@@ -1,0 +1,46 @@
+/* ================================================================
+   Globals - entry CSS.
+   Ordem:
+     1. fontes do Google (Inter + Manrope + JetBrains Mono + Material Symbols)
+     2. base.css (portado do frontend real: tokens + todos os componentes
+        visuais + refinamentos dos "stages" 12, 17, 18, 20)
+     3. overrides enxutos para remover dependências de IDs legados e
+        neutralizar regras que atrapalham o layout React-puro.
+   ================================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Manrope:wght@200;400;600;700;800&display=swap");
+
+@import "./base.css";
+
+/* ---------------------------------------------------------------
+   Overrides locais
+   ---------------------------------------------------------------
+   - Neutralizamos `.ov` (overlays modais legados) e regras que
+     escondiam nossas views via `display:none` dependente de JS.
+   - O sidebar do base.css vem com `position:fixed` e `width:var(--sw)`,
+     que é o que queremos.
+   --------------------------------------------------------------- */
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/* Overlays legados - não existem no React puro */
+.ov {
+  display: none !important;
+}
+
+/* Barras de rolagem finas já definidas no base.css; reforço para garantir */
+* {
+  scrollbar-width: thin;
+}

@@ -1,0 +1,379 @@
+/* CentralPage - portado de CentralWorkspace.module.css (DashboardView).
+   Mantemos o "linearCardsDashboard": cards métrica, chart de barras
+   refinado, alerta de contratos. Cards têm min-height 190px, valor
+   grande (clamp 34..52), delta pequeno no topo e gauge opcional no pé.
+*/
+
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.linearCardsDashboard {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px 30px 30px;
+  background: transparent;
+}
+
+/* --- Seletor de período (no panelHeader, via actions) ----------- */
+.periodControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #8f8f8f;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.linearSelect {
+  min-height: 40px;
+  min-width: 180px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #2d2d2d;
+  background: #151515;
+  color: #f2f2f2;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.16s ease;
+}
+
+.linearSelect:focus {
+  border-color: #3d3d3d;
+}
+
+.historyChip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(245, 195, 0, 0.1);
+  border: 1px solid rgba(245, 195, 0, 0.22);
+  color: #f5c300;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* --- Grid de cards --------------------------------------------- */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.metricCard,
+.chartCard,
+.alertCard {
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  background: #151515;
+}
+
+.metricCard {
+  min-height: 190px;
+  padding: 22px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.metricTopline {
+  width: 100%;
+  min-height: 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metricLabel {
+  color: #f5c300;
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 820;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.metricValue {
+  display: block;
+  margin-top: 24px;
+  color: #f0f0f0;
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 0.95;
+  font-weight: 760;
+  letter-spacing: -0.055em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricSub {
+  display: block;
+  margin-top: 16px;
+  color: #b8b8b8;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.metricSub b {
+  color: #f2f2f2;
+  font-weight: 700;
+}
+
+.delta {
+  flex-shrink: 0;
+  color: #858585;
+  font-size: 12px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.delta_pos { color: #7fc99b; }
+.delta_neg { color: #ef8f8f; }
+.delta_nd  { color: #777777; }
+
+.gauge {
+  width: 100%;
+  height: 5px;
+  margin-top: auto;
+  border-radius: 999px;
+  background: #2d2d2d;
+  overflow: hidden;
+}
+
+.gauge span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #f5c300;
+  transition: width 0.6s ease;
+}
+
+.gauge_red span {
+  background: #ef4444;
+}
+
+/* --- Cartões grandes (chart e alerta) -------------------------- */
+.chartCard,
+.alertCard {
+  padding: 24px 26px 26px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.sectionHeader span {
+  display: block;
+  margin-bottom: 8px;
+  color: #777777;
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0.02em;
+}
+
+.sectionHeader h3 {
+  margin: 0;
+  color: #e3e3e3;
+  font-size: 22px;
+  line-height: 1.1;
+  font-weight: 760;
+  letter-spacing: -0.035em;
+}
+
+.sectionHeader p {
+  margin: 0;
+  color: #858585;
+  font-size: 13px;
+}
+
+/* --- Chart de barras ------------------------------------------- */
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  height: 230px;
+  padding: 8px 2px 34px;
+  position: relative;
+}
+
+.barColumn {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #7f7f7f;
+  font-size: 12px;
+}
+
+.barColumn strong {
+  color: #d7d7d7;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.barTrack {
+  flex: 1;
+  width: 100%;
+  max-width: 54px;
+  display: flex;
+  align-items: flex-end;
+  border: 1px solid #252525;
+  border-radius: 14px;
+  background: #121212;
+  overflow: hidden;
+}
+
+.bar {
+  width: 100%;
+  min-height: 3px;
+  position: relative;
+  border-radius: 12px 12px 10px 10px;
+  background: #2f2f2f;
+  transition: height 0.5s ease;
+}
+
+.barActive {
+  background: #f5c300;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: max-content;
+  padding: 7px 9px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: #151515;
+  color: #d6d6d6;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.bar:hover .tooltip {
+  opacity: 1;
+}
+
+/* --- Alerta de contratos vencendo ------------------------------ */
+.alertRow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 90px 120px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid #2a2a2a;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.alertRow:last-child {
+  border-bottom: none;
+}
+
+.alertName {
+  color: #f2f2f2;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alertDate {
+  color: #8a8a8a;
+}
+
+.alertDays {
+  color: #f5c300;
+  font-weight: 720;
+}
+
+.alertFee {
+  color: #d7d7d7;
+  text-align: right;
+}
+
+/* --- Estado vazio / carregando --------------------------------- */
+.state {
+  padding: 40px 24px;
+  text-align: center;
+  color: #b1b6c0;
+  font-size: 13px;
+}
+
+.state.error {
+  color: #ef8f8f;
+}
+
+.retry {
+  margin-top: 14px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid #2d2d2d;
+  background: transparent;
+  color: #b1b6c0;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.16s, color 0.16s;
+}
+
+.retry:hover {
+  border-color: #3d3d3d;
+  color: #f2f2f2;
+}
+
+/* --- Responsivo ------------------------------------------------ */
+@media (max-width: 1280px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .linearCardsDashboard {
+    padding: 18px;
+  }
+
+  .chart {
+    height: 200px;
+    gap: 10px;
+  }
+
+  .alertRow {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .alertFee {
+    text-align: left;
+  }
+}

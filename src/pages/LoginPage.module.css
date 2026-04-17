@@ -1,0 +1,624 @@
+.login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.012) 0%, transparent 48%),
+    #0a0a0a;
+}
+
+.portal {
+  width: min(100%, 1120px);
+  min-height: 640px;
+  display: flex;
+  background: #0d0d0d;
+  border: 1px solid rgba(78, 70, 50, 0.2);
+  box-shadow: 0 0 52px rgba(0, 0, 0, 0.46);
+}
+
+.accessPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 72px 78px 72px 82px;
+  background: #0a0a0a;
+}
+
+.accessInner {
+  width: 100%;
+  max-width: 336px;
+}
+
+.header {
+  margin-bottom: 58px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #f5c300;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.66em;
+  text-transform: uppercase;
+}
+
+.eyebrowLine {
+  width: 72px;
+  height: 1px;
+  margin-top: 17px;
+  background: #f5c300;
+}
+
+.formBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  color: #9a9078;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.fieldShell {
+  position: relative;
+}
+
+.fieldInput {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 12px 0 11px;
+  padding-right: 52px;
+  color: #d7d1c4;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fieldInput::placeholder {
+  color: #3a3936;
+}
+
+.fieldInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fieldLine {
+  width: 100%;
+  height: 1px;
+  background: #4e4632;
+}
+
+.fieldFocusLine {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: #f5c300;
+  transition: width 0.35s ease;
+}
+
+.fieldInput:focus ~ .fieldFocusLine {
+  width: 100%;
+}
+
+.fieldToggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-60%);
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  cursor: pointer;
+  color: #4e4632;
+  font-family: "Inter", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.fieldToggle:hover {
+  color: #f5c300;
+}
+
+.errorMessage {
+  min-height: 16px;
+  margin-top: -4px;
+  color: #ef4444;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.actions {
+  margin-top: 48px;
+}
+
+.submitButton {
+  width: 100%;
+  height: 48px;
+  border: 1px solid transparent;
+  background: #f5c300;
+  color: #3d2f00;
+  font-family: "Manrope", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: transparent;
+  color: #f5c300;
+  border-color: #f5c300;
+}
+
+.submitButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  letter-spacing: 0.28em;
+}
+
+.secondaryActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.linkButton,
+.inviteButton {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.linkButton {
+  color: #9a9078;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.linkButton:hover {
+  color: #f5c300;
+}
+
+.inviteBlock {
+  width: 100%;
+  padding-top: 28px;
+  border-top: 1px solid rgba(78, 70, 50, 0.25);
+  text-align: center;
+}
+
+.inviteButton {
+  color: #f5c300;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: letter-spacing 0.2s ease;
+}
+
+.inviteButton:hover {
+  letter-spacing: 0.36em;
+}
+
+.brandPanel {
+  width: 286px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 52px 34px 46px;
+  background: #101010;
+  border-left: 1px solid rgba(78, 70, 50, 0.24);
+  text-align: center;
+}
+
+.brandTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brandMark {
+  position: relative;
+  width: 40px;
+  height: 34px;
+  margin-bottom: 30px;
+}
+
+.brandMarkBar {
+  position: absolute;
+  display: block;
+  width: 20px;
+  height: 3px;
+  background: #f5c300;
+  right: 9px;
+  transform-origin: center;
+}
+
+.brandMarkBar:nth-child(1) {
+  top: 2px;
+  transform: rotate(45deg);
+}
+
+.brandMarkBar:nth-child(2) {
+  top: 9px;
+  width: 15px;
+  transform: rotate(45deg);
+}
+
+.brandMarkBar:nth-child(3) {
+  top: 19px;
+  width: 24px;
+  transform: rotate(0deg);
+}
+
+.brandName {
+  color: #f5c300;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  text-indent: 0.38em;
+}
+
+.brandSub {
+  margin-top: 14px;
+  color: #6f6757;
+  font-family: "Inter", sans-serif;
+  font-size: 8px;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+}
+
+.seal {
+  width: 52px;
+  height: 52px;
+  margin-top: 20px;
+  border: 1px solid #4e4632;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.45;
+}
+
+.seal span {
+  color: #6f6757;
+  font-size: 7px;
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.divider {
+  width: 60%;
+  height: 1px;
+  margin: 20px 0 18px;
+  background: linear-gradient(to right, transparent, #4e4632, transparent);
+}
+
+.quoteBlock {
+  width: 100%;
+}
+
+.quoteText {
+  margin: 0;
+  color: #e0c382;
+  font-size: 17px;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.quoteMeta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.quoteMetaLine {
+  width: 22px;
+  height: 1px;
+  background: rgba(78, 70, 50, 0.6);
+}
+
+.quoteRef {
+  color: #9a9078;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.brandFooter {
+  margin-top: 28px;
+  color: #4e4632;
+  font-size: 8px;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 960px) {
+  .portal {
+    min-height: auto;
+    flex-direction: column;
+  }
+
+  .brandPanel {
+    width: 100%;
+    border-left: 0;
+    border-top: 1px solid rgba(78, 70, 50, 0.24);
+  }
+}
+
+@media (max-width: 640px) {
+  .login {
+    padding: 16px;
+  }
+
+  .accessPanel {
+    padding: 40px 24px 36px;
+  }
+
+  .brandPanel {
+    padding: 36px 24px;
+  }
+
+  .brandName {
+    font-size: 24px;
+  }
+
+  .quoteText {
+    font-size: 16px;
+  }
+}
+
+
+.statusMessage {
+  margin: 0 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted, #9ca3af);
+}
+
+.status_ready {
+  color: #22c55e;
+}
+
+.status_warning {
+  color: #f5c300;
+}
+
+.status_offline {
+  color: #ef4444;
+}
+
+.status_checking {
+  color: #60a5fa;
+}
+
+
+.setupCard {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(245, 195, 0, 0.24);
+  background: rgba(245, 195, 0, 0.04);
+}
+
+.setupTitle {
+  margin: 0 0 6px;
+  color: #f5c300;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.setupText {
+  margin: 0 0 14px;
+  color: #b6af9e;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.setupFields {
+  display: grid;
+  gap: 10px;
+}
+
+.setupInput {
+  width: 100%;
+  border: 1px solid rgba(78, 70, 50, 0.5);
+  outline: 0;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px 14px;
+  color: #d7d1c4;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+}
+
+.setupInput::placeholder {
+  color: #6e685b;
+}
+
+.setupInput:disabled {
+  opacity: 0.6;
+}
+
+.setupButton {
+  width: 100%;
+  margin-top: 12px;
+  height: 42px;
+  border: 1px solid rgba(245, 195, 0, 0.5);
+  background: transparent;
+  color: #f5c300;
+  font-family: "Manrope", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.setupButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+.noticeMessage {
+  min-height: 16px;
+  margin-top: -4px;
+  color: #22c55e;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.modalCard {
+  width: min(100%, 520px);
+  border: 1px solid rgba(245, 195, 0, 0.22);
+  background: #111111;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px 0;
+}
+
+.modalTitle {
+  margin: 0;
+  color: #f5c300;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.modalClose {
+  border: 0;
+  background: transparent;
+  color: #9a9078;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modalBody {
+  display: grid;
+  gap: 12px;
+  padding: 16px 22px 0;
+}
+
+.modalText {
+  margin: 0 0 4px;
+  color: #b6af9e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.modalInput,
+.modalTextarea {
+  width: 100%;
+  border: 1px solid rgba(78, 70, 50, 0.5);
+  outline: 0;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px 14px;
+  color: #d7d1c4;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+}
+
+.modalTextarea {
+  min-height: 104px;
+  resize: vertical;
+}
+
+.modalInput::placeholder,
+.modalTextarea::placeholder {
+  color: #6e685b;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 18px 22px 22px;
+}
+
+.modalPrimaryButton,
+.modalSecondaryButton {
+  height: 40px;
+  border: 1px solid rgba(245, 195, 0, 0.35);
+  padding: 0 16px;
+  font-family: "Manrope", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.modalPrimaryButton {
+  background: #f5c300;
+  color: #3d2f00;
+}
+
+.modalSecondaryButton {
+  background: transparent;
+  color: #f5c300;
+}
+
+.modalPrimaryButton:disabled,
+.modalSecondaryButton:disabled,
+.modalClose:disabled,
+.fieldToggle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
