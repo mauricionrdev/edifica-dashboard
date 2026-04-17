@@ -35,12 +35,23 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
+  height: var(--top-shell-height, 52px);
 }
 
 .brandText {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   min-width: 0;
+  transform: translateY(-1px);
+}
+
+.brandLogo {
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex: 0 0 24px;
+  object-fit: contain;
 }

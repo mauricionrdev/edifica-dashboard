@@ -74,11 +74,12 @@ export default function Sidebar({ clients = [], squads = [], onNavigate }) {
     <aside className="sb" aria-label="Navegação principal">
       <div className="sb-logo">
         <div className={`sb-brand ${styles.brand}`}>
-          <div className="licon" aria-hidden="true">
-            <div className="ll" />
-            <div className="ll" />
-            <div className="ll" />
-          </div>
+          <img
+            className={styles.brandLogo}
+            src="/brand/logotipo.svg"
+            alt=""
+            aria-hidden="true"
+          />
           <div className={styles.brandText}>
             <span className="ltxt">
               Edifica<b>.</b>
