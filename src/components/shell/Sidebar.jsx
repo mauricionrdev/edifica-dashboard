@@ -67,16 +67,9 @@ export default function Sidebar({ clients = [], squads = [], onNavigate }) {
         <div className={`sb-brand ${styles.brand}`}>
           <img
             className={styles.brandLogo}
-            src="/brand/logotipo.svg"
-            alt=""
-            aria-hidden="true"
+            src="/brand/logo.png"
+            alt="Edifica"
           />
-          <div className={styles.brandText}>
-            <span className="ltxt">
-              Edifica<b>.</b>
-            </span>
-            <div className="sb-subtitle">Platform Control Center</div>
-          </div>
         </div>
       </div>
 
