@@ -46,7 +46,7 @@ router.get('/:clientId/onboarding', async (req, res, next) => {
       });
       await query(
         `INSERT INTO onboardings (client_id, sections)
-         VALUES (?, CAST(? AS JSON))`,
+         VALUES (?, ?)`,
         [clientId, JSON.stringify(sections)]
       );
       return res.json({ onboarding: { clientId, sections, updatedAt: null } });
@@ -76,7 +76,7 @@ router.put('/:clientId/onboarding', async (req, res, next) => {
 
     await query(
       `INSERT INTO onboardings (client_id, sections)
-       VALUES (?, CAST(? AS JSON))
+       VALUES (?, ?)
        ON DUPLICATE KEY UPDATE sections = VALUES(sections)`,
       [clientId, JSON.stringify(sections)]
     );

@@ -175,7 +175,7 @@ router.post('/', async (req, res, next) => {
 
       await conn.query(
         `INSERT INTO onboardings (client_id, sections)
-         VALUES (?, CAST(? AS JSON))`,
+         VALUES (?, ?)`,
         [id, JSON.stringify(sections)]
       );
     });

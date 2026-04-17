@@ -67,7 +67,7 @@ router.post('/', async (req, res, next) => {
 
     await query(
       `INSERT INTO users (id, name, email, password_hash, role, is_master, squads, active)
-       VALUES (?, ?, ?, ?, ?, 0, CAST(? AS JSON), 1)`,
+       VALUES (?, ?, ?, ?, ?, 0, ?, 1)`,
       [id, name.trim(), normalizedEmail, passwordHash, normalizedRole, JSON.stringify(squadsArray)]
     );
 
@@ -123,7 +123,7 @@ router.put('/:id', async (req, res, next) => {
       params.push(role);
     }
     if (Array.isArray(squads)) {
-      updates.push('squads = CAST(? AS JSON)');
+      updates.push('squads = ?');
       params.push(JSON.stringify(squads));
     }
 

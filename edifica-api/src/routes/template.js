@@ -24,7 +24,7 @@ router.get('/', requireAuth, async (req, res, next) => {
       // operem sobre ele.
       await query(
         `INSERT INTO onboarding_template (id, sections)
-         VALUES (1, CAST(? AS JSON))
+         VALUES (1, ?)
          ON DUPLICATE KEY UPDATE sections = VALUES(sections)`,
         [JSON.stringify(ONBOARDING_TEMPLATE)]
       );
@@ -51,7 +51,7 @@ router.put('/', requireAuth, requireAdmin, async (req, res, next) => {
 
     await query(
       `INSERT INTO onboarding_template (id, sections)
-       VALUES (1, CAST(? AS JSON))
+       VALUES (1, ?)
        ON DUPLICATE KEY UPDATE sections = VALUES(sections)`,
       [JSON.stringify(sections)]
     );
@@ -74,7 +74,7 @@ router.post('/reset', requireAuth, requireAdmin, async (req, res, next) => {
   try {
     await query(
       `INSERT INTO onboarding_template (id, sections)
-       VALUES (1, CAST(? AS JSON))
+       VALUES (1, ?)
        ON DUPLICATE KEY UPDATE sections = VALUES(sections)`,
       [JSON.stringify(ONBOARDING_TEMPLATE)]
     );

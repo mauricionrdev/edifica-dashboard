@@ -177,14 +177,14 @@ router.put('/:clientId/:periodKey', async (req, res, next) => {
       if (existing.length > 0) {
         await conn.query(
           `UPDATE weekly_metrics
-              SET data = CAST(? AS JSON)
+              SET data = ?
             WHERE id = ?`,
           [JSON.stringify(merged), existing[0].id]
         );
       } else {
         await conn.query(
           `INSERT INTO weekly_metrics (id, client_id, period_key, data)
-           VALUES (?, ?, ?, CAST(? AS JSON))`,
+           VALUES (?, ?, ?, ?)`,
           [uuid(), clientId, periodKey, JSON.stringify(merged)]
         );
       }

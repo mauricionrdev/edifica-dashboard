@@ -25,8 +25,8 @@ async function seedAdmin() {
   const hash = await bcrypt.hash(password, 10);
   await query(
     `INSERT INTO users (id, name, email, password_hash, role, is_master, squads, active)
-     VALUES (?, ?, ?, ?, 'admin', 1, CAST('[]' AS JSON), 1)`,
-    [id, name, email, hash]
+     VALUES (?, ?, ?, ?, 'admin', 1, ?, 1)`,
+    [id, name, email, hash, JSON.stringify([])]
   );
   console.log(`✓ Admin master criado: ${email}  /  senha: ${password}`);
   console.log('  Troque a senha após o primeiro login.');
@@ -53,7 +53,7 @@ async function seedTemplate() {
     return;
   }
   await query(
-    `INSERT INTO onboarding_template (id, sections) VALUES (1, CAST(? AS JSON))`,
+    `INSERT INTO onboarding_template (id, sections) VALUES (1, ?)`,
     [JSON.stringify(ONBOARDING_TEMPLATE)]
   );
   console.log('✓ Template de onboarding (Modelo Oficial) inicializado.');
