@@ -46,6 +46,7 @@ function buildPeriodOptions() {
 const CHART_W = 720;
 const CHART_H = 260;
 const CHART_PAD = { top: 16, right: 18, bottom: 42, left: 42 };
+const SERIES_MONTHS = 6;
 
 function niceMax(value) {
   if (value <= 4) return 4;
@@ -69,6 +70,72 @@ function buildChartPoints(rows, maxValue, valueKey) {
   }));
 }
 
+function shiftPeriod(year, month0, offset) {
+  let y = year;
+  let m = month0 + offset;
+  while (m < 0) {
+    m += 12;
+    y -= 1;
+  }
+  while (m > 11) {
+    m -= 12;
+    y += 1;
+  }
+  return { y, m };
+}
+
+function readDatedEntries(client, keys) {
+  return keys.flatMap((key) => {
+    const value = client?.[key];
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((entry) => ({
+        date: entry?.date || entry?.createdAt || entry?.at,
+        label: entry?.label || entry?.title || entry?.name || entry?.type,
+        detail: entry?.detail || entry?.description || entry?.notes || '',
+      }))
+      .filter((entry) => entry.date && entry.label);
+  });
+}
+
+function collectMonthEvents(clients, year, month0) {
+  const prefix = `${year}-${String(month0 + 1).padStart(2, '0')}`;
+  return (Array.isArray(clients) ? clients : [])
+    .flatMap((client) =>
+      readDatedEntries(client, [
+        'dashboardEvents',
+        'events',
+        'notes',
+        'annotations',
+      ]).map((event) => ({
+        ...event,
+        clientName: client.name,
+      }))
+    )
+    .filter((event) => String(event.date).startsWith(prefix));
+}
+
+function enrichDashboardSeries(rows, clients) {
+  const all = Array.isArray(clients) ? clients : [];
+  return rows.map((row) => {
+    const prefix = `${row.y}-${String(row.m + 1).padStart(2, '0')}`;
+    const added = all.filter(
+      (client) =>
+        client.status !== 'churn' &&
+        client.startDate &&
+        String(client.startDate).startsWith(prefix)
+    );
+    return {
+      ...row,
+      benchmark: added.reduce(
+        (sum, client) => sum + (Number(client.metaLucro) || 0),
+        0
+      ),
+      events: collectMonthEvents(all, row.y, row.m),
+    };
+  });
+}
+
 function smoothPath(points) {
   if (points.length === 0) return '';
   if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
@@ -87,6 +154,54 @@ function smoothPath(points) {
     path.push(`C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`);
   }
   return path.join(' ');
+}
+
+function MetricCard({ label, value, sub, delta, gaugePct, gaugeTone = 'gold' }) {
+  return (
+    <article className={styles.metricCard}>
+      <div className={styles.metricTopline}>
+        <span className={styles.metricLabel}>{label}</span>
+        {delta}
+      </div>
+      <strong className={styles.metricValue}>{value}</strong>
+      <span className={styles.metricSub}>{sub}</span>
+      {gaugePct != null && (
+        <div
+          className={`${styles.gauge} ${
+            gaugeTone === 'red' ? styles.gauge_red : ''
+          }`}
+          aria-hidden="true"
+        >
+          <span style={{ width: `${Math.min(Math.max(gaugePct, 0), 100)}%` }} />
+        </div>
+      )}
+    </article>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="content">
+      <div className={`${styles.workspace} ${styles.linearCardsDashboard}`}>
+        <section className={styles.cardGrid} aria-label="Carregando indicadores">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <article key={index} className={`${styles.metricCard} ${styles.skeletonCard}`}>
+              <span className={`${styles.skeletonLine} ${styles.skeletonLabel}`} />
+              <span className={styles.skeletonValue} />
+              <span className={`${styles.skeletonLine} ${styles.skeletonSub}`} />
+              {index === 0 || index === 5 ? (
+                <span className={styles.skeletonGauge} />
+              ) : null}
+            </article>
+          ))}
+        </section>
+        <section className={`${styles.chartCard} ${styles.skeletonChartCard}`}>
+          <span className={`${styles.skeletonLine} ${styles.skeletonTitle}`} />
+          <div className={styles.skeletonChart} />
+        </section>
+      </div>
+    </div>
+  );
 }
 
 export default function CentralPage() {
@@ -127,24 +242,92 @@ export default function CentralPage() {
   const ticketMedio =
     metrics.active > 0 ? metrics.mrr / metrics.active : 0;
 
-  const bars = useMemo(
-    () => buildBarChartData(clients, period.y, period.m, 6),
+  const activePct =
+    metrics.total > 0
+      ? Math.min((metrics.active / metrics.total) * 100, 100)
+      : 0;
+
+  const dashboardMetrics = useMemo(
+    () => ({
+      active_clients: metrics.active,
+      total_clients: metrics.total,
+      current_mrr: metrics.mrr,
+      new_revenue: metrics.revenueNew,
+      new_clients: metrics.newCnt,
+      lost_revenue: metrics.revLost,
+      churn_count: metrics.churnedPeriodCnt,
+      churn_rate: metrics.churnRate,
+      average_ticket: ticketMedio,
+      active_ratio: activePct,
+    }),
+    [activePct, metrics, ticketMedio]
+  );
+
+  const rawBars = useMemo(
+    () => buildBarChartData(clients, period.y, period.m, SERIES_MONTHS),
     [clients, period]
   );
-  const chartMax = niceMax(Math.max(...bars.map((b) => b.cnt), 1));
+  const bars = useMemo(
+    () => enrichDashboardSeries(rawBars, clients),
+    [clients, rawBars]
+  );
+  const previousPeriodEnd = useMemo(
+    () => shiftPeriod(period.y, period.m, -SERIES_MONTHS),
+    [period]
+  );
+  const previousBars = useMemo(
+    () =>
+      buildBarChartData(
+        clients,
+        previousPeriodEnd.y,
+        previousPeriodEnd.m,
+        SERIES_MONTHS
+      ),
+    [clients, previousPeriodEnd]
+  );
+  const chartMax = niceMax(
+    Math.max(
+      ...bars.map((b) => b.cnt),
+      ...previousBars.map((b) => b.cnt),
+      1
+    )
+  );
   const revenueMax = Math.max(...bars.map((b) => Number(b.mrr) || 0), 1);
+  const benchmarkMax = Math.max(
+    ...bars.map((b) => Number(b.benchmark) || 0),
+    0
+  );
   const chartPoints = useMemo(
     () => buildChartPoints(bars, chartMax, 'cnt'),
     [bars, chartMax]
+  );
+  const previousPoints = useMemo(
+    () => buildChartPoints(previousBars, chartMax, 'cnt'),
+    [previousBars, chartMax]
   );
   const revenuePoints = useMemo(
     () => buildChartPoints(bars, revenueMax, 'mrr'),
     [bars, revenueMax]
   );
+  const benchmarkPoints = useMemo(
+    () =>
+      benchmarkMax > 0
+        ? buildChartPoints(bars, Math.max(benchmarkMax, 1), 'benchmark')
+        : [],
+    [bars, benchmarkMax]
+  );
   const lineD = useMemo(() => smoothPath(chartPoints), [chartPoints]);
+  const previousLineD = useMemo(
+    () => smoothPath(previousPoints),
+    [previousPoints]
+  );
   const revenueLineD = useMemo(
     () => smoothPath(revenuePoints),
     [revenuePoints]
+  );
+  const benchmarkLineD = useMemo(
+    () => smoothPath(benchmarkPoints),
+    [benchmarkPoints]
   );
   const baselineY = CHART_H - CHART_PAD.bottom;
   const areaD = lineD
@@ -152,6 +335,9 @@ export default function CentralPage() {
     : '';
   const revenueAreaD = revenueLineD
     ? `${revenueLineD} L ${revenuePoints.at(-1).x} ${baselineY} L ${revenuePoints[0].x} ${baselineY} Z`
+    : '';
+  const benchmarkAreaD = benchmarkLineD
+    ? `${benchmarkLineD} L ${benchmarkPoints.at(-1).x} ${baselineY} L ${benchmarkPoints[0].x} ${baselineY} Z`
     : '';
   const chartTicks = [
     chartMax,
@@ -165,11 +351,6 @@ export default function CentralPage() {
     () => clientsEndingSoon(clients, 30, now),
     [clients, now]
   );
-
-  const activePct =
-    metrics.total > 0
-      ? Math.min((metrics.active / metrics.total) * 100, 100)
-      : 0;
 
   // Registra título + seletor de período no panelHeader do AppShell.
   useEffect(() => {
@@ -212,11 +393,7 @@ export default function CentralPage() {
 
   // --- Estados ---
   if (loading && clients.length === 0) {
-    return (
-      <div className="content">
-        <div className={styles.state}>Carregando dados…</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error && clients.length === 0) {
@@ -239,25 +416,20 @@ export default function CentralPage() {
   return (
     <div className="content">
       <div className={`${styles.workspace} ${styles.linearCardsDashboard}`}>
-        {/* --- Linha 1: Ativos · MRR · Receita Nova --- */}
         <section className={styles.cardGrid} aria-label="Indicadores do dashboard">
-          <article className={styles.metricCard}>
-            <div className={styles.metricTopline}>
-              <span className={styles.metricLabel}>Clientes Ativos</span>
-            </div>
-            <strong className={styles.metricValue}>{metrics.active}</strong>
-            <span className={styles.metricSub}>
-              de <b>{metrics.total}</b> cadastrados
-            </span>
-            <div className={styles.gauge}>
-              <span style={{ width: `${activePct}%` }} />
-            </div>
-          </article>
+          <MetricCard
+            label="Clientes Ativos"
+            value={dashboardMetrics.active_clients}
+            sub={<>de <b>{dashboardMetrics.total_clients}</b> cadastrados</>}
+            gaugePct={dashboardMetrics.active_ratio}
+          />
 
-          <article className={styles.metricCard}>
-            <div className={styles.metricTopline}>
-              <span className={styles.metricLabel}>MRR Atual</span>
-              {mrrDelta === null ? (
+          <MetricCard
+            label="MRR Atual"
+            value={fmtMoney(dashboardMetrics.current_mrr)}
+            sub="Receita Mensal Recorrente"
+            delta={
+              mrrDelta === null ? (
                 <span className={`${styles.delta} ${styles.delta_nd}`}>
                   Primeiro mês
                 </span>
@@ -267,81 +439,49 @@ export default function CentralPage() {
                     mrrDelta >= 0 ? styles.delta_pos : styles.delta_neg
                   }`}
                 >
-                  {mrrDelta >= 0 ? '▲' : '▼'}{' '}
+                  {mrrDelta >= 0 ? '+' : '-'}{' '}
                   {Math.abs(mrrDelta).toFixed(1)}%
                 </span>
-              )}
-            </div>
-            <strong className={styles.metricValue}>
-              {fmtMoney(metrics.mrr)}
-            </strong>
-            <span className={styles.metricSub}>
-              Receita Mensal Recorrente
-            </span>
-          </article>
+              )
+            }
+          />
 
-          <article className={styles.metricCard}>
-            <div className={styles.metricTopline}>
-              <span className={styles.metricLabel}>
-                Receita Nova Adicionada
-              </span>
-            </div>
-            <strong className={styles.metricValue}>
-              {fmtMoney(metrics.revenueNew)}
-            </strong>
-            <span className={styles.metricSub}>
-              <b>{metrics.newCnt}</b> novos em {MONTHS[period.m]}
-            </span>
-          </article>
+          <MetricCard
+            label="Receita Nova Adicionada"
+            value={fmtMoney(dashboardMetrics.new_revenue)}
+            sub={<> <b>{dashboardMetrics.new_clients}</b> novos em {MONTHS[period.m]}</>}
+          />
         </section>
 
-        {/* --- Linha 2: Ticket · Receita Perdida · Churn --- */}
         <section className={styles.cardGrid}>
-          <article className={styles.metricCard}>
-            <div className={styles.metricTopline}>
-              <span className={styles.metricLabel}>Ticket Médio</span>
-            </div>
-            <strong className={styles.metricValue}>
-              {ticketMedio > 0 ? fmtMoney(ticketMedio) : '—'}
-            </strong>
-            <span className={styles.metricSub}>
-              MRR ÷ clientes ativos
-            </span>
-          </article>
+          <MetricCard
+            label="Ticket Médio"
+            value={
+              dashboardMetrics.average_ticket > 0
+                ? fmtMoney(dashboardMetrics.average_ticket)
+                : '-'
+            }
+            sub="MRR / clientes ativos"
+          />
 
-          <article className={styles.metricCard}>
-            <div className={styles.metricTopline}>
-              <span className={styles.metricLabel}>
-                Receita Perdida no Mês
-              </span>
-            </div>
-            <strong className={styles.metricValue}>
-              {fmtMoney(metrics.revLost)}
-            </strong>
-            <span className={styles.metricSub}>
-              <b>{metrics.churnedPeriodCnt}</b> churns em{' '}
-              {MONTHS[period.m]}
-            </span>
-          </article>
+          <MetricCard
+            label="Receita Perdida no Mês"
+            value={fmtMoney(dashboardMetrics.lost_revenue)}
+            sub={<> <b>{dashboardMetrics.churn_count}</b> churns em {MONTHS[period.m]}</>}
+          />
 
-          <article className={styles.metricCard}>
-            <div className={styles.metricTopline}>
-              <span className={styles.metricLabel}>Taxa de Churn</span>
-            </div>
-            <strong className={styles.metricValue}>
-              {metrics.churnRate > 0 ? fmtPct(metrics.churnRate) : '0%'}
-            </strong>
-            <span className={styles.metricSub}>
-              Cancelamentos / total
-            </span>
-            <div className={`${styles.gauge} ${styles.gauge_red}`}>
-              <span
-                style={{ width: `${Math.min(metrics.churnRate, 100)}%` }}
-              />
-            </div>
-          </article>
+          <MetricCard
+            label="Taxa de Churn"
+            value={
+              dashboardMetrics.churn_rate > 0
+                ? fmtPct(dashboardMetrics.churn_rate)
+                : '0%'
+            }
+            sub="Cancelamentos / total"
+            gaugePct={dashboardMetrics.churn_rate}
+            gaugeTone="red"
+          />
         </section>
-
         {/* --- Chart de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
@@ -368,6 +508,10 @@ export default function CentralPage() {
                   <stop offset="64%" stopColor="#6aa6ff" stopOpacity="0.06" />
                   <stop offset="100%" stopColor="#6aa6ff" stopOpacity="0" />
                 </linearGradient>
+                <linearGradient id="benchmarkLineFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#9b7cff" stopOpacity="0.16" />
+                  <stop offset="100%" stopColor="#9b7cff" stopOpacity="0" />
+                </linearGradient>
               </defs>
 
               {chartTicks.map((tick) => {
@@ -393,13 +537,30 @@ export default function CentralPage() {
 
               <path d={areaD} className={styles.areaPath} />
               <path d={revenueAreaD} className={styles.revenueAreaPath} />
+              {benchmarkAreaD && (
+                <path d={benchmarkAreaD} className={styles.benchmarkAreaPath} />
+              )}
+              {previousLineD && (
+                <path d={previousLineD} className={styles.comparisonLinePath} />
+              )}
               <path d={lineD} className={styles.linePath} />
               <path d={revenueLineD} className={styles.revenueLinePath} />
+              {benchmarkLineD && (
+                <path d={benchmarkLineD} className={styles.benchmarkLinePath} />
+              )}
 
               {chartPoints.map((point, index) => {
                 const revenuePoint = revenuePoints[index];
+                const previousPoint = previousBars[index];
+                const benchmarkPoint = benchmarkPoints[index];
+                const hasEvents = point.events?.length > 0;
                 return (
-                <g key={`${point.y}-${point.m}`}>
+                <g
+                  key={`${point.y}-${point.m}`}
+                  className={styles.dataNode}
+                  tabIndex="0"
+                  aria-label={`${MONTHS[point.m]}: ${point.cnt} novos clientes, ${fmtMoney(point.mrr)} em receita nova`}
+                >
                   <line
                     x1={point.x}
                     x2={point.x}
@@ -429,16 +590,52 @@ export default function CentralPage() {
                     r={4.5}
                     className={styles.revenuePoint}
                   />
+                  {benchmarkPoint && (
+                    <circle
+                      cx={benchmarkPoint.x}
+                      cy={benchmarkPoint.y}
+                      r={4}
+                      className={styles.benchmarkPoint}
+                    />
+                  )}
+                  {hasEvents && (
+                    <g>
+                      <circle
+                        cx={point.x}
+                        cy={baselineY - 24}
+                        r="9"
+                        className={styles.eventHalo}
+                      />
+                      <text
+                        x={point.x}
+                        y={baselineY - 20}
+                        textAnchor="middle"
+                        className={styles.eventMarker}
+                      >
+                        !
+                      </text>
+                    </g>
+                  )}
                   <foreignObject
-                    x={point.x - 55}
-                    y={Math.max(Math.min(point.y, revenuePoint.y) - 58, 0)}
-                    width="110"
-                    height="52"
+                    x={Math.min(Math.max(point.x - 78, 4), CHART_W - 164)}
+                    y={Math.max(Math.min(point.y, revenuePoint.y) - 92, 0)}
+                    width="160"
+                    height="88"
                     className={styles.pointTip}
                   >
-                    <div>
-                      <strong>{point.cnt} cliente{point.cnt === 1 ? '' : 's'}</strong>
-                      <span>{fmtMoney(point.mrr)}</span>
+                    <div className={styles.hudPanel}>
+                      <strong>{MONTHS[point.m]} {point.y}</strong>
+                      <span>Novos: {point.cnt}</span>
+                      <span>Receita: {fmtMoney(point.mrr)}</span>
+                      {previousPoint && (
+                        <span>Periodo anterior: {previousPoint.cnt}</span>
+                      )}
+                      {benchmarkPoint && (
+                        <span>Meta agregada: {point.benchmark}</span>
+                      )}
+                      {hasEvents && (
+                        <span>Evento: {point.events[0].label}</span>
+                      )}
                     </div>
                   </foreignObject>
                 </g>
@@ -454,6 +651,16 @@ export default function CentralPage() {
                 <i className={styles.legendRevenue} />
                 Receita nova no mês
               </span>
+              <span>
+                <i className={styles.legendComparison} />
+                Periodo anterior
+              </span>
+              {benchmarkLineD && (
+                <span>
+                  <i className={styles.legendBenchmark} />
+                  Meta agregada
+                </span>
+              )}
             </div>
           </div>
         </section>
@@ -488,3 +695,7 @@ export default function CentralPage() {
     </div>
   );
 }
+
+
+
+
