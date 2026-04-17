@@ -124,7 +124,13 @@ export default function AppShell() {
   );
 
   return (
-    <div className={styles.shell}>
+    // id="vApp" ativa o escopo Stage 20 do base.css que define:
+    //   --top-shell-height: 52px
+    //   --sw: 260px
+    //   .tbar -> position: absolute (presa no topo do .main)
+    //   .sb-logo -> 52px para casar com a .tbar
+    // Sem esse id, as medidas caem no Stage 17 e o layout desmonta.
+    <div id="vApp" className={styles.shell}>
       <Sidebar clients={clients} squads={squads} />
       <div className={styles.main}>
         <Topbar />

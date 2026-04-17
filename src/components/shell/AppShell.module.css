@@ -1,6 +1,8 @@
 /* AppShell - layout principal.
-   Portado do frontend real (AppShell.module.css), com ajustes para
-   nosso router-based driving (sem IDs legados, sem data-workspace-mode).
+   Fiel ao AppShell.module.css do frontend real. Importante:
+   a .tbar em Stage 20 do base.css é position:absolute top:0,
+   presa ao .main. Por isso .main precisa de padding-top igual
+   à --top-shell-height (52px), senão a tbar sobrepõe o frame.
 */
 
 .shell {
@@ -13,10 +15,8 @@
   min-height: 100vh;
   position: relative;
   background: #0d0d0d;
-  padding-top: 0; /* tbar é sticky e conta na altura */
+  padding-top: var(--top-shell-height, 52px);
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
 }
 
 .main::after {
@@ -27,9 +27,8 @@
 }
 
 .contentFrame {
-  flex: 1;
+  min-height: calc(100vh - var(--top-shell-height, 52px) - 16px);
   margin-right: 16px;
-  margin-top: 0;
   background: #171717;
   border: 1px solid #2d2d2d;
   border-radius: 12px;
@@ -93,42 +92,6 @@
 
 .contentBody > :global(.content) {
   padding: 20px 24px 24px;
-}
-
-.splash {
-  position: fixed;
-  inset: 0;
-  background: #08090a;
-}
-
-/* Estados genéricos em qualquer página */
-.pageState {
-  padding: 40px 24px;
-  text-align: center;
-  color: var(--text-soft, #b1b6c0);
-  font-size: 13px;
-}
-
-.pageState.error {
-  color: var(--red-soft, #ef4444);
-}
-
-.retryBtn {
-  margin-top: 14px;
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--line, #23262b);
-  background: transparent;
-  color: var(--text-soft, #b1b6c0);
-  font-family: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  transition: border-color 0.16s, color 0.16s;
-}
-
-.retryBtn:hover {
-  border-color: var(--line-strong, #30343a);
-  color: var(--text, #f3f4f6);
 }
 
 @media (max-width: 1100px) {

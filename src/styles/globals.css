@@ -1,11 +1,10 @@
 /* ================================================================
    Globals - entry CSS.
    Ordem:
-     1. fontes do Google (Inter + Manrope + JetBrains Mono + Material Symbols)
-     2. base.css (portado do frontend real: tokens + todos os componentes
-        visuais + refinamentos dos "stages" 12, 17, 18, 20)
-     3. overrides enxutos para remover dependências de IDs legados e
-        neutralizar regras que atrapalham o layout React-puro.
+     1. fontes do Google (Inter + Manrope + JetBrains Mono)
+     2. base.css (portado do frontend real: tokens + todas as classes
+        visuais + refinamentos Stages 12 / 17 / 18 / 20)
+     3. overrides enxutos
    ================================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Manrope:wght@200;400;600;700;800&display=swap");
@@ -14,11 +13,6 @@
 
 /* ---------------------------------------------------------------
    Overrides locais
-   ---------------------------------------------------------------
-   - Neutralizamos `.ov` (overlays modais legados) e regras que
-     escondiam nossas views via `display:none` dependente de JS.
-   - O sidebar do base.css vem com `position:fixed` e `width:var(--sw)`,
-     que é o que queremos.
    --------------------------------------------------------------- */
 
 :root {
@@ -35,12 +29,25 @@ body {
   margin: 0;
 }
 
-/* Overlays legados - não existem no React puro */
+/* Overlays legados - não existem mais no DOM React */
 .ov {
   display: none !important;
 }
 
-/* Barras de rolagem finas já definidas no base.css; reforço para garantir */
-* {
-  scrollbar-width: thin;
+/* ---------------------------------------------------------------
+   Scrollbar da Sidebar: escondemos totalmente, tanto em Firefox
+   (scrollbar-width:none) quanto em WebKit (::-webkit-scrollbar
+   display:none). O scroll continua funcional (roda do mouse, arrastar
+   com trackpad), mas sem barra visível - que é como o frontend real
+   renderiza.
+   --------------------------------------------------------------- */
+.sb-nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sb-nav::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
