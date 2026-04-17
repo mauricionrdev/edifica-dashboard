@@ -43,9 +43,9 @@ function buildPeriodOptions() {
   return out;
 }
 
-const CHART_W = 720;
-const CHART_H = 260;
-const CHART_PAD = { top: 16, right: 18, bottom: 42, left: 42 };
+const CHART_W = 1200;
+const CHART_H = 360;
+const CHART_PAD = { top: 24, right: 28, bottom: 52, left: 38 };
 const SERIES_MONTHS = 6;
 
 function niceMax(value) {
@@ -62,6 +62,8 @@ function buildChartPoints(rows, maxValue, valueKey) {
 
   return rows.map((row, index) => ({
     ...row,
+    year: row.y,
+    month: row.m,
     x: CHART_PAD.left + step * index,
     y:
       CHART_PAD.top +
@@ -556,10 +558,10 @@ export default function CentralPage() {
                 const hasEvents = point.events?.length > 0;
                 return (
                 <g
-                  key={`${point.y}-${point.m}`}
+                  key={`${point.year}-${point.month}`}
                   className={styles.dataNode}
                   tabIndex="0"
-                  aria-label={`${MONTHS[point.m]}: ${point.cnt} novos clientes, ${fmtMoney(point.mrr)} em receita nova`}
+                  aria-label={`${MONTHS[point.month]}: ${point.cnt} novos clientes, ${fmtMoney(point.mrr)} em receita nova`}
                 >
                   <line
                     x1={point.x}
@@ -574,7 +576,7 @@ export default function CentralPage() {
                     textAnchor="middle"
                     className={styles.monthLabel}
                   >
-                    {MONTHS[point.m]}
+                    {MONTHS[point.month]}
                   </text>
                   <circle
                     cx={point.x}
@@ -617,14 +619,14 @@ export default function CentralPage() {
                     </g>
                   )}
                   <foreignObject
-                    x={Math.min(Math.max(point.x - 78, 4), CHART_W - 164)}
-                    y={Math.max(Math.min(point.y, revenuePoint.y) - 92, 0)}
-                    width="160"
-                    height="88"
+                    x={Math.min(Math.max(point.x - 96, 4), CHART_W - 204)}
+                    y={Math.max(Math.min(point.y, revenuePoint.y) - 126, 0)}
+                    width="200"
+                    height="120"
                     className={styles.pointTip}
                   >
                     <div className={styles.hudPanel}>
-                      <strong>{MONTHS[point.m]} {point.y}</strong>
+                      <strong>{MONTHS[point.month]} {point.year}</strong>
                       <span>Novos: {point.cnt}</span>
                       <span>Receita: {fmtMoney(point.mrr)}</span>
                       {previousPoint && (
