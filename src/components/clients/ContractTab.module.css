@@ -1,0 +1,77 @@
+/* ContractTab - foco nos campos comerciais + mini-cards de resumo */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summaryCard {
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  background: #151515;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 88px;
+  position: relative;
+  overflow: hidden;
+}
+
+.summaryCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #f5c300;
+}
+
+.summaryCard.red::before {
+  background: #ef4444;
+}
+
+.summaryCard.green::before {
+  background: #22c55e;
+}
+
+.summaryLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8f8f8f;
+}
+
+.summaryValue {
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #f2f2f2;
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryValue.red {
+  color: #ef8f8f;
+}
+
+.summarySub {
+  font-size: 11px;
+  color: #8f8f8f;
+}
+
+@media (max-width: 560px) {
+  .summary {
+    grid-template-columns: 1fr;
+  }
+}

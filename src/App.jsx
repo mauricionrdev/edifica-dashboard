@@ -17,6 +17,7 @@ import AppShell from './components/shell/AppShell.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import CentralPage from './pages/CentralPage.jsx';
 import ClientsPage from './pages/ClientsPage.jsx';
+import ModeloOficialPage from './pages/ModeloOficialPage.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 export default function App() {
@@ -75,12 +76,7 @@ export default function App() {
               />
               <Route
                 path="modelo-oficial"
-                element={
-                  <PlaceholderPage
-                    title="Modelo Oficial"
-                    description="Editor do template oficial de onboarding em construção."
-                  />
-                }
+                element={<ModeloOficialPage />}
               />
             </Route>
 

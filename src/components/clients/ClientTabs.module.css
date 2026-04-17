@@ -1,0 +1,130 @@
+/* ClientTabs - navegação por abas estilo Asana dentro do drawer.
+   Linhas inferiores discretas, aba ativa em amarelo.
+*/
+
+.tabsBar {
+  display: flex;
+  gap: 2px;
+  padding: 0 24px;
+  border-bottom: 1px solid #232323;
+  background: #121212;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabsBar::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  position: relative;
+  padding: 12px 14px 13px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: #8f8f8f;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: #d7d9de;
+}
+
+.tabActive {
+  color: #f5c300;
+  border-bottom-color: #f5c300;
+}
+
+.tabCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.tabActive .tabCount {
+  background: rgba(245, 195, 0, 0.14);
+  color: #f5c300;
+}
+
+/* Status de save no header do tab */
+.saveStatus {
+  margin-left: auto;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #8f8f8f;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.saveStatus.saving {
+  color: #8f8f8f;
+}
+
+.saveStatus.saved {
+  color: #7fc99b;
+}
+
+.saveStatus.error {
+  color: #ef8f8f;
+}
+
+.saveStatus.pending {
+  color: #fbbf24;
+}
+
+.saveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.tabBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 24px 28px;
+}
+
+.tabBody::-webkit-scrollbar {
+  width: 6px;
+}
+.tabBody::-webkit-scrollbar-thumb {
+  background: #2d2d2d;
+  border-radius: 3px;
+}
+
+.emptyState {
+  padding: 40px 16px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.loadingState {
+  padding: 40px 16px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 13px;
+}

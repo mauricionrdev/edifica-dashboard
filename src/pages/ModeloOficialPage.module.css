@@ -1,0 +1,109 @@
+/* ModeloOficialPage - editor do template singleton.
+   Reusa OnboardingTab.module.css para lista de sections/tasks.
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px 24px 30px;
+  max-width: 960px;
+}
+
+.info {
+  padding: 14px 18px;
+  border: 1px solid rgba(245, 195, 0, 0.22);
+  background: rgba(245, 195, 0, 0.04);
+  border-radius: 12px;
+  color: #d7d9de;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.info b {
+  color: #f5c300;
+}
+
+.headerBtn {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #2d2d2d;
+  background: transparent;
+  color: #d7d9de;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.16s, border-color 0.16s, color 0.16s;
+}
+
+.headerBtn:hover:not(:disabled) {
+  border-color: #3d3d3d;
+  color: #f2f2f2;
+}
+
+.headerBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.headerBtn.danger:hover:not(:disabled) {
+  color: #ef8f8f;
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.addSection {
+  display: flex;
+  gap: 8px;
+}
+
+.addSectionInput {
+  flex: 1;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px dashed #2a2a2a;
+  background: transparent;
+  color: #d7d9de;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.addSectionInput:focus {
+  border-style: solid;
+  border-color: #3d3d3d;
+  background: #121212;
+}
+
+.addSectionBtn {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 195, 0, 0.35);
+  background: transparent;
+  color: #f5c300;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.addSectionBtn:hover {
+  background: rgba(245, 195, 0, 0.1);
+}
+
+.noAccess {
+  padding: 60px 24px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 14px;
+}

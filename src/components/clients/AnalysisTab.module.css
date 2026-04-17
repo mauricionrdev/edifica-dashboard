@@ -1,0 +1,173 @@
+/* AnalysisTab - layout de entradas de análise (ICP/GDV).
+   Cada entrada é um card com data editável (topo) e textarea livre.
+*/
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.title.icp {
+  color: #60a5fa;
+}
+
+.title.gdv {
+  color: #2dd4bf;
+}
+
+.sub {
+  font-size: 11px;
+  color: #8f8f8f;
+}
+
+.addBtn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 0;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.15s, filter 0.15s;
+  flex-shrink: 0;
+}
+
+.addBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px dashed #2a2a2a;
+  border-radius: 10px;
+  background: #121212;
+}
+
+.empty b {
+  color: #f2f2f2;
+}
+
+.entry {
+  border: 1px solid #232323;
+  border-radius: 10px;
+  background: #131313;
+  overflow: hidden;
+}
+
+.entryHdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #151515;
+  border-bottom: 1px solid #232323;
+}
+
+.dateLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8f8f8f;
+}
+
+.dateInput {
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+  background: #0f0f0f;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.delBtn {
+  margin-left: auto;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #8f8f8f;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.delBtn:hover:not(:disabled) {
+  color: #ef8f8f;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+.delBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  color: #d7d9de;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  outline: none;
+  resize: vertical;
+}
+
+.textarea::placeholder {
+  color: #5f5f5f;
+}
+
+.savingHint {
+  padding: 6px 14px 10px;
+  font-size: 10px;
+  color: #7fc99b;
+}
+
+.savingHint.pending {
+  color: #fbbf24;
+}
+
+.loading {
+  padding: 40px 16px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 13px;
+}
