@@ -150,6 +150,9 @@ export default function CentralPage() {
   const areaD = lineD
     ? `${lineD} L ${chartPoints.at(-1).x} ${baselineY} L ${chartPoints[0].x} ${baselineY} Z`
     : '';
+  const revenueAreaD = revenueLineD
+    ? `${revenueLineD} L ${revenuePoints.at(-1).x} ${baselineY} L ${revenuePoints[0].x} ${baselineY} Z`
+    : '';
   const chartTicks = [
     chartMax,
     chartMax * 0.75,
@@ -343,10 +346,8 @@ export default function CentralPage() {
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
             <div>
-              <span>Atividade</span>
-              <h3>Entradas de Clientes por Mês</h3>
+              <h3>Entradas de clientes e receita nova</h3>
             </div>
-            <p>Novos clientes nos últimos 6 meses</p>
           </div>
 
           <div className={styles.lineChartWrap}>
@@ -358,9 +359,14 @@ export default function CentralPage() {
             >
               <defs>
                 <linearGradient id="clientsLineFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f5c300" stopOpacity="0.28" />
-                  <stop offset="64%" stopColor="#f5c300" stopOpacity="0.08" />
+                  <stop offset="0%" stopColor="#f5c300" stopOpacity="0.22" />
+                  <stop offset="64%" stopColor="#f5c300" stopOpacity="0.07" />
                   <stop offset="100%" stopColor="#f5c300" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="revenueLineFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6aa6ff" stopOpacity="0.2" />
+                  <stop offset="64%" stopColor="#6aa6ff" stopOpacity="0.06" />
+                  <stop offset="100%" stopColor="#6aa6ff" stopOpacity="0" />
                 </linearGradient>
               </defs>
 
@@ -386,6 +392,7 @@ export default function CentralPage() {
               })}
 
               <path d={areaD} className={styles.areaPath} />
+              <path d={revenueAreaD} className={styles.revenueAreaPath} />
               <path d={lineD} className={styles.linePath} />
               <path d={revenueLineD} className={styles.revenueLinePath} />
 
