@@ -54,7 +54,7 @@ function niceMax(value) {
   return Math.ceil(value / 10) * 10;
 }
 
-function buildChartPoints(rows, maxValue) {
+function buildChartPoints(rows, maxValue, valueKey) {
   const innerW = CHART_W - CHART_PAD.left - CHART_PAD.right;
   const innerH = CHART_H - CHART_PAD.top - CHART_PAD.bottom;
   const step = rows.length > 1 ? innerW / (rows.length - 1) : 0;
@@ -65,7 +65,7 @@ function buildChartPoints(rows, maxValue) {
     y:
       CHART_PAD.top +
       innerH -
-      ((Number(row.cnt) || 0) / maxValue) * innerH,
+      ((Number(row[valueKey]) || 0) / maxValue) * innerH,
   }));
 }
 
@@ -132,11 +132,20 @@ export default function CentralPage() {
     [clients, period]
   );
   const chartMax = niceMax(Math.max(...bars.map((b) => b.cnt), 1));
+  const revenueMax = Math.max(...bars.map((b) => Number(b.mrr) || 0), 1);
   const chartPoints = useMemo(
-    () => buildChartPoints(bars, chartMax),
+    () => buildChartPoints(bars, chartMax, 'cnt'),
     [bars, chartMax]
   );
+  const revenuePoints = useMemo(
+    () => buildChartPoints(bars, revenueMax, 'mrr'),
+    [bars, revenueMax]
+  );
   const lineD = useMemo(() => smoothPath(chartPoints), [chartPoints]);
+  const revenueLineD = useMemo(
+    () => smoothPath(revenuePoints),
+    [revenuePoints]
+  );
   const baselineY = CHART_H - CHART_PAD.bottom;
   const areaD = lineD
     ? `${lineD} L ${chartPoints.at(-1).x} ${baselineY} L ${chartPoints[0].x} ${baselineY} Z`
@@ -378,8 +387,11 @@ export default function CentralPage() {
 
               <path d={areaD} className={styles.areaPath} />
               <path d={lineD} className={styles.linePath} />
+              <path d={revenueLineD} className={styles.revenueLinePath} />
 
-              {chartPoints.map((point) => (
+              {chartPoints.map((point, index) => {
+                const revenuePoint = revenuePoints[index];
+                return (
                 <g key={`${point.y}-${point.m}`}>
                   <line
                     x1={point.x}
@@ -404,20 +416,27 @@ export default function CentralPage() {
                       point.isNow ? styles.pointActive : ''
                     }`}
                   />
+                  <circle
+                    cx={revenuePoint.x}
+                    cy={revenuePoint.y}
+                    r={4.5}
+                    className={styles.revenuePoint}
+                  />
                   <foreignObject
                     x={point.x - 55}
-                    y={Math.max(point.y - 52, 0)}
+                    y={Math.max(Math.min(point.y, revenuePoint.y) - 58, 0)}
                     width="110"
-                    height="44"
+                    height="52"
                     className={styles.pointTip}
                   >
                     <div>
-                      <strong>{point.cnt}</strong>
+                      <strong>{point.cnt} cliente{point.cnt === 1 ? '' : 's'}</strong>
                       <span>{fmtMoney(point.mrr)}</span>
                     </div>
                   </foreignObject>
                 </g>
-              ))}
+                );
+              })}
             </svg>
             <div className={styles.chartLegend}>
               <span>

@@ -252,6 +252,16 @@
   vector-effect: non-scaling-stroke;
 }
 
+.revenueLinePath {
+  fill: none;
+  stroke: #6aa6ff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 12px 20px rgba(106, 166, 255, 0.12));
+  vector-effect: non-scaling-stroke;
+}
+
 .point {
   fill: #151515;
   stroke: #f5c300;
@@ -262,6 +272,13 @@
 .pointActive {
   fill: #f5c300;
   stroke: #fff2a8;
+}
+
+.revenuePoint {
+  fill: #151515;
+  stroke: #6aa6ff;
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
 }
 
 .pointTip {
