@@ -14,25 +14,16 @@
 
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { isAdminUser, roleLabel } from '../../utils/roles.js';
+import { isAdminUser } from '../../utils/roles.js';
 import {
   BuildingIcon,
   ClipboardListIcon,
   LayoutDashboardIcon,
-  LogOutIcon,
   ShieldIcon,
   SparklesIcon,
   UsersIcon,
 } from '../ui/Icons.jsx';
 import styles from './Sidebar.module.css';
-
-function initials(name) {
-  if (!name) return '?';
-  const parts = String(name).trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 /**
  * Monta o className do item de nav seguindo as regras do base.css:
@@ -57,7 +48,7 @@ function niClass(isActive, variant) {
  *                 (útil para fechar drawer mobile no futuro)
  */
 export default function Sidebar({ clients = [], squads = [], onNavigate }) {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const admin = isAdminUser(user);
 
   const activeCount = clients.filter((c) => c.status !== 'churn').length;
@@ -234,28 +225,6 @@ export default function Sidebar({ clients = [], squads = [], onNavigate }) {
           )}
         </div>
       </nav>
-
-      <div className="sb-foot">
-        <div className="urow">
-          <div className="uav" aria-hidden="true">
-            {initials(user?.name)}
-          </div>
-          <div>
-            <div className="uname" title={user?.name || ''}>
-              {user?.name || '—'}
-            </div>
-            <div className="urole">{roleLabel(user?.role)}</div>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="lbtn"
-          onClick={() => logout()}
-        >
-          <LogOutIcon size={15} />
-          <span>Sair</span>
-        </button>
-      </div>
     </aside>
   );
 }

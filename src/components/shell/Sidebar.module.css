@@ -8,6 +8,7 @@
 .navInner {
   display: flex;
   flex-direction: column;
+  padding-bottom: 10px;
 }
 
 /* NavLink é <a>. Forçamos inheritance de cor e reset visual para

@@ -1,27 +1,54 @@
 // ================================================================
 //  Topbar
-//  Barra superior sticky. A estética principal vem de .tbar no base.css
-//  (Stage 17 a refinou: fundo #121212, border-bottom removido, min-height
-//  72px, grid-template-columns). Mantemos a mesma estrutura visual do
-//  frontend real: tbar-leading (hambúrguer escondido em desktop) +
-//  tbar-center (banners inline) + tbar-actions (slot livre).
-//
-//  Aqui a Topbar não carrega título — o título vive no panelHeader do
-//  AppShell (é lá que o visual real coloca). Topbar só guarda banners
-//  contextuais e botões de ação fornecidos pelas páginas via slot.
+//  Barra superior sticky. A estética principal vem de .tbar no base.css.
+//  Mantém slots globais e concentra a área de conta para desafogar a sidebar.
 // ================================================================
 
+import { useAuth } from '../../context/AuthContext.jsx';
+import { roleLabel } from '../../utils/roles.js';
+import { LogOutIcon } from '../ui/Icons.jsx';
+import styles from './Topbar.module.css';
+
+function initials(name) {
+  if (!name) return '?';
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 export default function Topbar({ banner = null, actions = null }) {
+  const { user, logout } = useAuth();
+
   return (
     <header className="tbar">
       <div className="tbar-leading" />
 
       <div className="tbar-center">
-        {banner /* slot para badges contextuais (squad selecionado, etc.) */}
+        {banner}
       </div>
 
       <div className="tbar-actions">
-        {actions /* slot para ações globais de topbar */}
+        {actions}
+        <div className={styles.accountCluster}>
+          <div className={styles.accountAvatar} aria-hidden="true">
+            {initials(user?.name)}
+          </div>
+          <div className={styles.accountMeta}>
+            <strong title={user?.name || ''}>{user?.name || 'Usuário'}</strong>
+            <span>{roleLabel(user?.role)}</span>
+          </div>
+          <button
+            type="button"
+            className={styles.logoutButton}
+            onClick={() => logout()}
+            aria-label="Sair da conta"
+            title="Sair"
+          >
+            <LogOutIcon size={14} />
+            <span>Sair</span>
+          </button>
+        </div>
       </div>
     </header>
   );
