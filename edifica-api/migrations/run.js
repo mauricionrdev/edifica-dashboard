@@ -33,7 +33,10 @@ async function main() {
     DB_NAME,
     DB_USER,
     DB_PASS,
+    DB_PASSWORD,
   } = process.env;
+
+  const dbPassword = DB_PASS || DB_PASSWORD;
 
   if (!DB_NAME || !DB_USER) {
     console.error('Faltam variáveis no .env (DB_NAME, DB_USER).');
@@ -45,7 +48,7 @@ async function main() {
     host: DB_HOST,
     port: Number(DB_PORT),
     user: DB_USER,
-    password: DB_PASS,
+    password: dbPassword,
     multipleStatements: false,
   });
   await rootConn.query(
@@ -58,7 +61,7 @@ async function main() {
     host: DB_HOST,
     port: Number(DB_PORT),
     user: DB_USER,
-    password: DB_PASS,
+    password: dbPassword,
     database: DB_NAME,
     multipleStatements: false,
   });
