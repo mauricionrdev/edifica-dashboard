@@ -76,10 +76,27 @@
 .alertCard {
   border: 1px solid transparent;
   border-radius: 12px;
+  position: relative;
+  overflow: hidden;
   background:
-    linear-gradient(145deg, rgba(21, 21, 21, 0.94), rgba(13, 13, 13, 0.98)) padding-box,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(245, 195, 0, 0.06), rgba(255, 255, 255, 0.03)) border-box;
+    linear-gradient(145deg, rgba(28, 28, 30, 0.98), rgba(18, 18, 18, 0.98)) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 215, 0, 0.05), rgba(255, 255, 255, 0.03)) border-box;
   backdrop-filter: blur(12px);
+}
+
+.metricCard::after,
+.chartCard::after,
+.alertCard::after {
+  content: '';
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.68), rgba(255, 215, 0, 0));
+  opacity: 0.72;
+  pointer-events: none;
 }
 
 .metricCard {
@@ -108,7 +125,7 @@
 }
 
 .metricLabel {
-  color: #f5c300;
+  color: #ffd700;
   font-size: 10px;
   line-height: 1.3;
   font-weight: 820;
@@ -168,7 +185,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #f5c300;
+  background: #ffd700;
   transition: width 0.6s ease;
 }
 
@@ -218,7 +235,7 @@
 .lineChartWrap {
   position: relative;
   min-height: 428px;
-  padding: 0;
+  padding: 0 24px;
   isolation: isolate;
 }
 
@@ -278,7 +295,7 @@
 
 .linePath {
   fill: none;
-  stroke: #f5c300;
+  stroke: #ffd700;
   stroke-width: 3.25;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -318,13 +335,13 @@
 
 .point {
   fill: #151515;
-  stroke: #f5c300;
+  stroke: #ffd700;
   stroke-width: 3;
   vector-effect: non-scaling-stroke;
 }
 
 .pointActive {
-  fill: #f5c300;
+  fill: #ffd700;
   stroke: #fff2a8;
 }
 
@@ -350,7 +367,7 @@
 }
 
 .eventMarker {
-  fill: #f5c300;
+  fill: #ffd700;
   font-size: 10px;
   font-weight: 900;
 }
@@ -421,7 +438,7 @@
 }
 
 .legendClients {
-  background: #f5c300;
+  background: #ffd700;
 }
 
 .legendRevenue {
@@ -470,7 +487,7 @@
 }
 
 .alertDays {
-  color: #f5c300;
+  color: #ffd700;
   font-weight: 720;
 }
 

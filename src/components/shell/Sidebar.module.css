@@ -8,6 +8,7 @@
 .navInner {
   display: flex;
   flex-direction: column;
+  gap: 4px;
   padding-bottom: 10px;
 }
 
@@ -16,6 +17,57 @@
 .itemLink {
   color: inherit;
   text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  font-size: 14px !important;
+  font-weight: 560 !important;
+  border-radius: 12px !important;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.3s ease !important;
+}
+
+.itemLink:hover {
+  background: #2c2c2e !important;
+  color: #ffffff !important;
+}
+
+.itemLink:global(.on) {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0) 100%) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+.itemLink:global(.on)::before {
+  left: 0 !important;
+  width: 3px !important;
+  height: 22px !important;
+  background: #ffd700 !important;
+  border-radius: 999px !important;
+  opacity: 1 !important;
+}
+
+.itemLink:global(.on) :global(.nic) {
+  color: #ffd700 !important;
+}
+
+.itemLink :global(.nic) {
+  width: 18px !important;
+  color: #a1a1aa !important;
+}
+
+.itemLink :global(.nbg) {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #a1a1aa !important;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+.itemLink:global(.on) :global(.nbg) {
+  background: rgba(255, 215, 0, 0.12) !important;
+  border-color: rgba(255, 215, 0, 0.18) !important;
+  color: #ffd700 !important;
 }
 
 .itemLabel {
@@ -40,6 +92,28 @@
   min-width: 0;
   height: var(--top-shell-height, 52px);
   padding-left: 2px;
+}
+
+:global(#vApp .sb) {
+  background: #1c1c1e !important;
+}
+
+:global(#vApp .sb-logo),
+:global(#vApp .sb-foot) {
+  background: #1c1c1e !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+:global(#vApp .sb-nav) {
+  padding: 18px 12px 18px !important;
+}
+
+:global(#vApp .nl) {
+  color: #666666 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
 }
 
 .brandText {

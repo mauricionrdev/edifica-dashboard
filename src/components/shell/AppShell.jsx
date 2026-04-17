@@ -18,7 +18,7 @@ import {
 } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
-import Topbar from './Topbar.jsx';
+import Topbar from './TopbarPremium.jsx';
 import { listClients } from '../../api/clients.js';
 import { listSquads } from '../../api/squads.js';
 import { useAuth } from '../../context/AuthContext.jsx';

@@ -75,38 +75,65 @@ export default function Sidebar({ clients = [], squads = [], onNavigate }) {
 
       <nav className="sb-nav">
         <div className={styles.navInner}>
-          {/* Central */}
+          {/* Estrategico */}
           <div className="sb-section">
             <div className="nl">
-              <span>Central</span>
+              <span>ESTRATEGICO</span>
             </div>
             <NavLink
               to="/"
               end
               onClick={handleNav}
               className={({ isActive }) =>
-                `${niClass(isActive, 'central')} ${styles.itemLink}`
+                `${niClass(isActive)} ${styles.itemLink}`
               }
             >
               <span className="nic">
-                <LayoutDashboardIcon size={16} />
+                <LayoutDashboardIcon size={16} strokeWidth={1.7} />
               </span>
               <span className={styles.itemLabel}>Dashboard</span>
               <span className="nbg">{activeCount}</span>
             </NavLink>
+          </div>
+
+          {/* Gestao */}
+          <div className="sb-section">
+            <div className="nl">
+              <span>GESTAO</span>
+            </div>
             <NavLink
               to="/clientes"
               onClick={handleNav}
               className={({ isActive }) =>
-                `${niClass(isActive, 'central')} ${styles.itemLink}`
+                `${niClass(isActive)} ${styles.itemLink}`
               }
             >
               <span className="nic">
-                <BuildingIcon size={16} />
+                <BuildingIcon size={16} strokeWidth={1.7} />
               </span>
               <span className={styles.itemLabel}>Clientes</span>
               <span className="nbg">{total}</span>
             </NavLink>
+            <NavLink
+              to="/gdv"
+              onClick={handleNav}
+              className={({ isActive }) =>
+                `${niClass(isActive)} ${styles.itemLink}`
+              }
+            >
+              <span className="nic">
+                <SparklesIcon size={16} strokeWidth={1.7} />
+              </span>
+              <span className={styles.itemLabel}>Analises</span>
+              <span className="nbg">{total}</span>
+            </NavLink>
+          </div>
+
+          {/* Operacional */}
+          <div className="sb-section">
+            <div className="nl">
+              <span>OPERACIONAL</span>
+            </div>
             <NavLink
               to="/preencher-semana"
               onClick={handleNav}
@@ -115,37 +142,17 @@ export default function Sidebar({ clients = [], squads = [], onNavigate }) {
               }
             >
               <span className="nic">
-                <ClipboardListIcon size={16} />
+                <ClipboardListIcon size={16} strokeWidth={1.7} />
               </span>
               <span className={styles.itemLabel}>Preencher Semana</span>
               <span className="nbg">{activeCount}</span>
             </NavLink>
           </div>
 
-          {/* Análises */}
-          <div className="sb-section">
-            <div className="nl">
-              <span>Análises</span>
-            </div>
-            <NavLink
-              to="/gdv"
-              onClick={handleNav}
-              className={({ isActive }) =>
-                `${niClass(isActive, 'gdv')} ${styles.itemLink}`
-              }
-            >
-              <span className="nic">
-                <SparklesIcon size={16} />
-              </span>
-              <span className={styles.itemLabel}>GDV</span>
-              <span className="nbg">{total}</span>
-            </NavLink>
-          </div>
-
           {/* Squads */}
           <div className="sb-section">
             <div className="nl">
-              <span>Squads</span>
+              <span>SQUADS</span>
               {admin && (
                 <button
                   type="button"
@@ -188,7 +195,7 @@ export default function Sidebar({ clients = [], squads = [], onNavigate }) {
           {admin && (
             <div className="sb-section">
               <div className="nl">
-                <span>Administração</span>
+                <span>ADMIN</span>
               </div>
               <NavLink
                 to="/equipe"
@@ -198,7 +205,7 @@ export default function Sidebar({ clients = [], squads = [], onNavigate }) {
                 }
               >
                 <span className="nic">
-                  <UsersIcon size={16} />
+                  <UsersIcon size={16} strokeWidth={1.7} />
                 </span>
                 <span className={styles.itemLabel}>Equipe &amp; Acessos</span>
               </NavLink>
@@ -210,7 +217,7 @@ export default function Sidebar({ clients = [], squads = [], onNavigate }) {
                 }
               >
                 <span className="nic">
-                  <ShieldIcon size={16} />
+                  <ShieldIcon size={16} strokeWidth={1.7} />
                 </span>
                 <span className={styles.itemLabel}>Modelo Oficial</span>
               </NavLink>
