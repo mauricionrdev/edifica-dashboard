@@ -200,82 +200,131 @@
   font-size: 13px;
 }
 
-/* --- Chart de barras ------------------------------------------- */
-.chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 18px;
-  height: 230px;
-  padding: 8px 2px 34px;
+/* --- Chart de linha -------------------------------------------- */
+.lineChartWrap {
   position: relative;
+  min-height: 294px;
+  padding: 2px 0 0;
 }
 
-.barColumn {
-  flex: 1;
-  height: 100%;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: #7f7f7f;
-  font-size: 12px;
-}
-
-.barColumn strong {
-  color: #d7d7d7;
-  font-size: 13px;
-  font-weight: 720;
-}
-
-.barTrack {
-  flex: 1;
+.lineChart {
   width: 100%;
-  max-width: 54px;
-  display: flex;
-  align-items: flex-end;
-  border: 1px solid #252525;
-  border-radius: 14px;
-  background: #121212;
-  overflow: hidden;
+  height: 260px;
+  display: block;
+  overflow: visible;
 }
 
-.bar {
-  width: 100%;
-  min-height: 3px;
-  position: relative;
-  border-radius: 12px 12px 10px 10px;
-  background: #2f2f2f;
-  transition: height 0.5s ease;
+.axisLabel,
+.monthLabel {
+  fill: #777777;
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
 }
 
-.barActive {
-  background: #f5c300;
+.monthLabel {
+  fill: #a0a0a0;
 }
 
-.tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: max-content;
+.gridLine {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.tickLine {
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.areaPath {
+  fill: url("#clientsLineFill");
+}
+
+.linePath {
+  fill: none;
+  stroke: #f5c300;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 14px 22px rgba(245, 195, 0, 0.14));
+  vector-effect: non-scaling-stroke;
+}
+
+.point {
+  fill: #151515;
+  stroke: #f5c300;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.pointActive {
+  fill: #f5c300;
+  stroke: #fff2a8;
+}
+
+.pointTip {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+
+.pointTip div {
+  min-width: 90px;
   padding: 7px 9px;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
-  background: #151515;
+  background: rgba(18, 18, 18, 0.94);
   color: #d6d6d6;
   font-size: 11px;
-  font-weight: 700;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
+  line-height: 1.2;
+  text-align: center;
 }
 
-.bar:hover .tooltip {
+.pointTip strong,
+.pointTip span {
+  display: block;
+}
+
+.pointTip strong {
+  color: #f2f2f2;
+  font-size: 13px;
+}
+
+g:hover .pointTip {
   opacity: 1;
+}
+
+.chartLegend {
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  color: #c8c8c8;
+  font-size: 12px;
+}
+
+.chartLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.chartLegend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.legendClients {
+  background: #f5c300;
+}
+
+.legendRevenue {
+  background: #6aa6ff;
 }
 
 /* --- Alerta de contratos vencendo ------------------------------ */

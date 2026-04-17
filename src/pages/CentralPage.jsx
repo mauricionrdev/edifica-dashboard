@@ -43,6 +43,52 @@ function buildPeriodOptions() {
   return out;
 }
 
+const CHART_W = 720;
+const CHART_H = 260;
+const CHART_PAD = { top: 16, right: 18, bottom: 42, left: 42 };
+
+function niceMax(value) {
+  if (value <= 4) return 4;
+  if (value <= 8) return 8;
+  if (value <= 16) return 16;
+  return Math.ceil(value / 10) * 10;
+}
+
+function buildChartPoints(rows, maxValue) {
+  const innerW = CHART_W - CHART_PAD.left - CHART_PAD.right;
+  const innerH = CHART_H - CHART_PAD.top - CHART_PAD.bottom;
+  const step = rows.length > 1 ? innerW / (rows.length - 1) : 0;
+
+  return rows.map((row, index) => ({
+    ...row,
+    x: CHART_PAD.left + step * index,
+    y:
+      CHART_PAD.top +
+      innerH -
+      ((Number(row.cnt) || 0) / maxValue) * innerH,
+  }));
+}
+
+function smoothPath(points) {
+  if (points.length === 0) return '';
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+
+  const path = [`M ${points[0].x} ${points[0].y}`];
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i - 1] || points[i];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2] || p2;
+
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    path.push(`C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`);
+  }
+  return path.join(' ');
+}
+
 export default function CentralPage() {
   const { clients, loading, error, refreshClients, setPanelHeader } =
     useOutletContext();
@@ -85,7 +131,23 @@ export default function CentralPage() {
     () => buildBarChartData(clients, period.y, period.m, 6),
     [clients, period]
   );
-  const maxBar = Math.max(...bars.map((b) => b.cnt), 1);
+  const chartMax = niceMax(Math.max(...bars.map((b) => b.cnt), 1));
+  const chartPoints = useMemo(
+    () => buildChartPoints(bars, chartMax),
+    [bars, chartMax]
+  );
+  const lineD = useMemo(() => smoothPath(chartPoints), [chartPoints]);
+  const baselineY = CHART_H - CHART_PAD.bottom;
+  const areaD = lineD
+    ? `${lineD} L ${chartPoints.at(-1).x} ${baselineY} L ${chartPoints[0].x} ${baselineY} Z`
+    : '';
+  const chartTicks = [
+    chartMax,
+    chartMax * 0.75,
+    chartMax * 0.5,
+    chartMax * 0.25,
+    0,
+  ];
 
   const ending = useMemo(
     () => clientsEndingSoon(clients, 30, now),
@@ -268,7 +330,7 @@ export default function CentralPage() {
           </article>
         </section>
 
-        {/* --- Chart de barras --- */}
+        {/* --- Chart de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
             <div>
@@ -278,32 +340,95 @@ export default function CentralPage() {
             <p>Novos clientes nos últimos 6 meses</p>
           </div>
 
-          <div className={styles.chart}>
-            {bars.map((b) => {
-              const h =
-                b.cnt > 0
-                  ? Math.max(Math.round((b.cnt / maxBar) * 100), 8)
-                  : 0;
-              return (
-                <div key={`${b.y}-${b.m}`} className={styles.barColumn}>
-                  <div className={styles.barTrack}>
-                    <div
-                      className={`${styles.bar} ${
-                        b.isNow ? styles.barActive : ''
-                      }`}
-                      style={{ height: `${h}%` }}
-                    >
-                      <div className={styles.tooltip}>
-                        <span>{`${MONTHS[b.m]}: ${b.cnt} cliente(s)`}</span>
-                        <span>{`${fmtMoney(b.mrr)} MRR`}</span>
-                      </div>
+          <div className={styles.lineChartWrap}>
+            <svg
+              className={styles.lineChart}
+              viewBox={`0 0 ${CHART_W} ${CHART_H}`}
+              role="img"
+              aria-label="Novos clientes por mês nos últimos 6 meses"
+            >
+              <defs>
+                <linearGradient id="clientsLineFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f5c300" stopOpacity="0.28" />
+                  <stop offset="64%" stopColor="#f5c300" stopOpacity="0.08" />
+                  <stop offset="100%" stopColor="#f5c300" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+
+              {chartTicks.map((tick) => {
+                const y =
+                  CHART_PAD.top +
+                  (1 - tick / chartMax) *
+                    (CHART_H - CHART_PAD.top - CHART_PAD.bottom);
+                return (
+                  <g key={tick}>
+                    <text x="4" y={y + 4} className={styles.axisLabel}>
+                      {Math.round(tick)}
+                    </text>
+                    <line
+                      x1={CHART_PAD.left}
+                      x2={CHART_W - CHART_PAD.right}
+                      y1={y}
+                      y2={y}
+                      className={styles.gridLine}
+                    />
+                  </g>
+                );
+              })}
+
+              <path d={areaD} className={styles.areaPath} />
+              <path d={lineD} className={styles.linePath} />
+
+              {chartPoints.map((point) => (
+                <g key={`${point.y}-${point.m}`}>
+                  <line
+                    x1={point.x}
+                    x2={point.x}
+                    y1={baselineY - 5}
+                    y2={baselineY + 5}
+                    className={styles.tickLine}
+                  />
+                  <text
+                    x={point.x}
+                    y={CHART_H - 14}
+                    textAnchor="middle"
+                    className={styles.monthLabel}
+                  >
+                    {MONTHS[point.m]}
+                  </text>
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r={point.isNow ? 7 : 5.5}
+                    className={`${styles.point} ${
+                      point.isNow ? styles.pointActive : ''
+                    }`}
+                  />
+                  <foreignObject
+                    x={point.x - 55}
+                    y={Math.max(point.y - 52, 0)}
+                    width="110"
+                    height="44"
+                    className={styles.pointTip}
+                  >
+                    <div>
+                      <strong>{point.cnt}</strong>
+                      <span>{fmtMoney(point.mrr)}</span>
                     </div>
-                  </div>
-                  <span>{MONTHS[b.m]}</span>
-                  <strong>{b.cnt}</strong>
-                </div>
-              );
-            })}
+                  </foreignObject>
+                </g>
+              ))}
+            </svg>
+            <div className={styles.chartLegend}>
+              <span>
+                <i className={styles.legendClients} />
+                Novos clientes
+              </span>
+              <span>
+                <i className={styles.legendRevenue} />
+                Receita nova no mês
+              </span>
+            </div>
           </div>
         </section>
 
