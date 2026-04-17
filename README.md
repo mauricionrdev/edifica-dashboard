@@ -1,152 +1,100 @@
-# Edifica Dashboard
+# Patch: aba de Clientes
 
-Frontend da plataforma Edifica. React 18 + Vite, consumindo a `edifica-api`.
+10 arquivos novos/editados que implementam a aba `/clientes` completa:
+listagem, busca, scope tabs, criação, edição inline via drawer e
+exclusão (admin-only).
 
-Visual portado do frontend real (`FRONTEND.zip`): todo o CSS (tokens,
-sidebar, topbar, cards, login, refinamentos Stage 12/17/18/20) e a
-biblioteca de ícones SVG foram reaproveitados 1:1. Todo o runtime legado
-(`legacy.js`, bridges, `callLegacy`, leituras de `localStorage` com
-chaves `edifica_*`, IDs como `#vLogin`/`#vDash`/`#centralContent`) foi
-removido. A API é a única fonte de verdade.
+## Como aplicar
 
-## Stack
-
-- React 18 (ESM) + Vite 5
-- `react-router-dom` 6
-- CSS global (`styles/base.css` = `legacy.css` portado) + CSS Modules
-  por página/componente
-- Biblioteca de ícones própria (`components/ui/Icons.jsx` — SVG puro,
-  sem dependências externas)
-- Sem Tailwind, sem UI lib, sem `dangerouslySetInnerHTML`
-
-## Estrutura
+Copie a pasta `src/` por cima do seu projeto. Não apaga nada existente:
+só adiciona os arquivos novos e sobrescreve dois que precisaram mudar.
 
 ```
-edifica-dashboard/
-├── index.html
-├── package.json
-├── vite.config.js
-├── .env.example                  VITE_API_URL
-└── src/
-    ├── main.jsx                  entry React
-    ├── App.jsx                   router + AuthProvider
-    ├── styles/
-    │   ├── base.css              ← legacy.css portado (tokens + todas
-    │   │                           as classes globais .sb .ni .nl .tbar
-    │   │                           .mc .bmc .btn-y etc. + Stages)
-    │   └── globals.css           importa fontes + base.css + overrides
-    ├── api/
-    │   ├── client.js             fetch wrapper (Bearer, ApiError, 401)
-    │   ├── auth.js               /auth/login, /me, /logout
-    │   ├── clients.js            /clients
-    │   └── squads.js             /squads
-    ├── context/
-    │   └── AuthContext.jsx       token+user em sessionStorage
-    ├── routes/
-    │   └── ProtectedRoute.jsx    gate de rota autenticada
-    ├── utils/
-    │   ├── format.js             Intl pt-BR (moeda/%, meses)
-    │   ├── centralMetrics.js     derivações da Central
-    │   └── roles.js              labels de papel + isAdminUser
-    ├── components/
-    │   ├── ui/
-    │   │   └── Icons.jsx         ← biblioteca SVG portada do real
-    │   └── shell/
-    │       ├── Sidebar.jsx       nav fixa (base.css + NavLink)
-    │       ├── Sidebar.module.css
-    │       ├── Topbar.jsx        header sticky minimalista
-    │       ├── AppShell.jsx      layout com panelHeader controlável
-    │       │                     por página via outlet context
-    │       └── AppShell.module.css
-    └── pages/
-        ├── LoginPage.jsx         ← visual "Protocolo de Acesso" do real
-        ├── LoginPage.module.css  ← portado de LoginView.module.css
-        ├── CentralPage.jsx       ← visual DashboardView do real
-        ├── CentralPage.module.css
-        └── PlaceholderPage.jsx   stub para rotas não construídas
+src/App.jsx                                           (EDITADO)
+src/api/clients.js                                    (EDITADO)
+src/context/ToastContext.jsx                          (NOVO)
+src/utils/clientHelpers.js                            (NOVO)
+src/pages/ClientsPage.jsx                             (NOVO)
+src/pages/ClientsPage.module.css                      (NOVO)
+src/components/clients/ClientFormModal.jsx            (NOVO)
+src/components/clients/ClientFormModal.module.css     (NOVO)
+src/components/clients/ClientDetailDrawer.jsx         (NOVO)
+src/components/clients/ClientDetailDrawer.module.css  (NOVO)
 ```
 
-### Convenção de estilo
-
-- **Classes globais** (em `base.css`) são usadas para a moldura do shell
-  (`sb`, `tbar`, `ni`, `nl`, `lbtn`, `licon`, `uav`, etc.) porque o
-  frontend real as refinou ao longo de quatro "Stages". Essas classes
-  vivem sob um namespace previsível (prefixos curtos) e não colidem
-  entre si.
-- **CSS Modules** (`.module.css`) são usados para páginas e componentes
-  mais recentes (Login, Central, Shell), seguindo a escolha do frontend
-  real.
-- Nenhum componente nosso usa `:global(#id)` — os IDs legados foram
-  removidos.
-
-### Panel header controlado pela página
-
-O `AppShell` expõe `setPanelHeader({ title, actions })` via
-`useOutletContext()`. Cada página chama esse setter em um `useEffect`
-para ditar o que aparece no cabeçalho do frame (título + controles à
-direita, ex: o seletor de período da Central). Isso substitui o padrão
-de `createPortal` + `document.getElementById('dashboardPeriodControl')`
-que o frontend real usava.
-
-## Como rodar
+Depois:
 
 ```bash
-cd edifica-dashboard
-npm install
-cp .env.example .env     # VITE_API_URL=http://localhost:3001/api
-npm run dev
+npm run build
+# subir dist/ pro Hostinger
 ```
 
-Sobe em `http://localhost:5173`. O backend precisa estar rodando
-(`cd edifica-api && npm run dev`) e com seed aplicado (`npm run seed`).
+Sem dependências novas — usa só `react`, `react-dom`, `react-router-dom`
+que já estão no `package.json`.
 
-### Login inicial
+## O que mudou em cada arquivo editado
 
-Use as credenciais do admin master do seed (`SEED_ADMIN_*` no `.env` do
-backend). Fluxo:
+### `src/App.jsx`
+- Importado `ToastProvider` e `ClientsPage`.
+- `ToastProvider` envolve o `<Routes>` (dentro do `AuthProvider`).
+- Rota `path="clientes"` agora renderiza `<ClientsPage />` em vez do
+  placeholder.
 
-1. `POST /auth/login` guarda `{ token, user }` em `sessionStorage`.
-2. O `AppShell` dispara `GET /clients` e `GET /squads` em paralelo para
-   hidratar a Sidebar e a Central.
-3. Central renderiza no período corrente.
+### `src/api/clients.js`
+- Adicionadas três funções: `createClient(body)`, `updateClient(id, patch)`,
+  `deleteClient(id)`. Batem com o contrato de `POST`, `PUT` e `DELETE
+  /clients[/:id]` do backend (`src/routes/clients.js`).
 
-Em qualquer `401` posterior, o `AuthContext` faz logout automático e
-redireciona para `/login` preservando a rota de origem.
+## Funcionalidades entregues
 
-## Rotas
+**Listagem**
+- Consome o `clients` do outlet context do `AppShell` (já carregado na
+  entrada, sem requisições extras aqui).
+- 4 cards de métrica no topo: Total, Ativos, Vencendo (endDate em ≤30d),
+  Com squad.
+- Busca client-side por nome, squad, gestor ou GDV.
+- Scope tabs estilo Asana: Todos, Ativos, Vencendo, Churn, Com squad —
+  cada um com contagem.
+- Tabela usando as classes `.central-clients`, `.cc-hdr`, `.cc-row` do
+  `base.css` (que já tinham refinamentos Stage 17/20).
 
-| Rota                   | Estado         | Conteúdo                                      |
-|------------------------|----------------|-----------------------------------------------|
-| `/login`               | implementado   | "Protocolo de Acesso"                         |
-| `/`                    | implementado   | Central (cards grandes + chart + alerta)      |
-| `/clientes`            | placeholder    |                                               |
-| `/preencher-semana`    | placeholder    |                                               |
-| `/gdv`                 | placeholder    |                                               |
-| `/squads/:squadId`     | placeholder    |                                               |
-| `/equipe`              | placeholder    | admin                                         |
-| `/modelo-oficial`      | placeholder    | admin                                         |
+**Criação (`POST /clients`)**
+- Botão "+ Novo cliente" vai no `panelHeader` do AppShell (via
+  `setPanelHeader`).
+- Modal com todos os 9 campos que o backend aceita: `name`, `squadId`,
+  `gdvName`, `gestor`, `status`, `fee`, `metaLucro`, `startDate`, `endDate`.
+- Após criar: refresh da lista, abre o drawer do cliente novo, toast de
+  sucesso.
 
-## O que foi descartado do frontend real
+**Edição inline (`PUT /clients/:id`) via drawer**
+- Drawer lateral deslizando da direita (estilo Asana).
+- Cada alteração salva sozinha:
+  - text fields → debounce de 400ms
+  - select/date → commit imediato
+  - label do campo mostra "· salvando…" enquanto persiste
+- Se a API recusar, o campo volta ao valor canônico e um toast de erro
+  aparece.
 
-- Toda a pasta `src/legacy/` (incluindo `legacy.js` e os 5 bridges).
-- `legacyBridge.js`, `LegacyModals.jsx`, `AppViews.jsx`.
-- `services/sync.js`, `realtimeSync.js`, `setup.js`, `accessRequests.js`,
-  `env.js` (bootstrap/health/fallback local que não se aplicam ao nosso
-  backend).
-- `scripts/build-hostinger.mjs`.
-- Qualquer leitura/escrita em `localStorage` com chaves `edifica_*`.
+**Exclusão (`DELETE /clients/:id`) — admin only**
+- Seção "Zona perigosa" no drawer só aparece para admin/master.
+- Confirmação explícita com texto avisando que onboarding/métricas/análises
+  serão apagadas em cascata.
 
-O que **foi mantido** do real: todo o CSS visual (via `base.css`), a
-biblioteca `UiIcons`, o módulo de estilo do Login, o visual do
-DashboardView e o esqueleto do AppShell (layout com frame arredondado).
+**Toasts**
+- Sistema leve via portal no canto inferior direito.
+- Fila com autodismiss em 3.5s; clique dispensa antes.
+- Variantes: success (padrão), warn, error.
 
-## O que vem a seguir
+## Garantias de qualidade
 
-1. `/clientes` — lista com filtro, consumindo `GET /clients`.
-2. `/preencher-semana` — formulário semanal por cliente, integrando
-   `PUT /metrics/:clientId/:periodKey`.
-3. `/gdv` — aba de análises GDV.
-4. `/squads/:squadId` — dashboard por squad.
-5. `/equipe` (admin) — CRUD de usuários.
-6. `/modelo-oficial` (admin) — editor do template de onboarding.
-7. Modal "+ Novo Cliente" como action do panelHeader na página Clientes.
+Antes de entregar, validei estaticamente:
+- **55 imports relativos** resolvem (0 quebrados)
+- **Todas as classes CSS** referenciadas no JSX existem (globais em
+  `base.css` + CSS Modules por arquivo)
+- **Balanceamento de chaves/parênteses** em todos os `.jsx` ok
+
+## Fora do escopo desta rodada
+
+Aba Onboarding dentro do detalhe, análises ICP/GDV, contrato, dashboard
+do cliente. Todos esses ficam para rodadas próprias — o drawer atual só
+mostra dados do cliente + metadados.

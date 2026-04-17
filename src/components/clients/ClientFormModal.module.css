@@ -1,0 +1,227 @@
+/* Modal "Novo / Editar cliente"
+   Fiel ao visual dos modais do real (.ov + .modal) mas com estado
+   controlado em React. Overlay escuro + card centralizado.
+*/
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: overlay-in 0.16s ease-out;
+}
+
+.card {
+  width: min(100%, 620px);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  background: #151515;
+  border: 1px solid #2d2d2d;
+  border-radius: 14px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.48);
+  animation: card-in 0.18s ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid #232323;
+}
+
+.title {
+  margin: 0;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+  color: #f2f2f2;
+}
+
+.close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #2d2d2d;
+  background: transparent;
+  color: #8f8f8f;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.16s, color 0.16s;
+}
+
+.close:hover {
+  color: #f2f2f2;
+  border-color: #3d3d3d;
+}
+
+.body {
+  padding: 20px 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8f8f8f;
+}
+
+.input,
+.select {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #2d2d2d;
+  background: #111;
+  color: #f2f2f2;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.16s;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #3d3d3d;
+}
+
+.input:disabled,
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #8f8f8f 50%),
+    linear-gradient(135deg, #8f8f8f 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 32px;
+}
+
+.errorLine {
+  grid-column: 1 / -1;
+  color: #ef8f8f;
+  font-size: 12px;
+  line-height: 1.45;
+  padding-top: 4px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 24px 20px;
+  border-top: 1px solid #232323;
+}
+
+.btnPrimary,
+.btnSecondary,
+.btnDanger {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.16s, border-color 0.16s, color 0.16s;
+}
+
+.btnPrimary {
+  background: #f5c300;
+  border: 1px solid #f5c300;
+  color: #121212;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #ffd21f;
+  border-color: #ffd21f;
+}
+
+.btnSecondary {
+  background: transparent;
+  border: 1px solid #2d2d2d;
+  color: #d7d9de;
+}
+
+.btnSecondary:hover:not(:disabled) {
+  border-color: #3d3d3d;
+  color: #f2f2f2;
+}
+
+.btnDanger {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef8f8f;
+  margin-right: auto; /* empurra primary/secondary pra direita */
+}
+
+.btnDanger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fecaca;
+}
+
+.btnPrimary:disabled,
+.btnSecondary:disabled,
+.btnDanger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

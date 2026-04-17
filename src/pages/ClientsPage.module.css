@@ -1,0 +1,268 @@
+/* ClientsPage - visual inspirado no ClientsView do frontend real.
+   Layout: cards de métrica no topo, barra de ações (busca + scope
+   tabs), depois a tabela. A tabela usa as classes globais .central-clients
+   / .cc-hdr / .cc-row (já no base.css, com refinamentos dos Stages).
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px 24px 30px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metricCard {
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  background: #151515;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 108px;
+}
+
+.metricLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8f8f8f;
+}
+
+.metricValue {
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 800;
+  color: #f2f2f2;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricSub {
+  font-size: 12px;
+  color: #8f8f8f;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  min-width: 280px;
+  max-width: 420px;
+  flex: 1;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  background: #151515;
+  color: #8f8f8f;
+  transition: border-color 0.16s;
+}
+
+.searchBox:focus-within {
+  border-color: #3d3d3d;
+  color: #d7d9de;
+}
+
+.searchBox input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #f2f2f2;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.searchBox input::placeholder {
+  color: #8f8f8f;
+}
+
+.scopeTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scopeTab {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid #2a2a2a;
+  background: #151515;
+  color: #8f8f8f;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.16s, border-color 0.16s, color 0.16s;
+}
+
+.scopeTab:hover {
+  border-color: #3d3d3d;
+  color: #d7d9de;
+}
+
+.scopeTabActive {
+  color: #f2f2f2;
+  border-color: #3a3a3a;
+  background: #1b1b1b;
+}
+
+.scopeCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 10px;
+  font-weight: 700;
+  color: inherit;
+}
+
+.scopeTabActive .scopeCount {
+  background: rgba(245, 195, 0, 0.14);
+  color: #f5c300;
+}
+
+/* --- tabela: cabeçalho e linhas extras sobre .central-clients --- */
+
+.empty {
+  padding: 60px 24px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.emptyTitle {
+  color: #f2f2f2;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cellName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f2f2f2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellMuted {
+  font-size: 12px;
+  color: #8f8f8f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cellFee {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f5c300;
+  font-variant-numeric: tabular-nums;
+}
+
+.cellDate {
+  font-size: 12px;
+  color: #8f8f8f;
+  font-variant-numeric: tabular-nums;
+}
+
+.cellDate.soon {
+  color: #fb923c;
+  font-weight: 600;
+}
+
+/* Avatar inline da linha (sobrescreve .cav do base.css com tamanho certo) */
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #121212;
+  flex-shrink: 0;
+}
+
+.loadingState {
+  padding: 60px 24px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 13px;
+}
+
+/* --- botão novo cliente no panelHeader --- */
+.headerBtn {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #f5c300;
+  background: #f5c300;
+  color: #121212;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.16s, border-color 0.16s;
+}
+
+.headerBtn:hover:not(:disabled) {
+  background: #ffd21f;
+  border-color: #ffd21f;
+}
+
+.headerBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1100px) {
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px;
+  }
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+}
