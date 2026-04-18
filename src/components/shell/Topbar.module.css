@@ -484,7 +484,8 @@
   }
 
   .searchBox {
-    width: min(210px, 100%);
+    width: min(188px, 100%);
+    height: 36px;
   }
 
   .accountMeta,
@@ -493,12 +494,12 @@
   }
 
   .profileButton {
-    min-height: 32px;
+    min-height: 30px;
   }
 
   .accountAvatar {
-    width: 32px;
-    height: 32px;
-    flex-basis: 32px;
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
   }
 }

@@ -581,6 +581,10 @@
 }
 
 @media (max-width: 900px) {
+  .cardGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .linearCardsDashboard {
     padding: 18px;
   }
@@ -597,6 +601,16 @@
 
   .lineChart {
     height: 200px;
+  }
+
+  .chartCard,
+  .alertCard {
+    padding: 20px 18px 16px;
+  }
+
+  .metricCard {
+    min-height: 144px;
+    padding: 18px;
   }
 
   .alertRow {
