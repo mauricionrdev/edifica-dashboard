@@ -45,7 +45,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 0 26px;
+  padding: 0 52px 0 26px;
   border-bottom: 1px solid #2d2d2d;
   background: transparent;
   flex-shrink: 0;
