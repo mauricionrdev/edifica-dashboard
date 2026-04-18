@@ -1,138 +1,143 @@
-# Patch: tabs completas do cliente + Modelo Oficial
+# Patch: tela de GDV (Central de Gestão Comercial)
 
-Implementação completa das 5 abas do drawer de cliente e da página
-`/modelo-oficial`. Aplique copiando `src/` por cima do projeto.
+Implementa a `/gdv` como interface operacional completa, seguindo o
+padrão premium da dashboard (gradient border + backdrop-filter blur).
 
 ## Arquivos
 
 ```
-src/App.jsx                                           (EDITADO)
+src/App.jsx                         (EDITADO — 1 import + rota trocada)
 
-src/api/onboarding.js                                 (NOVO)
-src/api/analyses.js                                   (NOVO)
-src/api/template.js                                   (NOVO)
+src/api/metrics.js                  (NOVO — wrapper dos 3 endpoints de métricas)
+src/utils/gdvMetrics.js             (NOVO — cálculos: calcWeek, aggregate, priority)
 
-src/hooks/useAutoSave.js                              (NOVO)
-
-src/utils/onboardingHelpers.js                        (NOVO)
-
-src/components/clients/ClientDetailDrawer.jsx         (SUBSTITUI — refactor para 5 abas)
-src/components/clients/ClientTabs.module.css          (NOVO)
-src/components/clients/OverviewTab.jsx                (NOVO — extraído do drawer antigo)
-src/components/clients/OnboardingTab.jsx              (NOVO)
-src/components/clients/OnboardingTab.module.css       (NOVO)
-src/components/clients/ContractTab.jsx                (NOVO)
-src/components/clients/ContractTab.module.css         (NOVO)
-src/components/clients/AnalysisTab.jsx                (NOVO)
-src/components/clients/AnalysisTab.module.css         (NOVO)
-
-src/pages/ModeloOficialPage.jsx                       (NOVO)
-src/pages/ModeloOficialPage.module.css                (NOVO)
+src/pages/GdvPage.jsx               (NOVO — 550 linhas)
+src/pages/GdvPage.module.css        (NOVO — 700 linhas, padrão premium)
 ```
 
-Depois:
+## Aplicar
 
 ```bash
-npm run build
+unzip patch-gdv.zip
+cp -r patch-gdv/src/* /caminho/do/projeto/src/
+cd /caminho/do/projeto && npm run build
 # subir dist/
 ```
 
-Sem dependências novas.
+Zero dependências novas. Reaproveita `ClientDetailDrawer` existente
+para abrir detalhes de cliente ao clicar numa linha.
 
-## O que foi entregue
+## O que está na tela
 
-### Drawer de cliente — 5 abas estilo Asana
+### Panel header
+- Título: **Análises de GDV · {nome do GDV}**
+- Navegador de mês (‹ Abril 2026 ›)
+- Tabs de semana S1 · S2 · S3 · **S4** (ativa)
+- Spinner discreto enquanto refetch está em voo
 
-**Visão geral** — igual ao drawer anterior (dados principais, contrato,
-metadados, zona perigosa de exclusão — admin).
+### Hero "Meta GDV"
+Ocupa toda a largura, topo da tela. Mostra:
+- Badge teal animado com nome do GDV
+- Frase contextual (*"X/Y clientes devem bater meta em Abril · S2"*)
+- Subtexto inteligente:
+  - **Acima do target** → "Carteira está acima do target. Foque em…"
+  - **Abaixo do target** → "Faltam N cliente(s) batendo meta para atingir 70%"
+  - **Sem dados** → "Ainda não há clientes batendo meta…"
+- **Dial circular SVG** à direita com % da carteira (verde/teal se ≥70%,
+  vermelho se abaixo) — stroke-dashoffset animado 0.7s
 
-**Onboarding** — painel completo equivalente ao do frontend real:
+### Grid 3×2 de métricas agregadas
+1. **Contratos Fechados** — total da semana + "X/Y preencheram" (visibilidade do engajamento do time)
+2. **Taxa de Conversão** — fechados/volume da carteira inteira
+3. **Meta de Lucro** — colorida verde/vermelho com pill "✓ Vai bater" ou "✗ Em risco"
+4. **Contratos Previstos** — pelo ritmo atual
+5. **CPL Atual** — vs meta média da carteira, com pill ok/alto
+6. **Leads Previstos** — vs meta de volume agregada
 
-- Cabeçalho com progresso geral (track, percentual, X/Y tarefas).
-- Cada section é expansível, tem título editável, barra e % de
-  progresso, chip "✓ Concluído" quando todas as tarefas check.
-- Tarefas: checkbox, nome editável, select de responsável, data limite,
-  botão de nota (abre textarea).
-- Sub-tarefas herdadas do template.
-- Adicionar tarefa personalizada por seção (Enter ou botão).
-- Remover tarefa customizada (ícone ×) — tarefas do template padrão
-  não são removíveis aqui.
-- **Auto-save com debounce de 600ms** via `PUT /clients/:id/onboarding`
-  (o backend substitui o array inteiro — protocolo espelhado na UI).
-- Indicador de status ("Salvando…" / "Salvo" / "Alterações pendentes")
-  no canto da TabBar.
+### Tabela "Clientes da carteira"
+Ordenada por prioridade **descendente** (alta risco primeiro — é o que o
+GDV precisa ver):
+- Faixa lateral colorida indicando prioridade (vermelho/amarelo/verde/cinza)
+- Nome + meta (squad + gestor)
+- Badge de prioridade (Alta/Média/Baixa/Meta ok/Sem dados)
+- Fechados / Previstos / Meta / Taxa
+- Status pill (✓ Meta ok / ✗ Em risco / Sem dados)
+- Hover destaca + click abre o drawer do cliente na aba GDV
 
-**Contrato** — 3 mini-cards de resumo (Status · Mensalidade ·
-Vencimento com dias restantes) + formulário dos 8 campos contratuais.
-Cada campo salva sozinho (text debounce 400ms, select/date imediato).
+### Estados
+- **Carregando carteira**: spinner grande centralizado
+- **Sem clientes com GDV**: card vazio explicando como incluir cliente na carteira
+- **Loading métricas**: spinner na tabela + inline no header
+- **Erro de rede**: mensagem no lugar da tabela
 
-**ICP / GDV** — duas abas usando o mesmo componente `AnalysisTab`:
+## Backend - endpoints usados
 
-- Lista entradas ordenadas mais-recentes-primeiro.
-- "+ Nova análise" cria com data=hoje e textarea vazia.
-- Editar texto → `PUT` com debounce de 500ms.
-- Editar data → `PUT` imediato.
-- Remover → `DELETE` com `confirm` nativo e optimistic update.
-- Indicador "Salvando…" / "Alterações pendentes" por entrada.
+| Método | Rota                                   | Uso                          |
+|-------:|----------------------------------------|------------------------------|
+| GET    | `/metrics/:clientId/:periodKey`        | fetch paralelo por cliente   |
+| (já usados) | `/clients`, `/clients/:id/*`, `/template` | do AppShell + Drawer     |
 
-### Página `/modelo-oficial`
+`periodKey = 'YYYY-MM-Sw'` (ex: `2026-04-S2`).
 
-- Leitura via `GET /template` (qualquer autenticado).
-- Editor completo da estrutura: renomear seções/tarefas, remover,
-  adicionar nova seção (form no final), adicionar tarefa dentro da seção.
-- **Auto-save com debounce de 700ms** via `PUT /template` (admin only).
-- Botão "Restaurar padrão" → `POST /template/reset` com confirm nativo.
-- Usuários não-admin veem o template em modo **somente leitura** (inputs
-  desabilitados + botão de reset oculto).
-- Banner amarelo informativo explicando o comportamento
-  ("aplicado a novos clientes; não afeta existentes").
+Quando um cliente não tem métricas preenchidas ainda, o backend
+retorna um esqueleto `{ data: {}, computed }` — a tela marca esses
+como "Sem dados" sem crashar.
 
-### Backend — endpoints usados
+## Cálculos (portados do frontend real)
 
-| Método | Rota                                                           |
-|-------:|----------------------------------------------------------------|
-| GET    | `/clients/:clientId/onboarding`                                |
-| PUT    | `/clients/:clientId/onboarding`                                |
-| GET    | `/clients/:clientId/analyses/:type`                            |
-| POST   | `/clients/:clientId/analyses/:type`                            |
-| PUT    | `/clients/:clientId/analyses/:type/:analysisId`                |
-| DELETE | `/clients/:clientId/analyses/:type/:analysisId`                |
-| GET    | `/template`                                                    |
-| PUT    | `/template` (admin)                                            |
-| POST   | `/template/reset` (admin)                                      |
+`utils/gdvMetrics.js` exporta:
 
-Todos os 9 endpoints já existem no `edifica-api` entregue.
+- **`calcWeek(metric)`** — replica `calcM` do legado. Retorna `{ inv,
+  cpl, vol, fec, mLuc, mEmp, mVol, mCpl, lp, taxa, cp, isHit, cplOk,
+  volOk, hasData }`. Fórmulas idênticas ao backend (`computeWeeklyMetrics`),
+  desacoplado pra não depender do shape exato de `computed`.
 
-### Hook `useAutoSave`
+- **`aggregateCarteira(rows)`** — equivalente a `buildAgg`. Soma totais
+  e recalcula taxa/CPL agregados.
 
-Usado pelo OnboardingTab e pelo ModeloOficialPage. Características:
+- **`getPriority(calc)`** — equivalente a `getPri`. Sem dados → pri-n
+  (score 999 → vai pro topo pra atenção). Meta ok → pri-l. Acima de 50%
+  da meta faltando → pri-h (alta). 15-50% → pri-m. Abaixo de 15% → pri-l.
 
-- Debounce configurável (default 600ms).
-- Coalesce: se uma nova mudança chegar durante um save em voo, só
-  uma requisição adicional é disparada ao final com o valor mais
-  recente (não empilha).
-- Estado exposto: `'idle' | 'pending' | 'saving' | 'saved' | 'error'`.
-- `flush()` expõe commit imediato (útil em beforeunload futuro).
-- `skip: true` pula auto-save (usado até o estado inicial ser
-  hidratado do GET — evita PUT com sections vazio).
+- **`sortByPriority(rows)`** — ordena DESC por score (risco primeiro).
 
-## Validação estática aplicada antes de entregar
+- **`hitRate(rows)`** — `{ h, t, pct }` de clientes batendo meta.
 
-- **99/99 imports relativos** resolvem (0 quebrados).
-- **Todas as classes CSS** usadas no JSX existem em algum `.css`
-  (globais `base.css` + CSS Modules).
-- **Balanceamento de chaves/parênteses** OK em todos os novos `.jsx`.
+- **`GDV_TARGET = 70`** — meta mínima da carteira (% de clientes batendo meta).
 
-## Limitações assumidas
+## Performance
 
-- Sub-tarefas do onboarding não têm UI de "adicionar sub nova" (só
-  mostramos as que vêm do template). Se precisar, é uma evolução simples
-  no `OnboardingTab` usando `updateTask` + `subs: [...]`.
-- Delete de tarefa do onboarding só aparece em tarefas cuja `id`
-  contém `_custom_` — isto é, as que foram adicionadas pelo usuário.
-  Tarefas do template oficial não podem ser removidas do onboarding
-  de um cliente (devem ser retiradas do Modelo Oficial, ou marcadas
-  como feitas se forem irrelevantes para esse cliente).
-- Aba "Dashboard" do cliente (que existia no protótipo real com
-  métricas semanais) **não está nessa rodada** — vai na próxima, já
-  que depende de integração com `/metrics/:clientId/:periodKey`.
+- Fetch paralelo via `Promise.all` de todas as métricas da semana.
+- **Cache por periodKey** em estado local: trocar S2→S3→S2 não refaz
+  fetch de S2. O cache invalida se o conjunto de clientes do GDV muda.
+- `useMemo` em todos os derivados (agg, rows, sortedRows, hit) para não
+  recalcular em cada render.
+- Fetch cancelável via `fetchGenRef` (gen counter) — fetchs antigos
+  são descartados silenciosamente.
+
+## Design premium
+
+Mesmo DNA da CentralPage:
+- **Gradient border** via `padding-box` + `border-box` dupla camada
+- **Backdrop-filter blur(12px)**
+- Fundo 145deg dark gradient
+- Acento teal (`#2dd4bf`) para elementos exclusivos do GDV,
+  amarelo (`#f5c300`) para genéricos
+- Cards variantes: `cardTeal` (hero acima do target),
+  `cardRed` (hero abaixo do target)
+- Animações: dial circular, gauge bar, fade-in suave
+
+## Validação estática antes de entregar
+
+- **114/114 imports** relativos resolvem
+- **Todas as classes CSS** usadas no JSX existem (globais + módulos)
+- **Balanceamento de brackets** OK em `GdvPage.jsx`, `gdvMetrics.js`,
+  `metrics.js`
+
+## Fora desta rodada
+
+- Preenchimento de métricas (POST/PUT em `/metrics`) fica pra tela
+  `/preencher-semana` — próxima rodada.
+- Gráfico de evolução temporal (contratos fechados mês a mês) —
+  ficaria bonito como 7º card, mas requer múltiplos fetchs históricos
+  e pode ir numa evolução da GdvPage.

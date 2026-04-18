@@ -1,0 +1,840 @@
+/* GdvPage - Central de Gestão Comercial.
+   Visual herdado do CentralPage: gradient border via padding-box/border-box,
+   backdrop-filter blur 12px, fundo 145deg dark gradient. Acento teal
+   (#2dd4bf) para elementos exclusivos de GDV, amarelo para dados gerais.
+*/
+
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 26px 28px;
+  background: transparent;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONTROLES NO PANEL HEADER
+   ══════════════════════════════════════════════════════════════ */
+
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: #8f8f8f;
+  font-size: 13px;
+}
+
+.monthNav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 4px;
+  border-radius: 10px;
+  border: 1px solid #2d2d2d;
+  background: #151515;
+}
+
+.navBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: #8f8f8f;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.navBtn:hover {
+  color: #f5c300;
+  background: rgba(245, 195, 0, 0.06);
+}
+
+.monthLabel {
+  min-width: 120px;
+  text-align: center;
+  color: #f2f2f2;
+  font-size: 13px;
+  font-weight: 740;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekTabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #2d2d2d;
+  background: #151515;
+}
+
+.weekTab {
+  height: 30px;
+  min-width: 42px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 0;
+  background: transparent;
+  color: #8f8f8f;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 740;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.weekTab:hover {
+  color: #d7d9de;
+}
+
+.weekTabActive {
+  color: #0a0a0a;
+  background: #f5c300;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARD BASE (gradient border + blur)
+   ══════════════════════════════════════════════════════════════ */
+
+.card {
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(21, 21, 21, 0.94), rgba(13, 13, 13, 0.98)) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(245, 195, 0, 0.06), rgba(255, 255, 255, 0.03)) border-box;
+  backdrop-filter: blur(12px);
+}
+
+.cardTeal {
+  background:
+    linear-gradient(145deg, rgba(21, 21, 21, 0.94), rgba(13, 13, 13, 0.98)) padding-box,
+    linear-gradient(135deg, rgba(45, 212, 191, 0.28), rgba(45, 212, 191, 0.08), rgba(255, 255, 255, 0.03)) border-box;
+}
+
+.cardGreen {
+  background:
+    linear-gradient(145deg, rgba(21, 21, 21, 0.94), rgba(13, 13, 13, 0.98)) padding-box,
+    linear-gradient(135deg, rgba(34, 197, 94, 0.32), rgba(34, 197, 94, 0.08), rgba(255, 255, 255, 0.03)) border-box;
+}
+
+.cardRed {
+  background:
+    linear-gradient(145deg, rgba(21, 21, 21, 0.94), rgba(13, 13, 13, 0.98)) padding-box,
+    linear-gradient(135deg, rgba(239, 68, 68, 0.34), rgba(239, 68, 68, 0.08), rgba(255, 255, 255, 0.03)) border-box;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HERO - Meta GDV (card topo, largura total)
+   ══════════════════════════════════════════════════════════════ */
+
+.hero {
+  padding: 24px 28px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 28px;
+}
+
+.heroLeft {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heroLabel {
+  color: #2dd4bf;
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 820;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.heroOperator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(45, 212, 191, 0.08);
+  border: 1px solid rgba(45, 212, 191, 0.22);
+  color: #2dd4bf;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.heroOperatorDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2dd4bf;
+  box-shadow: 0 0 6px rgba(45, 212, 191, 0.7);
+}
+
+.heroTitle {
+  margin: 0;
+  color: #f0f0f0;
+  font-size: clamp(28px, 2.8vw, 40px);
+  line-height: 1.04;
+  font-weight: 760;
+  letter-spacing: -0.035em;
+}
+
+.heroTitle strong {
+  color: #7fc99b;
+  font-weight: 760;
+}
+
+.heroTitle strong.below {
+  color: #ef8f8f;
+}
+
+.heroSubtitle {
+  color: #b8b8b8;
+  opacity: 0.75;
+  font-size: 14px;
+  line-height: 1.45;
+  max-width: 620px;
+}
+
+.heroSubtitle b {
+  color: #f2f2f2;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.heroGaugeBar {
+  margin-top: 4px;
+  height: 6px;
+  border-radius: 999px;
+  background: #2a2a2a;
+  overflow: hidden;
+  max-width: 560px;
+}
+
+.heroGaugeBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #2dd4bf;
+  transition: width 0.6s ease;
+}
+
+.heroGaugeBar.below span {
+  background: #ef4444;
+}
+
+/* Dial circular do hero (SVG) */
+.heroDialWrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+}
+
+.heroDial {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.heroDialTrack {
+  fill: none;
+  stroke: #232323;
+  stroke-width: 10;
+}
+
+.heroDialFill {
+  fill: none;
+  stroke: #2dd4bf;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.7s ease, stroke 0.3s;
+}
+
+.heroDialFill.below {
+  stroke: #ef4444;
+}
+
+.heroDialCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.heroDialValue {
+  color: #f0f0f0;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.heroDialValue.below {
+  color: #ef8f8f;
+}
+
+.heroDialValue.above {
+  color: #7fc99b;
+}
+
+.heroDialMeta {
+  color: #858585;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GRID DE CARDS MÉTRICOS
+   ══════════════════════════════════════════════════════════════ */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metricCard {
+  min-height: 158px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.metricTopline {
+  width: 100%;
+  min-height: 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metricLabel {
+  color: #f5c300;
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 820;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.metricLabelTeal {
+  color: #2dd4bf;
+}
+
+.metricValue {
+  display: block;
+  margin-top: 18px;
+  color: #f0f0f0;
+  font-size: clamp(24px, 2.35vw, 34px);
+  line-height: 1.04;
+  font-weight: 740;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.metricValue.green {
+  color: #7fc99b;
+}
+
+.metricValue.red {
+  color: #ef8f8f;
+}
+
+.metricValue.muted {
+  color: #5f5f5f;
+}
+
+.metricSub {
+  display: block;
+  margin-top: 10px;
+  color: #b8b8b8;
+  opacity: 0.6;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.metricSub b {
+  color: #f2f2f2;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.metricPill {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.pillOk {
+  color: #7fc99b;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+
+.pillBad {
+  color: #ef8f8f;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+}
+
+.pillNd {
+  color: #858585;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gauge {
+  width: 100%;
+  height: 4px;
+  margin-top: 14px;
+  border-radius: 999px;
+  background: #2d2d2d;
+  overflow: hidden;
+}
+
+.gauge span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #f5c300;
+  transition: width 0.6s ease;
+}
+
+.gaugeRed span {
+  background: #ef4444;
+}
+.gaugeGreen span {
+  background: #22c55e;
+}
+.gaugeTeal span {
+  background: #2dd4bf;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SEÇÃO "CLIENTES EM RISCO"
+   ══════════════════════════════════════════════════════════════ */
+
+.tableCard {
+  padding: 24px 28px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.sectionHeader h3 {
+  margin: 0;
+  color: #e3e3e3;
+  font-size: 20px;
+  line-height: 1.16;
+  font-weight: 760;
+  letter-spacing: -0.025em;
+}
+
+.sectionSubtitle {
+  margin: 6px 0 0;
+  color: #858585;
+  font-size: 13px;
+  max-width: 560px;
+}
+
+.sectionHeaderRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #858585;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legendHigh {
+  background: #ef4444;
+}
+.legendMid {
+  background: #fbbf24;
+}
+.legendOk {
+  background: #22c55e;
+}
+.legendNd {
+  background: #6b7280;
+}
+
+/* Tabela custom - não usa .cc-row global pra manter o padrão premium */
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableHdr,
+.tableRow {
+  display: grid;
+  grid-template-columns:
+    32px minmax(200px, 2fr) 110px 88px 88px 88px 120px 110px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.tableHdr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.015);
+  border-radius: 10px 10px 0 0;
+}
+
+.tableHdr span {
+  color: #777777;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tableRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.tableRow:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tableRow:last-child {
+  border-bottom: 0;
+  border-radius: 0 0 10px 10px;
+}
+
+/* Faixa lateral de prioridade (indicador visual no começo da linha) */
+.priBar {
+  width: 4px;
+  height: 38px;
+  border-radius: 999px;
+  justify-self: center;
+}
+
+.priBar.high {
+  background: #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+.priBar.mid {
+  background: #fbbf24;
+}
+.priBar.ok {
+  background: #22c55e;
+}
+.priBar.nd {
+  background: #3d3d3d;
+}
+
+.clientCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.clientName {
+  color: #f0f0f0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clientMeta {
+  color: #777777;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clientMeta span + span::before {
+  content: '·';
+  margin: 0 6px;
+  opacity: 0.5;
+}
+
+.priBadge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  justify-self: start;
+}
+
+.priBadge.high {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+}
+
+.priBadge.mid {
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+.priBadge.ok {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+}
+
+.priBadge.nd {
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.numCell {
+  color: #e3e3e3;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.005em;
+}
+
+.numCell.muted {
+  color: #5f5f5f;
+  font-weight: 500;
+}
+
+.numCell.green {
+  color: #7fc99b;
+}
+
+.numCell.red {
+  color: #ef8f8f;
+}
+
+.numCellSub {
+  display: block;
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: 0.04em;
+  justify-self: start;
+}
+
+.statusPill.hit {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.statusPill.miss {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.statusPill.empty {
+  color: #777777;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ESTADOS (empty, loading, error)
+   ══════════════════════════════════════════════════════════════ */
+
+.emptyState,
+.loadingState {
+  padding: 64px 28px;
+  text-align: center;
+  color: #8f8f8f;
+  font-size: 14px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.emptyTitle {
+  color: #f0f0f0;
+  font-size: 18px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.loadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(245, 195, 0, 0.18);
+  border-top-color: #f5c300;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.inlineSpinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid rgba(245, 195, 0, 0.22);
+  border-top-color: #f5c300;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: -1px;
+  margin-right: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1100px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .tableHdr,
+  .tableRow {
+    grid-template-columns:
+      28px minmax(160px, 2fr) 100px 78px 78px 100px 96px;
+  }
+
+  .tableHdr span:nth-child(4),
+  .tableRow > *:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .headerActions {
+    gap: 8px;
+  }
+
+  .weekTabs {
+    padding: 3px;
+  }
+
+  .weekTab {
+    min-width: 36px;
+    padding: 0 6px;
+    font-size: 11px;
+  }
+
+  .tableHdr,
+  .tableRow {
+    grid-template-columns: 24px 1fr 80px 80px;
+    gap: 10px;
+  }
+
+  .tableHdr span:nth-child(3),
+  .tableRow > *:nth-child(3),
+  .tableHdr span:nth-child(5),
+  .tableRow > *:nth-child(5),
+  .tableHdr span:nth-child(6),
+  .tableRow > *:nth-child(6),
+  .tableHdr span:nth-child(7),
+  .tableRow > *:nth-child(7) {
+    display: none;
+  }
+}

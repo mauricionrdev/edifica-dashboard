@@ -18,6 +18,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import CentralPage from './pages/CentralPage.jsx';
 import ClientsPage from './pages/ClientsPage.jsx';
 import ModeloOficialPage from './pages/ModeloOficialPage.jsx';
+import GdvPage from './pages/GdvPage.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 export default function App() {
@@ -47,15 +48,7 @@ export default function App() {
                   />
                 }
               />
-              <Route
-                path="gdv"
-                element={
-                  <PlaceholderPage
-                    title="GDV"
-                    description="Análises de GDV em construção."
-                  />
-                }
-              />
+              <Route path="gdv" element={<GdvPage />} />
               <Route
                 path="squads/:squadId"
                 element={
