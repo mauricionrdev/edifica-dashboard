@@ -196,18 +196,18 @@ export function buildWeeklyContractTrendData(clients, year, month0) {
     if (weekdayIndex < 0 || weekdayIndex > 5) return;
     const row = base[weekdayIndex];
     row.contracts += 1;
-    row.ideal += Number(client.metaLucro) || 0;
   });
 
-  const fallbackIdeal = Math.max(
-    ...base.map((row) => row.contracts * 8),
-    0
-  );
+  const totalContracts = base.reduce((sum, row) => sum + row.contracts, 0);
+  const bestDay = Math.max(...base.map((row) => row.contracts), 0);
+  const dailyTarget = totalContracts > 0
+    ? Math.max(10, Math.ceil((totalContracts / 6) * 8), bestDay * 3)
+    : 0;
 
   return base.map((row) => {
-    const ideal = row.ideal > 0 ? row.ideal : row.contracts > 0 ? row.contracts * 8 : fallbackIdeal > 0 ? Math.round(fallbackIdeal * 0.4) : 0;
-    const stretch =
-      ideal > 0 ? Math.max(Math.round(ideal * 1.6), row.contracts * 12) : 0;
+    const momentum = row.contracts > 0 ? row.contracts * 4 : Math.round(dailyTarget * 0.45);
+    const ideal = dailyTarget > 0 ? Math.max(momentum, dailyTarget) : 0;
+    const stretch = dailyTarget > 0 ? Math.max(ideal + row.contracts * 6, Math.round(dailyTarget * 1.65)) : 0;
 
     return {
       ...row,

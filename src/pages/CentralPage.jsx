@@ -2,7 +2,7 @@
 //  CentralPage
 //  Visual portado do DashboardView do frontend real:
 //    - 5 cards métrica (Ativos · MRR · Receita Nova · Ticket · Churn)
-//      em grid 3 colunas, com delta no topline e gauge opcional no pÃ©.
+//      em grid 3 colunas, com delta no topline e gauge opcional no pé.
 //    - Card "chart": barras dos últimos 6 meses com tooltip.
 //    - Card "alerta": contratos vencendo em 30 dias.
 //
@@ -53,9 +53,23 @@ function buildPeriodOptions() {
   return out;
 }
 
-const CHART_W = 1200;
-const CHART_H = 360;
-const CHART_PAD = { top: 24, right: 20, bottom: 46, left: 60 };
+const CHART_W = 1095;
+const CHART_H = 344;
+const CHART_TOP = 6.83572;
+const CHART_BASELINE = 314.821;
+const CHART_GRID_LEFT = 37.1858;
+const CHART_GRID_RIGHT = 1093.34;
+const CHART_LABEL_Y = 337;
+const CHART_DATA_X = [70, 269.447, 468.895, 668.342, 867.789, 1067.24];
+const CHART_GRID_X = [36.5644, 212.59, 388.617, 564.643, 740.669, 916.695, 1092.72];
+const CHART_TICKS = [
+  { value: 100, y: 6.83572 },
+  { value: 70, y: 68.4329 },
+  { value: 50, y: 130.03 },
+  { value: 30, y: 191.627 },
+  { value: 10, y: 253.224 },
+  { value: 0, y: 314.821 },
+];
 
 function niceMax(value) {
   if (value <= 4) return 4;
@@ -65,17 +79,15 @@ function niceMax(value) {
 }
 
 function buildChartPoints(rows, maxValue, valueKey) {
-  const innerW = CHART_W - CHART_PAD.left - CHART_PAD.right;
-  const innerH = CHART_H - CHART_PAD.top - CHART_PAD.bottom;
-  const step = rows.length > 1 ? innerW / (rows.length - 1) : 0;
+  const innerH = CHART_BASELINE - CHART_TOP;
 
   return rows.map((row, index) => ({
     ...row,
     year: row.y,
     month: row.m,
-    x: CHART_PAD.left + step * index,
+    x: CHART_DATA_X[index] ?? CHART_DATA_X.at(-1),
     y:
-      CHART_PAD.top +
+      CHART_TOP +
       innerH -
       ((Number(row[valueKey]) || 0) / maxValue) * innerH,
   }));
@@ -344,13 +356,13 @@ export default function CentralPage() {
     () => buildChartPoints(contractTrend, chartMax, 'stretch'),
     [contractTrend, chartMax]
   );
-  const lineD = useMemo(() => smoothPath(chartPoints), [chartPoints]);
-  const idealLineD = useMemo(() => smoothPath(idealPoints), [idealPoints]);
+  const lineD = useMemo(() => buildLinearPath(chartPoints), [chartPoints]);
+  const idealLineD = useMemo(() => buildLinearPath(idealPoints), [idealPoints]);
   const stretchLineD = useMemo(
-    () => smoothPath(stretchPoints),
+    () => buildLinearPath(stretchPoints),
     [stretchPoints]
   );
-  const baselineY = CHART_H - CHART_PAD.bottom;
+  const baselineY = CHART_BASELINE;
   const areaD = lineD
     ? `${lineD} L ${chartPoints.at(-1).x} ${baselineY} L ${chartPoints[0].x} ${baselineY} Z`
     : '';
@@ -360,7 +372,7 @@ export default function CentralPage() {
   const stretchAreaD = stretchLineD
     ? `${stretchLineD} L ${stretchPoints.at(-1).x} ${baselineY} L ${stretchPoints[0].x} ${baselineY} Z`
     : '';
-  const chartTicks = [100, 70, 50, 30, 10, 0].filter((tick) => tick <= chartMax || tick === 0);
+  const chartTicks = CHART_TICKS;
   const peakClientsIndex = useMemo(() => {
     if (contractTrend.length === 0) return -1;
     return contractTrend.reduce(
@@ -502,76 +514,6 @@ export default function CentralPage() {
             legendSecondary="Base total"
           />
         </section>
-        {false && (
-          <>
-        <section className={styles.cardGrid} aria-label="Indicadores do dashboard">
-          <MetricCard
-            label="Clientes Ativos"
-            value={dashboardMetrics.active_clients}
-            sub={<>de <b>{dashboardMetrics.total_clients}</b> cadastrados</>}
-            gaugePct={dashboardMetrics.active_ratio}
-          />
-
-          <MetricCard
-            label="MRR Atual"
-            value={fmtMoney(dashboardMetrics.current_mrr)}
-            sub="Receita Mensal Recorrente"
-            delta={
-              mrrDelta === null ? (
-                <span className={`${styles.delta} ${styles.delta_nd}`}>
-                  Primeiro mês
-                </span>
-              ) : (
-                <span
-                  className={`${styles.delta} ${
-                    mrrDelta >= 0 ? styles.delta_pos : styles.delta_neg
-                  }`}
-                >
-                  {mrrDelta >= 0 ? '+' : '-'}{' '}
-                  {Math.abs(mrrDelta).toFixed(1)}%
-                </span>
-              )
-            }
-          />
-
-          <MetricCard
-            label="Receita Nova Adicionada"
-            value={fmtMoney(dashboardMetrics.new_revenue)}
-            sub={<> <b>{dashboardMetrics.new_clients}</b> novos em {MONTHS[period.m]}</>}
-          />
-        </section>
-
-        <section className={styles.cardGrid}>
-          <MetricCard
-            label="Ticket Médio"
-            value={
-              dashboardMetrics.average_ticket > 0
-                ? fmtMoney(dashboardMetrics.average_ticket)
-                : '-'
-            }
-            sub="MRR / clientes ativos"
-          />
-
-          <MetricCard
-            label="Receita Perdida no Mês"
-            value={fmtMoney(dashboardMetrics.lost_revenue)}
-            sub={<> <b>{dashboardMetrics.churn_count}</b> churns em {MONTHS[period.m]}</>}
-          />
-
-          <MetricCard
-            label="Taxa de Churn"
-            value={
-              dashboardMetrics.churn_rate > 0
-                ? fmtPct(dashboardMetrics.churn_rate)
-                : '0%'
-            }
-            sub="Cancelamentos / total"
-            gaugePct={dashboardMetrics.churn_rate}
-            gaugeTone="red"
-          />
-        </section>
-          </>
-        )}
         {/* --- Gráfico de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
@@ -650,34 +592,28 @@ export default function CentralPage() {
             >
               <defs>
                 <linearGradient id="clientsLineFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6f86ff" stopOpacity="0.24" />
-                  <stop offset="64%" stopColor="#6f86ff" stopOpacity="0.08" />
-                  <stop offset="100%" stopColor="#6f86ff" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#7086fd" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#7086fd" stopOpacity="0.05" />
                 </linearGradient>
                 <linearGradient id="revenueLineFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#66d59a" stopOpacity="0.18" />
-                  <stop offset="64%" stopColor="#66d59a" stopOpacity="0.06" />
-                  <stop offset="100%" stopColor="#66d59a" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#6fd195" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#6fd195" stopOpacity="0.05" />
                 </linearGradient>
                 <linearGradient id="benchmarkLineFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f3a43d" stopOpacity="0.22" />
-                  <stop offset="100%" stopColor="#f3a43d" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#ffae4c" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#ffae4c" stopOpacity="0.05" />
                 </linearGradient>
               </defs>
 
-              {chartTicks.map((tick) => {
-                const y =
-                  CHART_PAD.top +
-                  (1 - tick / chartMax) *
-                    (CHART_H - CHART_PAD.top - CHART_PAD.bottom);
+              {chartTicks.map(({ value, y }) => {
                 return (
-                  <g key={tick}>
+                  <g key={value}>
                     <text x="4" y={y + 4} className={styles.axisLabel}>
-                      {Math.round(tick)}
+                      {value}
                     </text>
                     <line
-                      x1={CHART_PAD.left}
-                      x2={CHART_W - CHART_PAD.right}
+                      x1={CHART_GRID_LEFT}
+                      x2={CHART_GRID_RIGHT}
                       y1={y}
                       y2={y}
                       className={styles.gridLine}
@@ -686,12 +622,12 @@ export default function CentralPage() {
                 );
               })}
 
-              {chartPoints.map((point) => (
+              {CHART_GRID_X.map((x) => (
                 <line
-                  key={`grid-${point.year}-${point.month}`}
-                  x1={point.x}
-                  x2={point.x}
-                  y1={CHART_PAD.top}
+                  key={`grid-${x}`}
+                  x1={x}
+                  x2={x}
+                  y1={CHART_TOP}
                   y2={baselineY}
                   className={styles.gridLineVertical}
                 />
@@ -723,7 +659,7 @@ export default function CentralPage() {
                     />
                     <text
                       x={point.x}
-                      y={CHART_H - 14}
+                      y={CHART_LABEL_Y}
                       textAnchor="middle"
                       className={styles.monthLabel}
                     >
@@ -732,19 +668,37 @@ export default function CentralPage() {
                     <circle
                       cx={stretchPoint.x}
                       cy={stretchPoint.y}
-                      r={4.5}
+                      r={9.94286}
+                      className={styles.benchmarkPointHalo}
+                    />
+                    <circle
+                      cx={stretchPoint.x}
+                      cy={stretchPoint.y}
+                      r={4.35}
                       className={styles.benchmarkPoint}
                     />
                     <circle
                       cx={idealPoint.x}
                       cy={idealPoint.y}
-                      r={4.5}
+                      r={9.94286}
+                      className={styles.revenuePointHalo}
+                    />
+                    <circle
+                      cx={idealPoint.x}
+                      cy={idealPoint.y}
+                      r={4.35}
                       className={styles.revenuePoint}
                     />
                     <circle
                       cx={point.x}
                       cy={point.y}
-                      r={point.isNow ? 7 : 5.5}
+                      r={9.94286}
+                      className={styles.pointHalo}
+                    />
+                    <circle
+                      cx={point.x}
+                      cy={point.y}
+                      r={4.35}
                       className={`${styles.point} ${
                         point.isNow ? styles.pointActive : ''
                       }`}
@@ -752,23 +706,23 @@ export default function CentralPage() {
                     {index === peakIdealIndex && point.ideal > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={idealPoint.x - 38}
-                          y={idealPoint.y - 54}
-                          width="76"
-                          height="26"
-                          rx="6"
+                          x={idealPoint.x - 37.75}
+                          y={idealPoint.y - 38.13}
+                          width="75.5"
+                          height="22.5"
+                          rx="1.75"
                           className={styles.idealCallout}
                         />
                         <text
                           x={idealPoint.x}
-                          y={idealPoint.y - 40}
+                          y={idealPoint.y - 23.8}
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
                           {`${fmtInt(point.ideal)} Contratos`}
                         </text>
                         <path
-                          d={`M ${idealPoint.x - 6} ${idealPoint.y - 32} L ${idealPoint.x} ${idealPoint.y - 24} L ${idealPoint.x + 6} ${idealPoint.y - 32} Z`}
+                          d={`M ${idealPoint.x - 4.33} ${idealPoint.y - 15.13} L ${idealPoint.x + 4.33} ${idealPoint.y - 15.13} L ${idealPoint.x} ${idealPoint.y - 11.38} Z`}
                           className={styles.idealCallout}
                         />
                       </g>
@@ -776,16 +730,16 @@ export default function CentralPage() {
                     {index === peakClientsIndex && point.contracts > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={point.x - 38}
-                          y={point.y - 54}
-                          width="76"
-                          height="26"
-                          rx="6"
+                          x={point.x - 34.75}
+                          y={point.y - 38.94}
+                          width="69.5"
+                          height="22.5"
+                          rx="1.75"
                           className={styles.clientsCallout}
                         />
                         <text
                           x={point.x}
-                          y={point.y - 40}
+                          y={point.y - 24.6}
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
@@ -794,7 +748,7 @@ export default function CentralPage() {
                           }`}
                         </text>
                         <path
-                          d={`M ${point.x - 6} ${point.y - 32} L ${point.x} ${point.y - 24} L ${point.x + 6} ${point.y - 32} Z`}
+                          d={`M ${point.x - 4.33} ${point.y - 15.94} L ${point.x + 4.33} ${point.y - 15.94} L ${point.x} ${point.y - 12.19} Z`}
                           className={styles.clientsCallout}
                         />
                       </g>
@@ -802,23 +756,23 @@ export default function CentralPage() {
                     {index === contractTrend.length - 1 && point.stretch > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={stretchPoint.x - 40}
-                          y={stretchPoint.y - 54}
-                          width="80"
-                          height="26"
-                          rx="6"
+                          x={stretchPoint.x - 37.75}
+                          y={stretchPoint.y - 38.13}
+                          width="75.5"
+                          height="22.5"
+                          rx="1.75"
                           className={styles.revenueCallout}
                         />
                         <text
                           x={stretchPoint.x}
-                          y={stretchPoint.y - 40}
+                          y={stretchPoint.y - 23.8}
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
                           {`${fmtInt(point.stretch)} Contratos`}
                         </text>
                         <path
-                          d={`M ${stretchPoint.x - 6} ${stretchPoint.y - 32} L ${stretchPoint.x} ${stretchPoint.y - 24} L ${stretchPoint.x + 6} ${stretchPoint.y - 32} Z`}
+                          d={`M ${stretchPoint.x - 4.33} ${stretchPoint.y - 15.13} L ${stretchPoint.x + 4.33} ${stretchPoint.y - 15.13} L ${stretchPoint.x} ${stretchPoint.y - 11.38} Z`}
                           className={styles.revenueCallout}
                         />
                       </g>

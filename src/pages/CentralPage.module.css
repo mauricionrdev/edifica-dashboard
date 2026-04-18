@@ -217,22 +217,23 @@
 /* --- Cartões grandes (chart e alerta) -------------------------- */
 .chartCard,
 .alertCard {
-  padding: 24px 28px 18px;
+  padding: 24px;
 }
 
 .chartCard {
-  border-radius: 22px;
+  border-radius: 24px;
   background:
-    linear-gradient(180deg, rgba(31, 31, 31, 0.98), rgba(28, 28, 28, 0.98)) padding-box,
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) border-box;
+    linear-gradient(180deg, #1c1c1c, #1c1c1c) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)) border-box;
 }
 
 .sectionHeader {
+  min-height: 41px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 18px;
+  margin-bottom: 32px;
 }
 
 .sectionHeader span {
@@ -263,15 +264,15 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #d8d4cd;
+  color: #b3b3b3;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font: inherit;
   font-size: 24px;
   line-height: 1;
   font-weight: 760;
-  letter-spacing: -0.03em;
+  letter-spacing: 0.03em;
   cursor: pointer;
 }
 
@@ -283,31 +284,33 @@
 .chartControls {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 32px;
   flex-wrap: wrap;
 }
 
 .chartControlGroup {
+  width: 270px;
+  height: 41px;
   display: inline-flex;
   align-items: center;
   gap: 0;
-  padding: 4px;
-  border-radius: 10px;
-  background: #252525;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: #262626;
 }
 
 .chartControlButton {
-  min-height: 40px;
+  min-height: 33px;
   padding: 0 17px;
   border: 1px solid transparent;
-  border-radius: 10px;
-  background: #2a2a2a;
+  border-radius: 4px;
+  background: #262626;
   color: #dfdcd7;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -318,12 +321,19 @@
 }
 
 .chartControlButtonActive {
-  background: #3a3a3a;
-  border-color: #454545;
+  background: rgba(77, 77, 77, 0.5);
+  border-color: transparent;
 }
 
 .chartPeriodPicker {
   position: relative;
+}
+
+.chartPeriodPicker .chartControlButton {
+  width: 154px;
+  height: 41px;
+  justify-content: center;
+  border-radius: 8px;
 }
 
 .chartPeriodPopover {
@@ -354,7 +364,7 @@
 /* --- Chart de linha -------------------------------------------- */
 .lineChartWrap {
   position: relative;
-  min-height: 424px;
+  min-height: 421px;
   padding: 0;
   isolation: isolate;
 }
@@ -364,71 +374,71 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.22;
+  opacity: 0.24;
   background-image: radial-gradient(rgba(0, 0, 0, 0.82) 1px, transparent 1px);
-  background-size: 22px 22px;
+  background-size: 24px 24px;
   mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
 }
 
 .lineChart {
   width: 100%;
-  height: 372px;
+  height: 344px;
   display: block;
   overflow: hidden;
 }
 
 .axisLabel,
 .monthLabel {
-  fill: #8e8c88;
-  font-size: 12px;
-  font-weight: 600;
+  fill: rgba(179, 179, 179, 0.7);
+  font-size: 14px;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
 
 .monthLabel {
-  fill: #8c8b87;
-  font-size: 12px;
+  fill: rgba(179, 179, 179, 0.7);
+  font-size: 14px;
 }
 
 .gridLine {
-  stroke: rgba(255, 255, 255, 0.055);
-  stroke-width: 1;
+  stroke: rgba(0, 0, 0, 0.25);
+  stroke-width: 1.24286;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1 5;
+  stroke-dasharray: 2.49;
 }
 
 .gridLineVertical {
-  stroke: rgba(255, 255, 255, 0.05);
-  stroke-width: 1;
+  stroke: rgba(0, 0, 0, 0.25);
+  stroke-width: 1.24286;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1 5;
+  stroke-dasharray: 2.49;
 }
 
 .tickLine {
-  stroke: rgba(255, 255, 255, 0.16);
-  stroke-width: 1;
+  stroke: transparent;
+  stroke-width: 0;
   vector-effect: non-scaling-stroke;
 }
 
 .areaPath {
   fill: url("#clientsLineFill");
-  opacity: 0.88;
+  opacity: 1;
 }
 
 .revenueAreaPath {
   fill: url("#revenueLineFill");
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .benchmarkAreaPath {
   fill: url("#benchmarkLineFill");
-  opacity: 0.92;
+  opacity: 1;
 }
 
 .linePath {
   fill: none;
-  stroke: #6f86ff;
-  stroke-width: 2.2;
+  stroke: #7086fd;
+  stroke-width: 1.24286;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: none;
@@ -437,8 +447,8 @@
 
 .revenueLinePath {
   fill: none;
-  stroke: #66d59a;
-  stroke-width: 2.2;
+  stroke: #6fd195;
+  stroke-width: 1.24286;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: none;
@@ -457,40 +467,55 @@
 
 .benchmarkLinePath {
   fill: none;
-  stroke: #f3a43d;
-  stroke-width: 2.2;
+  stroke: #ffae4c;
+  stroke-width: 1.24286;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 
 .point {
-  fill: #f3f6ff;
-  stroke: #6f86ff;
-  stroke-width: 2.4;
+  fill: #7086fd;
+  stroke: white;
+  stroke-width: 1.24286;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 6px rgba(111, 134, 255, 0.18));
 }
 
+.pointHalo {
+  fill: #7086fd;
+  opacity: 0.25;
+}
+
 .pointActive {
-  fill: #ffffff;
-  stroke: #6f86ff;
+  fill: #7086fd;
+  stroke: white;
 }
 
 .revenuePoint {
-  fill: #f7fffb;
-  stroke: #66d59a;
-  stroke-width: 2.4;
+  fill: #6fd195;
+  stroke: white;
+  stroke-width: 1.24286;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 6px rgba(102, 213, 154, 0.16));
 }
 
+.revenuePointHalo {
+  fill: #6fd195;
+  opacity: 0.25;
+}
+
 .benchmarkPoint {
-  fill: #fffaf1;
-  stroke: #f3a43d;
-  stroke-width: 2.4;
+  fill: #ffae4c;
+  stroke: white;
+  stroke-width: 1.24286;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 6px rgba(243, 164, 61, 0.16));
+}
+
+.benchmarkPointHalo {
+  fill: #ffae4c;
+  opacity: 0.25;
 }
 
 .eventHalo {
@@ -507,24 +532,24 @@
 }
 
 .clientsCallout {
-  fill: rgba(74, 95, 180, 0.92);
-  stroke: rgba(145, 164, 255, 0.18);
+  fill: rgba(112, 134, 253, 0.3);
+  stroke: #7086fd;
 }
 
 .idealCallout {
-  fill: rgba(88, 135, 99, 0.92);
-  stroke: rgba(160, 225, 181, 0.16);
+  fill: rgba(111, 209, 149, 0.3);
+  stroke: #6fd195;
 }
 
 .revenueCallout {
-  fill: rgba(133, 97, 47, 0.94);
-  stroke: rgba(255, 210, 134, 0.18);
+  fill: rgba(255, 174, 76, 0.3);
+  stroke: #ffae4c;
 }
 
 .calloutText {
-  fill: #f4f4f4;
-  font-size: 10px;
-  font-weight: 700;
+  fill: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .dataNode {
@@ -574,32 +599,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 26px;
-  color: #8e8e8e;
-  font-size: 13px;
-  margin-top: 10px;
+  gap: 44px;
+  color: #919191;
+  font-size: 14px;
+  margin-top: 18px;
 }
 
 .chartLegend span {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 10px;
 }
 
 .chartLegend i {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
+  width: 16px;
+  height: 2px;
+  border-radius: 0;
   display: inline-block;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.34) inset;
+  box-shadow: none;
 }
 
 .legendClients {
-  background: #6f86ff;
+  background: #7086fd;
 }
 
 .legendRevenue {
-  background: #66d59a;
+  background: #6fd195;
 }
 
 .legendComparison {
@@ -607,7 +632,7 @@
 }
 
 .legendBenchmark {
-  background: #f3a43d;
+  background: #ffae4c;
 }
 
 /* --- Alerta de contratos vencendo ------------------------------ */
