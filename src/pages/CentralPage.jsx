@@ -71,20 +71,25 @@ const CHART_TICKS = [
   { value: 0, y: 314.821 },
 ];
 
-function buildChartPoints(rows, valueKey, visualTop, visualBottom) {
-  const values = rows.map((row) => Number(row[valueKey]) || 0);
-  const maxValue = Math.max(...values, 0);
-  const minValue = Math.min(...values, 0);
-  const range = maxValue - minValue;
+function niceMax(value) {
+  if (!value || value <= 0) return 100;
+  const exponent = Math.floor(Math.log10(value));
+  const fraction = value / 10 ** exponent;
+  const niceFraction = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
+  return niceFraction * 10 ** exponent;
+}
 
+function buildChartPoints(rows, maxValue, valueKey) {
+  const chartMax = maxValue > 0 ? maxValue : 100;
   return rows.map((row, index) => ({
     ...row,
     year: row.y,
     month: row.m,
     x: CHART_DATA_X[index] ?? CHART_DATA_X.at(-1),
-    y: range > 0
-      ? visualBottom - (((Number(row[valueKey]) || 0) - minValue) / range) * (visualBottom - visualTop)
-      : visualBottom,
+    y:
+      CHART_BASELINE -
+      ((Number(row[valueKey]) || 0) / chartMax) *
+        (CHART_BASELINE - CHART_TOP),
   }));
 }
 
@@ -328,17 +333,31 @@ export default function CentralPage() {
     () => buildWeeklyContractTrendData(clients, period.y, period.m),
     [clients, period]
   );
-  const chartPoints = useMemo(
-    () => buildChartPoints(contractTrend, 'contracts', 216.44, 302.998),
+  const chartMax = useMemo(
+    () =>
+      niceMax(
+        Math.max(
+          ...contractTrend.flatMap((row) => [
+            row.contracts,
+            row.ideal,
+            row.stretch,
+          ]),
+          100
+        )
+      ),
     [contractTrend]
+  );
+  const chartPoints = useMemo(
+    () => buildChartPoints(contractTrend, chartMax, 'contracts'),
+    [contractTrend, chartMax]
   );
   const idealPoints = useMemo(
-    () => buildChartPoints(contractTrend, 'ideal', 129.882, 284.668),
-    [contractTrend]
+    () => buildChartPoints(contractTrend, chartMax, 'ideal'),
+    [contractTrend, chartMax]
   );
   const stretchPoints = useMemo(
-    () => buildChartPoints(contractTrend, 'stretch', 44.3417, 195.055),
-    [contractTrend]
+    () => buildChartPoints(contractTrend, chartMax, 'stretch'),
+    [contractTrend, chartMax]
   );
   const lineD = useMemo(() => buildLinearPath(chartPoints), [chartPoints]);
   const idealLineD = useMemo(() => buildLinearPath(idealPoints), [idealPoints]);
@@ -600,7 +619,7 @@ export default function CentralPage() {
                       x2={CHART_GRID_RIGHT}
                       y1={y}
                       y2={y}
-                      className={styles.gridLine}
+                      className={value === 0 ? styles.baselineLine : styles.gridLine}
                     />
                   </g>
                 );

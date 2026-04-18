@@ -442,6 +442,12 @@
   stroke-dasharray: 2.49;
 }
 
+.baselineLine {
+  stroke: rgba(0, 0, 0, 0.5);
+  stroke-width: 1.24286;
+  vector-effect: non-scaling-stroke;
+}
+
 .gridLineVertical {
   stroke: rgba(0, 0, 0, 0.25);
   stroke-width: 1.24286;
