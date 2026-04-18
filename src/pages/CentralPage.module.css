@@ -222,10 +222,6 @@
 
 .chartCard {
   width: min(100%, 1143px);
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, #1c1c1c, #1c1c1c) padding-box,
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)) border-box;
 }
 
 .sectionHeader {
@@ -402,17 +398,6 @@
   min-height: 389px;
   padding: 0;
   isolation: isolate;
-}
-
-.lineChartWrap::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.24;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.82) 1px, transparent 1px);
-  background-size: 24px 24px;
-  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
 }
 
 .lineChart {
