@@ -83,8 +83,8 @@
 }
 
 .metricCard {
-  min-height: 212px;
-  padding: 22px 22px 18px;
+  min-height: 182px;
+  padding: 20px 20px 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -151,37 +151,20 @@
   color: #f08d98;
 }
 
-.metricEquation {
-  margin-top: 28px;
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
 .metricValue {
   display: block;
+  margin-top: 22px;
   color: #ffe17d;
-  font-size: clamp(28px, 2.4vw, 50px);
+  font-size: clamp(26px, 2.1vw, 42px);
   line-height: 0.98;
   font-weight: 720;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
 }
 
-.metricDivider,
-.metricTotal {
-  color: rgba(255, 255, 255, 0.36);
-  font-size: clamp(28px, 2.4vw, 50px);
-  line-height: 0.98;
-  font-weight: 620;
-  letter-spacing: -0.04em;
-  font-variant-numeric: tabular-nums;
-}
-
 .metricHelperTitle {
   display: block;
-  margin-top: 18px;
+  margin-top: 16px;
   color: #d7d7d9;
   font-size: 12px;
   line-height: 1.35;
@@ -200,7 +183,7 @@
 .metricLegend {
   width: 100%;
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 14px;
   display: flex;
   align-items: center;
   gap: 18px;

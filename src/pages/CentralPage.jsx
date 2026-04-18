@@ -179,7 +179,6 @@ function MetricCard({
   badge,
   badgeTone = 'gold',
   primary,
-  secondary,
   helperTitle,
   helperText,
   legendPrimary,
@@ -196,11 +195,7 @@ function MetricCard({
           {badge}
         </span>
       </div>
-      <div className={styles.metricEquation}>
-        <strong className={styles.metricValue}>{primary}</strong>
-        <span className={styles.metricDivider}>/</span>
-        <span className={styles.metricTotal}>{secondary}</span>
-      </div>
+      <strong className={styles.metricValue}>{primary}</strong>
       <span className={styles.metricHelperTitle}>{helperTitle}</span>
       <span className={styles.metricSub}>{helperText}</span>
       <div className={styles.metricLegend}>
@@ -466,7 +461,6 @@ export default function CentralPage() {
             badge={`${Math.round(dashboardMetrics.active_ratio)}%`}
             badgeTone="green"
             primary={formatCompactValue(dashboardMetrics.active_clients)}
-            secondary={formatCompactValue(dashboardMetrics.total_clients)}
             helperTitle="Quantos seguem ativos?"
             helperText={`${dashboardMetrics.active_clients} clientes ativos de ${dashboardMetrics.total_clients} cadastrados`}
             legendPrimary="Clientes ativos"
@@ -479,7 +473,6 @@ export default function CentralPage() {
             badge={`${Math.round(newClientPct)}%`}
             badgeTone="green"
             primary={formatCompactValue(dashboardMetrics.new_clients)}
-            secondary={formatCompactValue(dashboardMetrics.total_clients)}
             helperTitle={`Entraram em ${MONTHS[period.m]}`}
             helperText={`${dashboardMetrics.new_clients} novos clientes no mes selecionado`}
             legendPrimary="Novos no mes"
@@ -492,7 +485,6 @@ export default function CentralPage() {
             badge={`${Math.round(newRevenuePct)}%`}
             badgeTone="amber"
             primary={fmtMoney(dashboardMetrics.new_revenue)}
-            secondary={fmtMoney(dashboardMetrics.current_mrr)}
             helperTitle="Nova receita sobre o MRR"
             helperText={`${dashboardMetrics.new_clients} clientes adicionaram ${fmtMoney(dashboardMetrics.new_revenue)} em ${MONTHS[period.m]}`}
             legendPrimary="Receita nova"
@@ -505,7 +497,6 @@ export default function CentralPage() {
             badge={fmtPct(churnPeriodPct)}
             badgeTone="red"
             primary={formatCompactValue(dashboardMetrics.churn_count)}
-            secondary={formatCompactValue(dashboardMetrics.total_clients)}
             helperTitle="Saidas no mes selecionado"
             helperText={`${dashboardMetrics.churn_count} cancelamentos e ${fmtMoney(dashboardMetrics.lost_revenue)} de receita perdida`}
             legendPrimary="Churns no mes"
