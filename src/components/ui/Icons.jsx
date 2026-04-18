@@ -62,6 +62,9 @@ export function UsersIcon(props) {
 export function ClipboardListIcon(props) {
   return <BaseIcon {...props}><rect x="8" y="3" width="8" height="4" rx="1.5" /><path d="M9 5H6.5A1.5 1.5 0 0 0 5 6.5v12A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 17.5 5H15" /><path d="M8 11h8" /><path d="M8 15h5" /></BaseIcon>;
 }
+export function CalendarIcon(props) {
+  return <BaseIcon {...props}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M3 10h18" /></BaseIcon>;
+}
 export function ArrowUpRightIcon(props) {
   return <BaseIcon {...props}><path d="M7 17 17 7" /><path d="M9 7h8v8" /></BaseIcon>;
 }

@@ -16,6 +16,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
+  CalendarIcon,
+  ChevronDownIcon,
+  ClipboardListIcon,
   CoinsIcon,
   TargetIcon,
   TrendingUpIcon,
@@ -239,10 +242,17 @@ export default function CentralPage() {
     y: now.getFullYear(),
     m: now.getMonth(),
   }));
+  const [chartPickerOpen, setChartPickerOpen] = useState(false);
 
   const periodOptions = useMemo(buildPeriodOptions, []);
   const isNow =
     period.y === now.getFullYear() && period.m === now.getMonth();
+  const previousPeriod = useMemo(
+    () => shiftPeriod(now.getFullYear(), now.getMonth(), -1),
+    [now]
+  );
+  const isPreviousPeriod =
+    period.y === previousPeriod.y && period.m === previousPeriod.m;
 
   const metrics = useMemo(
     () => computeCentralMetrics(clients, period.y, period.m),
@@ -370,6 +380,12 @@ export default function CentralPage() {
     () => clientsEndingSoon(clients, 30, now),
     [clients, now]
   );
+
+  const setPeriodFromOffset = (offset) => {
+    const next = shiftPeriod(now.getFullYear(), now.getMonth(), offset);
+    setPeriod(next);
+    setChartPickerOpen(false);
+  };
 
   // Registra tÃ­tulo + seletor de perÃ­odo no panelHeader do AppShell.
   useEffect(() => {
@@ -557,9 +573,67 @@ export default function CentralPage() {
         {/* --- GrÃ¡fico de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
-            <div className={styles.chartHeading}>
-              <h3>Evolução mensal</h3>
-              <p>Contratos fechados, meta ideal e super meta nos últimos 6 meses</p>
+            <button type="button" className={styles.chartTitleButton}>
+              <span>Evolução mensal</span>
+              <ChevronDownIcon size={16} strokeWidth={2} />
+            </button>
+            <div className={styles.chartControls}>
+              <button
+                type="button"
+                className={`${styles.chartControlButton} ${
+                  isNow ? styles.chartControlButtonActive : ''
+                }`}
+                onClick={() => setPeriodFromOffset(0)}
+              >
+                <ClipboardListIcon size={14} strokeWidth={1.8} />
+                <span>Mês atual</span>
+              </button>
+              <button
+                type="button"
+                className={`${styles.chartControlButton} ${
+                  isPreviousPeriod ? styles.chartControlButtonActive : ''
+                }`}
+                onClick={() => setPeriodFromOffset(-1)}
+              >
+                <ClipboardListIcon size={14} strokeWidth={1.8} />
+                <span>Mês anterior</span>
+              </button>
+              <div className={styles.chartPeriodPicker}>
+                <button
+                  type="button"
+                  className={`${styles.chartControlButton} ${
+                    chartPickerOpen ? styles.chartControlButtonActive : ''
+                  }`}
+                  onClick={() => setChartPickerOpen((open) => !open)}
+                  aria-expanded={chartPickerOpen}
+                  aria-haspopup="listbox"
+                >
+                  <CalendarIcon size={14} strokeWidth={1.8} />
+                  <span>Definir período</span>
+                </button>
+                {chartPickerOpen && (
+                  <div className={styles.chartPeriodPopover}>
+                    <select
+                      className={styles.chartPeriodSelect}
+                      value={`${period.y}-${period.m}`}
+                      onChange={(e) => {
+                        const [y, m] = e.target.value.split('-').map(Number);
+                        if (Number.isFinite(y) && Number.isFinite(m)) {
+                          setPeriod({ y, m });
+                        }
+                        setChartPickerOpen(false);
+                      }}
+                      aria-label="Selecionar período do gráfico"
+                    >
+                      {periodOptions.map((p) => (
+                        <option key={`${p.y}-${p.m}`} value={`${p.y}-${p.m}`}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -597,9 +671,27 @@ export default function CentralPage() {
                     <text x="4" y={y + 4} className={styles.axisLabel}>
                       {Math.round(tick)}
                     </text>
+                    <line
+                      x1={CHART_PAD.left}
+                      x2={CHART_W - CHART_PAD.right}
+                      y1={y}
+                      y2={y}
+                      className={styles.gridLine}
+                    />
                   </g>
                 );
               })}
+
+              {chartPoints.map((point) => (
+                <line
+                  key={`grid-${point.year}-${point.month}`}
+                  x1={point.x}
+                  x2={point.x}
+                  y1={CHART_PAD.top}
+                  y2={baselineY}
+                  className={styles.gridLineVertical}
+                />
+              ))}
 
               <path d={stretchAreaD} className={styles.benchmarkAreaPath} />
               <path d={idealAreaD} className={styles.revenueAreaPath} />
@@ -671,6 +763,10 @@ export default function CentralPage() {
                         >
                           {`${fmtInt(point.ideal)} contratos`}
                         </text>
+                        <path
+                          d={`M ${idealPoint.x - 6} ${idealPoint.y - 32} L ${idealPoint.x} ${idealPoint.y - 24} L ${idealPoint.x + 6} ${idealPoint.y - 32} Z`}
+                          className={styles.idealCallout}
+                        />
                       </g>
                     )}
                     {index === peakClientsIndex && point.contracts > 0 && (
@@ -693,6 +789,10 @@ export default function CentralPage() {
                             point.contracts === 1 ? '' : 's'
                           }`}
                         </text>
+                        <path
+                          d={`M ${point.x - 6} ${point.y - 32} L ${point.x} ${point.y - 24} L ${point.x + 6} ${point.y - 32} Z`}
+                          className={styles.clientsCallout}
+                        />
                       </g>
                     )}
                     {index === contractTrend.length - 1 && point.stretch > 0 && (
@@ -713,6 +813,10 @@ export default function CentralPage() {
                         >
                           {`${fmtInt(point.stretch)} contratos`}
                         </text>
+                        <path
+                          d={`M ${stretchPoint.x - 6} ${stretchPoint.y - 32} L ${stretchPoint.x} ${stretchPoint.y - 24} L ${stretchPoint.x + 6} ${stretchPoint.y - 32} Z`}
+                          className={styles.revenueCallout}
+                        />
                       </g>
                     )}
                     <foreignObject

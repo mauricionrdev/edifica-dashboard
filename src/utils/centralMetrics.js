@@ -108,21 +108,61 @@ export function buildBarChartData(clients, year, month0, months = 6) {
  * - stretch: melhor volume alcançado até o mês atual dentro da janela
  */
 export function buildContractTrendData(clients, year, month0, months = 6) {
-  const rows = buildBarChartData(clients, year, month0, months);
+  const now = new Date();
+  const nowY = now.getFullYear();
+  const nowM = now.getMonth();
+  const all = Array.isArray(clients) ? clients : [];
+
+  const rows = [];
+  for (let i = months - 1; i >= 0; i--) {
+    let y = year;
+    let m = month0 - i;
+    while (m < 0) {
+      m += 12;
+      y -= 1;
+    }
+
+    const prefix = monthKey(y, m);
+    const signed = all.filter(
+      (c) =>
+        isActive(c) &&
+        c.startDate &&
+        String(c.startDate).startsWith(prefix)
+    );
+
+    rows.push({
+      y,
+      m,
+      cnt: signed.length,
+      contractGoal: signed.reduce(
+        (sum, client) => sum + (Number(client.metaLucro) || 0),
+        0
+      ),
+      isNow: y === nowY && m === nowM,
+    });
+  }
 
   return rows.map((row, index) => {
     const slice = rows.slice(0, index + 1);
-    const sum = slice.reduce((acc, item) => acc + item.cnt, 0);
-    const best = slice.reduce(
-      (acc, item) => Math.max(acc, Number(item.cnt) || 0),
-      0
+    const avgContracts =
+      slice.reduce((acc, item) => acc + item.cnt, 0) / slice.length;
+    const derivedIdeal = Math.max(
+      row.cnt,
+      Math.round(avgContracts * 1.6),
+      row.cnt > 0 ? row.cnt + 8 : 0
+    );
+    const ideal = row.contractGoal > 0 ? row.contractGoal : derivedIdeal;
+    const stretch = Math.max(
+      ideal,
+      Math.round(ideal * 1.55),
+      row.cnt > 0 ? row.cnt + 20 : 0
     );
 
     return {
       ...row,
       contracts: row.cnt,
-      ideal: Math.round(sum / slice.length),
-      stretch: best,
+      ideal,
+      stretch,
     };
   });
 }

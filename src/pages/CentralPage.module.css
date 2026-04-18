@@ -252,14 +252,93 @@
   font-size: 13px;
 }
 
-.chartHeading p {
-  margin-top: 6px;
+.chartTitleButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #d7d3cb;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: inherit;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 760;
+  letter-spacing: -0.03em;
+  cursor: pointer;
+}
+
+.chartTitleButton svg {
+  color: #ece6d8;
+  opacity: 0.92;
+}
+
+.chartControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.chartControlButton {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid #2c2c2c;
+  border-radius: 10px;
+  background: #2a2a2a;
+  color: #e3e0db;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 560;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.chartControlButton:hover {
+  background: #313131;
+}
+
+.chartControlButtonActive {
+  background: #383838;
+  border-color: #444;
+}
+
+.chartPeriodPicker {
+  position: relative;
+}
+
+.chartPeriodPopover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 3;
+  min-width: 220px;
+  padding: 10px;
+  border: 1px solid #313131;
+  border-radius: 12px;
+  background: #1d1d1d;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
+}
+
+.chartPeriodSelect {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #151515;
+  color: #f4f4f4;
+  font: inherit;
+  font-size: 14px;
 }
 
 /* --- Chart de linha -------------------------------------------- */
 .lineChartWrap {
   position: relative;
-  min-height: 428px;
+  min-height: 410px;
   padding: 0;
   isolation: isolate;
 }
@@ -277,32 +356,40 @@
 
 .lineChart {
   width: 100%;
-  height: 370px;
+  height: 360px;
   display: block;
   overflow: hidden;
 }
 
 .axisLabel,
 .monthLabel {
-  fill: #777777;
-  font-size: 11px;
-  font-weight: 650;
+  fill: #8e8c88;
+  font-size: 10px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .monthLabel {
-  fill: #a0a0a0;
+  fill: #8c8b87;
+  font-size: 11px;
 }
 
 .gridLine {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1 6;
+}
+
+.gridLineVertical {
   stroke: rgba(255, 255, 255, 0.05);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 4 8;
+  stroke-dasharray: 1 7;
 }
 
 .tickLine {
-  stroke: rgba(255, 255, 255, 0.28);
+  stroke: rgba(255, 255, 255, 0.16);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
@@ -322,7 +409,7 @@
 .linePath {
   fill: none;
   stroke: #6f86ff;
-  stroke-width: 3.25;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: none;
@@ -332,7 +419,7 @@
 .revenueLinePath {
   fill: none;
   stroke: #66d59a;
-  stroke-width: 3.25;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: none;
@@ -352,7 +439,7 @@
 .benchmarkLinePath {
   fill: none;
   stroke: #f3a43d;
-  stroke-width: 2.75;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
@@ -361,26 +448,26 @@
 .point {
   fill: #151515;
   stroke: #6f86ff;
-  stroke-width: 3;
+  stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
 }
 
 .pointActive {
-  fill: #6f86ff;
-  stroke: #b8c5ff;
+  fill: #f4f4f4;
+  stroke: #6f86ff;
 }
 
 .revenuePoint {
   fill: #151515;
   stroke: #66d59a;
-  stroke-width: 2.5;
+  stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
 }
 
 .benchmarkPoint {
   fill: #151515;
   stroke: #f3a43d;
-  stroke-width: 2;
+  stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
 }
 
@@ -398,18 +485,18 @@
 }
 
 .clientsCallout {
-  fill: rgba(89, 112, 212, 0.72);
-  stroke: rgba(147, 167, 255, 0.4);
+  fill: rgba(74, 95, 180, 0.92);
+  stroke: rgba(145, 164, 255, 0.18);
 }
 
 .idealCallout {
-  fill: rgba(69, 125, 93, 0.78);
-  stroke: rgba(102, 213, 154, 0.38);
+  fill: rgba(88, 135, 99, 0.92);
+  stroke: rgba(160, 225, 181, 0.16);
 }
 
 .revenueCallout {
-  fill: rgba(110, 83, 38, 0.82);
-  stroke: rgba(245, 195, 0, 0.34);
+  fill: rgba(133, 97, 47, 0.94);
+  stroke: rgba(255, 210, 134, 0.18);
 }
 
 .calloutText {
@@ -465,9 +552,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 22px;
-  color: #c8c8c8;
-  font-size: 12px;
+  gap: 30px;
+  color: #8e8e8e;
+  font-size: 13px;
 }
 
 .chartLegend span {
@@ -477,10 +564,11 @@
 }
 
 .chartLegend i {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
   display: inline-block;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08) inset;
 }
 
 .legendClients {
@@ -664,6 +752,11 @@
 
   .lineChart {
     height: 200px;
+  }
+
+  .chartControls {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .chartCard,
