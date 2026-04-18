@@ -220,12 +220,19 @@
   padding: 24px 28px 18px;
 }
 
+.chartCard {
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(31, 31, 31, 0.98), rgba(28, 28, 28, 0.98)) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) border-box;
+}
+
 .sectionHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 8px;
+  margin-bottom: 18px;
 }
 
 .sectionHeader span {
@@ -286,7 +293,7 @@
   gap: 0;
   padding: 4px;
   border-radius: 10px;
-  background: #252525;
+  background: #262626;
 }
 
 .chartControlButton {
@@ -311,8 +318,8 @@
 }
 
 .chartControlButtonActive {
-  background: #383838;
-  border-color: #414141;
+  background: #3a3a3a;
+  border-color: #454545;
 }
 
 .chartPeriodPicker {
@@ -373,14 +380,14 @@
 .axisLabel,
 .monthLabel {
   fill: #8e8c88;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .monthLabel {
   fill: #8c8b87;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .gridLine {
@@ -405,14 +412,17 @@
 
 .areaPath {
   fill: url("#clientsLineFill");
+  opacity: 0.88;
 }
 
 .revenueAreaPath {
   fill: url("#revenueLineFill");
+  opacity: 0.9;
 }
 
 .benchmarkAreaPath {
   fill: url("#benchmarkLineFill");
+  opacity: 0.92;
 }
 
 .linePath {
@@ -459,7 +469,7 @@
   stroke: #6f86ff;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.18));
+  filter: drop-shadow(0 0 6px rgba(111, 134, 255, 0.18));
 }
 
 .pointActive {
@@ -472,7 +482,7 @@
   stroke: #66d59a;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.18));
+  filter: drop-shadow(0 0 6px rgba(102, 213, 154, 0.16));
 }
 
 .benchmarkPoint {
@@ -480,7 +490,7 @@
   stroke: #f3a43d;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.18));
+  filter: drop-shadow(0 0 6px rgba(243, 164, 61, 0.16));
 }
 
 .eventHalo {
@@ -567,6 +577,7 @@
   gap: 28px;
   color: #8e8e8e;
   font-size: 13px;
+  margin-top: 10px;
 }
 
 .chartLegend span {

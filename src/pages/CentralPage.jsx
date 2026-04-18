@@ -1,15 +1,15 @@
-﻿// ================================================================
+// ================================================================
 //  CentralPage
 //  Visual portado do DashboardView do frontend real:
-//    - 5 cards mÃ©trica (Ativos Â· MRR Â· Receita Nova Â· Ticket Â· Churn)
+//    - 5 cards métrica (Ativos · MRR · Receita Nova · Ticket · Churn)
 //      em grid 3 colunas, com delta no topline e gauge opcional no pÃ©.
-//    - Card "chart": barras dos Ãºltimos 6 meses com tooltip.
+//    - Card "chart": barras dos últimos 6 meses com tooltip.
 //    - Card "alerta": contratos vencendo em 30 dias.
 //
-//  CÃ¡lculos: utils/centralMetrics.js (computeCentralMetrics,
+//  Cálculos: utils/centralMetrics.js (computeCentralMetrics,
 //  buildBarChartData, clientsEndingSoon).
 //
-//  PanelHeader: tÃ­tulo "Central Â· Abril 2026" + seletor de perÃ­odo
+//  PanelHeader: título "Central · Abril 2026" + seletor de período
 //  como action.
 // ================================================================
 
@@ -389,7 +389,7 @@ export default function CentralPage() {
     setChartPickerOpen(false);
   };
 
-  // Registra tÃ­tulo + seletor de perÃ­odo no panelHeader do AppShell.
+  // Registra título + seletor de período no panelHeader do AppShell.
   useEffect(() => {
     const periodValue = `${period.y}-${period.m}`;
     const handleChange = (e) => {
@@ -400,7 +400,7 @@ export default function CentralPage() {
     const title = (
       <>
         <strong>Central</strong>
-        <span>Â·</span>
+        <span>·</span>
         <span>{`${MONTHS_FULL[period.m]} ${period.y}`}</span>
       </>
     );
@@ -408,13 +408,13 @@ export default function CentralPage() {
     const actions = (
       <div className={styles.periodControl}>
         {!isNow && (
-          <span className={styles.historyChip}>HistÃ³rico</span>
+          <span className={styles.historyChip}>Histórico</span>
         )}
         <select
           className={styles.linearSelect}
           value={periodValue}
           onChange={handleChange}
-          aria-label="PerÃ­odo do dashboard"
+          aria-label="Período do dashboard"
         >
           {periodOptions.map((p) => (
             <option key={`${p.y}-${p.m}`} value={`${p.y}-${p.m}`}>
@@ -468,13 +468,13 @@ export default function CentralPage() {
 
           <MetricCard
             icon={<TargetIcon size={16} strokeWidth={1.8} />}
-            label="Novos no mÃªs"
+            label="Novos no mês"
             badge={`${Math.round(newClientPct)}%`}
             badgeTone="green"
             primary={formatCompactValue(dashboardMetrics.new_clients)}
             helperTitle={`Entraram em ${MONTHS[period.m]}`}
-            helperText={`${dashboardMetrics.new_clients} novos clientes no mÃªs selecionado`}
-            legendPrimary="Novos no mÃªs"
+            helperText={`${dashboardMetrics.new_clients} novos clientes no mês selecionado`}
+            legendPrimary="Novos no mês"
             legendSecondary="Base total"
           />
 
@@ -492,13 +492,13 @@ export default function CentralPage() {
 
           <MetricCard
             icon={<TrendingUpIcon size={16} strokeWidth={1.8} />}
-            label="Churn do mÃªs"
+            label="Churn do mês"
             badge={fmtPct(churnPeriodPct)}
             badgeTone="red"
             primary={formatCompactValue(dashboardMetrics.churn_count)}
-            helperTitle="SaÃ­das no mÃªs selecionado"
+            helperTitle="Saídas no mês selecionado"
             helperText={`${dashboardMetrics.churn_count} cancelamentos e ${fmtMoney(dashboardMetrics.lost_revenue)} de receita perdida`}
-            legendPrimary="Churns no mÃªs"
+            legendPrimary="Churns no mês"
             legendSecondary="Base total"
           />
         </section>
@@ -519,7 +519,7 @@ export default function CentralPage() {
             delta={
               mrrDelta === null ? (
                 <span className={`${styles.delta} ${styles.delta_nd}`}>
-                  Primeiro mÃªs
+                  Primeiro mês
                 </span>
               ) : (
                 <span
@@ -543,7 +543,7 @@ export default function CentralPage() {
 
         <section className={styles.cardGrid}>
           <MetricCard
-            label="Ticket MÃ©dio"
+            label="Ticket Médio"
             value={
               dashboardMetrics.average_ticket > 0
                 ? fmtMoney(dashboardMetrics.average_ticket)
@@ -553,7 +553,7 @@ export default function CentralPage() {
           />
 
           <MetricCard
-            label="Receita Perdida no MÃªs"
+            label="Receita Perdida no Mês"
             value={fmtMoney(dashboardMetrics.lost_revenue)}
             sub={<> <b>{dashboardMetrics.churn_count}</b> churns em {MONTHS[period.m]}</>}
           />
@@ -572,7 +572,7 @@ export default function CentralPage() {
         </section>
           </>
         )}
-        {/* --- GrÃ¡fico de linha --- */}
+        {/* --- Gráfico de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
             <button type="button" className={styles.chartTitleButton}>
@@ -712,7 +712,7 @@ export default function CentralPage() {
                     key={`${point.year}-${point.month}`}
                     className={styles.dataNode}
                     tabIndex="0"
-                    aria-label={`${MONTHS[point.month]}: ${point.contracts} contratos fechados, meta ideal ${point.ideal} e super meta ${point.stretch}`}
+                    aria-label={`${point.label}: ${point.contracts} contratos fechados, meta ideal ${point.ideal} e super meta ${point.stretch}`}
                   >
                     <line
                       x1={point.x}
@@ -727,7 +727,7 @@ export default function CentralPage() {
                       textAnchor="middle"
                       className={styles.monthLabel}
                     >
-                      {MONTHS[point.month]}
+                      {point.label}
                     </text>
                     <circle
                       cx={stretchPoint.x}
@@ -765,7 +765,7 @@ export default function CentralPage() {
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
-                          {`${fmtInt(point.ideal)} contratos`}
+                          {`${fmtInt(point.ideal)} Contratos`}
                         </text>
                         <path
                           d={`M ${idealPoint.x - 6} ${idealPoint.y - 32} L ${idealPoint.x} ${idealPoint.y - 24} L ${idealPoint.x + 6} ${idealPoint.y - 32} Z`}
@@ -789,7 +789,7 @@ export default function CentralPage() {
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
-                          {`${fmtInt(point.contracts)} contrato${
+                          {`${fmtInt(point.contracts)} Contrato${
                             point.contracts === 1 ? '' : 's'
                           }`}
                         </text>
@@ -815,7 +815,7 @@ export default function CentralPage() {
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
-                          {`${fmtInt(point.stretch)} contratos`}
+                          {`${fmtInt(point.stretch)} Contratos`}
                         </text>
                         <path
                           d={`M ${stretchPoint.x - 6} ${stretchPoint.y - 32} L ${stretchPoint.x} ${stretchPoint.y - 24} L ${stretchPoint.x + 6} ${stretchPoint.y - 32} Z`}
@@ -831,7 +831,7 @@ export default function CentralPage() {
                       className={styles.pointTip}
                     >
                       <div className={styles.hudPanel}>
-                        <strong>{MONTHS[point.month]} {point.year}</strong>
+                        <strong>{point.label}</strong>
                         <span>Contratos fechados: {fmtInt(point.contracts)}</span>
                         <span>Meta ideal: {fmtInt(point.ideal)}</span>
                         <span>Super meta: {fmtInt(point.stretch)}</span>
@@ -844,7 +844,7 @@ export default function CentralPage() {
             <div className={styles.chartLegend}>
               <span>
                 <i className={styles.legendClients} />
-                Contratos fechados por mês
+                Contratos fechados por dia
               </span>
               <span>
                 <i className={styles.legendRevenue} />
@@ -877,7 +877,7 @@ export default function CentralPage() {
                     {daysLeft} dia{daysLeft === 1 ? '' : 's'}
                   </span>
                   <span className={styles.alertFee}>
-                    {fmtMoney(client.fee)}/mÃªs
+                    {fmtMoney(client.fee)}/mês
                   </span>
                 </div>
               ))}
