@@ -469,13 +469,13 @@ export default function CentralPage() {
 
           <MetricCard
             icon={<TargetIcon size={16} strokeWidth={1.8} />}
-            label="Novos no mes"
+            label="Novos no mês"
             badge={`${Math.round(newClientPct)}%`}
             badgeTone="green"
             primary={formatCompactValue(dashboardMetrics.new_clients)}
             helperTitle={`Entraram em ${MONTHS[period.m]}`}
-            helperText={`${dashboardMetrics.new_clients} novos clientes no mes selecionado`}
-            legendPrimary="Novos no mes"
+            helperText={`${dashboardMetrics.new_clients} novos clientes no mês selecionado`}
+            legendPrimary="Novos no mês"
             legendSecondary="Base total"
           />
 
@@ -493,13 +493,13 @@ export default function CentralPage() {
 
           <MetricCard
             icon={<TrendingUpIcon size={16} strokeWidth={1.8} />}
-            label="Churn do mes"
+            label="Churn do mês"
             badge={fmtPct(churnPeriodPct)}
             badgeTone="red"
             primary={formatCompactValue(dashboardMetrics.churn_count)}
-            helperTitle="Saidas no mes selecionado"
+            helperTitle="Saídas no mês selecionado"
             helperText={`${dashboardMetrics.churn_count} cancelamentos e ${fmtMoney(dashboardMetrics.lost_revenue)} de receita perdida`}
-            legendPrimary="Churns no mes"
+            legendPrimary="Churns no mês"
             legendSecondary="Base total"
           />
         </section>
