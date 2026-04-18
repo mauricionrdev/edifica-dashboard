@@ -7,14 +7,14 @@
 
 .shell {
   min-height: 100vh;
-  background: #121212;
+  background: #0d0d0d;
 }
 
 .main {
   margin-left: var(--sw);
   min-height: 100vh;
   position: relative;
-  background: #121212;
+  background: #0d0d0d;
   padding-top: var(--top-shell-height, 52px);
   box-sizing: border-box;
 }
@@ -23,14 +23,14 @@
   content: '';
   display: block;
   height: 16px;
-  background: #121212;
+  background: #0d0d0d;
 }
 
 .contentFrame {
   min-height: calc(100vh - var(--top-shell-height, 52px) - 16px);
   margin-right: 16px;
-  background: #1c1c1e;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #171717;
+  border: 1px solid #2d2d2d;
   border-radius: 12px;
   overflow: visible;
   display: flex;
@@ -46,8 +46,8 @@
   justify-content: space-between;
   gap: 20px;
   padding: 0 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: #1c1c1e;
+  border-bottom: 1px solid #2d2d2d;
+  background: transparent;
   flex-shrink: 0;
 }
 
