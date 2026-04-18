@@ -266,14 +266,18 @@
 }
 
 :global(#vApp .tbar) {
-  padding: 0 68px 0 20px !important;
+  padding: 0 20px !important;
+}
+
+:global(#vApp .tbar-actions) {
+  margin-right: 52px !important;
 }
 
 .controlRail {
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  margin-left: auto;
+  margin-left: 0;
   flex: 0 0 auto;
 }
 
