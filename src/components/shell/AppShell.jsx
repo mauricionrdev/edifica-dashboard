@@ -133,7 +133,7 @@ export default function AppShell() {
     <div id="vApp" className={styles.shell}>
       <Sidebar clients={clients} squads={squads} />
       <div className={styles.main}>
-        <Topbar />
+        <Topbar clients={clients} squads={squads} />
         <div className={styles.contentFrame}>
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>{panelHeader.title}</div>

@@ -38,6 +38,9 @@ export function ChevronLeftIcon(props) {
 export function ChevronRightIcon(props) {
   return <BaseIcon {...props}><path d="m9 18 6-6-6-6" /></BaseIcon>;
 }
+export function ChevronDownIcon(props) {
+  return <BaseIcon {...props}><path d="m6 9 6 6 6-6" /></BaseIcon>;
+}
 export function LayoutDashboardIcon(props) {
   return <BaseIcon {...props}><rect x="3" y="3" width="7" height="8" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="11" width="7" height="10" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /></BaseIcon>;
 }

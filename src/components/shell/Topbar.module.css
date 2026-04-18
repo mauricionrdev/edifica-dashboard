@@ -255,3 +255,240 @@
     right: -4px;
   }
 }
+
+:global(#vApp .tbar-leading) {
+  flex: 1 1 auto;
+  min-width: 240px;
+}
+
+:global(#vApp .tbar-center) {
+  flex: 0 1 auto;
+}
+
+.searchBox {
+  position: relative;
+  width: min(300px, 100%);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #2d2d2d;
+  border-radius: 12px;
+  background: #151515;
+  color: #a1a1aa;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.searchBox:focus-within {
+  border-color: #3a3a3a;
+  background: #171717;
+}
+
+.searchBox input {
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  padding: 0 12px 0 15px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #f2f2f2;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 450;
+}
+
+.searchBox input::placeholder {
+  color: #8f8f8f;
+}
+
+.searchButton {
+  width: 42px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 0 12px 12px 0;
+  background: transparent;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.searchButton:hover,
+.searchButton:focus-visible {
+  color: #f2f2f2;
+  outline: none;
+}
+
+.searchResults {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 90;
+  width: min(420px, calc(100vw - 32px));
+  padding: 8px;
+  border: 1px solid #2d2d2d;
+  border-radius: 12px;
+  background: #151515;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.48);
+}
+
+.searchResult,
+.searchEmpty {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #f2f2f2;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.searchResult:hover,
+.searchResult:focus-visible,
+.searchEmpty:hover,
+.searchEmpty:focus-visible {
+  background: rgba(255, 255, 255, 0.05);
+  outline: none;
+}
+
+.searchResult span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.searchResult strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.searchResult small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8f8f8f;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.searchResult em {
+  flex: 0 0 auto;
+  color: #f5c300;
+  font-size: 10px;
+  line-height: 1;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.searchEmpty {
+  color: #a1a1aa;
+  font-size: 13px;
+}
+
+.accountCluster {
+  min-height: 40px;
+  gap: 0;
+}
+
+.profileButton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #f2f2f2;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profileButton:hover,
+.profileButton:focus-visible,
+.profileButton[aria-expanded='true'] {
+  outline: none;
+}
+
+.profileButton:hover .accountAvatar,
+.profileButton:focus-visible .accountAvatar,
+.profileButton[aria-expanded='true'] .accountAvatar {
+  filter: brightness(1.06);
+}
+
+.accountAvatar {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  border: 1px solid #f5c300;
+  box-shadow: 0 0 0 2px rgba(245, 195, 0, 0.12);
+}
+
+.accountMeta {
+  display: flex;
+}
+
+.accountMeta strong {
+  max-width: 150px;
+  font-size: 15px;
+  line-height: 1.08;
+  font-weight: 680;
+}
+
+.accountMeta span {
+  max-width: 150px;
+  margin-top: 3px;
+  color: #9ca3af;
+  font-size: 13px;
+  line-height: 1.1;
+  font-weight: 420;
+}
+
+.chevron {
+  margin-left: 10px;
+  color: #d4d4d8;
+  transition: transform 0.18s ease;
+}
+
+.profileButton[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+.profileMenu {
+  top: calc(100% + 8px);
+}
+
+@media (max-width: 900px) {
+  .searchBox {
+    width: min(260px, 100%);
+  }
+}
+
+@media (max-width: 720px) {
+  :global(#vApp .tbar-leading) {
+    min-width: 0;
+  }
+
+  .searchBox {
+    width: min(210px, 100%);
+  }
+
+  .accountMeta,
+  .chevron {
+    display: none;
+  }
+}

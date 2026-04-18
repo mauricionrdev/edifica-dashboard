@@ -8,7 +8,7 @@
 // ================================================================
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { isAdminUser } from '../utils/roles.js';
@@ -39,10 +39,11 @@ export default function ClientsPage() {
     useOutletContext();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const admin = isAdminUser(user);
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(() => searchParams.get('search') || '');
   const [scope, setScope] = useState('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [detailId, setDetailId] = useState(null);
@@ -110,7 +111,12 @@ export default function ClientsPage() {
   }, [counts.all, counts.active, setPanelHeader]);
 
   const openDetail = useCallback((id) => setDetailId(id), []);
-  const closeDetail = useCallback(() => setDetailId(null), []);
+  const closeDetail = useCallback(() => {
+    setDetailId(null);
+    const next = new URLSearchParams(searchParams);
+    next.delete('client');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const selectedClient = useMemo(
     () =>
@@ -118,6 +124,29 @@ export default function ClientsPage() {
         ? (clients || []).find((c) => c.id === detailId) || null
         : null,
     [detailId, clients]
+  );
+
+  useEffect(() => {
+    const search = searchParams.get('search') || '';
+    setQuery(search);
+  }, [searchParams]);
+
+  useEffect(() => {
+    const clientId = searchParams.get('client');
+    if (!clientId || !Array.isArray(clients) || clients.length === 0) return;
+    if (clients.some((c) => c.id === clientId)) setDetailId(clientId);
+  }, [clients, searchParams]);
+
+  const handleQueryChange = useCallback(
+    (nextQuery) => {
+      setQuery(nextQuery);
+      const next = new URLSearchParams(searchParams);
+      if (nextQuery.trim()) next.set('search', nextQuery);
+      else next.delete('search');
+      next.delete('client');
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
   );
 
   // Depois de criar, abre o drawer do novo cliente (espelha o real)
@@ -227,7 +256,7 @@ export default function ClientsPage() {
             <input
               type="search"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => handleQueryChange(e.target.value)}
               placeholder="Buscar cliente, squad ou gestor…"
               aria-label="Buscar"
             />
