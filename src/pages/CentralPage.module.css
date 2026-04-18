@@ -256,12 +256,12 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #d7d3cb;
+  color: #d8d4cd;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   font: inherit;
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1;
   font-weight: 760;
   letter-spacing: -0.03em;
@@ -276,17 +276,26 @@
 .chartControls {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   flex-wrap: wrap;
+}
+
+.chartControlGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 4px;
+  border-radius: 10px;
+  background: #252525;
 }
 
 .chartControlButton {
   min-height: 40px;
   padding: 0 18px;
-  border: 1px solid #2c2c2c;
+  border: 1px solid transparent;
   border-radius: 10px;
   background: #2a2a2a;
-  color: #e3e0db;
+  color: #dfdcd7;
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -303,7 +312,7 @@
 
 .chartControlButtonActive {
   background: #383838;
-  border-color: #444;
+  border-color: #414141;
 }
 
 .chartPeriodPicker {
@@ -338,7 +347,7 @@
 /* --- Chart de linha -------------------------------------------- */
 .lineChartWrap {
   position: relative;
-  min-height: 410px;
+  min-height: 424px;
   padding: 0;
   isolation: isolate;
 }
@@ -356,7 +365,7 @@
 
 .lineChart {
   width: 100%;
-  height: 360px;
+  height: 372px;
   display: block;
   overflow: hidden;
 }
@@ -375,7 +384,7 @@
 }
 
 .gridLine {
-  stroke: rgba(255, 255, 255, 0.06);
+  stroke: rgba(255, 255, 255, 0.055);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
   stroke-dasharray: 1 6;
@@ -450,6 +459,7 @@
   stroke: #6f86ff;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.18));
 }
 
 .pointActive {
@@ -462,6 +472,7 @@
   stroke: #66d59a;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.18));
 }
 
 .benchmarkPoint {
@@ -469,6 +480,7 @@
   stroke: #f3a43d;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.18));
 }
 
 .eventHalo {
@@ -501,7 +513,7 @@
 
 .calloutText {
   fill: #f4f4f4;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
 }
 
@@ -552,7 +564,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 30px;
+  gap: 28px;
   color: #8e8e8e;
   font-size: 13px;
 }

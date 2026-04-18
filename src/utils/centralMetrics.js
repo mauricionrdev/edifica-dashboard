@@ -167,6 +167,56 @@ export function buildContractTrendData(clients, year, month0, months = 6) {
   });
 }
 
+const WEEKDAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+
+function weekdayIndexFromIso(isoDate) {
+  const date = new Date(`${isoDate}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return -1;
+  const weekday = date.getDay();
+  if (weekday === 0) return -1;
+  return weekday - 1;
+}
+
+export function buildWeeklyContractTrendData(clients, year, month0) {
+  const all = Array.isArray(clients) ? clients : [];
+  const prefix = monthKey(year, month0);
+
+  const base = WEEKDAY_LABELS.map((label, index) => ({
+    label,
+    weekday: index,
+    contracts: 0,
+    ideal: 0,
+    stretch: 0,
+  }));
+
+  all.forEach((client) => {
+    if (client.status === 'churn') return;
+    if (!client.startDate || !String(client.startDate).startsWith(prefix)) return;
+    const weekdayIndex = weekdayIndexFromIso(String(client.startDate).slice(0, 10));
+    if (weekdayIndex < 0 || weekdayIndex > 5) return;
+    const row = base[weekdayIndex];
+    row.contracts += 1;
+    row.ideal += Number(client.metaLucro) || 0;
+  });
+
+  const fallbackIdeal = Math.max(
+    ...base.map((row) => row.contracts * 8),
+    0
+  );
+
+  return base.map((row) => {
+    const ideal = row.ideal > 0 ? row.ideal : row.contracts > 0 ? row.contracts * 8 : fallbackIdeal > 0 ? Math.round(fallbackIdeal * 0.4) : 0;
+    const stretch =
+      ideal > 0 ? Math.max(Math.round(ideal * 1.6), row.contracts * 12) : 0;
+
+    return {
+      ...row,
+      ideal,
+      stretch,
+    };
+  });
+}
+
 /**
  * Lista clientes ativos cujo endDate expira nos próximos `days` dias
  * contados de `today`. Ignora datas inválidas e clientes em churn.

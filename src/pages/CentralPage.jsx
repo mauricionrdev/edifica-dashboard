@@ -25,7 +25,7 @@ import {
   UsersIcon,
 } from '../components/ui/Icons.jsx';
 import {
-  buildContractTrendData,
+  buildWeeklyContractTrendData,
   clientsEndingSoon,
   computeCentralMetrics,
 } from '../utils/centralMetrics.js';
@@ -55,8 +55,7 @@ function buildPeriodOptions() {
 
 const CHART_W = 1200;
 const CHART_H = 360;
-const CHART_PAD = { top: 24, right: 28, bottom: 52, left: 38 };
-const SERIES_MONTHS = 6;
+const CHART_PAD = { top: 24, right: 20, bottom: 46, left: 60 };
 
 function niceMax(value) {
   if (value <= 4) return 4;
@@ -166,6 +165,12 @@ function smoothPath(points) {
     path.push(`C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`);
   }
   return path.join(' ');
+}
+
+function buildLinearPath(points) {
+  if (points.length === 0) return '';
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+  return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
 }
 
 function formatCompactValue(value) {
@@ -313,15 +318,18 @@ export default function CentralPage() {
   );
 
   const contractTrend = useMemo(
-    () => buildContractTrendData(clients, period.y, period.m, SERIES_MONTHS),
+    () => buildWeeklyContractTrendData(clients, period.y, period.m),
     [clients, period]
   );
-  const chartMax = niceMax(
-    Math.max(
-      ...contractTrend.map((row) => row.contracts),
-      ...contractTrend.map((row) => row.ideal),
-      ...contractTrend.map((row) => row.stretch),
-      1
+  const chartMax = Math.max(
+    100,
+    niceMax(
+      Math.max(
+        ...contractTrend.map((row) => row.contracts),
+        ...contractTrend.map((row) => row.ideal),
+        ...contractTrend.map((row) => row.stretch),
+        1
+      )
     )
   );
   const chartPoints = useMemo(
@@ -336,10 +344,10 @@ export default function CentralPage() {
     () => buildChartPoints(contractTrend, chartMax, 'stretch'),
     [contractTrend, chartMax]
   );
-  const lineD = useMemo(() => smoothPath(chartPoints), [chartPoints]);
-  const idealLineD = useMemo(() => smoothPath(idealPoints), [idealPoints]);
+  const lineD = useMemo(() => buildLinearPath(chartPoints), [chartPoints]);
+  const idealLineD = useMemo(() => buildLinearPath(idealPoints), [idealPoints]);
   const stretchLineD = useMemo(
-    () => smoothPath(stretchPoints),
+    () => buildLinearPath(stretchPoints),
     [stretchPoints]
   );
   const baselineY = CHART_H - CHART_PAD.bottom;
@@ -352,13 +360,7 @@ export default function CentralPage() {
   const stretchAreaD = stretchLineD
     ? `${stretchLineD} L ${stretchPoints.at(-1).x} ${baselineY} L ${stretchPoints[0].x} ${baselineY} Z`
     : '';
-  const chartTicks = [
-    chartMax,
-    chartMax * 0.75,
-    chartMax * 0.5,
-    chartMax * 0.25,
-    0,
-  ];
+  const chartTicks = [100, 70, 50, 30, 10, 0].filter((tick) => tick <= chartMax || tick === 0);
   const peakClientsIndex = useMemo(() => {
     if (contractTrend.length === 0) return -1;
     return contractTrend.reduce(
@@ -578,26 +580,28 @@ export default function CentralPage() {
               <ChevronDownIcon size={16} strokeWidth={2} />
             </button>
             <div className={styles.chartControls}>
-              <button
-                type="button"
-                className={`${styles.chartControlButton} ${
-                  isNow ? styles.chartControlButtonActive : ''
-                }`}
-                onClick={() => setPeriodFromOffset(0)}
-              >
-                <ClipboardListIcon size={14} strokeWidth={1.8} />
-                <span>Mês atual</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.chartControlButton} ${
-                  isPreviousPeriod ? styles.chartControlButtonActive : ''
-                }`}
-                onClick={() => setPeriodFromOffset(-1)}
-              >
-                <ClipboardListIcon size={14} strokeWidth={1.8} />
-                <span>Mês anterior</span>
-              </button>
+              <div className={styles.chartControlGroup}>
+                <button
+                  type="button"
+                  className={`${styles.chartControlButton} ${
+                    isNow ? styles.chartControlButtonActive : ''
+                  }`}
+                  onClick={() => setPeriodFromOffset(0)}
+                >
+                  <ClipboardListIcon size={14} strokeWidth={1.8} />
+                  <span>Mês atual</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.chartControlButton} ${
+                    isPreviousPeriod ? styles.chartControlButtonActive : ''
+                  }`}
+                  onClick={() => setPeriodFromOffset(-1)}
+                >
+                  <ClipboardListIcon size={14} strokeWidth={1.8} />
+                  <span>Mês anterior</span>
+                </button>
+              </div>
               <div className={styles.chartPeriodPicker}>
                 <button
                   type="button"
@@ -748,9 +752,9 @@ export default function CentralPage() {
                     {index === peakIdealIndex && point.ideal > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={idealPoint.x - 46}
-                          y={idealPoint.y - 58}
-                          width="92"
+                          x={idealPoint.x - 38}
+                          y={idealPoint.y - 54}
+                          width="76"
                           height="26"
                           rx="6"
                           className={styles.idealCallout}
@@ -772,9 +776,9 @@ export default function CentralPage() {
                     {index === peakClientsIndex && point.contracts > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={point.x - 50}
-                          y={point.y - 58}
-                          width="100"
+                          x={point.x - 38}
+                          y={point.y - 54}
+                          width="76"
                           height="26"
                           rx="6"
                           className={styles.clientsCallout}
@@ -798,9 +802,9 @@ export default function CentralPage() {
                     {index === contractTrend.length - 1 && point.stretch > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={stretchPoint.x - 52}
-                          y={stretchPoint.y - 58}
-                          width="104"
+                          x={stretchPoint.x - 40}
+                          y={stretchPoint.y - 54}
+                          width="80"
                           height="26"
                           rx="6"
                           className={styles.revenueCallout}
