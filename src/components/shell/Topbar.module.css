@@ -272,15 +272,15 @@
 .controlRail {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   margin-left: auto;
   flex: 0 0 auto;
 }
 
 .searchBox {
   position: relative;
-  width: 292px;
-  flex: 0 0 292px;
+  width: 300px;
+  flex: 0 0 300px;
   height: 40px;
   display: flex;
   align-items: center;
@@ -422,7 +422,7 @@
   min-height: 36px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -445,9 +445,9 @@
 }
 
 .accountAvatar {
-  width: 32px;
-  height: 32px;
-  flex-basis: 32px;
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
   border: 1px solid #f5c300;
   box-shadow: 0 0 0 2px rgba(245, 195, 0, 0.12);
 }
@@ -457,23 +457,23 @@
 }
 
 .accountMeta strong {
-  max-width: 124px;
-  font-size: 12px;
+  max-width: 138px;
+  font-size: 13px;
   line-height: 1.08;
   font-weight: 650;
 }
 
 .accountMeta span {
-  max-width: 124px;
+  max-width: 138px;
   margin-top: 2px;
   color: #9ca3af;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.1;
   font-weight: 450;
 }
 
 .chevron {
-  margin-left: 4px;
+  margin-left: 6px;
   color: #d4d4d8;
   transition: transform 0.18s ease;
 }
