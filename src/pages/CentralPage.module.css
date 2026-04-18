@@ -220,10 +220,6 @@
   padding: 24px;
 }
 
-.chartCard {
-  width: min(100%, 1143px);
-}
-
 .sectionHeader {
   min-height: 41px;
   display: flex;
