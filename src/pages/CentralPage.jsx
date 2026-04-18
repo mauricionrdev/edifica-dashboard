@@ -2,7 +2,7 @@
 //  CentralPage
 //  Visual portado do DashboardView do frontend real:
 //    - 5 cards métrica (Ativos · MRR · Receita Nova · Ticket · Churn)
-//      em grid 3 colunas, com delta no topline e gauge opcional no pÃ©.
+//      em grid 3 colunas, com delta no topline e gauge opcional no pé.
 //    - Card "chart": barras dos últimos 6 meses com tooltip.
 //    - Card "alerta": contratos vencendo em 30 dias.
 //
@@ -53,9 +53,9 @@ function buildPeriodOptions() {
   return out;
 }
 
-const CHART_W = 1200;
-const CHART_H = 360;
-const CHART_PAD = { top: 24, right: 20, bottom: 46, left: 60 };
+const CHART_W = 1560;
+const CHART_H = 448;
+const CHART_PAD = { top: 18, right: 38, bottom: 54, left: 74 };
 
 function niceMax(value) {
   if (value <= 4) return 4;
@@ -502,76 +502,6 @@ export default function CentralPage() {
             legendSecondary="Base total"
           />
         </section>
-        {false && (
-          <>
-        <section className={styles.cardGrid} aria-label="Indicadores do dashboard">
-          <MetricCard
-            label="Clientes Ativos"
-            value={dashboardMetrics.active_clients}
-            sub={<>de <b>{dashboardMetrics.total_clients}</b> cadastrados</>}
-            gaugePct={dashboardMetrics.active_ratio}
-          />
-
-          <MetricCard
-            label="MRR Atual"
-            value={fmtMoney(dashboardMetrics.current_mrr)}
-            sub="Receita Mensal Recorrente"
-            delta={
-              mrrDelta === null ? (
-                <span className={`${styles.delta} ${styles.delta_nd}`}>
-                  Primeiro mês
-                </span>
-              ) : (
-                <span
-                  className={`${styles.delta} ${
-                    mrrDelta >= 0 ? styles.delta_pos : styles.delta_neg
-                  }`}
-                >
-                  {mrrDelta >= 0 ? '+' : '-'}{' '}
-                  {Math.abs(mrrDelta).toFixed(1)}%
-                </span>
-              )
-            }
-          />
-
-          <MetricCard
-            label="Receita Nova Adicionada"
-            value={fmtMoney(dashboardMetrics.new_revenue)}
-            sub={<> <b>{dashboardMetrics.new_clients}</b> novos em {MONTHS[period.m]}</>}
-          />
-        </section>
-
-        <section className={styles.cardGrid}>
-          <MetricCard
-            label="Ticket Médio"
-            value={
-              dashboardMetrics.average_ticket > 0
-                ? fmtMoney(dashboardMetrics.average_ticket)
-                : '-'
-            }
-            sub="MRR / clientes ativos"
-          />
-
-          <MetricCard
-            label="Receita Perdida no Mês"
-            value={fmtMoney(dashboardMetrics.lost_revenue)}
-            sub={<> <b>{dashboardMetrics.churn_count}</b> churns em {MONTHS[period.m]}</>}
-          />
-
-          <MetricCard
-            label="Taxa de Churn"
-            value={
-              dashboardMetrics.churn_rate > 0
-                ? fmtPct(dashboardMetrics.churn_rate)
-                : '0%'
-            }
-            sub="Cancelamentos / total"
-            gaugePct={dashboardMetrics.churn_rate}
-            gaugeTone="red"
-          />
-        </section>
-          </>
-        )}
         {/* --- Gráfico de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
@@ -752,23 +682,23 @@ export default function CentralPage() {
                     {index === peakIdealIndex && point.ideal > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={idealPoint.x - 38}
-                          y={idealPoint.y - 54}
-                          width="76"
-                          height="26"
-                          rx="6"
+                          x={idealPoint.x - 52}
+                          y={idealPoint.y - 48}
+                          width="104"
+                          height="32"
+                          rx="3"
                           className={styles.idealCallout}
                         />
                         <text
                           x={idealPoint.x}
-                          y={idealPoint.y - 40}
+                          y={idealPoint.y - 28}
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
                           {`${fmtInt(point.ideal)} Contratos`}
                         </text>
                         <path
-                          d={`M ${idealPoint.x - 6} ${idealPoint.y - 32} L ${idealPoint.x} ${idealPoint.y - 24} L ${idealPoint.x + 6} ${idealPoint.y - 32} Z`}
+                          d={`M ${idealPoint.x - 7} ${idealPoint.y - 16} L ${idealPoint.x} ${idealPoint.y - 6} L ${idealPoint.x + 7} ${idealPoint.y - 16} Z`}
                           className={styles.idealCallout}
                         />
                       </g>
@@ -776,16 +706,16 @@ export default function CentralPage() {
                     {index === peakClientsIndex && point.contracts > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={point.x - 38}
-                          y={point.y - 54}
-                          width="76"
-                          height="26"
-                          rx="6"
+                          x={point.x - 52}
+                          y={point.y - 48}
+                          width="104"
+                          height="32"
+                          rx="3"
                           className={styles.clientsCallout}
                         />
                         <text
                           x={point.x}
-                          y={point.y - 40}
+                          y={point.y - 28}
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
@@ -794,7 +724,7 @@ export default function CentralPage() {
                           }`}
                         </text>
                         <path
-                          d={`M ${point.x - 6} ${point.y - 32} L ${point.x} ${point.y - 24} L ${point.x + 6} ${point.y - 32} Z`}
+                          d={`M ${point.x - 7} ${point.y - 16} L ${point.x} ${point.y - 6} L ${point.x + 7} ${point.y - 16} Z`}
                           className={styles.clientsCallout}
                         />
                       </g>
@@ -802,23 +732,23 @@ export default function CentralPage() {
                     {index === contractTrend.length - 1 && point.stretch > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={stretchPoint.x - 40}
-                          y={stretchPoint.y - 54}
-                          width="80"
-                          height="26"
-                          rx="6"
+                          x={stretchPoint.x - 56}
+                          y={stretchPoint.y - 48}
+                          width="112"
+                          height="32"
+                          rx="3"
                           className={styles.revenueCallout}
                         />
                         <text
                           x={stretchPoint.x}
-                          y={stretchPoint.y - 40}
+                          y={stretchPoint.y - 28}
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
                           {`${fmtInt(point.stretch)} Contratos`}
                         </text>
                         <path
-                          d={`M ${stretchPoint.x - 6} ${stretchPoint.y - 32} L ${stretchPoint.x} ${stretchPoint.y - 24} L ${stretchPoint.x + 6} ${stretchPoint.y - 32} Z`}
+                          d={`M ${stretchPoint.x - 7} ${stretchPoint.y - 16} L ${stretchPoint.x} ${stretchPoint.y - 6} L ${stretchPoint.x + 7} ${stretchPoint.y - 16} Z`}
                           className={styles.revenueCallout}
                         />
                       </g>

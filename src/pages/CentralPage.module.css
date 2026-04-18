@@ -217,22 +217,22 @@
 /* --- Cartões grandes (chart e alerta) -------------------------- */
 .chartCard,
 .alertCard {
-  padding: 24px 28px 18px;
+  padding: 34px 36px 28px;
 }
 
 .chartCard {
-  border-radius: 22px;
+  border-radius: 26px;
   background:
-    linear-gradient(180deg, rgba(31, 31, 31, 0.98), rgba(28, 28, 28, 0.98)) padding-box,
+    linear-gradient(180deg, rgba(29, 29, 29, 0.99), rgba(27, 27, 27, 0.99)) padding-box,
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) border-box;
 }
 
 .sectionHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 18px;
+  margin-bottom: 44px;
 }
 
 .sectionHeader span {
@@ -268,9 +268,9 @@
   align-items: center;
   gap: 10px;
   font: inherit;
-  font-size: 24px;
+  font-size: 29px;
   line-height: 1;
-  font-weight: 760;
+  font-weight: 780;
   letter-spacing: -0.03em;
   cursor: pointer;
 }
@@ -278,12 +278,14 @@
 .chartTitleButton svg {
   color: #ece6d8;
   opacity: 0.92;
+  width: 18px;
+  height: 18px;
 }
 
 .chartControls {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 44px;
   flex-wrap: wrap;
 }
 
@@ -291,23 +293,23 @@
   display: inline-flex;
   align-items: center;
   gap: 0;
-  padding: 4px;
+  padding: 6px;
   border-radius: 10px;
-  background: #252525;
+  background: #242424;
 }
 
 .chartControlButton {
-  min-height: 40px;
-  padding: 0 17px;
+  min-height: 45px;
+  padding: 0 25px;
   border: 1px solid transparent;
-  border-radius: 10px;
-  background: #2a2a2a;
+  border-radius: 7px;
+  background: #242424;
   color: #dfdcd7;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 11px;
   font: inherit;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -319,7 +321,7 @@
 
 .chartControlButtonActive {
   background: #3a3a3a;
-  border-color: #454545;
+  border-color: #3f3f3f;
 }
 
 .chartPeriodPicker {
@@ -354,7 +356,7 @@
 /* --- Chart de linha -------------------------------------------- */
 .lineChartWrap {
   position: relative;
-  min-height: 424px;
+  min-height: 552px;
   padding: 0;
   isolation: isolate;
 }
@@ -364,15 +366,15 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.22;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.82) 1px, transparent 1px);
-  background-size: 22px 22px;
+  opacity: 0.24;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.9) 1px, transparent 1px);
+  background-size: 24px 24px;
   mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
 }
 
 .lineChart {
   width: 100%;
-  height: 372px;
+  height: 448px;
   display: block;
   overflow: hidden;
 }
@@ -380,14 +382,14 @@
 .axisLabel,
 .monthLabel {
   fill: #8e8c88;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .monthLabel {
-  fill: #8c8b87;
-  font-size: 12px;
+  fill: #8d8b87;
+  font-size: 20px;
 }
 
 .gridLine {
@@ -428,7 +430,7 @@
 .linePath {
   fill: none;
   stroke: #6f86ff;
-  stroke-width: 2.2;
+  stroke-width: 1.65;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: none;
@@ -438,7 +440,7 @@
 .revenueLinePath {
   fill: none;
   stroke: #66d59a;
-  stroke-width: 2.2;
+  stroke-width: 1.65;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: none;
@@ -458,7 +460,7 @@
 .benchmarkLinePath {
   fill: none;
   stroke: #f3a43d;
-  stroke-width: 2.2;
+  stroke-width: 1.65;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
@@ -467,7 +469,7 @@
 .point {
   fill: #f3f6ff;
   stroke: #6f86ff;
-  stroke-width: 2.4;
+  stroke-width: 2.1;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 6px rgba(111, 134, 255, 0.18));
 }
@@ -480,7 +482,7 @@
 .revenuePoint {
   fill: #f7fffb;
   stroke: #66d59a;
-  stroke-width: 2.4;
+  stroke-width: 2.1;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 6px rgba(102, 213, 154, 0.16));
 }
@@ -488,7 +490,7 @@
 .benchmarkPoint {
   fill: #fffaf1;
   stroke: #f3a43d;
-  stroke-width: 2.4;
+  stroke-width: 2.1;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 6px rgba(243, 164, 61, 0.16));
 }
@@ -523,8 +525,8 @@
 
 .calloutText {
   fill: #f4f4f4;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 650;
 }
 
 .dataNode {
@@ -574,21 +576,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 26px;
+  gap: 42px;
   color: #8e8e8e;
-  font-size: 13px;
-  margin-top: 10px;
+  font-size: 17px;
+  margin-top: 20px;
 }
 
 .chartLegend span {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 10px;
 }
 
 .chartLegend i {
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
   border-radius: 999px;
   display: inline-block;
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.34) inset;
