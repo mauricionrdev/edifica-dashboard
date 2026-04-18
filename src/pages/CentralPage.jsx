@@ -71,25 +71,20 @@ const CHART_TICKS = [
   { value: 0, y: 314.821 },
 ];
 
-function niceMax(value) {
-  if (value <= 4) return 4;
-  if (value <= 8) return 8;
-  if (value <= 16) return 16;
-  return Math.ceil(value / 10) * 10;
-}
-
-function buildChartPoints(rows, maxValue, valueKey) {
-  const innerH = CHART_BASELINE - CHART_TOP;
+function buildChartPoints(rows, valueKey, visualTop, visualBottom) {
+  const values = rows.map((row) => Number(row[valueKey]) || 0);
+  const maxValue = Math.max(...values, 0);
+  const minValue = Math.min(...values, 0);
+  const range = maxValue - minValue;
 
   return rows.map((row, index) => ({
     ...row,
     year: row.y,
     month: row.m,
     x: CHART_DATA_X[index] ?? CHART_DATA_X.at(-1),
-    y:
-      CHART_TOP +
-      innerH -
-      ((Number(row[valueKey]) || 0) / maxValue) * innerH,
+    y: range > 0
+      ? visualBottom - (((Number(row[valueKey]) || 0) - minValue) / range) * (visualBottom - visualTop)
+      : visualBottom,
   }));
 }
 
@@ -333,28 +328,17 @@ export default function CentralPage() {
     () => buildWeeklyContractTrendData(clients, period.y, period.m),
     [clients, period]
   );
-  const chartMax = Math.max(
-    100,
-    niceMax(
-      Math.max(
-        ...contractTrend.map((row) => row.contracts),
-        ...contractTrend.map((row) => row.ideal),
-        ...contractTrend.map((row) => row.stretch),
-        1
-      )
-    )
-  );
   const chartPoints = useMemo(
-    () => buildChartPoints(contractTrend, chartMax, 'contracts'),
-    [contractTrend, chartMax]
+    () => buildChartPoints(contractTrend, 'contracts', 216.44, 302.998),
+    [contractTrend]
   );
   const idealPoints = useMemo(
-    () => buildChartPoints(contractTrend, chartMax, 'ideal'),
-    [contractTrend, chartMax]
+    () => buildChartPoints(contractTrend, 'ideal', 129.882, 284.668),
+    [contractTrend]
   );
   const stretchPoints = useMemo(
-    () => buildChartPoints(contractTrend, chartMax, 'stretch'),
-    [contractTrend, chartMax]
+    () => buildChartPoints(contractTrend, 'stretch', 44.3417, 195.055),
+    [contractTrend]
   );
   const lineD = useMemo(() => buildLinearPath(chartPoints), [chartPoints]);
   const idealLineD = useMemo(() => buildLinearPath(idealPoints), [idealPoints]);

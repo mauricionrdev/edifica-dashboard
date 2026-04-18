@@ -399,7 +399,7 @@
 /* --- Chart de linha -------------------------------------------- */
 .lineChartWrap {
   position: relative;
-  min-height: 421px;
+  min-height: 389px;
   padding: 0;
   isolation: isolate;
 }
@@ -630,14 +630,14 @@
 }
 
 .chartLegend {
-  min-height: 24px;
+  min-height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 44px;
   color: #919191;
   font-size: 14px;
-  margin-top: 18px;
+  margin-top: 10px;
 }
 
 .chartLegend span {
