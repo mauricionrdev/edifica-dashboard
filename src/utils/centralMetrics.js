@@ -10,8 +10,38 @@
 
 import { monthKey } from './format.js';
 
-function isActive(c) {
-  return c.status !== 'churn';
+function parseClientDate(value) {
+  if (!value) return null;
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function monthBounds(year, month0) {
+  return {
+    start: new Date(year, month0, 1, 0, 0, 0, 0),
+    end: new Date(year, month0 + 1, 0, 23, 59, 59, 999),
+  };
+}
+
+function startedOnOrBefore(client, date) {
+  const start = parseClientDate(client.startDate);
+  return Boolean(start && start <= date);
+}
+
+function churnedOnOrBefore(client, date) {
+  const churn = parseClientDate(client.churnDate);
+  return Boolean(churn && churn <= date);
+}
+
+function activeAt(client, date) {
+  return startedOnOrBefore(client, date) && !churnedOnOrBefore(client, date);
+}
+
+function dateInMonth(value, year, month0) {
+  const date = parseClientDate(value);
+  return Boolean(
+    date && date.getFullYear() === year && date.getMonth() === month0
+  );
 }
 
 /**
@@ -27,20 +57,18 @@ function isActive(c) {
  */
 export function computeCentralMetrics(clients, year, month0) {
   const all = Array.isArray(clients) ? clients : [];
-  const active = all.filter(isActive);
-  const churned = all.filter((c) => c.status === 'churn');
+  const { start, end } = monthBounds(year, month0);
+  const signedToDate = all.filter((client) => startedOnOrBefore(client, end));
+  const active = signedToDate.filter((client) => activeAt(client, end));
+  const activeAtStart = all.filter((client) => activeAt(client, start));
 
   const mrr = active.reduce((s, c) => s + (Number(c.fee) || 0), 0);
 
-  const prefix = monthKey(year, month0);
-
-  const newInPeriod = active.filter(
-    (c) => c.startDate && String(c.startDate).startsWith(prefix)
-  );
+  const newInPeriod = all.filter((c) => dateInMonth(c.startDate, year, month0));
   const revenueNew = newInPeriod.reduce((s, c) => s + (Number(c.fee) || 0), 0);
 
-  const churnedInPeriod = churned.filter(
-    (c) => c.churnDate && String(c.churnDate).startsWith(prefix)
+  const churnedInPeriod = all.filter(
+    (c) => c.status === 'churn' && dateInMonth(c.churnDate, year, month0)
   );
   const revLost = churnedInPeriod.reduce(
     (s, c) => s + (Number(c.fee) || 0),
@@ -48,12 +76,14 @@ export function computeCentralMetrics(clients, year, month0) {
   );
 
   const churnRate =
-    all.length > 0 ? (churned.length / all.length) * 100 : 0;
+    activeAtStart.length > 0
+      ? (churnedInPeriod.length / activeAtStart.length) * 100
+      : 0;
 
   return {
     active: active.length,
-    total: all.length,
-    churned: churned.length,
+    total: signedToDate.length,
+    churned: all.filter((c) => c.status === 'churn').length,
     mrr,
     revenueNew,
     newCnt: newInPeriod.length,
@@ -83,13 +113,7 @@ export function buildBarChartData(clients, year, month0, months = 6) {
       m += 12;
       y -= 1;
     }
-    const prefix = monthKey(y, m);
-    const added = all.filter(
-      (c) =>
-        isActive(c) &&
-        c.startDate &&
-        String(c.startDate).startsWith(prefix)
-    );
+    const added = all.filter((c) => dateInMonth(c.startDate, y, m));
     out.push({
       y,
       m,
@@ -122,22 +146,12 @@ export function buildContractTrendData(clients, year, month0, months = 6) {
       y -= 1;
     }
 
-    const prefix = monthKey(y, m);
-    const signed = all.filter(
-      (c) =>
-        isActive(c) &&
-        c.startDate &&
-        String(c.startDate).startsWith(prefix)
-    );
+    const signed = all.filter((c) => dateInMonth(c.startDate, y, m));
 
     rows.push({
       y,
       m,
       cnt: signed.length,
-      contractGoal: signed.reduce(
-        (sum, client) => sum + (Number(client.metaLucro) || 0),
-        0
-      ),
       isNow: y === nowY && m === nowM,
     });
   }
@@ -151,7 +165,7 @@ export function buildContractTrendData(clients, year, month0, months = 6) {
       Math.round(avgContracts * 1.6),
       row.cnt > 0 ? row.cnt + 8 : 0
     );
-    const ideal = row.contractGoal > 0 ? row.contractGoal : derivedIdeal;
+    const ideal = derivedIdeal;
     const stretch = Math.max(
       ideal,
       Math.round(ideal * 1.55),
@@ -190,7 +204,6 @@ export function buildWeeklyContractTrendData(clients, year, month0) {
   }));
 
   all.forEach((client) => {
-    if (client.status === 'churn') return;
     if (!client.startDate || !String(client.startDate).startsWith(prefix)) return;
     const weekdayIndex = weekdayIndexFromIso(String(client.startDate).slice(0, 10));
     if (weekdayIndex < 0 || weekdayIndex > 5) return;

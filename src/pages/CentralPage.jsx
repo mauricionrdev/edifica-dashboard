@@ -370,11 +370,6 @@ export default function CentralPage() {
     dashboardMetrics.new_revenue,
     dashboardMetrics.current_mrr || dashboardMetrics.new_revenue
   );
-  const churnPeriodPct = ratioPercent(
-    dashboardMetrics.churn_count,
-    dashboardMetrics.total_clients
-  );
-
   const contractTrend = useMemo(() => {
     if (chartMode === 'weekly') {
       return buildWeeklyContractTrendData(clients, period.y, period.m);
@@ -527,10 +522,26 @@ export default function CentralPage() {
             badge={`${Math.round(dashboardMetrics.active_ratio)}%`}
             badgeTone="green"
             primary={formatCompactValue(dashboardMetrics.active_clients)}
-            helperTitle="Quantos seguem ativos?"
-            helperText={`${dashboardMetrics.active_clients} clientes ativos de ${dashboardMetrics.total_clients} cadastrados`}
+            helperTitle={`Base ativa em ${MONTHS[period.m]}`}
+            helperText={`${dashboardMetrics.active_clients} ativos de ${dashboardMetrics.total_clients} contratos assinados até o período`}
             legendPrimary="Clientes ativos"
-            legendSecondary="Base total"
+            legendSecondary="Contratos assinados"
+          />
+
+          <MetricCard
+            icon={<CoinsIcon size={16} strokeWidth={1.8} />}
+            label="MRR do período"
+            badge={
+              mrrDelta === null
+                ? 'base'
+                : `${mrrDelta >= 0 ? '+' : ''}${fmtPct(mrrDelta)}`
+            }
+            badgeTone={mrrDelta !== null && mrrDelta < 0 ? 'red' : 'green'}
+            primary={fmtMoney(dashboardMetrics.current_mrr)}
+            helperTitle="Receita recorrente ativa"
+            helperText={`MRR de fechamento para ${MONTHS_FULL[period.m]} ${period.y}`}
+            legendPrimary="MRR ativo"
+            legendSecondary="Variação mensal"
           />
 
           <MetricCard
@@ -558,9 +569,21 @@ export default function CentralPage() {
           />
 
           <MetricCard
+            icon={<TargetIcon size={16} strokeWidth={1.8} />}
+            label="Ticket médio"
+            badge={formatCompactValue(dashboardMetrics.active_clients)}
+            badgeTone="amber"
+            primary={fmtMoney(dashboardMetrics.average_ticket)}
+            helperTitle="MRR dividido pela base ativa"
+            helperText={`Ticket médio dos clientes ativos em ${MONTHS[period.m]}`}
+            legendPrimary="Ticket médio"
+            legendSecondary="Clientes ativos"
+          />
+
+          <MetricCard
             icon={<TrendingUpIcon size={16} strokeWidth={1.8} />}
             label="Churn do mês"
-            badge={fmtPct(churnPeriodPct)}
+            badge={fmtPct(dashboardMetrics.churn_rate)}
             badgeTone="red"
             primary={formatCompactValue(dashboardMetrics.churn_count)}
             helperTitle="Saídas no mês selecionado"
@@ -828,7 +851,9 @@ export default function CentralPage() {
             <div className={styles.chartLegend}>
               <span>
                 <i className={styles.legendClients} />
-                Contratos fechados por dia
+                {chartMode === 'weekly'
+                  ? 'Contratos fechados por dia'
+                  : 'Contratos fechados por mês'}
               </span>
               <span>
                 <i className={styles.legendRevenue} />
