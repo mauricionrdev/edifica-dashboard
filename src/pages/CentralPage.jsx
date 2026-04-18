@@ -16,6 +16,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
+  CoinsIcon,
+  TargetIcon,
+  TrendingUpIcon,
+  UsersIcon,
+} from '../components/ui/Icons.jsx';
+import {
   buildBarChartData,
   clientsEndingSoon,
   computeCentralMetrics,
@@ -158,25 +164,49 @@ function smoothPath(points) {
   return path.join(' ');
 }
 
-function MetricCard({ label, value, sub, delta, gaugePct, gaugeTone = 'gold' }) {
+function formatCompactValue(value) {
+  return new Intl.NumberFormat('pt-BR').format(Number(value) || 0);
+}
+
+function ratioPercent(part, total) {
+  if (!total || total <= 0) return 0;
+  return Math.max(0, Math.min((part / total) * 100, 999));
+}
+
+function MetricCard({
+  icon,
+  label,
+  badge,
+  badgeTone = 'gold',
+  primary,
+  secondary,
+  helperTitle,
+  helperText,
+  legendPrimary,
+  legendSecondary,
+}) {
   return (
     <article className={styles.metricCard}>
       <div className={styles.metricTopline}>
-        <span className={styles.metricLabel}>{label}</span>
-        {delta}
-      </div>
-      <strong className={styles.metricValue}>{value}</strong>
-      <span className={styles.metricSub}>{sub}</span>
-      {gaugePct != null && (
-        <div
-          className={`${styles.gauge} ${
-            gaugeTone === 'red' ? styles.gauge_red : ''
-          }`}
-          aria-hidden="true"
-        >
-          <span style={{ width: `${Math.min(Math.max(gaugePct, 0), 100)}%` }} />
+        <div className={styles.metricHeader}>
+          <span className={styles.metricIcon} aria-hidden="true">{icon}</span>
+          <span className={styles.metricLabel}>{label}</span>
         </div>
-      )}
+        <span className={`${styles.metricBadge} ${styles[`metricBadge_${badgeTone}`]}`}>
+          {badge}
+        </span>
+      </div>
+      <div className={styles.metricEquation}>
+        <strong className={styles.metricValue}>{primary}</strong>
+        <span className={styles.metricDivider}>/</span>
+        <span className={styles.metricTotal}>{secondary}</span>
+      </div>
+      <span className={styles.metricHelperTitle}>{helperTitle}</span>
+      <span className={styles.metricSub}>{helperText}</span>
+      <div className={styles.metricLegend}>
+        <span><i className={styles.legendDotPrimary} />{legendPrimary}</span>
+        <span><i className={styles.legendDotSecondary} />{legendSecondary}</span>
+      </div>
     </article>
   );
 }
@@ -191,9 +221,7 @@ function DashboardSkeleton() {
               <span className={`${styles.skeletonLine} ${styles.skeletonLabel}`} />
               <span className={styles.skeletonValue} />
               <span className={`${styles.skeletonLine} ${styles.skeletonSub}`} />
-              {index === 0 || index === 5 ? (
-                <span className={styles.skeletonGauge} />
-              ) : null}
+              <span className={styles.skeletonGauge} />
             </article>
           ))}
         </section>
@@ -263,6 +291,19 @@ export default function CentralPage() {
       active_ratio: activePct,
     }),
     [activePct, metrics, ticketMedio]
+  );
+
+  const newClientPct = ratioPercent(
+    dashboardMetrics.new_clients,
+    dashboardMetrics.total_clients
+  );
+  const newRevenuePct = ratioPercent(
+    dashboardMetrics.new_revenue,
+    dashboardMetrics.current_mrr || dashboardMetrics.new_revenue
+  );
+  const churnPeriodPct = ratioPercent(
+    dashboardMetrics.churn_count,
+    dashboardMetrics.total_clients
   );
 
   const rawBars = useMemo(
@@ -420,6 +461,61 @@ export default function CentralPage() {
       <div className={`${styles.workspace} ${styles.linearCardsDashboard}`}>
         <section className={styles.cardGrid} aria-label="Indicadores do dashboard">
           <MetricCard
+            icon={<UsersIcon size={16} strokeWidth={1.8} />}
+            label="Clientes ativos"
+            badge={`${Math.round(dashboardMetrics.active_ratio)}%`}
+            badgeTone="green"
+            primary={formatCompactValue(dashboardMetrics.active_clients)}
+            secondary={formatCompactValue(dashboardMetrics.total_clients)}
+            helperTitle="Quantos seguem ativos?"
+            helperText={`${dashboardMetrics.active_clients} clientes ativos de ${dashboardMetrics.total_clients} cadastrados`}
+            legendPrimary="Clientes ativos"
+            legendSecondary="Base total"
+          />
+
+          <MetricCard
+            icon={<TargetIcon size={16} strokeWidth={1.8} />}
+            label="Novos no mes"
+            badge={`${Math.round(newClientPct)}%`}
+            badgeTone="green"
+            primary={formatCompactValue(dashboardMetrics.new_clients)}
+            secondary={formatCompactValue(dashboardMetrics.total_clients)}
+            helperTitle={`Entraram em ${MONTHS[period.m]}`}
+            helperText={`${dashboardMetrics.new_clients} novos clientes no mes selecionado`}
+            legendPrimary="Novos no mes"
+            legendSecondary="Base total"
+          />
+
+          <MetricCard
+            icon={<CoinsIcon size={16} strokeWidth={1.8} />}
+            label="Receita nova"
+            badge={`${Math.round(newRevenuePct)}%`}
+            badgeTone="amber"
+            primary={fmtMoney(dashboardMetrics.new_revenue)}
+            secondary={fmtMoney(dashboardMetrics.current_mrr)}
+            helperTitle="Nova receita sobre o MRR"
+            helperText={`${dashboardMetrics.new_clients} clientes adicionaram ${fmtMoney(dashboardMetrics.new_revenue)} em ${MONTHS[period.m]}`}
+            legendPrimary="Receita nova"
+            legendSecondary="MRR atual"
+          />
+
+          <MetricCard
+            icon={<TrendingUpIcon size={16} strokeWidth={1.8} />}
+            label="Churn do mes"
+            badge={fmtPct(churnPeriodPct)}
+            badgeTone="red"
+            primary={formatCompactValue(dashboardMetrics.churn_count)}
+            secondary={formatCompactValue(dashboardMetrics.total_clients)}
+            helperTitle="Saidas no mes selecionado"
+            helperText={`${dashboardMetrics.churn_count} cancelamentos e ${fmtMoney(dashboardMetrics.lost_revenue)} de receita perdida`}
+            legendPrimary="Churns no mes"
+            legendSecondary="Base total"
+          />
+        </section>
+        {false && (
+          <>
+        <section className={styles.cardGrid} aria-label="Indicadores do dashboard">
+          <MetricCard
             label="Clientes Ativos"
             value={dashboardMetrics.active_clients}
             sub={<>de <b>{dashboardMetrics.total_clients}</b> cadastrados</>}
@@ -484,6 +580,8 @@ export default function CentralPage() {
             gaugeTone="red"
           />
         </section>
+          </>
+        )}
         {/* --- Chart de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
@@ -697,7 +795,3 @@ export default function CentralPage() {
     </div>
   );
 }
-
-
-
-

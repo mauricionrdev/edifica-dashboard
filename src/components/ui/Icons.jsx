@@ -41,6 +41,15 @@ export function ChevronRightIcon(props) {
 export function ChevronDownIcon(props) {
   return <BaseIcon {...props}><path d="m6 9 6 6 6-6" /></BaseIcon>;
 }
+export function CoinsIcon(props) {
+  return <BaseIcon {...props}><circle cx="12" cy="12" r="8" /><path d="M12 8v8" /><path d="M9.5 10.5c0-1 1-1.8 2.5-1.8s2.5.8 2.5 1.8-1 1.8-2.5 1.8-2.5.8-2.5 1.8 1 1.8 2.5 1.8 2.5-.8 2.5-1.8" /></BaseIcon>;
+}
+export function TargetIcon(props) {
+  return <BaseIcon {...props}><circle cx="12" cy="12" r="7.5" /><circle cx="12" cy="12" r="3.5" /><path d="M12 4v2.2" /><path d="M20 12h-2.2" /><path d="M12 20v-2.2" /><path d="M4 12h2.2" /></BaseIcon>;
+}
+export function TrendingUpIcon(props) {
+  return <BaseIcon {...props}><path d="M4 16l6-6 4 4 6-7" /><path d="M14 7h6v6" /></BaseIcon>;
+}
 export function LayoutDashboardIcon(props) {
   return <BaseIcon {...props}><rect x="3" y="3" width="7" height="8" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="11" width="7" height="10" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /></BaseIcon>;
 }
