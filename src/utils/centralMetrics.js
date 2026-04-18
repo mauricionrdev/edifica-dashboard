@@ -102,6 +102,32 @@ export function buildBarChartData(clients, year, month0, months = 6) {
 }
 
 /**
+ * Série de contratos fechados por mês com metas derivadas do histórico real.
+ * - contracts: quantidade de contratos iniciados no mês (startDate)
+ * - ideal: média móvel do período visível, baseada nos contratos fechados
+ * - stretch: melhor volume alcançado até o mês atual dentro da janela
+ */
+export function buildContractTrendData(clients, year, month0, months = 6) {
+  const rows = buildBarChartData(clients, year, month0, months);
+
+  return rows.map((row, index) => {
+    const slice = rows.slice(0, index + 1);
+    const sum = slice.reduce((acc, item) => acc + item.cnt, 0);
+    const best = slice.reduce(
+      (acc, item) => Math.max(acc, Number(item.cnt) || 0),
+      0
+    );
+
+    return {
+      ...row,
+      contracts: row.cnt,
+      ideal: Math.round(sum / slice.length),
+      stretch: best,
+    };
+  });
+}
+
+/**
  * Lista clientes ativos cujo endDate expira nos próximos `days` dias
  * contados de `today`. Ignora datas inválidas e clientes em churn.
  */

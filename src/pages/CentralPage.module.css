@@ -256,45 +256,6 @@
   margin-top: 6px;
 }
 
-.chartToolbar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.seriesToggle {
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid #2d2d2d;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  color: #9d9d9d;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    color 0.18s ease,
-    background-color 0.18s ease;
-}
-
-.seriesToggle:hover {
-  border-color: #3a3a3a;
-  color: #efefef;
-}
-
-.seriesToggleActive {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: #3d3d3d;
-  color: #f4f4f4;
-}
-
 /* --- Chart de linha -------------------------------------------- */
 .lineChartWrap {
   position: relative;
@@ -308,8 +269,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.28;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  opacity: 0.22;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.82) 1px, transparent 1px);
   background-size: 22px 22px;
   mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
 }
@@ -360,7 +321,7 @@
 
 .linePath {
   fill: none;
-  stroke: #f5c300;
+  stroke: #6f86ff;
   stroke-width: 3.25;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -370,7 +331,7 @@
 
 .revenueLinePath {
   fill: none;
-  stroke: #6aa6ff;
+  stroke: #66d59a;
   stroke-width: 3.25;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -390,9 +351,8 @@
 
 .benchmarkLinePath {
   fill: none;
-  stroke: #9b7cff;
-  stroke-width: 2.25;
-  stroke-dasharray: 10 8;
+  stroke: #f3a43d;
+  stroke-width: 2.75;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
@@ -400,26 +360,26 @@
 
 .point {
   fill: #151515;
-  stroke: #f5c300;
+  stroke: #6f86ff;
   stroke-width: 3;
   vector-effect: non-scaling-stroke;
 }
 
 .pointActive {
-  fill: #f5c300;
-  stroke: #fff2a8;
+  fill: #6f86ff;
+  stroke: #b8c5ff;
 }
 
 .revenuePoint {
   fill: #151515;
-  stroke: #6aa6ff;
+  stroke: #66d59a;
   stroke-width: 2.5;
   vector-effect: non-scaling-stroke;
 }
 
 .benchmarkPoint {
   fill: #151515;
-  stroke: #9b7cff;
+  stroke: #f3a43d;
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
@@ -440,6 +400,11 @@
 .clientsCallout {
   fill: rgba(89, 112, 212, 0.72);
   stroke: rgba(147, 167, 255, 0.4);
+}
+
+.idealCallout {
+  fill: rgba(69, 125, 93, 0.78);
+  stroke: rgba(102, 213, 154, 0.38);
 }
 
 .revenueCallout {
@@ -519,11 +484,11 @@
 }
 
 .legendClients {
-  background: #f5c300;
+  background: #6f86ff;
 }
 
 .legendRevenue {
-  background: #6aa6ff;
+  background: #66d59a;
 }
 
 .legendComparison {
@@ -531,7 +496,7 @@
 }
 
 .legendBenchmark {
-  background: #9b7cff;
+  background: #f3a43d;
 }
 
 /* --- Alerta de contratos vencendo ------------------------------ */
@@ -699,11 +664,6 @@
 
   .lineChart {
     height: 200px;
-  }
-
-  .chartToolbar {
-    width: 100%;
-    justify-content: flex-start;
   }
 
   .chartCard,

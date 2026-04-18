@@ -1,15 +1,15 @@
-// ================================================================
+﻿// ================================================================
 //  CentralPage
 //  Visual portado do DashboardView do frontend real:
-//    - 5 cards métrica (Ativos · MRR · Receita Nova · Ticket · Churn)
-//      em grid 3 colunas, com delta no topline e gauge opcional no pé.
-//    - Card "chart": barras dos últimos 6 meses com tooltip.
+//    - 5 cards mÃ©trica (Ativos Â· MRR Â· Receita Nova Â· Ticket Â· Churn)
+//      em grid 3 colunas, com delta no topline e gauge opcional no pÃ©.
+//    - Card "chart": barras dos Ãºltimos 6 meses com tooltip.
 //    - Card "alerta": contratos vencendo em 30 dias.
 //
-//  Cálculos: utils/centralMetrics.js (computeCentralMetrics,
+//  CÃ¡lculos: utils/centralMetrics.js (computeCentralMetrics,
 //  buildBarChartData, clientsEndingSoon).
 //
-//  PanelHeader: título "Central · Abril 2026" + seletor de período
+//  PanelHeader: tÃ­tulo "Central Â· Abril 2026" + seletor de perÃ­odo
 //  como action.
 // ================================================================
 
@@ -22,13 +22,14 @@ import {
   UsersIcon,
 } from '../components/ui/Icons.jsx';
 import {
-  buildBarChartData,
+  buildContractTrendData,
   clientsEndingSoon,
   computeCentralMetrics,
 } from '../utils/centralMetrics.js';
 import {
   MONTHS,
   MONTHS_FULL,
+  fmtInt,
   fmtMoney,
   fmtPct,
 } from '../utils/format.js';
@@ -238,12 +239,6 @@ export default function CentralPage() {
     y: now.getFullYear(),
     m: now.getMonth(),
   }));
-  const [seriesVisibility, setSeriesVisibility] = useState({
-    clients: true,
-    revenue: true,
-    previous: true,
-    benchmark: true,
-  });
 
   const periodOptions = useMemo(buildPeriodOptions, []);
   const isNow =
@@ -307,81 +302,45 @@ export default function CentralPage() {
     dashboardMetrics.total_clients
   );
 
-  const rawBars = useMemo(
-    () => buildBarChartData(clients, period.y, period.m, SERIES_MONTHS),
+  const contractTrend = useMemo(
+    () => buildContractTrendData(clients, period.y, period.m, SERIES_MONTHS),
     [clients, period]
-  );
-  const bars = useMemo(
-    () => enrichDashboardSeries(rawBars, clients),
-    [clients, rawBars]
-  );
-  const previousPeriodEnd = useMemo(
-    () => shiftPeriod(period.y, period.m, -SERIES_MONTHS),
-    [period]
-  );
-  const previousBars = useMemo(
-    () =>
-      buildBarChartData(
-        clients,
-        previousPeriodEnd.y,
-        previousPeriodEnd.m,
-        SERIES_MONTHS
-      ),
-    [clients, previousPeriodEnd]
   );
   const chartMax = niceMax(
     Math.max(
-      ...bars.map((b) => b.cnt),
-      ...previousBars.map((b) => b.cnt),
+      ...contractTrend.map((row) => row.contracts),
+      ...contractTrend.map((row) => row.ideal),
+      ...contractTrend.map((row) => row.stretch),
       1
     )
   );
-  const revenueMax = Math.max(...bars.map((b) => Number(b.mrr) || 0), 1);
-  const benchmarkMax = Math.max(
-    ...bars.map((b) => Number(b.benchmark) || 0),
-    0
-  );
   const chartPoints = useMemo(
-    () => buildChartPoints(bars, chartMax, 'cnt'),
-    [bars, chartMax]
+    () => buildChartPoints(contractTrend, chartMax, 'contracts'),
+    [contractTrend, chartMax]
   );
-  const previousPoints = useMemo(
-    () => buildChartPoints(previousBars, chartMax, 'cnt'),
-    [previousBars, chartMax]
+  const idealPoints = useMemo(
+    () => buildChartPoints(contractTrend, chartMax, 'ideal'),
+    [contractTrend, chartMax]
   );
-  const revenuePoints = useMemo(
-    () => buildChartPoints(bars, revenueMax, 'mrr'),
-    [bars, revenueMax]
-  );
-  const benchmarkPoints = useMemo(
-    () =>
-      benchmarkMax > 0
-        ? buildChartPoints(bars, Math.max(benchmarkMax, 1), 'benchmark')
-        : [],
-    [bars, benchmarkMax]
+  const stretchPoints = useMemo(
+    () => buildChartPoints(contractTrend, chartMax, 'stretch'),
+    [contractTrend, chartMax]
   );
   const lineD = useMemo(() => smoothPath(chartPoints), [chartPoints]);
-  const previousLineD = useMemo(
-    () => smoothPath(previousPoints),
-    [previousPoints]
-  );
-  const revenueLineD = useMemo(
-    () => smoothPath(revenuePoints),
-    [revenuePoints]
-  );
-  const benchmarkLineD = useMemo(
-    () => smoothPath(benchmarkPoints),
-    [benchmarkPoints]
+  const idealLineD = useMemo(() => smoothPath(idealPoints), [idealPoints]);
+  const stretchLineD = useMemo(
+    () => smoothPath(stretchPoints),
+    [stretchPoints]
   );
   const baselineY = CHART_H - CHART_PAD.bottom;
   const areaD = lineD
     ? `${lineD} L ${chartPoints.at(-1).x} ${baselineY} L ${chartPoints[0].x} ${baselineY} Z`
     : '';
-  const revenueAreaD = revenueLineD
-    ? `${revenueLineD} L ${revenuePoints.at(-1).x} ${baselineY} L ${revenuePoints[0].x} ${baselineY} Z`
+  const idealAreaD = idealLineD
+    ? `${idealLineD} L ${idealPoints.at(-1).x} ${baselineY} L ${idealPoints[0].x} ${baselineY} Z`
     : '';
-  const benchmarkAreaD = benchmarkLineD
-    ? `${benchmarkLineD} L ${benchmarkPoints.at(-1).x} ${baselineY} L ${benchmarkPoints[0].x} ${baselineY} Z`
+  const stretchAreaD = stretchLineD
+    ? `${stretchLineD} L ${stretchPoints.at(-1).x} ${baselineY} L ${stretchPoints[0].x} ${baselineY} Z`
     : '';
   const chartTicks = [
     chartMax,
@@ -391,35 +350,28 @@ export default function CentralPage() {
     0,
   ];
   const peakClientsIndex = useMemo(() => {
-    if (bars.length === 0) return -1;
-    return bars.reduce(
-      (best, row, index, list) => (row.cnt > list[best].cnt ? index : best),
-      0
-    );
-  }, [bars]);
-  const peakRevenueIndex = useMemo(() => {
-    if (bars.length === 0) return -1;
-    return bars.reduce(
+    if (contractTrend.length === 0) return -1;
+    return contractTrend.reduce(
       (best, row, index, list) =>
-        Number(row.mrr) > Number(list[best].mrr) ? index : best,
+        row.contracts > list[best].contracts ? index : best,
       0
     );
-  }, [bars]);
-  const hasBenchmarkSeries = Boolean(benchmarkLineD && benchmarkPoints.length);
-
-  const toggleSeries = (key) => {
-    setSeriesVisibility((current) => ({
-      ...current,
-      [key]: !current[key],
-    }));
-  };
+  }, [contractTrend]);
+  const peakIdealIndex = useMemo(() => {
+    if (contractTrend.length === 0) return -1;
+    return contractTrend.reduce(
+      (best, row, index, list) =>
+        Number(row.ideal) > Number(list[best].ideal) ? index : best,
+      0
+    );
+  }, [contractTrend]);
 
   const ending = useMemo(
     () => clientsEndingSoon(clients, 30, now),
     [clients, now]
   );
 
-  // Registra título + seletor de período no panelHeader do AppShell.
+  // Registra tÃ­tulo + seletor de perÃ­odo no panelHeader do AppShell.
   useEffect(() => {
     const periodValue = `${period.y}-${period.m}`;
     const handleChange = (e) => {
@@ -430,7 +382,7 @@ export default function CentralPage() {
     const title = (
       <>
         <strong>Central</strong>
-        <span>·</span>
+        <span>Â·</span>
         <span>{`${MONTHS_FULL[period.m]} ${period.y}`}</span>
       </>
     );
@@ -438,13 +390,13 @@ export default function CentralPage() {
     const actions = (
       <div className={styles.periodControl}>
         {!isNow && (
-          <span className={styles.historyChip}>Histórico</span>
+          <span className={styles.historyChip}>HistÃ³rico</span>
         )}
         <select
           className={styles.linearSelect}
           value={periodValue}
           onChange={handleChange}
-          aria-label="Período do dashboard"
+          aria-label="PerÃ­odo do dashboard"
         >
           {periodOptions.map((p) => (
             <option key={`${p.y}-${p.m}`} value={`${p.y}-${p.m}`}>
@@ -498,13 +450,13 @@ export default function CentralPage() {
 
           <MetricCard
             icon={<TargetIcon size={16} strokeWidth={1.8} />}
-            label="Novos no mês"
+            label="Novos no mÃªs"
             badge={`${Math.round(newClientPct)}%`}
             badgeTone="green"
             primary={formatCompactValue(dashboardMetrics.new_clients)}
             helperTitle={`Entraram em ${MONTHS[period.m]}`}
-            helperText={`${dashboardMetrics.new_clients} novos clientes no mês selecionado`}
-            legendPrimary="Novos no mês"
+            helperText={`${dashboardMetrics.new_clients} novos clientes no mÃªs selecionado`}
+            legendPrimary="Novos no mÃªs"
             legendSecondary="Base total"
           />
 
@@ -522,13 +474,13 @@ export default function CentralPage() {
 
           <MetricCard
             icon={<TrendingUpIcon size={16} strokeWidth={1.8} />}
-            label="Churn do mês"
+            label="Churn do mÃªs"
             badge={fmtPct(churnPeriodPct)}
             badgeTone="red"
             primary={formatCompactValue(dashboardMetrics.churn_count)}
-            helperTitle="Saídas no mês selecionado"
+            helperTitle="SaÃ­das no mÃªs selecionado"
             helperText={`${dashboardMetrics.churn_count} cancelamentos e ${fmtMoney(dashboardMetrics.lost_revenue)} de receita perdida`}
-            legendPrimary="Churns no mês"
+            legendPrimary="Churns no mÃªs"
             legendSecondary="Base total"
           />
         </section>
@@ -549,7 +501,7 @@ export default function CentralPage() {
             delta={
               mrrDelta === null ? (
                 <span className={`${styles.delta} ${styles.delta_nd}`}>
-                  Primeiro mês
+                  Primeiro mÃªs
                 </span>
               ) : (
                 <span
@@ -573,7 +525,7 @@ export default function CentralPage() {
 
         <section className={styles.cardGrid}>
           <MetricCard
-            label="Ticket Médio"
+            label="Ticket MÃ©dio"
             value={
               dashboardMetrics.average_ticket > 0
                 ? fmtMoney(dashboardMetrics.average_ticket)
@@ -583,7 +535,7 @@ export default function CentralPage() {
           />
 
           <MetricCard
-            label="Receita Perdida no Mês"
+            label="Receita Perdida no MÃªs"
             value={fmtMoney(dashboardMetrics.lost_revenue)}
             sub={<> <b>{dashboardMetrics.churn_count}</b> churns em {MONTHS[period.m]}</>}
           />
@@ -602,66 +554,12 @@ export default function CentralPage() {
         </section>
           </>
         )}
-        {/* --- Gráfico de linha --- */}
+        {/* --- GrÃ¡fico de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
             <div className={styles.chartHeading}>
               <h3>Evolução mensal</h3>
-              <p>Clientes e receita nova nos últimos 6 meses</p>
-            </div>
-            <div
-              className={styles.chartToolbar}
-              role="toolbar"
-              aria-label="Alternar séries do gráfico"
-            >
-              <button
-                type="button"
-                className={`${styles.seriesToggle} ${
-                  seriesVisibility.clients ? styles.seriesToggleActive : ''
-                }`}
-                onClick={() => toggleSeries('clients')}
-                aria-pressed={seriesVisibility.clients}
-              >
-                <i className={styles.legendClients} />
-                Clientes
-              </button>
-              <button
-                type="button"
-                className={`${styles.seriesToggle} ${
-                  seriesVisibility.revenue ? styles.seriesToggleActive : ''
-                }`}
-                onClick={() => toggleSeries('revenue')}
-                aria-pressed={seriesVisibility.revenue}
-              >
-                <i className={styles.legendRevenue} />
-                Receita nova
-              </button>
-              <button
-                type="button"
-                className={`${styles.seriesToggle} ${
-                  seriesVisibility.previous ? styles.seriesToggleActive : ''
-                }`}
-                onClick={() => toggleSeries('previous')}
-                aria-pressed={seriesVisibility.previous}
-              >
-                <i className={styles.legendComparison} />
-                Mês anterior
-              </button>
-              {hasBenchmarkSeries && (
-                <button
-                  type="button"
-                  className={`${styles.seriesToggle} ${
-                    seriesVisibility.benchmark
-                      ? styles.seriesToggleActive
-                      : ''
-                  }`}
-                  onClick={() => toggleSeries('benchmark')}
-                  aria-pressed={seriesVisibility.benchmark}
-                >
-                  <i className={styles.legendBenchmark} />
-                  Meta agregada
-                </button>
-              )}
+              <p>Contratos fechados, meta ideal e super meta nos últimos 6 meses</p>
             </div>
           </div>
 
@@ -670,22 +568,22 @@ export default function CentralPage() {
               className={styles.lineChart}
               viewBox={`0 0 ${CHART_W} ${CHART_H}`}
               role="img"
-              aria-label="Evolução mensal de clientes e receita nova nos últimos 6 meses"
+              aria-label="Evolução mensal de contratos fechados, meta ideal e super meta nos últimos 6 meses"
             >
               <defs>
                 <linearGradient id="clientsLineFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f5c300" stopOpacity="0.22" />
-                  <stop offset="64%" stopColor="#f5c300" stopOpacity="0.07" />
-                  <stop offset="100%" stopColor="#f5c300" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#6f86ff" stopOpacity="0.24" />
+                  <stop offset="64%" stopColor="#6f86ff" stopOpacity="0.08" />
+                  <stop offset="100%" stopColor="#6f86ff" stopOpacity="0" />
                 </linearGradient>
                 <linearGradient id="revenueLineFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6aa6ff" stopOpacity="0.2" />
-                  <stop offset="64%" stopColor="#6aa6ff" stopOpacity="0.06" />
-                  <stop offset="100%" stopColor="#6aa6ff" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#66d59a" stopOpacity="0.18" />
+                  <stop offset="64%" stopColor="#66d59a" stopOpacity="0.06" />
+                  <stop offset="100%" stopColor="#66d59a" stopOpacity="0" />
                 </linearGradient>
                 <linearGradient id="benchmarkLineFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#9b7cff" stopOpacity="0.16" />
-                  <stop offset="100%" stopColor="#9b7cff" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#f3a43d" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#f3a43d" stopOpacity="0" />
                 </linearGradient>
               </defs>
 
@@ -699,67 +597,54 @@ export default function CentralPage() {
                     <text x="4" y={y + 4} className={styles.axisLabel}>
                       {Math.round(tick)}
                     </text>
-                    <line
-                      x1={CHART_PAD.left}
-                      x2={CHART_W - CHART_PAD.right}
-                      y1={y}
-                      y2={y}
-                      className={styles.gridLine}
-                    />
                   </g>
                 );
               })}
 
-              {seriesVisibility.clients && (
-                <path d={areaD} className={styles.areaPath} />
-              )}
-              {seriesVisibility.revenue && (
-                <path d={revenueAreaD} className={styles.revenueAreaPath} />
-              )}
-              {hasBenchmarkSeries && seriesVisibility.benchmark && (
-                <path d={benchmarkAreaD} className={styles.benchmarkAreaPath} />
-              )}
-              {seriesVisibility.previous && previousLineD && (
-                <path d={previousLineD} className={styles.comparisonLinePath} />
-              )}
-              {seriesVisibility.clients && (
-                <path d={lineD} className={styles.linePath} />
-              )}
-              {seriesVisibility.revenue && (
-                <path d={revenueLineD} className={styles.revenueLinePath} />
-              )}
-              {hasBenchmarkSeries && seriesVisibility.benchmark && (
-                <path d={benchmarkLineD} className={styles.benchmarkLinePath} />
-              )}
+              <path d={stretchAreaD} className={styles.benchmarkAreaPath} />
+              <path d={idealAreaD} className={styles.revenueAreaPath} />
+              <path d={areaD} className={styles.areaPath} />
+              <path d={stretchLineD} className={styles.benchmarkLinePath} />
+              <path d={idealLineD} className={styles.revenueLinePath} />
+              <path d={lineD} className={styles.linePath} />
 
               {chartPoints.map((point, index) => {
-                const revenuePoint = revenuePoints[index];
-                const previousPoint = previousBars[index];
-                const benchmarkPoint = benchmarkPoints[index];
-                const hasEvents = point.events?.length > 0;
+                const idealPoint = idealPoints[index];
+                const stretchPoint = stretchPoints[index];
                 return (
-                <g
-                  key={`${point.year}-${point.month}`}
-                  className={styles.dataNode}
-                  tabIndex="0"
-                  aria-label={`${MONTHS[point.month]}: ${point.cnt} novos clientes, ${fmtMoney(point.mrr)} em receita nova`}
-                >
-                  <line
-                    x1={point.x}
-                    x2={point.x}
-                    y1={baselineY - 5}
-                    y2={baselineY + 5}
-                    className={styles.tickLine}
-                  />
-                  <text
-                    x={point.x}
-                    y={CHART_H - 14}
-                    textAnchor="middle"
-                    className={styles.monthLabel}
+                  <g
+                    key={`${point.year}-${point.month}`}
+                    className={styles.dataNode}
+                    tabIndex="0"
+                    aria-label={`${MONTHS[point.month]}: ${point.contracts} contratos fechados, meta ideal ${point.ideal} e super meta ${point.stretch}`}
                   >
-                    {MONTHS[point.month]}
-                  </text>
-                  {seriesVisibility.clients && (
+                    <line
+                      x1={point.x}
+                      x2={point.x}
+                      y1={baselineY - 5}
+                      y2={baselineY + 5}
+                      className={styles.tickLine}
+                    />
+                    <text
+                      x={point.x}
+                      y={CHART_H - 14}
+                      textAnchor="middle"
+                      className={styles.monthLabel}
+                    >
+                      {MONTHS[point.month]}
+                    </text>
+                    <circle
+                      cx={stretchPoint.x}
+                      cy={stretchPoint.y}
+                      r={4.5}
+                      className={styles.benchmarkPoint}
+                    />
+                    <circle
+                      cx={idealPoint.x}
+                      cy={idealPoint.y}
+                      r={4.5}
+                      className={styles.revenuePoint}
+                    />
                     <circle
                       cx={point.x}
                       cy={point.y}
@@ -768,33 +653,32 @@ export default function CentralPage() {
                         point.isNow ? styles.pointActive : ''
                       }`}
                     />
-                  )}
-                  {seriesVisibility.revenue && (
-                    <circle
-                      cx={revenuePoint.x}
-                      cy={revenuePoint.y}
-                      r={4.5}
-                      className={styles.revenuePoint}
-                    />
-                  )}
-                  {hasBenchmarkSeries &&
-                    seriesVisibility.benchmark &&
-                    benchmarkPoint && (
-                    <circle
-                      cx={benchmarkPoint.x}
-                      cy={benchmarkPoint.y}
-                      r={4}
-                      className={styles.benchmarkPoint}
-                    />
-                  )}
-                  {seriesVisibility.clients &&
-                    index === peakClientsIndex &&
-                    point.cnt > 0 && (
+                    {index === peakIdealIndex && point.ideal > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={point.x - 48}
+                          x={idealPoint.x - 46}
+                          y={idealPoint.y - 58}
+                          width="92"
+                          height="26"
+                          rx="6"
+                          className={styles.idealCallout}
+                        />
+                        <text
+                          x={idealPoint.x}
+                          y={idealPoint.y - 40}
+                          textAnchor="middle"
+                          className={styles.calloutText}
+                        >
+                          {`${fmtInt(point.ideal)} contratos`}
+                        </text>
+                      </g>
+                    )}
+                    {index === peakClientsIndex && point.contracts > 0 && (
+                      <g className={styles.calloutGroup}>
+                        <rect
+                          x={point.x - 50}
                           y={point.y - 58}
-                          width="96"
+                          width="100"
                           height="26"
                           rx="6"
                           className={styles.clientsCallout}
@@ -805,97 +689,63 @@ export default function CentralPage() {
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
-                          {`${point.cnt} cliente${
-                            point.cnt === 1 ? '' : 's'
+                          {`${fmtInt(point.contracts)} contrato${
+                            point.contracts === 1 ? '' : 's'
                           }`}
                         </text>
                       </g>
                     )}
-                  {seriesVisibility.revenue &&
-                    index === peakRevenueIndex &&
-                    Number(point.mrr) > 0 && (
+                    {index === contractTrend.length - 1 && point.stretch > 0 && (
                       <g className={styles.calloutGroup}>
                         <rect
-                          x={revenuePoint.x - 56}
-                          y={revenuePoint.y - 92}
-                          width="112"
+                          x={stretchPoint.x - 52}
+                          y={stretchPoint.y - 58}
+                          width="104"
                           height="26"
                           rx="6"
                           className={styles.revenueCallout}
                         />
                         <text
-                          x={revenuePoint.x}
-                          y={revenuePoint.y - 74}
+                          x={stretchPoint.x}
+                          y={stretchPoint.y - 40}
                           textAnchor="middle"
                           className={styles.calloutText}
                         >
-                          {fmtMoney(point.mrr)}
+                          {`${fmtInt(point.stretch)} contratos`}
                         </text>
                       </g>
                     )}
-                  {hasEvents && (
-                    <g>
-                      <circle
-                        cx={point.x}
-                        cy={baselineY - 24}
-                        r="9"
-                        className={styles.eventHalo}
-                      />
-                      <text
-                        x={point.x}
-                        y={baselineY - 20}
-                        textAnchor="middle"
-                        className={styles.eventMarker}
-                      >
-                        !
-                      </text>
-                    </g>
-                  )}
-                  <foreignObject
-                    x={Math.min(Math.max(point.x - 96, 4), CHART_W - 204)}
-                    y={Math.max(Math.min(point.y, revenuePoint.y) - 126, 0)}
-                    width="200"
-                    height="120"
-                    className={styles.pointTip}
-                  >
-                    <div className={styles.hudPanel}>
-                      <strong>{MONTHS[point.month]} {point.year}</strong>
-                      <span>Novos: {point.cnt}</span>
-                      <span>Receita: {fmtMoney(point.mrr)}</span>
-                      {previousPoint && (
-                        <span>Período anterior: {previousPoint.cnt}</span>
-                      )}
-                      {benchmarkPoint && (
-                        <span>Meta agregada: {point.benchmark}</span>
-                      )}
-                      {hasEvents && (
-                        <span>Evento: {point.events[0].label}</span>
-                      )}
-                    </div>
-                  </foreignObject>
-                </g>
+                    <foreignObject
+                      x={Math.min(Math.max(point.x - 96, 4), CHART_W - 204)}
+                      y={Math.max(Math.min(point.y, idealPoint.y, stretchPoint.y) - 126, 0)}
+                      width="200"
+                      height="120"
+                      className={styles.pointTip}
+                    >
+                      <div className={styles.hudPanel}>
+                        <strong>{MONTHS[point.month]} {point.year}</strong>
+                        <span>Contratos fechados: {fmtInt(point.contracts)}</span>
+                        <span>Meta ideal: {fmtInt(point.ideal)}</span>
+                        <span>Super meta: {fmtInt(point.stretch)}</span>
+                      </div>
+                    </foreignObject>
+                  </g>
                 );
               })}
             </svg>
             <div className={styles.chartLegend}>
               <span>
                 <i className={styles.legendClients} />
-                Novos clientes
+                Contratos fechados por mês
               </span>
               <span>
                 <i className={styles.legendRevenue} />
-                Receita nova no mês
+                Meta ideal
               </span>
               <span>
-                <i className={styles.legendComparison} />
-                Período anterior
+                <i className={styles.legendBenchmark} />
+                Super meta
               </span>
-              {hasBenchmarkSeries && (
-                <span>
-                  <i className={styles.legendBenchmark} />
-                  Meta agregada
-                </span>
-              )}
             </div>
           </div>
         </section>
@@ -919,7 +769,7 @@ export default function CentralPage() {
                     {daysLeft} dia{daysLeft === 1 ? '' : 's'}
                   </span>
                   <span className={styles.alertFee}>
-                    {fmtMoney(client.fee)}/mês
+                    {fmtMoney(client.fee)}/mÃªs
                   </span>
                 </div>
               ))}
