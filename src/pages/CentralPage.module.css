@@ -585,6 +585,16 @@
     padding: 18px;
   }
 
+  .periodControl {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .linearSelect {
+    min-width: 0;
+    width: min(180px, 100%);
+  }
+
   .lineChart {
     height: 200px;
   }
