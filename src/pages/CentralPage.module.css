@@ -221,6 +221,7 @@
 }
 
 .chartCard {
+  width: min(100%, 1143px);
   border-radius: 24px;
   background:
     linear-gradient(180deg, #1c1c1c, #1c1c1c) padding-box,
@@ -276,16 +277,30 @@
   cursor: pointer;
 }
 
+.chartTitleButton span {
+  display: inline;
+  margin: 0;
+  color: #b3b3b3;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
 .chartTitleButton svg {
   color: #ece6d8;
   opacity: 0.92;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
 }
 
 .chartControls {
   display: inline-flex;
   align-items: center;
   gap: 32px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .chartControlGroup {
@@ -300,6 +315,7 @@
 }
 
 .chartControlButton {
+  width: 129px;
   min-height: 33px;
   padding: 0 17px;
   border: 1px solid transparent;
@@ -308,12 +324,31 @@
   color: #dfdcd7;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   font: inherit;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.chartControlButton span {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chartControlButton svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 .chartControlButton:hover {
@@ -609,6 +644,13 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .chartLegend i {
