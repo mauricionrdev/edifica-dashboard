@@ -25,6 +25,7 @@ function monthBounds(year, month0) {
 
 function startedOnOrBefore(client, date) {
   const start = parseClientDate(client.startDate);
+  if (!start) return client.status !== 'churn';
   return Boolean(start && start <= date);
 }
 
@@ -42,6 +43,183 @@ function dateInMonth(value, year, month0) {
   return Boolean(
     date && date.getFullYear() === year && date.getMonth() === month0
   );
+}
+
+function periodWeekKey(year, month0, week) {
+  return `${monthKey(year, month0)}-S${week}`;
+}
+
+function metricNumbers(metric) {
+  const computed = metric?.computed || {};
+  const data = metric?.data || {};
+  return {
+    closed: Number(computed.fec ?? data.fechados) || 0,
+    leads: Number(computed.vol ?? data.volume) || 0,
+    weeklyGoal: Number(computed.mLuc ?? data.metaLucro) || 0,
+    projected: Number(computed.contratosPrevistos) || 0,
+  };
+}
+
+function metricsForMonth(metrics = [], year, month0) {
+  const prefix = monthKey(year, month0);
+  return (Array.isArray(metrics) ? metrics : []).filter((metric) =>
+    String(metric.periodKey || '').startsWith(`${prefix}-S`)
+  );
+}
+
+function activeClientsAtEnd(clients, year, month0) {
+  const { end } = monthBounds(year, month0);
+  return (Array.isArray(clients) ? clients : []).filter((client) =>
+    activeAt(client, end)
+  );
+}
+
+function monthlyGoalForClient(client, monthMetrics) {
+  const contractGoal = Number(client?.metaLucro) || 0;
+  if (contractGoal > 0) return contractGoal;
+  return monthMetrics.reduce(
+    (sum, metric) => sum + metricNumbers(metric).weeklyGoal,
+    0
+  );
+}
+
+export function buildMarketingDashboardData(
+  clients,
+  metricsByClient,
+  year,
+  month0,
+  selectedWeek = 1
+) {
+  const active = activeClientsAtEnd(clients, year, month0);
+  const safeWeek = Math.min(Math.max(Number(selectedWeek) || 1, 1), 4);
+  const weekKey = periodWeekKey(year, month0, safeWeek);
+
+  const clientRows = active.map((client) => {
+    const metrics = metricsByClient?.[client.id] || [];
+    const monthMetrics = metricsForMonth(metrics, year, month0);
+    const monthClosed = monthMetrics.reduce(
+      (sum, metric) => sum + metricNumbers(metric).closed,
+      0
+    );
+    const monthLeads = monthMetrics.reduce(
+      (sum, metric) => sum + metricNumbers(metric).leads,
+      0
+    );
+    const weekMetric = metrics.find((metric) => metric.periodKey === weekKey);
+    const weekNumbers = metricNumbers(weekMetric);
+    const monthlyGoal = monthlyGoalForClient(client, monthMetrics);
+    const fallbackWeeklyGoal = monthlyGoal > 0 ? Math.ceil(monthlyGoal / 4) : 0;
+    const weeklyGoal = weekNumbers.weeklyGoal || fallbackWeeklyGoal;
+    const progress =
+      monthlyGoal > 0 ? Math.min((monthClosed / monthlyGoal) * 100, 999) : 0;
+
+    return {
+      clientId: client.id,
+      name: client.name || 'Cliente sem nome',
+      squadName: client.squadName || client.squad || '',
+      monthClosed,
+      monthGoal: monthlyGoal,
+      monthLeads,
+      weekClosed: weekNumbers.closed,
+      weekGoal: weeklyGoal,
+      weekLeads: weekNumbers.leads,
+      projected: weekNumbers.projected,
+      progress,
+      hit: monthlyGoal > 0 && monthClosed >= monthlyGoal,
+      hasGoal: monthlyGoal > 0,
+    };
+  });
+
+  const weekBreakdown = [1, 2, 3, 4].map((week) => {
+    const key = periodWeekKey(year, month0, week);
+    return active.reduce(
+      (acc, client) => {
+        const metrics = metricsByClient?.[client.id] || [];
+        const monthMetrics = metricsForMonth(metrics, year, month0);
+        const metric = metrics.find((item) => item.periodKey === key);
+        const numbers = metricNumbers(metric);
+        const monthlyGoal = monthlyGoalForClient(client, monthMetrics);
+        acc.contracts += numbers.closed;
+        acc.leads += numbers.leads;
+        acc.ideal +=
+          numbers.weeklyGoal ||
+          (monthlyGoal > 0 ? Math.ceil(monthlyGoal / 4) : 0);
+        return acc;
+      },
+      {
+        label: `S${week}`,
+        contracts: 0,
+        leads: 0,
+        ideal: 0,
+        stretch: 0,
+      }
+    );
+  }).map((row) => ({
+    ...row,
+    stretch: Math.max(row.ideal * 1.25, row.contracts),
+  }));
+
+  const totals = clientRows.reduce(
+    (acc, row) => {
+      acc.monthClosed += row.monthClosed;
+      acc.monthGoal += row.monthGoal;
+      acc.monthLeads += row.monthLeads;
+      acc.weekClosed += row.weekClosed;
+      acc.weekGoal += row.weekGoal;
+      acc.weekLeads += row.weekLeads;
+      acc.hitClients += row.hit ? 1 : 0;
+      acc.clientsWithGoal += row.hasGoal ? 1 : 0;
+      return acc;
+    },
+    {
+      monthClosed: 0,
+      monthGoal: 0,
+      monthLeads: 0,
+      weekClosed: 0,
+      weekGoal: 0,
+      weekLeads: 0,
+      hitClients: 0,
+      clientsWithGoal: 0,
+    }
+  );
+
+  return {
+    rows: clientRows,
+    weekBreakdown,
+    totals: {
+      ...totals,
+      monthProgress:
+        totals.monthGoal > 0 ? (totals.monthClosed / totals.monthGoal) * 100 : 0,
+      weekProgress:
+        totals.weekGoal > 0 ? (totals.weekClosed / totals.weekGoal) * 100 : 0,
+      conversion:
+        totals.monthLeads > 0 ? (totals.monthClosed / totals.monthLeads) * 100 : 0,
+      hitRate:
+        totals.clientsWithGoal > 0
+          ? (totals.hitClients / totals.clientsWithGoal) * 100
+          : 0,
+    },
+  };
+}
+
+export function buildWeeklyGoalReport(marketingData) {
+  return marketingData?.weekBreakdown || [];
+}
+
+export function buildClientGoalReport(marketingData, limit = 6) {
+  return [...(marketingData?.rows || [])]
+    .sort((a, b) => b.monthGoal - a.monthGoal || b.monthClosed - a.monthClosed)
+    .slice(0, limit)
+    .map((row) => ({
+      label:
+        row.name.length > 10
+          ? `${row.name.slice(0, 9).trim()}…`
+          : row.name,
+      fullLabel: row.name,
+      contracts: row.monthClosed,
+      ideal: row.monthGoal,
+      stretch: Math.max(row.monthGoal * 1.25, row.monthClosed),
+    }));
 }
 
 /**

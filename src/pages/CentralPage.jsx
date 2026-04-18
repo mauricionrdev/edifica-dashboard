@@ -1,37 +1,28 @@
 // ================================================================
 //  CentralPage
-//  Visual portado do DashboardView do frontend real:
-//    - 5 cards métrica (Ativos · MRR · Receita Nova · Ticket · Churn)
-//      em grid 3 colunas, com delta no topline e gauge opcional no pé.
-//    - Card "chart": barras dos últimos 6 meses com tooltip.
-//    - Card "alerta": contratos vencendo em 30 dias.
-//
-//  Cálculos: utils/centralMetrics.js (computeCentralMetrics,
-//  buildBarChartData, clientsEndingSoon).
-//
-//  PanelHeader: título "Central · Abril 2026" + seletor de período
-//  como action.
+//  Dashboard operacional da Edifica:
+//    - KPIs de contratos fechados, metas e conversão por período.
+//    - Relatório visual por semana do mês ou ranking por cliente.
+//    - Dados reais vêm de weekly_metrics (/api/metrics).
 // ================================================================
 
 import { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   CalendarIcon,
-  ChevronDownIcon,
   ClipboardListIcon,
-  CoinsIcon,
   TargetIcon,
   TrendingUpIcon,
   UsersIcon,
 } from '../components/ui/Icons.jsx';
+import { listClientMetrics } from '../api/metrics.js';
 import {
-  buildContractTrendData,
-  buildWeeklyContractTrendData,
+  buildClientGoalReport,
+  buildMarketingDashboardData,
+  buildWeeklyGoalReport,
   clientsEndingSoon,
-  computeCentralMetrics,
 } from '../utils/centralMetrics.js';
 import {
-  MONTHS,
   MONTHS_FULL,
   fmtInt,
   fmtMoney,
@@ -64,16 +55,16 @@ const CHART_LABEL_Y = 337;
 const CHART_DATA_X = [70, 269.447, 468.895, 668.342, 867.789, 1067.24];
 const CHART_GRID_X = [36.5644, 212.59, 388.617, 564.643, 740.669, 916.695, 1092.72];
 const CHART_TICKS = [
-  { value: 100, y: 6.83572 },
-  { value: 70, y: 68.4329 },
-  { value: 50, y: 130.03 },
-  { value: 30, y: 191.627 },
-  { value: 10, y: 253.224 },
-  { value: 0, y: 314.821 },
+  { ratio: 1, y: 6.83572 },
+  { ratio: 0.7, y: 68.4329 },
+  { ratio: 0.5, y: 130.03 },
+  { ratio: 0.3, y: 191.627 },
+  { ratio: 0.1, y: 253.224 },
+  { ratio: 0, y: 314.821 },
 ];
 
 function niceMax(value) {
-  if (!value || value <= 0) return 100;
+  if (!value || value <= 0) return 10;
   const exponent = Math.floor(Math.log10(value));
   const fraction = value / 10 ** exponent;
   const niceFraction = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10;
@@ -82,11 +73,14 @@ function niceMax(value) {
 
 function buildChartPoints(rows, maxValue, valueKey) {
   const chartMax = maxValue > 0 ? maxValue : 100;
+  const firstX = CHART_DATA_X[0];
+  const lastX = CHART_DATA_X.at(-1);
+  const step = rows.length > 1 ? (lastX - firstX) / (rows.length - 1) : 0;
   return rows.map((row, index) => ({
     ...row,
     year: row.y,
     month: row.m,
-    x: CHART_DATA_X[index] ?? CHART_DATA_X.at(-1),
+    x: rows.length > 1 ? firstX + step * index : (firstX + lastX) / 2,
     y:
       CHART_BASELINE -
       ((Number(row[valueKey]) || 0) / chartMax) *
@@ -94,90 +88,8 @@ function buildChartPoints(rows, maxValue, valueKey) {
   }));
 }
 
-function shiftPeriod(year, month0, offset) {
-  let y = year;
-  let m = month0 + offset;
-  while (m < 0) {
-    m += 12;
-    y -= 1;
-  }
-  while (m > 11) {
-    m -= 12;
-    y += 1;
-  }
-  return { y, m };
-}
-
-function readDatedEntries(client, keys) {
-  return keys.flatMap((key) => {
-    const value = client?.[key];
-    if (!Array.isArray(value)) return [];
-    return value
-      .map((entry) => ({
-        date: entry?.date || entry?.createdAt || entry?.at,
-        label: entry?.label || entry?.title || entry?.name || entry?.type,
-        detail: entry?.detail || entry?.description || entry?.notes || '',
-      }))
-      .filter((entry) => entry.date && entry.label);
-  });
-}
-
-function collectMonthEvents(clients, year, month0) {
-  const prefix = `${year}-${String(month0 + 1).padStart(2, '0')}`;
-  return (Array.isArray(clients) ? clients : [])
-    .flatMap((client) =>
-      readDatedEntries(client, [
-        'dashboardEvents',
-        'events',
-        'notes',
-        'annotations',
-      ]).map((event) => ({
-        ...event,
-        clientName: client.name,
-      }))
-    )
-    .filter((event) => String(event.date).startsWith(prefix));
-}
-
-function enrichDashboardSeries(rows, clients) {
-  const all = Array.isArray(clients) ? clients : [];
-  return rows.map((row) => {
-    const prefix = `${row.y}-${String(row.m + 1).padStart(2, '0')}`;
-    const added = all.filter(
-      (client) =>
-        client.status !== 'churn' &&
-        client.startDate &&
-        String(client.startDate).startsWith(prefix)
-    );
-    return {
-      ...row,
-      benchmark: added.reduce(
-        (sum, client) => sum + (Number(client.metaLucro) || 0),
-        0
-      ),
-      events: collectMonthEvents(all, row.y, row.m),
-    };
-  });
-}
-
-function smoothPath(points) {
-  if (points.length === 0) return '';
-  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
-
-  const path = [`M ${points[0].x} ${points[0].y}`];
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i - 1] || points[i];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[i + 2] || p2;
-
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-    path.push(`C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`);
-  }
-  return path.join(' ');
+function weekOfMonth(date = new Date()) {
+  return Math.min(Math.max(Math.ceil(date.getDate() / 7), 1), 4);
 }
 
 function buildLinearPath(points) {
@@ -191,13 +103,17 @@ function formatCompactValue(value) {
 }
 
 const CHART_MODES = {
-  monthly: {
-    label: 'Evolução mensal',
-    ariaLabel: 'Evolução mensal de contratos fechados, meta ideal e super meta nos últimos 6 meses',
+  weeks: {
+    label: 'Semanas',
+    title: 'Evolução por semana',
+    description: 'Contratos fechados, meta contratada e super meta no mês selecionado.',
+    ariaLabel: 'Contratos fechados e metas por semana no mês selecionado',
   },
-  weekly: {
-    label: 'Evolução semanal',
-    ariaLabel: 'Evolução semanal de contratos fechados, meta ideal e super meta no mês selecionado',
+  clients: {
+    label: 'Clientes',
+    title: 'Ranking por cliente',
+    description: 'Quem está mais perto de bater a meta mensal de contratos.',
+    ariaLabel: 'Contratos fechados e metas por cliente no mês selecionado',
   },
 };
 
@@ -231,11 +147,6 @@ function ChartCallout({ x, y, width, tone, children }) {
       />
     </g>
   );
-}
-
-function ratioPercent(part, total) {
-  if (!total || total <= 0) return 0;
-  return Math.max(0, Math.min((part / total) * 100, 999));
 }
 
 function MetricCard({
@@ -276,7 +187,7 @@ function DashboardSkeleton() {
     <div className="content">
       <div className={`${styles.workspace} ${styles.linearCardsDashboard}`}>
         <section className={styles.cardGrid} aria-label="Carregando indicadores">
-          {Array.from({ length: 6 }).map((_, index) => (
+          {Array.from({ length: 4 }).map((_, index) => (
             <article key={index} className={`${styles.metricCard} ${styles.skeletonCard}`}>
               <span className={`${styles.skeletonLine} ${styles.skeletonLabel}`} />
               <span className={styles.skeletonValue} />
@@ -304,81 +215,67 @@ export default function CentralPage() {
     m: now.getMonth(),
   }));
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
-  const [chartModeOpen, setChartModeOpen] = useState(false);
-  const [chartMode, setChartMode] = useState('monthly');
+  const [chartMode, setChartMode] = useState('weeks');
+  const [weeklyMetricsByClient, setWeeklyMetricsByClient] = useState({});
 
   const periodOptions = useMemo(buildPeriodOptions, []);
   const isNow =
     period.y === now.getFullYear() && period.m === now.getMonth();
-  const previousPeriod = useMemo(
-    () => shiftPeriod(now.getFullYear(), now.getMonth(), -1),
-    [now]
-  );
-  const isPreviousPeriod =
-    period.y === previousPeriod.y && period.m === previousPeriod.m;
+  const dashboardWeek = isNow ? weekOfMonth(now) : 4;
 
-  const metrics = useMemo(
-    () => computeCentralMetrics(clients, period.y, period.m),
-    [clients, period]
-  );
+  useEffect(() => {
+    let cancelled = false;
+    const loadMetrics = async () => {
+      const source = Array.isArray(clients) ? clients : [];
+      if (source.length === 0) {
+        setWeeklyMetricsByClient({});
+        return;
+      }
 
-  const prevMonth = useMemo(() => {
-    const m = period.m > 0 ? period.m - 1 : 11;
-    const y = period.m > 0 ? period.y : period.y - 1;
-    return { y, m };
-  }, [period]);
+      const entries = await Promise.all(
+        source.map(async (client) => {
+          try {
+            const response = await listClientMetrics(client.id);
+            return [
+              client.id,
+              Array.isArray(response?.metrics) ? response.metrics : [],
+            ];
+          } catch {
+            return [client.id, []];
+          }
+        })
+      );
 
-  const prevMetrics = useMemo(
-    () => computeCentralMetrics(clients, prevMonth.y, prevMonth.m),
-    [clients, prevMonth]
-  );
+      if (!cancelled) {
+        setWeeklyMetricsByClient(Object.fromEntries(entries));
+      }
+    };
 
-  const mrrDelta =
-    prevMetrics.mrr > 0
-      ? ((metrics.mrr - prevMetrics.mrr) / prevMetrics.mrr) * 100
-      : null;
+    loadMetrics();
+    return () => {
+      cancelled = true;
+    };
+  }, [clients]);
 
-  const ticketMedio =
-    metrics.active > 0 ? metrics.mrr / metrics.active : 0;
-
-  const activePct =
-    metrics.total > 0
-      ? Math.min((metrics.active / metrics.total) * 100, 100)
-      : 0;
-
-  const dashboardMetrics = useMemo(
-    () => ({
-      active_clients: metrics.active,
-      total_clients: metrics.total,
-      current_mrr: metrics.mrr,
-      new_revenue: metrics.revenueNew,
-      new_clients: metrics.newCnt,
-      lost_revenue: metrics.revLost,
-      churn_count: metrics.churnedPeriodCnt,
-      churn_rate: metrics.churnRate,
-      average_ticket: ticketMedio,
-      active_ratio: activePct,
-    }),
-    [activePct, metrics, ticketMedio]
+  const marketingData = useMemo(
+    () =>
+      buildMarketingDashboardData(
+        clients,
+        weeklyMetricsByClient,
+        period.y,
+        period.m,
+        dashboardWeek
+      ),
+    [clients, weeklyMetricsByClient, period, dashboardWeek]
   );
 
-  const newClientPct = ratioPercent(
-    dashboardMetrics.new_clients,
-    dashboardMetrics.total_clients
+  const contractTrend = useMemo(
+    () =>
+      chartMode === 'clients'
+        ? buildClientGoalReport(marketingData)
+        : buildWeeklyGoalReport(marketingData),
+    [chartMode, marketingData]
   );
-  const newRevenuePct = ratioPercent(
-    dashboardMetrics.new_revenue,
-    dashboardMetrics.current_mrr || dashboardMetrics.new_revenue
-  );
-  const contractTrend = useMemo(() => {
-    if (chartMode === 'weekly') {
-      return buildWeeklyContractTrendData(clients, period.y, period.m);
-    }
-    return buildContractTrendData(clients, period.y, period.m).map((row) => ({
-      ...row,
-      label: MONTHS[row.m],
-    }));
-  }, [chartMode, clients, period]);
   const chartMax = useMemo(
     () =>
       niceMax(
@@ -388,7 +285,7 @@ export default function CentralPage() {
             row.ideal,
             row.stretch,
           ]),
-          100
+          1
         )
       ),
     [contractTrend]
@@ -443,13 +340,6 @@ export default function CentralPage() {
     () => clientsEndingSoon(clients, 30, now),
     [clients, now]
   );
-
-  const setPeriodFromOffset = (offset) => {
-    const next = shiftPeriod(now.getFullYear(), now.getMonth(), offset);
-    setPeriod(next);
-    setChartPickerOpen(false);
-    setChartModeOpen(false);
-  };
 
   // Registra título + seletor de período no panelHeader do AppShell.
   useEffect(() => {
@@ -518,137 +408,75 @@ export default function CentralPage() {
         <section className={styles.cardGrid} aria-label="Indicadores do dashboard">
           <MetricCard
             icon={<UsersIcon size={16} strokeWidth={1.8} />}
-            label="Clientes ativos"
-            badge={`${Math.round(dashboardMetrics.active_ratio)}%`}
+            label="Contratos no mês"
+            badge={`${Math.round(marketingData.totals.monthProgress)}%`}
             badgeTone="green"
-            primary={formatCompactValue(dashboardMetrics.active_clients)}
-            helperTitle={`Base ativa em ${MONTHS[period.m]}`}
-            helperText={`${dashboardMetrics.active_clients} ativos de ${dashboardMetrics.total_clients} contratos assinados até o período`}
-            legendPrimary="Clientes ativos"
-            legendSecondary="Contratos assinados"
-          />
-
-          <MetricCard
-            icon={<CoinsIcon size={16} strokeWidth={1.8} />}
-            label="MRR do período"
-            badge={
-              mrrDelta === null
-                ? 'base'
-                : `${mrrDelta >= 0 ? '+' : ''}${fmtPct(mrrDelta)}`
-            }
-            badgeTone={mrrDelta !== null && mrrDelta < 0 ? 'red' : 'green'}
-            primary={fmtMoney(dashboardMetrics.current_mrr)}
-            helperTitle="Receita recorrente ativa"
-            helperText={`MRR de fechamento para ${MONTHS_FULL[period.m]} ${period.y}`}
-            legendPrimary="MRR ativo"
-            legendSecondary="Variação mensal"
+            primary={`${formatCompactValue(marketingData.totals.monthClosed)} / ${formatCompactValue(marketingData.totals.monthGoal)}`}
+            helperTitle={`Resultado de ${MONTHS_FULL[period.m]}`}
+            helperText="Contratos fechados pelos clientes contra a meta mensal contratada"
+            legendPrimary="Fechados"
+            legendSecondary="Meta mensal"
           />
 
           <MetricCard
             icon={<TargetIcon size={16} strokeWidth={1.8} />}
-            label="Novos no mês"
-            badge={`${Math.round(newClientPct)}%`}
+            label={isNow ? 'Semana atual' : 'Última semana'}
+            badge={`${Math.round(marketingData.totals.weekProgress)}%`}
             badgeTone="green"
-            primary={formatCompactValue(dashboardMetrics.new_clients)}
-            helperTitle={`Entraram em ${MONTHS[period.m]}`}
-            helperText={`${dashboardMetrics.new_clients} novos clientes no mês selecionado`}
-            legendPrimary="Novos no mês"
-            legendSecondary="Base total"
-          />
-
-          <MetricCard
-            icon={<CoinsIcon size={16} strokeWidth={1.8} />}
-            label="Receita nova"
-            badge={`${Math.round(newRevenuePct)}%`}
-            badgeTone="amber"
-            primary={fmtMoney(dashboardMetrics.new_revenue)}
-            helperTitle="Nova receita sobre o MRR"
-            helperText={`${dashboardMetrics.new_clients} clientes adicionaram ${fmtMoney(dashboardMetrics.new_revenue)} em ${MONTHS[period.m]}`}
-            legendPrimary="Receita nova"
-            legendSecondary="MRR atual"
+            primary={`${formatCompactValue(marketingData.totals.weekClosed)} / ${formatCompactValue(marketingData.totals.weekGoal)}`}
+            helperTitle={`S${dashboardWeek} de ${MONTHS_FULL[period.m]}`}
+            helperText="Fechados na semana de referência contra a meta proporcional"
+            legendPrimary="Fechados"
+            legendSecondary="Meta da semana"
           />
 
           <MetricCard
             icon={<TargetIcon size={16} strokeWidth={1.8} />}
-            label="Ticket médio"
-            badge={formatCompactValue(dashboardMetrics.active_clients)}
+            label="Clientes na meta"
+            badge={`${Math.round(marketingData.totals.hitRate)}%`}
             badgeTone="amber"
-            primary={fmtMoney(dashboardMetrics.average_ticket)}
-            helperTitle="MRR dividido pela base ativa"
-            helperText={`Ticket médio dos clientes ativos em ${MONTHS[period.m]}`}
-            legendPrimary="Ticket médio"
-            legendSecondary="Clientes ativos"
+            primary={`${formatCompactValue(marketingData.totals.hitClients)} / ${formatCompactValue(marketingData.totals.clientsWithGoal)}`}
+            helperTitle="Advogados batendo o combinado"
+            helperText="Clientes que já atingiram a meta mensal de contratos"
+            legendPrimary="Na meta"
+            legendSecondary="Com meta"
           />
 
           <MetricCard
             icon={<TrendingUpIcon size={16} strokeWidth={1.8} />}
-            label="Churn do mês"
-            badge={fmtPct(dashboardMetrics.churn_rate)}
-            badgeTone="red"
-            primary={formatCompactValue(dashboardMetrics.churn_count)}
-            helperTitle="Saídas no mês selecionado"
-            helperText={`${dashboardMetrics.churn_count} cancelamentos e ${fmtMoney(dashboardMetrics.lost_revenue)} de receita perdida`}
-            legendPrimary="Churns no mês"
-            legendSecondary="Base total"
+            label="Conversão em contratos"
+            badge={`${formatCompactValue(marketingData.totals.monthLeads)} leads`}
+            badgeTone="green"
+            primary={fmtPct(marketingData.totals.conversion)}
+            helperTitle="Leads que viraram contrato"
+            helperText="Taxa calculada a partir dos leads e contratos preenchidos"
+            legendPrimary="Contratos"
+            legendSecondary="Leads"
           />
         </section>
         {/* --- Gráfico de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
-            <div className={styles.chartModePicker}>
-              <button
-                type="button"
-                className={styles.chartTitleButton}
-                onClick={() => setChartModeOpen((open) => !open)}
-                aria-expanded={chartModeOpen}
-                aria-haspopup="menu"
-              >
-                <span>{CHART_MODES[chartMode].label}</span>
-                <ChevronDownIcon size={16} strokeWidth={2} />
-              </button>
-              {chartModeOpen && (
-                <div className={styles.chartModeMenu} role="menu">
-                  {Object.entries(CHART_MODES).map(([mode, option]) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      className={`${styles.chartModeOption} ${
-                        chartMode === mode ? styles.chartModeOptionActive : ''
-                      }`}
-                      onClick={() => {
-                        setChartMode(mode);
-                        setChartModeOpen(false);
-                      }}
-                      role="menuitem"
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div className={styles.chartHeading}>
+              <span>Relatório visual</span>
+              <h3>{CHART_MODES[chartMode].title}</h3>
+              <p>{CHART_MODES[chartMode].description}</p>
             </div>
             <div className={styles.chartControls}>
               <div className={styles.chartControlGroup}>
-                <button
-                  type="button"
-                  className={`${styles.chartControlButton} ${
-                    isNow ? styles.chartControlButtonActive : ''
-                  }`}
-                  onClick={() => setPeriodFromOffset(0)}
-                >
-                  <ClipboardListIcon size={14} strokeWidth={1.8} />
-                  <span>Mês atual</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.chartControlButton} ${
-                    isPreviousPeriod ? styles.chartControlButtonActive : ''
-                  }`}
-                  onClick={() => setPeriodFromOffset(-1)}
-                >
-                  <ClipboardListIcon size={14} strokeWidth={1.8} />
-                  <span>Mês anterior</span>
-                </button>
+                {Object.entries(CHART_MODES).map(([mode, option]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    className={`${styles.chartControlButton} ${
+                      chartMode === mode ? styles.chartControlButtonActive : ''
+                    }`}
+                    onClick={() => setChartMode(mode)}
+                  >
+                    <ClipboardListIcon size={14} strokeWidth={1.8} />
+                    <span>{option.label}</span>
+                  </button>
+                ))}
               </div>
               <div className={styles.chartPeriodPicker}>
                 <button
@@ -658,7 +486,6 @@ export default function CentralPage() {
                   }`}
                   onClick={() => {
                     setChartPickerOpen((open) => !open);
-                    setChartModeOpen(false);
                   }}
                   aria-expanded={chartPickerOpen}
                   aria-haspopup="listbox"
@@ -677,7 +504,6 @@ export default function CentralPage() {
                           setPeriod({ y, m });
                         }
                         setChartPickerOpen(false);
-                        setChartModeOpen(false);
                       }}
                       aria-label="Selecionar período do gráfico"
                     >
@@ -715,9 +541,10 @@ export default function CentralPage() {
                 </linearGradient>
               </defs>
 
-              {chartTicks.map(({ value, y }) => {
+              {chartTicks.map(({ ratio, y }) => {
+                const value = Math.round(chartMax * ratio);
                 return (
-                  <g key={value}>
+                  <g key={ratio}>
                     <text x="4" y={y + 4} className={styles.axisLabel}>
                       {value}
                     </text>
@@ -758,7 +585,7 @@ export default function CentralPage() {
                     key={`${chartMode}-${point.label}-${index}`}
                     className={styles.dataNode}
                     tabIndex="0"
-                    aria-label={`${point.label}: ${point.contracts} contratos fechados, meta ideal ${point.ideal} e super meta ${point.stretch}`}
+                    aria-label={`${point.fullLabel || point.label}: ${point.contracts} contratos fechados, meta ${point.ideal}`}
                   >
                     <line
                       x1={point.x}
@@ -840,7 +667,7 @@ export default function CentralPage() {
                       <div className={styles.hudPanel}>
                         <strong>{point.label}</strong>
                         <span>Contratos fechados: {fmtInt(point.contracts)}</span>
-                        <span>Meta ideal: {fmtInt(point.ideal)}</span>
+                        <span>Meta: {fmtInt(point.ideal)}</span>
                         <span>Super meta: {fmtInt(point.stretch)}</span>
                       </div>
                     </foreignObject>
@@ -851,13 +678,11 @@ export default function CentralPage() {
             <div className={styles.chartLegend}>
               <span>
                 <i className={styles.legendClients} />
-                {chartMode === 'weekly'
-                  ? 'Contratos fechados por dia'
-                  : 'Contratos fechados por mês'}
+                Contratos fechados
               </span>
               <span>
                 <i className={styles.legendRevenue} />
-                Meta ideal
+                Meta contratada
               </span>
               <span>
                 <i className={styles.legendBenchmark} />
