@@ -141,7 +141,14 @@ export default function Topbar({
 
   return (
     <header className="tbar">
-      <div className="tbar-leading">
+      <div className="tbar-leading" />
+
+      <div className="tbar-center">
+        {banner}
+      </div>
+
+      <div className="tbar-actions">
+        {actions}
         <form
           className={styles.searchBox}
           ref={searchRef}
@@ -190,14 +197,6 @@ export default function Topbar({
             </div>
           )}
         </form>
-      </div>
-
-      <div className="tbar-center">
-        {banner}
-      </div>
-
-      <div className="tbar-actions">
-        {actions}
         <div className={styles.accountCluster} ref={menuRef}>
           <button
             type="button"
