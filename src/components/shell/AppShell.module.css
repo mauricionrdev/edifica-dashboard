@@ -45,7 +45,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 0 24px;
+  padding: 0 26px;
   border-bottom: 1px solid #2d2d2d;
   background: transparent;
   flex-shrink: 0;
@@ -91,7 +91,7 @@
 }
 
 .contentBody > :global(.content) {
-  padding: 20px 24px 24px;
+  padding: 20px 26px 24px;
 }
 
 @media (max-width: 1100px) {
@@ -118,7 +118,7 @@
 @media (max-width: 820px) {
   .panelHeader {
     min-height: auto;
-    padding: 14px;
+    padding: 18px;
     flex-wrap: wrap;
     align-items: stretch;
   }
@@ -134,6 +134,6 @@
   }
 
   .contentBody > :global(.content) {
-    padding: 14px;
+    padding: 18px;
   }
 }
