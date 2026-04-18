@@ -252,6 +252,49 @@
   font-size: 13px;
 }
 
+.chartHeading p {
+  margin-top: 6px;
+}
+
+.chartToolbar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.seriesToggle {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #9d9d9d;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.seriesToggle:hover {
+  border-color: #3a3a3a;
+  color: #efefef;
+}
+
+.seriesToggleActive {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #3d3d3d;
+  color: #f4f4f4;
+}
+
 /* --- Chart de linha -------------------------------------------- */
 .lineChartWrap {
   position: relative;
@@ -291,9 +334,10 @@
 }
 
 .gridLine {
-  stroke: rgba(255, 255, 255, 0.1);
+  stroke: rgba(255, 255, 255, 0.05);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
+  stroke-dasharray: 4 8;
 }
 
 .tickLine {
@@ -391,6 +435,22 @@
   fill: #f5c300;
   font-size: 10px;
   font-weight: 900;
+}
+
+.clientsCallout {
+  fill: rgba(89, 112, 212, 0.72);
+  stroke: rgba(147, 167, 255, 0.4);
+}
+
+.revenueCallout {
+  fill: rgba(110, 83, 38, 0.82);
+  stroke: rgba(245, 195, 0, 0.34);
+}
+
+.calloutText {
+  fill: #f4f4f4;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .dataNode {
@@ -639,6 +699,11 @@
 
   .lineChart {
     height: 200px;
+  }
+
+  .chartToolbar {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .chartCard,

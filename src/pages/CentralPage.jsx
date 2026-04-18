@@ -238,6 +238,12 @@ export default function CentralPage() {
     y: now.getFullYear(),
     m: now.getMonth(),
   }));
+  const [seriesVisibility, setSeriesVisibility] = useState({
+    clients: true,
+    revenue: true,
+    previous: true,
+    benchmark: true,
+  });
 
   const periodOptions = useMemo(buildPeriodOptions, []);
   const isNow =
@@ -384,6 +390,29 @@ export default function CentralPage() {
     chartMax * 0.25,
     0,
   ];
+  const peakClientsIndex = useMemo(() => {
+    if (bars.length === 0) return -1;
+    return bars.reduce(
+      (best, row, index, list) => (row.cnt > list[best].cnt ? index : best),
+      0
+    );
+  }, [bars]);
+  const peakRevenueIndex = useMemo(() => {
+    if (bars.length === 0) return -1;
+    return bars.reduce(
+      (best, row, index, list) =>
+        Number(row.mrr) > Number(list[best].mrr) ? index : best,
+      0
+    );
+  }, [bars]);
+  const hasBenchmarkSeries = Boolean(benchmarkLineD && benchmarkPoints.length);
+
+  const toggleSeries = (key) => {
+    setSeriesVisibility((current) => ({
+      ...current,
+      [key]: !current[key],
+    }));
+  };
 
   const ending = useMemo(
     () => clientsEndingSoon(clients, 30, now),
@@ -573,11 +602,66 @@ export default function CentralPage() {
         </section>
           </>
         )}
-        {/* --- Chart de linha --- */}
+        {/* --- Gráfico de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
-            <div>
-              <h3>Entradas de clientes e receita nova</h3>
+            <div className={styles.chartHeading}>
+              <h3>Evolução mensal</h3>
+              <p>Clientes e receita nova nos últimos 6 meses</p>
+            </div>
+            <div
+              className={styles.chartToolbar}
+              role="toolbar"
+              aria-label="Alternar séries do gráfico"
+            >
+              <button
+                type="button"
+                className={`${styles.seriesToggle} ${
+                  seriesVisibility.clients ? styles.seriesToggleActive : ''
+                }`}
+                onClick={() => toggleSeries('clients')}
+                aria-pressed={seriesVisibility.clients}
+              >
+                <i className={styles.legendClients} />
+                Clientes
+              </button>
+              <button
+                type="button"
+                className={`${styles.seriesToggle} ${
+                  seriesVisibility.revenue ? styles.seriesToggleActive : ''
+                }`}
+                onClick={() => toggleSeries('revenue')}
+                aria-pressed={seriesVisibility.revenue}
+              >
+                <i className={styles.legendRevenue} />
+                Receita nova
+              </button>
+              <button
+                type="button"
+                className={`${styles.seriesToggle} ${
+                  seriesVisibility.previous ? styles.seriesToggleActive : ''
+                }`}
+                onClick={() => toggleSeries('previous')}
+                aria-pressed={seriesVisibility.previous}
+              >
+                <i className={styles.legendComparison} />
+                Mês anterior
+              </button>
+              {hasBenchmarkSeries && (
+                <button
+                  type="button"
+                  className={`${styles.seriesToggle} ${
+                    seriesVisibility.benchmark
+                      ? styles.seriesToggleActive
+                      : ''
+                  }`}
+                  onClick={() => toggleSeries('benchmark')}
+                  aria-pressed={seriesVisibility.benchmark}
+                >
+                  <i className={styles.legendBenchmark} />
+                  Meta agregada
+                </button>
+              )}
             </div>
           </div>
 
@@ -586,7 +670,7 @@ export default function CentralPage() {
               className={styles.lineChart}
               viewBox={`0 0 ${CHART_W} ${CHART_H}`}
               role="img"
-              aria-label="Novos clientes por mês nos últimos 6 meses"
+              aria-label="Evolução mensal de clientes e receita nova nos últimos 6 meses"
             >
               <defs>
                 <linearGradient id="clientsLineFill" x1="0" y1="0" x2="0" y2="1">
@@ -626,17 +710,25 @@ export default function CentralPage() {
                 );
               })}
 
-              <path d={areaD} className={styles.areaPath} />
-              <path d={revenueAreaD} className={styles.revenueAreaPath} />
-              {benchmarkAreaD && (
+              {seriesVisibility.clients && (
+                <path d={areaD} className={styles.areaPath} />
+              )}
+              {seriesVisibility.revenue && (
+                <path d={revenueAreaD} className={styles.revenueAreaPath} />
+              )}
+              {hasBenchmarkSeries && seriesVisibility.benchmark && (
                 <path d={benchmarkAreaD} className={styles.benchmarkAreaPath} />
               )}
-              {previousLineD && (
+              {seriesVisibility.previous && previousLineD && (
                 <path d={previousLineD} className={styles.comparisonLinePath} />
               )}
-              <path d={lineD} className={styles.linePath} />
-              <path d={revenueLineD} className={styles.revenueLinePath} />
-              {benchmarkLineD && (
+              {seriesVisibility.clients && (
+                <path d={lineD} className={styles.linePath} />
+              )}
+              {seriesVisibility.revenue && (
+                <path d={revenueLineD} className={styles.revenueLinePath} />
+              )}
+              {hasBenchmarkSeries && seriesVisibility.benchmark && (
                 <path d={benchmarkLineD} className={styles.benchmarkLinePath} />
               )}
 
@@ -667,21 +759,27 @@ export default function CentralPage() {
                   >
                     {MONTHS[point.month]}
                   </text>
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r={point.isNow ? 7 : 5.5}
-                    className={`${styles.point} ${
-                      point.isNow ? styles.pointActive : ''
-                    }`}
-                  />
-                  <circle
-                    cx={revenuePoint.x}
-                    cy={revenuePoint.y}
-                    r={4.5}
-                    className={styles.revenuePoint}
-                  />
-                  {benchmarkPoint && (
+                  {seriesVisibility.clients && (
+                    <circle
+                      cx={point.x}
+                      cy={point.y}
+                      r={point.isNow ? 7 : 5.5}
+                      className={`${styles.point} ${
+                        point.isNow ? styles.pointActive : ''
+                      }`}
+                    />
+                  )}
+                  {seriesVisibility.revenue && (
+                    <circle
+                      cx={revenuePoint.x}
+                      cy={revenuePoint.y}
+                      r={4.5}
+                      className={styles.revenuePoint}
+                    />
+                  )}
+                  {hasBenchmarkSeries &&
+                    seriesVisibility.benchmark &&
+                    benchmarkPoint && (
                     <circle
                       cx={benchmarkPoint.x}
                       cy={benchmarkPoint.y}
@@ -689,6 +787,52 @@ export default function CentralPage() {
                       className={styles.benchmarkPoint}
                     />
                   )}
+                  {seriesVisibility.clients &&
+                    index === peakClientsIndex &&
+                    point.cnt > 0 && (
+                      <g className={styles.calloutGroup}>
+                        <rect
+                          x={point.x - 48}
+                          y={point.y - 58}
+                          width="96"
+                          height="26"
+                          rx="6"
+                          className={styles.clientsCallout}
+                        />
+                        <text
+                          x={point.x}
+                          y={point.y - 40}
+                          textAnchor="middle"
+                          className={styles.calloutText}
+                        >
+                          {`${point.cnt} cliente${
+                            point.cnt === 1 ? '' : 's'
+                          }`}
+                        </text>
+                      </g>
+                    )}
+                  {seriesVisibility.revenue &&
+                    index === peakRevenueIndex &&
+                    Number(point.mrr) > 0 && (
+                      <g className={styles.calloutGroup}>
+                        <rect
+                          x={revenuePoint.x - 56}
+                          y={revenuePoint.y - 92}
+                          width="112"
+                          height="26"
+                          rx="6"
+                          className={styles.revenueCallout}
+                        />
+                        <text
+                          x={revenuePoint.x}
+                          y={revenuePoint.y - 74}
+                          textAnchor="middle"
+                          className={styles.calloutText}
+                        >
+                          {fmtMoney(point.mrr)}
+                        </text>
+                      </g>
+                    )}
                   {hasEvents && (
                     <g>
                       <circle
@@ -719,7 +863,7 @@ export default function CentralPage() {
                       <span>Novos: {point.cnt}</span>
                       <span>Receita: {fmtMoney(point.mrr)}</span>
                       {previousPoint && (
-                        <span>Periodo anterior: {previousPoint.cnt}</span>
+                        <span>Período anterior: {previousPoint.cnt}</span>
                       )}
                       {benchmarkPoint && (
                         <span>Meta agregada: {point.benchmark}</span>
@@ -744,9 +888,9 @@ export default function CentralPage() {
               </span>
               <span>
                 <i className={styles.legendComparison} />
-                Periodo anterior
+                Período anterior
               </span>
-              {benchmarkLineD && (
+              {hasBenchmarkSeries && (
                 <span>
                   <i className={styles.legendBenchmark} />
                   Meta agregada
