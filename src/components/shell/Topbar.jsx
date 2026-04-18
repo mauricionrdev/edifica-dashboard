@@ -149,6 +149,7 @@ export default function Topbar({
 
       <div className="tbar-actions">
         {actions}
+        <div className={styles.controlRail}>
         <form
           className={styles.searchBox}
           ref={searchRef}
@@ -244,6 +245,7 @@ export default function Topbar({
               </button>
             </div>
           )}
+        </div>
         </div>
       </div>
     </header>
