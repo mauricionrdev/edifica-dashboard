@@ -25,6 +25,7 @@ import {
   UsersIcon,
 } from '../components/ui/Icons.jsx';
 import {
+  buildContractTrendData,
   buildWeeklyContractTrendData,
   clientsEndingSoon,
   computeCentralMetrics,
@@ -189,6 +190,17 @@ function formatCompactValue(value) {
   return new Intl.NumberFormat('pt-BR').format(Number(value) || 0);
 }
 
+const CHART_MODES = {
+  monthly: {
+    label: 'Evolução mensal',
+    ariaLabel: 'Evolução mensal de contratos fechados, meta ideal e super meta nos últimos 6 meses',
+  },
+  weekly: {
+    label: 'Evolução semanal',
+    ariaLabel: 'Evolução semanal de contratos fechados, meta ideal e super meta no mês selecionado',
+  },
+};
+
 function ChartCallout({ x, y, width, tone, children }) {
   const left = x - width / 2;
   const top = y - 38.38;
@@ -292,6 +304,8 @@ export default function CentralPage() {
     m: now.getMonth(),
   }));
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
+  const [chartModeOpen, setChartModeOpen] = useState(false);
+  const [chartMode, setChartMode] = useState('monthly');
 
   const periodOptions = useMemo(buildPeriodOptions, []);
   const isNow =
@@ -361,10 +375,15 @@ export default function CentralPage() {
     dashboardMetrics.total_clients
   );
 
-  const contractTrend = useMemo(
-    () => buildWeeklyContractTrendData(clients, period.y, period.m),
-    [clients, period]
-  );
+  const contractTrend = useMemo(() => {
+    if (chartMode === 'weekly') {
+      return buildWeeklyContractTrendData(clients, period.y, period.m);
+    }
+    return buildContractTrendData(clients, period.y, period.m).map((row) => ({
+      ...row,
+      label: MONTHS[row.m],
+    }));
+  }, [chartMode, clients, period]);
   const chartMax = useMemo(
     () =>
       niceMax(
@@ -434,6 +453,7 @@ export default function CentralPage() {
     const next = shiftPeriod(now.getFullYear(), now.getMonth(), offset);
     setPeriod(next);
     setChartPickerOpen(false);
+    setChartModeOpen(false);
   };
 
   // Registra título + seletor de período no panelHeader do AppShell.
@@ -552,10 +572,38 @@ export default function CentralPage() {
         {/* --- Gráfico de linha --- */}
         <section className={styles.chartCard}>
           <div className={styles.sectionHeader}>
-            <button type="button" className={styles.chartTitleButton}>
-              <span>Evolução mensal</span>
-              <ChevronDownIcon size={16} strokeWidth={2} />
-            </button>
+            <div className={styles.chartModePicker}>
+              <button
+                type="button"
+                className={styles.chartTitleButton}
+                onClick={() => setChartModeOpen((open) => !open)}
+                aria-expanded={chartModeOpen}
+                aria-haspopup="menu"
+              >
+                <span>{CHART_MODES[chartMode].label}</span>
+                <ChevronDownIcon size={16} strokeWidth={2} />
+              </button>
+              {chartModeOpen && (
+                <div className={styles.chartModeMenu} role="menu">
+                  {Object.entries(CHART_MODES).map(([mode, option]) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      className={`${styles.chartModeOption} ${
+                        chartMode === mode ? styles.chartModeOptionActive : ''
+                      }`}
+                      onClick={() => {
+                        setChartMode(mode);
+                        setChartModeOpen(false);
+                      }}
+                      role="menuitem"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className={styles.chartControls}>
               <div className={styles.chartControlGroup}>
                 <button
@@ -585,7 +633,10 @@ export default function CentralPage() {
                   className={`${styles.chartControlButton} ${
                     chartPickerOpen ? styles.chartControlButtonActive : ''
                   }`}
-                  onClick={() => setChartPickerOpen((open) => !open)}
+                  onClick={() => {
+                    setChartPickerOpen((open) => !open);
+                    setChartModeOpen(false);
+                  }}
                   aria-expanded={chartPickerOpen}
                   aria-haspopup="listbox"
                 >
@@ -603,6 +654,7 @@ export default function CentralPage() {
                           setPeriod({ y, m });
                         }
                         setChartPickerOpen(false);
+                        setChartModeOpen(false);
                       }}
                       aria-label="Selecionar período do gráfico"
                     >
@@ -623,7 +675,7 @@ export default function CentralPage() {
               className={styles.lineChart}
               viewBox={`0 0 ${CHART_W} ${CHART_H}`}
               role="img"
-              aria-label="Evolução mensal de contratos fechados, meta ideal e super meta nos últimos 6 meses"
+              aria-label={CHART_MODES[chartMode].ariaLabel}
             >
               <defs>
                 <linearGradient id="clientsLineFill" x1="0" y1="0" x2="0" y2="1">

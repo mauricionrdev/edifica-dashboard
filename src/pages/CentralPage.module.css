@@ -230,7 +230,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 32px;
+  margin-bottom: 30px;
 }
 
 .sectionHeader span {
@@ -257,20 +257,34 @@
   font-size: 13px;
 }
 
-.chartTitleButton {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #b3b3b3;
+.chartModePicker {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+}
+
+.chartTitleButton {
+  min-height: 40px;
+  padding: 0 10px 0 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #d7d7d9;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font: inherit;
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1;
-  font-weight: 760;
-  letter-spacing: 0.03em;
+  font-weight: 720;
+  letter-spacing: -0.025em;
   cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+.chartTitleButton:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .chartTitleButton span {
@@ -285,17 +299,57 @@
 }
 
 .chartTitleButton svg {
-  color: #ece6d8;
-  opacity: 0.92;
+  color: #c3c3c6;
+  opacity: 0.86;
   width: 16px;
   height: 16px;
   flex: 0 0 auto;
 }
 
+.chartModeMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 4;
+  width: 188px;
+  padding: 6px;
+  border: 1px solid #2d2d2d;
+  border-radius: 10px;
+  background:
+    linear-gradient(145deg, rgba(21, 21, 21, 0.98), rgba(13, 13, 13, 0.98)) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(245, 195, 0, 0.06)) border-box;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.36);
+}
+
+.chartModeOption {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #a1a1aa;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.chartModeOption:hover,
+.chartModeOptionActive {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
 .chartControls {
   display: inline-flex;
   align-items: center;
-  gap: 32px;
+  gap: 24px;
   flex-wrap: nowrap;
 }
 
@@ -307,7 +361,10 @@
   gap: 0;
   padding: 4px 6px;
   border-radius: 8px;
-  background: #262626;
+  border: 1px solid #2b2b2b;
+  background:
+    linear-gradient(145deg, rgba(37, 37, 37, 0.94), rgba(26, 26, 26, 0.96)) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) border-box;
 }
 
 .chartControlButton {
@@ -316,15 +373,15 @@
   padding: 0 17px;
   border: 1px solid transparent;
   border-radius: 4px;
-  background: #262626;
-  color: #dfdcd7;
+  background: transparent;
+  color: #c3c3c6;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   font: inherit;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 650;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
@@ -348,12 +405,14 @@
 }
 
 .chartControlButton:hover {
-  background: #313131;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
 }
 
 .chartControlButtonActive {
-  background: rgba(77, 77, 77, 0.5);
+  background: rgba(255, 255, 255, 0.09);
   border-color: transparent;
+  color: #ffffff;
 }
 
 .chartPeriodPicker {
@@ -365,6 +424,10 @@
   height: 41px;
   justify-content: center;
   border-radius: 8px;
+  border: 1px solid #2b2b2b;
+  background:
+    linear-gradient(145deg, rgba(37, 37, 37, 0.94), rgba(26, 26, 26, 0.96)) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)) border-box;
 }
 
 .chartPeriodPopover {
