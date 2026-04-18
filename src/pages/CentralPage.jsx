@@ -732,7 +732,7 @@ export default function CentralPage() {
                 const stretchPoint = stretchPoints[index];
                 return (
                   <g
-                    key={`${point.year}-${point.month}`}
+                    key={`${chartMode}-${point.label}-${index}`}
                     className={styles.dataNode}
                     tabIndex="0"
                     aria-label={`${point.label}: ${point.contracts} contratos fechados, meta ideal ${point.ideal} e super meta ${point.stretch}`}
