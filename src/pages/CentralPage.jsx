@@ -189,6 +189,38 @@ function formatCompactValue(value) {
   return new Intl.NumberFormat('pt-BR').format(Number(value) || 0);
 }
 
+function ChartCallout({ x, y, width, tone, children }) {
+  const left = x - width / 2;
+  const top = y - 38.38;
+  const tipTop = top + 23;
+  const tipBottom = top + 26.75;
+
+  return (
+    <g className={styles.calloutGroup}>
+      <rect
+        x={left + 0.25}
+        y={top + 0.25}
+        width={width - 0.5}
+        height="22.5"
+        rx="1.75"
+        className={`${styles.calloutBox} ${styles[`calloutBox_${tone}`]}`}
+      />
+      <text
+        x={x}
+        y={top + 14.75}
+        textAnchor="middle"
+        className={styles.calloutText}
+      >
+        {children}
+      </text>
+      <path
+        d={`M ${x - 3.0311} ${tipTop} L ${x + 3.0311} ${tipTop} L ${x} ${tipBottom} Z`}
+        className={`${styles.calloutTip} ${styles[`calloutTip_${tone}`]}`}
+      />
+    </g>
+  );
+}
+
 function ratioPercent(part, total) {
   if (!total || total <= 0) return 0;
   return Math.max(0, Math.min((part / total) * 100, 999));
@@ -707,78 +739,21 @@ export default function CentralPage() {
                       }`}
                     />
                     {index === peakIdealIndex && point.ideal > 0 && (
-                      <g className={styles.calloutGroup}>
-                        <rect
-                          x={idealPoint.x - 37.75}
-                          y={idealPoint.y - 38.13}
-                          width="75.5"
-                          height="22.5"
-                          rx="1.75"
-                          className={styles.idealCallout}
-                        />
-                        <text
-                          x={idealPoint.x}
-                          y={idealPoint.y - 23.8}
-                          textAnchor="middle"
-                          className={styles.calloutText}
-                        >
-                          {`${fmtInt(point.ideal)} Contratos`}
-                        </text>
-                        <path
-                          d={`M ${idealPoint.x - 4.33} ${idealPoint.y - 15.13} L ${idealPoint.x + 4.33} ${idealPoint.y - 15.13} L ${idealPoint.x} ${idealPoint.y - 11.38} Z`}
-                          className={styles.idealCallout}
-                        />
-                      </g>
+                      <ChartCallout x={idealPoint.x} y={idealPoint.y} width={76} tone="ideal">
+                        {`${fmtInt(point.ideal)} Contratos`}
+                      </ChartCallout>
                     )}
                     {index === peakClientsIndex && point.contracts > 0 && (
-                      <g className={styles.calloutGroup}>
-                        <rect
-                          x={point.x - 34.75}
-                          y={point.y - 38.94}
-                          width="69.5"
-                          height="22.5"
-                          rx="1.75"
-                          className={styles.clientsCallout}
-                        />
-                        <text
-                          x={point.x}
-                          y={point.y - 24.6}
-                          textAnchor="middle"
-                          className={styles.calloutText}
-                        >
-                          {`${fmtInt(point.contracts)} Contrato${
-                            point.contracts === 1 ? '' : 's'
-                          }`}
-                        </text>
-                        <path
-                          d={`M ${point.x - 4.33} ${point.y - 15.94} L ${point.x + 4.33} ${point.y - 15.94} L ${point.x} ${point.y - 12.19} Z`}
-                          className={styles.clientsCallout}
-                        />
-                      </g>
+                      <ChartCallout x={point.x} y={point.y} width={70} tone="clients">
+                        {`${fmtInt(point.contracts)} Contrato${
+                          point.contracts === 1 ? '' : 's'
+                        }`}
+                      </ChartCallout>
                     )}
                     {index === contractTrend.length - 1 && point.stretch > 0 && (
-                      <g className={styles.calloutGroup}>
-                        <rect
-                          x={stretchPoint.x - 37.75}
-                          y={stretchPoint.y - 38.13}
-                          width="75.5"
-                          height="22.5"
-                          rx="1.75"
-                          className={styles.revenueCallout}
-                        />
-                        <text
-                          x={stretchPoint.x}
-                          y={stretchPoint.y - 23.8}
-                          textAnchor="middle"
-                          className={styles.calloutText}
-                        >
-                          {`${fmtInt(point.stretch)} Contratos`}
-                        </text>
-                        <path
-                          d={`M ${stretchPoint.x - 4.33} ${stretchPoint.y - 15.13} L ${stretchPoint.x + 4.33} ${stretchPoint.y - 15.13} L ${stretchPoint.x} ${stretchPoint.y - 11.38} Z`}
-                          className={styles.revenueCallout}
-                        />
-                      </g>
+                      <ChartCallout x={stretchPoint.x} y={stretchPoint.y} width={76} tone="stretch">
+                        {`${fmtInt(point.stretch)} Contratos`}
+                      </ChartCallout>
                     )}
                     <foreignObject
                       x={Math.min(Math.max(point.x - 96, 4), CHART_W - 204)}

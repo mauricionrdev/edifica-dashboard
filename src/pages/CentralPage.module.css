@@ -572,25 +572,52 @@
   font-weight: 900;
 }
 
-.clientsCallout {
-  fill: rgba(112, 134, 253, 0.3);
-  stroke: #7086fd;
-}
-
-.idealCallout {
-  fill: rgba(111, 209, 149, 0.3);
-  stroke: #6fd195;
-}
-
-.revenueCallout {
-  fill: rgba(255, 174, 76, 0.3);
-  stroke: #ffae4c;
-}
-
 .calloutText {
   fill: #ffffff;
   font-size: 13px;
   font-weight: 600;
+  dominant-baseline: auto;
+  pointer-events: none;
+}
+
+.calloutBox {
+  stroke-width: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.calloutBox_clients {
+  fill: rgba(112, 134, 253, 0.3);
+  stroke: #7086fd;
+}
+
+.calloutBox_ideal {
+  fill: rgba(111, 209, 149, 0.3);
+  stroke: #6fd195;
+}
+
+.calloutBox_stretch {
+  fill: rgba(255, 174, 76, 0.3);
+  stroke: #ffae4c;
+}
+
+.calloutTip {
+  stroke-width: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.calloutTip_clients {
+  fill: #7086fd;
+  stroke: #7086fd;
+}
+
+.calloutTip_ideal {
+  fill: #6fd195;
+  stroke: #6fd195;
+}
+
+.calloutTip_stretch {
+  fill: #ffae4c;
+  stroke: none;
 }
 
 .dataNode {
