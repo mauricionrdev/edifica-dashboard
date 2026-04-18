@@ -344,10 +344,10 @@ export default function CentralPage() {
     () => buildChartPoints(contractTrend, chartMax, 'stretch'),
     [contractTrend, chartMax]
   );
-  const lineD = useMemo(() => buildLinearPath(chartPoints), [chartPoints]);
-  const idealLineD = useMemo(() => buildLinearPath(idealPoints), [idealPoints]);
+  const lineD = useMemo(() => smoothPath(chartPoints), [chartPoints]);
+  const idealLineD = useMemo(() => smoothPath(idealPoints), [idealPoints]);
   const stretchLineD = useMemo(
-    () => buildLinearPath(stretchPoints),
+    () => smoothPath(stretchPoints),
     [stretchPoints]
   );
   const baselineY = CHART_H - CHART_PAD.bottom;

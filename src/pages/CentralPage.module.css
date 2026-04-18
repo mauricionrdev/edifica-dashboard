@@ -283,7 +283,7 @@
 .chartControls {
   display: inline-flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -293,12 +293,12 @@
   gap: 0;
   padding: 4px;
   border-radius: 10px;
-  background: #262626;
+  background: #252525;
 }
 
 .chartControlButton {
   min-height: 40px;
-  padding: 0 18px;
+  padding: 0 17px;
   border: 1px solid transparent;
   border-radius: 10px;
   background: #2a2a2a;
@@ -308,7 +308,7 @@
   gap: 9px;
   font: inherit;
   font-size: 13px;
-  font-weight: 560;
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
@@ -394,14 +394,14 @@
   stroke: rgba(255, 255, 255, 0.055);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1 6;
+  stroke-dasharray: 1 5;
 }
 
 .gridLineVertical {
   stroke: rgba(255, 255, 255, 0.05);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1 7;
+  stroke-dasharray: 1 5;
 }
 
 .tickLine {
@@ -428,7 +428,7 @@
 .linePath {
   fill: none;
   stroke: #6f86ff;
-  stroke-width: 1.8;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: none;
@@ -438,7 +438,7 @@
 .revenueLinePath {
   fill: none;
   stroke: #66d59a;
-  stroke-width: 1.8;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: none;
@@ -458,14 +458,14 @@
 .benchmarkLinePath {
   fill: none;
   stroke: #f3a43d;
-  stroke-width: 1.8;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 
 .point {
-  fill: #151515;
+  fill: #f3f6ff;
   stroke: #6f86ff;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
@@ -473,12 +473,12 @@
 }
 
 .pointActive {
-  fill: #f4f4f4;
+  fill: #ffffff;
   stroke: #6f86ff;
 }
 
 .revenuePoint {
-  fill: #151515;
+  fill: #f7fffb;
   stroke: #66d59a;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
@@ -486,7 +486,7 @@
 }
 
 .benchmarkPoint {
-  fill: #151515;
+  fill: #fffaf1;
   stroke: #f3a43d;
   stroke-width: 2.4;
   vector-effect: non-scaling-stroke;
@@ -523,7 +523,7 @@
 
 .calloutText {
   fill: #f4f4f4;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -574,7 +574,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: 26px;
   color: #8e8e8e;
   font-size: 13px;
   margin-top: 10px;
@@ -591,7 +591,7 @@
   height: 12px;
   border-radius: 999px;
   display: inline-block;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08) inset;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.34) inset;
 }
 
 .legendClients {

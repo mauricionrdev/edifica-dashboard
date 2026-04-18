@@ -41,7 +41,7 @@ export function fmtDec(n) {
 export function fmtPct(n) {
   const v = Number(n);
   if (!Number.isFinite(v)) return '0%';
-  return `${DEC2.format(v)}%`;
+  return DEC2.format(v) + '%';
 }
 
 export const MONTHS = [
@@ -78,7 +78,7 @@ export const MONTHS_FULL = [
  * Retorna prefixo 'YYYY-MM' para uma data ou para (year, month0).
  */
 export function monthKey(year, month0) {
-  return `${year}-${String(month0 + 1).padStart(2, '0')}`;
+  return String(year) + '-' + String(month0 + 1).padStart(2, '0');
 }
 
 /**
