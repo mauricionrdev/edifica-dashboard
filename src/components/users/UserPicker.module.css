@@ -9,7 +9,7 @@
 .trigger {
   width: 100%;
   min-width: 0;
-  min-height: 32px;
+  min-height: 30px;
   padding: 0 8px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -26,7 +26,7 @@
 
 .trigger:hover,
 .trigger:focus-visible {
-  border-color: var(--line);
+  border-color: var(--line-strong);
   background: rgba(255, 255, 255, 0.035);
   outline: none;
 }
@@ -34,6 +34,11 @@
 .trigger:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.selectedUser {
+  min-width: 0;
+  display: contents;
 }
 
 .avatar {
@@ -59,6 +64,7 @@
 
 .triggerText {
   min-width: 0;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 620;
   overflow: hidden;
@@ -68,14 +74,14 @@
 
 .popover {
   position: absolute;
-  z-index: 950;
+  z-index: 850;
   top: calc(100% + 6px);
   left: 0;
   width: min(420px, calc(100vw - 48px));
   max-height: 360px;
   border: 1px solid var(--line-strong);
   border-radius: 10px;
-  background: #202122;
+  background: #151617;
   box-shadow: 0 18px 54px rgba(0, 0, 0, 0.46);
   overflow: hidden;
   display: grid;
@@ -85,6 +91,7 @@
 .searchWrap {
   padding: 10px;
   border-bottom: 1px solid var(--line);
+  background: #151617;
 }
 
 .searchWrap input {
@@ -92,7 +99,7 @@
   height: 34px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #151617;
+  background: #101112;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 13px;
@@ -101,7 +108,12 @@
 }
 
 .searchWrap input:focus {
-  border-color: color-mix(in srgb, var(--accent-amber) 38%, var(--line-strong));
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.searchWrap input::placeholder {
+  color: var(--text-quaternary);
 }
 
 .list {

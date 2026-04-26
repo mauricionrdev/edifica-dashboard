@@ -934,3 +934,35 @@
 .dueOffsetInput::placeholder {
   color: var(--text-tertiary) !important;
 }
+
+
+/* HOTFIX v15 — remover prazo do modelo e avatar duplicado */
+.tableHeader {
+  grid-template-columns: minmax(340px, 1fr) minmax(210px, 280px) 120px 44px !important;
+}
+
+.taskRow {
+  grid-template-columns: 32px minmax(320px, 1fr) minmax(210px, 280px) 120px 44px !important;
+}
+
+.dueOffsetCell,
+.dueOffsetBadge,
+.dueOffsetInput {
+  display: none !important;
+}
+
+.assigneeCell {
+  min-width: 0 !important;
+  display: block !important;
+}
+
+.assigneeSelect {
+  width: 100% !important;
+}
+
+@media (max-width: 980px) {
+  .tableHeader,
+  .taskRow {
+    grid-template-columns: 1fr !important;
+  }
+}

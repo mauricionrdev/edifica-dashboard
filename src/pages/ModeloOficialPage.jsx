@@ -11,7 +11,6 @@ import { useAutoSave } from '../hooks/useAutoSave.js';
 import { ChevronDownIcon, CloseIcon, PlusIcon, RotateCcwIcon } from '../components/ui/Icons.jsx';
 import Select from '../components/ui/Select.jsx';
 import UserPicker from '../components/users/UserPicker.jsx';
-import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import styles from './ModeloOficialPage.module.css';
 
@@ -25,7 +24,6 @@ function normalizeTemplate(raw) {
       assignee: String(task?.assignee || ''),
       assigneeId: String(task?.assigneeId || ''),
       notes: String(task?.notes || ''),
-      dueOffsetDays: Number.isFinite(Number(task?.dueOffsetDays)) ? Number(task.dueOffsetDays) : '',
       showNote: Boolean(task?.showNote),
       subs: (task?.subs || []).map((sub) => ({ name: String(sub?.name || '') })),
     })),
@@ -40,9 +38,6 @@ function sectionsForApi(sections) {
       assignee: task.assignee || '',
       assigneeId: task.assigneeId || '',
       notes: task.notes || '',
-      dueOffsetDays: task.dueOffsetDays === '' || task.dueOffsetDays === null || task.dueOffsetDays === undefined
-        ? ''
-        : Number(task.dueOffsetDays),
       ...(task.subs?.length ? { subs: task.subs.map((sub) => ({ name: sub.name })) } : {}),
     })),
   }));
@@ -61,19 +56,6 @@ function initials(name = '') {
     .toUpperCase();
 }
 
-function dueOffsetLabel(value) {
-  if (value === '' || value === null || value === undefined) return 'Sem prazo';
-  const number = Number(value);
-  if (!Number.isFinite(number) || number <= 0) return 'Sem prazo';
-  return `D+${number}`;
-}
-
-function normalizeDueOffsetInput(value) {
-  const clean = String(value || '').replace(/[^0-9]/g, '');
-  if (!clean) return '';
-  const number = Math.max(0, Math.min(365, Number(clean)));
-  return number > 0 ? number : '';
-}
 
 function SaveStatusPill({ status }) {
   if (!status || status === 'idle') return null;
@@ -311,21 +293,6 @@ export default function ModeloOficialPage() {
       )
     );
   };
-
-  const setTaskDueOffset = (si, ti, dueOffsetDays) =>
-    setSections((prev) =>
-      prev.map((section, i) =>
-        i !== si
-          ? section
-          : {
-              ...section,
-              tasks: section.tasks.map((task, j) =>
-                j !== ti ? task : { ...task, dueOffsetDays: normalizeDueOffsetInput(dueOffsetDays) }
-              ),
-            }
-      )
-    );
-
   const toggleTaskNote = (si, ti) =>
     setSections((prev) =>
       prev.map((section, i) =>
@@ -358,7 +325,7 @@ export default function ModeloOficialPage() {
     if (!name) return;
     setSections((prev) =>
       prev.map((section, i) =>
-        i !== si ? section : { ...section, tasks: [...section.tasks, { name, notes: '', dueOffsetDays: '', subs: [] }] }
+        i !== si ? section : { ...section, tasks: [...section.tasks, { name, notes: '', subs: [] }] }
       )
     );
     setAddDraft((draft) => ({ ...draft, [si]: '' }));
@@ -431,7 +398,6 @@ export default function ModeloOficialPage() {
         <div className={styles.tableHeader}>
           <span>Tarefa</span>
           <span>Responsável</span>
-          <span>Prazo</span>
           <span>Nota</span>
           <span />
         </div>
@@ -539,15 +505,6 @@ export default function ModeloOficialPage() {
                         </div>
 
                         <div className={styles.assigneeCell}>
-                          {assignee ? (
-                            <UserHoverCard user={assignee} placement="top">
-                              <span className={styles.avatar} aria-hidden="true">
-                                {renderAvatar(assignee, task.assignee)}
-                              </span>
-                            </UserHoverCard>
-                          ) : (
-                            <span className={styles.avatar} aria-hidden="true">NA</span>
-                          )}
                           <UserPicker
                             className={styles.assigneeSelect}
                             users={directoryUsers}
@@ -555,19 +512,6 @@ export default function ModeloOficialPage() {
                             disabled={!admin}
                             onChange={(userId) => setTaskAssignee(si, ti, userId)}
                             placeholder="Sem responsável"
-                          />
-                        </div>
-
-                        <div className={styles.dueOffsetCell}>
-                          <input
-                            className={styles.dueOffsetInput}
-                            value={task.dueOffsetDays}
-                            disabled={!admin}
-                            inputMode="numeric"
-                            placeholder="Sem prazo"
-                            title={dueOffsetLabel(task.dueOffsetDays)}
-                            onChange={(event) => setTaskDueOffset(si, ti, event.target.value)}
-                            aria-label="Prazo relativo em dias"
                           />
                         </div>
 

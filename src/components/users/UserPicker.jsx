@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
+import UserHoverCard from './UserHoverCard.jsx';
 import styles from './UserPicker.module.css';
 
 function initials(value = '') {
@@ -88,14 +89,19 @@ export default function UserPicker({
           setOpen((current) => !current);
         }}
       >
-        <span className={styles.avatar}>
-          {selected ? (
-            selectedAvatar ? <img src={selectedAvatar} alt="" /> : initials(selected.name)
-          ) : (
-            'NA'
-          )}
-        </span>
-        <span className={styles.triggerText}>{selected?.name || placeholder}</span>
+        {selected ? (
+          <UserHoverCard user={selected} placement="bottom" className={styles.selectedUser}>
+            <span className={styles.avatar}>
+              {selectedAvatar ? <img src={selectedAvatar} alt="" /> : initials(selected.name)}
+            </span>
+            <span className={styles.triggerText}>{selected.name}</span>
+          </UserHoverCard>
+        ) : (
+          <>
+            <span className={styles.avatar}>NA</span>
+            <span className={styles.triggerText}>{placeholder}</span>
+          </>
+        )}
       </button>
 
       {open ? (

@@ -11,7 +11,7 @@
   padding: 16px;
   border: 1px solid var(--line-strong);
   border-radius: 12px;
-  background: #202122;
+  background: #151617;
   color: var(--text-primary);
   box-shadow: 0 18px 54px rgba(0, 0, 0, 0.52);
   pointer-events: auto;
@@ -89,6 +89,7 @@
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   color: var(--text-primary);
+  background: transparent;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -100,7 +101,7 @@
 
 .action:hover {
   background: rgba(255, 255, 255, 0.045);
-  border-color: color-mix(in srgb, var(--accent-amber) 36%, var(--line-strong));
+  border-color: var(--text-tertiary);
 }
 
 @keyframes user-card-in {
