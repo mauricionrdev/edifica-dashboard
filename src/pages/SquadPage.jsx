@@ -728,6 +728,36 @@ export default function SquadPage() {
         onChange={handlePickLogo}
       />
 
+      {selectedClient ? (
+        <section className={styles.stickyResultBar}>
+          <span className={styles.clientAvatarMini}>{initialsFromClient(selectedClient.name)}</span>
+          <strong>{selectedClient.name}</strong>
+
+          <div className={styles.stickyMetric}>
+            <span>Fechados</span>
+            <b>{displayInt(selectedClient.calc.fec)}</b>
+          </div>
+
+          <div className={styles.stickyMetric}>
+            <span>Meta</span>
+            <b>{selectedClient.calc.mLuc > 0 ? displayInt(selectedClient.calc.mLuc) : '—'}</b>
+          </div>
+
+          <div className={styles.stickyMetric}>
+            <span>Gap</span>
+            <b>{selectedClient.calc.mLuc > 0 ? displayInt(selectedClient.weeklyGap) : '—'}</b>
+          </div>
+
+          <span className={`${styles.badge} ${toneClass(styles, selectedClient.tone)}`.trim()}>
+            {selectedClient.statusText}
+          </span>
+
+          <button type="button" className={styles.clearSelectionMini} onClick={() => setSelectedClientId(null)}>
+            Limpar
+          </button>
+        </section>
+      ) : null}
+
       <section className={styles.topArea}>
         {selectedClient ? (
           <section className={styles.selectedStrip}>
