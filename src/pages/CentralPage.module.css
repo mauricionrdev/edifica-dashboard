@@ -1,6 +1,6 @@
 .dashboard {
   min-height: 100%;
-  padding: 10px 14px 16px;
+  padding: 11px 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -25,20 +25,22 @@
 .metricCard {
   height: 84px;
   padding: 11px 12px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-subtle);
   border-radius: 12px;
-  background: var(--surface-panel);
+  background: rgba(255, 255, 255, 0.021);
   display: flex;
   flex-direction: column;
   gap: 7px;
   overflow: hidden;
   cursor: grab;
   box-shadow: none;
+  transition: border-color 0.14s ease, background-color 0.14s ease, transform 0.14s ease;
 }
 
 .metricCard:hover {
-  border-color: var(--line-strong);
-  background: var(--surface-raised);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.032);
+  transform: translateY(-1px);
 }
 
 .metricCardDragging {
@@ -67,7 +69,7 @@
   flex: 0 0 auto;
   border-radius: 999px;
   background: var(--line-strong);
-  opacity: 0.5;
+  opacity: 0.32;
 }
 
 .metricBody {
@@ -80,7 +82,7 @@
   color: var(--text-tertiary);
   font-size: 9px;
   font-weight: 590;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
@@ -88,10 +90,10 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(22px, 1.7vw, 28px);
-  line-height: 1.03;
+  font-size: clamp(22px, 1.65vw, 27px);
+  line-height: 1.02;
   font-weight: 590;
-  letter-spacing: -0.052em;
+  letter-spacing: -0.055em;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -123,7 +125,7 @@
 
 .dashboardPanels {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(350px, 0.86fr);
+  grid-template-columns: minmax(0, 1.72fr) minmax(350px, 0.86fr);
   gap: 10px;
   align-items: stretch;
 }
@@ -131,9 +133,9 @@
 .boardSection,
 .detailsPanel,
 .projectsPanel {
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-subtle);
   border-radius: 12px;
-  background: var(--surface-panel);
+  background: rgba(255, 255, 255, 0.021);
   overflow: hidden;
   box-shadow: none;
 }
@@ -200,7 +202,7 @@
   overflow: hidden;
   color: var(--text-quaternary);
   font-size: 10.5px;
-  font-weight: 520;
+  font-weight: 510;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -209,7 +211,7 @@
   min-width: 18px;
   color: var(--text-primary);
   font-size: 17px;
-  font-weight: 650;
+  font-weight: 590;
   letter-spacing: -0.04em;
   text-align: right;
 }
@@ -230,8 +232,8 @@
 .columnBar {
   width: 100%;
   min-height: 34px;
-  border-radius: 6px 6px 0 0;
-  background: var(--chart-bar);
+  border-radius: 7px 7px 0 0;
+  background: rgba(255, 255, 255, 0.052);
 }
 
 .columnBarCurrent {
@@ -243,7 +245,7 @@
   align-items: end;
   color: var(--text-quaternary);
   font-size: 10.5px;
-  font-weight: 520;
+  font-weight: 510;
 }
 
 .columnsLegend {
@@ -277,7 +279,7 @@
   color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1;
-  font-weight: 590;
+  font-weight: 510;
   letter-spacing: -0.01em;
 }
 
@@ -309,8 +311,8 @@
   color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1.1;
-  font-weight: 650;
-  letter-spacing: 0.13em;
+  font-weight: 590;
+  letter-spacing: 0.135em;
   text-transform: uppercase;
 }
 
@@ -321,7 +323,7 @@
   color: var(--text-primary);
   font-size: 16px;
   line-height: 1;
-  font-weight: 650;
+  font-weight: 590;
   letter-spacing: -0.04em;
   white-space: nowrap;
 }
@@ -333,7 +335,7 @@
   color: var(--success);
   font-size: 11px;
   line-height: 1.1;
-  font-weight: 650;
+  font-weight: 590;
   letter-spacing: -0.01em;
 }
 
@@ -345,7 +347,7 @@
 }
 
 .projectsHeader {
-  min-height: 52px;
+  min-height: 50px;
   padding: 0 18px;
 }
 
@@ -359,7 +361,7 @@
 }
 
 .projectsList {
-  padding: 10px 18px 14px;
+  padding: 8px 18px 14px;
   display: grid;
   grid-template-columns: 1fr;
 }
@@ -370,7 +372,7 @@
   padding: 8px 0;
   border-bottom: 1px solid var(--line-subtle);
   display: grid;
-  grid-template-columns: 28px minmax(260px, 1fr) minmax(132px, 176px) 42px minmax(104px, auto);
+  grid-template-columns: 30px minmax(260px, 1fr) minmax(132px, 176px) minmax(104px, auto);
   align-items: center;
   gap: 14px;
   color: var(--text-secondary);
@@ -389,11 +391,11 @@
 }
 
 .projectMark {
-  width: 24px;
-  height: 24px;
-  border: 0;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.035);
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(245, 184, 0, 0.075);
   color: var(--accent-amber);
   display: inline-flex;
   align-items: center;
@@ -437,7 +439,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 10px;
 }
 
 .projectProgressGroup strong {
@@ -476,7 +478,7 @@
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.024);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -515,7 +517,7 @@
 .stateBlock strong {
   color: var(--text-primary);
   font-size: 16px;
-  font-weight: 650;
+  font-weight: 590;
 }
 
 .retryButton {
@@ -656,7 +658,7 @@
   }
 
   .projectItem {
-    grid-template-columns: 8px 26px minmax(0, 1fr);
+    grid-template-columns: 30px minmax(0, 1fr);
     align-items: start;
     row-gap: 8px;
   }
@@ -664,7 +666,7 @@
   .projectProgressGroup,
   .projectTaskCount,
   .projectStatus {
-    grid-column: 3;
+    grid-column: 2;
   }
 }
 
