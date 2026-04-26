@@ -4,59 +4,50 @@
   background: var(--surface);
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 14px;
 }
 
 .hiddenInput {
   display: none;
 }
 
-.stickySummary {
-  position: sticky;
-  top: 0;
-  z-index: 8;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 4px 0 14px;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(8, 9, 10, 0.985) 0%,
-      rgba(8, 9, 10, 0.985) 78%,
-      rgba(8, 9, 10, 0.94) 100%
-    );
-  backdrop-filter: blur(12px);
-}
-
 .headerIdentity {
   min-width: 0;
   display: inline-flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
 }
 
 .headerLogo {
   position: relative;
-  width: 50px;
-  height: 50px;
-  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
   padding: 0;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 999px;
-  background: var(--bg-raised);
-  color: var(--text-primary);
+  background: transparent;
   display: grid;
   place-items: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .headerLogo:disabled {
   cursor: default;
 }
 
-.headerLogoImage,
-.headerLogo img {
+.headerLogoFrame {
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.headerLogoFrame img {
   width: 100%;
   height: 100%;
   display: block;
@@ -64,7 +55,7 @@
   object-position: center;
 }
 
-.headerLogo span {
+.headerLogoFrame span {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 700;
@@ -74,6 +65,7 @@
 .headerLogo em {
   position: absolute;
   inset: 0;
+  border-radius: 999px;
   background: rgba(8, 9, 10, 0.78);
   color: var(--text-primary);
   display: grid;
@@ -272,6 +264,16 @@
   animation: squad-spin 0.8s linear infinite;
 }
 
+.stickyTopRail {
+  position: static;
+  z-index: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 0;
+  background: transparent;
+}
+
 .selectedStrip {
   min-height: 58px;
   padding: 9px 12px;
@@ -356,7 +358,8 @@
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 9px;
-  padding-bottom: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 .metricCard {
@@ -432,14 +435,10 @@
   text-overflow: ellipsis;
 }
 
-.listToolbarShell {
-  padding-top: 2px;
-  border-bottom: 1px solid var(--line);
-}
-
 .listToolbar {
   min-height: 42px;
   padding: 0 2px 10px;
+  border-bottom: 1px solid var(--line);
   display: grid;
   grid-template-columns: minmax(160px, max-content) minmax(280px, 520px);
   align-items: center;
@@ -534,7 +533,6 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding-top: 2px;
 }
 
 .clientList {
@@ -675,17 +673,38 @@
 }
 
 .pagination {
+  padding: 16px 4px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 16px 4px 0;
+  gap: 12px;
 }
 
-.paginationButton,
-.paginationPage {
+.paginationInfo {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.paginationControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paginationCurrent {
+  min-width: 110px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 590;
+}
+
+.paginationButton {
   min-height: 34px;
+  padding: 0 12px;
   border: 1px solid var(--line);
+  border-radius: 10px;
   background: transparent;
   color: var(--text-secondary);
   font-family: inherit;
@@ -694,51 +713,15 @@
   cursor: pointer;
 }
 
-.paginationButton {
-  padding: 0 12px;
-  border-radius: 999px;
-}
-
-.paginationPage {
-  min-width: 34px;
-  padding: 0 10px;
-  border-radius: 10px;
-}
-
-.paginationButton:hover,
-.paginationPage:hover {
+.paginationButton:hover:not(:disabled) {
   border-color: var(--line-strong);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
 }
 
 .paginationButton:disabled {
-  opacity: 0.42;
-  cursor: default;
-}
-
-.paginationButton:disabled:hover {
-  border-color: var(--line);
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-.paginationNumbers {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.paginationPageActive {
-  border-color: rgba(245, 184, 0, 0.24);
-  background: rgba(245, 184, 0, 0.12);
-  color: var(--accent);
-}
-
-.paginationDots {
-  min-width: 22px;
-  color: var(--text-tertiary);
-  text-align: center;
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .inlineAction,
@@ -797,16 +780,6 @@
   .clientStatus {
     justify-content: flex-start;
   }
-
-  .pagination {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .paginationNumbers {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
 }
 
 @media (max-width: 920px) {
@@ -815,8 +788,11 @@
   }
 
   .selectedStrip,
-  .listToolbar {
+  .listToolbar,
+  .pagination {
     grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .selectedMeta {
@@ -827,15 +803,15 @@
     padding-left: 0;
     border-left: 0;
   }
+
+  .paginationControls {
+    justify-content: space-between;
+  }
 }
 
 @media (max-width: 820px) {
   .page {
     padding: 14px 14px 20px;
-  }
-
-  .stickySummary {
-    top: 0;
   }
 
   .headerActions {
