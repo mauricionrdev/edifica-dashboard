@@ -27,6 +27,7 @@ export default function UserPicker({
   searchPlaceholder = 'Buscar usuário...',
   className = '',
   showRole = false,
+  variant = 'default',
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -76,6 +77,8 @@ export default function UserPicker({
   return (
     <span
       className={`${styles.root} ${className}`.trim()}
+      data-variant={variant}
+      data-open={open ? 'true' : 'false'}
       onBlur={scheduleClose}
       onFocus={cancelClose}
       onMouseDown={cancelClose}

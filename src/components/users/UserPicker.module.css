@@ -177,3 +177,70 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+/* PATCH v22 — variante drawer */
+.root[data-open='true'] {
+  z-index: 1600;
+}
+
+.root[data-variant='drawer'] {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+}
+
+.root[data-variant='drawer'] .trigger {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0d0e0f;
+}
+
+.root[data-variant='drawer'] .trigger:hover,
+.root[data-variant='drawer'] .trigger:focus-visible {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.root[data-variant='drawer'] .triggerText {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 640;
+}
+
+.root[data-variant='drawer'] .popover {
+  top: calc(100% + 8px);
+  left: 0;
+  right: auto;
+  width: 100%;
+  max-width: none;
+  max-height: 320px;
+  border-radius: 12px;
+  z-index: 1601;
+}
+
+.root[data-variant='drawer'] .searchWrap {
+  padding: 10px;
+}
+
+.root[data-variant='drawer'] .searchWrap input {
+  height: 36px;
+  border-color: var(--line);
+  border-radius: 10px;
+  background: #101112;
+}
+
+.root[data-variant='drawer'] .searchWrap input:focus {
+  border-color: var(--line-strong);
+  outline: none;
+  box-shadow: none;
+}
+
+.root[data-variant='drawer'] .list {
+  max-height: 270px;
+}
+
+.root[data-variant='drawer'] .option {
+  min-height: 48px;
+}

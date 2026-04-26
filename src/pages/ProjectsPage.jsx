@@ -1944,6 +1944,7 @@ export default function ProjectsPage() {
                   <span>Responsável</span>
                   <UserPicker
                     className={styles.userPickerDrawer}
+                    variant="drawer"
                     users={Array.isArray(userDirectory) ? userDirectory : []}
                     value={selectedTask.assigneeUserId || ''}
                     disabled={taskSaving || !canEditTasks}
@@ -2006,7 +2007,8 @@ export default function ProjectsPage() {
                   {canEditTasks ? (
                   <form className={styles.collaboratorForm} onSubmit={handleAddCollaborator}>
                     <UserPicker
-                      className={styles.taskSelect}
+                      className={styles.userPickerDrawer}
+                      variant="drawer"
                       users={collaboratorOptions}
                       value={collaboratorUserId}
                       disabled={collaboratorSaving || collaboratorsLoading || collaboratorOptions.length === 0}
