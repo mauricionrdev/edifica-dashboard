@@ -206,7 +206,8 @@ export default function GdvPage() {
   const [fetchingKey, setFetchingKey] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const fetchGenRef = useRef(0);
-  const metricsRequestKeyRef = useRef('');
+  const loadedMetricsKeyRef = useRef('');
+  const inFlightMetricsKeyRef = useRef('');
 
   const gdvOptions = useMemo(() => {
     const names = new Set(
@@ -281,7 +282,8 @@ export default function GdvPage() {
     const requestKey = `${periodKey}::${gdvIdsKey}`;
 
     if (!gdvClients.length) {
-      metricsRequestKeyRef.current = requestKey;
+      loadedMetricsKeyRef.current = requestKey;
+      inFlightMetricsKeyRef.current = '';
       setMetricsByKey((prev) => ({ ...prev, [periodKey]: [] }));
       setFetchingKey(null);
       return undefined;
@@ -289,22 +291,22 @@ export default function GdvPage() {
 
     const cached = metricsByKey[periodKey];
 
-    if (metricsRequestKeyRef.current === requestKey && Array.isArray(cached)) {
+    if (loadedMetricsKeyRef.current === requestKey && Array.isArray(cached)) {
+      const cachedIds = cached.map((entry) => entry.clientId).sort().join('|');
+      if (cachedIds === gdvIdsKey && cached.length === gdvClients.length) return undefined;
+    }
+
+    if (inFlightMetricsKeyRef.current === requestKey) {
       return undefined;
     }
 
-    if (Array.isArray(cached)) {
-      const cachedIds = cached.map((entry) => entry.clientId).sort().join('|');
-      if (cachedIds === gdvIdsKey) {
-        metricsRequestKeyRef.current = requestKey;
-        return undefined;
-      }
-    }
-
-    metricsRequestKeyRef.current = requestKey;
-
     const gen = ++fetchGenRef.current;
+    const clientsSnapshot = [...gdvClients];
+
     let cancelled = false;
+
+    inFlightMetricsKeyRef.current = requestKey;
+    loadedMetricsKeyRef.current = '';
 
     setFetchingKey(periodKey);
     setFetchError(null);
@@ -313,10 +315,10 @@ export default function GdvPage() {
     async function loadMetricsInBatches() {
       const results = [];
 
-      for (let index = 0; index < gdvClients.length; index += METRIC_BATCH_SIZE) {
+      for (let index = 0; index < clientsSnapshot.length; index += METRIC_BATCH_SIZE) {
         if (cancelled || fetchGenRef.current !== gen) return;
 
-        const batch = gdvClients.slice(index, index + METRIC_BATCH_SIZE);
+        const batch = clientsSnapshot.slice(index, index + METRIC_BATCH_SIZE);
 
         const batchResults = await Promise.all(
           batch.map((client) =>
@@ -341,7 +343,11 @@ export default function GdvPage() {
         (result) => result.err instanceof ApiError && result.err.status === 401
       );
 
-      if (anyAuthErr) return;
+      if (anyAuthErr) {
+        inFlightMetricsKeyRef.current = '';
+        setFetchingKey(null);
+        return;
+      }
 
       const failures = results.filter(
         (result) => result.err && !(result.err instanceof ApiError && result.err.status === 404)
@@ -351,11 +357,14 @@ export default function GdvPage() {
         setFetchError(new Error('Falha ao carregar métricas da carteira.'));
       }
 
+      loadedMetricsKeyRef.current = requestKey;
+      inFlightMetricsKeyRef.current = '';
       setFetchingKey(null);
     }
 
     loadMetricsInBatches().catch((err) => {
       if (cancelled || fetchGenRef.current !== gen) return;
+      inFlightMetricsKeyRef.current = '';
       setFetchError(err);
       setFetchingKey(null);
     });
@@ -363,7 +372,7 @@ export default function GdvPage() {
     return () => {
       cancelled = true;
     };
-  }, [gdvClients, gdvIdsKey, periodKey]);
+  }, [gdvIdsKey, periodKey]);
 
   const currentResults = metricsByKey[periodKey] || [];
   const loadingMetrics = fetchingKey === periodKey && currentResults.length === 0;
@@ -1037,10 +1046,10 @@ export default function GdvPage() {
       </section>
 
       <section className={styles.listCard}>
-        {loadingMetrics ? (
-          <StateBlock variant="loading" compact title="Carregando métricas" />
-        ) : fetchError ? (
+        {fetchError ? (
           <StateBlock variant="error" compact title="Métricas indisponíveis" />
+        ) : visibleRows.length === 0 && loadingMetrics ? (
+          <StateBlock variant="loading" compact title="Carregando métricas" />
         ) : visibleRows.length === 0 ? (
           <StateBlock variant="empty" compact title="Nenhum cliente encontrado" />
         ) : (
