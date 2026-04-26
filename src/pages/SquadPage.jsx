@@ -274,27 +274,6 @@ export default function SquadPage() {
     setPage(1);
   }, [query, week, month0, year, squadId]);
 
-  useEffect(() => {
-    if (!selectedClient || !cardsRef.current) {
-      setShowStickyResult(false);
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setShowStickyResult(!entry.isIntersecting);
-      },
-      {
-        threshold: 0.08,
-        rootMargin: '-12px 0px 0px 0px',
-      }
-    );
-
-    observer.observe(cardsRef.current);
-
-    return () => observer.disconnect();
-  }, [selectedClient?.id]);
-
   const handlePickLogo = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -411,6 +390,27 @@ export default function SquadPage() {
     () => clientRows.find((row) => row.id === selectedClientId) || null,
     [clientRows, selectedClientId]
   );
+
+  useEffect(() => {
+    if (!selectedClient || !cardsRef.current) {
+      setShowStickyResult(false);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyResult(!entry.isIntersecting);
+      },
+      {
+        threshold: 0.08,
+        rootMargin: '-12px 0px 0px 0px',
+      }
+    );
+
+    observer.observe(cardsRef.current);
+
+    return () => observer.disconnect();
+  }, [selectedClient?.id]);
 
   const filteredRows = useMemo(() => {
     const normalized = query.trim();
