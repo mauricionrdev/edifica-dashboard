@@ -6,50 +6,56 @@
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  padding: 0 0 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 0 14px;
   border-bottom: 1px solid var(--line-subtle);
 }
 
 .summaryCard {
   min-width: 0;
+  min-height: 58px;
+  padding: 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: var(--surface-panel);
   display: grid;
   gap: 4px;
+  align-content: center;
 }
 
 .summaryCard + .summaryCard {
-  padding-left: 14px;
+  padding-left: 10px;
   border-left: 1px solid var(--line-subtle);
 }
 
 .summaryLabel {
   color: var(--text-quaternary);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.14em;
+  font-size: 9px;
+  font-weight: 590;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
 .summaryValue {
   color: var(--text-primary);
-  font-size: clamp(17px, 1.7vw, 22px);
-  font-weight: 800;
-  letter-spacing: -0.05em;
+  font-size: clamp(16px, 1.35vw, 20px);
+  font-weight: 590;
+  letter-spacing: -0.045em;
   line-height: 1;
 }
 
 .summarySub {
   color: var(--text-tertiary);
   font-size: 10px;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 
 .sectionHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .contractRule {
@@ -59,14 +65,14 @@
 .rows {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .rowCard {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 14px 0 0;
+  gap: 11px;
+  padding: 13px 0 0;
   border-top: 1px solid var(--line-subtle);
   background: transparent;
 }
@@ -80,110 +86,68 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .rowHeader strong {
   color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 780;
-  letter-spacing: -0.025em;
+  font-size: 13px;
+  font-weight: 590;
+  letter-spacing: -0.02em;
 }
 
-.removeBtn {
-  width: 28px;
-  height: 28px;
+.removeBtn,
+.iconAction {
+  width: 27px;
+  height: 27px;
+  min-width: 27px;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent);
   border-radius: 999px;
-  background: transparent;
-  color: var(--danger);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition:
-    background-color 0.16s ease,
-    border-color 0.16s ease;
+}
+
+.removeBtn {
+  border: 1px solid rgba(239, 68, 68, 0.24);
+  background: transparent;
+  color: var(--danger);
 }
 
 .removeBtn:hover {
   background: var(--danger-soft);
-  border-color: color-mix(in srgb, var(--danger) 42%, transparent);
+  border-color: rgba(239, 68, 68, 0.38);
 }
 
 .rowGrid {
   display: grid;
-  grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
-  gap: 12px 14px;
-}
-
-.iconAction {
-  width: 30px;
-  min-width: 30px;
-  padding: 0;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
   padding-top: 2px;
 }
 
 .footerHint {
   color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-@media (max-width: 920px) {
-  .summaryGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .summaryCard:nth-child(odd) {
-    padding-left: 0;
-    border-left: 0;
-  }
-
-  .rowGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 @media (max-width: 640px) {
-  .summaryGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .summaryCard {
-    padding-left: 0;
-    border-left: 0;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--line-subtle);
-  }
-
-  .summaryCard:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
-  }
-
-  .sectionHead {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
+  .summaryGrid,
   .rowGrid {
     grid-template-columns: 1fr;
   }
 
-  .rowHeader {
-    align-items: center;
+  .sectionHead,
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
