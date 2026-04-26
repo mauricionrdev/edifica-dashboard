@@ -22,6 +22,8 @@ import {
 } from '../api/projects.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import Select from '../components/ui/Select.jsx';
+import UserHoverCard from '../components/users/UserHoverCard.jsx';
+import UserPicker from '../components/users/UserPicker.jsx';
 import {
   BookTemplateIcon,
   CalendarIcon,
