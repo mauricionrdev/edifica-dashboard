@@ -44,8 +44,8 @@ export function getClientProject(clientId) {
   return api.get(`/projects/client/${encodeURIComponent(clientId)}`);
 }
 
-export function syncClientProject(clientId, body = {}) {
-  return api.post(`/projects/sync-client/${encodeURIComponent(clientId)}`, body);
+export function createClientProject(clientId, body = {}) {
+  return api.post(`/projects/client/${encodeURIComponent(clientId)}`, body);
 }
 
 export function createTask(body) {

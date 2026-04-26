@@ -8,7 +8,7 @@ import {
   statusLabel,
 } from '../../utils/clientHelpers.js';
 import { updateClient } from '../../api/clients.js';
-import { getClientProject, syncClientProject } from '../../api/projects.js';
+import { createClientProject, getClientProject } from '../../api/projects.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
@@ -21,12 +21,13 @@ import {
   subscribeAvatarChange,
 } from '../../utils/avatarStorage.js';
 import {
-  ChartColumnIcon,
+  BriefcaseIcon,
+  BuildingIcon,
+  CameraIcon,
   CloseIcon,
   CoinsIcon,
   TargetIcon,
   TrashIcon,
-  UsersIcon,
 } from '../ui/Icons.jsx';
 import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
@@ -34,7 +35,6 @@ import OverviewTab from './OverviewTab.jsx';
 import ContractTab from './ContractTab.jsx';
 import AnalysisTab from './AnalysisTab.jsx';
 import FeeScheduleTab from './FeeScheduleTab.jsx';
-import ClientDetailsTab from './ClientDetailsTab.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import tabStyles from './ClientTabs.module.css';
 
@@ -44,7 +44,6 @@ const TABS = [
   { key: 'fees', label: 'Mensalidades' },
   { key: 'icp', label: 'Análise ICP' },
   { key: 'gdv', label: 'Análise GDV' },
-  { key: 'details', label: 'Detalhes' },
 ];
 
 export default function ClientDetailDrawer({
@@ -195,10 +194,14 @@ export default function ClientDetailDrawer({
 
     try {
       setProjectActionBusy(true);
-      const res = await syncClientProject(client.id);
+      const useTemplate = window.confirm('Criar projeto a partir do Modelo Oficial?\n\nOK = usar Modelo Oficial\nCancelar = criar projeto do zero');
+      const res = await createClientProject(client.id, {
+        mode: useTemplate ? 'template' : 'blank',
+        name: `Projeto - ${client.name}`,
+      });
       const project = res?.project || null;
       setClientProject(project);
-      showToast('Projeto criado.', { variant: 'success' });
+      showToast(res?.alreadyExists ? 'Projeto já existente aberto.' : 'Projeto criado.', { variant: 'success' });
       if (project?.id) {
         onClose?.();
         navigate(`/projetos?id=${encodeURIComponent(project.id)}`);
@@ -212,8 +215,8 @@ export default function ClientDetailDrawer({
 
   const headerFacts = useMemo(
     () => [
-      { label: 'Squad', value: client?.squadName || '-', icon: UsersIcon },
-      { label: 'GDV', value: client?.gdvName || '-', icon: ChartColumnIcon },
+      { label: 'Squad', value: client?.squadName || '-', icon: BuildingIcon },
+      { label: 'GDV', value: client?.gdvName || '-', icon: BriefcaseIcon },
       {
         label: 'Mensalidade',
         value: fmtMoney(resolveClientFeeAtDate(client)),
@@ -246,35 +249,49 @@ export default function ClientDetailDrawer({
       >
         <div className={drawerStyles.header}>
           <div className={drawerStyles.topbar}>
-            {canViewProject && (clientProject?.id || canCreateProject) ? (
+            <div className={drawerStyles.topbarActions}>
+              {canViewProject && (clientProject?.id || canCreateProject) ? (
+                <button
+                  type="button"
+                  className={drawerStyles.projectBtn}
+                  onClick={handleProjectAction}
+                  disabled={projectLoading || projectActionBusy}
+                >
+                  {projectLoading ? 'Projeto' : clientProject?.id ? 'Abrir projeto' : 'Criar projeto'}
+                </button>
+              ) : null}
               <button
                 type="button"
-                className={drawerStyles.projectBtn}
-                onClick={handleProjectAction}
-                disabled={projectLoading || projectActionBusy}
+                className={drawerStyles.iconBtn}
+                onClick={onClose}
+                aria-label="Fechar detalhes"
               >
-                {projectLoading ? 'Projeto' : clientProject?.id ? 'Abrir projeto' : 'Criar projeto'}
+                <CloseIcon size={16} />
               </button>
-            ) : null}
-            <button
-              type="button"
-              className={drawerStyles.iconBtn}
-              onClick={onClose}
-              aria-label="Fechar detalhes"
-            >
-              <CloseIcon size={16} />
-            </button>
+            </div>
           </div>
 
           <div className={drawerStyles.identity}>
-            <span
-              className={drawerStyles.avatar}
+            <button
+              type="button"
+              className={`${drawerStyles.avatar} ${
+                canManageAvatar ? drawerStyles.avatarEditable : ''
+              }`.trim()}
               style={{ background: avatarBg }}
-              aria-label={`Avatar de ${client.name}`}
-              title={client.name}
+              onClick={() => canManageAvatar && avatarInputRef.current?.click()}
+              disabled={!canManageAvatar}
+              aria-label={
+                canManageAvatar ? 'Alterar foto do cliente' : `Avatar de ${client.name}`
+              }
+              title={canManageAvatar ? 'Clique para alterar a foto' : client.name}
             >
               {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
-            </span>
+              {canManageAvatar ? (
+                <span className={drawerStyles.avatarOverlay}>
+                  <CameraIcon size={14} />
+                </span>
+              ) : null}
+            </button>
 
             <div className={drawerStyles.identityText}>
               <div className={drawerStyles.nameRow}>
@@ -292,80 +309,87 @@ export default function ClientDetailDrawer({
                   {sl}
                 </span>
               </div>
+
+              {canManageAvatar && avatarUrl ? (
+                <div className={drawerStyles.avatarActions}>
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    aria-label="Remover foto"
+                    title="Remover foto"
+                  >
+                    <TrashIcon size={13} />
+                  </button>
+                </div>
+              ) : null}
+
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarFile}
+                hidden
+              />
             </div>
           </div>
         </div>
 
-        <div className={drawerStyles.contentShell}>
-          <aside className={tabStyles.tabsBar} role="tablist" aria-label="Detalhes do cliente">
-            {visibleTabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                role="tab"
-                aria-selected={activeTab === tab.key}
-                className={`${tabStyles.tab} ${
-                  activeTab === tab.key ? tabStyles.tabActive : ''
-                }`.trim()}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </aside>
+        <div className={tabStyles.tabsBar} role="tablist">
+          {visibleTabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              className={`${tabStyles.tab} ${
+                activeTab === tab.key ? tabStyles.tabActive : ''
+              }`.trim()}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
 
-          <div className={tabStyles.tabBody}>
-            {activeTab === 'overview' && (
-              <OverviewTab
-                client={client}
-                squads={squads}
-                users={users}
-                headerFacts={headerFacts}
-                canEdit={canEditClient}
-                canDelete={admin}
-                onUpdated={onUpdated}
-                onDeleted={onDeleted}
-              />
-            )}
+        <div className={tabStyles.tabBody}>
+          {activeTab === 'overview' && (
+            <OverviewTab
+              client={client}
+              squads={squads}
+              users={users}
+              headerFacts={headerFacts}
+              canEdit={canEditClient}
+              canDelete={admin}
+              onUpdated={onUpdated}
+              onDeleted={onDeleted}
+            />
+          )}
 
-            {activeTab === 'contract' && (
-              <ContractTab
-                client={client}
-                squads={squads}
-                users={users}
-                canEdit={canEditClient}
-                onUpdated={onUpdated}
-              />
-            )}
+          {activeTab === 'contract' && (
+            <ContractTab
+              client={client}
+              squads={squads}
+              users={users}
+              canEdit={canEditClient}
+              onUpdated={onUpdated}
+            />
+          )}
 
-            {activeTab === 'fees' && canViewFeeSchedule ? (
-              <FeeScheduleTab
-                client={client}
-                canEdit={canEditFeeSchedule}
-                onUpdated={onUpdated}
-              />
-            ) : null}
+          {activeTab === 'fees' && canViewFeeSchedule ? (
+            <FeeScheduleTab
+              client={client}
+              canEdit={canEditFeeSchedule}
+              onUpdated={onUpdated}
+            />
+          ) : null}
 
-            {activeTab === 'icp' && (
-              <AnalysisTab clientId={client.id} type="icp" canEdit={canEditClient} />
-            )}
+          {activeTab === 'icp' && (
+            <AnalysisTab clientId={client.id} type="icp" canEdit={canEditClient} />
+          )}
 
-            {activeTab === 'gdv' && (
-              <AnalysisTab clientId={client.id} type="gdvanalise" canEdit={canEditClient} />
-            )}
-
-            {activeTab === 'details' && (
-              <ClientDetailsTab
-                client={client}
-                avatarUrl={avatarUrl}
-                avatarBg={avatarBg}
-                canManageAvatar={canManageAvatar}
-                avatarInputRef={avatarInputRef}
-                onAvatarFile={handleAvatarFile}
-                onRemoveAvatar={handleRemoveAvatar}
-              />
-            )}
-          </div>
+          {activeTab === 'gdv' && (
+            <AnalysisTab clientId={client.id} type="gdvanalise" canEdit={canEditClient} />
+          )}
         </div>
       </div>
     </div>
@@ -374,3 +398,4 @@ export default function ClientDetailDrawer({
   if (typeof document === 'undefined') return null;
   return createPortal(node, document.body);
 }
+
