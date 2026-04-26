@@ -60,6 +60,7 @@ function computePosition(anchor) {
   if (!anchor || typeof window === 'undefined') return { top: 0, left: 0 };
   const rect = anchor.getBoundingClientRect();
   const width = 252;
+  const height = 324;
   const gap = 6;
   const margin = 10;
 
@@ -70,8 +71,8 @@ function computePosition(anchor) {
     left = Math.max(margin, window.innerWidth - width - margin);
   }
 
-  if (top + 324 > window.innerHeight && rect.top > 324) {
-    top = Math.max(margin, rect.top - 324 - gap);
+  if (top + height > window.innerHeight && rect.top > height) {
+    top = Math.max(margin, rect.top - height - gap);
   }
 
   return {
@@ -108,9 +109,7 @@ export default function DateField({
   useLayoutEffect(() => {
     if (!open) return undefined;
 
-    const updatePosition = () => {
-      setPosition(computePosition(rootRef.current));
-    };
+    const updatePosition = () => setPosition(computePosition(rootRef.current));
 
     updatePosition();
     window.addEventListener('resize', updatePosition);

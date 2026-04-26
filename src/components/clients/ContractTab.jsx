@@ -9,6 +9,7 @@ import {
 } from '../../utils/feeSchedule.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { gdvOptions, gestorOptions, userLabel } from '../../utils/responsibleUsers.js';
+import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import styles from './ContractTab.module.css';
@@ -75,8 +76,7 @@ export default function ContractTab({
         const response = await updateClient(client.id, patch);
         onUpdated?.(response?.client);
       } catch (error) {
-        const message =
-          error instanceof ApiError ? error.message : 'Erro ao salvar alteração.';
+        const message = error instanceof ApiError ? error.message : 'Erro ao salvar alteração.';
         showToast(message, { variant: 'error' });
         setForm(buildForm(client));
       } finally {
@@ -175,46 +175,24 @@ export default function ContractTab({
   return (
     <div className={styles.panel}>
       <div className={styles.summary}>
-        <div
-          className={`${styles.summaryCard} ${
-            summary.status.tone === 'green'
-              ? styles.green
-              : summary.status.tone === 'red'
-                ? styles.red
-                : ''
-          }`.trim()}
-        >
-          <span className={styles.summaryLabel}>{summary.status.label}</span>
-          <span className={styles.summaryValue}>{summary.status.value}</span>
-        </div>
-
-        <div
-          className={`${styles.summaryCard} ${
-            summary.fee.tone === 'red' ? styles.red : ''
-          }`.trim()}
-        >
-          <span className={styles.summaryLabel}>{summary.fee.label}</span>
-          <span className={styles.summaryValue}>{summary.fee.value}</span>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>{summary.schedule.label}</span>
-          <span className={styles.summaryValue}>{summary.schedule.value}</span>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>{summary.days.label}</span>
-          <span className={styles.summaryValue}>{summary.days.value}</span>
-        </div>
+        {Object.values(summary).map((item) => (
+          <div
+            key={item.label}
+            className={`${styles.summaryCard} ${
+              item.tone === 'green' ? styles.green : item.tone === 'red' ? styles.red : ''
+            }`.trim()}
+          >
+            <span className={styles.summaryLabel}>{item.label}</span>
+            <span className={styles.summaryValue}>{item.value}</span>
+          </div>
+        ))}
       </div>
 
       <div className={drawerStyles.section}>
         <div className={drawerStyles.sectionTitle}>Dados do contrato</div>
         <div className={drawerStyles.grid}>
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="ct-status">
-              Status
-            </label>
+            <label className={drawerStyles.label} htmlFor="ct-status">Status</label>
             <Select
               className={drawerStyles.selectControl}
               value={form.status}
@@ -228,9 +206,7 @@ export default function ContractTab({
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="ct-squad">
-              Squad
-            </label>
+            <label className={drawerStyles.label} htmlFor="ct-squad">Squad</label>
             <Select
               className={drawerStyles.selectControl}
               value={form.squadId}
@@ -241,9 +217,7 @@ export default function ContractTab({
             >
               <option value="">Sem squad</option>
               {squads.map((squad) => (
-                <option key={squad.id} value={squad.id}>
-                  {squad.name}
-                </option>
+                <option key={squad.id} value={squad.id}>{squad.name}</option>
               ))}
             </Select>
           </div>
@@ -260,9 +234,7 @@ export default function ContractTab({
             >
               <option value="">Sem gestor</option>
               {gestorRows.map((entry) => (
-                <option key={entry.id || entry.name} value={entry.name}>
-                  {userLabel(entry)}
-                </option>
+                <option key={entry.id || entry.name} value={entry.name}>{userLabel(entry)}</option>
               ))}
             </Select>
           </div>
@@ -279,74 +251,56 @@ export default function ContractTab({
             >
               <option value="">Sem GDV</option>
               {gdvRows.map((entry) => (
-                <option key={entry.id || entry.name} value={entry.name}>
-                  {userLabel(entry)}
-                </option>
+                <option key={entry.id || entry.name} value={entry.name}>{userLabel(entry)}</option>
               ))}
             </Select>
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="ct-start">
-              Início
-            </label>
-            <input
+            <label className={drawerStyles.label} htmlFor="ct-start">Início</label>
+            <DateField
               id="ct-start"
-              className={drawerStyles.input}
-              type="date"
               value={form.startDate}
-              onChange={(event) => onDateChange('startDate', 'startDate', event.target.value)}
+              onChange={(value) => onDateChange('startDate', 'startDate', value)}
               disabled={!canEdit}
+              ariaLabel="Data de início"
             />
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="ct-end">
-              Término
-            </label>
-            <input
+            <label className={drawerStyles.label} htmlFor="ct-end">Término</label>
+            <DateField
               id="ct-end"
-              className={drawerStyles.input}
-              type="date"
               value={form.endDate}
-              onChange={(event) => onDateChange('endDate', 'endDate', event.target.value)}
+              onChange={(value) => onDateChange('endDate', 'endDate', value)}
               disabled={!canEdit}
+              ariaLabel="Data de término"
             />
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="ct-fee">
-              Mensalidade base (R$)
-            </label>
+            <label className={drawerStyles.label} htmlFor="ct-fee">Mensalidade base (R$)</label>
             <input
               id="ct-fee"
               className={drawerStyles.input}
               type="text"
               inputMode="decimal"
               value={form.fee}
-              onChange={(event) =>
-                onTextChange('fee', 'fee', event.target.value, { number: true })
-              }
+              onChange={(event) => onTextChange('fee', 'fee', event.target.value, { number: true })}
               onBlur={() => onNumberBlur('fee')}
               disabled={!canEdit}
             />
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="ct-meta">
-              Meta base
-            </label>
+            <label className={drawerStyles.label} htmlFor="ct-meta">Meta base</label>
             <input
               id="ct-meta"
               className={drawerStyles.input}
               type="text"
               inputMode="decimal"
               value={form.metaLucro}
-              onChange={(event) =>
-                onTextChange('metaLucro', 'metaLucro', event.target.value, {
-                  number: true,
-                })
-              }
+              onChange={(event) => onTextChange('metaLucro', 'metaLucro', event.target.value, { number: true })}
               onBlur={() => onNumberBlur('metaLucro')}
               disabled={!canEdit}
             />

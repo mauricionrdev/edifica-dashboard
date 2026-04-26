@@ -3,6 +3,7 @@ import { updateClientFeeSteps } from '../../api/clients.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { PlusIcon, SaveIcon, TrashIcon } from '../ui/Icons.jsx';
+import DateField from '../ui/DateField.jsx';
 import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate, sortFeeSteps, summarizeFeeSchedule } from '../../utils/feeSchedule.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
@@ -154,26 +155,10 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
 
   const summaryItems = useMemo(
     () => [
-      {
-        label: 'Contrato',
-        value: contractRangeLabel,
-        sub: '',
-      },
-      {
-        label: 'Atual',
-        value: fmtMoney(currentFee),
-        sub: schedule.current ? fmtDateLabel(schedule.current.startDate) : '',
-      },
-      {
-        label: 'Próxima',
-        value: schedule.next ? fmtMoney(parseLocaleNumber(schedule.next.fee, 0)) : '—',
-        sub: schedule.next ? fmtDateLabel(schedule.next.startDate) : '',
-      },
-      {
-        label: 'Fases',
-        value: String(schedule.totalSteps || 0),
-        sub: '',
-      },
+      { label: 'Contrato', value: contractRangeLabel, sub: '' },
+      { label: 'Atual', value: fmtMoney(currentFee), sub: schedule.current ? fmtDateLabel(schedule.current.startDate) : '' },
+      { label: 'Próxima', value: schedule.next ? fmtMoney(parseLocaleNumber(schedule.next.fee, 0)) : '—', sub: schedule.next ? fmtDateLabel(schedule.next.startDate) : '' },
+      { label: 'Fases', value: String(schedule.totalSteps || 0), sub: '' },
     ],
     [contractRangeLabel, currentFee, schedule]
   );
@@ -232,8 +217,7 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
       onUpdated?.({ ...client, feeSteps: nextFeeSteps });
       showToast('Mensalidades atualizadas.', { variant: 'success' });
     } catch (error) {
-      const message =
-        error instanceof ApiError ? error.message : 'Não foi possível salvar as mensalidades.';
+      const message = error instanceof ApiError ? error.message : 'Não foi possível salvar as mensalidades.';
       showToast(message, { variant: 'error' });
     } finally {
       setSaving(false);
@@ -289,9 +273,7 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
 
               <div className={styles.rowGrid}>
                 <div className={drawerStyles.field}>
-                  <label className={drawerStyles.label} htmlFor={`fee-label-${row.id}`}>
-                    Rótulo
-                  </label>
+                  <label className={drawerStyles.label} htmlFor={`fee-label-${row.id}`}>Rótulo</label>
                   <input
                     id={`fee-label-${row.id}`}
                     className={drawerStyles.input}
@@ -303,37 +285,29 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
                 </div>
 
                 <div className={drawerStyles.field}>
-                  <label className={drawerStyles.label} htmlFor={`fee-start-${row.id}`}>
-                    Início
-                  </label>
-                  <input
+                  <label className={drawerStyles.label} htmlFor={`fee-start-${row.id}`}>Início</label>
+                  <DateField
                     id={`fee-start-${row.id}`}
-                    className={drawerStyles.input}
-                    type="date"
                     value={row.startDate}
-                    onChange={(event) => handleFieldChange(row.id, 'startDate', event.target.value)}
+                    onChange={(value) => handleFieldChange(row.id, 'startDate', value)}
                     disabled={!canEdit || saving}
+                    ariaLabel={`Início da fase ${index + 1}`}
                   />
                 </div>
 
                 <div className={drawerStyles.field}>
-                  <label className={drawerStyles.label} htmlFor={`fee-end-${row.id}`}>
-                    Fim
-                  </label>
-                  <input
+                  <label className={drawerStyles.label} htmlFor={`fee-end-${row.id}`}>Fim</label>
+                  <DateField
                     id={`fee-end-${row.id}`}
-                    className={drawerStyles.input}
-                    type="date"
                     value={row.endDate}
-                    onChange={(event) => handleFieldChange(row.id, 'endDate', event.target.value)}
+                    onChange={(value) => handleFieldChange(row.id, 'endDate', value)}
                     disabled={!canEdit || saving}
+                    ariaLabel={`Fim da fase ${index + 1}`}
                   />
                 </div>
 
                 <div className={drawerStyles.field}>
-                  <label className={drawerStyles.label} htmlFor={`fee-value-${row.id}`}>
-                    Mensalidade (R$)
-                  </label>
+                  <label className={drawerStyles.label} htmlFor={`fee-value-${row.id}`}>Mensalidade (R$)</label>
                   <input
                     id={`fee-value-${row.id}`}
                     className={drawerStyles.input}
