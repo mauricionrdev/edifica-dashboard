@@ -675,3 +675,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* PATCH v33 — regra visual: ícones soltos, sem caixa própria */
+.projectIcon,
+.clientIcon,
+.metricIcon,
+.cardIcon {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}

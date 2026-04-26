@@ -1776,25 +1776,26 @@ textarea:focus-visible {
 }
 
 
-/* PATCH v32 — ajuste visual pós-limpeza */
+/* PATCH v33 — colaboradores e ícones sem card */
 .projectIcon {
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
-  border-radius: 8px;
-  background: #f5b800;
-  color: #101112;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-amber);
 }
 
 .projectIcon svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 2.1;
+  width: 19px;
+  height: 19px;
+  stroke-width: 2;
 }
 
-/* Remove a sensação de borda dupla nos selects de filtro/ordenação. */
+/* Selects sem borda dupla */
 .taskToolbar .toolbarField {
-  min-width: 160px;
+  min-width: 158px;
 }
 
 .taskToolbar .toolbarField > div {
@@ -1807,7 +1808,7 @@ textarea:focus-visible {
 .taskToolbar .toolbarField [role="combobox"],
 .taskToolbar .toolbarField select {
   width: 100%;
-  min-width: 152px;
+  min-width: 148px;
   height: 36px;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -1827,11 +1828,11 @@ textarea:focus-visible {
 .taskToolbar .toolbarField [role="combobox"]:focus-visible,
 .taskToolbar .toolbarField select:focus-visible {
   border-color: var(--line-strong);
-  box-shadow: none;
   outline: none;
+  box-shadow: none;
 }
 
-/* Colaboradores no drawer */
+/* Colaboradores no drawer: fluxo vertical para o picker não quebrar */
 .collaborators {
   padding-top: 14px;
   margin-bottom: 18px;
@@ -1844,14 +1845,20 @@ textarea:focus-visible {
 .collaboratorItem {
   min-height: 56px;
   padding: 11px 0;
+  display: grid;
   grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
 }
 
 .collaboratorAvatar {
   width: 32px;
   height: 32px;
-  background: #17191b;
+  min-width: 32px;
   border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #17191b;
+  overflow: hidden;
 }
 
 .collaboratorContent strong {
@@ -1864,23 +1871,49 @@ textarea:focus-visible {
 }
 
 .collaboratorItem .inlineAction {
-  padding: 0 8px;
   height: 28px;
+  padding: 0 8px;
   border-radius: 8px;
 }
 
 .collaboratorItem .inlineAction:hover {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.collaboratorForm {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.collaboratorForm .userPickerDrawer {
+  width: 100%;
+  min-width: 0;
+}
+
+.collaboratorForm button {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  justify-content: center;
+}
+
+/* O popover do picker no drawer participa do fluxo para não ser engolido. */
+.collaboratorForm [data-variant='drawer'] {
+  width: 100%;
+  display: block;
 }
 
 @media (max-width: 1440px) {
   .taskToolbar .toolbarField {
-    min-width: 150px;
+    min-width: 148px;
   }
 
   .taskToolbar .toolbarField button,
   .taskToolbar .toolbarField [role="combobox"],
   .taskToolbar .toolbarField select {
-    min-width: 144px;
+    min-width: 140px;
   }
 }
