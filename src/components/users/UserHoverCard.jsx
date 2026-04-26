@@ -25,24 +25,24 @@ function localTimeLabel() {
   }).format(new Date())} horário local`;
 }
 
-function userProfilePath(userId = '') {
+function profilePath(userId = '') {
   return userId ? `/perfil/${encodeURIComponent(userId)}` : '/perfil';
 }
 
 export default function UserHoverCard({
-  user: userEntry,
+  user: rawUser,
   children,
   className = '',
   cardClassName = '',
   placement = 'bottom',
 }) {
   const { user: currentUser } = useAuth();
-  const user = userEntry || {};
-  const name = user.name || user.userName || 'Sem usuário';
-  const email = user.email || user.userEmail || '';
-  const avatarUrl = getUserAvatar(user) || user.avatarUrl || '';
+  const user = rawUser || {};
   const userId = user.id || user.userId || '';
-  const isOwnProfile = currentUser?.id && userId && currentUser.id === userId;
+  const name = user.name || user.userName || 'Sem usuário';
+  const email = user.email || user.userEmail || user.username || '';
+  const avatarUrl = getUserAvatar(user) || user.avatarUrl || '';
+  const isOwnProfile = Boolean(currentUser?.id && userId && currentUser.id === userId);
 
   return (
     <span className={`${styles.wrap} ${className}`.trim()}>
@@ -69,7 +69,7 @@ export default function UserHoverCard({
             </Link>
           ) : null}
           {userId ? (
-            <Link to={userProfilePath(userId)} className={styles.action}>
+            <Link to={profilePath(userId)} className={styles.action}>
               Ver perfil
             </Link>
           ) : null}

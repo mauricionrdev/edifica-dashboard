@@ -14,6 +14,7 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
+import UserPicker from '../components/users/UserPicker.jsx';
 import styles from './ProfilePage.module.css';
 
 const AVATAR_OPTIONS = [
@@ -435,18 +436,12 @@ export default function ProfilePage() {
                 placeholder="Adicionar tarefa"
                 aria-label="Nova tarefa"
               />
-              <select
+              <UserPicker
+                users={Array.isArray(userDirectory) ? userDirectory : []}
                 value={newTask.assigneeUserId}
-                onChange={(event) => setNewTask((prev) => ({ ...prev, assigneeUserId: event.target.value }))}
-                aria-label="Responsável"
-              >
-                <option value={user?.id || ''}>Eu</option>
-                {(Array.isArray(userDirectory) ? userDirectory : [])
-                  .filter((entry) => entry?.id && entry.id !== user?.id)
-                  .map((entry) => (
-                    <option key={entry.id} value={entry.id}>{entry.name}</option>
-                  ))}
-              </select>
+                onChange={(userId) => setNewTask((prev) => ({ ...prev, assigneeUserId: userId || user?.id || '' }))}
+                placeholder="Responsável"
+              />
               <input
                 type="date"
                 value={newTask.dueDate}

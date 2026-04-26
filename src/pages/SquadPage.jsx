@@ -34,6 +34,8 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
+import UserPicker from '../components/users/UserPicker.jsx';
+import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -492,7 +494,11 @@ export default function SquadPage() {
         <div className={styles.headerTitleText}>
           <strong>{squad.name}</strong>
           <small>
-            {squadOwnership.owner ? `Responsável: ${squadOwnership.owner.name}` : 'Sem responsável definido'} ·{' '}
+            {squadOwnership.owner ? (
+              <UserHoverCard user={squadOwnership.owner} placement="bottom">
+                <span>{`Responsável: ${squadOwnership.owner.name}`}</span>
+              </UserHoverCard>
+            ) : 'Sem responsável definido'} ·{' '}
             {squadOwnership.active ? 'Ativo' : 'Desativado'}
           </small>
         </div>
@@ -508,21 +514,13 @@ export default function SquadPage() {
         </span>
 
         {isAdmin ? (
-          <Select
+          <UserPicker
             className={styles.ownerControl}
+            users={Array.isArray(userDirectory) ? userDirectory : []}
             value={squad.ownerUserId || squad.owner?.id || ''}
-            onChange={handleOwnerChange}
-            aria-label="Responsável do squad"
-          >
-            <option value="">Sem responsável</option>
-            {(Array.isArray(userDirectory) ? userDirectory : [])
-              .filter((entry) => entry?.active !== false)
-              .map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {entry.name}
-                </option>
-              ))}
-          </Select>
+            onChange={(userId) => handleOwnerChange({ target: { value: userId } })}
+            placeholder="Sem responsável"
+          />
         ) : null}
 
         {isAdmin && logoUrl ? (

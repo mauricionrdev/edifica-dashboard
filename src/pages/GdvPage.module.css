@@ -932,3 +932,8 @@
   background: rgba(45, 212, 191, 0.08);
   color: #2dd4bf;
 }
+
+/* Global UserPicker/UserHoverCard integration */
+.ownerControl {
+  overflow: visible;
+}

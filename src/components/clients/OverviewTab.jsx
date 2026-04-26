@@ -7,6 +7,7 @@ import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { LogOutIcon } from '../ui/Icons.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
+import UserPicker from '../users/UserPicker.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import styles from './OverviewTab.module.css';
 
@@ -212,36 +213,26 @@ export default function OverviewTab({
 
           <div className={drawerStyles.field}>
             <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor</label>
-            <Select
+            <UserPicker
               className={drawerStyles.selectControl}
-              value={form.gestor}
-              onChange={(event) => onSelectChange('gestor', 'gestor', event.target.value)}
+              users={gestorRows}
+              value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+              onChange={(userId) => onSelectChange('gestor', 'gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
               disabled={deleting || !canEdit}
-              placeholder="Selecionar gestor"
-              aria-label="Gestor"
-            >
-              <option value="">Sem gestor</option>
-              {gestorRows.map((entry) => (
-                <option key={entry.id || entry.name} value={entry.name}>{userLabel(entry)}</option>
-              ))}
-            </Select>
+              placeholder="Sem gestor"
+            />
           </div>
 
           <div className={drawerStyles.field}>
             <label className={drawerStyles.label} htmlFor="cd-gdv">GDV</label>
-            <Select
+            <UserPicker
               className={drawerStyles.selectControl}
-              value={form.gdvName}
-              onChange={(event) => onSelectChange('gdvName', 'gdvName', event.target.value)}
+              users={gdvRows}
+              value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+              onChange={(userId) => onSelectChange('gdvName', 'gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
               disabled={deleting || !canEdit}
-              placeholder="Selecionar GDV"
-              aria-label="GDV"
-            >
-              <option value="">Sem GDV</option>
-              {gdvRows.map((entry) => (
-                <option key={entry.id || entry.name} value={entry.name}>{userLabel(entry)}</option>
-              ))}
-            </Select>
+              placeholder="Sem GDV"
+            />
           </div>
         </div>
       </div>

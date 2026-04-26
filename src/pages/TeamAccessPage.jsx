@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { createGdv, updateGdv } from '../api/gdvs.js';
 import { createSquad, deleteSquad, updateSquad } from '../api/squads.js';
@@ -18,6 +18,8 @@ import {
 } from '../components/ui/Icons.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { Select } from '../components/ui/index.js';
+import UserPicker from '../components/users/UserPicker.jsx';
+import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import { matchesAnySearch } from '../utils/search.js';
 import styles from './TeamAccessPage.module.css';
 
@@ -212,19 +214,13 @@ function SquadOwnerFormModal({
             <label className={styles.field}>
               <span>Proprietário do squad</span>
               {canEditOwner ? (
-                <Select
+                <UserPicker
+                  users={users}
                   value={ownerUserId}
-                  onChange={(event) => setOwnerUserId(event.target.value)}
-                  placeholder="Selecionar proprietário"
-                  aria-label="Selecionar proprietário do squad"
-                >
-                  <option value="">Sem proprietário</option>
-                  {users.map((entry) => (
-                    <option key={entry.id} value={entry.id}>
-                      {entry.name} · {roleLabel(entry.role)}
-                    </option>
-                  ))}
-                </Select>
+                  onChange={setOwnerUserId}
+                  placeholder="Sem proprietário"
+                  showRole
+                />
               ) : (
                 <input value={owner?.name || 'Sem proprietário'} disabled />
               )}
@@ -1446,27 +1442,23 @@ export default function TeamAccessPage() {
                         <td>{entry.clientsCount}</td>
                         <td>
                           {superAdmin ? (
-                            <Select
+                            <UserPicker
                               className={styles.ownerInlineSelect}
+                              users={userRows.filter((item) => item.active)}
                               value={entry.ownerId}
-                              onChange={async (event) => {
-                                await updateGdv(entry.id, { name: entry.name, ownerUserId: event.target.value });
+                              onChange={async (userId) => {
+                                await updateGdv(entry.id, { name: entry.name, ownerUserId: userId });
                                 await refreshGdvs?.();
                               }}
-                              placeholder="Selecionar proprietário"
-                              aria-label={`Selecionar proprietário do GDV ${entry.name}`}
-                            >
-                              <option value="">Sem proprietário</option>
-                              {userRows.filter((item) => item.active).map((item) => (
-                                <option key={item.id} value={item.id}>
-                                  {item.name} · {roleLabel(item.role)}
-                                </option>
-                              ))}
-                            </Select>
+                              placeholder="Sem proprietário"
+                              showRole
+                            />
                           ) : entry.owner ? (
-                            <Link to={`/perfil/${encodeURIComponent(entry.owner.id)}`} className={styles.inlineProfileLink}>
-                              {entry.owner.name}
-                            </Link>
+                            <UserHoverCard user={entry.owner} placement="top">
+                              <Link to={`/perfil/${encodeURIComponent(entry.owner.id)}`} className={styles.inlineProfileLink}>
+                                {entry.owner.name}
+                              </Link>
+                            </UserHoverCard>
                           ) : (
                             <span className={styles.dimText}>Sem proprietário</span>
                           )}

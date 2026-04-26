@@ -9,7 +9,7 @@
 .trigger {
   width: 100%;
   min-width: 0;
-  min-height: 30px;
+  min-height: 32px;
   padding: 0 8px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -68,7 +68,7 @@
 
 .popover {
   position: absolute;
-  z-index: 850;
+  z-index: 950;
   top: calc(100% + 6px);
   left: 0;
   width: min(420px, calc(100vw - 48px));

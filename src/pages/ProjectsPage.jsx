@@ -22,8 +22,8 @@ import {
 } from '../api/projects.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import Select from '../components/ui/Select.jsx';
-import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import UserPicker from '../components/users/UserPicker.jsx';
+import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import {
   BookTemplateIcon,
   CalendarIcon,
@@ -369,18 +369,14 @@ export default function ProjectsPage() {
         {canManageProjects ? (
           <div className={styles.projectHeaderGroup}>
             <form className={styles.shareForm} onSubmit={handleAddProjectMember}>
-              <Select
+              <UserPicker
                 className={styles.shareSelect}
+                users={projectMemberOptions}
                 value={projectMemberUserId}
                 disabled={memberSaving || projectMemberOptions.length === 0}
-                onChange={(event) => setProjectMemberUserId(event.target.value)}
-                aria-label="Compartilhar projeto"
-              >
-                <option value="">Compartilhar com</option>
-                {projectMemberOptions.map((entry) => (
-                  <option key={entry.id} value={entry.id}>{entry.name}</option>
-                ))}
-              </Select>
+                onChange={setProjectMemberUserId}
+                placeholder="Compartilhar com"
+              />
               <button type="submit" disabled={memberSaving || !projectMemberUserId} title="Adicionar membro" aria-label="Adicionar membro">
                 <PlusIcon size={13} />
               </button>
@@ -1187,17 +1183,13 @@ export default function ProjectsPage() {
                       <option key={section.id} value={section.id}>{section.name}</option>
                     ))}
                   </Select>
-                  <Select
+                  <UserPicker
                     className={styles.createSelect}
+                    users={Array.isArray(userDirectory) ? userDirectory : []}
                     value={newTask.assigneeUserId}
-                    onChange={(event) => setNewTask((prev) => ({ ...prev, assigneeUserId: event.target.value }))}
-                    aria-label="Responsável"
-                  >
-                    <option value="">Responsável</option>
-                    {(Array.isArray(userDirectory) ? userDirectory : []).map((entry) => (
-                      <option key={entry.id} value={entry.id}>{entry.name}</option>
-                    ))}
-                  </Select>
+                    onChange={(userId) => setNewTask((prev) => ({ ...prev, assigneeUserId: userId }))}
+                    placeholder="Responsável"
+                  />
                   <input
                     key={newTask.dueDate || 'empty-due'}
                     type="text"
@@ -1906,9 +1898,13 @@ export default function ProjectsPage() {
                     <div className={styles.collaboratorList}>
                       {taskCollaborators.map((entry) => (
                         <article key={entry.userId} className={styles.collaboratorItem}>
-                          <div className={styles.collaboratorAvatar}>{initials(entry.userName)}</div>
+                          <UserHoverCard user={{ id: entry.userId, name: entry.userName, email: entry.userEmail, role: entry.role }} placement="top">
+                            <div className={styles.collaboratorAvatar}>{initials(entry.userName)}</div>
+                          </UserHoverCard>
                           <div className={styles.collaboratorContent}>
-                            <strong>{entry.userName}</strong>
+                            <UserHoverCard user={{ id: entry.userId, name: entry.userName, email: entry.userEmail, role: entry.role }} placement="top">
+                              <strong>{entry.userName}</strong>
+                            </UserHoverCard>
                             <small>{entry.role || 'follower'}</small>
                           </div>
                           <button
@@ -1925,17 +1921,14 @@ export default function ProjectsPage() {
                   )}
                   {canEditTasks ? (
                   <form className={styles.collaboratorForm} onSubmit={handleAddCollaborator}>
-                    <Select
+                    <UserPicker
                       className={styles.taskSelect}
+                      users={collaboratorOptions}
                       value={collaboratorUserId}
                       disabled={collaboratorSaving || collaboratorsLoading || collaboratorOptions.length === 0}
-                      onChange={(event) => setCollaboratorUserId(event.target.value)}
-                    >
-                      <option value="">Adicionar colaborador</option>
-                      {collaboratorOptions.map((entry) => (
-                        <option key={entry.id} value={entry.id}>{entry.name}</option>
-                      ))}
-                    </Select>
+                      onChange={setCollaboratorUserId}
+                      placeholder="Adicionar colaborador"
+                    />
                     <button type="submit" disabled={collaboratorSaving || !collaboratorUserId}>
                       Adicionar
                     </button>

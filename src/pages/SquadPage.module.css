@@ -988,3 +988,8 @@
     transform: translateY(-6px);
   }
 }
+
+/* Global UserPicker/UserHoverCard integration */
+.ownerControl {
+  overflow: visible;
+}

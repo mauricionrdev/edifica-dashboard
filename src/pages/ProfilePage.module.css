@@ -695,3 +695,8 @@
     max-height: calc(100vh - 32px);
   }
 }
+
+/* Global UserPicker integration */
+.createTaskBar > span {
+  min-width: 0;
+}

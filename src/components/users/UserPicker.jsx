@@ -25,27 +25,30 @@ export default function UserPicker({
   placeholder = 'Sem responsável',
   searchPlaceholder = 'Buscar usuário...',
   className = '',
+  showRole = false,
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const closeTimer = useRef(null);
+  const safeUsers = Array.isArray(users) ? users.filter((entry) => entry?.id && entry?.active !== false) : [];
 
   const selected = useMemo(
-    () => users.find((entry) => entry.id === value) || null,
-    [users, value]
+    () => safeUsers.find((entry) => entry.id === value) || null,
+    [safeUsers, value]
   );
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
 
-    if (!term) return users;
+    if (!term) return safeUsers;
 
-    return users.filter((entry) => {
+    return safeUsers.filter((entry) => {
       const name = String(entry.name || '').toLowerCase();
-      const email = String(entry.email || '').toLowerCase();
-      return name.includes(term) || email.includes(term);
+      const email = String(entry.email || entry.username || '').toLowerCase();
+      const role = String(entry.role || '').toLowerCase();
+      return name.includes(term) || email.includes(term) || role.includes(term);
     });
-  }, [users, search]);
+  }, [safeUsers, search]);
 
   const selectedAvatar = getUserAvatar(selected) || selected?.avatarUrl || '';
 
@@ -96,7 +99,7 @@ export default function UserPicker({
       </button>
 
       {open ? (
-        <span className={styles.popover} role="dialog" aria-label="Selecionar responsável">
+        <span className={styles.popover} role="dialog" aria-label="Selecionar usuário">
           <span className={styles.searchWrap}>
             <input
               value={search}
@@ -120,8 +123,8 @@ export default function UserPicker({
             >
               <span className={styles.avatar}>NA</span>
               <span className={styles.optionMain}>
-                <strong>Sem responsável</strong>
-                <small>Remover responsável da tarefa</small>
+                <strong>{placeholder}</strong>
+                <small>Deixar sem usuário definido</small>
               </span>
             </button>
 
@@ -139,7 +142,7 @@ export default function UserPicker({
                   </span>
                   <span className={styles.optionMain}>
                     <strong>{entry.name}</strong>
-                    {entry.email ? <small>{entry.email}</small> : null}
+                    <small>{entry.email || entry.username || (showRole ? entry.role || '' : '')}</small>
                   </span>
                 </button>
               );

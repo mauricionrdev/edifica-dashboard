@@ -3,6 +3,7 @@ import { createClient, updateClient } from '../../api/clients.js';
 import { ApiError } from '../../api/client.js';
 import { CameraIcon, CloseIcon } from '../ui/Icons.jsx';
 import Select from '../ui/Select.jsx';
+import UserPicker from '../users/UserPicker.jsx';
 import DateField from '../ui/DateField.jsx';
 import { clientInitials, colorFromName } from '../../utils/clientHelpers.js';
 import {
@@ -252,40 +253,26 @@ export default function ClientFormModal({
 
               <div className={styles.field}>
                 <span className={styles.label}>Gestor de tráfego</span>
-                <Select
+                <UserPicker
                   className={styles.selectControl}
-                  value={form.gestor}
-                  onChange={(event) => setField('gestor', event.target.value)}
+                  users={gestorRows}
+                  value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+                  onChange={(userId) => setField('gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
                   disabled={saving}
-                  placeholder="Selecionar gestor"
-                  aria-label="Gestor de tráfego"
-                >
-                  <option value="">Sem gestor</option>
-                  {gestorRows.map((entry) => (
-                    <option key={entry.id || entry.name} value={entry.name}>
-                      {userLabel(entry)}
-                    </option>
-                  ))}
-                </Select>
+                  placeholder="Sem gestor"
+                />
               </div>
 
               <div className={styles.field}>
                 <span className={styles.label}>GDV responsável</span>
-                <Select
+                <UserPicker
                   className={styles.selectControl}
-                  value={form.gdvName}
-                  onChange={(event) => setField('gdvName', event.target.value)}
+                  users={gdvRows}
+                  value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+                  onChange={(userId) => setField('gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
                   disabled={saving}
-                  placeholder="Selecionar GDV"
-                  aria-label="GDV responsável"
-                >
-                  <option value="">Sem GDV</option>
-                  {gdvRows.map((entry) => (
-                    <option key={entry.id || entry.name} value={entry.name}>
-                      {userLabel(entry)}
-                    </option>
-                  ))}
-                </Select>
+                  placeholder="Sem GDV"
+                />
               </div>
             </div>
           </section>

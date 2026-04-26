@@ -24,6 +24,8 @@ import {
   saveGdvAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
+import UserPicker from '../components/users/UserPicker.jsx';
+import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './GdvPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -552,7 +554,9 @@ export default function GdvPage() {
 
   const gdvHeaderSubtitle = useMemo(() => {
     if (!activeGdvName) return 'Todos os GDVs';
-    return `${gdvOwnership.owner?.name || 'Sem proprietário'} · ${gdvOwnership.active ? 'Ativo' : 'Desativado'}`;
+    return gdvOwnership.owner?.name
+      ? `${gdvOwnership.owner.name} · ${gdvOwnership.active ? 'Ativo' : 'Desativado'}`
+      : `Sem proprietário · ${gdvOwnership.active ? 'Ativo' : 'Desativado'}`;
   }, [activeGdvName, gdvOwnership.active, gdvOwnership.owner?.name]);
 
   const handlePickLogo = useCallback(
@@ -842,31 +846,23 @@ export default function GdvPage() {
         ) : null}
 
         {superAdmin && activeGdvName ? (
-          <Select
+          <UserPicker
             className={styles.ownerControl}
+            users={Array.isArray(userDirectory) ? userDirectory : []}
             value={gdvOwnership.ownerId}
-            onChange={async (event) => {
+            placeholder="Sem proprietário"
+            showRole
+            onChange={async (userId) => {
               if (!activeGdvRecord?.id) return;
 
               await updateGdv(activeGdvRecord.id, {
                 name: activeGdvRecord.name,
-                ownerUserId: event.target.value,
+                ownerUserId: userId,
               });
 
               await refreshGdvs?.();
             }}
-            placeholder="Proprietário GDV"
-            aria-label="Selecionar proprietário do GDV"
-          >
-            <option value="">Sem proprietário</option>
-            {(Array.isArray(userDirectory) ? userDirectory : [])
-              .filter((entry) => entry?.active !== false)
-              .map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {entry.name} · {roleLabel(entry.role)}
-                </option>
-              ))}
-          </Select>
+          />
         ) : null}
 
         {admin && activeGdvRecord?.id && logoUrl ? (

@@ -3044,8 +3044,7 @@
   }
 }
 
-
-/* UserPicker/UserHoverCard integration */
+/* Global UserPicker/UserHoverCard integration */
 .userPickerInline {
   width: min(240px, 100%);
 }
@@ -3054,18 +3053,24 @@
   width: min(340px, 100%);
 }
 
-.taskMeta {
+.shareSelect,
+.createSelect,
+.taskSelect {
+  overflow: visible;
+}
+
+.taskMeta,
+.taskAssignee,
+.collaboratorItem,
+.collaboratorContent {
   min-width: 0;
-  position: relative;
   overflow: visible;
 }
 
-.task {
-  overflow: visible;
-}
-
+.task,
 .section,
 .sections,
-.mainPanel {
+.mainPanel,
+.workspace {
   overflow: visible;
 }

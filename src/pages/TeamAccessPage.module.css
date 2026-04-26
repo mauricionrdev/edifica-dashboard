@@ -1836,3 +1836,9 @@
   min-height: 54px;
   padding: 10px 16px;
 }
+
+/* Global UserPicker/UserHoverCard integration */
+.ownerInlineSelect {
+  min-width: 220px;
+  overflow: visible;
+}
