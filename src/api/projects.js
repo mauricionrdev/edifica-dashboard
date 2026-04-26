@@ -20,8 +20,9 @@ export function updateProjectSection(id, sectionId, body) {
   return api.patch(`/projects/${encodeURIComponent(id)}/sections/${encodeURIComponent(sectionId)}`, body);
 }
 
-export function deleteProjectSection(id, sectionId) {
-  return api.del(`/projects/${encodeURIComponent(id)}/sections/${encodeURIComponent(sectionId)}`);
+export function deleteProjectSection(id, sectionId, options = {}) {
+  const deleteTasks = options?.deleteTasks ? '?deleteTasks=1' : '';
+  return api.del(`/projects/${encodeURIComponent(id)}/sections/${encodeURIComponent(sectionId)}${deleteTasks}`);
 }
 
 export function reorderProjectSections(id, sectionIds) {

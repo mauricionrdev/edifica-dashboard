@@ -30,7 +30,6 @@ import {
   ChevronRightIcon,
   CloseIcon,
   PlusIcon,
-  ProjectBoardIcon,
   TrashIcon,
 } from '../components/ui/Icons.jsx';
 import obStyles from '../components/clients/OnboardingTab.module.css';
@@ -196,6 +195,7 @@ export default function ProjectsPage() {
   const [sectionEditingId, setSectionEditingId] = useState('');
   const [sectionEditingName, setSectionEditingName] = useState('');
   const [sectionDeletingId, setSectionDeletingId] = useState('');
+  const [sectionDeleteTarget, setSectionDeleteTarget] = useState(null);
   const [draggedSectionId, setDraggedSectionId] = useState('');
   const [draggedTask, setDraggedTask] = useState(null);
   const [orderingBusy, setOrderingBusy] = useState(false);
@@ -463,17 +463,29 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     if (!duePicker) return undefined;
+
     const close = () => setDuePicker(null);
+
     const handlePointerDown = (event) => {
       const target = event.target;
-      if (target?.closest?.(`.${styles.duePicker}`) || target?.closest?.(`.${styles.inlineDate}`)) return;
+
+      if (
+        target?.closest?.(`.${styles.duePicker}`) ||
+        target?.closest?.(`.${styles.inlineDate}`)
+      ) {
+        return;
+      }
+
       close();
     };
+
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') close();
     };
+
     window.addEventListener('mousedown', handlePointerDown);
     window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       window.removeEventListener('mousedown', handlePointerDown);
       window.removeEventListener('keydown', handleKeyDown);
@@ -566,19 +578,28 @@ export default function ProjectsPage() {
     }
   }
 
-  async function handleDeleteSection(section) {
+  function handleDeleteSection(section, taskCount = 0) {
     if (!selectedId || !section?.id) return;
-    if ((section.tasks || []).length > 0) {
-      showToast('Mova ou remova as tarefas antes de excluir a seção.', { variant: 'error' });
-      return;
-    }
-    if (!window.confirm(`Excluir a seção "${section.name}"?`)) return;
+
+    setSectionDeleteTarget({
+      id: section.id,
+      name: section.name,
+      taskCount: Number(taskCount || 0),
+    });
+  }
+
+  async function confirmDeleteSection({ deleteTasks = false } = {}) {
+    if (!selectedId || !sectionDeleteTarget?.id) return;
 
     try {
-      setSectionDeletingId(section.id);
-      const res = await deleteProjectSection(selectedId, section.id);
+      setSectionDeletingId(sectionDeleteTarget.id);
+
+      const res = await deleteProjectSection(selectedId, sectionDeleteTarget.id, { deleteTasks });
+
       setDetail((prev) => (prev ? { ...prev, sections: Array.isArray(res?.sections) ? res.sections : prev.sections } : prev));
-      showToast('Seção excluída.', { variant: 'success' });
+      syncProjectSummary(res?.project);
+      showToast(sectionDeleteTarget.taskCount > 0 ? 'Seção e tarefas excluídas.' : 'Seção excluída.', { variant: 'success' });
+      setSectionDeleteTarget(null);
     } catch (err) {
       showToast(err?.message || 'Não foi possível excluir a seção.', { variant: 'error' });
     } finally {
@@ -679,16 +700,6 @@ export default function ProjectsPage() {
 
     try {
       setInlineSavingTaskId(task.id);
-      setDetail((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          sections: (prev.sections || []).map((section) => ({
-            ...section,
-            tasks: (section.tasks || []).map((entry) => (entry.id === task.id ? { ...entry, ...cleanPatch } : entry)),
-          })),
-        };
-      });
       await updateTask(task.id, cleanPatch);
       const res = await refreshProject(selectedId);
       if (selectedTask?.id === task.id) {
@@ -723,25 +734,31 @@ export default function ProjectsPage() {
     });
   }
 
-  async function commitDuePicker(task, value = duePicker?.draft || '') {
-    const nextDate = parseDateInput(value);
-    if (nextDate === null) {
-      showToast('Use o formato dd/mm/aa.', { variant: 'error' });
+  async function commitDuePicker(task, value = '') {
+    const nextDate = /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))
+      ? value
+      : parseDateInput(value || duePicker?.draft || '');
+
+    if (!nextDate) {
+      showToast('Selecione uma data no calendário.', { variant: 'error' });
       return;
     }
+
     await handleInlineTaskUpdate(task, { dueDate: nextDate });
     setDuePicker(null);
+    showToast('Prazo atualizado.', { variant: 'success' });
   }
 
   async function clearDueDate(task) {
     await handleInlineTaskUpdate(task, { dueDate: '' });
     setDuePicker(null);
+    showToast('Prazo removido.', { variant: 'success' });
   }
 
   function renderDuePicker(task) {
     if (duePicker?.taskId !== task.id) return null;
     const monthDate = duePicker.month || dateFromIso(task.dueDate);
-    const selectedIso = parseDateInput(duePicker.draft) || task.dueDate || '';
+    const selectedIso = task.dueDate || '';
     const weekdays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
     return (
@@ -751,22 +768,15 @@ export default function ProjectsPage() {
         onClick={(event) => event.stopPropagation()}
       >
         <div className={styles.duePickerTop}>
-          <span className={styles.duePickerAdd}>+ Data de i...</span>
-          <label className={styles.duePickerInputWrap}>
-            <input
-              value={duePicker.draft}
-              onChange={(event) => setDuePicker((current) => ({ ...current, draft: event.target.value }))}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') commitDuePicker(task, event.currentTarget.value);
-                if (event.key === 'Escape') setDuePicker(null);
-              }}
-              autoFocus
-              aria-label="Prazo da tarefa"
-            />
-            <button type="button" onClick={() => setDuePicker(null)} aria-label="Fechar seletor de data">
-              <CloseIcon size={13} />
-            </button>
-          </label>
+          <span className={styles.duePickerAdd}>Selecione a data no calendário</span>
+          <button
+            type="button"
+            className={styles.duePickerClose}
+            onClick={() => setDuePicker(null)}
+            aria-label="Fechar seletor de data"
+          >
+            <CloseIcon size={13} />
+          </button>
         </div>
 
         <div className={styles.duePickerMonth}>
@@ -1123,7 +1133,7 @@ export default function ProjectsPage() {
               <section className={styles.detailHero}>
                 <div className={styles.heroMainRow}>
                   <div className={styles.projectTitleRow}>
-                    <ProjectBoardIcon size={30} className={styles.projectIcon} />
+                    <span className={styles.projectIcon}>{selectedProject.type === 'client' ? 'C' : 'P'}</span>
                     <div className={styles.projectHeading}>
                       <h1>{selectedProject.name}</h1>
                       <div className={styles.heroMeta}>
@@ -1342,9 +1352,9 @@ export default function ProjectsPage() {
                             <button
                               type="button"
                               className={styles.sectionAction}
-                              disabled={sectionDeletingId === section.id || group.tasks.length > 0}
-                              onClick={() => handleDeleteSection(section)}
-                              title={group.tasks.length > 0 ? 'Mova ou remova as tarefas antes de excluir' : 'Excluir seção'}
+                              disabled={sectionDeletingId === section.id}
+                              onClick={() => handleDeleteSection(section, group.tasks.length)}
+                              title={group.tasks.length > 0 ? 'Excluir seção e tarefas' : 'Excluir seção'}
                               aria-label="Excluir seção"
                             >
                               <TrashIcon size={12} />
@@ -1453,7 +1463,6 @@ export default function ProjectsPage() {
                                   {canEditTasks ? (
                                     <Select
                                       className={styles.inlineSelect}
-                                      menuMinWidth={220}
                                       value={task.assigneeUserId || ''}
                                       disabled={inlineSavingTaskId === task.id}
                                       onClick={(event) => event.stopPropagation()}
@@ -1581,6 +1590,60 @@ export default function ProjectsPage() {
                 disabled={deleteBusy}
               >
                 {deleteBusy ? 'Excluindo...' : 'Confirmar exclusão'}
+              </button>
+            </footer>
+          </section>
+        </div>
+      ) : null}
+
+      {sectionDeleteTarget ? (
+        <div className={styles.confirmOverlay} onClick={() => !sectionDeletingId && setSectionDeleteTarget(null)}>
+          <section
+            className={styles.confirmModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirmar exclusão da seção"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className={styles.confirmHeader}>
+              <h2>Excluir seção</h2>
+              <button
+                type="button"
+                onClick={() => setSectionDeleteTarget(null)}
+                disabled={Boolean(sectionDeletingId)}
+                aria-label="Fechar confirmação"
+              >
+                ×
+              </button>
+            </header>
+            <div className={styles.confirmBody}>
+              <p>
+                Você está prestes a excluir <strong>{sectionDeleteTarget.name}</strong>.
+              </p>
+              {sectionDeleteTarget.taskCount > 0 ? (
+                <p>
+                  Esta seção possui <strong>{sectionDeleteTarget.taskCount} tarefa(s)</strong>. Ao confirmar, as tarefas, comentários e colaboradores vinculados também serão removidos.
+                </p>
+              ) : (
+                <p>Esta seção está vazia e será removida do projeto.</p>
+              )}
+            </div>
+            <footer className={styles.confirmFooter}>
+              <button
+                type="button"
+                className={styles.confirmCancel}
+                onClick={() => setSectionDeleteTarget(null)}
+                disabled={Boolean(sectionDeletingId)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={styles.confirmDelete}
+                onClick={() => confirmDeleteSection({ deleteTasks: sectionDeleteTarget.taskCount > 0 })}
+                disabled={Boolean(sectionDeletingId)}
+              >
+                {sectionDeletingId ? 'Excluindo...' : sectionDeleteTarget.taskCount > 0 ? 'Excluir seção e tarefas' : 'Excluir seção'}
               </button>
             </footer>
           </section>
@@ -1791,16 +1854,20 @@ export default function ProjectsPage() {
 
                 <label className={styles.taskField}>
                   <span>Prazo</span>
-                  <input
-                    type="date"
-                    value={selectedTask.dueDate || ''}
-                    disabled={taskSaving || !canEditTasks}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setSelectedTask((prev) => ({ ...prev, dueDate: value }));
-                      handleUpdateSelectedTask({ dueDate: value });
-                    }}
-                  />
+                  <div className={styles.taskDateField}>
+                    <button
+                      type="button"
+                      className={styles.inlineDate}
+                      disabled={taskSaving || !canEditTasks}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openDuePicker(selectedTask);
+                      }}
+                    >
+                      {formatDateInput(selectedTask.dueDate) || 'Sem prazo'}
+                    </button>
+                    {renderDuePicker(selectedTask)}
+                  </div>
                 </label>
 
                 <section className={`${styles.taskSection} ${styles.collaborators}`}>

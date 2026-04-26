@@ -727,18 +727,72 @@ router.delete('/:id([0-9a-fA-F-]{36})/sections/:sectionId([0-9a-fA-F-]{36})', re
     const section = await getProjectSection(req.params.id, req.params.sectionId);
     if (!section) throw badRequest('Seção não encontrada');
 
-    const taskRows = await query('SELECT COUNT(*) AS total FROM tasks WHERE section_id = ?', [req.params.sectionId]);
-    const total = Number(taskRows[0]?.total || 0);
-    if (total > 0) throw badRequest('Remova ou mova as tarefas antes de excluir a seção');
+    const deleteTasks = req.query?.deleteTasks === '1' || req.query?.deleteTasks === 'true';
+
+    const taskRows = await query(
+      'SELECT id FROM tasks WHERE project_id = ? AND section_id = ?',
+      [req.params.id, req.params.sectionId]
+    );
+
+    const sectionTaskIds = taskRows.map((row) => row.id);
+
+    if (sectionTaskIds.length > 0 && !deleteTasks) {
+      throw badRequest('Esta seção possui tarefas. Confirme a exclusão das tarefas para remover a seção.');
+    }
 
     await runWithDeadlockRetry(() => withTransaction(async (conn) => {
+      if (sectionTaskIds.length > 0) {
+        const childRows = await conn.query(
+          `SELECT id
+             FROM tasks
+            WHERE project_id = ?
+              AND parent_task_id IN (${sectionTaskIds.map(() => '?').join(', ')})`,
+          [req.params.id, ...sectionTaskIds]
+        );
+
+        const childTaskIds = (Array.isArray(childRows?.[0]) ? childRows[0] : childRows).map((row) => row.id);
+        const taskIdsToDelete = [...new Set([...childTaskIds, ...sectionTaskIds])];
+
+        if (taskIdsToDelete.length > 0) {
+          const placeholders = taskIdsToDelete.map(() => '?').join(', ');
+
+          await conn.query(
+            `DELETE FROM task_collaborators WHERE task_id IN (${placeholders})`,
+            taskIdsToDelete
+          );
+
+          await conn.query(
+            `DELETE FROM task_comments WHERE task_id IN (${placeholders})`,
+            taskIdsToDelete
+          );
+
+          await conn.query(
+            `DELETE FROM task_events WHERE task_id IN (${placeholders})`,
+            taskIdsToDelete
+          );
+
+          if (childTaskIds.length > 0) {
+            await conn.query(
+              `DELETE FROM tasks WHERE id IN (${childTaskIds.map(() => '?').join(', ')})`,
+              childTaskIds
+            );
+          }
+
+          await conn.query(
+            `DELETE FROM tasks WHERE id IN (${sectionTaskIds.map(() => '?').join(', ')})`,
+            sectionTaskIds
+          );
+        }
+      }
+
       await conn.query('DELETE FROM project_sections WHERE id = ? AND project_id = ?', [req.params.sectionId, req.params.id]);
+
       await logTaskEvent({
         projectId: req.params.id,
         actorUserId: req.user.id,
         eventType: 'project.section_deleted',
         summary: `Seção removida: ${section.name}`,
-        metadata: { sectionId: req.params.sectionId },
+        metadata: { sectionId: req.params.sectionId, deletedTasks: sectionTaskIds.length },
       }, conn);
     }));
 

@@ -413,3 +413,113 @@
     display: none;
   }
 }
+
+
+/* Modelo Oficial: section modals and reordering */
+.section[draggable="true"],
+.taskRow[draggable="true"] {
+  cursor: grab;
+}
+
+.section[draggable="true"]:active,
+.taskRow[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 520;
+  background: rgba(6, 6, 6, 0.72);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.confirmModal {
+  width: min(520px, calc(100vw - 48px));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #111214;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52);
+  overflow: hidden;
+}
+
+.confirmHeader {
+  min-height: 64px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.confirmHeader h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.confirmHeader button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.confirmBody {
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.confirmBody p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.confirmBody strong {
+  color: var(--text-primary);
+}
+
+.confirmFooter {
+  padding: 14px 18px 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirmCancel,
+.confirmDelete {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirmCancel {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.confirmDelete {
+  border: 1px solid rgba(240, 68, 68, 0.42);
+  background: rgba(240, 68, 68, 0.12);
+  color: #ff6b6b;
+}

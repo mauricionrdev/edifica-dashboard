@@ -84,6 +84,10 @@ export default function ModeloOficialPage() {
   const [addDraft, setAddDraft] = useState({});
   const [sectionDraft, setSectionDraft] = useState('');
   const [resetting, setResetting] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [sectionDeleteTarget, setSectionDeleteTarget] = useState(null);
+  const [draggedSectionIndex, setDraggedSectionIndex] = useState(null);
+  const [draggedTaskRef, setDraggedTaskRef] = useState(null);
   const [directoryUsers, setDirectoryUsers] = useState([]);
   const fetchIdRef = useRef(0);
 
@@ -134,13 +138,20 @@ export default function ModeloOficialPage() {
     onError: handleError,
   });
 
-  async function handleReset() {
+  function handleReset() {
     if (!admin) return;
-    if (!window.confirm('Restaurar o modelo padrão? Todas as personalizações serão perdidas.')) return;
+    setResetConfirmOpen(true);
+  }
+
+  async function confirmResetTemplate() {
+    if (!admin) return;
+
     setResetting(true);
+
     try {
       const res = await resetTemplate();
       setSections(normalizeTemplate(res?.template?.sections));
+      setResetConfirmOpen(false);
       showToast('Modelo restaurado.');
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Falha ao restaurar modelo.';
@@ -191,10 +202,57 @@ export default function ModeloOficialPage() {
   const toggleSection = (si) =>
     setSections((prev) => prev.map((section, i) => (i === si ? { ...section, open: !section.open } : section)));
 
-  const removeSection = (si) => {
+  const requestRemoveSection = (si) => {
     if (!admin) return;
-    if (!window.confirm('Remover esta seção do modelo? Novos projetos não vão mais receber estas tarefas.')) return;
-    setSections((prev) => prev.filter((_, i) => i !== si));
+
+    const section = sections[si];
+
+    if (!section) return;
+
+    setSectionDeleteTarget({
+      index: si,
+      name: section.sec,
+      taskCount: section.tasks?.length || 0,
+    });
+  };
+
+  const confirmRemoveSection = () => {
+    if (!admin || sectionDeleteTarget?.index === undefined) return;
+
+    setSections((prev) => prev.filter((_, i) => i !== sectionDeleteTarget.index));
+    setSectionDeleteTarget(null);
+  };
+
+  const moveSection = (fromIndex, toIndex) => {
+    if (!admin || fromIndex === toIndex || toIndex < 0 || toIndex >= sections.length) return;
+
+    setSections((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+  };
+
+  const moveTask = (fromSectionIndex, fromTaskIndex, toSectionIndex, toTaskIndex) => {
+    if (!admin) return;
+
+    setSections((prev) => {
+      const next = prev.map((section) => ({ ...section, tasks: [...section.tasks] }));
+      const sourceSection = next[fromSectionIndex];
+      const targetSection = next[toSectionIndex];
+
+      if (!sourceSection || !targetSection) return prev;
+
+      const [moved] = sourceSection.tasks.splice(fromTaskIndex, 1);
+
+      if (!moved) return prev;
+
+      const safeTargetIndex = Math.max(0, Math.min(toTaskIndex, targetSection.tasks.length));
+      targetSection.tasks.splice(safeTargetIndex, 0, moved);
+
+      return next;
+    });
   };
 
   const renameTask = (si, ti, name) =>
@@ -345,7 +403,25 @@ export default function ModeloOficialPage() {
 
         <div className={styles.sectionList}>
           {sections.map((section, si) => (
-            <section key={si} className={styles.section}>
+            <section
+              key={si}
+              className={styles.section}
+              draggable={admin}
+              onDragStart={() => setDraggedSectionIndex(si)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+
+                if (draggedTaskRef) return;
+
+                if (draggedSectionIndex !== null && draggedSectionIndex !== si) {
+                  moveSection(draggedSectionIndex, si);
+                }
+
+                setDraggedSectionIndex(null);
+              }}
+              onDragEnd={() => setDraggedSectionIndex(null)}
+            >
               <button type="button" className={styles.sectionRow} onClick={() => toggleSection(si)}>
                 <ChevronDownIcon
                   size={14}
@@ -368,7 +444,7 @@ export default function ModeloOficialPage() {
                     className={styles.removeSection}
                     onClick={(event) => {
                       event.stopPropagation();
-                      removeSection(si);
+                      requestRemoveSection(si);
                     }}
                     role="button"
                     tabIndex={0}
@@ -384,7 +460,26 @@ export default function ModeloOficialPage() {
                   {section.tasks.map((task, ti) => {
                     const assignee = assigneeById.get(task.assigneeId);
                     return (
-                      <article key={ti} className={styles.taskRow}>
+                      <article
+                        key={ti}
+                        className={styles.taskRow}
+                        draggable={admin}
+                        onDragStart={(event) => {
+                          event.stopPropagation();
+                          setDraggedTaskRef({ sectionIndex: si, taskIndex: ti });
+                        }}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+
+                          if (!draggedTaskRef) return;
+
+                          moveTask(draggedTaskRef.sectionIndex, draggedTaskRef.taskIndex, si, ti);
+                          setDraggedTaskRef(null);
+                        }}
+                        onDragEnd={() => setDraggedTaskRef(null)}
+                      >
                         <span className={styles.taskCheck} aria-hidden="true" />
                         <div className={styles.taskMain}>
                           <input
@@ -477,6 +572,91 @@ export default function ModeloOficialPage() {
           ))}
         </div>
       </section>
+
+      {sectionDeleteTarget ? (
+        <div className={styles.confirmOverlay} onClick={() => setSectionDeleteTarget(null)}>
+          <section
+            className={styles.confirmModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirmar remoção da seção do modelo"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className={styles.confirmHeader}>
+              <h2>Remover seção</h2>
+              <button type="button" onClick={() => setSectionDeleteTarget(null)} aria-label="Fechar">
+                ×
+              </button>
+            </header>
+            <div className={styles.confirmBody}>
+              <p>
+                Você está prestes a remover <strong>{sectionDeleteTarget.name}</strong> do Modelo Oficial.
+              </p>
+              {sectionDeleteTarget.taskCount > 0 ? (
+                <p>
+                  Esta seção possui <strong>{sectionDeleteTarget.taskCount} tarefa(s)</strong>. Novos projetos criados a partir do modelo não receberão mais essa estrutura.
+                </p>
+              ) : (
+                <p>Esta seção está vazia e será removida do modelo.</p>
+              )}
+            </div>
+            <footer className={styles.confirmFooter}>
+              <button type="button" className={styles.confirmCancel} onClick={() => setSectionDeleteTarget(null)}>
+                Cancelar
+              </button>
+              <button type="button" className={styles.confirmDelete} onClick={confirmRemoveSection}>
+                Remover seção
+              </button>
+            </footer>
+          </section>
+        </div>
+      ) : null}
+
+      {resetConfirmOpen ? (
+        <div className={styles.confirmOverlay} onClick={() => !resetting && setResetConfirmOpen(false)}>
+          <section
+            className={styles.confirmModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirmar restauração do modelo"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className={styles.confirmHeader}>
+              <h2>Restaurar modelo</h2>
+              <button
+                type="button"
+                onClick={() => setResetConfirmOpen(false)}
+                disabled={resetting}
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </header>
+            <div className={styles.confirmBody}>
+              <p>Essa ação vai substituir o Modelo Oficial atual pelo padrão do sistema.</p>
+              <p>Projetos já criados não serão alterados.</p>
+            </div>
+            <footer className={styles.confirmFooter}>
+              <button
+                type="button"
+                className={styles.confirmCancel}
+                onClick={() => setResetConfirmOpen(false)}
+                disabled={resetting}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={styles.confirmDelete}
+                onClick={confirmResetTemplate}
+                disabled={resetting}
+              >
+                {resetting ? 'Restaurando...' : 'Restaurar modelo'}
+              </button>
+            </footer>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

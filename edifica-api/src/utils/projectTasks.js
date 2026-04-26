@@ -31,19 +31,6 @@ function normalizeDate(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null;
 }
 
-function serializeDbDate(value) {
-  if (!value) return '';
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    const year = value.getFullYear();
-    const month = String(value.getMonth() + 1).padStart(2, '0');
-    const day = String(value.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-  const raw = String(value);
-  const iso = raw.match(/^(\d{4}-\d{2}-\d{2})/);
-  return iso ? iso[1] : '';
-}
-
 export function serializeProject(row) {
   if (!row) return null;
   return {
@@ -87,7 +74,11 @@ export function serializeTask(row) {
     createdByUserId: row.created_by_user_id || '',
     createdByName: row.created_by_name || '',
     completedByUserId: row.completed_by_user_id || '',
-    dueDate: serializeDbDate(row.due_date),
+    dueDate: row.due_date
+      ? (row.due_date instanceof Date
+        ? row.due_date.toISOString().slice(0, 10)
+        : String(row.due_date).slice(0, 10))
+      : '',
     completedAt: row.completed_at,
     position: Number(row.position || 0),
     metadata: parseJson(row.metadata_json, null),
