@@ -12,6 +12,7 @@
 
 .headerIdentity {
   min-width: 0;
+  min-height: 50px;
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -19,13 +20,14 @@
 
 .headerLogo {
   position: relative;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
   padding: 0;
   border: 0;
   border-radius: 999px;
   background: var(--bg-raised);
+  margin-block: 3px;
   color: var(--text-primary);
   display: grid;
   place-items: center;
@@ -536,6 +538,7 @@
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   font-size: 11px;
   font-weight: 590;
 }
@@ -619,9 +622,9 @@
   color: inherit;
   text-align: left;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.95fr) auto;
+  grid-template-columns: minmax(260px, 1fr) 560px 128px;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   cursor: pointer;
 }
 
@@ -669,25 +672,31 @@
 }
 
 .clientStats {
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(70px, 1fr));
-  gap: 12px;
+  grid-template-columns: 156px 110px 90px 80px;
+  align-items: center;
+  justify-content: end;
+  column-gap: 22px;
 }
 
 .clientStats div {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  align-content: center;
   gap: 4px;
 }
 
 .clientStats span {
-  color: var(--text-muted);
-  font-size: 10px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 9px;
   line-height: 1.2;
   font-weight: 590;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.085em;
   text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .clientStats strong {
@@ -702,11 +711,13 @@
 }
 
 .clientStatus {
+  min-width: 0;
   display: flex;
   justify-content: flex-end;
 }
 
 .badge {
+  min-width: 92px;
   min-height: 28px;
   padding: 0 12px;
   border: 1px solid var(--line);
@@ -715,6 +726,7 @@
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   font-size: 11px;
   font-weight: 590;
   letter-spacing: 0.03em;
@@ -831,11 +843,13 @@
   }
 
   .clientRow {
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 0.95fr) auto;
+    grid-template-columns: minmax(240px, 1fr) 500px 118px;
+    gap: 14px;
   }
 
   .clientStats {
-    grid-template-columns: repeat(4, minmax(64px, 1fr));
+    grid-template-columns: 142px 96px 76px 70px;
+    column-gap: 18px;
   }
 }
 
@@ -850,6 +864,13 @@
 
   .clientRow {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .clientStats {
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(90px, 1fr));
+    justify-content: stretch;
   }
 
   .clientStatus {
@@ -914,6 +935,8 @@
 
   .clientStats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    row-gap: 12px;
   }
 }
 
