@@ -1,53 +1,21 @@
 .wrap {
-  position: relative;
   min-width: 0;
   display: inline-flex;
   align-items: center;
 }
 
 .card {
-  position: absolute;
-  z-index: 900;
+  position: fixed;
+  z-index: 99999;
   width: min(360px, calc(100vw - 32px));
   padding: 16px;
   border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: #202122;
   color: var(--text-primary);
-  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.46);
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-4px) scale(0.985);
-  transition:
-    opacity 0.14s ease,
-    transform 0.14s ease;
-}
-
-.wrap:hover .card,
-.wrap:focus-within .card {
-  opacity: 1;
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.52);
   pointer-events: auto;
-  transform: translateY(0) scale(1);
-}
-
-.placement_bottom {
-  top: calc(100% + 10px);
-  left: 0;
-}
-
-.placement_top {
-  bottom: calc(100% + 10px);
-  left: 0;
-}
-
-.placement_right {
-  top: 0;
-  left: calc(100% + 10px);
-}
-
-.placement_left {
-  top: 0;
-  right: calc(100% + 10px);
+  animation: user-card-in 0.12s ease-out;
 }
 
 .header {
@@ -133,4 +101,16 @@
 .action:hover {
   background: rgba(255, 255, 255, 0.045);
   border-color: color-mix(in srgb, var(--accent-amber) 36%, var(--line-strong));
+}
+
+@keyframes user-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

@@ -64,15 +64,15 @@ function initials(name = '') {
 function dueOffsetLabel(value) {
   if (value === '' || value === null || value === undefined) return 'Sem prazo';
   const number = Number(value);
-  if (!Number.isFinite(number)) return 'Sem prazo';
-  if (number === 0) return 'D+0';
+  if (!Number.isFinite(number) || number <= 0) return 'Sem prazo';
   return `D+${number}`;
 }
 
 function normalizeDueOffsetInput(value) {
   const clean = String(value || '').replace(/[^0-9]/g, '');
   if (!clean) return '';
-  return Math.max(0, Math.min(365, Number(clean)));
+  const number = Math.max(0, Math.min(365, Number(clean)));
+  return number > 0 ? number : '';
 }
 
 function SaveStatusPill({ status }) {
@@ -559,13 +559,13 @@ export default function ModeloOficialPage() {
                         </div>
 
                         <div className={styles.dueOffsetCell}>
-                          <span className={styles.dueOffsetBadge}>{dueOffsetLabel(task.dueOffsetDays)}</span>
                           <input
                             className={styles.dueOffsetInput}
                             value={task.dueOffsetDays}
                             disabled={!admin}
                             inputMode="numeric"
-                            placeholder="D+"
+                            placeholder="Sem prazo"
+                            title={dueOffsetLabel(task.dueOffsetDays)}
                             onChange={(event) => setTaskDueOffset(si, ti, event.target.value)}
                             aria-label="Prazo relativo em dias"
                           />

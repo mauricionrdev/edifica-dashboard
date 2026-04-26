@@ -53,10 +53,11 @@ function addDaysIso(days = 0) {
 function resolveTemplateDueDate(task = {}) {
   if (task?.dueDate) return clean(task.dueDate);
 
-  const offset = Number(task?.dueOffsetDays);
-  if (!Number.isFinite(offset) || offset <= 0) return '';
+  if (task?.dueOffsetDays === '' || task?.dueOffsetDays === null || task?.dueOffsetDays === undefined) {
+    return '';
+  }
 
-  return addDaysIso(offset);
+  return addDaysIso(task.dueOffsetDays);
 }
 
 async function resolveUserIdByName(name, db = null) {

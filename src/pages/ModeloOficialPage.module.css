@@ -894,3 +894,43 @@
 .assigneeSelect {
   overflow: visible;
 }
+
+
+/* HOTFIX v14 — prazo relativo simples */
+.dueOffsetCell {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.dueOffsetBadge {
+  display: none !important;
+}
+
+.dueOffsetInput {
+  width: 96px !important;
+  height: 30px !important;
+  padding: 0 10px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  color: var(--text-primary) !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 680 !important;
+  text-align: left !important;
+  outline: none !important;
+}
+
+.dueOffsetInput:not(:placeholder-shown)::before {
+  content: 'D+';
+}
+
+.dueOffsetInput:focus {
+  border-color: rgba(245, 184, 0, 0.36) !important;
+  background: rgba(245, 184, 0, 0.055) !important;
+}
+
+.dueOffsetInput::placeholder {
+  color: var(--text-tertiary) !important;
+}
