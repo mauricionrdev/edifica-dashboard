@@ -69,6 +69,8 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
 
   await addProjectMembers(projectId, [actorUser?.id].filter(Boolean), 'owner', db);
 
+  const templateAssigneeUserIds = new Set();
+
   if (mode === 'template') {
     const [templateRows] = await db.query('SELECT sections FROM onboarding_template WHERE id = 1 LIMIT 1');
     const sections = parseJson(templateRows?.[0]?.sections, []);
@@ -84,6 +86,9 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
 
       for (const [taskIndex, task] of (section?.tasks || []).entries()) {
         const assigneeUserId = clean(task?.assigneeId) || await resolveUserIdByName(task?.assignee, db);
+
+        if (assigneeUserId) templateAssigneeUserIds.add(assigneeUserId);
+
         const taskId = await createTaskRecord(
           {
             projectId,
@@ -106,6 +111,10 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
         );
 
         for (const [subIndex, sub] of (task?.subs || task?.subtasks || []).entries()) {
+          const subAssigneeUserId = clean(sub?.assigneeId) || await resolveUserIdByName(sub?.assignee, db) || assigneeUserId;
+
+          if (subAssigneeUserId) templateAssigneeUserIds.add(subAssigneeUserId);
+
           await createTaskRecord(
             {
               projectId,
@@ -114,7 +123,7 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
               parentTaskId: taskId,
               title: sub?.title || sub?.name,
               status: normalizeTemplateStatus(sub),
-              assigneeUserId,
+              assigneeUserId: subAssigneeUserId,
               dueDate: sub?.dueDate || '',
               position: subIndex,
               source: 'modelo_oficial_subtask',
@@ -126,6 +135,12 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
           );
         }
       }
+    }
+
+    const memberIds = [...templateAssigneeUserIds].filter((id) => id && id !== actorUser?.id);
+
+    if (memberIds.length > 0) {
+      await addProjectMembers(projectId, memberIds, 'member', db);
     }
   }
 

@@ -634,7 +634,7 @@ export default function ProjectsPage() {
     }
   }
 
-  async function handleTaskDrop(targetSectionId, targetTaskId = '') {
+  async function handleTaskDrop(targetSectionId, targetTaskId = '', position = 'before') {
     if (!selectedId || !draggedTask?.id || !targetSectionId || orderingBusy) return;
     if (!canEditTasks) return;
     if (taskFilter !== 'all' || taskSort !== 'section') return;
@@ -645,16 +645,34 @@ export default function ProjectsPage() {
         .filter((task) => !task.parentTaskId)
         .map((task) => task.id),
     }));
+
     const sourceGroup = groups.find((group) => group.taskIds.includes(draggedTask.id));
     const targetGroup = groups.find((group) => group.sectionId === targetSectionId);
+
     if (!sourceGroup || !targetGroup) return;
 
+    const beforeSignature = groups
+      .map((group) => `${group.sectionId}:${group.taskIds.join(',')}`)
+      .join('|');
+
     sourceGroup.taskIds = sourceGroup.taskIds.filter((taskId) => taskId !== draggedTask.id);
+
     const targetIndex = targetTaskId ? targetGroup.taskIds.indexOf(targetTaskId) : -1;
+
     if (targetIndex >= 0) {
-      targetGroup.taskIds.splice(targetIndex, 0, draggedTask.id);
+      const insertIndex = position === 'after' ? targetIndex + 1 : targetIndex;
+      targetGroup.taskIds.splice(insertIndex, 0, draggedTask.id);
     } else {
       targetGroup.taskIds.push(draggedTask.id);
+    }
+
+    const afterSignature = groups
+      .map((group) => `${group.sectionId}:${group.taskIds.join(',')}`)
+      .join('|');
+
+    if (beforeSignature === afterSignature) {
+      setDraggedTask(null);
+      return;
     }
 
     try {
@@ -1285,10 +1303,13 @@ export default function ProjectsPage() {
                         }}
                         onDrop={(event) => {
                           event.preventDefault();
+                          event.stopPropagation();
+
                           if (draggedTask) {
                             handleTaskDrop(group.key);
                             return;
                           }
+
                           handleSectionDrop(group.key);
                         }}
                       >
@@ -1380,17 +1401,27 @@ export default function ProjectsPage() {
                                 }`.trim()}
                                 draggable={canEditTasks && taskFilter === 'all' && taskSort === 'section'}
                                 onDragStart={(event) => {
-                                  setDraggedTask({ id: task.id, sectionId: group.key });
+                                  setDraggedTask({ id: task.id, sectionId: group.key, startedAt: Date.now() });
                                   event.dataTransfer.effectAllowed = 'move';
                                   event.dataTransfer.setData('text/plain', `task:${task.id}`);
                                 }}
                                 onDragEnd={() => setDraggedTask(null)}
                                 onDragOver={(event) => {
-                                  if (draggedTask?.id && draggedTask.id !== task.id) event.preventDefault();
+                                  if (draggedTask?.id && draggedTask.id !== task.id) {
+                                    event.preventDefault();
+                                    event.dataTransfer.dropEffect = 'move';
+                                  }
                                 }}
                                 onDrop={(event) => {
                                   event.preventDefault();
-                                  if (draggedTask?.id && draggedTask.id !== task.id) handleTaskDrop(group.key, task.id);
+                                  event.stopPropagation();
+
+                                  if (!draggedTask?.id || draggedTask.id === task.id) return;
+
+                                  const rect = event.currentTarget.getBoundingClientRect();
+                                  const position = event.clientY > rect.top + rect.height / 2 ? 'after' : 'before';
+
+                                  handleTaskDrop(group.key, task.id, position);
                                 }}
                               >
                                 <button

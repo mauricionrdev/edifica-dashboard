@@ -966,3 +966,44 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* PATCH v17 — Modelo Oficial final */
+.tableHeader {
+  grid-template-columns: minmax(340px, 1fr) minmax(220px, 300px) 120px 44px !important;
+}
+
+.taskRow {
+  grid-template-columns: 32px minmax(320px, 1fr) minmax(220px, 300px) 120px 44px !important;
+}
+
+.dueOffsetCell,
+.dueOffsetBadge,
+.dueOffsetInput {
+  display: none !important;
+}
+
+.assigneeCell {
+  min-width: 0 !important;
+  display: block !important;
+}
+
+.assigneeSelect {
+  width: 100% !important;
+}
+
+.taskName:focus,
+.sectionTitle:focus,
+.noteArea:focus,
+.sectionInput:focus {
+  border-color: var(--line-strong) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+@media (max-width: 980px) {
+  .tableHeader,
+  .taskRow {
+    grid-template-columns: 1fr !important;
+  }
+}
