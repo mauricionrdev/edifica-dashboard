@@ -185,7 +185,6 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       <div className={styles.header}>
         <div className={styles.titleBlock}>
           <span className={styles.eyebrow}>{title}</span>
-          <h3 className={styles.title}>{title}</h3>
         </div>
 
         <div className={styles.headerMeta}>

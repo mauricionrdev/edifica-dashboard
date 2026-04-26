@@ -22,7 +22,7 @@
 .header {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) auto max-content;
+  grid-template-columns: minmax(110px, 1fr) auto max-content;
   align-items: center;
   gap: 16px;
   padding-bottom: 14px;
@@ -31,17 +31,18 @@
 
 .titleBlock {
   min-width: 0;
-  display: grid;
-  gap: 3px;
+  display: flex;
+  align-items: center;
 }
 
 .eyebrow {
   width: max-content;
-  height: 23px;
-  padding: 0 10px;
+  height: 25px;
+  padding: 0 11px;
   border: 1px solid var(--analysis-accent-line);
   border-radius: 999px;
   color: var(--analysis-accent);
+  background: var(--analysis-accent-soft);
   display: inline-flex;
   align-items: center;
   font-size: 9px;
@@ -51,12 +52,7 @@
 }
 
 .title {
-  margin: 0;
-  color: var(--analysis-accent);
-  font-size: 15px;
-  line-height: 1.15;
-  font-weight: 590;
-  letter-spacing: -0.025em;
+  display: none;
 }
 
 .headerMeta {
