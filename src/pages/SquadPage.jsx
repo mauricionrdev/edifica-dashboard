@@ -199,6 +199,7 @@ export default function SquadPage() {
   const logoInputRef = useRef(null);
   const cardsRef = useRef(null);
   const [showStickyResult, setShowStickyResult] = useState(false);
+  const [renderStickyResult, setRenderStickyResult] = useState(false);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
 
@@ -411,6 +412,19 @@ export default function SquadPage() {
 
     return () => observer.disconnect();
   }, [selectedClient?.id]);
+
+  useEffect(() => {
+    if (showStickyResult) {
+      setRenderStickyResult(true);
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setRenderStickyResult(false);
+    }, 170);
+
+    return () => window.clearTimeout(timeout);
+  }, [showStickyResult]);
 
   const filteredRows = useMemo(() => {
     const normalized = query.trim();
@@ -751,8 +765,8 @@ export default function SquadPage() {
         onChange={handlePickLogo}
       />
 
-      {selectedClient && showStickyResult ? (
-        <section className={styles.stickyResultBar}>
+      {selectedClient && renderStickyResult ? (
+        <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
           <span className={styles.clientAvatarMini}>{initialsFromClient(selectedClient.name)}</span>
           <strong>{selectedClient.name}</strong>
 

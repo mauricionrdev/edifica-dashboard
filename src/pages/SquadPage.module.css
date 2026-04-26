@@ -938,3 +938,30 @@
     transform: translateY(0);
   }
 }
+
+
+/* Smooth sticky result enter/exit */
+.stickyResultBar {
+  will-change: opacity, transform;
+}
+
+.stickyVisible {
+  animation: squadStickyEnter 160ms ease-out both;
+}
+
+.stickyLeaving {
+  pointer-events: none;
+  animation: squadStickyExit 170ms ease-in both;
+}
+
+@keyframes squadStickyExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
