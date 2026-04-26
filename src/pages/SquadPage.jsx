@@ -197,6 +197,8 @@ export default function SquadPage() {
   const [metricsError, setMetricsError] = useState(null);
   const metricsFetchRef = useRef(0);
   const logoInputRef = useRef(null);
+  const cardsRef = useRef(null);
+  const [showStickyResult, setShowStickyResult] = useState(false);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
 
@@ -271,6 +273,27 @@ export default function SquadPage() {
   useEffect(() => {
     setPage(1);
   }, [query, week, month0, year, squadId]);
+
+  useEffect(() => {
+    if (!selectedClient || !cardsRef.current) {
+      setShowStickyResult(false);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyResult(!entry.isIntersecting);
+      },
+      {
+        threshold: 0.08,
+        rootMargin: '-12px 0px 0px 0px',
+      }
+    );
+
+    observer.observe(cardsRef.current);
+
+    return () => observer.disconnect();
+  }, [selectedClient?.id]);
 
   const handlePickLogo = async (event) => {
     const file = event.target.files?.[0];
@@ -728,7 +751,7 @@ export default function SquadPage() {
         onChange={handlePickLogo}
       />
 
-      {selectedClient ? (
+      {selectedClient && showStickyResult ? (
         <section className={styles.stickyResultBar}>
           <span className={styles.clientAvatarMini}>{initialsFromClient(selectedClient.name)}</span>
           <strong>{selectedClient.name}</strong>
@@ -759,24 +782,7 @@ export default function SquadPage() {
       ) : null}
 
       <section className={styles.topArea}>
-        {selectedClient ? (
-          <section className={styles.selectedStrip}>
-            <span className={styles.clientAvatar}>{initialsFromClient(selectedClient.name)}</span>
-            <div className={styles.selectedText}>
-              <span>Cliente em análise</span>
-              <strong>{selectedClient.name}</strong>
-            </div>
-            <div className={styles.selectedMeta}>
-              <span>{selectedClient.gdvName || 'Sem GDV'}</span>
-              <span>{selectedClient.gestor || 'Sem gestor'}</span>
-            </div>
-            <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
-              Limpar seleção
-            </button>
-          </section>
-        ) : null}
-
-        <section className={styles.metricGrid}>
+        <section ref={cardsRef} className={styles.metricGrid}>
           {topCards.map((card) => (
             <article key={card.id} className={styles.metricCard}>
               <span className={styles.metricLabel}>{card.label}</span>

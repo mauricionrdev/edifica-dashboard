@@ -916,3 +916,25 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* Sticky result behavior refinement */
+.selectedStrip {
+  display: none;
+}
+
+.stickyResultBar {
+  animation: squadStickyEnter 140ms ease-out;
+}
+
+@keyframes squadStickyEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
