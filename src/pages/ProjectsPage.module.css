@@ -3094,3 +3094,441 @@
 .sectionDragging {
   opacity: 0.72;
 }
+
+
+/* PATCH v20 — drawer final da tarefa */
+.taskOverlay {
+  z-index: 520 !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  padding: 0 !important;
+  background: rgba(5, 5, 6, 0.62) !important;
+  backdrop-filter: blur(8px);
+}
+
+.taskModal {
+  width: min(820px, calc(100vw - 64px)) !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 1px solid var(--line) !important;
+  background: #111214 !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  overflow: hidden !important;
+}
+
+.taskModalHeader {
+  min-height: 92px !important;
+  padding: 18px 22px 16px !important;
+  border-bottom: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  background: #111214 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 18px !important;
+}
+
+.taskModalHeader > div:first-child {
+  min-width: 0;
+}
+
+.taskModalHeader span {
+  color: var(--text-tertiary) !important;
+  font-size: 11px !important;
+  font-weight: 720 !important;
+}
+
+.taskModalHeader input {
+  margin: 7px 0 0 !important;
+  color: var(--text-primary) !important;
+  font-size: clamp(20px, 1.45vw, 26px) !important;
+  font-weight: 780 !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.taskModalHeader input:focus {
+  color: var(--text-primary) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.taskModalMeta {
+  margin-top: 10px !important;
+  gap: 7px !important;
+}
+
+.taskModalMeta small {
+  min-height: 24px !important;
+  border-color: var(--line) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  color: var(--text-secondary) !important;
+}
+
+.taskModalActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.taskCompleteButton,
+.taskHeaderDeleteButton,
+.taskCloseButton {
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.taskCompleteButton {
+  padding: 0 14px;
+}
+
+.taskHeaderDeleteButton {
+  padding: 0 13px;
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 28%, var(--line));
+}
+
+.taskCloseButton {
+  width: 34px;
+  padding: 0;
+  font-size: 18px;
+  color: var(--text-secondary);
+}
+
+.taskCompleteButton:hover,
+.taskCloseButton:hover {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--line-strong);
+}
+
+.taskHeaderDeleteButton:hover {
+  background: var(--danger-soft);
+}
+
+.taskCompleteButton:disabled,
+.taskHeaderDeleteButton:disabled,
+.taskCloseButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.taskModalGrid {
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 292px !important;
+  overflow: hidden !important;
+}
+
+.taskModalMain {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 22px 24px 132px !important;
+  border-right: 1px solid var(--line) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 26px !important;
+  overflow-y: auto !important;
+  scrollbar-width: none;
+}
+
+.taskModalMain::-webkit-scrollbar {
+  display: none;
+}
+
+.taskAside {
+  order: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 20px !important;
+  border-bottom: 0 !important;
+  background: #111214 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  overflow-y: auto !important;
+  scrollbar-width: none;
+}
+
+.taskAside::-webkit-scrollbar {
+  display: none;
+}
+
+.taskSection {
+  gap: 12px !important;
+}
+
+.taskSectionHeader {
+  min-height: 26px !important;
+}
+
+.taskSectionHeader h3 {
+  color: var(--text-primary) !important;
+  font-size: 15px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.025em;
+}
+
+.taskSectionHeader small {
+  color: var(--text-tertiary) !important;
+}
+
+.taskField {
+  gap: 6px !important;
+}
+
+.taskField span {
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+  font-weight: 720 !important;
+}
+
+.taskField input,
+.taskField select,
+.taskField textarea,
+.commentForm textarea,
+.subtaskForm input {
+  border-color: var(--line) !important;
+  border-radius: 10px !important;
+  background: #0d0e0f !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+.taskField input:focus,
+.taskField select:focus,
+.taskField textarea:focus,
+.commentForm textarea:focus,
+.subtaskForm input:focus {
+  border-color: var(--line-strong) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.taskField textarea {
+  min-height: 190px !important;
+  resize: vertical !important;
+}
+
+.taskSummaryCard {
+  padding: 0 0 14px !important;
+  border-bottom: 1px solid var(--line) !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  align-items: start !important;
+  gap: 4px !important;
+}
+
+.taskSummaryCard span {
+  color: var(--text-tertiary) !important;
+  font-size: 11px !important;
+  font-weight: 760 !important;
+}
+
+.taskSummaryCard strong {
+  color: var(--text-primary) !important;
+  font-size: 15px !important;
+  font-weight: 780 !important;
+}
+
+.taskSummaryCard small {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+}
+
+.priorityField {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.priorityPill {
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  font-size: 10px !important;
+}
+
+.taskDateField .inlineDate {
+  width: 100% !important;
+  max-width: none !important;
+  height: 36px !important;
+  justify-content: flex-start !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
+  background: #0d0e0f !important;
+  color: var(--text-primary) !important;
+}
+
+.taskDateField .inlineDate:focus,
+.taskDateField .inlineDate:hover {
+  border-color: var(--line-strong) !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.subtaskList,
+.collaboratorList {
+  border-top: 1px solid var(--line) !important;
+}
+
+.subtaskItem,
+.collaboratorItem {
+  min-height: 48px !important;
+  border-bottom: 1px solid var(--line-subtle) !important;
+  border-top: 0 !important;
+}
+
+.subtaskItem:last-child,
+.collaboratorItem:last-child {
+  border-bottom: 0 !important;
+}
+
+.subtaskContent span {
+  color: var(--text-primary) !important;
+}
+
+.subtaskContent small,
+.collaboratorContent small {
+  color: var(--text-tertiary) !important;
+}
+
+.comment {
+  padding: 14px 0 !important;
+  border-bottom: 1px solid var(--line-subtle) !important;
+}
+
+.commentHeader strong {
+  color: var(--text-primary) !important;
+}
+
+.commentForm {
+  position: sticky !important;
+  bottom: -132px !important;
+  z-index: 3 !important;
+  margin: auto -24px -132px !important;
+  padding: 14px 24px 20px !important;
+  border-top: 1px solid var(--line) !important;
+  background: #111214 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: end !important;
+  gap: 10px !important;
+}
+
+.commentForm textarea {
+  min-height: 74px !important;
+  max-height: 150px !important;
+  padding: 12px !important;
+  resize: vertical !important;
+  font: inherit !important;
+  font-size: 13px !important;
+}
+
+.commentForm button,
+.subtaskForm button,
+.collaboratorForm button {
+  height: 38px !important;
+  border-radius: 10px !important;
+  border-color: var(--line) !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  color: var(--text-primary) !important;
+}
+
+.commentForm button:hover,
+.subtaskForm button:hover,
+.collaboratorForm button:hover {
+  border-color: var(--line-strong) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.commentForm button:disabled,
+.subtaskForm button:disabled,
+.collaboratorForm button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.45 !important;
+}
+
+.collaborators {
+  grid-column: auto !important;
+  padding-top: 14px !important;
+  border-top: 1px solid var(--line) !important;
+}
+
+.collaboratorForm {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.taskDeleteButton {
+  display: none !important;
+}
+
+@media (max-width: 1100px) {
+  .taskModal {
+    width: min(760px, calc(100vw - 32px)) !important;
+  }
+
+  .taskModalGrid {
+    grid-template-columns: 1fr !important;
+    overflow-y: auto !important;
+  }
+
+  .taskModalMain {
+    border-right: 0 !important;
+    padding-bottom: 26px !important;
+  }
+
+  .taskAside {
+    order: -1 !important;
+    border-bottom: 1px solid var(--line) !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .taskSummaryCard,
+  .collaborators {
+    grid-column: 1 / -1 !important;
+  }
+
+  .commentForm {
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-top: 0 !important;
+    background: transparent !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .taskModal {
+    width: 100vw !important;
+  }
+
+  .taskModalHeader {
+    grid-template-columns: 1fr !important;
+  }
+
+  .taskModalActions {
+    justify-content: flex-end;
+  }
+
+  .taskAside {
+    grid-template-columns: 1fr !important;
+  }
+}

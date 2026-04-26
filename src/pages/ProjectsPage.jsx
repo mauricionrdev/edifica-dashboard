@@ -303,6 +303,23 @@ export default function ProjectsPage() {
     return (Array.isArray(userDirectory) ? userDirectory : []).filter((entry) => !usedIds.has(entry.id));
   }, [projectMembers, userDirectory]);
 
+
+  function resolveTaskUser(userId = '', userName = '', userEmail = '') {
+    const byId = userId ? (Array.isArray(userDirectory) ? userDirectory : []).find((entry) => entry.id === userId) : null;
+    if (byId) return byId;
+
+    const byName = userName
+      ? (Array.isArray(userDirectory) ? userDirectory : []).find((entry) => entry.name === userName)
+      : null;
+
+    return {
+      id: userId || byName?.id || '',
+      name: userName || byName?.name || 'Sem usuário',
+      email: userEmail || byName?.email || '',
+      avatarUrl: byName?.avatarUrl || '',
+    };
+  }
+
   const collaboratorOptions = useMemo(() => {
     const usedIds = new Set(taskCollaborators.map((entry) => entry.userId));
     if (selectedTask?.assigneeUserId) usedIds.add(selectedTask.assigneeUserId);
@@ -1721,9 +1738,34 @@ export default function ProjectsPage() {
                   <small>{formatDate(selectedTask.dueDate)}</small>
                 </div>
               </div>
-              <button type="button" onClick={() => setSelectedTask(null)} aria-label="Fechar">
-                ×
-              </button>
+              <div className={styles.taskModalActions}>
+                <button
+                  type="button"
+                  className={styles.taskCompleteButton}
+                  onClick={() => handleToggleTask(selectedTask)}
+                  disabled={!canCompleteTask(selectedTask) || taskSaving}
+                >
+                  {selectedTask.status === 'done' ? 'Reabrir' : 'Concluir'}
+                </button>
+                {canEditTasks ? (
+                  <button
+                    type="button"
+                    className={styles.taskHeaderDeleteButton}
+                    onClick={handleDeleteSelectedTask}
+                    disabled={taskSaving}
+                  >
+                    Excluir
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className={styles.taskCloseButton}
+                  onClick={() => setSelectedTask(null)}
+                  aria-label="Fechar"
+                >
+                  ×
+                </button>
+              </div>
             </header>
 
             <div className={styles.taskModalGrid}>
@@ -1738,7 +1780,7 @@ export default function ProjectsPage() {
                       onChange={(event) => setSelectedTask((prev) => ({ ...prev, description: event.target.value }))}
                       onBlur={(event) => handleUpdateSelectedTask({ description: event.target.value })}
                       disabled={!canEditTasks}
-                      placeholder="Adicionar descrição"
+                      placeholder="Descreva o contexto, combinados e próximos passos..."
                     />
                   </label>
                 </section>
@@ -1765,7 +1807,13 @@ export default function ProjectsPage() {
                           </button>
                           <div className={styles.subtaskContent}>
                             <span>{subtask.title}</span>
-                            <small>{subtask.assigneeName || 'Sem responsável'}</small>
+                            {subtask.assigneeName ? (
+                              <UserHoverCard user={resolveTaskUser(subtask.assigneeUserId, subtask.assigneeName)} placement="left">
+                                <small>{subtask.assigneeName}</small>
+                              </UserHoverCard>
+                            ) : (
+                              <small>Sem responsável</small>
+                            )}
                           </div>
                           <small className={styles.subtaskStatus}>{statusLabel(subtask.status)}</small>
                         </article>
@@ -1799,7 +1847,9 @@ export default function ProjectsPage() {
                     taskComments.map((comment) => (
                       <article key={comment.id} className={styles.comment}>
                         <div className={styles.commentHeader}>
-                          <strong>{comment.userName}</strong>
+                          <UserHoverCard user={resolveTaskUser(comment.userId, comment.userName)} placement="left">
+                            <strong>{comment.userName}</strong>
+                          </UserHoverCard>
                           <time>{formatEventTime(comment.createdAt)}</time>
                         </div>
                         <p>{comment.body}</p>
@@ -1808,10 +1858,11 @@ export default function ProjectsPage() {
                   )}
                   {canCommentTasks ? (
                   <form className={styles.commentForm} onSubmit={handleSubmitComment}>
-                    <input
+                    <textarea
                       value={commentBody}
                       onChange={(event) => setCommentBody(event.target.value)}
-                      placeholder="Comentar"
+                      placeholder="Adicionar comentário"
+                      rows={3}
                     />
                     <button type="submit" disabled={!commentBody.trim()}>
                       Enviar
@@ -1825,17 +1876,7 @@ export default function ProjectsPage() {
                 <section className={styles.taskSummaryCard}>
                   <span>Resumo</span>
                   <strong>{statusLabel(selectedTask.status)}</strong>
-                  <small>{selectedTask.assigneeName || 'Sem responsável'}</small>
-                  {canEditTasks ? (
-                    <button
-                      type="button"
-                      className={styles.taskDeleteButton}
-                      onClick={handleDeleteSelectedTask}
-                      disabled={taskSaving}
-                    >
-                      Excluir tarefa
-                    </button>
-                  ) : null}
+                  <small>{sections.find((section) => section.id === selectedTask.sectionId)?.name || 'Sem seção'}</small>
                 </section>
 
                 <label className={styles.taskField}>
