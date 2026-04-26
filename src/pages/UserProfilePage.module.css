@@ -420,3 +420,13 @@
     grid-column: 2;
   }
 }
+
+
+/* PATCH v34 — ícone de projeto solto */
+.projectIcon,
+.projectAvatar {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}

@@ -261,3 +261,21 @@
 .root[data-variant='drawer'] .list {
   max-height: min(260px, 34dvh);
 }
+
+
+/* PATCH v34 — drawer picker sem cards individuais */
+.root[data-variant='drawer'] .option {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.root[data-variant='drawer'] .option:hover,
+.root[data-variant='drawer'] .optionActive {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.root[data-variant='drawer'] .list {
+  gap: 1px;
+}

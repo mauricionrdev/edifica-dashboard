@@ -686,3 +686,25 @@
   border: 0 !important;
   box-shadow: none !important;
 }
+
+
+/* PATCH v34 — regra visual: ícones soltos no dashboard */
+.projectIcon,
+.clientIcon,
+.metricIcon,
+.cardIcon,
+.projectAvatar,
+.clientAvatar {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.projectIcon svg,
+.clientIcon svg,
+.metricIcon svg,
+.cardIcon svg {
+  width: 20px !important;
+  height: 20px !important;
+}

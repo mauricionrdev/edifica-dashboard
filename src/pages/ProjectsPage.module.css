@@ -1917,3 +1917,50 @@ textarea:focus-visible {
     min-width: 140px;
   }
 }
+
+
+/* PATCH v34 — roles PT-BR e ícone de projeto no visual Edifica */
+.projectIcon {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-amber);
+}
+
+.projectIcon svg {
+  width: 23px;
+  height: 23px;
+  stroke-width: 1.9;
+}
+
+/* Colaborador é uma função textual, não deve parecer chip/card */
+.collaboratorContent small {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.2;
+}
+
+/* UserPicker no drawer: lista sem cards ativos em todos os usuários */
+.collaboratorForm [data-variant='drawer'] .option {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.collaboratorForm [data-variant='drawer'] .option:hover,
+.collaboratorForm [data-variant='drawer'] .optionActive {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.collaboratorForm [data-variant='drawer'] .option + .option {
+  margin-top: 1px;
+}
+
+.collaboratorForm [data-variant='drawer'] .popover {
+  border-color: var(--line);
+  background: #121314;
+}

@@ -2043,7 +2043,7 @@ export default function ProjectsPage() {
                               <UserHoverCard user={collaboratorUser} placement="top">
                                 <strong>{collaboratorUser.name}</strong>
                               </UserHoverCard>
-                              <small>{entry.role || 'follower'}</small>
+                              <small>{entry.role === 'follower' || !entry.role ? 'Colaborador' : entry.role}</small>
                             </div>
                             <button
                               type="button"
