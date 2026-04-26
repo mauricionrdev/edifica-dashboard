@@ -2020,27 +2020,42 @@ export default function ProjectsPage() {
                     <div className={styles.emptyInline}>Sem colaboradores.</div>
                   ) : (
                     <div className={styles.collaboratorList}>
-                      {taskCollaborators.map((entry) => (
-                        <article key={entry.userId} className={styles.collaboratorItem}>
-                          <UserHoverCard user={{ id: entry.userId, name: entry.userName, email: entry.userEmail, role: entry.role }} placement="top">
-                            <div className={styles.collaboratorAvatar}>{initials(entry.userName)}</div>
-                          </UserHoverCard>
-                          <div className={styles.collaboratorContent}>
-                            <UserHoverCard user={{ id: entry.userId, name: entry.userName, email: entry.userEmail, role: entry.role }} placement="top">
-                              <strong>{entry.userName}</strong>
+                      {taskCollaborators.map((entry) => {
+                        const directoryUser = (Array.isArray(userDirectory) ? userDirectory : []).find(
+                          (userEntry) => userEntry.id === entry.userId || userEntry.name === entry.userName || userEntry.email === entry.userEmail
+                        );
+                        const collaboratorUser = {
+                          id: entry.userId || directoryUser?.id || '',
+                          name: entry.userName || directoryUser?.name || 'Usuário',
+                          email: entry.userEmail || directoryUser?.email || directoryUser?.username || '',
+                          role: entry.role,
+                          avatarUrl: getUserAvatar(directoryUser) || directoryUser?.avatarUrl || '',
+                        };
+
+                        return (
+                          <article key={entry.userId} className={styles.collaboratorItem}>
+                            <UserHoverCard user={collaboratorUser} placement="top">
+                              <div className={styles.collaboratorAvatar}>
+                                {collaboratorUser.avatarUrl ? <img src={collaboratorUser.avatarUrl} alt="" /> : initials(collaboratorUser.name)}
+                              </div>
                             </UserHoverCard>
-                            <small>{entry.role || 'follower'}</small>
-                          </div>
-                          <button
-                            type="button"
-                            className={styles.inlineAction}
-                            onClick={() => handleRemoveCollaborator(entry.userId)}
-                            disabled={collaboratorSaving || !canEditTasks}
-                          >
-                            Remover
-                          </button>
-                        </article>
-                      ))}
+                            <div className={styles.collaboratorContent}>
+                              <UserHoverCard user={collaboratorUser} placement="top">
+                                <strong>{collaboratorUser.name}</strong>
+                              </UserHoverCard>
+                              <small>{entry.role || 'follower'}</small>
+                            </div>
+                            <button
+                              type="button"
+                              className={styles.inlineAction}
+                              onClick={() => handleRemoveCollaborator(entry.userId)}
+                              disabled={collaboratorSaving || !canEditTasks}
+                            >
+                              Remover
+                            </button>
+                          </article>
+                        );
+                      })}
                     </div>
                   )}
                   {canEditTasks ? (

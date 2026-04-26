@@ -1774,3 +1774,113 @@ textarea:focus-visible {
     border-top: 1px solid var(--line);
   }
 }
+
+
+/* PATCH v32 — ajuste visual pós-limpeza */
+.projectIcon {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 8px;
+  background: #f5b800;
+  color: #101112;
+}
+
+.projectIcon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.1;
+}
+
+/* Remove a sensação de borda dupla nos selects de filtro/ordenação. */
+.taskToolbar .toolbarField {
+  min-width: 160px;
+}
+
+.taskToolbar .toolbarField > div {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.taskToolbar .toolbarField button,
+.taskToolbar .toolbarField [role="combobox"],
+.taskToolbar .toolbarField select {
+  width: 100%;
+  min-width: 152px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #111214;
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.taskToolbar .toolbarField button:hover,
+.taskToolbar .toolbarField [role="combobox"]:hover,
+.taskToolbar .toolbarField select:hover {
+  border-color: var(--line-strong);
+  background: #121314;
+}
+
+.taskToolbar .toolbarField button:focus-visible,
+.taskToolbar .toolbarField [role="combobox"]:focus-visible,
+.taskToolbar .toolbarField select:focus-visible {
+  border-color: var(--line-strong);
+  box-shadow: none;
+  outline: none;
+}
+
+/* Colaboradores no drawer */
+.collaborators {
+  padding-top: 14px;
+  margin-bottom: 18px;
+}
+
+.collaboratorList {
+  border-top: 1px solid var(--line);
+}
+
+.collaboratorItem {
+  min-height: 56px;
+  padding: 11px 0;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+}
+
+.collaboratorAvatar {
+  width: 32px;
+  height: 32px;
+  background: #17191b;
+  border: 1px solid var(--line);
+}
+
+.collaboratorContent strong {
+  font-size: 13.5px;
+  line-height: 1.2;
+}
+
+.collaboratorContent small {
+  font-size: 11.5px;
+}
+
+.collaboratorItem .inlineAction {
+  padding: 0 8px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.collaboratorItem .inlineAction:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+@media (max-width: 1440px) {
+  .taskToolbar .toolbarField {
+    min-width: 150px;
+  }
+
+  .taskToolbar .toolbarField button,
+  .taskToolbar .toolbarField [role="combobox"],
+  .taskToolbar .toolbarField select {
+    min-width: 144px;
+  }
+}
