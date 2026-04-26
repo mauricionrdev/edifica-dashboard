@@ -359,3 +359,58 @@
 .root[data-variant='default'] .popover {
   z-index: 900;
 }
+
+
+/* PATCH v30 — compactação definitiva do UserPicker */
+.root[data-variant='action'] .trigger {
+  min-height: 32px !important;
+  height: 32px !important;
+  padding: 0 11px !important;
+  border-radius: 999px !important;
+}
+
+.root[data-variant='action'] .triggerText {
+  font-size: 12px !important;
+}
+
+.root[data-variant='action'] .popover,
+.root[data-variant='default'] .popover {
+  width: min(320px, calc(100vw - 48px)) !important;
+  max-height: 300px !important;
+  border-radius: 10px !important;
+}
+
+.searchWrap {
+  padding: 8px !important;
+}
+
+.searchWrap input {
+  height: 32px !important;
+  font-size: 12.5px !important;
+}
+
+.list {
+  max-height: 246px !important;
+  padding: 5px !important;
+}
+
+.option {
+  min-height: 40px !important;
+  padding: 5px 7px !important;
+  gap: 8px !important;
+}
+
+.option .avatar,
+.avatar {
+  width: 22px !important;
+  height: 22px !important;
+  font-size: 8.5px !important;
+}
+
+.optionMain strong {
+  font-size: 12.5px !important;
+}
+
+.optionMain small {
+  font-size: 10.5px !important;
+}

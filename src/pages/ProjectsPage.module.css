@@ -5400,3 +5400,351 @@
     grid-area: action !important;
   }
 }
+
+
+/* PATCH v30 — density reset definitivo Projetos/Asana
+   Objetivo: neutralizar camadas antigas de CSS que inflaram header, cards, toolbar e linhas. */
+.grid {
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+}
+
+.detailHero {
+  min-height: auto !important;
+  height: auto !important;
+  padding: 18px 28px 16px !important;
+  background: #0b0c0d !important;
+  display: grid !important;
+  gap: 16px !important;
+}
+
+.heroMainRow {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 18px !important;
+}
+
+.projectTitleRow {
+  gap: 14px !important;
+  min-width: 0 !important;
+}
+
+.projectIcon {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+}
+
+.projectEyebrow {
+  font-size: 9.5px !important;
+  line-height: 1 !important;
+}
+
+.projectHeading {
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
+.projectHeading h1 {
+  font-size: clamp(24px, 1.55vw, 30px) !important;
+  line-height: 1.04 !important;
+  letter-spacing: -0.052em !important;
+  margin: 0 !important;
+}
+
+.heroMeta {
+  font-size: 12.5px !important;
+  line-height: 1.2 !important;
+  gap: 9px !important;
+}
+
+.projectHeaderActions {
+  gap: 8px !important;
+  align-items: center !important;
+  align-self: start !important;
+}
+
+.headerActionCompact,
+.iconActionButton,
+.shareFormCompact :global(button) {
+  height: 32px !important;
+  min-height: 32px !important;
+}
+
+.headerActionCompact {
+  padding: 0 10px !important;
+  font-size: 12px !important;
+}
+
+.iconActionButton {
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+}
+
+.memberAvatar {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.summaryInline {
+  margin-top: 0 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+.summaryPill {
+  min-width: 92px !important;
+  min-height: 44px !important;
+  padding: 7px 10px !important;
+  border-radius: 11px !important;
+}
+
+.summaryLabel {
+  font-size: 9.5px !important;
+  line-height: 1 !important;
+}
+
+.summaryValue {
+  font-size: 15px !important;
+  line-height: 1.05 !important;
+}
+
+.createTask {
+  min-height: 54px !important;
+  padding: 10px 28px !important;
+  grid-template-columns: minmax(260px, 1fr) minmax(180px, 220px) minmax(180px, 210px) 116px 68px !important;
+  gap: 8px !important;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.createSelect,
+.createTask button {
+  height: 36px !important;
+  min-height: 36px !important;
+  border-radius: 9px !important;
+  font-size: 12.5px !important;
+}
+
+.taskToolbar {
+  min-height: 58px !important;
+  padding: 10px 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.taskToolbarGroup {
+  gap: 10px !important;
+}
+
+.toolbarField {
+  gap: 6px !important;
+}
+
+.toolbarField > span {
+  font-size: 9.5px !important;
+  line-height: 1 !important;
+}
+
+.toolbarSelect,
+.sectionCreateForm input,
+.sectionCreateForm button {
+  height: 36px !important;
+  min-height: 36px !important;
+  border-radius: 9px !important;
+  font-size: 12px !important;
+}
+
+.sectionCreateForm {
+  gap: 8px !important;
+}
+
+.sectionCreateForm input {
+  width: 220px !important;
+}
+
+.sectionCreateForm button {
+  padding: 0 12px !important;
+}
+
+.taskTableHeader {
+  min-height: 36px !important;
+  height: 36px !important;
+  padding: 0 28px !important;
+  grid-template-columns: 28px minmax(320px, 1fr) minmax(185px, 230px) minmax(104px, 128px) 66px !important;
+}
+
+.taskTableHeader span {
+  font-size: 9.5px !important;
+  line-height: 1 !important;
+}
+
+.sectionToggle {
+  min-height: 42px !important;
+  height: 42px !important;
+  padding: 0 28px !important;
+  grid-template-columns: 24px 28px minmax(0, 1fr) auto auto auto !important;
+  column-gap: 8px !important;
+}
+
+.sectionCollapse {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.sectionIndex {
+  width: 24px !important;
+  height: 20px !important;
+  font-size: 9.5px !important;
+  border-radius: 7px !important;
+}
+
+.sectionTitle {
+  font-size: 14px !important;
+  line-height: 1.1 !important;
+}
+
+.sectionCount,
+.sectionDone {
+  min-height: 22px !important;
+  height: 22px !important;
+  padding: 0 8px !important;
+  font-size: 11px !important;
+}
+
+.sectionAction {
+  min-height: 24px !important;
+  height: 24px !important;
+}
+
+.task {
+  min-height: 44px !important;
+  height: 44px !important;
+  padding: 0 28px !important;
+  grid-template-columns: 28px minmax(320px, 1fr) minmax(185px, 230px) minmax(104px, 128px) 66px !important;
+  column-gap: 10px !important;
+}
+
+.task::before {
+  top: 6px !important;
+  bottom: 6px !important;
+}
+
+.check {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.taskTitleCell {
+  gap: 0 !important;
+}
+
+.taskTitleInput {
+  height: 28px !important;
+  font-size: 13px !important;
+}
+
+.taskAssignee,
+.taskAssigneeEmpty {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 7px !important;
+}
+
+.taskAssigneeAvatar {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  font-size: 8.5px !important;
+}
+
+.inlineDate {
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  font-size: 12px !important;
+}
+
+.noteButton {
+  min-width: 62px !important;
+  height: 28px !important;
+  padding: 0 8px !important;
+  font-size: 10px !important;
+}
+
+/* Lista lateral */
+.projectList {
+  padding: 10px !important;
+}
+
+.projectButton {
+  min-height: 64px !important;
+  padding: 12px 12px 12px 14px !important;
+  border-radius: 10px !important;
+}
+
+.projectName {
+  font-size: 13.5px !important;
+}
+
+.projectMeta {
+  font-size: 11.5px !important;
+}
+
+/* Elimina heranças infladas em telas de notebook */
+@media (max-width: 1440px) {
+  .grid {
+    grid-template-columns: 246px minmax(0, 1fr) !important;
+  }
+
+  .detailHero,
+  .createTask,
+  .taskToolbar,
+  .taskTableHeader,
+  .sectionToggle,
+  .task {
+    padding-left: 22px !important;
+    padding-right: 22px !important;
+  }
+
+  .projectHeading h1 {
+    font-size: clamp(23px, 1.45vw, 28px) !important;
+  }
+
+  .summaryPill {
+    min-width: 84px !important;
+  }
+
+  .createTask {
+    grid-template-columns: minmax(230px, 1fr) minmax(160px, 200px) minmax(168px, 196px) 108px 64px !important;
+  }
+
+  .taskTableHeader,
+  .task {
+    grid-template-columns: 28px minmax(280px, 1fr) minmax(165px, 210px) minmax(98px, 120px) 62px !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .heroMainRow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .summaryInline {
+    justify-content: flex-start !important;
+  }
+
+  .projectHeaderActions {
+    justify-content: flex-start !important;
+  }
+
+  .createTask {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
