@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   createAnalysis,
   deleteAnalysis,
@@ -7,6 +7,7 @@ import {
 } from '../../api/analyses.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
+import DateField from '../ui/DateField.jsx';
 import StateBlock from '../ui/StateBlock.jsx';
 import styles from './AnalysisTab.module.css';
 
@@ -18,6 +19,24 @@ function todayISO() {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function formatDateBR(value) {
+  if (!value) return '—';
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat('pt-BR').format(date);
+}
+
+function analysisAuthor(entry) {
+  return (
+    entry?.updatedByName
+    || entry?.createdByName
+    || entry?.authorName
+    || entry?.createdBy
+    || entry?.updatedBy
+    || 'Sem autor registrado'
+  );
 }
 
 export default function AnalysisTab({ clientId, type, canEdit = false }) {
@@ -34,11 +53,9 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
 
   const title = type === 'icp' ? 'Análise ICP' : 'Análise GDV';
   const titleClass = type === 'icp' ? styles.icp : styles.gdv;
-  const accentBg = type === 'icp' ? '#60a5fa' : '#2dd4bf';
-  const accentFg = type === 'icp' ? '#fff' : '#111';
 
   useEffect(() => {
-    if (!clientId) return;
+    if (!clientId) return undefined;
     const fetchId = ++fetchIdRef.current;
     setLoading(true);
 
@@ -49,8 +66,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       })
       .catch((error) => {
         if (fetchIdRef.current !== fetchId) return;
-        const message =
-          error instanceof ApiError ? error.message : 'Erro ao carregar análises.';
+        const message = error instanceof ApiError ? error.message : 'Erro ao carregar análises.';
         showToast(message, { variant: 'error' });
       })
       .finally(() => {
@@ -88,12 +104,9 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         text: '',
       });
       const entry = response?.analysis;
-      if (entry) {
-        setEntries((previous) => [entry, ...previous]);
-      }
+      if (entry) setEntries((previous) => [entry, ...previous]);
     } catch (error) {
-      const message =
-        error instanceof ApiError ? error.message : 'Erro ao criar análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao criar análise.';
       showToast(message, { variant: 'error' });
     } finally {
       setCreating(false);
@@ -106,12 +119,9 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     try {
       const response = await updateAnalysis(clientId, type, id, patch);
       const fresh = response?.analysis;
-      if (fresh) {
-        setEntries((previous) => previous.map((entry) => (entry.id === id ? fresh : entry)));
-      }
+      if (fresh) setEntries((previous) => previous.map((entry) => (entry.id === id ? fresh : entry)));
     } catch (error) {
-      const message =
-        error instanceof ApiError ? error.message : 'Erro ao salvar análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao salvar análise.';
       showToast(message, { variant: 'error' });
     } finally {
       markSaving(id, false);
@@ -144,9 +154,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   }
 
   async function handleDelete(id) {
-    const confirmed = window.confirm(
-      'Remover esta análise? Esta ação não pode ser desfeita.'
-    );
+    const confirmed = window.confirm('Remover esta análise? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
 
     const previous = entries;
@@ -156,8 +164,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       showToast('Análise removida.');
     } catch (error) {
       setEntries(previous);
-      const message =
-        error instanceof ApiError ? error.message : 'Erro ao remover análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao remover análise.';
       showToast(message, { variant: 'error' });
     }
   }
@@ -174,40 +181,30 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   }
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.hero}>
-        <div className={styles.heroMain}>
-          <span className={`${styles.heroBadge} ${titleClass}`.trim()}>{title}</span>
-          <div className={styles.heroMeta}>
-            <div className={styles.heroMetric}>
-              <strong>{entries.length}</strong>
-              <span>registros</span>
-            </div>
-            <div className={styles.heroMetric}>
-              <strong>{entries[0]?.date || '—'}</strong>
-              <span>última data</span>
-            </div>
-            <div className={styles.heroMetric}>
-              <strong>
-                {entries.filter((entry) => String(entry.text || '').trim()).length}
-              </strong>
-              <span>com conteúdo</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className={`${styles.panel} ${titleClass}`.trim()}>
       <div className={styles.header}>
-        <div>
-          <h3 className={`${styles.title} ${titleClass}`}>{title}</h3>
-          <div className={styles.sub}>
-            Registro cronológico com data, contexto e leitura estratégica
+        <div className={styles.titleBlock}>
+          <span className={styles.eyebrow}>{title}</span>
+        </div>
+
+        <div className={styles.headerMeta}>
+          <div className={styles.heroMetric}>
+            <strong>{entries.length}</strong>
+            <span>registros</span>
+          </div>
+          <div className={styles.heroMetric}>
+            <strong>{formatDateBR(entries[0]?.date)}</strong>
+            <span>última data</span>
+          </div>
+          <div className={styles.heroMetric}>
+            <strong>{entries.filter((entry) => String(entry.text || '').trim()).length}</strong>
+            <span>com conteúdo</span>
           </div>
         </div>
+
         <button
           type="button"
           className={styles.addBtn}
-          style={{ background: accentBg, color: accentFg }}
           onClick={handleCreate}
           disabled={creating || !canEdit}
         >
@@ -229,22 +226,26 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           return (
             <div key={entry.id} className={styles.entry}>
               <div className={styles.entryHdr}>
-                <span className={styles.dateLabel}>Data</span>
-                <input
-                  type="date"
-                  className={styles.dateInput}
-                  style={{ color: accentBg }}
-                  value={entry.date || ''}
-                  disabled={!canEdit}
-                  onChange={(event) => onDateChange(entry.id, event.target.value)}
-                />
+                <label className={styles.dateControl}>
+                  <span>Data</span>
+                  <DateField
+                    value={entry.date || ''}
+                    onChange={(value) => onDateChange(entry.id, value)}
+                    disabled={!canEdit}
+                    ariaLabel="Data da análise"
+                    className={styles.dateField}
+                  />
+                </label>
+
+                <span className={styles.entryAuthor}>{analysisAuthor(entry)}</span>
+
                 <button
                   type="button"
                   className={styles.delBtn}
                   onClick={() => handleDelete(entry.id)}
                   disabled={!canEdit}
                 >
-                  ✕ Remover
+                  Remover
                 </button>
               </div>
               <textarea
@@ -255,11 +256,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 onChange={(event) => onTextChange(entry.id, event.target.value)}
               />
               {(isPending || isSaving) && (
-                <div
-                  className={`${styles.savingHint} ${
-                    isPending && !isSaving ? styles.pending : ''
-                  }`.trim()}
-                >
+                <div className={`${styles.savingHint} ${isPending && !isSaving ? styles.pending : ''}`.trim()}>
                   {isSaving ? 'Salvando…' : 'Alterações pendentes…'}
                 </div>
               )}

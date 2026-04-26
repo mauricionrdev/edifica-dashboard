@@ -1,56 +1,69 @@
 .overviewFacts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  padding: 0 0 16px;
+  gap: 0;
+  padding: 0 0 14px;
   border-bottom: 1px solid var(--line-subtle);
 }
 
 .factItem {
   min-width: 0;
+  min-height: 44px;
+  padding: 0 13px;
+  border-left: 1px solid var(--line-subtle);
   display: grid;
-  grid-template-columns: 14px minmax(0, 1fr);
+  grid-template-columns: 16px minmax(0, 1fr);
   grid-template-areas:
     'icon label'
-    '. value';
+    'icon value';
   column-gap: 8px;
   row-gap: 3px;
+  align-content: center;
+}
+
+.factItem:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
 .factItem svg {
   grid-area: icon;
   margin-top: 2px;
   color: var(--text-quaternary);
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.75;
 }
 
 .factItem span {
   grid-area: label;
   color: var(--text-quaternary);
-  font-size: 10px;
-  font-weight: 760;
+  font-size: 9px;
+  font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .factItem strong {
   grid-area: value;
   color: var(--text-primary);
   font-size: 13px;
-  font-weight: 720;
+  font-weight: 590;
   letter-spacing: -0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px 16px;
+  gap: 14px;
 }
 
 .fieldCompact {
-  max-width: 720px;
+  max-width: none;
 }
 
 .fieldHint {
@@ -62,6 +75,12 @@
 @media (max-width: 920px) {
   .overviewFacts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 10px;
+  }
+
+  .factItem:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
   }
 }
 
@@ -69,10 +88,16 @@
   .overviewFacts,
   .formGrid {
     grid-template-columns: 1fr;
-    gap: 14px;
   }
 
-  .fieldCompact {
-    max-width: none;
+  .factItem {
+    padding-left: 0;
+    border-left: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .factItem:last-child {
+    border-bottom: 0;
   }
 }

@@ -156,9 +156,14 @@
   width: 30px;
   height: 30px;
   flex: 0 0 30px;
+  border-radius: 8px;
+  background: var(--accent-amber);
+  color: var(--mock-page-bg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
 }
 
 .projectHeading {

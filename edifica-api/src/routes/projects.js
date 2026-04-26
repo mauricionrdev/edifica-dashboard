@@ -14,7 +14,6 @@ import {
   logTaskEvent,
   serializeProject,
   serializeTask,
-  syncClientProjectFromOnboarding,
 } from '../utils/projectTasks.js';
 
 const router = Router();
@@ -32,6 +31,113 @@ function normalizeStatus(value) {
 function normalizePriority(value) {
   const priority = clean(value);
   return ['low', 'medium', 'high'].includes(priority) ? priority : 'medium';
+}
+
+function normalizeTemplateStatus(task = {}) {
+  if (task?.done === true) return 'done';
+  const status = clean(task?.status);
+  return ['todo', 'in_progress', 'done', 'canceled'].includes(status) ? status : 'todo';
+}
+
+async function resolveUserIdByName(name, db = null) {
+  const label = clean(name);
+  if (!label) return '';
+  const exec = db ? db.query.bind(db) : query;
+  const result = await exec(
+    `SELECT id
+       FROM users
+      WHERE active = 1
+        AND LOWER(TRIM(name)) = LOWER(TRIM(?))
+      LIMIT 1`,
+    [label]
+  );
+  const rows = Array.isArray(result?.[0]) ? result[0] : result;
+  return rows?.[0]?.id || '';
+}
+
+async function createClientProjectRecord({ client, mode, name, actorUser, db }) {
+  const projectId = uuid();
+  const projectName = clean(name) || `Projeto - ${client.name}`;
+  const source = mode === 'template' ? 'client_template' : 'client_manual';
+
+  await db.query(
+    `INSERT INTO projects (id, name, type, client_id, squad_id, owner_user_id, created_by_user_id, source, source_id)
+     VALUES (?, ?, 'client', ?, ?, ?, ?, ?, ?)`,
+    [projectId, projectName, client.id, client.squad_id || null, actorUser?.id || null, actorUser?.id || null, source, client.id]
+  );
+
+  await addProjectMembers(projectId, [actorUser?.id].filter(Boolean), 'owner', db);
+
+  if (mode === 'template') {
+    const [templateRows] = await db.query('SELECT sections FROM onboarding_template WHERE id = 1 LIMIT 1');
+    const sections = parseJson(templateRows?.[0]?.sections, []);
+
+    for (const [sectionIndex, section] of (Array.isArray(sections) ? sections : []).entries()) {
+      const sectionId = uuid();
+      const sectionName = clean(section?.sec || section?.name || section?.title) || `Seção ${sectionIndex + 1}`;
+      await db.query(
+        `INSERT INTO project_sections (id, project_id, name, position, source, source_id)
+         VALUES (?, ?, ?, ?, 'modelo_oficial', ?)`,
+        [sectionId, projectId, sectionName, sectionIndex, String(sectionIndex)]
+      );
+
+      for (const [taskIndex, task] of (section?.tasks || []).entries()) {
+        const assigneeUserId = clean(task?.assigneeId) || await resolveUserIdByName(task?.assignee, db);
+        const taskId = await createTaskRecord(
+          {
+            projectId,
+            sectionId,
+            clientId: client.id,
+            title: task?.title || task?.name,
+            description: task?.description || task?.notes,
+            status: normalizeTemplateStatus(task),
+            priority: normalizePriority(task?.priority),
+            assigneeUserId,
+            dueDate: task?.dueDate || '',
+            position: taskIndex,
+            source: 'modelo_oficial',
+            sourceId: `${sectionIndex}:${taskIndex}`,
+            metadata: { templateTaskId: task?.id || null, templateAssignee: task?.assignee || '' },
+            notifyAssignee: false,
+          },
+          actorUser,
+          db
+        );
+
+        for (const [subIndex, sub] of (task?.subs || task?.subtasks || []).entries()) {
+          await createTaskRecord(
+            {
+              projectId,
+              sectionId,
+              clientId: client.id,
+              parentTaskId: taskId,
+              title: sub?.title || sub?.name,
+              status: normalizeTemplateStatus(sub),
+              assigneeUserId,
+              position: subIndex,
+              source: 'modelo_oficial_subtask',
+              sourceId: `${sectionIndex}:${taskIndex}:${subIndex}`,
+              notifyAssignee: false,
+            },
+            actorUser,
+            db
+          );
+        }
+      }
+    }
+  }
+
+  await logTaskEvent(
+    {
+      projectId,
+      actorUserId: actorUser?.id || null,
+      eventType: mode === 'template' ? 'project.created_from_template' : 'project.created_blank',
+      summary: mode === 'template' ? 'Projeto criado a partir do Modelo Oficial' : 'Projeto criado do zero',
+      metadata: { clientId: client.id },
+    },
+    db
+  );
+  return projectId;
 }
 
 async function runWithDeadlockRetry(fn, attempts = 3) {
@@ -180,6 +286,7 @@ router.get('/', requirePermission('projects.view'), async (req, res, next) => {
          LEFT JOIN users u ON u.id = p.owner_user_id
          LEFT JOIN tasks t ON t.project_id = p.id AND t.parent_task_id IS NULL
         WHERE p.status = 'active'
+          AND COALESCE(p.source, '') <> 'client_onboarding'
         GROUP BY p.id
         ORDER BY p.updated_at DESC, p.name ASC`
     );
@@ -223,12 +330,27 @@ router.delete('/:id([0-9a-fA-F-]{36})', requirePermission('projects.edit'), asyn
     const project = await assertProjectAccess(req.params.id, req.user, 'projects.edit');
     const members = await loadProjectMembers(req.params.id);
 
-    await query('DELETE FROM projects WHERE id = ?', [req.params.id]);
+    await runWithDeadlockRetry(() => withTransaction(async (conn) => {
+      const [taskRows] = await conn.query('SELECT id FROM tasks WHERE project_id = ?', [req.params.id]);
+      const taskIds = taskRows.map((row) => row.id);
+      if (taskIds.length > 0) {
+        const placeholders = taskIds.map(() => '?').join(', ');
+        await conn.query(`DELETE FROM task_collaborators WHERE task_id IN (${placeholders})`, taskIds);
+        await conn.query(`DELETE FROM task_comments WHERE task_id IN (${placeholders})`, taskIds);
+        await conn.query(`DELETE FROM task_events WHERE project_id = ? OR task_id IN (${placeholders})`, [req.params.id, ...taskIds]);
+        await conn.query('DELETE FROM tasks WHERE project_id = ? AND parent_task_id IS NOT NULL', [req.params.id]);
+        await conn.query('DELETE FROM tasks WHERE project_id = ?', [req.params.id]);
+      } else {
+        await conn.query('DELETE FROM task_events WHERE project_id = ?', [req.params.id]);
+      }
+      await conn.query('DELETE FROM project_members WHERE project_id = ?', [req.params.id]);
+      await conn.query('DELETE FROM project_sections WHERE project_id = ?', [req.params.id]);
+      await conn.query('DELETE FROM projects WHERE id = ?', [req.params.id]);
+    }));
 
     const recipientIds = members
       .map((entry) => entry.userId)
       .filter((id, index, list) => id && id !== req.user.id && list.indexOf(id) === index);
-
     if (recipientIds.length > 0) {
       await notifyUsers({
         ids: recipientIds,
@@ -242,7 +364,6 @@ router.delete('/:id([0-9a-fA-F-]{36})', requirePermission('projects.edit'), asyn
         actionUrl: '/projetos',
       });
     }
-
     res.json({ ok: true });
   } catch (err) {
     next(err);
@@ -280,18 +401,48 @@ router.post('/', requirePermission('projects.create'), async (req, res, next) =>
   }
 });
 
-router.post('/sync-client/:clientId', requirePermission('projects.create'), async (req, res, next) => {
+router.post('/client/:clientId', requirePermission('projects.create'), async (req, res, next) => {
   try {
-    await getAccessibleClientRow(req.params.clientId, req.user, 'id, squad_id');
-    const projectId = await syncClientProjectFromOnboarding(req.params.clientId, {
-      actorUser: req.user,
-      force: Boolean(req.body?.force),
-    });
+    const client = await getAccessibleClientRow(req.params.clientId, req.user, 'id, name, squad_id');
+    const mode = clean(req.body?.mode) === 'blank' ? 'blank' : 'template';
+    const name = clean(req.body?.name) || `Projeto - ${client.name}`;
+    const existing = await query(
+      `SELECT id
+         FROM projects
+        WHERE client_id = ?
+          AND status = 'active'
+          AND COALESCE(source, '') <> 'client_onboarding'
+        ORDER BY created_at DESC
+        LIMIT 1`,
+      [client.id]
+    );
+    if (existing[0]?.id) {
+      const rows = await query('SELECT * FROM projects WHERE id = ? LIMIT 1', [existing[0].id]);
+      return res.json({ project: serializeProject(rows[0]), alreadyExists: true });
+    }
+    let projectId = '';
+    await runWithDeadlockRetry(() => withTransaction(async (conn) => {
+      await conn.query(
+        `UPDATE projects
+            SET client_id = NULL,
+                status = CASE WHEN status = 'active' THEN 'archived' ELSE status END,
+                updated_at = CURRENT_TIMESTAMP
+          WHERE client_id = ?
+            AND COALESCE(source, '') = 'client_onboarding'`,
+        [client.id]
+      );
+
+      projectId = await createClientProjectRecord({ client, mode, name, actorUser: req.user, db: conn });
+    }));
     const rows = await query('SELECT * FROM projects WHERE id = ? LIMIT 1', [projectId]);
-    res.json({ project: serializeProject(rows[0]) });
+    return res.status(201).json({ project: serializeProject(rows[0]), mode });
   } catch (err) {
     next(err);
   }
+});
+
+router.post('/sync-client/:clientId', requirePermission('projects.create'), async (req, res) => {
+  res.status(410).json({ error: 'Fluxo legado desativado. Crie o projeto manualmente pelo botão Criar projeto do cliente.' });
 });
 
 router.get('/client/:clientId', requirePermission('projects.view'), async (req, res, next) => {
@@ -308,6 +459,8 @@ router.get('/client/:clientId', requirePermission('projects.view'), async (req, 
          LEFT JOIN users u ON u.id = p.owner_user_id
          LEFT JOIN tasks t ON t.project_id = p.id AND t.parent_task_id IS NULL
         WHERE p.client_id = ?
+          AND p.status = 'active'
+          AND COALESCE(p.source, '') <> 'client_onboarding'
         GROUP BY p.id
         LIMIT 1`,
       [req.params.clientId]

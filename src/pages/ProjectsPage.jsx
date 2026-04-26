@@ -30,7 +30,6 @@ import {
   ChevronRightIcon,
   CloseIcon,
   PlusIcon,
-  ProjectBoardIcon,
   TrashIcon,
 } from '../components/ui/Icons.jsx';
 import obStyles from '../components/clients/OnboardingTab.module.css';
@@ -464,18 +463,13 @@ export default function ProjectsPage() {
   useEffect(() => {
     if (!duePicker) return undefined;
     const close = () => setDuePicker(null);
-    const handlePointerDown = (event) => {
-      const target = event.target;
-      if (target?.closest?.(`.${styles.duePicker}`) || target?.closest?.(`.${styles.inlineDate}`)) return;
-      close();
-    };
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') close();
     };
-    window.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mousedown', close);
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('mousedown', handlePointerDown);
+      window.removeEventListener('mousedown', close);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [duePicker]);
@@ -950,6 +944,7 @@ export default function ProjectsPage() {
   async function handleDeleteSelectedTask() {
     if (!selectedTask?.id) return;
     if (!canEditTasks) return;
+    if (!window.confirm(`Excluir a tarefa "${selectedTask.title}"?`)) return;
 
     try {
       setTaskSaving(true);
@@ -1113,7 +1108,7 @@ export default function ProjectsPage() {
               <section className={styles.detailHero}>
                 <div className={styles.heroMainRow}>
                   <div className={styles.projectTitleRow}>
-                    <ProjectBoardIcon size={30} className={styles.projectIcon} />
+                    <span className={styles.projectIcon}>{selectedProject.type === 'client' ? 'C' : 'P'}</span>
                     <div className={styles.projectHeading}>
                       <h1>{selectedProject.name}</h1>
                       <div className={styles.heroMeta}>
@@ -1784,11 +1779,7 @@ export default function ProjectsPage() {
                     type="date"
                     value={selectedTask.dueDate || ''}
                     disabled={taskSaving || !canEditTasks}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setSelectedTask((prev) => ({ ...prev, dueDate: value }));
-                      handleUpdateSelectedTask({ dueDate: value });
-                    }}
+                    onChange={(event) => handleUpdateSelectedTask({ dueDate: event.target.value })}
                   />
                 </label>
 

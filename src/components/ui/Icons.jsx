@@ -104,27 +104,6 @@ export function ChartColumnIcon(props) {
 export function BookTemplateIcon(props) {
   return <BaseIcon {...props}><path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h11.5v18H7a2.5 2.5 0 0 0-2.5 2.5" /><path d="M7 3v18" /><path d="M10 7h5" /><path d="M10 11h5" /><path d="M10 15h5" /></BaseIcon>;
 }
-
-export function ProjectBoardIcon({ size = 18, className, ...props }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      aria-hidden="true"
-      className={className}
-      {...props}
-    >
-      <rect x="2" y="2" width="20" height="20" rx="5" fill="#E3C857" />
-      <rect x="6.75" y="6.2" width="2.2" height="2.2" rx="0.7" fill="#121316" />
-      <rect x="6.75" y="10.9" width="2.2" height="2.2" rx="0.7" fill="#121316" />
-      <rect x="6.75" y="15.6" width="2.2" height="2.2" rx="0.7" fill="#121316" />
-      <rect x="10.5" y="6.45" width="6.8" height="1.7" rx="0.85" fill="#121316" />
-      <rect x="10.5" y="11.15" width="6.8" height="1.7" rx="0.85" fill="#121316" />
-      <rect x="10.5" y="15.85" width="6.8" height="1.7" rx="0.85" fill="#121316" />
-    </svg>
-  );
-}
 export function TrophyIcon(props) {
   return <BaseIcon {...props}><path d="M8 21h8" /><path d="M12 17v4" /><path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" /><path d="M7 6H5a2 2 0 0 0 0 4h2" /><path d="M17 6h2a2 2 0 0 1 0 4h-2" /></BaseIcon>;
 }

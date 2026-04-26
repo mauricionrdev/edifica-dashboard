@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import ClientDetailDrawer from '../components/clients/ClientDetailDrawer.jsx';
 import Select from '../components/ui/Select.jsx';
-import { ProjectBoardIcon } from '../components/ui/Icons.jsx';
 import { listProjects } from '../api/projects.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { buildBarChartData, computeCentralMetrics } from '../utils/centralMetrics.js';
@@ -344,7 +343,7 @@ function ProjectSummaryPanel({ projects = [], loading = false }) {
             return (
               <article key={project.id || `${project.name}-${index}`} className={styles.projectItem}>
                 <span className={styles.projectDot} aria-hidden="true" />
-                <span className={styles.projectMark}><ProjectBoardIcon size={24} /></span>
+                <span className={styles.projectMark}>{projectInitials(project.name)}</span>
                 <span className={styles.projectInfo}>
                   <strong>{project.name || 'Projeto'}</strong>
                   <small>{project.squadName || project.clientName || 'Sem squad'}</small>

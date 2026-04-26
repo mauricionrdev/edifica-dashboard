@@ -21,7 +21,7 @@ export function updateProjectSection(id, sectionId, body) {
 }
 
 export function deleteProjectSection(id, sectionId) {
-  return api.delete(`/projects/${encodeURIComponent(id)}/sections/${encodeURIComponent(sectionId)}`);
+  return api.del(`/projects/${encodeURIComponent(id)}/sections/${encodeURIComponent(sectionId)}`);
 }
 
 export function reorderProjectSections(id, sectionIds) {
@@ -37,15 +37,15 @@ export function addProjectMember(id, body) {
 }
 
 export function removeProjectMember(id, userId) {
-  return api.delete(`/projects/${encodeURIComponent(id)}/members/${encodeURIComponent(userId)}`);
+  return api.del(`/projects/${encodeURIComponent(id)}/members/${encodeURIComponent(userId)}`);
 }
 
 export function getClientProject(clientId) {
   return api.get(`/projects/client/${encodeURIComponent(clientId)}`);
 }
 
-export function syncClientProject(clientId, body = {}) {
-  return api.post(`/projects/sync-client/${encodeURIComponent(clientId)}`, body);
+export function createClientProject(clientId, body = {}) {
+  return api.post(`/projects/client/${encodeURIComponent(clientId)}`, body);
 }
 
 export function createTask(body) {
@@ -57,7 +57,7 @@ export function updateTask(id, body) {
 }
 
 export function deleteTask(id) {
-  return api.delete(`/projects/tasks/${encodeURIComponent(id)}`);
+  return api.del(`/projects/tasks/${encodeURIComponent(id)}`);
 }
 
 export function listTaskComments(id) {
@@ -77,7 +77,7 @@ export function addTaskCollaborator(id, body) {
 }
 
 export function removeTaskCollaborator(id, userId) {
-  return api.delete(`/projects/tasks/${encodeURIComponent(id)}/collaborators/${encodeURIComponent(userId)}`);
+  return api.del(`/projects/tasks/${encodeURIComponent(id)}/collaborators/${encodeURIComponent(userId)}`);
 }
 
 export function listMyProjectTasks() {

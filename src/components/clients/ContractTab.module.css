@@ -1,54 +1,63 @@
 .panel {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 14px;
 }
 
 .summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  padding: 0 0 18px;
+  grid-template-columns: minmax(230px, 2fr) minmax(132px, 1fr) minmax(98px, 0.72fr) minmax(68px, 0.48fr);
+  gap: 0;
+  padding: 0 0 12px;
   border-bottom: 1px solid var(--line-subtle);
 }
 
 .summaryCard {
   min-width: 0;
+  min-height: 44px;
+  padding: 0 14px;
+  border-left: 1px solid var(--line-subtle);
   display: grid;
-  gap: 4px;
-  align-content: start;
+  gap: 3px;
+  align-content: center;
 }
 
-.summaryCard + .summaryCard {
-  padding-left: 14px;
-  border-left: 1px solid var(--line-subtle);
+.summaryCard:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
 .summaryLabel {
   color: var(--text-quaternary);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.14em;
+  font-size: 9px;
+  font-weight: 590;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .summaryValue {
   color: var(--text-primary);
-  font-family: 'Manrope', system-ui, sans-serif;
-  font-size: clamp(18px, 1.9vw, 24px);
-  font-weight: 820;
-  line-height: 0.98;
-  letter-spacing: -0.05em;
+  font-size: clamp(14px, 1.15vw, 18px);
+  font-weight: 590;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.summaryCard:not(:first-child) .summaryValue {
+  white-space: nowrap;
 }
 
 .summaryCard.red .summaryValue,
 .summaryValue.red {
-  color: #ef8f8f;
+  color: var(--danger);
 }
 
 .summaryCard.green .summaryValue {
-  color: #7fc99b;
+  color: var(--success);
 }
 
 .summarySub {
@@ -66,7 +75,7 @@
 @media (max-width: 900px) {
   .summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    row-gap: 10px;
   }
 
   .summaryCard:nth-child(odd) {
@@ -83,7 +92,7 @@
   .summaryCard {
     padding-left: 0;
     border-left: 0;
-    padding-bottom: 14px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--line-subtle);
   }
 
