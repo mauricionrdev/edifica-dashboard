@@ -2776,3 +2776,196 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* HOTFIX Asana layout v7 — workspace vertical fix */
+.grid {
+  display: grid !important;
+  grid-template-columns: 292px minmax(0, 1fr) !important;
+  gap: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.mainPanel {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Esta classe é a área interna do projeto, não o layout geral.
+   Deve ficar em coluna para evitar createTask e sections lado a lado. */
+.workspace {
+  display: flex !important;
+  flex-direction: column !important;
+  grid-template-columns: none !important;
+  gap: 0 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.detailHero {
+  min-width: 0 !important;
+  padding: 20px 28px 18px !important;
+  border-bottom: 1px solid var(--line-subtle) !important;
+}
+
+.createTask {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns:
+    minmax(260px, 1fr)
+    minmax(190px, 250px)
+    minmax(180px, 240px)
+    minmax(132px, 160px)
+    max-content !important;
+  gap: 8px !important;
+  padding: 14px 28px !important;
+  border-bottom: 1px solid var(--line-subtle) !important;
+  background: #101112 !important;
+  align-items: center !important;
+}
+
+.createTask > *,
+.createTask input,
+.createTask button {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.sections {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 14px 28px 44px !important;
+  background: #101112 !important;
+}
+
+.taskToolbar {
+  width: 100% !important;
+  min-height: 42px !important;
+  margin: 0 0 12px !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.taskToolbarGroup {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.sectionCreateForm {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(170px, 230px) auto !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+.taskTableHeader {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 32px minmax(360px, 1fr) minmax(190px, 260px) minmax(128px, 160px) 72px !important;
+  gap: 12px !important;
+  align-items: center !important;
+  padding: 0 8px !important;
+}
+
+.sectionToggle {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: 24px 34px minmax(320px, 1fr) 92px 120px 36px !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+.task {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: 32px minmax(360px, 1fr) minmax(190px, 260px) minmax(128px, 160px) 72px !important;
+  gap: 12px !important;
+  align-items: center !important;
+  padding: 0 8px !important;
+}
+
+.taskTitle {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+.taskAssignee,
+.taskDue {
+  min-width: 0 !important;
+}
+
+.inlineDate {
+  max-width: 160px !important;
+}
+
+.taskOverlay {
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+}
+
+.taskModal {
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.taskModalHeader {
+  border-radius: 0 !important;
+}
+
+@media (max-width: 1280px) {
+  .grid {
+    grid-template-columns: 270px minmax(0, 1fr) !important;
+  }
+
+  .createTask {
+    grid-template-columns: minmax(260px, 1fr) minmax(170px, 220px) minmax(160px, 210px) !important;
+  }
+
+  .createTask > button {
+    justify-self: start !important;
+  }
+
+  .taskToolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sectionCreateForm {
+    justify-self: start !important;
+  }
+
+  .taskTableHeader,
+  .task {
+    grid-template-columns: 32px minmax(260px, 1fr) minmax(160px, 220px) minmax(120px, 150px) 64px !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sidebarPanel {
+    display: none !important;
+  }
+
+  .createTask,
+  .sectionCreateForm,
+  .taskTableHeader,
+  .sectionToggle,
+  .task {
+    grid-template-columns: 1fr !important;
+  }
+}
