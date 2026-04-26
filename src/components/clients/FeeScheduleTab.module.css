@@ -1,23 +1,23 @@
 .panel {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1.55fr 1fr 0.82fr 0.56fr;
   gap: 0;
-  padding: 0 0 14px;
+  padding: 0 0 12px;
   border-bottom: 1px solid var(--line-subtle);
 }
 
 .summaryCard {
   min-width: 0;
-  min-height: 46px;
-  padding: 0 13px;
+  min-height: 42px;
+  padding: 0 12px;
   border-left: 1px solid var(--line-subtle);
   display: grid;
-  gap: 3px;
+  gap: 2px;
   align-content: center;
 }
 
@@ -28,7 +28,7 @@
 
 .summaryLabel {
   color: var(--text-quaternary);
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 590;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -37,10 +37,10 @@
 .summaryValue {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(15px, 1.45vw, 20px);
+  font-size: clamp(14px, 1.25vw, 18px);
   font-weight: 590;
-  line-height: 1;
-  letter-spacing: -0.05em;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -52,10 +52,11 @@
 }
 
 .sectionHead {
+  min-height: 31px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .contractRule {
@@ -64,13 +65,13 @@
 
 .rows {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .rowCard {
   display: grid;
-  gap: 10px;
-  padding: 12px 0 0;
+  gap: 9px;
+  padding: 10px 0 0;
   border-top: 1px solid var(--line-subtle);
   background: transparent;
 }
@@ -81,7 +82,6 @@
 }
 
 .rowHeader {
-  min-height: 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -90,14 +90,14 @@
 
 .rowHeader strong {
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 590;
   letter-spacing: -0.02em;
 }
 
 .removeBtn {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -116,28 +116,18 @@
 
 .rowGrid {
   display: grid;
-  grid-template-columns: 1.15fr repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .iconAction {
   width: 28px;
   min-width: 28px;
-  height: 28px;
-  min-height: 28px;
   padding: 0;
-  border-radius: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text-tertiary);
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.iconAction:hover:not(:disabled) {
-  background: transparent;
-  color: var(--text-primary);
 }
 
 .footer {
@@ -176,21 +166,27 @@
   }
 
   .summaryCard {
-    min-height: 44px;
     padding-left: 0;
     border-left: 0;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--line-subtle);
   }
 
   .summaryCard:last-child {
+    padding-bottom: 0;
     border-bottom: 0;
   }
 
   .sectionHead {
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .rowGrid {
     grid-template-columns: 1fr;
+  }
+
+  .rowHeader {
+    align-items: center;
   }
 }

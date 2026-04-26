@@ -2,23 +2,18 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0;
-  padding: 0 0 14px;
+  padding: 0 0 12px;
   border-bottom: 1px solid var(--line-subtle);
 }
 
 .factItem {
   min-width: 0;
-  min-height: 46px;
-  padding: 0 13px;
+  min-height: 42px;
+  padding: 0 12px;
   border-right: 1px solid var(--line-subtle);
   display: grid;
-  grid-template-columns: 14px minmax(0, 1fr);
-  grid-template-areas:
-    'icon label'
-    'icon value';
-  column-gap: 8px;
-  row-gap: 2px;
   align-content: center;
+  gap: 2px;
 }
 
 .factItem:first-child {
@@ -31,30 +26,23 @@
 }
 
 .factItem svg {
-  grid-area: icon;
-  margin-top: 2px;
-  color: var(--text-quaternary);
-  width: 14px;
-  height: 14px;
-  stroke-width: 1.7;
+  display: none;
 }
 
 .factItem span {
-  grid-area: label;
   color: var(--text-quaternary);
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 590;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
 .factItem strong {
-  grid-area: value;
   overflow: hidden;
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 590;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -62,7 +50,7 @@
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 13px 16px;
+  gap: 12px 16px;
 }
 
 .fieldCompact {
@@ -81,12 +69,13 @@
     row-gap: 10px;
   }
 
-  .factItem:nth-child(2) {
-    border-right: 0;
+  .factItem:nth-child(odd) {
+    padding-left: 0;
   }
 
-  .factItem:nth-child(3) {
-    padding-left: 0;
+  .factItem:nth-child(2n) {
+    padding-right: 0;
+    border-right: 0;
   }
 
   .formGrid {

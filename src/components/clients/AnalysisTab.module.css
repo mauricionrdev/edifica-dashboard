@@ -1,58 +1,51 @@
 .panel {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .hero {
-  padding: 0 0 14px;
+  padding: 0 0 10px;
   border-bottom: 1px solid var(--line-subtle);
   background: transparent;
 }
 
 .heroMain {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  gap: 18px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 34px;
 }
 
 .heroBadge {
-  width: max-content;
-  min-height: 24px;
-  padding: 0 9px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  color: var(--text-secondary);
-  display: inline-flex;
-  align-items: center;
-  font-size: 10px;
-  font-weight: 590;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  display: none;
 }
 
 .heroMeta {
   display: grid;
-  grid-template-columns: repeat(3, minmax(76px, auto));
+  grid-template-columns: repeat(3, minmax(82px, auto));
   gap: 0;
   justify-content: end;
 }
 
 .heroMetric {
   min-width: 0;
-  min-height: 42px;
+  min-height: 34px;
   padding: 0 12px;
   border-left: 1px solid var(--line-subtle);
   background: transparent;
   display: grid;
   align-content: center;
-  gap: 3px;
+  gap: 2px;
+}
+
+.heroMetric:first-child {
+  border-left: 0;
 }
 
 .heroMetric strong {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 14.5px;
   line-height: 1;
   font-weight: 590;
   letter-spacing: -0.035em;
@@ -62,7 +55,7 @@
 
 .heroMetric span {
   color: var(--text-quaternary);
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -73,27 +66,28 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .title {
-  margin: 0 0 3px;
+  margin: 0;
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.2;
   font-weight: 590;
   letter-spacing: -0.025em;
 }
 
-.title.icp {
-  color: var(--vivid-blue);
-}
-
+.title.icp,
 .title.gdv {
-  color: var(--accent-cyan);
+  color: var(--text-primary);
 }
 
 .sub {
+  margin-top: 3px;
   font-size: 11px;
+  line-height: 1.35;
   color: var(--text-tertiary);
 }
 
@@ -101,9 +95,9 @@
   height: 30px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--text-secondary);
+  border: 1px solid var(--accent-amber-line);
+  background: var(--accent-amber);
+  color: #101010;
   font-family: inherit;
   font-size: 11px;
   font-weight: 590;
@@ -113,9 +107,7 @@
 }
 
 .addBtn:hover:not(:disabled) {
-  border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.026);
-  color: var(--text-primary);
+  background: var(--accent-amber-strong);
 }
 
 .addBtn:disabled {
@@ -124,11 +116,11 @@
 }
 
 .empty {
-  padding: 28px 0 6px;
+  padding: 26px 0 4px;
   text-align: left;
   color: var(--text-tertiary);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.55;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -145,18 +137,21 @@
   overflow: hidden;
 }
 
+.entry:first-of-type {
+  border-top: 0;
+}
+
 .entryHdr {
-  min-height: 42px;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 0;
+  padding: 12px 0 10px;
   background: transparent;
   border-bottom: 0;
 }
 
 .dateLabel {
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -164,12 +159,12 @@
 }
 
 .dateInput {
-  height: 28px;
-  padding: 0 7px;
+  height: 26px;
+  padding: 0 6px;
   border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-family: inherit;
   font-size: 12px;
   font-weight: 590;
@@ -185,8 +180,8 @@
 
 .delBtn {
   margin-left: auto;
-  height: 28px;
-  padding: 0 0 0 8px;
+  height: 26px;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -208,22 +203,23 @@
 
 .textarea {
   width: 100%;
-  min-height: 120px;
-  padding: 12px;
+  min-height: 104px;
+  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.016);
   border: 1px solid var(--line-subtle);
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.014);
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 12.5px;
+  line-height: 1.5;
   outline: none;
   resize: vertical;
 }
 
+.textarea:hover,
 .textarea:focus {
-  border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.022);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.024);
 }
 
 .textarea::placeholder {
@@ -231,7 +227,7 @@
 }
 
 .savingHint {
-  padding: 8px 0 0;
+  padding: 7px 0 0;
   font-size: 10px;
   color: var(--success);
 }
@@ -241,7 +237,7 @@
 }
 
 .loading {
-  padding: 28px 0 6px;
+  padding: 26px 0 4px;
   text-align: left;
   color: var(--text-tertiary);
   font-size: 13px;
@@ -249,20 +245,25 @@
 
 @media (max-width: 720px) {
   .heroMain {
-    grid-template-columns: 1fr;
+    justify-content: flex-start;
   }
 
   .heroMeta {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     justify-content: stretch;
   }
 
-  .heroMetric:first-child {
-    border-left: 0;
-    padding-left: 0;
+  .heroMetric {
+    padding-inline: 8px;
   }
 
   .header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .addBtn {
+    width: max-content;
   }
 }
