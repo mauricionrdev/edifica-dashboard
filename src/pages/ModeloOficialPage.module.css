@@ -774,3 +774,51 @@
     display: none;
   }
 }
+
+
+/* HOTFIX Modelo Oficial layout v6 */
+.board,
+.page {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.boardHeader {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.tableHeader {
+  grid-template-columns: minmax(360px, 1fr) minmax(180px, 240px) 120px 44px;
+  min-width: 0;
+}
+
+.sectionRow {
+  grid-template-columns: 24px 34px minmax(260px, 1fr) 70px 36px;
+  min-width: 0;
+}
+
+.taskRow {
+  grid-template-columns: 32px minmax(320px, 1fr) minmax(180px, 240px) 120px 44px;
+  min-width: 0;
+}
+
+.taskMain,
+.taskName,
+.assigneeCell {
+  min-width: 0;
+}
+
+.taskName {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 980px) {
+  .boardHeader,
+  .tableHeader,
+  .taskRow,
+  .addTaskRow {
+    grid-template-columns: 1fr;
+  }
+}
