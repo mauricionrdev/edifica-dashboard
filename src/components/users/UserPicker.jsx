@@ -28,6 +28,7 @@ export default function UserPicker({
   className = '',
   showRole = false,
   variant = 'default',
+  hideEmptyAvatar = false,
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -99,6 +100,8 @@ export default function UserPicker({
             </span>
             <span className={styles.triggerText}>{selected.name}</span>
           </UserHoverCard>
+        ) : hideEmptyAvatar ? (
+          <span className={styles.triggerText}>{placeholder}</span>
         ) : (
           <>
             <span className={styles.avatar}>NA</span>

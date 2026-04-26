@@ -56,6 +56,11 @@ function initials(value) {
     .toUpperCase();
 }
 
+function cleanProjectName(value) {
+  const text = String(value || '').trim();
+  return text.replace(/^Projeto\s*-\s*/i, '').trim() || text;
+}
+
 function formatDate(value) {
   if (!value) return 'Sem prazo';
   const date = new Date(`${value}T00:00:00`);
@@ -343,17 +348,22 @@ export default function ProjectsPage() {
     if (!selectedProject) return null;
     return (
       <div className={styles.projectHeaderActions}>
-        {selectedProject.clientName && selectedProject.clientName !== selectedProject.name ? (
-          <span className={styles.panelHeaderClient}>{selectedProject.clientName}</span>
-        ) : null}
-        <div className={styles.projectHeaderGroup}>
-          {projectMembers.length ? (
-            <div className={styles.memberStack} aria-label="Membros do projeto">
-              {projectMembers.slice(0, 5).map((member) => (
+        {projectMembers.length ? (
+          <div className={styles.memberStack} aria-label="Membros do projeto">
+            {projectMembers.slice(0, 5).map((member) => {
+              const memberUser = {
+                id: member.userId,
+                name: member.userName,
+                email: member.userEmail || '',
+                avatarUrl: getUserAvatar(member) || member.avatarUrl || '',
+              };
+              return (
                 <div key={member.userId} className={styles.memberBadge}>
-                  <span className={styles.memberAvatar} title={member.userName}>
-                    {initials(member.userName)}
-                  </span>
+                  <UserHoverCard user={memberUser} placement="bottom">
+                    <span className={styles.memberAvatar} title={member.userName}>
+                      {memberUser.avatarUrl ? <img src={memberUser.avatarUrl} alt="" /> : initials(member.userName)}
+                    </span>
+                  </UserHoverCard>
                   {canManageProjects && member.role !== 'owner' ? (
                     <button
                       type="button"
@@ -367,47 +377,59 @@ export default function ProjectsPage() {
                     </button>
                   ) : null}
                 </div>
-              ))}
-              {projectMembers.length > 5 ? <span className={styles.memberCounter}>+{projectMembers.length - 5}</span> : null}
-            </div>
-          ) : null}
-          {canAccessTemplate ? (
-            <button
-              type="button"
-              className={styles.headerAction}
-              onClick={() => navigate('/modelo-oficial')}
-              title="Abrir modelo oficial"
-            >
-              <BookTemplateIcon size={13} />
-              <span>Modelo</span>
-            </button>
-          ) : null}
-        </div>
-        {canManageProjects ? (
-          <div className={styles.projectHeaderGroup}>
-            <form className={styles.shareForm} onSubmit={handleAddProjectMember}>
-              <UserPicker
-                className={styles.shareSelect}
-                users={projectMemberOptions}
-                value={projectMemberUserId}
-                disabled={memberSaving || projectMemberOptions.length === 0}
-                onChange={setProjectMemberUserId}
-                placeholder="Compartilhar com"
-              />
-              <button type="submit" disabled={memberSaving || !projectMemberUserId} title="Adicionar membro" aria-label="Adicionar membro">
-                <PlusIcon size={13} />
-              </button>
-            </form>
-            <button
-              type="button"
-              className={`${styles.headerAction} ${styles.headerActionDanger}`.trim()}
-              onClick={() => setDeleteConfirmOpen(true)}
-              title="Excluir projeto"
-            >
-              <TrashIcon size={13} />
-              <span>Excluir projeto</span>
-            </button>
+              );
+            })}
+            {projectMembers.length > 5 ? <span className={styles.memberCounter}>+{projectMembers.length - 5}</span> : null}
           </div>
+        ) : null}
+
+        {canAccessTemplate ? (
+          <button
+            type="button"
+            className={`${styles.headerAction} ${styles.headerActionCompact}`.trim()}
+            onClick={() => navigate('/modelo-oficial')}
+            title="Abrir modelo oficial"
+          >
+            <BookTemplateIcon size={13} />
+            <span>Modelo</span>
+          </button>
+        ) : null}
+
+        {canManageProjects ? (
+          <form className={styles.shareFormCompact} onSubmit={handleAddProjectMember}>
+            <UserPicker
+              className={styles.shareSelectCompact}
+              users={projectMemberOptions}
+              value={projectMemberUserId}
+              disabled={memberSaving || projectMemberOptions.length === 0}
+              onChange={setProjectMemberUserId}
+              placeholder="Compartilhar"
+              variant="action"
+              hideEmptyAvatar
+            />
+            <button
+              type="submit"
+              className={styles.iconActionButton}
+              disabled={memberSaving || !projectMemberUserId}
+              title="Adicionar membro"
+              aria-label="Adicionar membro"
+            >
+              <PlusIcon size={14} />
+            </button>
+          </form>
+        ) : null}
+
+        {canManageProjects ? (
+          <button
+            type="button"
+            className={`${styles.iconActionButton} ${styles.iconDangerButton}`.trim()}
+            onClick={() => setDeleteConfirmOpen(true)}
+            title="Excluir projeto"
+            aria-label="Excluir projeto"
+          >
+            <TrashIcon size={14} />
+            <span className={styles.srOnly}>Excluir projeto</span>
+          </button>
         ) : null}
       </div>
     );
@@ -1148,7 +1170,7 @@ export default function ProjectsPage() {
                   >
                     <span className={styles.projectButtonBody}>
                       <span className={styles.projectNameRow}>
-                        <span className={styles.projectName}>{project.name}</span>
+                        <span className={styles.projectName}>{cleanProjectName(project.name)}</span>
                         <span className={styles.projectCount}>{value}%</span>
                       </span>
                       <span className={styles.projectMeta}>
@@ -1175,7 +1197,8 @@ export default function ProjectsPage() {
                   <div className={styles.projectTitleRow}>
                     <span className={styles.projectIcon}>{selectedProject.type === 'client' ? 'C' : 'P'}</span>
                     <div className={styles.projectHeading}>
-                      <h1>{selectedProject.name}</h1>
+                      <div className={styles.projectEyebrow}>Projeto</div>
+                      <h1>{cleanProjectName(selectedProject.name)}</h1>
                       <div className={styles.heroMeta}>
                         <span>{selectedProject.ownerName || 'Sem responsável'}</span>
                         {selectedProject.squadName ? <span>{selectedProject.squadName}</span> : null}
@@ -1186,10 +1209,22 @@ export default function ProjectsPage() {
                 </div>
 
                 <div className={`${obStyles.toolbarMeta} ${styles.summaryInline}`.trim()}>
-                  <span>{totalTasks} tarefa{totalTasks === 1 ? '' : 's'}</span>
-                  <span>{openCount} abertas</span>
-                  <span>Concluídas <b>{doneCount || selectedProject.doneCount || 0}</b></span>
-                  <b>{progress}%</b>
+                  <span className={styles.summaryPill}>
+                    <small className={styles.summaryLabel}>Tarefas</small>
+                    <b className={styles.summaryValue}>{totalTasks}</b>
+                  </span>
+                  <span className={styles.summaryPill}>
+                    <small className={styles.summaryLabel}>Abertas</small>
+                    <b className={styles.summaryValue}>{openCount}</b>
+                  </span>
+                  <span className={styles.summaryPill}>
+                    <small className={styles.summaryLabel}>Concluídas</small>
+                    <b className={styles.summaryValue}>{doneCount || selectedProject.doneCount || 0}</b>
+                  </span>
+                  <span className={`${styles.summaryPill} ${styles.summaryPillAccent}`.trim()}>
+                    <small className={styles.summaryLabel}>Progresso</small>
+                    <b className={styles.summaryValue}>{progress}%</b>
+                  </span>
                 </div>
               </section>
 

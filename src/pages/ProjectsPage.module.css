@@ -4481,3 +4481,453 @@
     flex-wrap: wrap !important;
   }
 }
+
+
+/* PATCH v28 — refinamento rigoroso do módulo Projetos/Asana */
+.grid {
+  grid-template-columns: 272px minmax(0, 1fr) !important;
+  gap: 0 !important;
+}
+
+.sidebarPanel {
+  background: #090a0b !important;
+  border-right: 1px solid var(--line) !important;
+}
+
+.projectList {
+  padding: 12px !important;
+  gap: 6px !important;
+}
+
+.projectButton {
+  min-height: 76px !important;
+  padding: 14px 14px 14px 16px !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+.projectButton::before {
+  left: 0 !important;
+  top: 12px !important;
+  bottom: 12px !important;
+  border-radius: 999px !important;
+}
+
+.projectButton:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.projectButtonActive {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: var(--line) !important;
+}
+
+.projectName {
+  font-size: 14px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.projectMeta {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+}
+
+.mainPanel {
+  background: #090a0b !important;
+}
+
+.detailHero {
+  padding: 22px 28px 18px !important;
+  background: #0d0e0f !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.heroMainRow {
+  align-items: flex-start !important;
+  gap: 20px !important;
+}
+
+.projectTitleRow {
+  align-items: flex-start !important;
+  gap: 16px !important;
+}
+
+.projectIcon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+}
+
+.projectHeading {
+  display: grid !important;
+  gap: 6px !important;
+}
+
+.projectEyebrow {
+  color: var(--text-tertiary) !important;
+  font-size: 10px !important;
+  font-weight: 760 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+.projectHeading h1 {
+  margin: 0 !important;
+  color: var(--text-primary) !important;
+  font-size: clamp(28px, 2vw, 36px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.055em !important;
+  font-weight: 790 !important;
+}
+
+.heroMeta {
+  gap: 12px !important;
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+}
+
+.projectHeaderActions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.memberStack {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  padding-right: 4px !important;
+}
+
+.memberBadge {
+  position: relative !important;
+  margin-left: -6px !important;
+}
+
+.memberBadge:first-child {
+  margin-left: 0 !important;
+}
+
+.memberAvatar {
+  width: 30px !important;
+  height: 30px !important;
+  border: 2px solid #0d0e0f !important;
+  background: #17191b !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+.memberAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.memberRemove {
+  width: 16px !important;
+  height: 16px !important;
+  top: -3px !important;
+  right: -2px !important;
+  border: 1px solid var(--line) !important;
+  background: #0d0e0f !important;
+}
+
+.memberCounter {
+  min-width: 28px !important;
+  height: 28px !important;
+  margin-left: 4px !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--line) !important;
+  background: rgba(255,255,255,0.02) !important;
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+  font-weight: 760 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.headerActionCompact {
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--line) !important;
+  background: rgba(255,255,255,0.018) !important;
+  color: var(--text-primary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 680 !important;
+}
+
+.headerActionCompact:hover {
+  background: rgba(255,255,255,0.04) !important;
+}
+
+.shareFormCompact {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.shareSelectCompact {
+  width: auto !important;
+}
+
+.iconActionButton {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--line) !important;
+  background: rgba(255,255,255,0.018) !important;
+  color: var(--text-primary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+}
+
+.iconActionButton:hover {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: var(--line-strong) !important;
+}
+
+.iconDangerButton {
+  color: var(--danger) !important;
+  border-color: color-mix(in srgb, var(--danger) 30%, var(--line)) !important;
+}
+
+.iconDangerButton:hover {
+  background: var(--danger-soft) !important;
+}
+
+.srOnly {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.summaryInline {
+  margin-top: 16px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+.summaryPill {
+  min-width: 108px !important;
+  min-height: 52px !important;
+  padding: 9px 12px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  background: rgba(255,255,255,0.018) !important;
+  display: grid !important;
+  gap: 4px !important;
+}
+
+.summaryPillAccent {
+  border-color: rgba(245,184,0,0.22) !important;
+  background: rgba(245,184,0,0.06) !important;
+}
+
+.summaryLabel {
+  color: var(--text-tertiary) !important;
+  font-size: 10px !important;
+  font-weight: 760 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+}
+
+.summaryValue {
+  color: var(--text-primary) !important;
+  font-size: 15px !important;
+  font-weight: 780 !important;
+}
+
+.createTask {
+  padding: 18px 28px !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: #0c0d0e !important;
+  display: grid !important;
+  grid-template-columns: minmax(280px, 1fr) minmax(190px, 230px) minmax(190px, 220px) 120px auto !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.createSelect,
+.createTask button,
+.sectionCreateForm input,
+.sectionCreateForm button,
+.toolbarSelect {
+  height: 40px !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.sectionCreateForm input,
+.toolbarSelect {
+  border: 1px solid var(--line) !important;
+  background: #111214 !important;
+}
+
+.createTask button,
+.sectionCreateForm button {
+  border: 1px solid var(--line) !important;
+  background: rgba(255,255,255,0.02) !important;
+  font-weight: 700 !important;
+}
+
+.createTask button:hover,
+.sectionCreateForm button:hover {
+  background: rgba(255,255,255,0.045) !important;
+}
+
+.taskToolbar {
+  padding: 18px 28px !important;
+  background: #0c0d0e !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.taskToolbarGroup {
+  gap: 12px !important;
+}
+
+.toolbarField > span {
+  color: var(--text-tertiary) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+}
+
+.sectionCreateForm {
+  gap: 10px !important;
+}
+
+.taskTableHeader {
+  padding: 0 28px !important;
+  min-height: 46px !important;
+  background: #0b0c0d !important;
+}
+
+.taskTableHeader span {
+  color: var(--text-tertiary) !important;
+  font-size: 10px !important;
+  font-weight: 760 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+}
+
+.sectionToggle {
+  padding: 0 28px !important;
+  min-height: 54px !important;
+  background: #0e0f10 !important;
+}
+
+.sectionTitle {
+  font-size: 15px !important;
+  font-weight: 760 !important;
+}
+
+.sectionCount,
+.sectionDone {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+}
+
+.sectionAction {
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--line) !important;
+  background: rgba(255,255,255,0.018) !important;
+  font-size: 11px !important;
+  font-weight: 680 !important;
+}
+
+.task {
+  min-height: 56px !important;
+  padding: 0 28px !important;
+}
+
+.taskTitleInput {
+  font-size: 13.5px !important;
+  font-weight: 620 !important;
+}
+
+.taskStatus {
+  color: var(--text-tertiary) !important;
+  font-size: 11px !important;
+}
+
+.noteButton {
+  min-width: 74px !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: #97a9c9 !important;
+  font-size: 11px !important;
+  font-weight: 770 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+.noteButton:hover {
+  background: rgba(255,255,255,0.035) !important;
+}
+
+.noteButtonActive {
+  color: var(--accent-amber) !important;
+}
+
+@media (max-width: 1440px) {
+  .grid {
+    grid-template-columns: 248px minmax(0, 1fr) !important;
+  }
+
+  .detailHero,
+  .createTask,
+  .taskToolbar,
+  .taskTableHeader,
+  .sectionToggle,
+  .task {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+
+  .createTask {
+    grid-template-columns: minmax(240px, 1fr) minmax(170px, 220px) minmax(180px, 210px) 112px auto !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .heroMainRow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .projectHeaderActions {
+    justify-content: flex-start !important;
+  }
+
+  .createTask {
+    grid-template-columns: 1fr !important;
+  }
+}
