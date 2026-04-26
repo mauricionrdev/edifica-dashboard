@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { updateSquad } from '../api/squads.js';
-import { getContractsSummary, getMetric } from '../api/metrics.js';
+import { getMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { CloseIcon, RotateCcwIcon, SearchIcon, Select, StateBlock, TrophyIcon, UsersIcon } from '../components/ui/index.js';
+import {
+  CloseIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  Select,
+  StateBlock,
+  TrophyIcon,
+  UsersIcon,
+} from '../components/ui/index.js';
 import { canAccessSquad } from '../utils/permissions.js';
 import { isAdminUser } from '../utils/roles.js';
-import { computeCentralMetrics } from '../utils/centralMetrics.js';
 import { resolveClientFeeAtMonthEnd } from '../utils/feeSchedule.js';
 import { MONTHS, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
 import { resolveSquadOwner, subscribeOwnershipChange } from '../utils/ownershipStorage.js';
@@ -39,6 +46,16 @@ function squadInitials(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
+function displayInt(value) {
+  const numeric = Number(value) || 0;
+  return numeric === 0 ? '0' : fmtInt(numeric);
+}
+
+function displayPct(value) {
+  const numeric = Number(value) || 0;
+  return numeric === 0 ? '0%' : fmtPct(numeric);
+}
+
 function statusTone(progress, hasGoal, status) {
   if (status === 'churn') return 'red';
   if (!hasGoal) return 'muted';
@@ -59,32 +76,55 @@ function toneClass(stylesMap, tone) {
   return tone && stylesMap[tone] ? stylesMap[tone] : '';
 }
 
-function displayInt(value) {
-  const numeric = Number(value) || 0;
-  return numeric === 0 ? '0' : fmtInt(numeric);
-}
-
-function displayPct(value) {
-  const numeric = Number(value) || 0;
-  if (numeric === 0) return '0%';
-  return fmtPct(numeric);
-}
-
-function buildPredictionCard(hit, total) {
+function predictionCard(hit, total) {
   if (!total) {
     return {
       value: '0/0',
-      sub: '',
+      sub: 'Sem meta',
       tone: 'muted',
     };
   }
 
-  const pct = (hit / total) * 100;
+  const willHit = hit >= total;
   return {
     value: `${displayInt(hit)}/${displayInt(total)}`,
-    sub: displayPct(pct),
-    tone: pct >= 70 ? 'green' : pct > 0 ? 'amber' : 'muted',
+    sub: willHit ? 'Vai bater a meta' : 'Não vai bater meta',
+    tone: willHit ? 'green' : 'red',
   };
+}
+
+function goalComparison(current, goal, { lowerIsBetter = false, format = displayInt } = {}) {
+  const currentValue = Number(current) || 0;
+  const goalValue = Number(goal) || 0;
+
+  if (goalValue <= 0) return '';
+
+  const isGood = lowerIsBetter
+    ? currentValue > 0 && currentValue <= goalValue
+    : currentValue >= goalValue;
+
+  const status = lowerIsBetter
+    ? isGood
+      ? 'Abaixo da meta'
+      : 'Acima da meta'
+    : isGood
+      ? 'Acima da meta'
+      : 'Abaixo da meta';
+
+  return `Meta ${format(goalValue)} · ${status}`;
+}
+
+function comparisonTone(current, goal, { lowerIsBetter = false } = {}) {
+  const currentValue = Number(current) || 0;
+  const goalValue = Number(goal) || 0;
+
+  if (goalValue <= 0) return currentValue > 0 ? 'neutral' : 'muted';
+
+  const isGood = lowerIsBetter
+    ? currentValue > 0 && currentValue <= goalValue
+    : currentValue >= goalValue;
+
+  return isGood ? 'green' : 'red';
 }
 
 export default function SquadPage() {
@@ -103,19 +143,29 @@ export default function SquadPage() {
 
   const isAdmin = isAdminUser(user);
   const hasSquadAccess = useMemo(() => canAccessSquad(user, squadId), [user, squadId]);
+
   const squad = useMemo(
     () => (Array.isArray(squads) ? squads.find((item) => item.id === squadId) : null),
     [squads, squadId]
   );
+
   const now = useMemo(() => new Date(), []);
   const [year, setYear] = useState(now.getFullYear());
   const [month0, setMonth0] = useState(now.getMonth());
   const [week, setWeek] = useState(() => currentWeek(now));
+  const [query, setQuery] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(() => getSquadAvatar(squad));
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [ownershipTick, setOwnershipTick] = useState(0);
+  const [metricsByKey, setMetricsByKey] = useState({});
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsError, setMetricsError] = useState(null);
+  const metricsFetchRef = useRef(0);
+  const logoInputRef = useRef(null);
+
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
-  const referenceDate = useMemo(
-    () => `${year}-${String(month0 + 1).padStart(2, '0')}-01`,
-    [year, month0]
-  );
+
   const squadClients = useMemo(
     () =>
       filterOperationalClientsForPeriod(clients, year, month0).filter(
@@ -123,43 +173,6 @@ export default function SquadPage() {
       ),
     [clients, month0, squadId, year]
   );
-
-  const [summary, setSummary] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [metricsLoading, setMetricsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [metricsError, setMetricsError] = useState(null);
-  const [query, setQuery] = useState('');
-  const [selectedClientId, setSelectedClientId] = useState(null);
-  const [logoUrl, setLogoUrl] = useState(() => getSquadAvatar(squad));
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [ownershipTick, setOwnershipTick] = useState(0);
-  const [metricsByKey, setMetricsByKey] = useState({});
-  const fetchGenRef = useRef(0);
-  const metricsFetchRef = useRef(0);
-  const logoInputRef = useRef(null);
-
-  const fetchData = useCallback(async () => {
-    if (!squadId) return;
-    const gen = ++fetchGenRef.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const summaryResponse = await getContractsSummary({ squadId, date: referenceDate });
-      if (fetchGenRef.current !== gen) return;
-      setSummary(summaryResponse);
-    } catch (err) {
-      if (fetchGenRef.current !== gen) return;
-      if (err instanceof ApiError && err.status === 401) return;
-      setError(err instanceof Error ? err : new Error('Não foi possível carregar os dados do squad.'));
-    } finally {
-      if (fetchGenRef.current === gen) setLoading(false);
-    }
-  }, [referenceDate, squadId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   useEffect(() => {
     setLogoUrl(getSquadAvatar(squad));
@@ -193,7 +206,11 @@ export default function SquadPage() {
     Promise.all(
       squadClients.map((client) =>
         getMetric(client.id, periodKey)
-          .then((response) => ({ clientId: client.id, metric: response?.metric || null, err: null }))
+          .then((response) => ({
+            clientId: client.id,
+            metric: response?.metric || null,
+            err: null,
+          }))
           .catch((err) => ({ clientId: client.id, metric: null, err }))
       )
     )
@@ -223,6 +240,7 @@ export default function SquadPage() {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file || !squad) return;
+
     setUploadingLogo(true);
     try {
       const dataUrl = await readAvatarFile(file);
@@ -232,8 +250,7 @@ export default function SquadPage() {
         logoUrl: dataUrl,
       });
       await refreshSquads?.();
-      const saved = saveSquadAvatar(squad, dataUrl) || true;
-      if (!saved) throw new Error('Não foi possível salvar o logotipo do squad.');
+      saveSquadAvatar(squad, dataUrl);
       setLogoUrl(dataUrl);
       showToast('Logotipo do squad atualizado.', { variant: 'success' });
     } catch (err) {
@@ -273,45 +290,31 @@ export default function SquadPage() {
         setOwnershipTick((current) => current + 1);
         showToast('Responsável do squad atualizado.', { variant: 'success' });
       } catch (err) {
-        showToast(err?.message || 'Não foi possível atualizar o responsável.', { variant: 'error' });
+        showToast(err?.message || 'Não foi possível atualizar o responsável.', {
+          variant: 'error',
+        });
       }
     },
     [logoUrl, refreshSquads, showToast, squad]
   );
 
-  const summaryRows = useMemo(() => (Array.isArray(summary?.clients) ? summary.clients : []), [summary]);
   const metricRows = metricsByKey[periodKey] || [];
-  const executive = useMemo(() => computeCentralMetrics(squadClients, year, month0), [month0, squadClients, year]);
 
   const clientRows = useMemo(() => {
     return squadClients.map((client) => {
-      const summaryEntry = summaryRows.find((row) => row.clientId === client.id) || {};
       const metricEntry = metricRows.find((row) => row.clientId === client.id);
       const metric = metricEntry?.metric || { data: {}, computed: {} };
       const calc = calcWeek(metric);
 
-      const monthClosed = Number(summaryEntry.monthClosed) || 0;
-      const monthGoal = Number(summaryEntry.monthGoal) || 0;
-      const monthProgress = Number(summaryEntry.monthProgress) || (monthGoal > 0 ? (monthClosed / monthGoal) * 100 : 0);
-      const monthGap = monthGoal > 0 ? Math.max(monthGoal - monthClosed, 0) : 0;
-      const monthHasGoal = monthGoal > 0;
-
       const weeklyProgress = calc.mLuc > 0 ? (calc.fec / calc.mLuc) * 100 : 0;
       const weeklyGap = calc.mLuc > 0 ? Math.max(calc.mLuc - calc.fec, 0) : 0;
       const weeklyHasGoal = calc.mLuc > 0;
-      const tone = weeklyHasGoal
-        ? statusTone(weeklyProgress, true, client.status)
-        : statusTone(monthProgress, monthHasGoal, client.status);
+      const tone = statusTone(weeklyProgress, weeklyHasGoal, client.status);
 
       return {
         ...client,
         metric,
         calc,
-        monthClosed,
-        monthGoal,
-        monthProgress,
-        monthGap,
-        monthHasGoal,
         weeklyProgress,
         weeklyGap,
         weeklyHasGoal,
@@ -320,16 +323,12 @@ export default function SquadPage() {
           client.status === 'churn'
             ? 1000
             : weeklyHasGoal
-            ? weeklyGap * 10 + Math.max(0, 100 - weeklyProgress)
-            : monthHasGoal
-            ? monthGap * 10 + Math.max(0, 100 - monthProgress)
-            : 800,
-        statusText: weeklyHasGoal
-          ? statusLabel(weeklyProgress, true, client.status)
-          : statusLabel(monthProgress, monthHasGoal, client.status),
+              ? weeklyGap * 10 + Math.max(0, 100 - weeklyProgress)
+              : 800,
+        statusText: statusLabel(weeklyProgress, weeklyHasGoal, client.status),
       };
     });
-  }, [metricRows, squadClients, summaryRows]);
+  }, [metricRows, squadClients]);
 
   const agg = useMemo(
     () => aggregateCarteira(clientRows.map((row) => ({ client: row, metric: row.metric, calc: row.calc }))),
@@ -352,9 +351,7 @@ export default function SquadPage() {
     const normalized = query.trim();
     const base = [...clientRows].sort((a, b) => b.priorityScore - a.priorityScore);
     if (!normalized) return base;
-    return base.filter((row) => {
-      return matchesAnySearch([row.name, row.gestor, row.gdvName], normalized);
-    });
+    return base.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
   }, [clientRows, query]);
 
   const prevMonth = useCallback(() => {
@@ -410,6 +407,7 @@ export default function SquadPage() {
           <strong>{displayInt(squadClients.length)}</strong>
           <small>{squadClients.length === 1 ? 'cliente' : 'clientes'}</small>
         </span>
+
         {isAdmin ? (
           <Select
             className={styles.ownerControl}
@@ -427,6 +425,7 @@ export default function SquadPage() {
               ))}
           </Select>
         ) : null}
+
         {isAdmin && logoUrl ? (
           <button
             type="button"
@@ -438,6 +437,7 @@ export default function SquadPage() {
             <CloseIcon size={14} aria-hidden="true" />
           </button>
         ) : null}
+
         <div className={styles.monthNav}>
           <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
             ‹
@@ -449,6 +449,7 @@ export default function SquadPage() {
             ›
           </button>
         </div>
+
         <div className={styles.weekTabs} role="tablist" aria-label="Semana">
           {[1, 2, 3, 4].map((value) => (
             <button
@@ -463,18 +464,17 @@ export default function SquadPage() {
             </button>
           ))}
         </div>
+
         <button
           type="button"
           className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
           aria-label="Atualizar visão"
           title="Atualizar visão"
-          onClick={() => {
-            refreshClients?.();
-            fetchData();
-          }}
+          onClick={() => refreshClients?.()}
         >
           <RotateCcwIcon size={14} aria-hidden="true" />
         </button>
+
         <Link
           to="/ranking-squads"
           className={`${styles.headerBtn} ${styles.iconButton}`.trim()}
@@ -483,13 +483,13 @@ export default function SquadPage() {
         >
           <TrophyIcon size={14} aria-hidden="true" />
         </Link>
+
         {metricsLoading ? <span className={styles.inlineSpinner} aria-label="Carregando métricas" /> : null}
       </div>
     );
 
     setPanelHeader({ title, actions });
   }, [
-    fetchData,
     handleOwnerChange,
     handleRemoveLogo,
     isAdmin,
@@ -512,17 +512,25 @@ export default function SquadPage() {
 
   const topCards = useMemo(() => {
     if (selectedClient) {
-      const prediction = buildPredictionCard(
-        selectedClient.calc.mLuc > 0 && selectedClient.calc.cp >= selectedClient.calc.mLuc ? 1 : 0,
-        selectedClient.calc.mLuc > 0 ? 1 : 0
+      const prediction = predictionCard(
+        selectedClient.calc.cp,
+        selectedClient.calc.mLuc > 0 ? selectedClient.calc.mLuc : 0
       );
 
       return [
         {
+          id: 'selected',
+          label: 'Cliente selecionado',
+          value: selectedClient.name,
+          sub: selectedClient.gdvName || selectedClient.gestor || '',
+          tone: 'neutral',
+          wide: true,
+        },
+        {
           id: 'closed',
           label: 'Contratos fechados',
           value: displayInt(selectedClient.calc.fec),
-          sub: `S${week}`,
+          sub: `Semana ${week}`,
           tone: 'neutral',
         },
         {
@@ -533,119 +541,82 @@ export default function SquadPage() {
           tone: selectedClient.calc.taxa > 0 ? 'neutral' : 'muted',
         },
         {
-          id: 'drawGoal',
-          label: 'Meta de empate',
-          value: selectedClient.calc.mEmp > 0 ? displayInt(selectedClient.calc.mEmp) : '—',
-          sub: '',
-          tone: selectedClient.calc.mEmp > 0 ? 'neutral' : 'muted',
-        },
-        {
-          id: 'profitGoal',
-          label: 'Meta de lucro',
-          value: selectedClient.calc.mLuc > 0 ? displayInt(selectedClient.calc.mLuc) : '—',
-          sub: '',
-          tone: selectedClient.calc.mLuc > 0 ? 'neutral' : 'muted',
-        },
-        {
           id: 'predictedContracts',
           label: 'Contratos previstos',
           value: selectedClient.calc.cp > 0 ? displayInt(selectedClient.calc.cp) : '0',
-          sub: '',
-          tone: selectedClient.calc.cp > 0 ? 'neutral' : 'muted',
+          sub: prediction.sub,
+          tone: prediction.tone,
         },
         {
           id: 'cpl',
           label: 'CPL atual',
           value: selectedClient.calc.cpl > 0 ? fmtMoney(selectedClient.calc.cpl) : '—',
-          sub: selectedClient.calc.mCpl > 0 ? fmtMoney(selectedClient.calc.mCpl) : '',
-          tone: selectedClient.calc.cpl > 0 ? 'neutral' : 'muted',
+          sub: goalComparison(selectedClient.calc.cpl, selectedClient.calc.mCpl, {
+            lowerIsBetter: true,
+            format: fmtMoney,
+          }),
+          tone: comparisonTone(selectedClient.calc.cpl, selectedClient.calc.mCpl, {
+            lowerIsBetter: true,
+          }),
         },
         {
           id: 'leads',
           label: 'Leads previstos',
           value: selectedClient.calc.lp > 0 ? displayInt(selectedClient.calc.lp) : '0',
-          sub: selectedClient.calc.mVol > 0 ? displayInt(selectedClient.calc.mVol) : '',
-          tone: selectedClient.calc.lp > 0 ? 'neutral' : 'muted',
-        },
-        {
-          id: 'prediction',
-          label: 'Cliente - previsão',
-          value: prediction.value,
-          sub: prediction.sub,
-          tone: prediction.tone,
+          sub: goalComparison(selectedClient.calc.lp, selectedClient.calc.mVol),
+          tone: comparisonTone(selectedClient.calc.lp, selectedClient.calc.mVol),
         },
       ];
     }
 
-    const prediction = buildPredictionCard(agg.hit, agg.total);
+    const prediction = predictionCard(agg.hit, agg.total);
 
     return [
       {
         id: 'closed',
         label: 'Contratos fechados',
         value: displayInt(agg.tF),
-          sub: `S${week}`,
+        sub: `Semana ${week}`,
         tone: 'neutral',
       },
       {
         id: 'conversion',
         label: 'Taxa de conversão',
         value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
-          sub: '',
+        sub: '',
         tone: agg.taxa > 0 ? 'neutral' : 'muted',
-      },
-      {
-        id: 'drawGoal',
-        label: 'Meta de empate',
-        value: agg.tEmp > 0 ? displayInt(agg.tEmp) : '—',
-          sub: '',
-        tone: agg.tEmp > 0 ? 'neutral' : 'muted',
-      },
-      {
-        id: 'profitGoal',
-        label: 'Meta de lucro',
-        value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
-          sub: '',
-        tone: agg.tLuc > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'predictedContracts',
         label: 'Contratos previstos',
         value: agg.tCp > 0 ? displayInt(agg.tCp) : '0',
-          sub: '',
-        tone: agg.tCp > 0 ? 'neutral' : 'muted',
+        sub: prediction.sub,
+        tone: prediction.tone,
       },
       {
         id: 'cpl',
         label: 'CPL atual',
         value: agg.cpl > 0 ? fmtMoney(agg.cpl) : '—',
-          sub: agg.avgMC > 0 ? fmtMoney(agg.avgMC) : '',
-        tone: agg.cpl > 0 ? 'neutral' : 'muted',
+        sub: goalComparison(agg.cpl, agg.avgMC, {
+          lowerIsBetter: true,
+          format: fmtMoney,
+        }),
+        tone: comparisonTone(agg.cpl, agg.avgMC, { lowerIsBetter: true }),
       },
       {
         id: 'leads',
         label: 'Leads previstos',
         value: agg.tLp > 0 ? displayInt(agg.tLp) : '0',
-          sub: agg.tMV > 0 ? displayInt(agg.tMV) : '',
-        tone: agg.tLp > 0 ? 'neutral' : 'muted',
-      },
-      {
-        id: 'prediction',
-        label: 'Carteira - previsão',
-        value: prediction.value,
-        sub: prediction.sub,
-        tone: prediction.tone,
+        sub: goalComparison(agg.tLp, agg.tMV),
+        tone: comparisonTone(agg.tLp, agg.tMV),
       },
     ];
-  }, [agg, clientRows.length, month0, selectedClient, week, year]);
+  }, [agg, selectedClient, week]);
 
   if (shellLoading && !squad) {
     return (
       <div className={styles.page}>
-        <StateBlock
-          variant="loading"
-          title="Carregando squad"
-        />
+        <StateBlock variant="loading" title="Carregando squad" />
       </div>
     );
   }
@@ -674,22 +645,6 @@ export default function SquadPage() {
     );
   }
 
-  if (error && !summary) {
-    return (
-      <div className={styles.page}>
-        <StateBlock
-          variant="error"
-          title="Erro ao carregar visão do squad"
-          action={
-            <button type="button" className={styles.inlineActionButton} onClick={fetchData}>
-              Tentar novamente
-            </button>
-          }
-        />
-      </div>
-    );
-  }
-
   return (
     <div className={styles.page}>
       <input
@@ -702,9 +657,14 @@ export default function SquadPage() {
 
       <section className={styles.metricGrid}>
         {topCards.map((card) => (
-          <article key={card.id} className={styles.metricCard}>
+          <article
+            key={card.id}
+            className={`${styles.metricCard} ${card.wide ? styles.metricCardWide : ''}`.trim()}
+          >
             <span className={styles.metricLabel}>{card.label}</span>
-            <strong className={`${styles.metricValue} ${toneClass(styles, card.tone)}`.trim()}>{card.value}</strong>
+            <strong className={`${styles.metricValue} ${toneClass(styles, card.tone)}`.trim()}>
+              {card.value}
+            </strong>
             <span className={styles.metricSub}>{card.sub}</span>
           </article>
         ))}
@@ -735,24 +695,10 @@ export default function SquadPage() {
           ) : null}
         </div>
 
-        {loading && !summary ? (
-          <StateBlock
-            variant="loading"
-            compact
-            title="Carregando clientes do squad"
-          />
-        ) : metricsError ? (
-          <StateBlock
-            variant="warning"
-            compact
-            title="Métricas indisponíveis"
-          />
+        {metricsError ? (
+          <StateBlock variant="warning" compact title="Métricas indisponíveis" />
         ) : filteredRows.length === 0 ? (
-          <StateBlock
-            variant="empty"
-            compact
-            title="Nenhum cliente encontrado"
-          />
+          <StateBlock variant="empty" compact title="Nenhum cliente encontrado" />
         ) : (
           <div className={styles.clientList}>
             {filteredRows.map((row) => (
@@ -779,90 +725,18 @@ export default function SquadPage() {
                     <span>Fechados</span>
                     <strong>{displayInt(row.calc.fec)}</strong>
                   </div>
-                  <div>
-                    <span>Meta</span>
-                    <strong>{row.calc.mLuc > 0 ? displayInt(row.calc.mLuc) : '—'}</strong>
-                  </div>
-                  <div>
-                    <span>Gap</span>
-                    <strong>{row.calc.mLuc > 0 ? displayInt(row.weeklyGap) : '—'}</strong>
-                  </div>
                 </div>
 
                 <div className={styles.clientStatus}>
-                  <span className={`${styles.badge} ${toneClass(styles, row.tone)}`.trim()}>{row.statusText}</span>
+                  <span className={`${styles.badge} ${toneClass(styles, row.tone)}`.trim()}>
+                    {row.statusText}
+                  </span>
                 </div>
               </button>
             ))}
           </div>
         )}
       </section>
-
-      {false ? (
-        <section className={styles.criticalSection}>
-        <div className={styles.sectionHeader}>
-          <div>
-            <span className={styles.cardEyebrow}>Atenção imediata</span>
-            <h3>Top 3 clientes em situação crítica</h3>
-          </div>
-        </div>
-
-        <div className={styles.criticalGrid}>
-          {topCritical.length === 0 ? (
-            <StateBlock
-              variant="empty"
-              compact
-              title="Nenhum cliente crítico"
-              description="Este squad ainda não tem sinais críticos suficientes para destacar."
-            />
-          ) : (
-            topCritical.map((client, index) => (
-              <button key={client.id} type="button" className={styles.criticalCard} onClick={() => setSelectedClientId(client.id)}>
-                <div className={styles.criticalHead}>
-                  <div>
-                    <span className={styles.criticalRank}>#{index + 1}</span>
-                    <strong>{client.name}</strong>
-                  </div>
-                  <span className={`${styles.badge} ${toneClass(styles, client.tone)}`.trim()}>{client.statusText}</span>
-                </div>
-
-                <div className={styles.criticalMeta}>
-                  <span>{client.gestor || 'Sem gestor'}</span>
-                  <span>{client.gdvName || 'Sem GDV'}</span>
-                </div>
-
-                <div className={styles.criticalBody}>
-                  <div>
-                    <span>Gap</span>
-                    <strong>{client.calc.mLuc > 0 ? displayInt(client.weeklyGap) : '—'}</strong>
-                  </div>
-                  <div>
-                    <span>Mensalidade</span>
-                    <strong>{fmtMoney(resolveClientFeeAtMonthEnd(client, year, month0))}</strong>
-                  </div>
-                  <div>
-                    <span>Progresso</span>
-                    <strong>{client.weeklyHasGoal ? displayPct(client.weeklyProgress) : 'Sem meta'}</strong>
-                  </div>
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-        </section>
-      ) : null}
-
-      {error ? (
-        <div className={styles.footerNote}>
-          <StateBlock
-            variant="warning"
-            compact
-            title="Dados desatualizados"
-          />
-        </div>
-      ) : null}
-
     </div>
   );
 }
-
