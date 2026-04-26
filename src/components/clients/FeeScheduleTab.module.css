@@ -1,68 +1,55 @@
 .panel {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
 }
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: minmax(250px, 2.1fr) minmax(132px, 1fr) minmax(96px, 0.78fr) minmax(68px, 0.48fr);
-  gap: 0;
-  padding: 0 0 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 0 18px;
   border-bottom: 1px solid var(--line-subtle);
 }
 
 .summaryCard {
   min-width: 0;
-  min-height: 44px;
-  padding: 0 14px;
-  border-left: 1px solid var(--line-subtle);
   display: grid;
-  gap: 3px;
-  align-content: center;
+  gap: 4px;
 }
 
-.summaryCard:first-child {
-  padding-left: 0;
-  border-left: 0;
+.summaryCard + .summaryCard {
+  padding-left: 14px;
+  border-left: 1px solid var(--line-subtle);
 }
 
 .summaryLabel {
   color: var(--text-quaternary);
-  font-size: 9px;
-  font-weight: 590;
-  letter-spacing: 0.13em;
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .summaryValue {
   color: var(--text-primary);
-  font-size: clamp(14px, 1.15vw, 18px);
-  font-weight: 590;
-  line-height: 1.15;
-  letter-spacing: -0.04em;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-}
-
-.summaryCard:not(:first-child) .summaryValue {
-  white-space: nowrap;
+  font-size: clamp(17px, 1.7vw, 22px);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
 }
 
 .summarySub {
   color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1.45;
-  white-space: nowrap;
 }
 
 .sectionHead {
-  min-height: 31px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .contractRule {
@@ -70,14 +57,16 @@
 }
 
 .rows {
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .rowCard {
-  display: grid;
-  gap: 9px;
-  padding: 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 0 0;
   border-top: 1px solid var(--line-subtle);
   background: transparent;
 }
@@ -91,44 +80,47 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .rowHeader strong {
   color: var(--text-primary);
-  font-size: 12.5px;
-  font-weight: 590;
-  letter-spacing: -0.02em;
+  font-size: 14px;
+  font-weight: 780;
+  letter-spacing: -0.025em;
 }
 
 .removeBtn {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: 0;
-  border-radius: 0;
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent);
+  border-radius: 999px;
   background: transparent;
-  color: var(--text-tertiary);
+  color: var(--danger);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease;
 }
 
 .removeBtn:hover {
-  color: var(--danger);
-  background: transparent;
+  background: var(--danger-soft);
+  border-color: color-mix(in srgb, var(--danger) 42%, transparent);
 }
 
 .rowGrid {
   display: grid;
-  grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: 1.4fr repeat(3, minmax(0, 1fr));
+  gap: 12px 14px;
 }
 
 .iconAction {
-  width: 28px;
-  min-width: 28px;
+  width: 30px;
+  min-width: 30px;
   padding: 0;
   border-radius: 999px;
   display: inline-flex;
@@ -140,8 +132,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  padding-top: 0;
+  gap: 10px;
+  padding-top: 2px;
 }
 
 .footerHint {
@@ -153,7 +145,6 @@
 @media (max-width: 920px) {
   .summaryGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 10px;
   }
 
   .summaryCard:nth-child(odd) {
@@ -174,7 +165,7 @@
   .summaryCard {
     padding-left: 0;
     border-left: 0;
-    padding-bottom: 10px;
+    padding-bottom: 14px;
     border-bottom: 1px solid var(--line-subtle);
   }
 

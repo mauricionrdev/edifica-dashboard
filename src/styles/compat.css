@@ -4,7 +4,7 @@
 }
 
 .ov {
-  display: none;
+  display: none !important;
 }
 
 .sb-nav {
@@ -57,7 +57,7 @@
 }
 
 .cc-row:last-child {
-  border-bottom: 0;
+  border-bottom: none;
 }
 
 .cc-row:hover {

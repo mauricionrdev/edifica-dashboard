@@ -5,7 +5,6 @@ import { useToast } from '../../context/ToastContext.jsx';
 import { gdvOptions, gestorOptions, userLabel } from '../../utils/responsibleUsers.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { LogOutIcon } from '../ui/Icons.jsx';
-import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import styles from './OverviewTab.module.css';
@@ -81,7 +80,8 @@ export default function OverviewTab({
         const response = await updateClient(client.id, patch);
         onUpdated?.(response?.client);
       } catch (error) {
-        const message = error instanceof ApiError ? error.message : 'Erro ao salvar alteração.';
+        const message =
+          error instanceof ApiError ? error.message : 'Erro ao salvar alteração.';
         showToast(message, { variant: 'error' });
         setForm(buildForm(client));
       } finally {
@@ -139,7 +139,8 @@ export default function OverviewTab({
       showToast('Cliente removido.', { variant: 'success' });
       onDeleted?.(client.id);
     } catch (error) {
-      const message = error instanceof ApiError ? error.message : 'Erro ao remover cliente.';
+      const message =
+        error instanceof ApiError ? error.message : 'Erro ao remover cliente.';
       showToast(message, { variant: 'error' });
       setDeleting(false);
     }
@@ -168,7 +169,9 @@ export default function OverviewTab({
         <div className={drawerStyles.sectionTitle}>Dados principais</div>
         <div className={styles.formGrid}>
           <div className={`${drawerStyles.field} ${styles.fieldCompact}`}>
-            <label className={drawerStyles.label} htmlFor="cd-name">Nome</label>
+            <label className={drawerStyles.label} htmlFor="cd-name">
+              Nome
+            </label>
             <input
               id="cd-name"
               className={drawerStyles.input}
@@ -180,7 +183,9 @@ export default function OverviewTab({
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-squad">Squad</label>
+            <label className={drawerStyles.label} htmlFor="cd-squad">
+              Squad
+            </label>
             <Select
               className={drawerStyles.selectControl}
               value={form.squadId}
@@ -191,13 +196,17 @@ export default function OverviewTab({
             >
               <option value="">Sem squad</option>
               {squads.map((squad) => (
-                <option key={squad.id} value={squad.id}>{squad.name}</option>
+                <option key={squad.id} value={squad.id}>
+                  {squad.name}
+                </option>
               ))}
             </Select>
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
+            <label className={drawerStyles.label} htmlFor="cd-status">
+              Status
+            </label>
             <Select
               className={drawerStyles.selectControl}
               value={form.status}
@@ -211,7 +220,9 @@ export default function OverviewTab({
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor</label>
+            <label className={drawerStyles.label} htmlFor="cd-gestor">
+              Gestor
+            </label>
             <Select
               className={drawerStyles.selectControl}
               value={form.gestor}
@@ -222,13 +233,17 @@ export default function OverviewTab({
             >
               <option value="">Sem gestor</option>
               {gestorRows.map((entry) => (
-                <option key={entry.id || entry.name} value={entry.name}>{userLabel(entry)}</option>
+                <option key={entry.id || entry.name} value={entry.name}>
+                  {userLabel(entry)}
+                </option>
               ))}
             </Select>
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-gdv">GDV</label>
+            <label className={drawerStyles.label} htmlFor="cd-gdv">
+              GDV
+            </label>
             <Select
               className={drawerStyles.selectControl}
               value={form.gdvName}
@@ -239,7 +254,9 @@ export default function OverviewTab({
             >
               <option value="">Sem GDV</option>
               {gdvRows.map((entry) => (
-                <option key={entry.id || entry.name} value={entry.name}>{userLabel(entry)}</option>
+                <option key={entry.id || entry.name} value={entry.name}>
+                  {userLabel(entry)}
+                </option>
               ))}
             </Select>
           </div>
@@ -250,50 +267,66 @@ export default function OverviewTab({
         <div className={drawerStyles.sectionTitle}>Contrato</div>
         <div className={styles.formGrid}>
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-start">Início</label>
-            <DateField
+            <label className={drawerStyles.label} htmlFor="cd-start">
+              Início
+            </label>
+            <input
               id="cd-start"
+              className={drawerStyles.input}
+              type="date"
               value={form.startDate}
-              onChange={(value) => onDateChange('startDate', 'startDate', value)}
+              onChange={(event) => onDateChange('startDate', 'startDate', event.target.value)}
               disabled={deleting || !canEdit}
-              ariaLabel="Data de início"
             />
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-end">Término</label>
-            <DateField
+            <label className={drawerStyles.label} htmlFor="cd-end">
+              Término
+            </label>
+            <input
               id="cd-end"
+              className={drawerStyles.input}
+              type="date"
               value={form.endDate}
-              onChange={(value) => onDateChange('endDate', 'endDate', value)}
+              onChange={(event) => onDateChange('endDate', 'endDate', event.target.value)}
               disabled={deleting || !canEdit}
-              ariaLabel="Data de término"
             />
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-fee">Mensalidade (R$)</label>
+            <label className={drawerStyles.label} htmlFor="cd-fee">
+              Mensalidade (R$)
+            </label>
             <input
               id="cd-fee"
               className={drawerStyles.input}
               type="text"
               inputMode="decimal"
               value={form.fee}
-              onChange={(event) => onTextChange('fee', 'fee', event.target.value, { number: true })}
+              onChange={(event) =>
+                onTextChange('fee', 'fee', event.target.value, { number: true })
+              }
               onBlur={() => onNumberBlur('fee')}
               disabled={deleting || !canEdit}
             />
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-meta">Meta base</label>
+            <label className={drawerStyles.label} htmlFor="cd-meta">
+              Meta base
+            </label>
             <input
               id="cd-meta"
               className={drawerStyles.input}
               type="text"
               inputMode="decimal"
               value={form.metaLucro}
-              onChange={(event) => onTextChange('metaLucro', 'metaLucro', event.target.value, { number: true })}
+              onChange={(event) =>
+                onTextChange('metaLucro', 'metaLucro', event.target.value, {
+                  number: true,
+                })
+              }
               onBlur={() => onNumberBlur('metaLucro')}
               disabled={deleting || !canEdit}
             />
@@ -307,7 +340,8 @@ export default function OverviewTab({
           {confirmingDelete ? (
             <div className={drawerStyles.confirmBar}>
               <div className={drawerStyles.confirmText}>
-                Remover <strong>{client.name}</strong>? Isso também apaga projeto, métricas e análises vinculadas.
+                Remover <strong>{client.name}</strong>? Isso também apaga projeto,
+                métricas e análises vinculadas.
               </div>
               <div className={drawerStyles.confirmActions}>
                 <button
@@ -335,7 +369,13 @@ export default function OverviewTab({
               onClick={() => setConfirmingDelete(true)}
               style={{ alignSelf: 'flex-start' }}
             >
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
                 <LogOutIcon size={13} />
                 Excluir cliente
               </span>
@@ -346,3 +386,4 @@ export default function OverviewTab({
     </>
   );
 }
+

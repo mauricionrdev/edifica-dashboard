@@ -1,8 +1,8 @@
 :root {
   color-scheme: dark;
 
-  --font-sans: "Inter Variable", "Inter", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "Berkeley Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-sans: "Inter", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   --bg-app: #08090a;
   --bg-canvas: #0f1011;
@@ -14,36 +14,26 @@
 
   --surface: #0f1011;
   --surface-subtle: #111214;
-  --surface-panel: rgba(255, 255, 255, 0.024);
-  --surface-raised: rgba(255, 255, 255, 0.038);
-  --surface-card: #111214;
-  --surface-card-soft: #0f1011;
-  --surface-strong: #151617;
+  --surface-panel: #111214;
+  --surface-raised: #141516;
 
   --text-primary: #f7f8f8;
   --text-secondary: #d0d6e0;
   --text-tertiary: #8a8f98;
   --text-quaternary: #62666d;
 
-  --line-subtle: rgba(255, 255, 255, 0.042);
-  --line: rgba(255, 255, 255, 0.066);
-  --line-strong: rgba(255, 255, 255, 0.092);
-  --border-subtle: var(--line-subtle);
-  --border-default: var(--line);
-  --border-strong: var(--line-strong);
+  --line-subtle: rgba(255, 255, 255, 0.045);
+  --line: rgba(255, 255, 255, 0.068);
+  --line-strong: rgba(255, 255, 255, 0.105);
 
-  --field-bg: rgba(255, 255, 255, 0.025);
-  --field-bg-hover: rgba(255, 255, 255, 0.04);
-  --field-line: rgba(255, 255, 255, 0.07);
-
-  --chart-bar: rgba(255, 255, 255, 0.055);
-  --progress-track: rgba(255, 255, 255, 0.07);
+  --field-bg: #151617;
+  --field-bg-hover: #191a1c;
+  --field-line: rgba(255, 255, 255, 0.075);
 
   --accent-amber: #f5b800;
   --accent-amber-strong: #ffc400;
   --accent-amber-soft: rgba(245, 184, 0, 0.08);
   --accent-amber-line: rgba(245, 184, 0, 0.24);
-  --accent-amber-border: var(--accent-amber-line);
 
   --accent-cyan: #55edf6;
   --accent-cyan-soft: rgba(85, 237, 246, 0.08);
@@ -80,13 +70,54 @@
 
   --shadow-1: none;
   --shadow-2: none;
-  --shadow-soft: none;
-  --shadow-panel: none;
 
+  --sidebar-width: 263px;
+  --topbar-height: 50px;
+  --page-max-width: none;
+  --page-padding-x: 20px;
+
+  --control-height: 38px;
+  --control-radius: 10px;
+}
+
+/* Notebook rigid refinement tokens */
+:root {
+  --font-sans: "Inter Variable", "Inter", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Berkeley Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --bg-app: #08090a;
+  --bg-canvas: #0f1011;
+  --bg-elevated: #111214;
+  --bg-raised: #141516;
+  --surface: #0f1011;
+  --surface-panel: rgba(255, 255, 255, 0.025);
+  --surface-raised: rgba(255, 255, 255, 0.04);
+
+  --line-subtle: rgba(255, 255, 255, 0.045);
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.09);
+
+  --field-bg: rgba(255, 255, 255, 0.025);
+  --field-bg-hover: rgba(255, 255, 255, 0.04);
+  --field-line: rgba(255, 255, 255, 0.07);
+
+  --sidebar-width: 263px;
+  --topbar-height: 50px;
+  --page-padding-x: 16px;
+  --control-height: 36px;
+  --control-radius: 9px;
+}
+
+/* Notebook official viewport tokens */
+:root {
   --sidebar-width: 260px;
   --topbar-height: 49px;
-  --page-max-width: none;
   --page-padding-x: 15px;
   --control-height: 34px;
   --control-radius: 8px;
+  --surface-panel: rgba(255, 255, 255, 0.024);
+  --surface-raised: rgba(255, 255, 255, 0.038);
+  --line-subtle: rgba(255, 255, 255, 0.042);
+  --line: rgba(255, 255, 255, 0.066);
+  --line-strong: rgba(255, 255, 255, 0.092);
 }

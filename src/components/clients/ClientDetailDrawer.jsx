@@ -8,7 +8,7 @@ import {
   statusLabel,
 } from '../../utils/clientHelpers.js';
 import { updateClient } from '../../api/clients.js';
-import { createClientProject, getClientProject } from '../../api/projects.js';
+import { getClientProject, syncClientProject } from '../../api/projects.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
@@ -63,7 +63,6 @@ export default function ClientDetailDrawer({
   const [clientProject, setClientProject] = useState(null);
   const [projectLoading, setProjectLoading] = useState(false);
   const [projectActionBusy, setProjectActionBusy] = useState(false);
-  const [projectCreateOpen, setProjectCreateOpen] = useState(false);
   const avatarInputRef = useRef(null);
 
   const navigate = useNavigate();
@@ -78,7 +77,6 @@ export default function ClientDetailDrawer({
     setActiveTab('overview');
     setAvatarUrl(getClientAvatar(client));
     setClientProject(null);
-    setProjectCreateOpen(false);
   }, [client?.id]);
 
   useEffect(() => {
@@ -181,9 +179,8 @@ export default function ClientDetailDrawer({
     }
   }, [client, onUpdated, showToast]);
 
-  const handleProjectAction = useCallback(() => {
+  const handleProjectAction = useCallback(async () => {
     if (!client?.id) return;
-
     if (clientProject?.id) {
       onClose?.();
       navigate(`/projetos?id=${encodeURIComponent(clientProject.id)}`);
@@ -195,40 +192,22 @@ export default function ClientDetailDrawer({
       return;
     }
 
-    setProjectCreateOpen(true);
-  }, [canCreateProject, client?.id, clientProject?.id, navigate, onClose, showToast]);
-
-  const handleCreateProject = useCallback(
-    async (mode) => {
-      if (!client?.id) return;
-
-      try {
-        setProjectActionBusy(true);
-        setProjectCreateOpen(false);
-
-        const res = await createClientProject(client.id, {
-          mode,
-          name: `Projeto - ${client.name}`,
-        });
-
-        const project = res?.project || null;
-        setClientProject(project);
-        showToast(res?.alreadyExists ? 'Projeto já existente aberto.' : 'Projeto criado.', {
-          variant: 'success',
-        });
-
-        if (project?.id) {
-          onClose?.();
-          navigate(`/projetos?id=${encodeURIComponent(project.id)}`);
-        }
-      } catch (error) {
-        showToast(error?.message || 'Não foi possível criar o projeto.', { variant: 'error' });
-      } finally {
-        setProjectActionBusy(false);
+    try {
+      setProjectActionBusy(true);
+      const res = await syncClientProject(client.id);
+      const project = res?.project || null;
+      setClientProject(project);
+      showToast('Projeto criado.', { variant: 'success' });
+      if (project?.id) {
+        onClose?.();
+        navigate(`/projetos?id=${encodeURIComponent(project.id)}`);
       }
-    },
-    [client?.id, client?.name, navigate, onClose, showToast]
-  );
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível criar o projeto.', { variant: 'error' });
+    } finally {
+      setProjectActionBusy(false);
+    }
+  }, [canCreateProject, client?.id, clientProject?.id, navigate, onClose, showToast]);
 
   const headerFacts = useMemo(
     () => [
@@ -408,57 +387,6 @@ export default function ClientDetailDrawer({
             <AnalysisTab clientId={client.id} type="gdvanalise" canEdit={canEditClient} />
           )}
         </div>
-
-
-        {projectCreateOpen ? (
-          <div className={drawerStyles.projectChoiceBackdrop} role="presentation" onClick={() => setProjectCreateOpen(false)}>
-            <div
-              className={drawerStyles.projectChoiceModal}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="project-choice-title"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className={drawerStyles.projectChoiceHeader}>
-                <div>
-                  <span>Criar projeto</span>
-                  <h3 id="project-choice-title">{client.name}</h3>
-                </div>
-                <button
-                  type="button"
-                  className={drawerStyles.iconBtn}
-                  onClick={() => setProjectCreateOpen(false)}
-                  aria-label="Fechar"
-                >
-                  <CloseIcon size={16} />
-                </button>
-              </div>
-
-              <div className={drawerStyles.projectChoiceGrid}>
-                <button
-                  type="button"
-                  className={drawerStyles.projectChoiceCard}
-                  onClick={() => handleCreateProject('template')}
-                  disabled={projectActionBusy}
-                >
-                  <strong>Usar Modelo Oficial</strong>
-                  <span>Copia seções, tarefas, subtarefas e responsáveis padrão.</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={drawerStyles.projectChoiceCard}
-                  onClick={() => handleCreateProject('blank')}
-                  disabled={projectActionBusy}
-                >
-                  <strong>Criar do zero</strong>
-                  <span>Cria um projeto vazio vinculado a este cliente.</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
       </div>
     </div>
   );

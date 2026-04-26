@@ -9,6 +9,7 @@ export const ROLE_PERMISSIONS = {
     "squads.view","squads.manage",
     "team.view","team.manage",
     "audit.view",
+    "onboarding.view","onboarding.edit","onboarding.assign","onboarding.complete.any",
     "projects.view","projects.create","projects.edit",
     "tasks.view","tasks.create","tasks.edit","tasks.comment","tasks.complete.own","tasks.complete.any",
     "profile.view","profile.edit",
@@ -20,12 +21,14 @@ export const ROLE_PERMISSIONS = {
   ],
   gestor: [
     "central.view","clients.view","metrics.view","metrics.fill_week",
+    "onboarding.view","onboarding.edit","onboarding.assign","onboarding.complete.any",
     "projects.view","projects.create","projects.edit",
     "tasks.view","tasks.create","tasks.edit","tasks.comment","tasks.complete.own","tasks.complete.any",
     "profile.view","profile.edit","squads.view",
   ],
   cap: [
     "central.view","clients.view","metrics.view","metrics.fill_week",
+    "onboarding.view","onboarding.complete.own","profile.view","profile.edit","squads.view",
     "projects.view","tasks.view","tasks.create","tasks.comment","tasks.complete.own",
   ],
 };
@@ -35,6 +38,7 @@ export const PERMISSION_GROUPS = [
   { area: 'Clientes', permissions: ['clients.view','clients.create','clients.edit'] },
   { area: 'Preencher Semana', permissions: ['metrics.view','metrics.fill_week'] },
   { area: 'GDV', permissions: ['gdv.view'] },
+  { area: 'Onboarding', permissions: ['onboarding.view','onboarding.edit','onboarding.assign','onboarding.complete.own','onboarding.complete.any'] },
   { area: 'Projetos', permissions: ['projects.view','projects.create','projects.edit'] },
   { area: 'Tarefas', permissions: ['tasks.view','tasks.create','tasks.edit','tasks.comment','tasks.complete.own','tasks.complete.any'] },
   { area: 'Squads', permissions: ['squads.view','squads.manage'] },

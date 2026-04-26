@@ -14,6 +14,7 @@ import squadsRoutes from './src/routes/squads.js';
 import gdvsRoutes from './src/routes/gdvs.js';
 import clientsRoutes from './src/routes/clients.js';
 import metricsRoutes from './src/routes/metrics.js';
+import onboardingRoutes from './src/routes/onboarding.js';
 import analysesRoutes from './src/routes/analyses.js';
 import templateRoutes from './src/routes/template.js';
 import accessRequestsRoutes from './src/routes/accessRequests.js';
@@ -65,7 +66,9 @@ app.use('/api/gdvs', gdvsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/metrics', metricsRoutes);
 
-// analyses usa /api/clients como prefixo, mas com router próprio.
+// onboarding e analyses usam /api/clients como prefixo,
+// mas com routers próprios (separação por domínio).
+app.use('/api/clients', onboardingRoutes);
 app.use('/api/clients', analysesRoutes);
 
 app.use('/api/template', templateRoutes);

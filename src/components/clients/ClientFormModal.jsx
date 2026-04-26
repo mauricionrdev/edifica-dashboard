@@ -3,7 +3,6 @@ import { createClient, updateClient } from '../../api/clients.js';
 import { ApiError } from '../../api/client.js';
 import { CameraIcon, CloseIcon } from '../ui/Icons.jsx';
 import Select from '../ui/Select.jsx';
-import DateField from '../ui/DateField.jsx';
 import { clientInitials, colorFromName } from '../../utils/clientHelpers.js';
 import {
   getClientAvatar,
@@ -160,9 +159,11 @@ export default function ClientFormModal({
         onSubmit={handleSubmit}
       >
         <div className={styles.header}>
-          <h2 id="client-form-title" className={styles.title}>
-            {title}
-          </h2>
+          <div>
+            <h2 id="client-form-title" className={styles.title}>
+              {title}
+            </h2>
+          </div>
           <button type="button" className={styles.close} onClick={onClose} aria-label="Fechar">
             <CloseIcon size={16} />
           </button>
@@ -297,12 +298,13 @@ export default function ClientFormModal({
                 <label className={styles.label} htmlFor="nc-start">
                   Início
                 </label>
-                <DateField
+                <input
                   id="nc-start"
+                  className={styles.input}
+                  type="date"
                   value={form.startDate}
-                  onChange={(value) => setField('startDate', value)}
+                  onChange={(event) => setField('startDate', event.target.value)}
                   disabled={saving}
-                  ariaLabel="Data de início"
                 />
               </div>
 
@@ -310,12 +312,13 @@ export default function ClientFormModal({
                 <label className={styles.label} htmlFor="nc-end">
                   Término
                 </label>
-                <DateField
+                <input
                   id="nc-end"
+                  className={styles.input}
+                  type="date"
                   value={form.endDate}
-                  onChange={(value) => setField('endDate', value)}
+                  onChange={(event) => setField('endDate', event.target.value)}
                   disabled={saving}
-                  ariaLabel="Data de término"
                 />
               </div>
 

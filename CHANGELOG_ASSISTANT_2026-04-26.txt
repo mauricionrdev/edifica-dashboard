@@ -1,0 +1,24 @@
+Ajustes aplicados nesta entrega:
+
+1) Exclusão de tarefa
+- Removido o alerta nativo (window.confirm) ao excluir tarefa pelo modal.
+- A exclusão continua funcional e agora usa apenas o fluxo visual interno.
+
+2) Prazo da tarefa
+- Corrigido o fechamento indevido do date picker inline ao clicar no seletor.
+- Ajustado o campo de prazo no modal para refletir o valor localmente e persistir a alteração.
+
+3) Avatar/ícone de projeto
+- Criado novo ícone de projeto inspirado no padrão visual de referência tipo Asana.
+- Aplicado na tela de Projetos.
+- Aplicado também na exibição de projetos do dashboard central.
+- Aplicado também na listagem de projetos do perfil de usuário.
+
+Arquivos alterados:
+- src/components/ui/Icons.jsx
+- src/pages/ProjectsPage.jsx
+- src/pages/ProjectsPage.module.css
+- src/pages/CentralPage.jsx
+- src/pages/CentralPage.module.css
+- src/pages/UserProfilePage.jsx
+- src/pages/UserProfilePage.module.css

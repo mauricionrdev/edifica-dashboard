@@ -1,9 +1,8 @@
 // ==============================================================
 //  /api/clients
 //  Regras:
-//   - Cliente não cria onboarding automaticamente.
-//   - Cliente não cria projeto automaticamente.
-//   - Projeto de cliente nasce somente por ação manual em Detalhes do Cliente.
+//   - Ao criar, instancia o onboarding a partir do Modelo Oficial
+//     (ou do template embutido se ainda não existir registro singleton).
 //   - Atualizar status=churn seta churn_date automaticamente.
 //   - goal_status é campo derivado mas persistido; atualizado pela
 //     rota de métricas. Esta rota nunca o sobrescreve diretamente.
@@ -21,7 +20,12 @@ import {
   forbidden,
 } from '../utils/helpers.js';
 import { filterRowsBySquadAccess, getAccessibleClientRow, isAdminUser } from '../utils/access.js';
+import {
+  ONBOARDING_TEMPLATE,
+  instantiateOnboarding,
+} from '../utils/domain.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
+import { syncClientProjectFromOnboarding } from '../utils/projectTasks.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -211,7 +215,7 @@ router.get('/:id', requirePermission('clients.view'), async (req, res, next) => 
 
 // --------------------------------------------------------------
 //  POST /api/clients
-//  Cria cliente sem onboarding/projeto automático.
+//  Cria cliente + onboarding inicial a partir do Modelo Oficial.
 // --------------------------------------------------------------
 router.post('/', requirePermission('clients.create'), async (req, res, next) => {
   try {
@@ -247,6 +251,52 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
           churnDate,
         ]
       );
+
+      // Carrega template singleton OU cai no template embutido.
+      const [tplRows] = await conn.query(
+        'SELECT sections FROM onboarding_template WHERE id = 1 LIMIT 1'
+      );
+      const baseSections =
+        tplRows.length > 0
+          ? parseJson(tplRows[0].sections, ONBOARDING_TEMPLATE)
+          : ONBOARDING_TEMPLATE;
+      const responsibleNames = [fields.gestor, fields.gdvName]
+        .map((value) => String(value || '').trim())
+        .filter(Boolean);
+      let gestorId = '';
+      let gdvId = '';
+      if (responsibleNames.length > 0) {
+        const [responsibleRows] = await conn.query(
+          `SELECT id, name
+             FROM users
+            WHERE active = 1
+              AND LOWER(name) IN (${responsibleNames.map(() => 'LOWER(?)').join(',')})`,
+          responsibleNames
+        );
+        const byName = new Map(
+          responsibleRows.map((row) => [String(row.name || '').trim().toLowerCase(), row.id])
+        );
+        gestorId = byName.get(String(fields.gestor || '').trim().toLowerCase()) || '';
+        gdvId = byName.get(String(fields.gdvName || '').trim().toLowerCase()) || '';
+      }
+
+      const sections = instantiateOnboarding(baseSections, {
+        gestor: fields.gestor || '',
+        gestorId,
+        gdv: fields.gdvName || '',
+        gdvId,
+      });
+
+      await conn.query(
+        `INSERT INTO onboardings (client_id, sections)
+         VALUES (?, ?)`,
+        [id, JSON.stringify(sections)]
+      );
+
+      await syncClientProjectFromOnboarding(id, {
+        actorUser: req.user,
+        db: conn,
+      });
     });
 
     const rows = await query(
@@ -338,6 +388,18 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
     if (updates.length > 0) {
       params.push(id);
       await query(`UPDATE clients SET ${updates.join(', ')} WHERE id = ?`, params);
+    }
+
+    const shouldSyncProject =
+      fields.name !== undefined ||
+      fields.squadId !== undefined ||
+      fields.gdvName !== undefined ||
+      fields.gestor !== undefined;
+
+    if (shouldSyncProject) {
+      await syncClientProjectFromOnboarding(id, {
+        actorUser: req.user,
+      });
     }
 
     const rows = await query(

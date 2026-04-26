@@ -315,7 +315,7 @@
   min-height: 48px;
   padding: 0 12px;
   display: grid;
-  grid-template-columns: 12px minmax(0, 1fr) auto;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   color: inherit;
@@ -324,11 +324,11 @@
 }
 
 .projectIcon {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--accent-amber);
-  color: transparent;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .projectArrow {

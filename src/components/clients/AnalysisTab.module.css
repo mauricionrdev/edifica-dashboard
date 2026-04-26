@@ -1,120 +1,116 @@
+/* AnalysisTab - layout de entradas de análise (ICP/GDV).
+   Cada entrada é um bloco com data editável e textarea livre.
+*/
+
 .panel {
-  --analysis-accent: var(--accent-amber);
-  --analysis-accent-soft: var(--accent-amber-soft);
-  --analysis-accent-line: var(--accent-amber-line);
-
-  display: grid;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.icp {
-  --analysis-accent: #60a5fa;
-  --analysis-accent-soft: rgba(96, 165, 250, 0.09);
-  --analysis-accent-line: rgba(96, 165, 250, 0.28);
+.hero {
+  padding: 4px 0 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
-.gdv {
-  --analysis-accent: #2dd4bf;
-  --analysis-accent-soft: rgba(45, 212, 191, 0.09);
-  --analysis-accent-line: rgba(45, 212, 191, 0.28);
-}
-
-.header {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(110px, 1fr) auto max-content;
-  align-items: center;
-  gap: 16px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.titleBlock {
-  min-width: 0;
+.heroMain {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.eyebrow {
-  width: max-content;
-  height: 25px;
-  padding: 0 11px;
-  border: 1px solid var(--analysis-accent-line);
-  border-radius: 999px;
-  color: var(--analysis-accent);
-  background: var(--analysis-accent-soft);
+.heroBadge {
   display: inline-flex;
   align-items: center;
-  font-size: 9px;
-  font-weight: 590;
-  letter-spacing: 0.13em;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.title {
-  display: none;
-}
-
-.headerMeta {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: repeat(3, max-content);
-  align-items: center;
-  justify-content: end;
+.heroMeta {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .heroMetric {
-  min-width: 0;
-  min-height: 35px;
-  padding: 0 13px;
+  min-width: 132px;
+  padding: 0 0 0 18px;
   border-left: 1px solid var(--line-subtle);
-  display: grid;
-  align-content: center;
-  gap: 3px;
-}
-
-.heroMetric:first-child {
-  border-left: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .heroMetric strong {
   color: var(--text-primary);
   font-size: 15px;
-  line-height: 1;
-  font-weight: 590;
-  letter-spacing: -0.032em;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  font-weight: 780;
 }
 
 .heroMetric span {
   color: var(--text-quaternary);
-  font-size: 9px;
-  font-weight: 590;
-  letter-spacing: 0.12em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  white-space: nowrap;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}
+
+.title.icp {
+  color: #60a5fa;
+}
+
+.title.gdv {
+  color: #2dd4bf;
+}
+
+.sub {
+  font-size: 11px;
+  color: var(--text-tertiary);
 }
 
 .addBtn {
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--analysis-accent-line);
-  background: var(--analysis-accent-soft);
-  color: var(--analysis-accent);
-  font-family: inherit;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 0;
+  font-family: 'Manrope', system-ui, sans-serif;
   font-size: 11px;
-  font-weight: 590;
-  letter-spacing: -0.01em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
+  transition: opacity 0.15s, filter 0.15s;
   flex-shrink: 0;
 }
 
 .addBtn:hover:not(:disabled) {
-  border-color: var(--analysis-accent);
-  background: var(--analysis-accent);
-  color: #08090a;
+  filter: brightness(1.1);
 }
 
 .addBtn:disabled {
@@ -122,100 +118,82 @@
   cursor: not-allowed;
 }
 
+.empty {
+  padding: 34px 0 6px;
+  text-align: left;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1.6;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.empty b {
+  color: var(--text-primary);
+}
+
 .entry {
   border-top: 1px solid var(--line-subtle);
   border-radius: 0;
   background: transparent;
-  overflow: visible;
-}
-
-.entry:first-of-type {
-  border-top: 0;
+  overflow: hidden;
 }
 
 .entryHdr {
-  min-height: 38px;
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 11px 0 10px;
+  gap: 10px;
+  padding: 14px 0 12px;
+  background: transparent;
+  border-bottom: 0;
 }
 
-.dateControl {
-  min-width: 0;
-  height: 30px;
-  padding: 0 10px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.016);
-  color: var(--text-secondary);
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-}
-
-.dateControl:hover,
-.dateControl:focus-within {
-  border-color: var(--analysis-accent-line);
-  background: var(--analysis-accent-soft);
-}
-
-.dateControl span {
-  color: var(--text-quaternary);
+.dateLabel {
   font-size: 9px;
-  font-weight: 590;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--text-quaternary);
 }
 
-.dateField {
-  width: 134px;
-}
-
-.dateField button {
+.dateInput {
   height: 28px;
-  padding: 0;
-  border: 0;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
   background: transparent;
-}
-
-.dateField button:hover,
-.dateField button[aria-expanded='true'] {
-  border-color: transparent;
-  background: transparent;
-}
-
-.dateField button span {
-  color: var(--analysis-accent);
+  font-family: inherit;
   font-size: 12px;
-  letter-spacing: -0.01em;
-  text-transform: none;
+  font-weight: 700;
+  outline: none;
+  font-variant-numeric: tabular-nums;
 }
 
-.entryAuthor {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 510;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.dateInput:hover,
+.dateInput:focus {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .delBtn {
-  height: 26px;
-  padding: 0;
-  border: 0;
+  margin-left: auto;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-tertiary);
   font-family: inherit;
   font-size: 11px;
   cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .delBtn:hover:not(:disabled) {
-  color: var(--danger);
+  color: #ef8f8f;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.22);
 }
 
 .delBtn:disabled {
@@ -225,23 +203,16 @@
 
 .textarea {
   width: 100%;
-  min-height: 104px;
-  padding: 11px 12px;
-  background: rgba(255, 255, 255, 0.016);
-  border: 1px solid var(--line-subtle);
-  border-radius: 9px;
+  min-height: 120px;
+  padding: 0 0 14px;
+  background: transparent;
+  border: 0;
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 12.5px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.55;
   outline: none;
   resize: vertical;
-}
-
-.textarea:hover,
-.textarea:focus {
-  border-color: var(--analysis-accent-line);
-  background: rgba(255, 255, 255, 0.024);
 }
 
 .textarea::placeholder {
@@ -249,44 +220,39 @@
 }
 
 .savingHint {
-  padding: 7px 0 0;
+  padding: 0 0 14px;
   font-size: 10px;
-  color: var(--success);
+  color: #7fc99b;
 }
 
 .savingHint.pending {
-  color: var(--analysis-accent);
+  color: #fbbf24;
 }
 
-@media (max-width: 920px) {
-  .header {
-    grid-template-columns: 1fr;
-    align-items: start;
-    gap: 12px;
+.loading {
+  padding: 34px 0 6px;
+  text-align: left;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .heroMain {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .headerMeta {
+  .heroMeta {
+    justify-content: flex-start;
     width: 100%;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    justify-content: stretch;
   }
 
   .heroMetric {
-    padding-inline: 10px;
-  }
-
-  .addBtn {
-    width: max-content;
-  }
-}
-
-@media (max-width: 640px) {
-  .entryHdr {
-    grid-template-columns: 1fr max-content;
-  }
-
-  .entryAuthor {
-    grid-column: 1 / -1;
-    grid-row: 2;
+    min-width: 0;
+    flex: 1;
+    padding-left: 0;
+    border-left: 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--line-subtle);
   }
 }
