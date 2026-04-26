@@ -862,14 +862,6 @@ export default function SquadPage() {
                       <span>Fechados</span>
                       <strong>{displayInt(row.calc.fec)}</strong>
                     </div>
-                    <div>
-                      <span>Meta</span>
-                      <strong>{row.calc.mLuc > 0 ? displayInt(row.calc.mLuc) : '—'}</strong>
-                    </div>
-                    <div>
-                      <span>Gap</span>
-                      <strong>{row.calc.mLuc > 0 ? displayInt(row.weeklyGap) : '—'}</strong>
-                    </div>
                   </div>
 
                   <div className={styles.clientStatus}>

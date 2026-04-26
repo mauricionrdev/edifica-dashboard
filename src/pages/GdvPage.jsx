@@ -1087,14 +1087,6 @@ export default function GdvPage() {
                         <span>Fechados</span>
                         <strong>{displayInt(calc.fec)}</strong>
                       </div>
-                      <div>
-                        <span>Meta</span>
-                        <strong>{calc.mLuc > 0 ? displayInt(calc.mLuc) : '—'}</strong>
-                      </div>
-                      <div>
-                        <span>Gap</span>
-                        <strong>{calc.mLuc > 0 ? displayInt(row.weeklyGap) : '—'}</strong>
-                      </div>
                     </div>
 
                     <div className={styles.clientStatus}>

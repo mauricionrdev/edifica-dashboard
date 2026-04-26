@@ -937,3 +937,37 @@
 .ownerControl {
   overflow: visible;
 }
+
+
+/* PATCH v26 — remover artefatos Meta/GAP da lista */
+.clientRow {
+  grid-template-columns: minmax(280px, 1fr) 320px 128px !important;
+}
+
+.clientStats {
+  grid-template-columns: 156px 110px !important;
+  column-gap: 24px !important;
+}
+
+@media (max-width: 1480px) {
+  .clientRow {
+    grid-template-columns: minmax(240px, 1fr) 280px 118px !important;
+  }
+
+  .clientStats {
+    grid-template-columns: 142px 96px !important;
+    column-gap: 18px !important;
+  }
+}
+
+@media (max-width: 1120px) {
+  .clientRow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .clientStats {
+    width: 100% !important;
+    grid-template-columns: repeat(2, minmax(120px, 1fr)) !important;
+    justify-content: stretch !important;
+  }
+}
