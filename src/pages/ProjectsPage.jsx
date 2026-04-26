@@ -32,6 +32,7 @@ import {
   ChevronRightIcon,
   CloseIcon,
   PlusIcon,
+  ProjectBoardIcon,
   TrashIcon,
 } from '../components/ui/Icons.jsx';
 import obStyles from '../components/clients/OnboardingTab.module.css';
@@ -351,11 +352,14 @@ export default function ProjectsPage() {
         {projectMembers.length ? (
           <div className={styles.memberStack} aria-label="Membros do projeto">
             {projectMembers.slice(0, 5).map((member) => {
+              const directoryUser = (Array.isArray(userDirectory) ? userDirectory : []).find(
+                (entry) => entry.id === member.userId || entry.name === member.userName || entry.email === member.userEmail
+              );
               const memberUser = {
-                id: member.userId,
-                name: member.userName,
-                email: member.userEmail || '',
-                avatarUrl: getUserAvatar(member) || member.avatarUrl || '',
+                id: member.userId || directoryUser?.id || '',
+                name: member.userName || directoryUser?.name || 'Usuário',
+                email: member.userEmail || directoryUser?.email || directoryUser?.username || '',
+                avatarUrl: getUserAvatar(directoryUser) || directoryUser?.avatarUrl || getUserAvatar(member) || member.avatarUrl || '',
               };
               return (
                 <div key={member.userId} className={styles.memberBadge}>
@@ -1195,7 +1199,7 @@ export default function ProjectsPage() {
               <section className={styles.detailHero}>
                 <div className={styles.heroMainRow}>
                   <div className={styles.projectTitleRow}>
-                    <span className={styles.projectIcon}>{selectedProject.type === 'client' ? 'C' : 'P'}</span>
+                    <span className={styles.projectIcon}><ProjectBoardIcon size={18} /></span>
                     <div className={styles.projectHeading}>
                       <div className={styles.projectEyebrow}>Projeto</div>
                       <h1>{cleanProjectName(selectedProject.name)}</h1>
