@@ -8,15 +8,13 @@ import {
   buildPeriodKey,
   calcWeek,
   currentWeek,
-  getPriority,
-  sortByPriority,
 } from '../utils/gdvMetrics.js';
-import { MONTHS, MONTHS_FULL, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
+import { MONTHS, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { isAdminUser, isSuperAdmin, roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
-import { CloseIcon, RotateCcwIcon, Select, UsersIcon } from '../components/ui/index.js';
+import { CloseIcon, RotateCcwIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
 import {
@@ -28,18 +26,7 @@ import {
 } from '../utils/avatarStorage.js';
 import styles from './GdvPage.module.css';
 
-function statusBreakdown(rows) {
-  return rows.reduce(
-    (acc, row) => {
-      if (!row.calc.hasData) acc.empty += 1;
-      else if (row.calc.isHit) acc.ok += 1;
-      else if (row.priority.cls === 'pri-h') acc.high += 1;
-      else acc.mid += 1;
-      return acc;
-    },
-    { ok: 0, mid: 0, high: 0, empty: 0 }
-  );
-}
+const PAGE_SIZE = 10;
 
 function displayInt(value) {
   const numeric = Number(value) || 0;
@@ -48,35 +35,130 @@ function displayInt(value) {
 
 function displayPct(value) {
   const numeric = Number(value) || 0;
-  if (numeric === 0) return '0%';
-  return fmtPct(numeric);
+  return numeric === 0 ? '0%' : fmtPct(numeric);
 }
 
-function buildPredictionCard(hit, total) {
-  if (!total) {
+function gdvInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'GD';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function clientInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'CL';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function effectiveForecast(closed, predicted) {
+  return Math.max(Number(closed) || 0, Number(predicted) || 0);
+}
+
+function predictionCard(closed, predicted, goal) {
+  const target = Number(goal) || 0;
+  const projected = effectiveForecast(closed, predicted);
+
+  if (!target) {
     return {
       value: '0/0',
-      sub: '',
+      sub: 'Sem meta configurada',
       tone: 'muted',
     };
   }
 
-  const pct = (hit / total) * 100;
+  const willHit = projected >= target;
+
   return {
-    value: `${displayInt(hit)}/${displayInt(total)}`,
-    sub: displayPct(pct),
-    tone: pct >= 70 ? 'green' : pct > 0 ? 'amber' : 'muted',
+    value: `${displayInt(projected)}/${displayInt(target)}`,
+    sub: willHit ? 'Vai bater a meta' : 'Não vai bater meta',
+    tone: willHit ? 'green' : 'red',
   };
 }
 
-function gdvInitials(name) {
-  const parts = String(name || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  if (!parts.length) return 'GD';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+function goalComparison(current, goal, { lowerIsBetter = false, format = displayInt } = {}) {
+  const currentValue = Number(current) || 0;
+  const goalValue = Number(goal) || 0;
+
+  if (goalValue <= 0) return 'Sem meta configurada';
+
+  const isGood = lowerIsBetter
+    ? currentValue > 0 && currentValue <= goalValue
+    : currentValue >= goalValue;
+
+  const status = lowerIsBetter
+    ? isGood ? 'Abaixo da meta' : 'Acima da meta'
+    : isGood ? 'Acima da meta' : 'Abaixo da meta';
+
+  return `Meta ${format(goalValue)} · ${status}`;
+}
+
+function comparisonTone(current, goal, { lowerIsBetter = false } = {}) {
+  const currentValue = Number(current) || 0;
+  const goalValue = Number(goal) || 0;
+
+  if (goalValue <= 0) return currentValue > 0 ? 'neutral' : 'muted';
+
+  const isGood = lowerIsBetter
+    ? currentValue > 0 && currentValue <= goalValue
+    : currentValue >= goalValue;
+
+  return isGood ? 'green' : 'red';
+}
+
+function statusTone(calc, clientStatus) {
+  if (clientStatus === 'churn') return 'red';
+  if (!calc?.mLuc) return 'muted';
+
+  const closed = Number(calc.fec) || 0;
+  const goal = Number(calc.mLuc) || 0;
+  const projected = effectiveForecast(calc.fec, calc.cp);
+  const progress = goal > 0 ? (closed / goal) * 100 : 0;
+
+  if (closed >= goal) return 'green';
+  if (projected >= goal) return 'amber';
+  if (progress >= 55) return 'amber';
+  return 'red';
+}
+
+function statusLabel(calc, clientStatus) {
+  if (clientStatus === 'churn') return 'Churn';
+  if (!calc?.mLuc) return 'Sem meta';
+
+  const closed = Number(calc.fec) || 0;
+  const goal = Number(calc.mLuc) || 0;
+  const projected = effectiveForecast(calc.fec, calc.cp);
+  const progress = goal > 0 ? (closed / goal) * 100 : 0;
+
+  if (closed >= goal) return 'Meta batida';
+  if (projected >= goal) return 'Vai bater';
+  if (progress >= 55) return 'Em andamento';
+  return 'Crítico';
+}
+
+function clientPriorityScore(row) {
+  if (!row) return -1;
+  if (row.client?.status === 'churn') return 100000;
+
+  const calc = row.calc || {};
+  const goal = Number(calc.mLuc) || 0;
+  const closed = Number(calc.fec) || 0;
+  const predicted = Number(calc.cp) || 0;
+  const projected = effectiveForecast(closed, predicted);
+  const gap = goal > 0 ? Math.max(goal - closed, 0) : 0;
+  const forecastGap = goal > 0 ? Math.max(goal - projected, 0) : 0;
+  const progress = goal > 0 ? (closed / goal) * 100 : 0;
+
+  if (!goal) return 100;
+  if (closed >= goal) return 0;
+  if (projected >= goal) return 3000 + gap * 20 + Math.max(0, 100 - progress);
+
+  return 6000 + forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
+}
+
+function toneClass(tone) {
+  return tone && styles[tone] ? styles[tone] : '';
 }
 
 export default function GdvPage() {
@@ -89,24 +171,40 @@ export default function GdvPage() {
     refreshGdvs,
     setPanelHeader,
   } = useOutletContext();
+
   const { user } = useAuth();
   const { showToast } = useToast();
 
   const admin = isAdminUser(user);
   const superAdmin = isSuperAdmin(user);
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [selectedGdv, setSelectedGdv] = useState('');
   const [gdvMenuOpen, setGdvMenuOpen] = useState(false);
-  const gdvMenuRef = useRef(null);
-  const gdvLogoInputRef = useRef(null);
+  const [selectedClientId, setSelectedClientId] = useState(null);
+  const [clientQuery, setClientQuery] = useState('');
+  const [page, setPage] = useState(1);
+
   const [logoUrl, setLogoUrl] = useState('');
   const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  const gdvMenuRef = useRef(null);
+  const gdvLogoInputRef = useRef(null);
+  const cardsRef = useRef(null);
+
+  const [showStickyResult, setShowStickyResult] = useState(false);
+  const [renderStickyResult, setRenderStickyResult] = useState(false);
 
   const now = useMemo(() => new Date(), []);
   const [year, setYear] = useState(now.getFullYear());
   const [month0, setMonth0] = useState(now.getMonth());
   const [week, setWeek] = useState(() => currentWeek(now));
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
+
+  const [metricsByKey, setMetricsByKey] = useState({});
+  const [fetchingKey, setFetchingKey] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
+  const fetchGenRef = useRef(0);
 
   const gdvOptions = useMemo(() => {
     const names = new Set(
@@ -136,6 +234,7 @@ export default function GdvPage() {
     const base = filterOperationalClientsForPeriod(clients, year, month0).filter(
       (client) => client && client.gdvName && String(client.gdvName).trim().length > 0
     );
+
     const userName = String(user?.name || '').trim().toLowerCase();
 
     if (admin) {
@@ -148,14 +247,7 @@ export default function GdvPage() {
     return base.filter(
       (client) => String(client.gdvName || '').trim().toLowerCase() === userName
     );
-  }, [clients, admin, selectedGdv, user, year, month0]);
-
-  const [metricsByKey, setMetricsByKey] = useState({});
-  const [fetchingKey, setFetchingKey] = useState(null);
-  const [fetchError, setFetchError] = useState(null);
-  const [selectedClientId, setSelectedClientId] = useState(null);
-  const [clientQuery, setClientQuery] = useState('');
-  const fetchGenRef = useRef(0);
+  }, [admin, clients, month0, selectedGdv, user, year]);
 
   const gdvIdsKey = useMemo(
     () => gdvClients.map((client) => client.id).sort().join('|'),
@@ -190,12 +282,14 @@ export default function GdvPage() {
     }
 
     const cached = metricsByKey[periodKey];
+
     if (Array.isArray(cached)) {
       const cachedIds = cached.map((entry) => entry.clientId).sort().join('|');
       if (cachedIds === gdvIdsKey) return;
     }
 
     const gen = ++fetchGenRef.current;
+
     setFetchingKey(periodKey);
     setFetchError(null);
 
@@ -212,6 +306,7 @@ export default function GdvPage() {
         const anyAuthErr = results.find(
           (result) => result.err instanceof ApiError && result.err.status === 401
         );
+
         if (anyAuthErr) return;
 
         setMetricsByKey((prev) => ({ ...prev, [periodKey]: results }));
@@ -219,6 +314,7 @@ export default function GdvPage() {
         const failures = results.filter(
           (result) => result.err && !(result.err instanceof ApiError && result.err.status === 404)
         );
+
         if (failures.length > 0 && failures.length === results.length) {
           setFetchError(new Error('Falha ao carregar métricas da carteira.'));
         }
@@ -236,8 +332,29 @@ export default function GdvPage() {
       const entry = currentResults.find((result) => result.clientId === client.id);
       const metric = entry?.metric || { data: {}, computed: {} };
       const calc = calcWeek(metric);
-      const priority = getPriority(calc);
-      return { client, metric, calc, priority };
+      const weeklyHasGoal = calc.mLuc > 0;
+      const weeklyProgress = weeklyHasGoal ? (calc.fec / calc.mLuc) * 100 : 0;
+      const weeklyGap = weeklyHasGoal ? Math.max(calc.mLuc - calc.fec, 0) : 0;
+      const forecastGap = weeklyHasGoal
+        ? Math.max(calc.mLuc - effectiveForecast(calc.fec, calc.cp), 0)
+        : 0;
+
+      const row = {
+        client,
+        metric,
+        calc,
+        weeklyHasGoal,
+        weeklyProgress,
+        weeklyGap,
+        forecastGap,
+        tone: statusTone(calc, client.status),
+        statusText: statusLabel(calc, client.status),
+      };
+
+      return {
+        ...row,
+        priorityScore: clientPriorityScore(row),
+      };
     });
   }, [currentResults, gdvClients]);
 
@@ -248,28 +365,86 @@ export default function GdvPage() {
   }, [rows, selectedClientId]);
 
   const agg = useMemo(() => aggregateCarteira(rows), [rows]);
-  const sortedRows = useMemo(() => sortByPriority(rows), [rows]);
-  const breakdown = useMemo(() => statusBreakdown(sortedRows), [sortedRows]);
 
   const selectedRow = useMemo(
     () => rows.find((row) => row.client.id === selectedClientId) || null,
     [rows, selectedClientId]
   );
 
+  useEffect(() => {
+    if (!selectedRow || !cardsRef.current) {
+      setShowStickyResult(false);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyResult(!entry.isIntersecting);
+      },
+      {
+        threshold: 0.08,
+        rootMargin: '-12px 0px 0px 0px',
+      }
+    );
+
+    observer.observe(cardsRef.current);
+
+    return () => observer.disconnect();
+  }, [selectedRow?.client?.id]);
+
+  useEffect(() => {
+    if (showStickyResult) {
+      setRenderStickyResult(true);
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setRenderStickyResult(false);
+    }, 170);
+
+    return () => window.clearTimeout(timeout);
+  }, [showStickyResult]);
+
   const visibleRows = useMemo(() => {
     const query = clientQuery.trim();
-    if (!query) return sortedRows;
 
-    return sortedRows.filter(({ client }) => {
-      return matchesAnySearch([client.name, client.squadName, client.gestor], query);
+    const base = [...rows].sort((a, b) => {
+      const scoreDiff = b.priorityScore - a.priorityScore;
+      if (scoreDiff !== 0) return scoreDiff;
+      return String(a.client?.name || '').localeCompare(String(b.client?.name || ''), 'pt-BR');
     });
-  }, [clientQuery, sortedRows]);
+
+    if (!query) return base;
+
+    return base.filter(({ client }) =>
+      matchesAnySearch([client.name, client.squadName, client.gestor], query)
+    );
+  }, [clientQuery, rows]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleRows.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [clientQuery, week, month0, year, selectedGdv]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const pagedRows = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return visibleRows.slice(start, start + PAGE_SIZE);
+  }, [page, visibleRows]);
+
+  const pageStart = visibleRows.length ? (page - 1) * PAGE_SIZE + 1 : 0;
+  const pageEnd = visibleRows.length ? Math.min(page * PAGE_SIZE, visibleRows.length) : 0;
 
   const gdvDisplayName = useMemo(() => {
     if (admin) return selectedGdv || 'Carteira GDV';
     if (gdvClients.length === 0) return 'Carteira GDV';
 
     const counts = new Map();
+
     for (const client of gdvClients) {
       const key = String(client.gdvName).trim();
       counts.set(key, (counts.get(key) || 0) + 1);
@@ -277,6 +452,7 @@ export default function GdvPage() {
 
     let best = 'Carteira GDV';
     let max = 0;
+
     for (const [name, total] of counts) {
       if (total > max) {
         best = name;
@@ -310,6 +486,7 @@ export default function GdvPage() {
         active: Boolean(activeGdvRecord.active && activeGdvRecord.owner),
       };
     }
+
     return {
       ownerId: '',
       owner: null,
@@ -319,25 +496,38 @@ export default function GdvPage() {
 
   const gdvHeaderName = useMemo(() => {
     if (!activeGdvName) return 'Carteira GDV';
-    return gdvOwnership.owner?.name || 'Sem proprietário';
-  }, [activeGdvName, gdvOwnership.owner?.name]);
+    return activeGdvName;
+  }, [activeGdvName]);
+
+  const gdvHeaderSubtitle = useMemo(() => {
+    if (!activeGdvName) return 'Todos os GDVs';
+    return `${gdvOwnership.owner?.name || 'Sem proprietário'} · ${gdvOwnership.active ? 'Ativo' : 'Desativado'}`;
+  }, [activeGdvName, gdvOwnership.active, gdvOwnership.owner?.name]);
 
   const handlePickLogo = useCallback(
     async (event) => {
       const file = event.target.files?.[0];
       event.target.value = '';
+
       if (!file || !activeGdvRecord?.id) return;
+
       setUploadingLogo(true);
+
       try {
         const dataUrl = await readAvatarFile(file);
+
         await updateGdv(activeGdvRecord.id, {
           name: activeGdvRecord.name,
           ownerUserId: activeGdvRecord.ownerUserId || activeGdvRecord.owner?.id || '',
           logoUrl: dataUrl,
         });
+
         await refreshGdvs?.();
+
         const saved = saveGdvAvatar(activeGdvRecord, dataUrl) || true;
+
         if (!saved) throw new Error('Não foi possível salvar a imagem do GDV.');
+
         setLogoUrl(dataUrl);
         showToast('Imagem do GDV atualizada.', { variant: 'success' });
       } catch (err) {
@@ -351,15 +541,19 @@ export default function GdvPage() {
 
   const handleRemoveLogo = useCallback(async () => {
     if (!activeGdvRecord?.id) return;
+
     try {
       await updateGdv(activeGdvRecord.id, {
         name: activeGdvRecord.name,
         ownerUserId: activeGdvRecord.ownerUserId || activeGdvRecord.owner?.id || '',
         logoUrl: '',
       });
+
       await refreshGdvs?.();
+
       removeGdvAvatar(activeGdvRecord);
       setLogoUrl('');
+
       showToast('Imagem do GDV removida.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Não foi possível remover a imagem.', { variant: 'error' });
@@ -368,114 +562,109 @@ export default function GdvPage() {
 
   const topCards = useMemo(() => {
     if (selectedRow) {
-      const { client, calc } = selectedRow;
-      const prediction = buildPredictionCard(calc.mLuc > 0 && calc.cp >= calc.mLuc ? 1 : 0, calc.mLuc > 0 ? 1 : 0);
+      const { calc } = selectedRow;
+      const prediction = predictionCard(calc.fec, calc.cp, calc.mLuc);
 
       return [
         {
+          id: 'closed',
           label: 'Contratos fechados',
           value: displayInt(calc.fec),
-          sub: `S${week}`,
+          sub: `Semana ${week}`,
           tone: 'neutral',
         },
         {
-          label: 'Taxa de conversão',
-          value: calc.taxa > 0 ? displayPct(calc.taxa) : '—',
-          sub: '',
-          tone: calc.taxa > 0 ? 'neutral' : 'muted',
-        },
-        {
-          label: 'Meta de empate',
-          value: calc.mEmp > 0 ? displayInt(calc.mEmp) : '—',
-          sub: '',
-          tone: calc.mEmp > 0 ? 'neutral' : 'muted',
-        },
-        {
+          id: 'profitGoal',
           label: 'Meta de lucro',
           value: calc.mLuc > 0 ? displayInt(calc.mLuc) : '—',
-          sub: '',
+          sub: calc.mLuc > 0 ? `${displayInt(selectedRow.weeklyGap)} para bater` : 'Sem meta configurada',
           tone: calc.mLuc > 0 ? 'neutral' : 'muted',
         },
         {
+          id: 'predictedContracts',
           label: 'Contratos previstos',
           value: calc.cp > 0 ? displayInt(calc.cp) : '0',
-          sub: '',
-          tone: calc.cp > 0 ? 'neutral' : 'muted',
-        },
-        {
-          label: 'CPL atual',
-          value: calc.cpl > 0 ? fmtMoney(calc.cpl) : '—',
-          sub: calc.mCpl > 0 ? fmtMoney(calc.mCpl) : '',
-          tone: calc.cpl > 0 ? 'neutral' : 'muted',
-        },
-        {
-          label: 'Leads previstos',
-          value: calc.lp > 0 ? displayInt(calc.lp) : '0',
-          sub: calc.mVol > 0 ? displayInt(calc.mVol) : '',
-          tone: calc.lp > 0 ? 'neutral' : 'muted',
-        },
-        {
-          label: 'Cliente - previsão',
-          value: prediction.value,
           sub: prediction.sub,
           tone: prediction.tone,
+        },
+        {
+          id: 'conversion',
+          label: 'Taxa de conversão',
+          value: calc.taxa > 0 ? displayPct(calc.taxa) : '—',
+          sub: calc.vol > 0 ? `${displayInt(calc.vol)} leads reais` : '',
+          tone: calc.taxa > 0 ? 'neutral' : 'muted',
+        },
+        {
+          id: 'cpl',
+          label: 'CPL atual',
+          value: calc.cpl > 0 ? fmtMoney(calc.cpl) : '—',
+          sub: goalComparison(calc.cpl, calc.mCpl, {
+            lowerIsBetter: true,
+            format: fmtMoney,
+          }),
+          tone: comparisonTone(calc.cpl, calc.mCpl, { lowerIsBetter: true }),
+        },
+        {
+          id: 'leads',
+          label: 'Leads previstos',
+          value: calc.lp > 0 ? displayInt(calc.lp) : '0',
+          sub: goalComparison(calc.lp, calc.mVol),
+          tone: comparisonTone(calc.lp, calc.mVol),
         },
       ];
     }
 
-    const prediction = buildPredictionCard(agg.hit, agg.total);
+    const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
+    const gap = agg.tLuc > 0 ? Math.max(agg.tLuc - agg.tF, 0) : 0;
 
     return [
       {
+        id: 'closed',
         label: 'Contratos fechados',
         value: displayInt(agg.tF),
-          sub: `S${week}`,
+        sub: `Semana ${week}`,
         tone: 'neutral',
       },
       {
-        label: 'Taxa de conversão',
-        value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
-          sub: '',
-        tone: agg.taxa > 0 ? 'neutral' : 'muted',
-      },
-      {
-        label: 'Meta de empate',
-        value: agg.tEmp > 0 ? displayInt(agg.tEmp) : '—',
-          sub: '',
-        tone: agg.tEmp > 0 ? 'neutral' : 'muted',
-      },
-      {
+        id: 'profitGoal',
         label: 'Meta de lucro',
         value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
-          sub: '',
+        sub: agg.tLuc > 0 ? `${displayInt(gap)} para bater` : 'Sem meta configurada',
         tone: agg.tLuc > 0 ? 'neutral' : 'muted',
       },
       {
+        id: 'predictedContracts',
         label: 'Contratos previstos',
         value: agg.tCp > 0 ? displayInt(agg.tCp) : '0',
-          sub: '',
-        tone: agg.tCp > 0 ? 'neutral' : 'muted',
-      },
-      {
-        label: 'CPL atual',
-        value: agg.cpl > 0 ? fmtMoney(agg.cpl) : '—',
-          sub: agg.avgMC > 0 ? fmtMoney(agg.avgMC) : '',
-        tone: agg.cpl > 0 ? 'neutral' : 'muted',
-      },
-      {
-        label: 'Leads previstos',
-        value: agg.tLp > 0 ? displayInt(agg.tLp) : '0',
-          sub: agg.tMV > 0 ? displayInt(agg.tMV) : '',
-        tone: agg.tLp > 0 ? 'neutral' : 'muted',
-      },
-      {
-        label: 'Carteira - previsão',
-        value: prediction.value,
         sub: prediction.sub,
         tone: prediction.tone,
       },
+      {
+        id: 'conversion',
+        label: 'Taxa de conversão',
+        value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
+        sub: agg.tVol > 0 ? `${displayInt(agg.tVol)} leads reais` : '',
+        tone: agg.taxa > 0 ? 'neutral' : 'muted',
+      },
+      {
+        id: 'cpl',
+        label: 'CPL atual',
+        value: agg.cpl > 0 ? fmtMoney(agg.cpl) : '—',
+        sub: goalComparison(agg.cpl, agg.avgMC, {
+          lowerIsBetter: true,
+          format: fmtMoney,
+        }),
+        tone: comparisonTone(agg.cpl, agg.avgMC, { lowerIsBetter: true }),
+      },
+      {
+        id: 'leads',
+        label: 'Leads previstos',
+        value: agg.tLp > 0 ? displayInt(agg.tLp) : '0',
+        sub: goalComparison(agg.tLp, agg.tMV),
+        tone: comparisonTone(agg.tLp, agg.tMV),
+      },
     ];
-  }, [agg, rows.length, selectedRow, week]);
+  }, [agg, selectedRow, week]);
 
   const prevMonth = useCallback(() => {
     setMonth0((value) => {
@@ -483,6 +672,7 @@ export default function GdvPage() {
         setYear((current) => current - 1);
         return 11;
       }
+
       return value - 1;
     });
   }, []);
@@ -493,6 +683,7 @@ export default function GdvPage() {
         setYear((current) => current + 1);
         return 0;
       }
+
       return value + 1;
     });
   }, []);
@@ -511,11 +702,10 @@ export default function GdvPage() {
           {logoUrl ? <img src={logoUrl} alt="" /> : <span>{gdvInitials(activeGdvName || gdvHeaderName)}</span>}
           {admin && activeGdvRecord?.id ? <em>{uploadingLogo ? '...' : 'Trocar'}</em> : null}
         </button>
+
         <div className={styles.headerTitleText}>
           <strong>{gdvHeaderName}</strong>
-          <small>
-            {activeGdvName || 'Carteira GDV'} · {gdvOwnership.active ? 'Ativo' : 'Desativado'}
-          </small>
+          <small>{gdvHeaderSubtitle}</small>
         </div>
       </div>
     );
@@ -552,6 +742,7 @@ export default function GdvPage() {
               <span>{selectedGdv || 'Todos os GDVs'}</span>
               <span aria-hidden="true">⌄</span>
             </button>
+
             {gdvMenuOpen ? (
               <div className={styles.gdvOptions} role="listbox" aria-label="Filtrar carteira por GDV">
                 <button
@@ -561,6 +752,7 @@ export default function GdvPage() {
                   className={`${styles.gdvOption} ${!selectedGdv ? styles.gdvOptionActive : ''}`.trim()}
                   onClick={() => {
                     setSelectedGdv('');
+                    setSelectedClientId(null);
                     setSearchParams((params) => {
                       const next = new URLSearchParams(params);
                       next.delete('gdv');
@@ -571,6 +763,7 @@ export default function GdvPage() {
                 >
                   Todos os GDVs
                 </button>
+
                 {gdvOptions.map((name) => (
                   <button
                     key={name}
@@ -580,6 +773,7 @@ export default function GdvPage() {
                     className={`${styles.gdvOption} ${selectedGdv === name ? styles.gdvOptionActive : ''}`.trim()}
                     onClick={() => {
                       setSelectedGdv(name);
+                      setSelectedClientId(null);
                       setSearchParams((params) => {
                         const next = new URLSearchParams(params);
                         next.set('gdv', name);
@@ -602,10 +796,12 @@ export default function GdvPage() {
             value={gdvOwnership.ownerId}
             onChange={async (event) => {
               if (!activeGdvRecord?.id) return;
+
               await updateGdv(activeGdvRecord.id, {
                 name: activeGdvRecord.name,
                 ownerUserId: event.target.value,
               });
+
               await refreshGdvs?.();
             }}
             placeholder="Proprietário GDV"
@@ -675,13 +871,13 @@ export default function GdvPage() {
     setPanelHeader({ title, actions });
   }, [
     activeGdvName,
-    activeGdvRecord?.id,
+    activeGdvRecord,
     admin,
     fetchingKey,
     gdvClients.length,
     gdvHeaderName,
+    gdvHeaderSubtitle,
     gdvMenuOpen,
-    gdvOwnership.active,
     gdvOptions,
     gdvOwnership.ownerId,
     handleRemoveLogo,
@@ -704,10 +900,7 @@ export default function GdvPage() {
   if (shellLoading && (!clients || clients.length === 0)) {
     return (
       <div className={styles.page}>
-        <StateBlock
-          variant="loading"
-          title="Carregando carteira GDV"
-        />
+        <StateBlock variant="loading" title="Carregando carteira GDV" />
       </div>
     );
   }
@@ -715,10 +908,7 @@ export default function GdvPage() {
   if (!gdvClients.length) {
     return (
       <div className={styles.page}>
-        <StateBlock
-          variant="empty"
-          title="Carteira vazia"
-        />
+        <StateBlock variant="empty" title="Carteira vazia" />
       </div>
     );
   }
@@ -733,157 +923,172 @@ export default function GdvPage() {
         onChange={handlePickLogo}
       />
 
-      <section className={styles.executiveGrid}>
+      {selectedRow && renderStickyResult ? (
+        <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
+          <span className={styles.clientAvatarMini}>{clientInitials(selectedRow.client.name)}</span>
+          <strong>{selectedRow.client.name}</strong>
+
+          <div className={styles.stickyMetric}>
+            <span>Fechados</span>
+            <b>{displayInt(selectedRow.calc.fec)}</b>
+          </div>
+
+          <div className={styles.stickyMetric}>
+            <span>Meta</span>
+            <b>{selectedRow.calc.mLuc > 0 ? displayInt(selectedRow.calc.mLuc) : '—'}</b>
+          </div>
+
+          <div className={styles.stickyMetric}>
+            <span>Gap</span>
+            <b>{selectedRow.calc.mLuc > 0 ? displayInt(selectedRow.weeklyGap) : '—'}</b>
+          </div>
+
+          <span className={`${styles.badge} ${toneClass(selectedRow.tone)}`.trim()}>
+            {selectedRow.statusText}
+          </span>
+
+          <button type="button" className={styles.clearSelectionMini} onClick={() => setSelectedClientId(null)}>
+            Limpar
+          </button>
+        </section>
+      ) : null}
+
+      <section ref={cardsRef} className={styles.metricGrid}>
         {topCards.map((item) => (
-          <div key={item.label} className={`${styles.card} ${styles.executiveCard}`}>
-            <span className={styles.executiveLabel}>{item.label}</span>
-            <strong className={`${styles.executiveValue} ${item.tone && styles[item.tone] ? styles[item.tone] : ''}`.trim()}>
+          <article key={item.id} className={styles.metricCard}>
+            <span className={styles.metricLabel}>{item.label}</span>
+            <strong className={`${styles.metricValue} ${toneClass(item.tone)}`.trim()}>
               {item.value}
             </strong>
-            <span className={styles.executiveSub}>{item.sub}</span>
-          </div>
+            <span className={`${styles.metricSub} ${toneClass(item.tone)}`.trim()}>
+              {item.sub}
+            </span>
+          </article>
         ))}
-        <div className={`${styles.card} ${styles.executiveCard}`}>
-          <span className={styles.executiveLabel}>Semana</span>
-          <strong className={`${styles.executiveValue} ${styles.amber}`}>S{week}</strong>
-          <span className={styles.executiveSub}>{MONTHS_FULL[month0]} {year}</span>
-        </div>
       </section>
 
-      <section className={`${styles.card} ${styles.clientPanel}`}>
-        <div className={styles.sectionHeader}>
-          <div>
-            <h3>Clientes da carteira</h3>
-          </div>
-          {selectedRow ? (
-            <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
-              Limpar seleção
-            </button>
-          ) : null}
+      <section className={styles.listToolbar}>
+        <div className={styles.listTitle}>
+          <span className={styles.cardEyebrow}>Clientes da carteira</span>
+          <span className={styles.listMeta}>{displayInt(visibleRows.length)} cliente(s)</span>
         </div>
 
-        <div className={styles.clientToolbar}>
-          <label className={styles.clientSearch}>
-            <span className={styles.clientSearchIcon} aria-hidden="true">
-              ⌕
-            </span>
-            <input
-              type="search"
-              value={clientQuery}
-              onChange={(event) => setClientQuery(event.target.value)}
-              placeholder="Buscar cliente, squad ou gestor..."
-            />
-          </label>
+        <label className={styles.searchBox}>
+          <SearchIcon size={15} aria-hidden="true" />
+          <input
+            type="search"
+            value={clientQuery}
+            onChange={(event) => setClientQuery(event.target.value)}
+            placeholder="Buscar cliente, squad ou gestor..."
+            aria-label="Buscar cliente da carteira GDV"
+          />
+        </label>
 
-          <div className={styles.clientToolbarMeta}>
-            <span>{displayInt(visibleRows.length)} cliente(s)</span>
-            {selectedRow ? <span>{selectedRow.client.name}</span> : null}
-          </div>
-        </div>
+        {selectedRow ? (
+          <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
+            Limpar seleção
+          </button>
+        ) : null}
+      </section>
 
+      <section className={styles.listCard}>
         {loadingMetrics ? (
-          <StateBlock
-            variant="loading"
-            compact
-            title="Carregando métricas"
-          />
+          <StateBlock variant="loading" compact title="Carregando métricas" />
         ) : fetchError ? (
-          <StateBlock
-            variant="error"
-            compact
-            title="Métricas indisponíveis"
-          />
+          <StateBlock variant="error" compact title="Métricas indisponíveis" />
         ) : visibleRows.length === 0 ? (
-          <StateBlock
-            variant="empty"
-            compact
-            title="Nenhum cliente encontrado"
-          />
+          <StateBlock variant="empty" compact title="Nenhum cliente encontrado" />
         ) : (
-          <div className={styles.clientList}>
-            {visibleRows.map((row) => {
-              const { client, calc, priority } = row;
-              const priClass =
-                priority.cls === 'pri-h'
-                  ? styles.high
-                  : priority.cls === 'pri-m'
-                  ? styles.mid
-                  : priority.cls === 'pri-l'
-                  ? styles.ok
-                  : styles.nd;
-              const gap = calc.mLuc > 0 ? Math.max(calc.mLuc - calc.fec, 0) : 0;
-              const squadName =
-                (squads || []).find((squad) => squad.id === client.squadId)?.name ||
-                client.squadName ||
-                'Sem squad';
-              const active = selectedClientId === client.id;
+          <>
+            <div className={styles.clientList}>
+              {pagedRows.map((row) => {
+                const { client, calc } = row;
+                const squadName =
+                  (squads || []).find((squad) => squad.id === client.squadId)?.name ||
+                  client.squadName ||
+                  'Sem squad';
 
-              return (
+                const active = selectedClientId === client.id;
+
+                return (
+                  <button
+                    key={client.id}
+                    type="button"
+                    className={`${styles.clientRow} ${active ? styles.clientRowActive : ''}`.trim()}
+                    onClick={() => setSelectedClientId(client.id)}
+                  >
+                    <div className={styles.clientMain}>
+                      <span className={styles.clientAvatarSmall}>{clientInitials(client.name)}</span>
+                      <div>
+                        <strong>{client.name}</strong>
+                        <span>
+                          {squadName}
+                          {client.gestor ? ` · ${client.gestor}` : ''}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={styles.clientStats}>
+                      <div>
+                        <span>Mensalidade</span>
+                        <strong>{fmtMoney(client.monthlyFee || client.mensalidade || client.fee || 0)}</strong>
+                      </div>
+                      <div>
+                        <span>Fechados</span>
+                        <strong>{displayInt(calc.fec)}</strong>
+                      </div>
+                      <div>
+                        <span>Meta</span>
+                        <strong>{calc.mLuc > 0 ? displayInt(calc.mLuc) : '—'}</strong>
+                      </div>
+                      <div>
+                        <span>Gap</span>
+                        <strong>{calc.mLuc > 0 ? displayInt(row.weeklyGap) : '—'}</strong>
+                      </div>
+                    </div>
+
+                    <div className={styles.clientStatus}>
+                      <span className={`${styles.badge} ${toneClass(row.tone)}`.trim()}>
+                        {row.statusText}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className={styles.pagination}>
+              <div className={styles.paginationInfo}>
+                Mostrando {pageStart}-{pageEnd} de {visibleRows.length}
+              </div>
+
+              <div className={styles.paginationControls}>
                 <button
-                  key={client.id}
                   type="button"
-                  className={`${styles.clientRowButton} ${active ? styles.clientRowButtonActive : ''}`.trim()}
-                  onClick={() => setSelectedClientId(client.id)}
+                  className={styles.paginationButton}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  disabled={page === 1}
                 >
-                  <span className={`${styles.clientPriorityBar} ${priClass}`} />
-
-                  <div className={styles.clientRowMain}>
-                    <div className={styles.clientRowName}>{client.name}</div>
-                    <div className={styles.clientRowMeta}>
-                      <span>{squadName}</span>
-                      {client.gestor ? <span>{client.gestor}</span> : null}
-                    </div>
-                  </div>
-
-                  <div className={styles.clientRowStats}>
-                    <div className={styles.clientMiniStat}>
-                      <span>Fechados</span>
-                      <strong>{displayInt(calc.fec)}</strong>
-                    </div>
-                    <div className={styles.clientMiniStat}>
-                      <span>Meta</span>
-                      <strong>{calc.mLuc > 0 ? displayInt(calc.mLuc) : '—'}</strong>
-                    </div>
-                    <div className={styles.clientMiniStat}>
-                      <span>Gap</span>
-                      <strong>{calc.mLuc > 0 ? displayInt(gap) : '—'}</strong>
-                    </div>
-                    <div className={styles.clientMiniStat}>
-                      <span>Taxa</span>
-                      <strong>{calc.taxa > 0 ? displayPct(calc.taxa) : '—'}</strong>
-                    </div>
-                  </div>
-
-                  <div className={styles.clientRowStatus}>
-                    <span className={`${styles.priBadge} ${priClass}`}>{priority.label}</span>
-                    {calc.hasData ? (
-                      calc.isHit ? (
-                        <span className={`${styles.statusPill} ${styles.hit}`}>Meta ok</span>
-                      ) : (
-                        <span className={`${styles.statusPill} ${styles.miss}`}>Em risco</span>
-                      )
-                    ) : (
-                      <span className={`${styles.statusPill} ${styles.empty}`}>Sem dados</span>
-                    )}
-                  </div>
+                  Anterior
                 </button>
-              );
-            })}
-          </div>
-        )}
 
-        <div className={styles.legend}>
-          <span className={styles.legendHigh} />
-          <span>Alta {breakdown.high}</span>
-          <span className={styles.legendMid} />
-          <span>Média {breakdown.mid}</span>
-          <span className={styles.legendOk} />
-          <span>Meta ok {breakdown.ok}</span>
-          <span className={styles.legendNd} />
-          <span>Sem dados {breakdown.empty}</span>
-        </div>
+                <span className={styles.paginationCurrent}>
+                  Página {page} de {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  className={styles.paginationButton}
+                  onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                  disabled={page === totalPages}
+                >
+                  Próxima
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </section>
     </div>
   );
 }
-
