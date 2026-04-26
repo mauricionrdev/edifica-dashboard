@@ -21,13 +21,12 @@ import {
   subscribeAvatarChange,
 } from '../../utils/avatarStorage.js';
 import {
-  BriefcaseIcon,
-  BuildingIcon,
-  CameraIcon,
+  ChartColumnIcon,
   CloseIcon,
   CoinsIcon,
   TargetIcon,
   TrashIcon,
+  UsersIcon,
 } from '../ui/Icons.jsx';
 import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
@@ -35,6 +34,7 @@ import OverviewTab from './OverviewTab.jsx';
 import ContractTab from './ContractTab.jsx';
 import AnalysisTab from './AnalysisTab.jsx';
 import FeeScheduleTab from './FeeScheduleTab.jsx';
+import ClientDetailsTab from './ClientDetailsTab.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import tabStyles from './ClientTabs.module.css';
 
@@ -44,6 +44,7 @@ const TABS = [
   { key: 'fees', label: 'Mensalidades' },
   { key: 'icp', label: 'Análise ICP' },
   { key: 'gdv', label: 'Análise GDV' },
+  { key: 'details', label: 'Detalhes' },
 ];
 
 export default function ClientDetailDrawer({
@@ -211,8 +212,8 @@ export default function ClientDetailDrawer({
 
   const headerFacts = useMemo(
     () => [
-      { label: 'Squad', value: client?.squadName || '-', icon: BuildingIcon },
-      { label: 'GDV', value: client?.gdvName || '-', icon: BriefcaseIcon },
+      { label: 'Squad', value: client?.squadName || '-', icon: UsersIcon },
+      { label: 'GDV', value: client?.gdvName || '-', icon: ChartColumnIcon },
       {
         label: 'Mensalidade',
         value: fmtMoney(resolveClientFeeAtDate(client)),
@@ -266,26 +267,14 @@ export default function ClientDetailDrawer({
           </div>
 
           <div className={drawerStyles.identity}>
-            <button
-              type="button"
-              className={`${drawerStyles.avatar} ${
-                canManageAvatar ? drawerStyles.avatarEditable : ''
-              }`.trim()}
+            <span
+              className={drawerStyles.avatar}
               style={{ background: avatarBg }}
-              onClick={() => canManageAvatar && avatarInputRef.current?.click()}
-              disabled={!canManageAvatar}
-              aria-label={
-                canManageAvatar ? 'Alterar foto do cliente' : `Avatar de ${client.name}`
-              }
+              aria-label={`Avatar de ${client.name}`}
               title={client.name}
             >
               {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
-              {canManageAvatar ? (
-                <span className={drawerStyles.avatarOverlay}>
-                  <CameraIcon size={14} />
-                </span>
-              ) : null}
-            </button>
+            </span>
 
             <div className={drawerStyles.identityText}>
               <div className={drawerStyles.nameRow}>
@@ -303,27 +292,6 @@ export default function ClientDetailDrawer({
                   {sl}
                 </span>
               </div>
-
-              {canManageAvatar && avatarUrl ? (
-                <div className={drawerStyles.avatarActions}>
-                  <button
-                    type="button"
-                    onClick={handleRemoveAvatar}
-                    aria-label="Remover foto"
-                    title="Remover foto"
-                  >
-                    <TrashIcon size={13} />
-                  </button>
-                </div>
-              ) : null}
-
-              <input
-                ref={avatarInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarFile}
-                hidden
-              />
             </div>
           </div>
         </div>
@@ -384,6 +352,18 @@ export default function ClientDetailDrawer({
 
             {activeTab === 'gdv' && (
               <AnalysisTab clientId={client.id} type="gdvanalise" canEdit={canEditClient} />
+            )}
+
+            {activeTab === 'details' && (
+              <ClientDetailsTab
+                client={client}
+                avatarUrl={avatarUrl}
+                avatarBg={avatarBg}
+                canManageAvatar={canManageAvatar}
+                avatarInputRef={avatarInputRef}
+                onAvatarFile={handleAvatarFile}
+                onRemoveAvatar={handleRemoveAvatar}
+              />
             )}
           </div>
         </div>
