@@ -39,10 +39,7 @@ import styles from './SquadPage.module.css';
 const PAGE_SIZE = 10;
 
 function squadInitials(name) {
-  const parts = String(name || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return 'SQ';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
@@ -117,12 +114,8 @@ function goalComparison(current, goal, { lowerIsBetter = false, format = display
     : currentValue >= goalValue;
 
   const status = lowerIsBetter
-    ? isGood
-      ? 'Abaixo da meta'
-      : 'Acima da meta'
-    : isGood
-      ? 'Acima da meta'
-      : 'Abaixo da meta';
+    ? isGood ? 'Abaixo da meta' : 'Acima da meta'
+    : isGood ? 'Acima da meta' : 'Abaixo da meta';
 
   return `Meta ${format(goalValue)} · ${status}`;
 }
@@ -155,38 +148,16 @@ function clientPriorityScore(row) {
 
   if (!goal) return 100;
   if (closed >= goal) return 0;
-  if (projected >= goal) {
-    return 3000 + gap * 20 + Math.max(0, 100 - progress);
-  }
+  if (projected >= goal) return 3000 + gap * 20 + Math.max(0, 100 - progress);
+
   return 6000 + forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
 }
 
 function initialsFromClient(name) {
-  const parts = String(name || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return 'CL';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-}
-
-function paginationItems(totalPages, currentPage) {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  const items = [1];
-  const start = Math.max(2, currentPage - 1);
-  const end = Math.min(totalPages - 1, currentPage + 1);
-
-  if (start > 2) items.push('left-ellipsis');
-  for (let value = start; value <= end; value += 1) items.push(value);
-  if (end < totalPages - 1) items.push('right-ellipsis');
-
-  items.push(totalPages);
-  return items;
 }
 
 export default function SquadPage() {
@@ -216,8 +187,8 @@ export default function SquadPage() {
   const [month0, setMonth0] = useState(now.getMonth());
   const [week, setWeek] = useState(() => currentWeek(now));
   const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
   const [selectedClientId, setSelectedClientId] = useState(null);
+  const [page, setPage] = useState(1);
   const [logoUrl, setLogoUrl] = useState(() => getSquadAvatar(squad));
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [ownershipTick, setOwnershipTick] = useState(0);
@@ -257,6 +228,7 @@ export default function SquadPage() {
 
     const clientIds = squadClients.map((client) => client.id).sort().join('|');
     const cached = metricsByKey[periodKey];
+
     if (Array.isArray(cached)) {
       const cachedIds = cached.map((entry) => entry.clientId).sort().join('|');
       if (cachedIds === clientIds) return;
@@ -269,11 +241,7 @@ export default function SquadPage() {
     Promise.all(
       squadClients.map((client) =>
         getMetric(client.id, periodKey)
-          .then((response) => ({
-            clientId: client.id,
-            metric: response?.metric || null,
-            err: null,
-          }))
+          .then((response) => ({ clientId: client.id, metric: response?.metric || null, err: null }))
           .catch((err) => ({ clientId: client.id, metric: null, err }))
       )
     )
@@ -290,6 +258,7 @@ export default function SquadPage() {
         const failures = results.filter(
           (result) => result.err && !(result.err instanceof ApiError && result.err.status === 404)
         );
+
         if (failures.length > 0 && failures.length === results.length) {
           setMetricsError(new Error('Falha ao carregar métricas operacionais do squad.'));
         }
@@ -299,12 +268,17 @@ export default function SquadPage() {
       });
   }, [metricsByKey, periodKey, squadClients]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [query, week, month0, year, squadId]);
+
   const handlePickLogo = async (event) => {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file || !squad) return;
 
     setUploadingLogo(true);
+
     try {
       const dataUrl = await readAvatarFile(file);
       await updateSquad(squad.id, {
@@ -325,6 +299,7 @@ export default function SquadPage() {
 
   const handleRemoveLogo = useCallback(async () => {
     if (!squad) return;
+
     try {
       await updateSquad(squad.id, {
         name: squad.name,
@@ -343,6 +318,7 @@ export default function SquadPage() {
   const handleOwnerChange = useCallback(
     async (event) => {
       if (!squad) return;
+
       try {
         await updateSquad(squad.id, {
           name: squad.name,
@@ -420,32 +396,24 @@ export default function SquadPage() {
       if (scoreDiff !== 0) return scoreDiff;
       return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
     });
+
     if (!normalized) return base;
     return base.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
   }, [clientRows, query]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   const pagedRows = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
+    const start = (page - 1) * PAGE_SIZE;
     return filteredRows.slice(start, start + PAGE_SIZE);
-  }, [currentPage, filteredRows]);
+  }, [filteredRows, page]);
 
-  const pageItems = useMemo(
-    () => paginationItems(totalPages, currentPage),
-    [currentPage, totalPages]
-  );
-
-  useEffect(() => {
-    setPage(1);
-  }, [periodKey, query, squadId]);
-
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
+  const pageStart = filteredRows.length ? (page - 1) * PAGE_SIZE + 1 : 0;
+  const pageEnd = filteredRows.length ? Math.min(page * PAGE_SIZE, filteredRows.length) : 0;
 
   const prevMonth = useCallback(() => {
     setMonth0((value) => {
@@ -480,9 +448,10 @@ export default function SquadPage() {
           aria-label={isAdmin ? 'Enviar logotipo do squad' : undefined}
           title={isAdmin ? 'Clique para trocar o logotipo' : squad.name}
         >
-          {logoUrl ? <img src={logoUrl} alt="" className={styles.headerLogoImage} /> : <span>{squadInitials(squad.name)}</span>}
+          {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(squad.name)}</span>}
           {isAdmin ? <em>{uploadingLogo ? '...' : 'Trocar'}</em> : null}
         </button>
+
         <div className={styles.headerTitleText}>
           <strong>{squad.name}</strong>
           <small>
@@ -759,7 +728,7 @@ export default function SquadPage() {
         onChange={handlePickLogo}
       />
 
-      <div className={styles.stickySummary}>
+      <section className={styles.topArea}>
         {selectedClient ? (
           <section className={styles.selectedStrip}>
             <span className={styles.clientAvatar}>{initialsFromClient(selectedClient.name)}</span>
@@ -791,26 +760,24 @@ export default function SquadPage() {
           ))}
         </section>
 
-        <div className={styles.listToolbarShell}>
-          <div className={styles.listToolbar}>
-            <div className={styles.listTitle}>
-              <span className={styles.cardEyebrow}>Clientes do squad</span>
-              <span className={styles.listMeta}>{displayInt(filteredRows.length)} cliente(s)</span>
-            </div>
-
-            <label className={styles.searchBox}>
-              <SearchIcon size={15} aria-hidden="true" />
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar cliente, gestor ou GDV..."
-                aria-label="Buscar cliente no squad"
-              />
-            </label>
+        <section className={styles.listToolbar}>
+          <div className={styles.listTitle}>
+            <span className={styles.cardEyebrow}>Clientes do squad</span>
+            <span className={styles.listMeta}>{displayInt(filteredRows.length)} cliente(s)</span>
           </div>
-        </div>
-      </div>
+
+          <label className={styles.searchBox}>
+            <SearchIcon size={15} aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar cliente, gestor ou GDV..."
+              aria-label="Buscar cliente no squad"
+            />
+          </label>
+        </section>
+      </section>
 
       <section className={styles.listCard}>
         {metricsError ? (
@@ -866,46 +833,35 @@ export default function SquadPage() {
               ))}
             </div>
 
-            {totalPages > 1 ? (
-              <div className={styles.pagination}>
+            <div className={styles.pagination}>
+              <div className={styles.paginationInfo}>
+                Mostrando {pageStart}-{pageEnd} de {filteredRows.length}
+              </div>
+
+              <div className={styles.paginationControls}>
                 <button
                   type="button"
                   className={styles.paginationButton}
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
-                  disabled={currentPage === 1}
+                  disabled={page === 1}
                 >
                   Anterior
                 </button>
 
-                <div className={styles.paginationNumbers}>
-                  {pageItems.map((item) =>
-                    typeof item === 'number' ? (
-                      <button
-                        key={item}
-                        type="button"
-                        className={`${styles.paginationPage} ${currentPage === item ? styles.paginationPageActive : ''}`.trim()}
-                        onClick={() => setPage(item)}
-                      >
-                        {item}
-                      </button>
-                    ) : (
-                      <span key={item} className={styles.paginationDots}>
-                        …
-                      </span>
-                    )
-                  )}
-                </div>
+                <span className={styles.paginationCurrent}>
+                  Página {page} de {totalPages}
+                </span>
 
                 <button
                   type="button"
                   className={styles.paginationButton}
                   onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                  disabled={currentPage === totalPages}
+                  disabled={page === totalPages}
                 >
                   Próxima
                 </button>
               </div>
-            ) : null}
+            </div>
           </>
         )}
       </section>
