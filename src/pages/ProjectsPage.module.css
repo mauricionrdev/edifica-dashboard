@@ -2113,3 +2113,465 @@
   cursor: progress;
   opacity: 0.55;
 }
+
+
+/* UX/UI Asana refinement — project list and task drawer */
+.page {
+  gap: 0;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 0;
+  min-height: calc(100vh - 76px);
+  border-top: 1px solid var(--line-subtle);
+}
+
+.sidebarPanel,
+.panel {
+  border-radius: 0;
+  border-top: 0;
+  border-bottom: 0;
+  background: #101112;
+}
+
+.sidebarPanel {
+  border-left: 0;
+  border-right: 1px solid var(--line-subtle);
+}
+
+.mainPanel {
+  border-left: 0;
+  border-right: 0;
+}
+
+.projectList {
+  padding: 8px;
+}
+
+.projectItem {
+  min-height: 44px;
+  border-radius: 8px;
+}
+
+.projectItemActive {
+  background: rgba(227, 200, 87, 0.1);
+  box-shadow: inset 2px 0 0 var(--accent-amber);
+}
+
+.detailHero {
+  min-height: 116px;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: #101112;
+}
+
+.heroMainRow {
+  align-items: center;
+}
+
+.projectTitleRow {
+  gap: 12px;
+}
+
+.projectHeading h1 {
+  font-size: 22px;
+  letter-spacing: -0.045em;
+}
+
+.projectMeta {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.projectStats {
+  gap: 18px;
+}
+
+.projectStat {
+  min-width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.toolbar {
+  min-height: 52px;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: #101112;
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.taskCreateForm {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(190px, 240px) minmax(160px, 220px) minmax(120px, 150px) auto;
+  gap: 8px;
+}
+
+.taskCreateForm input,
+.taskCreateForm select,
+.taskCreateForm button {
+  min-height: 36px;
+}
+
+.sectionList {
+  padding: 8px 24px 40px;
+}
+
+.section {
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+}
+
+.sectionHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 44px;
+  background: #101112;
+}
+
+.sectionToggle {
+  min-height: 44px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 24px 34px minmax(0, 1fr) 84px 120px auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.sectionTitle,
+.sectionTitleInput {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+}
+
+.sectionCount,
+.sectionDone {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 620;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task {
+  min-height: 42px;
+  padding: 0;
+  border-top: 1px solid var(--line-subtle);
+  display: grid;
+  grid-template-columns: 32px minmax(260px, 1fr) minmax(170px, 220px) minmax(128px, 160px) 72px;
+  gap: 10px;
+  align-items: center;
+  background: transparent;
+}
+
+.task:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.taskSelected,
+.task:focus-within {
+  background: rgba(227, 200, 87, 0.07);
+}
+
+.taskTitle {
+  font-size: 13px;
+  font-weight: 520;
+  color: var(--text-primary);
+}
+
+.taskAssignee,
+.inlineDate,
+.statusBadge {
+  min-height: 30px;
+}
+
+.inlineDate {
+  width: max-content;
+  max-width: 150px;
+  padding: 0 9px;
+  border-radius: 8px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.inlineDate:hover,
+.inlineDate:focus-visible {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.duePicker {
+  border-radius: 14px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.duePickerTop {
+  min-height: 54px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.duePickerAdd {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.duePickerMonth {
+  padding: 12px 14px 6px;
+}
+
+.duePickerGrid {
+  padding: 6px 14px;
+}
+
+.duePickerDay {
+  width: 34px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+.duePickerFooter {
+  min-height: 48px;
+  padding: 0 14px;
+  border-top: 1px solid var(--line-subtle);
+}
+
+.taskOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 520;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  background: rgba(6, 6, 6, 0.56);
+  backdrop-filter: blur(8px);
+}
+
+.taskModal {
+  width: min(760px, calc(100vw - 72px));
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 18px 0 0 18px;
+  background: #161718;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  animation: taskDrawerIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.taskModalHeader {
+  min-height: 64px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: #18191a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.taskModalHeader > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.taskModalHeader span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 590;
+}
+
+.taskModalHeader input {
+  width: min(560px, 100%);
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 760;
+  line-height: 1.15;
+  letter-spacing: -0.045em;
+  outline: none;
+}
+
+.taskModalBody {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px 24px 160px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+.taskFields {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 14px 22px;
+  align-items: center;
+  padding: 6px 0 18px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.taskField {
+  display: contents;
+}
+
+.taskField > span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.taskField > input,
+.taskField > select,
+.taskField > div,
+.taskField > button,
+.taskField .taskSelect {
+  min-width: 0;
+  width: min(340px, 100%);
+}
+
+.taskField .inlineDate {
+  width: min(340px, 100%);
+  max-width: 340px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.taskSection {
+  border: 0;
+  border-top: 1px solid var(--line-subtle);
+  border-radius: 0;
+  background: transparent;
+  padding: 20px 0 0;
+}
+
+.taskSection:first-of-type {
+  border-top: 0;
+}
+
+.taskSectionHeader h3 {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+}
+
+.taskDescription textarea,
+.commentForm textarea,
+.subtaskForm input {
+  border-radius: 10px;
+  background: #111214;
+}
+
+.commentForm {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin: 0 -24px -160px;
+  padding: 14px 24px 20px;
+  border-top: 1px solid var(--line-subtle);
+  background: #18191a;
+}
+
+.commentForm textarea {
+  min-height: 78px;
+}
+
+.commentList {
+  display: grid;
+  gap: 14px;
+}
+
+.commentItem {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.commentItem:last-child {
+  border-bottom: 0;
+}
+
+.priorityPill,
+.taskPriorityPill {
+  min-height: 24px;
+  width: max-content;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.03em;
+}
+
+@keyframes taskDrawerIn {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 1180px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebarPanel {
+    display: none;
+  }
+
+  .taskCreateForm {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .task {
+    grid-template-columns: 32px minmax(180px, 1fr) minmax(140px, 180px) minmax(120px, 140px);
+  }
+}
+
+@media (max-width: 780px) {
+  .taskModal {
+    width: 100vw;
+    border-radius: 0;
+  }
+
+  .taskFields {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .taskField {
+    display: grid;
+    gap: 6px;
+  }
+
+  .taskCreateForm {
+    grid-template-columns: 1fr;
+  }
+}

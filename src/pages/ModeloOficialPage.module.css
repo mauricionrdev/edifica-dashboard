@@ -523,3 +523,254 @@
   background: rgba(240, 68, 68, 0.12);
   color: #ff6b6b;
 }
+
+
+/* UX/UI Asana refinement — official model */
+.page {
+  padding: 0;
+  background: #101112;
+}
+
+.board {
+  border: 0;
+  border-radius: 0;
+  background: #101112;
+}
+
+.boardHeader {
+  min-height: 92px;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: #101112;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 20px;
+}
+
+.boardHeader h1 {
+  font-size: 22px;
+  font-weight: 780;
+  letter-spacing: -0.045em;
+}
+
+.boardHeader p {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.boardActions {
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionInput {
+  min-height: 36px;
+  width: 220px;
+}
+
+.addButton {
+  min-height: 36px;
+  border-radius: 9px;
+}
+
+.tableHeader {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  min-height: 42px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--line);
+  background: #101112;
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) 220px 120px 44px;
+  align-items: center;
+  gap: 12px;
+}
+
+.tableHeader span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 590;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.sectionList {
+  padding: 8px 24px 40px;
+}
+
+.section {
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+}
+
+.sectionRow {
+  min-height: 48px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: 24px 34px minmax(0, 1fr) 70px 36px;
+  gap: 10px;
+  align-items: center;
+}
+
+.sectionRow:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.sectionTitle {
+  height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 760;
+  letter-spacing: -0.025em;
+}
+
+.sectionTitle:focus {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  padding-inline: 8px;
+}
+
+.sectionCount {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 620;
+}
+
+.tasks {
+  display: grid;
+}
+
+.taskRow {
+  min-height: 42px;
+  padding: 0;
+  border-top: 1px solid var(--line-subtle);
+  display: grid;
+  grid-template-columns: 32px minmax(320px, 1fr) 220px 120px 44px;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+}
+
+.taskRow:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.taskCheck {
+  width: 18px;
+  height: 18px;
+  margin-left: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--text-quaternary);
+  background: transparent;
+}
+
+.taskMain {
+  min-width: 0;
+}
+
+.taskName {
+  height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 520;
+}
+
+.taskName:focus {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  padding-inline: 8px;
+}
+
+.assigneeCell {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+}
+
+.assigneeSelect {
+  --select-menu-min-width: 220px;
+}
+
+.noteButton {
+  min-height: 28px;
+  width: max-content;
+  padding: 0 10px;
+  border-radius: 999px;
+}
+
+.removeTask,
+.removeSection {
+  opacity: 0.55;
+}
+
+.taskRow:hover .removeTask,
+.sectionRow:hover .removeSection {
+  opacity: 1;
+}
+
+.addTaskRow {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 32px minmax(320px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line-subtle);
+}
+
+.addTaskRow input {
+  height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.addTaskRow input:focus {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  padding-inline: 8px;
+}
+
+.noteArea {
+  margin-top: 8px;
+  border-radius: 10px;
+  background: #111214;
+}
+
+.confirmOverlay {
+  z-index: 560;
+}
+
+@media (max-width: 980px) {
+  .boardHeader,
+  .tableHeader,
+  .taskRow,
+  .addTaskRow {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionList {
+    padding-inline: 14px;
+  }
+
+  .tableHeader {
+    display: none;
+  }
+}
