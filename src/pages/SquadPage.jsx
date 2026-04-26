@@ -56,28 +56,39 @@ function displayPct(value) {
   return numeric === 0 ? '0%' : fmtPct(numeric);
 }
 
-function statusTone(progress, hasGoal, status) {
-  if (status === 'churn') return 'red';
-  if (!hasGoal) return 'muted';
-  if (progress >= 100) return 'green';
-  if (progress >= 55) return 'amber';
-  return 'red';
-}
-
-function statusLabel(progress, hasGoal, status) {
-  if (status === 'churn') return 'Churn';
-  if (!hasGoal) return 'Sem meta';
-  if (progress >= 100) return 'Meta batida';
-  if (progress >= 55) return 'Em andamento';
-  return 'Crítico';
-}
-
 function toneClass(stylesMap, tone) {
   return tone && stylesMap[tone] ? stylesMap[tone] : '';
 }
 
-function predictionCard(hit, total) {
-  if (!total) {
+function effectiveForecast(closed, predicted) {
+  return Math.max(Number(closed) || 0, Number(predicted) || 0);
+}
+
+function statusTone(calc, status) {
+  if (status === 'churn') return 'red';
+  if (!calc?.mLuc) return 'muted';
+
+  const progress = (calc.fec / calc.mLuc) * 100;
+  if (calc.fec >= calc.mLuc) return 'green';
+  if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'amber';
+  if (progress >= 55) return 'amber';
+  return 'red';
+}
+
+function statusLabel(calc, status) {
+  if (status === 'churn') return 'Churn';
+  if (!calc?.mLuc) return 'Sem meta';
+  if (calc.fec >= calc.mLuc) return 'Meta batida';
+  if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'Vai bater';
+  if ((calc.fec / calc.mLuc) * 100 >= 55) return 'Em andamento';
+  return 'Crítico';
+}
+
+function predictionCard(closed, predicted, goal) {
+  const target = Number(goal) || 0;
+  const projected = effectiveForecast(closed, predicted);
+
+  if (!target) {
     return {
       value: '0/0',
       sub: 'Sem meta configurada',
@@ -85,9 +96,9 @@ function predictionCard(hit, total) {
     };
   }
 
-  const willHit = hit >= total;
+  const willHit = projected >= target;
   return {
-    value: `${displayInt(hit)}/${displayInt(total)}`,
+    value: `${displayInt(projected)}/${displayInt(target)}`,
     sub: willHit ? 'Vai bater a meta' : 'Não vai bater meta',
     tone: willHit ? 'green' : 'red',
   };
@@ -125,6 +136,30 @@ function comparisonTone(current, goal, { lowerIsBetter = false } = {}) {
     : currentValue >= goalValue;
 
   return isGood ? 'green' : 'red';
+}
+
+function clientPriorityScore(row) {
+  if (!row) return -1;
+  if (row.status === 'churn') return 100000;
+
+  const calc = row.calc || {};
+  const goal = Number(calc.mLuc) || 0;
+  const closed = Number(calc.fec) || 0;
+  const predicted = Number(calc.cp) || 0;
+  const projected = effectiveForecast(closed, predicted);
+  const gap = goal > 0 ? Math.max(goal - closed, 0) : 0;
+  const forecastGap = goal > 0 ? Math.max(goal - projected, 0) : 0;
+  const progress = goal > 0 ? (closed / goal) * 100 : 0;
+
+  if (!goal) return 100;
+
+  if (closed >= goal) return 0;
+
+  if (projected >= goal) {
+    return 3000 + gap * 20 + Math.max(0, 100 - progress);
+  }
+
+  return 6000 + forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
 }
 
 function initialsFromClient(name) {
@@ -316,27 +351,30 @@ export default function SquadPage() {
       const metricEntry = metricRows.find((row) => row.clientId === client.id);
       const metric = metricEntry?.metric || { data: {}, computed: {} };
       const calc = calcWeek(metric);
-
-      const weeklyProgress = calc.mLuc > 0 ? (calc.fec / calc.mLuc) * 100 : 0;
-      const weeklyGap = calc.mLuc > 0 ? Math.max(calc.mLuc - calc.fec, 0) : 0;
       const weeklyHasGoal = calc.mLuc > 0;
-      const tone = statusTone(weeklyProgress, weeklyHasGoal, client.status);
+      const weeklyProgress = weeklyHasGoal ? (calc.fec / calc.mLuc) * 100 : 0;
+      const weeklyGap = weeklyHasGoal ? Math.max(calc.mLuc - calc.fec, 0) : 0;
+      const forecastGap = weeklyHasGoal
+        ? Math.max(calc.mLuc - effectiveForecast(calc.fec, calc.cp), 0)
+        : 0;
+      const tone = statusTone(calc, client.status);
+      const statusText = statusLabel(calc, client.status);
 
-      return {
+      const row = {
         ...client,
         metric,
         calc,
         weeklyProgress,
         weeklyGap,
+        forecastGap,
         weeklyHasGoal,
         tone,
-        priorityScore:
-          client.status === 'churn'
-            ? 1000
-            : weeklyHasGoal
-              ? weeklyGap * 10 + Math.max(0, 100 - weeklyProgress)
-              : 800,
-        statusText: statusLabel(weeklyProgress, weeklyHasGoal, client.status),
+        statusText,
+      };
+
+      return {
+        ...row,
+        priorityScore: clientPriorityScore(row),
       };
     });
   }, [metricRows, squadClients]);
@@ -360,7 +398,11 @@ export default function SquadPage() {
 
   const filteredRows = useMemo(() => {
     const normalized = query.trim();
-    const base = [...clientRows].sort((a, b) => b.priorityScore - a.priorityScore);
+    const base = [...clientRows].sort((a, b) => {
+      const scoreDiff = b.priorityScore - a.priorityScore;
+      if (scoreDiff !== 0) return scoreDiff;
+      return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
+    });
     if (!normalized) return base;
     return base.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
   }, [clientRows, query]);
@@ -524,8 +566,9 @@ export default function SquadPage() {
   const topCards = useMemo(() => {
     if (selectedClient) {
       const prediction = predictionCard(
+        selectedClient.calc.fec,
         selectedClient.calc.cp,
-        selectedClient.calc.mLuc > 0 ? selectedClient.calc.mLuc : 0
+        selectedClient.calc.mLuc
       );
 
       return [
@@ -537,11 +580,14 @@ export default function SquadPage() {
           tone: 'neutral',
         },
         {
-          id: 'conversion',
-          label: 'Taxa de conversão',
-          value: selectedClient.calc.taxa > 0 ? displayPct(selectedClient.calc.taxa) : '—',
-          sub: '',
-          tone: selectedClient.calc.taxa > 0 ? 'neutral' : 'muted',
+          id: 'profitGoal',
+          label: 'Meta de lucro',
+          value: selectedClient.calc.mLuc > 0 ? displayInt(selectedClient.calc.mLuc) : '—',
+          sub:
+            selectedClient.calc.mLuc > 0
+              ? `${displayInt(selectedClient.weeklyGap)} para bater`
+              : 'Sem meta configurada',
+          tone: selectedClient.calc.mLuc > 0 ? 'neutral' : 'muted',
         },
         {
           id: 'predictedContracts',
@@ -549,6 +595,13 @@ export default function SquadPage() {
           value: selectedClient.calc.cp > 0 ? displayInt(selectedClient.calc.cp) : '0',
           sub: prediction.sub,
           tone: prediction.tone,
+        },
+        {
+          id: 'conversion',
+          label: 'Taxa de conversão',
+          value: selectedClient.calc.taxa > 0 ? displayPct(selectedClient.calc.taxa) : '—',
+          sub: selectedClient.calc.vol > 0 ? `${displayInt(selectedClient.calc.vol)} leads reais` : '',
+          tone: selectedClient.calc.taxa > 0 ? 'neutral' : 'muted',
         },
         {
           id: 'cpl',
@@ -572,7 +625,8 @@ export default function SquadPage() {
       ];
     }
 
-    const prediction = predictionCard(agg.hit, agg.total);
+    const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
+    const squadGap = agg.tLuc > 0 ? Math.max(agg.tLuc - agg.tF, 0) : 0;
 
     return [
       {
@@ -583,11 +637,11 @@ export default function SquadPage() {
         tone: 'neutral',
       },
       {
-        id: 'conversion',
-        label: 'Taxa de conversão',
-        value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
-        sub: '',
-        tone: agg.taxa > 0 ? 'neutral' : 'muted',
+        id: 'profitGoal',
+        label: 'Meta de lucro',
+        value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
+        sub: agg.tLuc > 0 ? `${displayInt(squadGap)} para bater` : 'Sem meta configurada',
+        tone: agg.tLuc > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'predictedContracts',
@@ -595,6 +649,13 @@ export default function SquadPage() {
         value: agg.tCp > 0 ? displayInt(agg.tCp) : '0',
         sub: prediction.sub,
         tone: prediction.tone,
+      },
+      {
+        id: 'conversion',
+        label: 'Taxa de conversão',
+        value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
+        sub: agg.tVol > 0 ? `${displayInt(agg.tVol)} leads reais` : '',
+        tone: agg.taxa > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'cpl',
@@ -740,6 +801,14 @@ export default function SquadPage() {
                   <div>
                     <span>Fechados</span>
                     <strong>{displayInt(row.calc.fec)}</strong>
+                  </div>
+                  <div>
+                    <span>Meta</span>
+                    <strong>{row.calc.mLuc > 0 ? displayInt(row.calc.mLuc) : '—'}</strong>
+                  </div>
+                  <div>
+                    <span>Gap</span>
+                    <strong>{row.calc.mLuc > 0 ? displayInt(row.weeklyGap) : '—'}</strong>
                   </div>
                 </div>
 
