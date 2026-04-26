@@ -3043,3 +3043,29 @@
     width: max-content;
   }
 }
+
+
+/* UserPicker/UserHoverCard integration */
+.userPickerInline {
+  width: min(240px, 100%);
+}
+
+.userPickerDrawer {
+  width: min(340px, 100%);
+}
+
+.taskMeta {
+  min-width: 0;
+  position: relative;
+  overflow: visible;
+}
+
+.task {
+  overflow: visible;
+}
+
+.section,
+.sections,
+.mainPanel {
+  overflow: visible;
+}

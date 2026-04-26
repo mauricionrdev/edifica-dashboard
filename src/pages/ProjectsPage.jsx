@@ -1423,66 +1423,30 @@ export default function ProjectsPage() {
                                   />
                                   <span className={styles.taskStatus}>{statusLabel(task.status)}</span>
                                 </div>
-                                <span className={styles.taskMeta}>
-                                  {assignee ? (
-                                    <span className={styles.assigneeHoverWrap}>
+                                <span className={styles.taskMeta} onClick={(event) => event.stopPropagation()}>
+                                  {canEditTasks ? (
+                                    <UserPicker
+                                      className={styles.userPickerInline}
+                                      users={Array.isArray(userDirectory) ? userDirectory : []}
+                                      value={task.assigneeUserId || ''}
+                                      disabled={inlineSavingTaskId === task.id}
+                                      onChange={(userId) => handleInlineTaskUpdate(task, { assigneeUserId: userId })}
+                                    />
+                                  ) : assignee ? (
+                                    <UserHoverCard user={assignee} placement="right">
                                       <span className={styles.taskAssignee}>
                                         <span className={styles.taskAssigneeAvatar}>
-                                        {assignee.avatarUrl ? (
-                                          <img src={assignee.avatarUrl} alt="" />
-                                        ) : (
-                                          initials(assignee.name)
-                                        )}
+                                          {assignee.avatarUrl ? <img src={assignee.avatarUrl} alt="" /> : initials(assignee.name)}
                                         </span>
                                         <span className={styles.taskAssigneeName}>{assignee.name}</span>
                                       </span>
-                                      <span className={styles.assigneeCard} role="tooltip">
-                                        <span className={styles.assigneeCardAvatar}>
-                                          {assignee.avatarUrl ? <img src={assignee.avatarUrl} alt="" /> : initials(assignee.name)}
-                                        </span>
-                                        <span className={styles.assigneeCardBody}>
-                                          <strong>{assignee.name}</strong>
-                                          {assignee.email ? <small>{assignee.email}</small> : null}
-                                          <small>{formatLocalTime()} horário local</small>
-                                        </span>
-                                        <span className={styles.assigneeCardDivider} />
-                                        <span className={styles.assigneeCardText}>
-                                          {assignee.projectCount !== null
-                                            ? `Colaborando com você em ${assignee.projectCount} projeto${assignee.projectCount === 1 ? '' : 's'}`
-                                            : 'Colaborando neste projeto'}
-                                        </span>
-                                        <span className={styles.assigneeCardActions}>
-                                          <button type="button" onClick={() => openTask(task)}>Abrir tarefa</button>
-                                          {assignee.id ? (
-                                            <button type="button" onClick={() => navigate(`/perfil/${encodeURIComponent(assignee.id)}`)}>
-                                              Ver perfil
-                                            </button>
-                                          ) : null}
-                                        </span>
-                                      </span>
-                                    </span>
+                                    </UserHoverCard>
                                   ) : (
                                     <span className={styles.taskAssigneeEmpty}>
                                       <span className={styles.taskAssigneeAvatar}>NA</span>
                                       <span>Sem responsável</span>
                                     </span>
                                   )}
-                                  {canEditTasks ? (
-                                    <Select
-                                      className={styles.inlineSelect}
-                                      value={task.assigneeUserId || ''}
-                                      disabled={inlineSavingTaskId === task.id}
-                                      menuMinWidth={220}
-                                      onClick={(event) => event.stopPropagation()}
-                                      onChange={(event) => handleInlineTaskUpdate(task, { assigneeUserId: event.target.value })}
-                                      aria-label="Alterar responsável"
-                                    >
-                                      <option value="">Sem responsável</option>
-                                      {(Array.isArray(userDirectory) ? userDirectory : []).map((entry) => (
-                                        <option key={entry.id} value={entry.id}>{entry.name}</option>
-                                      ))}
-                                    </Select>
-                                  ) : null}
                                 </span>
                                 <span
                                   className={`${styles.taskDue} ${
@@ -1900,17 +1864,13 @@ export default function ProjectsPage() {
 
                 <label className={styles.taskField}>
                   <span>Responsável</span>
-                  <Select
-                    className={styles.taskSelect}
+                  <UserPicker
+                    className={styles.userPickerDrawer}
+                    users={Array.isArray(userDirectory) ? userDirectory : []}
                     value={selectedTask.assigneeUserId || ''}
                     disabled={taskSaving || !canEditTasks}
-                    onChange={(event) => handleUpdateSelectedTask({ assigneeUserId: event.target.value })}
-                  >
-                    <option value="">Sem responsável</option>
-                    {(Array.isArray(userDirectory) ? userDirectory : []).map((entry) => (
-                      <option key={entry.id} value={entry.id}>{entry.name}</option>
-                    ))}
-                  </Select>
+                    onChange={(userId) => handleUpdateSelectedTask({ assigneeUserId: userId })}
+                  />
                 </label>
 
                 <label className={styles.taskField}>
