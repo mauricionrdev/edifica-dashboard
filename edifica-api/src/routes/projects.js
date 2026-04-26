@@ -41,7 +41,7 @@ function normalizeTemplateStatus(task = {}) {
 
 function addDaysIso(days = 0) {
   const number = Number(days);
-  if (!Number.isFinite(number) || number < 0) return '';
+  if (!Number.isFinite(number) || number <= 0) return '';
 
   const date = new Date();
   date.setHours(12, 0, 0, 0);
@@ -53,11 +53,10 @@ function addDaysIso(days = 0) {
 function resolveTemplateDueDate(task = {}) {
   if (task?.dueDate) return clean(task.dueDate);
 
-  if (task?.dueOffsetDays === '' || task?.dueOffsetDays === null || task?.dueOffsetDays === undefined) {
-    return '';
-  }
+  const offset = Number(task?.dueOffsetDays);
+  if (!Number.isFinite(offset) || offset <= 0) return '';
 
-  return addDaysIso(task.dueOffsetDays);
+  return addDaysIso(offset);
 }
 
 async function resolveUserIdByName(name, db = null) {

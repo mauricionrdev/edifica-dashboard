@@ -23,7 +23,7 @@ function normalizeTemplate(raw) {
       assignee: String(task?.assignee || ''),
       assigneeId: String(task?.assigneeId || ''),
       notes: String(task?.notes || ''),
-      dueOffsetDays: Number.isFinite(Number(task?.dueOffsetDays)) ? Number(task.dueOffsetDays) : '',
+      dueOffsetDays: Number(task?.dueOffsetDays) > 0 ? Number(task.dueOffsetDays) : '',
       showNote: Boolean(task?.showNote),
       subs: (task?.subs || []).map((sub) => ({ name: String(sub?.name || '') })),
     })),
@@ -38,9 +38,7 @@ function sectionsForApi(sections) {
       assignee: task.assignee || '',
       assigneeId: task.assigneeId || '',
       notes: task.notes || '',
-      dueOffsetDays: task.dueOffsetDays === '' || task.dueOffsetDays === null || task.dueOffsetDays === undefined
-        ? ''
-        : Number(task.dueOffsetDays),
+      dueOffsetDays: Number(task.dueOffsetDays) > 0 ? Number(task.dueOffsetDays) : '',
       ...(task.subs?.length ? { subs: task.subs.map((sub) => ({ name: sub.name })) } : {}),
     })),
   }));
@@ -60,17 +58,17 @@ function initials(name = '') {
 }
 
 function dueOffsetLabel(value) {
-  if (value === '' || value === null || value === undefined) return 'Sem prazo';
   const number = Number(value);
-  if (!Number.isFinite(number)) return 'Sem prazo';
-  if (number === 0) return 'D+0';
+  if (!Number.isFinite(number) || number <= 0) return 'Sem prazo';
   return `D+${number}`;
 }
 
 function normalizeDueOffsetInput(value) {
   const clean = String(value || '').replace(/[^0-9]/g, '');
   if (!clean) return '';
-  return Math.max(0, Math.min(365, Number(clean)));
+  const number = Number(clean);
+  if (!Number.isFinite(number) || number <= 0) return '';
+  return Math.min(365, number);
 }
 
 function SaveStatusPill({ status }) {
@@ -536,14 +534,35 @@ export default function ModeloOficialPage() {
                           ) : null}
                         </div>
 
-                        <div className={styles.dueOffsetCell}>
-                          <span className={styles.dueOffsetBadge}>{dueOffsetLabel(task.dueOffsetDays)}</span>
+                        <div className={styles.assigneeCell}>
+                          <span className={styles.avatar} aria-hidden="true">
+                            {renderAvatar(assignee, task.assignee)}
+                          </span>
+                          <Select
+                            className={styles.assigneeSelect}
+                            value={task.assigneeId || ''}
+                            disabled={!admin}
+                            menuMinWidth={220}
+                            onChange={(event) => setTaskAssignee(si, ti, event.target.value)}
+                            aria-label="Responsável padrão"
+                          >
+                            <option value="">Sem responsável</option>
+                            {directoryUsers.map((option) => (
+                              <option key={option.id} value={option.id}>
+                                {option.name}
+                              </option>
+                            ))}
+                          </Select>
+                        </div>
+
+                        <div className={styles.dueOffsetCell} title={dueOffsetLabel(task.dueOffsetDays)}>
+                          <span className={styles.dueOffsetPrefix}>D+</span>
                           <input
                             className={styles.dueOffsetInput}
                             value={task.dueOffsetDays}
                             disabled={!admin}
                             inputMode="numeric"
-                            placeholder="D+"
+                            placeholder="sem prazo"
                             onChange={(event) => setTaskDueOffset(si, ti, event.target.value)}
                             aria-label="Prazo relativo em dias"
                           />

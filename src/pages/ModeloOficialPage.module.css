@@ -888,3 +888,72 @@
     padding-left: 32px;
   }
 }
+
+
+/* HOTFIX Modelo Oficial prazo v10 — remover artefatos D+0/input duplicado */
+.tableHeader {
+  grid-template-columns: minmax(340px, 1fr) minmax(180px, 240px) 132px 120px 44px !important;
+}
+
+.taskRow {
+  grid-template-columns: 32px minmax(320px, 1fr) minmax(180px, 240px) 132px 120px 44px !important;
+}
+
+.dueOffsetCell {
+  width: max-content;
+  min-width: 96px;
+  max-width: 132px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  overflow: hidden;
+}
+
+.dueOffsetBadge {
+  display: none !important;
+}
+
+.dueOffsetPrefix {
+  height: 100%;
+  padding: 0 8px;
+  border-right: 1px solid var(--line-subtle);
+  color: var(--accent-amber);
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: 0.04em;
+}
+
+.dueOffsetInput {
+  width: 76px !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 680;
+  text-align: left;
+  padding: 0 8px;
+  outline: none;
+}
+
+.dueOffsetInput::placeholder {
+  color: var(--text-quaternary);
+  font-weight: 620;
+}
+
+.dueOffsetCell:focus-within {
+  border-color: rgba(245, 184, 0, 0.36);
+  background: rgba(245, 184, 0, 0.045);
+}
+
+.assigneeSelect {
+  --select-menu-min-width: 220px;
+}

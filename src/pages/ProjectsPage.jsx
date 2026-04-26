@@ -1472,6 +1472,7 @@ export default function ProjectsPage() {
                                       className={styles.inlineSelect}
                                       value={task.assigneeUserId || ''}
                                       disabled={inlineSavingTaskId === task.id}
+                                      menuMinWidth={220}
                                       onClick={(event) => event.stopPropagation()}
                                       onChange={(event) => handleInlineTaskUpdate(task, { assigneeUserId: event.target.value })}
                                       aria-label="Alterar responsável"
