@@ -917,3 +917,18 @@
     row-gap: 12px;
   }
 }
+
+
+/* GDV performance/loading refinements */
+.metricGridLoading .metricCard {
+  opacity: 0.82;
+}
+
+.metricCard {
+  max-height: 96px;
+}
+
+.listMeta + .listMeta {
+  background: rgba(45, 212, 191, 0.08);
+  color: #2dd4bf;
+}

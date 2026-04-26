@@ -27,6 +27,7 @@ import {
 import styles from './GdvPage.module.css';
 
 const PAGE_SIZE = 10;
+const METRIC_BATCH_SIZE = 8;
 
 function displayInt(value) {
   const numeric = Number(value) || 0;
@@ -205,6 +206,7 @@ export default function GdvPage() {
   const [fetchingKey, setFetchingKey] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const fetchGenRef = useRef(0);
+  const metricsRequestKeyRef = useRef('');
 
   const gdvOptions = useMemo(() => {
     const names = new Set(
@@ -276,56 +278,96 @@ export default function GdvPage() {
   }, [gdvMenuOpen]);
 
   useEffect(() => {
+    const requestKey = `${periodKey}::${gdvIdsKey}`;
+
     if (!gdvClients.length) {
+      metricsRequestKeyRef.current = requestKey;
       setMetricsByKey((prev) => ({ ...prev, [periodKey]: [] }));
-      return;
+      setFetchingKey(null);
+      return undefined;
     }
 
     const cached = metricsByKey[periodKey];
 
-    if (Array.isArray(cached)) {
-      const cachedIds = cached.map((entry) => entry.clientId).sort().join('|');
-      if (cachedIds === gdvIdsKey) return;
+    if (metricsRequestKeyRef.current === requestKey && Array.isArray(cached)) {
+      return undefined;
     }
 
+    if (Array.isArray(cached)) {
+      const cachedIds = cached.map((entry) => entry.clientId).sort().join('|');
+      if (cachedIds === gdvIdsKey) {
+        metricsRequestKeyRef.current = requestKey;
+        return undefined;
+      }
+    }
+
+    metricsRequestKeyRef.current = requestKey;
+
     const gen = ++fetchGenRef.current;
+    let cancelled = false;
 
     setFetchingKey(periodKey);
     setFetchError(null);
+    setMetricsByKey((prev) => ({ ...prev, [periodKey]: [] }));
 
-    Promise.all(
-      gdvClients.map((client) =>
-        getMetric(client.id, periodKey)
-          .then((response) => ({ clientId: client.id, metric: response?.metric || null, err: null }))
-          .catch((err) => ({ clientId: client.id, metric: null, err }))
-      )
-    )
-      .then((results) => {
-        if (fetchGenRef.current !== gen) return;
+    async function loadMetricsInBatches() {
+      const results = [];
 
-        const anyAuthErr = results.find(
-          (result) => result.err instanceof ApiError && result.err.status === 401
+      for (let index = 0; index < gdvClients.length; index += METRIC_BATCH_SIZE) {
+        if (cancelled || fetchGenRef.current !== gen) return;
+
+        const batch = gdvClients.slice(index, index + METRIC_BATCH_SIZE);
+
+        const batchResults = await Promise.all(
+          batch.map((client) =>
+            getMetric(client.id, periodKey)
+              .then((response) => ({ clientId: client.id, metric: response?.metric || null, err: null }))
+              .catch((err) => ({ clientId: client.id, metric: null, err }))
+          )
         );
 
-        if (anyAuthErr) return;
+        if (cancelled || fetchGenRef.current !== gen) return;
 
-        setMetricsByKey((prev) => ({ ...prev, [periodKey]: results }));
+        results.push(...batchResults);
 
-        const failures = results.filter(
-          (result) => result.err && !(result.err instanceof ApiError && result.err.status === 404)
-        );
+        setMetricsByKey((prev) => ({ ...prev, [periodKey]: [...results] }));
 
-        if (failures.length > 0 && failures.length === results.length) {
-          setFetchError(new Error('Falha ao carregar métricas da carteira.'));
-        }
-      })
-      .finally(() => {
-        if (fetchGenRef.current === gen) setFetchingKey(null);
-      });
-  }, [gdvClients, gdvIdsKey, metricsByKey, periodKey]);
+        await new Promise((resolve) => window.setTimeout(resolve, 0));
+      }
+
+      if (cancelled || fetchGenRef.current !== gen) return;
+
+      const anyAuthErr = results.find(
+        (result) => result.err instanceof ApiError && result.err.status === 401
+      );
+
+      if (anyAuthErr) return;
+
+      const failures = results.filter(
+        (result) => result.err && !(result.err instanceof ApiError && result.err.status === 404)
+      );
+
+      if (failures.length > 0 && failures.length === results.length) {
+        setFetchError(new Error('Falha ao carregar métricas da carteira.'));
+      }
+
+      setFetchingKey(null);
+    }
+
+    loadMetricsInBatches().catch((err) => {
+      if (cancelled || fetchGenRef.current !== gen) return;
+      setFetchError(err);
+      setFetchingKey(null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [gdvClients, gdvIdsKey, periodKey]);
 
   const currentResults = metricsByKey[periodKey] || [];
   const loadingMetrics = fetchingKey === periodKey && currentResults.length === 0;
+  const loadingMetricsPartial = fetchingKey === periodKey && currentResults.length > 0;
 
   const rows = useMemo(() => {
     return gdvClients.map((client) => {
@@ -953,7 +995,7 @@ export default function GdvPage() {
         </section>
       ) : null}
 
-      <section ref={cardsRef} className={styles.metricGrid}>
+      <section ref={cardsRef} className={`${styles.metricGrid} ${fetchingKey === periodKey ? styles.metricGridLoading : ""}`.trim()}>
         {topCards.map((item) => (
           <article key={item.id} className={styles.metricCard}>
             <span className={styles.metricLabel}>{item.label}</span>
@@ -971,6 +1013,9 @@ export default function GdvPage() {
         <div className={styles.listTitle}>
           <span className={styles.cardEyebrow}>Clientes da carteira</span>
           <span className={styles.listMeta}>{displayInt(visibleRows.length)} cliente(s)</span>
+          {loadingMetricsPartial ? (
+            <span className={styles.listMeta}>{displayInt(currentResults.length)}/{displayInt(gdvClients.length)} métricas</span>
+          ) : null}
         </div>
 
         <label className={styles.searchBox}>
