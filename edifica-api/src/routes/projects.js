@@ -39,6 +39,27 @@ function normalizeTemplateStatus(task = {}) {
   return ['todo', 'in_progress', 'done', 'canceled'].includes(status) ? status : 'todo';
 }
 
+function addDaysIso(days = 0) {
+  const number = Number(days);
+  if (!Number.isFinite(number) || number < 0) return '';
+
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + number);
+
+  return date.toISOString().slice(0, 10);
+}
+
+function resolveTemplateDueDate(task = {}) {
+  if (task?.dueDate) return clean(task.dueDate);
+
+  if (task?.dueOffsetDays === '' || task?.dueOffsetDays === null || task?.dueOffsetDays === undefined) {
+    return '';
+  }
+
+  return addDaysIso(task.dueOffsetDays);
+}
+
 async function resolveUserIdByName(name, db = null) {
   const label = clean(name);
   if (!label) return '';
@@ -93,7 +114,7 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
             status: normalizeTemplateStatus(task),
             priority: normalizePriority(task?.priority),
             assigneeUserId,
-            dueDate: task?.dueDate || '',
+            dueDate: resolveTemplateDueDate(task),
             position: taskIndex,
             source: 'modelo_oficial',
             sourceId: `${sectionIndex}:${taskIndex}`,
@@ -114,6 +135,7 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
               title: sub?.title || sub?.name,
               status: normalizeTemplateStatus(sub),
               assigneeUserId,
+              dueDate: resolveTemplateDueDate(sub) || resolveTemplateDueDate(task),
               position: subIndex,
               source: 'modelo_oficial_subtask',
               sourceId: `${sectionIndex}:${taskIndex}:${subIndex}`,

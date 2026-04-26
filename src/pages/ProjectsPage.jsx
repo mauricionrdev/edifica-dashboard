@@ -166,6 +166,12 @@ function statusLabel(status) {
   return 'Aberta';
 }
 
+function priorityLabel(priority) {
+  if (priority === 'high') return 'Alta';
+  if (priority === 'low') return 'Baixa';
+  return 'Média';
+}
+
 export default function ProjectsPage() {
   const navigate = useNavigate();
   const { setPanelHeader, userDirectory = [] } = useOutletContext();
@@ -181,6 +187,7 @@ export default function ProjectsPage() {
 
   const [memberSaving, setMemberSaving] = useState(false);
   const [memberRemovingId, setMemberRemovingId] = useState('');
+  const [memberRemoveTarget, setMemberRemoveTarget] = useState(null);
   const [projectMemberUserId, setProjectMemberUserId] = useState('');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -1596,6 +1603,54 @@ export default function ProjectsPage() {
         </div>
       ) : null}
 
+      {memberRemoveTarget ? (
+        <div className={styles.confirmOverlay} onClick={() => !memberRemovingId && setMemberRemoveTarget(null)}>
+          <section
+            className={styles.confirmModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirmar remoção de membro"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className={styles.confirmHeader}>
+              <h2>Remover membro</h2>
+              <button
+                type="button"
+                onClick={() => setMemberRemoveTarget(null)}
+                disabled={Boolean(memberRemovingId)}
+                aria-label="Fechar confirmação"
+              >
+                ×
+              </button>
+            </header>
+            <div className={styles.confirmBody}>
+              <p>
+                Você está prestes a remover <strong>{memberRemoveTarget.userName}</strong> deste projeto.
+              </p>
+              <p>As tarefas atribuídas a essa pessoa não serão excluídas.</p>
+            </div>
+            <footer className={styles.confirmFooter}>
+              <button
+                type="button"
+                className={styles.confirmCancel}
+                onClick={() => setMemberRemoveTarget(null)}
+                disabled={Boolean(memberRemovingId)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={styles.confirmDelete}
+                onClick={confirmRemoveMember}
+                disabled={Boolean(memberRemovingId)}
+              >
+                {memberRemovingId ? 'Removendo...' : 'Remover membro'}
+              </button>
+            </footer>
+          </section>
+        </div>
+      ) : null}
+
       {sectionDeleteTarget ? (
         <div className={styles.confirmOverlay} onClick={() => !sectionDeletingId && setSectionDeleteTarget(null)}>
           <section
@@ -1825,16 +1880,21 @@ export default function ProjectsPage() {
 
                 <label className={styles.taskField}>
                   <span>Prioridade</span>
-                  <Select
-                    className={styles.taskSelect}
-                    value={selectedTask.priority || 'medium'}
-                    disabled={taskSaving || !canEditTasks}
-                    onChange={(event) => handleUpdateSelectedTask({ priority: event.target.value })}
-                  >
-                    <option value="low">Baixa</option>
-                    <option value="medium">Média</option>
-                    <option value="high">Alta</option>
-                  </Select>
+                  <div className={styles.priorityField}>
+                    <Select
+                      className={styles.taskSelect}
+                      value={selectedTask.priority || 'medium'}
+                      disabled={taskSaving || !canEditTasks}
+                      onChange={(event) => handleUpdateSelectedTask({ priority: event.target.value })}
+                    >
+                      <option value="low">Baixa</option>
+                      <option value="medium">Média</option>
+                      <option value="high">Alta</option>
+                    </Select>
+                    <span className={`${styles.priorityPill} ${styles[`priority_${selectedTask.priority || 'medium'}`] || ''}`.trim()}>
+                      {priorityLabel(selectedTask.priority)}
+                    </span>
+                  </div>
                 </label>
 
                 <label className={styles.taskField}>

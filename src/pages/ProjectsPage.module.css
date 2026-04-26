@@ -2969,3 +2969,77 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* Asana cleanup v8 — member modal and priority field */
+.priorityField {
+  width: min(420px, 100%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.priorityField .taskSelect {
+  flex: 0 1 240px;
+}
+
+.priorityPill {
+  min-height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.priority_low {
+  color: var(--text-secondary);
+  border-color: rgba(138, 143, 152, 0.28);
+  background: rgba(138, 143, 152, 0.08);
+}
+
+.priority_medium {
+  color: var(--accent-amber);
+  border-color: rgba(245, 184, 0, 0.26);
+  background: rgba(245, 184, 0, 0.08);
+}
+
+.priority_high {
+  color: #ff8a8a;
+  border-color: rgba(255, 94, 94, 0.28);
+  background: rgba(255, 94, 94, 0.1);
+}
+
+.taskModal {
+  border-radius: 0 !important;
+}
+
+.taskModalHeader {
+  border-radius: 0 !important;
+}
+
+.confirmOverlay {
+  z-index: 620;
+}
+
+@media (max-width: 720px) {
+  .priorityField {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .priorityField .taskSelect {
+    flex-basis: auto;
+  }
+
+  .priorityPill {
+    width: max-content;
+  }
+}
