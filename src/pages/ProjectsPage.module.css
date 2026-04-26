@@ -3999,3 +3999,156 @@
   min-width: 0 !important;
   max-width: none !important;
 }
+
+
+/* PATCH v25 — altura e rolagem real do drawer em notebook */
+.taskOverlay {
+  overflow: hidden !important;
+}
+
+.taskModal {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  overflow: hidden !important;
+}
+
+.taskModalHeader {
+  min-height: auto !important;
+  max-height: none !important;
+  padding: 18px 22px 16px !important;
+  overflow: hidden !important;
+}
+
+.taskModalHeader input {
+  font-size: clamp(19px, 1.25vw, 24px) !important;
+  line-height: 1.1 !important;
+}
+
+.taskModalMeta {
+  margin-top: 10px !important;
+}
+
+.taskModalGrid {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: hidden !important;
+  align-items: stretch !important;
+}
+
+.taskModalMain {
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  padding: 22px 24px 28px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: none !important;
+}
+
+.taskModalMain::-webkit-scrollbar {
+  display: none !important;
+}
+
+.taskAside {
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  padding: 18px 20px 34px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: none !important;
+}
+
+.taskAside::-webkit-scrollbar {
+  display: none !important;
+}
+
+.taskSection {
+  gap: 10px !important;
+}
+
+.taskField {
+  gap: 7px !important;
+}
+
+.taskField textarea {
+  min-height: 150px !important;
+}
+
+.subtaskItem,
+.comment,
+.collaboratorItem {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+.commentForm {
+  position: static !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-top: 0 !important;
+  background: transparent !important;
+  grid-template-columns: minmax(0, 1fr) 82px !important;
+}
+
+.commentForm textarea {
+  min-height: 68px !important;
+}
+
+.collaborators {
+  padding-top: 16px !important;
+  margin-bottom: 22px !important;
+}
+
+.collaboratorForm {
+  position: relative !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  overflow: visible !important;
+}
+
+.collaboratorForm button {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Em notebook, mantém o drawer lateral mas libera rolagem vertical independente. */
+@media (max-height: 820px) {
+  .taskModalHeader {
+    padding-top: 14px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .taskModalMain {
+    padding-top: 18px !important;
+  }
+
+  .taskAside {
+    padding-top: 16px !important;
+  }
+
+  .taskField textarea {
+    min-height: 128px !important;
+  }
+
+  .taskModalMeta small {
+    min-height: 22px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .taskModalGrid {
+    overflow-y: auto !important;
+  }
+
+  .taskModalMain,
+  .taskAside {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}

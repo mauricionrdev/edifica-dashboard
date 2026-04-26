@@ -261,3 +261,38 @@
   width: 100%;
   min-width: 0;
 }
+
+
+/* PATCH v25 — picker em drawer entra no fluxo para não ser cortado */
+.root[data-variant='drawer'][data-open='true'] {
+  z-index: 20;
+}
+
+.root[data-variant='drawer'] .popover {
+  position: static !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin-top: 8px !important;
+  box-shadow: none !important;
+}
+
+.root[data-variant='drawer'] .list {
+  max-height: min(260px, 34dvh) !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+}
+
+.root[data-variant='drawer'] .list::-webkit-scrollbar {
+  display: none !important;
+}
+
+.root[data-variant='drawer'] .option {
+  min-width: 0 !important;
+}
+
+.root[data-variant='drawer'] .optionMain strong,
+.root[data-variant='drawer'] .optionMain small {
+  max-width: 100% !important;
+}
