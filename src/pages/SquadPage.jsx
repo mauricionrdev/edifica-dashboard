@@ -36,6 +36,8 @@ import {
 import { matchesAnySearch } from '../utils/search.js';
 import styles from './SquadPage.module.css';
 
+const PAGE_SIZE = 10;
+
 function squadInitials(name) {
   const parts = String(name || '')
     .trim()
@@ -152,13 +154,10 @@ function clientPriorityScore(row) {
   const progress = goal > 0 ? (closed / goal) * 100 : 0;
 
   if (!goal) return 100;
-
   if (closed >= goal) return 0;
-
   if (projected >= goal) {
     return 3000 + gap * 20 + Math.max(0, 100 - progress);
   }
-
   return 6000 + forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
 }
 
@@ -171,6 +170,23 @@ function initialsFromClient(name) {
   if (!parts.length) return 'CL';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function paginationItems(totalPages, currentPage) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const items = [1];
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  if (start > 2) items.push('left-ellipsis');
+  for (let value = start; value <= end; value += 1) items.push(value);
+  if (end < totalPages - 1) items.push('right-ellipsis');
+
+  items.push(totalPages);
+  return items;
 }
 
 export default function SquadPage() {
@@ -200,6 +216,7 @@ export default function SquadPage() {
   const [month0, setMonth0] = useState(now.getMonth());
   const [week, setWeek] = useState(() => currentWeek(now));
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
   const [selectedClientId, setSelectedClientId] = useState(null);
   const [logoUrl, setLogoUrl] = useState(() => getSquadAvatar(squad));
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -407,6 +424,29 @@ export default function SquadPage() {
     return base.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
   }, [clientRows, query]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+
+  const pagedRows = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredRows.slice(start, start + PAGE_SIZE);
+  }, [currentPage, filteredRows]);
+
+  const pageItems = useMemo(
+    () => paginationItems(totalPages, currentPage),
+    [currentPage, totalPages]
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [periodKey, query, squadId]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
   const prevMonth = useCallback(() => {
     setMonth0((value) => {
       if (value === 0) {
@@ -440,7 +480,7 @@ export default function SquadPage() {
           aria-label={isAdmin ? 'Enviar logotipo do squad' : undefined}
           title={isAdmin ? 'Clique para trocar o logotipo' : squad.name}
         >
-          {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(squad.name)}</span>}
+          {logoUrl ? <img src={logoUrl} alt="" className={styles.headerLogoImage} /> : <span>{squadInitials(squad.name)}</span>}
           {isAdmin ? <em>{uploadingLogo ? '...' : 'Trocar'}</em> : null}
         </button>
         <div className={styles.headerTitleText}>
@@ -719,107 +759,154 @@ export default function SquadPage() {
         onChange={handlePickLogo}
       />
 
-      {selectedClient ? (
-        <section className={styles.selectedStrip}>
-          <span className={styles.clientAvatar}>{initialsFromClient(selectedClient.name)}</span>
-          <div className={styles.selectedText}>
-            <span>Cliente em análise</span>
-            <strong>{selectedClient.name}</strong>
-          </div>
-          <div className={styles.selectedMeta}>
-            <span>{selectedClient.gdvName || 'Sem GDV'}</span>
-            <span>{selectedClient.gestor || 'Sem gestor'}</span>
-          </div>
-          <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
-            Limpar seleção
-          </button>
-        </section>
-      ) : null}
+      <div className={styles.stickySummary}>
+        {selectedClient ? (
+          <section className={styles.selectedStrip}>
+            <span className={styles.clientAvatar}>{initialsFromClient(selectedClient.name)}</span>
+            <div className={styles.selectedText}>
+              <span>Cliente em análise</span>
+              <strong>{selectedClient.name}</strong>
+            </div>
+            <div className={styles.selectedMeta}>
+              <span>{selectedClient.gdvName || 'Sem GDV'}</span>
+              <span>{selectedClient.gestor || 'Sem gestor'}</span>
+            </div>
+            <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
+              Limpar seleção
+            </button>
+          </section>
+        ) : null}
 
-      <section className={styles.metricGrid}>
-        {topCards.map((card) => (
-          <article key={card.id} className={styles.metricCard}>
-            <span className={styles.metricLabel}>{card.label}</span>
-            <strong className={`${styles.metricValue} ${toneClass(styles, card.tone)}`.trim()}>
-              {card.value}
-            </strong>
-            <span className={`${styles.metricSub} ${toneClass(styles, card.tone)}`.trim()}>
-              {card.sub}
-            </span>
-          </article>
-        ))}
-      </section>
+        <section className={styles.metricGrid}>
+          {topCards.map((card) => (
+            <article key={card.id} className={styles.metricCard}>
+              <span className={styles.metricLabel}>{card.label}</span>
+              <strong className={`${styles.metricValue} ${toneClass(styles, card.tone)}`.trim()}>
+                {card.value}
+              </strong>
+              <span className={`${styles.metricSub} ${toneClass(styles, card.tone)}`.trim()}>
+                {card.sub}
+              </span>
+            </article>
+          ))}
+        </section>
+
+        <div className={styles.listToolbarShell}>
+          <div className={styles.listToolbar}>
+            <div className={styles.listTitle}>
+              <span className={styles.cardEyebrow}>Clientes do squad</span>
+              <span className={styles.listMeta}>{displayInt(filteredRows.length)} cliente(s)</span>
+            </div>
+
+            <label className={styles.searchBox}>
+              <SearchIcon size={15} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar cliente, gestor ou GDV..."
+                aria-label="Buscar cliente no squad"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
 
       <section className={styles.listCard}>
-        <div className={styles.listToolbar}>
-          <div className={styles.listTitle}>
-            <span className={styles.cardEyebrow}>Clientes do squad</span>
-            <span className={styles.listMeta}>{displayInt(filteredRows.length)} cliente(s)</span>
-          </div>
-
-          <label className={styles.searchBox}>
-            <SearchIcon size={15} aria-hidden="true" />
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar cliente, gestor ou GDV..."
-              aria-label="Buscar cliente no squad"
-            />
-          </label>
-        </div>
-
         {metricsError ? (
           <StateBlock variant="warning" compact title="Métricas indisponíveis" />
         ) : filteredRows.length === 0 ? (
           <StateBlock variant="empty" compact title="Nenhum cliente encontrado" />
         ) : (
-          <div className={styles.clientList}>
-            {filteredRows.map((row) => (
-              <button
-                key={row.id}
-                type="button"
-                className={`${styles.clientRow} ${selectedClientId === row.id ? styles.clientRowActive : ''}`.trim()}
-                onClick={() => setSelectedClientId(row.id)}
-              >
-                <div className={styles.clientMain}>
-                  <span className={styles.clientAvatarSmall}>{initialsFromClient(row.name)}</span>
-                  <div>
-                    <strong>{row.name}</strong>
-                    <span>
-                      {row.gestor || 'Sem gestor'}
-                      {row.gdvName ? ` · ${row.gdvName}` : ''}
+          <>
+            <div className={styles.clientList}>
+              {pagedRows.map((row) => (
+                <button
+                  key={row.id}
+                  type="button"
+                  className={`${styles.clientRow} ${selectedClientId === row.id ? styles.clientRowActive : ''}`.trim()}
+                  onClick={() => setSelectedClientId(row.id)}
+                >
+                  <div className={styles.clientMain}>
+                    <span className={styles.clientAvatarSmall}>{initialsFromClient(row.name)}</span>
+                    <div>
+                      <strong>{row.name}</strong>
+                      <span>
+                        {row.gestor || 'Sem gestor'}
+                        {row.gdvName ? ` · ${row.gdvName}` : ''}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.clientStats}>
+                    <div>
+                      <span>Mensalidade</span>
+                      <strong>{fmtMoney(resolveClientFeeAtMonthEnd(row, year, month0))}</strong>
+                    </div>
+                    <div>
+                      <span>Fechados</span>
+                      <strong>{displayInt(row.calc.fec)}</strong>
+                    </div>
+                    <div>
+                      <span>Meta</span>
+                      <strong>{row.calc.mLuc > 0 ? displayInt(row.calc.mLuc) : '—'}</strong>
+                    </div>
+                    <div>
+                      <span>Gap</span>
+                      <strong>{row.calc.mLuc > 0 ? displayInt(row.weeklyGap) : '—'}</strong>
+                    </div>
+                  </div>
+
+                  <div className={styles.clientStatus}>
+                    <span className={`${styles.badge} ${toneClass(styles, row.tone)}`.trim()}>
+                      {row.statusText}
                     </span>
                   </div>
+                </button>
+              ))}
+            </div>
+
+            {totalPages > 1 ? (
+              <div className={styles.pagination}>
+                <button
+                  type="button"
+                  className={styles.paginationButton}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </button>
+
+                <div className={styles.paginationNumbers}>
+                  {pageItems.map((item) =>
+                    typeof item === 'number' ? (
+                      <button
+                        key={item}
+                        type="button"
+                        className={`${styles.paginationPage} ${currentPage === item ? styles.paginationPageActive : ''}`.trim()}
+                        onClick={() => setPage(item)}
+                      >
+                        {item}
+                      </button>
+                    ) : (
+                      <span key={item} className={styles.paginationDots}>
+                        …
+                      </span>
+                    )
+                  )}
                 </div>
 
-                <div className={styles.clientStats}>
-                  <div>
-                    <span>Mensalidade</span>
-                    <strong>{fmtMoney(resolveClientFeeAtMonthEnd(row, year, month0))}</strong>
-                  </div>
-                  <div>
-                    <span>Fechados</span>
-                    <strong>{displayInt(row.calc.fec)}</strong>
-                  </div>
-                  <div>
-                    <span>Meta</span>
-                    <strong>{row.calc.mLuc > 0 ? displayInt(row.calc.mLuc) : '—'}</strong>
-                  </div>
-                  <div>
-                    <span>Gap</span>
-                    <strong>{row.calc.mLuc > 0 ? displayInt(row.weeklyGap) : '—'}</strong>
-                  </div>
-                </div>
-
-                <div className={styles.clientStatus}>
-                  <span className={`${styles.badge} ${toneClass(styles, row.tone)}`.trim()}>
-                    {row.statusText}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
+                <button
+                  type="button"
+                  className={styles.paginationButton}
+                  onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Próxima
+                </button>
+              </div>
+            ) : null}
+          </>
         )}
       </section>
     </div>
