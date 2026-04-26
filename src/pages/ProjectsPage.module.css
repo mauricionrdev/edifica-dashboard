@@ -3944,3 +3944,58 @@
     min-width: 0 !important;
   }
 }
+
+/* PATCH v24 — estabilização final do drawer */
+.taskModalHeader {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+}
+
+.taskModalHeader .taskModalActions {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  margin-left: 0 !important;
+  padding-left: 12px !important;
+  max-width: none !important;
+  min-width: max-content !important;
+}
+
+.taskModalHeader .taskCompleteButton,
+.taskModalHeader .taskHeaderDeleteButton {
+  width: auto !important;
+  min-width: 108px !important;
+  max-width: none !important;
+  height: 38px !important;
+  padding: 0 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+.taskModalHeader .taskCloseButton {
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  height: 38px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+.taskAside .collaboratorForm {
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+
+.taskAside .collaboratorForm .userPickerDrawer,
+.taskAside .collaboratorForm button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}

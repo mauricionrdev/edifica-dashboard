@@ -244,3 +244,20 @@
 .root[data-variant='drawer'] .option {
   min-height: 48px;
 }
+
+/* PATCH v24 — ajuste de largura do picker em drawer */
+.root[data-variant='drawer'] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.root[data-variant='drawer'] .trigger {
+  width: 100%;
+  min-width: 0;
+}
+
+.root[data-variant='drawer'] .popover {
+  width: 100%;
+  min-width: 0;
+}
