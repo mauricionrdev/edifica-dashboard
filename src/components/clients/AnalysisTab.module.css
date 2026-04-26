@@ -126,21 +126,6 @@
   cursor: not-allowed;
 }
 
-.empty {
-  padding: 26px 0 4px;
-  text-align: left;
-  color: var(--text-tertiary);
-  font-size: 13px;
-  line-height: 1.55;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.empty b {
-  color: var(--text-primary);
-}
-
 .entry {
   border-top: 1px solid var(--line-subtle);
   border-radius: 0;
@@ -159,8 +144,6 @@
   align-items: center;
   gap: 14px;
   padding: 11px 0 10px;
-  background: transparent;
-  border-bottom: 0;
 }
 
 .dateControl {
@@ -190,24 +173,28 @@
   text-transform: uppercase;
 }
 
-.dateInput {
-  width: 126px;
+.dateField {
+  width: 134px;
+}
+
+.dateField button {
   height: 28px;
   padding: 0;
   border: 0;
-  border-radius: 0;
   background: transparent;
-  color: var(--analysis-accent);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 590;
-  outline: none;
-  font-variant-numeric: tabular-nums;
 }
 
-.dateInput::-webkit-calendar-picker-indicator {
-  opacity: 0.82;
-  cursor: pointer;
+.dateField button:hover,
+.dateField button[aria-expanded='true'] {
+  border-color: transparent;
+  background: transparent;
+}
+
+.dateField button span {
+  color: var(--analysis-accent);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  text-transform: none;
 }
 
 .entryAuthor {
@@ -224,7 +211,6 @@
   height: 26px;
   padding: 0;
   border: 0;
-  border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
   font-family: inherit;
@@ -234,7 +220,6 @@
 
 .delBtn:hover:not(:disabled) {
   color: var(--danger);
-  background: transparent;
 }
 
 .delBtn:disabled {
@@ -275,13 +260,6 @@
 
 .savingHint.pending {
   color: var(--analysis-accent);
-}
-
-.loading {
-  padding: 26px 0 4px;
-  text-align: left;
-  color: var(--text-tertiary);
-  font-size: 13px;
 }
 
 @media (max-width: 920px) {

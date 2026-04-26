@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   createAnalysis,
   deleteAnalysis,
@@ -7,6 +7,7 @@ import {
 } from '../../api/analyses.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
+import DateField from '../ui/DateField.jsx';
 import StateBlock from '../ui/StateBlock.jsx';
 import styles from './AnalysisTab.module.css';
 
@@ -54,7 +55,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const titleClass = type === 'icp' ? styles.icp : styles.gdv;
 
   useEffect(() => {
-    if (!clientId) return;
+    if (!clientId) return undefined;
     const fetchId = ++fetchIdRef.current;
     setLoading(true);
 
@@ -65,8 +66,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       })
       .catch((error) => {
         if (fetchIdRef.current !== fetchId) return;
-        const message =
-          error instanceof ApiError ? error.message : 'Erro ao carregar análises.';
+        const message = error instanceof ApiError ? error.message : 'Erro ao carregar análises.';
         showToast(message, { variant: 'error' });
       })
       .finally(() => {
@@ -104,12 +104,9 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         text: '',
       });
       const entry = response?.analysis;
-      if (entry) {
-        setEntries((previous) => [entry, ...previous]);
-      }
+      if (entry) setEntries((previous) => [entry, ...previous]);
     } catch (error) {
-      const message =
-        error instanceof ApiError ? error.message : 'Erro ao criar análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao criar análise.';
       showToast(message, { variant: 'error' });
     } finally {
       setCreating(false);
@@ -122,12 +119,9 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     try {
       const response = await updateAnalysis(clientId, type, id, patch);
       const fresh = response?.analysis;
-      if (fresh) {
-        setEntries((previous) => previous.map((entry) => (entry.id === id ? fresh : entry)));
-      }
+      if (fresh) setEntries((previous) => previous.map((entry) => (entry.id === id ? fresh : entry)));
     } catch (error) {
-      const message =
-        error instanceof ApiError ? error.message : 'Erro ao salvar análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao salvar análise.';
       showToast(message, { variant: 'error' });
     } finally {
       markSaving(id, false);
@@ -160,9 +154,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   }
 
   async function handleDelete(id) {
-    const confirmed = window.confirm(
-      'Remover esta análise? Esta ação não pode ser desfeita.'
-    );
+    const confirmed = window.confirm('Remover esta análise? Esta ação não pode ser desfeita.');
     if (!confirmed) return;
 
     const previous = entries;
@@ -172,8 +164,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       showToast('Análise removida.');
     } catch (error) {
       setEntries(previous);
-      const message =
-        error instanceof ApiError ? error.message : 'Erro ao remover análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao remover análise.';
       showToast(message, { variant: 'error' });
     }
   }
@@ -238,12 +229,12 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               <div className={styles.entryHdr}>
                 <label className={styles.dateControl}>
                   <span>Data</span>
-                  <input
-                    type="date"
-                    className={styles.dateInput}
+                  <DateField
                     value={entry.date || ''}
+                    onChange={(value) => onDateChange(entry.id, value)}
                     disabled={!canEdit}
-                    onChange={(event) => onDateChange(entry.id, event.target.value)}
+                    ariaLabel="Data da análise"
+                    className={styles.dateField}
                   />
                 </label>
 
@@ -266,11 +257,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 onChange={(event) => onTextChange(entry.id, event.target.value)}
               />
               {(isPending || isSaving) && (
-                <div
-                  className={`${styles.savingHint} ${
-                    isPending && !isSaving ? styles.pending : ''
-                  }`.trim()}
-                >
+                <div className={`${styles.savingHint} ${isPending && !isSaving ? styles.pending : ''}`.trim()}>
                   {isSaving ? 'Salvando…' : 'Alterações pendentes…'}
                 </div>
               )}

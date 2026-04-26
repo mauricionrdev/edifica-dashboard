@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons.jsx';
 import styles from './DateField.module.css';
 
@@ -33,11 +34,7 @@ function parseISO(value) {
   const [year, month, day] = clean.split('-').map(Number);
   if (!year || !month || !day) return null;
   const date = new Date(year, month - 1, day);
-  if (
-    date.getFullYear() !== year
-    || date.getMonth() !== month - 1
-    || date.getDate() !== day
-  ) {
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
     return null;
   }
   return date;
@@ -59,6 +56,30 @@ function monthMatrix(year, month) {
   });
 }
 
+function computePosition(anchor) {
+  if (!anchor || typeof window === 'undefined') return { top: 0, left: 0 };
+  const rect = anchor.getBoundingClientRect();
+  const width = 252;
+  const gap = 6;
+  const margin = 10;
+
+  let left = rect.left;
+  let top = rect.bottom + gap;
+
+  if (left + width + margin > window.innerWidth) {
+    left = Math.max(margin, window.innerWidth - width - margin);
+  }
+
+  if (top + 324 > window.innerHeight && rect.top > 324) {
+    top = Math.max(margin, rect.top - 324 - gap);
+  }
+
+  return {
+    top: Math.round(top),
+    left: Math.round(Math.max(margin, left)),
+  };
+}
+
 export default function DateField({
   id,
   value = '',
@@ -76,17 +97,38 @@ export default function DateField({
 
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState(() => selectedDate || today);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const rootRef = useRef(null);
+  const popoverRef = useRef(null);
 
   useEffect(() => {
     if (selectedDate) setCursor(selectedDate);
   }, [selectedDate]);
 
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+
+    const updatePosition = () => {
+      setPosition(computePosition(rootRef.current));
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open) return undefined;
 
     const handlePointerDown = (event) => {
-      if (rootRef.current && !rootRef.current.contains(event.target)) setOpen(false);
+      const target = event.target;
+      if (rootRef.current?.contains(target) || popoverRef.current?.contains(target)) return;
+      setOpen(false);
     };
 
     const handleKeyDown = (event) => {
@@ -103,7 +145,6 @@ export default function DateField({
   }, [open]);
 
   const days = useMemo(() => monthMatrix(cursor.getFullYear(), cursor.getMonth()), [cursor]);
-
   const label = `${MONTHS[cursor.getMonth()]} de ${cursor.getFullYear()}`;
   const display = formatBR(value);
 
@@ -120,6 +161,64 @@ export default function DateField({
     onChange?.('');
     setOpen(false);
   }
+
+  const popover = open ? (
+    <div
+      ref={popoverRef}
+      className={styles.popover}
+      style={{ top: position.top, left: position.left }}
+      role="dialog"
+      aria-label="Selecionar data"
+    >
+      <div className={styles.popoverHeader}>
+        <strong>{label}</strong>
+        <div className={styles.monthActions}>
+          <button type="button" onClick={() => changeMonth(-1)} aria-label="Mês anterior">
+            <ChevronLeftIcon size={15} />
+          </button>
+          <button type="button" onClick={() => changeMonth(1)} aria-label="Próximo mês">
+            <ChevronRightIcon size={15} />
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.weekdays}>
+        {WEEKDAYS.map((weekday, index) => (
+          <span key={`${weekday}-${index}`}>{weekday}</span>
+        ))}
+      </div>
+
+      <div className={styles.days}>
+        {days.map((day) => {
+          const iso = toISO(day);
+          const isOutside = day.getMonth() !== cursor.getMonth();
+          const isSelected = value === iso;
+          const isToday = toISO(today) === iso;
+
+          return (
+            <button
+              key={iso}
+              type="button"
+              className={[
+                styles.day,
+                isOutside ? styles.dayOutside : '',
+                isSelected ? styles.daySelected : '',
+                isToday ? styles.dayToday : '',
+              ].filter(Boolean).join(' ')}
+              onClick={() => commit(day)}
+            >
+              {day.getDate()}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className={styles.footer}>
+        <button type="button" onClick={clearValue}>Limpar</button>
+        <button type="button" onClick={() => commit(today)}>Hoje</button>
+      </div>
+    </div>
+  ) : null;
 
   return (
     <div ref={rootRef} className={`${styles.root} ${className}`.trim()}>
@@ -139,57 +238,7 @@ export default function DateField({
         <CalendarIcon size={14} />
       </button>
 
-      {open ? (
-        <div className={styles.popover} role="dialog" aria-label="Selecionar data">
-          <div className={styles.popoverHeader}>
-            <strong>{label}</strong>
-            <div className={styles.monthActions}>
-              <button type="button" onClick={() => changeMonth(-1)} aria-label="Mês anterior">
-                <ChevronLeftIcon size={15} />
-              </button>
-              <button type="button" onClick={() => changeMonth(1)} aria-label="Próximo mês">
-                <ChevronRightIcon size={15} />
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.weekdays}>
-            {WEEKDAYS.map((weekday, index) => (
-              <span key={`${weekday}-${index}`}>{weekday}</span>
-            ))}
-          </div>
-
-          <div className={styles.days}>
-            {days.map((day) => {
-              const iso = toISO(day);
-              const isOutside = day.getMonth() !== cursor.getMonth();
-              const isSelected = value === iso;
-              const isToday = toISO(today) === iso;
-
-              return (
-                <button
-                  key={iso}
-                  type="button"
-                  className={[
-                    styles.day,
-                    isOutside ? styles.dayOutside : '',
-                    isSelected ? styles.daySelected : '',
-                    isToday ? styles.dayToday : '',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => commit(day)}
-                >
-                  {day.getDate()}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className={styles.footer}>
-            <button type="button" onClick={clearValue}>Limpar</button>
-            <button type="button" onClick={() => commit(today)}>Hoje</button>
-          </div>
-        </div>
-      ) : null}
+      {typeof document !== 'undefined' && popover ? createPortal(popover, document.body) : null}
     </div>
   );
 }
