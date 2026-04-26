@@ -260,18 +260,13 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
           {canEdit ? (
             <button
               type="button"
-              className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.iconAction}`.trim()}
+              className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.actionButton}`.trim()}
               onClick={handleAdd}
-              aria-label="Adicionar fase"
-              title="Adicionar fase"
             >
               <PlusIcon size={14} />
+              <span>Adicionar fase</span>
             </button>
           ) : null}
-        </div>
-
-        <div className={styles.contractRule}>
-          <span>As fases seguem exatamente a vigência do contrato.</span>
         </div>
 
         <div className={styles.rows}>
@@ -355,20 +350,19 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
           ))}
         </div>
 
-        <div className={styles.footer}>
-          {canEdit ? (
+        {canEdit ? (
+          <div className={styles.footer}>
             <button
               type="button"
-              className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.iconAction}`.trim()}
+              className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.actionButton}`.trim()}
               onClick={handleSave}
               disabled={saving}
-              aria-label={saving ? 'Salvando' : 'Salvar mensalidades'}
-              title={saving ? 'Salvando' : 'Salvar mensalidades'}
             >
               <SaveIcon size={14} />
+              <span>{saving ? 'Salvando' : 'Salvar alterações'}</span>
             </button>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

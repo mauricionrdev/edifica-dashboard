@@ -177,42 +177,37 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     <div className={styles.panel}>
       <div className={styles.hero}>
         <div className={styles.heroMain}>
-          <span className={`${styles.heroBadge} ${titleClass}`.trim()}>{title}</span>
-          <div className={styles.heroMeta}>
-            <div className={styles.heroMetric}>
-              <strong>{entries.length}</strong>
-              <span>registros</span>
-            </div>
-            <div className={styles.heroMetric}>
-              <strong>{entries[0]?.date || '—'}</strong>
-              <span>última data</span>
-            </div>
-            <div className={styles.heroMetric}>
-              <strong>
-                {entries.filter((entry) => String(entry.text || '').trim()).length}
-              </strong>
-              <span>com conteúdo</span>
-            </div>
+          <div className={styles.heroTitleBlock}>
+            <span className={`${styles.heroBadge} ${titleClass}`.trim()}>{title}</span>
+            <h3 className={`${styles.title} ${titleClass}`}>{title}</h3>
           </div>
+          <button
+            type="button"
+            className={styles.addBtn}
+            style={{ background: accentBg, color: accentFg }}
+            onClick={handleCreate}
+            disabled={creating || !canEdit}
+          >
+            {creating ? 'Criando…' : '+ Nova análise'}
+          </button>
         </div>
-      </div>
 
-      <div className={styles.header}>
-        <div>
-          <h3 className={`${styles.title} ${titleClass}`}>{title}</h3>
-          <div className={styles.sub}>
-            Registro cronológico com data, contexto e leitura estratégica
+        <div className={styles.heroMeta}>
+          <div className={styles.heroMetric}>
+            <strong>{entries.length}</strong>
+            <span>Registros</span>
+          </div>
+          <div className={styles.heroMetric}>
+            <strong>{entries[0]?.date || '—'}</strong>
+            <span>Última data</span>
+          </div>
+          <div className={styles.heroMetric}>
+            <strong>
+              {entries.filter((entry) => String(entry.text || '').trim()).length}
+            </strong>
+            <span>Com conteúdo</span>
           </div>
         </div>
-        <button
-          type="button"
-          className={styles.addBtn}
-          style={{ background: accentBg, color: accentFg }}
-          onClick={handleCreate}
-          disabled={creating || !canEdit}
-        >
-          {creating ? 'Criando…' : '+ Nova análise'}
-        </button>
       </div>
 
       {entries.length === 0 ? (
@@ -244,7 +239,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                   onClick={() => handleDelete(entry.id)}
                   disabled={!canEdit}
                 >
-                  ✕ Remover
+                  Remover
                 </button>
               </div>
               <textarea

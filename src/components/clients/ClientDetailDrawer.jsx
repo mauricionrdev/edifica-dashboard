@@ -245,26 +245,24 @@ export default function ClientDetailDrawer({
       >
         <div className={drawerStyles.header}>
           <div className={drawerStyles.topbar}>
-            <div className={drawerStyles.topbarActions}>
-              {canViewProject && (clientProject?.id || canCreateProject) ? (
-                <button
-                  type="button"
-                  className={drawerStyles.projectBtn}
-                  onClick={handleProjectAction}
-                  disabled={projectLoading || projectActionBusy}
-                >
-                  {projectLoading ? 'Projeto' : clientProject?.id ? 'Abrir projeto' : 'Criar projeto'}
-                </button>
-              ) : null}
+            {canViewProject && (clientProject?.id || canCreateProject) ? (
               <button
                 type="button"
-                className={drawerStyles.iconBtn}
-                onClick={onClose}
-                aria-label="Fechar detalhes"
+                className={drawerStyles.projectBtn}
+                onClick={handleProjectAction}
+                disabled={projectLoading || projectActionBusy}
               >
-                <CloseIcon size={16} />
+                {projectLoading ? 'Projeto' : clientProject?.id ? 'Abrir projeto' : 'Criar projeto'}
               </button>
-            </div>
+            ) : null}
+            <button
+              type="button"
+              className={drawerStyles.iconBtn}
+              onClick={onClose}
+              aria-label="Fechar detalhes"
+            >
+              <CloseIcon size={16} />
+            </button>
           </div>
 
           <div className={drawerStyles.identity}>
@@ -279,7 +277,7 @@ export default function ClientDetailDrawer({
               aria-label={
                 canManageAvatar ? 'Alterar foto do cliente' : `Avatar de ${client.name}`
               }
-              title={canManageAvatar ? 'Clique para alterar a foto' : client.name}
+              title={client.name}
             >
               {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
               {canManageAvatar ? (
@@ -330,62 +328,64 @@ export default function ClientDetailDrawer({
           </div>
         </div>
 
-        <div className={tabStyles.tabsBar} role="tablist">
-          {visibleTabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab.key}
-              className={`${tabStyles.tab} ${
-                activeTab === tab.key ? tabStyles.tabActive : ''
-              }`.trim()}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
+        <div className={drawerStyles.contentShell}>
+          <aside className={tabStyles.tabsBar} role="tablist" aria-label="Detalhes do cliente">
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                className={`${tabStyles.tab} ${
+                  activeTab === tab.key ? tabStyles.tabActive : ''
+                }`.trim()}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </aside>
 
-        <div className={tabStyles.tabBody}>
-          {activeTab === 'overview' && (
-            <OverviewTab
-              client={client}
-              squads={squads}
-              users={users}
-              headerFacts={headerFacts}
-              canEdit={canEditClient}
-              canDelete={admin}
-              onUpdated={onUpdated}
-              onDeleted={onDeleted}
-            />
-          )}
+          <div className={tabStyles.tabBody}>
+            {activeTab === 'overview' && (
+              <OverviewTab
+                client={client}
+                squads={squads}
+                users={users}
+                headerFacts={headerFacts}
+                canEdit={canEditClient}
+                canDelete={admin}
+                onUpdated={onUpdated}
+                onDeleted={onDeleted}
+              />
+            )}
 
-          {activeTab === 'contract' && (
-            <ContractTab
-              client={client}
-              squads={squads}
-              users={users}
-              canEdit={canEditClient}
-              onUpdated={onUpdated}
-            />
-          )}
+            {activeTab === 'contract' && (
+              <ContractTab
+                client={client}
+                squads={squads}
+                users={users}
+                canEdit={canEditClient}
+                onUpdated={onUpdated}
+              />
+            )}
 
-          {activeTab === 'fees' && canViewFeeSchedule ? (
-            <FeeScheduleTab
-              client={client}
-              canEdit={canEditFeeSchedule}
-              onUpdated={onUpdated}
-            />
-          ) : null}
+            {activeTab === 'fees' && canViewFeeSchedule ? (
+              <FeeScheduleTab
+                client={client}
+                canEdit={canEditFeeSchedule}
+                onUpdated={onUpdated}
+              />
+            ) : null}
 
-          {activeTab === 'icp' && (
-            <AnalysisTab clientId={client.id} type="icp" canEdit={canEditClient} />
-          )}
+            {activeTab === 'icp' && (
+              <AnalysisTab clientId={client.id} type="icp" canEdit={canEditClient} />
+            )}
 
-          {activeTab === 'gdv' && (
-            <AnalysisTab clientId={client.id} type="gdvanalise" canEdit={canEditClient} />
-          )}
+            {activeTab === 'gdv' && (
+              <AnalysisTab clientId={client.id} type="gdvanalise" canEdit={canEditClient} />
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -394,4 +394,3 @@ export default function ClientDetailDrawer({
   if (typeof document === 'undefined') return null;
   return createPortal(node, document.body);
 }
-

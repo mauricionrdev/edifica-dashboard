@@ -1,79 +1,85 @@
 .tabsBar {
-  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 10px;
+  border-right: 1px solid var(--line-subtle);
+  background: #0f1011;
   display: flex;
-  gap: 5px;
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--line-subtle);
-  background: var(--surface);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.tabsBar::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
 }
 
 .tab {
   position: relative;
-  min-height: 28px;
-  padding: 0 9px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 11px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-tertiary);
   font-family: var(--font-sans);
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 510;
   letter-spacing: -0.01em;
   cursor: pointer;
   white-space: nowrap;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 7px;
-  transition: color 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.tab::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 2px;
+  height: 18px;
+  border-radius: 999px;
+  background: transparent;
 }
 
 .tab:hover {
-  color: var(--text-primary);
-  background: var(--surface-raised);
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .tabActive {
   color: var(--text-primary);
-  border-color: var(--accent-amber-line);
-  background: var(--accent-amber-soft);
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--line-subtle);
+}
+
+.tabActive::before {
+  background: var(--accent-amber);
 }
 
 .tabCount {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 16px;
+  min-width: 20px;
+  height: 18px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.06);
   font-size: 10px;
-  font-weight: 510;
-}
-
-.tabActive .tabCount {
-  background: rgba(245, 184, 0, 0.12);
-  color: var(--accent-amber);
+  font-weight: 590;
 }
 
 .saveStatus {
   margin-left: auto;
-  min-height: 28px;
-  padding: 0 9px;
+  min-height: 30px;
+  padding: 0 10px;
   border: 1px solid transparent;
   border-radius: 999px;
-  background: transparent;
-  color: var(--text-quaternary);
+  background: rgba(255, 255, 255, 0.02);
   font-size: 10px;
-  font-weight: 510;
+  font-weight: 590;
+  color: var(--text-quaternary);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -87,58 +93,74 @@
 
 .saveStatus.saved {
   color: var(--success);
-  border-color: rgba(39, 166, 68, 0.22);
-  background: var(--success-soft);
+  border-color: rgba(39, 166, 68, 0.24);
+  background: rgba(39, 166, 68, 0.08);
 }
 
 .saveStatus.error {
   color: var(--danger);
-  border-color: rgba(239, 68, 68, 0.22);
-  background: var(--danger-soft);
+  border-color: rgba(239, 68, 68, 0.24);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .saveStatus.pending {
-  color: var(--warning);
-  border-color: rgba(245, 184, 0, 0.24);
-  background: var(--warning-soft);
+  color: var(--accent-amber);
+  border-color: var(--accent-amber-line);
+  background: var(--accent-amber-soft);
 }
 
 .saveDot {
   width: 6px;
   height: 6px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: currentColor;
 }
 
 .tabBody {
-  flex: 1;
+  min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 14px;
-  background: var(--bg-app);
-  scrollbar-width: none;
-}
-
-.tabBody::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  padding: 22px 26px 28px;
+  background: #08090a;
 }
 
 .emptyState,
 .loadingState {
-  padding: 28px 12px;
+  padding: 40px 16px;
+  text-align: center;
   color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.55;
-  text-align: left;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 920px) {
+  .tabsBar {
+    min-height: 48px;
+    padding: 8px 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-subtle);
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .tab {
+    width: auto;
+    min-height: 32px;
+    padding: 0 12px;
+  }
+
+  .tab::before {
+    left: 12px;
+    top: auto;
+    bottom: 3px;
+    width: calc(100% - 24px);
+    height: 2px;
+  }
 }
 
 @media (max-width: 720px) {
-  .tabsBar {
-    padding: 8px 12px;
-  }
-
   .tabBody {
-    padding: 12px;
+    padding: 18px 16px 22px;
   }
 }

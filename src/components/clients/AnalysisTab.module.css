@@ -1,112 +1,132 @@
 .panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  gap: 18px;
 }
 
 .hero {
-  padding: 0 0 14px;
+  padding: 0 0 20px;
   border-bottom: 1px solid var(--line-subtle);
-  background: transparent;
+  display: grid;
+  gap: 16px;
 }
 
 .heroMain {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
+}
+
+.heroTitleBlock {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
 }
 
 .heroBadge {
-  height: 26px;
+  width: max-content;
+  height: 24px;
   padding: 0 10px;
-  border: 1px solid currentColor;
   border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
+.heroBadge.icp {
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.28);
+  background: rgba(96, 165, 250, 0.06);
+}
+
+.heroBadge.gdv {
+  color: #2dd4bf;
+  border-color: rgba(45, 212, 191, 0.28);
+  background: rgba(45, 212, 191, 0.06);
+}
+
 .heroMeta {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .heroMetric {
-  min-width: 112px;
-  padding: 9px;
+  min-width: 0;
+  min-height: 66px;
+  padding: 12px 13px;
   border: 1px solid var(--line-subtle);
-  border-radius: 10px;
-  background: var(--surface-panel);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+  display: grid;
+  gap: 6px;
+  align-content: center;
 }
 
 .heroMetric strong {
+  overflow: hidden;
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 18px;
+  line-height: 1;
   font-weight: 590;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .heroMetric span {
   color: var(--text-quaternary);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  display: none;
 }
 
 .title {
-  margin: 0 0 4px;
-  font-family: var(--font-sans);
-  font-size: 15px;
+  margin: 0;
+  font-size: 19px;
   font-weight: 590;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
 }
 
 .title.icp {
-  color: var(--vivid-blue);
+  color: #60a5fa;
 }
 
 .title.gdv {
-  color: var(--accent-cyan);
+  color: #2dd4bf;
 }
 
 .sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-tertiary);
 }
 
 .addBtn {
-  height: 31px;
-  padding: 0 11px;
-  border: 1px solid var(--line);
+  height: 34px;
+  padding: 0 14px;
   border-radius: 999px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font-sans);
-  font-size: 10.5px;
+  border: 0;
+  font-family: inherit;
+  font-size: 11px;
   font-weight: 590;
+  letter-spacing: -0.01em;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .addBtn:hover:not(:disabled) {
-  border-color: var(--line-strong);
-  background: var(--surface-raised);
-  color: var(--text-primary);
+  filter: brightness(1.04);
 }
 
 .addBtn:disabled {
@@ -114,54 +134,50 @@
   cursor: not-allowed;
 }
 
-.empty,
-.loading {
-  padding: 24px 0 6px;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.55;
+.empty {
+  padding: 34px 0 6px;
   text-align: left;
-}
-
-.empty b {
-  color: var(--text-primary);
-  font-weight: 590;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1.6;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .entry {
-  border-top: 1px solid var(--line-subtle);
-  border-radius: 0;
-  background: transparent;
+  border: 1px solid var(--line-subtle);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.014);
   overflow: hidden;
 }
 
 .entryHdr {
+  min-height: 48px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 0 10px;
-  background: transparent;
-  border-bottom: 0;
+  gap: 10px;
 }
 
 .dateLabel {
-  color: var(--text-quaternary);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--text-quaternary);
 }
 
 .dateInput {
-  height: 27px;
+  height: 30px;
   padding: 0 8px;
-  border: 1px solid transparent;
   border-radius: 8px;
+  border: 1px solid transparent;
   background: transparent;
-  color: var(--text-secondary);
   font-family: inherit;
-  font-size: 11px;
-  font-weight: 510;
+  font-size: 12px;
+  font-weight: 590;
   outline: none;
   font-variant-numeric: tabular-nums;
 }
@@ -169,26 +185,24 @@
 .dateInput:hover,
 .dateInput:focus {
   border-color: var(--line-subtle);
-  background: var(--field-bg);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .delBtn {
   margin-left: auto;
-  height: 27px;
-  padding: 0 9px;
-  border: 1px solid transparent;
+  height: 30px;
+  padding: 0 10px;
   border-radius: 999px;
+  border: 0;
   background: transparent;
   color: var(--text-tertiary);
   font-family: inherit;
-  font-size: 10.5px;
+  font-size: 11px;
   cursor: pointer;
 }
 
 .delBtn:hover:not(:disabled) {
   color: var(--danger);
-  background: var(--danger-soft);
-  border-color: rgba(239, 68, 68, 0.22);
 }
 
 .delBtn:disabled {
@@ -198,22 +212,16 @@
 
 .textarea {
   width: 100%;
-  min-height: 138px;
-  padding: 10px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 10px;
-  background: var(--field-bg);
+  min-height: 180px;
+  padding: 14px;
+  background: transparent;
+  border: 0;
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.55;
   outline: none;
   resize: vertical;
-}
-
-.textarea:focus {
-  border-color: var(--accent-amber-line);
-  background: var(--field-bg-hover);
 }
 
 .textarea::placeholder {
@@ -221,23 +229,29 @@
 }
 
 .savingHint {
-  padding: 8px 0 0;
+  padding: 0 14px 14px;
   font-size: 10px;
   color: var(--success);
 }
 
 .savingHint.pending {
-  color: var(--warning);
+  color: var(--accent-amber);
+}
+
+.loading {
+  padding: 34px 0 6px;
+  text-align: left;
+  color: var(--text-tertiary);
+  font-size: 13px;
 }
 
 @media (max-width: 720px) {
-  .heroMain,
-  .header {
+  .heroMain {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .heroMeta {
-    width: 100%;
     grid-template-columns: 1fr;
   }
 }
