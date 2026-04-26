@@ -1,9 +1,10 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { listUserProjectTasks, listUserProjects } from '../api/projects.js';
 import { getUserAvatar } from '../utils/avatarStorage.js';
 import { roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
+import { ProjectBoardIcon } from '../components/ui/Icons.jsx';
 import styles from './UserProfilePage.module.css';
 
 function initials(name) {
@@ -292,7 +293,7 @@ export default function UserProfilePage() {
                     to={`/projetos?id=${encodeURIComponent(project.id)}`}
                     className={styles.projectRow}
                   >
-                    <span className={styles.projectIcon}>â€¢</span>
+                    <span className={styles.projectIcon}><ProjectBoardIcon size={18} /></span>
                     <div className={styles.projectCopy}>
                       <strong>{project.name}</strong>
                       <span>{project.clientName || project.squadName || 'Projeto vinculado'}</span>
