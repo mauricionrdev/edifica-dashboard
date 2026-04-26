@@ -430,3 +430,16 @@
   border-radius: 0 !important;
   box-shadow: none !important;
 }
+
+
+/* PATCH v36 — ícones de projeto soltos */
+.projectIcon,
+.projectAvatar,
+.projectBadge,
+.projectMark {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--accent-amber) !important;
+}

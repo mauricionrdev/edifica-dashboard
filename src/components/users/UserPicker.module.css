@@ -279,3 +279,21 @@
 .root[data-variant='drawer'] .list {
   gap: 1px;
 }
+
+
+/* PATCH v36 — picker plano, sem cards individuais */
+.option {
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.option:hover,
+.optionActive {
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.list {
+  gap: 1px !important;
+}

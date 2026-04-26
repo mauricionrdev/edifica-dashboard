@@ -2348,3 +2348,59 @@ textarea:focus-visible {
     margin-left: 0;
   }
 }
+
+
+/* PATCH v36 — remover cards do picker e caixa do ícone de projeto */
+.projectIcon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--accent-amber) !important;
+}
+
+.projectIcon svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+
+/* UserPicker aberto na criação/edição de tarefa: lista plana, sem card em cada usuário */
+.userPickerInline [data-variant='default'] .option,
+.createTask [data-variant='default'] .option,
+.taskMeta [data-variant='default'] .option,
+.taskField [data-variant='default'] .option,
+.userPickerDrawer [data-variant='drawer'] .option,
+.collaboratorForm [data-variant='drawer'] .option {
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.userPickerInline [data-variant='default'] .option:hover,
+.userPickerInline [data-variant='default'] .optionActive,
+.createTask [data-variant='default'] .option:hover,
+.createTask [data-variant='default'] .optionActive,
+.taskMeta [data-variant='default'] .option:hover,
+.taskMeta [data-variant='default'] .optionActive,
+.taskField [data-variant='default'] .option:hover,
+.taskField [data-variant='default'] .optionActive,
+.userPickerDrawer [data-variant='drawer'] .option:hover,
+.userPickerDrawer [data-variant='drawer'] .optionActive,
+.collaboratorForm [data-variant='drawer'] .option:hover,
+.collaboratorForm [data-variant='drawer'] .optionActive {
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.userPickerInline [data-variant='default'] .list,
+.createTask [data-variant='default'] .list,
+.taskMeta [data-variant='default'] .list,
+.taskField [data-variant='default'] .list,
+.userPickerDrawer [data-variant='drawer'] .list,
+.collaboratorForm [data-variant='drawer'] .list {
+  gap: 1px !important;
+}
