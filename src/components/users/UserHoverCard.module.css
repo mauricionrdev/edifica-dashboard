@@ -1,7 +1,9 @@
 .wrap {
   min-width: 0;
+  max-width: 100%;
   display: inline-flex;
   align-items: center;
+  vertical-align: middle;
 }
 
 .card {

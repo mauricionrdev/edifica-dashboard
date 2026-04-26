@@ -31,10 +31,30 @@ function profilePath(userId = '') {
   return userId ? `/perfil/${encodeURIComponent(userId)}` : '/perfil';
 }
 
-function getCardPosition(anchor, placement = 'bottom') {
-  if (!anchor || typeof window === 'undefined') return { top: 16, left: 16 };
+function safeRect(element) {
+  if (!element || typeof element.getBoundingClientRect !== 'function') return null;
 
-  const rect = anchor.getBoundingClientRect();
+  const rect = element.getBoundingClientRect();
+
+  if (!rect || (rect.width === 0 && rect.height === 0 && rect.top === 0 && rect.left === 0)) {
+    return null;
+  }
+
+  return rect;
+}
+
+function getCardPosition(anchor, placement = 'bottom') {
+  if (typeof window === 'undefined') return { top: 16, left: 16 };
+
+  const rect = safeRect(anchor);
+
+  if (!rect) {
+    return {
+      top: Math.max(16, Math.round(window.innerHeight / 2 - 95)),
+      left: Math.max(16, Math.round(window.innerWidth / 2 - 180)),
+    };
+  }
+
   const cardWidth = 360;
   const cardHeight = 190;
   const gap = 10;
@@ -57,7 +77,10 @@ function getCardPosition(anchor, placement = 'bottom') {
   if (left + cardWidth > window.innerWidth - margin) left = Math.max(margin, window.innerWidth - cardWidth - margin);
   if (left < margin) left = margin;
 
-  return { top, left };
+  return {
+    top: Math.round(top),
+    left: Math.round(left),
+  };
 }
 
 export default function UserHoverCard({
@@ -70,6 +93,7 @@ export default function UserHoverCard({
   const { user: currentUser } = useAuth();
   const id = useId();
   const anchorRef = useRef(null);
+  const activeAnchorRef = useRef(null);
   const closeTimer = useRef(null);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 16, left: 16 });
@@ -81,9 +105,17 @@ export default function UserHoverCard({
   const avatarUrl = getUserAvatar(user) || user.avatarUrl || '';
   const isOwnProfile = currentUser?.id && userId && currentUser.id === userId;
 
-  function show() {
+  function resolveAnchor(event) {
+    const currentTarget = event?.currentTarget || null;
+    const anchor = safeRect(currentTarget) ? currentTarget : anchorRef.current;
+    activeAnchorRef.current = anchor;
+    return anchor;
+  }
+
+  function show(event) {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    setPosition(getCardPosition(anchorRef.current, placement));
+    const anchor = resolveAnchor(event);
+    setPosition(getCardPosition(anchor, placement));
     setOpen(true);
   }
 
@@ -98,7 +130,7 @@ export default function UserHoverCard({
   useEffect(() => {
     if (!open) return undefined;
 
-    const update = () => setPosition(getCardPosition(anchorRef.current, placement));
+    const update = () => setPosition(getCardPosition(activeAnchorRef.current || anchorRef.current, placement));
 
     window.addEventListener('scroll', update, true);
     window.addEventListener('resize', update);

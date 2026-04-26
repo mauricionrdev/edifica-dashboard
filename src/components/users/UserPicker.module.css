@@ -37,8 +37,13 @@
 }
 
 .selectedUser {
+  grid-column: 1 / -1;
+  width: 100%;
   min-width: 0;
-  display: contents;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
 }
 
 .avatar {
