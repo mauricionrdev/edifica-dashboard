@@ -422,6 +422,16 @@ router.post('/client/:clientId', requirePermission('projects.create'), async (re
     }
     let projectId = '';
     await runWithDeadlockRetry(() => withTransaction(async (conn) => {
+      await conn.query(
+        `UPDATE projects
+            SET client_id = NULL,
+                status = CASE WHEN status = 'active' THEN 'archived' ELSE status END,
+                updated_at = CURRENT_TIMESTAMP
+          WHERE client_id = ?
+            AND COALESCE(source, '') = 'client_onboarding'`,
+        [client.id]
+      );
+
       projectId = await createClientProjectRecord({ client, mode, name, actorUser: req.user, db: conn });
     }));
     const rows = await query('SELECT * FROM projects WHERE id = ? LIMIT 1', [projectId]);
