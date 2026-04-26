@@ -1,10 +1,11 @@
 .sidebar {
   --sidebar-bg: #0f1011;
-  --sidebar-surface: #141516;
-  --sidebar-surface-hover: rgba(255, 255, 255, 0.032);
-  --sidebar-surface-active: rgba(255, 255, 255, 0.055);
-  --sidebar-line: rgba(255, 255, 255, 0.075);
-  --sidebar-line-subtle: rgba(255, 255, 255, 0.045);
+  --sidebar-bg-deep: #0b0c0d;
+  --sidebar-surface: rgba(255, 255, 255, 0.024);
+  --sidebar-surface-hover: rgba(255, 255, 255, 0.04);
+  --sidebar-surface-active: rgba(255, 255, 255, 0.062);
+  --sidebar-line: rgba(255, 255, 255, 0.066);
+  --sidebar-line-subtle: rgba(255, 255, 255, 0.042);
   --sidebar-text: #f7f8f8;
   --sidebar-text-secondary: #d0d6e0;
   --sidebar-text-muted: #8a8f98;
@@ -22,7 +23,7 @@
   overflow: hidden;
   background: var(--sidebar-bg);
   border: 1px solid var(--sidebar-line);
-  border-right: 1px solid var(--sidebar-line);
+  border-right-color: var(--sidebar-line-subtle);
   border-radius: 15px 0 0 15px;
   transition: width 0.16s ease, flex-basis 0.16s ease;
 }
@@ -64,9 +65,10 @@
 }
 
 .collapsed .brandLogo {
-  width: 24px;
-  height: 24px;
+  width: 25px;
+  height: 25px;
   object-fit: cover;
+  object-position: left center;
 }
 
 .collapseButton,
@@ -86,6 +88,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: none;
+  transition: color 0.12s ease, opacity 0.12s ease;
 }
 
 .collapseButton:hover,
@@ -119,13 +122,13 @@
 }
 
 .searchBox {
-  height: 32px;
+  height: 31px;
   padding: 0 10px;
   display: flex;
   align-items: center;
   gap: 8px;
   border: 1px solid var(--sidebar-line);
-  border-radius: 9px;
+  border-radius: 8px;
   background: var(--sidebar-surface);
   color: var(--sidebar-text-soft);
 }
@@ -159,7 +162,7 @@
   flex: 1;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 6px 7px 7px;
+  padding: 7px 8px 8px;
   display: flex;
   flex-direction: column;
   background: var(--sidebar-bg);
@@ -172,9 +175,9 @@
 .group {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  margin: 0 0 8px;
-  padding: 0 0 9px;
+  gap: 2px;
+  margin: 0 0 9px;
+  padding: 0 0 10px;
   border-bottom: 1px solid var(--sidebar-line-subtle);
 }
 
@@ -185,7 +188,7 @@
 
 .group:last-of-type {
   margin-top: auto;
-  padding-top: 10px;
+  padding-top: 11px;
   border-top: 1px solid var(--sidebar-line-subtle);
   border-bottom: 0;
 }
@@ -199,7 +202,7 @@
   color: var(--sidebar-text-soft);
   font-size: 9.5px;
   font-weight: 590;
-  letter-spacing: 0.135em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -217,7 +220,7 @@
 .item {
   position: relative;
   height: 31px;
-  padding: 0 7px 0 9px;
+  padding: 0 7px 0 10px;
   border-radius: 7px;
   display: flex;
   align-items: center;
@@ -300,14 +303,14 @@
 .squadLogo {
   overflow: hidden;
   border: 0;
-  border-radius: 4px;
+  border-radius: 999px;
   background: transparent;
   color: var(--accent-amber);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 9.5px;
-  font-weight: 650;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 590;
   line-height: 1;
-  letter-spacing: -0.08em;
+  letter-spacing: -0.06em;
 }
 
 .squadLogo[data-tone="1"] { color: var(--accent-cyan); }
@@ -319,7 +322,7 @@
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
   border-radius: inherit;
 }
 
@@ -351,7 +354,7 @@
 
 .itemActive .itemMeta {
   color: var(--sidebar-text-secondary);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.058);
 }
 
 .renameInput {
@@ -377,14 +380,14 @@
 }
 
 .footer {
-  flex: 0 0 58px;
-  height: 58px;
+  flex: 0 0 60px;
+  height: 60px;
   padding: 10px 14px;
   border-top: 1px solid var(--sidebar-line-subtle);
   display: flex;
   align-items: center;
   gap: 9px;
-  background: var(--sidebar-bg);
+  background: var(--sidebar-bg-deep);
 }
 
 .collapsed .footer {
@@ -412,9 +415,9 @@
 }
 
 .avatar {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
