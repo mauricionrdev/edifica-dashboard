@@ -337,3 +337,25 @@
   right: 0;
   width: min(360px, calc(100vw - 48px));
 }
+
+
+/* PATCH v29 — densidade do picker inline em tabela */
+.userPickerInline .trigger,
+.root .trigger {
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.root[data-variant='default'] .trigger:focus-visible,
+.root[data-variant='action'] .trigger:focus-visible,
+.root[data-variant='drawer'] .trigger:focus-visible {
+  outline: none;
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
+
+.root[data-variant='default'] .popover {
+  z-index: 900;
+}

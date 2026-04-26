@@ -4931,3 +4931,472 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* PATCH v29 — segunda passada final tabela/lista Asana */
+.workspace {
+  background: #090a0b !important;
+}
+
+.sections {
+  background: #090a0b !important;
+}
+
+.taskToolbar {
+  min-height: 64px !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+.taskTableHeader {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 8 !important;
+  min-height: 42px !important;
+  border-top: 1px solid var(--line) !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: rgba(12, 13, 14, 0.96) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.taskTableHeader {
+  display: grid !important;
+  grid-template-columns: 28px minmax(360px, 1fr) minmax(210px, 260px) minmax(118px, 150px) 74px !important;
+  align-items: center !important;
+}
+
+.taskTableHeader span:first-child {
+  grid-column: 2 !important;
+}
+
+.taskTableHeader span:nth-child(2) {
+  grid-column: 3 !important;
+}
+
+.taskTableHeader span:nth-child(3) {
+  grid-column: 4 !important;
+}
+
+.section {
+  border-top: 0 !important;
+  background: transparent !important;
+}
+
+.section + .section {
+  margin-top: 4px !important;
+}
+
+.sectionToggle {
+  position: sticky !important;
+  top: 42px !important;
+  z-index: 7 !important;
+  min-height: 48px !important;
+  border-top: 1px solid var(--line) !important;
+  border-bottom: 1px solid var(--line-subtle) !important;
+  background: rgba(13, 14, 15, 0.97) !important;
+  backdrop-filter: blur(10px) !important;
+  display: grid !important;
+  grid-template-columns: 26px 30px minmax(0, 1fr) auto auto auto !important;
+  align-items: center !important;
+  column-gap: 10px !important;
+}
+
+.sectionCollapse {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
+  color: var(--text-secondary) !important;
+}
+
+.sectionCollapse:hover {
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: var(--text-primary) !important;
+}
+
+.sectionIndex {
+  width: 26px !important;
+  height: 22px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+  color: var(--text-secondary) !important;
+  font-size: 10px !important;
+  font-weight: 780 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.sectionTitle {
+  justify-self: start !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--text-primary) !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+.sectionTitle:hover {
+  color: var(--accent-amber) !important;
+}
+
+.sectionCount,
+.sectionDone {
+  min-height: 24px !important;
+  padding: 0 9px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+  color: var(--text-secondary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.sectionActions {
+  opacity: 0 !important;
+  transition: opacity 0.12s ease !important;
+}
+
+.sectionToggle:hover .sectionActions,
+.section:focus-within .sectionActions {
+  opacity: 1 !important;
+}
+
+.sectionChevronLegacy {
+  display: none !important;
+}
+
+.task {
+  min-height: 50px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  display: grid !important;
+  grid-template-columns: 28px minmax(360px, 1fr) minmax(210px, 260px) minmax(118px, 150px) 74px !important;
+  column-gap: 12px !important;
+  align-items: center !important;
+  background: transparent !important;
+  position: relative !important;
+}
+
+.task::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 7px !important;
+  bottom: 7px !important;
+  width: 2px !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+}
+
+.task:hover {
+  background: rgba(255, 255, 255, 0.028) !important;
+}
+
+.task:hover::before {
+  background: rgba(245, 184, 0, 0.36) !important;
+}
+
+.task:focus-within {
+  background: rgba(255, 255, 255, 0.038) !important;
+  outline: none !important;
+}
+
+.task:focus-within::before {
+  background: var(--accent-amber) !important;
+}
+
+.taskDragging {
+  opacity: 0.58 !important;
+  background: rgba(245, 184, 0, 0.08) !important;
+  outline: 1px solid rgba(245, 184, 0, 0.28) !important;
+}
+
+.done {
+  opacity: 0.64 !important;
+}
+
+.done .taskTitleInput {
+  color: var(--text-tertiary) !important;
+  text-decoration: line-through !important;
+}
+
+.check {
+  width: 20px !important;
+  height: 20px !important;
+  border: 1px solid var(--line-strong) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--accent-amber) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.12s ease !important;
+}
+
+.check:hover:not(:disabled) {
+  border-color: var(--accent-amber) !important;
+  background: rgba(245, 184, 0, 0.08) !important;
+  transform: scale(1.04) !important;
+}
+
+.check:focus-visible {
+  outline: 2px solid rgba(245, 184, 0, 0.28) !important;
+  outline-offset: 2px !important;
+}
+
+.done .check {
+  border-color: rgba(34, 197, 94, 0.5) !important;
+  background: rgba(34, 197, 94, 0.12) !important;
+  color: #4ade80 !important;
+}
+
+.taskTitleCell {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 2px !important;
+}
+
+.taskTitleInput {
+  width: 100% !important;
+  height: 30px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  font-size: 13.5px !important;
+  line-height: 1.25 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.taskTitleInput:hover:not(:disabled) {
+  color: var(--text-primary) !important;
+}
+
+.taskTitleInput:focus {
+  padding: 0 8px !important;
+  border-color: var(--line-strong) !important;
+  background: #111214 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.taskStatus {
+  display: none !important;
+}
+
+.taskMeta {
+  min-width: 0 !important;
+}
+
+.userPickerInline {
+  width: 100% !important;
+}
+
+.userPickerInline :global(button),
+.userPickerInline button {
+  min-height: 32px !important;
+}
+
+.taskAssignee,
+.taskAssigneeEmpty {
+  width: 100% !important;
+  min-height: 32px !important;
+  padding: 0 8px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: var(--text-secondary) !important;
+}
+
+.task:hover .taskAssignee,
+.task:hover .taskAssigneeEmpty {
+  background: rgba(255, 255, 255, 0.026) !important;
+}
+
+.taskAssigneeName {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+
+.taskAssigneeAvatar {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  font-size: 9px !important;
+  background: #151617 !important;
+  border: 1px solid var(--line) !important;
+}
+
+.taskDue {
+  min-width: 0 !important;
+  position: relative !important;
+}
+
+.inlineDate {
+  width: 100% !important;
+  min-height: 32px !important;
+  padding: 0 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  font-size: 12.5px !important;
+  font-weight: 660 !important;
+  text-align: left !important;
+}
+
+.inlineDate:hover,
+.taskDueActive .inlineDate {
+  border-color: var(--line) !important;
+  background: rgba(255, 255, 255, 0.026) !important;
+  color: var(--text-primary) !important;
+}
+
+.inlineDate:focus-visible {
+  border-color: var(--line-strong) !important;
+  outline: none !important;
+}
+
+.noteButton {
+  justify-self: end !important;
+  opacity: 0.72 !important;
+  transition:
+    opacity 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease !important;
+}
+
+.task:hover .noteButton,
+.task:focus-within .noteButton {
+  opacity: 1 !important;
+}
+
+.noteButtonActive {
+  opacity: 1 !important;
+  background: rgba(245, 184, 0, 0.07) !important;
+  border-color: rgba(245, 184, 0, 0.18) !important;
+}
+
+.createTask {
+  min-height: 66px !important;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.createSelect,
+.createTask button,
+.sectionCreateForm input,
+.sectionCreateForm button,
+.toolbarSelect {
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease !important;
+}
+
+.createTaskTitleWrap input:hover,
+.createTask > input:hover,
+.sectionCreateForm input:hover,
+.toolbarSelect:hover {
+  border-color: var(--line-strong) !important;
+}
+
+.createTaskTitleWrap input:focus,
+.createTask > input:focus,
+.sectionCreateForm input:focus,
+.toolbarSelect:focus {
+  border-color: var(--line-strong) !important;
+  background: #111214 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.createTask button:focus-visible,
+.sectionCreateForm button:focus-visible,
+.noteButton:focus-visible,
+.sectionAction:focus-visible {
+  outline: 2px solid rgba(245, 184, 0, 0.26) !important;
+  outline-offset: 2px !important;
+}
+
+@media (max-width: 1440px) {
+  .taskTableHeader,
+  .task {
+    grid-template-columns: 28px minmax(300px, 1fr) minmax(178px, 230px) minmax(112px, 140px) 70px !important;
+    column-gap: 10px !important;
+  }
+
+  .sectionToggle {
+    grid-template-columns: 26px 30px minmax(0, 1fr) auto auto auto !important;
+  }
+
+  .task {
+    min-height: 48px !important;
+  }
+
+  .taskTitleInput {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .taskTableHeader {
+    display: none !important;
+  }
+
+  .sectionToggle {
+    top: 0 !important;
+    grid-template-columns: 26px 30px minmax(0, 1fr) !important;
+  }
+
+  .sectionCount,
+  .sectionDone,
+  .sectionActions {
+    display: none !important;
+  }
+
+  .task {
+    grid-template-columns: 28px minmax(0, 1fr) 70px !important;
+    grid-template-areas:
+      "check title action"
+      ". meta due" !important;
+    row-gap: 4px !important;
+    min-height: 72px !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .check {
+    grid-area: check !important;
+  }
+
+  .taskTitleCell {
+    grid-area: title !important;
+  }
+
+  .taskMeta {
+    grid-area: meta !important;
+  }
+
+  .taskDue {
+    grid-area: due !important;
+  }
+
+  .noteButton {
+    grid-area: action !important;
+  }
+}
