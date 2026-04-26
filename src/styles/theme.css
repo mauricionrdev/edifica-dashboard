@@ -1,4 +1,3 @@
-/* Linear-inspired Edifica theme tokens */
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
@@ -13,31 +12,31 @@
 
   --surface: #0f1011;
   --surface-subtle: #111214;
-  --surface-panel: #111214;
-  --surface-raised: #141516;
+  --surface-panel: rgba(255, 255, 255, 0.024);
+  --surface-raised: rgba(255, 255, 255, 0.038);
+  --surface-card: #111214;
+  --surface-card-soft: #0f1011;
+  --surface-strong: #151617;
 
   --text-primary: #f7f8f8;
   --text-secondary: #d0d6e0;
   --text-tertiary: #8a8f98;
   --text-quaternary: #62666d;
 
-  --line-subtle: rgba(255, 255, 255, 0.045);
-  --line: rgba(255, 255, 255, 0.068);
-  --line-strong: rgba(255, 255, 255, 0.105);
+  --line-subtle: rgba(255, 255, 255, 0.042);
+  --line: rgba(255, 255, 255, 0.066);
+  --line-strong: rgba(255, 255, 255, 0.092);
+  --border-subtle: var(--line-subtle);
+  --border-default: var(--line);
+  --border-strong: var(--line-strong);
 
-  --field-bg: #151617;
-  --field-bg-hover: #191a1c;
-  --field-line: rgba(255, 255, 255, 0.075);
+  --field-bg: rgba(255, 255, 255, 0.025);
+  --field-bg-hover: rgba(255, 255, 255, 0.04);
+  --field-line: rgba(255, 255, 255, 0.07);
 
   --chart-bar: rgba(255, 255, 255, 0.055);
   --progress-track: rgba(255, 255, 255, 0.07);
 
-  --border-subtle: var(--line-subtle);
-  --border-default: var(--line);
-  --border-strong: var(--line-strong);
-  --surface-card: #111214;
-  --surface-card-soft: #0f1011;
-  --surface-strong: #151617;
   --accent-amber-border: var(--accent-amber-line);
   --shadow-soft: none;
   --shadow-panel: none;
@@ -57,7 +56,10 @@
   --surface: #ffffff;
   --surface-subtle: #f5f6f7;
   --surface-panel: #ffffff;
-  --surface-raised: #ffffff;
+  --surface-raised: #f5f6f7;
+  --surface-card: #ffffff;
+  --surface-card-soft: #f5f6f7;
+  --surface-strong: #f0f2f4;
 
   --text-primary: #111315;
   --text-secondary: #303640;
@@ -67,56 +69,18 @@
   --line-subtle: rgba(12, 18, 28, 0.06);
   --line: rgba(12, 18, 28, 0.105);
   --line-strong: rgba(12, 18, 28, 0.16);
+  --border-subtle: var(--line-subtle);
+  --border-default: var(--line);
+  --border-strong: var(--line-strong);
 
   --field-bg: #ffffff;
   --field-bg-hover: #f5f6f7;
-  --field-line: rgba(12, 18, 28, 0.13);
+  --field-line: rgba(15, 23, 42, 0.12);
 
   --chart-bar: #ebedf0;
   --progress-track: #e6e8eb;
 
-  --border-subtle: var(--line-subtle);
-  --border-default: var(--line);
-  --border-strong: var(--line-strong);
-  --surface-card: #ffffff;
-  --surface-card-soft: #f5f6f7;
-  --surface-strong: #f0f2f4;
   --accent-amber-border: rgba(245, 184, 0, 0.42);
   --shadow-soft: none;
   --shadow-panel: none;
-}
-
-/* Notebook rigid refinement theme */
-:root,
-[data-theme="dark"] {
-  --bg-app: #08090a;
-  --bg-canvas: #0f1011;
-  --surface: #0f1011;
-  --surface-subtle: #111214;
-  --surface-panel: rgba(255, 255, 255, 0.025);
-  --surface-raised: rgba(255, 255, 255, 0.04);
-
-  --text-primary: #f7f8f8;
-  --text-secondary: #d0d6e0;
-  --text-tertiary: #8a8f98;
-  --text-quaternary: #62666d;
-
-  --line-subtle: rgba(255, 255, 255, 0.045);
-  --line: rgba(255, 255, 255, 0.07);
-  --line-strong: rgba(255, 255, 255, 0.09);
-
-  --field-bg: rgba(255, 255, 255, 0.025);
-  --field-bg-hover: rgba(255, 255, 255, 0.04);
-  --field-line: rgba(255, 255, 255, 0.07);
-
-  --chart-bar: rgba(255, 255, 255, 0.055);
-  --progress-track: rgba(255, 255, 255, 0.07);
-}
-
-[data-theme="light"] {
-  --surface-panel: #ffffff;
-  --surface-raised: #f5f6f7;
-  --field-bg: #ffffff;
-  --field-bg-hover: #f5f6f7;
-  --field-line: rgba(15, 23, 42, 0.12);
 }
