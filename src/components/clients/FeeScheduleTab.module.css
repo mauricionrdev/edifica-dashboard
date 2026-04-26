@@ -5,7 +5,7 @@
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: 1.55fr 1fr 0.82fr 0.56fr;
+  grid-template-columns: minmax(250px, 2.1fr) minmax(132px, 1fr) minmax(96px, 0.78fr) minmax(68px, 0.48fr);
   gap: 0;
   padding: 0 0 12px;
   border-bottom: 1px solid var(--line-subtle);
@@ -13,11 +13,11 @@
 
 .summaryCard {
   min-width: 0;
-  min-height: 42px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 0 14px;
   border-left: 1px solid var(--line-subtle);
   display: grid;
-  gap: 2px;
+  gap: 3px;
   align-content: center;
 }
 
@@ -32,23 +32,29 @@
   font-weight: 590;
   letter-spacing: 0.13em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .summaryValue {
-  overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(14px, 1.25vw, 18px);
+  font-size: clamp(14px, 1.15vw, 18px);
   font-weight: 590;
-  line-height: 1.05;
-  letter-spacing: -0.045em;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.summaryCard:not(:first-child) .summaryValue {
   white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .summarySub {
   color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1.45;
+  white-space: nowrap;
 }
 
 .sectionHead {

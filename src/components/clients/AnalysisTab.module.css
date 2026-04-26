@@ -1,41 +1,80 @@
 .panel {
+  --analysis-accent: var(--accent-amber);
+  --analysis-accent-soft: var(--accent-amber-soft);
+  --analysis-accent-line: var(--accent-amber-line);
+
   display: grid;
   gap: 14px;
 }
 
-.hero {
-  padding: 0 0 10px;
-  border-bottom: 1px solid var(--line-subtle);
-  background: transparent;
+.icp {
+  --analysis-accent: #60a5fa;
+  --analysis-accent-soft: rgba(96, 165, 250, 0.09);
+  --analysis-accent-line: rgba(96, 165, 250, 0.28);
 }
 
-.heroMain {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  min-height: 34px;
+.gdv {
+  --analysis-accent: #2dd4bf;
+  --analysis-accent-soft: rgba(45, 212, 191, 0.09);
+  --analysis-accent-line: rgba(45, 212, 191, 0.28);
 }
 
-.heroBadge {
-  display: none;
-}
-
-.heroMeta {
+.header {
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(82px, auto));
-  gap: 0;
+  grid-template-columns: minmax(150px, 1fr) auto max-content;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.titleBlock {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.eyebrow {
+  width: max-content;
+  height: 23px;
+  padding: 0 10px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 999px;
+  color: var(--analysis-accent);
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 590;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--analysis-accent);
+  font-size: 15px;
+  line-height: 1.15;
+  font-weight: 590;
+  letter-spacing: -0.025em;
+}
+
+.headerMeta {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  align-items: center;
   justify-content: end;
 }
 
 .heroMetric {
   min-width: 0;
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 35px;
+  padding: 0 13px;
   border-left: 1px solid var(--line-subtle);
-  background: transparent;
   display: grid;
   align-content: center;
-  gap: 2px;
+  gap: 3px;
 }
 
 .heroMetric:first-child {
@@ -43,14 +82,13 @@
 }
 
 .heroMetric strong {
-  overflow: hidden;
   color: var(--text-primary);
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1;
   font-weight: 590;
-  letter-spacing: -0.035em;
-  text-overflow: ellipsis;
+  letter-spacing: -0.032em;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .heroMetric span {
@@ -59,45 +97,16 @@
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.title {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 590;
-  letter-spacing: -0.025em;
-}
-
-.title.icp,
-.title.gdv {
-  color: var(--text-primary);
-}
-
-.sub {
-  margin-top: 3px;
-  font-size: 11px;
-  line-height: 1.35;
-  color: var(--text-tertiary);
+  white-space: nowrap;
 }
 
 .addBtn {
   height: 30px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid var(--accent-amber-line);
-  background: var(--accent-amber);
-  color: #101010;
+  border: 1px solid var(--analysis-accent-line);
+  background: var(--analysis-accent-soft);
+  color: var(--analysis-accent);
   font-family: inherit;
   font-size: 11px;
   font-weight: 590;
@@ -107,7 +116,9 @@
 }
 
 .addBtn:hover:not(:disabled) {
-  background: var(--accent-amber-strong);
+  border-color: var(--analysis-accent);
+  background: var(--analysis-accent);
+  color: #08090a;
 }
 
 .addBtn:disabled {
@@ -134,7 +145,7 @@
   border-top: 1px solid var(--line-subtle);
   border-radius: 0;
   background: transparent;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .entry:first-of-type {
@@ -142,29 +153,51 @@
 }
 
 .entryHdr {
-  display: flex;
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
   align-items: center;
-  gap: 10px;
-  padding: 12px 0 10px;
+  gap: 14px;
+  padding: 11px 0 10px;
   background: transparent;
   border-bottom: 0;
 }
 
-.dateLabel {
+.dateControl {
+  min-width: 0;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.016);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.dateControl:hover,
+.dateControl:focus-within {
+  border-color: var(--analysis-accent-line);
+  background: var(--analysis-accent-soft);
+}
+
+.dateControl span {
+  color: var(--text-quaternary);
   font-size: 9px;
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-quaternary);
 }
 
 .dateInput {
-  height: 26px;
-  padding: 0 6px;
-  border-radius: 7px;
-  border: 1px solid transparent;
+  width: 126px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   background: transparent;
-  color: var(--text-primary);
+  color: var(--analysis-accent);
   font-family: inherit;
   font-size: 12px;
   font-weight: 590;
@@ -172,14 +205,22 @@
   font-variant-numeric: tabular-nums;
 }
 
-.dateInput:hover,
-.dateInput:focus {
-  border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.022);
+.dateInput::-webkit-calendar-picker-indicator {
+  opacity: 0.82;
+  cursor: pointer;
+}
+
+.entryAuthor {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 510;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .delBtn {
-  margin-left: auto;
   height: 26px;
   padding: 0;
   border: 0;
@@ -218,7 +259,7 @@
 
 .textarea:hover,
 .textarea:focus {
-  border-color: var(--line);
+  border-color: var(--analysis-accent-line);
   background: rgba(255, 255, 255, 0.024);
 }
 
@@ -233,7 +274,7 @@
 }
 
 .savingHint.pending {
-  color: var(--accent-amber);
+  color: var(--analysis-accent);
 }
 
 .loading {
@@ -243,27 +284,35 @@
   font-size: 13px;
 }
 
-@media (max-width: 720px) {
-  .heroMain {
-    justify-content: flex-start;
+@media (max-width: 920px) {
+  .header {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 12px;
   }
 
-  .heroMeta {
+  .headerMeta {
     width: 100%;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     justify-content: stretch;
   }
 
   .heroMetric {
-    padding-inline: 8px;
-  }
-
-  .header {
-    align-items: flex-start;
-    flex-direction: column;
+    padding-inline: 10px;
   }
 
   .addBtn {
     width: max-content;
+  }
+}
+
+@media (max-width: 640px) {
+  .entryHdr {
+    grid-template-columns: 1fr max-content;
+  }
+
+  .entryAuthor {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }

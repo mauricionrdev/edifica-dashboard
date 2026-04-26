@@ -20,6 +20,24 @@ function todayISO() {
   return `${year}-${month}-${day}`;
 }
 
+function formatDateBR(value) {
+  if (!value) return '—';
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat('pt-BR').format(date);
+}
+
+function analysisAuthor(entry) {
+  return (
+    entry?.updatedByName
+    || entry?.createdByName
+    || entry?.authorName
+    || entry?.createdBy
+    || entry?.updatedBy
+    || 'Sem autor registrado'
+  );
+}
+
 export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const { showToast } = useToast();
 
@@ -172,36 +190,28 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   }
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.hero}>
-        <div className={styles.heroMain}>
-          <span className={`${styles.heroBadge} ${titleClass}`.trim()}>{title}</span>
-          <div className={styles.heroMeta}>
-            <div className={styles.heroMetric}>
-              <strong>{entries.length}</strong>
-              <span>registros</span>
-            </div>
-            <div className={styles.heroMetric}>
-              <strong>{entries[0]?.date || '—'}</strong>
-              <span>última data</span>
-            </div>
-            <div className={styles.heroMetric}>
-              <strong>
-                {entries.filter((entry) => String(entry.text || '').trim()).length}
-              </strong>
-              <span>com conteúdo</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className={`${styles.panel} ${titleClass}`.trim()}>
       <div className={styles.header}>
-        <div>
-          <h3 className={`${styles.title} ${titleClass}`}>{title}</h3>
-          <div className={styles.sub}>
-            Registro cronológico com data, contexto e leitura estratégica
+        <div className={styles.titleBlock}>
+          <span className={styles.eyebrow}>{title}</span>
+          <h3 className={styles.title}>{title}</h3>
+        </div>
+
+        <div className={styles.headerMeta}>
+          <div className={styles.heroMetric}>
+            <strong>{entries.length}</strong>
+            <span>registros</span>
+          </div>
+          <div className={styles.heroMetric}>
+            <strong>{formatDateBR(entries[0]?.date)}</strong>
+            <span>última data</span>
+          </div>
+          <div className={styles.heroMetric}>
+            <strong>{entries.filter((entry) => String(entry.text || '').trim()).length}</strong>
+            <span>com conteúdo</span>
           </div>
         </div>
+
         <button
           type="button"
           className={styles.addBtn}
@@ -226,14 +236,19 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           return (
             <div key={entry.id} className={styles.entry}>
               <div className={styles.entryHdr}>
-                <span className={styles.dateLabel}>Data</span>
-                <input
-                  type="date"
-                  className={styles.dateInput}
-                  value={entry.date || ''}
-                  disabled={!canEdit}
-                  onChange={(event) => onDateChange(entry.id, event.target.value)}
-                />
+                <label className={styles.dateControl}>
+                  <span>Data</span>
+                  <input
+                    type="date"
+                    className={styles.dateInput}
+                    value={entry.date || ''}
+                    disabled={!canEdit}
+                    onChange={(event) => onDateChange(entry.id, event.target.value)}
+                  />
+                </label>
+
+                <span className={styles.entryAuthor}>{analysisAuthor(entry)}</span>
+
                 <button
                   type="button"
                   className={styles.delBtn}
