@@ -1809,7 +1809,13 @@ export default function ProjectsPage() {
                             <span>{subtask.title}</span>
                             {subtask.assigneeName ? (
                               <UserHoverCard user={resolveTaskUser(subtask.assigneeUserId, subtask.assigneeName)} placement="left">
-                                <small>{subtask.assigneeName}</small>
+                                <span className={styles.subtaskMeta}>
+                                  <AssigneeAvatar
+                                    name={subtask.assigneeName}
+                                    avatarUrl={resolveTaskUser(subtask.assigneeUserId, subtask.assigneeName)?.avatarUrl || ''}
+                                  />
+                                  <small>{subtask.assigneeName}</small>
+                                </span>
                               </UserHoverCard>
                             ) : (
                               <small>Sem responsável</small>
@@ -1848,7 +1854,13 @@ export default function ProjectsPage() {
                       <article key={comment.id} className={styles.comment}>
                         <div className={styles.commentHeader}>
                           <UserHoverCard user={resolveTaskUser(comment.userId, comment.userName)} placement="left">
-                            <strong>{comment.userName}</strong>
+                            <div className={styles.commentAuthor}>
+                              <AssigneeAvatar
+                                name={comment.userName}
+                                avatarUrl={resolveTaskUser(comment.userId, comment.userName)?.avatarUrl || ''}
+                              />
+                              <strong>{comment.userName}</strong>
+                            </div>
                           </UserHoverCard>
                           <time>{formatEventTime(comment.createdAt)}</time>
                         </div>

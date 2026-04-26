@@ -3532,3 +3532,135 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* PATCH v21 — refinamento do drawer da tarefa */
+.taskModal {
+  overflow: visible !important;
+}
+
+.taskModalHeader {
+  overflow: visible !important;
+  gap: 16px !important;
+}
+
+.taskModalHeader > div:first-child {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.taskModalHeader input {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-right: 6px !important;
+}
+
+.taskModalMeta {
+  flex-wrap: wrap !important;
+}
+
+.taskModalActions {
+  align-self: start !important;
+  justify-self: end !important;
+  flex-wrap: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.taskCompleteButton,
+.taskHeaderDeleteButton,
+.taskCloseButton {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+
+.taskCloseButton {
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+.commentHeader {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.commentAuthor {
+  min-width: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.commentAuthor strong {
+  color: var(--text-primary) !important;
+  font-size: 14px !important;
+  font-weight: 760 !important;
+}
+
+.commentHeader time {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+
+.comment p {
+  margin: 10px 0 0 42px !important;
+}
+
+.subtaskMeta {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+.subtaskMeta small {
+  color: var(--text-secondary) !important;
+}
+
+.subtaskContent {
+  gap: 7px !important;
+}
+
+.subtaskContent > span {
+  line-height: 1.35 !important;
+}
+
+.comment .taskAssigneeAvatar,
+.subtaskMeta .taskAssigneeAvatar {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  font-size: 11px !important;
+}
+
+.comment .taskAssigneeAvatar img,
+.subtaskMeta .taskAssigneeAvatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+@media (max-width: 900px) {
+  .taskModalHeader {
+    grid-template-columns: 1fr !important;
+  }
+
+  .taskModalActions {
+    justify-self: start !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .taskModalActions {
+    flex-wrap: wrap !important;
+  }
+
+  .commentHeader {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .comment p {
+    margin-left: 0 !important;
+  }
+}
