@@ -872,13 +872,13 @@
 }
 
 .inlineSelect {
-  width: 26px;
-  flex: 0 0 26px;
-  min-width: 26px;
+  width: 30px;
+  flex: 0 0 30px;
+  min-width: 30px;
 }
 
 .inlineSelect > button {
-  width: 26px;
+  width: 30px;
   min-height: 26px;
   height: 26px;
   border: 1px solid transparent;
@@ -935,7 +935,7 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  z-index: 130;
+  z-index: 260;
   width: 278px;
   border: 1px solid var(--line-strong);
   border-radius: 6px;
@@ -2024,6 +2024,8 @@
   width: 27px;
   height: 27px;
   flex-basis: 27px;
+  border-radius: 7px;
+  font-size: 12px;
 }
 
 .projectHeading h1 {

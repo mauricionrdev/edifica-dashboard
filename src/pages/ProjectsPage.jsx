@@ -679,6 +679,16 @@ export default function ProjectsPage() {
 
     try {
       setInlineSavingTaskId(task.id);
+      setDetail((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          sections: (prev.sections || []).map((section) => ({
+            ...section,
+            tasks: (section.tasks || []).map((entry) => (entry.id === task.id ? { ...entry, ...cleanPatch } : entry)),
+          })),
+        };
+      });
       await updateTask(task.id, cleanPatch);
       const res = await refreshProject(selectedId);
       if (selectedTask?.id === task.id) {
@@ -1443,6 +1453,7 @@ export default function ProjectsPage() {
                                   {canEditTasks ? (
                                     <Select
                                       className={styles.inlineSelect}
+                                      menuMinWidth={220}
                                       value={task.assigneeUserId || ''}
                                       disabled={inlineSavingTaskId === task.id}
                                       onClick={(event) => event.stopPropagation()}

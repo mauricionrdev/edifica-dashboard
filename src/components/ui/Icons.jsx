@@ -107,14 +107,7 @@ export function BookTemplateIcon(props) {
 
 export function ProjectBoardIcon({ size = 18, className, ...props }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      aria-hidden="true"
-      className={className}
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className={className} {...props}>
       <rect x="2" y="2" width="20" height="20" rx="5" fill="#E3C857" />
       <rect x="6.75" y="6.2" width="2.2" height="2.2" rx="0.7" fill="#121316" />
       <rect x="6.75" y="10.9" width="2.2" height="2.2" rx="0.7" fill="#121316" />

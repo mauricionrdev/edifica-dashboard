@@ -26,6 +26,7 @@ export default function Select({
   onChange,
   disabled = false,
   placeholder = 'Selecionar',
+  menuMinWidth = 0,
   'aria-label': ariaLabel,
   ...props
 }) {
@@ -52,9 +53,12 @@ export default function Select({
       const spaceBelow = viewportHeight - rect.bottom - 12;
       const openUp = spaceBelow < estimatedHeight && rect.top > estimatedHeight;
 
+      const minWidth = Number(menuMinWidth) || 0;
+      const menuWidth = Math.max(Math.round(rect.width), minWidth);
+
       setMenuStyle({
         left: Math.round(rect.left),
-        width: Math.round(rect.width),
+        width: menuWidth,
         top: openUp ? 'auto' : Math.round(rect.bottom + 6),
         bottom: openUp ? Math.max(8, Math.round(viewportHeight - rect.top + 6)) : 'auto',
         maxHeight: Math.min(estimatedHeight, viewportHeight - 16),
@@ -68,7 +72,7 @@ export default function Select({
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
     };
-  }, [open, options.length]);
+  }, [open, options.length, menuMinWidth]);
 
   useEffect(() => {
     if (!open) return undefined;
