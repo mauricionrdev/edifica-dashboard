@@ -1,34 +1,27 @@
 .panel {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .hero {
-  padding: 0 0 20px;
+  padding: 0 0 14px;
   border-bottom: 1px solid var(--line-subtle);
-  display: grid;
-  gap: 16px;
+  background: transparent;
 }
 
 .heroMain {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.heroTitleBlock {
-  min-width: 0;
   display: grid;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 18px;
 }
 
 .heroBadge {
   width: max-content;
-  height: 24px;
-  padding: 0 10px;
+  min-height: 24px;
+  padding: 0 9px;
   border-radius: 999px;
-  border: 1px solid var(--line);
+  border: 1px solid currentColor;
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -38,85 +31,79 @@
   text-transform: uppercase;
 }
 
-.heroBadge.icp {
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.28);
-  background: rgba(96, 165, 250, 0.06);
-}
-
-.heroBadge.gdv {
-  color: #2dd4bf;
-  border-color: rgba(45, 212, 191, 0.28);
-  background: rgba(45, 212, 191, 0.06);
-}
-
 .heroMeta {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(76px, auto));
+  gap: 0;
+  justify-content: end;
 }
 
 .heroMetric {
   min-width: 0;
-  min-height: 66px;
-  padding: 12px 13px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.018);
+  min-height: 42px;
+  padding: 0 12px;
+  border-left: 1px solid var(--line-subtle);
+  background: transparent;
   display: grid;
-  gap: 6px;
   align-content: center;
+  gap: 3px;
 }
 
 .heroMetric strong {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   font-weight: 590;
-  letter-spacing: -0.04em;
-  white-space: nowrap;
+  letter-spacing: -0.035em;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .heroMetric span {
   color: var(--text-quaternary);
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .header {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .title {
-  margin: 0;
-  font-size: 19px;
+  margin: 0 0 3px;
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.2;
   font-weight: 590;
-  letter-spacing: -0.035em;
-  line-height: 1.1;
+  letter-spacing: -0.025em;
 }
 
 .title.icp {
-  color: #60a5fa;
+  color: var(--vivid-blue);
 }
 
 .title.gdv {
-  color: #2dd4bf;
+  color: var(--accent-cyan);
 }
 
 .sub {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-tertiary);
 }
 
 .addBtn {
-  height: 34px;
-  padding: 0 14px;
+  height: 30px;
+  padding: 0 12px;
   border-radius: 999px;
-  border: 0;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: 11px;
   font-weight: 590;
@@ -126,7 +113,9 @@
 }
 
 .addBtn:hover:not(:disabled) {
-  filter: brightness(1.04);
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.026);
+  color: var(--text-primary);
 }
 
 .addBtn:disabled {
@@ -135,7 +124,7 @@
 }
 
 .empty {
-  padding: 34px 0 6px;
+  padding: 28px 0 6px;
   text-align: left;
   color: var(--text-tertiary);
   font-size: 13px;
@@ -145,24 +134,29 @@
   background: transparent;
 }
 
+.empty b {
+  color: var(--text-primary);
+}
+
 .entry {
-  border: 1px solid var(--line-subtle);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.014);
+  border-top: 1px solid var(--line-subtle);
+  border-radius: 0;
+  background: transparent;
   overflow: hidden;
 }
 
 .entryHdr {
-  min-height: 48px;
-  padding: 0 14px;
-  border-bottom: 1px solid var(--line-subtle);
+  min-height: 42px;
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 10px 0;
+  background: transparent;
+  border-bottom: 0;
 }
 
 .dateLabel {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 590;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -170,11 +164,12 @@
 }
 
 .dateInput {
-  height: 30px;
-  padding: 0 8px;
-  border-radius: 8px;
+  height: 28px;
+  padding: 0 7px;
+  border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: 12px;
   font-weight: 590;
@@ -185,15 +180,15 @@
 .dateInput:hover,
 .dateInput:focus {
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.022);
 }
 
 .delBtn {
   margin-left: auto;
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
+  height: 28px;
+  padding: 0 0 0 8px;
   border: 0;
+  border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
   font-family: inherit;
@@ -203,6 +198,7 @@
 
 .delBtn:hover:not(:disabled) {
   color: var(--danger);
+  background: transparent;
 }
 
 .delBtn:disabled {
@@ -212,10 +208,11 @@
 
 .textarea {
   width: 100%;
-  min-height: 180px;
-  padding: 14px;
-  background: transparent;
-  border: 0;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.014);
   color: var(--text-secondary);
   font-family: inherit;
   font-size: 13px;
@@ -224,12 +221,17 @@
   resize: vertical;
 }
 
+.textarea:focus {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.022);
+}
+
 .textarea::placeholder {
   color: var(--text-quaternary);
 }
 
 .savingHint {
-  padding: 0 14px 14px;
+  padding: 8px 0 0;
   font-size: 10px;
   color: var(--success);
 }
@@ -239,7 +241,7 @@
 }
 
 .loading {
-  padding: 34px 0 6px;
+  padding: 28px 0 6px;
   text-align: left;
   color: var(--text-tertiary);
   font-size: 13px;
@@ -247,11 +249,20 @@
 
 @media (max-width: 720px) {
   .heroMain {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
   }
 
   .heroMeta {
-    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .heroMetric:first-child {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
