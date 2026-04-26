@@ -1964,3 +1964,387 @@ textarea:focus-visible {
   border-color: var(--line);
   background: #121314;
 }
+
+
+/* PATCH v35 — refinamento rigoroso do drawer da tarefa */
+.taskModal {
+  width: min(900px, calc(100vw - 20px));
+  background: #101112;
+}
+
+.taskModalHeader {
+  padding: 18px 22px 15px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 18px;
+  background: #101112;
+}
+
+.taskModalHeader > div:first-child {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.taskModalHeader span:first-child {
+  max-width: 100%;
+  display: block;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.taskModalHeader input {
+  max-width: 100%;
+  height: auto;
+  min-height: 36px;
+  margin-top: 8px;
+  padding: 0;
+  display: block;
+  color: var(--text-primary);
+  font-size: clamp(22px, 1.55vw, 28px);
+  line-height: 1.08;
+  font-weight: 780;
+  letter-spacing: -0.05em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.taskModalHeader input:focus {
+  padding: 0 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.taskModalMeta {
+  margin-top: 10px;
+  gap: 7px;
+}
+
+.taskModalMeta small {
+  min-height: 24px;
+  max-width: 240px;
+  padding: 0 10px;
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 650;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.taskModalActions {
+  min-width: max-content;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.taskCompleteButton,
+.taskHeaderDeleteButton {
+  min-width: 94px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+}
+
+.taskCloseButton {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.taskModalGrid {
+  grid-template-columns: minmax(0, 1fr) 316px;
+  background: #101112;
+}
+
+.taskModalMain {
+  padding: 22px 26px 32px;
+  gap: 28px;
+  background: #101112;
+}
+
+.taskAside {
+  padding: 20px 22px 34px;
+  background: #101112;
+}
+
+.taskSectionHeader {
+  min-height: 30px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.taskSectionHeader h3 {
+  font-size: 17px;
+  font-weight: 780;
+  letter-spacing: -0.035em;
+}
+
+.taskSectionHeader small {
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Subtarefas */
+.subtaskList {
+  border-top: 0;
+}
+
+.subtaskItem {
+  min-height: 62px;
+  padding: 12px 0;
+  grid-template-columns: 24px minmax(0, 1fr) 74px;
+  gap: 12px;
+  border-bottom: 1px solid var(--line-subtle);
+  align-items: center;
+}
+
+.subtaskItem .check {
+  align-self: center;
+}
+
+.subtaskContent {
+  min-width: 0;
+  gap: 7px;
+}
+
+.subtaskContent > span {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-weight: 720;
+  line-height: 1.25;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.subtaskMeta {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subtaskMeta .taskAssigneeAvatar {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+
+.subtaskMeta small,
+.subtaskContent small {
+  min-width: 0;
+  color: #9fb0cc;
+  font-size: 12px;
+  font-weight: 650;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.subtaskStatus {
+  justify-self: end;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.018);
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Formulário de subtarefa */
+.subtaskForm {
+  margin-top: 4px;
+  grid-template-columns: minmax(0, 1fr) 78px;
+  gap: 10px;
+}
+
+.subtaskForm input {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 11px;
+  background: #0d0e0f;
+  font-size: 13.5px;
+}
+
+.subtaskForm button {
+  height: 42px;
+  border-radius: 11px;
+}
+
+/* Comentários */
+.comments {
+  border-top: 0;
+}
+
+.comment {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.commentHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+}
+
+.commentAuthor {
+  min-width: 0;
+  gap: 10px;
+}
+
+.commentAuthor .taskAssigneeAvatar {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+}
+
+.commentAuthor strong {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 760;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.commentHeader time {
+  padding-top: 3px;
+  color: #9fb0cc;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.comment p {
+  margin: 8px 0 0 40px;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* Formulário de comentário */
+.commentForm {
+  margin-top: 4px;
+  grid-template-columns: minmax(0, 1fr) 78px;
+  gap: 10px;
+}
+
+.commentForm textarea {
+  min-height: 78px;
+  padding: 12px 14px;
+  border-radius: 11px;
+  background: #0d0e0f;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.commentForm button {
+  height: 42px;
+  align-self: end;
+  border-radius: 11px;
+}
+
+/* Aside do drawer */
+.taskSummaryCard {
+  padding-bottom: 16px;
+}
+
+.taskField > span {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.taskField input,
+.taskField select {
+  height: 40px;
+  border-radius: 11px;
+}
+
+.priorityField {
+  gap: 8px;
+}
+
+.priorityPill {
+  height: 30px;
+}
+
+.collaborators {
+  padding-top: 16px;
+}
+
+.collaboratorItem {
+  min-height: 58px;
+}
+
+.collaboratorForm {
+  margin-top: 8px;
+}
+
+/* Notebook */
+@media (max-width: 1440px) {
+  .taskModal {
+    width: min(860px, calc(100vw - 20px));
+  }
+
+  .taskModalGrid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .taskModalHeader input {
+    font-size: clamp(21px, 1.45vw, 26px);
+  }
+
+  .taskModalMain {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (max-width: 980px) {
+  .taskModalHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .taskModalActions {
+    justify-content: flex-start;
+  }
+
+  .taskModalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .taskModalMain {
+    border-right: 0;
+  }
+
+  .comment p {
+    margin-left: 0;
+  }
+}
