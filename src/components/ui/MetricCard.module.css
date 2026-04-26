@@ -1,0 +1,123 @@
+/* ================================================================
+   MetricCard.module.css — usa os tokens semânticos de globals.css
+   ================================================================ */
+
+.card {
+  min-height: 148px;
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-4);
+  background: var(--surface);
+  transition:
+    opacity 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  opacity: 1;
+  border-color: var(--line-strong);
+  background: var(--surface-strong);
+}
+
+.clickable:active {
+  opacity: 0.7;
+  transform: scale(0.99);
+}
+
+/* Topline */
+.topline {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-size: var(--metric-label-size, 11px);
+  font-weight: 760;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--metric-label-color, var(--text-quaternary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pill {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+/* Valor */
+.value {
+  font-size: var(--metric-value-size, clamp(28px, 4vw, 44px));
+  font-weight: 760;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin-bottom: 4px;
+}
+
+/* Sub-texto */
+.sub {
+  font-size: var(--metric-sub-size, 12px);
+  color: var(--metric-sub-color, var(--text-secondary));
+  line-height: 1.4;
+  flex: 1;
+}
+
+/* Gauge bar */
+.gaugeWrap {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gaugeTrack {
+  width: 100%;
+  height: var(--gauge-h, 4px);
+  border-radius: var(--gauge-radius, 2px);
+  background: var(--gauge-bg, rgba(255, 255, 255, 0.08));
+  overflow: hidden;
+}
+
+.gaugeBar {
+  display: block;
+  height: 100%;
+  border-radius: var(--gauge-radius, 2px);
+  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gaugePct {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+/* Tone variants — cor da barra e do texto de percentual */
+.gaugeGreen  { background: var(--success); color: var(--success); }
+.gaugeAmber  { background: var(--accent-amber); color: var(--accent-amber); }
+.gaugeRed    { background: var(--danger); color: var(--danger); }
+.gaugeNeutral{ background: rgba(255,255,255,.18); color: var(--text-tertiary); }

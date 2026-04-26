@@ -1,0 +1,36 @@
+.page {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 28px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.primaryAction {
+  background: var(--accent-amber-soft);
+  color: #f6e7a4;
+  border: 1px solid rgba(255,205,73,.28);
+}
+
+.secondaryAction {
+  background: rgba(255,255,255,.04);
+  color: #d9deee;
+  border: 1px solid rgba(255,255,255,.08);
+}

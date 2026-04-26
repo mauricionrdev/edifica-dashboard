@@ -1,0 +1,397 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
+import {
+  clientInitials,
+  colorFromName,
+  statusClass,
+  statusLabel,
+} from '../../utils/clientHelpers.js';
+import { updateClient } from '../../api/clients.js';
+import { getClientProject, syncClientProject } from '../../api/projects.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
+import { hasPermission } from '../../utils/permissions.js';
+import { isAdminUser, isSuperAdmin } from '../../utils/roles.js';
+import {
+  getClientAvatar,
+  readAvatarFile,
+  removeClientAvatar,
+  saveClientAvatar,
+  subscribeAvatarChange,
+} from '../../utils/avatarStorage.js';
+import {
+  BriefcaseIcon,
+  BuildingIcon,
+  CameraIcon,
+  CloseIcon,
+  CoinsIcon,
+  TargetIcon,
+  TrashIcon,
+} from '../ui/Icons.jsx';
+import { fmtMoney } from '../../utils/format.js';
+import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
+import OverviewTab from './OverviewTab.jsx';
+import ContractTab from './ContractTab.jsx';
+import AnalysisTab from './AnalysisTab.jsx';
+import FeeScheduleTab from './FeeScheduleTab.jsx';
+import drawerStyles from './ClientDetailDrawer.module.css';
+import tabStyles from './ClientTabs.module.css';
+
+const TABS = [
+  { key: 'overview', label: 'Visão geral' },
+  { key: 'contract', label: 'Contrato' },
+  { key: 'fees', label: 'Mensalidades' },
+  { key: 'icp', label: 'Análise ICP' },
+  { key: 'gdv', label: 'Análise GDV' },
+];
+
+export default function ClientDetailDrawer({
+  client,
+  squads = [],
+  users = [],
+  canEditClient = false,
+  canViewFeeSchedule = false,
+  canEditFeeSchedule = false,
+  canDelete = false,
+  onClose,
+  onUpdated,
+  onDeleted,
+}) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [avatarUrl, setAvatarUrl] = useState(() => getClientAvatar(client));
+  const [clientProject, setClientProject] = useState(null);
+  const [projectLoading, setProjectLoading] = useState(false);
+  const [projectActionBusy, setProjectActionBusy] = useState(false);
+  const avatarInputRef = useRef(null);
+
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const admin = canDelete || isAdminUser(user);
+  const canManageAvatar = isSuperAdmin(user);
+  const canViewProject = hasPermission(user, 'projects.view');
+  const canCreateProject = hasPermission(user, 'projects.create');
+
+  useEffect(() => {
+    setActiveTab('overview');
+    setAvatarUrl(getClientAvatar(client));
+    setClientProject(null);
+  }, [client?.id]);
+
+  useEffect(() => {
+    if (!client?.id || !canViewProject) return undefined;
+    let cancelled = false;
+    setProjectLoading(true);
+    getClientProject(client.id)
+      .then((res) => {
+        if (!cancelled) setClientProject(res?.project || null);
+      })
+      .catch(() => {
+        if (!cancelled) setClientProject(null);
+      })
+      .finally(() => {
+        if (!cancelled) setProjectLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [canViewProject, client?.id]);
+
+  useEffect(() => subscribeAvatarChange(() => setAvatarUrl(getClientAvatar(client))), [client]);
+
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.key === 'Escape') onClose?.();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  const avatarBg = useMemo(() => colorFromName(client?.name), [client?.name]);
+
+  if (!client) return null;
+
+  const sc = statusClass(client);
+  const sl = statusLabel(client);
+  const statusTone =
+    sc === 'cc-active'
+      ? {
+          color: 'var(--success)',
+          background: 'var(--success-soft)',
+          border: 'color-mix(in srgb, var(--success) 24%, transparent)',
+        }
+      : sc === 'cc-ending'
+        ? {
+            color: 'var(--warning)',
+            background: 'var(--warning-soft)',
+            border: 'color-mix(in srgb, var(--warning) 26%, transparent)',
+          }
+        : {
+            color: 'var(--danger)',
+            background: 'var(--danger-soft)',
+            border: 'color-mix(in srgb, var(--danger) 24%, transparent)',
+          };
+
+  const handleAvatarFile = useCallback(
+    async (event) => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (!file || !client?.id) return;
+
+      try {
+        const dataUrl = await readAvatarFile(file);
+        const response = await updateClient(client.id, { avatarUrl: dataUrl });
+        saveClientAvatar(client, dataUrl);
+        setAvatarUrl(dataUrl);
+        showToast('Foto do cliente atualizada.', { variant: 'success' });
+        onUpdated?.(response?.client || { ...client, avatarUrl: dataUrl });
+      } catch (error) {
+        showToast(error?.message || 'Não foi possível usar esta imagem.', {
+          variant: 'error',
+        });
+      }
+    },
+    [client, onUpdated, showToast]
+  );
+
+  const handleRemoveAvatar = useCallback(async () => {
+    if (!client?.id) return;
+    try {
+      const response = await updateClient(client.id, { avatarUrl: '' });
+      removeClientAvatar(client);
+      setAvatarUrl('');
+      showToast('Foto do cliente removida.', { variant: 'success' });
+      onUpdated?.(response?.client || { ...client, avatarUrl: '' });
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível remover a foto.', {
+        variant: 'error',
+      });
+    }
+  }, [client, onUpdated, showToast]);
+
+  const handleProjectAction = useCallback(async () => {
+    if (!client?.id) return;
+    if (clientProject?.id) {
+      onClose?.();
+      navigate(`/projetos?id=${encodeURIComponent(clientProject.id)}`);
+      return;
+    }
+
+    if (!canCreateProject) {
+      showToast('Você não tem permissão para criar projetos.', { variant: 'error' });
+      return;
+    }
+
+    try {
+      setProjectActionBusy(true);
+      const res = await syncClientProject(client.id);
+      const project = res?.project || null;
+      setClientProject(project);
+      showToast('Projeto criado.', { variant: 'success' });
+      if (project?.id) {
+        onClose?.();
+        navigate(`/projetos?id=${encodeURIComponent(project.id)}`);
+      }
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível criar o projeto.', { variant: 'error' });
+    } finally {
+      setProjectActionBusy(false);
+    }
+  }, [canCreateProject, client?.id, clientProject?.id, navigate, onClose, showToast]);
+
+  const headerFacts = useMemo(
+    () => [
+      { label: 'Squad', value: client?.squadName || '-', icon: BuildingIcon },
+      { label: 'GDV', value: client?.gdvName || '-', icon: BriefcaseIcon },
+      {
+        label: 'Mensalidade',
+        value: fmtMoney(resolveClientFeeAtDate(client)),
+        icon: CoinsIcon,
+      },
+      { label: 'Meta', value: fmtMoney(client?.metaLucro || 0), icon: TargetIcon },
+    ],
+    [client]
+  );
+
+  const visibleTabs = useMemo(
+    () => TABS.filter((tab) => tab.key !== 'fees' || canViewFeeSchedule),
+    [canViewFeeSchedule]
+  );
+
+  useEffect(() => {
+    if (activeTab === 'fees' && !canViewFeeSchedule) {
+      setActiveTab('overview');
+    }
+  }, [activeTab, canViewFeeSchedule]);
+
+  const node = (
+    <div className={drawerStyles.overlay} role="presentation" onClick={onClose}>
+      <div
+        className={drawerStyles.drawer}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="client-drawer-name"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className={drawerStyles.header}>
+          <div className={drawerStyles.topbar}>
+            <div className={drawerStyles.topbarActions}>
+              {canViewProject && (clientProject?.id || canCreateProject) ? (
+                <button
+                  type="button"
+                  className={drawerStyles.projectBtn}
+                  onClick={handleProjectAction}
+                  disabled={projectLoading || projectActionBusy}
+                >
+                  {projectLoading ? 'Projeto' : clientProject?.id ? 'Abrir projeto' : 'Criar projeto'}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className={drawerStyles.iconBtn}
+                onClick={onClose}
+                aria-label="Fechar detalhes"
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div className={drawerStyles.identity}>
+            <button
+              type="button"
+              className={`${drawerStyles.avatar} ${
+                canManageAvatar ? drawerStyles.avatarEditable : ''
+              }`.trim()}
+              style={{ background: avatarBg }}
+              onClick={() => canManageAvatar && avatarInputRef.current?.click()}
+              disabled={!canManageAvatar}
+              aria-label={
+                canManageAvatar ? 'Alterar foto do cliente' : `Avatar de ${client.name}`
+              }
+              title={canManageAvatar ? 'Clique para alterar a foto' : client.name}
+            >
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
+              {canManageAvatar ? (
+                <span className={drawerStyles.avatarOverlay}>
+                  <CameraIcon size={14} />
+                </span>
+              ) : null}
+            </button>
+
+            <div className={drawerStyles.identityText}>
+              <div className={drawerStyles.nameRow}>
+                <h2 id="client-drawer-name" className={drawerStyles.name}>
+                  {client.name}
+                </h2>
+                <span
+                  className={drawerStyles.status}
+                  style={{
+                    color: statusTone.color,
+                    background: statusTone.background,
+                    border: `1px solid ${statusTone.border}`,
+                  }}
+                >
+                  {sl}
+                </span>
+              </div>
+
+              {canManageAvatar && avatarUrl ? (
+                <div className={drawerStyles.avatarActions}>
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    aria-label="Remover foto"
+                    title="Remover foto"
+                  >
+                    <TrashIcon size={13} />
+                  </button>
+                </div>
+              ) : null}
+
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarFile}
+                hidden
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className={tabStyles.tabsBar} role="tablist">
+          {visibleTabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              className={`${tabStyles.tab} ${
+                activeTab === tab.key ? tabStyles.tabActive : ''
+              }`.trim()}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className={tabStyles.tabBody}>
+          {activeTab === 'overview' && (
+            <OverviewTab
+              client={client}
+              squads={squads}
+              users={users}
+              headerFacts={headerFacts}
+              canEdit={canEditClient}
+              canDelete={admin}
+              onUpdated={onUpdated}
+              onDeleted={onDeleted}
+            />
+          )}
+
+          {activeTab === 'contract' && (
+            <ContractTab
+              client={client}
+              squads={squads}
+              users={users}
+              canEdit={canEditClient}
+              onUpdated={onUpdated}
+            />
+          )}
+
+          {activeTab === 'fees' && canViewFeeSchedule ? (
+            <FeeScheduleTab
+              client={client}
+              canEdit={canEditFeeSchedule}
+              onUpdated={onUpdated}
+            />
+          ) : null}
+
+          {activeTab === 'icp' && (
+            <AnalysisTab clientId={client.id} type="icp" canEdit={canEditClient} />
+          )}
+
+          {activeTab === 'gdv' && (
+            <AnalysisTab clientId={client.id} type="gdvanalise" canEdit={canEditClient} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(node, document.body);
+}
+

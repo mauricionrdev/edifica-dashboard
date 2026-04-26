@@ -1,0 +1,415 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.board {
+  min-width: 0;
+  background: var(--surface);
+}
+
+.boardHeader {
+  min-height: 58px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.boardHeader h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.1;
+  font-weight: 780;
+  letter-spacing: -0.03em;
+}
+
+.boardHeader p {
+  margin: 4px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.boardActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionInput {
+  width: min(260px, 26vw);
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.sectionInput::placeholder {
+  color: var(--text-quaternary);
+}
+
+.addButton,
+.headerButton,
+.noteButton,
+.removeTask,
+.removeSection,
+.addTaskRow button {
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.addButton {
+  padding: 0 12px;
+}
+
+.addButton:hover:not(:disabled),
+.headerButton:hover:not(:disabled),
+.noteButton:hover:not(:disabled),
+.removeTask:hover:not(:disabled),
+.removeSection:hover {
+  background: var(--bg-hover);
+}
+
+.addButton:disabled,
+.headerButton:disabled,
+.noteButton:disabled,
+.removeTask:disabled,
+.addTaskRow button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.headerButton {
+  padding: 0 10px;
+}
+
+.headerButtonSubtle {
+  color: var(--text-secondary);
+}
+
+.saveStatus {
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  color: var(--text-secondary);
+  background: var(--field-bg);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.saveStatus > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--text-quaternary);
+}
+
+.saveStatus_saved > span {
+  background: #68d391;
+}
+
+.saveStatus_saving > span,
+.saveStatus_pending > span {
+  background: var(--accent-amber);
+}
+
+.saveStatus_error > span {
+  background: #ef8f8f;
+}
+
+.tableHeader {
+  height: 38px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) minmax(220px, 300px) 112px 34px;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-quaternary);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sectionList {
+  display: flex;
+  flex-direction: column;
+}
+
+.section {
+  border-bottom: 1px solid var(--line);
+}
+
+.sectionRow {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: grid;
+  grid-template-columns: 18px 24px minmax(0, 1fr) auto 28px;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sectionRow:hover {
+  background: var(--bg-hover);
+}
+
+.sectionChevron {
+  color: var(--text-tertiary);
+  transition: transform 0.16s ease;
+}
+
+.sectionChevronClosed {
+  transform: rotate(-90deg);
+}
+
+.sectionIndex {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 780;
+}
+
+.sectionTitle {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 760;
+  outline: none;
+}
+
+.sectionTitle:disabled,
+.taskName:disabled,
+.noteArea:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.sectionCount {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.removeSection,
+.removeTask {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--text-tertiary);
+}
+
+.tasks {
+  display: flex;
+  flex-direction: column;
+}
+
+.taskRow {
+  min-height: 44px;
+  padding: 6px 16px;
+  border-top: 1px solid var(--line-subtle);
+  display: grid;
+  grid-template-columns: 24px minmax(340px, 1fr) minmax(220px, 300px) 112px 34px;
+  align-items: center;
+  gap: 12px;
+}
+
+.taskRow:hover {
+  background: color-mix(in srgb, var(--bg-hover) 60%, transparent);
+}
+
+.taskCheck {
+  width: 17px;
+  height: 17px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+}
+
+.taskMain {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.taskName {
+  width: 100%;
+  min-width: 0;
+  padding: 3px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  outline: none;
+}
+
+.assigneeCell {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.assigneeSelect {
+  min-width: 0;
+}
+
+.assigneeSelect > button {
+  min-height: 30px;
+  padding-inline: 8px;
+  background: transparent;
+  border-color: transparent;
+}
+
+.assigneeSelect > button:hover {
+  background: var(--field-bg);
+  border-color: var(--line);
+}
+
+.noteButton {
+  width: 100%;
+  height: 30px;
+  color: var(--text-tertiary);
+}
+
+.noteButtonActive {
+  color: var(--text-primary);
+}
+
+.noteArea {
+  width: 100%;
+  min-height: 72px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+
+.noteArea::placeholder {
+  color: var(--text-quaternary);
+}
+
+.addTaskRow {
+  min-height: 42px;
+  padding: 6px 16px;
+  border-top: 1px solid var(--line-subtle);
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.addTaskRow input {
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.addTaskRow input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.addTaskRow button {
+  padding: 0 12px;
+}
+
+@media (max-width: 1120px) {
+  .boardHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .boardActions {
+    width: 100%;
+  }
+
+  .sectionInput {
+    width: 100%;
+  }
+
+  .tableHeader,
+  .taskRow {
+    grid-template-columns: minmax(240px, 1fr) minmax(180px, 240px) 92px 30px;
+  }
+
+  .tableHeader span:first-child {
+    grid-column: 1;
+  }
+
+  .taskCheck {
+    display: none;
+  }
+}

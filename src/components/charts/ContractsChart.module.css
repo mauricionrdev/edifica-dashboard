@@ -1,0 +1,155 @@
+/* ContractsChart — estilo alinhado ao SVG de referência:
+   curvas suaves, grid dashed leve, áreas com gradient sutil,
+   pontos com halo, tooltips renderizados dentro do SVG.
+*/
+
+.wrap {
+  position: relative;
+  width: 100%;
+  padding: 8px 16px 0;
+  isolation: isolate;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.axisLabel {
+  fill: rgba(179, 179, 179, 0.7);
+  font-size: 14px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+.xLabel {
+  fill: rgba(179, 179, 179, 0.7);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  font-family: 'Manrope', system-ui, sans-serif;
+  text-anchor: middle;
+}
+
+.gridDashed {
+  stroke: rgba(0, 0, 0, 0.25);
+  stroke-width: 1.24286;
+  stroke-dasharray: 2.49;
+  vector-effect: non-scaling-stroke;
+}
+
+.axisBase {
+  stroke: rgba(0, 0, 0, 0.5);
+  stroke-width: 1.24286;
+  vector-effect: non-scaling-stroke;
+}
+
+.columnGuide {
+  stroke: rgba(255, 174, 76, 0.3);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* Linhas */
+.linePrimary {
+  fill: none;
+  stroke: #ffae4c;
+  stroke-width: 1.24286;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.lineMeta {
+  fill: none;
+  stroke: #6fd195;
+  stroke-width: 1.24286;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.linePrev {
+  fill: none;
+  stroke: #7086fd;
+  stroke-width: 1.24286;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Áreas com gradient (IDs correspondem aos <defs> do JSX) */
+.areaPrimary {
+  fill: rgba(255, 174, 76, 0.12);
+}
+
+.areaMeta {
+  fill: rgba(111, 209, 149, 0.1);
+}
+
+.areaPrev {
+  fill: rgba(112, 134, 253, 0.08);
+}
+
+/* Hit area transparente */
+.columnHit {
+  fill: transparent;
+  cursor: pointer;
+}
+
+/* Legenda */
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 44px;
+  flex-wrap: wrap;
+  padding: 18px 16px 22px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #919191;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.legendLine {
+  width: 16px;
+  height: 2px;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.legendLinePrimary { background: #ffae4c; }
+.legendLineMeta    { background: #6fd195; }
+.legendLinePrev    { background: #7086fd; }
+
+.legendValue {
+  color: #e3e3e3;
+  font-weight: 700;
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.emptyOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #858585;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 20px;
+}

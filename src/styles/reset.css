@@ -1,0 +1,138 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+html {
+  background: var(--bg-app);
+}
+
+body {
+  margin: 0;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+
+img,
+svg {
+  display: block;
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button,
+input,
+select,
+textarea {
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+#root {
+  isolation: isolate;
+}
+
+:where(button, a, input, select, textarea, [role="button"]) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button, a, input, select, textarea, [role="button"]):focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
+
+:where(button, a, input, select, textarea, [role="button"]):focus,
+:where(button, a, input, select, textarea, [role="button"]):focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+select {
+  appearance: none;
+  background-color: var(--field-bg);
+  color: var(--text-primary);
+  border-color: var(--field-line);
+  background-image: none;
+  padding-right: 34px !important;
+}
+
+select option {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+
+select:focus,
+select:focus-visible {
+  border-color: var(--field-line) !important;
+  background-color: var(--field-bg) !important;
+}
+
+:where(input, textarea):focus,
+:where(input, textarea):focus-visible {
+  border-color: var(--field-line) !important;
+  background-color: var(--field-bg) !important;
+}
+
+@media (max-width: 960px) {
+  :root {
+    --page-padding-x: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Notebook rigid reset */
+html,
+body,
+#root {
+  font-feature-settings: "cv01", "ss03";
+}

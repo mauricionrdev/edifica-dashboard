@@ -1,0 +1,94 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.summaryCard {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.summaryCard + .summaryCard {
+  padding-left: 14px;
+  border-left: 1px solid var(--line-subtle);
+}
+
+.summaryLabel {
+  color: var(--text-quaternary);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.summaryValue {
+  color: var(--text-primary);
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: clamp(18px, 1.9vw, 24px);
+  font-weight: 820;
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryCard.red .summaryValue,
+.summaryValue.red {
+  color: #ef8f8f;
+}
+
+.summaryCard.green .summaryValue {
+  color: #7fc99b;
+}
+
+.summarySub {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.fieldHint {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .summaryCard:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryCard {
+    padding-left: 0;
+    border-left: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .summaryCard:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+}

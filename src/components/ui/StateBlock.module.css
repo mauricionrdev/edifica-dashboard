@@ -1,0 +1,107 @@
+.block {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius-4);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.compact {
+  padding: 18px 8px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+}
+
+.body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.compact .badge {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.compact .title {
+  font-size: 13px;
+}
+
+.compact .description {
+  font-size: 13px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 730;
+  color: var(--text-primary);
+}
+
+.description {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.actions {
+  padding-top: 6px;
+}
+
+.loading .badge {
+  color: var(--warning);
+  background: rgba(245, 195, 0, 0.1);
+  border-color: rgba(245, 195, 0, 0.24);
+  animation: spin 0.95s linear infinite;
+}
+
+.error .badge {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.empty .badge {
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--line);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.92;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
