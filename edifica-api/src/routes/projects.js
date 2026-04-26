@@ -222,8 +222,69 @@ router.delete('/:id([0-9a-fA-F-]{36})', requirePermission('projects.edit'), asyn
   try {
     const project = await assertProjectAccess(req.params.id, req.user, 'projects.edit');
     const members = await loadProjectMembers(req.params.id);
+    const projectId = req.params.id;
 
-    await query('DELETE FROM projects WHERE id = ?', [req.params.id]);
+    await runWithDeadlockRetry(() => withTransaction(async (conn) => {
+      const [taskRows] = await conn.query(
+        'SELECT id FROM tasks WHERE project_id = ?',
+        [projectId]
+      );
+
+      const taskIds = taskRows.map((row) => row.id).filter(Boolean);
+
+      if (taskIds.length > 0) {
+        const placeholders = taskIds.map(() => '?').join(', ');
+
+        await conn.query(
+          `DELETE FROM task_collaborators WHERE task_id IN (${placeholders})`,
+          taskIds
+        );
+
+        await conn.query(
+          `DELETE FROM task_comments WHERE task_id IN (${placeholders})`,
+          taskIds
+        );
+
+        await conn.query(
+          `DELETE FROM task_events WHERE project_id = ? OR task_id IN (${placeholders})`,
+          [projectId, ...taskIds]
+        );
+
+        let removedSubtasks = 0;
+        do {
+          const [subtaskResult] = await conn.query(
+            'DELETE FROM tasks WHERE project_id = ? AND parent_task_id IS NOT NULL',
+            [projectId]
+          );
+          removedSubtasks = Number(subtaskResult?.affectedRows || 0);
+        } while (removedSubtasks > 0);
+
+        await conn.query(
+          'DELETE FROM tasks WHERE project_id = ?',
+          [projectId]
+        );
+      } else {
+        await conn.query(
+          'DELETE FROM task_events WHERE project_id = ?',
+          [projectId]
+        );
+      }
+
+      await conn.query(
+        'DELETE FROM project_members WHERE project_id = ?',
+        [projectId]
+      );
+
+      await conn.query(
+        'DELETE FROM project_sections WHERE project_id = ?',
+        [projectId]
+      );
+
+      await conn.query(
+        'DELETE FROM projects WHERE id = ?',
+        [projectId]
+      );
+    }));
 
     const recipientIds = members
       .map((entry) => entry.userId)
@@ -237,7 +298,7 @@ router.delete('/:id([0-9a-fA-F-]{36})', requirePermission('projects.edit'), asyn
         title: 'Projeto removido',
         body: project.name,
         entityType: 'project',
-        entityId: req.params.id,
+        entityId: projectId,
         entityLabel: project.name,
         actionUrl: '/projetos',
       });
