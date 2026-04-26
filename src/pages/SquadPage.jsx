@@ -80,7 +80,7 @@ function predictionCard(hit, total) {
   if (!total) {
     return {
       value: '0/0',
-      sub: 'Sem meta',
+      sub: 'Sem meta configurada',
       tone: 'muted',
     };
   }
@@ -97,7 +97,7 @@ function goalComparison(current, goal, { lowerIsBetter = false, format = display
   const currentValue = Number(current) || 0;
   const goalValue = Number(goal) || 0;
 
-  if (goalValue <= 0) return '';
+  if (goalValue <= 0) return 'Sem meta configurada';
 
   const isGood = lowerIsBetter
     ? currentValue > 0 && currentValue <= goalValue
@@ -125,6 +125,17 @@ function comparisonTone(current, goal, { lowerIsBetter = false } = {}) {
     : currentValue >= goalValue;
 
   return isGood ? 'green' : 'red';
+}
+
+function initialsFromClient(name) {
+  const parts = String(name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!parts.length) return 'CL';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 export default function SquadPage() {
@@ -519,14 +530,6 @@ export default function SquadPage() {
 
       return [
         {
-          id: 'selected',
-          label: 'Cliente selecionado',
-          value: selectedClient.name,
-          sub: selectedClient.gdvName || selectedClient.gestor || '',
-          tone: 'neutral',
-          wide: true,
-        },
-        {
           id: 'closed',
           label: 'Contratos fechados',
           value: displayInt(selectedClient.calc.fec),
@@ -655,17 +658,33 @@ export default function SquadPage() {
         onChange={handlePickLogo}
       />
 
+      {selectedClient ? (
+        <section className={styles.selectedStrip}>
+          <span className={styles.clientAvatar}>{initialsFromClient(selectedClient.name)}</span>
+          <div className={styles.selectedText}>
+            <span>Cliente em análise</span>
+            <strong>{selectedClient.name}</strong>
+          </div>
+          <div className={styles.selectedMeta}>
+            <span>{selectedClient.gdvName || 'Sem GDV'}</span>
+            <span>{selectedClient.gestor || 'Sem gestor'}</span>
+          </div>
+          <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
+            Limpar seleção
+          </button>
+        </section>
+      ) : null}
+
       <section className={styles.metricGrid}>
         {topCards.map((card) => (
-          <article
-            key={card.id}
-            className={`${styles.metricCard} ${card.wide ? styles.metricCardWide : ''}`.trim()}
-          >
+          <article key={card.id} className={styles.metricCard}>
             <span className={styles.metricLabel}>{card.label}</span>
             <strong className={`${styles.metricValue} ${toneClass(styles, card.tone)}`.trim()}>
               {card.value}
             </strong>
-            <span className={styles.metricSub}>{card.sub}</span>
+            <span className={`${styles.metricSub} ${toneClass(styles, card.tone)}`.trim()}>
+              {card.sub}
+            </span>
           </article>
         ))}
       </section>
@@ -687,12 +706,6 @@ export default function SquadPage() {
               aria-label="Buscar cliente no squad"
             />
           </label>
-
-          {selectedClient ? (
-            <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
-              Limpar seleção
-            </button>
-          ) : null}
         </div>
 
         {metricsError ? (
@@ -709,11 +722,14 @@ export default function SquadPage() {
                 onClick={() => setSelectedClientId(row.id)}
               >
                 <div className={styles.clientMain}>
-                  <strong>{row.name}</strong>
-                  <span>
-                    {row.gestor || 'Sem gestor'}
-                    {row.gdvName ? ` · ${row.gdvName}` : ''}
-                  </span>
+                  <span className={styles.clientAvatarSmall}>{initialsFromClient(row.name)}</span>
+                  <div>
+                    <strong>{row.name}</strong>
+                    <span>
+                      {row.gestor || 'Sem gestor'}
+                      {row.gdvName ? ` · ${row.gdvName}` : ''}
+                    </span>
+                  </div>
                 </div>
 
                 <div className={styles.clientStats}>

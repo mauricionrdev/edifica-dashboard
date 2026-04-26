@@ -4,7 +4,7 @@
   background: var(--surface);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
 }
 
 .hiddenInput {
@@ -20,8 +20,8 @@
 
 .headerLogo {
   position: relative;
-  width: 46px;
-  height: 46px;
+  width: 42px;
+  height: 42px;
   flex: 0 0 auto;
   padding: 0;
   border: 0;
@@ -46,8 +46,8 @@
 
 .headerLogo span {
   color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 760;
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: -0.04em;
 }
 
@@ -60,7 +60,7 @@
   place-items: center;
   font-size: 9px;
   font-style: normal;
-  font-weight: 760;
+  font-weight: 650;
   opacity: 0;
 }
 
@@ -252,28 +252,108 @@
   animation: squad-spin 0.8s linear infinite;
 }
 
+.selectedStrip {
+  min-height: 58px;
+  padding: 9px 12px;
+  border: 1px solid rgba(245, 184, 0, 0.16);
+  border-radius: 13px;
+  background: rgba(245, 184, 0, 0.035);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(180px, auto) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.clientAvatar,
+.clientAvatarSmall {
+  border-radius: 999px;
+  background: rgba(245, 184, 0, 0.13);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.clientAvatar {
+  width: 38px;
+  height: 38px;
+  font-size: 13px;
+}
+
+.clientAvatarSmall {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  font-size: 11px;
+}
+
+.selectedText {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.selectedText span,
+.selectedMeta span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 590;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.selectedText strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.08;
+  font-weight: 590;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.selectedMeta {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.selectedMeta span {
+  max-width: 140px;
+  overflow: hidden;
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .metricGrid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-  padding-bottom: 6px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
 }
 
 .metricCard {
-  min-height: 88px;
-  padding: 12px 14px;
+  min-height: 104px;
+  padding: 14px 15px;
   border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 12px;
+  border-radius: 13px;
   background: rgba(255, 255, 255, 0.018);
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.metricCardWide {
-  grid-column: span 2;
-  background: rgba(255, 255, 255, 0.028);
+.metricCard:hover {
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .metricLabel {
@@ -290,7 +370,7 @@
 .metricValue {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(19px, 1.45vw, 26px);
+  font-size: clamp(22px, 1.55vw, 28px);
   line-height: 1;
   font-weight: 590;
   letter-spacing: -0.045em;
@@ -300,21 +380,25 @@
 }
 
 .metricValue.green,
+.metricSub.green,
 .green {
   color: var(--success);
 }
 
 .metricValue.amber,
+.metricSub.amber,
 .amber {
   color: var(--accent);
 }
 
 .metricValue.red,
+.metricSub.red,
 .red {
   color: #f0a3a3;
 }
 
 .metricValue.muted,
+.metricSub.muted,
 .muted {
   color: var(--text-muted);
 }
@@ -329,14 +413,6 @@
   text-overflow: ellipsis;
 }
 
-.metricValue.green ~ .metricSub {
-  color: var(--success);
-}
-
-.metricValue.red ~ .metricSub {
-  color: #f0a3a3;
-}
-
 .listCard {
   display: flex;
   flex-direction: column;
@@ -348,9 +424,9 @@
   padding: 0 2px 10px;
   border-bottom: 1px solid var(--line);
   display: grid;
-  grid-template-columns: minmax(160px, max-content) minmax(260px, 420px) auto;
+  grid-template-columns: minmax(160px, max-content) minmax(280px, 520px);
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .listTitle {
@@ -382,12 +458,12 @@
 }
 
 .searchBox {
-  width: min(420px, 100%);
+  width: min(520px, 100%);
   height: 40px;
   padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--field-bg);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
   color: var(--text-quaternary);
   display: inline-flex;
   align-items: center;
@@ -396,7 +472,7 @@
 
 .searchBox:focus-within {
   border-color: var(--line-strong);
-  background: var(--field-bg-hover);
+  background: rgba(255, 255, 255, 0.032);
   color: var(--text-secondary);
 }
 
@@ -418,8 +494,7 @@
 }
 
 .clearSelection {
-  justify-self: end;
-  min-height: 34px;
+  min-height: 32px;
   padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -428,6 +503,7 @@
   font-family: inherit;
   font-size: 12px;
   font-weight: 590;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -445,8 +521,8 @@
 
 .clientRow {
   width: 100%;
-  min-height: 68px;
-  padding: 15px 12px;
+  min-height: 72px;
+  padding: 14px 14px;
   border: 0;
   border-bottom: 1px solid var(--line);
   border-radius: 0;
@@ -461,7 +537,7 @@
 }
 
 .clientRow:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.026);
 }
 
 .clientRowActive {
@@ -469,6 +545,14 @@
 }
 
 .clientMain {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+}
+
+.clientMain div {
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -498,7 +582,7 @@
 .clientStats {
   display: grid;
   grid-template-columns: repeat(2, minmax(70px, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .clientStats div {
@@ -600,13 +684,9 @@
   }
 }
 
-@media (max-width: 1220px) {
+@media (max-width: 1320px) {
   .metricGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .metricCardWide {
-    grid-column: span 1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .clientRow {
@@ -615,6 +695,27 @@
 
   .clientStatus {
     display: none;
+  }
+}
+
+@media (max-width: 920px) {
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .selectedStrip,
+  .listToolbar,
+  .clientRow {
+    grid-template-columns: 1fr;
+  }
+
+  .selectedMeta {
+    justify-content: flex-start;
+  }
+
+  .selectedMeta span:first-child {
+    padding-left: 0;
+    border-left: 0;
   }
 }
 
@@ -635,15 +736,6 @@
   .headerBtn,
   .headerGhostBtn {
     width: 100%;
-  }
-
-  .listToolbar,
-  .clientRow {
-    grid-template-columns: 1fr;
-  }
-
-  .clearSelection {
-    justify-self: stretch;
   }
 
   .clientStats {
