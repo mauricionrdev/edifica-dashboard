@@ -21,7 +21,6 @@ import TeamAccessPage from './pages/TeamAccessPage.jsx';
 import ForbiddenPage from './pages/ForbiddenPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
-import RequireAdminRoute from './routes/RequireAdminRoute.jsx';
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
 
 export default function App() {
@@ -60,12 +59,12 @@ export default function App() {
               <Route path="perfil" element={<RequirePermissionRoute permission="profile.view"><ProfilePage /></RequirePermissionRoute>} />
               <Route path="perfil/:userId" element={<RequirePermissionRoute permission="profile.view"><UserProfilePage /></RequirePermissionRoute>} />
               <Route path="squads/:squadId" element={<RequirePermissionRoute permission="squads.view"><SquadPage /></RequirePermissionRoute>} />
-              <Route path="ranking-squads" element={<RequireAdminRoute><SquadRankingPage /></RequireAdminRoute>} />
-              <Route path="equipe" element={<RequireAdminRoute><TeamAccessPage /></RequireAdminRoute>} />
+              <Route path="ranking-squads" element={<RequirePermissionRoute permission="squads.view"><SquadRankingPage /></RequirePermissionRoute>} />
+              <Route path="equipe" element={<RequirePermissionRoute permission="team.view"><TeamAccessPage /></RequirePermissionRoute>} />
               <Route path="acesso-negado" element={<ForbiddenPage />} />
               <Route
                 path="modelo-oficial"
-                element={<RequirePermissionRoute permission="projects.view"><ModeloOficialPage /></RequirePermissionRoute>}
+                element={<RequirePermissionRoute permission="project_template.view"><ModeloOficialPage /></RequirePermissionRoute>}
               />
             </Route>
 

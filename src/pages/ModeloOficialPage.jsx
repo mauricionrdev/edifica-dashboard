@@ -77,7 +77,7 @@ export default function ModeloOficialPage() {
   const { setPanelHeader } = useOutletContext();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const admin = hasPermission(user, 'projects.edit');
+  const admin = hasPermission(user, 'project_template.edit');
 
   const [sections, setSections] = useState([]);
   const [hydrated, setHydrated] = useState(false);

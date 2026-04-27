@@ -26,6 +26,53 @@ import { requireAuth, requirePermission } from '../middleware/auth.js';
 const router = Router();
 router.use(requireAuth);
 
+function hasEffectivePermission(user, permission) {
+  if (!user || !permission) return false;
+  if (user.isMaster || ['admin', 'ceo', 'suporte_tecnologia'].includes(user.role)) return true;
+  const perms = Array.isArray(user.permissions) ? user.permissions : [];
+  return perms.includes('*') || perms.includes(permission);
+}
+
+function canViewFeeSchedule(user) {
+  return hasEffectivePermission(user, 'clients.fee_schedule.view') || hasEffectivePermission(user, 'clients.edit');
+}
+
+function canEditFeeSchedule(user) {
+  return hasEffectivePermission(user, 'clients.fee_schedule.edit') || hasEffectivePermission(user, 'clients.edit');
+}
+
+function normalizeFeeSteps(value) {
+  if (value == null || value === '') return [];
+  let parsed = value;
+  if (typeof value === 'string') {
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      parsed = [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .map((step) => ({
+      id: String(step?.id || '').trim(),
+      label: String(step?.label || '').trim(),
+      amount: Number(step?.amount) || 0,
+      startsAt: String(step?.startsAt || step?.startDate || '').trim(),
+      endsAt: String(step?.endsAt || step?.endDate || '').trim(),
+      note: String(step?.note || '').trim(),
+    }))
+    .filter((step) => step.label || step.amount || step.startsAt || step.endsAt || step.note)
+    .slice(0, 60);
+}
+
+async function ensureClientFeeStepsSchema() {
+  try {
+    await query('ALTER TABLE clients ADD COLUMN fee_steps_json JSON NULL');
+  } catch (err) {
+    if (err?.code !== 'ER_DUP_FIELDNAME') throw err;
+  }
+}
+
 const RESPONSIBLE_ROLES = {
   gestor: new Set(['gestor', 'admin', 'ceo', 'suporte_tecnologia']),
   gdvName: new Set(['gdv', 'admin', 'ceo', 'suporte_tecnologia']),
@@ -263,6 +310,33 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
 });
 
 // --------------------------------------------------------------
+//  GET/PUT /api/clients/:id/fee-steps
+// --------------------------------------------------------------
+router.get('/:id/fee-steps', requirePermission('clients.fee_schedule.view'), async (req, res, next) => {
+  try {
+    if (!canViewFeeSchedule(req.user)) throw forbidden('Sem permissão para ver evolução contratual');
+    await ensureClientFeeStepsSchema();
+    const current = await getAccessibleClientRow(req.params.id, req.user, 'id, fee_steps_json');
+    res.json({ feeSteps: normalizeFeeSteps(current.fee_steps_json) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/:id/fee-steps', requirePermission('clients.fee_schedule.edit'), async (req, res, next) => {
+  try {
+    if (!canEditFeeSchedule(req.user)) throw forbidden('Sem permissão para editar evolução contratual');
+    await ensureClientFeeStepsSchema();
+    await getAccessibleClientRow(req.params.id, req.user, 'id, squad_id');
+    const feeSteps = normalizeFeeSteps(req.body?.feeSteps);
+    await query('UPDATE clients SET fee_steps_json = ? WHERE id = ?', [JSON.stringify(feeSteps), req.params.id]);
+    res.json({ feeSteps });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --------------------------------------------------------------
 //  PUT /api/clients/:id
 // --------------------------------------------------------------
 router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => {
@@ -272,6 +346,9 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
     const current = await getAccessibleClientRow(id, req.user, '*');
 
     const fields = await normalizeResponsibleFields(pickUpdatableFields(req.body || {}));
+    if ((fields.fee !== undefined || fields.metaLucro !== undefined) && !canEditFeeSchedule(req.user)) {
+      throw forbidden('Sem permissão para editar valores contratuais');
+    }
     const updates = [];
     const params = [];
 

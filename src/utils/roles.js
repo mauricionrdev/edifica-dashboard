@@ -7,7 +7,7 @@
 export const ROLES = {
   ceo:                { label: 'CEO',                    access: 'all', superAdmin: true },
   suporte_tecnologia: { label: 'Suporte de Tecnologia', access: 'all', superAdmin: true },
-  admin:              { label: 'Administrador',         access: 'all' },
+  admin:              { label: 'Administrador legado',  access: 'all', legacy: true },
   cap:                { label: 'CAP',                   access: 'squad' },
   gestor:             { label: 'Gestor de Tráfego',     access: 'squad' },
   gdv:                { label: 'GDV',                   access: 'squad' },

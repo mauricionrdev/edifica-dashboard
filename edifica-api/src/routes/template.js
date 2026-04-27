@@ -13,7 +13,7 @@ import { requireAuth, requirePermission } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', requireAuth, requirePermission('projects.view'), async (req, res, next) => {
+router.get('/', requireAuth, requirePermission('project_template.view'), async (req, res, next) => {
   try {
     const rows = await query(
       'SELECT sections, updated_at FROM onboarding_template WHERE id = 1 LIMIT 1'
@@ -44,7 +44,7 @@ router.get('/', requireAuth, requirePermission('projects.view'), async (req, res
   }
 });
 
-router.put('/', requireAuth, requirePermission('projects.edit'), async (req, res, next) => {
+router.put('/', requireAuth, requirePermission('project_template.edit'), async (req, res, next) => {
   try {
     const { sections } = req.body || {};
     if (!Array.isArray(sections)) throw badRequest('sections deve ser um array');
@@ -70,7 +70,7 @@ router.put('/', requireAuth, requirePermission('projects.edit'), async (req, res
   }
 });
 
-router.post('/reset', requireAuth, requirePermission('projects.edit'), async (req, res, next) => {
+router.post('/reset', requireAuth, requirePermission('project_template.edit'), async (req, res, next) => {
   try {
     await query(
       `INSERT INTO onboarding_template (id, sections)
