@@ -115,7 +115,7 @@ router.get('/', requireAuth, requirePermission('gdv.view'), async (req, res, nex
   }
 });
 
-router.post('/', requireAuth, requirePermission('team.manage'), async (req, res, next) => {
+router.post('/', requireAuth, requirePermission('gdv.manage'), async (req, res, next) => {
   try {
     await ensureGdvSchema();
     const clean = String(req.body?.name || '').trim();
@@ -148,7 +148,7 @@ router.post('/', requireAuth, requirePermission('team.manage'), async (req, res,
   }
 });
 
-router.put('/:id', requireAuth, requirePermission('team.manage'), async (req, res, next) => {
+router.put('/:id', requireAuth, requirePermission('gdv.manage'), async (req, res, next) => {
   try {
     await ensureGdvSchema();
     const { id } = req.params;
@@ -197,7 +197,7 @@ router.put('/:id', requireAuth, requirePermission('team.manage'), async (req, re
   }
 });
 
-router.delete('/:id', requireAuth, requirePermission('team.manage'), async (req, res, next) => {
+router.delete('/:id', requireAuth, requirePermission('gdv.manage'), async (req, res, next) => {
   try {
     await ensureGdvSchema();
     const rows = await query('SELECT id, name FROM gdvs WHERE id = ? LIMIT 1', [req.params.id]);

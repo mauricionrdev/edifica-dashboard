@@ -131,7 +131,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-router.get('/', requireAuth, requirePermission('team.view'), async (req, res, next) => {
+router.get('/', requireAuth, requirePermission('team.manage'), async (req, res, next) => {
   try {
     await ensureTable();
     const status = String(req.query.status || 'all');
@@ -172,6 +172,9 @@ router.patch('/:id', requireAuth, requirePermission('team.manage'), async (req, 
     if (status === 'approved') {
       if (current.type === 'invite') {
         const role = VALID_ROLES.includes(approval.role) ? approval.role : 'gestor';
+        if (role === 'admin') {
+          throw badRequest('O cargo admin é legado e não pode ser usado em convites.');
+        }
         const squads = Array.isArray(approval.squads) ? approval.squads : [];
         const requestedEmail = String(current.requester_email || '').trim().toLowerCase();
         const requestedName = String(current.requester_name || '').trim();

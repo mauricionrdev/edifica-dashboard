@@ -7,7 +7,7 @@ export const ROLE_PERMISSION_MAP = {
     'central.view',
     'clients.view', 'clients.create', 'clients.edit', 'clients.fee_schedule.view', 'clients.fee_schedule.edit',
     'metrics.view', 'metrics.fill_week',
-    'gdv.view',
+    'gdv.view', 'gdv.manage',
     'squads.view', 'squads.manage',
     'team.view', 'team.manage',
     'audit.view',
@@ -55,7 +55,7 @@ export const PERMISSION_GROUPS = [
   { area: 'Central', permissions: ['central.view'] },
   { area: 'Clientes', permissions: ['clients.view', 'clients.create', 'clients.edit', 'clients.fee_schedule.view', 'clients.fee_schedule.edit'] },
   { area: 'Preencher Semana', permissions: ['metrics.view', 'metrics.fill_week'] },
-  { area: 'GDV', permissions: ['gdv.view'] },
+  { area: 'GDV', permissions: ['gdv.view', 'gdv.manage'] },
   { area: 'Projetos', permissions: ['projects.view', 'projects.create', 'projects.edit', 'project_template.view', 'project_template.edit'] },
   { area: 'Tarefas', permissions: ['tasks.view', 'tasks.create', 'tasks.edit', 'tasks.comment', 'tasks.complete.own', 'tasks.complete.any'] },
   { area: 'Squads', permissions: ['squads.view', 'squads.manage'] },
@@ -69,11 +69,12 @@ export const PERMISSION_LABELS = {
   'clients.view': 'Ver clientes',
   'clients.create': 'Criar clientes',
   'clients.edit': 'Editar clientes',
-  'clients.fee_schedule.view': 'Ver evolucao contratual',
-  'clients.fee_schedule.edit': 'Editar evolucao contratual',
+  'clients.fee_schedule.view': 'Ver evolução contratual',
+  'clients.fee_schedule.edit': 'Editar evolução contratual',
   'metrics.view': 'Ver métricas',
   'metrics.fill_week': 'Preencher semana',
   'gdv.view': 'Acessar GDV',
+  'gdv.manage': 'Gerenciar GDVs',
   'projects.view': 'Ver projetos',
   'projects.create': 'Criar projetos',
   'projects.edit': 'Editar projetos',
@@ -83,7 +84,7 @@ export const PERMISSION_LABELS = {
   'tasks.create': 'Criar tarefas',
   'tasks.edit': 'Editar tarefas',
   'tasks.comment': 'Comentar tarefas',
-  'tasks.complete.own': 'Concluir prÃ³prias tarefas',
+  'tasks.complete.own': 'Concluir próprias tarefas',
   'tasks.complete.any': 'Concluir qualquer tarefa',
   'squads.view': 'Ver squads',
   'squads.manage': 'Gerenciar squads',
@@ -155,6 +156,18 @@ export function canFillMetrics(user) {
 
 export function canViewGdv(user) {
   return isAdminUser(user) || hasPermission(user, 'gdv.view');
+}
+
+export function canManageGdvs(user) {
+  return isAdminUser(user) || hasPermission(user, 'gdv.manage');
+}
+
+export function canManageSquads(user) {
+  return isAdminUser(user) || hasPermission(user, 'squads.manage');
+}
+
+export function canViewAudit(user) {
+  return isAdminUser(user) || hasPermission(user, 'audit.view');
 }
 
 

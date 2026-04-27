@@ -332,7 +332,7 @@ export default function ProjectsPage() {
     return (Array.isArray(userDirectory) ? userDirectory : []).filter((entry) => !usedIds.has(entry.id));
   }, [taskCollaborators, selectedTask?.assigneeUserId, userDirectory]);
 
-  const canAccessTemplate = hasPermission(user, 'projects.view');
+  const canAccessTemplate = hasPermission(user, 'project_template.view');
   const canManageProjects = hasPermission(user, 'projects.edit');
   const canCreateTasks = hasPermission(user, 'tasks.create');
   const canEditTasks = hasPermission(user, 'tasks.edit');

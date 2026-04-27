@@ -7,8 +7,8 @@ import { listAccessRequests, updateAccessRequest } from '../api/accessRequests.j
 import { listAuditLogs, listAuditLogFilters } from '../api/auditLogs.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { isAdminUser, isSuperAdmin, roleLabel } from '../utils/roles.js';
-import { PERMISSION_GROUPS, ROLE_ORDER, getRoleSummary, permissionLabel } from '../utils/permissions.js';
+import { roleLabel } from '../utils/roles.js';
+import { PERMISSION_GROUPS, ROLE_ORDER, getRoleSummary, hasPermission, permissionLabel } from '../utils/permissions.js';
 import {
   BuildingIcon,
   PlusIcon,
@@ -348,7 +348,7 @@ function UserFormModal({
                 <Select value={form.role} onChange={(event) => updateField('role', event.target.value)} aria-label="Cargo do usuário">
                   <option value="ceo">CEO</option>
                   <option value="suporte_tecnologia">Suporte de Tecnologia</option>
-                  <option value="admin">Administrador</option>
+                  {mode === 'edit' && form.role === 'admin' ? <option value="admin">Administrador legado</option> : null}
                   <option value="gdv">GDV</option>
                   <option value="gestor">Gestor de Tráfego</option>
                   <option value="cap">CAP</option>
@@ -357,27 +357,6 @@ function UserFormModal({
             </div>
           </section>
 
-          <section className={styles.selectorBlock}>
-            <div className={styles.selectorHead}>
-              <strong>Cargos secundários</strong>
-              <span>{form.secondaryRoles.length} marcado(s)</span>
-            </div>
-            <div className={styles.squadSelectGrid}>
-              {SECONDARY_ROLE_OPTIONS.map((role) => {
-                const checked = form.secondaryRoles.includes(role);
-                const disabled = form.role === role;
-                return (
-                  <label
-                    key={role}
-                    className={`${styles.checkboxCard} ${checked ? styles.checkboxCardActive : ''} ${disabled ? styles.checkboxCardDisabled : ''}`.trim()}
-                  >
-                    <input type="checkbox" checked={checked} disabled={disabled} onChange={() => toggleSecondaryRole(role)} />
-                    <span>{roleLabel(role)}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </section>
 
           <section className={styles.selectorBlock}>
             <div className={styles.selectorHead}><strong>Escopo de squads</strong><span>{form.squads.length} selecionado(s)</span></div>
@@ -592,7 +571,7 @@ function RequestReviewModal({ request, squads = [], busy = false, onClose, onSub
                   <Select value={form.role} onChange={(event) => updateField('role', event.target.value)} aria-label="Papel inicial do convite">
                     <option value="ceo">CEO</option>
                     <option value="suporte_tecnologia">Suporte de Tecnologia</option>
-                    <option value="admin">Administrador</option>
+
                     <option value="gdv">GDV</option>
                     <option value="gestor">Gestor de Tráfego</option>
                     <option value="cap">CAP</option>
@@ -694,9 +673,12 @@ export default function TeamAccessPage() {
     setPanelHeader,
   } = useOutletContext();
 
-  const admin = isAdminUser(user);
-  const superAdmin = isSuperAdmin(user);
-  const [activeTab, setActiveTab] = useState('requests');
+  const canViewTeam = hasPermission(user, 'team.view');
+  const canManageTeam = hasPermission(user, 'team.manage');
+  const canManageSquads = hasPermission(user, 'squads.manage');
+  const canManageGdvs = hasPermission(user, 'gdv.manage');
+  const canViewAuditTrail = hasPermission(user, 'audit.view');
+  const [activeTab, setActiveTab] = useState('users');
   const [squadModal, setSquadModal] = useState({ open: false, mode: 'create', squad: null });
   const [userModal, setUserModal] = useState({ open: false, mode: 'create', user: null, initialRole: 'gestor' });
   const [userDeleteConfirm, setUserDeleteConfirm] = useState({ open: false, user: null });
@@ -721,7 +703,7 @@ export default function TeamAccessPage() {
   const [auditActionFilter, setAuditActionFilter] = useState('all');
   const [auditEntityFilter, setAuditEntityFilter] = useState('all');
   const loadUsers = async () => {
-    if (!admin) return;
+    if (!canViewTeam) return;
     setUsersLoading(true);
     setUsersError(null);
     try {
@@ -736,7 +718,7 @@ export default function TeamAccessPage() {
   };
 
   const loadRequests = async () => {
-    if (!admin) return;
+    if (!canManageTeam) return;
     setRequestsLoading(true);
     setRequestsError(null);
     try {
@@ -750,7 +732,7 @@ export default function TeamAccessPage() {
   };
 
   const loadAuditLogs = async (overrides = {}) => {
-    if (!admin) return;
+    if (!canViewAuditTrail) return;
     const nextAction = overrides.action ?? auditActionFilter;
     const nextEntityType = overrides.entityType ?? auditEntityFilter;
     setAuditLoading(true);
@@ -773,12 +755,10 @@ export default function TeamAccessPage() {
   };
 
   useEffect(() => {
-    if (admin) {
-      loadUsers();
-      loadRequests();
-      loadAuditLogs({ action: 'all', entityType: 'all' });
-    }
-  }, [admin]);
+    if (canViewTeam) loadUsers();
+    if (canManageTeam) loadRequests();
+    if (canViewAuditTrail) loadAuditLogs({ action: 'all', entityType: 'all' });
+  }, [canManageTeam, canViewAuditTrail, canViewTeam]);
 
   const squadRows = useMemo(() => {
     const squadList = Array.isArray(squads) ? squads : [];
@@ -884,6 +864,20 @@ export default function TeamAccessPage() {
 
   const matrixPermissions = useMemo(() => permissionGroups.flatMap((group) => group.permissions), [permissionGroups]);
 
+  const accessibleTabs = useMemo(() => {
+    const tabs = [];
+    if (canManageTeam) tabs.push('requests');
+    if (canViewTeam) tabs.push('users', 'squads', 'gdvs', 'roles');
+    if (canViewAuditTrail) tabs.push('audit');
+    return tabs;
+  }, [canManageTeam, canViewAuditTrail, canViewTeam]);
+
+  useEffect(() => {
+    if (accessibleTabs.length && !accessibleTabs.includes(activeTab)) {
+      setActiveTab(accessibleTabs[0]);
+    }
+  }, [accessibleTabs, activeTab]);
+
   useEffect(() => {
     const title = (
       <>
@@ -905,56 +899,54 @@ export default function TeamAccessPage() {
       </>
     );
 
-    const actions = admin ? (
-      <div className={styles.headerActions}>
-        {activeTab === 'requests' ? (
-          <button type="button" className={styles.ghostButton} onClick={loadRequests}>
-            Atualizar solicitações
-          </button>
-        ) : activeTab === 'users' ? (
-          <button
-            type="button"
-            className={styles.headerBtn}
-            onClick={() => setUserModal({ open: true, mode: 'create', user: null, initialRole: 'gestor' })}
-          >
-            <PlusIcon size={14} />
-            <span>Novo usuário</span>
-          </button>
-        ) : activeTab === 'squads' ? (
-          <button
-            type="button"
-            className={styles.headerBtn}
-            onClick={() => setSquadModal({ open: true, mode: 'create', squad: null })}
-          >
-            <PlusIcon size={14} />
-            <span>Novo squad</span>
-          </button>
-        ) : activeTab === 'gdvs' ? (
-          <button
-            type="button"
-            className={styles.headerBtn}
-            onClick={() => setUserModal({ open: true, mode: 'create', user: null, initialRole: 'gdv' })}
-          >
-            <PlusIcon size={14} />
-            <span>Novo GDV</span>
-          </button>
-        ) : activeTab === 'roles' ? (
-          <button type="button" className={styles.ghostButton} onClick={loadUsers}>
-            Atualizar matriz
-          </button>
-        ) : (
-          <button type="button" className={styles.ghostButton} onClick={() => loadAuditLogs()}>
-            Atualizar trilha
-          </button>
-        )}
-      </div>
-    ) : null;
+    const actions = (() => {
+      if (activeTab === 'requests' && canManageTeam) {
+        return <div className={styles.headerActions}><button type="button" className={styles.ghostButton} onClick={loadRequests}>Atualizar solicitações</button></div>;
+      }
+      if (activeTab === 'users' && canManageTeam) {
+        return (
+          <div className={styles.headerActions}>
+            <button type="button" className={styles.headerBtn} onClick={() => setUserModal({ open: true, mode: 'create', user: null, initialRole: 'gestor' })}>
+              <PlusIcon size={14} />
+              <span>Novo usuário</span>
+            </button>
+          </div>
+        );
+      }
+      if (activeTab === 'squads' && canManageSquads) {
+        return (
+          <div className={styles.headerActions}>
+            <button type="button" className={styles.headerBtn} onClick={() => setSquadModal({ open: true, mode: 'create', squad: null })}>
+              <PlusIcon size={14} />
+              <span>Novo squad</span>
+            </button>
+          </div>
+        );
+      }
+      if (activeTab === 'gdvs' && canManageGdvs) {
+        return (
+          <div className={styles.headerActions}>
+            <button type="button" className={styles.headerBtn} onClick={() => setUserModal({ open: true, mode: 'create', user: null, initialRole: 'gdv' })}>
+              <PlusIcon size={14} />
+              <span>Novo GDV</span>
+            </button>
+          </div>
+        );
+      }
+      if (activeTab === 'roles' && canViewTeam) {
+        return <div className={styles.headerActions}><button type="button" className={styles.ghostButton} onClick={loadUsers}>Atualizar matriz</button></div>;
+      }
+      if (activeTab === 'audit' && canViewAuditTrail) {
+        return <div className={styles.headerActions}><button type="button" className={styles.ghostButton} onClick={() => loadAuditLogs()}>Atualizar trilha</button></div>;
+      }
+      return null;
+    })();
 
     setPanelHeader({ title, actions });
-  }, [activeTab, admin, squadRows.length, filteredUserRows.length, gdvRows.length, pendingRequests, auditLogs.length, roleSummaries.length, setPanelHeader]);
+  }, [activeTab, canManageGdvs, canManageSquads, canManageTeam, canViewAuditTrail, canViewTeam, squadRows.length, filteredUserRows.length, gdvRows.length, pendingRequests, auditLogs.length, roleSummaries.length, setPanelHeader]);
 
   async function handleSquadSubmit(payload) {
-    if (!admin) return;
+    if (!canManageSquads) return;
     const safeName = String(payload?.name || '').trim();
     const ownerUserId = payload?.ownerUserId || '';
     const active = Boolean(ownerUserId);
@@ -977,7 +969,7 @@ export default function TeamAccessPage() {
   }
 
   async function handleUserSubmit(form) {
-    if (!admin) return;
+    if (!canManageTeam) return;
     setSubmitting(true);
     try {
       if (userModal.mode === 'create') {
@@ -1004,7 +996,7 @@ export default function TeamAccessPage() {
   }
 
   async function handleDeleteSquad(squad) {
-    if (!admin || !squad?.id) return;
+    if (!canManageSquads || !squad?.id) return;
     setDeleteId(squad.id);
     try {
       await deleteSquad(squad.id);
@@ -1019,7 +1011,7 @@ export default function TeamAccessPage() {
   }
 
   async function handleToggleUser(target) {
-    if (!admin || !target?.id) return;
+    if (!canManageTeam || !target?.id) return;
     setDeleteId(target.id);
     try {
       const response = await toggleUserActive(target.id);
@@ -1033,7 +1025,7 @@ export default function TeamAccessPage() {
   }
 
   async function handleDeleteUser(target) {
-    if (!admin || !target?.id) return;
+    if (!canManageTeam || !target?.id) return;
     setDeleteId(target.id);
     try {
       await deleteUser(target.id);
@@ -1048,7 +1040,7 @@ export default function TeamAccessPage() {
   }
 
   async function handleResetUserPassword(target) {
-    if (!admin || !target?.id) return;
+    if (!canManageTeam || !target?.id) return;
     setDeleteId(target.id);
     try {
       const response = await resetUserPassword(target.id);
@@ -1067,6 +1059,7 @@ export default function TeamAccessPage() {
   }
 
   async function handleRequestStatus(target, payload) {
+    if (!canManageTeam) return;
     try {
       setSubmitting(true);
       const response = await updateAccessRequest(target.id, payload);
@@ -1082,13 +1075,13 @@ export default function TeamAccessPage() {
     }
   }
 
-  if (!admin) {
+  if (!accessibleTabs.length) {
     return (
       <div className={styles.page}>
         <StateBlock
           variant="empty"
-          title="Acesso administrativo necessário"
-          description="A gestão de squads, usuários, acessos e solicitações fica disponível apenas para administradores da plataforma."
+          title="Acesso não autorizado"
+          description="Seu usuário não possui permissões para visualizar esta área."
         />
       </div>
     );
@@ -1127,54 +1120,42 @@ export default function TeamAccessPage() {
     <>
       <div className={styles.page}>
         <div className={styles.tabBar}>
-          <button
-            type="button"
-            className={`${styles.tabButton} ${activeTab === 'requests' ? styles.tabButtonActive : ''}`}
-            onClick={() => setActiveTab('requests')}
-          >
-            <MailIcon size={14} />
-            <span>Solicitações</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.tabButton} ${activeTab === 'users' ? styles.tabButtonActive : ''}`}
-            onClick={() => setActiveTab('users')}
-          >
-            <ShieldIcon size={14} />
-            <span>Usuários &amp; acessos</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.tabButton} ${activeTab === 'squads' ? styles.tabButtonActive : ''}`}
-            onClick={() => setActiveTab('squads')}
-          >
-            <BuildingIcon size={14} />
-            <span>Squads</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.tabButton} ${activeTab === 'gdvs' ? styles.tabButtonActive : ''}`}
-            onClick={() => setActiveTab('gdvs')}
-          >
-            <UsersIcon size={14} />
-            <span>GDVs</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.tabButton} ${activeTab === 'roles' ? styles.tabButtonActive : ''}`}
-            onClick={() => setActiveTab('roles')}
-          >
-            <ShieldIcon size={14} />
-            <span>Cargos &amp; permissões</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.tabButton} ${activeTab === 'audit' ? styles.tabButtonActive : ''}`}
-            onClick={() => setActiveTab('audit')}
-          >
-            <ShieldIcon size={14} />
-            <span>Auditoria</span>
-          </button>
+          {canManageTeam ? (
+            <button
+              type="button"
+              className={`${styles.tabButton} ${activeTab === 'requests' ? styles.tabButtonActive : ''}`}
+              onClick={() => setActiveTab('requests')}
+            >
+              <MailIcon size={14} />
+              <span>Solicitações</span>
+            </button>
+          ) : null}
+          {canViewTeam ? (
+            <>
+              <button type="button" className={`${styles.tabButton} ${activeTab === 'users' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('users')}>
+                <ShieldIcon size={14} />
+                <span>Usuários &amp; acessos</span>
+              </button>
+              <button type="button" className={`${styles.tabButton} ${activeTab === 'squads' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('squads')}>
+                <BuildingIcon size={14} />
+                <span>Squads</span>
+              </button>
+              <button type="button" className={`${styles.tabButton} ${activeTab === 'gdvs' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('gdvs')}>
+                <UsersIcon size={14} />
+                <span>GDVs</span>
+              </button>
+              <button type="button" className={`${styles.tabButton} ${activeTab === 'roles' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('roles')}>
+                <ShieldIcon size={14} />
+                <span>Cargos &amp; permissões</span>
+              </button>
+            </>
+          ) : null}
+          {canViewAuditTrail ? (
+            <button type="button" className={`${styles.tabButton} ${activeTab === 'audit' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('audit')}>
+              <ShieldIcon size={14} />
+              <span>Auditoria</span>
+            </button>
+          ) : null}
         </div>
 
         {activeTab === 'squads' ? (
@@ -1240,10 +1221,14 @@ export default function TeamAccessPage() {
                         <td>
                           <div className={styles.rowActions}>
                             <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.dashboardLink}>Abrir dashboard</Link>
-                            <button type="button" className={styles.ghostButton} onClick={() => setSquadModal({ open: true, mode: 'edit', squad })}>Editar</button>
-                            <button type="button" className={styles.dangerButton} disabled={deleteId === squad.id} onClick={() => handleDeleteSquad(squad)}>
-                              {deleteId === squad.id ? 'Removendo...' : 'Excluir'}
-                            </button>
+                            {canManageSquads ? (
+                              <>
+                                <button type="button" className={styles.ghostButton} onClick={() => setSquadModal({ open: true, mode: 'edit', squad })}>Editar</button>
+                                <button type="button" className={styles.dangerButton} disabled={deleteId === squad.id} onClick={() => handleDeleteSquad(squad)}>
+                                  {deleteId === squad.id ? 'Removendo...' : 'Excluir'}
+                                </button>
+                              </>
+                            ) : <span className={styles.dimText}>Somente leitura</span>}
                           </div>
                         </td>
                       </tr>
@@ -1307,7 +1292,7 @@ export default function TeamAccessPage() {
                     <option value="all">Todos</option>
                     <option value="ceo">CEO</option>
                     <option value="suporte_tecnologia">Suporte de Tecnologia</option>
-                    <option value="admin">Administrador</option>
+                    <option value="admin">Administrador legado</option>
                     <option value="gdv">GDV</option>
                     <option value="gestor">Gestor de Tráfego</option>
                     <option value="cap">CAP</option>
@@ -1372,21 +1357,20 @@ export default function TeamAccessPage() {
                         <td><span className={`${styles.statusPill} ${entry.active ? styles.statusPillActive : styles.statusPillMuted}`}>{entry.active ? 'Ativo' : 'Inativo'}</span></td>
                         <td>
                           <div className={styles.rowActions}>
-                            <button type="button" className={styles.ghostButton} onClick={() => setUserModal({ open: true, mode: 'edit', user: entry })}>Editar</button>
-                            <button type="button" className={styles.dashboardLink} disabled={Boolean(entry.isMaster) || deleteId === entry.id} onClick={() => handleResetUserPassword(entry)}>
-                              {deleteId === entry.id ? 'Gerando...' : 'Gerar senha'}
-                            </button>
-                            <button type="button" className={styles.dashboardLink} disabled={Boolean(entry.isMaster) || deleteId === entry.id} onClick={() => handleToggleUser(entry)}>
-                              {deleteId === entry.id ? 'Salvando...' : entry.active ? 'Desativar' : 'Reativar'}
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.dangerButton}
-                              disabled={Boolean(entry.isMaster) || deleteId === entry.id}
-                              onClick={() => setUserDeleteConfirm({ open: true, user: entry })}
-                            >
-                              {deleteId === entry.id ? 'Removendo...' : 'Excluir'}
-                            </button>
+                            {canManageTeam ? (
+                              <>
+                                <button type="button" className={styles.ghostButton} onClick={() => setUserModal({ open: true, mode: 'edit', user: entry })}>Editar</button>
+                                <button type="button" className={styles.dashboardLink} disabled={Boolean(entry.isMaster) || deleteId === entry.id} onClick={() => handleResetUserPassword(entry)}>
+                                  {deleteId === entry.id ? 'Gerando...' : 'Gerar senha'}
+                                </button>
+                                <button type="button" className={styles.dashboardLink} disabled={Boolean(entry.isMaster) || deleteId === entry.id} onClick={() => handleToggleUser(entry)}>
+                                  {deleteId === entry.id ? 'Salvando...' : entry.active ? 'Desativar' : 'Reativar'}
+                                </button>
+                                <button type="button" className={styles.dangerButton} disabled={Boolean(entry.isMaster) || deleteId === entry.id} onClick={() => setUserDeleteConfirm({ open: true, user: entry })}>
+                                  {deleteId === entry.id ? 'Removendo...' : 'Excluir'}
+                                </button>
+                              </>
+                            ) : <span className={styles.dimText}>Somente leitura</span>}
                           </div>
                         </td>
                       </tr>
@@ -1441,7 +1425,7 @@ export default function TeamAccessPage() {
                         </td>
                         <td>{entry.clientsCount}</td>
                         <td>
-                          {superAdmin ? (
+                          {canManageGdvs ? (
                             <UserPicker
                               className={styles.ownerInlineSelect}
                               users={userRows.filter((item) => item.active)}
@@ -1807,7 +1791,7 @@ export default function TeamAccessPage() {
           mode={squadModal.mode}
           squad={squadModal.squad}
           users={userRows.filter((entry) => entry.active)}
-          canEditOwner={superAdmin}
+          canEditOwner={canManageSquads}
           busy={submitting}
           deleting={deleteId === squadModal.squad?.id}
           onClose={() => setSquadModal({ open: false, mode: 'create', squad: null })}

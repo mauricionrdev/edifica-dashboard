@@ -102,7 +102,7 @@ router.get('/', requireAuth, requirePermission('squads.view'), async (req, res, 
   }
 });
 
-router.post('/', requireAuth, requirePermission('team.manage'), async (req, res, next) => {
+router.post('/', requireAuth, requirePermission('squads.manage'), async (req, res, next) => {
   try {
     await ensureSquadSchema();
     const clean = String(req.body?.name || '').trim();
@@ -137,7 +137,7 @@ router.post('/', requireAuth, requirePermission('team.manage'), async (req, res,
   }
 });
 
-router.put('/:id', requireAuth, requirePermission('team.manage'), async (req, res, next) => {
+router.put('/:id', requireAuth, requirePermission('squads.manage'), async (req, res, next) => {
   try {
     await ensureSquadSchema();
     const { id } = req.params;
@@ -183,7 +183,7 @@ router.put('/:id', requireAuth, requirePermission('team.manage'), async (req, re
   }
 });
 
-router.delete('/:id', requireAuth, requirePermission('team.manage'), async (req, res, next) => {
+router.delete('/:id', requireAuth, requirePermission('squads.manage'), async (req, res, next) => {
   try {
     await ensureSquadSchema();
     const { id } = req.params;

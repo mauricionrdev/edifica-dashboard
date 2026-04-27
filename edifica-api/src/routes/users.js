@@ -130,6 +130,9 @@ router.post('/', requirePermission('team.manage'), async (req, res, next) => {
     }
     const normalizedEmail = String(email).trim().toLowerCase();
     const normalizedRole = role && VALID_ROLES.includes(role) ? role : 'gestor';
+    if (normalizedRole === 'admin') {
+      throw badRequest('O cargo admin é legado e não deve ser usado para novos usuários.');
+    }
     const normalizedSecondaryRoles = normalizeSecondaryRoles(secondaryRoles, normalizedRole);
     const squadsArray = Array.isArray(squads) ? squads : [];
     const normalizedAvatar = AVATAR_COLORS.includes(String(avatarColor || '').trim().toLowerCase())
@@ -220,6 +223,7 @@ router.put('/:id', requirePermission('team.manage'), async (req, res, next) => {
     const nextPrimaryRole = role && VALID_ROLES.includes(role) ? role : current.role;
 
     if (role && VALID_ROLES.includes(role)) {
+      if (role === 'admin' && current.role !== 'admin') throw badRequest('O cargo admin é legado e não pode ser atribuído a novos usuários.');
       if (current.is_master && role !== 'admin') throw forbidden('Admin Master deve permanecer admin');
       updates.push('role = ?'); params.push(role);
     }
