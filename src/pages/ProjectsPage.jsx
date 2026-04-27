@@ -465,30 +465,67 @@ export default function ProjectsPage() {
       return true;
     });
 
-    const sortedTasks = [...filteredTasks].sort((left, right) => {
+    const sortByManualOrder = (left, right) => {
+      const leftSectionIndex = sections.findIndex((section) => section.id === left.sectionId);
+      const rightSectionIndex = sections.findIndex((section) => section.id === right.sectionId);
+
+      if (leftSectionIndex !== rightSectionIndex) return leftSectionIndex - rightSectionIndex;
+      return Number(left.position ?? 0) - Number(right.position ?? 0);
+    };
+
+    const compareTasks = (left, right) => {
       if (taskSort === 'due') {
         const leftValue = left.dueDate || '9999-12-31';
         const rightValue = right.dueDate || '9999-12-31';
-        return leftValue.localeCompare(rightValue);
+        return leftValue.localeCompare(rightValue) || sortByManualOrder(left, right);
       }
-      if (taskSort === 'assignee') {
-        return normalizeText(left.assigneeName).localeCompare(normalizeText(right.assigneeName));
-      }
-      if (taskSort === 'title') {
-        return normalizeText(left.title).localeCompare(normalizeText(right.title));
-      }
-      if (taskSort === 'status') {
-        return normalizeText(statusLabel(left.status)).localeCompare(normalizeText(statusLabel(right.status)));
-      }
-      return 0;
-    });
 
-    return sections
-      .map((section) => ({
-        key: section.id,
-        name: section.name,
-        tasks: sortedTasks.filter((task) => task.sectionId === section.id),
-      }));
+      if (taskSort === 'assignee') {
+        return (
+          normalizeText(left.assigneeName || 'zzzz sem responsavel').localeCompare(
+            normalizeText(right.assigneeName || 'zzzz sem responsavel')
+          ) || sortByManualOrder(left, right)
+        );
+      }
+
+      if (taskSort === 'title') {
+        return normalizeText(left.title).localeCompare(normalizeText(right.title)) || sortByManualOrder(left, right);
+      }
+
+      if (taskSort === 'status') {
+        return normalizeText(statusLabel(left.status)).localeCompare(normalizeText(statusLabel(right.status))) || sortByManualOrder(left, right);
+      }
+
+      return sortByManualOrder(left, right);
+    };
+
+    if (taskSort !== 'section') {
+      return [
+        {
+          key: '__sorted_tasks__',
+          name: `Tarefas ordenadas por ${
+            taskSort === 'due'
+              ? 'prazo'
+              : taskSort === 'assignee'
+                ? 'responsável'
+                : taskSort === 'title'
+                  ? 'nome'
+                  : 'status'
+          }`,
+          isVirtual: true,
+          tasks: [...filteredTasks].sort(compareTasks),
+        },
+      ];
+    }
+
+    const manuallySortedTasks = [...filteredTasks].sort(sortByManualOrder);
+
+    return sections.map((section) => ({
+      key: section.id,
+      name: section.name,
+      isVirtual: false,
+      tasks: manuallySortedTasks.filter((task) => task.sectionId === section.id),
+    }));
   }, [flatTasks, sections, taskFilter, taskSort]);
 
   useEffect(() => {
@@ -1345,7 +1382,7 @@ export default function ProjectsPage() {
                     return (
                       <article
                         key={group.key}
-                        className={`${styles.section} ${draggedSectionId === group.key ? styles.sectionDragging : ''}`.trim()}
+                        className={`${styles.section} ${group.isVirtual ? styles.sectionVirtual : ''} ${draggedSectionId === group.key ? styles.sectionDragging : ''}`.trim()}
                         draggable={Boolean(canManageProjects && section)}
                         onDragStart={(event) => {
                           if (!section) return;
@@ -1383,7 +1420,7 @@ export default function ProjectsPage() {
                           />
                         </button>
                         <span className={styles.sectionIndex}>
-                          {String(sections.findIndex((entry) => entry.id === group.key) + 1).padStart(2, '0')}
+                          {group.isVirtual ? '↕' : String(sections.findIndex((entry) => entry.id === group.key) + 1).padStart(2, '0')}
                         </span>
                         {sectionEditingId === group.key ? (
                           <input

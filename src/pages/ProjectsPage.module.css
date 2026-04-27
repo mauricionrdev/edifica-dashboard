@@ -2404,3 +2404,254 @@ textarea:focus-visible {
 .collaboratorForm [data-variant='drawer'] .list {
   gap: 1px !important;
 }
+
+
+/* PATCH v37 — compactar header e refinar ordenar */
+.detailHero {
+  padding: 13px 24px 12px;
+  gap: 10px;
+}
+
+.heroMainRow {
+  gap: 14px;
+  align-items: center;
+}
+
+.projectTitleRow {
+  align-items: center;
+  gap: 11px;
+}
+
+.projectIcon {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+}
+
+.projectIcon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.projectHeading {
+  gap: 4px;
+}
+
+.projectEyebrow {
+  font-size: 9px;
+  letter-spacing: 0.13em;
+}
+
+.projectHeading h1 {
+  max-width: 660px;
+  font-size: clamp(22px, 1.35vw, 27px);
+  line-height: 1.02;
+}
+
+.heroMeta {
+  font-size: 12px;
+  gap: 8px;
+}
+
+.heroMeta span + span::before {
+  margin-right: 8px;
+}
+
+.projectHeaderActions {
+  gap: 7px;
+}
+
+.memberAvatar {
+  width: 26px;
+  height: 26px;
+}
+
+.headerAction,
+.headerActionCompact,
+.iconActionButton {
+  height: 31px;
+  font-size: 11.5px;
+}
+
+.headerAction,
+.headerActionCompact {
+  padding: 0 10px;
+}
+
+.iconActionButton {
+  width: 31px;
+  min-width: 31px;
+}
+
+.summaryInline {
+  gap: 7px;
+}
+
+.summaryPill {
+  min-width: 78px;
+  min-height: 38px;
+  padding: 6px 9px;
+  border-radius: 10px;
+}
+
+.summaryLabel {
+  font-size: 8.8px;
+}
+
+.summaryValue {
+  font-size: 14px;
+}
+
+.createTask {
+  min-height: 48px;
+  padding: 8px 24px;
+  grid-template-columns: minmax(320px, 1fr) minmax(180px, 220px) minmax(190px, 230px) 108px 62px;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.createSelect,
+.createTask button {
+  height: 34px;
+  min-height: 34px;
+  border-radius: 8px;
+}
+
+.taskToolbar {
+  min-height: 50px;
+  padding: 8px 24px;
+  align-items: end;
+}
+
+.taskToolbarGroup {
+  gap: 8px;
+}
+
+.toolbarField {
+  gap: 5px;
+}
+
+.toolbarField > span {
+  font-size: 8.8px;
+  letter-spacing: 0.11em;
+}
+
+.toolbarSelect,
+.taskToolbar .toolbarField button,
+.taskToolbar .toolbarField [role="combobox"],
+.taskToolbar .toolbarField select {
+  min-width: 132px;
+  height: 34px;
+  min-height: 34px;
+  border-radius: 8px;
+  background: #101112;
+  font-size: 11.8px;
+  font-weight: 720;
+}
+
+.taskToolbar .toolbarField button,
+.taskToolbar .toolbarField [role="combobox"],
+.taskToolbar .toolbarField select {
+  padding: 0 10px;
+}
+
+.taskToolbar .toolbarField:focus-within > span {
+  color: var(--accent-amber);
+}
+
+.toolbarSelect:hover,
+.toolbarSelect:focus,
+.taskToolbar .toolbarField button:hover,
+.taskToolbar .toolbarField button:focus-visible,
+.taskToolbar .toolbarField [role="combobox"]:hover,
+.taskToolbar .toolbarField [role="combobox"]:focus-visible,
+.taskToolbar .toolbarField select:hover,
+.taskToolbar .toolbarField select:focus-visible {
+  border-color: var(--line-strong);
+  background: #121314;
+  outline: none;
+  box-shadow: none;
+}
+
+.sectionCreateForm {
+  gap: 8px;
+}
+
+.sectionCreateForm input,
+.sectionCreateForm button {
+  height: 34px;
+  min-height: 34px;
+  border-radius: 8px;
+}
+
+.sectionCreateForm input {
+  width: 220px;
+}
+
+.taskTableHeader {
+  min-height: 34px;
+}
+
+.sectionToggle {
+  min-height: 40px;
+}
+
+.task {
+  min-height: 46px;
+}
+
+@media (max-width: 1440px) {
+  .detailHero,
+  .createTask,
+  .taskToolbar {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .projectHeading h1 {
+    max-width: 560px;
+    font-size: clamp(21px, 1.28vw, 25px);
+  }
+
+  .summaryPill {
+    min-width: 74px;
+  }
+
+  .createTask {
+    grid-template-columns: minmax(280px, 1fr) minmax(164px, 200px) minmax(170px, 210px) 102px 60px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .heroMainRow {
+    align-items: start;
+  }
+
+  .summaryInline {
+    justify-content: flex-start;
+  }
+
+  .createTask {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+/* PATCH v38 — ordenar funcional */
+.sectionVirtual .sectionTitle {
+  color: var(--text-secondary);
+}
+
+.sectionVirtual .sectionIndex {
+  color: var(--accent-amber);
+  border-color: rgba(245, 184, 0, 0.24);
+  background: rgba(245, 184, 0, 0.055);
+}
+
+.sectionVirtual .sectionActions {
+  display: none;
+}
+
+.sectionVirtual .task {
+  cursor: default;
+}
