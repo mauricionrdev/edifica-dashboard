@@ -239,15 +239,18 @@ function clientMeta(client) {
 }
 
 function ActivityPanel({ activities = [], onOpenClient }) {
+  const rows = Array.isArray(activities) ? activities.slice(0, 5) : [];
+
   return (
     <section className={styles.activityPanel}>
       <div className={styles.sectionHeaderCompact}>
         <h3>Atividades</h3>
+        <span className={styles.panelMetaBadge}>{fmtInt(rows.length)}</span>
       </div>
 
-      {activities.length > 0 ? (
+      {rows.length > 0 ? (
         <div className={styles.activityList}>
-          {activities.map((activity) => (
+          {rows.map((activity) => (
             <button
               key={activity.key}
               type="button"
@@ -310,13 +313,14 @@ function projectProgress(project) {
 }
 
 function ProjectSummaryPanel({ projects = [], loading = false }) {
-  const rows = Array.isArray(projects) ? projects.slice(0, 6) : [];
+  const rows = Array.isArray(projects) ? projects.slice(0, 5) : [];
   const total = Array.isArray(projects) ? projects.length : 0;
-  const totalTasks = rows.reduce(
+  const allProjects = Array.isArray(projects) ? projects : [];
+  const totalTasks = allProjects.reduce(
     (sum, project) => sum + (Number(project?.taskCount ?? project?.totalTasks ?? project?.tasksCount ?? 0) || 0),
     0
   );
-  const completedTasks = rows.reduce(
+  const completedTasks = allProjects.reduce(
     (sum, project) => sum + (Number(project?.doneCount ?? project?.completedTasks ?? project?.completedTaskCount ?? 0) || 0),
     0
   );
@@ -344,7 +348,7 @@ function ProjectSummaryPanel({ projects = [], loading = false }) {
             return (
               <article key={project.id || `${project.name}-${index}`} className={styles.projectItem}>
                 <span className={styles.projectDot} aria-hidden="true" />
-                <span className={styles.projectMark}><ProjectBoardIcon size={24} /></span>
+                <span className={styles.projectMark}><ProjectBoardIcon size={18} /></span>
                 <span className={styles.projectInfo}>
                   <strong>{project.name || 'Projeto'}</strong>
                   <small>{project.squadName || project.clientName || 'Sem squad'}</small>
