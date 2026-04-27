@@ -2657,379 +2657,140 @@ textarea:focus-visible {
 }
 
 
-/* PATCH v39 — refatoração sênior da tela Projetos/Asana
-   Decisão: a lista de tarefas é a protagonista. O topo vira comando executivo compacto. */
-
-.grid {
-  grid-template-columns: 248px minmax(0, 1fr);
-}
-
-/* Header executivo compacto */
+/* PATCH v40 — correção de escopo: header e foco sem alterar o restante */
 .detailHero {
-  min-height: auto;
   padding: 14px 24px 12px;
-  border-bottom: 1px solid var(--line);
-  background: #0a0b0c;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "main actions"
-    "status status";
-  align-items: start;
-  gap: 10px 18px;
+  gap: 10px;
 }
 
 .heroMainRow {
-  grid-area: main;
-  display: block;
-  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 16px;
 }
 
 .projectTitleRow {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
-}
-
-.projectIcon {
-  width: 26px;
-  height: 26px;
-  min-width: 26px;
-  color: var(--accent-amber);
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.projectIcon svg {
-  width: 22px;
-  height: 22px;
-  stroke-width: 2;
+  align-items: start;
+  gap: 11px;
 }
 
 .projectHeading {
-  min-width: 0;
-  display: grid;
   gap: 4px;
 }
 
-.projectEyebrow {
-  color: var(--text-tertiary);
-  font-size: 9px;
-  font-weight: 780;
-  line-height: 1;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
 .projectHeading h1 {
-  max-width: 720px;
-  margin: 0;
-  color: var(--text-primary);
-  font-size: clamp(22px, 1.45vw, 28px);
+  max-width: 620px;
+  font-size: clamp(22px, 1.35vw, 27px);
   line-height: 1.02;
-  font-weight: 790;
-  letter-spacing: -0.052em;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .heroMeta {
-  margin-left: 40px;
-  color: var(--text-secondary);
+  margin-top: 3px;
   font-size: 12px;
-  gap: 8px;
 }
 
 .projectHeaderActions {
-  grid-area: actions;
   align-self: start;
   justify-self: end;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
   gap: 7px;
   flex-wrap: nowrap;
 }
 
-.memberStack {
-  margin-right: 2px;
-}
-
-.memberAvatar {
-  width: 25px;
-  height: 25px;
-  border-color: #0a0b0c;
-}
-
-.headerAction,
-.headerActionCompact,
-.iconActionButton {
-  height: 31px;
-  border-radius: 999px;
-  font-size: 11.5px;
-}
-
-.headerAction,
-.headerActionCompact {
-  padding: 0 10px;
-}
-
-.iconActionButton {
-  width: 31px;
-  min-width: 31px;
-}
-
-/* Métricas deixam de ser cards e viram linha de status */
-.summaryInline,
-.summaryPill,
-.summaryPillAccent {
-  all: unset;
-}
-
-.projectStatusLine {
-  grid-area: status;
-  margin-left: 40px;
-  min-height: 26px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0;
-  color: var(--text-secondary);
-  font-size: 11.5px;
-  line-height: 1;
-}
-
-.projectStatusLine span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.projectStatusLine span + span::before {
-  content: "•";
-  margin: 0 10px;
-  color: var(--text-tertiary);
-}
-
-.projectStatusLine strong {
-  color: var(--accent-amber);
-  font-size: 12.5px;
-  font-weight: 790;
-}
-
-.projectProgressInline strong {
-  color: var(--accent-amber);
-}
-
-/* Toolbar única e mais inteligente */
-.createTask {
-  min-height: 48px;
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--line);
-  background: #0b0c0d;
-  display: grid;
-  grid-template-columns: minmax(360px, 1fr) minmax(190px, 230px) minmax(210px, 260px) 126px 68px;
-  gap: 8px;
-  align-items: center;
-}
-
-.createTaskTitleWrap input,
-.createTask > input,
-.createSelect,
-.createTask button {
-  height: 34px;
-  min-height: 34px;
-  border-radius: 9px;
-  font-size: 12.5px;
-}
-
-.taskToolbar {
-  min-height: 48px;
-  padding: 8px 24px;
-  border-bottom: 1px solid var(--line);
-  background: #090a0b;
-  display: grid;
-  grid-template-columns: minmax(0, auto) minmax(280px, auto);
-  align-items: end;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.taskToolbarGroup {
-  display: flex;
-  align-items: end;
+.summaryInline {
+  margin-top: 8px;
+  justify-content: flex-start;
   gap: 8px;
 }
 
-.toolbarField {
-  min-width: 136px;
-  gap: 5px;
-}
-
-.toolbarField > span {
-  color: var(--text-tertiary);
-  font-size: 8.8px;
-  font-weight: 790;
-  letter-spacing: 0.12em;
-  line-height: 1;
-}
-
-.toolbarSelect,
-.taskToolbar .toolbarField button,
-.taskToolbar .toolbarField [role="combobox"],
-.taskToolbar .toolbarField select {
-  min-width: 136px;
-  height: 34px;
-  min-height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: #101112;
-  color: var(--text-primary);
-  font-size: 11.8px;
-  font-weight: 720;
-  box-shadow: none;
-}
-
-.taskToolbar .toolbarField:focus-within > span {
-  color: var(--accent-amber);
-}
-
-.sortModeHint {
-  height: 34px;
-  padding: 0 10px;
-  border: 1px solid rgba(245, 184, 0, 0.22);
-  border-radius: 999px;
-  background: rgba(245, 184, 0, 0.055);
-  color: var(--accent-amber);
-  font-size: 10.5px;
-  font-weight: 740;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-}
-
-.sectionCreateForm {
-  display: flex;
-  align-items: end;
-  gap: 8px;
-  justify-self: end;
-}
-
-.sectionCreateForm input,
-.sectionCreateForm button {
-  height: 34px;
-  min-height: 34px;
-  border-radius: 9px;
-}
-
-.sectionCreateForm input {
-  width: 230px;
-}
-
-.sectionCreateForm button {
-  white-space: nowrap;
-}
-
-/* Tabela recebe mais área útil */
-.taskTableHeader {
-  min-height: 34px;
-  top: 0;
-  background: rgba(9, 10, 11, 0.96);
-  grid-template-columns: 28px minmax(460px, 1fr) minmax(210px, 260px) minmax(110px, 138px) 74px;
-}
-
-.sectionToggle {
-  top: 34px;
+.summaryPill {
+  min-width: 82px;
   min-height: 40px;
-  background: rgba(11, 12, 13, 0.97);
+  padding: 6px 9px;
+  border-radius: 10px;
 }
 
-.task {
-  min-height: 46px;
-  grid-template-columns: 28px minmax(460px, 1fr) minmax(210px, 260px) minmax(110px, 138px) 74px;
+.summaryLabel {
+  font-size: 9px;
 }
 
-/* Lista lateral um pouco mais silenciosa */
-.projectList {
-  padding: 10px;
+.summaryValue {
+  font-size: 14px;
 }
 
-.projectButton {
-  min-height: 62px;
+/* Regra visual: nunca usar focus amarelo em inline edit/campos */
+.taskTitleInput:focus,
+.sectionTitleInput:focus,
+.createTaskTitleWrap input:focus,
+.createTask > input:focus,
+.sectionCreateForm input:focus,
+.toolbarSelect:focus,
+.taskField input:focus,
+.taskField select:focus,
+.taskField textarea:focus,
+.commentForm textarea:focus,
+.subtaskForm input:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--line-strong) !important;
 }
 
-.projectName {
-  font-size: 13px;
+/* Remove qualquer outline amarelo herdado por focus-visible no módulo */
+.taskTitleInput:focus-visible,
+.sectionTitleInput:focus-visible,
+.createTaskTitleWrap input:focus-visible,
+.createTask > input:focus-visible,
+.sectionCreateForm input:focus-visible,
+.toolbarSelect:focus-visible,
+.taskField input:focus-visible,
+.taskField select:focus-visible,
+.taskField textarea:focus-visible,
+.commentForm textarea:focus-visible,
+.subtaskForm input:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-.projectMeta {
-  font-size: 11px;
+/* Ordenar funcional preservado, mas sem decisão visual invasiva */
+.sortModeHint {
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
-/* Notebook-first */
 @media (max-width: 1440px) {
-  .grid {
-    grid-template-columns: 238px minmax(0, 1fr);
-  }
-
-  .detailHero,
-  .createTask,
-  .taskToolbar,
-  .taskTableHeader,
-  .sectionToggle,
-  .task {
+  .detailHero {
     padding-left: 20px;
     padding-right: 20px;
   }
 
   .projectHeading h1 {
-    max-width: 580px;
-    font-size: clamp(21px, 1.32vw, 25px);
-  }
-
-  .createTask {
-    grid-template-columns: minmax(320px, 1fr) minmax(170px, 210px) minmax(188px, 230px) 116px 64px;
-  }
-
-  .taskTableHeader,
-  .task {
-    grid-template-columns: 28px minmax(380px, 1fr) minmax(180px, 230px) minmax(100px, 126px) 68px;
+    max-width: 540px;
   }
 }
 
 @media (max-width: 1280px) {
-  .detailHero {
+  .heroMainRow {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "main"
-      "actions"
-      "status";
   }
 
   .projectHeaderActions {
     justify-self: start;
     flex-wrap: wrap;
-  }
-
-  .projectStatusLine,
-  .heroMeta {
-    margin-left: 40px;
-  }
-
-  .createTask {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .taskToolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .sectionCreateForm {
-    justify-self: start;
   }
 }
