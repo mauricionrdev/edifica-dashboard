@@ -2281,3 +2281,27 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Patch 60 - simplificacao de cargos/permissoes e dropdown fora do fluxo */
+.roleStack .rolePill {
+  white-space: nowrap;
+}
+
+.squadIdentityPanel,
+.formGrid,
+.selectorBlock,
+.userModalBody,
+.modalCard {
+  overflow: visible;
+}
+
+.userModalCard,
+.modalCard {
+  overflow: visible;
+}
+
+.userModalBody {
+  overflow-y: auto;
+  overflow-x: visible;
+}

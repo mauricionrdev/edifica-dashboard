@@ -229,7 +229,7 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
               onChange={setOwnerUserId}
               placeholder="Sem proprietário"
               showRole
-              variant="drawer"
+              portal
               disableHover
             />
           </label>

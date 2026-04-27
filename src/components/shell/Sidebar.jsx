@@ -29,7 +29,6 @@ import {
   UsersIcon,
 } from '../ui/Icons.jsx';
 import { matchesSearch, normalizeSearch } from '../../utils/search.js';
-import UserHoverCard from '../users/UserHoverCard.jsx';
 import styles from './Sidebar.module.css';
 
 function initials(name) {
@@ -477,17 +476,15 @@ export default function Sidebar({
       </nav>
 
       <div className={styles.footer}>
-        <UserHoverCard user={user} placement="top">
-          <Link to="/perfil" className={styles.profileCard} onClick={handleNavigate} title={collapsed ? user?.name || 'Usuário' : undefined}>
-            <span className={styles.avatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
-            {!collapsed ? (
-              <span className={styles.profileText}>
-                <strong>{user?.name || 'Usuário'}</strong>
-                <span>{roleLabel(user?.role)}</span>
-              </span>
-            ) : null}
-          </Link>
-        </UserHoverCard>
+        <Link to="/perfil" className={styles.profileCard} onClick={handleNavigate} title={collapsed ? user?.name || 'Usuário' : undefined}>
+          <span className={styles.avatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
+          {!collapsed ? (
+            <span className={styles.profileText}>
+              <strong>{user?.name || 'Usuário'}</strong>
+              <span>{roleLabel(user?.role)}</span>
+            </span>
+          ) : null}
+        </Link>
 
         <button type="button" className={styles.logoutButton} onClick={() => logout()} aria-label="Sair">
           <LogOutIcon size={15} />

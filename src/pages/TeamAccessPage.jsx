@@ -256,7 +256,7 @@ function SquadOwnerFormModal({
                   onChange={setOwnerUserId}
                   placeholder="Sem proprietário"
                   showRole
-                  variant="drawer"
+                  portal
                   disableHover
                 />
               ) : (
@@ -401,7 +401,7 @@ function UserFormModal({
                 <span>Cargo</span>
                 <Select value={form.role} onChange={(event) => updateField('role', event.target.value)} aria-label="Cargo do usuário">
                   <option value="ceo">CEO</option>
-                  <option value="suporte_tecnologia">Suporte de Tecnologia</option>
+                  <option value="suporte_tecnologia">Suporte de tecnologia (TI)</option>
                   {mode === 'edit' && form.role === 'admin' ? <option value="admin">Administrador legado</option> : null}
                   <option value="gdv">GDV</option>
                   <option value="gestor">Gestor de Tráfego</option>
@@ -629,7 +629,7 @@ function RequestReviewModal({ request, squads = [], busy = false, onClose, onSub
                   <span>Papel inicial</span>
                   <Select value={form.role} onChange={(event) => updateField('role', event.target.value)} aria-label="Papel inicial do convite">
                     <option value="ceo">CEO</option>
-                    <option value="suporte_tecnologia">Suporte de Tecnologia</option>
+                    <option value="suporte_tecnologia">Suporte de tecnologia (TI)</option>
 
                     <option value="gdv">GDV</option>
                     <option value="gestor">Gestor de Tráfego</option>
@@ -1392,7 +1392,7 @@ export default function TeamAccessPage() {
                   <Select value={userRoleFilter} onChange={(event) => setUserRoleFilter(event.target.value)} aria-label="Filtrar por papel">
                     <option value="all">Todos</option>
                     <option value="ceo">CEO</option>
-                    <option value="suporte_tecnologia">Suporte de Tecnologia</option>
+                    <option value="suporte_tecnologia">Suporte de tecnologia (TI)</option>
                     <option value="admin">Administrador legado</option>
                     <option value="gdv">GDV</option>
                     <option value="gestor">Gestor de Tráfego</option>
@@ -1441,7 +1441,7 @@ export default function TeamAccessPage() {
                         </td>
                         <td>
                           <div className={styles.roleStack}>
-                            <span className={styles.rolePill}>{entry.isMaster ? 'Admin Master' : roleLabel(entry.role)}</span>
+                            <span className={styles.rolePill}>{entry.isMaster ? 'Suporte de tecnologia (TI)' : roleLabel(entry.role)}</span>
                             {effectiveRoleLabels(entry).slice(1).map((label) => (
                               <span key={label} className={styles.secondaryRolePill}>{label}</span>
                             ))}
@@ -1570,53 +1570,6 @@ export default function TeamAccessPage() {
           </>
         ) : activeTab === 'roles' ? (
           <>
-            <section className={styles.metricGrid}>
-              <StatCard label="Cargos oficiais" value={roleSummaries.length} hint="estrutura ativa" />
-              <StatCard label="Super admins" value={roleSummaries.filter((item) => item.superAdmin).length} hint="CEO e Suporte de Tecnologia" />
-              <StatCard label="Perfis com escopo total" value={roleSummaries.filter((item) => item.access === 'all').length} hint="" />
-              <StatCard label="Permissões mapeadas" value={matrixPermissions.length} hint="Áreas e ações monitoradas" />
-            </section>
-
-            <section className={styles.tableCard}>
-              <div className={styles.sectionHead}>
-                <div>
-                  <span className={styles.sectionEyebrow}>Modelo oficial de acesso</span>
-                  <h3>Mapa de cargos oficiais</h3>
-                </div>
-              </div>
-
-              <div className={styles.roleCardGrid}>
-                {roleSummaries.map((item) => (
-                  <article key={item.role} className={styles.roleCard}>
-                    <div className={styles.roleCardHead}>
-                      <div className={styles.roleIdentity}>
-                        <strong>{item.label}</strong>
-                        <small>{item.access === 'all' ? 'acesso transversal' : 'escopo por squad'}</small>
-                      </div>
-                      <span className={`${styles.statusPill} ${item.superAdmin ? styles.statusPillActive : styles.statusPillMuted}`}>
-                        {item.superAdmin ? 'Super admin' : item.access === 'all' ? 'Acesso amplo' : 'Escopo restrito'}
-                      </span>
-                    </div>
-                    <div className={styles.roleMetaGrid}>
-                      <div><span>Usuários</span><strong>{item.usersCount}</strong></div>
-                      <div><span>Ativos</span><strong>{item.activeCount}</strong></div>
-                      <div><span>Permissões base</span><strong>{item.isWildcard ? 'Total' : item.permissions.length}</strong></div>
-                    </div>
-                    <div className={`${styles.permissionChipWrap} ${item.isWildcard ? styles.permissionChipWrapSingle : ''}`}>
-                      {item.isWildcard ? (
-                        <span className={styles.permissionChipStrong}>Acesso total à plataforma</span>
-                      ) : item.permissions.map((permission) => (
-                        <span key={permission} className={styles.permissionChip}>
-                          <PermissionText permission={permission} />
-                          <PermissionScopeBadge permission={permission} />
-                        </span>
-                      ))}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-
             <section className={styles.tableCard}>
               <div className={styles.sectionHead}>
                 <div>
