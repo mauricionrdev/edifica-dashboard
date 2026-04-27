@@ -3485,3 +3485,132 @@ textarea:focus-visible {
     grid-template-columns: 1fr 1fr !important;
   }
 }
+
+
+/* PATCH v45 — command bar compacta e respirando no notebook
+   Inspirado nas referências: ação primária em cima, utilidades compactas abaixo.
+*/
+.commandBar {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  padding: 10px 24px 12px !important;
+}
+
+.commandPrimary,
+.commandSecondary {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.commandSecondary {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.createTask {
+  grid-template-columns: minmax(0, 1fr) 220px 240px 120px 76px !important;
+  gap: 10px !important;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.createSelect,
+.createTask button,
+.sectionCreateForm input,
+.sectionCreateForm button,
+.toolbarField,
+.toolbarSelect,
+.taskToolbarGroup :is(button, [role='combobox'], select) {
+  height: 38px !important;
+  min-height: 38px !important;
+}
+
+.taskToolbarGroup {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+
+.toolbarField {
+  padding: 0 10px 0 12px !important;
+  border-radius: 999px !important;
+  gap: 8px !important;
+  overflow: visible !important;
+  flex: 0 0 auto !important;
+}
+
+.toolbarField > span {
+  padding: 0 !important;
+  border-right: 0 !important;
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: none !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.toolbarSelect,
+.taskToolbarGroup :is(button, [role='combobox'], select) {
+  min-width: 88px !important;
+  width: auto !important;
+  padding: 0 26px 0 0 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.sectionCreateForm {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  flex: 0 0 auto !important;
+}
+
+.sectionCreateForm input {
+  width: 260px !important;
+}
+
+.sectionCreateForm button {
+  padding: 0 14px !important;
+}
+
+@media (max-width: 1440px) {
+  .commandBar {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .createTask {
+    grid-template-columns: minmax(0, 1fr) 190px 210px 108px 72px !important;
+  }
+
+  .sectionCreateForm input {
+    width: 232px !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .commandBar {
+    gap: 12px !important;
+  }
+
+  .createTask {
+    grid-template-columns: minmax(0, 1fr) 180px 190px 100px 70px !important;
+  }
+
+  .commandSecondary {
+    gap: 10px !important;
+  }
+
+  .sectionCreateForm input {
+    width: 200px !important;
+  }
+}
