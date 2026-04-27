@@ -3,6 +3,7 @@ import { query } from '../db/pool.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { badRequest, conflict, notFound, uuid } from '../utils/helpers.js';
 import { writeAuditLog } from '../utils/audit.js';
+import { hasPermission } from '../utils/permissions.js';
 
 const router = Router();
 
@@ -96,7 +97,11 @@ async function listRows() {
 router.get('/', requireAuth, requirePermission('squads.view'), async (req, res, next) => {
   try {
     const rows = await listRows();
-    res.json({ squads: rows.map(serialize) });
+    const allowedSquads = Array.isArray(req.user?.squads) ? req.user.squads.filter(Boolean) : [];
+    const visible = hasPermission(req.user, 'squads.view.all') || hasPermission(req.user, 'squads.manage')
+      ? rows
+      : rows.filter((row) => allowedSquads.includes(row.id));
+    res.json({ squads: visible.map(serialize) });
   } catch (err) {
     next(err);
   }

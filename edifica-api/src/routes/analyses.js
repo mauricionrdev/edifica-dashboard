@@ -65,7 +65,7 @@ function serializeAnalysis(row) {
 }
 
 async function assertClientExists(clientId, user) {
-  await getAccessibleClientRow(clientId, user, 'id, squad_id');
+  await getAccessibleClientRow(clientId, user, 'id, squad_id', 'clients.view.all');
 }
 
 function validateType(type) {

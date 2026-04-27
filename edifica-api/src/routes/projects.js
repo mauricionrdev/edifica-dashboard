@@ -4,6 +4,7 @@ import { requireAnyPermission, requireAuth, requirePermission } from '../middlew
 import { badRequest, parseJson, uuid } from '../utils/helpers.js';
 import { getAccessibleClientRow, getAllowedSquads, isAdminUser } from '../utils/access.js';
 import { notifyUsers } from '../utils/notifications.js';
+import { hasPermission } from '../utils/permissions.js';
 import {
   addProjectMembers,
   addTaskCollaborators,
@@ -518,8 +519,8 @@ router.get('/users/:userId/projects', requirePermission('profile.view'), async (
     const params = [targetUserId, targetUserId, targetUserId];
     let visibilityWhere = '';
 
-    if (!isAdminUser(req.user) && req.user.id !== targetUserId) {
-      const allowedSquads = getAllowedSquads(req.user);
+    if (!isAdminUser(req.user) && !hasPermission(req.user, 'projects.view.all') && req.user.id !== targetUserId) {
+      const allowedSquads = getAllowedSquads(req.user, 'projects.view.all');
       const squadPlaceholders = allowedSquads.map(() => '?').join(', ');
       const squadCondition = allowedSquads.length
         ? `COALESCE(p.squad_id, c.squad_id) IN (${squadPlaceholders})`
@@ -573,8 +574,8 @@ router.get('/users/:userId/tasks', requirePermission('profile.view'), async (req
     const params = [targetUserId];
     let visibilityWhere = '';
 
-    if (!isAdminUser(req.user) && req.user.id !== targetUserId) {
-      const allowedSquads = getAllowedSquads(req.user);
+    if (!isAdminUser(req.user) && !hasPermission(req.user, 'tasks.view.all') && req.user.id !== targetUserId) {
+      const allowedSquads = getAllowedSquads(req.user, 'tasks.view.all');
       const squadPlaceholders = allowedSquads.map(() => '?').join(', ');
       const squadCondition = allowedSquads.length
         ? `COALESCE(p.squad_id, c.squad_id) IN (${squadPlaceholders})`
@@ -1020,14 +1021,11 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
     const changingStatus = req.body?.status !== undefined || req.body?.done !== undefined;
     const editableFields = ['title', 'description', 'priority', 'sectionId', 'dueDate', 'assigneeUserId'];
     const changingEditableFields = editableFields.some((field) => req.body?.[field] !== undefined);
-    const userPermissions = Array.isArray(req.user.permissions) ? req.user.permissions : [];
-    const canEditTasks = req.user.isMaster
-      || ['admin', 'ceo', 'suporte_tecnologia'].includes(req.user.role)
-      || userPermissions.includes('*')
-      || userPermissions.includes('tasks.edit');
+    const canEditTasks = hasPermission(req.user, 'tasks.edit');
 
-    if (changingEditableFields && !canEditTasks) {
-      throw forbidden('Sem permissao para editar tarefas');
+    if (changingEditableFields) {
+      if (!canEditTasks) throw forbidden('Sem permissão para editar tarefas');
+      await assertTaskAccess(req.params.id, req.user, 'tasks.edit');
     }
 
     if (req.body?.title !== undefined) {
@@ -1065,13 +1063,10 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
     if (changingStatus) {
       const nextStatus = req.body?.status ? normalizeStatus(req.body.status) : (req.body.done ? 'done' : 'todo');
       const ownTask = task.assignee_user_id === req.user.id || task.created_by_user_id === req.user.id;
-      const canCompleteOwn = canEditTasks || userPermissions.includes('tasks.complete.own');
-      const canCompleteAny = req.user.isMaster
-        || ['admin', 'ceo', 'suporte_tecnologia'].includes(req.user.role)
-        || userPermissions.includes('tasks.complete.any')
-        || userPermissions.includes('*');
+      const canCompleteOwn = canEditTasks || hasPermission(req.user, 'tasks.complete.own');
+      const canCompleteAny = hasPermission(req.user, 'tasks.complete.any');
       if (!canCompleteAny && (!ownTask || !canCompleteOwn)) {
-        throw forbidden('Sem permissao para alterar o status desta tarefa');
+        throw forbidden('Sem permissão para alterar o status desta tarefa');
       }
       updates.push('status = ?');
       params.push(nextStatus);

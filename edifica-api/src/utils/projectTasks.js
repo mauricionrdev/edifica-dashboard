@@ -1,6 +1,7 @@
 import { query } from '../db/pool.js';
 import { badRequest, forbidden, notFound, parseJson, uuid } from './helpers.js';
-import { filterRowsBySquadAccess, getAllowedSquads, isAdminUser } from './access.js';
+import { filterRowsBySquadAccess, getAllowedSquads, hasGlobalScope, isAdminUser } from './access.js';
+import { hasPermission } from './permissions.js';
 import { notifyUsers } from './notifications.js';
 
 async function exec(db, sql, params = []) {
@@ -9,6 +10,24 @@ async function exec(db, sql, params = []) {
     return rows;
   }
   return query(sql, params);
+}
+
+
+function projectAllPermissionFor(permission = '') {
+  const key = String(permission || '');
+  if (key.startsWith('projects.edit')) return 'projects.edit.all';
+  if (key.startsWith('tasks.edit')) return 'tasks.edit.all';
+  if (key.startsWith('tasks.comment')) return 'tasks.comment.all';
+  if (key.startsWith('tasks.')) return 'tasks.view.all';
+  return 'projects.view.all';
+}
+
+function taskAllPermissionFor(permission = '') {
+  const key = String(permission || '');
+  if (key.startsWith('tasks.edit')) return 'tasks.edit.all';
+  if (key.startsWith('tasks.comment')) return 'tasks.comment.all';
+  if (key.startsWith('tasks.complete')) return 'tasks.complete.any';
+  return 'tasks.view.all';
 }
 
 function clean(value) {
@@ -113,9 +132,9 @@ export async function assertProjectAccess(projectId, user, permission = 'project
   );
   const project = rows[0];
   if (!project) throw notFound('Projeto não encontrado');
-  if (isAdminUser(user)) return project;
+  if (isAdminUser(user) || hasGlobalScope(user, projectAllPermissionFor(permission))) return project;
 
-  const allowedSquads = getAllowedSquads(user);
+  const allowedSquads = getAllowedSquads(user, projectAllPermissionFor(permission));
   const projectSquad = project.squad_id || project.client_squad_id;
   if (projectSquad && allowedSquads.includes(projectSquad)) return project;
 
@@ -139,7 +158,7 @@ export async function assertTaskAccess(taskId, user, permission = 'tasks.view') 
   );
   const task = rows[0];
   if (!task) throw notFound('Tarefa não encontrada');
-  if (isAdminUser(user)) return task;
+  if (isAdminUser(user) || hasGlobalScope(user, taskAllPermissionFor(permission))) return task;
   if (task.assignee_user_id === user.id || task.created_by_user_id === user.id) return task;
 
   const collaborators = await query(
@@ -148,7 +167,7 @@ export async function assertTaskAccess(taskId, user, permission = 'tasks.view') 
   );
   if (collaborators.length > 0) return task;
 
-  const allowedSquads = getAllowedSquads(user);
+  const allowedSquads = getAllowedSquads(user, taskAllPermissionFor(permission));
   const squadId = task.project_squad_id || task.client_squad_id;
   if (squadId && allowedSquads.includes(squadId)) return task;
   throw forbidden('Sem acesso a esta tarefa');
@@ -263,6 +282,6 @@ export async function createTaskRecord(input, actorUser = null, db = null) {
 }
 
 export function filterProjectRowsByAccess(user, rows = []) {
-  if (isAdminUser(user)) return rows;
-  return filterRowsBySquadAccess(user, rows);
+  if (isAdminUser(user) || hasPermission(user, 'projects.view.all')) return rows;
+  return filterRowsBySquadAccess(user, rows, 'projects.view.all');
 }

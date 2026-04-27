@@ -5,7 +5,7 @@ import { uuid, badRequest, notFound, conflict, forbidden, parseJson } from '../u
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { VALID_ROLES } from '../utils/domain.js';
 import { writeAuditLog } from '../utils/audit.js';
-import { resolvePermissions, PERMISSION_GROUPS } from '../utils/permissions.js';
+import { normalizePermissionList, resolvePermissions, PERMISSION_GROUPS } from '../utils/permissions.js';
 
 const router = Router();
 let profileInitPromise = null;
@@ -52,7 +52,7 @@ async function countActiveAdmins(excludeId = null) {
 }
 
 function normalizePermissionsOverride(value) {
-  return Array.isArray(value) ? Array.from(new Set(value.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim()))) : [];
+  return normalizePermissionList(value);
 }
 
 function normalizeSecondaryRoles(value, primaryRole = '') {

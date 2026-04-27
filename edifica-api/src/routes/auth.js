@@ -10,7 +10,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { query } from '../db/pool.js';
 import { parseJson, unauthorized, badRequest, conflict } from '../utils/helpers.js';
-import { resolvePermissions, PERMISSION_GROUPS } from '../utils/permissions.js';
+import { normalizePermissionList, resolvePermissions, PERMISSION_GROUPS } from '../utils/permissions.js';
 import { signToken, requireAuth, requirePermission } from '../middleware/auth.js';
 
 const router = Router();
@@ -88,7 +88,7 @@ async function ensureProfileColumns() {
 }
 
 function serializeUser(row) {
-  const permissionsOverride = parseJson(row.permissions_override, []);
+  const permissionsOverride = normalizePermissionList(parseJson(row.permissions_override, []));
   return {
     id: row.id,
     name: row.name,

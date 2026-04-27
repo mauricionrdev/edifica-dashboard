@@ -22,23 +22,17 @@ import {
 } from '../utils/helpers.js';
 import { filterRowsBySquadAccess, getAccessibleClientRow, isAdminUser } from '../utils/access.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
+import { hasPermission } from '../utils/permissions.js';
 
 const router = Router();
 router.use(requireAuth);
 
-function hasEffectivePermission(user, permission) {
-  if (!user || !permission) return false;
-  if (user.isMaster || ['admin', 'ceo', 'suporte_tecnologia'].includes(user.role)) return true;
-  const perms = Array.isArray(user.permissions) ? user.permissions : [];
-  return perms.includes('*') || perms.includes(permission);
-}
-
 function canViewFeeSchedule(user) {
-  return hasEffectivePermission(user, 'clients.fee_schedule.view') || hasEffectivePermission(user, 'clients.edit');
+  return hasPermission(user, 'clients.fee_schedule.view') || hasPermission(user, 'clients.edit');
 }
 
 function canEditFeeSchedule(user) {
-  return hasEffectivePermission(user, 'clients.fee_schedule.edit') || hasEffectivePermission(user, 'clients.edit');
+  return hasPermission(user, 'clients.fee_schedule.edit') || hasPermission(user, 'clients.edit');
 }
 
 function normalizeFeeSteps(value) {
@@ -223,7 +217,7 @@ router.get('/', requirePermission('clients.view'), async (req, res, next) => {
          LEFT JOIN squads s ON s.id = c.squad_id
         ORDER BY c.created_at DESC, c.name ASC`
     );
-    const visible = filterRowsBySquadAccess(req.user, rows);
+    const visible = filterRowsBySquadAccess(req.user, rows, 'clients.view.all');
     res.json({ clients: visible.map(serializeClient) });
   } catch (err) {
     next(err);
@@ -247,7 +241,7 @@ router.get('/:id', requirePermission('clients.view'), async (req, res, next) => 
     const row = rows[0];
     if (!row) throw notFound('Cliente não encontrado');
 
-    const accessible = filterRowsBySquadAccess(req.user, [row]);
+    const accessible = filterRowsBySquadAccess(req.user, [row], 'clients.view.all');
     if (accessible.length === 0) throw forbidden('Sem acesso a este cliente');
 
     res.json({ client: serializeClient(row) });
@@ -316,7 +310,7 @@ router.get('/:id/fee-steps', requirePermission('clients.fee_schedule.view'), asy
   try {
     if (!canViewFeeSchedule(req.user)) throw forbidden('Sem permissão para ver evolução contratual');
     await ensureClientFeeStepsSchema();
-    const current = await getAccessibleClientRow(req.params.id, req.user, 'id, fee_steps_json');
+    const current = await getAccessibleClientRow(req.params.id, req.user, 'id, fee_steps_json', 'clients.fee_schedule.view.all');
     res.json({ feeSteps: normalizeFeeSteps(current.fee_steps_json) });
   } catch (err) {
     next(err);
@@ -327,7 +321,7 @@ router.put('/:id/fee-steps', requirePermission('clients.fee_schedule.edit'), asy
   try {
     if (!canEditFeeSchedule(req.user)) throw forbidden('Sem permissão para editar evolução contratual');
     await ensureClientFeeStepsSchema();
-    await getAccessibleClientRow(req.params.id, req.user, 'id, squad_id');
+    await getAccessibleClientRow(req.params.id, req.user, 'id, squad_id', 'clients.fee_schedule.edit.all');
     const feeSteps = normalizeFeeSteps(req.body?.feeSteps);
     await query('UPDATE clients SET fee_steps_json = ? WHERE id = ?', [JSON.stringify(feeSteps), req.params.id]);
     res.json({ feeSteps });
@@ -343,7 +337,7 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
   try {
     await ensureResponsibleSchema();
     const { id } = req.params;
-    const current = await getAccessibleClientRow(id, req.user, '*');
+    const current = await getAccessibleClientRow(id, req.user, '*', 'clients.edit.all');
 
     const fields = await normalizeResponsibleFields(pickUpdatableFields(req.body || {}));
     if ((fields.fee !== undefined || fields.metaLucro !== undefined) && !canEditFeeSchedule(req.user)) {

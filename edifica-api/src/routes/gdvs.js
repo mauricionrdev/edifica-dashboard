@@ -3,6 +3,7 @@ import { query, withTransaction } from '../db/pool.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { badRequest, conflict, notFound, uuid } from '../utils/helpers.js';
 import { writeAuditLog } from '../utils/audit.js';
+import { hasPermission } from '../utils/permissions.js';
 
 const router = Router();
 
@@ -109,7 +110,10 @@ async function listRows() {
 router.get('/', requireAuth, requirePermission('gdv.view'), async (req, res, next) => {
   try {
     const rows = await listRows();
-    res.json({ gdvs: rows.map(serialize) });
+    const visible = hasPermission(req.user, 'gdv.view.all') || hasPermission(req.user, 'gdv.manage')
+      ? rows
+      : rows.filter((row) => row.owner_user_id && row.owner_user_id === req.user.id);
+    res.json({ gdvs: visible.map(serialize) });
   } catch (err) {
     next(err);
   }

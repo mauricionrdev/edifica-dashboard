@@ -8,7 +8,7 @@ import { listAuditLogs, listAuditLogFilters } from '../api/auditLogs.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { roleLabel } from '../utils/roles.js';
-import { PERMISSION_GROUPS, ROLE_ORDER, getRoleSummary, hasPermission, permissionLabel } from '../utils/permissions.js';
+import { PERMISSION_GROUPS, ROLE_ORDER, getRoleSummary, hasPermission, normalizePermissionList, permissionLabel } from '../utils/permissions.js';
 import {
   BuildingIcon,
   PlusIcon,
@@ -276,7 +276,7 @@ function UserFormModal({
     role: user?.role || initialRole,
     secondaryRoles: Array.isArray(user?.secondaryRoles) ? user.secondaryRoles : [],
     squads: Array.isArray(user?.squads) ? user.squads : [],
-    permissionsOverride: Array.isArray(user?.permissionsOverride) ? user.permissionsOverride : [],
+    permissionsOverride: normalizePermissionList(user?.permissionsOverride),
   });
 
   useEffect(() => {
@@ -287,7 +287,7 @@ function UserFormModal({
       role: user?.role || initialRole,
       secondaryRoles: Array.isArray(user?.secondaryRoles) ? user.secondaryRoles : [],
       squads: Array.isArray(user?.squads) ? user.squads : [],
-      permissionsOverride: Array.isArray(user?.permissionsOverride) ? user.permissionsOverride : [],
+      permissionsOverride: normalizePermissionList(user?.permissionsOverride),
     });
   }, [user, initialRole]);
 

@@ -4,7 +4,7 @@
 import jwt from 'jsonwebtoken';
 import { query } from '../db/pool.js';
 import { parseJson, unauthorized, forbidden } from '../utils/helpers.js';
-import { resolvePermissions } from '../utils/permissions.js';
+import { hasPermission, hasAnyPermission, resolvePermissions } from '../utils/permissions.js';
 
 const SUPER_ADMIN_ROLES = new Set(['admin', 'ceo', 'suporte_tecnologia']);
 
@@ -112,8 +112,7 @@ export function requirePermission(permission) {
     if (!req.user) return next(unauthorized());
     if (!permission) return next();
     if (req.user.isMaster || SUPER_ADMIN_ROLES.has(req.user.role)) return next();
-    const perms = Array.isArray(req.user.permissions) ? req.user.permissions : [];
-    if (perms.includes('*') || perms.includes(permission)) return next();
+    if (hasPermission(req.user, permission)) return next();
     return next(forbidden('Você não tem permissão para esta ação'));
   };
 }
@@ -122,12 +121,9 @@ export function requireAnyPermission(permissions = []) {
   return function anyPermissionGuard(req, res, next) {
     if (!req.user) return next(unauthorized());
     if (req.user.isMaster || SUPER_ADMIN_ROLES.has(req.user.role)) return next();
-    const perms = Array.isArray(req.user.permissions) ? req.user.permissions : [];
     const allowed = permissions.filter(Boolean);
     if (allowed.length === 0) return next();
-    if (perms.includes('*') || allowed.some((permission) => perms.includes(permission))) {
-      return next();
-    }
+    if (hasAnyPermission(req.user, allowed)) return next();
     return next(forbidden('Você não tem permissão para esta ação'));
   };
 }
