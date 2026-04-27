@@ -24,7 +24,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async ({ identifier, password }) => {
-    const { user } = await authApi.login({ identifier, password });
+    await authApi.login({ identifier, password });
+    const { user } = await authApi.me();
     setState({ status: 'authed', user });
     return user;
   }, []);

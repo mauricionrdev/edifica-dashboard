@@ -130,7 +130,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, password_hash, role, is_master, squads, active,
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, password_hash, role, is_master, squads, permissions_override, active,
               created_at, updated_at
          FROM users
         WHERE (LOWER(email) = LOWER(?) OR LOWER(name) = LOWER(?))

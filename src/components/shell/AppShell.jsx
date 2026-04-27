@@ -63,6 +63,24 @@ export default function AppShell() {
     document.body.setAttribute('data-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    setClients([]);
+    setSquads([]);
+    setGdvs([]);
+    setUserDirectory([]);
+    setNotifications([]);
+    setUnreadCount(0);
+    setNotificationsOpen(false);
+    setSidebarOpen(false);
+    setPanelHeader({
+      title: 'Central',
+      description: 'Visão operacional da Edifica',
+      actions: null,
+    });
+    setLoading(status === 'authed');
+    setError(null);
+  }, [status, user?.id]);
+
   const refreshClients = useCallback(async () => {
     if (!canViewClients(user)) {
       if (mountedRef.current) setClients([]);
