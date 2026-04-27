@@ -2925,3 +2925,194 @@ textarea:focus-visible {
   font-size: 10.5px !important;
   line-height: 1.15 !important;
 }
+
+
+/* PATCH v42 — header sem ícone e toolbar única de tabela */
+
+/* Header compacto: sem ícone de projeto */
+.detailHero {
+  padding: 12px 24px 10px !important;
+  gap: 8px !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.projectIcon {
+  display: none !important;
+}
+
+.projectTitleRow {
+  display: block !important;
+  min-width: 0 !important;
+}
+
+.projectHeading {
+  gap: 4px !important;
+}
+
+.projectHeading h1 {
+  max-width: 720px !important;
+  font-size: clamp(22px, 1.32vw, 26px) !important;
+  line-height: 1.02 !important;
+}
+
+.heroMeta {
+  margin-left: 0 !important;
+  margin-top: 2px !important;
+  font-size: 12px !important;
+}
+
+.summaryInline {
+  margin-top: 7px !important;
+}
+
+.projectHeaderActions {
+  align-self: start !important;
+}
+
+/* Criação + filtros visualmente como uma única toolbar */
+.createTask {
+  min-height: 44px !important;
+  padding: 8px 24px 6px !important;
+  border-bottom: 0 !important;
+  background: #0a0b0c !important;
+  grid-template-columns: minmax(360px, 1fr) minmax(190px, 230px) minmax(210px, 260px) 126px 64px !important;
+  gap: 8px !important;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.createSelect,
+.createTask button {
+  height: 34px !important;
+  min-height: 34px !important;
+  border-radius: 9px !important;
+}
+
+.taskToolbar {
+  min-height: 44px !important;
+  padding: 4px 24px 8px !important;
+  border-top: 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: #0a0b0c !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, auto) minmax(300px, auto) !important;
+  align-items: end !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+}
+
+.taskToolbarGroup {
+  display: flex !important;
+  align-items: end !important;
+  gap: 8px !important;
+}
+
+.toolbarField {
+  min-width: 132px !important;
+  gap: 5px !important;
+}
+
+.toolbarField > span {
+  font-size: 8.8px !important;
+  letter-spacing: 0.12em !important;
+}
+
+.toolbarSelect,
+.taskToolbar .toolbarField button,
+.taskToolbar .toolbarField [role="combobox"],
+.taskToolbar .toolbarField select {
+  min-width: 132px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  border-radius: 9px !important;
+}
+
+.sectionCreateForm {
+  justify-self: end !important;
+  display: flex !important;
+  align-items: end !important;
+  gap: 8px !important;
+}
+
+.sectionCreateForm input {
+  width: 230px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+}
+
+.sectionCreateForm button {
+  height: 34px !important;
+  min-height: 34px !important;
+  white-space: nowrap !important;
+}
+
+/* Tabela sobe e ganha protagonismo */
+.taskTableHeader {
+  min-height: 34px !important;
+}
+
+.sectionToggle {
+  min-height: 40px !important;
+}
+
+.task {
+  min-height: 46px !important;
+}
+
+/* Nenhum focus amarelo no módulo */
+.projectsShell input:focus,
+.projectsShell select:focus,
+.projectsShell textarea:focus,
+.projectsShell button:focus,
+.projectsShell input:focus-visible,
+.projectsShell select:focus-visible,
+.projectsShell textarea:focus-visible,
+.projectsShell button:focus-visible,
+.page input:focus,
+.page select:focus,
+.page textarea:focus,
+.page button:focus,
+.page input:focus-visible,
+.page select:focus-visible,
+.page textarea:focus-visible,
+.page button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Notebook */
+@media (max-width: 1440px) {
+  .detailHero,
+  .createTask,
+  .taskToolbar {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .projectHeading h1 {
+    max-width: 620px !important;
+    font-size: clamp(21px, 1.26vw, 24px) !important;
+  }
+
+  .createTask {
+    grid-template-columns: minmax(300px, 1fr) minmax(170px, 210px) minmax(190px, 230px) 112px 60px !important;
+  }
+
+  .sectionCreateForm input {
+    width: 210px !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .createTask {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .taskToolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sectionCreateForm {
+    justify-self: start !important;
+  }
+}
