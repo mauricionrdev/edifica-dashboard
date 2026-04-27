@@ -12,6 +12,9 @@ const LEGACY_SCOPE_MAP = {
   'tasks.edit': 'tasks.edit.own',
   'tasks.comment': 'tasks.comment.own',
   'squads.view': 'squads.view.own',
+  'metrics.view': 'metrics.view.own',
+  'metrics.fill_week': 'metrics.fill_week.own',
+  'ranking.view': 'ranking.view.own',
 };
 
 const GENERIC_SCOPE_MAP = {
@@ -26,6 +29,9 @@ const GENERIC_SCOPE_MAP = {
   'tasks.edit': ['tasks.edit.own', 'tasks.edit.all'],
   'tasks.comment': ['tasks.comment.own', 'tasks.comment.all'],
   'squads.view': ['squads.view.own', 'squads.view.all'],
+  'metrics.view': ['metrics.view.own', 'metrics.view.all'],
+  'metrics.fill_week': ['metrics.fill_week.own', 'metrics.fill_week.all'],
+  'ranking.view': ['ranking.view.own', 'ranking.view.all'],
 };
 
 function basePermissionForScoped(permission = '') {
@@ -56,7 +62,7 @@ export const ROLE_PERMISSION_MAP = {
   admin: [
     'central.view',
     'clients.view.all', 'clients.create', 'clients.edit.all', 'clients.fee_schedule.view.all', 'clients.fee_schedule.edit.all',
-    'metrics.view', 'metrics.fill_week',
+    'metrics.view.all', 'metrics.fill_week.all', 'ranking.view.all',
     'gdv.view.all', 'gdv.manage',
     'squads.view.all', 'squads.manage',
     'team.view', 'team.manage',
@@ -67,17 +73,17 @@ export const ROLE_PERMISSION_MAP = {
   ],
   gdv: [
     'central.view', 'clients.view.own', 'clients.fee_schedule.view.own', 'gdv.view.own', 'squads.view.own',
-    'metrics.view', 'profile.view', 'profile.edit',
+    'metrics.view.own', 'ranking.view.own', 'profile.view', 'profile.edit',
     'projects.view.own', 'tasks.view.own', 'tasks.create', 'tasks.comment.own', 'tasks.complete.own',
   ],
   gestor: [
-    'central.view', 'clients.view.all', 'clients.fee_schedule.view.all', 'metrics.view', 'metrics.fill_week',
+    'central.view', 'clients.view.all', 'clients.fee_schedule.view.all', 'metrics.view.all', 'metrics.fill_week.all', 'ranking.view.all',
     'projects.view.all', 'projects.create', 'projects.edit.all',
     'tasks.view.all', 'tasks.create', 'tasks.edit.all', 'tasks.comment.all', 'tasks.complete.own', 'tasks.complete.any',
     'profile.view', 'profile.edit', 'squads.view.all',
   ],
   cap: [
-    'central.view', 'clients.view.own', 'clients.fee_schedule.view.own', 'metrics.view', 'metrics.fill_week',
+    'central.view', 'clients.view.own', 'clients.fee_schedule.view.own', 'metrics.view.own', 'metrics.fill_week.own', 'ranking.view.own',
     'projects.view.own', 'tasks.view.own', 'tasks.create', 'tasks.comment.own', 'tasks.complete.own', 'squads.view.own',
   ],
 };
@@ -104,7 +110,8 @@ export function getRoleSummary(role) {
 export const PERMISSION_GROUPS = [
   { area: 'Central', permissions: ['central.view'] },
   { area: 'Clientes', permissions: ['clients.view.own', 'clients.view.all', 'clients.create', 'clients.edit.own', 'clients.edit.all', 'clients.fee_schedule.view.own', 'clients.fee_schedule.view.all', 'clients.fee_schedule.edit.own', 'clients.fee_schedule.edit.all'] },
-  { area: 'Preencher Semana', permissions: ['metrics.view', 'metrics.fill_week'] },
+  { area: 'Métricas', permissions: ['metrics.view.own', 'metrics.view.all', 'metrics.fill_week.own', 'metrics.fill_week.all'] },
+  { area: 'Ranking', permissions: ['ranking.view.own', 'ranking.view.all'] },
   { area: 'GDV', permissions: ['gdv.view.own', 'gdv.view.all', 'gdv.manage'] },
   { area: 'Projetos', permissions: ['projects.view.own', 'projects.view.all', 'projects.create', 'projects.edit.own', 'projects.edit.all', 'project_template.view', 'project_template.edit'] },
   { area: 'Tarefas', permissions: ['tasks.view.own', 'tasks.view.all', 'tasks.create', 'tasks.edit.own', 'tasks.edit.all', 'tasks.comment.own', 'tasks.comment.all', 'tasks.complete.own', 'tasks.complete.any'] },
@@ -125,8 +132,12 @@ export const PERMISSION_LABELS = {
   'clients.fee_schedule.view.all': 'Ver evolução contratual de todos',
   'clients.fee_schedule.edit.own': 'Editar evolução contratual do próprio escopo',
   'clients.fee_schedule.edit.all': 'Editar evolução contratual de todos',
-  'metrics.view': 'Ver métricas',
-  'metrics.fill_week': 'Preencher semana',
+  'metrics.view.own': 'Ver métricas do próprio escopo',
+  'metrics.view.all': 'Ver métricas de todos',
+  'metrics.fill_week.own': 'Preencher semana do próprio escopo',
+  'metrics.fill_week.all': 'Preencher semana de todos',
+  'ranking.view.own': 'Ver ranking do próprio escopo',
+  'ranking.view.all': 'Ver ranking geral',
   'gdv.view.own': 'Ver GDV do próprio escopo',
   'gdv.view.all': 'Ver todos os GDVs',
   'gdv.manage': 'Gerenciar GDVs',
@@ -264,7 +275,7 @@ export const ROUTE_PERMISSION_MAP = [
   { path: '/preencher-semana', permission: 'metrics.view' },
   { path: '/gdv', permission: 'gdv.view' },
   { path: '/perfil', permission: 'profile.view' },
-  { path: '/ranking-squads', permission: 'squads.view' },
+  { path: '/ranking-squads', permission: 'ranking.view' },
   { path: '/equipe', permission: 'team.view' },
   { path: '/modelo-oficial', permission: 'project_template.view' },
 ];

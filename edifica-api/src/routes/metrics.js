@@ -28,7 +28,7 @@ import {
   aggregatePortfolioSummary,
 } from '../utils/domain.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
-import { getAccessibleClientRow, getAllowedSquads, isAdminUser } from '../utils/access.js';
+import { getAccessibleClientRow, getAllowedSquads } from '../utils/access.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -102,6 +102,56 @@ function sanitizeMetricData(incoming) {
   return clean;
 }
 
+
+function parseClientDate(value) {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(String(value).slice(0, 10) + 'T00:00:00Z');
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function monthBoundsFromPrefix(prefix) {
+  const [yearRaw, monthRaw] = String(prefix || '').split('-');
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return null;
+  return {
+    start: new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0)),
+    end: new Date(Date.UTC(year, month, 0, 23, 59, 59, 999)),
+  };
+}
+
+function startedOnOrBefore(row, date) {
+  const source = row?.start_date || row?.created_at;
+  const start = parseClientDate(source);
+  if (!start) return row?.status !== 'churn';
+  return start <= date;
+}
+
+function churnedOnOrBefore(row, date) {
+  const churn = parseClientDate(row?.churn_date);
+  return Boolean(churn && churn <= date);
+}
+
+function activeAt(row, date) {
+  return startedOnOrBefore(row, date) && !churnedOnOrBefore(row, date);
+}
+
+function dateInMonth(value, monthPrefix) {
+  const date = parseClientDate(value);
+  if (!date) return false;
+  const prefix = date.toISOString().slice(0, 7);
+  return prefix === monthPrefix;
+}
+
+function performanceScore({ mrr, metaIndex, churnRate, activeClients }) {
+  const safeMrr = Math.max(0, Number(mrr) || 0);
+  const safeMeta = Math.max(0, Number(metaIndex) || 0);
+  const safeChurn = Math.max(0, Number(churnRate) || 0);
+  const safeActive = Math.max(0, Number(activeClients) || 0);
+  if (safeMrr <= 0 || safeActive <= 0 || safeMeta <= 0) return 0;
+  return Math.round(safeMrr * (safeMeta / 100) * Math.max(0, 1 - safeChurn / 100));
+}
+
 function serializeMetric(row, clientMetaLucro = 0) {
   const data = parseJson(row.data, {});
   const computed = computeWeeklyMetrics(data, { clientMetaLucro });
@@ -116,8 +166,8 @@ function serializeMetric(row, clientMetaLucro = 0) {
   };
 }
 
-async function assertClientExists(clientId, user) {
-  const row = await getAccessibleClientRow(clientId, user, 'id, squad_id, meta_lucro');
+async function assertClientExists(clientId, user, allPermission = 'metrics.view.all') {
+  const row = await getAccessibleClientRow(clientId, user, 'id, squad_id, meta_lucro', allPermission);
   return { clientMetaLucro: Number(row.meta_lucro) || 0 };
 }
 
@@ -169,7 +219,7 @@ router.get('/presence', requirePermission('metrics.view'), async (req, res, next
     if (clientIds.length === 0) return res.json({ presence: [] });
 
     for (const clientId of clientIds) {
-      await assertClientExists(clientId, req.user);
+      await assertClientExists(clientId, req.user, 'metrics.view.all');
     }
 
     const placeholders = clientIds.map(() => '?').join(',');
@@ -201,6 +251,162 @@ router.get('/presence', requirePermission('metrics.view'), async (req, res, next
 });
 
 // --------------------------------------------------------------
+//  GET /api/metrics/ranking
+//  Ranking consolidado por squad, calculado no backend com o
+//  mesmo escopo de dados da permissão ranking.view.own/all.
+// --------------------------------------------------------------
+router.get('/ranking', requirePermission('ranking.view'), async (req, res, next) => {
+  try {
+    const { date: dateParam, squadId } = req.query;
+    let ref;
+    if (dateParam) {
+      ref = new Date(String(dateParam) + 'T00:00:00Z');
+      if (Number.isNaN(ref.getTime())) throw badRequest('Parâmetro date inválido. Use YYYY-MM-DD.');
+    } else {
+      ref = new Date();
+    }
+
+    const weekKey = currentPeriodKey(ref);
+    const monthPrefix = monthPrefixFromDate(ref);
+    const prevWeekKey = previousPeriodKey(weekKey);
+    const prevMonthPrefix = previousMonthPrefix(monthPrefix);
+    const bounds = monthBoundsFromPrefix(monthPrefix);
+    const referenceDateSql = monthPrefix + '-01';
+
+    const squadScope = getAllowedSquads(req.user, 'ranking.view.all');
+    const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
+
+    let squadSql = `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url,
+                           u.name AS owner_name, u.email AS owner_email, u.role AS owner_role
+                      FROM squads s
+                      LEFT JOIN users u ON u.id = s.owner_user_id
+                     WHERE 1 = 1`;
+    const squadParams = [];
+
+    if (squadId) {
+      squadSql += ' AND s.id = ?';
+      squadParams.push(squadId);
+    }
+    if (allowedSquads) {
+      if (allowedSquads.length === 0) return res.json({ weekKey, monthPrefix, rows: [] });
+      squadSql += ` AND s.id IN (${allowedSquads.map(() => '?').join(',')})`;
+      squadParams.push(...allowedSquads);
+    }
+    squadSql += ' ORDER BY s.name ASC';
+
+    const squads = await query(squadSql, squadParams);
+    if (squads.length === 0) return res.json({ weekKey, monthPrefix, rows: [] });
+
+    const squadIds = squads.map((squad) => squad.id);
+    const squadPlaceholders = squadIds.map(() => '?').join(',');
+
+    const clients = await query(
+      `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.meta_lucro,
+              c.start_date, c.churn_date, c.created_at
+         FROM clients c
+        WHERE c.squad_id IN (${squadPlaceholders})
+          AND COALESCE(c.start_date, DATE(c.created_at)) <= LAST_DAY(?)`,
+      [...squadIds, referenceDateSql]
+    );
+
+    const clientIds = clients.map((client) => client.id);
+    let metricRows = [];
+    if (clientIds.length > 0) {
+      const clientPlaceholders = clientIds.map(() => '?').join(',');
+      metricRows = await query(
+        `SELECT client_id, period_key, data
+           FROM weekly_metrics
+          WHERE client_id IN (${clientPlaceholders})
+            AND (period_key LIKE ? OR period_key LIKE ?)
+          ORDER BY client_id, period_key`,
+        [...clientIds, monthPrefix + '-S%', prevMonthPrefix + '-S%']
+      );
+    }
+
+    const metricsByClient = new Map();
+    for (const row of metricRows) {
+      if (!metricsByClient.has(row.client_id)) metricsByClient.set(row.client_id, []);
+      metricsByClient.get(row.client_id).push({
+        period_key: row.period_key,
+        data: typeof row.data === 'object' ? row.data : JSON.parse(row.data || '{}'),
+      });
+    }
+
+    const clientsBySquad = new Map();
+    for (const client of clients) {
+      if (!clientsBySquad.has(client.squad_id)) clientsBySquad.set(client.squad_id, []);
+      clientsBySquad.get(client.squad_id).push(client);
+    }
+
+    const rows = squads.map((squad) => {
+      const squadClients = clientsBySquad.get(squad.id) || [];
+      const activeClients = squadClients.filter((client) => activeAt(client, bounds.end));
+      const activeAtStart = squadClients.filter((client) => activeAt(client, bounds.start));
+      const churnedInPeriod = squadClients.filter((client) => client.status === 'churn' && dateInMonth(client.churn_date, monthPrefix));
+      const mrr = activeClients.reduce((sum, client) => sum + (Number(client.fee) || 0), 0);
+      const churnRate = activeAtStart.length > 0 ? (churnedInPeriod.length / activeAtStart.length) * 100 : 0;
+
+      const clientSummaries = activeClients.map((client) => {
+        const summary = aggregateClientSummary(metricsByClient.get(client.id) || [], weekKey, monthPrefix, {
+          prevWeekKey,
+          prevMonthPrefix,
+          clientMetaLucro: Number(client.meta_lucro) || 0,
+        });
+        return {
+          clientId: client.id,
+          name: client.name,
+          squadId: client.squad_id,
+          clientMetaLucro: Number(client.meta_lucro) || 0,
+          ...summary,
+          hit: summary.monthGoal > 0 && summary.monthClosed >= summary.monthGoal,
+          hasGoal: summary.monthGoalSeen,
+        };
+      });
+
+      const totals = aggregatePortfolioSummary(clientSummaries);
+      const metaIndex = Number(totals.monthProgress) || 0;
+      const score = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
+
+      return {
+        squad: {
+          id: squad.id,
+          name: squad.name,
+          ownerUserId: squad.owner_user_id || '',
+          owner: squad.owner_user_id ? {
+            id: squad.owner_user_id,
+            name: squad.owner_name || '',
+            email: squad.owner_email || '',
+            role: squad.owner_role || '',
+          } : null,
+          active: Boolean(squad.active),
+          logoUrl: squad.logo_data_url || '',
+        },
+        ownerName: squad.owner_name || 'Sem responsável',
+        ownerRole: squad.owner_role || '',
+        activeClients: activeClients.length,
+        clientsWithGoal: Number(totals.clientsWithGoal) || 0,
+        mrr,
+        metaIndex,
+        hitRate: Number(totals.hitRateMonth) || 0,
+        churnRate,
+        performanceScore: score,
+        totals,
+      };
+    }).sort((a, b) => {
+      if (b.performanceScore !== a.performanceScore) return b.performanceScore - a.performanceScore;
+      if (b.metaIndex !== a.metaIndex) return b.metaIndex - a.metaIndex;
+      if (a.churnRate !== b.churnRate) return a.churnRate - b.churnRate;
+      if (b.mrr !== a.mrr) return b.mrr - a.mrr;
+      return String(a.squad.name || '').localeCompare(String(b.squad.name || ''), 'pt-BR');
+    }).map((row, index) => ({ ...row, position: index + 1 }));
+
+    res.json({ weekKey, monthPrefix, rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// --------------------------------------------------------------
 //  GET /api/metrics/summary
 // --------------------------------------------------------------
 router.get('/summary', requirePermission('metrics.view'), async (req, res, next) => {
@@ -223,10 +429,8 @@ router.get('/summary', requirePermission('metrics.view'), async (req, res, next)
     const prevMonthPrefix = previousMonthPrefix(monthPrefix);
     const referenceDateSql = `${monthPrefix}-01`;
 
-    const user = req.user;
-    const isAdmin = isAdminUser(user);
-    const squadScope = getAllowedSquads(user);
-    const allowedSquads = !isAdmin && squadScope.length > 0 ? squadScope : null;
+    const squadScope = getAllowedSquads(req.user, 'metrics.view.all');
+    const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
 
     // [Fase 2] Seleciona c.meta_lucro para usar no fallback
     let clientSql = `
@@ -336,10 +540,8 @@ router.get('/summary/history', requirePermission('metrics.view'), async (req, re
     const refYear  = ref.getUTCFullYear();
     const refMonth = ref.getUTCMonth();
 
-    const user = req.user;
-    const isAdmin = isAdminUser(user);
-    const squadScope = getAllowedSquads(user);
-    const allowedSquads = !isAdmin && squadScope.length > 0 ? squadScope : null;
+    const squadScope = getAllowedSquads(req.user, 'metrics.view.all');
+    const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
 
     let clientSql = `
       SELECT id, meta_lucro, start_date, created_at
@@ -454,7 +656,7 @@ router.get('/summary/history', requirePermission('metrics.view'), async (req, re
 router.get('/:clientId', requirePermission('metrics.view'), async (req, res, next) => {
   try {
     const { clientId } = req.params;
-    const { clientMetaLucro } = await assertClientExists(clientId, req.user);
+    const { clientMetaLucro } = await assertClientExists(clientId, req.user, 'metrics.view.all');
 
     const rows = await query(
       `SELECT id, client_id, period_key, data, created_at, updated_at
@@ -473,7 +675,7 @@ router.get('/:clientId/:periodKey', requirePermission('metrics.view'), async (re
     if (!PERIOD_KEY_RE.test(periodKey)) {
       throw badRequest('periodKey inválido. Esperado YYYY-MM-Sw');
     }
-    const { clientMetaLucro } = await assertClientExists(clientId, req.user);
+    const { clientMetaLucro } = await assertClientExists(clientId, req.user, 'metrics.view.all');
 
     const rows = await query(
       `SELECT id, client_id, period_key, data, created_at, updated_at
@@ -502,7 +704,7 @@ router.put('/:clientId/:periodKey', requirePermission('metrics.fill_week'), asyn
     if (!PERIOD_KEY_RE.test(periodKey)) {
       throw badRequest('periodKey inválido. Esperado YYYY-MM-Sw');
     }
-    const { clientMetaLucro } = await assertClientExists(clientId, req.user);
+    const { clientMetaLucro } = await assertClientExists(clientId, req.user, 'metrics.fill_week.all');
 
     const incomingData = sanitizeMetricData((req.body && req.body.data) || {});
 
@@ -562,7 +764,7 @@ router.post('/presence', requirePermission('metrics.fill_week'), async (req, res
     if (!PERIOD_KEY_RE.test(periodKey)) throw badRequest('periodKey inválido. Esperado YYYY-MM-Sw');
     if (!ALLOWED_METRIC_FIELDS.has(fieldKey)) throw badRequest('fieldKey inválido');
 
-    await assertClientExists(clientId, req.user);
+    await assertClientExists(clientId, req.user, 'metrics.fill_week.all');
 
     await query(
       `INSERT INTO metric_edit_presence (client_id, period_key, field_key, user_id)

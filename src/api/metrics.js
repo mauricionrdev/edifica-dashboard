@@ -44,6 +44,15 @@ export function getContractsHistory({ months, date, squadId, clientId } = {}) {
   return api.get(`/metrics/summary/history${qs ? `?${qs}` : ''}`);
 }
 
+
+export function getSquadRanking({ date, squadId } = {}) {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  if (squadId) params.set('squadId', squadId);
+  const qs = params.toString();
+  return api.get(`/metrics/ranking${qs ? `?${qs}` : ''}`);
+}
+
 export function listClientMetrics(clientId) {
   return api.get(`/metrics/${encodeURIComponent(clientId)}`);
 }

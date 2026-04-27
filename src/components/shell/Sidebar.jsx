@@ -387,7 +387,7 @@ export default function Sidebar({
           </section>
         ) : null}
 
-        {hasPermission(user, 'squads.view') && matchesSearch('Ranking', normalizedQuery) ? (
+        {hasPermission(user, 'ranking.view') && matchesSearch('Ranking', normalizedQuery) ? (
           <section className={styles.group}>
             <Item
               to="/ranking-squads"

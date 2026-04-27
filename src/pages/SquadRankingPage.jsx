@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { getContractsSummary } from '../api/metrics.js';
-import { ApiError } from '../api/client.js';
+import { getSquadRanking } from '../api/metrics.js';
 import { StateBlock } from '../components/ui/index.js';
-import { computeCentralMetrics } from '../utils/centralMetrics.js';
 import { MONTHS_FULL, fmtMoney, fmtPct } from '../utils/format.js';
 import { getSquadAvatar, getUserAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import { resolveSquadOwner } from '../utils/ownershipStorage.js';
@@ -13,13 +11,6 @@ const SCORE_FORMATTER = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 
 
 function buildReferenceDate(year, month0) {
   return `${year}-${String(month0 + 1).padStart(2, '0')}-15`;
-}
-
-function squadInitials(name) {
-  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return 'SQ';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 function leaderInitials(name) {
@@ -34,18 +25,6 @@ function rankLabel(position) {
 
 function formatScore(value) {
   return SCORE_FORMATTER.format(Math.max(0, Math.round(Number(value) || 0)));
-}
-
-function computePerformanceScore({ mrr, metaIndex, churnRate, activeClients }) {
-  const safeMrr = Math.max(0, Number(mrr) || 0);
-  const safeMeta = Math.max(0, Number(metaIndex) || 0);
-  const safeChurn = Math.max(0, Number(churnRate) || 0);
-  const safeActive = Math.max(0, Number(activeClients) || 0);
-  if (safeMrr <= 0 || safeActive <= 0 || safeMeta <= 0) return 0;
-
-  const targetFactor = safeMeta / 100;
-  const retentionFactor = Math.max(0, 1 - safeChurn / 100);
-  return Math.round(safeMrr * targetFactor * retentionFactor);
 }
 
 function PodiumCard({ row, variant = 'default', maxScore = 1, onOpen }) {
@@ -102,66 +81,35 @@ function PodiumCard({ row, variant = 'default', maxScore = 1, onOpen }) {
 export default function SquadRankingPage() {
   const navigate = useNavigate();
   const {
-    squads,
-    clients,
     userDirectory,
     loading: shellLoading,
     setPanelHeader,
   } = useOutletContext();
 
   const now = useMemo(() => new Date(), []);
-  const [period, setPeriod] = useState(() => ({ y: now.getFullYear(), m: now.getMonth() }));
-  const [summaries, setSummaries] = useState({});
+  const [period] = useState(() => ({ y: now.getFullYear(), m: now.getMonth() }));
+  const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [assetVersion, setAssetVersion] = useState(0);
-  const fetchGenRef = useRef(0);
 
-  const fetchSummaries = useCallback(async () => {
-    const safeSquads = Array.isArray(squads) ? squads : [];
-    if (!safeSquads.length) {
-      setSummaries({});
-      return;
-    }
-
-    const refDate = buildReferenceDate(period.y, period.m);
-    const gen = ++fetchGenRef.current;
+  const fetchRanking = useCallback(async () => {
     setLoading(true);
     setError(null);
-
-    const settled = await Promise.allSettled(
-      safeSquads.map(async (squad) => {
-        const response = await getContractsSummary({ squadId: squad.id, date: refDate });
-        return [squad.id, response];
-      })
-    );
-
-    if (fetchGenRef.current !== gen) return;
-
-    const next = {};
-    let failure = null;
-
-    settled.forEach((result) => {
-      if (result.status === 'fulfilled') {
-        const [squadId, response] = result.value;
-        next[squadId] = response;
-        return;
-      }
-
-      const reason = result.reason;
-      if (!(reason instanceof ApiError && reason.status === 401) && !failure) {
-        failure = reason instanceof Error ? reason : new Error('Não foi possível consolidar o ranking.');
-      }
-    });
-
-    setSummaries(next);
-    setError(failure);
-    setLoading(false);
-  }, [period.m, period.y, squads]);
+    try {
+      const response = await getSquadRanking({ date: buildReferenceDate(period.y, period.m) });
+      setRows(Array.isArray(response?.rows) ? response.rows : []);
+    } catch (err) {
+      setRows([]);
+      setError(err instanceof Error ? err : new Error('Não foi possível consolidar o ranking.'));
+    } finally {
+      setLoading(false);
+    }
+  }, [period.m, period.y]);
 
   useEffect(() => {
-    fetchSummaries();
-  }, [fetchSummaries]);
+    fetchRanking();
+  }, [fetchRanking]);
 
   useEffect(() => subscribeAvatarChange(() => setAssetVersion((current) => current + 1)), []);
 
@@ -169,59 +117,43 @@ export default function SquadRankingPage() {
     setPanelHeader({
       title: <strong>Ranking de Squads</strong>,
       actions: (
-        <button type="button" className={styles.headerAction} onClick={fetchSummaries}>
+        <button type="button" className={styles.headerAction} onClick={fetchRanking}>
           Atualizar
         </button>
       ),
     });
-  }, [fetchSummaries, setPanelHeader]);
+  }, [fetchRanking, setPanelHeader]);
 
   const rankingRows = useMemo(() => {
-    const safeSquads = Array.isArray(squads) ? squads : [];
-    const safeClients = Array.isArray(clients) ? clients : [];
+    const safeRows = Array.isArray(rows) ? rows : [];
+    return safeRows.map((row, index) => {
+      const squad = row.squad || { id: row.squadId, name: row.squadName || 'Squad' };
+      const ownership = resolveSquadOwner(squad, userDirectory);
+      const owner = squad.owner || ownership.owner || null;
+      const ownerName = row.ownerName || owner?.name || 'Sem responsável';
+      const metaIndex = Number(row.metaIndex) || 0;
+      const churnRate = Number(row.churnRate) || 0;
+      const displayAvatar = getSquadAvatar(squad) || getUserAvatar(owner) || '';
 
-    return safeSquads
-      .map((squad) => {
-        const squadClients = safeClients.filter((client) => client?.squadId === squad.id);
-        const executive = computeCentralMetrics(squadClients, period.y, period.m);
-        const summary = summaries[squad.id];
-        const totals = summary?.totals || {};
-        const ownership = resolveSquadOwner(squad, userDirectory);
-        const metaIndex = Number(totals.monthProgress) || 0;
-        const performanceScore = computePerformanceScore({
-          mrr: executive.mrr,
-          metaIndex,
-          churnRate: executive.churnRate,
-          activeClients: executive.active,
-        });
-        const displayAvatar = getSquadAvatar(squad) || getUserAvatar(ownership.owner) || '';
-
-        return {
-          squad,
-          ownerName: ownership.owner?.name || 'Sem responsável',
-          ownerRole: ownership.owner?.role || '',
-          activeClients: executive.active,
-          clientsWithGoal: Number(totals.clientsWithGoal) || 0,
-          mrr: Number(executive.mrr) || 0,
-          metaIndex,
-          hitRate: Number(totals.hitRateMonth) || 0,
-          churnRate: Number(executive.churnRate) || 0,
-          performanceScore,
-          displayAvatar,
-          metaDisplay: metaIndex > 0 ? fmtPct(metaIndex) : '—',
-          churnDisplay: executive.churnRate > 0 ? fmtPct(executive.churnRate) : '0,00%',
-        };
-      })
-      .sort((a, b) => {
-        const scoreDiff = b.performanceScore - a.performanceScore;
-        if (scoreDiff) return scoreDiff;
-        if (b.metaIndex !== a.metaIndex) return b.metaIndex - a.metaIndex;
-        if (a.churnRate !== b.churnRate) return a.churnRate - b.churnRate;
-        if (b.mrr !== a.mrr) return b.mrr - a.mrr;
-        return String(a.squad.name || '').localeCompare(String(b.squad.name || ''), 'pt-BR');
-      })
-      .map((row, index) => ({ ...row, position: index + 1 }));
-  }, [assetVersion, clients, period.m, period.y, squads, summaries, userDirectory]);
+      return {
+        ...row,
+        squad,
+        ownerName,
+        ownerRole: row.ownerRole || owner?.role || '',
+        activeClients: Number(row.activeClients) || 0,
+        clientsWithGoal: Number(row.clientsWithGoal) || 0,
+        mrr: Number(row.mrr) || 0,
+        metaIndex,
+        hitRate: Number(row.hitRate) || 0,
+        churnRate,
+        performanceScore: Number(row.performanceScore) || 0,
+        displayAvatar,
+        position: Number(row.position) || index + 1,
+        metaDisplay: metaIndex > 0 ? fmtPct(metaIndex) : '—',
+        churnDisplay: churnRate > 0 ? fmtPct(churnRate) : '0,00%',
+      };
+    });
+  }, [assetVersion, rows, userDirectory]);
 
   const filteredRows = rankingRows;
 
@@ -251,7 +183,7 @@ export default function SquadRankingPage() {
           variant="error"
           title="Erro ao montar o ranking"
           action={
-            <button type="button" className={styles.inlineButton} onClick={fetchSummaries}>
+            <button type="button" className={styles.inlineButton} onClick={fetchRanking}>
               Tentar novamente
             </button>
           }
