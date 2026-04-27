@@ -383,9 +383,10 @@ function UserFormModal({
                   {group.permissions.map((permission) => {
                     const checked = form.permissionsOverride.includes(permission);
                     return (
-                      <label key={permission} className={`${styles.checkboxCard} ${checked ? styles.checkboxCardActive : ''}`}>
+                      <label key={permission} className={`${styles.checkboxCard} ${styles.permissionOptionCard} ${checked ? styles.checkboxCardActive : ''}`}>
                         <input type="checkbox" checked={checked} onChange={() => togglePermission(permission)} />
-                        <span>{permissionLabel(permission)}</span>
+                        <PermissionText permission={permission} showHint />
+                        <PermissionScopeBadge permission={permission} />
                       </label>
                     );
                   })}
@@ -644,6 +645,57 @@ function RequestReviewModal({ request, squads = [], busy = false, onClose, onSub
         </div>
       </div>
     </div>
+  );
+}
+
+
+function getPermissionMeta(permission) {
+  const key = String(permission || '');
+  if (key === '*' || key.endsWith('.all')) {
+    return { scope: 'Todos', tone: 'all', hint: 'Acesso amplo aos dados da área.' };
+  }
+  if (key.endsWith('.own')) {
+    return { scope: 'Próprio escopo', tone: 'own', hint: 'Limitado a squads, vínculos ou responsabilidades do usuário.' };
+  }
+  if (key.endsWith('.edit.all')) {
+    return { scope: 'Editar todos', tone: 'all', hint: 'Permite edição ampla na área.' };
+  }
+  if (key.endsWith('.edit.own')) {
+    return { scope: 'Editar próprio', tone: 'own', hint: 'Permite edição apenas quando houver vínculo direto.' };
+  }
+  if (key.endsWith('.fill_week.all')) {
+    return { scope: 'Preencher todos', tone: 'all', hint: 'Permite preencher métricas de todos os squads.' };
+  }
+  if (key.endsWith('.fill_week.own')) {
+    return { scope: 'Preencher próprio', tone: 'own', hint: 'Permite preencher métricas apenas do próprio escopo.' };
+  }
+  if (key.endsWith('.manage') || key === 'team.manage') {
+    return { scope: 'Gerenciar', tone: 'admin', hint: 'Permissão administrativa de manutenção.' };
+  }
+  if (key.endsWith('.create')) {
+    return { scope: 'Criar', tone: 'create', hint: 'Permite criar novos registros na área.' };
+  }
+  if (key === 'audit.view') {
+    return { scope: 'Auditoria', tone: 'admin', hint: 'Permite consultar histórico administrativo.' };
+  }
+  if (key === 'team.view') {
+    return { scope: 'Administrativo', tone: 'admin', hint: 'Permite visualizar equipe e acessos.' };
+  }
+  return { scope: 'Operacional', tone: 'neutral', hint: 'Permissão operacional da área.' };
+}
+
+function PermissionScopeBadge({ permission }) {
+  const meta = getPermissionMeta(permission);
+  return <span className={`${styles.permissionScopeBadge} ${styles[`permissionScopeBadge_${meta.tone}`] || ''}`.trim()}>{meta.scope}</span>;
+}
+
+function PermissionText({ permission, showHint = false }) {
+  const meta = getPermissionMeta(permission);
+  return (
+    <span className={styles.permissionText}>
+      <strong>{permissionLabel(permission)}</strong>
+      {showHint ? <small>{meta.hint}</small> : null}
+    </span>
   );
 }
 
@@ -1505,7 +1557,10 @@ export default function TeamAccessPage() {
                       {item.isWildcard ? (
                         <span className={styles.permissionChipStrong}>Acesso total à plataforma</span>
                       ) : item.permissions.map((permission) => (
-                        <span key={permission} className={styles.permissionChip}>{permissionLabel(permission)}</span>
+                        <span key={permission} className={styles.permissionChip}>
+                          <PermissionText permission={permission} />
+                          <PermissionScopeBadge permission={permission} />
+                        </span>
                       ))}
                     </div>
                   </article>
@@ -1526,6 +1581,7 @@ export default function TeamAccessPage() {
                   <thead>
                     <tr>
                       <th>Permissão</th>
+                      <th>Escopo</th>
                       {roleSummaries.map((item) => (
                         <th key={item.role}>{item.label}</th>
                       ))}
@@ -1537,13 +1593,14 @@ export default function TeamAccessPage() {
                         <tr key={permission}>
                           <td>
                             <div className={styles.primaryCell}>
-                              <div className={styles.squareIcon}><ShieldIcon size={16} /></div>
+                              <ShieldIcon size={15} />
                               <div>
                                 <strong>{permissionLabel(permission)}</strong>
                                 <small>{index === 0 ? group.area : 'Permissão operacional'}</small>
                               </div>
                             </div>
                           </td>
+                          <td><PermissionScopeBadge permission={permission} /></td>
                           {roleSummaries.map((item) => {
                             const allowed = item.isWildcard || item.permissions.includes(permission);
                             return (

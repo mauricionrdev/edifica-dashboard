@@ -1842,3 +1842,297 @@
   min-width: 220px;
   overflow: visible;
 }
+
+/* Patch 57 — refinamento visual da central de permissões */
+.page {
+  background: transparent;
+}
+
+.tabBar {
+  width: 100%;
+  justify-content: flex-start;
+  border-radius: var(--radius-3);
+  background: rgba(255,255,255,0.018);
+}
+
+.tabButton {
+  flex: 0 0 auto;
+}
+
+.heroPanel,
+.metricCard,
+.tableCard,
+.modalCard,
+.roleCard,
+.selectorBlock,
+.requestSummaryCard,
+.governanceCard,
+.roleMetaGrid div,
+.checkboxCard {
+  background: rgba(255,255,255,0.018);
+  border-color: rgba(255,255,255,0.06);
+}
+
+.heroPanel {
+  display: none;
+}
+
+.metricGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.metricCard {
+  min-height: 82px;
+  padding: 12px 14px;
+}
+
+.metricCard strong {
+  font-size: 20px;
+}
+
+.tableCard {
+  border-radius: var(--radius-3);
+}
+
+.sectionHead {
+  min-height: 48px;
+  padding: 12px 14px;
+}
+
+.tableWrap {
+  scrollbar-width: none;
+}
+
+.tableWrap::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.table th {
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 11px 0;
+}
+
+.primaryCell {
+  grid-template-columns: 18px minmax(0, 1fr);
+}
+
+.primaryCell > svg {
+  color: var(--text-tertiary);
+}
+
+.squareIcon {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.squareIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.field input:focus,
+.field select:focus,
+.filterField input:focus,
+.filterField select:focus {
+  border-color: var(--line-strong);
+  background: var(--field-bg-hover);
+  box-shadow: none;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.filterField input:focus-visible,
+.filterField select:focus-visible,
+.tabButton:focus-visible,
+.headerBtn:focus-visible,
+.primaryButton:focus-visible,
+.ghostButton:focus-visible,
+.dangerButton:focus-visible,
+.inlineRetry:focus-visible,
+.dashboardLink:focus-visible,
+.modalClose:focus-visible,
+.checkboxCard:focus-within {
+  outline: none;
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
+
+.userModalCard {
+  width: min(1040px, calc(100vw - 36px));
+}
+
+.permissionSelectGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.checkboxGroup {
+  gap: 7px;
+  padding: 0;
+}
+
+.selectorGroupTitle {
+  padding: 0 2px 2px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+}
+
+.permissionOptionCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 8px 9px;
+}
+
+.permissionText {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.permissionText strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 680;
+}
+
+.permissionText small {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.25;
+  font-weight: 520;
+}
+
+.checkboxCardActive .permissionText strong,
+.checkboxCardActive .permissionText small {
+  color: var(--text-primary);
+}
+
+.permissionScopeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  max-width: 112px;
+  padding: 4px 7px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.028);
+  color: var(--text-tertiary);
+  font-size: 9px;
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.permissionScopeBadge_own {
+  border-color: rgba(46, 242, 255, 0.16);
+  background: rgba(46, 242, 255, 0.055);
+  color: #a7f7ff;
+}
+
+.permissionScopeBadge_all {
+  border-color: rgba(245, 184, 0, 0.26);
+  background: rgba(245, 184, 0, 0.09);
+  color: #ffe8a3;
+}
+
+.permissionScopeBadge_admin {
+  border-color: rgba(255, 91, 115, 0.18);
+  background: rgba(255, 91, 115, 0.06);
+  color: #ffb4c0;
+}
+
+.permissionScopeBadge_create {
+  border-color: rgba(94, 234, 145, 0.16);
+  background: rgba(94, 234, 145, 0.055);
+  color: #b9f6ca;
+}
+
+.permissionChipWrap {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.permissionChip {
+  min-height: 42px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  border-radius: var(--radius-2);
+  background: rgba(255,255,255,0.02);
+}
+
+.permissionChip .permissionScopeBadge {
+  flex: 0 0 auto;
+}
+
+.permissionChipStrong {
+  min-height: 42px;
+  align-items: center;
+}
+
+.matrixPill {
+  min-width: 62px;
+  min-height: 22px;
+  padding: 4px 7px;
+  font-size: 10px;
+}
+
+.matrixPillOn {
+  background: rgba(94, 234, 145, 0.08);
+  border-color: rgba(94, 234, 145, 0.18);
+  color: #b9f6ca;
+}
+
+.roleCardGrid {
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+
+.roleCard {
+  border-radius: var(--radius-3);
+}
+
+.roleMetaGrid div {
+  background: rgba(255,255,255,0.018);
+}
+
+@media (max-width: 1280px) {
+  .permissionSelectGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .permissionSelectGrid,
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .permissionOptionCard {
+    grid-template-columns: 16px minmax(0, 1fr);
+  }
+
+  .permissionOptionCard .permissionScopeBadge {
+    grid-column: 2;
+    width: fit-content;
+  }
+}
