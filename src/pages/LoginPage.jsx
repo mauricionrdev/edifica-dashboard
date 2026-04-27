@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { ApiError } from '../api/client.js';
+import { getSafeRedirectPath } from '../utils/permissions.js';
 import { createAccessRequest } from '../api/accessRequests.js';
 import styles from './LoginPage.module.css';
 
@@ -9,7 +10,7 @@ const EMPTY_RESET = { identifier: '', email: '', note: '' };
 const EMPTY_INVITE = { name: '', email: '', company: '', note: '' };
 
 export default function LoginPage() {
-  const { login, status } = useAuth();
+  const { login, status, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -33,10 +34,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === 'authed') {
-      const to = location.state?.from?.pathname || '/';
+      const to = getSafeRedirectPath(user, location.state?.from || '/');
       navigate(to, { replace: true });
     }
-  }, [status, navigate, location.state]);
+  }, [status, navigate, location.state, user]);
 
   function clearMessages() {
     setError('');
@@ -59,8 +60,8 @@ export default function LoginPage() {
     clearMessages();
     setLoading(true);
     try {
-      await login({ identifier: id, password });
-      const to = location.state?.from?.pathname || '/';
+      const loggedUser = await login({ identifier: id, password });
+      const to = getSafeRedirectPath(loggedUser, location.state?.from || '/');
       navigate(to, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) {

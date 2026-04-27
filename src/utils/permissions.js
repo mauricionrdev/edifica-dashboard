@@ -185,6 +185,54 @@ export function canAccessSquad(user, squadId) {
   return getUserSquadIds(user).includes(squadId);
 }
 
+
+
+export const ROUTE_PERMISSION_MAP = [
+  { path: '/', permission: 'central.view' },
+  { path: '/clientes', permission: 'clients.view' },
+  { path: '/projetos', permission: 'projects.view' },
+  { path: '/preencher-semana', permission: 'metrics.view' },
+  { path: '/gdv', permission: 'gdv.view' },
+  { path: '/perfil', permission: 'profile.view' },
+  { path: '/ranking-squads', permission: 'squads.view' },
+  { path: '/equipe', permission: 'team.view' },
+  { path: '/modelo-oficial', permission: 'project_template.view' },
+];
+
+export function buildPathFromLocation(locationLike) {
+  if (!locationLike) return '';
+  if (typeof locationLike === 'string') return locationLike;
+  const pathname = locationLike.pathname || '';
+  const search = locationLike.search || '';
+  const hash = locationLike.hash || '';
+  return `${pathname}${search}${hash}` || '';
+}
+
+export function getRoutePermission(pathname = '/') {
+  const cleanPath = String(pathname || '/').split('?')[0].split('#')[0] || '/';
+  if (cleanPath === '/acesso-negado' || cleanPath === '/login') return null;
+  if (cleanPath.startsWith('/perfil/')) return 'profile.view';
+  if (cleanPath.startsWith('/squads/')) return 'squads.view';
+  const match = ROUTE_PERMISSION_MAP.find((route) => route.path === cleanPath);
+  return match?.permission || null;
+}
+
+export function canAccessRoute(user, path) {
+  const permission = getRoutePermission(path || '/');
+  if (!permission) return true;
+  return hasPermission(user, permission);
+}
+
+export function getDefaultRouteForUser(user) {
+  const firstAllowed = ROUTE_PERMISSION_MAP.find((route) => hasPermission(user, route.permission));
+  return firstAllowed?.path || '/acesso-negado';
+}
+
+export function getSafeRedirectPath(user, requestedPath) {
+  const path = buildPathFromLocation(requestedPath) || '/';
+  return canAccessRoute(user, path) ? path : getDefaultRouteForUser(user);
+}
+
 export function permissionLabel(key) {
   return PERMISSION_LABELS[key] || key;
 }

@@ -11,6 +11,9 @@ import {
   canViewGdv,
   canViewMetrics,
   hasPermission,
+  canManageGdvs,
+  canManageSquads,
+  canViewTeamArea,
 } from '../../utils/permissions.js';
 import {
   BriefcaseIcon,
@@ -95,6 +98,9 @@ export default function Sidebar({
   const [renamingGdvKey, setRenamingGdvKey] = useState('');
   const searchRef = useRef(null);
   const admin = isAdminUser(user);
+  const canManageSidebarSquads = canManageSquads(user);
+  const canManageSidebarGdvs = canManageGdvs(user);
+  const canViewTeam = canViewTeamArea(user);
 
   const normalizedQuery = normalizeSearch(query);
   const activeGdvParam = useMemo(() => {
@@ -192,7 +198,7 @@ export default function Sidebar({
   };
 
   const startSquadRename = (event, squad) => {
-    if (!admin || !squad?.id || collapsed) return;
+    if (!canManageSidebarSquads || !squad?.id || collapsed) return;
     event.preventDefault();
     event.stopPropagation();
     setEditingSquadId(squad.id);
@@ -205,7 +211,7 @@ export default function Sidebar({
   };
 
   const commitSquadRename = async (squad) => {
-    if (!admin || !squad?.id || renamingSquadId) return;
+    if (!canManageSidebarSquads || !squad?.id || renamingSquadId) return;
     const nextName = editingSquadName.trim();
     if (!nextName || nextName === squad.name) {
       cancelSquadRename();
@@ -226,7 +232,7 @@ export default function Sidebar({
   };
 
   const startGdvRename = (event, entry) => {
-    if (!admin || !entry?.owner?.id || collapsed) return;
+    if (!canManageSidebarGdvs || !entry?.owner?.id || collapsed) return;
     event.preventDefault();
     event.stopPropagation();
     setEditingGdvKey(entry.key);
@@ -239,7 +245,7 @@ export default function Sidebar({
   };
 
   const commitGdvRename = async (entry) => {
-    if (!admin || !entry?.id || renamingGdvKey) return;
+    if (!canManageSidebarGdvs || !entry?.id || renamingGdvKey) return;
     const nextName = editingGdvName.trim();
     const currentName = String(entry.name || '').trim();
     if (!nextName || nextName === currentName) {
@@ -371,7 +377,7 @@ export default function Sidebar({
                     }}
                   />
                 ) : !collapsed ? (
-                  <span className={styles.itemLabel} title={admin ? 'Clique duas vezes para renomear' : entry.name}>
+                  <span className={styles.itemLabel} title={canManageSidebarGdvs ? 'Clique duas vezes para renomear' : entry.name}>
                     {entry.name}
                   </span>
                 ) : null}
@@ -381,7 +387,7 @@ export default function Sidebar({
           </section>
         ) : null}
 
-        {admin && hasPermission(user, 'squads.view') && matchesSearch('Ranking', normalizedQuery) ? (
+        {hasPermission(user, 'squads.view') && matchesSearch('Ranking', normalizedQuery) ? (
           <section className={styles.group}>
             <Item
               to="/ranking-squads"
@@ -441,7 +447,7 @@ export default function Sidebar({
                       }}
                     />
                   ) : !collapsed ? (
-                    <span className={styles.itemLabel} title={admin ? 'Clique duas vezes para renomear' : squad.name}>
+                    <span className={styles.itemLabel} title={canManageSidebarSquads ? 'Clique duas vezes para renomear' : squad.name}>
                       {squad.name}
                     </span>
                   ) : null}
@@ -458,7 +464,7 @@ export default function Sidebar({
           </section>
         ) : null}
 
-        {admin ? (
+        {canViewTeam ? (
           <section className={styles.group}>
             <div className={styles.groupLabel}>
               <span>Admin</span>
