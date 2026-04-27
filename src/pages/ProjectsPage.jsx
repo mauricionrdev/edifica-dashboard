@@ -1614,30 +1614,6 @@ export default function ProjectsPage() {
                 </section>
               </section>
 
-              <section className={styles.activityPanel}>
-                <header className={styles.activityHeader}>
-                  <h2>Atividade</h2>
-                  <span>{projectEvents.length}</span>
-                </header>
-                {projectEvents.length === 0 ? (
-                  <div className={styles.emptyActivity}>Sem atividades registradas.</div>
-                ) : (
-                  <div className={styles.activityList}>
-                    {projectEvents.slice(0, 8).map((event) => (
-                      <article key={event.id} className={styles.activityItem}>
-                        <span className={styles.activityDot} aria-hidden="true" />
-                        <div>
-                          <p>
-                            <strong>{event.actorName || 'Sistema'}</strong>
-                            <span>{event.summary}</span>
-                          </p>
-                          <time>{formatEventTime(event.createdAt)}</time>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
             </>
           )}
         </main>

@@ -535,6 +535,11 @@ export default function CentralPage() {
     [period, visibleClients]
   );
 
+  const recentActivities = useMemo(
+    () => buildClientActivities(visibleClients),
+    [visibleClients]
+  );
+
   const activeClients = executiveMetrics.active ?? 0;
   const totalClients = executiveMetrics.total ?? 0;
   const mrr = executiveMetrics.mrr ?? 0;
@@ -759,7 +764,10 @@ export default function CentralPage() {
             />
           </div>
 
-          <ProjectSummaryPanel projects={projects} loading={projectsLoading} />
+          <section className={styles.dashboardLastCard}>
+            <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
+            <ProjectSummaryPanel projects={projects} loading={projectsLoading} />
+          </section>
         </div>
 
         {selectedClient ? (

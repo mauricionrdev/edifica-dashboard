@@ -721,3 +721,147 @@
   box-shadow: none !important;
   color: var(--accent-amber) !important;
 }
+
+
+/* PATCH v47 — último card do dashboard em duas colunas: Atividades | Projetos */
+.dashboardLastCard {
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.021);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.dashboardLastCard .activityPanel,
+.dashboardLastCard .projectsPanel {
+  display: block;
+  min-height: 264px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.dashboardLastCard .activityPanel {
+  border-right: 1px solid var(--line-subtle);
+}
+
+.dashboardLastCard .activityList,
+.dashboardLastCard .activityItem,
+.dashboardLastCard .activityDot,
+.dashboardLastCard .activityCopy,
+.dashboardLastCard .activityMain,
+.dashboardLastCard .activityMeta {
+  display: initial;
+}
+
+.dashboardLastCard .activityList {
+  display: grid;
+  padding: 8px 18px 14px;
+}
+
+.dashboardLastCard .activityItem {
+  width: 100%;
+  min-height: 50px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.dashboardLastCard .activityItem:last-child {
+  border-bottom: 0;
+}
+
+.dashboardLastCard .activityItem:hover {
+  color: var(--text-primary);
+}
+
+.dashboardLastCard .activityDot {
+  width: 6px;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--text-quaternary);
+  display: inline-block;
+}
+
+.dashboardLastCard .activityDot_amber { background: var(--accent-amber); }
+.dashboardLastCard .activityDot_green { background: var(--success); }
+.dashboardLastCard .activityDot_pink { background: var(--danger); }
+
+.dashboardLastCard .activityCopy {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.dashboardLastCard .activityMain {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.dashboardLastCard .activityMain strong,
+.dashboardLastCard .activityMain span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dashboardLastCard .activityMain strong {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.dashboardLastCard .activityMain span {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+}
+
+.dashboardLastCard .activityMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboardLastCard .activityMeta small {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+}
+
+.dashboardLastCard .projectsPanel {
+  min-height: 264px;
+}
+
+.dashboardLastCard .projectsList {
+  padding: 8px 18px 14px;
+}
+
+.dashboardLastCard .projectItem {
+  grid-template-columns: 24px minmax(180px, 1fr) minmax(82px, 110px) minmax(74px, auto);
+  min-height: 50px;
+  gap: 10px;
+}
+
+@media (max-width: 1180px) {
+  .dashboardLastCard {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboardLastCard .activityPanel {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+}
