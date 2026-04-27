@@ -1269,7 +1269,8 @@ export default function TeamAccessPage() {
           ) : null}
         </div>
 
-        {activeTab === 'squads' ? (
+        <div className={styles.tabContent}>
+          {activeTab === 'squads' ? (
           <>
             <section className={styles.metricGrid}>
               <StatCard label="Total de squads" value={squadRows.length} hint="estrutura cadastrada" />
@@ -1843,6 +1844,7 @@ export default function TeamAccessPage() {
             </section>
           </>
         )}
+        </div>
       </div>
 
       {squadModal.open ? (

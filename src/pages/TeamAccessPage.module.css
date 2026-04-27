@@ -1,165 +1,38 @@
 .page {
-  display: grid;
-  gap: 18px;
-}
-
-.headerActions,
-.rowActions,
-.modalActions,
-.tabBar,
-.heroBadges,
-.heroSide,
-.squadPills,
-.checkboxGrid {
+  min-height: 100%;
+  padding: 20px 24px 32px;
+  background: var(--surface, #08090a);
+  color: var(--text-primary, #f7f8f8);
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 14px;
+  isolation: isolate;
+  contain: paint;
 }
 
-.headerActions,
-.rowActions,
-.tabBar,
-.heroBadges,
-.heroSide,
-.squadPills,
-.checkboxGrid {
+.tabBar {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--line, rgba(255,255,255,0.08));
+  border-radius: 14px;
+  background: var(--bg-canvas, #0b0c0d);
+  display: flex;
   flex-wrap: wrap;
+  gap: 4px;
+  box-shadow: none;
+  transform: translateZ(0);
 }
 
-.heroPanel,
-.metricCard,
-.tableCard,
-.modalCard,
-.tabBar {
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: var(--surface);
-  box-shadow: 0 24px 60px rgba(0,0,0,.24);
-}
-
-.heroPanel {
+.tabContent {
+  min-height: 420px;
+  background: var(--surface, #08090a);
   display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(280px, .95fr);
-  gap: 18px;
-  padding: 22px;
-}
-
-.heroMain,
-.heroStatCard,
-.metricCard,
-.tableCard,
-.modalCard {
-  min-width: 0;
-}
-
-.heroEyebrow,
-.sectionEyebrow,
-.modalEyebrow,
-.selectorHead span,
-.metricCard span,
-.heroStatCard span {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: rgba(233,236,241,.55);
-}
-
-.heroEyebrow,
-.selectorHead {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.heroTitle,
-.sectionHead h3,
-.modalHead h3 {
-  margin: 10px 0 0;
-  color: #fff;
-}
-
-.heroTitle {
-  max-width: 18ch;
-  font-size: clamp(28px, 3vw, 38px);
-  line-height: 1.02;
-}
-
-.heroTitle strong {
-  color: #ffd972;
-}
-
-.heroText,
-.modalText,
-.sectionHead p,
-.metricCard small,
-.heroStatCard small,
-.primaryCell small,
-.tableEmpty,
-.selectorEmpty,
-.dimText {
-  color: rgba(227,232,238,.7);
-}
-
-.heroText,
-.modalText,
-.sectionHead p {
-  margin: 14px 0 0;
-  max-width: 70ch;
-  line-height: 1.6;
-}
-
-.heroBadge,
-.heroBadgeMuted,
-.rolePill,
-.squadPill,
-.statusPill {
-  border-radius: 999px;
-  padding: 9px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid rgba(255,255,255,.08);
-}
-
-.heroBadge {
-  background: rgba(255,200,0,.12);
-  border-color: rgba(255,200,0,.2);
-  color: #fff2be;
-}
-
-.heroBadgeMuted,
-.squadPill {
-  background: rgba(255,255,255,.04);
-  color: rgba(244,247,251,.78);
-}
-
-.heroSide {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-.heroStatCard {
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.03);
-  padding: 18px;
-  display: grid;
-  gap: 6px;
-}
-
-.heroStatCard strong,
-.metricCard strong,
-.primaryCell strong {
-  color: #fff;
-}
-
-.heroStatCard strong,
-.metricCard strong {
-  font-size: 28px;
-  line-height: 1;
-}
-
-.tabBar {
-  padding: 8px;
+  gap: 14px;
+  contain: layout paint;
+  transform: translateZ(0);
 }
 
 .tabButton,
@@ -170,852 +43,286 @@
 .inlineRetry,
 .dashboardLink,
 .modalClose {
-  cursor: pointer;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.1);
-  font-weight: 700;
-  transition: transform .16s ease, border-color .16s ease, background .16s ease;
-}
-
-.tabButton,
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dangerButton,
-.inlineRetry,
-.dashboardLink {
-  padding: 10px 14px;
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary, #c9cdd3);
+  font: inherit;
   font-size: 12px;
+  font-weight: 680;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-}
-
-.tabButton:hover,
-.headerBtn:hover,
-.primaryButton:hover,
-.ghostButton:hover,
-.dangerButton:hover,
-.inlineRetry:hover,
-.dashboardLink:hover {
-  transform: translateY(-1px);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
 }
 
 .tabButton {
-  background: transparent;
-  color: rgba(232,236,242,.7);
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.tabButton:hover,
+.ghostButton:hover,
+.inlineRetry:hover,
+.dashboardLink:hover,
+.modalClose:hover {
+  border-color: var(--line-strong, rgba(255,255,255,0.14));
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary, #f7f8f8);
 }
 
 .tabButtonActive,
 .headerBtn,
 .primaryButton {
-  background: var(--accent-amber-soft);
-  border-color: rgba(255,174,76,.28);
-  color: #fff;
+  border-color: rgba(245,184,0,0.32);
+  background: rgba(245,184,0,0.14);
+  color: #ffe8a3;
+}
+
+.primaryButton:hover,
+.headerBtn:hover {
+  border-color: rgba(245,184,0,0.42);
+  background: rgba(245,184,0,0.18);
+}
+
+.dangerButton {
+  padding: 0 12px;
+  border-color: rgba(255,91,115,0.24);
+  background: rgba(255,91,115,0.08);
+  color: #ff9cad;
+}
+
+.dangerButton:hover {
+  border-color: rgba(255,91,115,0.34);
+  background: rgba(255,91,115,0.12);
 }
 
 .ghostButton,
 .inlineRetry,
-.dashboardLink {
-  background: rgba(255,255,255,.04);
-  color: #f3f5f8;
-}
-
-.dangerButton {
-  background: rgba(239,68,68,.12);
-  color: #fecaca;
-  border-color: rgba(239,68,68,.24);
-}
-
-.metricGrid {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.metricCard {
-  padding: 18px;
-  display: grid;
-  gap: 8px;
-}
-
-.tableCard {
-  padding: 20px;
-  display: grid;
-  gap: 16px;
-}
-
-.sectionHead {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: end;
-}
-
-.sectionHead p {
-  max-width: 480px;
-  margin-top: 0;
-}
-
-.tableWrap {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th {
-  text-align: left;
-  font-size: 11px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: rgba(232,236,242,.48);
-  padding: 0 0 14px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-.table td {
-  padding: 16px 0;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-  color: rgba(239,242,247,.84);
-  font-size: 13px;
-  vertical-align: middle;
-}
-
-.primaryCell {
-  display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
-}
-
-.squareIcon {
-  width: 38px;
-  height: 38px;
-  border-radius: 13px;
-  display: grid;
-  place-items: center;
-  color: #ffd972;
-  background: rgba(255,200,0,.09);
-  border: 1px solid rgba(255,200,0,.18);
-}
-
-.primaryCell strong {
-  display: block;
-  font-size: 13px;
-}
-
-.primaryCell small {
-  display: block;
-  margin-top: 2px;
-}
-
-.textStack {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-}
-
-.textStack strong,
-.textStack small {
-  display: block;
-}
-
-.rolePill {
-  background: rgba(59,130,246,.12);
-  border-color: rgba(59,130,246,.22);
-  color: #dbeafe;
-}
-
-.statusPillActive {
-  background: rgba(34,197,94,.12);
-  border-color: rgba(34,197,94,.22);
-  color: #dcfce7;
-}
-
-.statusPillMuted {
-  background: rgba(255,255,255,.04);
-  color: rgba(244,247,251,.76);
-}
-
-.tableEmpty,
-.selectorEmpty {
-  padding: 18px 0 4px;
-}
-
-.modalBackdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(4,6,9,.72);
-  backdrop-filter: blur(14px);
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  z-index: 80;
-}
-
-.modalCard {
-  width: min(640px, calc(100vw - 32px));
-  padding: 22px;
-}
-
-.userModalCard {
-  width: min(820px, calc(100vw - 32px));
-}
-
-.modalHead {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: start;
-}
-
-.modalClose {
-  width: 36px;
-  height: 36px;
-  background: rgba(255,255,255,.04);
-  color: rgba(244,247,251,.78);
-}
-
-.field {
-  display: grid;
-  gap: 8px;
-}
-
-.field span {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(233,236,241,.7);
-}
-
-.field :global([class*="wrap"]) {
-  width: 100%;
-}
-
-.field input,
-.field select {
-  width: 100%;
-  min-height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.04);
-  color: #fff;
-  padding: 0 14px;
-  outline: none;
-}
-
-.field input:focus,
-.field select:focus {
-  border-color: rgba(255,200,0,.34);
-  box-shadow: 0 0 0 3px rgba(255,200,0,.08);
-}
-
-.formGrid {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 16px;
-}
-
-.selectorBlock {
-  margin-top: 16px;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.07);
-  background: rgba(255,255,255,.025);
-  display: grid;
-  gap: 12px;
-}
-
-.checkboxGrid {
-  align-items: stretch;
-}
-
-.checkboxCard {
-  min-width: 160px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.03);
-  color: rgba(244,247,251,.8);
-}
-
-.checkboxCard input {
-  accent-color: #ffd972;
-}
-
-.checkboxCardActive {
-  border-color: rgba(255,200,0,.24);
-  background: rgba(255,200,0,.09);
-  color: #fff5cf;
-}
-
-@media (max-width: 1100px) {
-  .heroPanel,
-  .metricGrid,
-  .formGrid,
-  .sectionHead {
-    grid-template-columns: 1fr;
-  }
-
-  .sectionHead {
-    display: grid;
-    align-items: start;
-  }
-}
-
-@media (max-width: 720px) {
-  .heroPanel,
-  .tableCard,
-  .modalCard {
-    padding: 18px;
-  }
-
-  .heroTitle {
-    max-width: 100%;
-    font-size: 28px;
-  }
-
-  .table th:nth-child(3),
-  .table td:nth-child(3),
-  .table th:nth-child(4),
-  .table td:nth-child(4) {
-    display: none;
-  }
-
-  .rowActions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-
-.requestSummary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.requestSummaryCard,
-.resultBanner,
-.resultCreds {
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.03);
-}
-
-.requestSummaryCard {
-  padding: 16px;
-  display: grid;
-  gap: 6px;
-}
-
-.requestSummaryCard span,
-.resultCreds span {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: rgba(233,236,241,.55);
-}
-
-.requestSummaryCard strong,
-.resultCreds strong {
-  color: #fff;
-}
-
-.resultBanner {
-  padding: 18px 20px;
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: center;
-}
-
-.resultBanner h3 {
-  margin: 10px 0 0;
-  color: #fff;
-}
-
-.resultBanner p {
-  margin: 12px 0 0;
-  color: rgba(227,232,238,.74);
-}
-
-.resultMeta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.resultCreds {
-  padding: 14px 16px;
-  min-width: 220px;
-  display: grid;
-  gap: 6px;
-  background: rgba(255,200,0,.08);
-  border-color: rgba(255,200,0,.18);
-}
-
-@media (max-width: 1100px) {
-  .requestSummary {
-    grid-template-columns: 1fr;
-  }
-
-  .resultBanner {
-    display: grid;
-  }
-}
-
-
-.governanceGrid,
-.filterBar {
-  display: grid;
-  gap: 12px;
-}
-
-.governanceGrid {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.governanceCard {
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.03);
-  padding: 14px;
-  display: grid;
-  gap: 6px;
-}
-
-.governanceCard strong {
-  color: #fff;
-}
-
-.governanceCard small {
-  color: rgba(227,232,238,.72);
-}
-
-.filterBar {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-bottom: 14px;
-}
-
-.filterField {
-  display: grid;
-  gap: 8px;
-}
-
-.filterField span {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: rgba(233,236,241,.55);
-}
-
-.filterField input,
-.filterField select {
-  width: 100%;
-  min-height: 42px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.1);
-  background: rgba(10,12,16,.82);
-  color: #fff;
-  padding: 0 14px;
-}
-
-.filterField :global([class*="wrap"]) {
-  width: 100%;
-}
-
-
-.checkboxGroup {
-  display: grid;
-  gap: 10px;
-  padding: 10px 0;
-  min-width: 240px;
-}
-
-.selectorGroupTitle {
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.72);
-}
-
-
-.roleCardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 14px;
-}
-
-.roleCard {
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.03);
-  padding: 16px;
-  display: grid;
-  gap: 14px;
-}
-
-.roleCardHead,
-.roleMetaGrid {
-  display: grid;
-  gap: 10px;
-}
-
-.roleCardHead {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-}
-
-.roleCardHead strong,
-.roleMetaGrid strong {
-  color: #fff;
-}
-
-.roleCardHead small,
-.roleMetaGrid span {
-  color: rgba(227,232,238,.7);
-}
-
-.roleMetaGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.roleMetaGrid div {
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.02);
-  padding: 10px 12px;
-  display: grid;
-  gap: 4px;
-}
-
-.permissionChipWrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.permissionChip,
-.permissionChipStrong,
-.matrixPill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 8px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid rgba(255,255,255,.08);
-}
-
-.permissionChip {
-  background: rgba(255,255,255,.04);
-  color: rgba(242,245,249,.82);
-}
-
-.permissionChipStrong,
-.matrixPillOn {
-  background: rgba(255,200,0,.12);
-  border-color: rgba(255,174,76,.26);
-  color: #fff2be;
-}
-
-.matrixPillOff {
-  background: rgba(255,255,255,.03);
-  color: rgba(227,232,238,.52);
-}
-
-@media (max-width: 860px) {
-  .roleCardHead {
-    grid-template-columns: 1fr;
-  }
-
-  .roleMetaGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Asana/black reconstruction pass */
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  min-height: 100%;
-  padding: 20px 24px 30px;
-  background: var(--surface);
+.dashboardLink,
+.headerBtn,
+.primaryButton {
+  padding: 0 12px;
+}
+
+button:disabled,
+.ghostButton:disabled,
+.primaryButton:disabled,
+.dangerButton:disabled,
+.dashboardLink:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
 }
 
 .headerActions,
 .rowActions,
 .modalActions,
-.tabBar,
-.heroBadges,
-.heroSide,
+.roleStack,
 .squadPills,
 .checkboxGrid,
-.permissionChipWrap,
 .resultMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
-.heroPanel,
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .metricCard,
 .tableCard,
 .modalCard,
-.tabBar,
-.heroStatCard,
+.selectorBlock,
 .requestSummaryCard,
 .resultBanner,
-.resultCreds,
-.governanceCard,
-.roleCard,
-.roleMetaGrid div,
-.selectorBlock,
-.checkboxCard {
-  border: 1px solid var(--line);
-  background: var(--bg-canvas);
+.resultCreds {
+  min-width: 0;
+  border: 1px solid var(--line, rgba(255,255,255,0.08));
+  background: var(--bg-canvas, #0b0c0d);
   box-shadow: none;
 }
 
-.heroPanel {
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
-  align-items: stretch;
-  gap: 16px;
-  padding: 18px;
-  border-radius: var(--radius-4);
-}
-
-.heroTitle {
-  max-width: 32ch;
-  margin-top: 8px;
-  font-size: clamp(24px, 2.2vw, 32px);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-}
-
-.heroTitle strong {
-  color: var(--accent);
-}
-
-.heroText {
-  max-width: 72ch;
-  margin-top: 8px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.heroBadge,
-.heroBadgeMuted,
-.rolePill,
-.squadPill,
-.statusPill,
-.permissionChip,
-.permissionChipStrong,
-.matrixPill {
-  min-height: 28px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  line-height: 1;
-}
-
-.heroBadge,
-.permissionChipStrong,
-.matrixPillOn,
-.tabButtonActive,
-.headerBtn,
-.primaryButton {
-  background: rgba(245, 184, 0, 0.14);
-  border-color: rgba(245, 184, 0, 0.34);
-  color: #ffe8a3;
-}
-
-.heroSide {
-  display: grid;
-  grid-template-columns: 1fr;
-  align-content: stretch;
-}
-
-.heroStatCard {
-  padding: 14px 16px;
-  border-radius: var(--radius-3);
-  background: var(--bg-raised);
-}
-
-.heroStatCard strong,
-.metricCard strong {
-  font-size: 24px;
-  letter-spacing: -0.04em;
-}
-
-.tabBar {
-  width: fit-content;
-  max-width: 100%;
-  padding: 4px;
-  border-radius: var(--radius-3);
-  background: var(--bg-canvas);
-}
-
-.tabButton,
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dangerButton,
-.inlineRetry,
-.dashboardLink,
-.modalClose {
-  border-radius: var(--radius-2);
-  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
-}
-
-.tabButton,
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dangerButton,
-.inlineRetry,
-.dashboardLink {
-  min-height: 34px;
-  padding: 8px 12px;
-  font-size: 12px;
-}
-
-.tabButton:hover,
-.headerBtn:hover,
-.primaryButton:hover,
-.ghostButton:hover,
-.dangerButton:hover,
-.inlineRetry:hover,
-.dashboardLink:hover {
-  transform: none;
-}
-
-.tabButton {
-  border-color: transparent;
-  color: var(--text-muted);
-}
-
-.tabButton:hover,
-.ghostButton:hover,
-.inlineRetry:hover,
-.dashboardLink:hover {
-  background: var(--bg-raised);
-  border-color: var(--line-strong);
-  color: var(--text-primary);
-}
-
-.ghostButton,
-.inlineRetry,
-.dashboardLink {
-  background: transparent;
-  border-color: var(--line);
-  color: var(--text-secondary);
-}
-
-.dangerButton {
-  background: rgba(255, 91, 115, 0.08);
-  border-color: rgba(255, 91, 115, 0.2);
-  color: #ff9cad;
-}
-
-.metricGrid {
-  gap: 12px;
-}
-
 .metricCard {
-  min-height: 108px;
-  padding: 14px 16px;
-  border-radius: var(--radius-3);
-  background: var(--bg-canvas);
+  min-height: 76px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+}
+
+.metricCard span,
+.sectionEyebrow,
+.modalEyebrow,
+.selectorHead span,
+.requestSummaryCard span,
+.resultCreds span,
+.filterField span {
+  color: var(--text-muted, #8a8f98);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.metricCard strong {
+  color: var(--text-primary, #f7f8f8);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricCard small,
+.dimText,
+.tableEmpty,
+.selectorEmpty,
+.primaryCell small,
+.textStack small,
+.requestSummaryCard small,
+.resultBanner p {
+  color: var(--text-muted, #8a8f98);
 }
 
 .tableCard {
-  gap: 0;
   overflow: hidden;
-  padding: 0;
-  border-radius: var(--radius-4);
-  background: var(--bg-canvas);
+  border-radius: 16px;
+  display: grid;
+  gap: 0;
+  transform: translateZ(0);
 }
 
 .sectionHead {
   min-height: 58px;
   padding: 16px 18px;
+  border-bottom: 1px solid var(--line, rgba(255,255,255,0.08));
+  background: var(--bg-canvas, #0b0c0d);
+  display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--line);
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .sectionHead h3,
-.modalHead h3 {
-  margin-top: 4px;
+.modalHead h3,
+.resultBanner h3 {
+  margin: 4px 0 0;
+  color: var(--text-primary, #f7f8f8);
   font-size: 15px;
-  letter-spacing: -0.01em;
-}
-
-.sectionEyebrow,
-.heroEyebrow,
-.modalEyebrow,
-.selectorHead span,
-.metricCard span,
-.heroStatCard span,
-.requestSummaryCard span,
-.resultCreds span,
-.filterField span {
-  color: var(--text-muted);
-  font-size: 10px;
-  letter-spacing: 0.11em;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .tableWrap {
-  padding: 0 18px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--bg-canvas, #0b0c0d);
+  scrollbar-width: none;
+}
+
+.tableWrap::-webkit-scrollbar {
+  display: none;
+}
+
+.table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  background: var(--bg-canvas, #0b0c0d);
+  color: var(--text-secondary, #c9cdd3);
+  table-layout: auto;
+}
+
+.table th,
+.table td {
+  background: var(--bg-canvas, #0b0c0d);
+  border-bottom: 1px solid rgba(255,255,255,0.052);
+  text-align: left;
+  vertical-align: middle;
 }
 
 .table th {
-  padding: 12px 0;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--line);
+  padding: 12px 18px;
+  color: var(--text-muted, #8a8f98);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .table td {
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(255,255,255,.045);
-  color: var(--text-secondary);
+  padding: 13px 18px;
+  color: var(--text-secondary, #c9cdd3);
+  font-size: 13px;
 }
 
 .table tr:last-child td {
   border-bottom: 0;
 }
 
+.table tbody tr {
+  background: var(--bg-canvas, #0b0c0d);
+}
+
+.table tbody tr:hover td {
+  background: rgba(255,255,255,0.018);
+}
+
 .primaryCell {
+  min-width: 0;
+  display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
   gap: 10px;
+}
+
+.primaryCell > svg {
+  color: var(--text-muted, #8a8f98);
+}
+
+.primaryCell strong,
+.textStack strong,
+.requestSummaryCard strong,
+.resultCreds strong {
+  color: var(--text-primary, #f7f8f8);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.primaryCell small,
+.textStack small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
 }
 
 .squareIcon {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-2);
-  color: var(--accent);
-  background: rgba(245, 184, 0, 0.1);
-  border-color: rgba(245, 184, 0, 0.22);
+  border-radius: 999px;
+  color: var(--text-muted, #8a8f98);
+  background: transparent;
+  display: grid;
+  place-items: center;
 }
 
-.primaryCell strong {
-  font-size: 13px;
-  color: var(--text-primary);
+.textStack,
+.permissionText {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
 }
 
 .inlineProfileLink {
@@ -1024,219 +331,213 @@
 }
 
 .inlineProfileLink:hover {
-  color: var(--accent);
+  color: var(--accent, #f5b800);
 }
 
-.primaryCell small,
-.metricCard small,
-.heroStatCard small,
-.sectionHead p,
-.tableEmpty,
-.selectorEmpty,
-.dimText,
-.governanceCard small,
-.roleCardHead small,
-.roleMetaGrid span {
-  color: var(--text-muted);
+.rolePill,
+.secondaryRolePill,
+.squadPill,
+.statusPill,
+.permissionScopeBadge,
+.matrixPill {
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--line, rgba(255,255,255,0.08));
+  border-radius: 999px;
+  background: rgba(255,255,255,0.035);
+  color: var(--text-secondary, #c9cdd3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rolePill {
+  border-color: rgba(46,242,255,0.18);
+  background: rgba(46,242,255,0.08);
+  color: #9cfbff;
+}
+
+.statusPillActive {
+  border-color: rgba(94,234,145,0.22);
+  background: rgba(94,234,145,0.1);
+  color: #a7f3c0;
+}
+
+.statusPillMuted,
+.matrixPillOff {
+  color: var(--text-muted, #8a8f98);
+}
+
+.matrixPillOn {
+  border-color: rgba(245,184,0,0.28);
+  background: rgba(245,184,0,0.12);
+  color: #ffe8a3;
+}
+
+.permissionScopeBadge_own {
+  border-color: rgba(46,242,255,0.18);
+  background: rgba(46,242,255,0.08);
+  color: #9cfbff;
+}
+
+.permissionScopeBadge_all {
+  border-color: rgba(245,184,0,0.28);
+  background: rgba(245,184,0,0.12);
+  color: #ffe8a3;
+}
+
+.permissionScopeBadge_admin {
+  border-color: rgba(167,139,250,0.26);
+  background: rgba(167,139,250,0.11);
+  color: #cdbdff;
+}
+
+.permissionScopeBadge_create {
+  border-color: rgba(94,234,145,0.22);
+  background: rgba(94,234,145,0.1);
+  color: #a7f3c0;
+}
+
+.permissionScopeBadge_neutral {
+  color: var(--text-secondary, #c9cdd3);
 }
 
 .filterBar {
-  grid-template-columns: minmax(260px, 1fr) minmax(160px, 220px) minmax(160px, 220px);
-  gap: 10px;
-  margin: 0;
   padding: 14px 18px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--line, rgba(255,255,255,0.08));
+  background: var(--bg-canvas, #0b0c0d);
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(150px, 220px) minmax(150px, 220px);
+  gap: 10px;
 }
 
-.ownerInlineSelect {
-  min-width: 220px;
-  max-width: 280px;
+.filterField,
+.field {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.field span {
+  color: var(--text-muted, #8a8f98);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .field input,
 .field select,
 .filterField input,
 .filterField select {
-  min-height: 38px;
-  border-radius: var(--radius-2);
-  border-color: var(--line);
-  background: var(--bg-raised);
-  color: var(--text-primary);
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--line, rgba(255,255,255,0.08));
+  border-radius: 10px;
+  background: var(--bg-raised, #111214);
+  color: var(--text-primary, #f7f8f8);
+  padding: 0 12px;
+  font: inherit;
+  outline: none;
 }
 
 .field input:focus,
 .field select:focus,
 .filterField input:focus,
 .filterField select:focus {
-  border-color: rgba(245, 184, 0, 0.42);
-  box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.08);
+  border-color: var(--line-strong, rgba(255,255,255,0.16));
+  box-shadow: none;
 }
 
-.rolePill {
-  background: rgba(46, 242, 255, 0.08);
-  border-color: rgba(46, 242, 255, 0.18);
-  color: #9cfbff;
+.field input:disabled,
+.field select:disabled {
+  color: var(--text-secondary, #c9cdd3);
+  opacity: 0.72;
 }
 
-.roleStack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.secondaryRolePill {
-  min-height: 28px;
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg-raised);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.statusPillActive {
-  background: rgba(94, 234, 145, 0.1);
-  border-color: rgba(94, 234, 145, 0.22);
-  color: #a7f3c0;
-}
-
-.statusPillMuted,
-.heroBadgeMuted,
-.squadPill,
-.matrixPillOff,
-.permissionChip {
-  background: var(--bg-raised);
-  color: var(--text-secondary);
-}
-
-.modalBackdrop {
-  background: rgba(10, 10, 10, 0.72);
-  backdrop-filter: blur(10px);
-}
-
-.modalCard {
-  overflow: auto;
-  border-radius: var(--radius-4);
-  background: var(--bg-canvas);
-}
-
-.selectorBlock,
-.requestSummaryCard,
-.resultBanner,
-.resultCreds,
-.governanceCard,
-.roleCard,
-.roleMetaGrid div,
-.checkboxCard {
-  border-radius: var(--radius-3);
-  background: var(--bg-raised);
-}
-
-.requestSummary,
-.governanceGrid,
-.roleCardGrid {
-  gap: 12px;
-}
-
-.resultBanner {
-  padding: 16px 18px;
-}
-
-.userModalCard,
-.modalCard {
-  max-height: min(860px, calc(100vh - 48px));
-}
-
-.userModalCard {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  width: min(940px, calc(100vw - 64px));
-  max-height: min(820px, calc(100vh - 64px));
-  padding: 0;
-  overflow: hidden;
-}
-
-.userModalCard .modalHead {
-  z-index: 2;
-  margin: 0;
-  padding: 18px 22px;
-  background: var(--bg-canvas);
-  border-bottom: 1px solid var(--line);
-}
-
-.userModalBody {
-  min-height: 0;
-  overflow: auto;
-  padding: 18px 22px 22px;
-}
-
-.modalText {
-  margin: 0;
-  max-width: 72ch;
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.modalClose {
-  width: 34px;
-  height: 34px;
-  flex: 0 0 auto;
+.field :global([class*="root"]),
+.filterField :global([class*="root"]) {
+  width: 100%;
 }
 
 .formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.modalSection {
-  margin-top: 18px;
-}
-
 .selectorBlock {
-  margin-top: 16px;
-  padding: 14px 16px;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  display: grid;
+  gap: 12px;
+  overflow: visible;
 }
 
 .selectorHead {
   display: flex;
   justify-content: space-between;
-  width: 100%;
+  align-items: center;
+  gap: 12px;
 }
 
-.checkboxGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  align-items: stretch;
+.selectorHead strong,
+.selectorGroupTitle {
+  color: var(--text-primary, #f7f8f8);
+  font-size: 13px;
+  font-weight: 760;
 }
 
-.squadSelectGrid {
+.checkboxGrid,
+.squadSelectGrid,
+.permissionSelectGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 8px;
 }
 
+.checkboxGrid,
+.squadSelectGrid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
 .permissionSelectGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+.permissionColumn,
+.checkboxGroup {
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-content: start;
   gap: 10px;
 }
 
 .checkboxGroup {
-  min-width: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .checkboxCard {
   min-width: 0;
   min-height: 38px;
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 8px 10px;
-  color: var(--text-secondary);
+  padding: 9px 10px;
+  border: 1px solid var(--line, rgba(255,255,255,0.08));
+  border-radius: 10px;
+  background: var(--bg-raised, #111214);
+  color: var(--text-secondary, #c9cdd3);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.checkboxCard input {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  accent-color: var(--accent, #f5b800);
 }
 
 .checkboxCard span {
@@ -1245,120 +546,102 @@
   line-height: 1.25;
 }
 
-.checkboxCard input {
-  flex: 0 0 auto;
-  width: 14px;
-  height: 14px;
+.checkboxCardActive {
+  border-color: rgba(245,184,0,0.28);
+  background: rgba(245,184,0,0.10);
+  color: var(--text-primary, #f7f8f8);
 }
 
-.checkboxCardDisabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.permissionOptionCard {
+  align-items: flex-start;
 }
 
-.userModalCard .modalActions {
-  justify-content: flex-end;
-  margin: 0;
-  padding: 14px 22px;
-  background: var(--bg-canvas);
-  border-top: 1px solid var(--line);
+.permissionText strong {
+  color: var(--text-primary, #f7f8f8);
+  font-size: 12px;
 }
 
-/* Modal refinement pass: consistent windows, calmer density */
+.permissionText small {
+  color: var(--text-muted, #8a8f98);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
 .modalBackdrop {
+  position: fixed;
   inset: 0;
+  z-index: 220;
   padding: 28px;
+  background: rgba(6,8,10,0.62);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 10, 10, 0.7);
-  backdrop-filter: blur(8px);
 }
 
 .modalCard {
   width: min(720px, calc(100vw - 56px));
   max-height: min(820px, calc(100vh - 56px));
-  border: 1px solid var(--line);
-  border-radius: var(--radius-4);
-  background: var(--bg-canvas);
-  box-shadow: none;
-  overflow: hidden;
+  border-radius: 16px;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.modalCard::-webkit-scrollbar,
+.userModalBody::-webkit-scrollbar {
+  display: none;
 }
 
 .userModalCard {
-  width: min(920px, calc(100vw - 56px));
-  max-height: min(800px, calc(100vh - 56px));
+  width: min(980px, calc(100vw - 64px));
+  max-height: min(820px, calc(100vh - 64px));
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
 }
 
 .modalHead {
-  min-height: 72px;
-  margin: 0;
   padding: 18px 22px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--line, rgba(255,255,255,0.08));
+  background: var(--bg-canvas, #0b0c0d);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
-}
-
-.modalHead h3 {
-  margin: 4px 0 0;
-  color: var(--text-primary);
-  font-size: 17px;
-  line-height: 1.2;
-  font-weight: 760;
-  letter-spacing: -0.02em;
-}
-
-.modalEyebrow {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  gap: 14px;
 }
 
 .modalClose {
   width: 34px;
+  min-width: 34px;
   height: 34px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-2);
-  background: var(--bg-raised);
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 16px;
+  padding: 0;
+  font-size: 22px;
   line-height: 1;
-}
-
-.modalClose:hover {
-  border-color: var(--line-strong);
-  background: var(--bg-hover);
-  color: var(--text-primary);
 }
 
 .userModalBody {
   min-height: 0;
-  padding: 18px 22px 22px;
   overflow: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  scrollbar-width: none;
+  padding: 18px 22px 22px;
+  background: var(--bg-canvas, #0b0c0d);
 }
 
-.userModalBody::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+.modalSection {
+  margin: 0;
 }
 
 .modalText {
   margin: 0;
-  max-width: 78ch;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.5;
+  color: var(--text-secondary, #c9cdd3);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.modalActions {
+  justify-content: flex-end;
+  padding: 14px 22px;
+  border-top: 1px solid var(--line, rgba(255,255,255,0.08));
+  background: var(--bg-canvas, #0b0c0d);
 }
 
 .requestSummary {
@@ -1367,877 +650,52 @@
   gap: 10px;
 }
 
-.requestSummaryCard {
-  min-height: 84px;
-  padding: 14px 16px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3);
-  background: var(--bg-raised);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-}
-
-.requestSummaryCard span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.requestSummaryCard strong {
-  color: var(--text-primary);
-  font-size: 13px;
-  line-height: 1.25;
-  font-weight: 760;
-}
-
-.requestSummaryCard small {
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.3;
-}
-
-.formGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.field {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.field span {
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.field input,
-.field select {
-  height: 40px;
-  width: 100%;
-  min-width: 0;
-  padding: 0 12px;
-  border: 1px solid var(--field-line);
-  border-radius: var(--control-radius);
-  background: var(--field-bg);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  outline: none;
-}
-
-.field input:focus,
-.field select:focus {
-  border-color: var(--accent-amber);
-  background: var(--field-bg-hover);
-}
-
-.selectorBlock {
-  margin: 0;
-  padding: 14px 16px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3);
-  background: var(--bg-raised);
-}
-
-.selectorHead {
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.selectorHead strong {
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 760;
-}
-
-.selectorHead span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.selectorHint {
-  margin: -4px 0 10px;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.checkboxGrid,
-.squadSelectGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.checkboxCard {
-  min-height: 38px;
-  padding: 9px 10px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-.checkboxCardActive {
-  border-color: color-mix(in srgb, var(--accent-amber) 42%, transparent);
-  background: var(--accent-amber-soft);
-  color: var(--text-primary);
-}
-
-.userModalCard .modalActions {
-  min-height: 64px;
-  margin: 0;
-  padding: 14px 22px;
-  border-top: 1px solid var(--line);
-  background: var(--bg-canvas);
-}
-
-@media (max-width: 760px) {
-  .modalBackdrop {
-    padding: 12px;
-  }
-
-  .modalCard,
-  .userModalCard {
-    width: 100%;
-    max-height: calc(100vh - 24px);
-  }
-
-  .requestSummary,
-  .formGrid,
-  .checkboxGrid,
-  .squadSelectGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.roleCardGrid {
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  align-items: start;
-  padding: 18px;
-}
-
-.roleCard {
-  min-height: auto;
-  padding: 14px;
-  align-content: start;
-}
-
-.roleCardHead {
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  min-height: 34px;
-  align-items: start;
-}
-
-.roleIdentity {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-
-.roleIdentity strong {
-  display: block;
-  overflow-wrap: anywhere;
-  font-size: 14px;
-  line-height: 1.25;
-}
-
-.roleIdentity small {
-  display: block;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.roleMetaGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.roleMetaGrid div {
-  min-height: 62px;
-  padding: 9px 10px;
-}
-
-.roleMetaGrid span {
-  font-size: 11px;
-  line-height: 1.3;
-}
-
-.roleMetaGrid strong {
-  align-self: end;
-  font-size: 18px;
-  line-height: 1.1;
-}
-
-.permissionChipWrap {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
-  gap: 8px;
-}
-
-.permissionChipWrapSingle {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.permissionChip,
-.permissionChipStrong {
-  width: 100%;
-  min-height: 30px;
-  justify-content: flex-start;
-  border-radius: var(--radius-2);
-  padding: 8px 10px;
-  line-height: 1.25;
-  text-align: left;
-  white-space: normal;
-}
-
-.permissionChipStrong {
-  justify-content: center;
-}
-
-.matrixPill {
-  min-width: 74px;
-}
-
-@media (max-width: 1100px) {
-  .page {
-    padding: 14px;
-  }
-
-  .filterBar {
-    grid-template-columns: 1fr;
-  }
-
-  .roleCardGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .userModalCard {
-    width: min(720px, calc(100vw - 32px));
-  }
-
-  .permissionSelectGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 720px) {
-  .permissionSelectGrid,
-  .squadSelectGrid,
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Notebook density pass */
-.page {
-  gap: 12px;
-  padding: 12px 16px 20px;
-}
-
-.heroPanel {
-  gap: 14px;
-  padding: 14px;
-  border-radius: var(--radius-4);
-}
-
-.heroTitle {
-  margin-top: 6px;
-  font-size: clamp(22px, 2vw, 28px);
-}
-
-.heroText,
-.modalText,
-.sectionHead p {
-  margin-top: 8px;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.heroStatCard,
-.metricCard {
-  padding: 12px 14px;
-}
-
-.heroStatCard strong,
-.metricCard strong {
-  font-size: 22px;
-}
-
-.tabBar {
-  padding: 3px;
-}
-
-.tabButton,
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dangerButton,
-.inlineRetry,
-.dashboardLink {
-  min-height: 30px;
-  padding: 6px 10px;
-  font-size: 11px;
-}
-
-.metricGrid {
-  gap: 10px;
-}
-
-.tableCard {
-  border-radius: var(--radius-4);
-}
-
-.sectionHead {
-  min-height: 50px;
-  padding: 12px 14px;
-}
-
-.tableWrap {
-  padding: 0 14px;
-}
-
-.table th {
-  padding: 10px 0;
-  font-size: 10px;
-}
-
-.table td {
-  padding: 12px 0;
-  font-size: 12px;
-}
-
-.primaryCell {
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 8px;
-}
-
-.squareIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-2);
-}
-
-.filterBar {
-  gap: 8px;
-  padding: 10px 14px;
-}
-
-.filterField input,
-.filterField select,
-.field input,
-.field select {
-  min-height: 36px;
-  font-size: 13px;
-}
-
-.selectorBlock,
 .requestSummaryCard,
-.resultBanner,
-.resultCreds,
-.governanceCard,
-.roleCard,
-.roleMetaGrid div,
-.checkboxCard {
-  border-radius: var(--radius-3);
-}
-
-.selectorBlock {
-  padding: 12px 14px;
-}
-
-.checkboxGrid,
-.squadSelectGrid {
-  gap: 6px;
-}
-
-.checkboxCard {
-  min-height: 34px;
-  padding: 7px 9px;
-}
-
-.roleCardGrid {
-  gap: 10px;
+.resultCreds {
   padding: 14px;
-}
-
-.roleCard {
-  padding: 12px;
-  gap: 12px;
-}
-
-.roleMetaGrid {
+  border-radius: 14px;
+  display: grid;
   gap: 6px;
 }
 
-.roleMetaGrid div {
-  min-height: 54px;
-  padding: 8px 9px;
+.resultBanner {
+  padding: 16px 18px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
 }
 
-.permissionChipWrap {
-  gap: 6px;
-}
-
-.permissionChip,
-.permissionChipStrong,
-.matrixPill,
-.heroBadge,
-.heroBadgeMuted,
-.rolePill,
-.squadPill,
-.statusPill,
-.secondaryRolePill {
-  min-height: 24px;
-  padding: 5px 8px;
-  font-size: 10px;
-}
-
-.modalBackdrop {
-  padding: 18px;
-}
-
-.modalCard {
-  width: min(700px, calc(100vw - 36px));
-  max-height: min(820px, calc(100vh - 36px));
-}
-
-.userModalCard {
-  width: min(900px, calc(100vw - 36px));
-}
-
-.modalHead {
-  min-height: 62px;
-  padding: 14px 16px;
-}
-
-.userModalBody {
-  padding: 14px 16px 16px;
-  gap: 12px;
-}
-
-.userModalCard .modalActions {
-  min-height: 54px;
-  padding: 10px 16px;
-}
-
-/* Global UserPicker/UserHoverCard integration */
-.ownerInlineSelect {
+.resultCreds {
   min-width: 220px;
-  overflow: visible;
+  border-color: rgba(245,184,0,0.18);
+  background: rgba(245,184,0,0.08);
 }
 
-/* Patch 57 — refinamento visual da central de permissões */
-.page {
-  background: transparent;
+.ownerInlineSelect {
+  width: 240px;
+  max-width: 100%;
 }
 
-.tabBar {
-  width: 100%;
-  justify-content: flex-start;
-  border-radius: var(--radius-3);
-  background: rgba(255,255,255,0.018);
-}
-
-.tabButton {
-  flex: 0 0 auto;
-}
-
-.heroPanel,
-.metricCard,
-.tableCard,
-.modalCard,
-.roleCard,
-.selectorBlock,
-.requestSummaryCard,
-.governanceCard,
-.roleMetaGrid div,
-.checkboxCard {
-  background: rgba(255,255,255,0.018);
-  border-color: rgba(255,255,255,0.06);
-}
-
-.heroPanel {
-  display: none;
-}
-
-.metricGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.metricCard {
-  min-height: 82px;
-  padding: 12px 14px;
-}
-
-.metricCard strong {
-  font-size: 20px;
-}
-
-.tableCard {
-  border-radius: var(--radius-3);
-}
-
-.sectionHead {
-  min-height: 48px;
-  padding: 12px 14px;
-}
-
-.tableWrap {
-  scrollbar-width: none;
-}
-
-.tableWrap::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-.table th {
-  white-space: nowrap;
-}
-
-.table td {
-  padding: 11px 0;
-}
-
-.primaryCell {
-  grid-template-columns: 18px minmax(0, 1fr);
-}
-
-.primaryCell > svg {
-  color: var(--text-tertiary);
-}
-
-.squareIcon {
-  width: 18px;
-  height: 18px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--text-tertiary);
-}
-
-.squareIcon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.field input:focus,
-.field select:focus,
-.filterField input:focus,
-.filterField select:focus {
-  border-color: var(--line-strong);
-  background: var(--field-bg-hover);
-  box-shadow: none;
-}
-
-.field input:focus-visible,
-.field select:focus-visible,
-.filterField input:focus-visible,
-.filterField select:focus-visible,
-.tabButton:focus-visible,
-.headerBtn:focus-visible,
-.primaryButton:focus-visible,
-.ghostButton:focus-visible,
-.dangerButton:focus-visible,
-.inlineRetry:focus-visible,
-.dashboardLink:focus-visible,
-.modalClose:focus-visible,
-.checkboxCard:focus-within {
-  outline: none;
-  border-color: var(--line-strong);
-  box-shadow: none;
-}
-
-.userModalCard {
-  width: min(1040px, calc(100vw - 36px));
-}
-
-.permissionSelectGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.checkboxGroup {
-  gap: 7px;
-  padding: 0;
-}
-
-.selectorGroupTitle {
-  padding: 0 2px 2px;
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.12em;
-}
-
-.permissionOptionCard {
-  position: relative;
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 9px;
-  min-height: 48px;
-  padding: 8px 9px;
-}
-
-.permissionText {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-}
-
-.permissionText strong {
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 680;
-}
-
-.permissionText small {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1.25;
-  font-weight: 520;
-}
-
-.checkboxCardActive .permissionText strong,
-.checkboxCardActive .permissionText small {
-  color: var(--text-primary);
-}
-
-.permissionScopeBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 22px;
-  max-width: 112px;
-  padding: 4px 7px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 999px;
-  background: rgba(255,255,255,0.028);
-  color: var(--text-tertiary);
-  font-size: 9px;
-  font-weight: 760;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.permissionScopeBadge_own {
-  border-color: rgba(46, 242, 255, 0.16);
-  background: rgba(46, 242, 255, 0.055);
-  color: #a7f7ff;
-}
-
-.permissionScopeBadge_all {
-  border-color: rgba(245, 184, 0, 0.26);
-  background: rgba(245, 184, 0, 0.09);
-  color: #ffe8a3;
-}
-
-.permissionScopeBadge_admin {
-  border-color: rgba(255, 91, 115, 0.18);
-  background: rgba(255, 91, 115, 0.06);
-  color: #ffb4c0;
-}
-
-.permissionScopeBadge_create {
-  border-color: rgba(94, 234, 145, 0.16);
-  background: rgba(94, 234, 145, 0.055);
-  color: #b9f6ca;
-}
-
-.permissionChipWrap {
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-}
-
-.permissionChip {
-  min-height: 42px;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  border-radius: var(--radius-2);
-  background: rgba(255,255,255,0.02);
-}
-
-.permissionChip .permissionScopeBadge {
-  flex: 0 0 auto;
-}
-
-.permissionChipStrong {
-  min-height: 42px;
-  align-items: center;
-}
-
-.matrixPill {
-  min-width: 62px;
-  min-height: 22px;
-  padding: 4px 7px;
-  font-size: 10px;
-}
-
-.matrixPillOn {
-  background: rgba(94, 234, 145, 0.08);
-  border-color: rgba(94, 234, 145, 0.18);
-  color: #b9f6ca;
-}
-
-.roleCardGrid {
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-}
-
-.roleCard {
-  border-radius: var(--radius-3);
-}
-
-.roleMetaGrid div {
-  background: rgba(255,255,255,0.018);
-}
-
-@media (max-width: 1280px) {
-  .permissionSelectGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .metricGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 760px) {
-  .permissionSelectGrid,
-  .metricGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .permissionOptionCard {
-    grid-template-columns: 16px minmax(0, 1fr);
-  }
-
-  .permissionOptionCard .permissionScopeBadge {
-    grid-column: 2;
-    width: fit-content;
-  }
-}
-
-
-/* Patch 58 — ajustes finos de hierarquia, overlay e colunas */
-.metricGrid {
-  gap: 8px;
-}
-
-.metricCard {
-  min-height: 70px;
-  padding: 10px 12px;
-}
-
-.metricCard span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 720;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.metricCard strong {
-  font-size: 18px;
-  line-height: 1;
-}
-
-.metricCard small {
-  display: none;
-}
-
-.modalBackdrop {
-  z-index: 220;
-  background: rgba(6, 8, 10, 0.56);
-  backdrop-filter: blur(4px);
-}
-
-.modalCard {
-  background: rgba(12, 13, 15, 0.9);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.userModalCard .selectorBlock,
-.userModalCard .checkboxCard,
-.userModalCard .requestSummaryCard {
-  background: rgba(255, 255, 255, 0.026);
-}
-
-.permissionSelectGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  align-items: start;
-}
-
-.permissionColumn {
-  display: grid;
-  gap: 14px;
-  align-content: start;
-}
-
-.checkboxGroup {
-  gap: 8px;
-}
-
-.selectorGroupTitle {
-  padding-bottom: 4px;
-}
-
-@media (max-width: 1280px) {
-  .permissionSelectGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 760px) {
-  .permissionSelectGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Patch 59 — edição de squad e popovers sem clipping */
 .hiddenInput {
   display: none;
 }
 
 .squadIdentityPanel {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-columns: 78px minmax(0, 1fr);
   gap: 14px;
-  align-items: start;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-3);
-  background: rgba(255, 255, 255, 0.018);
+  align-items: center;
 }
 
 .squadAvatarEditor {
-  width: 68px;
-  height: 68px;
-  padding: 0;
-  border: 1px solid rgba(245, 184, 0, 0.22);
-  border-radius: 50%;
-  background: rgba(245, 184, 0, 0.08);
-  color: var(--accent);
+  width: 78px;
+  height: 78px;
+  border: 1px solid var(--line, rgba(255,255,255,0.08));
+  border-radius: 20px;
+  background: var(--bg-raised, #111214);
+  color: var(--text-primary, #f7f8f8);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -2247,23 +705,13 @@
 .squadAvatarEditor img {
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
 }
 
 .squadAvatarEditor span {
-  color: var(--accent);
-  font-size: 17px;
-  font-weight: 780;
-  letter-spacing: -0.05em;
-}
-
-.squadAvatarEditor:hover,
-.squadAvatarEditor:focus-visible {
-  border-color: rgba(245, 184, 0, 0.38);
-  background: rgba(245, 184, 0, 0.12);
-  outline: none;
-  box-shadow: none;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
 .squadIdentityFields {
@@ -2272,36 +720,51 @@
   gap: 10px;
 }
 
-.ownerInlineSelect {
-  overflow: visible;
-}
+@media (max-width: 1280px) {
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-@media (max-width: 760px) {
-  .squadIdentityPanel {
-    grid-template-columns: 1fr;
+  .permissionSelectGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+@media (max-width: 860px) {
+  .page {
+    padding: 14px;
+  }
 
-/* Patch 60 - simplificacao de cargos/permissoes e dropdown fora do fluxo */
-.roleStack .rolePill {
-  white-space: nowrap;
-}
+  .metricGrid,
+  .formGrid,
+  .filterBar,
+  .requestSummary,
+  .permissionSelectGrid,
+  .squadIdentityPanel {
+    grid-template-columns: 1fr;
+  }
 
-.squadIdentityPanel,
-.formGrid,
-.selectorBlock,
-.userModalBody,
-.modalCard {
-  overflow: visible;
-}
+  .sectionHead,
+  .resultBanner {
+    display: grid;
+    align-items: start;
+  }
 
-.userModalCard,
-.modalCard {
-  overflow: visible;
-}
+  .tabBar {
+    width: 100%;
+  }
 
-.userModalBody {
-  overflow-y: auto;
-  overflow-x: visible;
+  .tabButton {
+    flex: 1 1 auto;
+  }
+
+  .modalBackdrop {
+    padding: 14px;
+  }
+
+  .modalCard,
+  .userModalCard {
+    width: calc(100vw - 28px);
+    max-height: calc(100vh - 28px);
+  }
 }
