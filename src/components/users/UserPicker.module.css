@@ -297,3 +297,34 @@
 .list {
   gap: 1px !important;
 }
+
+
+/* PATCH v41 — UserPicker plano e denso */
+.option {
+  min-height: 34px !important;
+  padding: 4px 8px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.option:hover,
+.optionActive {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.list {
+  gap: 0 !important;
+  padding: 4px !important;
+}
+
+.optionMain strong {
+  font-size: 12.5px !important;
+  line-height: 1.15 !important;
+}
+
+.optionMain small {
+  font-size: 10.5px !important;
+  line-height: 1.15 !important;
+}

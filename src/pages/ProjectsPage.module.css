@@ -2794,3 +2794,134 @@ textarea:focus-visible {
     flex-wrap: wrap;
   }
 }
+
+
+/* PATCH v41 — densidade sênior: remover cards onde espaço é crítico */
+
+/* Header: métricas como linha compacta, não cards */
+.summaryInline {
+  margin-top: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 0 !important;
+}
+
+.summaryPill,
+.summaryPillAccent {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  display: inline-flex !important;
+  align-items: baseline !important;
+  gap: 5px !important;
+}
+
+.summaryPill + .summaryPill::before,
+.summaryPill + .summaryPillAccent::before,
+.summaryPillAccent + .summaryPill::before {
+  content: "•" !important;
+  margin: 0 10px !important;
+  color: var(--text-tertiary) !important;
+  font-size: 12px !important;
+}
+
+.summaryLabel {
+  color: var(--text-secondary) !important;
+  font-size: 11.5px !important;
+  font-weight: 620 !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  text-transform: lowercase !important;
+  order: 2 !important;
+}
+
+.summaryValue {
+  color: var(--accent-amber) !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  order: 1 !important;
+}
+
+.summaryPillAccent .summaryLabel,
+.summaryPillAccent .summaryValue {
+  color: var(--accent-amber) !important;
+}
+
+/* Header mais contido sem recriar layout inteiro */
+.detailHero {
+  padding-top: 13px !important;
+  padding-bottom: 12px !important;
+}
+
+.projectHeading h1 {
+  font-size: clamp(22px, 1.34vw, 26px) !important;
+}
+
+/* UserPicker em áreas de tabela/toolbar: lista plana e densa */
+.createTask .popover,
+.userPickerInline .popover,
+.taskMeta .popover,
+.taskField .popover,
+.collaboratorForm .popover {
+  border-radius: 10px !important;
+  padding: 0 !important;
+}
+
+.createTask .option,
+.userPickerInline .option,
+.taskMeta .option,
+.taskField .option,
+.collaboratorForm .option {
+  min-height: 34px !important;
+  padding: 4px 8px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.createTask .option:hover,
+.createTask .optionActive,
+.userPickerInline .option:hover,
+.userPickerInline .optionActive,
+.taskMeta .option:hover,
+.taskMeta .optionActive,
+.taskField .option:hover,
+.taskField .optionActive,
+.collaboratorForm .option:hover,
+.collaboratorForm .optionActive {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.createTask .list,
+.userPickerInline .list,
+.taskMeta .list,
+.taskField .list,
+.collaboratorForm .list {
+  gap: 0 !important;
+  padding: 4px !important;
+}
+
+.createTask .optionMain strong,
+.userPickerInline .optionMain strong,
+.taskMeta .optionMain strong,
+.taskField .optionMain strong,
+.collaboratorForm .optionMain strong {
+  font-size: 12.5px !important;
+  line-height: 1.15 !important;
+}
+
+.createTask .optionMain small,
+.userPickerInline .optionMain small,
+.taskMeta .optionMain small,
+.taskField .optionMain small,
+.collaboratorForm .optionMain small {
+  font-size: 10.5px !important;
+  line-height: 1.15 !important;
+}
