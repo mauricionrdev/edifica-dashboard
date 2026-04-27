@@ -1249,23 +1249,11 @@ export default function ProjectsPage() {
                   {projectHeaderActions}
                 </div>
 
-                <div className={`${obStyles.toolbarMeta} ${styles.summaryInline}`.trim()}>
-                  <span className={styles.summaryPill}>
-                    <small className={styles.summaryLabel}>Tarefas</small>
-                    <b className={styles.summaryValue}>{totalTasks}</b>
-                  </span>
-                  <span className={styles.summaryPill}>
-                    <small className={styles.summaryLabel}>Abertas</small>
-                    <b className={styles.summaryValue}>{openCount}</b>
-                  </span>
-                  <span className={styles.summaryPill}>
-                    <small className={styles.summaryLabel}>Concluídas</small>
-                    <b className={styles.summaryValue}>{doneCount || selectedProject.doneCount || 0}</b>
-                  </span>
-                  <span className={`${styles.summaryPill} ${styles.summaryPillAccent}`.trim()}>
-                    <small className={styles.summaryLabel}>Progresso</small>
-                    <b className={styles.summaryValue}>{progress}%</b>
-                  </span>
+                <div className={styles.projectStatusLine} aria-label="Resumo do projeto">
+                  <span><strong>{totalTasks}</strong> tarefas</span>
+                  <span><strong>{openCount}</strong> abertas</span>
+                  <span><strong>{doneCount || selectedProject.doneCount || 0}</strong> concluídas</span>
+                  <span className={styles.projectProgressInline}><strong>{progress}%</strong> progresso</span>
                 </div>
               </section>
 
@@ -1347,6 +1335,9 @@ export default function ProjectsPage() {
                           <option value="status">Status</option>
                         </Select>
                       </label>
+                      {taskSort !== 'section' ? (
+                        <span className={styles.sortModeHint}>Visão ordenada</span>
+                      ) : null}
                     </div>
                     {canManageProjects ? (
                       <form className={styles.sectionCreateForm} onSubmit={handleCreateSection}>
