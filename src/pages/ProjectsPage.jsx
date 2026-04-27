@@ -1274,57 +1274,59 @@ export default function ProjectsPage() {
               </div>
 
               <section className={styles.workspace}>
-                {canCreateTasks ? (
-                <form className={styles.createTask} onSubmit={handleCreateTask}>
-                  <div className={styles.createTaskTitleWrap}>
-                    <input
-                      value={newTask.title}
-                      onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
-                      aria-label="Título da tarefa"
-                      placeholder="Nova tarefa"
-                    />
+                <div className={styles.commandBar}>
+                  <div className={styles.commandPrimary}>
+                    {canCreateTasks ? (
+                      <form className={styles.createTask} onSubmit={handleCreateTask}>
+                        <div className={styles.createTaskTitleWrap}>
+                          <input
+                            value={newTask.title}
+                            onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
+                            aria-label="Título da tarefa"
+                            placeholder="Nova tarefa"
+                          />
+                        </div>
+                        <Select
+                          className={styles.createSelect}
+                          value={newTask.sectionId}
+                          onChange={(event) => setNewTask((prev) => ({ ...prev, sectionId: event.target.value }))}
+                          aria-label="Seção"
+                        >
+                          {sections.map((section) => (
+                            <option key={section.id} value={section.id}>{section.name}</option>
+                          ))}
+                        </Select>
+                        <UserPicker
+                          className={styles.createSelect}
+                          users={Array.isArray(userDirectory) ? userDirectory : []}
+                          value={newTask.assigneeUserId}
+                          onChange={(userId) => setNewTask((prev) => ({ ...prev, assigneeUserId: userId }))}
+                          placeholder="Responsável"
+                        />
+                        <input
+                          key={newTask.dueDate || 'empty-due'}
+                          type="text"
+                          defaultValue={formatDateInput(newTask.dueDate)}
+                          onBlur={(event) => {
+                            const nextDate = parseDateInput(event.target.value);
+                            if (nextDate === null) {
+                              event.currentTarget.value = formatDateInput(newTask.dueDate);
+                              showToast('Use o formato dd/mm/aa.', { variant: 'error' });
+                              return;
+                            }
+                            setNewTask((prev) => ({ ...prev, dueDate: nextDate }));
+                          }}
+                          placeholder="dd/mm/aa"
+                          aria-label="Prazo"
+                        />
+                        <button type="submit" disabled={creatingTask || !newTask.title.trim()}>
+                          Criar
+                        </button>
+                      </form>
+                    ) : null}
                   </div>
-                  <Select
-                    className={styles.createSelect}
-                    value={newTask.sectionId}
-                    onChange={(event) => setNewTask((prev) => ({ ...prev, sectionId: event.target.value }))}
-                    aria-label="Seção"
-                  >
-                    {sections.map((section) => (
-                      <option key={section.id} value={section.id}>{section.name}</option>
-                    ))}
-                  </Select>
-                  <UserPicker
-                    className={styles.createSelect}
-                    users={Array.isArray(userDirectory) ? userDirectory : []}
-                    value={newTask.assigneeUserId}
-                    onChange={(userId) => setNewTask((prev) => ({ ...prev, assigneeUserId: userId }))}
-                    placeholder="Responsável"
-                  />
-                  <input
-                    key={newTask.dueDate || 'empty-due'}
-                    type="text"
-                    defaultValue={formatDateInput(newTask.dueDate)}
-                    onBlur={(event) => {
-                      const nextDate = parseDateInput(event.target.value);
-                      if (nextDate === null) {
-                        event.currentTarget.value = formatDateInput(newTask.dueDate);
-                        showToast('Use o formato dd/mm/aa.', { variant: 'error' });
-                        return;
-                      }
-                      setNewTask((prev) => ({ ...prev, dueDate: nextDate }));
-                    }}
-                    placeholder="dd/mm/aa"
-                    aria-label="Prazo"
-                  />
-                  <button type="submit" disabled={creatingTask || !newTask.title.trim()}>
-                    Criar
-                  </button>
-                </form>
-                ) : null}
 
-                <section className={styles.sections}>
-                  <div className={styles.taskToolbar}>
+                  <div className={styles.commandSecondary}>
                     <div className={styles.taskToolbarGroup}>
                       <label className={styles.toolbarField}>
                         <span>Filtrar</span>
@@ -1362,6 +1364,9 @@ export default function ProjectsPage() {
                       </form>
                     ) : null}
                   </div>
+                </div>
+
+                <section className={styles.sections}>
 
                   <div className={styles.taskTableHeader} aria-hidden="true">
                     <span>Nome</span>

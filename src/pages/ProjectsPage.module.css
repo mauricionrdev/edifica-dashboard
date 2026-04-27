@@ -3116,3 +3116,139 @@ textarea:focus-visible {
     justify-self: start !important;
   }
 }
+
+
+/* PATCH v43 — command bar sênior: criação, filtro, ordenar e seção em uma área única */
+.commandBar {
+  padding: 10px 24px 10px !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: #0a0b0c !important;
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.commandPrimary,
+.commandSecondary {
+  min-width: 0 !important;
+}
+
+.commandPrimary {
+  display: block !important;
+}
+
+.commandSecondary {
+  display: grid !important;
+  grid-template-columns: minmax(0, auto) minmax(260px, auto) !important;
+  align-items: end !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+}
+
+.createTask {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  display: grid !important;
+  grid-template-columns: minmax(340px, 1fr) minmax(190px, 230px) minmax(210px, 260px) 126px 64px !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+.taskToolbar {
+  display: contents !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.taskToolbarGroup {
+  display: flex !important;
+  align-items: end !important;
+  gap: 8px !important;
+}
+
+.toolbarField {
+  min-width: 132px !important;
+  gap: 4px !important;
+}
+
+.toolbarField > span {
+  font-size: 8.8px !important;
+  line-height: 1 !important;
+  letter-spacing: 0.12em !important;
+}
+
+.toolbarSelect,
+.taskToolbar .toolbarField button,
+.taskToolbar .toolbarField [role="combobox"],
+.taskToolbar .toolbarField select {
+  height: 32px !important;
+  min-height: 32px !important;
+  min-width: 132px !important;
+  border-radius: 8px !important;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.createSelect,
+.createTask button,
+.sectionCreateForm input,
+.sectionCreateForm button {
+  height: 34px !important;
+  min-height: 34px !important;
+  border-radius: 9px !important;
+}
+
+.sectionCreateForm {
+  justify-self: end !important;
+  display: flex !important;
+  align-items: end !important;
+  gap: 8px !important;
+}
+
+.sectionCreateForm input {
+  width: 250px !important;
+}
+
+.sectionCreateForm button {
+  white-space: nowrap !important;
+}
+
+.sections {
+  background: #08090a !important;
+}
+
+.taskTableHeader {
+  top: 0 !important;
+}
+
+@media (max-width: 1440px) {
+  .commandBar {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .createTask {
+    grid-template-columns: minmax(300px, 1fr) minmax(170px, 210px) minmax(190px, 230px) 112px 60px !important;
+  }
+
+  .sectionCreateForm input {
+    width: 220px !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .createTask {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .commandSecondary {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sectionCreateForm {
+    justify-self: start !important;
+  }
+}
