@@ -3614,3 +3614,94 @@ textarea:focus-visible {
     width: 200px !important;
   }
 }
+
+
+/* PATCH v46 — Filtro/Ordem sem pill dupla */
+.taskToolbarGroup {
+  gap: 14px !important;
+}
+
+.toolbarField {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  gap: 8px !important;
+}
+
+.toolbarField:hover,
+.toolbarField:focus-within {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.toolbarField > span {
+  height: 36px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 720 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.toolbarField .toolbarSelect {
+  min-width: 112px !important;
+}
+
+.toolbarField .toolbarSelect,
+.taskToolbarGroup .toolbarField .toolbarSelect,
+.taskToolbarGroup .toolbarField [class*="wrap"] {
+  height: 36px !important;
+  min-height: 36px !important;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.toolbarField .toolbarSelect button,
+.taskToolbarGroup .toolbarField button,
+.taskToolbarGroup .toolbarField [role="combobox"] {
+  height: 36px !important;
+  min-height: 36px !important;
+  min-width: 112px !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
+  background: #111214 !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+.toolbarField .toolbarSelect button:hover,
+.taskToolbarGroup .toolbarField button:hover,
+.taskToolbarGroup .toolbarField [role="combobox"]:hover {
+  border-color: var(--line-strong) !important;
+  background: #121314 !important;
+}
+
+.toolbarField .toolbarSelect button:focus,
+.toolbarField .toolbarSelect button:focus-visible,
+.taskToolbarGroup .toolbarField button:focus,
+.taskToolbarGroup .toolbarField button:focus-visible,
+.taskToolbarGroup .toolbarField [role="combobox"]:focus,
+.taskToolbarGroup .toolbarField [role="combobox"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--line-strong) !important;
+}
+
+/* Evita que o Select interno herde borda/pill antiga do container */
+.toolbarField > div {
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
