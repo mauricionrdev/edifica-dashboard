@@ -328,3 +328,11 @@
   font-size: 10.5px !important;
   line-height: 1.15 !important;
 }
+
+
+/* Patch 59 — popover portal para evitar clipping em cards, tabelas e modais */
+.popoverPortal {
+  position: fixed !important;
+  z-index: 1200 !important;
+  max-height: 312px;
+}

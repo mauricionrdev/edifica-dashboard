@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
 import UserHoverCard from './UserHoverCard.jsx';
 import styles from './UserPicker.module.css';
@@ -29,10 +30,14 @@ export default function UserPicker({
   showRole = false,
   variant = 'default',
   hideEmptyAvatar = false,
+  disableHover = false,
+  portal = false,
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const closeTimer = useRef(null);
+  const triggerRef = useRef(null);
+  const [portalStyle, setPortalStyle] = useState(null);
   const safeUsers = Array.isArray(users) ? users.filter((entry) => entry?.id && entry?.active !== false) : [];
 
   const selected = useMemo(
@@ -75,6 +80,100 @@ export default function UserPicker({
     setSearch('');
   }
 
+  useEffect(() => {
+    if (!open || !portal || !triggerRef.current) return undefined;
+
+    function updatePosition() {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const width = Math.min(320, Math.max(rect.width, 260), window.innerWidth - 32);
+      const left = Math.max(16, Math.min(rect.left, window.innerWidth - width - 16));
+      const estimatedHeight = 312;
+      const opensUp = rect.bottom + estimatedHeight > window.innerHeight && rect.top > estimatedHeight;
+      const top = opensUp
+        ? Math.max(16, rect.top - estimatedHeight - 6)
+        : Math.min(rect.bottom + 6, window.innerHeight - estimatedHeight - 16);
+      setPortalStyle({ left, top: Math.max(16, top), width });
+    }
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [open, portal, value, search]);
+
+  const selectedContent = selected ? (
+    <>
+      <span className={styles.avatar}>
+        {selectedAvatar ? <img src={selectedAvatar} alt="" /> : initials(selected.name)}
+      </span>
+      <span className={styles.triggerText}>{selected.name}</span>
+    </>
+  ) : null;
+
+  const popover = open ? (
+    <span
+      className={`${styles.popover} ${portal ? styles.popoverPortal : ''}`.trim()}
+      role="dialog"
+      aria-label="Selecionar usuário"
+      style={portal ? portalStyle || undefined : undefined}
+      onMouseDown={cancelClose}
+      onFocus={cancelClose}
+    >
+      <span className={styles.searchWrap}>
+        <input
+          value={search}
+          autoFocus
+          placeholder={searchPlaceholder}
+          onChange={(event) => setSearch(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              setOpen(false);
+              setSearch('');
+            }
+          }}
+        />
+      </span>
+
+      <span className={styles.list}>
+        <button
+          type="button"
+          className={`${styles.option} ${!value ? styles.optionActive : ''}`.trim()}
+          onClick={() => choose('')}
+        >
+          <span className={styles.avatar}>NA</span>
+          <span className={styles.optionMain}>
+            <strong>{placeholder}</strong>
+            <small>Deixar sem usuário definido</small>
+          </span>
+        </button>
+
+        {filtered.map((entry) => {
+          const avatar = getUserAvatar(entry) || entry.avatarUrl || '';
+          return (
+            <button
+              key={entry.id}
+              type="button"
+              className={`${styles.option} ${entry.id === value ? styles.optionActive : ''}`.trim()}
+              onClick={() => choose(entry.id)}
+            >
+              <span className={styles.avatar}>
+                {avatar ? <img src={avatar} alt="" /> : initials(entry.name)}
+              </span>
+              <span className={styles.optionMain}>
+                <strong>{entry.name}</strong>
+                <small>{entry.email || entry.username || (showRole ? entry.role || '' : '')}</small>
+              </span>
+            </button>
+          );
+        })}
+      </span>
+    </span>
+  ) : null;
+
   return (
     <span
       className={`${styles.root} ${className}`.trim()}
@@ -85,6 +184,7 @@ export default function UserPicker({
       onMouseDown={cancelClose}
     >
       <button
+        ref={triggerRef}
         type="button"
         className={styles.trigger}
         disabled={disabled}
@@ -94,12 +194,13 @@ export default function UserPicker({
         }}
       >
         {selected ? (
-          <UserHoverCard user={selected} placement="bottom" className={styles.selectedUser}>
-            <span className={styles.avatar}>
-              {selectedAvatar ? <img src={selectedAvatar} alt="" /> : initials(selected.name)}
-            </span>
-            <span className={styles.triggerText}>{selected.name}</span>
-          </UserHoverCard>
+          disableHover ? (
+            <span className={styles.selectedUser}>{selectedContent}</span>
+          ) : (
+            <UserHoverCard user={selected} placement="bottom" className={styles.selectedUser}>
+              {selectedContent}
+            </UserHoverCard>
+          )
         ) : hideEmptyAvatar ? (
           <span className={styles.triggerText}>{placeholder}</span>
         ) : (
@@ -110,58 +211,7 @@ export default function UserPicker({
         )}
       </button>
 
-      {open ? (
-        <span className={styles.popover} role="dialog" aria-label="Selecionar usuário">
-          <span className={styles.searchWrap}>
-            <input
-              value={search}
-              autoFocus
-              placeholder={searchPlaceholder}
-              onChange={(event) => setSearch(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Escape') {
-                  setOpen(false);
-                  setSearch('');
-                }
-              }}
-            />
-          </span>
-
-          <span className={styles.list}>
-            <button
-              type="button"
-              className={`${styles.option} ${!value ? styles.optionActive : ''}`.trim()}
-              onClick={() => choose('')}
-            >
-              <span className={styles.avatar}>NA</span>
-              <span className={styles.optionMain}>
-                <strong>{placeholder}</strong>
-                <small>Deixar sem usuário definido</small>
-              </span>
-            </button>
-
-            {filtered.map((entry) => {
-              const avatar = getUserAvatar(entry) || entry.avatarUrl || '';
-              return (
-                <button
-                  key={entry.id}
-                  type="button"
-                  className={`${styles.option} ${entry.id === value ? styles.optionActive : ''}`.trim()}
-                  onClick={() => choose(entry.id)}
-                >
-                  <span className={styles.avatar}>
-                    {avatar ? <img src={avatar} alt="" /> : initials(entry.name)}
-                  </span>
-                  <span className={styles.optionMain}>
-                    <strong>{entry.name}</strong>
-                    <small>{entry.email || entry.username || (showRole ? entry.role || '' : '')}</small>
-                  </span>
-                </button>
-              );
-            })}
-          </span>
-        </span>
-      ) : null}
+      {portal && open && typeof document !== 'undefined' ? createPortal(popover, document.body) : popover}
     </span>
   );
 }

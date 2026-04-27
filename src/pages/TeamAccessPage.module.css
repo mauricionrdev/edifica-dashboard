@@ -2213,3 +2213,71 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Patch 59 — edição de squad e popovers sem clipping */
+.hiddenInput {
+  display: none;
+}
+
+.squadIdentityPanel {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.squadAvatarEditor {
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border: 1px solid rgba(245, 184, 0, 0.22);
+  border-radius: 50%;
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.squadAvatarEditor img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.squadAvatarEditor span {
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 780;
+  letter-spacing: -0.05em;
+}
+
+.squadAvatarEditor:hover,
+.squadAvatarEditor:focus-visible {
+  border-color: rgba(245, 184, 0, 0.38);
+  background: rgba(245, 184, 0, 0.12);
+  outline: none;
+  box-shadow: none;
+}
+
+.squadIdentityFields {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.ownerInlineSelect {
+  overflow: visible;
+}
+
+@media (max-width: 760px) {
+  .squadIdentityPanel {
+    grid-template-columns: 1fr;
+  }
+}

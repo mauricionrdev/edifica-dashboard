@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { createGdv, updateGdv } from '../api/gdvs.js';
 import { createSquad, deleteSquad, updateSquad } from '../api/squads.js';
@@ -19,7 +19,7 @@ import {
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { Select } from '../components/ui/index.js';
 import UserPicker from '../components/users/UserPicker.jsx';
-import UserHoverCard from '../components/users/UserHoverCard.jsx';
+import { readAvatarFile } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
 import styles from './TeamAccessPage.module.css';
 
@@ -32,6 +32,13 @@ function userHasRole(entry, role) {
 function effectiveRoleLabels(entry) {
   const secondary = Array.isArray(entry?.secondaryRoles) ? entry.secondaryRoles : [];
   return [entry?.role, ...secondary].filter(Boolean).map((role) => roleLabel(role));
+}
+
+function squadInitials(name = '') {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'SQ';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 function SquadFormModal({ mode = 'create', initialName = '', busy = false, onClose, onSubmit }) {
@@ -170,16 +177,27 @@ function SquadOwnerFormModal({
   onSubmit,
   onDelete,
 }) {
+  const fileInputRef = useRef(null);
   const [name, setName] = useState(squad?.name || '');
   const [ownerUserId, setOwnerUserId] = useState(squad?.ownerUserId || squad?.ownerId || squad?.owner?.id || '');
+  const [logoUrl, setLogoUrl] = useState(squad?.logoUrl || '');
 
   useEffect(() => {
     setName(squad?.name || '');
     setOwnerUserId(squad?.ownerUserId || squad?.ownerId || squad?.owner?.id || '');
-  }, [squad?.id, squad?.name, squad?.ownerUserId, squad?.ownerId, squad?.owner]);
+    setLogoUrl(squad?.logoUrl || '');
+  }, [squad?.id, squad?.name, squad?.ownerUserId, squad?.ownerId, squad?.owner, squad?.logoUrl]);
 
   const owner = users.find((entry) => entry.id === ownerUserId) || null;
   const statusLabel = owner ? 'Ativo' : 'Desativado';
+
+  async function handleLogoFile(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    const dataUrl = await readAvatarFile(file);
+    setLogoUrl(dataUrl);
+  }
 
   return (
     <div className={styles.modalBackdrop} role="presentation" onClick={onClose}>
@@ -193,19 +211,37 @@ function SquadOwnerFormModal({
         </div>
 
         <div className={styles.userModalBody}>
-          <div className={styles.formGrid}>
-            <label className={styles.field}>
-              <span>Nome do squad</span>
-              <input
-                autoFocus
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="Ex.: Squad Comercial Sul"
-                maxLength={80}
-              />
-            </label>
+          <section className={styles.squadIdentityPanel}>
+            <input ref={fileInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleLogoFile} />
+            <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()}>
+              {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(name)}</span>}
+            </button>
+            <div className={styles.squadIdentityFields}>
+              <label className={styles.field}>
+                <span>Nome do squad</span>
+                <input
+                  autoFocus
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Ex.: Squad Comercial Sul"
+                  maxLength={80}
+                />
+              </label>
+              <div className={styles.rowActions}>
+                <button type="button" className={styles.ghostButton} onClick={() => fileInputRef.current?.click()}>
+                  Alterar avatar
+                </button>
+                {logoUrl ? (
+                  <button type="button" className={styles.ghostButton} onClick={() => setLogoUrl('')}>
+                    Remover avatar
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </section>
 
+          <div className={styles.formGrid}>
             <label className={styles.field}>
               <span>Status operacional</span>
               <input value={statusLabel} disabled />
@@ -220,6 +256,8 @@ function SquadOwnerFormModal({
                   onChange={setOwnerUserId}
                   placeholder="Sem proprietário"
                   showRole
+                  variant="drawer"
+                  disableHover
                 />
               ) : (
                 <input value={owner?.name || 'Sem proprietário'} disabled />
@@ -249,7 +287,7 @@ function SquadOwnerFormModal({
           <button
             type="button"
             className={styles.primaryButton}
-            onClick={() => onSubmit({ name, ownerUserId, active: Boolean(ownerUserId) })}
+            onClick={() => onSubmit({ name, ownerUserId, active: Boolean(ownerUserId), logoUrl })}
             disabled={busy || deleting || !name.trim()}
           >
             {busy ? 'Salvando...' : mode === 'create' ? 'Criar squad' : 'Salvar alterações'}
@@ -1022,13 +1060,14 @@ export default function TeamAccessPage() {
     const safeName = String(payload?.name || '').trim();
     const ownerUserId = payload?.ownerUserId || '';
     const active = Boolean(ownerUserId);
+    const logoUrl = typeof payload?.logoUrl === 'string' ? payload.logoUrl : '';
     setSubmitting(true);
     try {
       if (squadModal.mode === 'create') {
-        await createSquad({ name: safeName, ownerUserId, active });
+        await createSquad({ name: safeName, ownerUserId, active, logoUrl });
         showToast(`"${safeName}" criado com sucesso.`);
       } else if (squadModal.squad?.id) {
-        await updateSquad(squadModal.squad.id, { name: safeName, ownerUserId, active });
+        await updateSquad(squadModal.squad.id, { name: safeName, ownerUserId, active, logoUrl });
         showToast(`"${safeName}" atualizado com sucesso.`);
       }
       setSquadModal({ open: false, mode: 'create', squad: null });
@@ -1498,13 +1537,13 @@ export default function TeamAccessPage() {
                               }}
                               placeholder="Sem proprietário"
                               showRole
+                              portal
+                              disableHover
                             />
                           ) : entry.owner ? (
-                            <UserHoverCard user={entry.owner} placement="top">
-                              <Link to={`/perfil/${encodeURIComponent(entry.owner.id)}`} className={styles.inlineProfileLink}>
-                                {entry.owner.name}
-                              </Link>
-                            </UserHoverCard>
+                            <Link to={`/perfil/${encodeURIComponent(entry.owner.id)}`} className={styles.inlineProfileLink}>
+                              {entry.owner.name}
+                            </Link>
                           ) : (
                             <span className={styles.dimText}>Sem proprietário</span>
                           )}

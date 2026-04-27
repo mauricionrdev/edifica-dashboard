@@ -1027,3 +1027,218 @@
     justify-content: stretch !important;
   }
 }
+
+/* Patch 59 — modal de configuração do squad */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 8, 10, 0.56);
+  backdrop-filter: blur(4px);
+}
+
+.modalCard {
+  width: min(760px, calc(100vw - 56px));
+  max-height: min(760px, calc(100vh - 56px));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(12, 13, 15, 0.92);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.modalHead {
+  min-height: 74px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.modalHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.modalHead h3 {
+  margin: 6px 0 0;
+  color: var(--text-primary);
+  font-size: 20px;
+  line-height: 1.1;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+}
+
+.modalClose {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modalClose:hover {
+  border-color: var(--line-strong);
+  color: var(--text-primary);
+}
+
+.modalBody {
+  min-height: 0;
+  padding: 18px 22px;
+  overflow: auto;
+  display: grid;
+  gap: 14px;
+  scrollbar-width: none;
+}
+
+.modalBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.squadIdentityPanel {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.squadAvatarEditor {
+  width: 74px;
+  height: 74px;
+  padding: 0;
+  border: 1px solid rgba(245, 184, 0, 0.22);
+  border-radius: 50%;
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.squadAvatarEditor img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.squadAvatarEditor span {
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 780;
+  letter-spacing: -0.05em;
+}
+
+.squadAvatarEditor:hover,
+.squadAvatarEditor:focus-visible {
+  border-color: rgba(245, 184, 0, 0.38);
+  background: rgba(245, 184, 0, 0.12);
+  outline: none;
+  box-shadow: none;
+}
+
+.squadIdentityFields {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.modalField {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.modalField > span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 680;
+}
+
+.modalField input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.024);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 590;
+  padding: 0 12px;
+  outline: none;
+}
+
+.modalField input:focus {
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
+
+.modalActions,
+.modalActionsInline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modalActions {
+  justify-content: flex-end;
+  padding: 14px 22px;
+  border-top: 1px solid var(--line);
+}
+
+.modalGhostBtn,
+.modalPrimaryBtn {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+.modalPrimaryBtn {
+  border-color: rgba(245, 184, 0, 0.42);
+  background: rgba(245, 184, 0, 0.14);
+  color: #ffe58a;
+}
+
+.modalGhostBtn:hover,
+.modalPrimaryBtn:hover {
+  border-color: var(--line-strong);
+  color: var(--text-primary);
+}
+
+@media (max-width: 760px) {
+  .modalBackdrop {
+    padding: 14px;
+  }
+
+  .squadIdentityPanel {
+    grid-template-columns: 1fr;
+  }
+}
