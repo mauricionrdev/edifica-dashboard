@@ -333,18 +333,53 @@ export default function ProjectsPage() {
   }, [taskCollaborators, selectedTask?.assigneeUserId, userDirectory]);
 
   const canAccessTemplate = hasPermission(user, 'project_template.view');
-  const canManageProjects = hasPermission(user, 'projects.edit');
+  const hasProjectEditAll = hasPermission(user, 'projects.edit.all');
+  const hasProjectEditOwn = hasPermission(user, 'projects.edit.own');
+  const hasTaskEditAll = hasPermission(user, 'tasks.edit.all');
+  const hasTaskEditOwn = hasPermission(user, 'tasks.edit.own');
+  const hasTaskCommentAll = hasPermission(user, 'tasks.comment.all');
+  const hasTaskCommentOwn = hasPermission(user, 'tasks.comment.own');
   const canCreateTasks = hasPermission(user, 'tasks.create');
-  const canEditTasks = hasPermission(user, 'tasks.edit');
-  const canCommentTasks = hasPermission(user, 'tasks.comment');
   const canCompleteAnyTask = hasPermission(user, 'tasks.complete.any');
   const canCompleteOwnTask = hasPermission(user, 'tasks.complete.own');
+
+  const isProjectParticipant = useCallback((project = selectedProject) => {
+    if (!project || !user?.id) return false;
+    if (project.ownerUserId === user.id || project.createdByUserId === user.id) return true;
+    return projectMembers.some(
+      (member) => member.userId === user.id && ['owner', 'member'].includes(member.role || 'member')
+    );
+  }, [projectMembers, selectedProject, user?.id]);
+
+  const canManageProjects = hasProjectEditAll || (hasProjectEditOwn && isProjectParticipant(selectedProject));
+
+  const isTaskParticipant = useCallback((task) => {
+    if (!task || !user?.id) return false;
+    if (task.assigneeUserId === user.id || task.createdByUserId === user.id) return true;
+    if (isProjectParticipant(selectedProject)) return true;
+    return taskCollaborators.some((entry) => entry.userId === user.id);
+  }, [isProjectParticipant, selectedProject, taskCollaborators, user?.id]);
+
+  const canEditTask = useCallback((task) => {
+    if (!task) return false;
+    if (hasTaskEditAll) return true;
+    return hasTaskEditOwn && isTaskParticipant(task);
+  }, [hasTaskEditAll, hasTaskEditOwn, isTaskParticipant]);
+
+  const canCommentTask = useCallback((task) => {
+    if (!task) return false;
+    if (hasTaskCommentAll) return true;
+    return hasTaskCommentOwn && isTaskParticipant(task);
+  }, [hasTaskCommentAll, hasTaskCommentOwn, isTaskParticipant]);
+
+  const canEditTasks = selectedTask ? canEditTask(selectedTask) : hasTaskEditAll || (hasTaskEditOwn && isProjectParticipant(selectedProject));
+  const canCommentTasks = selectedTask ? canCommentTask(selectedTask) : hasTaskCommentAll || (hasTaskCommentOwn && isProjectParticipant(selectedProject));
   const canCompleteTask = useCallback((task) => {
     if (!task) return false;
-    if (canEditTasks || canCompleteAnyTask) return true;
+    if (canCompleteAnyTask || hasTaskEditAll || canEditTask(task)) return true;
     const ownTask = task.assigneeUserId === user?.id || task.createdByUserId === user?.id;
     return canCompleteOwnTask && ownTask;
-  }, [canCompleteAnyTask, canCompleteOwnTask, canEditTasks, user?.id]);
+  }, [canCompleteAnyTask, canCompleteOwnTask, canEditTask, hasTaskEditAll, user?.id]);
   const projectHeaderActions = useMemo(() => {
     if (!selectedProject) return null;
     return (
@@ -716,7 +751,7 @@ export default function ProjectsPage() {
 
   async function handleTaskDrop(targetSectionId, targetTaskId = '', position = 'before') {
     if (!selectedId || !draggedTask?.id || !targetSectionId || orderingBusy) return;
-    if (!canEditTasks) return;
+    if (!canManageProjects) return;
     if (taskFilter !== 'all' || taskSort !== 'section') return;
 
     const groups = sections.map((section) => ({
@@ -792,7 +827,7 @@ export default function ProjectsPage() {
   }
 
   async function handleInlineTaskUpdate(task, patch) {
-    if (!task?.id || !canEditTasks) return;
+    if (!task?.id || !canEditTask(task)) return;
     const cleanPatch = { ...patch };
     if (cleanPatch.title !== undefined) {
       cleanPatch.title = cleanPatch.title.trim();
@@ -1489,6 +1524,7 @@ export default function ProjectsPage() {
                       {!collapsedGroups[group.key]
                         ? group.tasks.map((task) => {
                             const assignee = taskAssignee(task);
+                            const canEditThisTask = canEditTask(task);
                             return (
                               <div
                                 key={task.id}
@@ -1497,7 +1533,7 @@ export default function ProjectsPage() {
                                 } ${draggedTask?.id === task.id ? styles.taskDragging : ''} ${
                                   inlineSavingTaskId === task.id ? styles.taskSaving : ''
                                 }`.trim()}
-                                draggable={canEditTasks && taskFilter === 'all' && taskSort === 'section'}
+                                draggable={canManageProjects && taskFilter === 'all' && taskSort === 'section'}
                                 onDragStart={(event) => {
                                   setDraggedTask({ id: task.id, sectionId: group.key, startedAt: Date.now() });
                                   event.dataTransfer.effectAllowed = 'move';
@@ -1535,7 +1571,7 @@ export default function ProjectsPage() {
                                   <input
                                     className={styles.taskTitleInput}
                                     defaultValue={task.title}
-                                    disabled={!canEditTasks || inlineSavingTaskId === task.id}
+                                    disabled={!canEditThisTask || inlineSavingTaskId === task.id}
                                     onClick={(event) => event.stopPropagation()}
                                     onBlur={(event) => handleInlineTaskUpdate(task, { title: event.target.value })}
                                     onKeyDown={(event) => {
@@ -1547,7 +1583,7 @@ export default function ProjectsPage() {
                                   <span className={styles.taskStatus}>{statusLabel(task.status)}</span>
                                 </div>
                                 <span className={styles.taskMeta} onClick={(event) => event.stopPropagation()}>
-                                  {canEditTasks ? (
+                                  {canEditThisTask ? (
                                     <UserPicker
                                       className={styles.userPickerInline}
                                       users={Array.isArray(userDirectory) ? userDirectory : []}
@@ -1576,7 +1612,7 @@ export default function ProjectsPage() {
                                     duePicker?.taskId === task.id ? styles.taskDueActive : ''
                                   }`.trim()}
                                 >
-                                  {canEditTasks ? (
+                                  {canEditThisTask ? (
                                     <>
                                       <button
                                         type="button"

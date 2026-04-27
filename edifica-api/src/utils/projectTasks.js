@@ -30,6 +30,43 @@ function taskAllPermissionFor(permission = '') {
   return 'tasks.view.all';
 }
 
+function isProjectWritePermission(permission = '') {
+  const key = String(permission || '');
+  return key.startsWith('projects.edit') || key.startsWith('tasks.edit') || key.startsWith('tasks.comment');
+}
+
+function isTaskWritePermission(permission = '') {
+  const key = String(permission || '');
+  return key.startsWith('tasks.edit') || key.startsWith('tasks.comment');
+}
+
+async function hasProjectParticipation(projectId, userId) {
+  if (!projectId || !userId) return false;
+  const rows = await query(
+    `SELECT role
+       FROM project_members
+      WHERE project_id = ?
+        AND user_id = ?
+        AND role IN ('owner', 'member')
+      LIMIT 1`,
+    [projectId, userId]
+  );
+  return rows.length > 0;
+}
+
+async function hasTaskParticipation(task, userId) {
+  if (!task || !userId) return false;
+  if (task.assignee_user_id === userId || task.created_by_user_id === userId) return true;
+
+  const collaborators = await query(
+    'SELECT user_id FROM task_collaborators WHERE task_id = ? AND user_id = ? LIMIT 1',
+    [task.id, userId]
+  );
+  if (collaborators.length > 0) return true;
+
+  return hasProjectParticipation(task.project_id, userId);
+}
+
 function clean(value) {
   return String(value || '').trim();
 }
@@ -132,23 +169,32 @@ export async function assertProjectAccess(projectId, user, permission = 'project
   );
   const project = rows[0];
   if (!project) throw notFound('Projeto não encontrado');
-  if (isAdminUser(user) || hasGlobalScope(user, projectAllPermissionFor(permission))) return project;
 
-  const allowedSquads = getAllowedSquads(user, projectAllPermissionFor(permission));
+  const allPermission = projectAllPermissionFor(permission);
+  if (isAdminUser(user) || hasGlobalScope(user, allPermission)) return project;
+
+  const participates =
+    project.owner_user_id === user?.id ||
+    project.created_by_user_id === user?.id ||
+    await hasProjectParticipation(projectId, user?.id);
+
+  if (participates) return project;
+
+  if (isProjectWritePermission(permission)) {
+    throw forbidden('Sem permissão para editar este projeto');
+  }
+
+  const allowedSquads = getAllowedSquads(user, allPermission);
   const projectSquad = project.squad_id || project.client_squad_id;
   if (projectSquad && allowedSquads.includes(projectSquad)) return project;
 
-  const members = await query(
-    'SELECT user_id FROM project_members WHERE project_id = ? AND user_id = ? LIMIT 1',
-    [projectId, user.id]
-  );
-  if (members.length > 0) return project;
   throw forbidden('Sem acesso a este projeto');
 }
 
 export async function assertTaskAccess(taskId, user, permission = 'tasks.view') {
   const rows = await query(
-    `SELECT t.*, p.squad_id AS project_squad_id, c.squad_id AS client_squad_id
+    `SELECT t.*, p.squad_id AS project_squad_id, p.owner_user_id AS project_owner_user_id,
+            p.created_by_user_id AS project_created_by_user_id, c.squad_id AS client_squad_id
        FROM tasks t
        LEFT JOIN projects p ON p.id = t.project_id
        LEFT JOIN clients c ON c.id = t.client_id
@@ -158,16 +204,24 @@ export async function assertTaskAccess(taskId, user, permission = 'tasks.view') 
   );
   const task = rows[0];
   if (!task) throw notFound('Tarefa não encontrada');
-  if (isAdminUser(user) || hasGlobalScope(user, taskAllPermissionFor(permission))) return task;
-  if (task.assignee_user_id === user.id || task.created_by_user_id === user.id) return task;
 
-  const collaborators = await query(
-    'SELECT user_id FROM task_collaborators WHERE task_id = ? AND user_id = ? LIMIT 1',
-    [taskId, user.id]
-  );
-  if (collaborators.length > 0) return task;
+  const allPermission = taskAllPermissionFor(permission);
+  if (isAdminUser(user) || hasGlobalScope(user, allPermission)) return task;
 
-  const allowedSquads = getAllowedSquads(user, taskAllPermissionFor(permission));
+  const participates =
+    task.assignee_user_id === user?.id ||
+    task.created_by_user_id === user?.id ||
+    task.project_owner_user_id === user?.id ||
+    task.project_created_by_user_id === user?.id ||
+    await hasTaskParticipation(task, user?.id);
+
+  if (participates) return task;
+
+  if (isTaskWritePermission(permission)) {
+    throw forbidden('Sem permissão para editar esta tarefa');
+  }
+
+  const allowedSquads = getAllowedSquads(user, allPermission);
   const squadId = task.project_squad_id || task.client_squad_id;
   if (squadId && allowedSquads.includes(squadId)) return task;
   throw forbidden('Sem acesso a esta tarefa');

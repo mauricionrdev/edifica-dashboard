@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { query, withTransaction } from '../db/pool.js';
 import { requireAnyPermission, requireAuth, requirePermission } from '../middleware/auth.js';
-import { badRequest, parseJson, uuid } from '../utils/helpers.js';
+import { badRequest, forbidden, parseJson, uuid } from '../utils/helpers.js';
 import { getAccessibleClientRow, getAllowedSquads, isAdminUser } from '../utils/access.js';
 import { notifyUsers } from '../utils/notifications.js';
 import { hasPermission } from '../utils/permissions.js';
@@ -1022,10 +1022,20 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
     const editableFields = ['title', 'description', 'priority', 'sectionId', 'dueDate', 'assigneeUserId'];
     const changingEditableFields = editableFields.some((field) => req.body?.[field] !== undefined);
     const canEditTasks = hasPermission(req.user, 'tasks.edit');
+    const canEditAllTasks = hasPermission(req.user, 'tasks.edit.all');
+    let canEditThisTask = false;
+
+    if (canEditTasks) {
+      try {
+        await assertTaskAccess(req.params.id, req.user, 'tasks.edit');
+        canEditThisTask = true;
+      } catch (err) {
+        if (changingEditableFields) throw err;
+      }
+    }
 
     if (changingEditableFields) {
-      if (!canEditTasks) throw forbidden('Sem permissão para editar tarefas');
-      await assertTaskAccess(req.params.id, req.user, 'tasks.edit');
+      if (!canEditThisTask) throw forbidden('Sem permissão para editar esta tarefa');
     }
 
     if (req.body?.title !== undefined) {
@@ -1063,9 +1073,9 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
     if (changingStatus) {
       const nextStatus = req.body?.status ? normalizeStatus(req.body.status) : (req.body.done ? 'done' : 'todo');
       const ownTask = task.assignee_user_id === req.user.id || task.created_by_user_id === req.user.id;
-      const canCompleteOwn = canEditTasks || hasPermission(req.user, 'tasks.complete.own');
-      const canCompleteAny = hasPermission(req.user, 'tasks.complete.any');
-      if (!canCompleteAny && (!ownTask || !canCompleteOwn)) {
+      const canCompleteOwn = hasPermission(req.user, 'tasks.complete.own');
+      const canCompleteAny = hasPermission(req.user, 'tasks.complete.any') || canEditAllTasks;
+      if (!canCompleteAny && !canEditThisTask && (!ownTask || !canCompleteOwn)) {
         throw forbidden('Sem permissão para alterar o status desta tarefa');
       }
       updates.push('status = ?');
