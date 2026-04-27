@@ -526,3 +526,15 @@
     display: inline-flex;
   }
 }
+
+
+/* Patch 58 — camadas da sidebar abaixo dos modais */
+.sidebar {
+  z-index: 1;
+}
+
+@media (max-width: 1100px) {
+  .sidebar {
+    z-index: 60;
+  }
+}

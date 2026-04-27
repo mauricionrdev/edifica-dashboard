@@ -325,6 +325,22 @@ function UserFormModal({
   }
 
   const canSubmit = form.name.trim() && form.email.trim() && (mode === 'edit' || form.password.trim());
+  const permissionColumns = useMemo(() => {
+    const sortedGroups = [...permissionGroups].sort((a, b) => {
+      if (b.permissions.length !== a.permissions.length) return b.permissions.length - a.permissions.length;
+      return a.area.localeCompare(b.area, 'pt-BR');
+    });
+    const columns = Array.from({ length: 3 }, () => ({ groups: [], weight: 0 }));
+    sortedGroups.forEach((group) => {
+      let targetIndex = 0;
+      for (let index = 1; index < columns.length; index += 1) {
+        if (columns[index].weight < columns[targetIndex].weight) targetIndex = index;
+      }
+      columns[targetIndex].groups.push(group);
+      columns[targetIndex].weight += group.permissions.length;
+    });
+    return columns.filter((column) => column.groups.length > 0).map((column) => column.groups);
+  }, [permissionGroups]);
 
   return (
     <div className={styles.modalBackdrop} role="presentation" onClick={onClose}>
@@ -377,19 +393,23 @@ function UserFormModal({
           <section className={styles.selectorBlock}>
             <div className={styles.selectorHead}><strong>Permissões complementares</strong><span>{form.permissionsOverride.length} marcada(s)</span></div>
             <div className={styles.permissionSelectGrid}>
-              {permissionGroups.map((group) => (
-                <div key={group.area} className={styles.checkboxGroup}>
-                  <strong className={styles.selectorGroupTitle}>{group.area}</strong>
-                  {group.permissions.map((permission) => {
-                    const checked = form.permissionsOverride.includes(permission);
-                    return (
-                      <label key={permission} className={`${styles.checkboxCard} ${styles.permissionOptionCard} ${checked ? styles.checkboxCardActive : ''}`}>
-                        <input type="checkbox" checked={checked} onChange={() => togglePermission(permission)} />
-                        <PermissionText permission={permission} showHint />
-                        <PermissionScopeBadge permission={permission} />
-                      </label>
-                    );
-                  })}
+              {permissionColumns.map((column, columnIndex) => (
+                <div key={`permission-column-${columnIndex + 1}`} className={styles.permissionColumn}>
+                  {column.map((group) => (
+                    <div key={group.area} className={styles.checkboxGroup}>
+                      <strong className={styles.selectorGroupTitle}>{group.area}</strong>
+                      {group.permissions.map((permission) => {
+                        const checked = form.permissionsOverride.includes(permission);
+                        return (
+                          <label key={permission} className={`${styles.checkboxCard} ${styles.permissionOptionCard} ${checked ? styles.checkboxCardActive : ''}`}>
+                            <input type="checkbox" checked={checked} onChange={() => togglePermission(permission)} />
+                            <PermissionText permission={permission} showHint />
+                            <PermissionScopeBadge permission={permission} />
+                          </label>
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
@@ -699,12 +719,12 @@ function PermissionText({ permission, showHint = false }) {
   );
 }
 
-function StatCard({ label, value, hint }) {
+function StatCard({ label, value, hint = '' }) {
   return (
     <article className={styles.metricCard}>
       <span>{label}</span>
       <strong>{value}</strong>
-      <small>{hint}</small>
+      {hint ? <small>{hint}</small> : null}
     </article>
   );
 }
@@ -1296,21 +1316,11 @@ export default function TeamAccessPage() {
         ) : activeTab === 'users' ? (
           <>
             <section className={styles.metricGrid}>
-              <StatCard label="Usuários ativos" value={activeUsers} hint="acessando a operação" />
-              <StatCard label="Admins ativos" value={activeAdmins} hint="governança crítica" />
-              <StatCard label="Escopo por squad" value={restrictedUsers} hint="contas com restrição" />
-              <StatCard label="Acesso amplo" value={unrestrictedUsers} hint="" />
+              <StatCard label="Usuários ativos" value={activeUsers} />
+              <StatCard label="Admins ativos" value={activeAdmins} />
+              <StatCard label="Escopo por squad" value={restrictedUsers} />
+              <StatCard label="Acesso amplo" value={unrestrictedUsers} />
             </section>
-
-            <section className={styles.tableCard}>
-              <div className={styles.sectionHead}>
-                <div>
-                  <span className={styles.sectionEyebrow}>Matriz administrativa</span>
-                  <h3>Governança de permissões</h3>
-                </div>
-              </div>
-            </section>
-
             {usersError && userRows.length === 0 ? (
               <StateBlock
                 variant="error"
