@@ -3252,3 +3252,236 @@ textarea:focus-visible {
     justify-self: start !important;
   }
 }
+
+
+/* PATCH v44 — command bar real, sem segunda linha bagunçada */
+
+/*
+  Decisão de UX:
+  - Criação de tarefa é a ação primária.
+  - Filtro/ordem são controles de visualização compactos.
+  - Criar seção é ação secundária à direita.
+  - Não usar label em cima do controle.
+*/
+
+.commandBar {
+  padding: 8px 24px !important;
+  border-top: 1px solid var(--line) !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: #0a0b0c !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-areas: "primary secondary" !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.commandPrimary {
+  grid-area: primary !important;
+  min-width: 0 !important;
+}
+
+.commandSecondary {
+  grid-area: secondary !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+/* A criação fica em uma linha horizontal simples */
+.createTask {
+  width: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  display: grid !important;
+  grid-template-columns:
+    minmax(260px, 1fr)
+    minmax(150px, 190px)
+    minmax(170px, 220px)
+    108px
+    58px !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+.createTaskTitleWrap input,
+.createTask > input,
+.createSelect,
+.createTask button {
+  height: 34px !important;
+  min-height: 34px !important;
+  border-radius: 9px !important;
+  font-size: 12.5px !important;
+}
+
+/* Remove visual de segunda barra */
+.taskToolbar {
+  display: contents !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/* Filtro/ordem viram controles inline compactos, sem label vertical */
+.taskToolbarGroup {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.toolbarField {
+  min-width: 0 !important;
+  height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  background: #101112 !important;
+  overflow: hidden !important;
+}
+
+.toolbarField > span {
+  height: 100% !important;
+  padding: 0 8px 0 10px !important;
+  border-right: 1px solid var(--line) !important;
+  color: var(--text-tertiary) !important;
+  font-size: 9px !important;
+  font-weight: 780 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.toolbarSelect,
+.taskToolbar .toolbarField button,
+.taskToolbar .toolbarField [role="combobox"],
+.taskToolbar .toolbarField select {
+  min-width: 92px !important;
+  width: auto !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 28px 0 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  font-size: 12px !important;
+  font-weight: 720 !important;
+  box-shadow: none !important;
+}
+
+.toolbarField:hover {
+  border-color: var(--line-strong) !important;
+  background: #121314 !important;
+}
+
+.toolbarField:focus-within {
+  border-color: var(--line-strong) !important;
+}
+
+/* Criação de seção como ação secundária compacta */
+.sectionCreateForm {
+  min-width: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.sectionCreateForm input {
+  width: 168px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  border-radius: 9px !important;
+  font-size: 12.5px !important;
+}
+
+.sectionCreateForm button {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 11px !important;
+  border-radius: 9px !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+}
+
+/* Tabela encosta na command bar sem parecer bloco separado */
+.sections {
+  border-top: 0 !important;
+}
+
+.taskTableHeader {
+  top: 0 !important;
+  border-top: 0 !important;
+}
+
+/* Sem focus amarelo em qualquer controle dessa barra */
+.commandBar input:focus,
+.commandBar select:focus,
+.commandBar textarea:focus,
+.commandBar button:focus,
+.commandBar input:focus-visible,
+.commandBar select:focus-visible,
+.commandBar textarea:focus-visible,
+.commandBar button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Notebook */
+@media (max-width: 1440px) {
+  .commandBar {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    gap: 10px !important;
+  }
+
+  .createTask {
+    grid-template-columns:
+      minmax(220px, 1fr)
+      minmax(138px, 172px)
+      minmax(150px, 200px)
+      100px
+      56px !important;
+  }
+
+  .toolbarField > span {
+    padding-left: 8px !important;
+    padding-right: 7px !important;
+  }
+
+  .toolbarSelect,
+  .taskToolbar .toolbarField button,
+  .taskToolbar .toolbarField [role="combobox"],
+  .taskToolbar .toolbarField select {
+    min-width: 84px !important;
+  }
+
+  .sectionCreateForm input {
+    width: 150px !important;
+  }
+}
+
+@media (max-width: 1280px) {
+  .commandBar {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "primary"
+      "secondary" !important;
+    align-items: stretch !important;
+  }
+
+  .commandSecondary {
+    justify-content: space-between !important;
+  }
+
+  .createTask {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}

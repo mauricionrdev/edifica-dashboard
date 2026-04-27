@@ -1329,7 +1329,7 @@ export default function ProjectsPage() {
                   <div className={styles.commandSecondary}>
                     <div className={styles.taskToolbarGroup}>
                       <label className={styles.toolbarField}>
-                        <span>Filtrar</span>
+                        <span>Filtro</span>
                         <Select className={styles.toolbarSelect} value={taskFilter} onChange={(event) => setTaskFilter(event.target.value)} aria-label="Filtrar tarefas">
                           <option value="all">Tudo</option>
                           <option value="open">Abertas</option>
@@ -1340,7 +1340,7 @@ export default function ProjectsPage() {
                         </Select>
                       </label>
                       <label className={styles.toolbarField}>
-                        <span>Ordenar</span>
+                        <span>Ordem</span>
                         <Select className={styles.toolbarSelect} value={taskSort} onChange={(event) => setTaskSort(event.target.value)} aria-label="Ordenar tarefas">
                           <option value="section">Padrão</option>
                           <option value="due">Prazo</option>
