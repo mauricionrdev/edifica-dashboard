@@ -1168,3 +1168,64 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* Patch v99 — logo GDV estável */
+.headerIdentity {
+  min-width: 0;
+}
+
+.headerLogo {
+  box-sizing: border-box !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  background: rgba(39, 166, 68, 0.1) !important;
+  color: var(--success) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 36px !important;
+  line-height: 1 !important;
+  text-indent: 0 !important;
+}
+
+.headerLogo > span {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--success) !important;
+  font-size: 9px !important;
+  line-height: 1 !important;
+  font-weight: 590 !important;
+  letter-spacing: 0 !important;
+  text-indent: 0 !important;
+  text-align: center !important;
+}
+
+.headerLogo img {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+.headerLogo em {
+  display: none !important;
+}

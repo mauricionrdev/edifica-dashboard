@@ -566,3 +566,44 @@
   object-fit: cover;
   object-position: center;
 }
+
+
+/* Patch v99 — logo GDV sidebar estável */
+.gdvLogo {
+  box-sizing: border-box !important;
+  width: 22px !important;
+  min-width: 22px !important;
+  max-width: 22px !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  max-height: 22px !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  background: rgba(39, 166, 68, 0.1) !important;
+  color: var(--success) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 22px !important;
+  line-height: 1 !important;
+  font-size: 8px !important;
+  font-weight: 590 !important;
+  letter-spacing: 0 !important;
+  text-indent: 0 !important;
+  text-align: center !important;
+}
+
+.gdvLogo img {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}

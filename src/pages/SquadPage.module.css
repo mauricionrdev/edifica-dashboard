@@ -1620,3 +1620,104 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* Patch v99 — Squad busca sem quebra */
+.page {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+.metricGrid {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  overflow: hidden !important;
+}
+
+.metricCard {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 92px !important;
+  padding: 13px 14px !important;
+  overflow: hidden !important;
+}
+
+.listToolbar {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(120px, max-content) minmax(0, 520px) !important;
+  align-items: center !important;
+  gap: 12px !important;
+  overflow: hidden !important;
+}
+
+.searchBox {
+  width: 100% !important;
+  max-width: 520px !important;
+  min-width: 0 !important;
+  justify-self: start !important;
+}
+
+.searchBox input {
+  min-width: 0 !important;
+}
+
+.listCard,
+.clientList,
+.clientRow,
+.clientMain,
+.clientStats,
+.clientStatus {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.clientRow {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+
+.clientStats {
+  display: none !important;
+}
+
+.clientStatus {
+  justify-content: flex-start !important;
+}
+
+@media (min-width: 1281px) {
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .clientRow {
+    grid-template-columns: minmax(0, 1fr) minmax(160px, 280px) 110px !important;
+  }
+
+  .clientStats {
+    display: grid !important;
+    grid-template-columns: minmax(112px, 156px) minmax(82px, 110px) !important;
+  }
+
+  .clientStatus {
+    justify-content: flex-end !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .metricGrid,
+  .listToolbar {
+    grid-template-columns: 1fr !important;
+  }
+}
