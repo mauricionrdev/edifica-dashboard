@@ -2,9 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { updateClient, deleteClient } from '../../api/clients.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
-import { gdvOptions, gestorOptions, userLabel } from '../../utils/responsibleUsers.js';
+import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
-import { LogOutIcon } from '../ui/Icons.jsx';
+import { clientInitials } from '../../utils/clientHelpers.js';
+import { CameraIcon, LogOutIcon, TrashIcon } from '../ui/Icons.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
 import UserPicker from '../users/UserPicker.jsx';
@@ -46,8 +47,13 @@ export default function OverviewTab({
   squads = [],
   users = [],
   headerFacts = [],
+  avatarUrl = '',
+  avatarBg = 'var(--bg-raised)',
   canEdit = false,
+  canManageAvatar = false,
   canDelete = false,
+  onPickAvatar,
+  onRemoveAvatar,
   onUpdated,
   onDeleted,
 }) {
@@ -164,6 +170,30 @@ export default function OverviewTab({
           ))}
         </div>
       ) : null}
+
+      <div className={styles.identityPanel}>
+        <div className={styles.clientAvatarLarge} style={{ background: avatarBg }}>
+          {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
+        </div>
+        <div className={styles.identityMain}>
+          <span>Imagem do cliente</span>
+          <strong>{client.name}</strong>
+        </div>
+        {canManageAvatar ? (
+          <div className={styles.identityActions}>
+            <button type="button" onClick={onPickAvatar} disabled={deleting}>
+              <CameraIcon size={13} />
+              Alterar avatar
+            </button>
+            {avatarUrl ? (
+              <button type="button" onClick={onRemoveAvatar} disabled={deleting}>
+                <TrashIcon size={13} />
+                Remover avatar
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
 
       <div className={drawerStyles.section}>
         <div className={drawerStyles.sectionTitle}>Dados principais</div>

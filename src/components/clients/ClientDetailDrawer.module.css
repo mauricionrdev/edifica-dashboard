@@ -622,3 +622,147 @@
 .drawer::-webkit-scrollbar {
   display: none;
 }
+
+/* Patch 63 — drawer reto, mais executivo e avatar sem ação no cabeçalho */
+.overlay {
+  background: rgba(4, 5, 6, 0.68) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+.drawer {
+  width: min(940px, calc(100vw - 56px)) !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 1px solid var(--line) !important;
+  background: #08090a !important;
+  box-shadow: -28px 0 80px rgba(0, 0, 0, 0.38) !important;
+  grid-template-columns: 184px minmax(0, 1fr) !important;
+  grid-template-rows: 112px minmax(0, 1fr) !important;
+  grid-template-areas:
+    "header header"
+    "tabs body" !important;
+}
+
+.header {
+  min-height: 112px !important;
+  padding: 22px 86px 20px 24px !important;
+  background: #0d0e0f !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.identity {
+  gap: 14px !important;
+}
+
+.avatar {
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 50% !important;
+  border-color: var(--line-strong) !important;
+  background: #151617 !important;
+  color: var(--text-primary) !important;
+  cursor: default !important;
+}
+
+.avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: inherit !important;
+}
+
+.avatarEditable::after,
+.avatarOverlay,
+.avatarActions {
+  display: none !important;
+}
+
+.name {
+  font-size: clamp(24px, 2.15vw, 32px) !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.status {
+  border-radius: 999px !important;
+}
+
+.body {
+  padding: 0 !important;
+  background: #08090a !important;
+}
+
+.section {
+  padding: 18px 22px !important;
+  border-top: 1px solid var(--line) !important;
+  background: #08090a !important;
+}
+
+.section:first-child {
+  border-top: 0 !important;
+}
+
+.sectionTitle {
+  color: var(--text-tertiary) !important;
+}
+
+.input,
+.select,
+.readonly {
+  height: 38px !important;
+  border-radius: 8px !important;
+  border-color: var(--line) !important;
+  background: rgba(255, 255, 255, 0.024) !important;
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--line-strong) !important;
+  box-shadow: none !important;
+}
+
+.projectBtn,
+.iconBtn,
+.btn,
+.projectChoiceCard,
+.projectChoiceModal {
+  border-radius: 0 !important;
+}
+
+.projectBtn,
+.iconBtn,
+.btn {
+  border-radius: 8px !important;
+}
+
+.projectChoiceBackdrop {
+  background: rgba(5, 6, 7, 0.72) !important;
+}
+
+.projectChoiceModal {
+  background: #0f1011 !important;
+  border-color: var(--line) !important;
+}
+
+.projectChoiceCard {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+@media (max-width: 720px) {
+  .drawer {
+    width: 100% !important;
+    border-left: 0 !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto minmax(0, 1fr) !important;
+    grid-template-areas:
+      "header"
+      "tabs"
+      "body" !important;
+  }
+}

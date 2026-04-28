@@ -23,11 +23,9 @@ import {
 import {
   BriefcaseIcon,
   BuildingIcon,
-  CameraIcon,
   CloseIcon,
   CoinsIcon,
   TargetIcon,
-  TrashIcon,
 } from '../ui/Icons.jsx';
 import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
@@ -289,26 +287,14 @@ export default function ClientDetailDrawer({
           </div>
 
           <div className={drawerStyles.identity}>
-            <button
-              type="button"
-              className={`${drawerStyles.avatar} ${
-                canManageAvatar ? drawerStyles.avatarEditable : ''
-              }`.trim()}
+            <div
+              className={drawerStyles.avatar}
               style={{ background: avatarBg }}
-              onClick={() => canManageAvatar && avatarInputRef.current?.click()}
-              disabled={!canManageAvatar}
-              aria-label={
-                canManageAvatar ? 'Alterar foto do cliente' : `Avatar de ${client.name}`
-              }
-              title={canManageAvatar ? 'Clique para alterar a foto' : client.name}
+              aria-label={`Avatar de ${client.name}`}
+              title={client.name}
             >
               {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
-              {canManageAvatar ? (
-                <span className={drawerStyles.avatarOverlay}>
-                  <CameraIcon size={14} />
-                </span>
-              ) : null}
-            </button>
+            </div>
 
             <div className={drawerStyles.identityText}>
               <div className={drawerStyles.nameRow}>
@@ -326,19 +312,6 @@ export default function ClientDetailDrawer({
                   {sl}
                 </span>
               </div>
-
-              {canManageAvatar && avatarUrl ? (
-                <div className={drawerStyles.avatarActions}>
-                  <button
-                    type="button"
-                    onClick={handleRemoveAvatar}
-                    aria-label="Remover foto"
-                    title="Remover foto"
-                  >
-                    <TrashIcon size={13} />
-                  </button>
-                </div>
-              ) : null}
 
               <input
                 ref={avatarInputRef}
@@ -375,8 +348,13 @@ export default function ClientDetailDrawer({
               squads={squads}
               users={users}
               headerFacts={headerFacts}
+              avatarUrl={avatarUrl}
+              avatarBg={avatarBg}
               canEdit={canEditClient}
+              canManageAvatar={canManageAvatar}
               canDelete={admin}
+              onPickAvatar={() => avatarInputRef.current?.click()}
+              onRemoveAvatar={handleRemoveAvatar}
               onUpdated={onUpdated}
               onDeleted={onDeleted}
             />

@@ -101,3 +101,115 @@
     border-bottom: 0;
   }
 }
+
+/* Patch 63 — identidade e avatar gerenciados na visão geral */
+.identityPanel {
+  min-height: 86px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  background: #0b0c0d;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.clientAvatarLarge {
+  width: 58px;
+  height: 58px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  overflow: hidden;
+  background: #151617;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 760;
+  letter-spacing: -0.04em;
+}
+
+.clientAvatarLarge img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
+}
+
+.identityMain {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.identityMain span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.identityMain strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.identityActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.identityActions button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.identityActions button:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-primary);
+}
+
+.identityActions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.overviewFacts {
+  padding: 16px 22px !important;
+  background: #08090a;
+}
+
+@media (max-width: 760px) {
+  .identityPanel {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .identityActions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}

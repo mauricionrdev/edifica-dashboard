@@ -112,3 +112,37 @@
 
   .tabBody { padding: 18px 16px 22px; }
 }
+
+/* Patch 63 — navegação lateral mais rígida para drawer reto */
+.tabsBar {
+  background: #0b0c0d !important;
+  border-right: 1px solid var(--line) !important;
+}
+
+.tab {
+  min-height: 38px !important;
+  border-radius: 0 !important;
+  padding: 0 12px !important;
+  letter-spacing: 0 !important;
+}
+
+.tab:hover,
+.tabActive {
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+.tabActive {
+  border-color: transparent !important;
+}
+
+.tab::before {
+  left: 0 !important;
+  top: 9px !important;
+  height: 20px !important;
+  border-radius: 0 !important;
+}
+
+.tabBody {
+  padding: 0 !important;
+  background: #08090a !important;
+}
