@@ -880,3 +880,65 @@ button:disabled,
   align-items: center !important;
   justify-content: center !important;
 }
+
+
+/* Patch 82 — corrige pills de escopo no modal de permissões */
+.permissionOptionCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 9px;
+  min-height: 68px;
+  padding: 10px 10px;
+}
+
+.permissionOptionCard input {
+  margin-top: 2px;
+}
+
+.permissionOptionCard .permissionText {
+  min-width: 0;
+  padding-right: 4px;
+}
+
+.permissionOptionCard .permissionScopeBadge {
+  align-self: start;
+  justify-self: end;
+  max-width: 116px;
+  min-height: 22px;
+  height: 22px;
+  padding: 0 7px;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 1;
+  text-overflow: ellipsis;
+}
+
+.permissionText strong {
+  display: block;
+  max-width: 100%;
+  padding-right: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.22;
+}
+
+.permissionText small {
+  display: block;
+  max-width: 100%;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1120px) {
+  .permissionOptionCard {
+    grid-template-columns: 14px minmax(0, 1fr);
+  }
+
+  .permissionOptionCard .permissionScopeBadge {
+    grid-column: 2;
+    justify-self: start;
+    max-width: 100%;
+    margin-top: 2px;
+  }
+}
