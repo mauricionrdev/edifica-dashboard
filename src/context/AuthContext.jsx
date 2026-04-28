@@ -8,25 +8,38 @@ import {
   useState,
 } from 'react';
 import * as authApi from '../api/auth.js';
-import { onUnauthorized, ApiError } from '../api/client.js';
+import { ApiError } from '../api/client.js';
 
 const AuthContext = createContext(null);
+
+function isUnauthorized(err) {
+  return err instanceof ApiError && err.status === 401;
+}
 
 export function AuthProvider({ children }) {
   const [state, setState] = useState({
     status: 'loading',
     user: null,
+    error: null,
   });
   const didBootstrapRef = useRef(false);
 
   const clear = useCallback(() => {
-    setState({ status: 'anon', user: null });
+    setState({ status: 'anon', user: null, error: null });
+  }, []);
+
+  const markAuthError = useCallback((err) => {
+    setState((current) => ({
+      status: 'auth_error',
+      user: current.user,
+      error: err instanceof Error ? err : new Error(String(err)),
+    }));
   }, []);
 
   const login = useCallback(async ({ identifier, password }) => {
     await authApi.login({ identifier, password }, { timeoutMs: 15000 });
     const { user } = await authApi.me({ timeoutMs: 10000 });
-    setState({ status: 'authed', user });
+    setState({ status: 'authed', user, error: null });
     return user;
   }, []);
 
@@ -40,17 +53,25 @@ export function AuthProvider({ children }) {
   }, [clear]);
 
   const reloadUser = useCallback(async () => {
+    setState((current) => ({
+      status: 'loading',
+      user: current.user,
+      error: null,
+    }));
+
     try {
       const { user } = await authApi.me({ timeoutMs: 10000 });
-      setState({ status: 'authed', user });
+      setState({ status: 'authed', user, error: null });
       return user;
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
+      if (isUnauthorized(err)) {
         clear();
+        return null;
       }
+      markAuthError(err);
       throw err;
     }
-  }, [clear]);
+  }, [clear, markAuthError]);
 
   useEffect(() => {
     if (didBootstrapRef.current) return;
@@ -61,32 +82,27 @@ export function AuthProvider({ children }) {
       try {
         const { user } = await authApi.me({ timeoutMs: 10000 });
         if (cancelled) return;
-        setState({ status: 'authed', user });
+        setState({ status: 'authed', user, error: null });
       } catch (err) {
         if (cancelled) return;
-        if (err instanceof ApiError && err.status === 401) {
+        if (isUnauthorized(err)) {
           clear();
           return;
         }
-        setState({ status: 'anon', user: null });
+        markAuthError(err);
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [clear]);
-
-  useEffect(() => {
-    return onUnauthorized(() => {
-      clear();
-    });
-  }, [clear]);
+  }, [clear, markAuthError]);
 
   const value = useMemo(
     () => ({
       status: state.status,
       user: state.user,
+      error: state.error,
       login,
       logout,
       reloadUser,

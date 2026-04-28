@@ -12,12 +12,6 @@ export class ApiError extends Error {
   }
 }
 
-const unauthorizedListeners = new Set();
-
-export function onUnauthorized(listener) {
-  unauthorizedListeners.add(listener);
-  return () => unauthorizedListeners.delete(listener);
-}
 
 function createRequestSignal(externalSignal, timeoutMs = DEFAULT_TIMEOUT_MS) {
   if (!timeoutMs || timeoutMs <= 0) {
@@ -107,15 +101,6 @@ async function request(method, path, { body, signal, timeoutMs } = {}) {
   }
 
   if (!res.ok) {
-    if (res.status === 401) {
-      for (const listener of unauthorizedListeners) {
-        try {
-          listener();
-        } catch {
-          // Ignore listener errors.
-        }
-      }
-    }
 
     const message =
       (data && (data.error || data.message)) ||
