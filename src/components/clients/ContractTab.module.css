@@ -106,3 +106,14 @@
     grid-template-columns: minmax(220px, 1.35fr) repeat(3, minmax(108px, 0.7fr));
   }
 }
+
+
+/* Patch 67 — cards compactos com respiro */
+.summary {
+  margin-bottom: 2px;
+}
+
+.summaryCard {
+  min-height: 76px;
+  padding: 14px 16px;
+}

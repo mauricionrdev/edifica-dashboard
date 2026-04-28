@@ -28,7 +28,7 @@
   gap: 18px;
   padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 10px;
   background: #0b0c0d;
 }
 
@@ -98,7 +98,7 @@
 .addBtn {
   min-height: 36px;
   padding: 0 14px;
-  border-radius: 14px;
+  border-radius: 10px;
   border: 1px solid var(--analysis-accent-line);
   background: var(--analysis-accent-soft);
   color: var(--analysis-accent);
@@ -120,7 +120,7 @@
 
 .entry {
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 10px;
   background: #0b0c0d;
   overflow: hidden;
 }
@@ -140,7 +140,7 @@
   min-height: 34px;
   padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 10px;
   background: rgba(255,255,255,0.025);
   color: var(--text-secondary);
   display: inline-flex;
@@ -198,7 +198,7 @@
   min-height: 30px;
   padding: 0 10px;
   border: 1px solid rgba(255, 91, 115, 0.22);
-  border-radius: 12px;
+  border-radius: 8px;
   background: rgba(255, 91, 115, 0.06);
   color: #ff9cad;
   font-family: inherit;
@@ -257,7 +257,7 @@
 .header {
   gap: 14px;
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .eyebrow {
@@ -279,11 +279,11 @@
 .addBtn {
   min-height: 32px;
   padding: 0 12px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .entry {
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .entryHdr {
@@ -295,7 +295,7 @@
 .dateControl {
   min-height: 30px;
   padding: 0 10px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .dateField {
@@ -311,4 +311,26 @@
   min-height: 104px;
   padding: 12px 14px;
   line-height: 1.48;
+}
+
+
+/* Patch 67 — padrão de curvatura e espaçamento */
+.panel {
+  gap: 16px;
+}
+
+.header,
+.entry,
+.dateControl,
+.delBtn,
+.addBtn {
+  border-radius: 10px;
+}
+
+.eyebrow {
+  border-radius: 999px;
+}
+
+.entry + .entry {
+  margin-top: 2px;
 }

@@ -16,7 +16,7 @@
   min-height: 86px;
   padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 10px;
   background: #0b0c0d;
   display: grid;
   gap: 6px;
@@ -70,7 +70,7 @@
   gap: 12px;
   padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 10px;
   background: #0b0c0d;
 }
 
@@ -93,7 +93,7 @@
   height: 30px;
   padding: 0;
   border: 1px solid rgba(255, 91, 115, 0.22);
-  border-radius: 12px;
+  border-radius: 8px;
   background: rgba(255, 91, 115, 0.06);
   color: #ff9cad;
   display: inline-flex;
@@ -114,7 +114,7 @@
   width: 32px;
   min-width: 32px;
   padding: 0;
-  border-radius: 12px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -133,7 +133,7 @@
   line-height: 1.5;
 }
 
-.actionButton { border-radius: 14px; }
+.actionButton { border-radius: 10px; }
 
 @media (max-width: 920px) {
   .panel { padding: 22px; }
@@ -160,7 +160,7 @@
 .summaryCard {
   min-height: 68px;
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: 10px;
   gap: 4px;
 }
 
@@ -183,7 +183,7 @@
 .rowCard {
   gap: 10px;
   padding: 12px;
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .rowHeader {
@@ -196,4 +196,29 @@
 
 .footer {
   gap: 8px;
+}
+
+
+/* Patch 67 — menos curva e mais respiro entre cards */
+.panel {
+  gap: 16px;
+}
+
+.summaryGrid,
+.rows,
+.rowCard {
+  gap: 10px;
+}
+
+.summaryCard,
+.rowCard,
+.removeBtn,
+.iconAction,
+.actionButton {
+  border-radius: 10px;
+}
+
+.summaryCard {
+  min-height: 76px;
+  padding: 14px 16px;
 }

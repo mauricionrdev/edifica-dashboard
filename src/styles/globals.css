@@ -49,3 +49,11 @@ button[class*="Avatar"]:focus-visible {
   outline: 0 !important;
   box-shadow: none !important;
 }
+
+
+/* Patch 67 — tokens visuais operacionais */
+:root {
+  --ed-radius-card: 10px;
+  --ed-radius-control: 10px;
+  --ed-radius-pill: 999px;
+}

@@ -11,7 +11,7 @@
 .summaryStrip,
 .workbench {
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 10px;
   background: #0b0c0d;
   overflow: hidden;
 }
@@ -83,7 +83,7 @@
   height: 42px;
   padding: 0 14px;
   border: 1px solid var(--field-line);
-  border-radius: 14px;
+  border-radius: 10px;
   background: var(--field-bg);
   color: var(--text-tertiary);
   display: inline-flex;
@@ -188,7 +188,7 @@
 }
 
 .pageSizeSelect { min-width: 150px; }
-.pageSizeSelect > button { min-height: 38px; min-width: 150px; border-radius: 14px; }
+.pageSizeSelect > button { min-height: 38px; min-width: 150px; border-radius: 10px; }
 
 .clientTable {
   min-width: 0;
@@ -424,7 +424,7 @@
 
 .searchBox {
   height: 38px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .scopeTab {
@@ -435,7 +435,7 @@
 
 .pageSizeSelect > button {
   min-height: 34px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .clientHeader {
@@ -477,4 +477,33 @@
     min-height: 74px;
     height: 74px;
   }
+}
+
+
+/* Patch 67 — padrão de curvatura e respiro entre blocos */
+.summaryStrip,
+.workbench {
+  border-radius: 10px;
+}
+
+.page {
+  gap: 14px;
+}
+
+.summaryStrip {
+  margin-bottom: 2px;
+}
+
+.searchBox,
+.pageSizeSelect > button,
+.pageButton {
+  border-radius: 10px;
+}
+
+.statusPill,
+.scopeTab,
+.scopeCount,
+.avatar,
+.avatar img {
+  border-radius: 999px;
 }

@@ -66,7 +66,7 @@
 .btn,
 .btnGhost,
 .btnDanger {
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .projectBtn {
@@ -225,7 +225,7 @@
   width: 100%;
   min-height: 48px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 10px;
   background: #0d0e0f;
   color: var(--text-primary);
   font: inherit;
@@ -300,7 +300,7 @@
   align-items: center;
   padding: 16px;
   border: 1px solid rgba(255, 91, 115, 0.18);
-  border-radius: 18px;
+  border-radius: 10px;
   background: rgba(255, 91, 115, 0.045);
 }
 
@@ -332,7 +332,7 @@
 .projectChoiceModal {
   width: min(540px, calc(100% - 48px));
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 10px;
   background: #0b0c0d;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
   overflow: hidden;
@@ -372,7 +372,7 @@
   min-height: 84px;
   padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 10px;
   background: #0d0e0f;
   color: var(--text-secondary);
   text-align: left;
@@ -448,13 +448,13 @@
 .projectBtn {
   min-height: 34px;
   padding: 0 13px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .iconBtn {
   width: 34px;
   height: 34px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .identity {
@@ -514,7 +514,7 @@
 .selectControl :global(input),
 .selectControl :global(select) {
   min-height: 40px;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 13px;
   padding: 0 13px;
 }
@@ -522,18 +522,18 @@
 .btn {
   min-height: 34px;
   padding: 0 13px;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .confirmBar {
   gap: 10px;
   padding: 12px;
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 .projectChoiceModal {
   width: min(500px, calc(100% - 44px));
-  border-radius: 18px;
+  border-radius: 10px;
 }
 
 .projectChoiceHeader {
@@ -549,7 +549,7 @@
 .projectChoiceCard {
   min-height: 72px;
   padding: 13px 15px;
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
 @media (max-width: 1366px) and (min-width: 901px) {
@@ -571,4 +571,48 @@
   .name {
     font-size: clamp(24px, 2vw, 32px);
   }
+}
+
+
+/* Patch 67 — drawer externo reto; elementos internos com pouca curva */
+.drawer {
+  border-radius: 0 !important;
+}
+
+.projectBtn,
+.iconBtn,
+.btn,
+.btnGhost,
+.btnDanger,
+.input,
+.selectControl :global(button),
+.selectControl :global(input),
+.selectControl :global(select),
+.confirmBar,
+.projectChoiceModal,
+.projectChoiceCard {
+  border-radius: 10px;
+}
+
+.section {
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+
+.section + .section {
+  margin-top: 2px;
+}
+
+.grid {
+  gap: 16px 18px;
+}
+
+.field {
+  gap: 7px;
+}
+
+.status,
+.avatar,
+.avatar img {
+  border-radius: 999px;
 }
