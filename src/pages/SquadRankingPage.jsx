@@ -30,7 +30,7 @@ function formatScore(value) {
 function PodiumCard({ row, variant = 'default', maxScore = 1, onOpen }) {
   if (!row) return null;
 
-  const relative = maxScore > 0 ? Math.max(18, (row.performanceScore / maxScore) * 100) : 18;
+  const relative = maxScore > 0 ? Math.max(18, (row.rankingScore / maxScore) * 100) : 18;
   const avatarLabel = row.ownerName || row.squad.name;
 
   return (
@@ -58,16 +58,16 @@ function PodiumCard({ row, variant = 'default', maxScore = 1, onOpen }) {
         <span>{row.ownerName}</span>
       </div>
 
-      <div className={styles.podiumScore}>{formatScore(row.performanceScore)}</div>
+      <div className={styles.podiumScore}>{row.churnDisplay}</div>
 
       <div className={styles.podiumMeta}>
         <div>
-          <span>Meta</span>
-          <strong>{row.metaDisplay}</strong>
+          <span>Meta Lucro</span>
+          <strong>{row.hitRateDisplay}</strong>
         </div>
         <div>
-          <span>Churn</span>
-          <strong>{row.churnDisplay}</strong>
+          <span>MRR</span>
+          <strong>{fmtMoney(row.mrr)}</strong>
         </div>
       </div>
 
@@ -133,6 +133,8 @@ export default function SquadRankingPage() {
       const ownerName = row.ownerName || owner?.name || 'Sem responsável';
       const metaIndex = Number(row.metaIndex) || 0;
       const churnRate = Number(row.churnRate) || 0;
+      const hitRate = Number(row.hitRate) || 0;
+      const rankingScore = Number(row.rankingScore) || 0;
       const displayAvatar = getSquadAvatar(squad) || getUserAvatar(owner) || '';
 
       return {
@@ -144,12 +146,16 @@ export default function SquadRankingPage() {
         clientsWithGoal: Number(row.clientsWithGoal) || 0,
         mrr: Number(row.mrr) || 0,
         metaIndex,
-        hitRate: Number(row.hitRate) || 0,
+        hitRate,
         churnRate,
+        churnTarget: Number(row.churnTarget) || 8,
+        churnOnTarget: row.churnOnTarget !== false,
+        rankingScore,
         performanceScore: Number(row.performanceScore) || 0,
         displayAvatar,
         position: Number(row.position) || index + 1,
         metaDisplay: metaIndex > 0 ? fmtPct(metaIndex) : '—',
+        hitRateDisplay: hitRate > 0 ? fmtPct(hitRate) : '0,00%',
         churnDisplay: churnRate > 0 ? fmtPct(churnRate) : '0,00%',
       };
     });
@@ -159,7 +165,7 @@ export default function SquadRankingPage() {
 
   const podiumRows = useMemo(() => filteredRows.slice(0, 3), [filteredRows]);
   const maxScore = useMemo(
-    () => Math.max(...filteredRows.map((row) => row.performanceScore), 0),
+    () => Math.max(...filteredRows.map((row) => row.rankingScore), 0),
     [filteredRows]
   );
 
@@ -221,9 +227,9 @@ export default function SquadRankingPage() {
             <span>Rank</span>
             <span>Líder</span>
             <span>Squad</span>
-            <span>Meta</span>
             <span>Churn</span>
-            <span>Score</span>
+            <span>Meta Lucro</span>
+            <span>MRR</span>
           </div>
 
           {loading && !filteredRows.length ? (
@@ -231,7 +237,7 @@ export default function SquadRankingPage() {
           ) : filteredRows.length === 0 ? null : (
             <div className={styles.rankList}>
               {filteredRows.map((row) => {
-                const relative = maxScore > 0 ? Math.max(8, (row.performanceScore / maxScore) * 100) : 8;
+                const relative = maxScore > 0 ? Math.max(8, (row.rankingScore / maxScore) * 100) : 8;
                 return (
                   <button
                     key={row.squad.id}
@@ -260,11 +266,11 @@ export default function SquadRankingPage() {
                       <span>{fmtMoney(row.mrr)} MRR</span>
                     </div>
 
-                    <strong className={styles.metricCell}>{row.metaDisplay}</strong>
                     <strong className={styles.metricCell}>{row.churnDisplay}</strong>
+                    <strong className={styles.metricCell}>{row.hitRateDisplay}</strong>
 
                     <div className={styles.scoreCell}>
-                      <strong>{formatScore(row.performanceScore)}</strong>
+                      <strong>{fmtMoney(row.mrr)}</strong>
                       <span className={styles.scoreBar}>
                         <span style={{ width: `${relative}%` }} />
                       </span>

@@ -483,3 +483,18 @@
     font-size: 16px;
   }
 }
+
+
+/* Patch 70 — ranking por Churn e Meta Lucro */
+.podiumScore {
+  font-variant-numeric: tabular-nums;
+}
+
+.podiumMeta div:first-child strong,
+.metricCell {
+  font-variant-numeric: tabular-nums;
+}
+
+.scoreCell strong {
+  font-size: clamp(18px, 1.7vw, 26px);
+}

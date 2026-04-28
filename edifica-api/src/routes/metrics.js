@@ -143,6 +143,8 @@ function dateInMonth(value, monthPrefix) {
   return prefix === monthPrefix;
 }
 
+const CHURN_TARGET_RATE = 8;
+
 function performanceScore({ mrr, metaIndex, churnRate, activeClients }) {
   const safeMrr = Math.max(0, Number(mrr) || 0);
   const safeMeta = Math.max(0, Number(metaIndex) || 0);
@@ -150,6 +152,39 @@ function performanceScore({ mrr, metaIndex, churnRate, activeClients }) {
   const safeActive = Math.max(0, Number(activeClients) || 0);
   if (safeMrr <= 0 || safeActive <= 0 || safeMeta <= 0) return 0;
   return Math.round(safeMrr * (safeMeta / 100) * Math.max(0, 1 - safeChurn / 100));
+}
+
+function churnRankScore(churnRate) {
+  const safeChurn = Math.max(0, Number(churnRate) || 0);
+  if (safeChurn <= CHURN_TARGET_RATE) {
+    return 100 + (safeChurn / CHURN_TARGET_RATE) * 100;
+  }
+  return Math.max(0, 100 - (safeChurn - CHURN_TARGET_RATE) * 12.5);
+}
+
+function compareRankingRows(a, b) {
+  const aChurn = Math.max(0, Number(a.churnRate) || 0);
+  const bChurn = Math.max(0, Number(b.churnRate) || 0);
+  const aOnTarget = aChurn <= CHURN_TARGET_RATE;
+  const bOnTarget = bChurn <= CHURN_TARGET_RATE;
+
+  if (aOnTarget !== bOnTarget) return aOnTarget ? -1 : 1;
+  if (aOnTarget && bOnTarget && bChurn !== aChurn) return bChurn - aChurn;
+  if (!aOnTarget && !bOnTarget && aChurn !== bChurn) return aChurn - bChurn;
+
+  const aHit = Number(a.hitRate) || 0;
+  const bHit = Number(b.hitRate) || 0;
+  if (bHit !== aHit) return bHit - aHit;
+
+  const aMeta = Number(a.metaIndex) || 0;
+  const bMeta = Number(b.metaIndex) || 0;
+  if (bMeta !== aMeta) return bMeta - aMeta;
+
+  const aMrr = Number(a.mrr) || 0;
+  const bMrr = Number(b.mrr) || 0;
+  if (bMrr !== aMrr) return bMrr - aMrr;
+
+  return String(a.squad?.name || '').localeCompare(String(b.squad?.name || ''), 'pt-BR');
 }
 
 function serializeMetric(row, clientMetaLucro = 0) {
@@ -365,7 +400,9 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
 
       const totals = aggregatePortfolioSummary(clientSummaries);
       const metaIndex = Number(totals.monthProgress) || 0;
-      const score = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
+      const hitRate = Number(totals.hitRateMonth) || 0;
+      const legacyPerformanceScore = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
+      const rankingScore = churnRankScore(churnRate);
 
       return {
         squad: {
@@ -387,20 +424,16 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         clientsWithGoal: Number(totals.clientsWithGoal) || 0,
         mrr,
         metaIndex,
-        hitRate: Number(totals.hitRateMonth) || 0,
-        churnRate,
-        performanceScore: score,
+        hitRate,
+        churnTarget: CHURN_TARGET_RATE,
+        churnOnTarget: churnRate <= CHURN_TARGET_RATE,
+        rankingScore,
+        performanceScore: legacyPerformanceScore,
         totals,
       };
-    }).sort((a, b) => {
-      if (b.performanceScore !== a.performanceScore) return b.performanceScore - a.performanceScore;
-      if (b.metaIndex !== a.metaIndex) return b.metaIndex - a.metaIndex;
-      if (a.churnRate !== b.churnRate) return a.churnRate - b.churnRate;
-      if (b.mrr !== a.mrr) return b.mrr - a.mrr;
-      return String(a.squad.name || '').localeCompare(String(b.squad.name || ''), 'pt-BR');
-    }).map((row, index) => ({ ...row, position: index + 1 }));
+    }).sort(compareRankingRows).map((row, index) => ({ ...row, position: index + 1 }));
 
-    res.json({ weekKey, monthPrefix, rows });
+    res.json({ weekKey, monthPrefix, churnTarget: CHURN_TARGET_RATE, rows });
   } catch (err) {
     next(err);
   }
