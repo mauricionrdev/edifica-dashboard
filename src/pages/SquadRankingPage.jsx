@@ -83,6 +83,7 @@ export default function SquadRankingPage() {
   const {
     userDirectory,
     loading: shellLoading,
+    loadingState,
     setPanelHeader,
   } = useOutletContext();
 
@@ -175,7 +176,7 @@ export default function SquadRankingPage() {
     [navigate]
   );
 
-  if (shellLoading && !rankingRows.length) {
+  if ((loadingState?.clients ?? shellLoading) && !rankingRows.length) {
     return (
       <div className={styles.page}>
         <StateBlock variant="loading" title="Carregando ranking" />

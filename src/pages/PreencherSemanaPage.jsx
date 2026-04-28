@@ -499,7 +499,7 @@ const WeekCard = memo(WeekCardBase, (prevProps, nextProps) => {
 });
 
 export default function PreencherSemanaPage() {
-  const { clients, squads, loading: shellLoading, setPanelHeader } = useOutletContext();
+  const { clients, squads, loading: shellLoading, loadingState, setPanelHeader } = useOutletContext();
   const { user } = useAuth();
   const canEditMetrics = canFillMetrics(user);
 
@@ -740,15 +740,11 @@ export default function PreencherSemanaPage() {
     year,
   ]);
 
-  if (shellLoading && clients.length === 0) {
+  if ((loadingState?.clients ?? shellLoading) && clients.length === 0) {
     return (
       <div className="content">
         <div className={styles.workspace}>
-          <StateBlock
-            variant="loading"
-            title="Carregando semana"
-            description="Sincronizando clientes e estrutura operacional da semana."
-          />
+          <StateBlock variant="loading" title="Carregando semana" />
         </div>
       </div>
     );

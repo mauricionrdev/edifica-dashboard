@@ -172,6 +172,7 @@ export default function GdvPage() {
     gdvs,
     userDirectory,
     loading: shellLoading,
+    loadingState,
     refreshGdvs,
     setPanelHeader,
   } = useOutletContext();
@@ -947,7 +948,7 @@ export default function GdvPage() {
     year,
   ]);
 
-  if (shellLoading && (!clients || clients.length === 0)) {
+  if ((loadingState?.clients ?? shellLoading) && (!clients || clients.length === 0)) {
     return (
       <div className={styles.page}>
         <StateBlock variant="loading" title="Carregando carteira GDV" />

@@ -775,6 +775,7 @@ export default function TeamAccessPage() {
     gdvs,
     clients,
     loading,
+    loadingState,
     error,
     refreshSquads,
     refreshGdvs,
@@ -1198,14 +1199,10 @@ export default function TeamAccessPage() {
     );
   }
 
-  if (loading && squadRows.length === 0) {
+  if (((loadingState?.squads ?? loading) || (loadingState?.userDirectory ?? false)) && squadRows.length === 0) {
     return (
       <div className={styles.page}>
-        <StateBlock
-          variant="loading"
-          title="Carregando administração"
-          description="Buscando squads, usuários e governança do ambiente."
-        />
+        <StateBlock variant="loading" title="Carregando administração" />
       </div>
     );
   }

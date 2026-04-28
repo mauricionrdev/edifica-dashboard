@@ -261,6 +261,7 @@ export default function SquadPage() {
     clients,
     userDirectory,
     loading: shellLoading,
+    loadingState,
     setPanelHeader,
     refreshClients,
     refreshSquads,
@@ -858,7 +859,7 @@ export default function SquadPage() {
     ];
   }, [agg, selectedClient, week]);
 
-  if (shellLoading && !squad) {
+  if (((loadingState?.squads ?? shellLoading) || (loadingState?.clients ?? false)) && !squad) {
     return (
       <div className={styles.page}>
         <StateBlock variant="loading" title="Carregando squad" />

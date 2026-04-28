@@ -42,7 +42,7 @@ const SCOPES = [
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
 export default function ClientsPage() {
-  const { clients, squads, userDirectory, loading, error, refreshClients, setPanelHeader } = useOutletContext();
+  const { clients, squads, userDirectory, loading, loadingState, error, refreshClients, setPanelHeader } = useOutletContext();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -212,7 +212,7 @@ export default function ClientsPage() {
     }
   }, [refreshClients]);
 
-  if (loading && (!clients || clients.length === 0)) {
+  if ((loadingState?.clients ?? loading) && (!clients || clients.length === 0)) {
     return (
       <div className={styles.page}>
         <StateBlock variant="loading" title="Carregando clientes" />
