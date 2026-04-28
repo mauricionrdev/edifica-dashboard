@@ -4,61 +4,34 @@
 @import "./reset.css";
 @import "./compat.css";
 
-
-/* Patch 64 — avatar baseline: avatar não recebe borda/focus visual */
-:where([class*="avatar" i]) {
-  outline: 0 !important;
-  box-shadow: none !important;
-}
-
-:where([class*="avatar" i]:focus),
-:where([class*="avatar" i]:focus-visible) {
-  outline: 0 !important;
-  box-shadow: none !important;
-}
-
-:where([class*="avatar" i]) img {
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  object-fit: cover;
-}
-
-/* Patch 65 — regra global de avatar livre */
-[class*="avatar"],
-[class*="Avatar"] {
-  outline: 0 !important;
-  box-shadow: none !important;
-}
-
-[class*="avatar"] img,
-[class*="Avatar"] img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-}
-
-button[class*="avatar"]:focus,
-button[class*="Avatar"]:focus,
-button[class*="avatar"]:focus-visible,
-button[class*="Avatar"]:focus-visible {
-  outline: 0 !important;
-  box-shadow: none !important;
-}
-
-
-/* Patch 67 — tokens visuais operacionais */
 :root {
   --ed-radius-card: 10px;
   --ed-radius-control: 10px;
   --ed-radius-pill: 999px;
 }
 
-/* Patch 68 — padrão global para avatares de Squad */
+:where([class*="avatar" i]) {
+  outline: 0;
+  box-shadow: none;
+}
+
+:where([class*="avatar" i]:focus),
+:where([class*="avatar" i]:focus-visible) {
+  outline: 0;
+  box-shadow: none;
+}
+
+:where([class*="avatar" i]) img {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
 :where(
   [class*="squadLogo"],
   [class*="squadAvatar"],
@@ -66,13 +39,13 @@ button[class*="Avatar"]:focus-visible {
   [class*="squadAvatarEditor"],
   [class*="headerLogo"]
 ) {
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  border-radius: 999px !important;
-  overflow: hidden !important;
-  background: transparent !important;
   aspect-ratio: 1 / 1;
+  border: 0;
+  border-radius: 999px;
+  outline: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background: transparent;
 }
 
 :where(
@@ -96,9 +69,9 @@ button[class*="Avatar"]:focus-visible {
   [class*="squadAvatarEditor"],
   [class*="headerLogo"]
 ):hover {
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
 }
 
 :where(
@@ -107,18 +80,7 @@ button[class*="Avatar"]:focus-visible {
   [class*="SquadAvatar"],
   [class*="squadAvatarEditor"],
   [class*="headerLogo"]
-) img {
-  width: 100% !important;
-  height: 100% !important;
-  display: block !important;
-  object-fit: cover !important;
-  object-position: center !important;
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  border-radius: 999px !important;
-}
-
+) img,
 :where(
   [class*="squadLogo"],
   [class*="squadAvatar"],
@@ -126,8 +88,10 @@ button[class*="Avatar"]:focus-visible {
   [class*="squadAvatarEditor"],
   [class*="headerLogo"]
 ) > span {
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  border-radius: 999px !important;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 999px;
+  outline: 0;
+  box-shadow: none;
 }
