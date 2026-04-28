@@ -498,6 +498,10 @@
   background: var(--accent-amber-soft);
 }
 
+.projectsLoading {
+  padding: 10px 16px 16px;
+}
+
 .projectsEmpty,
 .emptyState,
 .stateBlock {

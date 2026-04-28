@@ -71,13 +71,15 @@ export default function AppShell() {
   }, []);
 
   useEffect(() => {
-    setPanelHeader(routePanelHeader);
-  }, [routePanelHeader]);
-
-  useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     document.body.setAttribute('data-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    setNotificationsOpen(false);
+    setSidebarOpen(false);
+    setPanelHeader(routePanelHeader);
+  }, [routePanelHeader]);
 
   useEffect(() => {
     setClients([]);
@@ -88,10 +90,9 @@ export default function AppShell() {
     setUnreadCount(0);
     setNotificationsOpen(false);
     setSidebarOpen(false);
-    setPanelHeader(routePanelHeader);
     setLoading(status === 'authed');
     setError(null);
-  }, [routePanelHeader, status, user?.id]);
+  }, [status, user?.id]);
 
   const refreshClients = useCallback(async () => {
     if (!canViewClients(user)) {

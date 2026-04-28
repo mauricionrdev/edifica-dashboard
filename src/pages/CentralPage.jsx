@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import ClientDetailDrawer from '../components/clients/ClientDetailDrawer.jsx';
 import Select from '../components/ui/Select.jsx';
+import StateBlock from '../components/ui/StateBlock.jsx';
 import { ProjectBoardIcon } from '../components/ui/Icons.jsx';
 import { listProjects } from '../api/projects.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -337,7 +338,9 @@ function ProjectSummaryPanel({ projects = [], loading = false }) {
       </div>
 
       {loading ? (
-        <div className={styles.projectsEmpty}>Carregando projetos</div>
+        <div className={styles.projectsLoading}>
+          <StateBlock compact variant="loading" title="Carregando projetos" />
+        </div>
       ) : rows.length > 0 ? (
         <div className={styles.projectsList}>
           {rows.map((project, index) => {

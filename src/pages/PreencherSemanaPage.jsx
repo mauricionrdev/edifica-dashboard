@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { clearMetricPresence, getMetric, listMetricPresence, touchMetricPresence, upsertMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
 import { SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
+import StateBlock from '../components/ui/StateBlock.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { canFillMetrics } from '../utils/permissions.js';
@@ -743,7 +744,11 @@ export default function PreencherSemanaPage() {
     return (
       <div className="content">
         <div className={styles.workspace}>
-          <div className={styles.skeletonCard} />
+          <StateBlock
+            variant="loading"
+            title="Carregando semana"
+            description="Sincronizando clientes e estrutura operacional da semana."
+          />
         </div>
       </div>
     );

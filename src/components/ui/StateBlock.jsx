@@ -1,9 +1,9 @@
 import styles from './StateBlock.module.css';
 
 function iconFor(variant) {
-  if (variant === 'loading') return '○';
   if (variant === 'error') return '!';
-  return '•';
+  if (variant === 'empty') return '•';
+  return null;
 }
 
 export default function StateBlock({
@@ -26,7 +26,7 @@ export default function StateBlock({
   return (
     <div className={classes} role={variant === 'error' ? 'alert' : 'status'}>
       <div className={styles.badge} aria-hidden="true">
-        {iconFor(variant)}
+        {variant === 'loading' ? <span className={styles.spinner} /> : iconFor(variant)}
       </div>
       <div className={styles.body}>
         {title ? <div className={styles.title}>{title}</div> : null}
