@@ -686,3 +686,17 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* Patch v96 — rolagem deve ficar no AppShell, não presa na página */
+.workspace {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  overscroll-behavior: auto;
+  scrollbar-width: none;
+}
+
+.workspace::-webkit-scrollbar {
+  display: none;
+}

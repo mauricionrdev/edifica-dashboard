@@ -1409,3 +1409,99 @@
   object-fit: cover;
   object-position: center;
 }
+
+
+
+/* Patch v96 — Squad não quebra ao filtrar */
+.metricGrid {
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+}
+
+.listToolbar {
+  grid-template-columns: minmax(140px, max-content) minmax(220px, 520px);
+}
+
+.searchBox {
+  max-width: 520px;
+}
+
+.clientRow {
+  min-width: 0;
+}
+
+.clientMain,
+.clientStats,
+.clientStatus {
+  min-width: 0;
+}
+
+@media (max-width: 1280px) {
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(168px, 1fr));
+  }
+
+  .listToolbar {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .searchBox {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Patch v96 — avatares compactos estáveis */
+.clientAvatarMini,
+.clientAvatarSmall,
+.clientAvatar {
+  aspect-ratio: 1 / 1;
+  min-width: unset;
+  overflow: hidden;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.clientAvatarMini {
+  width: 28px;
+  height: 28px;
+  font-size: 9px;
+  letter-spacing: -0.01em;
+}
+
+.clientAvatarSmall {
+  width: 30px;
+  height: 30px;
+  font-size: 9px;
+  letter-spacing: -0.01em;
+}
+
+.clientAvatar {
+  width: 34px;
+  height: 34px;
+}
+
+.clientAvatarMini img,
+.clientAvatarSmall img,
+.clientAvatar img {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 999px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
