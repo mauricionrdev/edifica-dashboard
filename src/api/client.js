@@ -2,6 +2,7 @@ const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 export const API_BASE_URL = BASE_URL;
 
 const DEFAULT_TIMEOUT_MS = 15000;
+const RETRYABLE_METHODS = new Set(['GET']);
 
 export class ApiError extends Error {
   constructor(message, { status, body } = {}) {
@@ -12,6 +13,9 @@ export class ApiError extends Error {
   }
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
 
 function createRequestSignal(externalSignal, timeoutMs = DEFAULT_TIMEOUT_MS) {
   if (!timeoutMs || timeoutMs <= 0) {
@@ -49,7 +53,11 @@ function createRequestSignal(externalSignal, timeoutMs = DEFAULT_TIMEOUT_MS) {
   };
 }
 
-async function request(method, path, { body, signal, timeoutMs } = {}) {
+function isRetryableError(err) {
+  return err instanceof ApiError && err.status === 0;
+}
+
+async function requestOnce(method, path, { body, signal, timeoutMs } = {}) {
   if (!BASE_URL) {
     throw new ApiError(
       'VITE_API_URL nao configurada. Copie .env.example para .env.',
@@ -101,7 +109,6 @@ async function request(method, path, { body, signal, timeoutMs } = {}) {
   }
 
   if (!res.ok) {
-
     const message =
       (data && (data.error || data.message)) ||
       `Erro ${res.status} em ${method} ${path}`;
@@ -110,6 +117,30 @@ async function request(method, path, { body, signal, timeoutMs } = {}) {
   }
 
   return data;
+}
+
+async function request(method, path, opts = {}) {
+  const maxRetries =
+    opts.retries ??
+    (RETRYABLE_METHODS.has(method) ? 2 : 0);
+
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+    try {
+      return await requestOnce(method, path, opts);
+    } catch (err) {
+      lastError = err;
+
+      if (!isRetryableError(err) || attempt >= maxRetries || opts.signal?.aborted) {
+        throw err;
+      }
+
+      await sleep(350 + attempt * 650);
+    }
+  }
+
+  throw lastError;
 }
 
 export const api = {

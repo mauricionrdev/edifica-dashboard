@@ -189,8 +189,18 @@ export default function AppShell() {
       setLoading(true);
       setError(null);
       try {
-        await Promise.all([refreshClients(), refreshSquads(), refreshGdvs(), refreshUserDirectory()]);
-        await refreshNotifications();
+        const [clientsResult] = await Promise.allSettled([
+          refreshClients(),
+          refreshSquads(),
+          refreshGdvs(),
+          refreshUserDirectory(),
+        ]);
+
+        refreshNotifications().catch(() => {});
+
+        if (!cancelled && clientsResult.status === 'rejected') {
+          setError(clientsResult.reason instanceof Error ? clientsResult.reason : new Error(String(clientsResult.reason)));
+        }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err : new Error(String(err)));
