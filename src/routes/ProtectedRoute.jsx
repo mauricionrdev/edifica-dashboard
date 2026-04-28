@@ -27,7 +27,7 @@ function LoadingSplash({ mode = 'loading', showRecovery = false, onRetry }) {
 }
 
 export default function ProtectedRoute({ children }) {
-  const { status, reloadUser } = useAuth();
+  const { status, user, reloadUser } = useAuth();
   const location = useLocation();
   const [showRecovery, setShowRecovery] = useState(false);
 
@@ -40,6 +40,10 @@ export default function ProtectedRoute({ children }) {
     const timer = window.setTimeout(() => setShowRecovery(true), 8000);
     return () => window.clearTimeout(timer);
   }, [status]);
+
+  if (status === 'authed' && user) {
+    return children;
+  }
 
   if (status === 'loading') {
     return (
@@ -65,9 +69,5 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  if (status !== 'authed') {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-
-  return children;
+  return <Navigate to="/login" replace state={{ from: location }} />;
 }
