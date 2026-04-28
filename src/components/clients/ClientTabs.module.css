@@ -1,14 +1,13 @@
-
 .tabsBar {
   grid-area: tabs;
   min-width: 0;
   min-height: 0;
-  padding: 18px 12px;
+  padding: 20px 14px;
   border-right: 1px solid var(--line);
   background: #0a0b0c;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -18,40 +17,44 @@
 .tab {
   position: relative;
   width: 100%;
-  min-height: 42px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 0;
+  min-height: 46px;
+  padding: 0 14px 0 16px;
+  border: 1px solid transparent;
+  border-radius: 14px;
   background: transparent;
   color: var(--text-tertiary);
   font: inherit;
   font-size: 13px;
-  font-weight: 620;
+  font-weight: 700;
   text-align: left;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, color .16s ease;
 }
 
 .tab::before {
   content: '';
   position: absolute;
-  left: 0;
-  top: 11px;
-  bottom: 11px;
+  left: 8px;
+  top: 13px;
+  bottom: 13px;
   width: 2px;
+  border-radius: 999px;
   background: transparent;
 }
 
 .tab:hover {
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.026);
+  background: rgba(255,255,255,0.035);
+  border-color: rgba(255,255,255,0.04);
 }
 
 .tabActive {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.052);
+  background: rgba(255,255,255,0.064);
+  border-color: rgba(255,255,255,0.07);
 }
 
 .tabActive::before { background: var(--accent-amber); }
@@ -70,7 +73,11 @@
 
 .emptyState,
 .loadingState {
-  padding: 40px 22px;
+  margin: 28px;
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #0b0c0d;
   color: var(--text-tertiary);
   font-size: 13px;
   line-height: 1.6;
@@ -83,8 +90,8 @@
 
 @media (max-width: 900px) {
   .tabsBar {
-    min-height: 48px;
-    padding: 6px 12px;
+    min-height: 58px;
+    padding: 8px 12px;
     border-right: 0;
     border-bottom: 1px solid var(--line);
     flex-direction: row;
@@ -95,14 +102,14 @@
   .tab {
     width: auto;
     min-width: max-content;
-    min-height: 36px;
+    min-height: 38px;
   }
 
   .tab::before {
-    left: 12px;
-    right: 12px;
+    left: 14px;
+    right: 14px;
     top: auto;
-    bottom: 0;
+    bottom: 4px;
     width: auto;
     height: 2px;
   }

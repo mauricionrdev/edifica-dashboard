@@ -23,3 +23,29 @@
   box-shadow: none !important;
   object-fit: cover;
 }
+
+/* Patch 65 — regra global de avatar livre */
+[class*="avatar"],
+[class*="Avatar"] {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+[class*="avatar"] img,
+[class*="Avatar"] img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+button[class*="avatar"]:focus,
+button[class*="Avatar"]:focus,
+button[class*="avatar"]:focus-visible,
+button[class*="Avatar"]:focus-visible {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
