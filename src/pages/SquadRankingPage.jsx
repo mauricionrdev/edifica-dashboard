@@ -116,12 +116,17 @@ export default function SquadRankingPage() {
   useEffect(() => {
     setPanelHeader({
       title: <strong>Ranking de Squads</strong>,
+      description: null,
       actions: (
         <button type="button" className={styles.headerAction} onClick={fetchRanking}>
           Atualizar
         </button>
       ),
     });
+
+    return () => {
+      setPanelHeader({ title: 'Central', description: null, actions: null });
+    };
   }, [fetchRanking, setPanelHeader]);
 
   const rankingRows = useMemo(() => {
@@ -205,21 +210,6 @@ export default function SquadRankingPage() {
           <div className={styles.heroCopy}>
             <h1>Ranking Squads</h1>
             <p>Performance real dos squads em {MONTHS_FULL[period.m]} de {period.y}.</p>
-          </div>
-
-          <div className={styles.ruleStrip} aria-label="Critérios do ranking">
-            <div>
-              <span>Métrica principal</span>
-              <strong>Churn até 8%</strong>
-            </div>
-            <div>
-              <span>Desempate</span>
-              <strong>Meta Lucro</strong>
-            </div>
-            <div>
-              <span>Referência</span>
-              <strong>MRR</strong>
-            </div>
           </div>
         </header>
 
