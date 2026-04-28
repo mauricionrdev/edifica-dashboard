@@ -28,14 +28,17 @@ export function resolveClientIdentity(client, sourceClients = []) {
       ? sourceClients.find((entry) => entry?.id === client.id)
       : null;
 
+  const avatarUrl = getClientAvatarUrl(client) || getClientAvatarUrl(source);
+
   const merged = {
-    ...(client || {}),
     ...(source || {}),
+    ...(client || {}),
+    avatarUrl,
   };
 
   return {
     client: merged,
-    avatarUrl: getClientAvatarUrl(merged),
-    initials: clientInitials(merged?.name || client?.name || ''),
+    avatarUrl,
+    initials: clientInitials(merged?.name || source?.name || client?.name || ''),
   };
 }

@@ -1468,3 +1468,155 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Patch v98 — correção final Squad */
+.page {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.metricGrid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)) !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+  margin-bottom: 18px !important;
+}
+
+.metricCard {
+  min-width: 0 !important;
+  min-height: 96px !important;
+  padding: 13px 14px !important;
+}
+
+.listToolbar {
+  display: grid !important;
+  grid-template-columns: minmax(140px, max-content) minmax(220px, 520px) !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+  margin-top: 0 !important;
+}
+
+.searchBox {
+  width: min(520px, 100%) !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.listCard,
+.clientList,
+.clientRow,
+.clientMain {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.clientRow {
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 280px) 110px !important;
+  overflow: hidden !important;
+}
+
+.clientStats {
+  min-width: 0 !important;
+  grid-template-columns: minmax(112px, 156px) minmax(82px, 110px) !important;
+  column-gap: 16px !important;
+}
+
+.clientAvatarMini,
+.clientAvatarSmall,
+.clientAvatar {
+  box-sizing: border-box !important;
+  aspect-ratio: 1 / 1 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: var(--text-secondary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  font-weight: 590 !important;
+  letter-spacing: 0 !important;
+  text-indent: 0 !important;
+}
+
+.clientAvatarMini {
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  font-size: 9px !important;
+}
+
+.clientAvatarSmall {
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  font-size: 9px !important;
+}
+
+.clientAvatar {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+}
+
+.clientAvatarMini img,
+.clientAvatarSmall img,
+.clientAvatar img {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+@media (max-width: 1280px) {
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(176px, 1fr)) !important;
+  }
+
+  .listToolbar {
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+  }
+
+  .searchBox {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .clientRow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .clientStats {
+    width: 100% !important;
+    grid-template-columns: repeat(2, minmax(100px, 1fr)) !important;
+    justify-content: stretch !important;
+    row-gap: 10px !important;
+  }
+
+  .clientStatus {
+    justify-content: flex-start !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .metricGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
