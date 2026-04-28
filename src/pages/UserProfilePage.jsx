@@ -41,7 +41,7 @@ function sameName(a, b) {
 }
 
 function getTaskStatusLabel(task) {
-  return task?.status === 'done' ? 'ConcluÃ­da' : 'Aberta';
+  return task?.status === 'done' ? 'Concluída' : 'Aberta';
 }
 
 export default function UserProfilePage() {
@@ -183,8 +183,8 @@ export default function UserProfilePage() {
       <div className={styles.page}>
         <StateBlock
           variant="empty"
-          title="UsuÃ¡rio nÃ£o encontrado"
-          description="Esse perfil nÃ£o estÃ¡ disponÃ­vel no diretÃ³rio carregado."
+          title="Usuário não encontrado"
+          description="Esse perfil não está disponível no diretório carregado."
           action={<Link to="/equipe" className={styles.inlineLink}>Voltar para Equipe</Link>}
         />
       </div>
@@ -207,7 +207,7 @@ export default function UserProfilePage() {
 
             <div className={styles.profileMeta}>
               <span>{profileUser.email || 'Sem e-mail cadastrado'}</span>
-              <span>{formatLocalTime()} horÃ¡rio local</span>
+              <span>{formatLocalTime()} horário local</span>
               <span>{profileUser.active === false ? 'Inativo' : 'Ativo'}</span>
             </div>
 
@@ -317,7 +317,7 @@ export default function UserProfilePage() {
           <section className={styles.panel}>
             <header className={styles.panelHeader}>
               <div className={styles.panelHeading}>
-                <h2>AtuaÃ§Ã£o</h2>
+                <h2>Atuação</h2>
                 <p>Resumo operacional</p>
               </div>
             </header>
@@ -333,14 +333,14 @@ export default function UserProfilePage() {
               </div>
               <div className={styles.infoRow}>
                 <span>Squads</span>
-                <strong>{userSquads.length ? userSquads.map((squad) => squad.name).join(', ') : 'Sem vÃ­nculo'}</strong>
+                <strong>{userSquads.length ? userSquads.map((squad) => squad.name).join(', ') : 'Sem vínculo'}</strong>
               </div>
               <div className={styles.infoRow}>
-                <span>Squads prÃ³prios</span>
+                <span>Squads próprios</span>
                 <strong>{ownedSquads.length ? ownedSquads.map((squad) => squad.name).join(', ') : 'Nenhum'}</strong>
               </div>
               <div className={styles.infoRow}>
-                <span>GDVs prÃ³prios</span>
+                <span>GDVs próprios</span>
                 <strong>{ownedGdvs.length ? ownedGdvs.map((gdv) => gdv.name).join(', ') : 'Nenhum'}</strong>
               </div>
             </div>

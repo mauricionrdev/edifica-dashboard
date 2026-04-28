@@ -183,7 +183,6 @@ export default function ProfilePage() {
       description: null,
       actions: null,
     });
-    return () => setPanelHeader({ title: 'Dashboard', description: null, actions: null });
   }, [setPanelHeader]);
 
   useEffect(() => {
@@ -577,7 +576,7 @@ export default function ProfilePage() {
                           Remover foto
                         </button>
                       </div>
-                      <p>As fotos ajudam o time a reconhecer você na operação.</p>
+                      
                     </div>
                     <input
                       ref={avatarInputRef}
@@ -653,7 +652,7 @@ export default function ProfilePage() {
                       onClick={handleSaveProfile}
                       disabled={savingProfile}
                     >
-                      {savingProfile ? 'Salvando...' : 'Salvar alterações'}
+                      {savingProfile ? 'Salvando' : 'Salvar alterações'}
                     </button>
                   </div>
                 </div>
@@ -663,7 +662,7 @@ export default function ProfilePage() {
                 <div className={styles.settingsSection}>
                   <div className={styles.sectionCopy}>
                     <h3>Conta e segurança</h3>
-                    <p>Atualize a senha de acesso usada para entrar na ferramenta interna.</p>
+                    
                   </div>
 
                   <div className={styles.formGrid}>
@@ -697,7 +696,7 @@ export default function ProfilePage() {
                       onClick={handleChangePassword}
                       disabled={savingPassword || !passwordForm.currentPassword || !passwordForm.newPassword}
                     >
-                      {savingPassword ? 'Atualizando...' : 'Atualizar senha'}
+                      {savingPassword ? 'Atualizando' : 'Atualizar senha'}
                     </button>
                   </div>
                 </div>
@@ -707,7 +706,7 @@ export default function ProfilePage() {
                 <div className={styles.settingsSection}>
                   <div className={styles.sectionCopy}>
                     <h3>Exibição</h3>
-                    <p>Escolha como a interface deve aparecer durante a operação diária.</p>
+                    
                   </div>
 
                   <div className={styles.themeCard}>
