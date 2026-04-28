@@ -6,22 +6,13 @@ import { SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { canFillMetrics } from '../utils/permissions.js';
-import { MONTHS_FULL, fmtInt, fmtPct } from '../utils/format.js';
+import { MONTHS_FULL, fmtDec, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
 import { buildPeriodKey, calcWeek, currentWeek } from '../utils/gdvMetrics.js';
 import { parseLocaleNumber } from '../utils/number.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { clientInitials, colorFromName } from '../utils/clientHelpers.js';
+import { getClientAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import styles from './PreencherSemanaPage.module.css';
-
-const INLINE_FIELDS = [
-  { key: 'investimento', label: 'Investimento', step: '0.01', placeholder: '0' },
-  { key: 'cpl', label: 'CPL atual', step: '0.01', placeholder: '0.00' },
-  { key: 'metaCpl', label: 'Meta CPL', step: '0.01', placeholder: 'meta' },
-  { key: 'volume', label: 'Volume', placeholder: '0' },
-  { key: 'metaVolume', label: 'Meta volume', placeholder: 'meta' },
-  { key: 'fechados', label: 'Fechados', placeholder: '0' },
-  { key: 'metaEmpate', label: 'Meta emp.', placeholder: 'emp.' },
-  { key: 'metaSemanal', label: 'Meta lucro', placeholder: 'luc.' },
-];
 
 const EMPTY_DATA = {
   metaSemanal: '',
@@ -36,6 +27,29 @@ const EMPTY_DATA = {
 };
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
+
+const CARD_LEGEND = [
+  { key: 'weekly', label: 'Preencher toda semana' },
+  { key: 'once', label: 'Preencher uma vez' },
+  { key: 'auto', label: 'Calculado automaticamente' },
+];
+
+const TRAFFIC_FIELDS = [
+  { key: 'cpl', label: 'CPL atual (R$)', kind: 'weekly', placeholder: '0,00' },
+  { key: 'volume', label: 'Volume de leads', kind: 'weekly', placeholder: '0' },
+  { key: 'investimento', label: 'Investimento (R$)', kind: 'once', placeholder: '0,00' },
+  { key: 'metaCpl', label: 'Meta CPL (R$)', kind: 'once', placeholder: 'meta' },
+  { key: 'metaVolume', label: 'Meta volume', kind: 'once', placeholder: 'meta' },
+  { key: 'leadsPrevistos', label: 'Leads previstos (auto)', kind: 'auto', computed: true },
+];
+
+const COMMERCIAL_FIELDS = [
+  { key: 'fechados', label: 'Contratos fechados', kind: 'weekly', placeholder: '0' },
+  { key: 'metaEmpate', label: 'Meta empate (qtd)', kind: 'once', placeholder: 'empate' },
+  { key: 'metaSemanal', label: 'Meta lucro (qtd)', kind: 'once', placeholder: 'lucro' },
+  { key: 'taxa', label: 'Taxa conversão (auto)', kind: 'auto', computed: true },
+  { key: 'contratosPrevistos', label: 'Contratos prev. (auto)', kind: 'auto', computed: true },
+];
 
 function dataFromMetric(metric) {
   const data = metric?.data || {};
@@ -126,12 +140,144 @@ function arePresenceMapsEqual(a = {}, b = {}) {
   return true;
 }
 
-function WeekRowBase({ client, periodKey, week, canEdit, onSaved, presenceByField }) {
+function fieldValue(form, localCalc, key) {
+  if (key === 'leadsPrevistos') return localCalc.lp > 0 ? fmtInt(Math.round(localCalc.lp)) : '—';
+  if (key === 'taxa') return localCalc.taxa > 0 ? fmtPct(localCalc.taxa) : '—';
+  if (key === 'contratosPrevistos') return localCalc.cp > 0 ? fmtInt(Math.round(localCalc.cp)) : '—';
+
+  const raw = form[key] ?? '';
+  return raw === '' ? '' : raw;
+}
+
+function buildCardSummary({ loaded, goal, fechados, localCalc, form }) {
+  const hasManualData = ['cpl', 'volume', 'investimento', 'fechados', 'metaSemanal', 'metaEmpate', 'metaVolume', 'metaCpl']
+    .some((key) => String(form[key] || '').trim() !== '');
+
+  if (!loaded) {
+    return { tone: 'neutral', label: 'Carregando' };
+  }
+
+  if (!hasManualData && localCalc.cp <= 0 && localCalc.lp <= 0) {
+    return { tone: 'neutral', label: 'Sem dados' };
+  }
+
+  if (goal <= 0) {
+    return { tone: 'warning', label: 'Sem meta' };
+  }
+
+  if (fechados >= goal) {
+    return { tone: 'good', label: 'Meta batida' };
+  }
+
+  if (localCalc.cp >= goal) {
+    return { tone: 'good', label: 'Vai bater meta' };
+  }
+
+  if (fechados > 0 || localCalc.cp > 0 || localCalc.lp > 0) {
+    return { tone: 'warning', label: 'Em andamento' };
+  }
+
+  return { tone: 'risk', label: 'Em risco' };
+}
+
+function GroupLegend() {
+  return (
+    <div className={styles.legendRow}>
+      {CARD_LEGEND.map((item) => (
+        <span key={item.key} className={`${styles.legendPill} ${styles[`legendPill_${item.key}`]}`}>
+          <i aria-hidden="true" />
+          {item.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function MetricField({
+  client,
+  field,
+  value,
+  canEdit,
+  onChange,
+  onFocus,
+  onBlur,
+  presenceEntries,
+}) {
+  const presenceNames = Array.isArray(presenceEntries) ? presenceEntries.map((entry) => entry.userName).filter(Boolean) : [];
+  const isComputed = field.computed;
+  const rootClass = [styles.fieldCard, styles[`fieldCard_${field.kind}`]].join(' ');
+
+  return (
+    <div className={rootClass}>
+      <div className={styles.fieldHeader}>
+        <span>{field.label}</span>
+        {presenceNames.length > 0 ? (
+          <span
+            className={styles.presenceHint}
+            title={`${presenceNames.join(', ')} editando`}
+            aria-label={`${presenceNames.join(', ')} editando`}
+          >
+            {presenceNames.length}
+          </span>
+        ) : null}
+      </div>
+
+      {isComputed ? (
+        <div className={`${styles.fieldValue} ${styles.fieldValue_readonly}`}>{value || '—'}</div>
+      ) : (
+        <input
+          type="text"
+          inputMode="decimal"
+          value={value}
+          onChange={(event) => onChange(field.key, event.target.value)}
+          onFocus={() => {
+            if (canEdit) onFocus(field.key);
+          }}
+          onBlur={() => onBlur(field.key)}
+          className={styles.fieldInput}
+          placeholder={field.placeholder}
+          disabled={!canEdit}
+          aria-label={`${field.label} de ${client.name}`}
+        />
+      )}
+    </div>
+  );
+}
+
+function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canEdit, setField, startPresence, handleBlur, presenceByField }) {
+  return (
+    <section className={styles.segmentBlock}>
+      <header className={styles.segmentHeader}>
+        <span className={styles.segmentBadge}>{shortLabel}</span>
+        <strong>{title}</strong>
+      </header>
+
+      <div className={styles.segmentGrid}>
+        {fields.map((field) => (
+          <MetricField
+            key={field.key}
+            client={client}
+            field={field}
+            value={fieldValue(form, localCalc, field.key)}
+            canEdit={canEdit && !field.computed}
+            onChange={setField}
+            onFocus={startPresence}
+            onBlur={handleBlur}
+            presenceEntries={presenceByField?.[field.key] || []}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WeekCardBase({ client, periodKey, week, canEdit, onSaved, presenceByField }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(EMPTY_DATA);
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState('idle');
   const [serverComputed, setServerComputed] = useState({});
+  const [avatarVersion, setAvatarVersion] = useState(0);
   const loadGenRef = useRef(0);
   const saveTimerRef = useRef(null);
   const mountedRef = useRef(true);
@@ -214,6 +360,11 @@ function WeekRowBase({ client, periodKey, week, canEdit, onSaved, presenceByFiel
   }, [client.id, periodKey, stopPresence]);
 
   useEffect(() => {
+    const unsubscribe = subscribeAvatarChange(() => setAvatarVersion((value) => value + 1));
+    return () => unsubscribe?.();
+  }, []);
+
+  useEffect(() => {
     mountedRef.current = true;
     const token = ++loadGenRef.current;
     setLoaded(false);
@@ -235,6 +386,7 @@ function WeekRowBase({ client, periodKey, week, canEdit, onSaved, presenceByFiel
         }
         latestFormRef.current = EMPTY_DATA;
         lastSavedRef.current = JSON.stringify(sanitizeForSave(EMPTY_DATA));
+        setForm(EMPTY_DATA);
         setLoaded(true);
       });
 
@@ -283,72 +435,76 @@ function WeekRowBase({ client, periodKey, week, canEdit, onSaved, presenceByFiel
 
   const goal = localCalc.mLuc > 0 ? localCalc.mLuc : parseLocaleNumber(form.metaSemanal, 0);
   const fechados = parseLocaleNumber(form.fechados, 0);
-  const pct = goal > 0 ? Math.min((fechados / goal) * 100, 999) : 0;
-  const tone = !loaded ? 'neutral' : goal === 0 ? 'neutral' : pct >= 100 ? 'good' : pct >= 50 ? 'warning' : 'risk';
-  const statusLabel = !loaded ? '...' : goal === 0 ? 'Sem meta' : pct >= 100 ? 'Meta batida' : pct >= 50 ? 'Em andamento' : 'Em risco';
+  const summary = buildCardSummary({ loaded, goal, fechados, localCalc, form });
+  const avatarUrl = getClientAvatar(client);
+  const ownerLabel = [client.squadName, client.gdvName || client.gestor].filter(Boolean).join(' · ');
+
+  const handleBlur = useCallback(
+    (fieldKey) => {
+      void flushPendingSave();
+      void stopPresence(fieldKey);
+    },
+    [flushPendingSave, stopPresence]
+  );
 
   return (
-    <article className={styles.inlineRow}>
-      <div className={styles.clientCell}>
-        <button type="button" className={styles.clientBadge} aria-label={`${client.name} semana ${week}`}>
-          {String(client.name || '?').trim().charAt(0).toUpperCase()}
-        </button>
-        <div className={styles.clientMeta}>
-          <strong>{client.name}</strong>
-          <small>{client.squadName || '—'}</small>
+    <article className={styles.clientCard}>
+      <div className={styles.clientTopbar}>
+        <div className={styles.clientIdentity}>
+          <div
+            className={styles.clientAvatar}
+            style={avatarUrl ? undefined : { background: colorFromName(client.name) }}
+            data-avatar-version={avatarVersion}
+          >
+            {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
+          </div>
+
+          <div className={styles.clientText}>
+            <strong>{client.name}</strong>
+            <span>{ownerLabel || 'Sem responsável definido'}</span>
+          </div>
+        </div>
+
+        <div className={styles.clientTopbarRight}>
+          <span className={`${styles.progressPill} ${styles[`progressPill_${summary.tone}`]}`}>{summary.label}</span>
+          <StatusChip status={status} />
         </div>
       </div>
 
-      {INLINE_FIELDS.map((field) => (
-        <div key={field.key} className={styles.metricCell}>
-          {Array.isArray(presenceByField?.[field.key]) && presenceByField[field.key].length > 0 ? (
-            <span
-              className={styles.presenceHint}
-              title={`${presenceByField[field.key].map((entry) => entry.userName).join(', ')} editando`}
-              aria-label={`${presenceByField[field.key].map((entry) => entry.userName).join(', ')} editando`}
-            >
-              💬
-            </span>
-          ) : null}
-          <input
-            type="text"
-            inputMode="decimal"
-            value={form[field.key]}
-            onChange={(event) => setField(field.key, event.target.value)}
-            onFocus={() => {
-              if (canEdit) void startPresence(field.key);
-            }}
-            onBlur={() => {
-              void flushPendingSave();
-              void stopPresence(field.key);
-            }}
-            className={styles.metricInput}
-            placeholder={field.placeholder}
-            disabled={!canEdit}
-            aria-label={`${field.label} de ${client.name}`}
-          />
-        </div>
-      ))}
+      <div className={styles.clientSegments}>
+        <SegmentBlock
+          title="Tráfego"
+          shortLabel="T"
+          fields={TRAFFIC_FIELDS}
+          client={client}
+          form={form}
+          localCalc={localCalc}
+          canEdit={canEdit}
+          setField={setField}
+          startPresence={startPresence}
+          handleBlur={handleBlur}
+          presenceByField={presenceByField}
+        />
 
-      <div className={styles.computedCell}>
-        <span className={styles.computedValue}>{localCalc.lp > 0 ? fmtInt(Math.round(localCalc.lp)) : '—'}</span>
-      </div>
-      <div className={styles.computedCell}>
-        <span className={styles.computedValue}>{localCalc.taxa > 0 ? fmtPct(localCalc.taxa) : '—'}</span>
-      </div>
-      <div className={styles.computedCell}>
-        <span className={styles.computedValue}>{localCalc.cp > 0 ? fmtInt(Math.round(localCalc.cp)) : '—'}</span>
-      </div>
-
-      <div className={styles.statusCell}>
-        <span className={`${styles.statusPill} ${styles[`statusPill_${tone}`]}`}>{statusLabel}</span>
-        <StatusChip status={status} />
+        <SegmentBlock
+          title="Comercial"
+          shortLabel="C"
+          fields={COMMERCIAL_FIELDS}
+          client={client}
+          form={form}
+          localCalc={localCalc}
+          canEdit={canEdit}
+          setField={setField}
+          startPresence={startPresence}
+          handleBlur={handleBlur}
+          presenceByField={presenceByField}
+        />
       </div>
     </article>
   );
 }
 
-const WeekRow = memo(WeekRowBase, (prevProps, nextProps) => {
+const WeekCard = memo(WeekCardBase, (prevProps, nextProps) => {
   return (
     prevProps.client === nextProps.client &&
     prevProps.periodKey === nextProps.periodKey &&
@@ -414,7 +570,11 @@ export default function PreencherSemanaPage() {
       );
     }
 
-    return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name), 'pt-BR'));
+    return [...list].sort((a, b) => {
+      const squadCompare = String(a.squadName || '').localeCompare(String(b.squadName || ''), 'pt-BR');
+      if (squadCompare !== 0) return squadCompare;
+      return String(a.name).localeCompare(String(b.name), 'pt-BR');
+    });
   }, [clientFilter, clients, query, squadFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredClients.length / pageSize));
@@ -423,6 +583,19 @@ export default function PreencherSemanaPage() {
     const start = (safePage - 1) * pageSize;
     return filteredClients.slice(start, start + pageSize);
   }, [filteredClients, page, pageSize, totalPages]);
+
+  const groupedVisibleClients = useMemo(() => {
+    const map = new Map();
+    visibleClients.forEach((client) => {
+      const key = client.squadId || client.squad_id || client.squadName || 'sem-squad';
+      const label = client.squadName || 'Sem squad';
+      if (!map.has(key)) {
+        map.set(key, { key, label, clients: [] });
+      }
+      map.get(key).clients.push(client);
+    });
+    return Array.from(map.values());
+  }, [visibleClients]);
 
   useEffect(() => {
     if (!visibleClients.length) {
@@ -614,13 +787,13 @@ export default function PreencherSemanaPage() {
   return (
     <div className="content">
       <div className={styles.workspace}>
-        <section className={styles.tablePanel}>
-          <div className={styles.tableHeader}>
-            <div className={styles.tableTitleBlock}>
+        <section className={styles.cardsPanel}>
+          <div className={styles.panelHeader}>
+            <div className={styles.panelTitleBlock}>
               <strong>Preenchimento operacional da semana</strong>
-              <p>Carteira da semana com foco só no que precisa ser alimentado.</p>
+              <p>Carteira por cliente em cards, com leitura rápida e foco no preenchimento.</p>
             </div>
-            <div className={styles.tableHeaderActions}>
+            <div className={styles.panelHeaderActions}>
               <span>{filteredClients.length} cliente(s)</span>
               <Select
                 className={styles.pageSizeSelect}
@@ -637,54 +810,54 @@ export default function PreencherSemanaPage() {
             </div>
           </div>
 
-          <label className={styles.searchField}>
-            <span>Buscar na lista</span>
-            <div className={styles.searchControl}>
-              <SearchIcon size={15} aria-hidden="true" />
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Cliente, squad, GDV ou gestor"
-              />
-            </div>
-          </label>
-
-          <div className={styles.inlineTable}>
-            <div className={styles.inlineHeader}>
-              <span className={styles.colClient}>Cliente</span>
-              <span>Investimento</span>
-              <span>CPL atual</span>
-              <span>Meta CPL</span>
-              <span>Volume</span>
-              <span>Meta volume</span>
-              <span>Fechados</span>
-              <span>Meta emp.</span>
-              <span>Meta lucro</span>
-              <span>Leads prev.</span>
-              <span>Taxa conv.</span>
-              <span>Prev. contr.</span>
-              <span>Status</span>
-            </div>
-
-            {filteredClients.length === 0 ? (
-              <div className={styles.emptyTableState}>
-                <h2>Nenhum resultado</h2>
-              </div>
-            ) : (
-              visibleClients.map((client) => (
-                <WeekRow
-                  key={`${client.id}-${periodKey}`}
-                  client={client}
-                  periodKey={periodKey}
-                  week={week}
-                  canEdit={canEditMetrics}
-                  onSaved={() => {}}
-                  presenceByField={presenceByClientField[client.id] || {}}
+          <div className={styles.toolbarRow}>
+            <label className={styles.searchField}>
+              <span>Buscar na lista</span>
+              <div className={styles.searchControl}>
+                <SearchIcon size={15} aria-hidden="true" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Cliente, squad, GDV ou gestor"
                 />
-              ))
-            )}
+              </div>
+            </label>
+
+            <GroupLegend />
           </div>
+
+          {filteredClients.length === 0 ? (
+            <div className={styles.emptyTableState}>
+              <h2>Nenhum resultado</h2>
+              <p>Tente ajustar os filtros ou a busca para encontrar outros clientes.</p>
+            </div>
+          ) : (
+            <div className={styles.groupsWrap}>
+              {groupedVisibleClients.map((group) => (
+                <section key={group.key} className={styles.squadGroup}>
+                  <header className={styles.squadGroupHeader}>
+                    <strong>{group.label}</strong>
+                    <span>{group.clients.length} cliente(s)</span>
+                  </header>
+
+                  <div className={styles.cardsStack}>
+                    {group.clients.map((client) => (
+                      <WeekCard
+                        key={`${client.id}-${periodKey}`}
+                        client={client}
+                        periodKey={periodKey}
+                        week={week}
+                        canEdit={canEditMetrics}
+                        onSaved={() => {}}
+                        presenceByField={presenceByClientField[client.id] || {}}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
 
           {filteredClients.length > pageSize ? (
             <div className={styles.pagination}>
