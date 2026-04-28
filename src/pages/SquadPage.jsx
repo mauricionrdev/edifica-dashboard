@@ -36,7 +36,6 @@ import {
 import { resolveClientIdentity } from '../utils/clientIdentity.js';
 import { matchesAnySearch } from '../utils/search.js';
 import UserPicker from '../components/users/UserPicker.jsx';
-import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
