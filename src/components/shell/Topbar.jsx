@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BellIcon, ChecklistIcon, MenuIcon, MoonIcon, PanelLeftIcon, RotateCcwIcon, SunIcon } from '../ui/Icons.jsx';
 import Button from '../ui/Button.jsx';
+import LoadingIcon from '../ui/LoadingIcon.jsx';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
 import styles from './Topbar.module.css';
 
@@ -203,7 +204,7 @@ export default function Topbar({
 
                 <div className={styles.notificationsList}>
                   {notificationsLoading && notifications.length === 0 ? (
-                    <div className={styles.notificationsEmpty}>Carregando notificações</div>
+                    <div className={styles.notificationsEmpty}><LoadingIcon size="sm" label="Carregando notificações" /><span>Carregando notificações</span></div>
                   ) : notifications.length === 0 ? (
                     <div className={styles.notificationsEmpty}>Nenhuma notificação</div>
                   ) : (

@@ -1,9 +1,11 @@
+import LoadingIcon from './LoadingIcon.jsx';
 import styles from './StateBlock.module.css';
 
 function iconFor(variant) {
   if (variant === 'error') return '!';
+  if (variant === 'warning') return '!';
   if (variant === 'empty') return '•';
-  return null;
+  return '•';
 }
 
 export default function StateBlock({
@@ -26,7 +28,7 @@ export default function StateBlock({
   return (
     <div className={classes} role={variant === 'error' ? 'alert' : 'status'}>
       <div className={styles.badge} aria-hidden="true">
-        {variant === 'loading' ? <span className={styles.spinner} /> : iconFor(variant)}
+        {variant === 'loading' ? <LoadingIcon size={compact ? 'sm' : 'md'} /> : iconFor(variant)}
       </div>
       <div className={styles.body}>
         {title ? <div className={styles.title}>{title}</div> : null}

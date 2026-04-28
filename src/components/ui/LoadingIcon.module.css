@@ -1,0 +1,50 @@
+.icon {
+  --loading-size: 14px;
+  --loading-border: 2px;
+  width: var(--loading-size);
+  height: var(--loading-size);
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--accent-amber);
+}
+
+.icon > span {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  border: var(--loading-border) solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--accent-amber);
+  border-right-color: rgba(245, 184, 0, 0.46);
+  background: transparent;
+  animation: loading-spin 0.86s linear infinite;
+}
+
+.xs {
+  --loading-size: 11px;
+  --loading-border: 1.5px;
+}
+
+.sm {
+  --loading-size: 12px;
+  --loading-border: 1.8px;
+}
+
+.md {
+  --loading-size: 14px;
+  --loading-border: 2px;
+}
+
+.lg {
+  --loading-size: 18px;
+  --loading-border: 2px;
+}
+
+@keyframes loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

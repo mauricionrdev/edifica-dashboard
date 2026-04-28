@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { ApiError } from '../api/client.js';
 import { getSafeRedirectPath } from '../utils/permissions.js';
 import { createAccessRequest } from '../api/accessRequests.js';
+import LoadingIcon from '../components/ui/LoadingIcon.jsx';
 import styles from './LoginPage.module.css';
 
 const EMPTY_RESET = { identifier: '', email: '', note: '' };
@@ -185,7 +186,7 @@ export default function LoginPage() {
             {error ? <p className={styles.errorMessage} role="alert">{error}</p> : null}
 
             <button className={styles.submitButton} type="submit" disabled={loading}>
-              {loading ? 'Validando...' : 'Entrar'}
+              {loading ? (<> <LoadingIcon size="sm" label="Validando acesso" /> Validando</>) : 'Entrar'}
             </button>
 
             <div className={styles.secondaryActions}>
@@ -272,7 +273,7 @@ export default function LoginPage() {
             <div className={styles.modalActions}>
               <button type="button" onClick={closeModal} disabled={requestLoading}>Cancelar</button>
               <button type="button" onClick={handleSubmitRequest} disabled={requestLoading}>
-                {requestLoading ? 'Enviando...' : 'Registrar'}
+                {requestLoading ? (<> <LoadingIcon size="sm" label="Enviando solicitação" /> Enviando</>) : 'Registrar'}
               </button>
             </div>
           </div>

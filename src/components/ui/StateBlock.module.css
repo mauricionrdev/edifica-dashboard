@@ -47,9 +47,9 @@
 }
 
 .title {
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 590;
-  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
@@ -58,9 +58,9 @@
 }
 
 .description {
+  color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1.55;
-  color: var(--text-tertiary);
 }
 
 .compact .description {
@@ -69,16 +69,6 @@
 
 .actions {
   padding-top: 6px;
-}
-
-.spinner {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  border-top-color: rgba(245, 184, 0, 0.9);
-  border-right-color: rgba(245, 184, 0, 0.46);
-  animation: spin 0.9s linear infinite;
 }
 
 .loading {
@@ -98,7 +88,8 @@
   background: linear-gradient(180deg, rgba(239, 68, 68, 0.04), rgba(255, 255, 255, 0.015));
 }
 
-.error .badge {
+.error .badge,
+.warning .badge {
   color: #ffb1b1;
   background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.18);
@@ -108,13 +99,4 @@
   color: var(--text-tertiary);
   background: rgba(255, 255, 255, 0.025);
   border-color: var(--line-subtle);
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

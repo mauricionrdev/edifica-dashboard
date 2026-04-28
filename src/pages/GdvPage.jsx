@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { isAdminUser, isSuperAdmin, roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
+import LoadingIcon from '../components/ui/LoadingIcon.jsx';
 import { CloseIcon, RotateCcwIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
@@ -755,7 +756,9 @@ export default function GdvPage() {
           title={admin && activeGdvRecord?.id ? 'Clique para trocar a imagem' : gdvHeaderName}
         >
           {logoUrl ? <img src={logoUrl} alt="" /> : <span>{gdvInitials(activeGdvName || gdvHeaderName)}</span>}
-          {admin && activeGdvRecord?.id ? <em>{uploadingLogo ? '...' : 'Trocar'}</em> : null}
+          {admin && activeGdvRecord?.id ? (
+            <em>{uploadingLogo ? <LoadingIcon size="xs" label="Atualizando avatar" /> : 'Trocar'}</em>
+          ) : null}
         </button>
 
         <div className={styles.headerTitleText}>
@@ -910,7 +913,7 @@ export default function GdvPage() {
         </button>
 
         {fetchingKey === periodKey ? (
-          <span title="Carregando métricas" className={styles.inlineSpinner} aria-label="Carregando" />
+          <LoadingIcon size="sm" label="Carregando métricas" />
         ) : null}
       </div>
     );

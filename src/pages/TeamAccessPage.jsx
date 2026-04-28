@@ -1423,7 +1423,7 @@ export default function TeamAccessPage() {
                   </thead>
                   <tbody>
                     {usersLoading && filteredUserRows.length === 0 ? (
-                      <tr><td colSpan="5"><div className={styles.tableEmpty}>Carregando usuários...</div></td></tr>
+                      <tr><td colSpan="5"><StateBlock compact variant="loading" title="Carregando usuários" /></td></tr>
                     ) : null}
                     {!usersLoading && filteredUserRows.map((entry) => (
                       <tr key={entry.id}>
@@ -1686,7 +1686,7 @@ export default function TeamAccessPage() {
                   </thead>
                   <tbody>
                     {requestsLoading && requestRows.length === 0 ? (
-                      <tr><td colSpan="5"><div className={styles.tableEmpty}>Carregando solicitações...</div></td></tr>
+                      <tr><td colSpan="5"><StateBlock compact variant="loading" title="Carregando solicitações" /></td></tr>
                     ) : null}
                     {!requestsLoading && requestRows.map((entry) => (
                       <tr key={entry.id}>
@@ -1811,7 +1811,7 @@ export default function TeamAccessPage() {
                   </thead>
                   <tbody>
                     {auditLoading && auditLogs.length === 0 ? (
-                      <tr><td colSpan="5"><div className={styles.tableEmpty}>Carregando auditoria...</div></td></tr>
+                      <tr><td colSpan="5"><StateBlock compact variant="loading" title="Carregando auditoria" /></td></tr>
                     ) : null}
                     {!auditLoading && auditLogs.map((entry) => (
                       <tr key={entry.id}>

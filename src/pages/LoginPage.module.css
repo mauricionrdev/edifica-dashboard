@@ -175,6 +175,10 @@
   border-radius: var(--radius-2);
   background: var(--accent-amber);
   color: #101010;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-size: 13px;
   font-weight: 800;
 }
@@ -303,6 +307,10 @@
   min-height: 34px;
   padding: 0 13px;
   border-radius: var(--radius-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-size: 12px;
   font-weight: 700;
 }

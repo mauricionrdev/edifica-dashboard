@@ -10,6 +10,7 @@ import {
   RotateCcwIcon,
   SearchIcon,
   Select,
+  LoadingIcon,
   StateBlock,
   TrophyIcon,
   UsersIcon,
@@ -608,7 +609,9 @@ export default function SquadPage() {
           title={canManageSquads ? 'Clique para trocar o logotipo' : squad.name}
         >
           {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(squad.name)}</span>}
-          {canManageSquads ? <em>{uploadingLogo ? '...' : 'Trocar'}</em> : null}
+          {canManageSquads ? (
+            <em>{uploadingLogo ? <LoadingIcon size="xs" label="Atualizando avatar" /> : 'Trocar'}</em>
+          ) : null}
         </button>
 
         <div className={styles.headerTitleText}>
@@ -715,7 +718,7 @@ export default function SquadPage() {
           <TrophyIcon size={14} aria-hidden="true" />
         </Link>
 
-        {metricsLoading ? <span className={styles.inlineSpinner} aria-label="Carregando métricas" /> : null}
+        {metricsLoading ? <LoadingIcon size="sm" label="Carregando métricas" /> : null}
       </div>
     );
 
