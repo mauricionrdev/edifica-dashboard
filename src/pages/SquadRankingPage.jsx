@@ -206,6 +206,21 @@ export default function SquadRankingPage() {
             <h1>Ranking Squads</h1>
             <p>Performance real dos squads em {MONTHS_FULL[period.m]} de {period.y}.</p>
           </div>
+
+          <div className={styles.ruleStrip} aria-label="Critérios do ranking">
+            <div>
+              <span>Métrica principal</span>
+              <strong>Churn até 8%</strong>
+            </div>
+            <div>
+              <span>Desempate</span>
+              <strong>Meta Lucro</strong>
+            </div>
+            <div>
+              <span>Referência</span>
+              <strong>MRR</strong>
+            </div>
+          </div>
         </header>
 
         <section className={styles.podiumSection}>
