@@ -983,400 +983,116 @@
 }
 
 
-
-/* Patch 59 — modal de configuração do squad */
-.modalBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 220;
-  padding: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(6, 8, 10, 0.56);
-  backdrop-filter: blur(4px);
-}
-
-.modalCard {
-  width: min(760px, calc(100vw - 56px));
-  max-height: min(760px, calc(100vh - 56px));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  background: rgba(12, 13, 15, 0.92);
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-}
-
-.modalHead {
-  min-height: 74px;
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.modalHead span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.modalHead h3 {
-  margin: 6px 0 0;
-  color: var(--text-primary);
-  font-size: 20px;
-  line-height: 1.1;
-  font-weight: 720;
-  letter-spacing: -0.04em;
-}
-
-.modalClose {
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-secondary);
-  font-size: 20px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.modalClose:hover {
-  border-color: var(--line-strong);
-  color: var(--text-primary);
-}
-
-.modalBody {
-  min-height: 0;
-  padding: 18px 22px;
-  overflow: auto;
-  display: grid;
-  gap: 14px;
-  scrollbar-width: none;
-}
-
-.modalBody::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-.squadIdentityPanel {
-  display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.018);
-}
-
-.squadAvatarEditor {
-  width: 74px;
-  height: 74px;
-  padding: 0;
-  border: 1px solid rgba(245, 184, 0, 0.22);
-  border-radius: 50%;
-  background: rgba(245, 184, 0, 0.08);
-  color: var(--accent);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.squadAvatarEditor img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.squadAvatarEditor span {
-  color: var(--accent);
-  font-size: 18px;
-  font-weight: 780;
-  letter-spacing: -0.05em;
-}
-
-.squadAvatarEditor:hover,
-.squadAvatarEditor:focus-visible {
-  border-color: rgba(245, 184, 0, 0.38);
-  background: rgba(245, 184, 0, 0.12);
-  outline: none;
-  box-shadow: none;
-}
-
-.squadIdentityFields {
-  min-width: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.modalField {
-  min-width: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.modalField > span {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 680;
-}
-
-.modalField input {
-  width: 100%;
-  min-height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.024);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 590;
-  padding: 0 12px;
-  outline: none;
-}
-
-.modalField input:focus {
-  border-color: var(--line-strong);
-  box-shadow: none;
-}
-
-.modalActions,
-.modalActionsInline {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.modalActions {
-  justify-content: flex-end;
-  padding: 14px 22px;
-  border-top: 1px solid var(--line);
-}
-
-.modalGhostBtn,
-.modalPrimaryBtn {
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 680;
-  cursor: pointer;
-}
-
-.modalPrimaryBtn {
-  border-color: rgba(245, 184, 0, 0.42);
-  background: rgba(245, 184, 0, 0.14);
-  color: #ffe58a;
-}
-
-.modalGhostBtn:hover,
-.modalPrimaryBtn:hover {
-  border-color: var(--line-strong);
-  color: var(--text-primary);
-}
-
-@media (max-width: 760px) {
-  .modalBackdrop {
-    padding: 14px;
-  }
-
-  .squadIdentityPanel {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Patch 63 — avatar do squad sempre redondo e preenchido */
-.squadAvatarEditor {
-  width: 74px !important;
-  height: 74px !important;
-  min-width: 74px !important;
-  min-height: 74px !important;
-  aspect-ratio: 1 / 1 !important;
-  border-radius: 50% !important;
-  overflow: hidden !important;
-  padding: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.squadAvatarEditor img {
-  width: 100% !important;
-  height: 100% !important;
-  display: block !important;
-  object-fit: cover !important;
-  object-position: center !important;
-  border-radius: inherit !important;
-}
-
-
-/* Patch v92 — topo de Squad alinhado ao Design System */
+/* v100 — base final Squad */
 .page {
-  padding: 15px;
-  background: var(--bg-canvas);
-  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .headerIdentity {
-  min-height: 42px;
-  gap: 11px;
+  min-width: 0;
 }
 
 .headerLogo {
+  box-sizing: border-box;
   width: 36px;
+  min-width: 36px;
   height: 36px;
-  flex-basis: 36px;
-  margin-block: 0;
-  background: rgba(245, 184, 0, 0.1);
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  outline: 0;
+  box-shadow: none;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
 }
 
-.headerLogo > span {
-  color: var(--accent-amber);
-  font-size: 12px;
-  font-weight: 590;
-  letter-spacing: -0.02em;
+.headerLogo img {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 999px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
 .headerLogo em {
-  background: rgba(8, 9, 10, 0.82);
-  font-weight: 510;
+  display: none;
 }
 
-.headerTitleText {
-  gap: 2px;
-}
-
-.headerTitleText strong {
-  font-size: 17px;
-  font-weight: 590;
-  letter-spacing: -0.03em;
-}
-
-.headerTitleText small {
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 510;
-}
-
-.headerActions {
-  gap: 7px;
-}
-
-.headerStat,
-.monthNav,
-.weekTabs,
-.headerBtn,
-.headerGhostBtn {
-  min-height: 32px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.018);
-}
-
-.headerStat {
-  color: var(--text-secondary);
-}
-
-.headerStat strong {
-  font-weight: 590;
-}
-
-.headerStat small {
-  color: var(--text-tertiary);
-}
-
-.ownerControl button {
-  min-height: 32px;
-  border-radius: var(--radius-2);
-  font-size: 12px;
-}
-
-.navBtn {
-  border-radius: 6px;
-  font-weight: 590;
-}
-
-.monthLabel {
-  font-weight: 510;
-}
-
-.weekTab {
-  border-radius: 6px;
-  font-weight: 510;
-}
-
-.weekTabActive {
-  background: rgba(245, 184, 0, 0.12);
-  color: var(--accent-amber);
-}
-
-.headerBtn,
-.headerGhostBtn {
-  background: rgba(255, 255, 255, 0.018);
-}
-
-.headerBtn:hover,
-.headerGhostBtn:hover,
-.monthNav:hover,
-.weekTabs:hover {
-  border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-
-
-
-/* Patch v97 — saneamento final de layout Squad */
 .metricGrid {
-  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr));
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  overflow: hidden;
+  margin-bottom: 18px;
 }
 
 .metricCard {
   min-width: 0;
+  max-width: 100%;
+  min-height: 92px;
+  padding: 13px 14px;
+  overflow: hidden;
 }
 
 .listToolbar {
-  grid-template-columns: minmax(130px, max-content) minmax(220px, 520px);
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) minmax(0, 520px);
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  margin-top: 0;
 }
 
 .searchBox {
-  width: min(520px, 100%);
+  width: 100%;
+  max-width: 520px;
+  min-width: 0;
+  justify-self: start;
+}
+
+.searchBox input {
+  min-width: 0;
+}
+
+.listCard,
+.clientList,
+.clientRow,
+.clientMain,
+.clientStats,
+.clientStatus {
+  width: 100%;
   max-width: 100%;
   min-width: 0;
+  overflow: hidden;
 }
 
 .clientRow {
-  min-width: 0;
-  grid-template-columns: minmax(220px, 1fr) minmax(220px, 320px) 118px;
-}
-
-.clientMain,
-.clientStats,
-.clientStatus,
-.clientList,
-.listCard {
-  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
 }
 
 .clientStats {
-  grid-template-columns: minmax(112px, 156px) minmax(82px, 110px);
-  column-gap: 16px;
+  display: none;
+}
+
+.clientStatus {
+  justify-content: flex-start;
 }
 
 .clientAvatarMini,
@@ -1401,23 +1117,30 @@
   white-space: nowrap;
   font-weight: 590;
   letter-spacing: 0;
+  text-indent: 0;
 }
 
 .clientAvatarMini {
   width: 28px;
+  min-width: 28px;
   height: 28px;
+  min-height: 28px;
   font-size: 9px;
 }
 
 .clientAvatarSmall {
   width: 32px;
+  min-width: 32px;
   height: 32px;
+  min-height: 32px;
   font-size: 9px;
 }
 
 .clientAvatar {
   width: 34px;
+  min-width: 34px;
   height: 34px;
+  min-height: 34px;
 }
 
 .clientAvatarMini img,
@@ -1432,292 +1155,28 @@
   object-position: center;
 }
 
-@media (max-width: 1280px) {
-  .metricGrid {
-    grid-template-columns: repeat(3, minmax(176px, 1fr));
-  }
-
-  .listToolbar {
-    grid-template-columns: 1fr;
-    align-items: stretch;
-  }
-
-  .searchBox {
-    width: 100%;
-    max-width: none;
-  }
-
-  .clientRow {
-    grid-template-columns: 1fr;
-  }
-
-  .clientStats {
-    width: 100%;
-    grid-template-columns: repeat(2, minmax(100px, 1fr));
-    justify-content: stretch;
-    row-gap: 10px;
-  }
-
-  .clientStatus {
-    justify-content: flex-start;
-  }
-}
-
-@media (max-width: 760px) {
-  .metricGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-/* Patch v98 — correção final Squad */
-.page {
-  max-width: 100% !important;
-  overflow-x: hidden !important;
-}
-
-.metricGrid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)) !important;
-  gap: 10px !important;
-  min-width: 0 !important;
-  margin-bottom: 18px !important;
-}
-
-.metricCard {
-  min-width: 0 !important;
-  min-height: 96px !important;
-  padding: 13px 14px !important;
-}
-
-.listToolbar {
-  display: grid !important;
-  grid-template-columns: minmax(140px, max-content) minmax(220px, 520px) !important;
-  align-items: center !important;
-  gap: 12px !important;
-  min-width: 0 !important;
-  margin-top: 0 !important;
-}
-
-.searchBox {
-  width: min(520px, 100%) !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-}
-
-.listCard,
-.clientList,
-.clientRow,
-.clientMain {
-  min-width: 0 !important;
-  max-width: 100% !important;
-}
-
-.clientRow {
-  grid-template-columns: minmax(220px, 1fr) minmax(180px, 280px) 110px !important;
-  overflow: hidden !important;
-}
-
-.clientStats {
-  min-width: 0 !important;
-  grid-template-columns: minmax(112px, 156px) minmax(82px, 110px) !important;
-  column-gap: 16px !important;
-}
-
-.clientAvatarMini,
-.clientAvatarSmall,
-.clientAvatar {
-  box-sizing: border-box !important;
-  aspect-ratio: 1 / 1 !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  overflow: hidden !important;
-  background: rgba(255, 255, 255, 0.045) !important;
-  color: var(--text-secondary) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex: 0 0 auto !important;
-  line-height: 1 !important;
-  text-align: center !important;
-  text-transform: uppercase !important;
-  white-space: nowrap !important;
-  font-weight: 590 !important;
-  letter-spacing: 0 !important;
-  text-indent: 0 !important;
-}
-
-.clientAvatarMini {
-  width: 28px !important;
-  min-width: 28px !important;
-  height: 28px !important;
-  min-height: 28px !important;
-  font-size: 9px !important;
-}
-
-.clientAvatarSmall {
-  width: 32px !important;
-  min-width: 32px !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  font-size: 9px !important;
-}
-
-.clientAvatar {
-  width: 34px !important;
-  min-width: 34px !important;
-  height: 34px !important;
-  min-height: 34px !important;
-}
-
-.clientAvatarMini img,
-.clientAvatarSmall img,
-.clientAvatar img {
-  width: 100% !important;
-  height: 100% !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  display: block !important;
-  object-fit: cover !important;
-  object-position: center !important;
-}
-
-@media (max-width: 1280px) {
-  .metricGrid {
-    grid-template-columns: repeat(3, minmax(176px, 1fr)) !important;
-  }
-
-  .listToolbar {
-    grid-template-columns: 1fr !important;
-    align-items: stretch !important;
-  }
-
-  .searchBox {
-    width: 100% !important;
-    max-width: none !important;
-  }
-
-  .clientRow {
-    grid-template-columns: 1fr !important;
-  }
-
-  .clientStats {
-    width: 100% !important;
-    grid-template-columns: repeat(2, minmax(100px, 1fr)) !important;
-    justify-content: stretch !important;
-    row-gap: 10px !important;
-  }
-
-  .clientStatus {
-    justify-content: flex-start !important;
-  }
-}
-
-@media (max-width: 760px) {
-  .metricGrid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-
-/* Patch v99 — Squad busca sem quebra */
-.page {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  overflow-x: hidden !important;
-}
-
-.metricGrid {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 10px !important;
-  overflow: hidden !important;
-}
-
-.metricCard {
-  min-width: 0 !important;
-  max-width: 100% !important;
-  min-height: 92px !important;
-  padding: 13px 14px !important;
-  overflow: hidden !important;
-}
-
-.listToolbar {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  display: grid !important;
-  grid-template-columns: minmax(120px, max-content) minmax(0, 520px) !important;
-  align-items: center !important;
-  gap: 12px !important;
-  overflow: hidden !important;
-}
-
-.searchBox {
-  width: 100% !important;
-  max-width: 520px !important;
-  min-width: 0 !important;
-  justify-self: start !important;
-}
-
-.searchBox input {
-  min-width: 0 !important;
-}
-
-.listCard,
-.clientList,
-.clientRow,
-.clientMain,
-.clientStats,
-.clientStatus {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  overflow: hidden !important;
-}
-
-.clientRow {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) !important;
-  gap: 10px !important;
-}
-
-.clientStats {
-  display: none !important;
-}
-
-.clientStatus {
-  justify-content: flex-start !important;
-}
-
 @media (min-width: 1281px) {
   .metricGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .clientRow {
-    grid-template-columns: minmax(0, 1fr) minmax(160px, 280px) 110px !important;
+    grid-template-columns: minmax(0, 1fr) minmax(160px, 280px) 110px;
   }
 
   .clientStats {
-    display: grid !important;
-    grid-template-columns: minmax(112px, 156px) minmax(82px, 110px) !important;
+    display: grid;
+    grid-template-columns: minmax(112px, 156px) minmax(82px, 110px);
   }
 
   .clientStatus {
-    justify-content: flex-end !important;
+    justify-content: flex-end;
   }
 }
 
 @media (max-width: 760px) {
   .metricGrid,
   .listToolbar {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }

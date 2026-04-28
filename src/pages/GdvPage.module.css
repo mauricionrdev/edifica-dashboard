@@ -901,71 +901,127 @@
 }
 
 
-/* Patch v92 — topo de GDV alinhado ao Design System */
+/* v100 — base final GDV */
+.page {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 .headerIdentity {
-  min-height: 42px;
-  gap: 11px;
+  min-width: 0;
+}
+
+.headerLogo,
+.gdvLogo {
+  box-sizing: border-box;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  outline: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background: rgba(39, 166, 68, 0.1);
+  color: var(--success);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-indent: 0;
+  text-align: center;
+  flex: 0 0 auto;
 }
 
 .headerLogo {
   width: 36px;
+  min-width: 36px;
   height: 36px;
-  flex-basis: 36px;
-  background: rgba(39, 166, 68, 0.1);
 }
 
-.headerLogo > span {
+.headerLogo > span,
+.gdvLogo > span {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--success);
-  font-size: 12px;
+  font-size: 9px;
   font-weight: 590;
-  letter-spacing: -0.02em;
+  line-height: 1;
+  letter-spacing: 0;
+  text-indent: 0;
 }
 
-.headerTitleText strong {
-  font-size: 17px;
-  font-weight: 590;
-  letter-spacing: -0.03em;
+.headerLogo img,
+.gdvLogo img {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 999px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
-.headerTitleText small {
-  color: var(--text-tertiary);
-  font-weight: 510;
+.headerLogo em {
+  display: none;
 }
 
-.headerActions {
-  gap: 7px;
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr));
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
-.headerStat,
-.monthNav,
-.weekTabs,
-.iconButton,
-.gdvSelectButton {
-  border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.018);
+.metricCard {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 96px;
+  padding: 13px 14px;
+  overflow: hidden;
 }
 
-.headerStat strong,
-.monthLabel,
-.weekTab,
-.gdvSelectButton {
-  font-weight: 510;
+.listToolbar {
+  display: grid;
+  grid-template-columns: minmax(150px, max-content) minmax(220px, 520px);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
-.weekTabActive,
-.gdvOptionActive,
-.gdvOption:hover {
-  background: rgba(39, 166, 68, 0.1);
-  color: var(--success);
+.searchBox {
+  width: min(520px, 100%);
+  max-width: 100%;
+  min-width: 0;
 }
 
-.gdvLogoTone {
-  color: var(--success);
+.searchBox input {
+  min-width: 0;
 }
 
+.listCard,
+.clientList,
+.clientRow,
+.clientMain,
+.clientStats,
+.clientStatus {
+  min-width: 0;
+  max-width: 100%;
+}
 
+.clientRow {
+  overflow: hidden;
+}
 
-/* Patch v97 — saneamento final de avatares GDV */
 .clientAvatarMini,
 .clientAvatarSmall,
 .clientAvatar {
@@ -988,23 +1044,30 @@
   white-space: nowrap;
   font-weight: 590;
   letter-spacing: 0;
+  text-indent: 0;
 }
 
 .clientAvatarMini {
   width: 28px;
+  min-width: 28px;
   height: 28px;
+  min-height: 28px;
   font-size: 9px;
 }
 
 .clientAvatarSmall {
   width: 32px;
+  min-width: 32px;
   height: 32px;
+  min-height: 32px;
   font-size: 9px;
 }
 
 .clientAvatar {
   width: 34px;
+  min-width: 34px;
   height: 34px;
+  min-height: 34px;
 }
 
 .clientAvatarMini img,
@@ -1019,213 +1082,28 @@
   object-position: center;
 }
 
-.clientMain {
-  min-width: 0;
-}
-
-.clientRow {
-  min-width: 0;
-  overflow: hidden;
-}
-
-.clientList {
-  min-width: 0;
-}
-
-.listCard {
-  min-width: 0;
-}
-
-
-/* Patch v98 — correção final GDV */
-.page {
-  max-width: 100% !important;
-  overflow-x: hidden !important;
-}
-
-.metricGrid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)) !important;
-  gap: 10px !important;
-  min-width: 0 !important;
-}
-
-.metricCard {
-  min-width: 0 !important;
-  min-height: 96px !important;
-  padding: 13px 14px !important;
-}
-
-.listToolbar {
-  display: grid !important;
-  grid-template-columns: minmax(150px, max-content) minmax(220px, 520px) !important;
-  align-items: center !important;
-  gap: 12px !important;
-  min-width: 0 !important;
-}
-
-.searchBox {
-  width: min(520px, 100%) !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-}
-
-.listCard,
-.clientList,
-.clientRow,
-.clientMain {
-  min-width: 0 !important;
-  max-width: 100% !important;
-}
-
-.clientRow {
-  grid-template-columns: minmax(220px, 1fr) minmax(180px, 280px) 110px !important;
-  overflow: hidden !important;
-}
-
-.clientAvatarMini,
-.clientAvatarSmall,
-.clientAvatar {
-  box-sizing: border-box !important;
-  aspect-ratio: 1 / 1 !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  overflow: hidden !important;
-  background: rgba(255, 255, 255, 0.045) !important;
-  color: var(--text-secondary) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex: 0 0 auto !important;
-  line-height: 1 !important;
-  text-align: center !important;
-  text-transform: uppercase !important;
-  white-space: nowrap !important;
-  font-weight: 590 !important;
-  letter-spacing: 0 !important;
-  text-indent: 0 !important;
-}
-
-.clientAvatarMini {
-  width: 28px !important;
-  min-width: 28px !important;
-  height: 28px !important;
-  min-height: 28px !important;
-  font-size: 9px !important;
-}
-
-.clientAvatarSmall {
-  width: 32px !important;
-  min-width: 32px !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  font-size: 9px !important;
-}
-
-.clientAvatar {
-  width: 34px !important;
-  min-width: 34px !important;
-  height: 34px !important;
-  min-height: 34px !important;
-}
-
-.clientAvatarMini img,
-.clientAvatarSmall img,
-.clientAvatar img {
-  width: 100% !important;
-  height: 100% !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  display: block !important;
-  object-fit: cover !important;
-  object-position: center !important;
-}
-
 @media (max-width: 1280px) {
   .metricGrid {
-    grid-template-columns: repeat(3, minmax(176px, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(176px, 1fr));
   }
 
   .listToolbar {
-    grid-template-columns: 1fr !important;
-    align-items: stretch !important;
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 
   .searchBox {
-    width: 100% !important;
-    max-width: none !important;
+    width: 100%;
+    max-width: none;
   }
 
   .clientRow {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 760px) {
   .metricGrid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
-}
-
-
-/* Patch v99 — logo GDV estável */
-.headerIdentity {
-  min-width: 0;
-}
-
-.headerLogo {
-  box-sizing: border-box !important;
-  width: 36px !important;
-  min-width: 36px !important;
-  max-width: 36px !important;
-  height: 36px !important;
-  min-height: 36px !important;
-  max-height: 36px !important;
-  aspect-ratio: 1 / 1 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  overflow: hidden !important;
-  background: rgba(39, 166, 68, 0.1) !important;
-  color: var(--success) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex: 0 0 36px !important;
-  line-height: 1 !important;
-  text-indent: 0 !important;
-}
-
-.headerLogo > span {
-  width: 100% !important;
-  height: 100% !important;
-  border-radius: 999px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  color: var(--success) !important;
-  font-size: 9px !important;
-  line-height: 1 !important;
-  font-weight: 590 !important;
-  letter-spacing: 0 !important;
-  text-indent: 0 !important;
-  text-align: center !important;
-}
-
-.headerLogo img {
-  width: 100% !important;
-  height: 100% !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  display: block !important;
-  object-fit: cover !important;
-  object-position: center !important;
-}
-
-.headerLogo em {
-  display: none !important;
 }

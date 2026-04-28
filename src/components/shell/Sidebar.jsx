@@ -5,6 +5,7 @@ import { updateSquad } from '../../api/squads.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { getGdvAvatar, getUserAvatar, subscribeAvatarChange } from '../../utils/avatarStorage.js';
+import { resolveGdvIdentity } from '../../utils/clientIdentity.js';
 import { isAdminUser, roleLabel } from '../../utils/roles.js';
 import {
   canViewClients,
@@ -127,8 +128,9 @@ export default function Sidebar({
           ownerId: gdv.ownerUserId,
           active: gdv.active,
           clientsCount: gdv.clientsCount || 0,
-          logoUrl: getGdvAvatar(gdv),
-        };
+          logoUrl: getGdvAvatar(gdv) || resolveGdvIdentity(gdv).logoUrl,
+          initials: resolveGdvIdentity(gdv).initials,
+          };
       })
       .filter((entry) => entry.owner && entry.active)
       .filter((entry) => admin || entry.ownerId === user?.id)
@@ -346,7 +348,7 @@ export default function Sidebar({
                 title={collapsed ? entry.name : undefined}
               >
                 <span className={`${styles.itemIcon} ${styles.gdvLogo}`} aria-hidden="true">
-                  {entry.logoUrl ? <img src={entry.logoUrl} alt="" /> : initials(entry.name)}
+                  {entry.logoUrl ? <img src={entry.logoUrl} alt="" /> : entry.initials}
                 </span>
                 {editingGdvKey === entry.key ? (
                   <input
