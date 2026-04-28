@@ -26,7 +26,6 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import UserPicker from '../components/users/UserPicker.jsx';
-import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './GdvPage.module.css';
 
 const PAGE_SIZE = 10;
