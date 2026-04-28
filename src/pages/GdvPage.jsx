@@ -25,7 +25,7 @@ import {
   saveGdvAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
-import { clientInitials as sharedClientInitials, resolveClientIdentity } from '../utils/clientIdentity.js';
+import { resolveClientIdentity } from '../utils/clientIdentity.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import styles from './GdvPage.module.css';
 
@@ -49,12 +49,6 @@ function gdvInitials(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-function sharedClientInitials(name) {
-  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return 'CL';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-}
 
 function effectiveForecast(closed, predicted) {
   return Math.max(Number(closed) || 0, Number(predicted) || 0);

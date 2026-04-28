@@ -33,7 +33,7 @@ import {
   saveSquadAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
-import { clientInitials as sharedClientInitials, resolveClientIdentity } from '../utils/clientIdentity.js';
+import { resolveClientIdentity } from '../utils/clientIdentity.js';
 import { matchesAnySearch } from '../utils/search.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import UserHoverCard from '../components/users/UserHoverCard.jsx';
