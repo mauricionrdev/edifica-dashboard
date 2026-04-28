@@ -220,6 +220,8 @@ export default function OverviewTab({
               onChange={(userId) => onSelectChange('gestor', 'gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
               disabled={deleting || !canEdit}
               placeholder="Sem gestor"
+              disableHover
+              portal
             />
           </div>
 
@@ -232,6 +234,8 @@ export default function OverviewTab({
               onChange={(userId) => onSelectChange('gdvName', 'gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
               disabled={deleting || !canEdit}
               placeholder="Sem GDV"
+              disableHover
+              portal
             />
           </div>
         </div>

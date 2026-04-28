@@ -568,3 +568,57 @@
     width: 100%;
   }
 }
+
+/* Patch 62B — estabilidade visual e densidade do drawer de cliente */
+.overlay {
+  background: rgba(6, 7, 8, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.drawer,
+.header,
+.projectChoiceModal {
+  background: #0f1011;
+}
+
+.drawer {
+  box-shadow: none;
+}
+
+.body,
+.tabBody,
+.projectChoiceGrid {
+  background: #08090a;
+}
+
+.header,
+.section,
+.projectChoiceHeader {
+  border-color: var(--line-subtle);
+}
+
+.input,
+.select,
+.readonly {
+  background: rgba(255, 255, 255, 0.022);
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
+
+.selectControl {
+  overflow: visible;
+}
+
+.body,
+.drawer {
+  scrollbar-width: none;
+}
+
+.body::-webkit-scrollbar,
+.drawer::-webkit-scrollbar {
+  display: none;
+}

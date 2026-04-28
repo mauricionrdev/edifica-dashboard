@@ -2,14 +2,17 @@
   grid-area: tabs;
   min-width: 0;
   min-height: 0;
-  padding: 16px 10px;
+  padding: 14px 10px;
   border-right: 1px solid var(--line-subtle);
   background: #0f1011;
   display: flex;
   flex-direction: column;
   gap: 4px;
   overflow-y: auto;
+  scrollbar-width: none;
 }
+
+.tabsBar::-webkit-scrollbar { display: none; }
 
 .tab {
   position: relative;
@@ -54,9 +57,7 @@
   border-color: var(--line-subtle);
 }
 
-.tabActive::before {
-  background: var(--accent-amber);
-}
+.tabActive::before { background: var(--accent-amber); }
 
 .tabBody {
   grid-area: body;
@@ -65,7 +66,11 @@
   overflow-y: auto;
   padding: 22px 24px 28px;
   background: #08090a;
+  contain: layout paint;
+  scrollbar-width: none;
 }
+
+.tabBody::-webkit-scrollbar { display: none; }
 
 .emptyState,
 .loadingState {
@@ -78,9 +83,7 @@
 
 .saveStatus,
 .tabCount,
-.saveDot {
-  display: none;
-}
+.saveDot { display: none; }
 
 @media (max-width: 720px) {
   .tabsBar {
@@ -107,7 +110,5 @@
     height: 2px;
   }
 
-  .tabBody {
-    padding: 18px 16px 22px;
-  }
+  .tabBody { padding: 18px 16px 22px; }
 }

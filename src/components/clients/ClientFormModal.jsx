@@ -260,6 +260,8 @@ export default function ClientFormModal({
                   onChange={(userId) => setField('gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
                   disabled={saving}
                   placeholder="Sem gestor"
+                  disableHover
+                  portal
                 />
               </div>
 
@@ -272,6 +274,8 @@ export default function ClientFormModal({
                   onChange={(userId) => setField('gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
                   disabled={saving}
                   placeholder="Sem GDV"
+                  disableHover
+                  portal
                 />
               </div>
             </div>
