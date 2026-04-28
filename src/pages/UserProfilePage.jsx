@@ -19,12 +19,6 @@ function initials(name) {
   );
 }
 
-function formatLocalTime() {
-  return new Intl.DateTimeFormat('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date());
-}
 
 function formatDateLabel(value) {
   if (!value) return 'Sem prazo';
@@ -205,17 +199,11 @@ export default function UserProfilePage() {
               <span className={styles.roleBadge}>{roleLabel(profileUser.role)}</span>
             </div>
 
-            <div className={styles.profileMeta}>
-              <span>{profileUser.email || 'Sem e-mail cadastrado'}</span>
-              <span>{formatLocalTime()} horário local</span>
-              <span>{profileUser.active === false ? 'Inativo' : 'Ativo'}</span>
-            </div>
-
-            <div className={styles.heroStats}>
-              <span><strong>{openTasksCount}</strong> abertas</span>
-              <span><strong>{completedTasksCount}</strong> concluÃ­das</span>
-              <span><strong>{profileProjects.length}</strong> projetos</span>
-            </div>
+            {profileUser.email ? (
+              <div className={styles.profileMeta}>
+                <span>{profileUser.email}</span>
+              </div>
+            ) : null}
           </div>
         </div>
 

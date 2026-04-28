@@ -48,8 +48,8 @@
 }
 
 .hero {
-  min-height: 96px;
-  padding: 14px 16px;
+  min-height: 78px;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -60,12 +60,12 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 12px;
 }
 
 .avatar {
-  width: 56px;
-  height: 56px;
+  width: 46px;
+  height: 46px;
   border: 0;
   border-radius: 999px;
   outline: none;
@@ -75,7 +75,7 @@
   place-items: center;
   background: var(--accent-amber);
   color: #08090a;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 590;
   flex: 0 0 auto;
 }
@@ -98,7 +98,7 @@
 }
 
 .heroCopy {
-  gap: 6px;
+  gap: 4px;
 }
 
 .nameRow {
@@ -112,7 +112,7 @@
 .nameRow h1 {
   margin: 0;
   color: var(--text-primary);
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1.08;
   font-weight: 590;
   letter-spacing: -0.045em;
@@ -134,26 +134,13 @@
   letter-spacing: 0.04em;
 }
 
-.profileMeta,
-.heroStats {
+.profileMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
+  gap: 8px;
   color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 400;
-}
-
-.profileMeta span + span::before,
-.heroStats span + span::before {
-  content: '·';
-  margin-right: 14px;
-  color: var(--text-quaternary);
-}
-
-.heroStats strong {
-  color: var(--text-primary);
-  font-weight: 510;
 }
 
 .layout {

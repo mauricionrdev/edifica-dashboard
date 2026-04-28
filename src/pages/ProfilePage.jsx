@@ -48,20 +48,6 @@ function initials(name) {
     .join('') || '?';
 }
 
-function formatLongDate(date) {
-  return new Intl.DateTimeFormat('pt-BR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  }).format(date);
-}
-
-function getGreeting(date) {
-  const hour = date.getHours();
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
-}
 
 function formatDueLabel(value) {
   if (!value) return 'Sem prazo';
@@ -223,9 +209,6 @@ export default function ProfilePage() {
     setNewTask((prev) => ({ ...prev, assigneeUserId: prev.assigneeUserId || user?.id || '' }));
   }, [user?.id]);
 
-  const today = useMemo(() => new Date(), []);
-  const dateLabel = useMemo(() => formatLongDate(today), [today]);
-  const greeting = useMemo(() => getGreeting(today), [today]);
 
   const squadNames = useMemo(() => {
     const map = new Map((squads || []).map((item) => [item.id, item.name]));
@@ -368,16 +351,15 @@ export default function ProfilePage() {
           </span>
 
           <div className={styles.heroCopy}>
-            <span className={styles.heroDate}>{dateLabel}</span>
             <div className={styles.heroHeading}>
-              <h1>{greeting}, {user?.name?.split(' ')?.[0] || 'usuário'}</h1>
+              <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
               <span className={styles.boardMeta}>{roleLabel(user?.role)}</span>
             </div>
-            <div className={styles.heroMeta}>
-              <span>{taskGroups.upcoming.length} próximas</span>
-              <span>{taskGroups.done.length} concluídas</span>
-              <span>{squadNames.length} squads</span>
-            </div>
+            {user?.email ? (
+              <div className={styles.heroMeta}>
+                <span>{user.email}</span>
+              </div>
+            ) : null}
           </div>
         </div>
 
