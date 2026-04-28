@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
 import { listClients } from '../../api/clients.js';
@@ -27,8 +27,24 @@ import {
 } from '../../utils/permissions.js';
 import styles from './AppShell.module.css';
 
+
+function getRoutePanelHeader(pathname = '/') {
+  if (pathname.startsWith('/clientes')) return { title: 'Clientes', description: null, actions: null };
+  if (pathname.startsWith('/preencher-semana')) return { title: 'Semana', description: null, actions: null };
+  if (pathname.startsWith('/gdv')) return { title: 'GDV', description: null, actions: null };
+  if (pathname.startsWith('/equipe')) return { title: 'Equipe & Acessos', description: null, actions: null };
+  if (pathname.startsWith('/perfil')) return { title: 'Perfil', description: null, actions: null };
+  if (pathname.startsWith('/modelo-oficial')) return { title: 'Modelo Oficial', description: null, actions: null };
+  if (pathname.startsWith('/ranking-squads')) return { title: 'Ranking de Squads', description: null, actions: null };
+  if (pathname.startsWith('/squads')) return { title: 'Squad', description: null, actions: null };
+  if (pathname.startsWith('/projetos')) return { title: 'Projetos', description: null, actions: null };
+  return { title: 'Central', description: null, actions: null };
+}
+
 export default function AppShell() {
   const { status, user } = useAuth();
+  const location = useLocation();
+  const routePanelHeader = useMemo(() => getRoutePanelHeader(location.pathname), [location.pathname]);
 
   const [clients, setClients] = useState([]);
   const [squads, setSquads] = useState([]);
@@ -43,11 +59,7 @@ export default function AppShell() {
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [panelHeader, setPanelHeader] = useState({
-    title: 'Central',
-    description: 'Visão operacional da Edifica',
-    actions: null,
-  });
+  const [panelHeader, setPanelHeader] = useState(routePanelHeader);
 
   const mountedRef = useRef(true);
 
@@ -57,6 +69,10 @@ export default function AppShell() {
       mountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    setPanelHeader(routePanelHeader);
+  }, [routePanelHeader]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -72,14 +88,10 @@ export default function AppShell() {
     setUnreadCount(0);
     setNotificationsOpen(false);
     setSidebarOpen(false);
-    setPanelHeader({
-      title: 'Central',
-      description: 'Visão operacional da Edifica',
-      actions: null,
-    });
+    setPanelHeader(routePanelHeader);
     setLoading(status === 'authed');
     setError(null);
-  }, [status, user?.id]);
+  }, [routePanelHeader, status, user?.id]);
 
   const refreshClients = useCallback(async () => {
     if (!canViewClients(user)) {
@@ -313,15 +325,11 @@ export default function AppShell() {
 
   const setPanelHeaderStable = useCallback((next) => {
     setPanelHeader((prev) => {
-      const base = {
-        title: 'Central',
-        description: null,
-        actions: null,
-      };
+      const base = routePanelHeader;
       const merged = typeof next === 'function' ? next(prev) : { ...base, ...next };
       return merged;
     });
-  }, []);
+  }, [routePanelHeader]);
 
   const outletContext = useMemo(
     () => ({

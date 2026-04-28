@@ -123,10 +123,6 @@ export default function SquadRankingPage() {
         </button>
       ),
     });
-
-    return () => {
-      setPanelHeader({ title: 'Central', description: null, actions: null });
-    };
   }, [fetchRanking, setPanelHeader]);
 
   const rankingRows = useMemo(() => {

@@ -59,7 +59,7 @@ export default function App() {
               <Route path="perfil" element={<RequirePermissionRoute permission="profile.view"><ProfilePage /></RequirePermissionRoute>} />
               <Route path="perfil/:userId" element={<RequirePermissionRoute permission="profile.view"><UserProfilePage /></RequirePermissionRoute>} />
               <Route path="squads/:squadId" element={<RequirePermissionRoute permission="squads.view"><SquadPage /></RequirePermissionRoute>} />
-              <Route path="ranking-squads" element={<RequirePermissionRoute permission="squads.view"><SquadRankingPage /></RequirePermissionRoute>} />
+              <Route path="ranking-squads" element={<RequirePermissionRoute permission="ranking.view"><SquadRankingPage /></RequirePermissionRoute>} />
               <Route path="equipe" element={<RequirePermissionRoute permission="team.view"><TeamAccessPage /></RequirePermissionRoute>} />
               <Route path="acesso-negado" element={<ForbiddenPage />} />
               <Route

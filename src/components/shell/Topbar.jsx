@@ -6,6 +6,7 @@ import { getUserAvatar } from '../../utils/avatarStorage.js';
 import styles from './Topbar.module.css';
 
 function routeLabel(pathname) {
+  if (pathname.startsWith('/ranking-squads')) return 'Ranking';
   if (pathname.startsWith('/clientes')) return 'Clientes';
   if (pathname.startsWith('/preencher-semana')) return 'Semana';
   if (pathname.startsWith('/gdv')) return 'GDV';

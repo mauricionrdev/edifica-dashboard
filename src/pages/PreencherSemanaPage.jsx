@@ -28,11 +28,6 @@ const EMPTY_DATA = {
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
-const CARD_LEGEND = [
-  { key: 'weekly', label: 'Preencher toda semana' },
-  { key: 'once', label: 'Preencher uma vez' },
-  { key: 'auto', label: 'Calculado automaticamente' },
-];
 
 const TRAFFIC_FIELDS = [
   { key: 'cpl', label: 'CPL atual (R$)', kind: 'weekly', placeholder: '0,00' },
@@ -178,19 +173,6 @@ function buildCardSummary({ loaded, goal, fechados, localCalc, form }) {
   }
 
   return { tone: 'risk', label: 'Em risco' };
-}
-
-function GroupLegend() {
-  return (
-    <div className={styles.legendRow}>
-      {CARD_LEGEND.map((item) => (
-        <span key={item.key} className={`${styles.legendPill} ${styles[`legendPill_${item.key}`]}`}>
-          <i aria-hidden="true" />
-          {item.label}
-        </span>
-      ))}
-    </div>
-  );
 }
 
 function MetricField({
@@ -788,13 +770,19 @@ export default function PreencherSemanaPage() {
     <div className="content">
       <div className={styles.workspace}>
         <section className={styles.cardsPanel}>
-          <div className={styles.panelHeader}>
-            <div className={styles.panelTitleBlock}>
-              <strong>Preenchimento operacional da semana</strong>
-              <p>Carteira por cliente em cards, com leitura rápida e foco no preenchimento.</p>
-            </div>
-            <div className={styles.panelHeaderActions}>
-              <span>{filteredClients.length} cliente(s)</span>
+          <div className={styles.commandBar}>
+            <label className={styles.searchField}>
+              <SearchIcon size={15} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Cliente, squad, GDV ou gestor"
+              />
+            </label>
+
+            <div className={styles.commandActions}>
+              <span className={styles.resultCount}>{filteredClients.length}</span>
               <Select
                 className={styles.pageSizeSelect}
                 value={String(pageSize)}
@@ -808,23 +796,6 @@ export default function PreencherSemanaPage() {
                 ))}
               </Select>
             </div>
-          </div>
-
-          <div className={styles.toolbarRow}>
-            <label className={styles.searchField}>
-              <span>Buscar na lista</span>
-              <div className={styles.searchControl}>
-                <SearchIcon size={15} aria-hidden="true" />
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Cliente, squad, GDV ou gestor"
-                />
-              </div>
-            </label>
-
-            <GroupLegend />
           </div>
 
           {filteredClients.length === 0 ? (
