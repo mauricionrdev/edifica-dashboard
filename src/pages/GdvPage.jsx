@@ -25,8 +25,8 @@ import {
   saveGdvAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
-import { resolveClientIdentity } from '../utils/clientIdentity.js';
 import UserPicker from '../components/users/UserPicker.jsx';
+import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './GdvPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -49,6 +49,12 @@ function gdvInitials(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
+function clientInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'CL';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
 
 function effectiveForecast(closed, predicted) {
   return Math.max(Number(closed) || 0, Number(predicted) || 0);
@@ -166,7 +172,6 @@ export default function GdvPage() {
     gdvs,
     userDirectory,
     loading: shellLoading,
-    loadingState,
     refreshGdvs,
     setPanelHeader,
   } = useOutletContext();
@@ -190,12 +195,6 @@ export default function GdvPage() {
   const gdvMenuRef = useRef(null);
   const gdvLogoInputRef = useRef(null);
   const cardsRef = useRef(null);
-
-  const resolveClientDisplay = useCallback(
-    (client) => resolveClientIdentity(client, clients),
-    [clients]
-  );
-
 
   const [showStickyResult, setShowStickyResult] = useState(false);
   const [renderStickyResult, setRenderStickyResult] = useState(false);
@@ -948,7 +947,7 @@ export default function GdvPage() {
     year,
   ]);
 
-  if ((loadingState?.clients ?? shellLoading) && (!clients || clients.length === 0)) {
+  if (shellLoading && (!clients || clients.length === 0)) {
     return (
       <div className={styles.page}>
         <StateBlock variant="loading" title="Carregando carteira GDV" />
@@ -976,13 +975,7 @@ export default function GdvPage() {
 
       {selectedRow && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <span className={styles.clientAvatarMini}>
-            {resolveClientDisplay(selectedRow.client).avatarUrl ? (
-              <img src={resolveClientDisplay(selectedRow.client).avatarUrl} alt="" />
-            ) : (
-              resolveClientDisplay(selectedRow.client).initials
-            )}
-          </span>
+          <span className={styles.clientAvatarMini}>{clientInitials(selectedRow.client.name)}</span>
           <strong>{selectedRow.client.name}</strong>
 
           <div className={styles.stickyMetric}>
@@ -1078,13 +1071,7 @@ export default function GdvPage() {
                     onClick={() => setSelectedClientId(client.id)}
                   >
                     <div className={styles.clientMain}>
-                      <span className={styles.clientAvatarSmall}>
-                        {resolveClientDisplay(client).avatarUrl ? (
-                          <img src={resolveClientDisplay(client).avatarUrl} alt="" />
-                        ) : (
-                          resolveClientDisplay(client).initials
-                        )}
-                      </span>
+                      <span className={styles.clientAvatarSmall}>{clientInitials(client.name)}</span>
                       <div>
                         <strong>{client.name}</strong>
                         <span>

@@ -4,8 +4,7 @@ import { updateGdv } from '../../api/gdvs.js';
 import { updateSquad } from '../../api/squads.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { getGdvAvatar, getUserAvatar, subscribeAvatarChange } from '../../utils/avatarStorage.js';
-import { resolveGdvIdentity } from '../../utils/clientIdentity.js';
+import { getUserAvatar, subscribeAvatarChange } from '../../utils/avatarStorage.js';
 import { isAdminUser, roleLabel } from '../../utils/roles.js';
 import {
   canViewClients,
@@ -18,6 +17,7 @@ import {
 } from '../../utils/permissions.js';
 import {
   BriefcaseIcon,
+  ChartColumnIcon,
   CalendarIcon,
   ClipboardListIcon,
   ChevronLeftIcon,
@@ -128,9 +128,7 @@ export default function Sidebar({
           ownerId: gdv.ownerUserId,
           active: gdv.active,
           clientsCount: gdv.clientsCount || 0,
-          logoUrl: getGdvAvatar(gdv) || resolveGdvIdentity(gdv).logoUrl,
-          initials: resolveGdvIdentity(gdv).initials,
-          };
+        };
       })
       .filter((entry) => entry.owner && entry.active)
       .filter((entry) => admin || entry.ownerId === user?.id)
@@ -347,8 +345,8 @@ export default function Sidebar({
                 }
                 title={collapsed ? entry.name : undefined}
               >
-                <span className={`${styles.itemIcon} ${styles.gdvLogo}`} aria-hidden="true">
-                  {entry.logoUrl ? <img src={entry.logoUrl} alt="" /> : entry.initials}
+                <span className={styles.itemIcon}>
+                  <ChartColumnIcon size={16} strokeWidth={1.7} />
                 </span>
                 {editingGdvKey === entry.key ? (
                   <input

@@ -33,9 +33,9 @@ import {
   saveSquadAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
-import { resolveClientIdentity } from '../utils/clientIdentity.js';
 import { matchesAnySearch } from '../utils/search.js';
 import UserPicker from '../components/users/UserPicker.jsx';
+import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -261,7 +261,6 @@ export default function SquadPage() {
     clients,
     userDirectory,
     loading: shellLoading,
-    loadingState,
     setPanelHeader,
     refreshClients,
     refreshSquads,
@@ -297,12 +296,6 @@ export default function SquadPage() {
   const [renderStickyResult, setRenderStickyResult] = useState(false);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
-
-  const resolveClientDisplay = useCallback(
-    (client) => resolveClientIdentity(client, clients),
-    [clients]
-  );
-
 
   const squadClients = useMemo(
     () =>
@@ -624,7 +617,12 @@ export default function SquadPage() {
         <div className={styles.headerTitleText}>
           <strong>{squad.name}</strong>
           <small>
-            {squadOwnership.owner?.name || 'Sem responsável'} · {squadOwnership.active ? 'Ativo' : 'Desativado'}
+            {squadOwnership.owner ? (
+              <UserHoverCard user={squadOwnership.owner} placement="bottom">
+                <span>{`Responsável: ${squadOwnership.owner.name}`}</span>
+              </UserHoverCard>
+            ) : 'Sem responsável definido'} ·{' '}
+            {squadOwnership.active ? 'Ativo' : 'Desativado'}
           </small>
         </div>
       </div>
@@ -860,7 +858,7 @@ export default function SquadPage() {
     ];
   }, [agg, selectedClient, week]);
 
-  if (((loadingState?.squads ?? shellLoading) || (loadingState?.clients ?? false)) && !squad) {
+  if (shellLoading && !squad) {
     return (
       <div className={styles.page}>
         <StateBlock variant="loading" title="Carregando squad" />
@@ -914,13 +912,7 @@ export default function SquadPage() {
 
       {selectedClient && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <span className={styles.clientAvatarMini}>
-            {resolveClientDisplay(selectedClient).avatarUrl ? (
-              <img src={resolveClientDisplay(selectedClient).avatarUrl} alt="" />
-            ) : (
-              resolveClientDisplay(selectedClient).initials
-            )}
-          </span>
+          <span className={styles.clientAvatarMini}>{initialsFromClient(selectedClient.name)}</span>
           <strong>{selectedClient.name}</strong>
 
           <div className={styles.stickyMetric}>
@@ -998,13 +990,7 @@ export default function SquadPage() {
                   onClick={() => setSelectedClientId(row.id)}
                 >
                   <div className={styles.clientMain}>
-                    <span className={styles.clientAvatarSmall}>
-                      {resolveClientDisplay(row).avatarUrl ? (
-                        <img src={resolveClientDisplay(row).avatarUrl} alt="" />
-                      ) : (
-                        resolveClientDisplay(row).initials
-                      )}
-                    </span>
+                    <span className={styles.clientAvatarSmall}>{initialsFromClient(row.name)}</span>
                     <div>
                       <strong>{row.name}</strong>
                       <span>

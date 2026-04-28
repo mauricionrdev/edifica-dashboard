@@ -37,12 +37,7 @@ export default function AppShell() {
   const [squads, setSquads] = useState([]);
   const [gdvs, setGdvs] = useState([]);
   const [userDirectory, setUserDirectory] = useState([]);
-  const [loadingState, setLoadingState] = useState({
-    clients: true,
-    squads: true,
-    gdvs: true,
-    userDirectory: true,
-  });
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -54,11 +49,6 @@ export default function AppShell() {
   const [panelHeader, setPanelHeader] = useState(routePanelHeader);
 
   const mountedRef = useRef(true);
-
-  const setResourceLoading = useCallback((key, value) => {
-    if (!mountedRef.current) return;
-    setLoadingState((current) => ({ ...current, [key]: value }));
-  }, []);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -87,20 +77,13 @@ export default function AppShell() {
     setUnreadCount(0);
     setNotificationsOpen(false);
     setSidebarOpen(false);
-    setLoadingState({
-      clients: status === 'authed',
-      squads: status === 'authed',
-      gdvs: status === 'authed',
-      userDirectory: status === 'authed',
-    });
+    setLoading(status === 'authed');
     setError(null);
   }, [status, user?.id]);
 
   const refreshClients = useCallback(async () => {
-    setResourceLoading('clients', true);
     if (!canViewClients(user)) {
       if (mountedRef.current) setClients([]);
-      setResourceLoading('clients', false);
       return;
     }
     try {
@@ -114,16 +97,12 @@ export default function AppShell() {
         return;
       }
       throw err;
-    } finally {
-      setResourceLoading('clients', false);
     }
-  }, [setResourceLoading, user]);
+  }, [user]);
 
   const refreshSquads = useCallback(async () => {
-    setResourceLoading('squads', true);
     if (!hasPermission(user, 'squads.view')) {
       if (mountedRef.current) setSquads([]);
-      setResourceLoading('squads', false);
       return;
     }
     try {
@@ -137,16 +116,12 @@ export default function AppShell() {
         return;
       }
       throw err;
-    } finally {
-      setResourceLoading('squads', false);
     }
-  }, [setResourceLoading, user]);
+  }, [user]);
 
   const refreshGdvs = useCallback(async () => {
-    setResourceLoading('gdvs', true);
     if (!canViewGdv(user)) {
       if (mountedRef.current) setGdvs([]);
-      setResourceLoading('gdvs', false);
       return;
     }
     try {
@@ -160,13 +135,10 @@ export default function AppShell() {
         return;
       }
       throw err;
-    } finally {
-      setResourceLoading('gdvs', false);
     }
-  }, [setResourceLoading, user]);
+  }, [user]);
 
   const refreshUserDirectory = useCallback(async () => {
-    setResourceLoading('userDirectory', true);
     try {
       const data = await listUserDirectory();
       if (mountedRef.current) {
@@ -182,10 +154,8 @@ export default function AppShell() {
         return;
       }
       throw err;
-    } finally {
-      setResourceLoading('userDirectory', false);
     }
-  }, [setResourceLoading]);
+  }, []);
 
   const refreshNotifications = useCallback(async () => {
     if (status !== 'authed') {
@@ -216,23 +186,18 @@ export default function AppShell() {
     let cancelled = false;
 
     (async () => {
+      setLoading(true);
       setError(null);
       try {
-        const [clientsResult] = await Promise.allSettled([
-          refreshClients(),
-          refreshSquads(),
-          refreshGdvs(),
-          refreshUserDirectory(),
-        ]);
-
-        refreshNotifications().catch(() => {});
-
-        if (!cancelled && clientsResult.status === 'rejected') {
-          setError(clientsResult.reason instanceof Error ? clientsResult.reason : new Error(String(clientsResult.reason)));
-        }
+        await Promise.all([refreshClients(), refreshSquads(), refreshGdvs(), refreshUserDirectory()]);
+        await refreshNotifications();
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err : new Error(String(err)));
+        }
+      } finally {
+        if (!cancelled && mountedRef.current) {
+          setLoading(false);
         }
       }
     })();
@@ -354,8 +319,6 @@ export default function AppShell() {
     });
   }, [routePanelHeader]);
 
-  const loading = loadingState.clients;
-
   const outletContext = useMemo(
     () => ({
       clients,
@@ -363,7 +326,6 @@ export default function AppShell() {
       gdvs,
       userDirectory,
       loading,
-      loadingState,
       error,
       refreshClients,
       refreshSquads,
@@ -379,7 +341,6 @@ export default function AppShell() {
       gdvs,
       userDirectory,
       loading,
-      loadingState,
       error,
       refreshClients,
       refreshSquads,

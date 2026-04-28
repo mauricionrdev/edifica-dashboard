@@ -8,44 +8,31 @@ import {
   useState,
 } from 'react';
 import * as authApi from '../api/auth.js';
-import { ApiError } from '../api/client.js';
+import { onUnauthorized, ApiError } from '../api/client.js';
 
 const AuthContext = createContext(null);
-
-function isUnauthorized(err) {
-  return err instanceof ApiError && err.status === 401;
-}
 
 export function AuthProvider({ children }) {
   const [state, setState] = useState({
     status: 'loading',
     user: null,
-    error: null,
   });
   const didBootstrapRef = useRef(false);
 
   const clear = useCallback(() => {
-    setState({ status: 'anon', user: null, error: null });
-  }, []);
-
-  const markAuthError = useCallback((err) => {
-    setState((current) => ({
-      status: 'auth_error',
-      user: current.user,
-      error: err instanceof Error ? err : new Error(String(err)),
-    }));
+    setState({ status: 'anon', user: null });
   }, []);
 
   const login = useCallback(async ({ identifier, password }) => {
-    await authApi.login({ identifier, password }, { timeoutMs: 15000 });
-    const { user } = await authApi.me({ timeoutMs: 10000 });
-    setState({ status: 'authed', user, error: null });
+    await authApi.login({ identifier, password });
+    const { user } = await authApi.me();
+    setState({ status: 'authed', user });
     return user;
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await authApi.logout({ timeoutMs: 8000 });
+      await authApi.logout();
     } catch {
       // Logout deve limpar o cliente mesmo com falha de rede.
     }
@@ -53,25 +40,17 @@ export function AuthProvider({ children }) {
   }, [clear]);
 
   const reloadUser = useCallback(async () => {
-    setState((current) => ({
-      status: current.user ? 'authed' : 'loading',
-      user: current.user,
-      error: null,
-    }));
-
     try {
-      const { user } = await authApi.me({ timeoutMs: 10000 });
-      setState({ status: 'authed', user, error: null });
+      const { user } = await authApi.me();
+      setState({ status: 'authed', user });
       return user;
     } catch (err) {
-      if (isUnauthorized(err)) {
+      if (err instanceof ApiError && err.status === 401) {
         clear();
-        return null;
       }
-      markAuthError(err);
       throw err;
     }
-  }, [clear, markAuthError]);
+  }, [clear]);
 
   useEffect(() => {
     if (didBootstrapRef.current) return;
@@ -80,29 +59,34 @@ export function AuthProvider({ children }) {
     let cancelled = false;
     (async () => {
       try {
-        const { user } = await authApi.me({ timeoutMs: 10000 });
+        const { user } = await authApi.me();
         if (cancelled) return;
-        setState({ status: 'authed', user, error: null });
+        setState({ status: 'authed', user });
       } catch (err) {
         if (cancelled) return;
-        if (isUnauthorized(err)) {
+        if (err instanceof ApiError && err.status === 401) {
           clear();
           return;
         }
-        markAuthError(err);
+        setState({ status: 'anon', user: null });
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [clear, markAuthError]);
+  }, [clear]);
+
+  useEffect(() => {
+    return onUnauthorized(() => {
+      clear();
+    });
+  }, [clear]);
 
   const value = useMemo(
     () => ({
       status: state.status,
       user: state.user,
-      error: state.error,
       login,
       logout,
       reloadUser,
