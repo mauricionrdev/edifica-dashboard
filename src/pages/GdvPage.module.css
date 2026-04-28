@@ -964,77 +964,42 @@
 }
 
 
-/* Patch v93 — clientes usam avatar oficial na tela de GDV */
-.clientAvatarMini img,
-.clientAvatarSmall img {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 999px;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-}
 
-
-.clientAvatarMini,
-.clientAvatarSmall {
-  overflow: hidden;
-  line-height: 1;
-}
-
-
-/* Patch v94 — avatar real compartilhado entre telas */
+/* Patch v97 — saneamento final de avatares GDV */
 .clientAvatarMini,
 .clientAvatarSmall,
 .clientAvatar {
-  overflow: hidden;
-  line-height: 1;
-}
-
-.clientAvatarMini img,
-.clientAvatarSmall img,
-.clientAvatar img {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 999px;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-}
-
-
-/* Patch v96 — avatares compactos estáveis */
-.clientAvatarMini,
-.clientAvatarSmall,
-.clientAvatar {
+  box-sizing: border-box;
   aspect-ratio: 1 / 1;
-  min-width: unset;
-  overflow: hidden;
   border: 0;
+  border-radius: 999px;
   outline: 0;
   box-shadow: none;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
-  display: inline-grid;
-  place-items: center;
-  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: 590;
+  letter-spacing: 0;
 }
 
 .clientAvatarMini {
   width: 28px;
   height: 28px;
   font-size: 9px;
-  letter-spacing: -0.01em;
 }
 
 .clientAvatarSmall {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   font-size: 9px;
-  letter-spacing: -0.01em;
 }
 
 .clientAvatar {
@@ -1052,4 +1017,21 @@
   display: block;
   object-fit: cover;
   object-position: center;
+}
+
+.clientMain {
+  min-width: 0;
+}
+
+.clientRow {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.clientList {
+  min-width: 0;
+}
+
+.listCard {
+  min-width: 0;
 }
