@@ -618,12 +618,7 @@ export default function SquadPage() {
         <div className={styles.headerTitleText}>
           <strong>{squad.name}</strong>
           <small>
-            {squadOwnership.owner ? (
-              <UserHoverCard user={squadOwnership.owner} placement="bottom">
-                <span>{`Responsável: ${squadOwnership.owner.name}`}</span>
-              </UserHoverCard>
-            ) : 'Sem responsável definido'} ·{' '}
-            {squadOwnership.active ? 'Ativo' : 'Desativado'}
+            {squadOwnership.owner?.name || 'Sem responsável'} · {squadOwnership.active ? 'Ativo' : 'Desativado'}
           </small>
         </div>
       </div>

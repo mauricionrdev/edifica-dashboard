@@ -899,3 +899,66 @@
     width: 100%;
   }
 }
+
+
+/* Patch v92 — topo de GDV alinhado ao Design System */
+.headerIdentity {
+  min-height: 42px;
+  gap: 11px;
+}
+
+.headerLogo {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+  background: rgba(39, 166, 68, 0.1);
+}
+
+.headerLogo > span {
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 590;
+  letter-spacing: -0.02em;
+}
+
+.headerTitleText strong {
+  font-size: 17px;
+  font-weight: 590;
+  letter-spacing: -0.03em;
+}
+
+.headerTitleText small {
+  color: var(--text-tertiary);
+  font-weight: 510;
+}
+
+.headerActions {
+  gap: 7px;
+}
+
+.headerStat,
+.monthNav,
+.weekTabs,
+.iconButton,
+.gdvSelectButton {
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.headerStat strong,
+.monthLabel,
+.weekTab,
+.gdvSelectButton {
+  font-weight: 510;
+}
+
+.weekTabActive,
+.gdvOptionActive,
+.gdvOption:hover {
+  background: rgba(39, 166, 68, 0.1);
+  color: var(--success);
+}
+
+.gdvLogoTone {
+  color: var(--success);
+}
