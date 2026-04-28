@@ -4,20 +4,8 @@ import { BellIcon, ChecklistIcon, MenuIcon, MoonIcon, PanelLeftIcon, RotateCcwIc
 import Button from '../ui/Button.jsx';
 import LoadingIcon from '../ui/LoadingIcon.jsx';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
+import { getRouteCrumbLabel } from '../../utils/routeMeta.js';
 import styles from './Topbar.module.css';
-
-function routeLabel(pathname) {
-  if (pathname.startsWith('/ranking-squads')) return 'Ranking';
-  if (pathname.startsWith('/clientes')) return 'Clientes';
-  if (pathname.startsWith('/preencher-semana')) return 'Semana';
-  if (pathname.startsWith('/gdv')) return 'GDV';
-  if (pathname.startsWith('/equipe')) return 'Equipe';
-  if (pathname.startsWith('/perfil')) return 'Perfil';
-  if (pathname.startsWith('/modelo-oficial')) return 'Modelo Oficial';
-  if (pathname.startsWith('/squads')) return 'Squad';
-  if (pathname.startsWith('/projetos')) return 'Projetos';
-  return 'Dashboard';
-}
 
 function levelLabel(level) {
   if (level === 'success') return 'Sucesso';
@@ -54,7 +42,7 @@ export default function Topbar({
   const navigate = useNavigate();
   const panelRef = useRef(null);
   const nextThemeLabel = theme === 'dark' ? 'Tema claro' : 'Tema escuro';
-  const current = routeLabel(location.pathname);
+  const current = getRouteCrumbLabel(location.pathname);
   const unreadItems = useMemo(
     () => notifications.filter((item) => !item.readAt).length,
     [notifications]

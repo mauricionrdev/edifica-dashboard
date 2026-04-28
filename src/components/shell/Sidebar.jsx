@@ -164,7 +164,7 @@ export default function Sidebar({
         ? {
             to: '/preencher-semana',
             icon: <CalendarIcon size={16} strokeWidth={1.65} />,
-            label: 'Semana',
+            label: 'Preencher Semana',
           }
         : null,
     ].filter(Boolean),

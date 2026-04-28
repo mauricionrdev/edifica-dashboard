@@ -25,21 +25,8 @@ import {
   canViewGdv,
   hasPermission,
 } from '../../utils/permissions.js';
+import { getRoutePanelHeader } from '../../utils/routeMeta.js';
 import styles from './AppShell.module.css';
-
-
-function getRoutePanelHeader(pathname = '/') {
-  if (pathname.startsWith('/clientes')) return { title: 'Clientes', description: null, actions: null };
-  if (pathname.startsWith('/preencher-semana')) return { title: 'Semana', description: null, actions: null };
-  if (pathname.startsWith('/gdv')) return { title: 'GDV', description: null, actions: null };
-  if (pathname.startsWith('/equipe')) return { title: 'Equipe & Acessos', description: null, actions: null };
-  if (pathname.startsWith('/perfil')) return { title: 'Perfil', description: null, actions: null };
-  if (pathname.startsWith('/modelo-oficial')) return { title: 'Modelo Oficial', description: null, actions: null };
-  if (pathname.startsWith('/ranking-squads')) return { title: 'Ranking de Squads', description: null, actions: null };
-  if (pathname.startsWith('/squads')) return { title: 'Squad', description: null, actions: null };
-  if (pathname.startsWith('/projetos')) return { title: 'Projetos', description: null, actions: null };
-  return { title: 'Central', description: null, actions: null };
-}
 
 export default function AppShell() {
   const { status, user } = useAuth();

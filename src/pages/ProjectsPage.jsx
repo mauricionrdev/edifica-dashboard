@@ -487,7 +487,6 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     setPanelHeader({ title: 'Projetos', description: null, actions: null });
-    return () => setPanelHeader({ title: 'Dashboard', description: null, actions: null });
   }, [setPanelHeader]);
 
   const renderedTaskGroups = useMemo(() => {

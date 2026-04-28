@@ -884,7 +884,7 @@ export default function SquadPage() {
         <StateBlock
           variant="empty"
           title="Squad não encontrado"
-          action={<Link to="/" className={styles.inlineAction}>Voltar para a Central</Link>}
+          action={<Link to="/" className={styles.inlineAction}>Voltar para o Dashboard</Link>}
         />
       </div>
     );
