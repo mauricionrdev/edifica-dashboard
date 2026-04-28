@@ -247,3 +247,68 @@
   .entryHdr { grid-template-columns: 1fr max-content; }
   .entryAuthor { grid-column: 1 / -1; grid-row: 2; }
 }
+
+/* Patch 66 — densidade para notebook */
+.panel {
+  gap: 14px;
+  padding: 20px 26px 26px;
+}
+
+.header {
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+
+.eyebrow {
+  min-height: 24px;
+  padding: 0 10px;
+  font-size: 9.5px;
+}
+
+.heroMetric {
+  min-height: 34px;
+  padding: 0 11px;
+  gap: 4px;
+}
+
+.heroMetric strong {
+  font-size: 15px;
+}
+
+.addBtn {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 12px;
+}
+
+.entry {
+  border-radius: 14px;
+}
+
+.entryHdr {
+  min-height: 42px;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.dateControl {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 12px;
+}
+
+.dateField {
+  width: 126px;
+}
+
+.delBtn {
+  min-height: 28px;
+  border-radius: 10px;
+}
+
+.textarea {
+  min-height: 104px;
+  padding: 12px 14px;
+  line-height: 1.48;
+}

@@ -84,3 +84,25 @@
   .summaryCard { border-left: 0; border-top: 1px solid var(--line); }
   .summaryCard:first-child { border-top: 0; }
 }
+
+/* Patch 66 — densidade para notebook */
+.summaryCard {
+  min-height: 68px;
+  padding: 13px 16px;
+  gap: 5px;
+}
+
+.summaryValue {
+  font-size: clamp(16px, 1.35vw, 21px);
+}
+
+.summarySub,
+.fieldHint {
+  font-size: 10.5px;
+}
+
+@media (max-width: 1366px) and (min-width: 901px) {
+  .summary {
+    grid-template-columns: minmax(220px, 1.35fr) repeat(3, minmax(108px, 0.7fr));
+  }
+}

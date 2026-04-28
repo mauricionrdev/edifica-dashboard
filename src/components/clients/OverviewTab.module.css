@@ -169,3 +169,49 @@
   .factItem:first-child { border-top: 0; }
   .identityPanel { padding: 18px 20px; }
 }
+
+/* Patch 66 — densidade para notebook */
+.factItem {
+  min-height: 62px;
+  padding: 12px 14px;
+  gap: 4px 9px;
+}
+
+.factItem strong {
+  font-size: 14px;
+}
+
+.identityPanel {
+  min-height: 88px;
+  padding: 16px 26px;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  gap: 14px;
+}
+
+.clientAvatarLarge {
+  width: 54px;
+  height: 54px;
+  font-size: 16px;
+}
+
+.identityMain {
+  gap: 5px;
+}
+
+.identityMain strong {
+  font-size: 15px;
+}
+
+.identityActions {
+  gap: 6px;
+}
+
+.identityActions button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 12px;
+}
+
+.formGrid {
+  gap: 14px 16px;
+}

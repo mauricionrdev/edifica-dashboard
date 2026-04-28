@@ -424,3 +424,151 @@
   .confirmBar { grid-template-columns: 1fr; }
   .confirmActions { justify-content: flex-start; }
 }
+
+/* Patch 66 — densidade para notebook */
+.drawer {
+  width: min(900px, calc(100vw - 54px));
+  grid-template-columns: 188px minmax(0, 1fr);
+}
+
+.header {
+  min-height: 104px;
+  padding: 18px 72px 18px 24px;
+}
+
+.topbar {
+  top: 16px;
+  right: 18px;
+}
+
+.topbarActions {
+  gap: 8px;
+}
+
+.projectBtn {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 12px;
+}
+
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+}
+
+.identity {
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.avatar {
+  width: 58px;
+  height: 58px;
+  font-size: 16px;
+}
+
+.identityText {
+  gap: 6px;
+}
+
+.nameRow {
+  gap: 10px;
+}
+
+.name {
+  max-width: min(440px, 100%);
+  font-size: clamp(25px, 2.1vw, 34px);
+  line-height: 1;
+}
+
+.status {
+  min-height: 23px;
+  padding: 0 10px;
+  font-size: 9px;
+}
+
+.section {
+  padding: 20px 26px;
+}
+
+.sectionTitle {
+  margin-bottom: 12px;
+  font-size: 10px;
+}
+
+.grid {
+  gap: 14px 16px;
+}
+
+.field {
+  gap: 7px;
+}
+
+.label {
+  font-size: 11px;
+}
+
+.input,
+.selectControl :global(button),
+.selectControl :global(input),
+.selectControl :global(select) {
+  min-height: 40px;
+  border-radius: 12px;
+  font-size: 13px;
+  padding: 0 13px;
+}
+
+.btn {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 12px;
+}
+
+.confirmBar {
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.projectChoiceModal {
+  width: min(500px, calc(100% - 44px));
+  border-radius: 18px;
+}
+
+.projectChoiceHeader {
+  min-height: 58px;
+  padding: 13px 15px;
+}
+
+.projectChoiceGrid {
+  gap: 10px;
+  padding: 14px;
+}
+
+.projectChoiceCard {
+  min-height: 72px;
+  padding: 13px 15px;
+  border-radius: 14px;
+}
+
+@media (max-width: 1366px) and (min-width: 901px) {
+  .drawer {
+    width: min(860px, calc(100vw - 48px));
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .header {
+    min-height: 96px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .section {
+    padding: 18px 24px;
+  }
+
+  .name {
+    font-size: clamp(24px, 2vw, 32px);
+  }
+}

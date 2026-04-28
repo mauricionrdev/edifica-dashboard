@@ -146,3 +146,54 @@
   .rowGrid { grid-template-columns: 1fr; }
   .sectionHead { flex-direction: column; align-items: stretch; }
 }
+
+/* Patch 66 — densidade para notebook */
+.panel {
+  gap: 16px;
+  padding: 20px 26px 26px;
+}
+
+.summaryGrid {
+  gap: 10px;
+}
+
+.summaryCard {
+  min-height: 68px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  gap: 4px;
+}
+
+.summaryValue {
+  font-size: clamp(16px, 1.3vw, 20px);
+}
+
+.summarySub {
+  font-size: 10.5px;
+}
+
+.sectionHead {
+  min-height: 32px;
+}
+
+.rows {
+  gap: 10px;
+}
+
+.rowCard {
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.rowHeader {
+  gap: 10px;
+}
+
+.rowGrid {
+  gap: 10px;
+}
+
+.footer {
+  gap: 8px;
+}
