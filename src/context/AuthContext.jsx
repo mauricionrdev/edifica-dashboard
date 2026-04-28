@@ -24,15 +24,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async ({ identifier, password }) => {
-    await authApi.login({ identifier, password });
-    const { user } = await authApi.me();
+    await authApi.login({ identifier, password }, { timeoutMs: 15000 });
+    const { user } = await authApi.me({ timeoutMs: 10000 });
     setState({ status: 'authed', user });
     return user;
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await authApi.logout();
+      await authApi.logout({ timeoutMs: 8000 });
     } catch {
       // Logout deve limpar o cliente mesmo com falha de rede.
     }
@@ -41,7 +41,7 @@ export function AuthProvider({ children }) {
 
   const reloadUser = useCallback(async () => {
     try {
-      const { user } = await authApi.me();
+      const { user } = await authApi.me({ timeoutMs: 10000 });
       setState({ status: 'authed', user });
       return user;
     } catch (err) {
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
     let cancelled = false;
     (async () => {
       try {
-        const { user } = await authApi.me();
+        const { user } = await authApi.me({ timeoutMs: 10000 });
         if (cancelled) return;
         setState({ status: 'authed', user });
       } catch (err) {
