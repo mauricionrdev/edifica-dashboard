@@ -12,7 +12,7 @@ import { createClientProject, getClientProject } from '../../api/projects.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
-import { isAdminUser, isSuperAdmin } from '../../utils/roles.js';
+import { isAdminUser } from '../../utils/roles.js';
 import {
   getClientAvatar,
   readAvatarFile,
@@ -70,7 +70,7 @@ export default function ClientDetailDrawer({
   const { user } = useAuth();
   const { showToast } = useToast();
   const admin = canDelete || isAdminUser(user);
-  const canManageAvatar = isSuperAdmin(user);
+  const canManageAvatar = canEditClient;
   const canViewProject = hasPermission(user, 'projects.view');
   const canCreateProject = hasPermission(user, 'projects.create');
 

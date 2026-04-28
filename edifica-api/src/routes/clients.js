@@ -20,7 +20,7 @@ import {
   notFound,
   forbidden,
 } from '../utils/helpers.js';
-import { filterRowsBySquadAccess, getAccessibleClientRow, isAdminUser } from '../utils/access.js';
+import { filterRowsBySquadAccess, getAccessibleClientRow, getAllowedSquads, isAdminUser } from '../utils/access.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { hasPermission } from '../utils/permissions.js';
 
@@ -181,6 +181,25 @@ async function normalizeResponsibleFields(fields) {
   return next;
 }
 
+function canUseAnySquadOnCreate(user) {
+  return isAdminUser(user) || hasPermission(user, 'clients.view.all') || hasPermission(user, 'clients.edit.all');
+}
+
+function assertCreateSquadScope(user, squadId) {
+  const cleanSquadId = String(squadId || '').trim();
+  if (canUseAnySquadOnCreate(user)) return;
+  const allowedSquads = getAllowedSquads(user, 'clients.view.all') || [];
+  if (!cleanSquadId || !allowedSquads.includes(cleanSquadId)) {
+    throw forbidden('Selecione um squad dentro do seu escopo.');
+  }
+}
+
+async function assertClientDeleteScope(user, clientId) {
+  if (isAdminUser(user) || hasPermission(user, 'clients.edit.all')) return;
+  await getAccessibleClientRow(clientId, user, 'id, squad_id', 'clients.edit.all');
+  throw forbidden('A exclusão de cliente exige permissão para editar todos os clientes.');
+}
+
 async function assertUniqueClientName(name, excludeId = null) {
   const cleanName = String(name || '').trim();
   if (!cleanName) return;
@@ -260,6 +279,7 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
     const fields = await normalizeResponsibleFields(pickUpdatableFields(req.body || {}));
     const name = String(fields.name || '').trim();
     if (!name) throw badRequest('Informe o nome do cliente');
+    assertCreateSquadScope(req.user, fields.squadId);
     await assertUniqueClientName(name);
 
     const id = uuid();
@@ -432,6 +452,7 @@ router.delete('/:id', requirePermission('clients.edit'), async (req, res, next) 
     const { id } = req.params;
     const rows = await query('SELECT id FROM clients WHERE id = ? LIMIT 1', [id]);
     if (rows.length === 0) throw notFound('Cliente não encontrado');
+    await assertClientDeleteScope(req.user, id);
 
     // FK ON DELETE CASCADE cuida de onboardings, weekly_metrics e analyses.
     await query('DELETE FROM clients WHERE id = ?', [id]);

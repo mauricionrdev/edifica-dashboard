@@ -4,9 +4,11 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import {
   canCreateClients,
-  canEditClients,
-  canEditClientFeeSchedule,
-  canViewClientFeeSchedule,
+  canDeleteClientRecord,
+  canEditClientFeeScheduleRecord,
+  canEditClientRecord,
+  canViewClientFeeScheduleRecord,
+  hasPermission,
 } from '../utils/permissions.js';
 import {
   clientInitials,
@@ -47,9 +49,7 @@ export default function ClientsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const canCreate = canCreateClients(user);
-  const canEdit = canEditClients(user);
-  const canViewFeeSchedule = canViewClientFeeSchedule(user);
-  const canManageFeeSchedule = canEditClientFeeSchedule(user);
+  const canOpenTemplate = hasPermission(user, 'project_template.view');
 
   const [query, setQuery] = useState(() => searchParams.get('search') || '');
   const [scope, setScope] = useState('all');
@@ -118,15 +118,17 @@ export default function ClientsPage() {
 
     const actions = (
       <div className={styles.headerActions}>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={() => navigate('/modelo-oficial')}
-          aria-label="Abrir modelo oficial"
-        >
-          <span>Modelo oficial</span>
-        </Button>
+        {canOpenTemplate ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate('/modelo-oficial')}
+            aria-label="Abrir modelo oficial"
+          >
+            <span>Modelo oficial</span>
+          </Button>
+        ) : null}
         {canCreate ? (
           <Button type="button" variant="primary" size="sm" onClick={() => setModalOpen(true)} aria-label="Novo cliente">
             <PlusIcon size={14} />
@@ -137,7 +139,7 @@ export default function ClientsPage() {
     );
 
     setPanelHeader({ title, actions });
-  }, [canCreate, counts.all, counts.active, navigate, setPanelHeader]);
+  }, [canCreate, canOpenTemplate, counts.all, counts.active, navigate, setPanelHeader]);
 
   const openDetail = useCallback((id) => setDetailId(id), []);
   const closeDetail = useCallback(() => {
@@ -406,10 +408,10 @@ export default function ClientsPage() {
           client={selectedClient}
           squads={squads || []}
           users={userDirectory || []}
-          canEditClient={canEdit}
-          canViewFeeSchedule={canViewFeeSchedule}
-          canEditFeeSchedule={canManageFeeSchedule}
-          canDelete={canEdit}
+          canEditClient={canEditClientRecord(user, selectedClient)}
+          canViewFeeSchedule={canViewClientFeeScheduleRecord(user, selectedClient)}
+          canEditFeeSchedule={canEditClientFeeScheduleRecord(user, selectedClient)}
+          canDelete={canDeleteClientRecord(user, selectedClient)}
           onClose={closeDetail}
           onUpdated={handleUpdated}
           onDeleted={handleDeleted}

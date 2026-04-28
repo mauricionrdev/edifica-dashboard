@@ -230,6 +230,32 @@ export function canEditClientFeeSchedule(user) {
   return isAdminUser(user) || hasPermission(user, 'clients.fee_schedule.edit');
 }
 
+export function canAccessClientRecord(user, client, allPermission = 'clients.view.all') {
+  if (!client) return false;
+  if (isAdminUser(user) || hasPermission(user, allPermission)) return true;
+  const squadId = client.squadId || client.squad_id || '';
+  return Boolean(squadId && getUserSquadIds(user).includes(squadId));
+}
+
+export function canEditClientRecord(user, client) {
+  if (isAdminUser(user) || hasPermission(user, 'clients.edit.all')) return true;
+  return hasPermission(user, 'clients.edit.own') && canAccessClientRecord(user, client, 'clients.edit.all');
+}
+
+export function canDeleteClientRecord(user, client) {
+  return Boolean(client) && (isAdminUser(user) || hasPermission(user, 'clients.edit.all'));
+}
+
+export function canViewClientFeeScheduleRecord(user, client) {
+  if (isAdminUser(user) || hasPermission(user, 'clients.fee_schedule.view.all')) return true;
+  return hasPermission(user, 'clients.fee_schedule.view.own') && canAccessClientRecord(user, client, 'clients.fee_schedule.view.all');
+}
+
+export function canEditClientFeeScheduleRecord(user, client) {
+  if (isAdminUser(user) || hasPermission(user, 'clients.fee_schedule.edit.all')) return true;
+  return hasPermission(user, 'clients.fee_schedule.edit.own') && canAccessClientRecord(user, client, 'clients.fee_schedule.edit.all');
+}
+
 export function canViewMetrics(user) {
   return isAdminUser(user) || hasPermission(user, 'metrics.view');
 }
