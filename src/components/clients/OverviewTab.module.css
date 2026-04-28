@@ -1,127 +1,76 @@
+
 .overviewFacts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  padding: 0 0 14px;
-  border-bottom: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line);
+  background: #08090a;
 }
 
 .factItem {
   min-width: 0;
-  min-height: 44px;
-  padding: 0 13px;
-  border-left: 1px solid var(--line-subtle);
+  min-height: 74px;
+  padding: 16px 18px;
+  border-left: 1px solid var(--line);
   display: grid;
   grid-template-columns: 16px minmax(0, 1fr);
   grid-template-areas:
     'icon label'
     'icon value';
-  column-gap: 8px;
-  row-gap: 3px;
   align-content: center;
+  gap: 4px 10px;
 }
 
-.factItem:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
+.factItem:first-child { border-left: 0; }
 
 .factItem svg {
   grid-area: icon;
-  margin-top: 2px;
+  margin-top: 1px;
   color: var(--text-quaternary);
-  width: 14px;
-  height: 14px;
-  stroke-width: 1.75;
 }
 
-.factItem span {
-  grid-area: label;
+.factItem span,
+.identityMain span {
   color: var(--text-quaternary);
-  font-size: 9px;
-  font-weight: 590;
-  letter-spacing: 0.12em;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 720;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .factItem strong {
   grid-area: value;
+  min-width: 0;
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 590;
+  font-size: 14px;
+  font-weight: 680;
   letter-spacing: -0.02em;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.formGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.fieldCompact {
-  max-width: none;
-}
-
-.fieldHint {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-@media (max-width: 920px) {
-  .overviewFacts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 10px;
-  }
-
-  .factItem:nth-child(odd) {
-    padding-left: 0;
-    border-left: 0;
-  }
-}
-
-@media (max-width: 760px) {
-  .overviewFacts,
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .factItem {
-    padding-left: 0;
-    border-left: 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--line-subtle);
-  }
-
-  .factItem:last-child {
-    border-bottom: 0;
-  }
-}
-
-/* Patch 63 — identidade e avatar gerenciados na visão geral */
 .identityPanel {
-  min-height: 86px;
-  padding: 18px 22px;
+  min-height: 96px;
+  padding: 18px 28px;
   border-bottom: 1px solid var(--line);
   background: #0b0c0d;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .clientAvatarLarge {
   width: 58px;
   height: 58px;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  overflow: hidden;
-  background: #151617;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  border-radius: 999px;
+  background: #0f1011;
   color: var(--text-primary);
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -136,31 +85,26 @@
   display: block;
   object-fit: cover;
   object-position: center;
-  border-radius: inherit;
+  border-radius: 999px;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
 }
 
 .identityMain {
   min-width: 0;
   display: grid;
-  gap: 4px;
-}
-
-.identityMain span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 720;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  gap: 5px;
 }
 
 .identityMain strong {
-  overflow: hidden;
+  min-width: 0;
   color: var(--text-primary);
   font-size: 15px;
-  font-weight: 640;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
+  font-weight: 700;
+  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .identityActions {
@@ -173,43 +117,52 @@
 
 .identityActions button {
   min-height: 34px;
-  padding: 0 11px;
+  padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 0;
   background: transparent;
   color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 11px;
+  font: inherit;
+  font-size: 12px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  cursor: pointer;
+  gap: 8px;
 }
 
 .identityActions button:hover:not(:disabled) {
+  color: var(--text-primary);
   border-color: var(--line-strong);
   background: rgba(255, 255, 255, 0.035);
-  color: var(--text-primary);
 }
 
-.identityActions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.identityActions button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
 }
 
-.overviewFacts {
-  padding: 16px 22px !important;
-  background: #08090a;
+.fieldCompact { max-width: none; }
+
+.fieldHint {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
-@media (max-width: 760px) {
-  .identityPanel {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
+@media (max-width: 920px) {
+  .overviewFacts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .factItem:nth-child(odd) { border-left: 0; }
+  .identityPanel { grid-template-columns: 58px minmax(0, 1fr); }
+  .identityActions { grid-column: 1 / -1; justify-content: flex-start; }
+}
 
-  .identityActions {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-  }
+@media (max-width: 640px) {
+  .overviewFacts,
+  .formGrid { grid-template-columns: 1fr; }
+  .factItem { border-left: 0; border-top: 1px solid var(--line); }
+  .factItem:first-child { border-top: 0; }
+  .identityPanel { padding: 16px 18px; }
 }

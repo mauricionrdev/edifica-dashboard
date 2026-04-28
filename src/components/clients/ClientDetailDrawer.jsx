@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   clientInitials,
-  colorFromName,
   statusClass,
   statusLabel,
 } from '../../utils/clientHelpers.js';
@@ -116,8 +115,6 @@ export default function ClientDetailDrawer({
       document.body.style.overflow = previousOverflow;
     };
   }, []);
-
-  const avatarBg = useMemo(() => colorFromName(client?.name), [client?.name]);
 
   if (!client) return null;
 
@@ -289,7 +286,6 @@ export default function ClientDetailDrawer({
           <div className={drawerStyles.identity}>
             <div
               className={drawerStyles.avatar}
-              style={{ background: avatarBg }}
               aria-label={`Avatar de ${client.name}`}
               title={client.name}
             >
@@ -349,7 +345,6 @@ export default function ClientDetailDrawer({
               users={users}
               headerFacts={headerFacts}
               avatarUrl={avatarUrl}
-              avatarBg={avatarBg}
               canEdit={canEditClient}
               canManageAvatar={canManageAvatar}
               canDelete={admin}

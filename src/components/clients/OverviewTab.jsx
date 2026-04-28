@@ -48,7 +48,6 @@ export default function OverviewTab({
   users = [],
   headerFacts = [],
   avatarUrl = '',
-  avatarBg = 'var(--bg-raised)',
   canEdit = false,
   canManageAvatar = false,
   canDelete = false,
@@ -172,7 +171,7 @@ export default function OverviewTab({
       ) : null}
 
       <div className={styles.identityPanel}>
-        <div className={styles.clientAvatarLarge} style={{ background: avatarBg }}>
+        <div className={styles.clientAvatarLarge}>
           {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
         </div>
         <div className={styles.identityMain}>

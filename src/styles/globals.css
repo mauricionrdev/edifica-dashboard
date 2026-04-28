@@ -3,3 +3,23 @@
 @import "./theme.css";
 @import "./reset.css";
 @import "./compat.css";
+
+
+/* Patch 64 — avatar baseline: avatar não recebe borda/focus visual */
+:where([class*="avatar" i]) {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+:where([class*="avatar" i]:focus),
+:where([class*="avatar" i]:focus-visible) {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+:where([class*="avatar" i]) img {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  object-fit: cover;
+}

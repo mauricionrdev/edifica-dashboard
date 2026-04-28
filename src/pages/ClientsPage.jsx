@@ -341,7 +341,7 @@ export default function ClientsPage() {
                   >
                     <div
                       className={styles.avatar}
-                      style={{ background: colorFromName(c.name) }}
+                      style={avatarUrl ? undefined : { background: colorFromName(c.name) }}
                       aria-hidden="true"
                       data-avatar-version={avatarVersion}
                     >
