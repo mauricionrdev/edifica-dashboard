@@ -33,6 +33,7 @@ import {
   saveSquadAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
+import { clientInitials as sharedClientInitials, resolveClientIdentity } from '../utils/clientIdentity.js';
 import { matchesAnySearch } from '../utils/search.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import UserHoverCard from '../components/users/UserHoverCard.jsx';
@@ -297,6 +298,12 @@ export default function SquadPage() {
   const [renderStickyResult, setRenderStickyResult] = useState(false);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
+
+  const resolveClientDisplay = useCallback(
+    (client) => resolveClientIdentity(client, clients),
+    [clients]
+  );
+
 
   const squadClients = useMemo(
     () =>
@@ -908,7 +915,13 @@ export default function SquadPage() {
 
       {selectedClient && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <span className={styles.clientAvatarMini}>{initialsFromClient(selectedClient.name)}</span>
+          <span className={styles.clientAvatarMini}>
+            {resolveClientDisplay(selectedClient).avatarUrl ? (
+              <img src={resolveClientDisplay(selectedClient).avatarUrl} alt="" />
+            ) : (
+              resolveClientDisplay(selectedClient).initials
+            )}
+          </span>
           <strong>{selectedClient.name}</strong>
 
           <div className={styles.stickyMetric}>
@@ -986,7 +999,13 @@ export default function SquadPage() {
                   onClick={() => setSelectedClientId(row.id)}
                 >
                   <div className={styles.clientMain}>
-                    <span className={styles.clientAvatarSmall}>{initialsFromClient(row.name)}</span>
+                    <span className={styles.clientAvatarSmall}>
+                      {resolveClientDisplay(row).avatarUrl ? (
+                        <img src={resolveClientDisplay(row).avatarUrl} alt="" />
+                      ) : (
+                        resolveClientDisplay(row).initials
+                      )}
+                    </span>
                     <div>
                       <strong>{row.name}</strong>
                       <span>

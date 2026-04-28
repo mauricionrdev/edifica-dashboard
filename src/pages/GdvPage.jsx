@@ -25,6 +25,7 @@ import {
   saveGdvAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
+import { clientInitials as sharedClientInitials, resolveClientIdentity } from '../utils/clientIdentity.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import styles from './GdvPage.module.css';
 
@@ -48,7 +49,7 @@ function gdvInitials(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-function clientInitials(name) {
+function sharedClientInitials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return 'CL';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
@@ -195,6 +196,12 @@ export default function GdvPage() {
   const gdvMenuRef = useRef(null);
   const gdvLogoInputRef = useRef(null);
   const cardsRef = useRef(null);
+
+  const resolveClientDisplay = useCallback(
+    (client) => resolveClientIdentity(client, clients),
+    [clients]
+  );
+
 
   const [showStickyResult, setShowStickyResult] = useState(false);
   const [renderStickyResult, setRenderStickyResult] = useState(false);
@@ -975,7 +982,13 @@ export default function GdvPage() {
 
       {selectedRow && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <span className={styles.clientAvatarMini}>{clientInitials(selectedRow.client.name)}</span>
+          <span className={styles.clientAvatarMini}>
+            {resolveClientDisplay(selectedRow.client).avatarUrl ? (
+              <img src={resolveClientDisplay(selectedRow.client).avatarUrl} alt="" />
+            ) : (
+              resolveClientDisplay(selectedRow.client).initials
+            )}
+          </span>
           <strong>{selectedRow.client.name}</strong>
 
           <div className={styles.stickyMetric}>
@@ -1071,7 +1084,13 @@ export default function GdvPage() {
                     onClick={() => setSelectedClientId(client.id)}
                   >
                     <div className={styles.clientMain}>
-                      <span className={styles.clientAvatarSmall}>{clientInitials(client.name)}</span>
+                      <span className={styles.clientAvatarSmall}>
+                        {resolveClientDisplay(client).avatarUrl ? (
+                          <img src={resolveClientDisplay(client).avatarUrl} alt="" />
+                        ) : (
+                          resolveClientDisplay(client).initials
+                        )}
+                      </span>
                       <div>
                         <strong>{client.name}</strong>
                         <span>
