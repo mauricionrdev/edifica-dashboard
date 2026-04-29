@@ -368,6 +368,34 @@
 }
 
 /* Métricas */
+
+.toolbarMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.progressLine {
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 82%, transparent);
+  overflow: hidden;
+}
+
+.progressLine span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-amber);
+  transition: width 0.25s ease;
+}
+
 .summaryInline {
   margin-top: 0;
   display: flex;

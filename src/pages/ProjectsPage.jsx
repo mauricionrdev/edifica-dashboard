@@ -35,7 +35,6 @@ import {
   ProjectBoardIcon,
   TrashIcon,
 } from '../components/ui/Icons.jsx';
-import obStyles from '../components/clients/OnboardingTab.module.css';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { hasPermission } from '../utils/permissions.js';
@@ -1283,7 +1282,7 @@ export default function ProjectsPage() {
                   {projectHeaderActions}
                 </div>
 
-                <div className={`${obStyles.toolbarMeta} ${styles.summaryInline}`.trim()}>
+                <div className={`${styles.toolbarMeta} ${styles.summaryInline}`.trim()}>
                   <span className={styles.summaryPill}>
                     <small className={styles.summaryLabel}>Tarefas</small>
                     <b className={styles.summaryValue}>{totalTasks}</b>
@@ -1303,7 +1302,7 @@ export default function ProjectsPage() {
                 </div>
               </section>
 
-              <div className={obStyles.progressLine} aria-hidden="true">
+              <div className={styles.progressLine} aria-hidden="true">
                 <span style={{ width: `${progress}%` }} />
               </div>
 

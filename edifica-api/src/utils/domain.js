@@ -106,8 +106,7 @@ export const ONBOARDING_TEMPLATE = [
     ],
   },
 ];
-
-export function instantiateOnboarding(template, { gestor = '', gestorId = '', gdv = '', gdvId = '' } = {}) {
+ = {}) {
   return template.map((section, si) => ({
     sec: section.sec,
     open: true,

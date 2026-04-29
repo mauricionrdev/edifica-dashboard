@@ -12,8 +12,6 @@
     "start": "node server.js",
     "migrate": "node migrations/run.js",
     "seed": "node scripts/seed.js",
-    "normalize:onboarding": "node scripts/normalize-onboarding-tasks.js",
-    "migrate:projects": "node scripts/migrate-onboardings-to-projects.js",
     "clean:responsibles": "node scripts/clean-client-responsibles.js"
   },
   "dependencies": {
