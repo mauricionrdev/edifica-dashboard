@@ -742,7 +742,7 @@ export default function PreencherSemanaPage() {
 
   if (shellLoading && clients.length === 0) {
     return (
-      <div className="content">
+      <div className={styles.page}>
         <div className={styles.workspace}>
           <StateBlock
             variant="loading"
@@ -756,7 +756,7 @@ export default function PreencherSemanaPage() {
 
   if (filteredClients.length === 0 && activeClients.length === 0 && !query.trim() && !squadFilter && !clientFilter) {
     return (
-      <div className="content">
+      <div className={styles.page}>
         <div className={styles.workspace}>
           <div className={styles.emptyState}>
             <h2>Nenhum cliente</h2>
@@ -772,7 +772,7 @@ export default function PreencherSemanaPage() {
   }
 
   return (
-    <div className="content">
+    <div className={styles.page}>
       <div className={styles.workspace}>
         <section className={styles.cardsPanel}>
           <div className={styles.commandBar}>

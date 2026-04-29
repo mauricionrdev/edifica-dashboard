@@ -121,25 +121,4 @@
 .optionActive {
   outline: 1px solid var(--line-subtle);
 }
-
-:global([data-theme="light"]) .select {
-  background: #ffffff;
-  border-color: var(--line);
-  color: var(--text-primary);
-}
-
-:global([data-theme="light"]) .select:hover,
-:global([data-theme="light"]) .selectOpen {
-  background: var(--field-bg-hover);
-  border-color: var(--line-strong);
-}
-
-:global([data-theme="light"]) .menu {
-  background: #ffffff;
-  border-color: var(--line);
-}
-
-:global([data-theme="light"]) .option:hover,
-:global([data-theme="light"]) .optionActive {
-  background: var(--bg-hover);
-}
+

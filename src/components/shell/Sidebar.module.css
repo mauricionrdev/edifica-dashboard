@@ -466,11 +466,6 @@
   color: var(--danger);
 }
 
-:global([data-theme="light"]) .sidebar {
-  background: var(--sidebar-bg);
-  border-color: var(--sidebar-line);
-}
-
 @media (max-height: 820px) and (min-width: 1024px) {
   .sidebar {
     height: calc(100vh - 12px);

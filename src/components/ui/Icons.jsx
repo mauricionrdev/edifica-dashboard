@@ -32,12 +32,6 @@ export function CameraIcon(props) {
 export function SearchIcon(props) {
   return <BaseIcon {...props}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></BaseIcon>;
 }
-export function SunIcon(props) {
-  return <BaseIcon {...props}><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2.2" /><path d="M12 19.3v2.2" /><path d="m4.93 4.93 1.56 1.56" /><path d="m17.51 17.51 1.56 1.56" /><path d="M2.5 12h2.2" /><path d="M19.3 12h2.2" /><path d="m4.93 19.07 1.56-1.56" /><path d="m17.51 6.49 1.56-1.56" /></BaseIcon>;
-}
-export function MoonIcon(props) {
-  return <BaseIcon {...props}><path d="M20 14.5A7.5 7.5 0 1 1 9.5 4a6.2 6.2 0 0 0 10.5 10.5Z" /></BaseIcon>;
-}
 export function PlusIcon(props) {
   return <BaseIcon {...props}><path d="M12 5v14" /><path d="M5 12h14" /></BaseIcon>;
 }

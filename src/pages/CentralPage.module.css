@@ -557,40 +557,6 @@
   display: none;
 }
 
-:global([data-theme="light"]) .metricCard,
-:global([data-theme="light"]) .boardSection,
-:global([data-theme="light"]) .detailsPanel,
-:global([data-theme="light"]) .projectsPanel {
-  background: var(--surface-panel);
-  border-color: var(--line);
-}
-
-:global([data-theme="light"]) .metricCard:hover {
-  background: #ffffff;
-  border-color: var(--line-strong);
-}
-
-:global([data-theme="light"]) .columnBar {
-  background: var(--chart-bar);
-}
-
-:global([data-theme="light"]) .columnBarCurrent {
-  background: var(--accent-amber);
-}
-
-:global([data-theme="light"]) .projectsSummary span,
-:global([data-theme="light"]) .projectMark,
-:global([data-theme="light"]) .projectStatus {
-  background: #f7f8fa;
-  border-color: var(--line-subtle);
-}
-
-:global([data-theme="light"]) .projectStatus_blocked {
-  background: rgba(245, 184, 0, 0.12);
-  border-color: rgba(245, 184, 0, 0.36);
-  color: #7a5a00;
-}
-
 @media (min-width: 1180px) and (max-height: 820px) {
   .dashboard {
     padding-top: 9px;

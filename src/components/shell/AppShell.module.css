@@ -124,25 +124,6 @@
   pointer-events: auto;
 }
 
-:global([data-theme="light"]) .shell {
-  background: var(--bg-app);
-}
-
-:global([data-theme="light"]) .main {
-  background: var(--surface);
-  border-color: var(--line);
-}
-
-:global([data-theme="light"]) .pageRail {
-  background: var(--bg-app);
-  border-left-color: rgba(12, 18, 28, 0.1);
-}
-
-:global([data-theme="light"]) .pageHeader {
-  background: var(--surface);
-  border-bottom-color: rgba(12, 18, 28, 0.08);
-}
-
 @media (max-height: 820px) and (min-width: 1024px) {
   .shell {
     padding: 6px;

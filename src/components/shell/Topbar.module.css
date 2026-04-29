@@ -16,7 +16,6 @@
 
 .menuButton,
 .collapseButton,
-.themeButton,
 .notificationButton,
 .notificationsActionIcon {
   width: 24px;
@@ -39,7 +38,6 @@
 
 .menuButton:hover,
 .collapseButton:hover,
-.themeButton:hover,
 .notificationButton:hover,
 .notificationButtonActive,
 .notificationsActionIcon:hover {
@@ -49,7 +47,6 @@
 
 .menuButton svg,
 .collapseButton svg,
-.themeButton svg,
 .notificationButton svg,
 .notificationsActionIcon svg {
   width: 15px;
@@ -361,14 +358,6 @@
 .notificationItemHead,
 .notificationTitleBlock {
   display: contents;
-}
-
-:global([data-theme="light"]) .notificationBadge {
-  border-color: #ffffff;
-}
-
-:global([data-theme="light"]) .notificationItemUnread {
-  background: rgba(245, 184, 0, 0.08);
 }
 
 @media (max-width: 1100px) {

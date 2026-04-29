@@ -1,5 +1,4 @@
-:root,
-[data-theme="dark"] {
+:root {
   color-scheme: dark;
 
   --bg-app: #08090a;
@@ -42,45 +41,3 @@
   --shadow-panel: none;
 }
 
-[data-theme="light"] {
-  color-scheme: light;
-
-  --bg-app: #f7f8f8;
-  --bg-canvas: #ffffff;
-  --bg-elevated: #f3f4f5;
-  --bg-raised: #ffffff;
-  --bg-hover: #f0f2f4;
-  --bg-selected: #e8ebee;
-  --bg-soft: #f5f6f7;
-
-  --surface: #ffffff;
-  --surface-subtle: #f5f6f7;
-  --surface-panel: #ffffff;
-  --surface-raised: #f5f6f7;
-  --surface-card: #ffffff;
-  --surface-card-soft: #f5f6f7;
-  --surface-strong: #f0f2f4;
-
-  --text-primary: #111315;
-  --text-secondary: #303640;
-  --text-tertiary: #68727d;
-  --text-quaternary: #8c96a1;
-
-  --line-subtle: rgba(12, 18, 28, 0.06);
-  --line: rgba(12, 18, 28, 0.105);
-  --line-strong: rgba(12, 18, 28, 0.16);
-  --border-subtle: var(--line-subtle);
-  --border-default: var(--line);
-  --border-strong: var(--line-strong);
-
-  --field-bg: #ffffff;
-  --field-bg-hover: #f5f6f7;
-  --field-line: rgba(15, 23, 42, 0.12);
-
-  --chart-bar: #ebedf0;
-  --progress-track: #e6e8eb;
-
-  --accent-amber-border: rgba(245, 184, 0, 0.42);
-  --shadow-soft: none;
-  --shadow-panel: none;
-}

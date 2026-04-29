@@ -29,7 +29,6 @@ const AVATAR_OPTIONS = [
 const SETTINGS_TABS = [
   { value: 'profile', label: 'Perfil' },
   { value: 'account', label: 'Conta' },
-  { value: 'display', label: 'Exibição' },
 ];
 
 const TASK_TABS = [
@@ -138,7 +137,7 @@ function getTaskSections(tasks, tab) {
 }
 
 export default function ProfilePage() {
-  const { setPanelHeader, squads = [], userDirectory = [], theme, setTheme } = useOutletContext();
+  const { setPanelHeader, squads = [], userDirectory = [] } = useOutletContext();
   const { user, reloadUser } = useAuth();
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
@@ -684,34 +683,6 @@ export default function ProfilePage() {
                 </div>
               ) : null}
 
-              {settingsTab === 'display' ? (
-                <div className={styles.settingsSection}>
-                  <div className={styles.sectionCopy}>
-                    <h3>Exibição</h3>
-                    
-                  </div>
-
-                  <div className={styles.themeCard}>
-                    <strong>Tema da interface</strong>
-                    <div className={styles.themeToggle}>
-                      <button
-                        type="button"
-                        className={`${styles.themeButton} ${theme === 'dark' ? styles.themeButtonActive : ''}`.trim()}
-                        onClick={() => setTheme?.('dark')}
-                      >
-                        Escuro
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.themeButton} ${theme === 'light' ? styles.themeButtonActive : ''}`.trim()}
-                        onClick={() => setTheme?.('light')}
-                      >
-                        Claro
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
             </div>
           </section>
         </div>

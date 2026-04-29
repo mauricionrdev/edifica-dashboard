@@ -129,7 +129,6 @@
 .settingsButton,
 .addTaskButton,
 .primaryButton,
-.themeButton,
 .closeButton,
 .linkButton,
 .taskTab,
@@ -142,8 +141,7 @@
 
 .settingsButton,
 .addTaskButton,
-.primaryButton,
-.themeButton {
+.primaryButton {
   min-height: 34px;
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
@@ -155,8 +153,7 @@
 }
 
 .settingsButton:hover,
-.addTaskButton:hover,
-.themeButton:hover {
+.addTaskButton:hover {
   border-color: var(--line);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
@@ -622,8 +619,7 @@
 }
 
 .field span,
-.sectionCopy h3,
-.themeCard strong {
+.sectionCopy h3 {
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 510;
@@ -672,28 +668,6 @@
 
 .sectionCopy p {
   display: none;
-}
-
-.themeCard {
-  padding: 14px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.018);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.themeToggle {
-  display: inline-flex;
-  gap: 6px;
-}
-
-.themeButtonActive {
-  border-color: rgba(245, 184, 0, 0.24);
-  background: rgba(245, 184, 0, 0.08);
-  color: var(--accent-amber);
 }
 
 .modalFooter {
@@ -745,8 +719,7 @@
     padding: 12px;
   }
 
-  .photoBlock,
-  .themeCard {
+  .photoBlock {
     align-items: flex-start;
     flex-direction: column;
   }

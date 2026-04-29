@@ -41,7 +41,6 @@ export default function AppShell() {
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [theme, setTheme] = useState('dark');
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -58,9 +57,9 @@ export default function AppShell() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.body.setAttribute('data-theme', theme);
-  }, [theme]);
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.body.setAttribute('data-theme', 'dark');
+  }, []);
 
   useEffect(() => {
     setNotificationsOpen(false);
@@ -332,8 +331,6 @@ export default function AppShell() {
       refreshGdvs,
       refreshUserDirectory,
       setPanelHeader: setPanelHeaderStable,
-      theme,
-      setTheme,
     }),
     [
       clients,
@@ -347,12 +344,11 @@ export default function AppShell() {
       refreshGdvs,
       refreshUserDirectory,
       setPanelHeaderStable,
-      theme,
     ]
   );
 
   return (
-    <div className={styles.shell} data-theme={theme}>
+    <div className={styles.shell} data-theme="dark">
       <div
         className={`${styles.overlay} ${sidebarOpen ? styles.overlayVisible : ''}`}
         aria-hidden={sidebarOpen ? 'false' : 'true'}
@@ -376,8 +372,6 @@ export default function AppShell() {
 
       <div className={styles.main}>
         <Topbar
-          theme={theme}
-          onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
           onOpenSidebar={() => setSidebarOpen(true)}
           onToggleSidebarCollapse={() => setSidebarCollapsed((current) => !current)}
           sidebarCollapsed={sidebarCollapsed}

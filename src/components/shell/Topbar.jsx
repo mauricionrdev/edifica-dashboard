@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BellIcon, ChecklistIcon, MenuIcon, MoonIcon, PanelLeftIcon, RotateCcwIcon, SunIcon } from '../ui/Icons.jsx';
+import { BellIcon, ChecklistIcon, MenuIcon, PanelLeftIcon, RotateCcwIcon } from '../ui/Icons.jsx';
 import Button from '../ui/Button.jsx';
 import LoadingIcon from '../ui/LoadingIcon.jsx';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
@@ -23,9 +23,7 @@ function initials(name = '') {
 export default function Topbar({
   onOpenSidebar,
   onToggleSidebarCollapse,
-  onToggleTheme,
   sidebarCollapsed = false,
-  theme = 'dark',
   title,
   notifications = [],
   notificationsLoading = false,
@@ -41,7 +39,6 @@ export default function Topbar({
   const location = useLocation();
   const navigate = useNavigate();
   const panelRef = useRef(null);
-  const nextThemeLabel = theme === 'dark' ? 'Tema claro' : 'Tema escuro';
   const current = getRouteCrumbLabel(location.pathname);
   const unreadItems = useMemo(
     () => notifications.filter((item) => !item.readAt).length,
@@ -233,16 +230,6 @@ export default function Topbar({
             ) : null}
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className={styles.themeButton}
-            onClick={onToggleTheme}
-            aria-label={nextThemeLabel}
-            title={nextThemeLabel}
-          >
-            {theme === 'dark' ? <SunIcon size={15} /> : <MoonIcon size={15} />}
-          </Button>
         </div>
       </div>
     </header>

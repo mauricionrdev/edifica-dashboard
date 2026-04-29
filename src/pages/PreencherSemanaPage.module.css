@@ -1,34 +1,14 @@
+.page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+}
+
 .workspace {
-  height: 100%;
-  min-height: 0;
+  min-height: 100%;
   padding: 15px;
   background: var(--bg-app);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
-}
-
-.workspace::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  display: block;
-}
-
-.workspace::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.workspace::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  background-clip: content-box;
-}
-
-.workspace::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.24);
-  background-clip: content-box;
+  overflow: visible;
 }
 
 .headerControls {
