@@ -221,12 +221,12 @@
   flex-direction: column;
 }
 
-.boardSection > *,
-.detailsPanel > * {
+.boardSection>*,
+.detailsPanel>* {
   min-height: 0;
 }
 
-.boardSection > section,
+.boardSection>section,
 .detailsPanel {
   flex: 1;
   display: flex;
@@ -349,8 +349,8 @@
 
 .compareHeaderHint {
   color: var(--text-tertiary);
-  font-size: 11.5px;
-  font-weight: 400;
+  font-size: 13px;
+  font-weight: 600;
   letter-spacing: -0.005em;
 }
 

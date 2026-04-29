@@ -347,7 +347,6 @@ function ComparisonPanel({ current, previous, previousLabel }) {
       </div>
 
       <div className={styles.compareBody}>
-        <span className={styles.comparePeriod}>vs. mês anterior</span>
 
         <dl className={styles.compareGrid}>
           {rows.map((row) => (
