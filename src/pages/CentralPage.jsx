@@ -315,31 +315,6 @@ function clientInitials(name) {
   return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
-// Paleta inspirada em Linear: dessaturada o suficiente para conviver bem
-// com o canvas escuro, mas com hue distinta o bastante para diferenciar
-// avatares na lista. Determinística — mesmo nome sempre dá a mesma cor.
-const AVATAR_PALETTE = [
-  '#d97706', // âmbar profundo
-  '#0891b2', // ciano
-  '#7c3aed', // violeta
-  '#059669', // verde
-  '#db2777', // rosa
-  '#2563eb', // azul
-  '#9333ea', // roxo
-  '#dc2626', // vermelho
-  '#ea580c', // laranja
-  '#0d9488', // teal
-];
-
-function avatarColorFromName(name) {
-  const text = String(name || '');
-  let hash = 0;
-  for (let i = 0; i < text.length; i += 1) {
-    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
-  }
-  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
-}
-
 function clientMeta(client) {
   const pieces = [];
   if (client?.squadName || client?.squad) pieces.push(client.squadName || client.squad);
@@ -367,10 +342,9 @@ function ActivityPanel({ activities = [], onOpenClient }) {
             const isActive = status === 'active' || status === 'ativo';
             const isChurn = status === 'churn';
             const initials = clientInitials(client.name);
-            const avatarBg = avatarColorFromName(client.name);
+            const avatarUrl = client.avatarUrl || '';
             const fee = Number(client.fee) > 0 ? fmtMoney(client.fee) : '';
             const squad = client.squadName || client.squad || '';
-            const squadColor = squad ? avatarColorFromName(squad) : null;
 
             return (
               <button
@@ -379,13 +353,12 @@ function ActivityPanel({ activities = [], onOpenClient }) {
                 className={styles.activityItem}
                 onClick={() => onOpenClient(client.id)}
               >
-                <span
-                  className={styles.activityAvatar}
-                  style={{ background: avatarBg }}
-                  aria-hidden="true"
-                >
-                  <span className={styles.activityAvatarInitials}>{initials}</span>
-                  {isActive ? <span className={styles.activityAvatarStatus} /> : null}
+                <span className={styles.activityAvatar} aria-hidden="true">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" />
+                  ) : (
+                    <span className={styles.activityAvatarInitials}>{initials}</span>
+                  )}
                 </span>
 
                 <span className={styles.activityCopy}>
@@ -395,20 +368,10 @@ function ActivityPanel({ activities = [], onOpenClient }) {
 
                 <span className={styles.activityDate}>{formatShortDate(activity.date)}</span>
 
-                {squad ? (
-                  <span className={styles.activitySquad}>
-                    <span
-                      className={styles.activitySquadDot}
-                      style={{ background: squadColor }}
-                      aria-hidden="true"
-                    />
-                    {squad}
-                  </span>
-                ) : <span aria-hidden="true" />}
+                {squad ? <span className={styles.activitySquad}>{squad}</span> : <span aria-hidden="true" />}
 
                 {isActive ? (
                   <span className={`${styles.activityStatusPill} ${styles.activityStatusPill_active}`}>
-                    <span className={styles.activityStatusDot} />
                     ATIVO
                   </span>
                 ) : isChurn ? (

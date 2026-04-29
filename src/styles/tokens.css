@@ -9,10 +9,10 @@
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "Berkeley Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  /* Pesos Linear */
+  /* Pesos clássicos (Inter estática, sem eixo variable) */
   --weight-regular: 400;
-  --weight-medium: 510;     /* signature weight - default de UI */
-  --weight-semibold: 590;   /* ênfase forte - títulos de card/seção */
+  --weight-medium: 500;
+  --weight-semibold: 600;
 
   /* Tamanhos (rem para acessibilidade) */
   --fs-display-xl: 4.5rem;   /* 72px - hero */

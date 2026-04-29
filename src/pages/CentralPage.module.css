@@ -61,18 +61,6 @@
   transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
 }
 
-.metricCard::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.005) 0%,
-    rgba(255, 255, 255, 0) 60%
-  );
-}
-
 .metricCard:hover {
   border-color: var(--line);
   background: rgba(255, 255, 255, 0.034);
@@ -241,9 +229,9 @@
   letter-spacing: -0.02em;
 }
 
-/* PATCH v55 — Entradas: header simples, escala vertical, grid lines */
+/* PATCH v56 — Entradas: gráfico com mais altura, sem gradiente, gap reduzido */
 .columnsPanel {
-  min-height: 280px;
+  min-height: 320px;
   padding: 16px 18px 14px;
   display: flex;
   flex-direction: column;
@@ -267,20 +255,20 @@
 
 .columnsBody {
   flex: 1;
-  min-height: 200px;
+  min-height: 240px;
   display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 8px;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
 }
 
 .columnsScale {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 14px 0 30px;
+  padding: 8px 0 28px;
   color: var(--text-quaternary);
   font-size: 10.5px;
-  font-weight: var(--weight-medium, 510);
+  font-weight: 500;
   text-align: right;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -293,13 +281,13 @@
 .columnsGridArea {
   position: relative;
   min-height: 0;
-  padding-top: 14px;
-  padding-bottom: 30px;
+  padding-top: 8px;
+  padding-bottom: 28px;
 }
 
 .columnsGridLines {
   position: absolute;
-  inset: 14px 0 30px;
+  inset: 8px 0 28px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -310,7 +298,7 @@
   display: block;
   width: 100%;
   height: 1px;
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .columnsChart {
@@ -318,8 +306,8 @@
   height: 100%;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 22px;
-  padding: 0 6px;
+  gap: 10px;
+  padding: 0;
   align-items: stretch;
 }
 
@@ -969,10 +957,10 @@
   padding: 4px 18px 12px;
 }
 
-/* PATCH v55 — Atividade em 5 colunas alinhadas: avatar | copy | date | squad | pill */
+/* PATCH v56 — Atividade em 5 colunas alinhadas: avatar | copy | date | squad | pill */
 .dashboardLastCard .activityItem {
   width: 100%;
-  min-height: 60px;
+  min-height: 64px;
   padding: 12px 0;
   border: 0;
   border-bottom: 1px solid var(--line-subtle);
@@ -982,7 +970,7 @@
   text-align: left;
   cursor: pointer;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto auto auto;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto auto;
   gap: 16px;
   align-items: center;
   transition: background-color 0.14s ease;
@@ -998,32 +986,32 @@
 
 .activityAvatar {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
+  background: var(--bg-soft, #121315);
+  border: 1px solid var(--line-subtle);
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.activityAvatarInitials {
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 12px;
-  font-weight: var(--weight-semibold, 590);
-  letter-spacing: -0.01em;
-  line-height: 1;
+.activityAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
-.activityAvatarStatus {
-  position: absolute;
-  right: -1px;
-  bottom: -1px;
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--success, #27a644);
-  border: 2px solid var(--bg-app, #08090a);
+.activityAvatarInitials {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
 
 .activityCopy {
@@ -1038,7 +1026,7 @@
 .activityCopy strong {
   color: var(--text-primary);
   font-size: 13px;
-  font-weight: var(--weight-semibold, 590);
+  font-weight: 600;
   letter-spacing: -0.012em;
   white-space: nowrap;
   overflow: hidden;
@@ -1048,7 +1036,7 @@
 .activityCopy > span {
   color: var(--text-secondary);
   font-size: 12.5px;
-  font-weight: var(--weight-regular, 400);
+  font-weight: 400;
   letter-spacing: -0.005em;
   white-space: nowrap;
   overflow: hidden;
@@ -1060,41 +1048,29 @@
 .activityDate {
   color: var(--text-tertiary);
   font-size: 11.5px;
-  font-weight: var(--weight-medium, 510);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.005em;
   white-space: nowrap;
-  font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
 }
 
 .activitySquad {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: var(--weight-medium, 510);
+  font-weight: 500;
   letter-spacing: -0.005em;
   white-space: nowrap;
-}
-
-.activitySquadDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  flex-shrink: 0;
 }
 
 .activityStatusPill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   height: 22px;
   padding: 0 10px;
   border-radius: 999px;
   border: 1px solid transparent;
   font-size: 10.5px;
-  font-weight: var(--weight-semibold, 590);
+  font-weight: 600;
   letter-spacing: 0.06em;
   line-height: 1;
   white-space: nowrap;
@@ -1112,18 +1088,10 @@
   color: var(--danger, #ef4444);
 }
 
-.activityStatusDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: currentColor;
-  display: inline-block;
-}
-
 .activityFee {
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: var(--weight-semibold, 590);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.012em;
 }
