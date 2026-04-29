@@ -1,3 +1,25 @@
+/* PATCH v54 — refinar tipografia do título do header */
+.headerTitleMain {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: var(--weight-semibold, 590);
+  letter-spacing: -0.026em;
+  line-height: 1;
+}
+
+.headerTitleSep {
+  color: var(--text-quaternary);
+  font-size: 12px;
+  font-weight: var(--weight-regular, 400);
+}
+
+.headerTitlePeriod {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: var(--weight-medium, 510);
+  letter-spacing: -0.005em;
+}
+
 .dashboard {
   min-height: 100%;
   padding: 11px 14px 16px;
@@ -19,27 +41,42 @@
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 9px;
+  gap: 10px;
 }
 
+/* PATCH v54 — KPIs com luminance stacking + delta colorido visível */
 .metricCard {
-  height: 84px;
-  padding: 11px 12px 10px;
+  position: relative;
+  min-height: 108px;
+  padding: 14px 16px 14px;
   border: 1px solid var(--line-subtle);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.021);
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
   overflow: hidden;
   cursor: grab;
   box-shadow: none;
-  transition: border-color 0.14s ease, background-color 0.14s ease, transform 0.14s ease;
+  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
+}
+
+.metricCard::before {
+  /* gradiente sutil de baixo para cima — dá profundidade Linear sem "card chapado" */
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.005) 0%,
+    rgba(255, 255, 255, 0) 60%
+  );
 }
 
 .metricCard:hover {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.032);
+  background: rgba(255, 255, 255, 0.034);
   transform: translateY(-1px);
 }
 
@@ -56,11 +93,22 @@
 }
 
 .metricCardTop {
-  min-height: 15px;
+  min-height: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
+}
+
+.metricIcon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-quaternary);
+  opacity: 0.45;
 }
 
 .metricGrip {
@@ -80,9 +128,9 @@
 
 .metricLabel {
   color: var(--text-tertiary);
-  font-size: 9px;
-  font-weight: 590;
-  letter-spacing: 0.13em;
+  font-size: 10px;
+  font-weight: var(--weight-semibold, 590);
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
@@ -90,16 +138,56 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(22px, 1.65vw, 27px);
-  line-height: 1.02;
-  font-weight: 590;
-  letter-spacing: -0.055em;
+  font-size: clamp(26px, 1.85vw, 32px);
+  line-height: 1.05;
+  font-weight: var(--weight-semibold, 590);
+  letter-spacing: -0.024em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-feature-settings: "cv01", "ss03", "ss01", "tnum";
 }
 
 .metricHelper {
-  display: none;
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  letter-spacing: -0.005em;
+}
+
+.metricDelta {
+  margin: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--weight-medium, 510);
+  letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricDeltaArrow {
+  font-size: 11px;
+  font-weight: var(--weight-semibold, 590);
+  line-height: 1;
+}
+
+.metricDeltaHelper {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: var(--weight-regular, 400);
+}
+
+.metricDelta_up {
+  color: var(--success, #27a644);
+}
+
+.metricDelta_down {
+  color: var(--danger, #ef4444);
+}
+
+.metricDelta_flat {
+  color: var(--text-tertiary);
 }
 
 .metricProgress {
@@ -161,29 +249,87 @@
   letter-spacing: -0.02em;
 }
 
+/* PATCH v54 — Entradas com header próprio + barras refinadas */
 .columnsPanel {
-  height: 230px;
-  padding: 13px 14px 13px;
+  min-height: 240px;
+  padding: 16px 18px 14px;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 10px;
+}
+
+.columnsPanelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.columnsPanelTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--weight-semibold, 590);
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+}
+
+.columnsPanelSubtitle {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: var(--weight-regular, 400);
+  letter-spacing: -0.005em;
+}
+
+.columnsLegend {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: nowrap;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: var(--weight-medium, 510);
+  letter-spacing: -0.005em;
+}
+
+.legendSwatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.legendSwatch_current {
+  background: var(--accent-amber);
+}
+
+.legendSwatch_history {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .columnsChart {
   flex: 1;
-  min-height: 0;
+  min-height: 140px;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
   align-items: stretch;
 }
 
 .columnCard {
   min-width: 0;
   display: grid;
-  grid-template-rows: 36px 1fr 22px;
+  grid-template-rows: 22px 1fr 28px;
   align-items: stretch;
-  gap: 0;
+  gap: 4px;
 }
 
 .columnCardCurrent {}
@@ -191,96 +337,153 @@
 .columnMetaTop {
   min-width: 0;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--text-quaternary);
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
 }
 
 .columnMonth {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--text-quaternary);
+  color: var(--text-tertiary);
   font-size: 10.5px;
-  font-weight: 510;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  font-weight: var(--weight-medium, 510);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.columnYear {
+  color: var(--text-quaternary);
+  font-size: 9.5px;
+  font-weight: var(--weight-regular, 400);
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
 .columnCount {
   min-width: 18px;
-  color: var(--text-primary);
-  font-size: 17px;
-  font-weight: 590;
-  letter-spacing: -0.04em;
-  text-align: right;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: var(--weight-semibold, 590);
+  letter-spacing: -0.012em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.columnCardCurrent .columnCount {
+  color: var(--accent-amber);
+  font-size: 13px;
 }
 
 .columnTrack {
   min-height: 0;
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .columnBarWrap {
   width: 100%;
-  height: 92px;
+  height: 100%;
   display: flex;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .columnBar {
   width: 100%;
-  min-height: 34px;
-  border-radius: 7px 7px 0 0;
-  background: rgba(255, 255, 255, 0.052);
+  min-height: 6px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.075) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  transition: background 0.18s ease;
 }
 
-.columnBarCurrent {
-  background: var(--accent-amber);
+.columnCard:hover .columnBar {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+}
+
+.columnBarCurrent,
+.columnCard:hover .columnBarCurrent {
+  background: linear-gradient(
+    180deg,
+    var(--accent-amber-strong, #ffc400) 0%,
+    var(--accent-amber, #f5b800) 100%
+  );
 }
 
 .columnMetaBottom {
   display: flex;
-  align-items: end;
-  color: var(--text-quaternary);
-  font-size: 10.5px;
-  font-weight: 510;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1px;
+  padding-top: 4px;
 }
 
-.columnsLegend {
-  min-height: 29px;
+/* PATCH v54 — Comparativo refinado */
+.compareHeader {
   display: flex;
-  align-items: end;
-  gap: 10px;
-  color: var(--text-secondary);
-  font-size: 11.5px;
-  font-weight: 590;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 0;
 }
 
-.legendDot {
-  width: 18px;
-  height: 2px;
-  margin-bottom: 5px;
-  border-radius: 999px;
-  background: var(--accent-amber);
+.compareHeader h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--weight-semibold, 590);
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+}
+
+.compareHeaderHint {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: var(--weight-regular, 400);
+  letter-spacing: -0.005em;
 }
 
 .compareBody {
-  height: 230px;
-  padding: 16px 15px 12px;
+  min-height: 200px;
+  padding: 12px 18px 14px;
   display: flex;
   flex-direction: column;
 }
 
+.comparePeriodRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
 .comparePeriod {
-  display: block;
-  margin-bottom: 12px;
-  color: var(--text-tertiary);
-  font-size: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
   line-height: 1;
-  font-weight: 510;
+  font-weight: var(--weight-medium, 510);
   letter-spacing: -0.01em;
+}
+
+.comparePeriodTag {
+  padding: 2px 7px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-tertiary);
+  font-size: 9.5px;
+  font-weight: var(--weight-medium, 510);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+  line-height: 1;
 }
 
 .compareGrid {
@@ -291,7 +494,7 @@
 }
 
 .compareItem {
-  min-height: 43px;
+  min-height: 44px;
   padding: 9px 0 10px;
   border-bottom: 1px solid var(--line-subtle);
   display: grid;
@@ -305,42 +508,53 @@
   border-bottom: 0;
 }
 
-.compareItem dt {
+.compareLabel {
   grid-column: 1;
   grid-row: 1;
   color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1.1;
-  font-weight: 590;
+  font-weight: var(--weight-semibold, 590);
   letter-spacing: 0.135em;
   text-transform: uppercase;
 }
 
-.compareItem dd {
+.compareValue {
   grid-column: 2;
   grid-row: 1 / span 2;
   margin: 0;
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
-  font-weight: 590;
-  letter-spacing: -0.04em;
+  font-weight: var(--weight-semibold, 590);
+  letter-spacing: -0.026em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  font-feature-settings: "cv01", "ss03", "tnum";
 }
 
 .compareDelta {
   grid-column: 1;
   grid-row: 2;
-  margin-top: 6px;
-  color: var(--success);
-  font-size: 11px;
+  margin-top: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
   line-height: 1.1;
-  font-weight: 590;
-  letter-spacing: -0.01em;
+  font-weight: var(--weight-medium, 510);
+  letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+}
+
+.compareDeltaArrow {
+  font-size: 11px;
+  font-weight: var(--weight-semibold, 590);
 }
 
 .compareDelta_good { color: var(--success); }
 .compareDelta_risk { color: var(--danger); }
+.compareDelta_flat { color: var(--text-tertiary); }
 
 .projectsPanel {
   min-height: 264px;
@@ -719,6 +933,51 @@
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.021);
   overflow: hidden;
+}
+
+/* PATCH v54 — header das Atividades */
+.dashboardLastCard .activityHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.dashboardLastCard .activityHeader h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: var(--weight-semibold, 590);
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+}
+
+.dashboardLastCard .activityHeaderMeta {
+  flex: 1;
+  margin-left: 4px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: var(--weight-regular, 400);
+  letter-spacing: -0.005em;
+}
+
+.dashboardLastCard .activityHeaderBadge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: var(--weight-semibold, 590);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .dashboardLastCard .activityList {

@@ -81,10 +81,43 @@ function moveItem(order, fromId, toId) {
   return next;
 }
 
+function buildKpiDelta(currentValue, previousValue, formatter, options = {}) {
+  const cur = Number(currentValue) || 0;
+  const prev = Number(previousValue) || 0;
+  const diff = cur - prev;
+  if (Math.abs(diff) < 0.0001) {
+    return { delta: '0', deltaTone: 'flat' };
+  }
+  // Para churn, "subir é ruim". options.invert = true.
+  const isUp = options.invert ? diff < 0 : diff > 0;
+  const deltaTone = isUp ? 'up' : 'down';
+  const formatted = formatter ? formatter(Math.abs(diff)) : fmtInt(Math.abs(diff));
+  const sign = diff > 0 ? '+' : '−';
+  return { delta: `${sign}${formatted}`, deltaTone };
+}
+
+function buildKpiPctDelta(currentValue, previousValue, options = {}) {
+  const cur = Number(currentValue) || 0;
+  const prev = Number(previousValue) || 0;
+  if (prev === 0) {
+    if (cur === 0) return { delta: '0%', deltaTone: 'flat' };
+    return { delta: 'novo', deltaTone: options.invert ? 'down' : 'up' };
+  }
+  const pct = ((cur - prev) / Math.abs(prev)) * 100;
+  if (Math.abs(pct) < 0.1) return { delta: '0%', deltaTone: 'flat' };
+  const isUp = options.invert ? pct < 0 : pct > 0;
+  const deltaTone = isUp ? 'up' : 'down';
+  const sign = pct > 0 ? '+' : '−';
+  return { delta: `${sign}${Math.abs(pct).toFixed(1)}%`, deltaTone };
+}
+
 function MetricCard({
   label,
   value,
   helper,
+  delta,
+  deltaTone,
+  icon,
   progress,
   tone = 'neutral',
   detail,
@@ -108,6 +141,7 @@ function MetricCard({
     >
       <div className={styles.metricCardTop}>
         <span className={styles.metricLabel}>{label}</span>
+        {icon ? <span className={styles.metricIcon} aria-hidden="true">{icon}</span> : null}
         {draggable ? <span className={styles.metricGrip} aria-hidden="true" /> : null}
       </div>
 
@@ -115,7 +149,18 @@ function MetricCard({
         <strong className={styles.metricValue}>{value}</strong>
       </div>
 
-      {helper ? <p className={styles.metricHelper}>{helper}</p> : null}
+      {delta ? (
+        <p className={`${styles.metricDelta} ${styles[`metricDelta_${deltaTone || 'neutral'}`]}`}>
+          <span className={styles.metricDeltaArrow} aria-hidden="true">
+            {deltaTone === 'up' ? '↗' : deltaTone === 'down' ? '↘' : '—'}
+          </span>
+          <span>{delta}</span>
+          {helper ? <small className={styles.metricDeltaHelper}>{helper}</small> : null}
+        </p>
+      ) : helper ? (
+        <p className={styles.metricHelper}>{helper}</p>
+      ) : null}
+
       {typeof progress === 'number' ? (
         <div className={styles.metricProgress}>
           <span
@@ -138,9 +183,26 @@ function EntryColumnsChart({ rows = [] }) {
 
   return (
     <div className={styles.columnsPanel}>
+      <div className={styles.columnsPanelHeader}>
+        <div>
+          <h3 className={styles.columnsPanelTitle}>Entradas</h3>
+          <span className={styles.columnsPanelSubtitle}>novos clientes por mês · últimos 7 meses</span>
+        </div>
+        <div className={styles.columnsLegend}>
+          <span className={styles.legendItem}>
+            <span className={`${styles.legendSwatch} ${styles.legendSwatch_current}`} aria-hidden="true" />
+            Selecionado
+          </span>
+          <span className={styles.legendItem}>
+            <span className={`${styles.legendSwatch} ${styles.legendSwatch_history}`} aria-hidden="true" />
+            Histórico
+          </span>
+        </div>
+      </div>
+
       <div className={styles.columnsChart}>
         {rows.map((row) => {
-          const height = maxClients > 0 ? Math.max(18, (row.cnt / maxClients) * 100) : 0;
+          const height = maxClients > 0 ? Math.max(8, (row.cnt / maxClients) * 100) : 0;
           const monthLabel = MONTHS_FULL[row.m].slice(0, 3);
 
           return (
@@ -149,7 +211,6 @@ function EntryColumnsChart({ rows = [] }) {
               className={`${styles.columnCard} ${row.isNow ? styles.columnCardCurrent : ''}`.trim()}
             >
               <div className={styles.columnMetaTop}>
-                <span className={styles.columnMonth}>{monthLabel}</span>
                 <strong className={styles.columnCount}>{fmtInt(row.cnt)}</strong>
               </div>
 
@@ -163,63 +224,72 @@ function EntryColumnsChart({ rows = [] }) {
               </div>
 
               <div className={styles.columnMetaBottom}>
-                <span>{String(row.y)}</span>
+                <span className={styles.columnMonth}>{monthLabel}</span>
+                <span className={styles.columnYear}>{String(row.y)}</span>
               </div>
             </article>
           );
         })}
-      </div>
-
-      <div className={styles.columnsLegend}>
-        <span className={styles.legendDot} />
-        <span>Selecionado</span>
       </div>
     </div>
   );
 }
 
 function ComparisonPanel({ current, previous, previousLabel }) {
+  const buildRow = (label, currentVal, previousVal, formatter, options = {}) => {
+    const cur = Number(currentVal) || 0;
+    const prev = Number(previousVal) || 0;
+    const diff = cur - prev;
+    const isFlat = Math.abs(diff) < 0.0001;
+    let tone;
+    if (isFlat) {
+      tone = 'flat';
+    } else if (options.invert) {
+      tone = diff < 0 ? 'good' : 'risk';
+    } else {
+      tone = diff > 0 ? 'good' : 'risk';
+    }
+    const arrow = isFlat ? '—' : diff > 0 ? '↗' : '↘';
+    const sign = diff > 0 ? '+' : diff < 0 ? '−' : '';
+    const formatted = formatter ? formatter(Math.abs(diff)) : fmtInt(Math.abs(diff));
+    return {
+      label,
+      value: formatter ? formatter(prev) : fmtInt(prev),
+      delta: isFlat ? '0' : `${sign}${formatted}`,
+      arrow,
+      tone,
+    };
+  };
+
   const rows = [
-    {
-      label: 'Ativos',
-      value: fmtInt(previous.active),
-      delta: fmtDelta((current.active || 0) - (previous.active || 0)),
-      tone: (current.active || 0) >= (previous.active || 0) ? 'good' : 'risk',
-    },
-    {
-      label: 'MRR',
-      value: fmtMoney(previous.mrr),
-      delta: fmtDelta((current.mrr || 0) - (previous.mrr || 0), fmtMoney),
-      tone: (current.mrr || 0) >= (previous.mrr || 0) ? 'good' : 'risk',
-    },
-    {
-      label: 'Receita nova',
-      value: fmtMoney(previous.revenueNew),
-      delta: fmtDelta((current.revenueNew || 0) - (previous.revenueNew || 0), fmtMoney),
-      tone: (current.revenueNew || 0) >= (previous.revenueNew || 0) ? 'good' : 'risk',
-    },
-    {
-      label: 'Churn',
-      value: fmtPct(previous.churnRate || 0),
-      delta: fmtDelta((current.churnRate || 0) - (previous.churnRate || 0), fmtPct),
-      tone: (current.churnRate || 0) <= (previous.churnRate || 0) ? 'good' : 'risk',
-    },
+    buildRow('Ativos', current.active, previous.active),
+    buildRow('MRR', current.mrr, previous.mrr, fmtMoney),
+    buildRow('Receita nova', current.revenueNew, previous.revenueNew, fmtMoney),
+    buildRow('Churn', current.churnRate, previous.churnRate, fmtPct, { invert: true }),
   ];
 
   return (
     <section className={styles.detailsPanel}>
-      <div className={styles.sectionHeaderCompact}>
+      <div className={styles.compareHeader}>
         <h3>Comparativo</h3>
+        <span className={styles.compareHeaderHint}>vs. mês anterior</span>
       </div>
 
       <div className={styles.compareBody}>
-        <span className={styles.comparePeriod}>{previousLabel}</span>
+        <div className={styles.comparePeriodRow}>
+          <span className={styles.comparePeriod}>{previousLabel}</span>
+          <span className={styles.comparePeriodTag}>baseline</span>
+        </div>
+
         <dl className={styles.compareGrid}>
           {rows.map((row) => (
             <div key={row.label} className={styles.compareItem}>
-              <dt>{row.label}</dt>
-              <dd>{row.value}</dd>
-              <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>{row.delta}</span>
+              <dt className={styles.compareLabel}>{row.label}</dt>
+              <dd className={styles.compareValue}>{row.value}</dd>
+              <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>
+                <span className={styles.compareDeltaArrow} aria-hidden="true">{row.arrow}</span>
+                <span>{row.delta}</span>
+              </span>
             </div>
           ))}
         </dl>
@@ -237,13 +307,14 @@ function clientMeta(client) {
 }
 
 function ActivityPanel({ activities = [], onOpenClient }) {
-  const rows = Array.isArray(activities) ? activities.slice(0, 10) : [];
+  const rows = Array.isArray(activities) ? activities.slice(0, 5) : [];
 
   return (
     <section className={styles.activityPanel}>
-      <div className={styles.sectionHeaderCompact}>
-        <h3>Atividades</h3>
-        <span className={styles.panelMetaBadge}>{fmtInt(rows.length)}</span>
+      <div className={styles.activityHeader}>
+        <h3>Atividades recentes</h3>
+        <span className={styles.activityHeaderMeta}>últimas 24h · {fmtInt(rows.length)}</span>
+        <span className={styles.activityHeaderBadge}>{fmtInt(rows.length)}</span>
       </div>
 
       {rows.length > 0 ? (
@@ -283,36 +354,66 @@ function buildClientActivities(clients = []) {
 
   (Array.isArray(clients) ? clients : []).forEach((client) => {
     const created = parseAnyDate(client?.createdAt);
+    const start = parseClientDate(client?.startDate);
+    const churn = parseClientDate(client?.churnDate);
+    const endDate = parseClientDate(client?.endDate);
+    const fee = Number(client?.fee) || 0;
+
+    // "foi cadastrado(a) como novo cliente"
+    // Só dispara se NÃO houver startDate no mesmo dia (evita duplicar
+    // cadastro + início de contrato no mesmo evento).
     if (created && created <= now) {
-      events.push({
-        key: `${client.id}-created`,
-        client,
-        date: created,
-        tone: 'amber',
-        text: 'foi cadastrado',
-      });
+      const sameDayAsStart =
+        start && Math.abs(created.getTime() - start.getTime()) < 24 * 60 * 60 * 1000;
+      if (!sameDayAsStart) {
+        events.push({
+          key: `${client.id}-created`,
+          client,
+          date: created,
+          tone: 'amber',
+          text: 'foi cadastrado(a) como novo cliente',
+        });
+      }
     }
 
-    const start = parseClientDate(client?.startDate);
+    // "iniciou contrato de R$ X/mês" — engloba o caso de cadastro+contrato no mesmo dia
     if (start && start <= now) {
+      const feePart = fee > 0 ? ` de ${fmtMoney(fee)}/mês` : '';
       events.push({
         key: `${client.id}-start`,
         client,
         date: start,
         tone: 'green',
-        text: 'iniciou contrato',
+        text: `iniciou contrato${feePart}`,
       });
     }
 
-    const churn = parseClientDate(client?.churnDate);
+    // "saiu (churn)"
     if (churn && churn <= now) {
       events.push({
         key: `${client.id}-churn`,
         client,
         date: churn,
         tone: 'pink',
-        text: 'teve churn registrado',
+        text: 'saiu (churn)',
       });
+    }
+
+    // "vencendo em X dias" — só entra se ≤ 7 dias e cliente não está em churn.
+    // Date é o endDate (futuro) — assim ordena alto na lista (recente).
+    if (endDate && !churn) {
+      const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+      if (diffDays >= 0 && diffDays <= 7) {
+        events.push({
+          key: `${client.id}-expiring`,
+          client,
+          date: endDate,
+          tone: 'amber',
+          text: diffDays === 0
+            ? 'vence hoje'
+            : `vencendo em ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`,
+        });
+      }
     }
   });
 
@@ -438,73 +539,105 @@ export default function CentralPage() {
   const previousLabel = `${MONTHS_FULL[prevPeriod.m]} ${prevPeriod.y}`;
 
   const metricDefinitions = useMemo(
-    () => [
-      {
-        id: 'base',
-        label: 'Base de dados',
-        value: fmtInt(totalClients),
-        helper: '',
-        detail: '',
-        tone: 'neutral',
-      },
-      {
-        id: 'ativos',
-        label: 'Clientes ativos',
-        value: fmtInt(activeClients),
-        helper: '',
-        detail: totalClients > 0 ? `${fmtInt(totalClients)} na base` : '',
-        tone: 'neutral',
-      },
-      {
-        id: 'novosAtual',
-        label: 'Clientes novos no mês atual',
-        value: fmtInt(currentMonthNewClients),
-        helper: '',
-        detail: `${MONTHS_FULL[now.getMonth()]} ${now.getFullYear()}`,
-        tone: currentMonthNewClients > 0 ? 'good' : 'neutral',
-      },
-      {
-        id: 'mrr',
-        label: 'MRR atual',
-        value: fmtMoney(mrr),
-        helper: '',
-        detail: activeClients > 0 ? `${fmtInt(activeClients)} clientes` : '',
-        tone: 'neutral',
-      },
-      {
-        id: 'receitaNova',
-        label: 'Receita nova gerada',
-        value: fmtMoney(revenueNew),
-        helper: '',
-        detail: `${fmtInt(newClients)} novo(s) em ${MONTHS_FULL[period.m]}`,
-        tone: revenueNew > 0 ? 'good' : 'neutral',
-      },
-      {
-        id: 'ticket',
-        label: 'Ticket médio',
-        value: fmtMoney(ticketMedio),
-        helper: '',
-        detail: '',
-        tone: 'neutral',
-      },
-      {
-        id: 'perdida',
-        label: 'Receita perdida no mês',
-        value: fmtMoney(revenueLost),
-        helper: '',
-        detail: `${fmtInt(churnedPeriod)} churn(s) em ${MONTHS_FULL[period.m]}`,
-        tone: revenueLost > 0 ? 'risk' : 'neutral',
-      },
-      {
-        id: 'churn',
-        label: 'Taxa de churn',
-        value: fmtPct(churnRate),
-        helper: '',
-        detail: churnedPeriod > 0 ? `${fmtInt(churnedPeriod)} no período` : '',
-        progress: Math.min(churnRate, 100),
-        tone: toneFromChurn(churnRate),
-      },
-    ],
+    () => {
+      const prevTotal = previousMetrics.total ?? 0;
+      const prevActive = previousMetrics.active ?? 0;
+      const prevMrr = previousMetrics.mrr ?? 0;
+      const prevRevenueNew = previousMetrics.revenueNew ?? 0;
+      const prevRevenueLost = previousMetrics.revLost ?? 0;
+      const prevChurnRate = previousMetrics.churnRate ?? 0;
+      const prevTicket = prevActive > 0 ? prevMrr / prevActive : 0;
+      const prevNewCnt = previousMetrics.newCnt ?? 0;
+
+      const baseDelta = buildKpiDelta(totalClients, prevTotal);
+      const ativosDelta = buildKpiDelta(activeClients, prevActive);
+      const novosDelta = buildKpiDelta(currentMonthNewClients, prevNewCnt);
+      const mrrDelta = buildKpiPctDelta(mrr, prevMrr);
+      const receitaNovaDelta = buildKpiPctDelta(revenueNew, prevRevenueNew);
+      const ticketDelta = buildKpiDelta(ticketMedio, prevTicket, fmtMoney);
+      const perdidaDelta = buildKpiDelta(revenueLost, prevRevenueLost, fmtMoney, { invert: true });
+      const churnDelta = buildKpiPctDelta(churnRate, prevChurnRate, { invert: true });
+
+      return [
+        {
+          id: 'base',
+          label: 'Base de dados',
+          value: fmtInt(totalClients),
+          helper: 'vs. mês passado',
+          delta: baseDelta.delta,
+          deltaTone: baseDelta.deltaTone,
+          tone: 'neutral',
+        },
+        {
+          id: 'ativos',
+          label: 'Clientes ativos',
+          value: fmtInt(activeClients),
+          helper: 'vs. mês passado',
+          delta: ativosDelta.delta,
+          deltaTone: ativosDelta.deltaTone,
+          tone: 'neutral',
+        },
+        {
+          id: 'novosAtual',
+          label: 'Clientes novos no mês',
+          value: fmtInt(currentMonthNewClients),
+          helper: 'vs. mês passado',
+          delta: novosDelta.delta,
+          deltaTone: novosDelta.deltaTone,
+          tone: currentMonthNewClients > 0 ? 'good' : 'neutral',
+        },
+        {
+          id: 'mrr',
+          label: 'MRR atual',
+          value: fmtMoney(mrr),
+          helper: 'vs. mês passado',
+          delta: mrrDelta.delta,
+          deltaTone: mrrDelta.deltaTone,
+          tone: 'neutral',
+        },
+        {
+          id: 'receitaNova',
+          label: 'Receita nova gerada',
+          value: fmtMoney(revenueNew),
+          helper: 'vs. mês passado',
+          delta: receitaNovaDelta.delta,
+          deltaTone: receitaNovaDelta.deltaTone,
+          tone: revenueNew > 0 ? 'good' : 'neutral',
+        },
+        {
+          id: 'ticket',
+          label: 'Ticket médio',
+          value: fmtMoney(ticketMedio),
+          helper: 'vs. mês passado',
+          delta: ticketDelta.delta,
+          deltaTone: ticketDelta.deltaTone,
+          tone: 'neutral',
+        },
+        {
+          id: 'perdida',
+          label: 'Receita perdida no mês',
+          value: fmtMoney(revenueLost),
+          helper: revenueLost > 0
+            ? `${fmtInt(churnedPeriod)} churn(s) em ${MONTHS_FULL[period.m]}`
+            : 'sem perdas',
+          delta: revenueLost > 0 ? perdidaDelta.delta : '',
+          deltaTone: perdidaDelta.deltaTone,
+          tone: revenueLost > 0 ? 'risk' : 'neutral',
+        },
+        {
+          id: 'churn',
+          label: 'Taxa de churn',
+          value: fmtPct(churnRate),
+          helper: churnedPeriod > 0
+            ? `${fmtInt(churnedPeriod)} no período`
+            : 'sem churn',
+          delta: churnedPeriod > 0 ? churnDelta.delta : '',
+          deltaTone: churnDelta.deltaTone,
+          progress: Math.min(churnRate, 100),
+          tone: toneFromChurn(churnRate),
+        },
+      ];
+    },
     [
       activeClients,
       churnRate,
@@ -514,6 +647,7 @@ export default function CentralPage() {
       newClients,
       now,
       period,
+      previousMetrics,
       revenueLost,
       revenueNew,
       ticketMedio,
@@ -540,9 +674,9 @@ export default function CentralPage() {
   useEffect(() => {
     const title = (
       <>
-        <strong>Dashboard</strong>
-        <span>·</span>
-        <span>{`${MONTHS_FULL[period.m]} ${period.y}`}</span>
+        <strong className={styles.headerTitleMain}>Dashboard</strong>
+        <span className={styles.headerTitleSep} aria-hidden="true">·</span>
+        <span className={styles.headerTitlePeriod}>{`${MONTHS_FULL[period.m]} ${period.y}`}</span>
       </>
     );
 
