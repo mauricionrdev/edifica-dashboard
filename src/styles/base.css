@@ -7,6 +7,12 @@ body,
   background: var(--bg-app);
   font-family: var(--font-sans);
   font-feature-settings: "cv01", "ss03";
+  /*
+    font-variation-settings destrava o eixo wght da Inter Variable.
+    Com isso, qualquer font-weight: 510 vira renderização real (e não
+    arredondado para 500). Sem isso, perdemos a "cara Linear" do peso 510.
+  */
+  font-variation-settings: "wght" 400;
 }
 
 html {
@@ -29,6 +35,13 @@ body {
   box-sizing: border-box;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /*
+    Garante que cv01/ss03 também valham em inputs, buttons, selects,
+    textareas e qualquer pseudo-elemento - não só no body. Sem essa
+    cascata, campos de formulário do Chrome/Firefox perdem os stylistic
+    alternates da Inter.
+  */
+  font-feature-settings: inherit;
 }
 
 *::-webkit-scrollbar {
@@ -44,6 +57,7 @@ textarea {
   font: inherit;
   font-family: inherit;
   font-feature-settings: inherit;
+  font-variation-settings: inherit;
 }
 
 button {

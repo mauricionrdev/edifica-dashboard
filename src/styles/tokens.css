@@ -1,9 +1,59 @@
 :root {
   color-scheme: dark;
 
-  --font-sans: "Inter Variable", "Inter", "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* ============================================================
+     TIPOGRAFIA — escala Linear adaptada ao Edifica
+     Inter Variable (eixo wght) é a fonte base. cv01 e ss03 são
+     habilitados em base.css. Os pesos canônicos são 400 / 510 / 590.
+     ============================================================ */
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "Berkeley Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
+  /* Pesos Linear */
+  --weight-regular: 400;
+  --weight-medium: 510;     /* signature weight - default de UI */
+  --weight-semibold: 590;   /* ênfase forte - títulos de card/seção */
+
+  /* Tamanhos (rem para acessibilidade) */
+  --fs-display-xl: 4.5rem;   /* 72px - hero */
+  --fs-display-lg: 4rem;     /* 64px */
+  --fs-display:    3rem;     /* 48px */
+  --fs-h1: 2rem;             /* 32px */
+  --fs-h2: 1.5rem;           /* 24px */
+  --fs-h3: 1.25rem;          /* 20px */
+  --fs-body-lg: 1.125rem;    /* 18px */
+  --fs-body: 1rem;           /* 16px */
+  --fs-small: 0.9375rem;     /* 15px */
+  --fs-caption-lg: 0.875rem; /* 14px */
+  --fs-caption: 0.8125rem;   /* 13px */
+  --fs-label: 0.75rem;       /* 12px */
+  --fs-micro: 0.6875rem;     /* 11px */
+  --fs-tiny: 0.625rem;       /* 10px */
+
+  /* Tracking — Linear é agressivamente negativo em display sizes */
+  --tracking-display-xl: -1.584px;  /* @72px */
+  --tracking-display-lg: -1.408px;  /* @64px */
+  --tracking-display:    -1.056px;  /* @48px */
+  --tracking-h1:         -0.704px;  /* @32px */
+  --tracking-h2:         -0.288px;  /* @24px */
+  --tracking-h3:         -0.24px;   /* @20px */
+  --tracking-body-lg:    -0.165px;  /* @18px */
+  --tracking-small:      -0.165px;  /* @15px */
+  --tracking-caption-lg: -0.182px;  /* @14px */
+  --tracking-caption:    -0.13px;   /* @13px */
+  --tracking-tiny:       -0.15px;   /* @10px */
+
+  /* Line-heights canônicos */
+  --lh-tight: 1;
+  --lh-h1: 1.13;
+  --lh-h2: 1.33;
+  --lh-snug: 1.4;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.6;
+
+  /* ============================================================
+     SUPERFÍCIES — luminance stacking
+     ============================================================ */
   --bg-app: #08090a;
   --bg-canvas: #0f1011;
   --bg-elevated: #111214;
@@ -20,11 +70,17 @@
   --surface-card-soft: #0f1011;
   --surface-strong: #151617;
 
+  /* ============================================================
+     TEXTO
+     ============================================================ */
   --text-primary: #f7f8f8;
   --text-secondary: #d0d6e0;
   --text-tertiary: #8a8f98;
   --text-quaternary: #62666d;
 
+  /* ============================================================
+     BORDAS — sempre semi-transparentes em fundos escuros
+     ============================================================ */
   --line-subtle: rgba(255, 255, 255, 0.042);
   --line: rgba(255, 255, 255, 0.066);
   --line-strong: rgba(255, 255, 255, 0.092);
@@ -32,6 +88,9 @@
   --border-default: var(--line);
   --border-strong: var(--line-strong);
 
+  /* ============================================================
+     CAMPOS / FORMULÁRIO
+     ============================================================ */
   --field-bg: rgba(255, 255, 255, 0.025);
   --field-bg-hover: rgba(255, 255, 255, 0.04);
   --field-line: rgba(255, 255, 255, 0.07);
@@ -39,12 +98,17 @@
   --chart-bar: rgba(255, 255, 255, 0.055);
   --progress-track: rgba(255, 255, 255, 0.07);
 
+  /* ============================================================
+     ACENTO — amarelo Edifica (substitui o indigo Linear)
+     Cor de marca, CTA primário, estado ativo discreto.
+     ============================================================ */
   --accent-amber: #f5b800;
   --accent-amber-strong: #ffc400;
   --accent-amber-soft: rgba(245, 184, 0, 0.08);
   --accent-amber-line: rgba(245, 184, 0, 0.24);
   --accent-amber-border: var(--accent-amber-line);
 
+  /* mantidos por compatibilidade — não usar em UI nova */
   --accent-cyan: #55edf6;
   --accent-cyan-soft: rgba(85, 237, 246, 0.08);
   --vivid-pink: #ef7aae;
@@ -52,6 +116,10 @@
   --vivid-purple: #c77dff;
   --vivid-orange: #f5b800;
 
+  /* ============================================================
+     STATUS — apenas para sinalização operacional
+     (Ativo, Crítico, Vencendo, Churn). Não usar em chrome de UI.
+     ============================================================ */
   --success: #27a644;
   --success-soft: rgba(39, 166, 68, 0.1);
   --warning: #f5b800;
@@ -61,6 +129,9 @@
   --info: #55edf6;
   --info-soft: rgba(85, 237, 246, 0.08);
 
+  /* ============================================================
+     RAIO / ESPAÇO / SOMBRA
+     ============================================================ */
   --radius-1: 6px;
   --radius-2: 8px;
   --radius-3: 10px;
@@ -83,6 +154,9 @@
   --shadow-soft: none;
   --shadow-panel: none;
 
+  /* ============================================================
+     LAYOUT
+     ============================================================ */
   --sidebar-width: 260px;
   --topbar-height: 49px;
   --page-max-width: none;

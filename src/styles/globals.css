@@ -1,8 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;800&display=swap");
 @import "./tokens.css";
 @import "./theme.css";
 @import "./reset.css";
 @import "./compat.css";
+
+/*
+  Nota: a Inter Variable é carregada via <link> no index.html.
+  O @import antigo aqui puxava a versão estática (wght@400;500;...) e
+  brigava com a variable, fazendo o navegador cair no fallback estático
+  e perder o peso 510 e o tracking agressivo do display.
+*/
 
 
 /* Patch 64 — avatar baseline: avatar não recebe borda/focus visual */
