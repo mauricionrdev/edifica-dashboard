@@ -180,18 +180,30 @@ function MetricCard({
 }
 
 function EntryColumnsChart({ rows = [] }) {
-  const hasData = rows.some((row) => row.cnt > 0 || row.mrr > 0);
+  const hasData = rows.some((row) => row.cnt > 0);
   const maxClients = Math.max(...rows.map((row) => row.cnt || 0), 0);
 
   if (!hasData) {
     return <p className={styles.emptyState}>Sem entradas no período recente.</p>;
   }
 
-  // Escala vertical fixa em incrementos de 5, sempre arredondando para cima.
-  // Ex: max 17 -> escala vai até 20 (0, 5, 10, 15, 20).
+  // Escala em incrementos de 5, sempre arredondando pra cima.
   const scaleMax = Math.max(5, Math.ceil(maxClients / 5) * 5);
   const ticks = [];
-  for (let v = scaleMax; v >= 0; v -= 5) ticks.push(v);
+  for (let v = 0; v <= scaleMax; v += 5) ticks.push(v);
+
+  // Grid SVG: viewBox fluido. As coordenadas internas em "user units"
+  // permitem que tudo escale junto (texto, barras, gap) com o tamanho do card.
+  const VB_W = 700;
+  const VB_H = 280;
+  const padding = { top: 26, right: 16, bottom: 36, left: 36 };
+  const plotW = VB_W - padding.left - padding.right;
+  const plotH = VB_H - padding.top - padding.bottom;
+
+  const cols = rows.length;
+  const slotW = plotW / cols;
+  // Barra premium: largura fixa proporcional ao slot, deixando ar dos lados.
+  const barW = Math.min(56, slotW * 0.5);
 
   return (
     <div className={styles.columnsPanel}>
@@ -199,47 +211,98 @@ function EntryColumnsChart({ rows = [] }) {
         <h3 className={styles.columnsPanelTitle}>Entradas</h3>
       </div>
 
-      <div className={styles.columnsBody}>
-        <div className={styles.columnsScale} aria-hidden="true">
-          {ticks.map((value) => (
-            <span key={value} className={styles.columnsScaleTick}>{value}</span>
-          ))}
-        </div>
+      <div className={styles.columnsCanvas}>
+        <svg
+          className={styles.columnsSvg}
+          viewBox={`0 0 ${VB_W} ${VB_H}`}
+          preserveAspectRatio="none"
+          aria-label="Entradas por mês"
+        >
+          {/* Linhas de grade horizontais */}
+          {ticks.map((tick) => {
+            const y = padding.top + plotH - (tick / scaleMax) * plotH;
+            return (
+              <line
+                key={`grid-${tick}`}
+                x1={padding.left}
+                x2={VB_W - padding.right}
+                y1={y}
+                y2={y}
+                stroke="rgba(255,255,255,0.045)"
+                strokeWidth="1"
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+          })}
 
-        <div className={styles.columnsGridArea}>
-          <div className={styles.columnsGridLines} aria-hidden="true">
-            {ticks.map((value) => (
-              <span key={value} className={styles.columnsGridLine} />
-            ))}
-          </div>
+          {/* Labels da escala vertical */}
+          {ticks.map((tick) => {
+            const y = padding.top + plotH - (tick / scaleMax) * plotH;
+            return (
+              <text
+                key={`tick-${tick}`}
+                x={padding.left - 10}
+                y={y + 4}
+                textAnchor="end"
+                className={styles.columnsAxisText}
+              >
+                {tick}
+              </text>
+            );
+          })}
 
-          <div className={styles.columnsChart}>
-            {rows.map((row) => {
-              const height = scaleMax > 0 ? (row.cnt / scaleMax) * 100 : 0;
-              const monthLabel = MONTHS_FULL[row.m].slice(0, 3);
+          {/* Barras */}
+          {rows.map((row, i) => {
+            const cx = padding.left + slotW * i + slotW / 2;
+            const barH = scaleMax > 0 ? (row.cnt / scaleMax) * plotH : 0;
+            const x = cx - barW / 2;
+            const y = padding.top + plotH - barH;
+            const fill = row.isNow ? 'var(--accent-amber)' : 'rgba(255,255,255,0.075)';
+            const labelColor = row.isNow ? 'var(--accent-amber)' : 'var(--text-tertiary)';
 
-              return (
-                <article
-                  key={`${row.y}-${row.m}`}
-                  className={`${styles.columnCard} ${row.isNow ? styles.columnCardCurrent : ''}`.trim()}
+            return (
+              <g key={`bar-${row.y}-${row.m}`}>
+                {/* Valor em cima da barra */}
+                <text
+                  x={cx}
+                  y={y - 8}
+                  textAnchor="middle"
+                  className={`${styles.columnsValue} ${row.isNow ? styles.columnsValueCurrent : ''}`}
+                  fill={labelColor}
                 >
-                  <div className={styles.columnTrack}>
-                    <span className={styles.columnCount}>{fmtInt(row.cnt)}</span>
-                    <div
-                      className={`${styles.columnBar} ${row.isNow ? styles.columnBarCurrent : ''}`.trim()}
-                      style={{ height: `${height}%` }}
-                    />
-                  </div>
-
-                  <div className={styles.columnMetaBottom}>
-                    <span className={styles.columnMonth}>{monthLabel}</span>
-                    <span className={styles.columnYear}>{String(row.y)}</span>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </div>
+                  {fmtInt(row.cnt)}
+                </text>
+                {/* Barra */}
+                <rect
+                  x={x}
+                  y={y}
+                  width={barW}
+                  height={Math.max(barH, 2)}
+                  rx="3"
+                  ry="3"
+                  fill={fill}
+                />
+                {/* Mês embaixo */}
+                <text
+                  x={cx}
+                  y={VB_H - padding.bottom + 18}
+                  textAnchor="middle"
+                  className={`${styles.columnsMonth} ${row.isNow ? styles.columnsMonthCurrent : ''}`}
+                >
+                  {MONTHS_FULL[row.m].slice(0, 3).toUpperCase()}
+                </text>
+                <text
+                  x={cx}
+                  y={VB_H - padding.bottom + 30}
+                  textAnchor="middle"
+                  className={styles.columnsYear}
+                >
+                  {String(row.y)}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
       </div>
     </div>
   );
@@ -284,18 +347,18 @@ function ComparisonPanel({ current, previous, previousLabel }) {
       </div>
 
       <div className={styles.compareBody}>
-        <div className={styles.comparePeriodRow}>
-          <span className={styles.comparePeriod}>{previousLabel}</span>
-        </div>
+        <span className={styles.comparePeriod}>{previousLabel}</span>
 
         <dl className={styles.compareGrid}>
           {rows.map((row) => (
             <div key={row.label} className={styles.compareItem}>
-              <dt className={styles.compareLabel}>{row.label}</dt>
+              <div className={styles.compareLeft}>
+                <dt className={styles.compareLabel}>{row.label}</dt>
+                <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>
+                  {row.delta}
+                </span>
+              </div>
               <dd className={styles.compareValue}>{row.value}</dd>
-              <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>
-                {row.delta}
-              </span>
             </div>
           ))}
         </dl>
