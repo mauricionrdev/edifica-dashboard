@@ -2,6 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import ClientDetailDrawer from '../components/clients/ClientDetailDrawer.jsx';
 import Select from '../components/ui/Select.jsx';
+import {
+  BriefcaseIcon,
+  ChartColumnIcon,
+  CoinsIcon,
+  TargetIcon,
+  TrendingUpIcon,
+  UsersIcon,
+} from '../components/ui/Icons.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { buildBarChartData, computeCentralMetrics } from '../utils/centralMetrics.js';
 import { fmtMoney, fmtPct, MONTHS_FULL } from '../utils/format.js';
@@ -142,23 +150,21 @@ function MetricCard({
       <div className={styles.metricCardTop}>
         <span className={styles.metricLabel}>{label}</span>
         {icon ? <span className={styles.metricIcon} aria-hidden="true">{icon}</span> : null}
-        {draggable ? <span className={styles.metricGrip} aria-hidden="true" /> : null}
       </div>
 
       <div className={styles.metricBody}>
         <strong className={styles.metricValue}>{value}</strong>
       </div>
 
-      {delta ? (
-        <p className={`${styles.metricDelta} ${styles[`metricDelta_${deltaTone || 'neutral'}`]}`}>
-          <span className={styles.metricDeltaArrow} aria-hidden="true">
-            {deltaTone === 'up' ? '↗' : deltaTone === 'down' ? '↘' : '—'}
-          </span>
-          <span>{delta}</span>
-          {helper ? <small className={styles.metricDeltaHelper}>{helper}</small> : null}
+      {delta || helper ? (
+        <p className={styles.metricFooter}>
+          {delta ? (
+            <span className={`${styles.metricDelta} ${styles[`metricDelta_${deltaTone || 'neutral'}`]}`}>
+              {delta}
+            </span>
+          ) : null}
+          {helper ? <span className={styles.metricHelper}>{helper}</span> : null}
         </p>
-      ) : helper ? (
-        <p className={styles.metricHelper}>{helper}</p>
       ) : null}
 
       {typeof progress === 'number' ? (
@@ -181,55 +187,59 @@ function EntryColumnsChart({ rows = [] }) {
     return <p className={styles.emptyState}>Sem entradas no período recente.</p>;
   }
 
+  // Escala vertical fixa em incrementos de 5, sempre arredondando para cima.
+  // Ex: max 17 -> escala vai até 20 (0, 5, 10, 15, 20).
+  const scaleMax = Math.max(5, Math.ceil(maxClients / 5) * 5);
+  const ticks = [];
+  for (let v = scaleMax; v >= 0; v -= 5) ticks.push(v);
+
   return (
     <div className={styles.columnsPanel}>
       <div className={styles.columnsPanelHeader}>
-        <div>
-          <h3 className={styles.columnsPanelTitle}>Entradas</h3>
-          <span className={styles.columnsPanelSubtitle}>novos clientes por mês · últimos 7 meses</span>
-        </div>
-        <div className={styles.columnsLegend}>
-          <span className={styles.legendItem}>
-            <span className={`${styles.legendSwatch} ${styles.legendSwatch_current}`} aria-hidden="true" />
-            Selecionado
-          </span>
-          <span className={styles.legendItem}>
-            <span className={`${styles.legendSwatch} ${styles.legendSwatch_history}`} aria-hidden="true" />
-            Histórico
-          </span>
-        </div>
+        <h3 className={styles.columnsPanelTitle}>Entradas</h3>
       </div>
 
-      <div className={styles.columnsChart}>
-        {rows.map((row) => {
-          const height = maxClients > 0 ? Math.max(8, (row.cnt / maxClients) * 100) : 0;
-          const monthLabel = MONTHS_FULL[row.m].slice(0, 3);
+      <div className={styles.columnsBody}>
+        <div className={styles.columnsScale} aria-hidden="true">
+          {ticks.map((value) => (
+            <span key={value} className={styles.columnsScaleTick}>{value}</span>
+          ))}
+        </div>
 
-          return (
-            <article
-              key={`${row.y}-${row.m}`}
-              className={`${styles.columnCard} ${row.isNow ? styles.columnCardCurrent : ''}`.trim()}
-            >
-              <div className={styles.columnMetaTop}>
-                <strong className={styles.columnCount}>{fmtInt(row.cnt)}</strong>
-              </div>
+        <div className={styles.columnsGridArea}>
+          <div className={styles.columnsGridLines} aria-hidden="true">
+            {ticks.map((value) => (
+              <span key={value} className={styles.columnsGridLine} />
+            ))}
+          </div>
 
-              <div className={styles.columnTrack}>
-                <div className={styles.columnBarWrap}>
-                  <div
-                    className={`${styles.columnBar} ${row.isNow ? styles.columnBarCurrent : ''}`.trim()}
-                    style={{ height: `${height}%` }}
-                  />
-                </div>
-              </div>
+          <div className={styles.columnsChart}>
+            {rows.map((row) => {
+              const height = scaleMax > 0 ? (row.cnt / scaleMax) * 100 : 0;
+              const monthLabel = MONTHS_FULL[row.m].slice(0, 3);
 
-              <div className={styles.columnMetaBottom}>
-                <span className={styles.columnMonth}>{monthLabel}</span>
-                <span className={styles.columnYear}>{String(row.y)}</span>
-              </div>
-            </article>
-          );
-        })}
+              return (
+                <article
+                  key={`${row.y}-${row.m}`}
+                  className={`${styles.columnCard} ${row.isNow ? styles.columnCardCurrent : ''}`.trim()}
+                >
+                  <div className={styles.columnTrack}>
+                    <span className={styles.columnCount}>{fmtInt(row.cnt)}</span>
+                    <div
+                      className={`${styles.columnBar} ${row.isNow ? styles.columnBarCurrent : ''}`.trim()}
+                      style={{ height: `${height}%` }}
+                    />
+                  </div>
+
+                  <div className={styles.columnMetaBottom}>
+                    <span className={styles.columnMonth}>{monthLabel}</span>
+                    <span className={styles.columnYear}>{String(row.y)}</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -249,14 +259,12 @@ function ComparisonPanel({ current, previous, previousLabel }) {
     } else {
       tone = diff > 0 ? 'good' : 'risk';
     }
-    const arrow = isFlat ? '—' : diff > 0 ? '↗' : '↘';
     const sign = diff > 0 ? '+' : diff < 0 ? '−' : '';
     const formatted = formatter ? formatter(Math.abs(diff)) : fmtInt(Math.abs(diff));
     return {
       label,
       value: formatter ? formatter(prev) : fmtInt(prev),
       delta: isFlat ? '0' : `${sign}${formatted}`,
-      arrow,
       tone,
     };
   };
@@ -287,8 +295,7 @@ function ComparisonPanel({ current, previous, previousLabel }) {
               <dt className={styles.compareLabel}>{row.label}</dt>
               <dd className={styles.compareValue}>{row.value}</dd>
               <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>
-                <span className={styles.compareDeltaArrow} aria-hidden="true">{row.arrow}</span>
-                <span>{row.delta}</span>
+                {row.delta}
               </span>
             </div>
           ))}
@@ -296,6 +303,41 @@ function ComparisonPanel({ current, previous, previousLabel }) {
       </div>
     </section>
   );
+}
+
+function clientInitials(name) {
+  const words = String(name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!words.length) return '·';
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
+
+// Paleta inspirada em Linear: dessaturada o suficiente para conviver bem
+// com o canvas escuro, mas com hue distinta o bastante para diferenciar
+// avatares na lista. Determinística — mesmo nome sempre dá a mesma cor.
+const AVATAR_PALETTE = [
+  '#d97706', // âmbar profundo
+  '#0891b2', // ciano
+  '#7c3aed', // violeta
+  '#059669', // verde
+  '#db2777', // rosa
+  '#2563eb', // azul
+  '#9333ea', // roxo
+  '#dc2626', // vermelho
+  '#ea580c', // laranja
+  '#0d9488', // teal
+];
+
+function avatarColorFromName(name) {
+  const text = String(name || '');
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  }
+  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
 }
 
 function clientMeta(client) {
@@ -319,26 +361,66 @@ function ActivityPanel({ activities = [], onOpenClient }) {
 
       {rows.length > 0 ? (
         <div className={styles.activityList}>
-          {rows.map((activity) => (
-            <button
-              key={activity.key}
-              type="button"
-              className={styles.activityItem}
-              onClick={() => onOpenClient(activity.client.id)}
-            >
-              <span className={`${styles.activityDot} ${styles[`activityDot_${activity.tone}`]}`} />
-              <span className={styles.activityCopy}>
-                <span className={styles.activityMain}>
-                  <strong>{activity.client.name}</strong>
+          {rows.map((activity) => {
+            const client = activity.client || {};
+            const status = String(client.status || '').toLowerCase();
+            const isActive = status === 'active' || status === 'ativo';
+            const isChurn = status === 'churn';
+            const initials = clientInitials(client.name);
+            const avatarBg = avatarColorFromName(client.name);
+            const fee = Number(client.fee) > 0 ? fmtMoney(client.fee) : '';
+            const squad = client.squadName || client.squad || '';
+            const squadColor = squad ? avatarColorFromName(squad) : null;
+
+            return (
+              <button
+                key={activity.key}
+                type="button"
+                className={styles.activityItem}
+                onClick={() => onOpenClient(client.id)}
+              >
+                <span
+                  className={styles.activityAvatar}
+                  style={{ background: avatarBg }}
+                  aria-hidden="true"
+                >
+                  <span className={styles.activityAvatarInitials}>{initials}</span>
+                  {isActive ? <span className={styles.activityAvatarStatus} /> : null}
+                </span>
+
+                <span className={styles.activityCopy}>
+                  <strong>{client.name || 'Cliente'}</strong>
                   <span>{activity.text}</span>
                 </span>
-                <span className={styles.activityMeta}>
-                  <small>{formatShortDate(activity.date)}</small>
-                  {clientMeta(activity.client) ? <small>{clientMeta(activity.client)}</small> : null}
-                </span>
-              </span>
-            </button>
-          ))}
+
+                <span className={styles.activityDate}>{formatShortDate(activity.date)}</span>
+
+                {squad ? (
+                  <span className={styles.activitySquad}>
+                    <span
+                      className={styles.activitySquadDot}
+                      style={{ background: squadColor }}
+                      aria-hidden="true"
+                    />
+                    {squad}
+                  </span>
+                ) : <span aria-hidden="true" />}
+
+                {isActive ? (
+                  <span className={`${styles.activityStatusPill} ${styles.activityStatusPill_active}`}>
+                    <span className={styles.activityStatusDot} />
+                    ATIVO
+                  </span>
+                ) : isChurn ? (
+                  <span className={`${styles.activityStatusPill} ${styles.activityStatusPill_churn}`}>
+                    CHURN
+                  </span>
+                ) : fee ? (
+                  <span className={styles.activityFee}>{fee}</span>
+                ) : <span aria-hidden="true" />}
+              </button>
+            );
+          })}
         </div>
       ) : (
         <p className={styles.emptyState}>Nenhuma atividade recente.</p>
@@ -566,6 +648,7 @@ export default function CentralPage() {
           helper: 'vs. mês passado',
           delta: baseDelta.delta,
           deltaTone: baseDelta.deltaTone,
+          icon: <UsersIcon size={14} />,
           tone: 'neutral',
         },
         {
@@ -575,6 +658,7 @@ export default function CentralPage() {
           helper: 'vs. mês passado',
           delta: ativosDelta.delta,
           deltaTone: ativosDelta.deltaTone,
+          icon: <BriefcaseIcon size={14} />,
           tone: 'neutral',
         },
         {
@@ -584,6 +668,7 @@ export default function CentralPage() {
           helper: 'vs. mês passado',
           delta: novosDelta.delta,
           deltaTone: novosDelta.deltaTone,
+          icon: <TrendingUpIcon size={14} />,
           tone: currentMonthNewClients > 0 ? 'good' : 'neutral',
         },
         {
@@ -593,6 +678,7 @@ export default function CentralPage() {
           helper: 'vs. mês passado',
           delta: mrrDelta.delta,
           deltaTone: mrrDelta.deltaTone,
+          icon: <CoinsIcon size={14} />,
           tone: 'neutral',
         },
         {
@@ -602,6 +688,7 @@ export default function CentralPage() {
           helper: 'vs. mês passado',
           delta: receitaNovaDelta.delta,
           deltaTone: receitaNovaDelta.deltaTone,
+          icon: <TrendingUpIcon size={14} />,
           tone: revenueNew > 0 ? 'good' : 'neutral',
         },
         {
@@ -611,6 +698,7 @@ export default function CentralPage() {
           helper: 'vs. mês passado',
           delta: ticketDelta.delta,
           deltaTone: ticketDelta.deltaTone,
+          icon: <TargetIcon size={14} />,
           tone: 'neutral',
         },
         {
@@ -622,6 +710,7 @@ export default function CentralPage() {
             : 'sem perdas',
           delta: revenueLost > 0 ? perdidaDelta.delta : '',
           deltaTone: perdidaDelta.deltaTone,
+          icon: <ChartColumnIcon size={14} />,
           tone: revenueLost > 0 ? 'risk' : 'neutral',
         },
         {
@@ -633,6 +722,7 @@ export default function CentralPage() {
             : 'sem churn',
           delta: churnedPeriod > 0 ? churnDelta.delta : '',
           deltaTone: churnDelta.deltaTone,
+          icon: <ChartColumnIcon size={14} />,
           progress: Math.min(churnRate, 100),
           tone: toneFromChurn(churnRate),
         },
@@ -775,9 +865,6 @@ export default function CentralPage() {
 
           <div className={styles.dashboardPanels}>
             <section className={styles.boardSection}>
-              <div className={styles.sectionHeaderCompact}>
-                <h3>Entradas</h3>
-              </div>
               <EntryColumnsChart rows={entryColumns} />
             </section>
 
