@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -72,7 +73,17 @@ export default function AppShell() {
     document.body.setAttribute('data-theme', 'dark');
   }, []);
 
-  useEffect(() => {
+  // useLayoutEffect (não useEffect) é crítico aqui:
+  // - useEffect do filho roda ANTES do useEffect do pai em updates;
+  //   se este reset estivesse em useEffect, ele rodaria DEPOIS do
+  //   setPanelHeader(...) que a página filha (ex: CentralPage) chama
+  //   no mount, sobrescrevendo os actions custom (selects do header).
+  // - useLayoutEffect roda síncrono na fase de commit do pai, antes
+  //   do mount do filho disparar seus effects. Assim o reset acontece
+  //   primeiro e a página filha tem a última palavra sobre seus actions.
+  // Sintoma que isto resolve: Dashboard -> outra tela -> volta para
+  // Dashboard fazia os 3 selects do header sumirem até F5.
+  useLayoutEffect(() => {
     setNotificationsOpen(false);
     setSidebarOpen(false);
     setPanelHeader(routePanelHeader);
