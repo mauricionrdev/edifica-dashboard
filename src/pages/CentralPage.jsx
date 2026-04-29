@@ -286,7 +286,6 @@ function ComparisonPanel({ current, previous, previousLabel }) {
       <div className={styles.compareBody}>
         <div className={styles.comparePeriodRow}>
           <span className={styles.comparePeriod}>{previousLabel}</span>
-          <span className={styles.comparePeriodTag}>baseline</span>
         </div>
 
         <dl className={styles.compareGrid}>

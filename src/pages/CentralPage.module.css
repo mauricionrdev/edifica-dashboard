@@ -186,10 +186,21 @@
   background: var(--text-quaternary);
 }
 
-.metricProgressBar_good { background: var(--success); }
-.metricProgressBar_warning { background: var(--accent-amber); }
-.metricProgressBar_risk { background: var(--danger); }
-.metricProgressBar_neutral { background: var(--text-quaternary); }
+.metricProgressBar_good {
+  background: var(--success);
+}
+
+.metricProgressBar_warning {
+  background: var(--accent-amber);
+}
+
+.metricProgressBar_risk {
+  background: var(--danger);
+}
+
+.metricProgressBar_neutral {
+  background: var(--text-quaternary);
+}
 
 .dashboardPanels {
   display: grid;
@@ -282,7 +293,6 @@
   position: relative;
   min-height: 0;
   padding-top: 8px;
-  padding-bottom: 28px;
 }
 
 .columnsGridLines {
@@ -444,20 +454,6 @@
   letter-spacing: -0.01em;
 }
 
-.comparePeriodTag {
-  padding: 2px 7px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.025);
-  color: var(--text-tertiary);
-  font-size: 9.5px;
-  font-weight: var(--weight-medium, 510);
-  letter-spacing: 0.04em;
-  text-transform: lowercase;
-  font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
-  line-height: 1;
-}
-
 .compareGrid {
   min-height: 0;
   margin: 0;
@@ -524,9 +520,17 @@
   font-weight: var(--weight-semibold, 590);
 }
 
-.compareDelta_good { color: var(--success); }
-.compareDelta_risk { color: var(--danger); }
-.compareDelta_flat { color: var(--text-tertiary); }
+.compareDelta_good {
+  color: var(--success);
+}
+
+.compareDelta_risk {
+  color: var(--danger);
+}
+
+.compareDelta_flat {
+  color: var(--text-tertiary);
+}
 
 .projectsPanel {
   min-height: 264px;
@@ -676,8 +680,14 @@
 
 .projectStatus_progress,
 .projectStatus_planned,
-.projectStatus_paused { color: var(--text-secondary); }
-.projectStatus_done { color: var(--success); }
+.projectStatus_paused {
+  color: var(--text-secondary);
+}
+
+.projectStatus_done {
+  color: var(--success);
+}
+
 .projectStatus_blocked {
   color: var(--accent-amber);
   border-color: var(--accent-amber-line);
@@ -755,7 +765,7 @@
 
   .columnsPanel,
   .compareBody {
-    height: 218px;
+    height: 100%;
   }
 
   .columnBarWrap {
@@ -961,7 +971,7 @@
 .dashboardLastCard .activityItem {
   width: 100%;
   min-height: 64px;
-  padding: 12px 0;
+  padding: 10px;
   border: 0;
   border-bottom: 1px solid var(--line-subtle);
   background: transparent;
@@ -1033,7 +1043,7 @@
   text-overflow: ellipsis;
 }
 
-.activityCopy > span {
+.activityCopy>span {
   color: var(--text-secondary);
   font-size: 12.5px;
   font-weight: 400;
