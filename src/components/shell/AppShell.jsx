@@ -49,6 +49,17 @@ export default function AppShell() {
 
   const mountedRef = useRef(true);
 
+  // userRef sempre carrega o user mais recente. Usado dentro dos refresh*
+  // para que esses callbacks possam ter dependência apenas em user?.id
+  // (string estável), evitando recriação espúria a cada re-render.
+  const userRef = useRef(user);
+  userRef.current = user;
+
+  // Detecta troca real de usuário (login -> outro user, ou logout).
+  // O bootstrap inicial (loading -> authed) não conta como troca, então
+  // não dispara reset (que zerava arrays e criava janela de UI vazia).
+  const prevUserIdRef = useRef(null);
+
   useEffect(() => {
     mountedRef.current = true;
     return () => {
@@ -68,20 +79,38 @@ export default function AppShell() {
   }, [routePanelHeader]);
 
   useEffect(() => {
-    setClients([]);
-    setSquads([]);
-    setGdvs([]);
-    setUserDirectory([]);
-    setNotifications([]);
-    setUnreadCount(0);
-    setNotificationsOpen(false);
-    setSidebarOpen(false);
+    const previousUserId = prevUserIdRef.current;
+    const currentUserId = user?.id || null;
+
+    // Caso 1: bootstrap (primeiro render). previousUserId é null.
+    //   - Se status virou authed e há user, é só registrar o id.
+    //     Os arrays já são [] do useState inicial, refetch vai populá-los
+    //     diretamente sem precisar zerar.
+    // Caso 2: troca de user OU logout (authed -> anon).
+    //   - Aí sim zera tudo para evitar vazar dados do user antigo.
+    const isUserSwitch =
+      previousUserId !== null && previousUserId !== currentUserId;
+    const isLogout = previousUserId !== null && status !== 'authed';
+
+    if (isUserSwitch || isLogout) {
+      setClients([]);
+      setSquads([]);
+      setGdvs([]);
+      setUserDirectory([]);
+      setNotifications([]);
+      setUnreadCount(0);
+      setNotificationsOpen(false);
+      setSidebarOpen(false);
+    }
+
     setLoading(status === 'authed');
     setError(null);
+    prevUserIdRef.current = currentUserId;
   }, [status, user?.id]);
 
   const refreshClients = useCallback(async () => {
-    if (!canViewClients(user)) {
+    const currentUser = userRef.current;
+    if (!canViewClients(currentUser)) {
       if (mountedRef.current) setClients([]);
       return;
     }
@@ -97,10 +126,11 @@ export default function AppShell() {
       }
       throw err;
     }
-  }, [user]);
+  }, [user?.id]);
 
   const refreshSquads = useCallback(async () => {
-    if (!hasPermission(user, 'squads.view')) {
+    const currentUser = userRef.current;
+    if (!hasPermission(currentUser, 'squads.view')) {
       if (mountedRef.current) setSquads([]);
       return;
     }
@@ -116,10 +146,11 @@ export default function AppShell() {
       }
       throw err;
     }
-  }, [user]);
+  }, [user?.id]);
 
   const refreshGdvs = useCallback(async () => {
-    if (!canViewGdv(user)) {
+    const currentUser = userRef.current;
+    if (!canViewGdv(currentUser)) {
       if (mountedRef.current) setGdvs([]);
       return;
     }
@@ -135,7 +166,7 @@ export default function AppShell() {
       }
       throw err;
     }
-  }, [user]);
+  }, [user?.id]);
 
   const refreshUserDirectory = useCallback(async () => {
     try {

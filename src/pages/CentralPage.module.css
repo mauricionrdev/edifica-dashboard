@@ -693,11 +693,9 @@
 }
 
 
-/* PATCH v50 — dashboard final em 2 cards independentes e mais densos */
+/* PATCH v52 — Atividades full-width, sem painel de Projetos */
 .dashboardLastCard {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  display: block;
 }
 
 .panelMetaBadge {
@@ -710,39 +708,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  font-weight: 590;
+  font-size: var(--fs-micro, 11px);
+  font-weight: var(--weight-semibold, 590);
   line-height: 1;
 }
 
-.dashboardLastCard .activityPanel,
-.dashboardLastCard .projectsPanel {
+.dashboardLastCard .activityPanel {
   display: block;
-  min-height: 320px;
   border: 1px solid var(--line-subtle);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.021);
   overflow: hidden;
 }
 
-.dashboardLastCard .activityList,
-.dashboardLastCard .activityItem,
-.dashboardLastCard .activityDot,
-.dashboardLastCard .activityCopy,
-.dashboardLastCard .activityMain,
-.dashboardLastCard .activityMeta {
-  display: initial;
-}
-
 .dashboardLastCard .activityList {
   display: grid;
-  padding: 6px 16px 14px;
+  padding: 6px 18px 14px;
 }
 
 .dashboardLastCard .activityItem {
   width: 100%;
-  min-height: 58px;
-  padding: 10px 0;
+  min-height: 56px;
+  padding: 12px 0;
   border: 0;
   border-bottom: 1px solid var(--line-subtle);
   background: transparent;
@@ -752,8 +739,9 @@
   cursor: pointer;
   display: grid;
   grid-template-columns: 10px minmax(0, 1fr);
-  gap: 10px;
+  gap: 12px;
   align-items: start;
+  transition: color 0.14s ease;
 }
 
 .dashboardLastCard .activityItem:last-child {
@@ -767,7 +755,7 @@
 .dashboardLastCard .activityDot {
   width: 6px;
   height: 6px;
-  margin-top: 7px;
+  margin-top: 8px;
   border-radius: 999px;
   background: var(--text-quaternary);
   display: inline-block;
@@ -780,13 +768,17 @@
 .dashboardLastCard .activityCopy {
   min-width: 0;
   display: grid;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: baseline;
 }
 
 .dashboardLastCard .activityMain {
   min-width: 0;
-  display: grid;
-  gap: 3px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .dashboardLastCard .activityMain strong,
@@ -800,110 +792,26 @@
 
 .dashboardLastCard .activityMain strong {
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 650;
+  font-size: var(--fs-caption, 13px);
+  font-weight: var(--weight-medium, 510);
+  letter-spacing: var(--tracking-caption, -0.13px);
 }
 
 .dashboardLastCard .activityMain span {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: var(--fs-caption, 13px);
+  letter-spacing: var(--tracking-caption, -0.13px);
 }
 
 .dashboardLastCard .activityMeta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .dashboardLastCard .activityMeta small {
   color: var(--text-tertiary);
-  font-size: 11px;
-}
-
-.dashboardLastCard .projectsPanel {
-  min-height: 320px;
-}
-
-.dashboardLastCard .projectsHeader {
-  min-height: 46px;
-  padding: 0 16px;
-}
-
-.dashboardLastCard .projectsSummary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dashboardLastCard .projectsSummary span {
-  min-width: 24px;
-  height: 24px;
-  padding: 0 8px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.018);
-  color: var(--text-secondary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 590;
-}
-
-.dashboardLastCard .projectsList {
-  display: grid;
-  padding: 6px 16px 14px;
-}
-
-.dashboardLastCard .projectItem {
-  min-height: 58px;
-  padding: 10px 0;
-  grid-template-columns: 28px minmax(0, 1fr) minmax(104px, 128px) auto;
-  gap: 12px;
-}
-
-.dashboardLastCard .projectMark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: 1px solid rgba(245, 184, 0, 0.16);
-  background: rgba(245, 184, 0, 0.08);
-}
-
-.dashboardLastCard .projectInfo {
-  gap: 4px;
-}
-
-.dashboardLastCard .projectInfo strong {
-  font-size: 13px;
-}
-
-.dashboardLastCard .projectInfo small {
-  font-size: 11px;
-}
-
-.dashboardLastCard .projectProgressGroup {
-  gap: 8px;
-}
-
-.dashboardLastCard .projectProgressGroup strong {
-  width: 34px;
-  font-size: 11px;
-}
-
-.dashboardLastCard .projectProgressTrack {
-  min-width: 72px;
-}
-
-.dashboardLastCard .projectStatus {
-  min-width: 98px;
-  height: 26px;
-  padding: 0 10px;
-  font-size: 10.5px;
-}
-
-@media (max-width: 1180px) {
-  .dashboardLastCard {
-    grid-template-columns: 1fr;
-  }
+  font-size: var(--fs-label, 12px);
+  font-variant-numeric: tabular-nums;
 }

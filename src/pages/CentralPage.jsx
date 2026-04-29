@@ -2,9 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import ClientDetailDrawer from '../components/clients/ClientDetailDrawer.jsx';
 import Select from '../components/ui/Select.jsx';
-import StateBlock from '../components/ui/StateBlock.jsx';
-import { ProjectBoardIcon } from '../components/ui/Icons.jsx';
-import { listProjects } from '../api/projects.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { buildBarChartData, computeCentralMetrics } from '../utils/centralMetrics.js';
 import { fmtMoney, fmtPct, MONTHS_FULL } from '../utils/format.js';
@@ -240,7 +237,7 @@ function clientMeta(client) {
 }
 
 function ActivityPanel({ activities = [], onOpenClient }) {
-  const rows = Array.isArray(activities) ? activities.slice(0, 5) : [];
+  const rows = Array.isArray(activities) ? activities.slice(0, 10) : [];
 
   return (
     <section className={styles.activityPanel}>
@@ -279,103 +276,6 @@ function ActivityPanel({ activities = [], onOpenClient }) {
   );
 }
 
-
-function projectInitials(value) {
-  const words = String(value || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
-  if (!words.length) return 'PJ';
-  return words.map((word) => word[0]).join('').toUpperCase();
-}
-
-function projectStatusLabel(status) {
-  if (status === 'done' || status === 'completed') return 'Concluído';
-  if (status === 'blocked') return 'Bloqueado';
-  if (status === 'planned' || status === 'todo') return 'Planejado';
-  if (status === 'paused') return 'Pausado';
-  return 'Em andamento';
-}
-
-function projectStatusTone(status) {
-  if (status === 'done' || status === 'completed') return 'done';
-  if (status === 'blocked') return 'blocked';
-  if (status === 'planned' || status === 'todo') return 'planned';
-  if (status === 'paused') return 'paused';
-  return 'progress';
-}
-
-function projectProgress(project) {
-  const total = Number(project?.taskCount ?? project?.totalTasks ?? project?.tasksCount ?? 0) || 0;
-  const done = Number(project?.doneCount ?? project?.completedTasks ?? project?.completedTaskCount ?? 0) || 0;
-  if (!total) return 0;
-  return Math.max(0, Math.min(100, Math.round((done / total) * 100)));
-}
-
-function ProjectSummaryPanel({ projects = [], loading = false }) {
-  const rows = Array.isArray(projects) ? projects.slice(0, 5) : [];
-  const total = Array.isArray(projects) ? projects.length : 0;
-  const allProjects = Array.isArray(projects) ? projects : [];
-  const totalTasks = allProjects.reduce(
-    (sum, project) => sum + (Number(project?.taskCount ?? project?.totalTasks ?? project?.tasksCount ?? 0) || 0),
-    0
-  );
-  const completedTasks = allProjects.reduce(
-    (sum, project) => sum + (Number(project?.doneCount ?? project?.completedTasks ?? project?.completedTaskCount ?? 0) || 0),
-    0
-  );
-  const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-  return (
-    <section className={styles.projectsPanel}>
-      <div className={styles.projectsHeader}>
-        <h3>Projetos</h3>
-        <div className={styles.projectsSummary}>
-          <span>{fmtInt(total)}</span>
-          <span>{fmtInt(overallProgress)}%</span>
-        </div>
-      </div>
-
-      {loading ? (
-        <div className={styles.projectsLoading}>
-          <StateBlock compact variant="loading" title="Carregando projetos" />
-        </div>
-      ) : rows.length > 0 ? (
-        <div className={styles.projectsList}>
-          {rows.map((project, index) => {
-            const progress = projectProgress(project);
-            const taskCount = Number(project?.taskCount ?? project?.totalTasks ?? project?.tasksCount ?? 0) || 0;
-            const doneCount = Number(project?.doneCount ?? project?.completedTasks ?? project?.completedTaskCount ?? 0) || 0;
-            const tone = projectStatusTone(project.status);
-            return (
-              <article key={project.id || `${project.name}-${index}`} className={styles.projectItem}>
-                <span className={styles.projectDot} aria-hidden="true" />
-                <span className={styles.projectMark}><ProjectBoardIcon size={18} /></span>
-                <span className={styles.projectInfo}>
-                  <strong>{project.name || 'Projeto'}</strong>
-                  <small>{project.squadName || project.clientName || 'Sem squad'}</small>
-                </span>
-                <span className={styles.projectProgressGroup}>
-                  <strong>{progress}%</strong>
-                  <span className={styles.projectProgressTrack} aria-hidden="true">
-                    <span style={{ width: `${progress}%` }} />
-                  </span>
-                </span>
-                <span className={styles.projectTaskCount}>{doneCount}/{taskCount}</span>
-                <span className={`${styles.projectStatus} ${styles[`projectStatus_${tone}`]}`}>
-                  {projectStatusLabel(project.status)}
-                </span>
-              </article>
-            );
-          })}
-        </div>
-      ) : (
-        <div className={styles.projectsEmpty}>Nenhum projeto encontrado</div>
-      )}
-    </section>
-  );
-}
 
 function buildClientActivities(clients = []) {
   const now = new Date();
@@ -418,7 +318,7 @@ function buildClientActivities(clients = []) {
 
   return events
     .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .slice(0, 8);
+    .slice(0, 10);
 }
 
 function DashboardSkeleton() {
@@ -455,8 +355,6 @@ export default function CentralPage() {
   const [clientFilter, setClientFilter] = useState('');
   const [draggingMetric, setDraggingMetric] = useState('');
   const [selectedClientId, setSelectedClientId] = useState(null);
-  const [projects, setProjects] = useState([]);
-  const [projectsLoading, setProjectsLoading] = useState(false);
 
   const clientOptions = useMemo(() => {
     const list = Array.isArray(clients) ? clients : [];
@@ -485,26 +383,6 @@ export default function CentralPage() {
     () => (selectedClientId ? (clients || []).find((client) => client.id === selectedClientId) || null : null),
     [clients, selectedClientId]
   );
-
-  useEffect(() => {
-    let cancelled = false;
-    setProjectsLoading(true);
-
-    listProjects()
-      .then((data) => {
-        if (!cancelled) setProjects(Array.isArray(data?.projects) ? data.projects : []);
-      })
-      .catch(() => {
-        if (!cancelled) setProjects([]);
-      })
-      .finally(() => {
-        if (!cancelled) setProjectsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const openClientDetail = useCallback((clientId) => setSelectedClientId(clientId), []);
   const closeClientDetail = useCallback(() => setSelectedClientId(null), []);
@@ -673,27 +551,32 @@ export default function CentralPage() {
       if (Number.isFinite(year) && Number.isFinite(month)) setPeriod({ y: year, m: month });
     };
 
+    const squadsList = Array.isArray(squads) ? squads : [];
+    const isSquadsLoading = shellLoading && squadsList.length === 0;
+
     const actions = (
       <div className={styles.toolbar}>
-        {Array.isArray(squads) && squads.length > 0 ? (
-          <Select
-            value={squadFilter}
-            onChange={(event) => setSquadFilter(event.target.value)}
-            aria-label="Filtrar por squad"
-          >
-            <option value="">Todos squads</option>
-            {squads.map((squad) => (
-              <option key={squad.id} value={squad.id}>
-                {squad.name}
-              </option>
-            ))}
-          </Select>
-        ) : null}
+        <Select
+          value={squadFilter}
+          onChange={(event) => setSquadFilter(event.target.value)}
+          aria-label="Filtrar por squad"
+          disabled={isSquadsLoading}
+          placeholder={isSquadsLoading ? 'Carregando squads…' : 'Todos squads'}
+        >
+          <option value="">Todos squads</option>
+          {squadsList.map((squad) => (
+            <option key={squad.id} value={squad.id}>
+              {squad.name}
+            </option>
+          ))}
+        </Select>
 
         <Select
           value={clientFilter}
           onChange={(event) => setClientFilter(event.target.value)}
           aria-label="Filtrar por cliente"
+          disabled={shellLoading && clientOptions.length === 0}
+          placeholder={shellLoading && clientOptions.length === 0 ? 'Carregando clientes…' : 'Todos clientes'}
         >
           <option value="">Todos clientes</option>
           {clientOptions.map((client) => (
@@ -714,7 +597,7 @@ export default function CentralPage() {
     );
 
     setPanelHeader({ title, description: '', actions });
-  }, [clientFilter, clientOptions, period, periodOptions, setPanelHeader, squadFilter, squads]);
+  }, [clientFilter, clientOptions, period, periodOptions, setPanelHeader, shellLoading, squadFilter, squads]);
 
   if (shellLoading && !clients?.length) return <DashboardSkeleton />;
 
@@ -773,7 +656,6 @@ export default function CentralPage() {
 
           <section className={styles.dashboardLastCard}>
             <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
-            <ProjectSummaryPanel projects={projects} loading={projectsLoading} />
           </section>
         </div>
 
