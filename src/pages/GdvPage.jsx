@@ -141,6 +141,50 @@ function statusLabel(calc, clientStatus) {
   return 'Crítico';
 }
 
+function goalState(calc = {}) {
+  const goal = Number(calc.mLuc) || 0;
+  const closed = Number(calc.fec) || 0;
+  const projected = effectiveForecast(calc.fec, calc.cp);
+
+  if (goal <= 0) {
+    return {
+      hasGoal: false,
+      hit: false,
+      forecast: false,
+    };
+  }
+
+  return {
+    hasGoal: true,
+    hit: closed >= goal,
+    forecast: closed < goal && projected >= goal,
+  };
+}
+
+function yesNoCard(state, { forecast = false } = {}) {
+  if (!state.hasGoal) {
+    return {
+      value: '—',
+      sub: 'Sem meta configurada',
+      tone: 'muted',
+    };
+  }
+
+  if (forecast) {
+    return {
+      value: state.forecast ? 'Sim' : 'Não',
+      sub: state.forecast ? 'Projeção alcança a meta' : 'Projeção abaixo da meta',
+      tone: state.forecast ? 'green' : 'muted',
+    };
+  }
+
+  return {
+    value: state.hit ? 'Sim' : 'Não',
+    sub: state.hit ? 'Meta já alcançada' : 'Ainda não bateu',
+    tone: state.hit ? 'green' : 'muted',
+  };
+}
+
 function clientPriorityScore(row) {
   if (!row) return -1;
   if (row.client?.status === 'churn') return 100000;
@@ -651,27 +695,24 @@ export default function GdvPage() {
           tone: calc.taxa > 0 ? 'neutral' : 'muted',
         },
         {
-          id: 'cpl',
-          label: 'CPL atual',
-          value: calc.cpl > 0 ? fmtMoney(calc.cpl) : '—',
-          sub: goalComparison(calc.cpl, calc.mCpl, {
-            lowerIsBetter: true,
-            format: fmtMoney,
-          }),
-          tone: comparisonTone(calc.cpl, calc.mCpl, { lowerIsBetter: true }),
+          id: 'forecastGoal',
+          label: 'Previsto bater meta',
+          ...yesNoCard(goalState(calc), { forecast: true }),
         },
         {
-          id: 'leads',
-          label: 'Leads previstos',
-          value: calc.lp > 0 ? displayInt(calc.lp) : '0',
-          sub: goalComparison(calc.lp, calc.mVol),
-          tone: comparisonTone(calc.lp, calc.mVol),
+          id: 'hitGoal',
+          label: 'Já bateu meta',
+          ...yesNoCard(goalState(calc)),
         },
       ];
     }
 
     const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
     const gap = agg.tLuc > 0 ? Math.max(agg.tLuc - agg.tF, 0) : 0;
+    const goalRows = rows.filter((row) => row.client?.status !== 'churn' && goalState(row.calc).hasGoal);
+    const forecastGoalRows = goalRows.filter((row) => goalState(row.calc).forecast);
+    const hitGoalRows = goalRows.filter((row) => goalState(row.calc).hit);
+    const withoutGoalCount = rows.length - goalRows.length;
 
     return [
       {
@@ -703,24 +744,25 @@ export default function GdvPage() {
         tone: agg.taxa > 0 ? 'neutral' : 'muted',
       },
       {
-        id: 'cpl',
-        label: 'CPL atual',
-        value: agg.cpl > 0 ? fmtMoney(agg.cpl) : '—',
-        sub: goalComparison(agg.cpl, agg.avgMC, {
-          lowerIsBetter: true,
-          format: fmtMoney,
-        }),
-        tone: comparisonTone(agg.cpl, agg.avgMC, { lowerIsBetter: true }),
+        id: 'forecastGoal',
+        label: 'Previsto bater meta',
+        value: displayInt(forecastGoalRows.length),
+        sub: goalRows.length
+          ? `${displayInt(goalRows.length)} com meta${withoutGoalCount > 0 ? ` · ${displayInt(withoutGoalCount)} sem meta` : ''}`
+          : 'Sem metas configuradas',
+        tone: forecastGoalRows.length > 0 ? 'green' : 'muted',
       },
       {
-        id: 'leads',
-        label: 'Leads previstos',
-        value: agg.tLp > 0 ? displayInt(agg.tLp) : '0',
-        sub: goalComparison(agg.tLp, agg.tMV),
-        tone: comparisonTone(agg.tLp, agg.tMV),
+        id: 'hitGoal',
+        label: 'Já bateu meta',
+        value: displayInt(hitGoalRows.length),
+        sub: goalRows.length
+          ? `${displayInt(goalRows.length)} com meta${withoutGoalCount > 0 ? ` · ${displayInt(withoutGoalCount)} sem meta` : ''}`
+          : 'Sem metas configuradas',
+        tone: hitGoalRows.length > 0 ? 'green' : 'muted',
       },
     ];
-  }, [agg, selectedRow, week]);
+  }, [agg, rows, selectedRow, week]);
 
   const prevMonth = useCallback(() => {
     setMonth0((value) => {
