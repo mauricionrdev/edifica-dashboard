@@ -1,6 +1,6 @@
 import React from 'react';
 
-function BaseIcon({ children, size = 18, strokeWidth = 1.8, className, ...props }) {
+function BaseIcon({ children, size = 18, strokeWidth = 1.65, className, ...props }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -112,6 +112,11 @@ export function ProjectBoardIcon({ size = 18, className, ...props }) {
     </svg>
   );
 }
+
+export function SettingsIcon(props) {
+  return <BaseIcon {...props}><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.05.05a2 2 0 0 1-2.83 2.83l-.05-.05A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .92l-.02.07a2 2 0 0 1-3.76 0l-.02-.07a1.7 1.7 0 0 0-1-.92 1.7 1.7 0 0 0-1.88.34l-.05.05a2 2 0 0 1-2.83-2.83l.05-.05A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.92-1l-.07-.02a2 2 0 0 1 0-3.76l.07-.02a1.7 1.7 0 0 0 .92-1 1.7 1.7 0 0 0-.34-1.88l-.05-.05a2 2 0 0 1 2.83-2.83l.05.05A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.92l.02-.07a2 2 0 0 1 3.76 0l.02.07a1.7 1.7 0 0 0 1 .92 1.7 1.7 0 0 0 1.88-.34l.05-.05a2 2 0 0 1 2.83 2.83l-.05.05A1.7 1.7 0 0 0 19.4 9c.35.18.67.5.92 1l.07.02a2 2 0 0 1 0 3.76l-.07.02a1.7 1.7 0 0 0-.92 1Z" /></BaseIcon>;
+}
+
 export function TrophyIcon(props) {
   return <BaseIcon {...props}><path d="M8 21h8" /><path d="M12 17v4" /><path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" /><path d="M7 6H5a2 2 0 0 0 0 4h2" /><path d="M17 6h2a2 2 0 0 1 0 4h-2" /></BaseIcon>;
 }

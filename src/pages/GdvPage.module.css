@@ -20,7 +20,7 @@
 
 .headerIdentity {
   min-width: 0;
-  min-height: 48px;
+  min-height: 56px;
   display: inline-flex;
   align-items: center;
   gap: 14px;
@@ -28,9 +28,9 @@
 
 .headerLogo {
   position: relative;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
   padding: 0;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
@@ -92,8 +92,8 @@
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 18px;
-  line-height: 1.04;
+  font-size: 19px;
+  line-height: 1.06;
   font-weight: 620;
   letter-spacing: -0.03em;
   white-space: nowrap;
@@ -104,8 +104,8 @@
   min-width: 0;
   overflow: hidden;
   color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1.25;
+  font-size: 12.5px;
+  line-height: 1.3;
   font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -123,7 +123,7 @@
 .headerCluster {
   position: relative;
   min-width: 0;
-  min-height: 34px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -142,7 +142,7 @@
   left: 0;
   top: 50%;
   width: 1px;
-  height: 20px;
+  height: 24px;
   background: var(--line-subtle);
   transform: translateY(-50%);
 }
@@ -162,7 +162,7 @@
 }
 
 .headerStat {
-  min-height: 30px;
+  min-height: 34px;
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -190,7 +190,7 @@
 }
 
 .monthNav {
-  min-height: 30px;
+  min-height: 34px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -209,8 +209,8 @@
 }
 
 .navBtn {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 0;
   border-radius: var(--radius-1);
@@ -244,7 +244,7 @@
 }
 
 .weekTabs {
-  min-height: 30px;
+  min-height: 34px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -252,8 +252,8 @@
 
 .weekTab {
   min-width: 24px;
-  height: 28px;
-  padding: 0 6px;
+  height: 32px;
+  padding: 0 7px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -276,8 +276,8 @@
 
 .gdvSelectButton {
   width: 188px;
-  min-height: 30px;
-  padding: 0 10px;
+  min-height: 34px;
+  padding: 0 11px;
   border-radius: var(--radius-1);
   display: inline-flex;
   align-items: center;
@@ -353,14 +353,14 @@
 }
 
 .ownerControl button {
-  min-height: 30px;
+  min-height: 34px;
   border-radius: var(--radius-1);
 }
 
 .iconButton {
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
   padding: 0;
   border-radius: var(--radius-1);
   display: inline-grid;
@@ -368,8 +368,8 @@
 }
 
 .headerLoading {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   display: inline-grid;
   place-items: center;
 }
@@ -549,8 +549,8 @@
 }
 
 .clientAvatarMini {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   font-size: 10px;
 }
 

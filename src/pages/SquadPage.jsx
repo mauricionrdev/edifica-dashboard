@@ -12,6 +12,7 @@ import {
   Select,
   LoadingIcon,
   StateBlock,
+  SettingsIcon,
   TrophyIcon,
   UsersIcon,
 } from '../components/ui/index.js';
@@ -162,14 +163,6 @@ function initialsFromClient(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-function SettingsGlyph({ size = 14 }) {
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.05.05a2 2 0 0 1-2.83 2.83l-.05-.05A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .92l-.02.07a2 2 0 0 1-3.76 0l-.02-.07a1.7 1.7 0 0 0-1-.92 1.7 1.7 0 0 0-1.88.34l-.05.05a2 2 0 0 1-2.83-2.83l.05-.05A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.92-1l-.07-.02a2 2 0 0 1 0-3.76l.07-.02a1.7 1.7 0 0 0 .92-1 1.7 1.7 0 0 0-.34-1.88l-.05-.05a2 2 0 0 1 2.83-2.83l.05.05A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.92l.02-.07a2 2 0 0 1 3.76 0l.02.07a1.7 1.7 0 0 0 1 .92 1.7 1.7 0 0 0 1.88-.34l.05-.05a2 2 0 0 1 2.83 2.83l-.05.05A1.7 1.7 0 0 0 19.4 9c.35.18.67.5.92 1l.07.02a2 2 0 0 1 0 3.76l-.07.02a1.7 1.7 0 0 0-.92 1Z" />
-    </svg>
-  );
-}
 
 function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit }) {
   const fileInputRef = useRef(null);
@@ -700,7 +693,7 @@ export default function SquadPage() {
               aria-label="Configurar squad"
               title="Configurar squad"
             >
-              <SettingsGlyph size={14} />
+              <SettingsIcon size={14} aria-hidden="true" />
             </button>
           ) : null}
 
