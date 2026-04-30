@@ -825,88 +825,91 @@ export default function GdvPage() {
           </div>
         </div>
 
-        {(admin && gdvOptions.length > 0) || (superAdmin && activeGdvName) ? (
+        {admin && gdvOptions.length > 0 ? (
           <div className={styles.headerGroup}>
-            {admin && gdvOptions.length > 0 ? (
-              <div className={styles.gdvMenu} ref={gdvMenuRef}>
-                <button
-                  type="button"
-                  className={`${styles.gdvSelectButton} ${gdvMenuOpen ? styles.gdvSelectButtonOpen : ''}`.trim()}
-                  aria-haspopup="listbox"
-                  aria-expanded={gdvMenuOpen}
-                  title={selectedGdv || 'Todos os GDVs'}
-                  onClick={() => setGdvMenuOpen((open) => !open)}
-                >
-                  <span>{selectedGdv || 'Todos'}</span>
-                  <ChevronDownIcon size={13} aria-hidden="true" />
-                </button>
+            <div className={styles.gdvMenu} ref={gdvMenuRef}>
+              <button
+                type="button"
+                className={`${styles.gdvSelectButton} ${gdvMenuOpen ? styles.gdvSelectButtonOpen : ''}`.trim()}
+                aria-haspopup="listbox"
+                aria-expanded={gdvMenuOpen}
+                title={selectedGdv || 'Todos os GDVs'}
+                onClick={() => setGdvMenuOpen((open) => !open)}
+              >
+                <span>{selectedGdv || 'Todos'}</span>
+                <ChevronDownIcon size={13} aria-hidden="true" />
+              </button>
 
-                {gdvMenuOpen ? (
-                  <div className={styles.gdvOptions} role="listbox" aria-label="Filtrar carteira por GDV">
+              {gdvMenuOpen ? (
+                <div className={styles.gdvOptions} role="listbox" aria-label="Filtrar carteira por GDV">
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={!selectedGdv}
+                    className={`${styles.gdvOption} ${!selectedGdv ? styles.gdvOptionActive : ''}`.trim()}
+                    onClick={() => {
+                      setSelectedGdv('');
+                      setSelectedClientId(null);
+                      setSearchParams((params) => {
+                        const next = new URLSearchParams(params);
+                        next.delete('gdv');
+                        return next;
+                      });
+                      setGdvMenuOpen(false);
+                    }}
+                  >
+                    Todos os GDVs
+                  </button>
+
+                  {gdvOptions.map((name) => (
                     <button
+                      key={name}
                       type="button"
                       role="option"
-                      aria-selected={!selectedGdv}
-                      className={`${styles.gdvOption} ${!selectedGdv ? styles.gdvOptionActive : ''}`.trim()}
+                      aria-selected={selectedGdv === name}
+                      className={`${styles.gdvOption} ${selectedGdv === name ? styles.gdvOptionActive : ''}`.trim()}
                       onClick={() => {
-                        setSelectedGdv('');
+                        setSelectedGdv(name);
                         setSelectedClientId(null);
                         setSearchParams((params) => {
                           const next = new URLSearchParams(params);
-                          next.delete('gdv');
+                          next.set('gdv', name);
                           return next;
                         });
                         setGdvMenuOpen(false);
                       }}
                     >
-                      Todos os GDVs
+                      {name}
                     </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
-                    {gdvOptions.map((name) => (
-                      <button
-                        key={name}
-                        type="button"
-                        role="option"
-                        aria-selected={selectedGdv === name}
-                        className={`${styles.gdvOption} ${selectedGdv === name ? styles.gdvOptionActive : ''}`.trim()}
-                        onClick={() => {
-                          setSelectedGdv(name);
-                          setSelectedClientId(null);
-                          setSearchParams((params) => {
-                            const next = new URLSearchParams(params);
-                            next.set('gdv', name);
-                            return next;
-                          });
-                          setGdvMenuOpen(false);
-                        }}
-                      >
-                        {name}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
+        {superAdmin && activeGdvName ? (
+          <div className={styles.ownerGroup} title="Proprietário do GDV">
+            <span className={styles.ownerIcon} aria-hidden="true"><UsersIcon size={13} /></span>
+            <UserPicker
+              className={styles.ownerControl}
+              users={Array.isArray(userDirectory) ? userDirectory : []}
+              value={gdvOwnership.ownerId}
+              placeholder="Sem proprietário"
+              showRole
+              portal
+              disableHover
+              onChange={async (userId) => {
+                if (!activeGdvRecord?.id) return;
 
-            {superAdmin && activeGdvName ? (
-              <UserPicker
-                className={styles.ownerControl}
-                users={Array.isArray(userDirectory) ? userDirectory : []}
-                value={gdvOwnership.ownerId}
-                placeholder="Sem proprietário"
-                showRole
-                onChange={async (userId) => {
-                  if (!activeGdvRecord?.id) return;
+                await updateGdv(activeGdvRecord.id, {
+                  name: activeGdvRecord.name,
+                  ownerUserId: userId,
+                });
 
-                  await updateGdv(activeGdvRecord.id, {
-                    name: activeGdvRecord.name,
-                    ownerUserId: userId,
-                  });
-
-                  await refreshGdvs?.();
-                }}
-              />
-            ) : null}
+                await refreshGdvs?.();
+              }}
+            />
           </div>
         ) : null}
 

@@ -935,13 +935,36 @@
   background: rgba(255, 255, 255, 0.045);
 }
 
+.ownerGroup {
+  min-height: 34px;
+  max-width: 190px;
+  padding: 2px 4px 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ownerIcon {
+  width: 18px;
+  min-width: 18px;
+  height: 28px;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .ownerControl {
-  width: 184px;
-  min-width: 184px;
+  width: 142px;
+  min-width: 0;
 }
 
 .ownerControl button {
   min-height: 28px;
+  padding: 0 6px;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -1076,6 +1099,7 @@
     flex-direction: column;
   }
 
+  .ownerGroup,
   .ownerControl,
   .monthNav,
   .weekTabs,
@@ -1110,11 +1134,6 @@
 .listMeta + .listMeta {
   background: rgba(45, 212, 191, 0.08);
   color: #2dd4bf;
-}
-
-/* Global UserPicker/UserHoverCard integration */
-.ownerControl {
-  overflow: visible;
 }
 
 
@@ -1153,8 +1172,10 @@
 
 @media (max-width: 820px) {
   .headerGroup,
-  .headerGroupCompact {
+  .headerGroupCompact,
+  .ownerGroup {
     width: 100%;
+    max-width: none;
     justify-content: stretch;
   }
 
@@ -1168,6 +1189,7 @@
   .weekTabs,
   .iconButton,
   .gdvSelectButton,
+  .ownerGroup,
   .ownerControl {
     width: auto;
     min-width: 0;
