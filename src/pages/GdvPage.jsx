@@ -21,15 +21,13 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
-  CoinsIcon,
   RotateCcwIcon,
   SearchIcon,
-  TargetIcon,
   UsersIcon,
 } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
-import { clientInitials, colorFromName } from '../utils/clientHelpers.js';
+import { clientInitials } from '../utils/clientHelpers.js';
 import {
   getClientAvatar,
   getGdvAvatar,
@@ -39,7 +37,6 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import UserPicker from '../components/users/UserPicker.jsx';
-import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './GdvPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -66,10 +63,7 @@ function ClientAvatar({ client, className }) {
   const avatarUrl = getClientAvatar(client);
 
   return (
-    <span
-      className={className}
-      style={avatarUrl ? undefined : { background: colorFromName(client?.name) }}
-    >
+    <span className={className}>
       {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client?.name)}
     </span>
   );
@@ -892,13 +886,14 @@ export default function GdvPage() {
 
         {superAdmin && activeGdvName ? (
           <div className={styles.ownerGroup} title="Proprietário do GDV">
-            <span className={styles.ownerIcon} aria-hidden="true"><UsersIcon size={13} /></span>
+            <span className={styles.ownerIcon} aria-hidden="true"><UsersIcon size={13} strokeWidth={1.65} /></span>
             <UserPicker
               className={styles.ownerControl}
               users={Array.isArray(userDirectory) ? userDirectory : []}
               value={gdvOwnership.ownerId}
               placeholder="Sem proprietário"
               showRole
+              variant="action"
               portal
               disableHover
               onChange={async (userId) => {
@@ -1119,12 +1114,10 @@ export default function GdvPage() {
 
                     <div className={styles.clientStats}>
                       <div className={styles.clientMetric} title="Mensalidade">
-                        <CoinsIcon size={14} aria-hidden="true" />
                         <span>Mensalidade</span>
                         <strong>{fmtMoney(client.monthlyFee || client.mensalidade || client.fee || 0)}</strong>
                       </div>
                       <div className={styles.clientMetric} title="Contratos fechados na semana">
-                        <TargetIcon size={14} aria-hidden="true" />
                         <span>Fechados</span>
                         <strong>{displayInt(calc.fec)}</strong>
                       </div>
