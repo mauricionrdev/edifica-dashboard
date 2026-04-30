@@ -807,3 +807,251 @@ button:disabled,
     grid-template-columns: 1fr;
   }
 }
+
+.metricGrid,
+.gdvAdminMetricGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.metricCard,
+.gdvAdminMetricCard {
+  height: 78px;
+  min-height: 78px;
+  max-height: 78px;
+  padding: 13px 14px;
+  grid-template-rows: 16px 1fr;
+  align-content: center;
+  gap: 8px;
+}
+
+.metricCard small,
+.gdvAdminMetricCard small {
+  display: none;
+}
+
+.metricCard strong,
+.gdvAdminMetricCard strong {
+  align-self: end;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.metricCard span,
+.gdvAdminMetricCard span {
+  align-self: start;
+}
+
+.tableCard {
+  border-radius: var(--radius-3);
+  overflow: hidden;
+}
+
+.sectionHead {
+  min-height: 58px;
+  padding: 15px 18px;
+}
+
+.table th,
+.table td {
+  padding: 13px 18px;
+}
+
+.table th {
+  vertical-align: middle;
+}
+
+.primaryCell > div,
+.textStack {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.primaryCell strong,
+.textStack strong {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 620;
+  white-space: normal;
+  text-overflow: ellipsis;
+}
+
+.primaryCell small,
+.textStack small {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.rowActions .ghostButton,
+.rowActions .dashboardLink,
+.rowActions .dangerButton {
+  min-height: 30px;
+  padding: 0 10px;
+}
+
+.gdvAdminPane {
+  gap: 12px;
+}
+
+.gdvAdminMetricGrid {
+  margin: 0;
+}
+
+.gdvAdminMetricCard {
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.024), rgba(255, 255, 255, 0.012)),
+    var(--bg-canvas);
+}
+
+.gdvAdminTable .sectionHead {
+  min-height: 58px;
+}
+
+.gdvAdminTable .table {
+  min-width: 920px;
+  table-layout: fixed;
+}
+
+.gdvAdminTable .table th:nth-child(1),
+.gdvAdminTable .table td:nth-child(1) { width: 30%; }
+.gdvAdminTable .table th:nth-child(2),
+.gdvAdminTable .table td:nth-child(2) { width: 12%; }
+.gdvAdminTable .table th:nth-child(3),
+.gdvAdminTable .table td:nth-child(3) { width: 30%; }
+.gdvAdminTable .table th:nth-child(4),
+.gdvAdminTable .table td:nth-child(4) { width: 13%; }
+.gdvAdminTable .table th:nth-child(5),
+.gdvAdminTable .table td:nth-child(5) { width: 15%; }
+
+.gdvAdminTable .primaryCell strong,
+.gdvAdminTable .primaryCell small {
+  white-space: nowrap;
+}
+
+.rolesAdminPane {
+  gap: 12px;
+}
+
+.rolesMatrixCard {
+  border-radius: var(--radius-3);
+  overflow: hidden;
+}
+
+.rolesMatrixCard .sectionHead {
+  min-height: 58px;
+  padding: 15px 18px;
+}
+
+.rolesMatrixCard .tableWrap {
+  overflow: auto;
+  max-height: calc(100vh - 250px);
+}
+
+.rolesMatrixCard .table {
+  min-width: 1180px;
+  table-layout: fixed;
+}
+
+.rolesMatrixCard .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #111214;
+}
+
+.rolesMatrixCard .table th,
+.rolesMatrixCard .table td {
+  padding: 11px 14px;
+  vertical-align: middle;
+}
+
+.rolesMatrixCard .table th:first-child,
+.rolesMatrixCard .table td:first-child {
+  width: 310px;
+}
+
+.rolesMatrixCard .table th:nth-child(2),
+.rolesMatrixCard .table td:nth-child(2) {
+  width: 150px;
+}
+
+.rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
+.rolesMatrixCard .table td:not(:first-child):not(:nth-child(2)) {
+  width: 128px;
+  text-align: center;
+}
+
+.rolesMatrixCard .primaryCell {
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.rolesMatrixCard .primaryCell svg {
+  color: var(--text-tertiary);
+}
+
+.rolesMatrixCard .primaryCell strong {
+  white-space: normal;
+  line-height: 1.22;
+}
+
+.rolesMatrixCard .primaryCell small {
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.rolesMatrixCard .permissionScopeBadge,
+.rolesMatrixCard .matrixPill {
+  min-width: 0;
+  min-height: 22px;
+  padding: 0 8px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.rolesMatrixCard .matrixPillOff {
+  width: 24px;
+  padding: 0;
+  color: var(--text-tertiary);
+}
+
+.filterBar {
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 220px) minmax(150px, 220px);
+}
+
+@media (max-width: 1180px) {
+  .metricGrid,
+  .gdvAdminMetricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .metricGrid,
+  .gdvAdminMetricGrid {
+    grid-template-columns: 1fr;
+  }
+}

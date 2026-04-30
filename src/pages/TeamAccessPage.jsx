@@ -1651,7 +1651,7 @@ export default function TeamAccessPage() {
                               <ShieldIcon size={15} />
                               <div>
                                 <strong>{permissionLabel(permission)}</strong>
-                                <small>{index === 0 ? group.area : 'Permissão operacional'}</small>
+                                {index === 0 ? <small>{group.area}</small> : null}
                               </div>
                             </div>
                           </td>
