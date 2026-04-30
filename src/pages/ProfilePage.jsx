@@ -158,6 +158,7 @@ export default function ProfilePage() {
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState('');
   const [creatingTask, setCreatingTask] = useState(false);
+  const [showCreateTask, setShowCreateTask] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', assigneeUserId: user?.id || '', dueDate: '' });
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
   const [collapsedTaskSections, setCollapsedTaskSections] = useState({});
@@ -333,6 +334,7 @@ export default function ProfilePage() {
       });
       await reloadTasks();
       setNewTask((prev) => ({ ...prev, title: '', dueDate: '' }));
+      setShowCreateTask(false);
       showToast('Tarefa criada.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Não foi possível criar a tarefa.', { variant: 'error' });
@@ -401,14 +403,22 @@ export default function ProfilePage() {
           </div>
 
           {canCreateTasks ? (
-            <button type="button" className={styles.addTaskButton} onClick={() => setTaskTab('upcoming')}>
-              Nova tarefa
+            <button
+              type="button"
+              className={styles.addTaskButton}
+              onClick={() => {
+                setTaskTab('upcoming');
+                setShowCreateTask((current) => !current);
+              }}
+              aria-expanded={showCreateTask}
+            >
+              {showCreateTask ? 'Fechar' : 'Nova tarefa'}
             </button>
           ) : null}
         </header>
 
         <div className={styles.tasksBody}>
-          {canCreateTasks ? (
+          {canCreateTasks && showCreateTask ? (
             <form className={styles.createTaskBar} onSubmit={handleCreateTask}>
               <input
                 value={newTask.title}

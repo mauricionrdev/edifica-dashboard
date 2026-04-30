@@ -599,3 +599,125 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* v39 — Perfil público: alinhamento com Perfil próprio */
+.page {
+  padding: 18px 18px 28px;
+  gap: 14px;
+}
+
+.hero,
+.panel {
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
+}
+
+.hero {
+  min-height: 104px;
+  padding: 18px 22px;
+}
+
+.heroMain {
+  gap: 16px;
+}
+
+.avatar {
+  width: 58px;
+  height: 58px;
+  background: #08090a;
+  color: var(--text-primary);
+}
+
+.nameRow h1 {
+  font-size: clamp(24px, 2.1vw, 32px);
+  font-weight: 620;
+  letter-spacing: -0.035em;
+}
+
+.roleBadge {
+  min-height: 24px;
+  padding: 0 8px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-secondary);
+  font-size: 10px;
+  letter-spacing: 0.085em;
+}
+
+.profileMeta {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.layout {
+  gap: 14px;
+}
+
+.panelHeader {
+  min-height: 72px;
+  padding: 18px 22px;
+}
+
+.panelHeading h2 {
+  font-size: 20px;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+}
+
+.taskTableHead {
+  padding: 0 18px;
+  grid-template-columns: 20px minmax(320px, 1fr) minmax(180px, 0.42fr) auto 90px;
+}
+
+.taskRow {
+  min-height: 58px;
+  padding: 0 18px;
+  grid-template-columns: 20px minmax(320px, 1fr) minmax(180px, 0.42fr) auto 90px;
+}
+
+.taskCopy strong,
+.projectCopy strong,
+.infoRow strong {
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.taskProject,
+.taskDue,
+.projectMeta,
+.infoRow span,
+.infoRow small {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.projectRow {
+  min-height: 58px;
+  padding: 0 18px;
+}
+
+.infoList {
+  padding: 4px 22px 14px;
+}
+
+.checkCircle,
+.projectIcon {
+  background: #08090a;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 14px;
+  }
+
+  .hero,
+  .panelHeader {
+    padding: 16px;
+  }
+
+  .taskRow,
+  .projectRow {
+    padding: 12px 16px;
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
+}
