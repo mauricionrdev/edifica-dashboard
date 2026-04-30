@@ -15,7 +15,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { isAdminUser, isSuperAdmin, roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import LoadingIcon from '../components/ui/LoadingIcon.jsx';
-import { CloseIcon, RotateCcwIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, RotateCcwIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
 import {
@@ -779,13 +779,13 @@ export default function GdvPage() {
 
           <div className={styles.monthNav}>
             <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
-              ‹
+              <ChevronLeftIcon size={15} aria-hidden="true" />
             </button>
             <div className={styles.monthLabel}>
               {MONTHS[month0]} {year}
             </div>
             <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
-              ›
+              <ChevronRightIcon size={15} aria-hidden="true" />
             </button>
           </div>
 

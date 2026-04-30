@@ -1,6 +1,6 @@
 import React from 'react';
 
-function BaseIcon({ children, size = 18, strokeWidth = 1.65, className, ...props }) {
+function BaseIcon({ children, size = 18, strokeWidth = 1.55, className, ...props }) {
   return (
     <svg
       viewBox="0 0 24 24"

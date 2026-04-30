@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import {
   CloseIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   RotateCcwIcon,
   SearchIcon,
   Select,
@@ -632,13 +634,13 @@ export default function SquadPage() {
 
           <div className={styles.monthNav}>
             <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
-              ‹
+              <ChevronLeftIcon size={15} aria-hidden="true" />
             </button>
             <div className={styles.monthLabel}>
               {MONTHS[month0]} {year}
             </div>
             <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
-              ›
+              <ChevronRightIcon size={15} aria-hidden="true" />
             </button>
           </div>
 

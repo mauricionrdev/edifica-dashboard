@@ -140,7 +140,7 @@ export default function Sidebar({
       hasPermission(user, 'central.view')
         ? {
             to: '/',
-            icon: <HomeIcon size={16} strokeWidth={1.7} />,
+            icon: <HomeIcon size={16} />,
             label: 'Dashboard',
             meta: activeCount ? String(activeCount) : null,
           }
@@ -148,7 +148,7 @@ export default function Sidebar({
       canViewClients(user)
         ? {
             to: '/clientes',
-            icon: <BriefcaseIcon size={16} strokeWidth={1.65} />,
+            icon: <BriefcaseIcon size={16} />,
             label: 'Clientes',
             meta: totalCount ? String(totalCount) : null,
           }
@@ -156,14 +156,14 @@ export default function Sidebar({
       hasPermission(user, 'projects.view')
         ? {
             to: '/projetos',
-            icon: <ClipboardListIcon size={16} strokeWidth={1.65} />,
+            icon: <ClipboardListIcon size={16} />,
             label: 'Projetos',
           }
         : null,
       canViewMetrics(user)
         ? {
             to: '/preencher-semana',
-            icon: <CalendarIcon size={16} strokeWidth={1.65} />,
+            icon: <CalendarIcon size={16} />,
             label: 'Preencher Semana',
           }
         : null,
@@ -175,7 +175,7 @@ export default function Sidebar({
     () => [
       {
         to: '/equipe',
-        icon: <UsersIcon size={16} strokeWidth={1.65} />,
+        icon: <UsersIcon size={16} />,
         label: 'Equipe',
       },
     ].filter(Boolean),
@@ -346,7 +346,7 @@ export default function Sidebar({
                 title={collapsed ? entry.name : undefined}
               >
                 <span className={styles.itemIcon}>
-                  <ChartColumnIcon size={16} strokeWidth={1.7} />
+                  <ChartColumnIcon size={16} />
                 </span>
                 {editingGdvKey === entry.key ? (
                   <input
@@ -390,7 +390,7 @@ export default function Sidebar({
           <section className={styles.group}>
             <Item
               to="/ranking-squads"
-              icon={<TrophyIcon size={16} strokeWidth={1.65} />}
+              icon={<TrophyIcon size={16} />}
               label="Ranking"
               onClick={handleNavigate}
               collapsed={collapsed}

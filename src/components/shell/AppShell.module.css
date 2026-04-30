@@ -40,13 +40,13 @@
 .pageHeader {
   position: relative;
   z-index: 1000;
-  flex: 0 0 60px;
-  min-height: 60px;
-  padding: 0 20px;
+  flex: 0 0 66px;
+  min-height: 66px;
+  padding: 0 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 18px;
   overflow: visible;
   background: rgba(15, 16, 17, 0.92);
   border-bottom: 1px solid var(--line-subtle);
@@ -139,8 +139,8 @@
   }
 
   .pageHeader {
-    flex-basis: 58px;
-    min-height: 58px;
+    flex-basis: 64px;
+    min-height: 64px;
   }
 }
 
