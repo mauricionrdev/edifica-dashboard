@@ -1,33 +1,90 @@
 .login {
   min-height: 100vh;
-  padding: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 100dvh;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 215, 0, 0.08), transparent 28%),
+    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.035), transparent 28%),
+    var(--bg-app);
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
   overflow: auto;
-  background: var(--bg-app);
 }
 
 .portal {
-  width: min(100%, 1100px);
-  min-height: 560px;
-  border: 1px solid var(--line);
+  width: min(100%, 1080px);
+  min-height: 590px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: var(--radius-5);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    var(--surface);
   display: grid;
-  grid-template-columns: minmax(330px, 40%) minmax(0, 60%);
+  grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
   overflow: hidden;
-  background: var(--surface);
-  box-shadow: var(--shadow-2);
+  box-shadow: none;
+}
+
+.quoteSide,
+.formSide {
+  min-width: 0;
+}
+
+.quoteSide {
+  position: relative;
+  padding: 56px;
+  border-right: 1px solid var(--line-subtle);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 215, 0, 0.085), transparent 34%),
+    var(--bg-canvas);
+  display: flex;
+  align-items: flex-end;
+}
+
+.quoteSide::before {
+  content: '';
+  position: absolute;
+  inset: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-4);
+  pointer-events: none;
+}
+
+.quoteSide blockquote {
+  position: relative;
+  z-index: 1;
+  max-width: 370px;
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: clamp(28px, 2.6vw, 42px);
+  line-height: 1.05;
+  font-style: normal;
+  font-weight: 620;
+  letter-spacing: -0.045em;
+}
+
+.quoteSide cite {
+  display: block;
+  margin-top: 18px;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1;
+  font-style: normal;
+  font-weight: 620;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .formSide {
-  min-width: 0;
-  padding: 58px 70px;
+  padding: 56px 68px;
+  background: rgba(255, 255, 255, 0.008);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 38px;
-  background: var(--surface);
+  gap: 34px;
 }
 
 .brandLine {
@@ -36,34 +93,38 @@
 }
 
 .brandLine img {
-  width: 156px;
+  width: 150px;
   height: auto;
+  display: block;
 }
 
 .formCard {
-  width: min(100%, 460px);
+  width: min(100%, 430px);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .restrictedText {
-  margin: 0 0 8px;
+  margin: 0 0 2px;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 600;
+  line-height: 1.4;
+  font-weight: 590;
 }
 
 .field {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
 }
 
 .field span {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 600;
+  line-height: 1;
+  font-weight: 590;
 }
 
 .field input,
@@ -71,17 +132,20 @@
 .modalBody input,
 .modalBody textarea {
   width: 100%;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
-  background: #242424;
+  background: rgba(255, 255, 255, 0.025);
   color: var(--text-primary);
+  font: inherit;
   font-size: 13px;
+  outline: none;
+  transition: border-color 120ms ease, background 120ms ease;
 }
 
 .field input,
 .modalBody input {
   height: 42px;
-  padding: 0 14px;
+  padding: 0 13px;
 }
 
 .field input:-webkit-autofill,
@@ -95,7 +159,7 @@
 .modalBody input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--text-primary);
   caret-color: var(--text-primary);
-  box-shadow: 0 0 0 1000px #242424 inset;
+  box-shadow: 0 0 0 1000px #111214 inset;
   transition: background-color 9999s ease-out;
 }
 
@@ -103,9 +167,8 @@
 .passwordShell:focus-within,
 .modalBody input:focus,
 .modalBody textarea:focus {
-  border-color: var(--line-strong);
-  outline: 0;
-  box-shadow: 0 0 0 3px rgba(240, 159, 24, 0.1);
+  border-color: rgba(255, 215, 0, 0.32);
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .field input::placeholder,
@@ -118,11 +181,12 @@
   height: 42px;
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 .passwordShell input {
-  height: 40px;
   min-width: 0;
+  height: 40px;
   flex: 1;
   border: 0;
   background: transparent;
@@ -134,18 +198,20 @@
   border: 0;
   background: transparent;
   color: var(--text-tertiary);
+  font: inherit;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 590;
+  cursor: pointer;
 }
 
 .passwordShell button {
   flex: 0 0 auto;
-  padding: 0 12px;
+  padding: 0 13px;
 }
 
 .passwordShell button:hover,
 .secondaryActions button:hover {
-  color: var(--accent-amber);
+  color: var(--accent);
 }
 
 .noticeMessage,
@@ -158,37 +224,43 @@
 }
 
 .noticeMessage {
-  border: 1px solid rgba(111, 207, 139, 0.22);
-  background: var(--success-soft);
-  color: var(--success);
+  border: 1px solid rgba(39, 166, 68, 0.22);
+  background: rgba(39, 166, 68, 0.09);
+  color: #86efac;
 }
 
 .errorMessage {
-  border: 1px solid rgba(224, 84, 84, 0.22);
-  background: var(--danger-soft);
-  color: #ff9b9b;
+  border: 1px solid rgba(239, 68, 68, 0.24);
+  background: rgba(239, 68, 68, 0.09);
+  color: #fca5a5;
 }
 
 .submitButton {
-  height: 40px;
-  border: 1px solid rgba(240, 159, 24, 0.7);
+  min-height: 42px;
+  border: 1px solid rgba(255, 215, 0, 0.36);
   border-radius: var(--radius-2);
-  background: var(--accent-amber);
-  color: #101010;
+  background: rgba(255, 215, 0, 0.13);
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 13px;
-  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
 }
 
 .submitButton:hover:not(:disabled) {
-  background: var(--accent-amber-strong);
+  border-color: rgba(255, 215, 0, 0.5);
+  background: rgba(255, 215, 0, 0.18);
+  color: var(--text-primary);
 }
 
 .submitButton:disabled,
 .passwordShell button:disabled,
+.secondaryActions button:disabled,
 .modalActions button:disabled {
   opacity: 0.58;
   cursor: not-allowed;
@@ -201,64 +273,31 @@
   gap: 12px;
 }
 
-.quoteSide {
-  min-width: 0;
-  padding: 58px 62px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  background: var(--bg-canvas);
-  border-right: 1px solid var(--line);
-}
-
-.quoteSide blockquote {
-  max-width: 330px;
-  margin: 0;
-  color: var(--text-primary);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(25px, 2.3vw, 34px);
-  font-style: italic;
-  line-height: 1.18;
-  letter-spacing: 0.01em;
-  font-weight: 400;
-}
-
-.quoteSide cite {
-  display: block;
-  margin-top: 16px;
-  color: var(--accent-amber);
-  font-size: 12px;
-  font-family: var(--font-sans);
-  font-style: normal;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
 .modalOverlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(8, 8, 8, 0.72);
-  backdrop-filter: blur(8px);
+  z-index: 1000;
+  padding: 24px;
+  background: rgba(8, 9, 10, 0.78);
+  backdrop-filter: blur(12px);
+  display: grid;
+  place-items: center;
 }
 
 .modalCard {
-  width: min(100%, 520px);
-  border: 1px solid var(--line);
+  width: min(500px, calc(100vw - 48px));
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-4);
-  background: var(--bg-canvas);
-  box-shadow: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    var(--surface);
   overflow: hidden;
+  box-shadow: none;
 }
 
 .modalHeader {
-  min-height: 58px;
-  padding: 0 16px;
+  min-height: 62px;
+  padding: 0 18px;
   border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
@@ -269,35 +308,47 @@
 .modalHeader h3 {
   margin: 0;
   color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 620;
+  letter-spacing: -0.03em;
 }
 
 .modalHeader button {
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--line);
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
-  background: var(--surface);
+  background: transparent;
   color: var(--text-secondary);
-  font-size: 18px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modalHeader button:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
 }
 
 .modalBody {
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 11px;
 }
 
 .modalBody textarea {
-  min-height: 108px;
-  padding: 10px 12px;
+  min-height: 104px;
+  padding: 11px 13px;
   resize: vertical;
 }
 
 .modalActions {
-  padding: 0 16px 16px;
+  min-height: 62px;
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--line-subtle);
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -307,61 +358,36 @@
   min-height: 34px;
   padding: 0 13px;
   border-radius: var(--radius-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 620;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 12px;
-  font-weight: 700;
+  cursor: pointer;
 }
 
 .modalActions button:first-child {
-  border: 1px solid var(--line);
-  background: var(--surface);
+  border: 1px solid var(--line-subtle);
+  background: transparent;
   color: var(--text-primary);
 }
 
+.modalActions button:first-child:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .modalActions button:last-child {
-  border: 1px solid rgba(240, 159, 24, 0.7);
-  background: var(--accent-amber);
-  color: #101010;
+  border: 1px solid rgba(255, 215, 0, 0.36);
+  background: rgba(255, 215, 0, 0.13);
+  color: var(--accent);
 }
 
-/* Window refinement pass */
-.modalOverlay {
-  padding: 28px;
-  background: rgba(10, 10, 10, 0.7);
-  backdrop-filter: blur(8px);
-}
-
-.modalCard {
-  width: min(500px, calc(100vw - 56px));
-  border-radius: var(--radius-4);
-}
-
-.modalHeader {
-  min-height: 64px;
-  padding: 0 18px;
-}
-
-.modalBody {
-  padding: 18px;
-  gap: 11px;
-}
-
-.modalActions {
-  min-height: 62px;
-  padding: 14px 18px 18px;
-}
-
-@media (max-width: 640px) {
-  .modalOverlay {
-    padding: 12px;
-  }
-
-  .modalCard {
-    width: 100%;
-  }
+.modalActions button:last-child:hover:not(:disabled) {
+  border-color: rgba(255, 215, 0, 0.5);
+  background: rgba(255, 215, 0, 0.18);
+  color: var(--text-primary);
 }
 
 @media (max-width: 960px) {
@@ -371,13 +397,15 @@
 
   .formSide {
     order: 1;
-    border-bottom: 1px solid var(--line);
+    padding: 44px;
   }
 
   .quoteSide {
     order: 2;
+    min-height: 250px;
+    padding: 44px;
     border-right: 0;
-    min-height: 300px;
+    border-top: 1px solid var(--line-subtle);
     align-items: flex-start;
   }
 }
@@ -389,6 +417,7 @@
 
   .portal {
     min-height: 100vh;
+    min-height: 100dvh;
     border-radius: 0;
     border-left: 0;
     border-right: 0;
@@ -402,5 +431,13 @@
   .secondaryActions {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .modalOverlay {
+    padding: 12px;
+  }
+
+  .modalCard {
+    width: 100%;
   }
 }
