@@ -53,7 +53,7 @@
   color: var(--text-primary);
   font-size: clamp(26px, 2.1vw, 34px);
   line-height: 1;
-  font-weight: 760;
+  font-weight: 600;
   letter-spacing: -0.055em;
   font-variant-numeric: tabular-nums;
 }
@@ -227,18 +227,18 @@
 .avatar {
   width: 34px;
   height: 34px;
-  border: 0 !important;
+  border: 1px solid var(--line-subtle) !important;
   outline: 0 !important;
   box-shadow: none !important;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(255,255,255,0.05);
-  color: var(--text-primary);
+  background: var(--bg-soft);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  font-weight: 760;
+  font-weight: 600;
   letter-spacing: -0.04em;
 }
 

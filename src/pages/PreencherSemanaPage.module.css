@@ -263,9 +263,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #08090a;
+  background: var(--bg-soft);
+  border: 1px solid var(--line-subtle);
+  color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 590;
+  font-weight: 600;
   box-shadow: none;
   outline: none;
 }

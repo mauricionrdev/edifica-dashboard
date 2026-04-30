@@ -18,30 +18,12 @@ export function clientInitials(name) {
 }
 
 /**
- * Cor estável do avatar derivada do nome. Usa hash simples para
- * distribuir as cores sem precisar persistir nada. As 10 cores
- * foram selecionadas para funcionar em fundo escuro.
+ * Cor padrão para fallback de avatar de cliente.
+ * Mantém o mesmo tratamento visual usado nas atividades recentes do Dashboard.
+ * A variação por nome foi removida para preservar consistência na plataforma.
  */
-const AVATAR_PALETTE = [
-  '#f5c300', // amber
-  '#60a5fa', // blue
-  '#22c55e', // green
-  '#ef4444', // red
-  '#2dd4bf', // teal
-  '#a78bfa', // purple
-  '#fb923c', // orange
-  '#f472b6', // pink
-  '#34d399', // emerald
-  '#c084fc', // violet
-];
-
-export function colorFromName(name) {
-  const s = String(name || '');
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  }
-  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+export function colorFromName() {
+  return 'var(--bg-soft, #121315)';
 }
 
 /**

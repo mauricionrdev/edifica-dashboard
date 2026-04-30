@@ -64,7 +64,7 @@
   place-items: center;
   font-size: 9px;
   font-style: normal;
-  font-weight: 650;
+  font-weight: 600;
   opacity: 0;
 }
 
@@ -125,7 +125,7 @@
 .headerStat strong {
   color: var(--text-primary);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .headerStat small {
@@ -280,13 +280,14 @@
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: rgba(245, 184, 0, 0.13);
-  color: var(--accent);
+  background: var(--bg-soft);
+  border: 1px solid var(--line-subtle);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.04em;
 }
 
@@ -369,12 +370,13 @@
 .clientAvatar,
 .clientAvatarSmall {
   border-radius: 999px;
-  background: rgba(245, 184, 0, 0.13);
-  color: var(--accent);
+  background: var(--bg-soft);
+  border: 1px solid var(--line-subtle);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.04em;
 }
 
