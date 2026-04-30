@@ -1231,3 +1231,177 @@ button:disabled,
     width: 100%;
   }
 }
+
+
+/* Patch v25 — Equipe & Acessos: correção de quebras e refinamento das abas */
+.page {
+  min-width: 0;
+  padding: 18px 18px 28px;
+  gap: 14px;
+}
+
+.tabBar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(11, 12, 13, 0.88);
+  backdrop-filter: blur(10px);
+}
+
+.tabContent {
+  min-width: 0;
+  overflow: visible;
+  gap: 14px;
+}
+
+.metricGrid {
+  align-items: stretch;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metricCard {
+  min-width: 0;
+  min-height: 134px;
+  padding: 18px 18px 16px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-content: stretch;
+  gap: 12px;
+}
+
+.metricCard span {
+  min-width: 0;
+  display: block;
+  line-height: 1.2;
+}
+
+.metricCard strong {
+  align-self: center;
+  font-size: clamp(22px, 2vw, 34px);
+  line-height: 1;
+}
+
+.metricCard small {
+  min-height: 18px;
+  line-height: 1.3;
+}
+
+.tableCard {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sectionHead {
+  min-height: 64px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sectionHead > div {
+  min-width: 0;
+}
+
+.sectionHead h3 {
+  margin-top: 3px;
+}
+
+.filterBar {
+  grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(160px, 220px));
+  align-items: end;
+}
+
+.filterField,
+.field,
+.primaryCell,
+.textStack,
+.rowActions,
+.headerActions,
+.squadPills,
+.roleStack {
+  min-width: 0;
+}
+
+.primaryCell {
+  grid-template-columns: 32px minmax(0, 1fr);
+}
+
+.primaryCell strong,
+.textStack strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.primaryCell small,
+.textStack small,
+.dimText {
+  overflow-wrap: anywhere;
+}
+
+.rowActions {
+  gap: 6px;
+}
+
+.rowActions > * {
+  flex: 0 0 auto;
+}
+
+.ownerInlineSelect {
+  width: 100%;
+  max-width: 280px;
+}
+
+.modalBackdrop {
+  z-index: 1000;
+}
+
+.userModalCard {
+  width: min(980px, calc(100vw - 48px));
+  max-height: min(860px, calc(100vh - 48px));
+}
+
+.userModalBody {
+  padding-top: 22px;
+}
+
+@media (max-width: 1180px) {
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .filterBar {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHead {
+    align-items: start;
+  }
+
+  .ownerInlineSelect {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 680px) {
+  .page {
+    padding: 14px 14px 22px;
+  }
+
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metricCard {
+    min-height: 118px;
+  }
+}
