@@ -451,6 +451,21 @@
   font-size: 10px;
 }
 
+
+
+.clientAvatarMini,
+.clientAvatarSmall {
+  overflow: hidden;
+}
+
+.clientAvatarMini img,
+.clientAvatarSmall img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .stickyMetric {
   min-width: 58px;
   padding-left: 12px;

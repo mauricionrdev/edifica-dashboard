@@ -34,6 +34,8 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { clientInitials, colorFromName } from '../utils/clientHelpers.js';
+import { getClientAvatar } from '../utils/avatarStorage.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './SquadPage.module.css';
@@ -155,11 +157,17 @@ function clientPriorityScore(row) {
   return 6000 + forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
 }
 
-function initialsFromClient(name) {
-  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return 'CL';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+function ClientAvatar({ client, className }) {
+  const avatarUrl = getClientAvatar(client);
+
+  return (
+    <span
+      className={className}
+      style={avatarUrl ? undefined : { background: colorFromName(client?.name) }}
+    >
+      {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client?.name)}
+    </span>
+  );
 }
 
 function SettingsGlyph({ size = 14 }) {
@@ -912,7 +920,7 @@ export default function SquadPage() {
 
       {selectedClient && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <span className={styles.clientAvatarMini}>{initialsFromClient(selectedClient.name)}</span>
+          <ClientAvatar client={selectedClient} className={styles.clientAvatarMini} />
           <strong>{selectedClient.name}</strong>
 
           <div className={styles.stickyMetric}>
@@ -990,7 +998,7 @@ export default function SquadPage() {
                   onClick={() => setSelectedClientId(row.id)}
                 >
                   <div className={styles.clientMain}>
-                    <span className={styles.clientAvatarSmall}>{initialsFromClient(row.name)}</span>
+                    <ClientAvatar client={row} className={styles.clientAvatarSmall} />
                     <div>
                       <strong>{row.name}</strong>
                       <span>

@@ -18,7 +18,9 @@ import LoadingIcon from '../components/ui/LoadingIcon.jsx';
 import { CloseIcon, RotateCcwIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { clientInitials, colorFromName } from '../utils/clientHelpers.js';
 import {
+  getClientAvatar,
   getGdvAvatar,
   readAvatarFile,
   removeGdvAvatar,
@@ -49,11 +51,17 @@ function gdvInitials(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-function clientInitials(name) {
-  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return 'CL';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+function ClientAvatar({ client, className }) {
+  const avatarUrl = getClientAvatar(client);
+
+  return (
+    <span
+      className={className}
+      style={avatarUrl ? undefined : { background: colorFromName(client?.name) }}
+    >
+      {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client?.name)}
+    </span>
+  );
 }
 
 function effectiveForecast(closed, predicted) {
@@ -975,7 +983,7 @@ export default function GdvPage() {
 
       {selectedRow && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <span className={styles.clientAvatarMini}>{clientInitials(selectedRow.client.name)}</span>
+          <ClientAvatar client={selectedRow.client} className={styles.clientAvatarMini} />
           <strong>{selectedRow.client.name}</strong>
 
           <div className={styles.stickyMetric}>
@@ -1071,7 +1079,7 @@ export default function GdvPage() {
                     onClick={() => setSelectedClientId(client.id)}
                   >
                     <div className={styles.clientMain}>
-                      <span className={styles.clientAvatarSmall}>{clientInitials(client.name)}</span>
+                      <ClientAvatar client={client} className={styles.clientAvatarSmall} />
                       <div>
                         <strong>{client.name}</strong>
                         <span>
