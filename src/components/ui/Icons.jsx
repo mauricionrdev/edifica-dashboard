@@ -1,6 +1,6 @@
 import React from 'react';
 
-function BaseIcon({ children, size = 18, strokeWidth = 1.55, className, ...props }) {
+function BaseIcon({ children, size = 18, strokeWidth = 1.8, className, ...props }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -112,11 +112,6 @@ export function ProjectBoardIcon({ size = 18, className, ...props }) {
     </svg>
   );
 }
-
-export function SettingsIcon(props) {
-  return <BaseIcon {...props}><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.05.05a2 2 0 0 1-2.83 2.83l-.05-.05A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .92l-.02.07a2 2 0 0 1-3.76 0l-.02-.07a1.7 1.7 0 0 0-1-.92 1.7 1.7 0 0 0-1.88.34l-.05.05a2 2 0 0 1-2.83-2.83l.05-.05A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.92-1l-.07-.02a2 2 0 0 1 0-3.76l.07-.02a1.7 1.7 0 0 0 .92-1 1.7 1.7 0 0 0-.34-1.88l-.05-.05a2 2 0 0 1 2.83-2.83l.05.05A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.92l.02-.07a2 2 0 0 1 3.76 0l.02.07a1.7 1.7 0 0 0 1 .92 1.7 1.7 0 0 0 1.88-.34l.05-.05a2 2 0 0 1 2.83 2.83l-.05.05A1.7 1.7 0 0 0 19.4 9c.35.18.67.5.92 1l.07.02a2 2 0 0 1 0 3.76l-.07.02a1.7 1.7 0 0 0-.92 1Z" /></BaseIcon>;
-}
-
 export function TrophyIcon(props) {
   return <BaseIcon {...props}><path d="M8 21h8" /><path d="M12 17v4" /><path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" /><path d="M7 6H5a2 2 0 0 0 0 4h2" /><path d="M17 6h2a2 2 0 0 1 0 4h-2" /></BaseIcon>;
 }
@@ -136,4 +131,7 @@ export function MailIcon(props) {
 }
 export function BellIcon(props) {
   return <BaseIcon {...props}><path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9" /><path d="M10 21a2 2 0 0 0 4 0" /></BaseIcon>;
+}
+export function SettingsIcon(props) {
+  return <BaseIcon {...props}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a2 2 0 1 1-4 0v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a2 2 0 1 1 0-4h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a2 2 0 1 1 4 0v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6H20a2 2 0 1 1 0 4h-.2a1 1 0 0 0-.4 1.6" /></BaseIcon>;
 }

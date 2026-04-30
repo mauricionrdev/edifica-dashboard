@@ -14,6 +14,7 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
+import { CloseIcon, SettingsIcon } from '../components/ui/Icons.jsx';
 import UserPicker from '../components/users/UserPicker.jsx';
 import styles from './ProfilePage.module.css';
 
@@ -371,8 +372,10 @@ export default function ProfilePage() {
             setSettingsTab('profile');
             setSettingsOpen(true);
           }}
+          aria-label="Abrir configurações do perfil"
+          title="Configurações"
         >
-          Configurações
+          <SettingsIcon size={16} />
         </button>
       </section>
 
