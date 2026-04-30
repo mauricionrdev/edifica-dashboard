@@ -11,7 +11,7 @@ import { MONTHS_FULL, fmtDec, fmtInt, fmtMoney, fmtPct } from '../utils/format.j
 import { buildPeriodKey, calcWeek, currentWeek } from '../utils/gdvMetrics.js';
 import { parseLocaleNumber } from '../utils/number.js';
 import { matchesAnySearch } from '../utils/search.js';
-import { clientInitials, colorFromName } from '../utils/clientHelpers.js';
+import { clientInitials } from '../utils/clientHelpers.js';
 import { getClientAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import styles from './PreencherSemanaPage.module.css';
 
@@ -436,7 +436,6 @@ function WeekCardBase({ client, periodKey, week, canEdit, onSaved, presenceByFie
         <div className={styles.clientIdentity}>
           <div
             className={styles.clientAvatar}
-            style={avatarUrl ? undefined : { background: colorFromName(client.name) }}
             data-avatar-version={avatarVersion}
           >
             {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}

@@ -6,8 +6,8 @@
 
 .workspace {
   min-height: 100%;
-  padding: 15px;
-  background: var(--bg-app);
+  padding: 16px;
+  background: transparent;
   overflow: visible;
 }
 
@@ -20,17 +20,17 @@
 }
 
 .headerStat {
-  height: 34px;
-  padding: 0 10px;
+  height: 38px;
+  padding: 0 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-tertiary);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 12px;
-  font-weight: 510;
+  font-weight: 590;
 }
 
 .headerStat svg {
@@ -60,13 +60,13 @@
 
 .select > button {
   min-width: 154px;
-  min-height: 34px;
-  border-radius: var(--radius-1);
+  min-height: 38px;
+  border-radius: var(--radius-2);
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.018);
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 510;
+  font-weight: 590;
 }
 
 .select > button:hover {
@@ -80,25 +80,25 @@
 }
 
 .weekTabs {
-  height: 34px;
-  padding: 3px;
+  height: 38px;
+  padding: 4px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.018);
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
 }
 
 .weekTab {
-  width: 32px;
-  height: 26px;
+  width: 34px;
+  height: 28px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-1);
   background: transparent;
   color: var(--text-tertiary);
   font-size: 12px;
-  font-weight: 510;
+  font-weight: 590;
   cursor: pointer;
 }
 
@@ -109,19 +109,20 @@
 
 .weekTabActive {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.055);
+  background: var(--accent-amber-soft);
 }
 
 .cardsPanel {
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4);
   background: var(--bg-canvas);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
   overflow: hidden;
 }
 
 .commandBar {
-  min-height: 58px;
-  padding: 11px 14px;
+  min-height: 62px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
@@ -130,12 +131,12 @@
 }
 
 .searchField {
-  width: min(430px, 100%);
-  height: 36px;
-  padding: 0 11px;
+  width: min(450px, 100%);
+  height: 38px;
+  padding: 0 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.018);
   color: var(--text-quaternary);
   display: flex;
   align-items: center;
@@ -231,19 +232,20 @@
 
 .clientCard {
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-3);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.014));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
   overflow: hidden;
 }
 
 .clientTopbar {
-  min-height: 61px;
-  padding: 11px 12px;
+  min-height: 66px;
+  padding: 13px 14px;
   border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
 .clientIdentity {
@@ -254,20 +256,20 @@
 }
 
 .clientAvatar {
-  width: 38px;
-  height: 38px;
-  border: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-subtle);
   border-radius: 50%;
   flex: 0 0 auto;
   overflow: hidden;
+  background: #08090a;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #08090a;
-  border: 1px solid var(--line-subtle);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 620;
+  letter-spacing: -0.03em;
   box-shadow: none;
   outline: none;
 }
@@ -290,10 +292,10 @@
   max-width: 520px;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 590;
-  letter-spacing: -0.24px;
-  line-height: 1.13;
+  font-size: 18px;
+  font-weight: 620;
+  letter-spacing: -0.024em;
+  line-height: 1.12;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -376,7 +378,7 @@
 
 .segmentBlock {
   min-width: 0;
-  padding: 12px;
+  padding: 14px;
 }
 
 .segmentBlock + .segmentBlock {
@@ -420,10 +422,10 @@
 
 .fieldCard {
   min-width: 0;
-  padding: 8px;
+  padding: 10px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.024), rgba(255, 255, 255, 0.018));
+  border-radius: var(--radius-2);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.024), rgba(255, 255, 255, 0.014));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
 }
 
@@ -491,17 +493,17 @@
 .fieldInput,
 .fieldValue {
   width: 100%;
-  min-height: 36px;
-  padding: 0 10px;
+  min-height: 38px;
+  padding: 0 11px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1);
-  background: rgba(8, 9, 10, 0.35);
+  background: rgba(8, 9, 10, 0.44);
   display: inline-flex;
   align-items: center;
   color: var(--text-primary);
   font: inherit;
   font-size: 15px;
-  font-weight: 510;
+  font-weight: 590;
   font-variant-numeric: tabular-nums;
 }
 
@@ -588,11 +590,16 @@
   cursor: pointer;
 }
 
-.pageButton:hover,
-.pageButtonActive {
+.pageButton:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
   border-color: var(--line);
+}
+
+.pageButtonActive {
+  background: var(--accent-amber-soft);
+  color: var(--text-primary);
+  border-color: rgba(245, 184, 0, 0.22);
 }
 
 .skeletonCard {
