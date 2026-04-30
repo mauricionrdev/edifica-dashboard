@@ -12,7 +12,6 @@ import {
 } from '../utils/permissions.js';
 import {
   clientInitials,
-  colorFromName,
   fmtDateBR,
   isEndingSoon,
   isExpired,
@@ -341,7 +340,6 @@ export default function ClientsPage() {
                   >
                     <div
                       className={styles.avatar}
-                      style={avatarUrl ? undefined : { background: colorFromName(c.name) }}
                       aria-hidden="true"
                       data-avatar-version={avatarVersion}
                     >
