@@ -769,204 +769,48 @@ button:disabled,
   }
 }
 
-
-/* Patch 67 — separação entre cards e curvatura padrão */
+/* v29 — Equipe & Acessos: base limpa, abas estáveis e GDVs isolado */
 .page {
-  gap: 16px;
-}
-
-.tabContent {
-  gap: 16px;
-}
-
-.metricGrid {
-  gap: 10px;
-  margin-bottom: 4px;
-}
-
-.metricCard,
-.tableCard,
-.selectorBlock,
-.requestSummaryCard,
-.resultBanner,
-.resultCreds,
-.tabBar,
-.modalCard {
-  border-radius: 10px;
-}
-
-.tabButton,
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dangerButton,
-.inlineRetry,
-.dashboardLink,
-.modalClose,
-.field input,
-.field select,
-.field textarea,
-.filterField input,
-.filterField select,
-.checkboxCard,
-.permissionOptionCard {
-  border-radius: 10px;
-}
-
-.statusPill,
-.scopePill,
-.roleChip,
-.permissionScopeBadge,
-.avatar,
-.avatar img {
-  border-radius: 999px;
-}
-
-/* Patch 69 — corrige avatar de Squad no modal Equipe & Acessos */
-.squadIdentityPanel {
-  align-items: center;
-}
-
-.squadAvatarEditor,
-.squadAvatarEditor:hover,
-.squadAvatarEditor:focus,
-.squadAvatarEditor:focus-visible,
-.squadAvatarEditor:active {
-  width: 74px !important;
-  height: 74px !important;
-  min-width: 74px !important;
-  max-width: 74px !important;
-  min-height: 74px !important;
-  max-height: 74px !important;
-  aspect-ratio: 1 / 1 !important;
-  flex: 0 0 74px !important;
-  padding: 0 !important;
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  border-radius: 999px !important;
-  background: transparent !important;
-  overflow: hidden !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.squadAvatarEditor:has(img) {
-  background: transparent !important;
-}
-
-.squadAvatarEditor img {
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 100% !important;
-  min-height: 100% !important;
-  display: block !important;
-  object-fit: cover !important;
-  object-position: center !important;
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  border-radius: 999px !important;
-}
-
-.squadAvatarEditor span {
-  width: 100% !important;
-  height: 100% !important;
-  border-radius: 999px !important;
-  background: #08090a !important;
-  color: var(--text-primary, #f7f8f8) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-
-/* Patch 82 — corrige pills de escopo no modal de permissões */
-.permissionOptionCard {
-  position: relative;
-  display: grid;
-  grid-template-columns: 14px minmax(0, 1fr) auto;
-  align-items: start;
-  gap: 9px;
-  min-height: 68px;
-  padding: 10px 10px;
-}
-
-.permissionOptionCard input {
-  margin-top: 2px;
-}
-
-.permissionOptionCard .permissionText {
   min-width: 0;
-  padding-right: 4px;
-}
-
-.permissionOptionCard .permissionScopeBadge {
-  align-self: start;
-  justify-self: end;
-  max-width: 116px;
-  min-height: 22px;
-  height: 22px;
-  padding: 0 7px;
-  overflow: hidden;
-  font-size: 10px;
-  line-height: 1;
-  text-overflow: ellipsis;
-}
-
-.permissionText strong {
-  display: block;
-  max-width: 100%;
-  padding-right: 0;
-  overflow-wrap: anywhere;
-  line-height: 1.22;
-}
-
-.permissionText small {
-  display: block;
-  max-width: 100%;
-  margin-top: 2px;
-  overflow-wrap: anywhere;
-}
-
-@media (max-width: 1120px) {
-  .permissionOptionCard {
-    grid-template-columns: 14px minmax(0, 1fr);
-  }
-
-  .permissionOptionCard .permissionScopeBadge {
-    grid-column: 2;
-    justify-self: start;
-    max-width: 100%;
-    margin-top: 2px;
-  }
-}
-
-
-.page {
+  min-height: 100%;
   padding: 16px 16px 24px;
   background: transparent;
   color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+  isolation: isolate;
+  contain: none;
 }
 
 .tabBar {
-  width: max-content;
-  padding: 3px;
-  border-color: var(--line-subtle);
+  position: relative;
+  z-index: 4;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--line-subtle);
   border-radius: var(--radius-3);
   background: rgba(255, 255, 255, 0.018);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  box-shadow: none;
 }
 
 .tabContent {
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
   background: transparent;
+  display: grid;
   gap: 12px;
+  contain: none;
 }
 
 .tabButton {
-  min-height: 32px;
-  padding: 0 12px;
+  min-height: 34px;
+  padding: 0 13px;
   border-radius: var(--radius-1);
   color: var(--text-tertiary);
   font-size: 12px;
@@ -980,61 +824,34 @@ button:disabled,
 }
 
 .tabButtonActive {
-  border-color: rgba(255, 215, 0, 0.22);
-  background: rgba(255, 215, 0, 0.1);
-  color: var(--text-primary);
-}
-
-.headerBtn,
-.primaryButton {
-  min-height: 34px;
   border-color: rgba(255, 215, 0, 0.24);
-  border-radius: var(--radius-1);
-  background: rgba(255, 215, 0, 0.1);
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 620;
-}
-
-.headerBtn:hover,
-.primaryButton:hover {
-  border-color: rgba(255, 215, 0, 0.34);
-  background: rgba(255, 215, 0, 0.14);
+  background: rgba(255, 215, 0, 0.12);
   color: var(--text-primary);
-}
-
-.ghostButton,
-.inlineRetry,
-.dashboardLink,
-.modalClose {
-  border-radius: var(--radius-1);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 590;
 }
 
 .metricGrid {
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+  margin: 0;
 }
 
-.metricCard,
-.tableCard,
-.selectorBlock,
-.requestSummaryCard,
-.resultBanner,
-.resultCreds {
-  border-color: rgba(255, 255, 255, 0.065);
+.metricCard {
+  min-width: 0;
+  min-height: 88px;
+  height: auto;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: var(--radius-3);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
     var(--bg-canvas);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.022);
-}
-
-.metricCard {
-  min-height: 88px;
-  padding: 14px;
-  align-content: space-between;
+  box-shadow: none;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-content: stretch;
+  gap: 7px;
 }
 
 .metricCard span,
@@ -1046,35 +863,95 @@ button:disabled,
 .filterField span {
   color: var(--text-tertiary);
   font-size: 10px;
+  line-height: 1.15;
   font-weight: 590;
   letter-spacing: 0.075em;
+  text-transform: uppercase;
 }
 
 .metricCard strong {
+  align-self: center;
   color: var(--text-primary);
   font-size: clamp(22px, 1.5vw, 28px);
+  line-height: 1;
   font-weight: 620;
   letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricCard small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tableCard,
+.selectorBlock,
+.requestSummaryCard,
+.resultBanner,
+.resultCreds {
+  min-width: 0;
+  border-color: rgba(255, 255, 255, 0.065);
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    var(--bg-canvas);
+  box-shadow: none;
+}
+
+.tableCard {
+  overflow: hidden;
 }
 
 .sectionHead {
   min-height: 62px;
   padding: 16px 18px;
   background: rgba(255, 255, 255, 0.012);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sectionHead > div {
+  min-width: 0;
 }
 
 .sectionHead h3,
 .modalHead h3,
 .resultBanner h3 {
+  margin: 3px 0 0;
+  color: var(--text-primary);
   font-size: 16px;
+  line-height: 1.15;
   font-weight: 620;
   letter-spacing: -0.03em;
 }
 
 .filterBar {
   padding: 14px 18px;
+  border-bottom: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.01);
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(160px, 220px));
+  align-items: end;
   gap: 10px;
+}
+
+.filterField,
+.field,
+.primaryCell,
+.textStack,
+.rowActions,
+.headerActions,
+.squadPills,
+.roleStack {
+  min-width: 0;
 }
 
 .field span {
@@ -1085,6 +962,7 @@ button:disabled,
 
 .field input,
 .field select,
+.field textarea,
 .filterField input,
 .filterField select {
   min-height: 38px;
@@ -1097,28 +975,55 @@ button:disabled,
 
 .field input:focus,
 .field select:focus,
+.field textarea:focus,
 .filterField input:focus,
 .filterField select:focus {
   border-color: rgba(255, 215, 0, 0.28);
   background: rgba(255, 255, 255, 0.035);
 }
 
-.table {
+.tableWrap {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
   background: transparent;
+  scrollbar-width: none;
+}
+
+.tableWrap::-webkit-scrollbar {
+  display: none;
+}
+
+.table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  background: transparent;
+  color: var(--text-secondary);
+  table-layout: auto;
 }
 
 .table th,
 .table td {
   background: transparent;
-  border-bottom-color: rgba(255, 255, 255, 0.055);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  text-align: left;
+  vertical-align: middle;
 }
 
 .table th {
+  padding: 12px 18px;
   color: var(--text-tertiary);
+  font-size: 10px;
   font-weight: 590;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .table td {
+  padding: 13px 18px;
   color: var(--text-secondary);
   font-size: 13px;
 }
@@ -1127,13 +1032,33 @@ button:disabled,
   background: rgba(255, 255, 255, 0.024);
 }
 
+.primaryCell {
+  grid-template-columns: 32px minmax(0, 1fr);
+}
+
 .primaryCell strong,
 .textStack strong,
 .requestSummaryCard strong,
 .resultCreds strong {
   color: var(--text-primary);
   font-size: 13px;
+  line-height: 1.25;
   font-weight: 620;
+}
+
+.primaryCell small,
+.textStack small,
+.dimText {
+  color: var(--text-tertiary);
+  overflow-wrap: anywhere;
+}
+
+.rowActions {
+  gap: 6px;
+}
+
+.rowActions > * {
+  flex: 0 0 auto;
 }
 
 .rolePill,
@@ -1163,234 +1088,33 @@ button:disabled,
   color: #86efac;
 }
 
-.modalBackdrop {
-  z-index: 260;
-  padding: 28px;
-  background: rgba(8, 9, 10, 0.78);
-  backdrop-filter: blur(12px);
-}
-
-.modalCard {
-  border-color: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-4);
-  background: var(--surface);
-}
-
-.modalHead {
-  padding: 20px 24px;
-  background: rgba(255, 255, 255, 0.012);
-}
-
-.userModalBody {
-  padding: 20px 24px 24px;
-  background: var(--bg-canvas);
-}
-
-.modalActions {
-  padding: 15px 24px;
-  background: rgba(255, 255, 255, 0.012);
-}
-
-.squadAvatarEditor,
-.squadAvatarEditor:hover,
-.squadAvatarEditor:focus,
-.squadAvatarEditor:focus-visible,
-.squadAvatarEditor:active {
-  background: #08090a !important;
-}
-
 .squareIcon,
 .avatar,
-.roleChip {
+.roleChip,
+.squadAvatarEditor span {
   background: #08090a;
 }
 
-.checkboxCard {
-  min-height: 40px;
-  border-color: var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.018);
-}
-
-.checkboxCard:hover {
-  border-color: rgba(255, 255, 255, 0.11);
-  background: rgba(255, 255, 255, 0.028);
-}
-
-.checkboxCardActive {
-  border-color: rgba(255, 215, 0, 0.28);
-  background: rgba(255, 215, 0, 0.09);
-}
-
-@media (max-width: 860px) {
-  .page {
-    padding: 14px;
-  }
-
-  .tabBar {
-    width: 100%;
-  }
-}
-
-
-.page {
+/* Aba GDVs: estrutura própria, sem herdar os cards genéricos */
+.gdvAdminPane {
   min-width: 0;
-  padding: 18px 18px 28px;
-  gap: 14px;
-}
-
-.tabBar {
-  position: sticky;
-  top: 0;
-  z-index: 6;
-  width: fit-content;
-  max-width: 100%;
-  padding: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(11, 12, 13, 0.88);
-  backdrop-filter: blur(10px);
-}
-
-.tabContent {
-  min-width: 0;
-  overflow: visible;
-  gap: 14px;
-}
-
-.tableCard {
-  min-width: 0;
-  overflow: hidden;
-}
-
-.sectionHead {
-  min-height: 64px;
-  padding: 16px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.sectionHead > div {
-  min-width: 0;
-}
-
-.sectionHead h3 {
-  margin-top: 3px;
-}
-
-.filterBar {
-  grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(160px, 220px));
-  align-items: end;
-}
-
-.filterField,
-.field,
-.primaryCell,
-.textStack,
-.rowActions,
-.headerActions,
-.squadPills,
-.roleStack {
-  min-width: 0;
-}
-
-.primaryCell {
-  grid-template-columns: 32px minmax(0, 1fr);
-}
-
-.primaryCell strong,
-.textStack strong {
-  display: block;
-  overflow-wrap: anywhere;
-}
-
-.primaryCell small,
-.textStack small,
-.dimText {
-  overflow-wrap: anywhere;
-}
-
-.rowActions {
-  gap: 6px;
-}
-
-.rowActions > * {
-  flex: 0 0 auto;
-}
-
-.modalBackdrop {
-  z-index: 1000;
-}
-
-.userModalCard {
-  width: min(980px, calc(100vw - 48px));
-  max-height: min(860px, calc(100vh - 48px));
-}
-
-.userModalBody {
-  padding-top: 22px;
-}
-
-
-/* v28 — Equipe & Acessos: GDVs e Cargos & Permissões isolados */
-.page {
-  min-width: 0;
-  padding: 16px 16px 24px;
-  background: transparent;
-  color: var(--text-secondary);
+  display: grid;
   gap: 12px;
 }
 
-.tabBar {
-  position: relative;
-  z-index: 4;
-  width: fit-content;
-  max-width: 100%;
-  padding: 4px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3);
-  background: rgba(255, 255, 255, 0.018);
-  box-shadow: none;
-}
-
-.tabContent {
-  min-width: 0;
-  overflow: visible;
-  background: transparent;
-  gap: 12px;
-  contain: none;
-}
-
-.tabButton {
-  min-height: 34px;
-  padding: 0 13px;
-  border-radius: var(--radius-1);
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 590;
-}
-
-.tabButtonActive {
-  border-color: rgba(255, 215, 0, 0.24);
-  background: rgba(255, 215, 0, 0.12);
-  color: var(--text-primary);
-}
-
-/* Aba GDVs — não herda .metricCard */
 .gdvAdminMetricGrid {
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   align-items: stretch;
-  margin: 0;
 }
 
 .gdvAdminMetricCard {
   min-width: 0;
-  min-height: 86px;
-  height: 86px;
+  height: 88px;
+  min-height: 88px;
+  max-height: 88px;
   padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: var(--radius-3);
@@ -1399,22 +1123,29 @@ button:disabled,
     var(--bg-canvas);
   box-shadow: none;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 16px 1fr 16px;
   align-items: center;
   gap: 4px;
+  overflow: hidden;
+}
+
+.gdvAdminMetricCard span,
+.gdvAdminMetricCard strong,
+.gdvAdminMetricCard small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .gdvAdminMetricCard span {
-  min-width: 0;
-  overflow: hidden;
   color: var(--text-tertiary);
   font-size: 10px;
-  line-height: 1.1;
+  line-height: 1;
   font-weight: 590;
   letter-spacing: 0.075em;
   text-transform: uppercase;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .gdvAdminMetricCard strong {
@@ -1427,29 +1158,18 @@ button:disabled,
 }
 
 .gdvAdminMetricCard small {
-  min-width: 0;
-  overflow: hidden;
   color: var(--text-tertiary);
   font-size: 12px;
-  line-height: 1.2;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1;
 }
 
 .gdvAdminTable {
-  isolation: isolate;
+  min-width: 0;
   overflow: hidden;
 }
 
 .gdvAdminTable .sectionHead {
   min-height: 58px;
-  padding: 16px 18px;
-}
-
-.gdvAdminTable .tableWrap {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: visible;
 }
 
 .gdvAdminTable .table {
@@ -1479,7 +1199,14 @@ button:disabled,
 }
 
 /* Aba Cargos & Permissões */
+.rolesAdminPane {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
 .rolesMatrixCard {
+  min-width: 0;
   overflow: hidden;
   border-color: rgba(255, 255, 255, 0.065);
   background:
@@ -1488,13 +1215,9 @@ button:disabled,
 }
 
 .rolesMatrixCard .sectionHead {
-  min-height: 68px;
+  min-height: 66px;
   padding: 18px 20px;
   background: rgba(255, 255, 255, 0.01);
-}
-
-.rolesMatrixCard .sectionEyebrow {
-  color: var(--text-tertiary);
 }
 
 .rolesMatrixCard .sectionHead h3 {
@@ -1510,26 +1233,15 @@ button:disabled,
   scrollbar-width: none;
 }
 
-.rolesMatrixCard .tableWrap::-webkit-scrollbar {
-  display: none;
-}
-
 .rolesMatrixCard .table {
-  min-width: 1040px;
+  min-width: 1060px;
   table-layout: fixed;
 }
 
 .rolesMatrixCard .table th,
 .rolesMatrixCard .table td {
-  padding: 12px 14px;
+  padding: 11px 14px;
   vertical-align: middle;
-}
-
-.rolesMatrixCard .table th {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 590;
-  letter-spacing: 0.075em;
 }
 
 .rolesMatrixCard .table th:first-child,
@@ -1539,7 +1251,7 @@ button:disabled,
 
 .rolesMatrixCard .table th:nth-child(2),
 .rolesMatrixCard .table td:nth-child(2) {
-  width: 120px;
+  width: 124px;
 }
 
 .rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
@@ -1590,25 +1302,64 @@ button:disabled,
   color: var(--accent);
 }
 
+.modalBackdrop {
+  z-index: 1000;
+  padding: 28px;
+  background: rgba(8, 9, 10, 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.modalCard {
+  border-color: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-4);
+  background: var(--surface);
+}
+
+.userModalCard {
+  width: min(980px, calc(100vw - 48px));
+  max-height: min(860px, calc(100vh - 48px));
+}
+
+.modalHead {
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.userModalBody {
+  padding: 22px 24px 24px;
+  background: var(--bg-canvas);
+}
+
+.modalActions {
+  padding: 15px 24px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
 @media (max-width: 1180px) {
+  .metricGrid,
   .gdvAdminMetricGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 960px) {
+  .filterBar {
+    grid-template-columns: 1fr;
+  }
+
+  .ownerInlineSelect,
   .gdvOwnerSelect {
     max-width: 100%;
   }
 }
 
 @media (max-width: 680px) {
-  .gdvAdminMetricGrid {
-    grid-template-columns: 1fr;
+  .page {
+    padding: 14px 14px 22px;
   }
 
-  .gdvAdminMetricCard {
-    height: 82px;
-    min-height: 82px;
+  .metricGrid,
+  .gdvAdminMetricGrid {
+    grid-template-columns: 1fr;
   }
 }

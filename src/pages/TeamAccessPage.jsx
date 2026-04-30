@@ -1522,7 +1522,7 @@ export default function TeamAccessPage() {
             </section>
           </>
         ) : activeTab === 'gdvs' ? (
-          <>
+          <div className={styles.gdvAdminPane}>
             <section className={styles.gdvAdminMetricGrid}>
               <article className={styles.gdvAdminMetricCard}>
                 <span>GDVs mapeados</span>
@@ -1620,9 +1620,9 @@ export default function TeamAccessPage() {
                 </table>
               </div>
             </section>
-          </>
+          </div>
         ) : activeTab === 'roles' ? (
-          <>
+          <div className={styles.rolesAdminPane}>
             <section className={`${styles.tableCard} ${styles.rolesMatrixCard}`}>
               <div className={styles.sectionHead}>
                 <div>
@@ -1673,7 +1673,7 @@ export default function TeamAccessPage() {
                 </table>
               </div>
             </section>
-          </>
+          </div>
         ) : activeTab === 'requests' ? (
           <>
             <section className={styles.metricGrid}>
