@@ -1,171 +1,206 @@
 .page {
   min-height: 100%;
-  padding: 24px;
-  background: var(--surface);
+  padding: 16px 16px 24px;
+  background: transparent;
+  color: var(--text-secondary);
 }
 
 .surface {
   width: min(1240px, 100%);
   margin: 0 auto;
-  padding: 44px 36px 32px;
-  border: 1px solid var(--line);
-  border-radius: 32px;
-  background: var(--bg-canvas);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  padding: 18px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    var(--surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.026);
 }
 
 .headerAction,
 .inlineButton {
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-1);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font: inherit;
-  font-size: 12px;
-  font-weight: 700;
+  display: inline-grid;
+  place-items: center;
   cursor: pointer;
+}
+
+.inlineButton {
+  width: auto;
+  min-width: 0;
+  padding: 0 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .headerAction:hover,
 .inlineButton:hover {
-  background: var(--bg-raised);
+  background: rgba(255, 255, 255, 0.035);
   color: var(--text-primary);
-  border-color: var(--line-strong);
 }
 
 .hero {
-  display: grid;
+  min-height: 96px;
+  padding: 18px 18px 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 16px;
-  justify-items: center;
-  text-align: center;
+}
+
+.heroCopy {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
 }
 
 .heroCopy h1 {
   margin: 0;
   color: var(--text-primary);
-  font-size: clamp(52px, 8vw, 90px);
-  line-height: 0.9;
-  font-weight: 900;
+  font-size: clamp(28px, 3.1vw, 42px);
+  line-height: 1.02;
+  font-weight: 620;
   letter-spacing: -0.04em;
-  text-transform: uppercase;
 }
 
 .heroCopy p {
-  margin: 16px 0 0;
-  color: var(--text-tertiary);
+  margin: 0;
+  color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
 .podiumSection {
-  margin-top: 44px;
+  margin-top: 8px;
 }
 
 .podiumGrid {
   display: grid;
-  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1fr) minmax(0, 0.84fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 10px;
   align-items: end;
 }
 
 .podiumCard {
   position: relative;
-  min-height: 380px;
-  padding: 26px 28px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 0;
-  background: rgba(255, 255, 255, 0.02);
+  min-height: 292px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.064);
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    var(--bg-canvas);
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
 }
 
 .podiumCard:hover {
-  border-color: rgba(255, 200, 0, 0.16);
-  transform: translateY(-2px);
+  border-color: rgba(255, 215, 0, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.034), rgba(255, 255, 255, 0.016)),
+    var(--bg-canvas);
+  transform: translateY(-1px);
 }
 
 .podiumCard_champion {
-  min-height: 472px;
+  min-height: 338px;
+  border-color: rgba(255, 215, 0, 0.18);
   background:
-    radial-gradient(circle at top, rgba(255, 200, 0, 0.09), transparent 30%),
-    linear-gradient(180deg, rgba(255, 200, 0, 0.035), rgba(255, 255, 255, 0.024) 44%),
-    rgba(255, 255, 255, 0.024);
-  border-color: rgba(255, 200, 0, 0.15);
+    radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.09), transparent 34%),
+    linear-gradient(180deg, rgba(255, 215, 0, 0.036), rgba(255, 255, 255, 0.014)),
+    var(--bg-canvas);
 }
 
 .podiumCard_runnerUp,
 .podiumCard_third {
-  opacity: 0.9;
+  opacity: 0.98;
 }
 
 .podiumTag {
   position: absolute;
-  top: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  min-height: 24px;
-  padding: 0 18px;
+  top: 14px;
+  right: 14px;
+  min-height: 22px;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 215, 0, 0.08);
+  color: var(--accent);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
-  border-radius: 0;
-  background: linear-gradient(180deg, #ffd44d, #f0bf00);
-  color: #151515;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  box-shadow: 0 10px 24px rgba(255, 200, 0, 0.14);
 }
 
 .podiumRank {
   position: relative;
   z-index: 2;
-  display: inline-flex;
+  width: max-content;
   color: var(--accent);
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: 0.08em;
 }
 
 .podiumGhostRank {
   position: absolute;
-  top: 18px;
-  right: 18px;
-  color: rgba(255, 255, 255, 0.04);
-  font-size: clamp(88px, 12vw, 136px);
-  font-weight: 900;
+  top: 4px;
+  right: 10px;
+  color: rgba(255, 255, 255, 0.035);
+  font-size: clamp(68px, 7vw, 104px);
+  font-weight: 650;
   line-height: 1;
+  letter-spacing: -0.08em;
+  pointer-events: none;
+}
+
+.podiumCard_champion .podiumGhostRank {
+  color: rgba(255, 215, 0, 0.06);
 }
 
 .podiumAvatarWrap {
-  margin-top: 42px;
+  margin-top: 30px;
   display: grid;
   justify-items: center;
 }
 
 .podiumAvatar {
-  width: 116px;
-  height: 116px;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
   overflow: hidden;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255, 200, 0, 0.28);
+  border: 1px solid var(--line-subtle);
   background: #08090a;
   color: var(--text-primary);
-  font-size: 28px;
-  font-weight: 900;
+  font-size: 20px;
+  font-weight: 620;
+  letter-spacing: -0.04em;
 }
 
-.podiumCard_champion .podiumGhostRank {
-  color: rgba(255, 200, 0, 0.07);
+.podiumCard_champion .podiumAvatar {
+  width: 96px;
+  height: 96px;
+  border-color: rgba(255, 215, 0, 0.28);
 }
 
 .podiumAvatar img {
@@ -176,174 +211,196 @@
 }
 
 .podiumIdentity {
-  margin-top: 26px;
+  min-width: 0;
+  margin-top: 18px;
   display: grid;
-  gap: 6px;
+  gap: 5px;
   justify-items: center;
   text-align: center;
 }
 
 .podiumIdentity strong {
+  max-width: 100%;
+  overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(26px, 2.8vw, 46px);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
+  font-size: clamp(17px, 1.8vw, 24px);
+  font-weight: 620;
+  line-height: 1.08;
+  letter-spacing: -0.032em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.podiumCard_runnerUp .podiumIdentity strong,
-.podiumCard_third .podiumIdentity strong {
-  font-size: clamp(18px, 2vw, 30px);
+.podiumCard_champion .podiumIdentity strong {
+  font-size: clamp(20px, 2.2vw, 30px);
 }
 
 .podiumIdentity span {
+  max-width: 100%;
+  overflow: hidden;
   color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .podiumScore {
-  margin-top: 18px;
-  color: #f4c400;
-  font-size: clamp(54px, 7vw, 92px);
-  font-weight: 900;
-  line-height: 0.9;
+  margin-top: 16px;
+  color: var(--accent);
+  font-size: clamp(34px, 4.4vw, 56px);
+  font-weight: 620;
+  line-height: 0.98;
   text-align: center;
-  letter-spacing: -0.06em;
-  text-shadow: 0 10px 24px rgba(244, 196, 0, 0.08);
+  letter-spacing: -0.055em;
+  font-variant-numeric: tabular-nums;
 }
 
 .podiumCard_runnerUp .podiumScore,
 .podiumCard_third .podiumScore {
   color: var(--text-primary);
-  font-size: clamp(34px, 4vw, 58px);
+  font-size: clamp(28px, 3vw, 42px);
 }
 
 .podiumMeta {
-  margin-top: 28px;
+  margin-top: auto;
   padding-top: 18px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 12px;
+  border-top: 1px solid var(--line-subtle);
 }
 
 .podiumMeta span {
   display: block;
+  overflow: hidden;
   color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .podiumMeta strong {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
+  overflow: hidden;
   color: var(--text-primary);
-  font-size: 22px;
-  font-weight: 850;
+  font-size: 15px;
+  font-weight: 620;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
 }
 
 .podiumBar {
-  margin-top: 18px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  margin-top: 14px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
 }
 
 .podiumBar span {
   display: block;
   height: 100%;
+  border-radius: inherit;
   background: var(--accent);
 }
 
 .listSection {
-  margin-top: 36px;
+  margin-top: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: var(--radius-3);
+  background: var(--bg-canvas);
+  overflow: hidden;
 }
 
 .columns {
-  padding: 0 10px 14px;
+  min-height: 38px;
+  padding: 0 14px;
   display: grid;
-  grid-template-columns: 84px minmax(200px, 0.8fr) minmax(220px, 1fr) 120px 120px 180px;
-  gap: 16px;
+  grid-template-columns: 58px minmax(170px, 0.9fr) minmax(190px, 1fr) 100px 112px 150px;
+  gap: 14px;
+  align-items: center;
+  border-bottom: 1px solid var(--line-subtle);
   color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.22em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.055em;
   text-transform: uppercase;
 }
 
 .rankList {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 0;
 }
 
 .rankRow {
-  min-height: 92px;
-  padding: 0 10px;
+  min-height: 76px;
+  padding: 0 14px;
   display: grid;
-  grid-template-columns: 84px minmax(200px, 0.8fr) minmax(220px, 1fr) 120px 120px 180px;
-  gap: 16px;
+  grid-template-columns: 58px minmax(170px, 0.9fr) minmax(190px, 1fr) 100px 112px 150px;
+  gap: 14px;
   align-items: center;
-  border-top: 0;
-  border-right: 0;
-  border-bottom: 0;
-  border-left: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
   outline: 0;
   box-shadow: none;
-  background: var(--bg-canvas);
+  background: transparent;
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.rankRow:last-child {
+  border-bottom: 0;
 }
 
 .rankRow:hover {
-  background: rgba(255, 255, 255, 0.018);
-}
-
-.rankRow:first-child {
-  margin-top: 0;
+  background: rgba(255, 255, 255, 0.024);
 }
 
 .rankNumber {
-  color: rgba(255, 255, 255, 0.28);
-  font-size: 44px;
-  font-weight: 900;
+  color: var(--text-tertiary);
+  font-size: 18px;
+  font-weight: 620;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
 }
 
 .leaderCell,
 .squadCell {
   min-width: 0;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
 }
 
 .squadCell {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
 }
 
 .listAvatar {
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   overflow: hidden;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line-subtle);
   background: #08090a;
   color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 620;
+  letter-spacing: -0.035em;
 }
 
 .listAvatar img {
@@ -353,14 +410,21 @@
   display: block;
 }
 
+.leaderInfo,
+.squadCell {
+  min-width: 0;
+}
+
 .leaderInfo strong,
 .squadCell strong {
   display: block;
-  color: var(--text-primary);
-  font-size: 18px;
-  font-weight: 800;
-  white-space: nowrap;
   overflow: hidden;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 620;
+  letter-spacing: -0.018em;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
@@ -368,47 +432,59 @@
 .squadCell span {
   display: block;
   margin-top: 4px;
-  color: var(--text-muted);
+  overflow: hidden;
+  color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 650;
+  line-height: 1.25;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .metricCell {
   color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 850;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 620;
   font-variant-numeric: tabular-nums;
 }
 
 .scoreCell {
+  min-width: 0;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   justify-items: start;
 }
 
 .scoreCell strong {
+  max-width: 100%;
+  overflow: hidden;
   color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 14px;
+  font-weight: 620;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .scoreBar {
   width: 100%;
-  height: 4px;
+  height: 3px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
 }
 
 .scoreBar span {
   display: block;
   height: 100%;
+  border-radius: inherit;
   background: var(--accent);
 }
 
 @media (max-width: 1120px) {
   .surface {
-    padding-left: 22px;
-    padding-right: 22px;
+    padding: 14px;
   }
 
   .podiumGrid {
@@ -427,7 +503,7 @@
 
   .columns,
   .rankRow {
-    grid-template-columns: 66px minmax(180px, 1fr) minmax(180px, 1fr) 92px 92px 140px;
+    grid-template-columns: 50px minmax(150px, 1fr) minmax(160px, 1fr) 84px 96px 128px;
   }
 }
 
@@ -437,13 +513,18 @@
   }
 
   .surface {
-    padding: 22px 16px 18px;
-    border-radius: 24px;
+    padding: 12px;
+    border-radius: var(--radius-3);
   }
 
-  .heroCopy p {
-    letter-spacing: 0.18em;
-    line-height: 1.5;
+  .hero {
+    min-height: 0;
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .heroCopy h1 {
+    font-size: 28px;
   }
 
   .columns {
@@ -451,16 +532,14 @@
   }
 
   .rankList {
-    gap: 12px;
-    background: transparent;
+    gap: 0;
   }
 
   .rankRow {
-    padding: 16px;
-    grid-template-columns: 56px 1fr;
+    min-height: 0;
+    padding: 14px;
+    grid-template-columns: 44px minmax(0, 1fr);
     gap: 12px;
-    border: 0;
-    background: rgba(255, 255, 255, 0.02);
   }
 
   .leaderCell {
@@ -475,26 +554,11 @@
 
   .rankNumber {
     grid-row: span 4;
-    font-size: 34px;
+    font-size: 18px;
   }
 
   .metricCell,
   .scoreCell strong {
-    font-size: 16px;
+    font-size: 14px;
   }
-}
-
-
-/* Patch 70 — ranking por Churn e Meta Lucro */
-.podiumScore {
-  font-variant-numeric: tabular-nums;
-}
-
-.podiumMeta div:first-child strong,
-.metricCell {
-  font-variant-numeric: tabular-nums;
-}
-
-.scoreCell strong {
-  font-size: clamp(18px, 1.7vw, 26px);
 }

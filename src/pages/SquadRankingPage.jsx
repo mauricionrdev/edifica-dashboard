@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { getSquadRanking } from '../api/metrics.js';
-import { StateBlock } from '../components/ui/index.js';
+import { RotateCcwIcon, StateBlock } from '../components/ui/index.js';
 import { MONTHS_FULL, fmtMoney, fmtPct } from '../utils/format.js';
 import { getSquadAvatar, getUserAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import { resolveSquadOwner } from '../utils/ownershipStorage.js';
@@ -118,8 +118,8 @@ export default function SquadRankingPage() {
       title: <strong>Ranking de Squads</strong>,
       description: null,
       actions: (
-        <button type="button" className={styles.headerAction} onClick={fetchRanking}>
-          Atualizar
+        <button type="button" className={styles.headerAction} onClick={fetchRanking} aria-label="Atualizar ranking" title="Atualizar ranking">
+          <RotateCcwIcon size={14} aria-hidden="true" />
         </button>
       ),
     });
