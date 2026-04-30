@@ -873,6 +873,8 @@ export default function GdvPage() {
               value={gdvOwnership.ownerId}
               placeholder="Sem proprietário"
               showRole
+              portal
+              disableHover
               onChange={async (userId) => {
                 if (!activeGdvRecord?.id) return;
 
