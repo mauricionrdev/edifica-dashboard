@@ -1679,7 +1679,7 @@ export default function TeamAccessPage() {
                         <tr key={permission}>
                           <td>
                             <div className={styles.primaryCell}>
-                              <ShieldIcon size={15} />
+                              <span className={styles.squareIcon}><ShieldIcon size={14} /></span>
                               <div>
                                 <strong>{permissionLabel(permission)}</strong>
                                 {index === 0 ? <small className={styles.permissionAreaLabel}>{group.area}</small> : null}
