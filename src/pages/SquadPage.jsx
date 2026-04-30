@@ -34,8 +34,6 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
-import { clientInitials, colorFromName } from '../utils/clientHelpers.js';
-import { getClientAvatar } from '../utils/avatarStorage.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './SquadPage.module.css';
@@ -157,17 +155,11 @@ function clientPriorityScore(row) {
   return 6000 + forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
 }
 
-function ClientAvatar({ client, className }) {
-  const avatarUrl = getClientAvatar(client);
-
-  return (
-    <span
-      className={className}
-      style={avatarUrl ? undefined : { background: colorFromName(client?.name) }}
-    >
-      {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client?.name)}
-    </span>
-  );
+function initialsFromClient(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'CL';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 function SettingsGlyph({ size = 14 }) {
@@ -638,95 +630,105 @@ export default function SquadPage() {
 
     const actions = (
       <div className={styles.headerActions}>
-        <span className={styles.headerStat}>
-          <UsersIcon size={14} aria-hidden="true" />
-          <strong>{displayInt(squadClients.length)}</strong>
-          <small>{squadClients.length === 1 ? 'cliente' : 'clientes'}</small>
-        </span>
+        <div className={styles.headerCluster}>
+          <span className={styles.headerStat}>
+            <UsersIcon size={15} aria-hidden="true" />
+            <strong>{displayInt(squadClients.length)}</strong>
+            <small>{squadClients.length === 1 ? 'cliente' : 'clientes'}</small>
+          </span>
 
-        {canManageSquads ? (
-          <UserPicker
-            className={styles.ownerControl}
-            users={Array.isArray(userDirectory) ? userDirectory : []}
-            value={squad.ownerUserId || squad.owner?.id || ''}
-            onChange={(userId) => handleOwnerChange({ target: { value: userId } })}
-            placeholder="Sem responsável"
-            disableHover
-            portal
-          />
-        ) : null}
-
-        {canManageSquads && logoUrl ? (
-          <button
-            type="button"
-            className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
-            onClick={handleRemoveLogo}
-            aria-label="Remover logo"
-            title="Remover logo"
-          >
-            <CloseIcon size={14} aria-hidden="true" />
-          </button>
-        ) : null}
-
-        {canManageSquads ? (
-          <button
-            type="button"
-            className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Configurar squad"
-            title="Configurar squad"
-          >
-            <SettingsGlyph size={14} />
-          </button>
-        ) : null}
-
-        <div className={styles.monthNav}>
-          <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
-            ‹
-          </button>
-          <div className={styles.monthLabel}>
-            {MONTHS[month0]} {year}
-          </div>
-          <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
-            ›
-          </button>
-        </div>
-
-        <div className={styles.weekTabs} role="tablist" aria-label="Semana">
-          {[1, 2, 3, 4].map((value) => (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={week === value}
-              className={`${styles.weekTab} ${week === value ? styles.weekTabActive : ''}`.trim()}
-              onClick={() => setWeek(value)}
-            >
-              S{value}
+          <div className={styles.monthNav}>
+            <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
+              ‹
             </button>
-          ))}
+            <div className={styles.monthLabel}>
+              {MONTHS[month0]} {year}
+            </div>
+            <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
+              ›
+            </button>
+          </div>
+
+          <div className={styles.weekTabs} role="tablist" aria-label="Semana">
+            {[1, 2, 3, 4].map((value) => (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={week === value}
+                className={`${styles.weekTab} ${week === value ? styles.weekTabActive : ''}`.trim()}
+                onClick={() => setWeek(value)}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <button
-          type="button"
-          className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
-          aria-label="Atualizar visão"
-          title="Atualizar visão"
-          onClick={() => refreshClients?.()}
-        >
-          <RotateCcwIcon size={14} aria-hidden="true" />
-        </button>
+        {canManageSquads ? (
+          <div className={styles.headerCluster}>
+            <UserPicker
+              className={styles.ownerControl}
+              users={Array.isArray(userDirectory) ? userDirectory : []}
+              value={squad.ownerUserId || squad.owner?.id || ''}
+              onChange={(userId) => handleOwnerChange({ target: { value: userId } })}
+              placeholder="Sem responsável"
+              disableHover
+              portal
+            />
+          </div>
+        ) : null}
 
-        <Link
-          to="/ranking-squads"
-          className={`${styles.headerBtn} ${styles.iconButton}`.trim()}
-          aria-label="Ver ranking"
-          title="Ver ranking"
-        >
-          <TrophyIcon size={14} aria-hidden="true" />
-        </Link>
+        <div className={styles.headerCluster}>
+          {canManageSquads && logoUrl ? (
+            <button
+              type="button"
+              className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
+              onClick={handleRemoveLogo}
+              aria-label="Remover logo"
+              title="Remover logo"
+            >
+              <CloseIcon size={14} aria-hidden="true" />
+            </button>
+          ) : null}
 
-        {metricsLoading ? <LoadingIcon size="sm" label="Carregando métricas" /> : null}
+          {canManageSquads ? (
+            <button
+              type="button"
+              className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Configurar squad"
+              title="Configurar squad"
+            >
+              <SettingsGlyph size={14} />
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
+            aria-label="Atualizar visão"
+            title="Atualizar visão"
+            onClick={() => refreshClients?.()}
+          >
+            <RotateCcwIcon size={14} aria-hidden="true" />
+          </button>
+
+          <Link
+            to="/ranking-squads"
+            className={`${styles.headerBtn} ${styles.iconButton}`.trim()}
+            aria-label="Ver ranking"
+            title="Ver ranking"
+          >
+            <TrophyIcon size={14} aria-hidden="true" />
+          </Link>
+
+          {metricsLoading ? (
+            <span className={styles.headerLoading}>
+              <LoadingIcon size="sm" label="Carregando métricas" />
+            </span>
+          ) : null}
+        </div>
       </div>
     );
 
@@ -920,7 +922,7 @@ export default function SquadPage() {
 
       {selectedClient && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <ClientAvatar client={selectedClient} className={styles.clientAvatarMini} />
+          <span className={styles.clientAvatarMini}>{selectedClient.avatarUrl ? <img src={selectedClient.avatarUrl} alt="" /> : initialsFromClient(selectedClient.name)}</span>
           <strong>{selectedClient.name}</strong>
 
           <div className={styles.stickyMetric}>
@@ -998,7 +1000,7 @@ export default function SquadPage() {
                   onClick={() => setSelectedClientId(row.id)}
                 >
                   <div className={styles.clientMain}>
-                    <ClientAvatar client={row} className={styles.clientAvatarSmall} />
+                    <span className={styles.clientAvatarSmall}>{row.avatarUrl ? <img src={row.avatarUrl} alt="" /> : initialsFromClient(row.name)}</span>
                     <div>
                       <strong>{row.name}</strong>
                       <span>
