@@ -1103,3 +1103,270 @@ button:disabled,
     flex-direction: column;
   }
 }
+
+/* v33 — refinamento real da matriz de permissões e padrão final dos cards das abas */
+.metricGrid,
+.gdvAdminMetricGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.metricCard,
+.gdvAdminMetricCard {
+  min-height: 92px;
+  height: 92px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-content: stretch;
+  gap: 8px;
+}
+
+.metricCard span,
+.gdvAdminMetricCard span {
+  align-self: start;
+  line-height: 1.15;
+}
+
+.metricCard strong,
+.gdvAdminMetricCard strong {
+  align-self: end;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.metricCard small,
+.gdvAdminMetricCard small {
+  display: none;
+}
+
+.tableCard {
+  border-radius: var(--radius-3);
+  overflow: hidden;
+}
+
+.tableWrap {
+  min-width: 0;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.tableWrap::-webkit-scrollbar {
+  display: none;
+}
+
+.table th,
+.table td {
+  padding-block: 13px;
+  vertical-align: middle;
+}
+
+.primaryCell {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.primaryCell > div,
+.textStack {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.primaryCell strong,
+.textStack strong {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-primary);
+  line-height: 1.22;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.primaryCell small,
+.textStack small {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rolesAdminPane {
+  gap: 14px;
+}
+
+.rolesMatrixCard {
+  border-radius: var(--radius-3);
+  background: var(--bg-canvas);
+  overflow: hidden;
+}
+
+.rolesMatrixCard .sectionHead {
+  min-height: 68px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.rolesMatrixCard .sectionEyebrow {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  letter-spacing: 0.11em;
+}
+
+.rolesMatrixCard .sectionHead h3 {
+  margin-top: 4px;
+  font-size: 18px;
+  line-height: 1.12;
+  font-weight: 650;
+  letter-spacing: -0.032em;
+}
+
+.rolesMatrixCard .tableWrap {
+  max-height: calc(100vh - 270px);
+  overflow: auto;
+}
+
+.rolesMatrixCard .table {
+  min-width: 1320px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.rolesMatrixCard .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  height: 42px;
+  padding: 0 16px;
+  background: #111214;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.105em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rolesMatrixCard .table th:first-child,
+.rolesMatrixCard .table td:first-child {
+  width: 330px;
+}
+
+.rolesMatrixCard .table th:nth-child(2),
+.rolesMatrixCard .table td:nth-child(2) {
+  width: 150px;
+}
+
+.rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
+.rolesMatrixCard .table td:not(:first-child):not(:nth-child(2)) {
+  width: 140px;
+  text-align: center;
+}
+
+.rolesMatrixCard .table td {
+  height: 58px;
+  padding: 10px 16px;
+  background: transparent;
+}
+
+.rolesMatrixCard .table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.rolesMatrixCard .primaryCell {
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.rolesMatrixCard .primaryCell svg {
+  color: var(--text-tertiary);
+  opacity: 0.9;
+}
+
+.rolesMatrixCard .primaryCell strong {
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.rolesMatrixCard .primaryCell small,
+.permissionAreaLabel {
+  margin-top: 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.roleHeaderLabel {
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rolesMatrixCard .permissionScopeBadge,
+.rolesMatrixCard .matrixPill {
+  min-height: 22px;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.rolesMatrixCard .matrixPillOn {
+  min-width: 64px;
+}
+
+.rolesMatrixCard .matrixPillOff {
+  width: 26px;
+  min-width: 26px;
+  padding: 0;
+  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-tertiary);
+}
+
+.gdvAdminTable .primaryCell strong,
+.gdvAdminTable .primaryCell small,
+.tableCard .primaryCell strong,
+.tableCard .primaryCell small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1180px) {
+  .metricGrid,
+  .gdvAdminMetricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .metricGrid,
+  .gdvAdminMetricGrid {
+    grid-template-columns: 1fr;
+  }
+}

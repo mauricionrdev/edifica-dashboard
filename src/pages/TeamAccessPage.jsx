@@ -758,6 +758,20 @@ function PermissionText({ permission, showHint = false }) {
   );
 }
 
+
+function compactRoleLabel(role, fallback = '') {
+  const labels = {
+    ceo: 'CEO',
+    suporte_tecnologia: 'Suporte TI',
+    admin: 'Admin legado',
+    gdv: 'GDV',
+    gestor: 'Gestor',
+    cap: 'CAP',
+  };
+
+  return labels[role] || fallback;
+}
+
 function StatCard({ label, value, hint = '', className = '' }) {
   const cardClassName = [styles.metricCard, className].filter(Boolean).join(' ');
 
@@ -1653,7 +1667,9 @@ export default function TeamAccessPage() {
                       <th>Permissão</th>
                       <th>Escopo</th>
                       {roleSummaries.map((item) => (
-                        <th key={item.role}>{item.label}</th>
+                        <th key={item.role}>
+                          <span className={styles.roleHeaderLabel}>{compactRoleLabel(item.role, item.label)}</span>
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -1666,7 +1682,7 @@ export default function TeamAccessPage() {
                               <ShieldIcon size={15} />
                               <div>
                                 <strong>{permissionLabel(permission)}</strong>
-                                {index === 0 ? <small>{group.area}</small> : null}
+                                {index === 0 ? <small className={styles.permissionAreaLabel}>{group.area}</small> : null}
                               </div>
                             </div>
                           </td>
