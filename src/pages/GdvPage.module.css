@@ -1,4 +1,9 @@
 .page {
+  --gdv-accent: var(--success);
+  --gdv-accent-soft: var(--success-soft);
+  --gdv-accent-line: rgba(39, 166, 68, 0.26);
+  --gdv-accent-strong-line: rgba(39, 166, 68, 0.36);
+
   min-height: 100%;
   padding: 14px 15px 24px;
   background: var(--bg-app);
@@ -250,8 +255,8 @@
 }
 
 .weekTabActive {
-  background: rgba(245, 184, 0, 0.1);
-  color: var(--accent-amber);
+  background: var(--gdv-accent-soft);
+  color: var(--gdv-accent);
 }
 
 .gdvMenu {
@@ -275,6 +280,7 @@
 .gdvSelectButtonOpen {
   background: rgba(255, 255, 255, 0.045);
   color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--gdv-accent-line);
 }
 
 .gdvSelectButton span:first-child {
@@ -324,7 +330,7 @@
 
 .gdvOption:hover,
 .gdvOptionActive {
-  background: rgba(255, 255, 255, 0.055);
+  background: var(--gdv-accent-soft);
   color: var(--text-primary);
 }
 
@@ -436,7 +442,7 @@
 .amber,
 .metricValue.amber,
 .metricSub.amber {
-  color: var(--accent-amber);
+  color: var(--gdv-accent);
 }
 
 .red,
@@ -457,7 +463,7 @@
   z-index: 30;
   min-height: 48px;
   padding: 8px 10px;
-  border: 1px solid rgba(245, 184, 0, 0.18);
+  border: 1px solid var(--gdv-accent-line);
   border-radius: var(--radius-3);
   background: rgba(12, 13, 14, 0.96);
   backdrop-filter: blur(10px);
@@ -628,7 +634,7 @@
 }
 
 .searchBox:focus-within {
-  border-color: var(--line);
+  border-color: var(--gdv-accent-line);
   background: rgba(255, 255, 255, 0.035);
   color: var(--text-secondary);
 }
@@ -690,7 +696,7 @@
 }
 
 .clientRowActive {
-  background: rgba(245, 184, 0, 0.055);
+  background: var(--gdv-accent-soft);
 }
 
 .clientMain {
@@ -802,9 +808,9 @@
 }
 
 .badge.amber {
-  color: var(--accent-amber);
-  border-color: rgba(245, 184, 0, 0.22);
-  background: rgba(245, 184, 0, 0.08);
+  color: var(--gdv-accent);
+  border-color: var(--gdv-accent-line);
+  background: var(--gdv-accent-soft);
 }
 
 .badge.red {

@@ -785,21 +785,21 @@ export default function GdvPage() {
       <div className={styles.headerActions}>
         <div className={styles.headerGroup}>
           <span className={styles.headerStat} title={`${displayInt(gdvClients.length)} clientes`}>
-            <UsersIcon size={14} aria-hidden="true" />
+            <UsersIcon size={16} strokeWidth={1.65} aria-hidden="true" />
             <strong>{displayInt(gdvClients.length)}</strong>
             <small>{gdvClients.length === 1 ? 'cliente' : 'clientes'}</small>
           </span>
 
           <div className={styles.monthNav} title={`Período: ${MONTHS[month0]} ${year}`}>
             <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
-              <ChevronLeftIcon size={13} aria-hidden="true" />
+              <ChevronLeftIcon size={16} strokeWidth={1.65} aria-hidden="true" />
             </button>
             <div className={styles.monthLabel}>
-              <CalendarIcon size={13} aria-hidden="true" />
+              <CalendarIcon size={16} strokeWidth={1.65} aria-hidden="true" />
               <span>{MONTHS[month0]} {year}</span>
             </div>
             <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
-              <ChevronRightIcon size={13} aria-hidden="true" />
+              <ChevronRightIcon size={16} strokeWidth={1.65} aria-hidden="true" />
             </button>
           </div>
 
@@ -833,7 +833,7 @@ export default function GdvPage() {
                 onClick={() => setGdvMenuOpen((open) => !open)}
               >
                 <span>{selectedGdv || 'Todos'}</span>
-                <ChevronDownIcon size={13} aria-hidden="true" />
+                <ChevronDownIcon size={16} strokeWidth={1.65} aria-hidden="true" />
               </button>
 
               {gdvMenuOpen ? (
@@ -886,7 +886,7 @@ export default function GdvPage() {
 
         {superAdmin && activeGdvName ? (
           <div className={styles.ownerGroup} title="Proprietário do GDV">
-            <span className={styles.ownerIcon} aria-hidden="true"><UsersIcon size={13} strokeWidth={1.65} /></span>
+            <span className={styles.ownerIcon} aria-hidden="true"><UsersIcon size={16} strokeWidth={1.65} /></span>
             <UserPicker
               className={styles.ownerControl}
               users={Array.isArray(userDirectory) ? userDirectory : []}
@@ -919,7 +919,7 @@ export default function GdvPage() {
               title="Remover imagem do GDV"
               onClick={handleRemoveLogo}
             >
-              <CloseIcon size={14} aria-hidden="true" />
+              <CloseIcon size={16} strokeWidth={1.65} aria-hidden="true" />
             </button>
           ) : null}
 
@@ -937,7 +937,7 @@ export default function GdvPage() {
               });
             }}
           >
-            <RotateCcwIcon size={14} aria-hidden="true" />
+            <RotateCcwIcon size={16} strokeWidth={1.65} aria-hidden="true" />
           </button>
 
           {fetchingKey === periodKey ? (
@@ -1058,7 +1058,7 @@ export default function GdvPage() {
         </div>
 
         <label className={styles.searchBox}>
-          <SearchIcon size={15} aria-hidden="true" />
+          <SearchIcon size={16} strokeWidth={1.65} aria-hidden="true" />
           <input
             type="search"
             value={clientQuery}
