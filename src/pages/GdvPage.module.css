@@ -1641,3 +1641,173 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* v48 — corrige header GDV: grupos compactos sem cards altos */
+.headerIdentity {
+  min-height: 44px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+}
+
+.headerTitleText strong {
+  max-width: 190px;
+  font-size: 17px;
+}
+
+.headerTitleText small {
+  max-width: 190px;
+  font-size: 12px;
+}
+
+.headerActions {
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.headerCard {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-left: 1px solid var(--line-subtle);
+  border-radius: 0;
+  background: transparent;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.headerCard:first-child {
+  border-left: 0;
+}
+
+.headerCardLabel {
+  display: none;
+}
+
+.headerStatCard {
+  min-width: 110px;
+}
+
+.headerPeriodCard {
+  min-width: 164px;
+}
+
+.headerWeekCard {
+  min-width: 132px;
+}
+
+.headerFilterCard {
+  min-width: 188px;
+}
+
+.headerOwnerCard {
+  min-width: 236px;
+}
+
+.headerUtilityCard {
+  min-width: 42px;
+  padding-right: 0;
+}
+
+.headerStat,
+.monthNav,
+.weekTabs {
+  min-height: 30px;
+}
+
+.headerStat strong {
+  font-size: 14px;
+}
+
+.headerStat small {
+  font-size: 12px;
+}
+
+.monthLabel {
+  min-width: 94px;
+  font-size: 13px;
+}
+
+.navBtn,
+.iconButton {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+}
+
+.weekTabs {
+  padding: 2px;
+}
+
+.weekTab {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+}
+
+.gdvSelectButton {
+  min-height: 30px;
+  padding: 0 10px;
+}
+
+.ownerControl button {
+  min-height: 30px;
+}
+
+.headerUtilityRow {
+  height: 30px;
+}
+
+@media (max-width: 1260px) {
+  .headerActions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .headerCard {
+    min-height: 32px;
+    border-left: 0;
+    border: 1px solid var(--line-subtle);
+    border-radius: 10px;
+    padding: 0 8px;
+  }
+
+  .headerStatCard,
+  .headerPeriodCard,
+  .headerWeekCard,
+  .headerFilterCard,
+  .headerOwnerCard,
+  .headerUtilityCard {
+    min-width: auto;
+  }
+
+  .headerFilterCard {
+    width: 180px;
+  }
+
+  .headerOwnerCard {
+    width: 210px;
+  }
+}
+
+@media (max-width: 980px) {
+  .headerCard {
+    width: auto;
+  }
+
+  .headerFilterCard,
+  .headerOwnerCard {
+    width: min(100%, 260px);
+  }
+}
