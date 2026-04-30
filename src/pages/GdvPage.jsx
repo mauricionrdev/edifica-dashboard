@@ -15,7 +15,16 @@ import { useToast } from '../context/ToastContext.jsx';
 import { isAdminUser, isSuperAdmin, roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import LoadingIcon from '../components/ui/LoadingIcon.jsx';
-import { CloseIcon, RotateCcwIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
+import {
+  CalendarIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  UsersIcon,
+} from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
 import { clientInitials, colorFromName } from '../utils/clientHelpers.js';
@@ -778,151 +787,165 @@ export default function GdvPage() {
 
     const actions = (
       <div className={styles.headerActions}>
-        <span className={styles.headerStat} title={`${displayInt(gdvClients.length)} clientes`}>
-          <UsersIcon size={14} aria-hidden="true" />
-          <strong>{displayInt(gdvClients.length)}</strong>
-          <small>{gdvClients.length === 1 ? 'cliente' : 'clientes'}</small>
-        </span>
+        <div className={styles.headerGroup}>
+          <span className={styles.headerStat} title={`${displayInt(gdvClients.length)} clientes`}>
+            <UsersIcon size={14} aria-hidden="true" />
+            <strong>{displayInt(gdvClients.length)}</strong>
+            <small>{gdvClients.length === 1 ? 'cliente' : 'clientes'}</small>
+          </span>
 
-        <div className={styles.monthNav}>
-          <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
-            ‹
-          </button>
-          <div className={styles.monthLabel}>
-            {MONTHS[month0]} {year}
+          <div className={styles.monthNav} title={`Período: ${MONTHS[month0]} ${year}`}>
+            <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
+              <ChevronLeftIcon size={13} aria-hidden="true" />
+            </button>
+            <div className={styles.monthLabel}>
+              <CalendarIcon size={13} aria-hidden="true" />
+              <span>{MONTHS[month0]} {year}</span>
+            </div>
+            <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
+              <ChevronRightIcon size={13} aria-hidden="true" />
+            </button>
           </div>
-          <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
-            ›
-          </button>
+
+          <div className={styles.weekTabs} role="tablist" aria-label="Semana">
+            {[1, 2, 3, 4].map((value) => (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-label={`Semana ${value}`}
+                aria-selected={week === value}
+                title={`Semana ${value}`}
+                className={`${styles.weekTab} ${week === value ? styles.weekTabActive : ''}`.trim()}
+                onClick={() => setWeek(value)}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {admin && gdvOptions.length > 0 ? (
-          <div className={styles.gdvMenu} ref={gdvMenuRef}>
-            <button
-              type="button"
-              className={`${styles.gdvSelectButton} ${gdvMenuOpen ? styles.gdvSelectButtonOpen : ''}`.trim()}
-              aria-haspopup="listbox"
-              aria-expanded={gdvMenuOpen}
-              onClick={() => setGdvMenuOpen((open) => !open)}
-            >
-              <span>{selectedGdv || 'Todos os GDVs'}</span>
-              <span aria-hidden="true">⌄</span>
-            </button>
-
-            {gdvMenuOpen ? (
-              <div className={styles.gdvOptions} role="listbox" aria-label="Filtrar carteira por GDV">
+        {(admin && gdvOptions.length > 0) || (superAdmin && activeGdvName) ? (
+          <div className={styles.headerGroup}>
+            {admin && gdvOptions.length > 0 ? (
+              <div className={styles.gdvMenu} ref={gdvMenuRef}>
                 <button
                   type="button"
-                  role="option"
-                  aria-selected={!selectedGdv}
-                  className={`${styles.gdvOption} ${!selectedGdv ? styles.gdvOptionActive : ''}`.trim()}
-                  onClick={() => {
-                    setSelectedGdv('');
-                    setSelectedClientId(null);
-                    setSearchParams((params) => {
-                      const next = new URLSearchParams(params);
-                      next.delete('gdv');
-                      return next;
-                    });
-                    setGdvMenuOpen(false);
-                  }}
+                  className={`${styles.gdvSelectButton} ${gdvMenuOpen ? styles.gdvSelectButtonOpen : ''}`.trim()}
+                  aria-haspopup="listbox"
+                  aria-expanded={gdvMenuOpen}
+                  title={selectedGdv || 'Todos os GDVs'}
+                  onClick={() => setGdvMenuOpen((open) => !open)}
                 >
-                  Todos os GDVs
+                  <span>{selectedGdv || 'Todos'}</span>
+                  <ChevronDownIcon size={13} aria-hidden="true" />
                 </button>
 
-                {gdvOptions.map((name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    role="option"
-                    aria-selected={selectedGdv === name}
-                    className={`${styles.gdvOption} ${selectedGdv === name ? styles.gdvOptionActive : ''}`.trim()}
-                    onClick={() => {
-                      setSelectedGdv(name);
-                      setSelectedClientId(null);
-                      setSearchParams((params) => {
-                        const next = new URLSearchParams(params);
-                        next.set('gdv', name);
-                        return next;
-                      });
-                      setGdvMenuOpen(false);
-                    }}
-                  >
-                    {name}
-                  </button>
-                ))}
+                {gdvMenuOpen ? (
+                  <div className={styles.gdvOptions} role="listbox" aria-label="Filtrar carteira por GDV">
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={!selectedGdv}
+                      className={`${styles.gdvOption} ${!selectedGdv ? styles.gdvOptionActive : ''}`.trim()}
+                      onClick={() => {
+                        setSelectedGdv('');
+                        setSelectedClientId(null);
+                        setSearchParams((params) => {
+                          const next = new URLSearchParams(params);
+                          next.delete('gdv');
+                          return next;
+                        });
+                        setGdvMenuOpen(false);
+                      }}
+                    >
+                      Todos os GDVs
+                    </button>
+
+                    {gdvOptions.map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        role="option"
+                        aria-selected={selectedGdv === name}
+                        className={`${styles.gdvOption} ${selectedGdv === name ? styles.gdvOptionActive : ''}`.trim()}
+                        onClick={() => {
+                          setSelectedGdv(name);
+                          setSelectedClientId(null);
+                          setSearchParams((params) => {
+                            const next = new URLSearchParams(params);
+                            next.set('gdv', name);
+                            return next;
+                          });
+                          setGdvMenuOpen(false);
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
+            ) : null}
+
+            {superAdmin && activeGdvName ? (
+              <UserPicker
+                className={styles.ownerControl}
+                users={Array.isArray(userDirectory) ? userDirectory : []}
+                value={gdvOwnership.ownerId}
+                placeholder="Sem proprietário"
+                showRole
+                onChange={async (userId) => {
+                  if (!activeGdvRecord?.id) return;
+
+                  await updateGdv(activeGdvRecord.id, {
+                    name: activeGdvRecord.name,
+                    ownerUserId: userId,
+                  });
+
+                  await refreshGdvs?.();
+                }}
+              />
             ) : null}
           </div>
         ) : null}
 
-        {superAdmin && activeGdvName ? (
-          <UserPicker
-            className={styles.ownerControl}
-            users={Array.isArray(userDirectory) ? userDirectory : []}
-            value={gdvOwnership.ownerId}
-            placeholder="Sem proprietário"
-            showRole
-            onChange={async (userId) => {
-              if (!activeGdvRecord?.id) return;
+        <div className={styles.headerGroupCompact}>
+          {admin && activeGdvRecord?.id && logoUrl ? (
+            <button
+              type="button"
+              className={styles.iconButton}
+              aria-label="Remover imagem do GDV"
+              title="Remover imagem do GDV"
+              onClick={handleRemoveLogo}
+            >
+              <CloseIcon size={14} aria-hidden="true" />
+            </button>
+          ) : null}
 
-              await updateGdv(activeGdvRecord.id, {
-                name: activeGdvRecord.name,
-                ownerUserId: userId,
-              });
-
-              await refreshGdvs?.();
-            }}
-          />
-        ) : null}
-
-        {admin && activeGdvRecord?.id && logoUrl ? (
           <button
             type="button"
             className={styles.iconButton}
-            aria-label="Remover imagem do GDV"
-            title="Remover imagem do GDV"
-            onClick={handleRemoveLogo}
+            aria-label="Atualizar visão"
+            title="Atualizar visão"
+            onClick={() => {
+              refreshGdvs?.();
+              setMetricsByKey((prev) => {
+                const next = { ...prev };
+                delete next[periodKey];
+                return next;
+              });
+            }}
           >
-            <CloseIcon size={14} aria-hidden="true" />
+            <RotateCcwIcon size={14} aria-hidden="true" />
           </button>
-        ) : null}
 
-        <div className={styles.weekTabs} role="tablist" aria-label="Semana">
-          {[1, 2, 3, 4].map((value) => (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={week === value}
-              className={`${styles.weekTab} ${week === value ? styles.weekTabActive : ''}`.trim()}
-              onClick={() => setWeek(value)}
-            >
-              S{value}
-            </button>
-          ))}
+          {fetchingKey === periodKey ? (
+            <span className={styles.headerLoading} title="Carregando métricas">
+              <LoadingIcon size="sm" label="Carregando métricas" />
+            </span>
+          ) : null}
         </div>
-
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label="Atualizar visão"
-          title="Atualizar visão"
-          onClick={() => {
-            refreshGdvs?.();
-            setMetricsByKey((prev) => {
-              const next = { ...prev };
-              delete next[periodKey];
-              return next;
-            });
-          }}
-        >
-          <RotateCcwIcon size={14} aria-hidden="true" />
-        </button>
-
-        {fetchingKey === periodKey ? (
-          <LoadingIcon size="sm" label="Carregando métricas" />
-        ) : null}
       </div>
     );
 
