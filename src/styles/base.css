@@ -6,6 +6,7 @@ body,
   min-width: 0;
   background: var(--bg-app);
   font-family: var(--font-sans);
+  font-feature-settings: "cv01", "ss03";
 }
 
 html {
@@ -42,6 +43,7 @@ select,
 textarea {
   font: inherit;
   font-family: inherit;
+  font-feature-settings: inherit;
 }
 
 button {

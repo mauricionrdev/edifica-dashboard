@@ -1,10 +1,10 @@
 .shell {
   height: 100vh;
   height: 100dvh;
-  padding: 6px;
+  padding: var(--app-frame-padding);
   display: flex;
   overflow: hidden;
-  background: var(--bg-app);
+  background: var(--app-shell-glow);
 }
 
 .main {
@@ -12,8 +12,8 @@
   z-index: 1;
   flex: 1;
   min-width: 0;
-  height: calc(100vh - 12px);
-  height: calc(100dvh - 12px);
+  height: calc(100vh - (var(--app-frame-padding) * 2));
+  height: calc(100dvh - (var(--app-frame-padding) * 2));
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -21,8 +21,8 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-left: 0;
-  border-radius: 0 15px 15px 0;
-  box-shadow: none;
+  border-radius: 0 var(--app-frame-radius) var(--app-frame-radius) 0;
+  box-shadow: var(--shadow-panel);
 }
 
 .pageRail {
@@ -33,7 +33,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: var(--bg-app);
+  background: var(--bg-canvas);
   border-left: 1px solid var(--line);
 }
 
@@ -46,8 +46,9 @@
   justify-content: space-between;
   gap: 16px;
   overflow: visible;
-  background: var(--surface);
+  background: rgba(15, 16, 17, 0.92);
   border-bottom: 1px solid var(--line-subtle);
+  backdrop-filter: blur(14px);
 }
 
 .pageTitleBlock {
@@ -126,13 +127,13 @@
 
 @media (max-height: 820px) and (min-width: 1024px) {
   .shell {
-    padding: 6px;
+    padding: var(--app-frame-padding);
   }
 
   .main {
-    height: calc(100vh - 12px);
-    height: calc(100dvh - 12px);
-    border-radius: 0 15px 15px 0;
+    height: calc(100vh - (var(--app-frame-padding) * 2));
+    height: calc(100dvh - (var(--app-frame-padding) * 2));
+    border-radius: 0 var(--app-frame-radius) var(--app-frame-radius) 0;
   }
 
   .pageHeader {

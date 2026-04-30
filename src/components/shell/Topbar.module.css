@@ -2,8 +2,9 @@
   flex: 0 0 49px;
   height: 49px;
   min-height: 49px;
-  background: var(--surface);
+  background: rgba(15, 16, 17, 0.92);
   border-bottom: 1px solid var(--line-subtle);
+  backdrop-filter: blur(14px);
 }
 
 .rail {
@@ -170,6 +171,7 @@
   background: var(--surface);
   overflow: hidden;
   z-index: 180;
+  box-shadow: var(--shadow-dialog);
 }
 
 .notificationsHead {
