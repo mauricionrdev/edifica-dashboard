@@ -1487,14 +1487,14 @@ export default function TeamAccessPage() {
           </>
         ) : activeTab === 'gdvs' ? (
           <>
-            <section className={styles.metricGrid}>
+            <section className={`${styles.metricGrid} ${styles.gdvAdminMetricGrid}`}>
               <StatCard label="GDVs mapeados" value={gdvRows.length} hint="carteiras operacionais" />
               <StatCard label="Com proprietário" value={gdvsWithOwner} hint="ativos para operação" />
               <StatCard label="Sem proprietário" value={gdvsWithoutOwner} hint="" />
               <StatCard label="Clientes vinculados" value={gdvLinkedClients} hint="base com GDV definido" />
             </section>
 
-            <section className={styles.tableCard}>
+            <section className={`${styles.tableCard} ${styles.gdvAdminTable}`}>
               <div className={styles.sectionHead}>
                 <div>
                   <span className={styles.sectionEyebrow}>Governança GDV</span>
@@ -1529,7 +1529,7 @@ export default function TeamAccessPage() {
                         <td>
                           {canManageGdvs ? (
                             <UserPicker
-                              className={styles.ownerInlineSelect}
+                              className={`${styles.ownerInlineSelect} ${styles.gdvOwnerSelect}`}
                               users={userRows.filter((item) => item.active)}
                               value={entry.ownerId}
                               onChange={async (userId) => {
