@@ -33,7 +33,7 @@
   padding: 0;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.025);
+  background: #08090a;
   color: var(--text-primary);
   display: grid;
   place-items: center;
@@ -125,8 +125,8 @@
 .headerStat,
 .iconButton,
 .gdvSelectButton {
-  border: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.02);
+  border: 0;
+  background: transparent;
   color: var(--text-secondary);
 }
 
@@ -134,19 +134,15 @@
 .headerGroupCompact,
 .ownerGroup {
   min-width: 0;
-  min-height: 34px;
-  border-radius: var(--radius-1);
+  min-height: 32px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.headerGroup {
-  padding: 3px;
-}
-
+.headerGroup,
 .headerGroupCompact {
-  padding: 3px;
+  padding: 0;
 }
 
 .headerStat {
@@ -216,7 +212,7 @@
 .weekTab:hover,
 .iconButton:hover,
 .gdvSelectButton:hover {
-  background: rgba(255, 255, 255, 0.045);
+  background: transparent;
   color: var(--text-primary);
 }
 
@@ -255,8 +251,9 @@
 }
 
 .weekTabActive {
-  background: var(--gdv-accent-soft);
+  background: transparent;
   color: var(--gdv-accent);
+  box-shadow: inset 0 -1px 0 var(--gdv-accent);
 }
 
 .gdvMenu {
@@ -278,9 +275,9 @@
 }
 
 .gdvSelectButtonOpen {
-  background: rgba(255, 255, 255, 0.045);
+  background: transparent;
   color: var(--text-primary);
-  box-shadow: inset 0 0 0 1px var(--gdv-accent-line);
+  box-shadow: inset 0 -1px 0 var(--gdv-accent);
 }
 
 .gdvSelectButton span:first-child {
@@ -336,7 +333,7 @@
 
 .ownerGroup {
   max-width: 252px;
-  padding: 2px 4px 2px 8px;
+  padding: 0;
   overflow: visible;
 }
 
@@ -497,7 +494,7 @@
 .clientAvatarSmall {
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.025);
+  background: #08090a;
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -789,15 +786,16 @@
   min-width: 94px;
   min-height: 28px;
   padding: 0 12px;
-  border: 1px solid var(--line-subtle);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02);
+  background: transparent;
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  font-weight: 510;
+  font-weight: 590;
+  letter-spacing: 0.03em;
   white-space: nowrap;
 }
 
@@ -808,9 +806,9 @@
 }
 
 .badge.amber {
-  color: var(--gdv-accent);
-  border-color: var(--gdv-accent-line);
-  background: var(--gdv-accent-soft);
+  color: var(--accent);
+  border-color: rgba(245, 184, 0, 0.24);
+  background: rgba(245, 184, 0, 0.09);
 }
 
 .badge.red {

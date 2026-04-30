@@ -893,7 +893,7 @@ export default function GdvPage() {
               value={gdvOwnership.ownerId}
               placeholder="Sem proprietário"
               showRole
-              variant="action"
+              variant="flatAction"
               portal
               disableHover
               onChange={async (userId) => {

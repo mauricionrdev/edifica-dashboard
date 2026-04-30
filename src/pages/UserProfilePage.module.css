@@ -73,8 +73,8 @@
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: var(--accent-amber);
-  color: #08090a;
+  background: #08090a;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 590;
   flex: 0 0 auto;

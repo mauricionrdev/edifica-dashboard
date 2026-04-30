@@ -874,7 +874,7 @@ button:disabled,
   width: 100% !important;
   height: 100% !important;
   border-radius: 999px !important;
-  background: rgba(255, 255, 255, 0.045) !important;
+  background: #08090a !important;
   color: var(--text-primary, #f7f8f8) !important;
   display: inline-flex !important;
   align-items: center !important;

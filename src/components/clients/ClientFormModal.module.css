@@ -115,7 +115,7 @@
   height: 38px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: var(--bg-soft);
+  background: #08090a;
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;

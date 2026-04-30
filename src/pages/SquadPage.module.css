@@ -280,7 +280,7 @@
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: var(--bg-soft);
+  background: #08090a;
   border: 1px solid var(--line-subtle);
   color: var(--text-secondary);
   display: inline-flex;
@@ -370,7 +370,7 @@
 .clientAvatar,
 .clientAvatarSmall {
   border-radius: 999px;
-  background: var(--bg-soft);
+  background: #08090a;
   border: 1px solid var(--line-subtle);
   color: var(--text-secondary);
   display: inline-flex;

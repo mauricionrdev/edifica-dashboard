@@ -911,7 +911,7 @@
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  background: var(--bg-soft, #121315);
+  background: #08090a;
   border: 1px solid var(--line-subtle);
   overflow: hidden;
   display: inline-flex;

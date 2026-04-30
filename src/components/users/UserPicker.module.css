@@ -54,7 +54,7 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #151617;
+  background: #08090a;
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -335,4 +335,43 @@
   position: fixed !important;
   z-index: 1200 !important;
   max-height: 312px;
+}
+
+
+/* GDV header: trigger plano, sem card/pill */
+.root[data-variant='flatAction'] {
+  width: auto;
+}
+
+.root[data-variant='flatAction'] .trigger {
+  width: auto;
+  min-height: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  grid-template-columns: auto;
+}
+
+.root[data-variant='flatAction'] .trigger:hover,
+.root[data-variant='flatAction'] .trigger:focus-visible {
+  border-color: transparent;
+  background: transparent;
+}
+
+.root[data-variant='flatAction'] .triggerText {
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.root[data-variant='flatAction'] .selectedUser {
+  grid-template-columns: 22px minmax(0, 1fr);
+}
+
+.root[data-variant='flatAction'] .popover {
+  left: auto;
+  right: 0;
 }

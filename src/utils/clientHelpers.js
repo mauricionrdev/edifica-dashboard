@@ -23,7 +23,7 @@ export function clientInitials(name) {
  * A variação por nome foi removida para preservar consistência na plataforma.
  */
 export function colorFromName() {
-  return 'var(--bg-soft, #121315)';
+  return '#08090a';
 }
 
 /**
