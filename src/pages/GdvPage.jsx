@@ -21,8 +21,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
+  CoinsIcon,
   RotateCcwIcon,
   SearchIcon,
+  TargetIcon,
   UsersIcon,
 } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
@@ -1116,11 +1118,13 @@ export default function GdvPage() {
                     </div>
 
                     <div className={styles.clientStats}>
-                      <div>
+                      <div className={styles.clientMetric} title="Mensalidade">
+                        <CoinsIcon size={14} aria-hidden="true" />
                         <span>Mensalidade</span>
                         <strong>{fmtMoney(client.monthlyFee || client.mensalidade || client.fee || 0)}</strong>
                       </div>
-                      <div>
+                      <div className={styles.clientMetric} title="Contratos fechados na semana">
+                        <TargetIcon size={14} aria-hidden="true" />
                         <span>Fechados</span>
                         <strong>{displayInt(calc.fec)}</strong>
                       </div>
