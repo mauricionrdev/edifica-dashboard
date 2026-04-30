@@ -110,6 +110,8 @@
 }
 
 .headerActions {
+  position: relative;
+  z-index: 80;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -407,7 +409,7 @@
 
 .topArea {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .selectedStrip {
@@ -417,23 +419,32 @@
 .metricGrid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .metricCard {
   min-width: 0;
-  min-height: 92px;
-  padding: 14px 14px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 12px;
+  min-height: 94px;
+  padding: 14px 15px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 13px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.014)),
-    var(--bg-canvas);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.012)),
+    #0b0c0d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.026),
+    0 1px 0 rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 9px;
+}
+
+.metricCard:hover {
+  border-color: rgba(255, 255, 255, 0.085);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.016)),
+    #0b0c0d;
 }
 
 .metricLabel {
@@ -441,8 +452,9 @@
   overflow: hidden;
   color: var(--text-tertiary);
   font-size: 10px;
-  font-weight: 590;
-  letter-spacing: 0.075em;
+  line-height: 1.2;
+  font-weight: 620;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -452,10 +464,10 @@
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(23px, 1.48vw, 28px);
+  font-size: clamp(24px, 1.5vw, 29px);
   line-height: 1.02;
-  font-weight: 590;
-  letter-spacing: -0.032em;
+  font-weight: 620;
+  letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -465,9 +477,10 @@
   min-width: 0;
   min-height: 16px;
   overflow: hidden;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 11px;
   line-height: 1.35;
+  font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -497,13 +510,13 @@
 }
 
 .listToolbar {
-  min-height: 42px;
-  padding: 0 0 11px;
+  min-height: 48px;
+  padding: 0 2px 12px;
   border-bottom: 1px solid var(--line);
   display: grid;
-  grid-template-columns: minmax(160px, max-content) minmax(280px, 560px);
+  grid-template-columns: minmax(190px, max-content) minmax(280px, 560px);
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 }
 
 .listTitle {
@@ -517,15 +530,24 @@
 .cardEyebrow {
   color: var(--text-secondary);
   font-size: 10px;
-  font-weight: 590;
-  letter-spacing: 0.11em;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .listMeta {
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.018);
   color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 590;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
 }
 
 .searchBox {
@@ -539,12 +561,17 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  transition: border-color 140ms ease, background 140ms ease;
 }
 
 .searchBox:focus-within {
-  border-color: var(--line-strong);
+  border-color: var(--squad-accent-line);
   background: rgba(255, 255, 255, 0.032);
   color: var(--text-secondary);
+}
+
+.searchBox svg {
+  color: var(--text-tertiary);
 }
 
 .searchBox input {
@@ -564,7 +591,14 @@
   color: var(--text-quaternary);
 }
 
-.listCard,
+.listCard {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
+  overflow: hidden;
+}
+
 .clientList {
   display: flex;
   flex-direction: column;
@@ -573,8 +607,8 @@
 
 .clientRow {
   width: 100%;
-  min-height: 68px;
-  padding: 12px 14px;
+  min-height: 70px;
+  padding: 12px 15px;
   border: 0;
   border-bottom: 1px solid var(--line);
   border-radius: 0;
@@ -582,17 +616,21 @@
   color: inherit;
   text-align: left;
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) 320px 128px;
+  grid-template-columns: minmax(280px, 1fr) minmax(250px, 320px) 128px;
   align-items: center;
   gap: 18px;
 }
 
+.clientRow:last-child {
+  border-bottom: 0;
+}
+
 .clientRow:hover {
-  background: rgba(255, 255, 255, 0.026);
+  background: rgba(255, 255, 255, 0.024);
 }
 
 .clientRowActive {
-  background: rgba(245, 184, 0, 0.045);
+  background: rgba(245, 184, 0, 0.05);
 }
 
 .clientMain {
@@ -600,7 +638,7 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 11px;
+  gap: 12px;
 }
 
 .clientMain div {
@@ -615,7 +653,7 @@
   color: var(--text-primary);
   font-size: 15px;
   line-height: 1.2;
-  font-weight: 590;
+  font-weight: 620;
   letter-spacing: -0.025em;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -623,17 +661,45 @@
 
 .clientMain span {
   overflow: hidden;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.35;
+  font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.clientAvatarMini,
+.clientAvatarSmall {
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: #08090a;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 620;
+  letter-spacing: -0.035em;
+  overflow: hidden;
+}
+
+.clientAvatarMini {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+}
+
+.clientAvatarSmall {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  font-size: 10px;
 }
 
 .clientStats {
   min-width: 0;
   display: grid;
-  grid-template-columns: 156px 110px;
+  grid-template-columns: minmax(128px, 1fr) 96px;
   align-items: center;
   justify-content: end;
   column-gap: 24px;
@@ -648,11 +714,11 @@
 
 .clientStats span {
   overflow: hidden;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 9px;
   line-height: 1.2;
-  font-weight: 590;
-  letter-spacing: 0.085em;
+  font-weight: 620;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -663,7 +729,7 @@
   color: var(--text-primary);
   font-size: 15px;
   line-height: 1;
-  font-weight: 590;
+  font-weight: 620;
   white-space: nowrap;
   text-overflow: ellipsis;
   font-variant-numeric: tabular-nums;
@@ -676,7 +742,7 @@
 }
 
 .badge {
-  min-width: 92px;
+  min-width: 96px;
   min-height: 28px;
   padding: 0 12px;
   border: 1px solid var(--line);
@@ -687,8 +753,9 @@
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  font-weight: 590;
-  letter-spacing: 0.03em;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
@@ -723,7 +790,7 @@
   color: var(--text-secondary);
   font-family: inherit;
   font-size: 12px;
-  font-weight: 590;
+  font-weight: 600;
   white-space: nowrap;
   text-decoration: none;
 }
@@ -739,7 +806,8 @@
 }
 
 .pagination {
-  padding: 16px 4px 0;
+  padding: 14px 14px;
+  border-top: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -763,7 +831,7 @@
   color: var(--text-secondary);
   text-align: center;
   font-size: 12px;
-  font-weight: 590;
+  font-weight: 600;
 }
 
 .paginationButton {
@@ -775,6 +843,42 @@
 .paginationButton:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+@media (max-width: 1260px) {
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .clientRow {
+    grid-template-columns: minmax(240px, 1fr) minmax(220px, 300px) 120px;
+  }
+}
+
+@media (max-width: 920px) {
+  .listToolbar {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .searchBox {
+    width: 100%;
+  }
+
+  .clientRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 10px;
+  }
+
+  .clientStats {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .clientStatus {
+    justify-content: flex-start;
+  }
 }
 
 .modalBackdrop {
