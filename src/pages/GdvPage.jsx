@@ -15,21 +15,10 @@ import { useToast } from '../context/ToastContext.jsx';
 import { isAdminUser, isSuperAdmin, roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import LoadingIcon from '../components/ui/LoadingIcon.jsx';
-import {
-  CalendarIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CloseIcon,
-  RotateCcwIcon,
-  SearchIcon,
-  UsersIcon,
-} from '../components/ui/index.js';
+import { CloseIcon, RotateCcwIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
-import { clientInitials } from '../utils/clientHelpers.js';
 import {
-  getClientAvatar,
   getGdvAvatar,
   readAvatarFile,
   removeGdvAvatar,
@@ -37,6 +26,7 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import UserPicker from '../components/users/UserPicker.jsx';
+import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './GdvPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -59,14 +49,11 @@ function gdvInitials(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-function ClientAvatar({ client, className }) {
-  const avatarUrl = getClientAvatar(client);
-
-  return (
-    <span className={className}>
-      {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client?.name)}
-    </span>
-  );
+function clientInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'CL';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 function effectiveForecast(closed, predicted) {
@@ -783,23 +770,22 @@ export default function GdvPage() {
 
     const actions = (
       <div className={styles.headerActions}>
-        <div className={styles.headerGroup}>
+        <div className={styles.headerCluster}>
           <span className={styles.headerStat} title={`${displayInt(gdvClients.length)} clientes`}>
-            <UsersIcon size={16} strokeWidth={1.65} aria-hidden="true" />
+            <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(gdvClients.length)}</strong>
             <small>{gdvClients.length === 1 ? 'cliente' : 'clientes'}</small>
           </span>
 
-          <div className={styles.monthNav} title={`Período: ${MONTHS[month0]} ${year}`}>
+          <div className={styles.monthNav}>
             <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
-              <ChevronLeftIcon size={16} strokeWidth={1.65} aria-hidden="true" />
+              ‹
             </button>
             <div className={styles.monthLabel}>
-              <CalendarIcon size={16} strokeWidth={1.65} aria-hidden="true" />
-              <span>{MONTHS[month0]} {year}</span>
+              {MONTHS[month0]} {year}
             </div>
             <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
-              <ChevronRightIcon size={16} strokeWidth={1.65} aria-hidden="true" />
+              ›
             </button>
           </div>
 
@@ -809,9 +795,7 @@ export default function GdvPage() {
                 key={value}
                 type="button"
                 role="tab"
-                aria-label={`Semana ${value}`}
                 aria-selected={week === value}
-                title={`Semana ${value}`}
                 className={`${styles.weekTab} ${week === value ? styles.weekTabActive : ''}`.trim()}
                 onClick={() => setWeek(value)}
               >
@@ -821,19 +805,18 @@ export default function GdvPage() {
           </div>
         </div>
 
-        {admin && gdvOptions.length > 0 ? (
-          <div className={styles.headerGroup}>
+        <div className={styles.headerCluster}>
+          {admin && gdvOptions.length > 0 ? (
             <div className={styles.gdvMenu} ref={gdvMenuRef}>
               <button
                 type="button"
                 className={`${styles.gdvSelectButton} ${gdvMenuOpen ? styles.gdvSelectButtonOpen : ''}`.trim()}
                 aria-haspopup="listbox"
                 aria-expanded={gdvMenuOpen}
-                title={selectedGdv || 'Todos os GDVs'}
                 onClick={() => setGdvMenuOpen((open) => !open)}
               >
-                <span>{selectedGdv || 'Todos'}</span>
-                <ChevronDownIcon size={16} strokeWidth={1.65} aria-hidden="true" />
+                <span>{selectedGdv || 'Todos os GDVs'}</span>
+                <span aria-hidden="true">⌄</span>
               </button>
 
               {gdvMenuOpen ? (
@@ -881,21 +864,15 @@ export default function GdvPage() {
                 </div>
               ) : null}
             </div>
-          </div>
-        ) : null}
+          ) : null}
 
-        {superAdmin && activeGdvName ? (
-          <div className={styles.ownerGroup} title="Proprietário do GDV">
-            <span className={styles.ownerIcon} aria-hidden="true"><UsersIcon size={16} strokeWidth={1.65} /></span>
+          {superAdmin && activeGdvName ? (
             <UserPicker
               className={styles.ownerControl}
               users={Array.isArray(userDirectory) ? userDirectory : []}
               value={gdvOwnership.ownerId}
               placeholder="Sem proprietário"
               showRole
-              variant="flatAction"
-              portal
-              disableHover
               onChange={async (userId) => {
                 if (!activeGdvRecord?.id) return;
 
@@ -907,10 +884,10 @@ export default function GdvPage() {
                 await refreshGdvs?.();
               }}
             />
-          </div>
-        ) : null}
+          ) : null}
+        </div>
 
-        <div className={styles.headerGroupCompact}>
+        <div className={styles.headerCluster}>
           {admin && activeGdvRecord?.id && logoUrl ? (
             <button
               type="button"
@@ -919,7 +896,7 @@ export default function GdvPage() {
               title="Remover imagem do GDV"
               onClick={handleRemoveLogo}
             >
-              <CloseIcon size={16} strokeWidth={1.65} aria-hidden="true" />
+              <CloseIcon size={14} aria-hidden="true" />
             </button>
           ) : null}
 
@@ -937,11 +914,11 @@ export default function GdvPage() {
               });
             }}
           >
-            <RotateCcwIcon size={16} strokeWidth={1.65} aria-hidden="true" />
+            <RotateCcwIcon size={14} aria-hidden="true" />
           </button>
 
           {fetchingKey === periodKey ? (
-            <span className={styles.headerLoading} title="Carregando métricas">
+            <span className={styles.headerLoading}>
               <LoadingIcon size="sm" label="Carregando métricas" />
             </span>
           ) : null}
@@ -1006,7 +983,7 @@ export default function GdvPage() {
 
       {selectedRow && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <ClientAvatar client={selectedRow.client} className={styles.clientAvatarMini} />
+          <span className={styles.clientAvatarMini}>{clientInitials(selectedRow.client.name)}</span>
           <strong>{selectedRow.client.name}</strong>
 
           <div className={styles.stickyMetric}>
@@ -1058,7 +1035,7 @@ export default function GdvPage() {
         </div>
 
         <label className={styles.searchBox}>
-          <SearchIcon size={16} strokeWidth={1.65} aria-hidden="true" />
+          <SearchIcon size={15} aria-hidden="true" />
           <input
             type="search"
             value={clientQuery}
@@ -1102,7 +1079,7 @@ export default function GdvPage() {
                     onClick={() => setSelectedClientId(client.id)}
                   >
                     <div className={styles.clientMain}>
-                      <ClientAvatar client={client} className={styles.clientAvatarSmall} />
+                      <span className={styles.clientAvatarSmall}>{clientInitials(client.name)}</span>
                       <div>
                         <strong>{client.name}</strong>
                         <span>
@@ -1113,11 +1090,11 @@ export default function GdvPage() {
                     </div>
 
                     <div className={styles.clientStats}>
-                      <div className={styles.clientMetric} title="Mensalidade">
+                      <div>
                         <span>Mensalidade</span>
                         <strong>{fmtMoney(client.monthlyFee || client.mensalidade || client.fee || 0)}</strong>
                       </div>
-                      <div className={styles.clientMetric} title="Contratos fechados na semana">
+                      <div>
                         <span>Fechados</span>
                         <strong>{displayInt(calc.fec)}</strong>
                       </div>

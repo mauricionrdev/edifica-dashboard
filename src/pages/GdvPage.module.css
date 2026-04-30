@@ -17,19 +17,20 @@
   display: none;
 }
 
+
 .headerIdentity {
   min-width: 0;
   min-height: 48px;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .headerLogo {
   position: relative;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
   padding: 0;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
@@ -57,7 +58,7 @@
 .headerLogo > span {
   color: var(--text-primary);
   font-size: 13px;
-  font-weight: 590;
+  font-weight: 600;
   letter-spacing: -0.03em;
 }
 
@@ -83,6 +84,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 4px;
 }
 
@@ -91,9 +93,9 @@
   overflow: hidden;
   color: var(--text-primary);
   font-size: 18px;
-  line-height: 1.08;
-  font-weight: 590;
-  letter-spacing: -0.026em;
+  line-height: 1.04;
+  font-weight: 620;
+  letter-spacing: -0.03em;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -101,9 +103,10 @@
 .headerTitleText small {
   min-width: 0;
   overflow: hidden;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 400;
+  line-height: 1.25;
+  font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -114,15 +117,43 @@
   align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0;
 }
 
-.headerGroup,
-.headerGroupCompact,
-.ownerGroup,
+.headerCluster {
+  position: relative;
+  min-width: 0;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 14px;
+  margin-left: 14px;
+}
+
+.headerCluster:first-child {
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.headerCluster::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 20px;
+  background: var(--line-subtle);
+  transform: translateY(-50%);
+}
+
+.headerCluster:first-child::before {
+  display: none;
+}
+
+.headerStat,
 .monthNav,
 .weekTabs,
-.headerStat,
 .iconButton,
 .gdvSelectButton {
   border: 0;
@@ -130,58 +161,39 @@
   color: var(--text-secondary);
 }
 
-.headerGroup,
-.headerGroupCompact,
-.ownerGroup {
-  min-width: 0;
-  min-height: 32px;
+.headerStat {
+  min-height: 30px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.headerGroup,
-.headerGroupCompact {
-  padding: 0;
-}
-
-.headerStat {
-  min-height: 28px;
-  padding: 0 9px;
-  border: 0;
-  background: transparent;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.headerStat svg,
-.monthLabel svg,
-.ownerIcon svg,
-.searchBox svg {
+.headerStat svg {
   color: var(--text-tertiary);
 }
 
 .headerStat strong {
   color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 590;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.02em;
 }
 
 .headerStat small {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .monthNav {
-  min-height: 28px;
-  border: 0;
-  background: transparent;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .navBtn,
@@ -197,8 +209,8 @@
 }
 
 .navBtn {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   border-radius: var(--radius-1);
@@ -206,48 +218,49 @@
   color: var(--text-tertiary);
   display: inline-grid;
   place-items: center;
+  font-size: 15px;
+  line-height: 1;
 }
 
 .navBtn:hover,
 .weekTab:hover,
 .iconButton:hover,
 .gdvSelectButton:hover {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-primary);
 }
 
 .monthLabel {
-  min-width: 112px;
+  min-width: 116px;
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  font-size: 12px;
-  font-weight: 510;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 
 .weekTabs {
-  min-height: 28px;
-  padding: 0 4px;
-  border: 0;
-  background: transparent;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 5px;
 }
 
 .weekTab {
-  min-width: 26px;
-  height: 24px;
-  padding: 0 8px;
+  min-width: 24px;
+  height: 28px;
+  padding: 0 6px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0;
   background: transparent;
   color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 510;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 600;
 }
 
 .weekTabActive {
@@ -262,12 +275,10 @@
 }
 
 .gdvSelectButton {
-  width: 176px;
-  min-height: 28px;
-  padding: 0 9px;
-  border: 0;
+  width: 188px;
+  min-height: 30px;
+  padding: 0 10px;
   border-radius: var(--radius-1);
-  background: transparent;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -275,7 +286,7 @@
 }
 
 .gdvSelectButtonOpen {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text-primary);
   box-shadow: inset 0 -1px 0 var(--gdv-accent);
 }
@@ -284,8 +295,9 @@
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 510;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 600;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -331,42 +343,72 @@
   color: var(--text-primary);
 }
 
-.ownerGroup {
-  max-width: 252px;
-  padding: 0;
-  overflow: visible;
-}
-
-.ownerIcon {
-  width: 18px;
-  height: 18px;
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 auto;
-}
-
 .ownerControl {
-  width: 204px;
+  width: 216px;
   min-width: 0;
 }
 
-.iconButton {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  padding: 0;
-  border: 0;
+.ownerControl > span:first-child {
+  display: none;
+}
+
+.ownerControl button {
+  min-height: 30px;
   border-radius: var(--radius-1);
-  background: transparent;
+}
+
+.iconButton {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  border-radius: var(--radius-1);
   display: inline-grid;
   place-items: center;
 }
 
 .headerLoading {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   display: inline-grid;
   place-items: center;
+}
+
+@media (max-width: 1260px) {
+  .headerActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .headerCluster {
+    padding-left: 12px;
+    margin-left: 12px;
+  }
+
+  .gdvSelectButton {
+    width: 170px;
+  }
+
+  .ownerControl {
+    width: 196px;
+  }
+}
+
+@media (max-width: 980px) {
+  .headerActions {
+    gap: 8px;
+  }
+
+  .headerCluster {
+    margin-left: 0;
+    padding-left: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .headerCluster::before {
+    display: none;
+  }
 }
 
 .metricGrid {
