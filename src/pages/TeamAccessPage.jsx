@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
 import { createGdv, updateGdv } from '../api/gdvs.js';
 import { createSquad, deleteSquad, updateSquad } from '../api/squads.js';
 import { createUser, deleteUser, listUsers, resetUserPassword, toggleUserActive, updateUser } from '../api/users.js';
@@ -757,9 +757,11 @@ function PermissionText({ permission, showHint = false }) {
   );
 }
 
-function StatCard({ label, value, hint = '' }) {
+function StatCard({ label, value, hint = '', className = '' }) {
+  const cardClassName = [styles.metricCard, className].filter(Boolean).join(' ');
+
   return (
-    <article className={styles.metricCard}>
+    <article className={cardClassName}>
       <span>{label}</span>
       <strong>{value}</strong>
       {hint ? <small>{hint}</small> : null}
@@ -788,7 +790,8 @@ export default function TeamAccessPage() {
   const canManageSquads = hasPermission(user, 'squads.manage');
   const canManageGdvs = hasPermission(user, 'gdv.manage');
   const canViewAuditTrail = hasPermission(user, 'audit.view');
-  const [activeTab, setActiveTab] = useState('users');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'users');
   const [squadModal, setSquadModal] = useState({ open: false, mode: 'create', squad: null });
   const [userModal, setUserModal] = useState({ open: false, mode: 'create', user: null, initialRole: 'gestor' });
   const [userDeleteConfirm, setUserDeleteConfirm] = useState({ open: false, user: null });
@@ -983,10 +986,43 @@ export default function TeamAccessPage() {
   }, [canManageTeam, canViewAuditTrail, canViewTeam]);
 
   useEffect(() => {
-    if (accessibleTabs.length && !accessibleTabs.includes(activeTab)) {
-      setActiveTab(accessibleTabs[0]);
+    if (!accessibleTabs.length) return;
+
+    const tabFromUrl = searchParams.get('tab');
+
+    if (tabFromUrl && accessibleTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+      return;
     }
-  }, [accessibleTabs, activeTab]);
+
+    if (!accessibleTabs.includes(activeTab)) {
+      const fallbackTab = accessibleTabs[0];
+      setActiveTab(fallbackTab);
+      setSearchParams((params) => {
+        const next = new URLSearchParams(params);
+        next.set('tab', fallbackTab);
+        return next;
+      }, { replace: true });
+      return;
+    }
+
+    if (!tabFromUrl) {
+      setSearchParams((params) => {
+        const next = new URLSearchParams(params);
+        next.set('tab', activeTab);
+        return next;
+      }, { replace: true });
+    }
+  }, [accessibleTabs, activeTab, searchParams, setSearchParams]);
+
+  function handleTabChange(tab) {
+    setActiveTab(tab);
+    setSearchParams((params) => {
+      const next = new URLSearchParams(params);
+      next.set('tab', tab);
+      return next;
+    });
+  }
 
   useEffect(() => {
     const title = (
@@ -1235,7 +1271,7 @@ export default function TeamAccessPage() {
             <button
               type="button"
               className={`${styles.tabButton} ${activeTab === 'requests' ? styles.tabButtonActive : ''}`}
-              onClick={() => setActiveTab('requests')}
+              onClick={() => handleTabChange('requests')}
             >
               <MailIcon size={14} />
               <span>Solicitações</span>
@@ -1243,26 +1279,26 @@ export default function TeamAccessPage() {
           ) : null}
           {canViewTeam ? (
             <>
-              <button type="button" className={`${styles.tabButton} ${activeTab === 'users' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('users')}>
+              <button type="button" className={`${styles.tabButton} ${activeTab === 'users' ? styles.tabButtonActive : ''}`} onClick={() => handleTabChange('users')}>
                 <ShieldIcon size={14} />
                 <span>Usuários &amp; acessos</span>
               </button>
-              <button type="button" className={`${styles.tabButton} ${activeTab === 'squads' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('squads')}>
+              <button type="button" className={`${styles.tabButton} ${activeTab === 'squads' ? styles.tabButtonActive : ''}`} onClick={() => handleTabChange('squads')}>
                 <BuildingIcon size={14} />
                 <span>Squads</span>
               </button>
-              <button type="button" className={`${styles.tabButton} ${activeTab === 'gdvs' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('gdvs')}>
+              <button type="button" className={`${styles.tabButton} ${activeTab === 'gdvs' ? styles.tabButtonActive : ''}`} onClick={() => handleTabChange('gdvs')}>
                 <UsersIcon size={14} />
                 <span>GDVs</span>
               </button>
-              <button type="button" className={`${styles.tabButton} ${activeTab === 'roles' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('roles')}>
+              <button type="button" className={`${styles.tabButton} ${activeTab === 'roles' ? styles.tabButtonActive : ''}`} onClick={() => handleTabChange('roles')}>
                 <ShieldIcon size={14} />
                 <span>Cargos &amp; permissões</span>
               </button>
             </>
           ) : null}
           {canViewAuditTrail ? (
-            <button type="button" className={`${styles.tabButton} ${activeTab === 'audit' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('audit')}>
+            <button type="button" className={`${styles.tabButton} ${activeTab === 'audit' ? styles.tabButtonActive : ''}`} onClick={() => handleTabChange('audit')}>
               <ShieldIcon size={14} />
               <span>Auditoria</span>
             </button>
@@ -1487,11 +1523,11 @@ export default function TeamAccessPage() {
           </>
         ) : activeTab === 'gdvs' ? (
           <>
-            <section className={`${styles.metricGrid} ${styles.gdvAdminMetricGrid}`}>
-              <StatCard label="GDVs mapeados" value={gdvRows.length} hint="carteiras operacionais" />
-              <StatCard label="Com proprietário" value={gdvsWithOwner} hint="ativos para operação" />
-              <StatCard label="Sem proprietário" value={gdvsWithoutOwner} hint="" />
-              <StatCard label="Clientes vinculados" value={gdvLinkedClients} hint="base com GDV definido" />
+            <section className={styles.gdvAdminMetricGrid}>
+              <StatCard className={styles.gdvAdminMetricCard} label="GDVs mapeados" value={gdvRows.length} hint="carteiras operacionais" />
+              <StatCard className={styles.gdvAdminMetricCard} label="Com proprietário" value={gdvsWithOwner} hint="ativos para operação" />
+              <StatCard className={styles.gdvAdminMetricCard} label="Sem proprietário" value={gdvsWithoutOwner} hint="" />
+              <StatCard className={styles.gdvAdminMetricCard} label="Clientes vinculados" value={gdvLinkedClients} hint="base com GDV definido" />
             </section>
 
             <section className={`${styles.tableCard} ${styles.gdvAdminTable}`}>
@@ -1571,7 +1607,7 @@ export default function TeamAccessPage() {
           </>
         ) : activeTab === 'roles' ? (
           <>
-            <section className={styles.tableCard}>
+            <section className={`${styles.tableCard} ${styles.rolesMatrixCard}`}>
               <div className={styles.sectionHead}>
                 <div>
                   <span className={styles.sectionEyebrow}>Matriz de permissão</span>
