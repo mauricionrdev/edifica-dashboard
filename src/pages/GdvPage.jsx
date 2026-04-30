@@ -812,13 +812,17 @@ export default function GdvPage() {
 
     const actions = (
       <div className={styles.headerActions}>
-        <div className={styles.headerCluster}>
+        <div className={`${styles.headerCard} ${styles.headerStatCard}`.trim()}>
+          <span className={styles.headerCardLabel}>Carteira</span>
           <span className={styles.headerStat} title={`${displayInt(gdvClients.length)} clientes`}>
             <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(gdvClients.length)}</strong>
             <small>{gdvClients.length === 1 ? 'cliente' : 'clientes'}</small>
           </span>
+        </div>
 
+        <div className={`${styles.headerCard} ${styles.headerPeriodCard}`.trim()}>
+          <span className={styles.headerCardLabel}>Período</span>
           <div className={styles.monthNav}>
             <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
               <ChevronLeftIcon size={15} aria-hidden="true" />
@@ -830,7 +834,10 @@ export default function GdvPage() {
               <ChevronRightIcon size={15} aria-hidden="true" />
             </button>
           </div>
+        </div>
 
+        <div className={`${styles.headerCard} ${styles.headerWeekCard}`.trim()}>
+          <span className={styles.headerCardLabel}>Semana</span>
           <div className={styles.weekTabs} role="tablist" aria-label="Semana">
             {[1, 2, 3, 4].map((value) => (
               <button
@@ -847,8 +854,9 @@ export default function GdvPage() {
           </div>
         </div>
 
-        <div className={styles.headerCluster}>
-          {admin && gdvOptions.length > 0 ? (
+        {admin && gdvOptions.length > 0 ? (
+          <div className={`${styles.headerCard} ${styles.headerFilterCard}`.trim()}>
+            <span className={styles.headerCardLabel}>GDV</span>
             <div className={styles.gdvMenu} ref={gdvMenuRef}>
               <button
                 type="button"
@@ -906,9 +914,12 @@ export default function GdvPage() {
                 </div>
               ) : null}
             </div>
-          ) : null}
+          </div>
+        ) : null}
 
-          {superAdmin && activeGdvName ? (
+        {superAdmin && activeGdvName ? (
+          <div className={`${styles.headerCard} ${styles.headerOwnerCard}`.trim()}>
+            <span className={styles.headerCardLabel}>Proprietário</span>
             <UserPicker
               className={styles.ownerControl}
               users={Array.isArray(userDirectory) ? userDirectory : []}
@@ -928,44 +939,47 @@ export default function GdvPage() {
                 await refreshGdvs?.();
               }}
             />
-          ) : null}
-        </div>
+          </div>
+        ) : null}
 
-        <div className={styles.headerCluster}>
-          {admin && activeGdvRecord?.id && logoUrl ? (
+        <div className={`${styles.headerCard} ${styles.headerUtilityCard}`.trim()}>
+          <span className={styles.headerCardLabel}>Ações</span>
+          <div className={styles.headerUtilityRow}>
+            {admin && activeGdvRecord?.id && logoUrl ? (
+              <button
+                type="button"
+                className={styles.iconButton}
+                aria-label="Remover imagem do GDV"
+                title="Remover imagem do GDV"
+                onClick={handleRemoveLogo}
+              >
+                <CloseIcon size={14} aria-hidden="true" />
+              </button>
+            ) : null}
+
             <button
               type="button"
               className={styles.iconButton}
-              aria-label="Remover imagem do GDV"
-              title="Remover imagem do GDV"
-              onClick={handleRemoveLogo}
+              aria-label="Atualizar visão"
+              title="Atualizar visão"
+              onClick={() => {
+                refreshGdvs?.();
+                setMetricsByKey((prev) => {
+                  const next = { ...prev };
+                  delete next[periodKey];
+                  return next;
+                });
+              }}
             >
-              <CloseIcon size={14} aria-hidden="true" />
+              <RotateCcwIcon size={14} aria-hidden="true" />
             </button>
-          ) : null}
 
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Atualizar visão"
-            title="Atualizar visão"
-            onClick={() => {
-              refreshGdvs?.();
-              setMetricsByKey((prev) => {
-                const next = { ...prev };
-                delete next[periodKey];
-                return next;
-              });
-            }}
-          >
-            <RotateCcwIcon size={14} aria-hidden="true" />
-          </button>
-
-          {fetchingKey === periodKey ? (
-            <span className={styles.headerLoading}>
-              <LoadingIcon size="sm" label="Carregando métricas" />
-            </span>
-          ) : null}
+            {fetchingKey === periodKey ? (
+              <span className={styles.headerLoading}>
+                <LoadingIcon size="sm" label="Carregando métricas" />
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
     );

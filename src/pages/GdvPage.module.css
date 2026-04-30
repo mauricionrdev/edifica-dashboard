@@ -114,41 +114,56 @@
 .headerActions {
   min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-end;
-  flex-wrap: nowrap;
-  gap: 0;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.headerCluster {
-  position: relative;
+.headerCard {
   min-width: 0;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding-left: 14px;
-  margin-left: 14px;
+  min-height: 56px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.01));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
 }
 
-.headerCluster:first-child {
-  padding-left: 0;
-  margin-left: 0;
+.headerCardLabel {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 590;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.headerCluster::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 1px;
-  height: 28px;
-  background: var(--line-subtle);
-  transform: translateY(-50%);
+.headerStatCard {
+  min-width: 120px;
 }
 
-.headerCluster:first-child::before {
-  display: none;
+.headerPeriodCard {
+  min-width: 182px;
+}
+
+.headerWeekCard {
+  min-width: 164px;
+}
+
+.headerFilterCard {
+  min-width: 196px;
+}
+
+.headerOwnerCard {
+  min-width: 220px;
+}
+
+.headerUtilityCard {
+  min-width: 96px;
 }
 
 .headerStat,
@@ -162,7 +177,7 @@
 }
 
 .headerStat {
-  min-height: 38px;
+  min-height: 26px;
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -190,10 +205,10 @@
 }
 
 .monthNav {
-  min-height: 34px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .navBtn,
@@ -209,11 +224,11 @@
 }
 
 .navBtn {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   border: 0;
-  border-radius: var(--radius-1);
+  border-radius: 8px;
   background: transparent;
   color: var(--text-tertiary);
   display: inline-grid;
@@ -226,12 +241,12 @@
 .weekTab:hover,
 .iconButton:hover,
 .gdvSelectButton:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
 }
 
 .monthLabel {
-  min-width: 116px;
+  min-width: 108px;
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -244,18 +259,21 @@
 }
 
 .weekTabs {
-  min-height: 34px;
+  min-height: 30px;
+  padding: 2px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 2px;
 }
 
 .weekTab {
-  min-width: 24px;
-  height: 34px;
+  min-width: 28px;
+  height: 26px;
   padding: 0 8px;
   border: 0;
-  border-radius: 0;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-tertiary);
   font-size: 13px;
@@ -264,9 +282,9 @@
 }
 
 .weekTabActive {
-  background: transparent;
+  background: var(--gdv-accent-soft);
   color: var(--gdv-accent);
-  box-shadow: inset 0 -1px 0 var(--gdv-accent);
+  box-shadow: inset 0 0 0 1px var(--gdv-accent-line);
 }
 
 .gdvMenu {
@@ -275,10 +293,11 @@
 }
 
 .gdvSelectButton {
-  width: 188px;
-  min-height: 34px;
+  width: 100%;
+  min-height: 30px;
   padding: 0 11px;
-  border-radius: var(--radius-1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -286,9 +305,9 @@
 }
 
 .gdvSelectButtonOpen {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text-primary);
-  box-shadow: inset 0 -1px 0 var(--gdv-accent);
+  box-shadow: inset 0 0 0 1px var(--gdv-accent-line);
 }
 
 .gdvSelectButton span:first-child {
@@ -344,7 +363,7 @@
 }
 
 .ownerControl {
-  width: 224px;
+  width: 100%;
   min-width: 0;
 }
 
@@ -353,23 +372,31 @@
 }
 
 .ownerControl button {
-  min-height: 38px;
-  border-radius: var(--radius-1);
+  min-height: 30px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.headerUtilityRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .iconButton {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
   padding: 0;
-  border-radius: var(--radius-1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
   display: inline-grid;
   place-items: center;
 }
 
 .headerLoading {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   display: inline-grid;
   place-items: center;
 }
@@ -380,17 +407,20 @@
     justify-content: flex-start;
   }
 
-  .headerCluster {
-    padding-left: 12px;
-    margin-left: 12px;
+  .headerPeriodCard {
+    min-width: 172px;
   }
 
-  .gdvSelectButton {
-    width: 170px;
+  .headerWeekCard {
+    min-width: 156px;
   }
 
-  .ownerControl {
-    width: 196px;
+  .headerFilterCard {
+    min-width: 184px;
+  }
+
+  .headerOwnerCard {
+    min-width: 200px;
   }
 }
 
@@ -399,15 +429,12 @@
     gap: 8px;
   }
 
-  .headerCluster {
-    margin-left: 0;
-    padding-left: 0;
+  .headerCard {
     width: 100%;
-    flex-wrap: wrap;
   }
 
-  .headerCluster::before {
-    display: none;
+  .headerUtilityCard {
+    min-width: 0;
   }
 }
 
