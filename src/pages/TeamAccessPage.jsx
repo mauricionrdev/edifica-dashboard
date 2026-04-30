@@ -24,6 +24,7 @@ import { matchesAnySearch } from '../utils/search.js';
 import styles from './TeamAccessPage.module.css';
 
 const SECONDARY_ROLE_OPTIONS = ROLE_ORDER.filter((role) => !['ceo', 'suporte_tecnologia', 'admin'].includes(role));
+const AUDIT_PAGE_SIZE = 12;
 
 function userHasRole(entry, role) {
   return entry?.role === role || (Array.isArray(entry?.secondaryRoles) && entry.secondaryRoles.includes(role));
@@ -815,6 +816,7 @@ export default function TeamAccessPage() {
   const [auditFilters, setAuditFilters] = useState({ actions: [], entityTypes: [] });
   const [auditActionFilter, setAuditActionFilter] = useState('all');
   const [auditEntityFilter, setAuditEntityFilter] = useState('all');
+  const [auditPage, setAuditPage] = useState(1);
   const loadUsers = async () => {
     if (!canViewTeam) return;
     setUsersLoading(true);
@@ -848,6 +850,7 @@ export default function TeamAccessPage() {
     if (!canViewAuditTrail) return;
     const nextAction = overrides.action ?? auditActionFilter;
     const nextEntityType = overrides.entityType ?? auditEntityFilter;
+    setAuditPage(1);
     setAuditLoading(true);
     setAuditError(null);
     try {
@@ -872,6 +875,18 @@ export default function TeamAccessPage() {
     if (canManageTeam) loadRequests();
     if (canViewAuditTrail) loadAuditLogs({ action: 'all', entityType: 'all' });
   }, [canManageTeam, canViewAuditTrail, canViewTeam]);
+
+  const auditTotalPages = useMemo(() => Math.max(1, Math.ceil(auditLogs.length / AUDIT_PAGE_SIZE)), [auditLogs.length]);
+
+  const auditPageLogs = useMemo(() => {
+    const safePage = Math.min(Math.max(auditPage, 1), auditTotalPages);
+    const start = (safePage - 1) * AUDIT_PAGE_SIZE;
+    return auditLogs.slice(start, start + AUDIT_PAGE_SIZE);
+  }, [auditLogs, auditPage, auditTotalPages]);
+
+  useEffect(() => {
+    if (auditPage > auditTotalPages) setAuditPage(auditTotalPages);
+  }, [auditPage, auditTotalPages]);
 
   const squadRows = useMemo(() => {
     const squadList = Array.isArray(squads) ? squads : [];
@@ -1865,7 +1880,7 @@ export default function TeamAccessPage() {
                     {auditLoading && auditLogs.length === 0 ? (
                       <tr><td colSpan="5"><StateBlock compact variant="loading" title="Carregando auditoria" /></td></tr>
                     ) : null}
-                    {!auditLoading && auditLogs.map((entry) => (
+                    {!auditLoading && auditPageLogs.map((entry) => (
                       <tr key={entry.id}>
                         <td>{entry.createdAt ? new Date(entry.createdAt).toLocaleString('pt-BR') : '—'}</td>
                         <td><span className={styles.rolePill}>{entry.action}</span></td>
@@ -1893,6 +1908,23 @@ export default function TeamAccessPage() {
                   </tbody>
                 </table>
               </div>
+
+              {auditLogs.length > AUDIT_PAGE_SIZE ? (
+                <div className={styles.paginationBar}>
+                  <span>
+                    {Math.min((auditPage - 1) * AUDIT_PAGE_SIZE + 1, auditLogs.length)}–{Math.min(auditPage * AUDIT_PAGE_SIZE, auditLogs.length)} de {auditLogs.length}
+                  </span>
+                  <div className={styles.paginationActions}>
+                    <button type="button" className={styles.ghostButton} disabled={auditPage <= 1} onClick={() => setAuditPage((page) => Math.max(1, page - 1))}>
+                      Anterior
+                    </button>
+                    <strong>{auditPage}/{auditTotalPages}</strong>
+                    <button type="button" className={styles.ghostButton} disabled={auditPage >= auditTotalPages} onClick={() => setAuditPage((page) => Math.min(auditTotalPages, page + 1))}>
+                      Próxima
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </section>
           </>
         )}

@@ -1055,3 +1055,51 @@ button:disabled,
     grid-template-columns: 1fr;
   }
 }
+
+/* Patch v32 — paginação da auditoria */
+.paginationBar {
+  min-height: 52px;
+  padding: 12px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.065);
+  background: rgba(255, 255, 255, 0.01);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.paginationBar > span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 560;
+  white-space: nowrap;
+}
+
+.paginationActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.paginationActions strong {
+  min-width: 48px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 620;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.paginationActions .ghostButton {
+  min-height: 30px;
+  padding-inline: 10px;
+}
+
+@media (max-width: 640px) {
+  .paginationBar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
