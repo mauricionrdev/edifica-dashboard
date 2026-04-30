@@ -39,7 +39,7 @@
     radial-gradient(circle at 0% 0%, rgba(255, 215, 0, 0.085), transparent 34%),
     var(--bg-canvas);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .quoteSide::before {
@@ -58,7 +58,7 @@
   margin: 0;
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: clamp(28px, 2.6vw, 42px);
+  font-size: clamp(28px, 6.6vw, 42px);
   line-height: 1.05;
   font-style: normal;
   font-weight: 620;
