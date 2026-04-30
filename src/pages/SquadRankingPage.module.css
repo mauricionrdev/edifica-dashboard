@@ -175,18 +175,18 @@
 
 .podiumGhostRank {
   position: absolute;
-  top: 4px;
-  right: 10px;
-  color: rgba(255, 255, 255, 0.07);
-  font-size: clamp(118px, 12vw, 188px);
-  font-weight: 650;
+  top: 10px;
+  right: 14px;
+  color: rgba(255, 255, 255, 0.055);
+  font-size: clamp(98px, 9vw, 152px);
+  font-weight: 640;
   line-height: 1;
-  letter-spacing: -0.08em;
+  letter-spacing: -0.06em;
   pointer-events: none;
 }
 
 .podiumCard_champion .podiumGhostRank {
-  color: rgba(255, 215, 0, 0.13);
+  color: rgba(255, 215, 0, 0.095);
 }
 
 .podiumAvatarWrap {
@@ -213,7 +213,7 @@
 .podiumCard_champion .podiumAvatar {
   width: 108px;
   height: 108px;
-  border-color: rgba(255, 215, 0, 0.28);
+  border-color: rgba(255, 215, 0, 0.2);
 }
 
 .podiumAvatar img {
