@@ -182,3 +182,55 @@
     display: none;
   }
 }
+
+
+/* v41 — shell final */
+.shell {
+  padding: var(--app-frame-padding);
+}
+
+.main {
+  height: calc(100vh - (var(--app-frame-padding) * 2));
+  height: calc(100dvh - (var(--app-frame-padding) * 2));
+  border-radius: 0 var(--app-frame-radius) var(--app-frame-radius) 0;
+  box-shadow: none;
+}
+
+.pageHeader {
+  flex-basis: 58px;
+  min-height: 58px;
+  padding: 0 18px;
+  background: rgba(15, 16, 17, 0.94);
+}
+
+.pageTitleRow,
+.pageTitleRow strong {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.pageTitleRow span {
+  font-size: 11px;
+}
+
+.pageActions {
+  gap: 8px;
+}
+
+.pageContent {
+  min-width: 0;
+}
+
+@media (max-height: 820px) and (min-width: 1024px) {
+  .pageHeader {
+    flex-basis: 56px;
+    min-height: 56px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .pageHeader {
+    padding: 12px 14px;
+  }
+}

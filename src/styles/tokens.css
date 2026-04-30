@@ -191,3 +191,22 @@
   --app-frame-radius: 15px;
   --app-frame-padding: 8px;
 }
+
+
+/* v41 — Ajustes finais globais */
+:root {
+  --avatar-fallback-bg: #08090a;
+  --icon-stroke: 1.75;
+  --control-height: 34px;
+  --control-radius: 8px;
+  --app-frame-padding: 7px;
+  --app-frame-radius: 14px;
+  --shadow-1: none;
+  --shadow-2: none;
+  --shadow-soft: none;
+  --shadow-panel: none;
+  --shadow-dialog: 0 20px 60px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --focus-ring: 0 0 0 3px rgba(245, 184, 0, 0.08);
+  --active-fill: rgba(255, 255, 255, 0.045);
+  --active-line: rgba(255, 255, 255, 0.11);
+}

@@ -69,3 +69,34 @@ svg {
   background: rgba(245, 184, 0, 0.28);
   color: var(--text-primary);
 }
+
+
+/* v41 — consistência global de interação */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+button,
+input,
+select,
+textarea {
+  color: inherit;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-quaternary);
+}
+
+svg {
+  flex: 0 0 auto;
+}

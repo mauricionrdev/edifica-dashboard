@@ -374,3 +374,29 @@
     gap: 8px;
   }
 }
+
+
+/* v41 — topbar final */
+.topbar {
+  box-shadow: none;
+}
+
+.menuButton svg,
+.collapseButton svg,
+.notificationButton svg,
+.notificationsActionIcon svg {
+  stroke-width: 1.75;
+}
+
+.userAvatar,
+.userAvatar:nth-child(2),
+.userAvatar:nth-child(3),
+.userAvatar:nth-child(4),
+.userAvatar:nth-child(5) {
+  background: var(--avatar-fallback-bg, #08090a);
+  color: var(--text-primary);
+}
+
+.notificationsPanel {
+  box-shadow: var(--shadow-dialog);
+}

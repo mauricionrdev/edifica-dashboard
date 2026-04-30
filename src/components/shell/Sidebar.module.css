@@ -533,3 +533,43 @@
     z-index: 60;
   }
 }
+
+
+/* v41 — sidebar final */
+.sidebar {
+  box-shadow: none;
+}
+
+.item svg,
+.groupLabel svg,
+.collapseButton svg,
+.closeButton svg,
+.logoutButton svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.75;
+}
+
+.item {
+  height: 32px;
+  font-weight: 520;
+}
+
+.itemActive,
+.itemActive:hover {
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--sidebar-text);
+}
+
+.badge,
+.count,
+.itemCount {
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--sidebar-text-muted);
+}
+
+.userAvatar,
+.avatar,
+.memberAvatar {
+  background: var(--avatar-fallback-bg, #08090a);
+}
