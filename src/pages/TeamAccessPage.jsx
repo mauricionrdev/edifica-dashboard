@@ -15,6 +15,8 @@ import {
   ShieldIcon,
   UsersIcon,
   MailIcon,
+  CloseIcon,
+  RotateCcwIcon,
 } from '../components/ui/Icons.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { Select } from '../components/ui/index.js';
@@ -63,7 +65,7 @@ function SquadFormModal({ mode = 'create', initialName = '', busy = false, onClo
             <span className={styles.modalEyebrow}>Estrutura operacional</span>
             <h3 id="squad-form-title">{mode === 'create' ? 'Novo squad' : 'Editar squad'}</h3>
           </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">×</button>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
         </div>
 
         <p className={styles.modalText}>
@@ -109,7 +111,7 @@ function EnhancedSquadFormModal({
             <span className={styles.modalEyebrow}>Estrutura operacional</span>
             <h3 id="enhanced-squad-form-title">{mode === 'create' ? 'Novo squad' : 'Editar squad'}</h3>
           </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">×</button>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
         </div>
 
         <div className={styles.userModalBody}>
@@ -208,7 +210,7 @@ function SquadOwnerFormModal({
             <span className={styles.modalEyebrow}>Estrutura operacional</span>
             <h3 id="squad-owner-form-title">{mode === 'create' ? 'Novo squad' : 'Editar squad'}</h3>
           </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">×</button>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
         </div>
 
         <div className={styles.userModalBody}>
@@ -389,7 +391,7 @@ function UserFormModal({
             <span className={styles.modalEyebrow}>Equipe e acessos</span>
             <h3 id="user-form-title">{mode === 'create' ? 'Novo usuário' : 'Editar usuário'}</h3>
           </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">×</button>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
         </div>
 
         <div className={styles.userModalBody}>
@@ -483,7 +485,7 @@ function ConfirmDeleteUserModal({ user, busy = false, onClose, onConfirm }) {
             <span className={styles.modalEyebrow}>Equipe e acessos</span>
             <h3 id="confirm-delete-user-title">Confirmar exclusão de usuário</h3>
           </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">×</button>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
         </div>
 
         <div className={styles.userModalBody}>
@@ -577,7 +579,7 @@ function RequestReviewModal({ request, squads = [], busy = false, onClose, onSub
             </h3>
           </div>
           <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">
-            ×
+            <CloseIcon size={16} />
           </button>
         </div>
 
@@ -1076,7 +1078,7 @@ export default function TeamAccessPage() {
 
     const actions = (() => {
       if (activeTab === 'requests' && canManageTeam) {
-        return <div className={styles.headerActions}><button type="button" className={styles.ghostButton} onClick={loadRequests}>Atualizar solicitações</button></div>;
+        return <div className={styles.headerActions}><button type="button" className={styles.headerIconButton} onClick={loadRequests} aria-label="Atualizar solicitações" title="Atualizar solicitações"><RotateCcwIcon size={15} /></button></div>;
       }
       if (activeTab === 'users' && canManageTeam) {
         return (
@@ -1109,10 +1111,10 @@ export default function TeamAccessPage() {
         );
       }
       if (activeTab === 'roles' && canViewTeam) {
-        return <div className={styles.headerActions}><button type="button" className={styles.ghostButton} onClick={loadUsers}>Atualizar matriz</button></div>;
+        return <div className={styles.headerActions}><button type="button" className={styles.headerIconButton} onClick={loadUsers} aria-label="Atualizar matriz" title="Atualizar matriz"><RotateCcwIcon size={15} /></button></div>;
       }
       if (activeTab === 'audit' && canViewAuditTrail) {
-        return <div className={styles.headerActions}><button type="button" className={styles.ghostButton} onClick={() => loadAuditLogs()}>Atualizar trilha</button></div>;
+        return <div className={styles.headerActions}><button type="button" className={styles.headerIconButton} onClick={() => loadAuditLogs()} aria-label="Atualizar trilha" title="Atualizar trilha"><RotateCcwIcon size={15} /></button></div>;
       }
       return null;
     })();

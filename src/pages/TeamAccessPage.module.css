@@ -1515,3 +1515,232 @@ button:disabled,
     min-width: 980px;
   }
 }
+
+/* v43 — Padronização pelo Perfil: modais e ações neutras */
+.headerIconButton,
+.headerBtn,
+.primaryButton,
+.ghostButton,
+.dashboardLink,
+.inlineRetry,
+.modalClose {
+  min-height: 34px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.headerIconButton {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  cursor: pointer;
+}
+
+.headerIconButton:hover,
+.headerBtn:hover,
+.primaryButton:hover,
+.ghostButton:hover,
+.dashboardLink:hover,
+.inlineRetry:hover,
+.modalClose:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.headerBtn,
+.primaryButton {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+}
+
+.headerBtn svg,
+.headerIconButton svg,
+.modalClose svg {
+  color: currentColor;
+  stroke-width: 1.75;
+}
+
+.tabButtonActive {
+  border-color: rgba(255, 215, 0, 0.26);
+  background: rgba(255, 215, 0, 0.10);
+  color: var(--text-primary);
+}
+
+.checkboxCardActive {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-primary);
+}
+
+.modalBackdrop {
+  z-index: 1000;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.modalCard {
+  width: min(720px, calc(100vw - 40px));
+  max-height: min(740px, calc(100vh - 40px));
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-4);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+}
+
+.userModalCard {
+  width: min(900px, calc(100vw - 40px));
+  max-height: min(740px, calc(100vh - 40px));
+}
+
+.modalHead {
+  min-height: 54px;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, 0.012);
+  align-items: center;
+}
+
+.modalHead h3 {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.modalEyebrow {
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  font-weight: 520;
+}
+
+.modalClose {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
+}
+
+.userModalBody {
+  padding: 16px;
+  gap: 14px;
+  background: transparent;
+}
+
+.modalActions {
+  min-height: 56px;
+  padding: 11px 16px;
+  border-top: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.formGrid {
+  gap: 12px;
+}
+
+.field {
+  gap: 6px;
+}
+
+.field > span,
+.filterField > span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 520;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field input,
+.field select,
+.field textarea,
+.filterField input,
+.filterField select {
+  min-height: 34px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.filterField input:focus,
+.filterField select:focus {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.selectorBlock,
+.requestSummaryCard,
+.resultCreds {
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.selectorBlock {
+  padding: 12px;
+  gap: 10px;
+}
+
+.checkboxCard {
+  min-height: 34px;
+  padding: 8px 9px;
+}
+
+.permissionOptionCard {
+  min-height: 58px;
+}
+
+.squadIdentityPanel {
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.squadAvatarEditor {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+}
+
+.rowActions {
+  gap: 6px;
+}
+
+.dangerButton {
+  min-height: 34px;
+  border-color: rgba(248, 113, 113, 0.22);
+  background: rgba(248, 113, 113, 0.075);
+  color: #fca5a5;
+}
+
+.dangerButton:hover {
+  border-color: rgba(248, 113, 113, 0.32);
+  background: rgba(248, 113, 113, 0.11);
+  color: #fecaca;
+}
+
+@media (max-width: 860px) {
+  .modalBackdrop {
+    padding: 10px;
+  }
+
+  .modalCard,
+  .userModalCard {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+  }
+}
