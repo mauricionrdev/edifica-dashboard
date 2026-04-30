@@ -5,8 +5,8 @@
   --gdv-accent-strong-line: rgba(39, 166, 68, 0.36);
 
   min-height: 100%;
-  padding: 14px 15px 24px;
-  background: var(--bg-app);
+  padding: 16px 16px 24px;
+  background: transparent;
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
@@ -372,30 +372,32 @@
 .metricGrid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 9px;
+  gap: 8px;
 }
 
 .metricCard {
   min-width: 0;
-  min-height: 86px;
-  padding: 12px 13px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3);
-  background: rgba(255, 255, 255, 0.021);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.016);
+  min-height: 92px;
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.014)),
+    var(--bg-canvas);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 9px;
 }
 
 .metricLabel {
   min-width: 0;
   overflow: hidden;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 10px;
   font-weight: 590;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.075em;
   text-transform: uppercase;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -405,10 +407,10 @@
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(22px, 1.45vw, 27px);
-  line-height: 1.04;
+  font-size: clamp(23px, 1.48vw, 28px);
+  line-height: 1.02;
   font-weight: 590;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.032em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -421,7 +423,7 @@
   color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1.35;
-  font-weight: 400;
+  font-weight: 510;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -571,16 +573,18 @@
 
 .listToolbar,
 .listCard {
-  border: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.021);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.016);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    var(--bg-canvas);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.022);
 }
 
 .listToolbar {
   min-width: 0;
-  min-height: 58px;
-  padding: 10px 12px;
-  border-radius: var(--radius-3);
+  min-height: 56px;
+  padding: 9px 12px;
+  border-radius: 12px;
   display: grid;
   grid-template-columns: minmax(210px, max-content) minmax(220px, 560px) minmax(0, auto);
   align-items: center;
@@ -606,9 +610,9 @@
 .listMeta {
   min-height: 22px;
   padding: 0 8px;
-  border: 1px solid var(--line-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(8, 9, 10, 0.48);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -621,9 +625,9 @@
   width: 100%;
   height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
-  background: rgba(8, 9, 10, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 10px;
+  background: rgba(8, 9, 10, 0.48);
   color: var(--text-tertiary);
   display: inline-flex;
   align-items: center;
@@ -632,7 +636,7 @@
 
 .searchBox:focus-within {
   border-color: var(--gdv-accent-line);
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(8, 9, 10, 0.68);
   color: var(--text-secondary);
 }
 
@@ -655,7 +659,7 @@
 
 .listCard {
   min-width: 0;
-  border-radius: var(--radius-3);
+  border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -670,7 +674,7 @@
 .clientRow {
   width: 100%;
   min-width: 0;
-  min-height: 68px;
+  min-height: 70px;
   padding: 12px 14px;
   border: 0;
   border-bottom: 1px solid var(--line-subtle);
@@ -689,11 +693,11 @@
 }
 
 .clientRow:hover {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.026);
 }
 
 .clientRowActive {
-  background: var(--gdv-accent-soft);
+  background: linear-gradient(90deg, rgba(39, 166, 68, 0.115), rgba(39, 166, 68, 0.028));
 }
 
 .clientMain {
@@ -819,7 +823,7 @@
 
 .pagination {
   padding: 13px 14px;
-  border-top: 1px solid var(--line-subtle);
+  border-top: 1px solid rgba(255, 255, 255, 0.065);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -849,9 +853,9 @@
 .paginationButton {
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 8px;
+  background: rgba(8, 9, 10, 0.42);
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 510;
