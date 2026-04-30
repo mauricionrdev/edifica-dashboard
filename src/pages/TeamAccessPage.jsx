@@ -1524,10 +1524,26 @@ export default function TeamAccessPage() {
         ) : activeTab === 'gdvs' ? (
           <>
             <section className={styles.gdvAdminMetricGrid}>
-              <StatCard className={styles.gdvAdminMetricCard} label="GDVs mapeados" value={gdvRows.length} hint="carteiras operacionais" />
-              <StatCard className={styles.gdvAdminMetricCard} label="Com proprietário" value={gdvsWithOwner} hint="ativos para operação" />
-              <StatCard className={styles.gdvAdminMetricCard} label="Sem proprietário" value={gdvsWithoutOwner} hint="" />
-              <StatCard className={styles.gdvAdminMetricCard} label="Clientes vinculados" value={gdvLinkedClients} hint="base com GDV definido" />
+              <article className={styles.gdvAdminMetricCard}>
+                <span>GDVs mapeados</span>
+                <strong>{gdvRows.length}</strong>
+                <small>carteiras operacionais</small>
+              </article>
+              <article className={styles.gdvAdminMetricCard}>
+                <span>Com proprietário</span>
+                <strong>{gdvsWithOwner}</strong>
+                <small>ativos para operação</small>
+              </article>
+              <article className={styles.gdvAdminMetricCard}>
+                <span>Sem proprietário</span>
+                <strong>{gdvsWithoutOwner}</strong>
+                <small>pendentes de vínculo</small>
+              </article>
+              <article className={styles.gdvAdminMetricCard}>
+                <span>Clientes vinculados</span>
+                <strong>{gdvLinkedClients}</strong>
+                <small>base com GDV definido</small>
+              </article>
             </section>
 
             <section className={`${styles.tableCard} ${styles.gdvAdminTable}`}>
