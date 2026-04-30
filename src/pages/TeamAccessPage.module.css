@@ -1744,3 +1744,374 @@ button:disabled,
     max-height: calc(100vh - 20px);
   }
 }
+
+/* v44 — Equipe & Acessos alinhado ao padrão validado do Perfil */
+.page {
+  padding: 12px 14px 20px;
+  gap: 10px;
+}
+
+.tabBar {
+  padding: 3px;
+  border-radius: var(--radius-3);
+  background: rgba(255, 255, 255, 0.014);
+  gap: 3px;
+}
+
+.tabButton {
+  min-height: 32px;
+  padding: 0 10px;
+  border-color: transparent;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.tabButton:hover,
+.tabButtonActive {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-primary);
+}
+
+.tabButtonActive {
+  box-shadow: none;
+}
+
+.tabButton svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.75;
+}
+
+.tabContent {
+  gap: 10px;
+}
+
+.metricGrid,
+.gdvAdminMetricGrid {
+  gap: 8px;
+}
+
+.metricCard,
+.gdvAdminMetricCard {
+  height: 76px;
+  min-height: 76px;
+  max-height: 76px;
+  padding: 12px 13px;
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  grid-template-rows: 15px 1fr;
+  gap: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+}
+
+.metricCard span,
+.gdvAdminMetricCard span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 520;
+  letter-spacing: 0.1em;
+}
+
+.metricCard strong,
+.gdvAdminMetricCard strong {
+  align-self: end;
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.metricCard small,
+.gdvAdminMetricCard small {
+  display: none !important;
+}
+
+.tableCard,
+.gdvAdminTable,
+.rolesMatrixCard {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+}
+
+.sectionHead,
+.gdvAdminTable .sectionHead,
+.rolesMatrixCard .sectionHead {
+  min-height: 54px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.sectionEyebrow,
+.rolesMatrixCard .sectionEyebrow {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 520;
+  letter-spacing: 0.1em;
+}
+
+.sectionHead h3,
+.rolesMatrixCard .sectionHead h3 {
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.filterBar {
+  padding: 12px 14px;
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 210px) minmax(150px, 210px);
+  gap: 8px;
+}
+
+.table {
+  font-size: 13px;
+}
+
+.table th,
+.table td {
+  padding: 10px 14px;
+}
+
+.table th {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 520;
+  letter-spacing: 0.1em;
+}
+
+.table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.primaryCell {
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+}
+
+.squareIcon,
+.avatar,
+.roleChip,
+.squadAvatarEditor span,
+.rolesMatrixCard .primaryCell .squareIcon {
+  width: 30px;
+  height: 30px;
+  background: #08090a;
+  color: var(--text-tertiary);
+}
+
+.primaryCell > div,
+.textStack {
+  gap: 2px;
+}
+
+.primaryCell strong,
+.textStack strong {
+  font-size: 13px;
+  line-height: 1.24;
+  font-weight: 600;
+}
+
+.primaryCell small,
+.textStack small {
+  font-size: 12px;
+  line-height: 1.24;
+}
+
+.headerBtn,
+.primaryButton,
+.ghostButton,
+.dashboardLink,
+.inlineRetry,
+.headerIconButton {
+  min-height: 34px;
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font-weight: 520;
+}
+
+.headerBtn:hover,
+.primaryButton:hover,
+.ghostButton:hover,
+.dashboardLink:hover,
+.inlineRetry:hover,
+.headerIconButton:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.rowActions {
+  gap: 6px;
+}
+
+.rowActions .ghostButton,
+.rowActions .dashboardLink,
+.rowActions .dangerButton {
+  min-height: 30px;
+  padding: 0 9px;
+}
+
+.rolePill,
+.secondaryRolePill,
+.squadPill,
+.statusPill,
+.permissionScopeBadge,
+.matrixPill {
+  min-height: 22px;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 560;
+}
+
+.rolePill,
+.permissionScopeBadge_own,
+.permissionScopeBadge_all,
+.permissionScopeBadge_manage,
+.matrixPillOn {
+  border-color: rgba(255, 215, 0, 0.18);
+  background: rgba(255, 215, 0, 0.065);
+}
+
+.statusPillActive,
+.permissionScopeBadge_create {
+  border-color: rgba(39, 166, 68, 0.22);
+  background: rgba(39, 166, 68, 0.09);
+}
+
+.gdvAdminPane,
+.rolesAdminPane {
+  gap: 10px;
+}
+
+.gdvAdminTable .table {
+  min-width: 860px;
+}
+
+.gdvAdminTable .table th:nth-child(1),
+.gdvAdminTable .table td:nth-child(1) { width: 31%; }
+.gdvAdminTable .table th:nth-child(2),
+.gdvAdminTable .table td:nth-child(2) { width: 12%; }
+.gdvAdminTable .table th:nth-child(3),
+.gdvAdminTable .table td:nth-child(3) { width: 29%; }
+.gdvAdminTable .table th:nth-child(4),
+.gdvAdminTable .table td:nth-child(4) { width: 13%; }
+.gdvAdminTable .table th:nth-child(5),
+.gdvAdminTable .table td:nth-child(5) { width: 15%; }
+
+.rolesMatrixCard .tableWrap {
+  max-height: calc(100vh - 245px);
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.rolesMatrixCard .table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.rolesMatrixCard .table thead th {
+  height: 36px;
+  padding: 0 8px;
+  background: #111214;
+  font-size: 9px;
+  font-weight: 560;
+  letter-spacing: 0.095em;
+}
+
+.rolesMatrixCard .table td {
+  height: 48px;
+  padding: 8px 8px;
+}
+
+.rolesMatrixCard .table th:first-child,
+.rolesMatrixCard .table td:first-child {
+  width: 27%;
+}
+
+.rolesMatrixCard .table th:nth-child(2),
+.rolesMatrixCard .table td:nth-child(2) {
+  width: 12%;
+}
+
+.rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
+.rolesMatrixCard .table td:not(:first-child):not(:nth-child(2)) {
+  width: 10.16%;
+  text-align: center;
+}
+
+.rolesMatrixCard .primaryCell {
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 9px;
+}
+
+.rolesMatrixCard .primaryCell strong {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.rolesMatrixCard .primaryCell small,
+.rolesMatrixCard .permissionAreaLabel {
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.roleHeaderLabel {
+  color: var(--text-tertiary);
+  font-size: 9px;
+  font-weight: 560;
+  letter-spacing: 0.08em;
+}
+
+.rolesMatrixCard .permissionScopeBadge,
+.rolesMatrixCard .matrixPill {
+  min-height: 20px;
+  height: 20px;
+  padding: 0 7px;
+  font-size: 9px;
+  font-weight: 560;
+}
+
+.rolesMatrixCard .matrixPillOn {
+  min-width: 52px;
+}
+
+.rolesMatrixCard .matrixPillOff {
+  width: 22px;
+  min-width: 22px;
+  padding: 0;
+}
+
+.rolesMatrixCard .permissionScopeBadge {
+  max-width: 100px;
+}
+
+.paginationBar {
+  min-height: 46px;
+  padding: 10px 14px;
+}
+
+@media (max-width: 1180px) {
+  .rolesMatrixCard .table {
+    min-width: 980px;
+  }
+}
+
+@media (max-width: 860px) {
+  .page {
+    padding: 12px;
+  }
+
+  .filterBar {
+    grid-template-columns: 1fr;
+  }
+}
