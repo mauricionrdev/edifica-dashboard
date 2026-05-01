@@ -100,9 +100,41 @@ function sameMonthPeriodKey(periodKey, targetWeek) {
   return `${prefix}-S${targetWeek}`;
 }
 
-async function inheritFixedMonthFields(clientId, periodKey, currentWeek, currentForm) {
+function previousMonthWeek4PeriodKey(periodKey) {
+  const match = /^(\d{4})-(\d{2})-S[1-4]$/.exec(String(periodKey || ''));
+  if (!match) return '';
+
+  let year = Number(match[1]);
+  let month = Number(match[2]) - 1;
+
+  if (month === 0) {
+    month = 12;
+    year -= 1;
+  }
+
+  return `${year}-${String(month).padStart(2, '0')}-S4`;
+}
+
+function mergeMissingFixedFields(currentForm = {}, candidate = {}) {
+  const inherited = {};
+
+  FIXED_MONTH_FIELDS.forEach((key) => {
+    if (String(currentForm[key] || '').trim() === '' && String(candidate[key] || '').trim() !== '') {
+      inherited[key] = candidate[key];
+    }
+  });
+
+  return {
+    form: Object.keys(inherited).length ? { ...currentForm, ...inherited } : currentForm,
+    inherited,
+  };
+}
+
+async function resolveFixedMonthFields(clientId, periodKey, currentWeek, currentForm) {
   const currentHasAllFixed = FIXED_MONTH_FIELDS.every((key) => String(currentForm[key] || '').trim() !== '');
-  if (currentHasAllFixed) return currentForm;
+  if (currentHasAllFixed) {
+    return { form: currentForm, inherited: {}, source: 'current' };
+  }
 
   const weekOrder = [currentWeek - 1, currentWeek - 2, currentWeek - 3, currentWeek + 1, currentWeek + 2, currentWeek + 3]
     .filter((value) => value >= 1 && value <= 4);
@@ -112,21 +144,29 @@ async function inheritFixedMonthFields(clientId, periodKey, currentWeek, current
       const res = await getMetric(clientId, sameMonthPeriodKey(periodKey, targetWeek));
       const candidate = dataFromMetric(res?.metric);
       if (hasAnyField(candidate, FIXED_MONTH_FIELDS)) {
-        return {
-          ...currentForm,
-          ...Object.fromEntries(
-            FIXED_MONTH_FIELDS
-              .filter((key) => String(currentForm[key] || '').trim() === '' && String(candidate[key] || '').trim() !== '')
-              .map((key) => [key, candidate[key]])
-          ),
-        };
+        const merged = mergeMissingFixedFields(currentForm, candidate);
+        return { ...merged, source: 'same-month' };
       }
     } catch {
       // Se uma semana não carregar, mantém a tela usando os dados da semana atual.
     }
   }
 
-  return currentForm;
+  const previousMonthWeek4 = previousMonthWeek4PeriodKey(periodKey);
+  if (previousMonthWeek4) {
+    try {
+      const res = await getMetric(clientId, previousMonthWeek4);
+      const candidate = dataFromMetric(res?.metric);
+      if (hasAnyField(candidate, FIXED_MONTH_FIELDS)) {
+        const merged = mergeMissingFixedFields(currentForm, candidate);
+        return { ...merged, source: 'previous-month-week-4' };
+      }
+    } catch {
+      // Se o mês anterior não tiver dados, segue sem herança.
+    }
+  }
+
+  return { form: currentForm, inherited: {}, source: 'none' };
 }
 
 function filteredClientsForSelect(clients, squadFilter) {
@@ -421,8 +461,19 @@ function WeekCardBase({ client, periodKey, week, canEdit, onSaved, presenceByFie
       .then(async (res) => {
         if (loadGenRef.current !== token) return;
         const currentForm = dataFromMetric(res?.metric);
-        const nextForm = await inheritFixedMonthFields(client.id, periodKey, week, currentForm);
+        const resolvedFixedFields = await resolveFixedMonthFields(client.id, periodKey, week, currentForm);
+        const nextForm = resolvedFixedFields.form;
         if (loadGenRef.current !== token) return;
+
+        const inheritedPayload = sanitizeForSave(resolvedFixedFields.inherited);
+        if (resolvedFixedFields.source === 'previous-month-week-4' && Object.keys(inheritedPayload).length > 0) {
+          const targetWeeks = [1, 2, 3, 4].filter((targetWeek) => targetWeek >= week);
+          await Promise.all(
+            targetWeeks.map((targetWeek) => upsertMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), inheritedPayload))
+          );
+          if (loadGenRef.current !== token) return;
+        }
+
         latestFormRef.current = nextForm;
         lastSavedRef.current = JSON.stringify(sanitizeForSave(nextForm));
         setForm(nextForm);
