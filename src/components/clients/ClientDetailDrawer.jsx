@@ -20,8 +20,8 @@ import {
   subscribeAvatarChange,
 } from '../../utils/avatarStorage.js';
 import {
-  BriefcaseIcon,
   BuildingIcon,
+  UsersIcon,
   CloseIcon,
   CoinsIcon,
   TargetIcon,
@@ -228,7 +228,7 @@ export default function ClientDetailDrawer({
   const headerFacts = useMemo(
     () => [
       { label: 'Squad', value: client?.squadName || '-', icon: BuildingIcon },
-      { label: 'GDV', value: client?.gdvName || '-', icon: BriefcaseIcon },
+      { label: 'GDV', value: client?.gdvName || '-', icon: UsersIcon },
       {
         label: 'Mensalidade',
         value: fmtMoney(resolveClientFeeAtDate(client)),

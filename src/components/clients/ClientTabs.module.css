@@ -1,63 +1,53 @@
+
 .tabsBar {
   grid-area: tabs;
   min-width: 0;
   min-height: 0;
-  padding: 20px 14px;
-  border-right: 1px solid var(--line);
+  padding: 12px 10px;
+  border-right: 1px solid var(--line-subtle);
   background: #0a0b0c;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   overflow-y: auto;
   scrollbar-width: none;
 }
 
-.tabsBar::-webkit-scrollbar { display: none; }
+.tabsBar::-webkit-scrollbar {
+  display: none;
+}
 
 .tab {
   position: relative;
   width: 100%;
-  min-height: 46px;
-  padding: 0 14px 0 16px;
+  min-height: 34px;
+  padding: 0 10px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-1);
   background: transparent;
   color: var(--text-tertiary);
   font: inherit;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 520;
   text-align: left;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   cursor: pointer;
-  transition: background .16s ease, border-color .16s ease, color .16s ease;
-}
-
-.tab::before {
-  content: '';
-  position: absolute;
-  left: 8px;
-  top: 13px;
-  bottom: 13px;
-  width: 2px;
-  border-radius: 999px;
-  background: transparent;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
 }
 
 .tab:hover {
   color: var(--text-secondary);
-  background: rgba(255,255,255,0.035);
-  border-color: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.04);
 }
 
 .tabActive {
   color: var(--text-primary);
-  background: rgba(255,255,255,0.064);
-  border-color: rgba(255,255,255,0.07);
+  background: rgba(255, 255, 255, 0.055);
+  border-color: var(--line-subtle);
 }
-
-.tabActive::before { background: var(--accent-amber); }
 
 .tabBody {
   grid-area: body;
@@ -69,15 +59,17 @@
   scrollbar-width: none;
 }
 
-.tabBody::-webkit-scrollbar { display: none; }
+.tabBody::-webkit-scrollbar {
+  display: none;
+}
 
 .emptyState,
 .loadingState {
-  margin: 28px;
-  padding: 32px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #0b0c0d;
+  margin: 20px;
+  padding: 24px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.018);
   color: var(--text-tertiary);
   font-size: 13px;
   line-height: 1.6;
@@ -86,14 +78,16 @@
 
 .saveStatus,
 .tabCount,
-.saveDot { display: none; }
+.saveDot {
+  display: none;
+}
 
 @media (max-width: 900px) {
   .tabsBar {
-    min-height: 58px;
-    padding: 8px 12px;
+    min-height: 52px;
+    padding: 8px 10px;
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--line-subtle);
     flex-direction: row;
     overflow-x: auto;
     overflow-y: hidden;
@@ -102,68 +96,5 @@
   .tab {
     width: auto;
     min-width: max-content;
-    min-height: 38px;
   }
-
-  .tab::before {
-    left: 14px;
-    right: 14px;
-    top: auto;
-    bottom: 4px;
-    width: auto;
-    height: 2px;
-  }
-}
-
-/* Patch 66 — densidade para notebook */
-.tabsBar {
-  padding: 14px 10px;
-  gap: 6px;
-}
-
-.tab {
-  min-height: 38px;
-  padding: 0 11px 0 14px;
-  border-radius: 8px;
-  font-size: 12.5px;
-}
-
-.tab::before {
-  left: 7px;
-  top: 11px;
-  bottom: 11px;
-}
-
-.emptyState,
-.loadingState {
-  margin: 20px;
-  padding: 24px;
-  border-radius: 10px;
-}
-
-@media (max-width: 1366px) and (min-width: 901px) {
-  .tabsBar {
-    padding: 12px 9px;
-  }
-
-  .tab {
-    min-height: 36px;
-    font-size: 12px;
-  }
-}
-
-
-/* Patch 67 — abas compactas e curvatura padrão */
-.tabsBar {
-  gap: 6px;
-}
-
-.tab,
-.emptyState,
-.loadingState {
-  border-radius: 10px;
-}
-
-.tabBody {
-  background-clip: padding-box;
 }
