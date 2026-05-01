@@ -9,6 +9,7 @@
 // ================================================================
 
 import { monthKey } from './format.js';
+import { isActiveClientStatus } from './clientStatus.js';
 import { resolveClientFeeAtDate } from './feeSchedule.js';
 
 function parseClientDate(value) {
@@ -26,7 +27,7 @@ function monthBounds(year, month0) {
 
 function startedOnOrBefore(client, date) {
   const start = parseClientDate(client.startDate);
-  if (!start) return client.status !== 'churn';
+  if (!start) return isActiveClientStatus(client.status);
   return Boolean(start && start <= date);
 }
 
@@ -36,7 +37,7 @@ function churnedOnOrBefore(client, date) {
 }
 
 function activeAt(client, date) {
-  return startedOnOrBefore(client, date) && !churnedOnOrBefore(client, date);
+  return isActiveClientStatus(client?.status) && startedOnOrBefore(client, date) && !churnedOnOrBefore(client, date);
 }
 
 function dateInMonth(value, year, month0) {
@@ -433,7 +434,7 @@ export function clientsEndingSoon(clients, days = 30, today = new Date()) {
   const all = Array.isArray(clients) ? clients : [];
   return all
     .map((c) => {
-      if (!c.endDate || c.status === 'churn') return null;
+      if (!c.endDate || !isActiveClientStatus(c.status)) return null;
       const end = new Date(c.endDate);
       if (Number.isNaN(end.getTime())) return null;
       const diff = Math.round((end - today) / (1000 * 60 * 60 * 24));

@@ -720,3 +720,16 @@
     min-height: 64px;
   }
 }
+
+
+.status_onboarding {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, 0.24);
+  background: rgba(90, 169, 255, 0.08);
+}
+
+.status_paused {
+  color: var(--text-secondary);
+  border-color: rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.04);
+}

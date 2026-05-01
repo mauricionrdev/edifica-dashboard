@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../context/AuthContext.jsx';
 import { buildBarChartData, computeCentralMetrics } from '../utils/centralMetrics.js';
 import { fmtMoney, fmtPct, MONTHS_FULL } from '../utils/format.js';
+import { isActiveClientStatus } from '../utils/clientStatus.js';
 import {
   canEditClientFeeSchedule,
   canEditClients,
@@ -449,7 +450,7 @@ function buildClientActivities(clients = []) {
     const isChurn = status === 'churn' || Boolean(churn);
     const endDate = parseClientDate(client?.endDate);
 
-    if (!endDate || isChurn) return;
+    if (!endDate || isChurn || !isActiveClientStatus(client?.status)) return;
 
     const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
     if (diffDays < 0 || diffDays > 30) return;

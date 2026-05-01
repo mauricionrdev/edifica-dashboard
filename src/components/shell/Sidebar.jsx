@@ -1,3 +1,4 @@
+import { isActiveClientStatus } from '../../utils/clientStatus.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { updateGdv } from '../../api/gdvs.js';
@@ -107,7 +108,7 @@ export default function Sidebar({
     return params.get('gdv') || '';
   }, [location.search]);
 
-  const activeCount = clients.filter((client) => client.status !== 'churn').length;
+  const activeCount = clients.filter((client) => isActiveClientStatus(client.status)).length;
   const totalCount = clients.length;
   const userSquadIds = Array.isArray(user?.squads) ? user.squads : [];
   const visibleSquads = admin ? squads : squads.filter((squad) => userSquadIds.includes(squad.id));

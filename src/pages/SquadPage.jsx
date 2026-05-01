@@ -37,6 +37,7 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './SquadPage.module.css';
@@ -69,7 +70,8 @@ function effectiveForecast(closed, predicted) {
 }
 
 function statusTone(calc, status) {
-  if (status === 'churn') return 'red';
+  if (status === CLIENT_STATUS.CHURN) return 'red';
+  if (!isActiveClientStatus(status)) return 'muted';
   if (!calc?.mLuc) return 'muted';
 
   const progress = (calc.fec / calc.mLuc) * 100;
@@ -80,7 +82,9 @@ function statusTone(calc, status) {
 }
 
 function statusLabel(calc, status) {
-  if (status === 'churn') return 'Churn';
+  if (status === CLIENT_STATUS.ONBOARDING) return 'Onboard';
+  if (status === CLIENT_STATUS.PAUSED) return 'Pausado';
+  if (status === CLIENT_STATUS.CHURN) return 'Churn';
   if (!calc?.mLuc) return 'Sem meta';
   if (calc.fec >= calc.mLuc) return 'Meta batida';
   if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'Vai bater';
@@ -140,7 +144,7 @@ function comparisonTone(current, goal, { lowerIsBetter = false } = {}) {
 
 function clientPriorityScore(row) {
   if (!row) return -1;
-  if (row.status === 'churn') return 100000;
+  if (!isActiveClientStatus(row.status)) return 100000;
 
   const calc = row.calc || {};
   const goal = Number(calc.mLuc) || 0;

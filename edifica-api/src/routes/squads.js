@@ -84,7 +84,7 @@ async function listRows() {
     `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.created_at, s.updated_at,
             u.name AS owner_name, u.email AS owner_email, u.role AS owner_role, u.active AS owner_active,
             COUNT(c.id) AS clients_count,
-            SUM(CASE WHEN c.status <> 'churn' THEN 1 ELSE 0 END) AS active_clients
+            SUM(CASE WHEN c.status = 'active' THEN 1 ELSE 0 END) AS active_clients
        FROM squads s
        LEFT JOIN users u ON u.id = s.owner_user_id
        LEFT JOIN clients c ON c.squad_id = s.id

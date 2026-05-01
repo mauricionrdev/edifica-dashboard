@@ -1,3 +1,5 @@
+import { isActiveClientStatus } from './clientStatus.js';
+
 function parseClientDate(value) {
   if (!value) return null;
   const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
@@ -10,7 +12,7 @@ function periodEnd(year, month0) {
 
 export function isOperationalClientForPeriod(client, year, month0) {
   if (!client) return false;
-  if (client.status === 'churn') return false;
+  if (!isActiveClientStatus(client.status)) return false;
 
   const end = periodEnd(year, month0);
   const start = parseClientDate(

@@ -4,6 +4,7 @@ import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
+import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { LogOutIcon } from '../ui/Icons.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
@@ -33,7 +34,7 @@ function buildForm(client) {
     squadId: client.squadId || '',
     gdvName: client.gdvName || '',
     gestor: client.gestor || '',
-    status: client.status === 'churn' ? 'churn' : 'active',
+    status: normalizeClientStatus(client.status),
     fee: client.fee != null ? formatLocaleNumber(client.fee, '') : '',
     metaLucro: client.metaLucro != null ? formatLocaleNumber(client.metaLucro, '') : '',
     startDate: client.startDate || '',
@@ -185,6 +186,21 @@ export default function OverviewTab({
           </div>
 
           <div className={drawerStyles.field}>
+            <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
+            <Select
+              className={drawerStyles.selectControl}
+              value={form.status}
+              onChange={(event) => onSelectChange('status', 'status', event.target.value)}
+              disabled={deleting || !canEdit}
+              aria-label="Status do cliente"
+            >
+              {CLIENT_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </Select>
+          </div>
+
+          <div className={drawerStyles.field}>
             <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor</label>
             <UserPicker
               className={drawerStyles.selectControl}
@@ -196,20 +212,6 @@ export default function OverviewTab({
               disableHover
               portal
             />
-          </div>
-
-          <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
-            <Select
-              className={drawerStyles.selectControl}
-              value={form.status}
-              onChange={(event) => onSelectChange('status', 'status', event.target.value)}
-              disabled={deleting || !canEdit}
-              aria-label="Status do cliente"
-            >
-              <option value="active">Ativo</option>
-              <option value="churn">Churn / Cancelado</option>
-            </Select>
           </div>
 
           <div className={drawerStyles.field}>

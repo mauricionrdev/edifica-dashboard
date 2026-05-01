@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS clients (
   squad_id     CHAR(36)     NULL,
   gdv_name     VARCHAR(160) NOT NULL DEFAULT '',
   gestor       VARCHAR(160) NOT NULL DEFAULT '',
-  status       ENUM('active','churn') NOT NULL DEFAULT 'active',
+  status       ENUM('active','onboarding','paused','churn') NOT NULL DEFAULT 'active',
   goal_status  ENUM('','vai','nao') NOT NULL DEFAULT '',
   fee          DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   meta_lucro   DECIMAL(12,2) NOT NULL DEFAULT 0.00,

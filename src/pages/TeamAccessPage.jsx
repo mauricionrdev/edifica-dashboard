@@ -23,6 +23,7 @@ import { Select } from '../components/ui/index.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import { readAvatarFile } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { isActiveClientStatus } from '../utils/clientStatus.js';
 import styles from './TeamAccessPage.module.css';
 
 const SECONDARY_ROLE_OPTIONS = ROLE_ORDER.filter((role) => !['ceo', 'suporte_tecnologia', 'admin'].includes(role));
@@ -910,7 +911,7 @@ export default function TeamAccessPage() {
     return squadList
       .map((squad) => {
         const linked = clientList.filter((client) => client?.squadId === squad.id);
-        const active = linked.filter((client) => client?.status !== 'churn').length;
+        const active = linked.filter((client) => isActiveClientStatus(client?.status)).length;
         const gestors = new Set(linked.map((client) => client?.gestor).filter(Boolean)).size;
         const owner =
           squad?.owner
@@ -958,7 +959,7 @@ export default function TeamAccessPage() {
           id: gdv.id,
           name: gdv.name,
           clientsCount: linked.length,
-          activeClients: linked.filter((client) => client?.status !== 'churn').length,
+          activeClients: linked.filter((client) => isActiveClientStatus(client?.status)).length,
           ownerId: gdv.ownerUserId || '',
           owner,
           operationalStatus: gdv.active && owner ? 'Ativo' : 'Desativado',

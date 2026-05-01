@@ -27,6 +27,13 @@ import { hasPermission } from '../utils/permissions.js';
 const router = Router();
 router.use(requireAuth);
 
+const VALID_CLIENT_STATUSES = new Set(['active', 'onboarding', 'paused', 'churn']);
+
+function normalizeClientStatus(status) {
+  const value = String(status || '').trim();
+  return VALID_CLIENT_STATUSES.has(value) ? value : 'active';
+}
+
 function canViewFeeSchedule(user) {
   return hasPermission(user, 'clients.fee_schedule.view') || hasPermission(user, 'clients.edit');
 }
@@ -85,6 +92,10 @@ async function ensureResponsibleSchema() {
       const clientNames = new Set(clientCols.map((column) => column.Field));
       if (!clientNames.has('avatar_data_url')) {
         await query('ALTER TABLE clients ADD COLUMN avatar_data_url MEDIUMTEXT NULL AFTER name');
+      }
+      const statusColumn = clientCols.find((column) => column.Field === 'status');
+      if (statusColumn && !String(statusColumn.Type || '').includes('onboarding')) {
+        await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','paused','churn') NOT NULL DEFAULT 'active'");
       }
     })().catch((err) => {
       responsibleSchemaPromise = null;
@@ -283,7 +294,7 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
     await assertUniqueClientName(name);
 
     const id = uuid();
-    const status = fields.status === 'churn' ? 'churn' : 'active';
+    const status = normalizeClientStatus(fields.status);
     const churnDate = status === 'churn' ? toDateString(new Date()) : null;
 
     await withTransaction(async (conn) => {
@@ -396,15 +407,15 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
       params.push(String(fields.gestor || ''));
     }
     if (fields.status !== undefined) {
-      const nextStatus = fields.status === 'churn' ? 'churn' : 'active';
+      const nextStatus = normalizeClientStatus(fields.status);
       updates.push('status = ?');
       params.push(nextStatus);
 
-      // Transição active -> churn marca churn_date; churn -> active limpa.
+      // Transição para churn marca churn_date; saída de churn limpa.
       if (nextStatus === 'churn' && current.status !== 'churn') {
         updates.push('churn_date = ?');
         params.push(toDateString(new Date()));
-      } else if (nextStatus === 'active' && current.status === 'churn') {
+      } else if (nextStatus !== 'churn' && current.status === 'churn') {
         updates.push('churn_date = ?');
         params.push(null);
       }

@@ -18,6 +18,7 @@ import LoadingIcon from '../components/ui/LoadingIcon.jsx';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, RotateCcwIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import {
   getGdvAvatar,
   readAvatarFile,
@@ -112,7 +113,8 @@ function comparisonTone(current, goal, { lowerIsBetter = false } = {}) {
 }
 
 function statusTone(calc, clientStatus) {
-  if (clientStatus === 'churn') return 'red';
+  if (clientStatus === CLIENT_STATUS.CHURN) return 'red';
+  if (!isActiveClientStatus(clientStatus)) return 'muted';
   if (!calc?.mLuc) return 'muted';
 
   const closed = Number(calc.fec) || 0;
@@ -127,7 +129,9 @@ function statusTone(calc, clientStatus) {
 }
 
 function statusLabel(calc, clientStatus) {
-  if (clientStatus === 'churn') return 'Churn';
+  if (clientStatus === CLIENT_STATUS.ONBOARDING) return 'Onboard';
+  if (clientStatus === CLIENT_STATUS.PAUSED) return 'Pausado';
+  if (clientStatus === CLIENT_STATUS.CHURN) return 'Churn';
   if (!calc?.mLuc) return 'Sem meta';
 
   const closed = Number(calc.fec) || 0;
@@ -187,7 +191,7 @@ function yesNoCard(state, { forecast = false } = {}) {
 
 function clientPriorityScore(row) {
   if (!row) return -1;
-  if (row.client?.status === 'churn') return 100000;
+  if (!isActiveClientStatus(row.client?.status)) return 100000;
 
   const calc = row.calc || {};
   const goal = Number(calc.mLuc) || 0;
@@ -709,7 +713,7 @@ export default function GdvPage() {
 
     const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
     const gap = agg.tLuc > 0 ? Math.max(agg.tLuc - agg.tF, 0) : 0;
-    const goalRows = rows.filter((row) => row.client?.status !== 'churn' && goalState(row.calc).hasGoal);
+    const goalRows = rows.filter((row) => isActiveClientStatus(row.client?.status) && goalState(row.calc).hasGoal);
     const forecastGoalRows = goalRows.filter((row) => goalState(row.calc).forecast);
     const hitGoalRows = goalRows.filter((row) => goalState(row.calc).hit);
     const withoutGoalCount = rows.length - goalRows.length;

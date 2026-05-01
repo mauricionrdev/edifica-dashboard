@@ -123,7 +123,7 @@ function monthBoundsFromPrefix(prefix) {
 function startedOnOrBefore(row, date) {
   const source = row?.start_date || row?.created_at;
   const start = parseClientDate(source);
-  if (!start) return row?.status !== 'churn';
+  if (!start) return row?.status === 'active';
   return start <= date;
 }
 
@@ -133,7 +133,7 @@ function churnedOnOrBefore(row, date) {
 }
 
 function activeAt(row, date) {
-  return startedOnOrBefore(row, date) && !churnedOnOrBefore(row, date);
+  return row?.status === 'active' && startedOnOrBefore(row, date) && !churnedOnOrBefore(row, date);
 }
 
 function dateInMonth(value, monthPrefix) {

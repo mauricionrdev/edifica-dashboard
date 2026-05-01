@@ -12,6 +12,7 @@ import {
   saveClientAvatar,
 } from '../../utils/avatarStorage.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
+import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { gdvOptions, gestorOptions, userLabel } from '../../utils/responsibleUsers.js';
 import styles from './ClientFormModal.module.css';
 
@@ -35,7 +36,7 @@ function toPayload(form) {
     squadId: form.squadId || null,
     gdvName: form.gdvName.trim(),
     gestor: form.gestor.trim(),
-    status: form.status === 'churn' ? 'churn' : 'active',
+    status: normalizeClientStatus(form.status),
     fee: parseLocaleNumber(form.fee, 0),
     metaLucro: parseLocaleNumber(form.metaLucro, 0),
     startDate: form.startDate || null,
@@ -51,7 +52,7 @@ function fromClient(client) {
     squadId: client.squadId || '',
     gdvName: client.gdvName || '',
     gestor: client.gestor || '',
-    status: client.status === 'churn' ? 'churn' : 'active',
+    status: normalizeClientStatus(client.status),
     fee: client.fee != null ? formatLocaleNumber(client.fee, '') : '',
     metaLucro: client.metaLucro != null ? formatLocaleNumber(client.metaLucro, '') : '',
     startDate: client.startDate || '',
@@ -245,8 +246,9 @@ export default function ClientFormModal({
                   placeholder="Selecionar status"
                   aria-label="Status"
                 >
-                  <option value="active">Ativo</option>
-                  <option value="churn">Churn / Cancelado</option>
+                  {CLIENT_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
                 </Select>
               </div>
 

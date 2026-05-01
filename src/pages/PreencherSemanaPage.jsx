@@ -11,6 +11,7 @@ import { MONTHS_FULL, fmtDec, fmtInt, fmtMoney, fmtPct } from '../utils/format.j
 import { buildPeriodKey, calcWeek, currentWeek } from '../utils/gdvMetrics.js';
 import { parseLocaleNumber } from '../utils/number.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { isActiveClientStatus } from '../utils/clientStatus.js';
 import { clientInitials } from '../utils/clientHelpers.js';
 import { getClientAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import styles from './PreencherSemanaPage.module.css';
@@ -170,7 +171,7 @@ async function resolveFixedMonthFields(clientId, periodKey, currentWeek, current
 }
 
 function filteredClientsForSelect(clients, squadFilter) {
-  const list = Array.isArray(clients) ? clients.filter((client) => client && client.status !== 'churn') : [];
+  const list = Array.isArray(clients) ? clients.filter((client) => client && isActiveClientStatus(client.status)) : [];
   const filtered = squadFilter
     ? list.filter((client) => (client.squadId || client.squad_id) === squadFilter)
     : list;
@@ -634,7 +635,7 @@ export default function PreencherSemanaPage() {
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
   const activeClients = useMemo(
-    () => (Array.isArray(clients) ? clients.filter((client) => client && client.status !== 'churn') : []),
+    () => (Array.isArray(clients) ? clients.filter((client) => client && isActiveClientStatus(client.status)) : []),
     [clients]
   );
 
@@ -660,7 +661,7 @@ export default function PreencherSemanaPage() {
   }, [now]);
 
   const filteredClients = useMemo(() => {
-    let list = Array.isArray(clients) ? clients.filter((client) => client && client.status !== 'churn') : [];
+    let list = Array.isArray(clients) ? clients.filter((client) => client && isActiveClientStatus(client.status)) : [];
     if (squadFilter) list = list.filter((client) => (client.squadId || client.squad_id) === squadFilter);
     if (clientFilter) list = list.filter((client) => client.id === clientFilter);
 

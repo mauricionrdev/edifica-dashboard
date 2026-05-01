@@ -28,11 +28,14 @@ import { PlusIcon, SearchIcon } from '../components/ui/Icons.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import Select from '../components/ui/Select.jsx';
 import { matchesAnySearch } from '../utils/search.js';
+import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import styles from './ClientsPage.module.css';
 
 const SCOPES = [
   { key: 'all', label: 'Todos' },
   { key: 'active', label: 'Ativos' },
+  { key: 'onboarding', label: 'Onboard' },
+  { key: 'paused', label: 'Pausados' },
   { key: 'expired', label: 'Vencidos' },
   { key: 'ending', label: 'Vencendo' },
   { key: 'churn', label: 'Churn' },
@@ -64,7 +67,9 @@ export default function ClientsPage() {
     const all = Array.isArray(clients) ? clients : [];
     return {
       all: all.length,
-      active: all.filter((c) => c.status !== 'churn' && !isExpired(c, today)).length,
+      active: all.filter((c) => isActiveClientStatus(c.status) && !isExpired(c, today)).length,
+      onboarding: all.filter((c) => c.status === CLIENT_STATUS.ONBOARDING).length,
+      paused: all.filter((c) => c.status === CLIENT_STATUS.PAUSED).length,
       expired: all.filter((c) => isExpired(c, today)).length,
       ending: all.filter((c) => isEndingSoon(c, 30, today)).length,
       churn: all.filter((c) => c.status === 'churn').length,
@@ -77,11 +82,12 @@ export default function ClientsPage() {
     const q = query.trim();
 
     return rows.filter((c) => {
-      if (scope === 'active' && c.status === 'churn') return false;
-      if (scope === 'active' && isExpired(c, today)) return false;
+      if (scope === 'active' && (!isActiveClientStatus(c.status) || isExpired(c, today))) return false;
+      if (scope === 'onboarding' && c.status !== CLIENT_STATUS.ONBOARDING) return false;
+      if (scope === 'paused' && c.status !== CLIENT_STATUS.PAUSED) return false;
       if (scope === 'expired' && !isExpired(c, today)) return false;
       if (scope === 'ending' && !isEndingSoon(c, 30, today)) return false;
-      if (scope === 'churn' && c.status !== 'churn') return false;
+      if (scope === 'churn' && c.status !== CLIENT_STATUS.CHURN) return false;
 
       if (!q) return true;
       return matchesAnySearch([c.name, c.squadName, c.gestor, c.gdvName], q);

@@ -127,11 +127,23 @@ export default function ClientDetailDrawer({
             background: 'var(--warning-soft)',
             border: 'color-mix(in srgb, var(--warning) 26%, transparent)',
           }
-        : {
-            color: 'var(--danger)',
-            background: 'var(--danger-soft)',
-            border: 'color-mix(in srgb, var(--danger) 24%, transparent)',
-          };
+        : sc === 'cc-onboarding'
+          ? {
+              color: '#8ab4ff',
+              background: 'rgba(90, 169, 255, 0.08)',
+              border: 'rgba(90, 169, 255, 0.24)',
+            }
+          : sc === 'cc-paused'
+            ? {
+                color: 'var(--text-secondary)',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: 'rgba(255, 255, 255, 0.11)',
+              }
+            : {
+                color: 'var(--danger)',
+                background: 'var(--danger-soft)',
+                border: 'color-mix(in srgb, var(--danger) 24%, transparent)',
+              };
 
   const handleAvatarFile = useCallback(
     async (event) => {

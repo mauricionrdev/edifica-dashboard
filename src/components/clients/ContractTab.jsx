@@ -8,6 +8,7 @@ import {
   summarizeFeeSchedule,
 } from '../../utils/feeSchedule.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
+import { CLIENT_STATUS_OPTIONS, isActiveClientStatus, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { gdvOptions, gestorOptions, userLabel } from '../../utils/responsibleUsers.js';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
@@ -34,7 +35,7 @@ function buildForm(client) {
     squadId: client.squadId || '',
     gdvName: client.gdvName || '',
     gestor: client.gestor || '',
-    status: client.status === 'churn' ? 'churn' : 'active',
+    status: normalizeClientStatus(client.status),
     fee: client.fee != null ? formatLocaleNumber(client.fee, '') : '',
     metaLucro: client.metaLucro != null ? formatLocaleNumber(client.metaLucro, '') : '',
     startDate: client.startDate || '',
@@ -129,7 +130,7 @@ export default function ContractTab({
   const summary = useMemo(() => {
     const currentFee = resolveClientFeeAtDate(client);
     const feeSchedule = summarizeFeeSchedule(client);
-    const active = client?.status !== 'churn';
+    const active = isActiveClientStatus(client?.status);
 
     const today = new Date();
     let daysLeft = null;
@@ -138,10 +139,12 @@ export default function ContractTab({
       if (Number.isFinite(total)) daysLeft = total;
     }
 
+    const statusOption = CLIENT_STATUS_OPTIONS.find((option) => option.value === normalizeClientStatus(client?.status));
+
     return {
       status: {
         label: 'Status',
-        value: active ? 'Ativo' : 'Churn',
+        value: statusOption?.label || 'Ativo',
         tone: active ? 'green' : 'red',
       },
       fee: {
@@ -200,8 +203,9 @@ export default function ContractTab({
               disabled={!canEdit}
               aria-label="Status do contrato"
             >
-              <option value="active">Ativo</option>
-              <option value="churn">Churn / Cancelado</option>
+              {CLIENT_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
             </Select>
           </div>
 

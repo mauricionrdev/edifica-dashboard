@@ -1,3 +1,5 @@
+import { CLIENT_STATUS, isActiveClientStatus, normalizeClientStatus } from './clientStatus.js';
+
 // ================================================================
 //  Client helpers
 //  Funções puras de UI para clientes: iniciais, cor do avatar,
@@ -32,7 +34,7 @@ export function colorFromName() {
  * - Retorna false se endDate for inválido ou já venceu.
  */
 export function isEndingSoon(client, days = 30, today = new Date()) {
-  if (!client || !client.endDate || client.status === 'churn') return false;
+  if (!client || !client.endDate || !isActiveClientStatus(client.status)) return false;
   const end = parseDateOnly(client.endDate);
   if (Number.isNaN(end.getTime())) return false;
   const base = startOfDay(today);
@@ -57,7 +59,7 @@ function startOfDay(value) {
 }
 
 export function isExpired(client, today = new Date()) {
-  if (!client || !client.endDate || client.status === 'churn') return false;
+  if (!client || !client.endDate || !isActiveClientStatus(client.status)) return false;
   const end = parseDateOnly(client.endDate);
   if (Number.isNaN(end.getTime())) return false;
   return end < startOfDay(today);
@@ -69,7 +71,10 @@ export function isExpired(client, today = new Date()) {
  */
 export function statusClass(client, today = new Date()) {
   if (!client) return '';
-  if (client.status === 'churn') return 'cc-churn';
+  const status = normalizeClientStatus(client.status);
+  if (status === CLIENT_STATUS.ONBOARDING) return 'cc-onboarding';
+  if (status === CLIENT_STATUS.PAUSED) return 'cc-paused';
+  if (status === CLIENT_STATUS.CHURN) return 'cc-churn';
   if (isExpired(client, today)) return 'cc-expired';
   if (isEndingSoon(client, 30, today)) return 'cc-ending';
   return 'cc-active';
@@ -77,7 +82,10 @@ export function statusClass(client, today = new Date()) {
 
 export function statusLabel(client, today = new Date()) {
   if (!client) return '';
-  if (client.status === 'churn') return 'Churn';
+  const status = normalizeClientStatus(client.status);
+  if (status === CLIENT_STATUS.ONBOARDING) return 'Onboard';
+  if (status === CLIENT_STATUS.PAUSED) return 'Pausado';
+  if (status === CLIENT_STATUS.CHURN) return 'Churn';
   if (isExpired(client, today)) return 'Vencido';
   if (isEndingSoon(client, 30, today)) return 'Vencendo';
   return 'Ativo';
