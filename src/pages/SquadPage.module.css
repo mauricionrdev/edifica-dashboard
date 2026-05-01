@@ -1272,3 +1272,377 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v49 — Squad: refinamento secundário no padrão Perfil/GDV compacto */
+.page {
+  padding: 12px 14px 20px;
+  gap: 10px;
+}
+
+.headerIdentity {
+  min-height: 50px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
+
+.headerTitleText {
+  gap: 2px;
+}
+
+.headerTitleText strong {
+  max-width: 220px;
+  font-size: 18px;
+  line-height: 1.05;
+  font-weight: 600;
+}
+
+.headerTitleText small {
+  max-width: 260px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.headerActions {
+  position: relative;
+  z-index: 80;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.headerCluster {
+  min-height: 34px;
+  gap: 8px;
+  margin-left: 0;
+  padding-left: 10px;
+}
+
+.headerCluster:first-child {
+  padding-left: 0;
+}
+
+.headerCluster::before {
+  height: 20px;
+}
+
+.headerStat {
+  min-height: 32px;
+  gap: 8px;
+}
+
+.headerStat strong {
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.headerStat small {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.monthNav {
+  min-height: 32px;
+  gap: 2px;
+}
+
+.navBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+.monthLabel {
+  min-width: 104px;
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.weekTabs {
+  min-height: 30px;
+  padding: 2px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  gap: 2px;
+}
+
+.weekTab {
+  min-width: 28px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.weekTabActive {
+  background: rgba(255, 255, 255, 0.052);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.18);
+}
+
+.ownerControl {
+  width: 196px;
+}
+
+.ownerControl button {
+  min-height: 32px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.headerBtn,
+.headerGhostBtn,
+.iconButton {
+  min-height: 32px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+}
+
+.headerBtn {
+  color: var(--text-secondary);
+}
+
+.iconButton {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+}
+
+.headerBtn:hover,
+.headerGhostBtn:hover,
+.iconButton:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-primary);
+}
+
+.headerLoading {
+  width: 32px;
+  height: 32px;
+}
+
+.metricGrid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.metricCard {
+  min-height: 82px;
+  padding: 12px 13px 11px;
+  border-color: var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+  gap: 7px;
+}
+
+.metricCard:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.028);
+}
+
+.metricLabel {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 590;
+  letter-spacing: 0.075em;
+}
+
+.metricValue {
+  font-size: clamp(21px, 1.38vw, 26px);
+  font-weight: 600;
+  letter-spacing: -0.032em;
+}
+
+.metricSub {
+  min-height: 15px;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.stickyResultBar {
+  top: 8px;
+  min-height: 44px;
+  padding: 7px 9px;
+  border-color: rgba(255, 215, 0, 0.16);
+  border-radius: 12px;
+  background: rgba(11, 12, 13, 0.96);
+  box-shadow: none;
+  gap: 10px;
+}
+
+.searchBox {
+  height: 36px;
+  border-color: var(--line-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.searchBox:focus-within {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.clientList {
+  border-radius: 12px;
+}
+
+.clientRow {
+  min-height: 58px;
+  padding: 9px 12px;
+  grid-template-columns: minmax(260px, 1fr) minmax(210px, 280px) 116px;
+  gap: 14px;
+}
+
+.clientRowActive {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.clientMain {
+  gap: 10px;
+}
+
+.clientMain div {
+  gap: 2px;
+}
+
+.clientMain strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.clientMain small {
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.clientAvatarSmall {
+  width: 28px;
+  height: 28px;
+  font-size: 9px;
+}
+
+.clientStats {
+  grid-template-columns: minmax(112px, 1fr) 78px;
+  column-gap: 16px;
+}
+
+.clientStats div {
+  gap: 3px;
+}
+
+.clientStats span {
+  font-size: 9px;
+  letter-spacing: 0.075em;
+}
+
+.clientStats strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.badge {
+  min-width: 86px;
+  min-height: 24px;
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.clearSelectionMini,
+.clearSelection,
+.paginationButton,
+.inlineAction,
+.inlineActionButton {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.014);
+  font-size: 11px;
+}
+
+.inlineActionButton,
+.paginationButton {
+  color: var(--text-secondary);
+}
+
+.inlineActionButton:hover,
+.paginationButton:hover:not(:disabled),
+.clearSelection:hover,
+.clearSelectionMini:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.pagination {
+  padding: 10px 12px;
+  gap: 10px;
+}
+
+.paginationInfo,
+.paginationCurrent {
+  font-size: 11px;
+}
+
+.modalBackdrop {
+  background: rgba(0, 0, 0, 0.74);
+  backdrop-filter: blur(14px);
+}
+
+.modalCard {
+  box-shadow: none;
+}
+
+@media (max-width: 1280px) {
+  .headerActions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .headerCluster {
+    width: auto;
+    padding-left: 0;
+  }
+
+  .headerCluster::before {
+    display: none;
+  }
+
+  .ownerControl {
+    width: 100%;
+  }
+
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .clientRow {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .clientStats,
+  .clientStatus {
+    justify-content: start;
+  }
+}
