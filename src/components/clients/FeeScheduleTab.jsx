@@ -242,14 +242,25 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
         <div className={styles.sectionHead}>
           <div className={drawerStyles.sectionTitle}>Mensalidades</div>
           {canEdit ? (
-            <button
-              type="button"
-              className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.actionButton}`.trim()}
-              onClick={handleAdd}
-            >
-              <PlusIcon size={14} />
-              <span>Adicionar fase</span>
-            </button>
+            <div className={styles.sectionActions}>
+              <button
+                type="button"
+                className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.actionButton}`.trim()}
+                onClick={handleAdd}
+              >
+                <PlusIcon size={14} />
+                <span>Adicionar fase</span>
+              </button>
+              <button
+                type="button"
+                className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.actionButton}`.trim()}
+                onClick={handleSave}
+                disabled={saving}
+              >
+                <SaveIcon size={14} />
+                <span>{saving ? 'Salvando' : 'Salvar alterações'}</span>
+              </button>
+            </div>
           ) : null}
         </div>
 
@@ -323,20 +334,6 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
             </div>
           ))}
         </div>
-
-        {canEdit ? (
-          <div className={styles.footer}>
-            <button
-              type="button"
-              className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.actionButton}`.trim()}
-              onClick={handleSave}
-              disabled={saving}
-            >
-              <SaveIcon size={14} />
-              <span>{saving ? 'Salvando' : 'Salvar alterações'}</span>
-            </button>
-          </div>
-        ) : null}
       </div>
     </div>
   );

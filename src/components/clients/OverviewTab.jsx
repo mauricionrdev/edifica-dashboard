@@ -4,8 +4,7 @@ import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
-import { clientInitials } from '../../utils/clientHelpers.js';
-import { CameraIcon, LogOutIcon, TrashIcon } from '../ui/Icons.jsx';
+import { LogOutIcon } from '../ui/Icons.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
 import UserPicker from '../users/UserPicker.jsx';
@@ -46,13 +45,8 @@ export default function OverviewTab({
   client,
   squads = [],
   users = [],
-  headerFacts = [],
-  avatarUrl = '',
   canEdit = false,
-  canManageAvatar = false,
   canDelete = false,
-  onPickAvatar,
-  onRemoveAvatar,
   onUpdated,
   onDeleted,
 }) {
@@ -158,41 +152,6 @@ export default function OverviewTab({
 
   return (
     <>
-      {headerFacts.length > 0 ? (
-        <div className={styles.overviewFacts}>
-          {headerFacts.map((fact) => (
-            <div key={fact.label} className={styles.factItem}>
-              <span>{fact.label}</span>
-              <strong title={fact.value}>{fact.value}</strong>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      <div className={styles.identityPanel}>
-        <div className={styles.clientAvatarLarge}>
-          {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
-        </div>
-        <div className={styles.identityMain}>
-          <span>Imagem do cliente</span>
-          <strong>{client.name}</strong>
-        </div>
-        {canManageAvatar ? (
-          <div className={styles.identityActions}>
-            <button type="button" onClick={onPickAvatar} disabled={deleting}>
-              <CameraIcon size={13} />
-              Alterar avatar
-            </button>
-            {avatarUrl ? (
-              <button type="button" onClick={onRemoveAvatar} disabled={deleting}>
-                <TrashIcon size={13} />
-                Remover avatar
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
       <div className={drawerStyles.section}>
         <div className={drawerStyles.sectionTitle}>Dados principais</div>
         <div className={styles.formGrid}>

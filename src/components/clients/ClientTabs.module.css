@@ -1,19 +1,17 @@
 .tabsBar {
   min-width: 0;
   min-height: 0;
-  padding: 12px 10px;
+  padding: 12px;
   border-right: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.012);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   overflow-y: auto;
   scrollbar-width: none;
 }
 
-.tabsBar::-webkit-scrollbar {
-  display: none;
-}
+.tabsBar::-webkit-scrollbar { display: none; }
 
 .tab {
   position: relative;
@@ -26,7 +24,7 @@
   color: var(--text-tertiary);
   font: inherit;
   font-size: 12px;
-  font-weight: 540;
+  font-weight: 560;
   text-align: left;
   display: flex;
   align-items: center;
@@ -39,23 +37,15 @@
   content: '';
   width: 3px;
   height: 14px;
-  margin-right: 9px;
+  margin-right: 8px;
   border-radius: 999px;
   background: transparent;
-  flex: 0 0 auto;
-}
-
-.tab span {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .tab:hover {
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.035);
-  border-color: transparent;
+  border-color: rgba(255, 255, 255, 0.04);
 }
 
 .tabActive {
@@ -65,42 +55,36 @@
 }
 
 .tabActive::before {
-  background: var(--text-tertiary);
-  opacity: 0.9;
+  background: var(--text-secondary);
 }
 
 .tabBody {
-  position: relative;
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
-  background: var(--bg-canvas, #0b0c0d);
+  background: #08090a;
   contain: layout paint;
   scrollbar-width: none;
 }
 
-.tabBody::-webkit-scrollbar {
-  display: none;
-}
+.tabBody::-webkit-scrollbar { display: none; }
 
 .emptyState,
 .loadingState {
-  margin: 16px;
-  padding: 18px;
+  margin: 18px;
+  padding: 22px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.018);
   color: var(--text-tertiary);
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.6;
   text-align: center;
 }
 
 .saveStatus,
 .tabCount,
-.saveDot {
-  display: none;
-}
+.saveDot { display: none; }
 
 @media (max-width: 900px) {
   .tabsBar {

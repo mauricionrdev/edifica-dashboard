@@ -1,77 +1,82 @@
 .panel {
   display: grid;
-  gap: 22px;
-  padding: 26px 34px 34px;
+  gap: 14px;
+  padding: 18px;
   background: #08090a;
 }
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: minmax(240px, 1.4fr) repeat(3, minmax(120px, 0.75fr));
-  gap: 12px;
+  grid-template-columns: minmax(180px, 1.2fr) repeat(3, minmax(120px, 0.7fr));
+  gap: 10px;
 }
 
 .summaryCard {
   min-width: 0;
-  min-height: 86px;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #0b0c0d;
+  min-height: 68px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
   display: grid;
-  gap: 6px;
+  gap: 4px;
   align-content: center;
 }
 
 .summaryLabel {
-  color: var(--text-quaternary);
+  color: var(--text-tertiary);
   font-size: 10px;
-  font-weight: 740;
-  letter-spacing: 0.13em;
+  font-weight: 590;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .summaryValue {
   color: var(--text-primary);
-  font-size: clamp(17px, 1.5vw, 23px);
-  font-weight: 760;
+  font-size: clamp(15px, 1.25vw, 19px);
+  font-weight: 620;
   line-height: 1.12;
-  letter-spacing: -0.045em;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
+  letter-spacing: -0.035em;
 }
 
 .summarySub {
   color: var(--text-tertiary);
   font-size: 11px;
-  line-height: 1.45;
+  line-height: 1.35;
   white-space: nowrap;
 }
 
 .sectionHead {
-  min-height: 38px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
+.sectionActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .contractRule { display: none; }
 
 .rows {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .rowCard {
   display: grid;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #0b0c0d;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
 }
 
 .rowHeader {
@@ -84,7 +89,7 @@
 .rowHeader strong {
   color: var(--text-primary);
   font-size: 13px;
-  font-weight: 740;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -94,7 +99,7 @@
   padding: 0;
   border: 1px solid rgba(255, 91, 115, 0.22);
   border-radius: 8px;
-  background: rgba(255, 91, 115, 0.06);
+  background: rgba(255, 91, 115, 0.05);
   color: #ff9cad;
   display: inline-flex;
   align-items: center;
@@ -102,12 +107,12 @@
   cursor: pointer;
 }
 
-.removeBtn:hover { color: #ffd0d8; background: rgba(255, 91, 115, 0.12); }
+.removeBtn:hover { color: #ffd0d8; background: rgba(255, 91, 115, 0.1); }
 
 .rowGrid {
   display: grid;
   grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .iconAction {
@@ -133,10 +138,12 @@
   line-height: 1.5;
 }
 
-.actionButton { border-radius: 10px; }
+.actionButton {
+  min-height: 34px;
+  border-radius: 10px;
+}
 
 @media (max-width: 920px) {
-  .panel { padding: 22px; }
   .summaryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rowGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -144,81 +151,7 @@
 @media (max-width: 640px) {
   .summaryGrid,
   .rowGrid { grid-template-columns: 1fr; }
-  .sectionHead { flex-direction: column; align-items: stretch; }
-}
-
-/* Patch 66 — densidade para notebook */
-.panel {
-  gap: 16px;
-  padding: 20px 26px 26px;
-}
-
-.summaryGrid {
-  gap: 10px;
-}
-
-.summaryCard {
-  min-height: 68px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  gap: 4px;
-}
-
-.summaryValue {
-  font-size: clamp(16px, 1.3vw, 20px);
-}
-
-.summarySub {
-  font-size: 10.5px;
-}
-
-.sectionHead {
-  min-height: 32px;
-}
-
-.rows {
-  gap: 10px;
-}
-
-.rowCard {
-  gap: 10px;
-  padding: 12px;
-  border-radius: 10px;
-}
-
-.rowHeader {
-  gap: 10px;
-}
-
-.rowGrid {
-  gap: 10px;
-}
-
-.footer {
-  gap: 8px;
-}
-
-
-/* Patch 67 — menos curva e mais respiro entre cards */
-.panel {
-  gap: 16px;
-}
-
-.summaryGrid,
-.rows,
-.rowCard {
-  gap: 10px;
-}
-
-.summaryCard,
-.rowCard,
-.removeBtn,
-.iconAction,
-.actionButton {
-  border-radius: 10px;
-}
-
-.summaryCard {
-  min-height: 76px;
-  padding: 14px 16px;
+  .sectionHead,
+  .footer { flex-direction: column; align-items: stretch; }
+  .sectionActions { justify-content: flex-start; }
 }

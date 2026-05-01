@@ -19,12 +19,9 @@ import {
   saveClientAvatar,
   subscribeAvatarChange,
 } from '../../utils/avatarStorage.js';
-import {
-  CloseIcon,
-} from '../ui/Icons.jsx';
-import { fmtMoney } from '../../utils/format.js';
-import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
+import { CloseIcon } from '../ui/Icons.jsx';
 import OverviewTab from './OverviewTab.jsx';
+import AvatarTab from './AvatarTab.jsx';
 import ContractTab from './ContractTab.jsx';
 import AnalysisTab from './AnalysisTab.jsx';
 import FeeScheduleTab from './FeeScheduleTab.jsx';
@@ -33,6 +30,7 @@ import tabStyles from './ClientTabs.module.css';
 
 const TABS = [
   { key: 'overview', label: 'Visão geral' },
+  { key: 'avatar', label: 'Avatar' },
   { key: 'contract', label: 'Contrato' },
   { key: 'fees', label: 'Mensalidades' },
   { key: 'icp', label: 'Análise ICP' },
@@ -221,16 +219,6 @@ export default function ClientDetailDrawer({
     [client?.id, client?.name, navigate, onClose, showToast]
   );
 
-  const headerFacts = useMemo(
-    () => [
-      { label: 'Squad', value: client?.squadName || '-' },
-      { label: 'GDV', value: client?.gdvName || '-' },
-      { label: 'Mensalidade', value: fmtMoney(resolveClientFeeAtDate(client)) },
-      { label: 'Meta', value: fmtMoney(client?.metaLucro || 0) },
-    ],
-    [client]
-  );
-
   const visibleTabs = useMemo(
     () => TABS.filter((tab) => tab.key !== 'fees' || canViewFeeSchedule),
     [canViewFeeSchedule]
@@ -311,17 +299,6 @@ export default function ClientDetailDrawer({
           />
         </header>
 
-        {headerFacts.length > 0 ? (
-          <div className={drawerStyles.factsStrip} aria-label="Resumo do cliente">
-            {headerFacts.map((fact) => (
-              <div key={fact.label} className={drawerStyles.factItem}>
-                <span>{fact.label}</span>
-                <strong title={fact.value}>{fact.value}</strong>
-              </div>
-            ))}
-          </div>
-        ) : null}
-
         <div className={drawerStyles.modalBody}>
           <aside className={tabStyles.tabsBar} role="tablist" aria-label="Detalhes do cliente">
             {visibleTabs.map((tab) => (
@@ -346,15 +323,20 @@ export default function ClientDetailDrawer({
                 client={client}
                 squads={squads}
                 users={users}
-                headerFacts={[]}
-                avatarUrl={avatarUrl}
                 canEdit={canEditClient}
-                canManageAvatar={canManageAvatar}
                 canDelete={admin}
-                onPickAvatar={() => avatarInputRef.current?.click()}
-                onRemoveAvatar={handleRemoveAvatar}
                 onUpdated={onUpdated}
                 onDeleted={onDeleted}
+              />
+            )}
+
+            {activeTab === 'avatar' && (
+              <AvatarTab
+                client={client}
+                avatarUrl={avatarUrl}
+                canManageAvatar={canManageAvatar}
+                onPickAvatar={() => avatarInputRef.current?.click()}
+                onRemoveAvatar={handleRemoveAvatar}
               />
             )}
 
