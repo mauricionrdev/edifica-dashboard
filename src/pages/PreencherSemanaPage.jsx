@@ -27,6 +27,7 @@ const EMPTY_DATA = {
   observacoes: '',
 };
 
+const FIXED_MONTH_FIELDS = ['investimento', 'metaCpl', 'metaVolume', 'metaEmpate', 'metaSemanal'];
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
 
@@ -74,6 +75,58 @@ function sanitizeForSave(form) {
     if (!Number.isNaN(numeric) && numeric >= 0) payload[key] = numeric;
   });
   return payload;
+}
+
+function pickFields(source = {}, keys = []) {
+  const picked = {};
+  keys.forEach((key) => {
+    if (source[key] !== undefined && source[key] !== null && source[key] !== '') {
+      picked[key] = source[key];
+    }
+  });
+  return picked;
+}
+
+function hasAnyField(source = {}, keys = []) {
+  return keys.some((key) => source[key] !== undefined && source[key] !== null && source[key] !== '');
+}
+
+function changedFields(next = {}, previous = {}, keys = []) {
+  return keys.filter((key) => String(next[key] ?? '') !== String(previous[key] ?? ''));
+}
+
+function sameMonthPeriodKey(periodKey, targetWeek) {
+  const prefix = String(periodKey || '').replace(/-S[1-4]$/, '');
+  return `${prefix}-S${targetWeek}`;
+}
+
+async function inheritFixedMonthFields(clientId, periodKey, currentWeek, currentForm) {
+  const currentHasAllFixed = FIXED_MONTH_FIELDS.every((key) => String(currentForm[key] || '').trim() !== '');
+  if (currentHasAllFixed) return currentForm;
+
+  const weekOrder = [currentWeek - 1, currentWeek - 2, currentWeek - 3, currentWeek + 1, currentWeek + 2, currentWeek + 3]
+    .filter((value) => value >= 1 && value <= 4);
+
+  for (const targetWeek of weekOrder) {
+    try {
+      const res = await getMetric(clientId, sameMonthPeriodKey(periodKey, targetWeek));
+      const candidate = dataFromMetric(res?.metric);
+      if (hasAnyField(candidate, FIXED_MONTH_FIELDS)) {
+        return {
+          ...currentForm,
+          ...Object.fromEntries(
+            FIXED_MONTH_FIELDS
+              .filter((key) => String(currentForm[key] || '').trim() === '' && String(candidate[key] || '').trim() !== '')
+              .map((key) => [key, candidate[key]])
+          ),
+        };
+      }
+    } catch {
+      // Se uma semana não carregar, mantém a tela usando os dados da semana atual.
+    }
+  }
+
+  return currentForm;
 }
 
 function filteredClientsForSelect(clients, squadFilter) {
@@ -278,9 +331,21 @@ function WeekCardBase({ client, periodKey, week, canEdit, onSaved, presenceByFie
         return;
       }
 
+      const previousPayload = JSON.parse(lastSavedRef.current || '{}');
+      const fixedFieldsChanged = changedFields(payload, previousPayload, FIXED_MONTH_FIELDS);
+      const fixedPayload = pickFields(payload, fixedFieldsChanged);
+
       if (mountedRef.current) setStatus('saving');
       try {
         const res = await upsertMetric(client.id, periodKey, payload);
+
+        if (fixedFieldsChanged.length > 0) {
+          const targetWeeks = [1, 2, 3, 4].filter((targetWeek) => targetWeek >= week && targetWeek !== week);
+          await Promise.all(
+            targetWeeks.map((targetWeek) => upsertMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), fixedPayload))
+          );
+        }
+
         lastSavedRef.current = serialized;
         if (!mountedRef.current) return;
         setServerComputed(res?.metric?.computed || {});
@@ -298,7 +363,7 @@ function WeekCardBase({ client, periodKey, week, canEdit, onSaved, presenceByFie
         if (mountedRef.current) setStatus('error');
       }
     },
-    [client.id, client.name, onSaved, periodKey, showToast]
+    [client.id, client.name, onSaved, periodKey, showToast, week]
   );
 
   const flushPendingSave = useCallback(() => {
@@ -353,9 +418,11 @@ function WeekCardBase({ client, periodKey, week, canEdit, onSaved, presenceByFie
     setLoaded(false);
 
     getMetric(client.id, periodKey)
-      .then((res) => {
+      .then(async (res) => {
         if (loadGenRef.current !== token) return;
-        const nextForm = dataFromMetric(res?.metric);
+        const currentForm = dataFromMetric(res?.metric);
+        const nextForm = await inheritFixedMonthFields(client.id, periodKey, week, currentForm);
+        if (loadGenRef.current !== token) return;
         latestFormRef.current = nextForm;
         lastSavedRef.current = JSON.stringify(sanitizeForSave(nextForm));
         setForm(nextForm);
