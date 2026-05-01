@@ -5,7 +5,7 @@ import { CameraIcon, CloseIcon } from '../ui/Icons.jsx';
 import Select from '../ui/Select.jsx';
 import UserPicker from '../users/UserPicker.jsx';
 import DateField from '../ui/DateField.jsx';
-import { clientInitials, colorFromName } from '../../utils/clientHelpers.js';
+import { clientInitials } from '../../utils/clientHelpers.js';
 import {
   getClientAvatar,
   readAvatarFile,
@@ -175,7 +175,6 @@ export default function ClientFormModal({
             <div className={styles.avatarUpload}>
               <div
                 className={styles.avatarPreview}
-                style={{ background: colorFromName(form.name) }}
                 aria-hidden="true"
               >
                 {avatarPreview ? <img src={avatarPreview} alt="" /> : clientInitials(form.name)}
