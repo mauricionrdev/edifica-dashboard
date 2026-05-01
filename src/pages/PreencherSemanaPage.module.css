@@ -193,10 +193,10 @@
 }
 
 .groupsWrap {
-  padding: 12px 14px 14px;
+  padding: 10px 12px 12px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .squadGroup {
@@ -231,25 +231,25 @@
 .cardsStack {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
 }
 
 .clientCard {
   overflow: hidden;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3);
-  background: rgba(255, 255, 255, 0.016);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.01);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.015);
+  box-shadow: none;
 }
 
 .clientTopbar {
-  min-height: 56px;
-  padding: 10px 12px;
+  min-height: 50px;
+  padding: 8px 10px;
   border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .clientIdentity {
@@ -260,8 +260,8 @@
 }
 
 .clientAvatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   flex: 0 0 auto;
   overflow: hidden;
   border: 1px solid var(--line-subtle);
@@ -294,7 +294,7 @@
   max-width: 560px;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.16;
   font-weight: 610;
   letter-spacing: -0.02em;
@@ -321,8 +321,8 @@
 
 .progressPill,
 .statusChip {
-  min-height: 23px;
-  padding: 0 9px;
+  min-height: 21px;
+  padding: 0 8px;
   border-radius: 999px;
   border: 1px solid var(--line-subtle);
   display: inline-flex;
@@ -366,7 +366,7 @@
 
 .segmentBlock {
   min-width: 0;
-  padding: 12px;
+  padding: 10px;
 }
 
 .segmentBlock + .segmentBlock {
@@ -374,8 +374,8 @@
 }
 
 .segmentHeader {
-  min-height: 24px;
-  margin-bottom: 9px;
+  min-height: 22px;
+  margin-bottom: 8px;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -405,15 +405,15 @@
 .segmentGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
+  gap: 6px;
 }
 
 .fieldCard {
   min-width: 0;
-  padding: 9px;
+  padding: 8px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.014);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.012);
 }
 
 .fieldCard:hover {
@@ -421,16 +421,24 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
-.fieldCard_weekly,
-.fieldCard_once,
+.fieldCard_weekly {
+  border-color: rgba(245, 184, 0, 0.13);
+  background: linear-gradient(180deg, rgba(245, 184, 0, 0.045), rgba(255, 255, 255, 0.01));
+}
+
+.fieldCard_once {
+  border-color: rgba(39, 166, 68, 0.13);
+  background: linear-gradient(180deg, rgba(39, 166, 68, 0.04), rgba(255, 255, 255, 0.01));
+}
+
 .fieldCard_auto {
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.014);
+  background: rgba(255, 255, 255, 0.012);
 }
 
 .fieldHeader {
-  min-height: 28px;
-  margin-bottom: 6px;
+  min-height: 24px;
+  margin-bottom: 5px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -441,8 +449,8 @@
   min-width: 0;
   color: var(--text-tertiary);
   font-size: 10px;
-  font-weight: 540;
-  line-height: 1.3;
+  font-weight: 560;
+  line-height: 1.2;
 }
 
 .presenceHint {
@@ -464,8 +472,8 @@
 .fieldInput,
 .fieldValue {
   width: 100%;
-  min-height: 34px;
-  padding: 0 10px;
+  min-height: 30px;
+  padding: 0 9px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1);
   background: rgba(8, 9, 10, 0.42);
@@ -473,7 +481,7 @@
   align-items: center;
   color: var(--text-primary);
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 570;
   font-variant-numeric: tabular-nums;
 }
@@ -573,7 +581,7 @@
 }
 
 .skeletonCard {
-  height: 260px;
+  height: 210px;
   border-radius: var(--radius-4);
   background: rgba(255, 255, 255, 0.02);
   animation: shimmer 1.2s linear infinite;
@@ -645,4 +653,51 @@
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+/* v60 — refinamento final de densidade e acentos discretos */
+.clientCard:hover {
+  border-color: rgba(255, 255, 255, 0.095);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.fieldCard_weekly .fieldHeader span {
+  color: rgba(245, 184, 0, 0.82);
+}
+
+.fieldCard_once .fieldHeader span {
+  color: rgba(73, 190, 104, 0.82);
+}
+
+.fieldCard_auto .fieldHeader span {
+  color: var(--text-tertiary);
+}
+
+.fieldCard_weekly .fieldInput:focus {
+  border-color: rgba(245, 184, 0, 0.22);
+  background: rgba(245, 184, 0, 0.045);
+}
+
+.fieldCard_once .fieldInput:focus {
+  border-color: rgba(39, 166, 68, 0.22);
+  background: rgba(39, 166, 68, 0.045);
+}
+
+.fieldCard_auto .fieldValue_readonly {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.segmentBadge {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.segmentBlock:first-child .segmentBadge {
+  color: rgba(245, 184, 0, 0.9);
+  background: rgba(245, 184, 0, 0.07);
+}
+
+.segmentBlock:last-child .segmentBadge {
+  color: rgba(73, 190, 104, 0.9);
+  background: rgba(39, 166, 68, 0.07);
 }
