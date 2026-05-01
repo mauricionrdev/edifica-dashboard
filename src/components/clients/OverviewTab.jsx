@@ -185,20 +185,6 @@ export default function OverviewTab({
           </div>
 
           <div className={drawerStyles.field}>
-            <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
-            <Select
-              className={drawerStyles.selectControl}
-              value={form.status}
-              onChange={(event) => onSelectChange('status', 'status', event.target.value)}
-              disabled={deleting || !canEdit}
-              aria-label="Status do cliente"
-            >
-              <option value="active">Ativo</option>
-              <option value="churn">Churn / Cancelado</option>
-            </Select>
-          </div>
-
-          <div className={drawerStyles.field}>
             <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor</label>
             <UserPicker
               className={drawerStyles.selectControl}
@@ -210,6 +196,20 @@ export default function OverviewTab({
               disableHover
               portal
             />
+          </div>
+
+          <div className={drawerStyles.field}>
+            <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
+            <Select
+              className={drawerStyles.selectControl}
+              value={form.status}
+              onChange={(event) => onSelectChange('status', 'status', event.target.value)}
+              disabled={deleting || !canEdit}
+              aria-label="Status do cliente"
+            >
+              <option value="active">Ativo</option>
+              <option value="churn">Churn / Cancelado</option>
+            </Select>
           </div>
 
           <div className={drawerStyles.field}>

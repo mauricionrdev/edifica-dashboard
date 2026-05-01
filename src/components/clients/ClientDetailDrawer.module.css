@@ -12,9 +12,8 @@
 
 .modalCard {
   position: relative;
-  width: min(1040px, calc(100vw - 40px));
-  height: min(760px, calc(100vh - 40px));
-  max-height: min(760px, calc(100vh - 40px));
+  width: 70%;
+  height: 95%;
   min-width: 0;
   color: var(--text-primary);
   border: 1px solid var(--line-subtle);
