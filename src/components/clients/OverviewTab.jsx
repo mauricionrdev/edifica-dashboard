@@ -162,7 +162,6 @@ export default function OverviewTab({
         <div className={styles.overviewFacts}>
           {headerFacts.map((fact) => (
             <div key={fact.label} className={styles.factItem}>
-              <fact.icon size={14} />
               <span>{fact.label}</span>
               <strong title={fact.value}>{fact.value}</strong>
             </div>
