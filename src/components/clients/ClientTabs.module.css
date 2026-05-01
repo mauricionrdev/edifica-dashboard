@@ -1,12 +1,12 @@
 .tabsBar {
   min-width: 0;
   min-height: 0;
-  padding: 12px;
+  padding: 12px 10px;
   border-right: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.012);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -21,12 +21,12 @@
   min-height: 34px;
   padding: 0 10px;
   border: 1px solid transparent;
-  border-radius: var(--radius-1);
+  border-radius: 10px;
   background: transparent;
   color: var(--text-tertiary);
   font: inherit;
   font-size: 12px;
-  font-weight: 520;
+  font-weight: 540;
   text-align: left;
   display: flex;
   align-items: center;
@@ -35,10 +35,27 @@
   transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
 }
 
+.tab::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  margin-right: 9px;
+  border-radius: 999px;
+  background: transparent;
+  flex: 0 0 auto;
+}
+
+.tab span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .tab:hover {
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.04);
+  border-color: transparent;
 }
 
 .tabActive {
@@ -47,7 +64,13 @@
   border-color: var(--line-subtle);
 }
 
+.tabActive::before {
+  background: var(--text-tertiary);
+  opacity: 0.9;
+}
+
 .tabBody {
+  position: relative;
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
@@ -62,14 +85,14 @@
 
 .emptyState,
 .loadingState {
-  margin: 18px;
-  padding: 22px;
+  margin: 16px;
+  padding: 18px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
   background: rgba(255, 255, 255, 0.018);
   color: var(--text-tertiary);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.55;
   text-align: center;
 }
 
@@ -94,57 +117,4 @@
     width: auto;
     min-width: max-content;
   }
-}
-
-/* v54 — abas do modal de cliente no padrão Equipe & Acessos */
-.tabsBar {
-  padding: 10px;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.01);
-}
-
-.tab {
-  min-height: 32px;
-  padding: 0 9px 0 11px;
-  border-radius: 10px;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 540;
-}
-
-.tab::before {
-  content: '';
-  width: 3px;
-  height: 14px;
-  margin-right: 8px;
-  border-radius: 999px;
-  background: transparent;
-}
-
-.tab:hover {
-  color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.03);
-  border-color: transparent;
-}
-
-.tabActive {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.055);
-  border-color: var(--line-subtle);
-}
-
-.tabActive::before {
-  background: var(--accent, #ffd700);
-  opacity: 0.72;
-}
-
-.tab span {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.tabBody {
-  position: relative;
 }

@@ -20,11 +20,7 @@ import {
   subscribeAvatarChange,
 } from '../../utils/avatarStorage.js';
 import {
-  BuildingIcon,
-  UsersIcon,
   CloseIcon,
-  CoinsIcon,
-  TargetIcon,
 } from '../ui/Icons.jsx';
 import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
@@ -315,6 +311,17 @@ export default function ClientDetailDrawer({
           />
         </header>
 
+        {headerFacts.length > 0 ? (
+          <div className={drawerStyles.factsStrip} aria-label="Resumo do cliente">
+            {headerFacts.map((fact) => (
+              <div key={fact.label} className={drawerStyles.factItem}>
+                <span>{fact.label}</span>
+                <strong title={fact.value}>{fact.value}</strong>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
         <div className={drawerStyles.modalBody}>
           <aside className={tabStyles.tabsBar} role="tablist" aria-label="Detalhes do cliente">
             {visibleTabs.map((tab) => (
@@ -339,7 +346,7 @@ export default function ClientDetailDrawer({
                 client={client}
                 squads={squads}
                 users={users}
-                headerFacts={headerFacts}
+                headerFacts={[]}
                 avatarUrl={avatarUrl}
                 canEdit={canEditClient}
                 canManageAvatar={canManageAvatar}

@@ -1,59 +1,21 @@
 .overviewFacts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-bottom: 1px solid var(--line-subtle);
-  background: var(--bg-canvas, #0b0c0d);
-}
-
-.factItem {
-  min-width: 0;
-  min-height: 62px;
-  padding: 12px 14px;
-  border-left: 1px solid var(--line-subtle);
-  display: grid;
-  align-content: center;
-  gap: 7px;
-}
-
-.factItem:first-child {
-  border-left: 0;
-}
-
-.factItem span,
-.identityMain span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 540;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.factItem strong {
-  min-width: 0;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 590;
-  letter-spacing: -0.02em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 .identityPanel {
-  min-height: 76px;
+  min-height: 70px;
   padding: 12px 18px;
   border-bottom: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.012);
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
 }
 
 .clientAvatarLarge {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--line-subtle) !important;
   outline: 0 !important;
   box-shadow: none !important;
@@ -64,7 +26,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 620;
   letter-spacing: -0.04em;
 }
@@ -91,6 +53,15 @@
   gap: 5px;
 }
 
+.identityMain span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 540;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .identityMain strong {
   min-width: 0;
   color: var(--text-primary);
@@ -110,10 +81,10 @@
 }
 
 .identityActions button {
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 32px;
+  padding: 0 11px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
   font: inherit;
@@ -152,16 +123,8 @@
 }
 
 @media (max-width: 920px) {
-  .overviewFacts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .factItem:nth-child(odd) {
-    border-left: 0;
-  }
-
   .identityPanel {
-    grid-template-columns: 46px minmax(0, 1fr);
+    grid-template-columns: 44px minmax(0, 1fr);
   }
 
   .identityActions {
@@ -171,18 +134,8 @@
 }
 
 @media (max-width: 640px) {
-  .overviewFacts,
   .formGrid {
     grid-template-columns: 1fr;
-  }
-
-  .factItem {
-    border-left: 0;
-    border-top: 1px solid var(--line-subtle);
-  }
-
-  .factItem:first-child {
-    border-top: 0;
   }
 
   .identityPanel {
