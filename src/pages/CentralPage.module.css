@@ -1,33 +1,32 @@
 .headerTitleMain {
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1;
-  font-weight: 620;
+  font-weight: 600;
   letter-spacing: -0.028em;
 }
 
 .headerTitleSep {
   color: var(--text-quaternary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
 }
 
 .headerTitlePeriod {
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1;
   font-weight: 510;
-  letter-spacing: -0.01em;
 }
 
 .dashboard {
   min-height: 100%;
-  padding: 16px 16px 24px;
+  padding: 12px 14px 20px;
   background: transparent;
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .toolbar {
@@ -49,32 +48,28 @@
 .metricCard {
   position: relative;
   min-width: 0;
-  min-height: 96px;
-  padding: 14px 14px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
+  min-height: 86px;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--line-subtle);
   border-radius: 12px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.014)),
-    var(--bg-canvas);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 7px;
   overflow: hidden;
   cursor: grab;
-  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
 }
 
 .metricCard:hover {
   border-color: var(--line);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.036), rgba(255, 255, 255, 0.018)),
-    var(--bg-canvas);
+  background: rgba(255, 255, 255, 0.032);
   transform: translateY(-1px);
 }
 
 .metricCardDragging {
-  opacity: 0.6;
+  opacity: 0.62;
   cursor: grabbing;
 }
 
@@ -125,7 +120,7 @@
   color: var(--text-quaternary);
   display: inline-grid;
   place-items: center;
-  opacity: 0.9;
+  opacity: 0.86;
 }
 
 .metricIcon svg {
@@ -143,9 +138,9 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: clamp(23px, 1.5vw, 29px);
+  font-size: clamp(22px, 1.42vw, 28px);
   line-height: 1.02;
-  font-weight: 620;
+  font-weight: 610;
   letter-spacing: -0.034em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -195,7 +190,7 @@
 .metricProgress {
   width: 100%;
   height: 2px;
-  margin-top: 2px;
+  margin-top: 1px;
   border-radius: 999px;
   background: var(--progress-track);
   overflow: hidden;
@@ -226,7 +221,7 @@
 
 .dashboardPanels {
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(340px, 0.9fr);
+  grid-template-columns: minmax(0, 1.62fr) minmax(320px, 0.9fr);
   gap: 8px;
   align-items: stretch;
 }
@@ -235,18 +230,16 @@
 .detailsPanel,
 .activityPanel {
   min-width: 0;
-  border: 1px solid rgba(255, 255, 255, 0.065);
+  border: 1px solid var(--line-subtle);
   border-radius: 12px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.024), rgba(255, 255, 255, 0.012)),
-    var(--bg-canvas);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.022);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
   overflow: hidden;
 }
 
 .boardSection,
 .detailsPanel {
-  min-height: 336px;
+  min-height: 310px;
   display: flex;
   flex-direction: column;
 }
@@ -258,17 +251,17 @@
 
 .columnsPanel {
   flex: 1;
-  min-height: 320px;
-  padding: 17px 18px 15px;
+  min-height: 300px;
+  padding: 14px 16px 13px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .columnsPanelHeader,
 .compareHeader,
 .activityHeader {
-  min-height: 28px;
+  min-height: 26px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -282,13 +275,13 @@
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.1;
-  font-weight: 620;
+  font-weight: 610;
   letter-spacing: -0.018em;
 }
 
 .columnsCanvas {
   flex: 1;
-  min-height: 240px;
+  min-height: 222px;
   width: 100%;
   display: block;
 }
@@ -338,7 +331,7 @@
 }
 
 .compareHeader {
-  padding: 17px 18px 0;
+  padding: 14px 16px 0;
 }
 
 .compareHeaderHint {
@@ -352,7 +345,7 @@
 .compareBody {
   flex: 1;
   min-height: 0;
-  padding: 14px 18px 16px;
+  padding: 12px 16px 14px;
   display: flex;
   flex-direction: column;
 }
@@ -364,7 +357,6 @@
   font-size: 13px;
   line-height: 1;
   font-weight: 510;
-  letter-spacing: -0.01em;
 }
 
 .compareGrid {
@@ -378,12 +370,12 @@
 .compareItem {
   flex: 1;
   min-height: 0;
-  padding: 11px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
 }
 
 .compareItem:last-child {
@@ -410,9 +402,9 @@
 .compareValue {
   margin: 0;
   color: var(--text-primary);
-  font-size: 19px;
+  font-size: 18px;
   line-height: 1;
-  font-weight: 620;
+  font-weight: 610;
   letter-spacing: -0.028em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -439,16 +431,13 @@
   color: var(--text-tertiary);
 }
 
-.dashboardLastCard {
-  display: block;
-}
-
+.dashboardLastCard,
 .activityPanel {
   display: block;
 }
 
 .activityHeader {
-  padding: 15px 18px 13px;
+  padding: 13px 16px 11px;
   border-bottom: 1px solid var(--line-subtle);
 }
 
@@ -462,8 +451,8 @@
 }
 
 .activityHeaderBadge {
-  min-width: 23px;
-  height: 23px;
+  min-width: 22px;
+  height: 22px;
   padding: 0 8px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
@@ -480,13 +469,13 @@
 
 .activityList {
   display: grid;
-  padding: 4px 18px 12px;
+  padding: 3px 16px 10px;
 }
 
 .activityItem {
   width: 100%;
-  min-height: 62px;
-  padding: 10px 0;
+  min-height: 56px;
+  padding: 9px 0;
   border: 0;
   border-bottom: 1px solid var(--line-subtle);
   background: transparent;
@@ -495,8 +484,8 @@
   text-align: left;
   cursor: pointer;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto auto auto;
-  gap: 14px;
+  grid-template-columns: 36px minmax(0, 1fr) auto auto auto;
+  gap: 12px;
   align-items: center;
   transition: background-color 0.14s ease;
 }
@@ -511,8 +500,8 @@
 
 .activityAvatar {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
   background: #08090a;
@@ -533,7 +522,7 @@
 
 .activityAvatarInitials {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 620;
   letter-spacing: -0.02em;
   line-height: 1;
@@ -554,7 +543,7 @@
   color: var(--text-primary);
   font-size: 13px;
   line-height: 1.2;
-  font-weight: 620;
+  font-weight: 610;
   letter-spacing: -0.018em;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -564,7 +553,7 @@
   min-width: 0;
   overflow: hidden;
   color: var(--text-secondary);
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.2;
   font-weight: 400;
   white-space: nowrap;
@@ -589,7 +578,7 @@
 }
 
 .activityFee {
-  font-weight: 620;
+  font-weight: 610;
   letter-spacing: -0.012em;
 }
 
@@ -598,12 +587,12 @@
   align-items: center;
   justify-content: center;
   height: 22px;
-  padding: 0 10px;
+  padding: 0 9px;
   border: 1px solid transparent;
   border-radius: 999px;
   font-size: 10.5px;
   line-height: 1;
-  font-weight: 620;
+  font-weight: 610;
   white-space: nowrap;
 }
 
@@ -621,14 +610,14 @@
 
 .emptyState,
 .stateBlock {
-  padding: 22px 16px;
+  padding: 20px 14px;
   color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 510;
 }
 
 .stateBlock {
-  min-height: 220px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -661,25 +650,25 @@
 }
 
 .skeletonTall {
-  min-height: 260px;
+  min-height: 240px;
 }
 
 @media (min-width: 1180px) and (max-height: 820px) {
   .dashboard {
-    padding-top: 12px;
-    gap: 10px;
+    padding-top: 10px;
+    gap: 8px;
   }
 
   .metricCard {
-    min-height: 88px;
+    min-height: 82px;
   }
 
   .columnsPanel {
-    min-height: 292px;
+    min-height: 286px;
   }
 
   .activityItem {
-    min-height: 58px;
+    min-height: 54px;
   }
 }
 
@@ -693,7 +682,7 @@
   }
 
   .detailsPanel {
-    min-height: 250px;
+    min-height: 240px;
   }
 
   .toolbar {
@@ -717,7 +706,7 @@
   }
 
   .activityItem {
-    grid-template-columns: 38px minmax(0, 1fr) auto;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
     row-gap: 6px;
   }
 
@@ -733,7 +722,7 @@
   }
 
   .activityItem {
-    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-columns: 36px minmax(0, 1fr);
   }
 
   .activityDate,
