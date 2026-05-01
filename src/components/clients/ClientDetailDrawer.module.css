@@ -616,3 +616,145 @@
 .avatar img {
   border-radius: 999px;
 }
+
+/* v50 — drawer de cliente mais compacto e neutro */
+.overlay {
+  background: rgba(3, 4, 5, 0.68);
+  backdrop-filter: blur(8px);
+}
+
+.drawer {
+  width: min(920px, calc(100vw - 56px));
+  grid-template-columns: 196px minmax(0, 1fr);
+  box-shadow: none;
+}
+
+.header {
+  min-height: 104px;
+  padding: 18px 72px 18px 22px;
+  background: #0b0c0d;
+}
+
+.topbar {
+  top: 16px;
+  right: 16px;
+}
+
+.topbarActions {
+  gap: 8px;
+}
+
+.projectBtn,
+.iconBtn {
+  min-height: 34px;
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.projectBtn:hover:not(:disabled),
+.iconBtn:hover:not(:disabled) {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.iconBtn {
+  width: 34px;
+  height: 34px;
+}
+
+.identity {
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  background: #08090a !important;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.identityText {
+  gap: 6px;
+}
+
+.nameRow {
+  gap: 8px;
+}
+
+.name {
+  max-width: min(460px, 100%);
+  font-size: clamp(22px, 2vw, 28px);
+  line-height: 1.05;
+  font-weight: 620;
+  letter-spacing: -0.04em;
+}
+
+.status {
+  min-height: 22px;
+  padding: 0 9px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.section {
+  padding: 20px 24px;
+}
+
+.sectionTitle {
+  margin-bottom: 12px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.grid {
+  gap: 14px 16px;
+}
+
+.field {
+  gap: 6px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 520;
+}
+
+.input,
+.selectControl :global(button),
+.selectControl :global(input),
+.selectControl :global(select) {
+  min-height: 38px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 0 12px;
+}
+
+.btn,
+.btnGhost,
+.btnDanger {
+  min-height: 34px;
+  border-radius: var(--radius-1);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.btn {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary);
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+}

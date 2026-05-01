@@ -166,9 +166,9 @@
 }
 
 .scopeTabActive {
-  background: var(--accent-amber-soft);
+  background: transparent;
   color: var(--text-primary);
-  box-shadow: none;
+  box-shadow: inset 0 -1px 0 var(--accent-amber);
 }
 
 .scopeCount {
@@ -425,9 +425,8 @@
 }
 
 .pageButtonActive {
-  background: var(--accent-amber-soft);
-  color: var(--text-primary);
-  box-shadow: none;
+  color: var(--accent-amber);
+  box-shadow: inset 0 -1px 0 var(--accent-amber);
 }
 
 @media (max-width: 1180px) {
@@ -489,5 +488,235 @@
   .pagination {
     align-items: stretch;
     flex-direction: column;
+  }
+}
+
+/* v50 — Clientes alinhado ao padrão Perfil/GDV/Squad */
+.page {
+  padding: 12px 14px 20px;
+  gap: 10px;
+}
+
+.headerActions {
+  gap: 8px;
+}
+
+.headerActionButton {
+  border-color: var(--line-subtle) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.headerActionButton:hover {
+  border-color: var(--line) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--text-primary) !important;
+}
+
+.summaryStrip,
+.workbench {
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-4);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+}
+
+.summaryStrip {
+  min-height: 74px;
+}
+
+.summaryItem {
+  min-height: 74px;
+  padding: 12px 14px;
+  gap: 6px;
+}
+
+.summaryItem span,
+.clientHeader span {
+  font-size: 10px;
+  font-weight: 520;
+  letter-spacing: 0.1em;
+}
+
+.summaryItem strong {
+  font-size: clamp(22px, 1.45vw, 28px);
+  font-weight: 600;
+}
+
+.warningValue {
+  color: var(--text-primary);
+}
+
+.workbench {
+  min-height: 380px;
+}
+
+.toolbar {
+  min-height: 54px;
+  padding: 10px 12px;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.008);
+}
+
+.searchBox {
+  width: min(390px, 100%);
+  height: 34px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.searchBox:focus-within {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.searchBox input {
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.scopeTabs {
+  padding: 2px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.scopeTab {
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.scopeTabActive {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.scopeTabActive .scopeCount {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.scopeCount {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.paginationControl {
+  gap: 8px;
+}
+
+.resultCount,
+.pagination > span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pageSizeSelect,
+.pageSizeSelect > button {
+  min-width: 136px;
+}
+
+.pageSizeSelect > button {
+  min-height: 32px;
+  border-radius: var(--radius-1);
+}
+
+.clientHeader,
+.clientRow {
+  grid-template-columns: 34px minmax(210px, 2fr) minmax(120px, 0.88fr) minmax(120px, 0.88fr) 96px 96px 118px 104px;
+  gap: 12px;
+}
+
+.clientHeader {
+  min-height: 36px;
+  padding: 0 14px;
+}
+
+.clientRow {
+  min-height: 50px;
+  padding: 0 14px;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  background: #08090a;
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.cellName {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cellMuted,
+.cellDate,
+.cellFee {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.cellFee {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.statusPill {
+  min-height: 22px;
+  padding: 0 9px;
+  font-size: 11px;
+  font-weight: 590;
+}
+
+.status_ending {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-secondary);
+}
+
+.pagination {
+  min-height: 46px;
+  padding: 8px 12px;
+}
+
+.pageButton {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.pageButtonActive {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.empty {
+  min-height: 220px;
+  padding: 48px 20px;
+}
+
+@media (max-width: 1180px) {
+  .clientHeader,
+  .clientRow {
+    min-width: 920px;
+  }
+}
+
+@media (max-width: 760px) {
+  .summaryItem {
+    min-height: 64px;
   }
 }

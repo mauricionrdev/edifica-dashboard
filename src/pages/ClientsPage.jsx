@@ -122,6 +122,7 @@ export default function ClientsPage() {
             type="button"
             variant="secondary"
             size="sm"
+            className={styles.headerActionButton}
             onClick={() => navigate('/modelo-oficial')}
             aria-label="Abrir modelo oficial"
           >
@@ -129,7 +130,7 @@ export default function ClientsPage() {
           </Button>
         ) : null}
         {canCreate ? (
-          <Button type="button" variant="primary" size="sm" onClick={() => setModalOpen(true)} aria-label="Novo cliente">
+          <Button type="button" variant="secondary" size="sm" className={styles.headerActionButton} onClick={() => setModalOpen(true)} aria-label="Novo cliente">
             <PlusIcon size={14} />
             <span>Novo cliente</span>
           </Button>
