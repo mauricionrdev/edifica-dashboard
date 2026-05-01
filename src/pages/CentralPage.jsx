@@ -390,25 +390,18 @@ function ActivityPanel({ activities = [], onOpenClient }) {
   return (
     <section className={styles.activityPanel}>
       <div className={styles.activityHeader}>
-        <div className={styles.activityHeaderCopy}>
-          <h3>Contratos vencendo</h3>
-        </div>
+        <h3>Contratos vencendo</h3>
       </div>
 
       {rows.length > 0 ? (
         <div className={styles.activityList}>
-          <div className={styles.activityColumns} aria-hidden="true">
-            <span>Cliente</span>
-            <span>Vencimento</span>
-            <span>Squad</span>
-            <span>Mensalidade</span>
-          </div>
           {rows.map((activity) => {
             const client = activity.client || {};
             const initials = clientInitials(client.name);
             const avatarUrl = client.avatarUrl || '';
             const fee = Number(client.fee) > 0 ? fmtMoney(client.fee) : '';
             const squad = client.squadName || client.squad || '';
+
             return (
               <button
                 key={activity.key}
@@ -438,7 +431,7 @@ function ActivityPanel({ activities = [], onOpenClient }) {
           })}
         </div>
       ) : (
-        <p className={styles.emptyState}>Nenhum contrato vencendo nos próximos 30 dias.</p>
+        <p className={styles.emptyState}>Nenhum contrato vencendo.</p>
       )}
     </section>
   );
