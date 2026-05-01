@@ -422,18 +422,18 @@
 }
 
 .fieldCard_weekly {
-  border-color: rgba(245, 184, 0, 0.13);
-  background: linear-gradient(180deg, rgba(245, 184, 0, 0.045), rgba(255, 255, 255, 0.01));
+  border-color: rgba(245, 184, 0, 0.105);
+  background: linear-gradient(180deg, rgba(245, 184, 0, 0.026), rgba(255, 255, 255, 0.012) 76%);
 }
 
 .fieldCard_once {
-  border-color: rgba(39, 166, 68, 0.13);
-  background: linear-gradient(180deg, rgba(39, 166, 68, 0.04), rgba(255, 255, 255, 0.01));
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.012);
 }
 
 .fieldCard_auto {
-  border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.012);
+  border-color: rgba(39, 166, 68, 0.105);
+  background: linear-gradient(180deg, rgba(39, 166, 68, 0.024), rgba(255, 255, 255, 0.012) 76%);
 }
 
 .fieldHeader {
@@ -458,9 +458,9 @@
   height: 17px;
   padding: 0 5px;
   border-radius: 999px;
-  border: 1px solid rgba(245, 184, 0, 0.18);
-  background: rgba(245, 184, 0, 0.08);
-  color: var(--accent-amber);
+  border: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -662,42 +662,39 @@
 }
 
 .fieldCard_weekly .fieldHeader span {
-  color: rgba(245, 184, 0, 0.82);
+  color: rgba(245, 184, 0, 0.72);
 }
 
 .fieldCard_once .fieldHeader span {
-  color: rgba(73, 190, 104, 0.82);
-}
-
-.fieldCard_auto .fieldHeader span {
   color: var(--text-tertiary);
 }
 
+.fieldCard_auto .fieldHeader span {
+  color: rgba(73, 190, 104, 0.72);
+}
+
 .fieldCard_weekly .fieldInput:focus {
-  border-color: rgba(245, 184, 0, 0.22);
-  background: rgba(245, 184, 0, 0.045);
+  border-color: rgba(245, 184, 0, 0.18);
+  background: rgba(245, 184, 0, 0.026);
 }
 
 .fieldCard_once .fieldInput:focus {
-  border-color: rgba(39, 166, 68, 0.22);
-  background: rgba(39, 166, 68, 0.045);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .fieldCard_auto .fieldValue_readonly {
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.018);
+  background: rgba(39, 166, 68, 0.018);
 }
 
 .segmentBadge {
+  color: var(--text-tertiary);
   background: rgba(255, 255, 255, 0.035);
 }
 
-.segmentBlock:first-child .segmentBadge {
-  color: rgba(245, 184, 0, 0.9);
-  background: rgba(245, 184, 0, 0.07);
-}
-
+.segmentBlock:first-child .segmentBadge,
 .segmentBlock:last-child .segmentBadge {
-  color: rgba(73, 190, 104, 0.9);
-  background: rgba(39, 166, 68, 0.07);
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.035);
 }
