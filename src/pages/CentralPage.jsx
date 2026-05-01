@@ -385,27 +385,29 @@ function clientMeta(client) {
 }
 
 function ActivityPanel({ activities = [], onOpenClient }) {
-  const rows = Array.isArray(activities) ? activities.slice(0, 5) : [];
+  const rows = Array.isArray(activities) ? activities.slice(0, 8) : [];
 
   return (
     <section className={styles.activityPanel}>
       <div className={styles.activityHeader}>
-        <h3>Atividades recentes</h3>
-        <span className={styles.activityHeaderMeta}>últimas 24h · {fmtInt(rows.length)}</span>
-        <span className={styles.activityHeaderBadge}>{fmtInt(rows.length)}</span>
+        <div className={styles.activityHeaderCopy}>
+          <h3>Contratos vencendo</h3>
+          <span className={styles.activityHeaderMeta}>próximos 30 dias</span>
+        </div>
+        <span className={styles.activityHeaderBadge}>{fmtInt(activities.length)}</span>
       </div>
 
       {rows.length > 0 ? (
         <div className={styles.activityList}>
           {rows.map((activity) => {
             const client = activity.client || {};
-            const status = String(client.status || '').toLowerCase();
-            const isActive = status === 'active' || status === 'ativo';
-            const isChurn = status === 'churn';
             const initials = clientInitials(client.name);
             const avatarUrl = client.avatarUrl || '';
             const fee = Number(client.fee) > 0 ? fmtMoney(client.fee) : '';
             const squad = client.squadName || client.squad || '';
+            const urgencyClass = activity.diffDays <= 3
+              ? styles.activityStatusPill_urgent
+              : styles.activityStatusPill_warning;
 
             return (
               <button
@@ -431,23 +433,17 @@ function ActivityPanel({ activities = [], onOpenClient }) {
 
                 {squad ? <span className={styles.activitySquad}>{squad}</span> : <span aria-hidden="true" />}
 
-                {isActive ? (
-                  <span className={`${styles.activityStatusPill} ${styles.activityStatusPill_active}`}>
-                    ATIVO
-                  </span>
-                ) : isChurn ? (
-                  <span className={`${styles.activityStatusPill} ${styles.activityStatusPill_churn}`}>
-                    CHURN
-                  </span>
-                ) : fee ? (
-                  <span className={styles.activityFee}>{fee}</span>
-                ) : <span aria-hidden="true" />}
+                {fee ? <span className={styles.activityFee}>{fee}</span> : <span aria-hidden="true" />}
+
+                <span className={`${styles.activityStatusPill} ${urgencyClass}`}>
+                  {activity.diffDays === 0 ? 'HOJE' : `${activity.diffDays}D`}
+                </span>
               </button>
             );
           })}
         </div>
       ) : (
-        <p className={styles.emptyState}>Nenhuma atividade recente.</p>
+        <p className={styles.emptyState}>Nenhum contrato vencendo nos próximos 30 dias.</p>
       )}
     </section>
   );
@@ -456,76 +452,35 @@ function ActivityPanel({ activities = [], onOpenClient }) {
 
 function buildClientActivities(clients = []) {
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
   const events = [];
 
   (Array.isArray(clients) ? clients : []).forEach((client) => {
-    const created = parseAnyDate(client?.createdAt);
-    const start = parseClientDate(client?.startDate);
     const churn = parseClientDate(client?.churnDate);
+    const status = String(client?.status || '').toLowerCase();
+    const isChurn = status === 'churn' || Boolean(churn);
     const endDate = parseClientDate(client?.endDate);
-    const fee = Number(client?.fee) || 0;
 
-    // "foi cadastrado(a) como novo cliente"
-    // Só dispara se NÃO houver startDate no mesmo dia (evita duplicar
-    // cadastro + início de contrato no mesmo evento).
-    if (created && created <= now) {
-      const sameDayAsStart =
-        start && Math.abs(created.getTime() - start.getTime()) < 24 * 60 * 60 * 1000;
-      if (!sameDayAsStart) {
-        events.push({
-          key: `${client.id}-created`,
-          client,
-          date: created,
-          tone: 'amber',
-          text: 'foi cadastrado(a) como novo cliente',
-        });
-      }
-    }
+    if (!endDate || isChurn) return;
 
-    // "iniciou contrato de R$ X/mês" — engloba o caso de cadastro+contrato no mesmo dia
-    if (start && start <= now) {
-      const feePart = fee > 0 ? ` de ${fmtMoney(fee)}/mês` : '';
-      events.push({
-        key: `${client.id}-start`,
-        client,
-        date: start,
-        tone: 'green',
-        text: `iniciou contrato${feePart}`,
-      });
-    }
+    const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+    if (diffDays < 0 || diffDays > 30) return;
 
-    // "saiu (churn)"
-    if (churn && churn <= now) {
-      events.push({
-        key: `${client.id}-churn`,
-        client,
-        date: churn,
-        tone: 'pink',
-        text: 'saiu (churn)',
-      });
-    }
-
-    // "vencendo em X dias" — só entra se ≤ 7 dias e cliente não está em churn.
-    // Date é o endDate (futuro) — assim ordena alto na lista (recente).
-    if (endDate && !churn) {
-      const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-      if (diffDays >= 0 && diffDays <= 7) {
-        events.push({
-          key: `${client.id}-expiring`,
-          client,
-          date: endDate,
-          tone: 'amber',
-          text: diffDays === 0
-            ? 'vence hoje'
-            : `vencendo em ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`,
-        });
-      }
-    }
+    events.push({
+      key: `${client.id}-expiring`,
+      client,
+      date: endDate,
+      diffDays,
+      tone: diffDays <= 3 ? 'risk' : 'amber',
+      text: diffDays === 0
+        ? 'contrato vence hoje'
+        : `contrato vence em ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`,
+    });
   });
 
   return events
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .slice(0, 10);
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .slice(0, 12);
 }
 
 function DashboardSkeleton() {

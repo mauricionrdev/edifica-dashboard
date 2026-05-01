@@ -731,3 +731,244 @@
     justify-self: start;
   }
 }
+
+/* v63 — Dashboard/Central: refinamento executivo e contratos vencendo */
+.dashboard {
+  padding: 10px 12px 18px;
+  gap: 8px;
+}
+
+.metricsGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.metricCard {
+  min-height: 78px;
+  padding: 10px 11px 9px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
+}
+
+.metricCard:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: none;
+}
+
+.metricCardTop {
+  min-height: 14px;
+}
+
+.metricLabel {
+  font-size: 9.8px;
+  letter-spacing: 0.07em;
+}
+
+.metricIcon,
+.metricIcon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.metricValue {
+  font-size: clamp(20px, 1.22vw, 25px);
+  font-weight: 610;
+}
+
+.metricFooter {
+  gap: 5px;
+  font-size: 11.5px;
+}
+
+.dashboardPanels {
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.82fr);
+  gap: 7px;
+}
+
+.boardSection,
+.detailsPanel,
+.activityPanel {
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
+}
+
+.boardSection,
+.detailsPanel {
+  min-height: 286px;
+}
+
+.columnsPanel {
+  min-height: 276px;
+  padding: 12px 14px 11px;
+  gap: 8px;
+}
+
+.columnsCanvas {
+  min-height: 210px;
+}
+
+.compareHeader {
+  padding: 12px 14px 0;
+}
+
+.compareBody {
+  padding: 10px 14px 12px;
+}
+
+.compareItem {
+  padding: 8px 0;
+}
+
+.compareValue {
+  font-size: 17px;
+}
+
+.activityPanel {
+  overflow: hidden;
+}
+
+.activityHeader {
+  min-height: 48px;
+  padding: 10px 14px;
+  align-items: center;
+}
+
+.activityHeaderCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.activityHeader h3 {
+  font-size: 14px;
+}
+
+.activityHeaderMeta {
+  flex: 0 1 auto;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.activityHeaderBadge {
+  min-width: 24px;
+  height: 22px;
+  color: var(--text-primary);
+}
+
+.activityList {
+  padding: 2px 14px 8px;
+}
+
+.activityItem {
+  min-height: 50px;
+  padding: 8px 0;
+  grid-template-columns: 32px minmax(0, 1fr) 94px minmax(110px, 0.32fr) auto 54px;
+  gap: 10px;
+}
+
+.activityAvatar {
+  width: 30px;
+  height: 30px;
+}
+
+.activityAvatarInitials {
+  font-size: 10.5px;
+}
+
+.activityCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.activityCopy strong {
+  font-size: 13px;
+  line-height: 1.18;
+}
+
+.activityCopy > span {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  line-height: 1.2;
+}
+
+.activityDate,
+.activitySquad,
+.activityFee {
+  font-size: 11.5px;
+}
+
+.activitySquad {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activityStatusPill {
+  height: 21px;
+  min-width: 48px;
+  padding: 0 8px;
+  font-size: 10px;
+}
+
+.activityStatusPill_warning {
+  background: rgba(255, 215, 0, 0.075);
+  border-color: rgba(255, 215, 0, 0.18);
+  color: var(--accent-amber);
+}
+
+.activityStatusPill_urgent {
+  background: rgba(239, 68, 68, 0.075);
+  border-color: rgba(239, 68, 68, 0.18);
+  color: var(--danger);
+}
+
+.emptyState {
+  padding: 18px 14px;
+}
+
+@media (min-width: 1180px) and (max-height: 820px) {
+  .metricCard {
+    min-height: 74px;
+  }
+
+  .columnsPanel {
+    min-height: 260px;
+  }
+
+  .activityItem {
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .dashboardPanels {
+    grid-template-columns: 1fr;
+  }
+
+  .activityItem {
+    grid-template-columns: 32px minmax(0, 1fr) 88px auto;
+  }
+
+  .activitySquad,
+  .activityFee {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .activityItem {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .activityDate,
+  .activityStatusPill {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
