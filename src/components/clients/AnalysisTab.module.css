@@ -334,3 +334,93 @@
 .entry + .entry {
   margin-top: 2px;
 }
+
+/* v54 — confirmações internas e refinamento do modal de cliente */
+.confirmOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(8, 9, 10, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.confirmModal {
+  width: min(420px, 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-4);
+  background: var(--surface, #111214);
+  overflow: hidden;
+}
+
+.confirmHead {
+  min-height: 58px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: grid;
+  gap: 4px;
+}
+
+.confirmHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.confirmHead strong {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+
+.confirmModal p {
+  margin: 0;
+  padding: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.confirmActions {
+  padding: 12px 16px 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancelBtn,
+.confirmDeleteBtn {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-primary);
+}
+
+.confirmDeleteBtn {
+  border-color: rgba(255, 91, 115, 0.24);
+  background: rgba(255, 91, 115, 0.065);
+  color: #ff9cad;
+}
+
+.confirmDeleteBtn:hover {
+  border-color: rgba(255, 91, 115, 0.4);
+  background: rgba(255, 91, 115, 0.12);
+  color: #ffd0d8;
+}

@@ -47,6 +47,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const [creating, setCreating] = useState(false);
   const [pendingIds, setPendingIds] = useState(new Set());
   const [savingIds, setSavingIds] = useState(new Set());
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const timersRef = useRef(new Map());
   const fetchIdRef = useRef(0);
@@ -153,14 +154,15 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     commitPatch(id, { date: value });
   }
 
-  async function handleDelete(id) {
-    const confirmed = window.confirm('Remover esta análise? Esta ação não pode ser desfeita.');
-    if (!confirmed) return;
+  async function confirmDelete() {
+    const target = deleteTarget;
+    if (!target?.id) return;
 
     const previous = entries;
-    setEntries((list) => list.filter((entry) => entry.id !== id));
+    setDeleteTarget(null);
+    setEntries((list) => list.filter((entry) => entry.id !== target.id));
     try {
-      await deleteAnalysis(clientId, type, id);
+      await deleteAnalysis(clientId, type, target.id);
       showToast('Análise removida.');
     } catch (error) {
       setEntries(previous);
@@ -242,7 +244,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 <button
                   type="button"
                   className={styles.delBtn}
-                  onClick={() => handleDelete(entry.id)}
+                  onClick={() => setDeleteTarget(entry)}
                   disabled={!canEdit}
                 >
                   Remover
@@ -264,6 +266,32 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           );
         })
       )}
+
+      {deleteTarget ? (
+        <div className={styles.confirmOverlay} role="presentation" onClick={() => setDeleteTarget(null)}>
+          <section
+            className={styles.confirmModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Remover análise"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.confirmHead}>
+              <span>Remover análise</span>
+              <strong>{title}</strong>
+            </div>
+            <p>Esta ação remove o registro selecionado e não pode ser desfeita.</p>
+            <div className={styles.confirmActions}>
+              <button type="button" className={styles.cancelBtn} onClick={() => setDeleteTarget(null)}>
+                Cancelar
+              </button>
+              <button type="button" className={styles.confirmDeleteBtn} onClick={confirmDelete}>
+                Remover
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

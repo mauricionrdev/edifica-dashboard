@@ -458,3 +458,64 @@
     justify-content: flex-start;
   }
 }
+
+/* v54 — modal de cliente mais próximo de Equipe & Acessos */
+.modalCard {
+  width: min(1040px, calc(100vw - 56px));
+  height: min(760px, calc(100vh - 56px));
+}
+
+.modalHead {
+  min-height: 70px;
+  padding: 14px 16px;
+}
+
+.modalBody {
+  grid-template-columns: 188px minmax(0, 1fr);
+}
+
+.identity {
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 11px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+}
+
+.name {
+  font-size: clamp(19px, 1.5vw, 24px);
+}
+
+.status {
+  min-height: 21px;
+  padding: 0 7px;
+  font-size: 9.5px;
+}
+
+.projectBtn,
+.iconBtn,
+.btn,
+.btnGhost,
+.btnDanger {
+  border-radius: 10px;
+}
+
+.projectBtn,
+.btn {
+  min-height: 32px;
+  padding: 0 11px;
+}
+
+.iconBtn {
+  width: 32px;
+  height: 32px;
+}
+
+@media (max-width: 900px) {
+  .modalBody {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+}
