@@ -973,155 +973,8 @@
   }
 }
 
-/* v64 — Dashboard premium: respiro, cards executivos e contratos vencendo refinado */
-.dashboard {
-  padding: 14px 14px 22px;
-  gap: 12px;
-}
 
-.metricsGrid {
-  gap: 10px;
-}
-
-.metricCard {
-  min-height: 96px;
-  padding: 14px 15px 13px;
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.021);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
-  justify-content: space-between;
-}
-
-.metricCard:hover {
-  border-color: rgba(255, 255, 255, 0.105);
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.metricCardTop {
-  min-height: 18px;
-}
-
-.metricLabel {
-  font-size: 10.2px;
-  letter-spacing: 0.082em;
-}
-
-.metricValue {
-  font-size: clamp(24px, 1.55vw, 30px);
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-.metricFooter,
-.metricProgress {
-  display: none;
-}
-
-.dashboardPanels {
-  grid-template-columns: minmax(0, 1.58fr) minmax(340px, 0.88fr);
-  gap: 10px;
-}
-
-.boardSection,
-.detailsPanel,
-.activityPanel {
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.021);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
-}
-
-.boardSection,
-.detailsPanel {
-  min-height: 318px;
-}
-
-.columnsPanel {
-  min-height: 310px;
-  padding: 16px 18px 15px;
-  gap: 12px;
-}
-
-.columnsPanelHeader,
-.compareHeader,
-.activityHeader {
-  min-height: 32px;
-}
-
-.columnsPanelTitle,
-.compareHeader h3,
-.activityHeader h3 {
-  font-size: 15px;
-  font-weight: 620;
-  letter-spacing: -0.02em;
-}
-
-.columnsCanvas {
-  min-height: 236px;
-}
-
-.columnsAxisText {
-  fill: var(--text-muted);
-}
-
-.columnsValue {
-  fill: var(--text-tertiary);
-  font-size: 11.5px;
-}
-
-.columnsValueCurrent {
-  fill: var(--text-primary);
-}
-
-.columnsMonth {
-  fill: var(--text-tertiary);
-}
-
-.columnsMonthCurrent {
-  fill: var(--text-primary);
-}
-
-.compareHeader {
-  padding: 16px 18px 0;
-}
-
-.compareHeaderHint {
-  color: var(--text-quaternary);
-  font-size: 11px;
-}
-
-.compareBody {
-  padding: 14px 18px 16px;
-}
-
-.compareGrid {
-  gap: 0;
-}
-
-.compareItem {
-  min-height: 56px;
-  padding: 12px 0;
-}
-
-.compareLabel {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  letter-spacing: 0.09em;
-}
-
-.compareDelta {
-  color: var(--text-quaternary);
-  font-size: 11.5px;
-}
-
-.compareValue {
-  font-size: 19px;
-  letter-spacing: -0.032em;
-}
-
-.activityPanel {
-  overflow: hidden;
-}
-
+/* v65 — manter apenas refinamento de Contratos vencendo */
 .activityHeader {
   padding: 14px 18px 13px;
   border-bottom: 1px solid var(--line-subtle);
@@ -1217,22 +1070,281 @@
   color: var(--text-muted);
 }
 
-.emptyState {
-  padding: 18px;
+@media (max-width: 1180px) {
+  .activityItem {
+    grid-template-columns: 36px minmax(0, 1fr) 120px 110px;
+  }
+
+  .activityFee {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .activityItem {
+    grid-template-columns: 36px minmax(0, 1fr) 110px;
+    gap: 12px;
+  }
+
+  .activitySquad,
+  .activityMuted {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .activityItem {
+    grid-template-columns: 36px minmax(0, 1fr);
+    row-gap: 4px;
+  }
+
+  .activityDate {
+    grid-column: 2;
+  }
+}
+
+/* v66 — garantia de reversão do v64 fora de Contratos vencendo */
+.dashboard {
+  padding: 10px 12px 18px;
+  gap: 8px;
+}
+
+.metricsGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.metricCard {
+  min-height: 78px;
+  padding: 10px 11px 9px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
+  justify-content: flex-start;
+}
+
+.metricCard:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  transform: none;
+}
+
+.metricCardTop {
+  min-height: 14px;
+}
+
+.metricLabel {
+  font-size: 9.8px;
+  letter-spacing: 0.07em;
+}
+
+.metricValue {
+  font-size: clamp(20px, 1.22vw, 25px);
+  font-weight: 610;
+}
+
+.metricFooter {
+  margin: auto 0 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  line-height: 1.2;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.metricProgress {
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: var(--progress-track);
+  overflow: hidden;
+}
+
+.dashboardPanels {
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.82fr);
+  gap: 7px;
+}
+
+.boardSection,
+.detailsPanel,
+.activityPanel {
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
+}
+
+.boardSection,
+.detailsPanel {
+  min-height: 286px;
+}
+
+.columnsPanel {
+  min-height: 276px;
+  padding: 12px 14px 11px;
+  gap: 8px;
+}
+
+.columnsPanelHeader,
+.compareHeader {
+  min-height: initial;
+}
+
+.columnsPanelTitle,
+.compareHeader h3 {
+  font-size: initial;
+  font-weight: initial;
+  letter-spacing: initial;
+}
+
+.columnsCanvas {
+  min-height: 210px;
+}
+
+.compareHeader {
+  padding: 12px 14px 0;
+}
+
+.compareHeaderHint {
+  color: var(--text-tertiary);
+  font-size: initial;
+}
+
+.compareBody {
+  padding: 10px 14px 12px;
+}
+
+.compareGrid {
+  gap: initial;
+}
+
+.compareItem {
+  min-height: initial;
+  padding: 8px 0;
+}
+
+.compareLabel {
+  color: var(--text-tertiary);
+  font-size: initial;
+  letter-spacing: initial;
+}
+
+.compareDelta {
+  font-size: initial;
+}
+
+.compareValue {
+  font-size: 17px;
+}
+
+/* Contratos vencendo permanece refinado */
+.activityHeader {
+  padding: 14px 18px 13px;
+  border-bottom: 1px solid var(--line-subtle);
+  align-items: center;
+}
+
+.activityHeaderCopy {
+  gap: 0;
+}
+
+.activityHeaderMeta,
+.activityHeaderBadge,
+.activityStatusPill,
+.activityStatusPill_warning,
+.activityStatusPill_urgent,
+.activityStatusPill_active,
+.activityStatusPill_churn {
+  display: none;
+}
+
+.activityList {
+  padding: 0 18px 8px;
+}
+
+.activityItem {
+  min-height: 58px;
+  padding: 11px 0;
+  grid-template-columns: 36px minmax(220px, 1fr) 132px minmax(130px, 0.32fr) 118px;
+  gap: 18px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.activityItem:hover {
+  background: transparent;
+}
+
+.activityAvatar {
+  width: 32px;
+  height: 32px;
+  border-color: rgba(255, 255, 255, 0.075);
+}
+
+.activityAvatarInitials {
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  font-weight: 620;
+}
+
+.activityCopy {
+  display: block;
+  min-width: 0;
+}
+
+.activityCopy strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  line-height: 1.2;
+  font-weight: 620;
+  letter-spacing: -0.018em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityDate,
+.activitySquad,
+.activityFee,
+.activityMuted {
+  min-width: 0;
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 520;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activitySquad {
+  color: var(--text-secondary);
+}
+
+.activityFee {
+  color: var(--text-primary);
+  text-align: right;
+  font-weight: 620;
+  letter-spacing: -0.012em;
+}
+
+.activityMuted {
+  color: var(--text-muted);
 }
 
 @media (min-width: 1180px) and (max-height: 820px) {
-  .dashboard {
-    padding-top: 12px;
-    gap: 10px;
-  }
-
   .metricCard {
-    min-height: 90px;
+    min-height: 74px;
   }
 
   .columnsPanel {
-    min-height: 292px;
+    min-height: 260px;
   }
 
   .activityItem {
@@ -1278,5 +1390,6 @@
 
   .activityDate {
     grid-column: 2;
+    justify-self: start;
   }
 }
