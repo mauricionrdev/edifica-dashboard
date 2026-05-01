@@ -392,9 +392,7 @@ function ActivityPanel({ activities = [], onOpenClient }) {
       <div className={styles.activityHeader}>
         <div className={styles.activityHeaderCopy}>
           <h3>Contratos vencendo</h3>
-          <span className={styles.activityHeaderMeta}>próximos 30 dias</span>
         </div>
-        <span className={styles.activityHeaderBadge}>{fmtInt(activities.length)}</span>
       </div>
 
       {rows.length > 0 ? (
@@ -405,10 +403,6 @@ function ActivityPanel({ activities = [], onOpenClient }) {
             const avatarUrl = client.avatarUrl || '';
             const fee = Number(client.fee) > 0 ? fmtMoney(client.fee) : '';
             const squad = client.squadName || client.squad || '';
-            const urgencyClass = activity.diffDays <= 3
-              ? styles.activityStatusPill_urgent
-              : styles.activityStatusPill_warning;
-
             return (
               <button
                 key={activity.key}
@@ -426,18 +420,13 @@ function ActivityPanel({ activities = [], onOpenClient }) {
 
                 <span className={styles.activityCopy}>
                   <strong>{client.name || 'Cliente'}</strong>
-                  <span>{activity.text}</span>
                 </span>
 
                 <span className={styles.activityDate}>{formatShortDate(activity.date)}</span>
 
-                {squad ? <span className={styles.activitySquad}>{squad}</span> : <span aria-hidden="true" />}
+                {squad ? <span className={styles.activitySquad}>{squad}</span> : <span className={styles.activityMuted}>Sem squad</span>}
 
-                {fee ? <span className={styles.activityFee}>{fee}</span> : <span aria-hidden="true" />}
-
-                <span className={`${styles.activityStatusPill} ${urgencyClass}`}>
-                  {activity.diffDays === 0 ? 'HOJE' : `${activity.diffDays}D`}
-                </span>
+                {fee ? <span className={styles.activityFee}>{fee}</span> : <span className={styles.activityMuted}>Sem mensalidade</span>}
               </button>
             );
           })}
@@ -472,9 +461,7 @@ function buildClientActivities(clients = []) {
       date: endDate,
       diffDays,
       tone: diffDays <= 3 ? 'risk' : 'amber',
-      text: diffDays === 0
-        ? 'contrato vence hoje'
-        : `contrato vence em ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`,
+      text: '',
     });
   });
 
@@ -624,9 +611,6 @@ export default function CentralPage() {
           id: 'base',
           label: 'Base de dados',
           value: fmtInt(totalClients),
-          helper: 'vs. mês passado',
-          delta: baseDelta.delta,
-          deltaTone: baseDelta.deltaTone,
           icon: <UsersIcon size={14} />,
           tone: 'neutral',
         },
@@ -634,9 +618,6 @@ export default function CentralPage() {
           id: 'ativos',
           label: 'Clientes ativos',
           value: fmtInt(activeClients),
-          helper: 'vs. mês passado',
-          delta: ativosDelta.delta,
-          deltaTone: ativosDelta.deltaTone,
           icon: <BriefcaseIcon size={14} />,
           tone: 'neutral',
         },
@@ -644,9 +625,6 @@ export default function CentralPage() {
           id: 'novosAtual',
           label: 'Clientes novos no mês',
           value: fmtInt(currentMonthNewClients),
-          helper: 'vs. mês passado',
-          delta: novosDelta.delta,
-          deltaTone: novosDelta.deltaTone,
           icon: <TrendingUpIcon size={14} />,
           tone: currentMonthNewClients > 0 ? 'good' : 'neutral',
         },
@@ -654,9 +632,6 @@ export default function CentralPage() {
           id: 'mrr',
           label: 'MRR atual',
           value: fmtMoney(mrr),
-          helper: 'vs. mês passado',
-          delta: mrrDelta.delta,
-          deltaTone: mrrDelta.deltaTone,
           icon: <CoinsIcon size={14} />,
           tone: 'neutral',
         },
@@ -664,9 +639,6 @@ export default function CentralPage() {
           id: 'receitaNova',
           label: 'Receita nova gerada',
           value: fmtMoney(revenueNew),
-          helper: 'vs. mês passado',
-          delta: receitaNovaDelta.delta,
-          deltaTone: receitaNovaDelta.deltaTone,
           icon: <TrendingUpIcon size={14} />,
           tone: revenueNew > 0 ? 'good' : 'neutral',
         },
@@ -674,9 +646,6 @@ export default function CentralPage() {
           id: 'ticket',
           label: 'Ticket médio',
           value: fmtMoney(ticketMedio),
-          helper: 'vs. mês passado',
-          delta: ticketDelta.delta,
-          deltaTone: ticketDelta.deltaTone,
           icon: <TargetIcon size={14} />,
           tone: 'neutral',
         },
@@ -684,11 +653,6 @@ export default function CentralPage() {
           id: 'perdida',
           label: 'Receita perdida no mês',
           value: fmtMoney(revenueLost),
-          helper: revenueLost > 0
-            ? `${fmtInt(churnedPeriod)} churn(s) em ${MONTHS_FULL[period.m]}`
-            : 'sem perdas',
-          delta: revenueLost > 0 ? perdidaDelta.delta : '',
-          deltaTone: perdidaDelta.deltaTone,
           icon: <ChartColumnIcon size={14} />,
           tone: revenueLost > 0 ? 'risk' : 'neutral',
         },
@@ -696,13 +660,7 @@ export default function CentralPage() {
           id: 'churn',
           label: 'Taxa de churn',
           value: fmtPct(churnRate),
-          helper: churnedPeriod > 0
-            ? `${fmtInt(churnedPeriod)} no período`
-            : 'sem churn',
-          delta: churnedPeriod > 0 ? churnDelta.delta : '',
-          deltaTone: churnDelta.deltaTone,
           icon: <ChartColumnIcon size={14} />,
-          progress: Math.min(churnRate, 100),
           tone: toneFromChurn(churnRate),
         },
       ];
