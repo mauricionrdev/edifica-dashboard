@@ -21,7 +21,6 @@ export default function AvatarTab({
         <div className={styles.avatarInfo}>
           <span>Imagem do cliente</span>
           <strong>{client.name}</strong>
-          <p>Use uma foto ou marca simples para identificação visual na plataforma.</p>
         </div>
 
         {canManageAvatar ? (

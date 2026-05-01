@@ -61,9 +61,9 @@
 .tabBody {
   min-width: 0;
   min-height: 0;
+  max-height: inherit;
   overflow-y: auto;
   background: #08090a;
-  contain: layout paint;
   scrollbar-width: none;
 }
 
@@ -71,8 +71,8 @@
 
 .emptyState,
 .loadingState {
-  margin: 18px;
-  padding: 22px;
+  margin: 14px;
+  padding: 18px;
   border: 1px solid var(--line-subtle);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.018);

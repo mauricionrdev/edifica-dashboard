@@ -1,23 +1,23 @@
 .panel {
-  padding: 18px;
+  padding: 14px;
   background: #08090a;
 }
 
 .avatarCard {
-  min-height: 132px;
-  padding: 18px;
+  min-height: 104px;
+  padding: 14px;
   border: 1px solid var(--line-subtle);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.016);
   display: grid;
-  grid-template-columns: 74px minmax(0, 1fr) auto;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .avatarPreview {
-  width: 74px;
-  height: 74px;
+  width: 64px;
+  height: 64px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
   background: #08090a;
@@ -26,7 +26,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 620;
   letter-spacing: -0.04em;
 }
@@ -58,15 +58,12 @@
   line-height: 1.2;
   font-weight: 600;
   letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.avatarInfo p {
-  max-width: 520px;
-  margin: 0;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.5;
-}
+.avatarInfo p { display: none; }
 
 .actions {
   display: inline-flex;
@@ -110,7 +107,7 @@
 
 @media (max-width: 780px) {
   .avatarCard {
-    grid-template-columns: 74px minmax(0, 1fr);
+    grid-template-columns: 64px minmax(0, 1fr);
   }
 
   .actions {
