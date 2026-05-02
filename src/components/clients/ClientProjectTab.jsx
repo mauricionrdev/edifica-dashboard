@@ -109,6 +109,8 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   const [commentBody, setCommentBody] = useState('');
   const [subtaskTitle, setSubtaskTitle] = useState('');
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
+  const [deleteSectionTarget, setDeleteSectionTarget] = useState(null);
+  const [deleteTaskTarget, setDeleteTaskTarget] = useState(null);
 
   const project = detail.project;
   const sections = Array.isArray(detail.sections) ? detail.sections : [];
@@ -128,6 +130,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   const totalTasks = flatTasks.length || Number(project?.taskCount || 0);
   const doneTasks = flatTasks.filter((task) => task.status === 'done').length || Number(project?.doneCount || 0);
   const progress = percent(doneTasks, totalTasks);
+  const openTasks = Math.max(totalTasks - doneTasks, 0);
 
   const refreshProject = useCallback(
     async (projectId = project?.id) => {
@@ -303,6 +306,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
       showToast(error?.message || 'Não foi possível remover a seção.', { variant: 'error' });
     } finally {
       setBusy(false);
+      setDeleteSectionTarget(null);
     }
   }
 
@@ -363,6 +367,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
       showToast(error?.message || 'Não foi possível remover a tarefa.', { variant: 'error' });
     } finally {
       setBusy(false);
+      setDeleteTaskTarget(null);
     }
   }
 
@@ -464,8 +469,12 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
             <span>progresso</span>
           </div>
           <div>
+            <strong>{openTasks}</strong>
+            <span>abertas</span>
+          </div>
+          <div>
             <strong>{doneTasks}/{totalTasks}</strong>
-            <span>tarefas</span>
+            <span>concluídas</span>
           </div>
           <div>
             <strong>{members.length}</strong>
@@ -486,7 +495,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
         </button>
       </form>
 
-      <section className={styles.workspace}>
+      <section className={`${styles.workspace} ${selectedTask ? styles.workspaceWithPanel : ''}`.trim()}>
         <div className={styles.sections}>
           {sections.length === 0 ? (
             <StateBlock variant="empty" compact title="Nenhuma seção criada" />
@@ -498,39 +507,45 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
               return (
                 <article key={section.id} className={styles.sectionCard}>
                   <header className={styles.sectionHead}>
-                    {isEditing ? (
-                      <input
-                        value={editingSectionName}
-                        onChange={(event) => setEditingSectionName(event.target.value)}
-                        onBlur={() => handleSaveSection(section)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter') handleSaveSection(section);
-                          if (event.key === 'Escape') {
-                            setEditingSectionId('');
-                            setEditingSectionName('');
-                          }
-                        }}
-                        autoFocus
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.sectionName}
-                        onClick={() => {
-                          setEditingSectionId(section.id);
-                          setEditingSectionName(section.name || '');
-                        }}
-                      >
-                        {section.name}
-                      </button>
-                    )}
-
-                    <div className={styles.sectionActions}>
-                      <span>{tasks.length}</span>
-                      <button type="button" onClick={() => handleDeleteSection(section)} disabled={busy}>
-                        Remover
-                      </button>
+                    <div className={styles.sectionTitleBlock}>
+                      {isEditing ? (
+                        <input
+                          value={editingSectionName}
+                          onChange={(event) => setEditingSectionName(event.target.value)}
+                          onBlur={() => handleSaveSection(section)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') handleSaveSection(section);
+                            if (event.key === 'Escape') {
+                              setEditingSectionId('');
+                              setEditingSectionName('');
+                            }
+                          }}
+                          autoFocus
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          className={styles.sectionName}
+                          onClick={() => {
+                            setEditingSectionId(section.id);
+                            setEditingSectionName(section.name || '');
+                          }}
+                        >
+                          {section.name}
+                        </button>
+                      )}
+                      <span>{tasks.length} tarefa(s)</span>
                     </div>
+
+                    <button
+                      type="button"
+                      className={styles.actionIcon}
+                      onClick={() => setDeleteSectionTarget(section)}
+                      disabled={busy}
+                      aria-label="Remover seção"
+                    >
+                      ×
+                    </button>
                   </header>
 
                   <form className={styles.taskForm} onSubmit={(event) => handleCreateTask(event, section.id)}>
@@ -580,11 +595,12 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
 
                             <button
                               type="button"
-                              className={styles.taskDelete}
-                              onClick={() => handleDeleteTask(task)}
+                              className={styles.actionIcon}
+                              onClick={() => setDeleteTaskTarget(task)}
                               disabled={busy}
+                              aria-label="Remover tarefa"
                             >
-                              Remover
+                              ×
                             </button>
                           </div>
                         );
@@ -597,18 +613,16 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
           )}
         </div>
 
-        <aside className={styles.taskPanel}>
-          {!selectedTask ? (
-            <StateBlock variant="empty" compact title="Selecione uma tarefa" />
-          ) : (
+        {selectedTask ? (
+          <aside className={styles.taskPanel}>
             <div className={styles.taskDetail}>
               <header className={styles.taskDetailHead}>
                 <div>
                   <span>Tarefa</span>
                   <strong>{selectedTask.title}</strong>
                 </div>
-                <button type="button" onClick={() => setSelectedTaskId('')}>
-                  Fechar
+                <button type="button" onClick={() => setSelectedTaskId('')} aria-label="Fechar tarefa">
+                  ×
                 </button>
               </header>
 
@@ -701,8 +715,8 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                           {subtask.status === 'done' ? '✓' : ''}
                         </button>
                         <span>{subtask.title}</span>
-                        <button type="button" onClick={() => handleDeleteTask(subtask)} disabled={busy}>
-                          Remover
+                        <button type="button" onClick={() => setDeleteTaskTarget(subtask)} disabled={busy} aria-label="Remover subtarefa">
+                          ×
                         </button>
                       </div>
                     ))
@@ -744,8 +758,8 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                       <div key={entry.userId} className={styles.collabRow}>
                         <span>{initials(entry.userName || entry.userEmail)}</span>
                         <strong>{entry.userName || entry.userEmail}</strong>
-                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy}>
-                          Remover
+                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy} aria-label="Remover colaborador">
+                          ×
                         </button>
                       </div>
                     ))
@@ -788,9 +802,43 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                 </div>
               </section>
             </div>
-          )}
-        </aside>
+          </aside>
+        ) : null}
       </section>
+
+      {deleteSectionTarget ? (
+        <div className={styles.confirmBackdrop} role="presentation" onClick={() => setDeleteSectionTarget(null)}>
+          <section className={styles.confirmModal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className={styles.confirmHead}>
+              <span>Remover seção</span>
+              <strong>{deleteSectionTarget.name}</strong>
+            </div>
+            <div className={styles.confirmActions}>
+              <button type="button" onClick={() => setDeleteSectionTarget(null)}>Cancelar</button>
+              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteSection(deleteSectionTarget)} disabled={busy}>
+                Remover
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {deleteTaskTarget ? (
+        <div className={styles.confirmBackdrop} role="presentation" onClick={() => setDeleteTaskTarget(null)}>
+          <section className={styles.confirmModal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className={styles.confirmHead}>
+              <span>Remover tarefa</span>
+              <strong>{deleteTaskTarget.title}</strong>
+            </div>
+            <div className={styles.confirmActions}>
+              <button type="button" onClick={() => setDeleteTaskTarget(null)}>Cancelar</button>
+              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy}>
+                Remover
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
