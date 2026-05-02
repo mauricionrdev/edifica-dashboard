@@ -219,8 +219,8 @@ function GdvSettingsModal({ gdv, users = [], busy = false, onClose, onSubmit }) 
       <div className={styles.modalCard} role="dialog" aria-modal="true" aria-labelledby="gdv-settings-title" onClick={(event) => event.stopPropagation()}>
         <div className={styles.modalHead}>
           <div>
-            <span>Configurações</span>
-            <h3 id="gdv-settings-title">GDV</h3>
+            <span>GDV</span>
+            <h3 id="gdv-settings-title">Configurações</h3>
           </div>
           <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">
             <CloseIcon size={16} aria-hidden="true" />
@@ -294,7 +294,7 @@ function IndicatorsModal({ metrics, onClose }) {
       <section className={styles.indicatorsModal} role="dialog" aria-modal="true" aria-label="Indicadores da carteira" onClick={(event) => event.stopPropagation()}>
         <div className={styles.modalHead}>
           <div>
-            <span>Carteira GDV</span>
+            <span>GDV</span>
             <h3>Indicadores</h3>
           </div>
           <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar indicadores">
