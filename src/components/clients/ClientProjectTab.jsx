@@ -12,6 +12,8 @@ import {
   listTaskCollaborators,
   listTaskComments,
   removeTaskCollaborator,
+  reorderProjectSections,
+  reorderProjectTasks,
   updateProjectSection,
   updateTask,
 } from '../../api/projects.js';
@@ -90,6 +92,15 @@ function normalizeProjectPayload(payload) {
     members: [],
     events: [],
   };
+}
+
+function moveItemByIndex(list, fromIndex, toIndex) {
+  if (!Array.isArray(list)) return [];
+  if (fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length) return list;
+  const next = [...list];
+  const [item] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, item);
+  return next;
 }
 
 function userName(users, userId, fallback = '') {
@@ -331,6 +342,84 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
     } finally {
       setBusy(false);
       setDeleteSectionTarget(null);
+    }
+  }
+
+  async function handleMoveSection(sectionId, direction) {
+    if (!project?.id || busy) return;
+
+    const currentIndex = sections.findIndex((section) => section.id === sectionId);
+    const targetIndex = currentIndex + direction;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= sections.length) return;
+
+    const nextSections = moveItemByIndex(sections, currentIndex, targetIndex);
+    const sectionIds = nextSections.map((section) => section.id);
+
+    setDetail((current) => ({ ...current, sections: nextSections }));
+
+    try {
+      setBusy(true);
+      const response = await reorderProjectSections(project.id, sectionIds);
+      if (Array.isArray(response?.sections)) {
+        setDetail((current) => ({ ...current, sections: response.sections, project: response.project || current.project }));
+      } else {
+        await refreshProject(project.id);
+      }
+    } catch (error) {
+      await refreshProject(project.id);
+      showToast(error?.message || 'Não foi possível reordenar a seção.', { variant: 'error' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleMoveTask(sectionId, taskId, direction) {
+    if (!project?.id || !sectionId || !taskId || busy) return;
+
+    const section = sections.find((entry) => entry.id === sectionId);
+    const parentTasks = (section?.tasks || []).filter((task) => !task.parentTaskId);
+    const currentIndex = parentTasks.findIndex((task) => task.id === taskId);
+    const targetIndex = currentIndex + direction;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= parentTasks.length) return;
+
+    const nextParentTasks = moveItemByIndex(parentTasks, currentIndex, targetIndex);
+
+    const groups = sections.map((entry) => {
+      if (entry.id === sectionId) {
+        return {
+          sectionId: entry.id,
+          taskIds: nextParentTasks.map((task) => task.id),
+        };
+      }
+
+      return {
+        sectionId: entry.id,
+        taskIds: (entry.tasks || []).filter((task) => !task.parentTaskId).map((task) => task.id),
+      };
+    });
+
+    setDetail((current) => ({
+      ...current,
+      sections: current.sections.map((entry) => {
+        if (entry.id !== sectionId) return entry;
+        const childTasks = (entry.tasks || []).filter((task) => task.parentTaskId);
+        return { ...entry, tasks: [...nextParentTasks, ...childTasks] };
+      }),
+    }));
+
+    try {
+      setBusy(true);
+      const response = await reorderProjectTasks(project.id, groups);
+      if (Array.isArray(response?.sections)) {
+        setDetail((current) => ({ ...current, sections: response.sections, project: response.project || current.project }));
+      } else {
+        await refreshProject(project.id);
+      }
+    } catch (error) {
+      await refreshProject(project.id);
+      showToast(error?.message || 'Não foi possível reordenar a tarefa.', { variant: 'error' });
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -587,15 +676,35 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                       <span>{tasks.length} tarefa(s)</span>
                     </div>
 
-                    <button
-                      type="button"
-                      className={styles.actionIcon}
-                      onClick={() => setDeleteSectionTarget(section)}
-                      disabled={busy}
-                      aria-label="Remover seção"
-                    >
-                      ×
-                    </button>
+                    <div className={styles.rowActions}>
+                      <button
+                        type="button"
+                        className={styles.moveBtn}
+                        onClick={() => handleMoveSection(section.id, -1)}
+                        disabled={busy}
+                        aria-label="Mover seção para cima"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.moveBtn}
+                        onClick={() => handleMoveSection(section.id, 1)}
+                        disabled={busy}
+                        aria-label="Mover seção para baixo"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.actionIcon}
+                        onClick={() => setDeleteSectionTarget(section)}
+                        disabled={busy}
+                        aria-label="Remover seção"
+                      >
+                        <TrashIcon size={13} aria-hidden="true" />
+                      </button>
+                    </div>
                   </header>
 
                   <form className={styles.taskForm} onSubmit={(event) => handleCreateTask(event, section.id)}>
@@ -643,15 +752,35 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                               </span>
                             </button>
 
-                            <button
-                              type="button"
-                              className={styles.actionIcon}
-                              onClick={() => setDeleteTaskTarget(task)}
-                              disabled={busy}
-                              aria-label="Remover tarefa"
-                            >
-                              ×
-                            </button>
+                            <div className={styles.rowActions}>
+                              <button
+                                type="button"
+                                className={styles.moveBtn}
+                                onClick={() => handleMoveTask(section.id, task.id, -1)}
+                                disabled={busy}
+                                aria-label="Mover tarefa para cima"
+                              >
+                                ↑
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.moveBtn}
+                                onClick={() => handleMoveTask(section.id, task.id, 1)}
+                                disabled={busy}
+                                aria-label="Mover tarefa para baixo"
+                              >
+                                ↓
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.actionIcon}
+                                onClick={() => setDeleteTaskTarget(task)}
+                                disabled={busy}
+                                aria-label="Remover tarefa"
+                              >
+                                <TrashIcon size={13} aria-hidden="true" />
+                              </button>
+                            </div>
                           </div>
                         );
                       })

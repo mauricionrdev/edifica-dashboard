@@ -251,7 +251,7 @@ textarea:disabled {
   padding: 8px 10px 8px 12px;
   border-bottom: 1px solid var(--line-subtle);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 30px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
 }
@@ -276,6 +276,43 @@ textarea:disabled {
   white-space: nowrap;
   text-overflow: ellipsis;
   cursor: pointer;
+}
+
+.rowActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.moveBtn {
+  width: 26px;
+  height: 28px;
+  min-width: 26px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.sectionCard:hover .moveBtn,
+.taskRow:hover .moveBtn,
+.taskSelected .moveBtn {
+  opacity: 1;
+}
+
+.moveBtn:hover:not(:disabled) {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-secondary);
 }
 
 .actionIcon {
@@ -330,7 +367,7 @@ textarea:disabled {
   padding: 8px 10px 8px 12px;
   border-top: 1px solid var(--line-subtle);
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 30px;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
 }
@@ -928,7 +965,8 @@ textarea:disabled {
     padding-top: 0;
   }
 
-  .actionIcon {
+  .actionIcon,
+  .moveBtn {
     opacity: 1;
   }
 }
