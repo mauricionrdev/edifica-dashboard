@@ -509,6 +509,7 @@ export default function GdvPage() {
 
   const currentResults = metricsByKey[periodKey] || [];
   const loadingMetrics = fetchingKey === periodKey && currentResults.length === 0;
+  const hasActiveSearch = clientQuery.trim().length > 0;
 
   const rows = useMemo(() => {
     return gdvClients.map((client) => {
@@ -1071,7 +1072,7 @@ export default function GdvPage() {
       <section className={styles.listCard}>
         {fetchError ? (
           <StateBlock variant="error" compact title="Métricas indisponíveis" />
-        ) : visibleRows.length === 0 && loadingMetrics ? (
+        ) : !hasActiveSearch && visibleRows.length === 0 && loadingMetrics ? (
           <StateBlock variant="loading" compact title="Carregando métricas" />
         ) : visibleRows.length === 0 ? (
           <StateBlock variant="empty" compact title="Nenhum cliente encontrado" />
