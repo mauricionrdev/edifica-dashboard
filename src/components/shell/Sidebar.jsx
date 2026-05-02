@@ -384,7 +384,7 @@ export default function Sidebar({
                     }}
                   />
                 ) : !collapsed ? (
-                  <span className={styles.itemLabel} title={canManageSidebarGdvs ? 'Clique duas vezes para renomear' : entry.name}>
+                  <span className={styles.itemLabel} title={entry.name}>
                     {entry.name}
                   </span>
                 ) : null}
@@ -454,7 +454,7 @@ export default function Sidebar({
                       }}
                     />
                   ) : !collapsed ? (
-                    <span className={styles.itemLabel} title={canManageSidebarSquads ? 'Clique duas vezes para renomear' : squad.name}>
+                    <span className={styles.itemLabel} title={squad.name}>
                       {squad.name}
                     </span>
                   ) : null}

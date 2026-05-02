@@ -422,9 +422,8 @@ export default function SquadPage() {
       if (!squad || !canManageSquads) return;
       setSettingsSaving(true);
       try {
-        const nextName = String(name || '').trim();
-        const response = await updateSquad(squad.id, {
-          name: nextName,
+        await updateSquad(squad.id, {
+          name: String(name || '').trim(),
           ownerUserId: ownerUserId || '',
           logoUrl: nextLogoUrl || '',
           customSlug: customSlug || '',
@@ -438,7 +437,6 @@ export default function SquadPage() {
         setLogoUrl(nextLogoUrl || '');
         setSettingsOpen(false);
         setOwnershipTick((current) => current + 1);
-        navigate(buildSquadPath(response?.squad || { ...squad, name: nextName, customSlug }), { replace: true });
         showToast('Squad atualizado.', { variant: 'success' });
       } catch (err) {
         showToast(err?.message || 'Não foi possível atualizar o squad.', { variant: 'error' });
@@ -446,7 +444,7 @@ export default function SquadPage() {
         setSettingsSaving(false);
       }
     },
-    [canManageSquads, navigate, refreshSquads, showToast, squad]
+    [canManageSquads, refreshSquads, showToast, squad]
   );
 
 
@@ -628,7 +626,7 @@ export default function SquadPage() {
           onClick={() => canManageSquads && logoInputRef.current?.click()}
           disabled={!canManageSquads || uploadingLogo}
           aria-label={canManageSquads ? 'Enviar logotipo do squad' : undefined}
-          title={squad.name}
+          title={canManageSquads ? 'Clique para trocar o logotipo' : squad.name}
         >
           {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(squad.name)}</span>}
           {canManageSquads ? (

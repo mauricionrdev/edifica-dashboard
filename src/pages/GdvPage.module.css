@@ -1106,29 +1106,30 @@
   font-size: 11px;
 }
 
-/* v6 — compactação definitiva GDV baseada em Equipe & Acessos / Perfil */
+/* v7 — GDV alinhado ao padrão compacto de Squad/Perfil */
 .page {
-  min-height: 100%;
-  min-width: 0;
-  padding: 16px 16px 22px;
-  gap: 12px;
+  height: 100%;
+  max-height: calc(100vh - 78px);
+  overflow: hidden;
+  padding: 10px 14px 14px;
+  gap: 10px;
+  background: var(--bg-app, #08090a);
 }
 
 .headerIdentity {
-  min-height: 48px;
-  gap: 10px;
+  min-height: 52px;
+  gap: 12px;
 }
 
 .headerLogo {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
 }
 
 .headerTitleText strong {
   font-size: 18px;
   line-height: 1.05;
-  font-weight: 630;
 }
 
 .headerTitleText small {
@@ -1137,164 +1138,179 @@
 }
 
 .headerActions {
-  min-height: 40px;
   align-items: center;
-  justify-content: flex-end;
-  flex-wrap: nowrap;
   gap: 8px;
 }
 
-.headerCard,
-.headerCard + .headerCard {
-  min-height: unset;
+.headerCard {
+  min-height: 36px;
   padding: 0;
   border: 0;
-  border-radius: 0;
   background: transparent;
   box-shadow: none;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .headerCardLabel {
   display: none;
 }
 
+.headerCard + .headerCard {
+  padding-left: 8px;
+  border-left: 1px solid var(--line-subtle);
+}
+
 .headerStat,
 .monthNav,
 .weekTabs,
 .headerUtilityRow {
-  height: 34px;
   min-height: 34px;
 }
 
-.headerStat {
-  padding: 0 8px;
-}
-
-.monthNav,
-.weekTabs {
-  border: 1px solid var(--line-subtle);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.018);
-}
-
-.monthNav {
-  padding: 0 4px;
+.headerStat strong {
+  font-size: 14px;
 }
 
 .monthLabel {
   min-width: 96px;
-  font-size: 12px;
-}
-
-.navBtn,
-.iconButton {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  font-size: 13px;
 }
 
 .weekTabs {
+  min-height: 34px;
   padding: 2px;
-  gap: 2px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
 }
 
 .weekTab {
-  min-width: 28px;
-  height: 28px;
-  padding: 0 8px;
+  min-width: 30px;
+  height: 30px;
   border-radius: 9px;
-  font-size: 12px;
+  font-size: 13px;
+}
+
+.iconButton,
+.navBtn {
+  width: 32px;
+  height: 32px;
 }
 
 .metricGrid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
+  flex: 0 0 auto;
 }
 
 .metricCard {
-  min-height: 92px;
-  height: 92px;
-  padding: 13px 14px;
-  border-radius: var(--radius-3);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
-    var(--bg-canvas);
-  display: grid;
-  grid-template-rows: 16px 1fr 18px;
-  align-items: center;
-  gap: 4px;
-  overflow: hidden;
-}
-
-.metricCard span,
-.metricCard strong {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  min-height: 78px;
+  padding: 11px 12px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
 }
 
 .metricLabel {
-  font-size: 10px;
-  line-height: 1;
+  font-size: 9.5px;
   letter-spacing: 0.075em;
 }
 
 .metricValue {
-  font-size: 24px;
-  line-height: 1;
+  font-size: clamp(20px, 1.22vw, 24px);
 }
 
 .metricSub {
-  font-size: 12px;
-  line-height: 1.2;
+  min-height: 14px;
+  font-size: 10.5px;
 }
 
 .listToolbar {
-  min-height: unset;
-  padding: 0;
+  min-height: 42px;
+  padding: 8px 0 0;
+  border-bottom: 0;
+  flex: 0 0 auto;
 }
 
 .toolbarControls {
-  grid-template-columns: minmax(0, 1fr) 220px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) max-content;
+  align-items: center;
   gap: 10px;
 }
 
-.searchBox,
-.complementaryButton {
-  min-height: 42px;
-  height: 42px;
-  border-radius: var(--radius-3);
+.searchBox {
+  width: 100%;
+  min-height: 36px;
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
 }
 
 .complementaryButton {
-  min-width: 0;
-  padding: 0 14px;
+  min-width: 178px;
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
 }
 
 .complementaryButton span {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 560;
 }
 
 .listCard {
-  border-radius: var(--radius-3);
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .clientList {
-  padding: 8px;
-  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  gap: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
 .clientRow {
-  min-height: 64px;
-  padding: 10px 14px;
-  border-radius: var(--radius-3);
-  grid-template-columns: minmax(0, 1.4fr) minmax(190px, 0.7fr) max-content;
+  min-height: 70px;
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
+  border-radius: 0;
+  background: transparent;
+  grid-template-columns: minmax(0, 1.45fr) minmax(220px, 0.62fr) max-content;
+}
+
+.clientRow:last-child {
+  border-bottom: 0;
+}
+
+.clientRow:hover,
+.clientRowActive {
+  border-color: var(--line-subtle);
+  border-bottom-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.024);
 }
 
 .clientAvatarSmall {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
+  font-size: 11px;
+}
+
+.clientMain {
+  gap: 12px;
 }
 
 .clientMain strong,
@@ -1303,18 +1319,55 @@
 }
 
 .clientMain span:last-child,
+.paginationInfo,
+.paginationCurrent {
+  font-size: 11.5px;
+}
+
+.clientStats {
+  gap: 30px;
+}
+
 .clientStats span {
-  font-size: 11px;
+  font-size: 9.5px;
+  letter-spacing: 0.075em;
 }
 
 .badge {
   min-height: 24px;
-  padding: 0 9px;
-  font-size: 11px;
+  padding: 0 11px;
+  font-size: 10.5px;
 }
 
-@media (max-width: 1280px) {
+.pagination {
+  min-height: 50px;
+  padding: 10px 16px 12px;
+}
+
+.paginationButton {
+  height: 32px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.stickyResultBar {
+  display: none !important;
+}
+
+@media (max-width: 1180px) {
   .metricGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .toolbarControls,
+  .clientRow {
+    grid-template-columns: 1fr;
+  }
+
+  .clientStats,
+  .clientStatus {
+    justify-content: flex-start;
   }
 }
