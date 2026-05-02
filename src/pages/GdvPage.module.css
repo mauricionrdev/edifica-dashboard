@@ -55,7 +55,7 @@
   object-fit: cover;
 }
 
-.headerLogo>span {
+.headerLogo > span {
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -367,7 +367,7 @@
   min-width: 0;
 }
 
-.ownerControl>span:first-child {
+.ownerControl > span:first-child {
   display: none;
 }
 
@@ -550,7 +550,7 @@
   animation: gdvStickyExit 170ms ease-in both;
 }
 
-.stickyResultBar>strong {
+.stickyResultBar > strong {
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
@@ -1409,7 +1409,7 @@
   gap: 10px;
 }
 
-.stickyResultBar>strong {
+.stickyResultBar > strong {
   font-size: 13px;
   font-weight: 560;
 }
@@ -1826,7 +1826,7 @@
 }
 
 .modalCard {
-  width: min(600px, calc(100vw - 32px));
+  width: min(760px, calc(100vw - 32px));
   max-height: min(720px, calc(100vh - 48px));
   border: 1px solid var(--line-subtle);
   border-radius: 18px;
@@ -1948,7 +1948,7 @@
   gap: 7px;
 }
 
-.modalField>span {
+.modalField > span {
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 620;
