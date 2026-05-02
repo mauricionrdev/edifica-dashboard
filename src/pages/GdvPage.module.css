@@ -1105,3 +1105,216 @@
   min-height: 24px;
   font-size: 11px;
 }
+
+/* v6 — compactação definitiva GDV baseada em Equipe & Acessos / Perfil */
+.page {
+  min-height: 100%;
+  min-width: 0;
+  padding: 16px 16px 22px;
+  gap: 12px;
+}
+
+.headerIdentity {
+  min-height: 48px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+}
+
+.headerTitleText strong {
+  font-size: 18px;
+  line-height: 1.05;
+  font-weight: 630;
+}
+
+.headerTitleText small {
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.headerActions {
+  min-height: 40px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.headerCard,
+.headerCard + .headerCard {
+  min-height: unset;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.headerCardLabel {
+  display: none;
+}
+
+.headerStat,
+.monthNav,
+.weekTabs,
+.headerUtilityRow {
+  height: 34px;
+  min-height: 34px;
+}
+
+.headerStat {
+  padding: 0 8px;
+}
+
+.monthNav,
+.weekTabs {
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.monthNav {
+  padding: 0 4px;
+}
+
+.monthLabel {
+  min-width: 96px;
+  font-size: 12px;
+}
+
+.navBtn,
+.iconButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+.weekTabs {
+  padding: 2px;
+  gap: 2px;
+}
+
+.weekTab {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.metricGrid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metricCard {
+  min-height: 92px;
+  height: 92px;
+  padding: 13px 14px;
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    var(--bg-canvas);
+  display: grid;
+  grid-template-rows: 16px 1fr 18px;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.metricCard span,
+.metricCard strong {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.metricLabel {
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.075em;
+}
+
+.metricValue {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.metricSub {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.listToolbar {
+  min-height: unset;
+  padding: 0;
+}
+
+.toolbarControls {
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 10px;
+}
+
+.searchBox,
+.complementaryButton {
+  min-height: 42px;
+  height: 42px;
+  border-radius: var(--radius-3);
+}
+
+.complementaryButton {
+  min-width: 0;
+  padding: 0 14px;
+}
+
+.complementaryButton span {
+  font-size: 13px;
+}
+
+.listCard {
+  border-radius: var(--radius-3);
+}
+
+.clientList {
+  padding: 8px;
+  gap: 6px;
+}
+
+.clientRow {
+  min-height: 64px;
+  padding: 10px 14px;
+  border-radius: var(--radius-3);
+  grid-template-columns: minmax(0, 1.4fr) minmax(190px, 0.7fr) max-content;
+}
+
+.clientAvatarSmall {
+  width: 32px;
+  height: 32px;
+}
+
+.clientMain strong,
+.clientStats strong {
+  font-size: 13px;
+}
+
+.clientMain span:last-child,
+.clientStats span {
+  font-size: 11px;
+}
+
+.badge {
+  min-height: 24px;
+  padding: 0 9px;
+  font-size: 11px;
+}
+
+@media (max-width: 1280px) {
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
