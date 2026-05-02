@@ -18,6 +18,7 @@ import {
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import StateBlock from '../ui/StateBlock.jsx';
+import { TrashIcon } from '../ui/Icons.jsx';
 import styles from './ClientProjectTab.module.css';
 
 function percent(done, total) {
@@ -109,6 +110,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   const [commentBody, setCommentBody] = useState('');
   const [subtaskTitle, setSubtaskTitle] = useState('');
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
+  const [taskDraft, setTaskDraft] = useState({ title: '', description: '' });
   const [deleteSectionTarget, setDeleteSectionTarget] = useState(null);
   const [deleteTaskTarget, setDeleteTaskTarget] = useState(null);
 
@@ -126,6 +128,13 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
     () => (selectedTask ? allTasks.filter((task) => task.parentTaskId === selectedTask.id) : []),
     [allTasks, selectedTask]
   );
+
+  useEffect(() => {
+    setTaskDraft({
+      title: selectedTask?.title || '',
+      description: selectedTask?.description || '',
+    });
+  }, [selectedTask?.id, selectedTask?.title, selectedTask?.description]);
 
   const totalTasks = flatTasks.length || Number(project?.taskCount || 0);
   const doneTasks = flatTasks.filter((task) => task.status === 'done').length || Number(project?.doneCount || 0);
@@ -333,6 +342,25 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
     } finally {
       setBusy(false);
     }
+  }
+
+  async function handleSaveTaskDraft() {
+    if (!selectedTask?.id || busy) return;
+
+    const title = taskDraft.title.trim();
+    const description = String(taskDraft.description || '').trim();
+
+    if (!title) {
+      setTaskDraft((current) => ({ ...current, title: selectedTask.title || '' }));
+      return;
+    }
+
+    const patch = {};
+    if (title !== String(selectedTask.title || '').trim()) patch.title = title;
+    if (description !== String(selectedTask.description || '').trim()) patch.description = description;
+
+    if (Object.keys(patch).length === 0) return;
+    await handleUpdateTask(selectedTask, patch);
   }
 
   async function handleUpdateTask(task, patch) {
@@ -625,12 +653,32 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
               <header className={styles.taskDetailHead}>
                 <div>
                   <span>Tarefa</span>
-                  <strong>{selectedTask.title}</strong>
+                  <input
+                    value={taskDraft.title}
+                    onChange={(event) => setTaskDraft((current) => ({ ...current, title: event.target.value }))}
+                    onBlur={handleSaveTaskDraft}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') event.currentTarget.blur();
+                    }}
+                    disabled={busy}
+                    aria-label="Título da tarefa"
+                  />
                 </div>
                 <button type="button" onClick={() => setSelectedTaskId('')} aria-label="Fechar tarefa">
                   ×
                 </button>
               </header>
+
+              <div className={styles.taskDescriptionBox}>
+                <span>Descrição</span>
+                <textarea
+                  value={taskDraft.description}
+                  onChange={(event) => setTaskDraft((current) => ({ ...current, description: event.target.value }))}
+                  onBlur={handleSaveTaskDraft}
+                  placeholder="Descrição da tarefa"
+                  disabled={busy}
+                />
+              </div>
 
               <div className={styles.taskControls}>
                 <label>
@@ -722,7 +770,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                         </button>
                         <span>{subtask.title}</span>
                         <button type="button" onClick={() => setDeleteTaskTarget(subtask)} disabled={busy} aria-label="Remover subtarefa">
-                          ×
+                          <TrashIcon size={12} aria-hidden="true" />
                         </button>
                       </div>
                     ))
@@ -765,7 +813,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                         <span>{initials(entry.userName || entry.userEmail)}</span>
                         <strong>{entry.userName || entry.userEmail}</strong>
                         <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy} aria-label="Remover colaborador">
-                          ×
+                          <TrashIcon size={12} aria-hidden="true" />
                         </button>
                       </div>
                     ))

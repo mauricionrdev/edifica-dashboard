@@ -286,9 +286,6 @@ textarea:disabled {
   border-radius: 9px;
   background: transparent;
   color: var(--text-tertiary);
-  font: inherit;
-  font-size: 17px;
-  line-height: 1;
   display: inline-grid;
   place-items: center;
   cursor: pointer;
@@ -442,16 +439,28 @@ textarea:disabled {
   gap: 6px;
 }
 
-.taskDetailHead strong {
+.taskDetailHead input {
+  width: 100%;
   min-width: 0;
-  overflow: hidden;
+  min-height: 34px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
   color: var(--text-primary);
+  font: inherit;
   font-size: 16px;
   line-height: 1.1;
   font-weight: 620;
   letter-spacing: -0.035em;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  outline: 0;
+}
+
+.taskDetailHead input:hover,
+.taskDetailHead input:focus {
+  padding: 0 9px;
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .taskDetailHead button {
@@ -465,6 +474,47 @@ textarea:disabled {
   font-size: 17px;
   line-height: 1;
   cursor: pointer;
+}
+
+.taskDescriptionBox {
+  padding: 12px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: grid;
+  gap: 7px;
+}
+
+.taskDescriptionBox span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.taskDescriptionBox textarea {
+  width: 100%;
+  min-height: 74px;
+  padding: 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  outline: 0;
+  resize: vertical;
+}
+
+.taskDescriptionBox textarea:focus {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.taskDescriptionBox textarea::placeholder {
+  color: var(--text-quaternary);
+  opacity: 1;
 }
 
 .taskControls {
@@ -561,6 +611,28 @@ textarea:disabled {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+
+.subtaskRow > button:last-child,
+.collabRow > button {
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.subtaskRow > button:last-child:hover:not(:disabled),
+.collabRow > button:hover:not(:disabled) {
+  border-color: rgba(255, 91, 115, 0.22);
+  background: rgba(255, 91, 115, 0.055);
+  color: #ff9cad;
 }
 
 .subtaskRow span,
