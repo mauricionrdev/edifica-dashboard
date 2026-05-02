@@ -930,11 +930,6 @@ export default function SquadPage() {
         </section>
 
         <section className={styles.listToolbar}>
-          <div className={styles.listTitle}>
-            <span className={styles.cardEyebrow}>Clientes do squad</span>
-            <span className={styles.listMeta}>{displayInt(filteredRows.length)} cliente(s)</span>
-          </div>
-
           <div className={styles.toolbarControls}>
             <label className={styles.searchBox}>
               <SearchIcon size={15} aria-hidden="true" />
@@ -953,7 +948,7 @@ export default function SquadPage() {
               onClick={() => setShowComplementaryMetrics((open) => !open)}
               aria-expanded={showComplementaryMetrics}
             >
-              <span>Indicadores</span>
+              <span>Indicadores da carteira</span>
             </button>
           </div>
         </section>
