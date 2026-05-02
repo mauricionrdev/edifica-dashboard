@@ -29,7 +29,7 @@
 .header {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) auto max-content;
+  grid-template-columns: minmax(220px, 1fr) auto max-content;
   align-items: center;
   gap: 12px;
   padding: 12px;
@@ -40,8 +40,9 @@
 
 .titleBlock {
   min-width: 0;
-  display: flex;
-  align-items: center;
+  display: grid;
+  gap: 8px;
+  align-content: center;
 }
 
 .eyebrow {
@@ -60,7 +61,25 @@
   text-transform: uppercase;
 }
 
-.title { display: none; }
+.titleCopy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.titleMain {
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.05;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+}
+
+.titleHint {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.45;
+}
 
 .headerMeta {
   min-width: 0;
@@ -72,15 +91,17 @@
 
 .heroMetric {
   min-width: 0;
-  min-height: 34px;
-  padding: 0 11px;
+  min-height: 38px;
+  padding: 0 12px;
   border-left: 1px solid var(--line-subtle);
   display: grid;
   align-content: center;
   gap: 4px;
 }
 
-.heroMetric:first-child { border-left: 0; }
+.heroMetric:first-child {
+  border-left: 0;
+}
 
 .heroMetric strong {
   color: var(--text-primary);
@@ -121,7 +142,10 @@
   color: var(--text-primary);
 }
 
-.addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .entry {
   border: 1px solid var(--line-subtle);
@@ -146,7 +170,7 @@
   padding: 0 10px;
   border: 1px solid var(--line-subtle);
   border-radius: 8px;
-  background: rgba(255,255,255,0.025);
+  background: rgba(255, 255, 255, 0.025);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -156,7 +180,7 @@
 .dateControl:hover,
 .dateControl:focus-within {
   border-color: var(--line);
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .dateControl span {
@@ -167,7 +191,9 @@
   text-transform: uppercase;
 }
 
-.dateField { width: 126px; }
+.dateField {
+  width: 126px;
+}
 
 .dateField button {
   height: 30px;
@@ -211,26 +237,38 @@
   cursor: pointer;
 }
 
-.delBtn:hover:not(:disabled) { color: #ffd0d8; background: rgba(255, 91, 115, 0.12); }
-.delBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.delBtn:hover:not(:disabled) {
+  color: #ffd0d8;
+  background: rgba(255, 91, 115, 0.12);
+}
+
+.delBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .textarea {
   width: 100%;
-  min-height: 104px;
+  min-height: 116px;
   padding: 12px 14px;
   background: transparent;
   border: 0;
   color: var(--text-secondary);
   font-family: inherit;
   font-size: 13px;
-  line-height: 1.48;
+  line-height: 1.55;
   outline: none;
   resize: vertical;
 }
 
 .textarea:hover,
-.textarea:focus { background: rgba(255,255,255,0.025); }
-.textarea::placeholder { color: var(--text-quaternary); }
+.textarea:focus {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.textarea::placeholder {
+  color: var(--text-quaternary);
+}
 
 .savingHint {
   padding: 8px 14px 12px;
@@ -238,7 +276,9 @@
   color: var(--success);
 }
 
-.savingHint.pending { color: var(--analysis-accent); }
+.savingHint.pending {
+  color: var(--analysis-accent);
+}
 
 .confirmOverlay {
   position: fixed;
@@ -252,7 +292,7 @@
 }
 
 .confirmModal {
-  width: min(420px, calc(100vw - 40px));
+  width: min(440px, calc(100vw - 40px));
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4);
   background: #111214;
@@ -260,7 +300,9 @@
 }
 
 .confirmHead {
-  padding: 14px 16px;
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
   border-bottom: 1px solid var(--line-subtle);
 }
 
@@ -273,22 +315,25 @@
 }
 
 .confirmHead strong {
-  margin: 4px 0 0;
+  display: block;
+  margin: 0;
   color: var(--text-primary);
-  font-size: 17px;
+  font-size: 18px;
+  line-height: 1.1;
   font-weight: 620;
+  letter-spacing: -0.03em;
 }
 
 .confirmModal p {
   margin: 0;
-  padding: 14px 16px;
+  padding: 16px 18px;
   color: var(--text-secondary);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .confirmActions {
-  padding: 12px 16px;
+  padding: 12px 18px 16px;
   border-top: 1px solid var(--line-subtle);
   display: flex;
   justify-content: flex-end;
@@ -297,8 +342,8 @@
 
 .cancelBtn,
 .confirmDeleteBtn {
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 36px;
+  padding: 0 14px;
   border-radius: 10px;
   font: inherit;
   font-size: 12px;
@@ -308,7 +353,7 @@
 
 .cancelBtn {
   border: 1px solid var(--line-subtle);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
 }
 
@@ -329,13 +374,51 @@
 }
 
 @media (max-width: 920px) {
-  .header { grid-template-columns: 1fr; align-items: start; gap: 12px; }
-  .headerMeta { width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); justify-content: stretch; }
-  .heroMetric { padding-inline: 10px; }
-  .addBtn { width: max-content; }
+  .header {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 12px;
+  }
+
+  .headerMeta {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .heroMetric {
+    padding-inline: 10px;
+  }
+
+  .addBtn {
+    width: max-content;
+  }
 }
 
 @media (max-width: 640px) {
-  .entryHdr { grid-template-columns: 1fr max-content; }
-  .entryAuthor { grid-column: 1 / -1; grid-row: 2; }
+  .entryHdr {
+    grid-template-columns: 1fr max-content;
+  }
+
+  .entryAuthor {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .headerMeta {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .heroMetric {
+    min-height: 34px;
+    border-left: 0;
+    border-top: 1px solid var(--line-subtle);
+    padding: 10px 0 0;
+  }
+
+  .heroMetric:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
 }

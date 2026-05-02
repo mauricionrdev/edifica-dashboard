@@ -13,6 +13,51 @@ import styles from './AnalysisTab.module.css';
 
 const DEBOUNCE_MS = 500;
 
+const ANALYSIS_META = {
+  icp: {
+    title: 'Análise ICP',
+    subtitle: 'Leitura de aderência, perfil e posicionamento.',
+    className: styles.icp,
+    loadingTitle: 'Carregando Análise ICP',
+    loadingDescription: 'Buscando o histórico estratégico de aderência e perfil deste cliente.',
+    emptyTitle: 'Nenhum registro de Análise ICP',
+    emptyDescription: 'Ainda não existe histórico desta etapa para este cliente.',
+    placeholder: 'Registre aderência ao ICP, perfil, riscos, oportunidades e próximos ajustes…',
+    deleteEyebrow: 'Remover registro',
+    deleteTitle: 'Análise ICP',
+    deleteDescription: 'O registro selecionado será removido da etapa de Análise ICP e não poderá ser recuperado.',
+    createLabel: '+ Novo registro',
+  },
+  gdvanalise: {
+    title: 'Análise GDV',
+    subtitle: 'Leitura comercial, maturidade e direcionamento.',
+    className: styles.gdv,
+    loadingTitle: 'Carregando Análise GDV',
+    loadingDescription: 'Buscando o histórico estratégico comercial deste cliente.',
+    emptyTitle: 'Nenhum registro de Análise GDV',
+    emptyDescription: 'Ainda não existe histórico desta etapa para este cliente.',
+    placeholder: 'Registre leitura comercial, momento do cliente, gargalos, tração e próximos movimentos…',
+    deleteEyebrow: 'Remover registro',
+    deleteTitle: 'Análise GDV',
+    deleteDescription: 'O registro selecionado será removido da etapa de Análise GDV e não poderá ser recuperado.',
+    createLabel: '+ Novo registro',
+  },
+  route_summary: {
+    title: 'Resumo de Rotas',
+    subtitle: 'Síntese de encaminhamentos, direção e próximos passos.',
+    className: styles.routes,
+    loadingTitle: 'Carregando Resumo de Rotas',
+    loadingDescription: 'Buscando o histórico consolidado de rotas e direcionamentos deste cliente.',
+    emptyTitle: 'Nenhum registro de Resumo de Rotas',
+    emptyDescription: 'Ainda não existe histórico desta etapa para este cliente.',
+    placeholder: 'Registre a síntese das rotas sugeridas, encaminhamentos, decisões e próximos passos…',
+    deleteEyebrow: 'Remover registro',
+    deleteTitle: 'Resumo de Rotas',
+    deleteDescription: 'O registro selecionado será removido da etapa de Resumo de Rotas e não poderá ser recuperado.',
+    createLabel: '+ Novo registro',
+  },
+};
+
 function todayISO() {
   const date = new Date();
   const year = date.getFullYear();
@@ -52,12 +97,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const timersRef = useRef(new Map());
   const fetchIdRef = useRef(0);
 
-  const analysisMeta = {
-    icp: { title: 'Análise ICP', className: styles.icp },
-    gdvanalise: { title: 'Análise GDV', className: styles.gdv },
-    route_summary: { title: 'Resumo de Rotas', className: styles.routes },
-  };
-  const { title, className: titleClass } = analysisMeta[type] || analysisMeta.icp;
+  const meta = ANALYSIS_META[type] || ANALYSIS_META.icp;
 
   useEffect(() => {
     if (!clientId) return undefined;
@@ -71,7 +111,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       })
       .catch((error) => {
         if (fetchIdRef.current !== fetchId) return;
-        const message = error instanceof ApiError ? error.message : 'Erro ao carregar análises.';
+        const message = error instanceof ApiError ? error.message : 'Erro ao carregar registros.';
         showToast(message, { variant: 'error' });
       })
       .finally(() => {
@@ -111,7 +151,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       const entry = response?.analysis;
       if (entry) setEntries((previous) => [entry, ...previous]);
     } catch (error) {
-      const message = error instanceof ApiError ? error.message : 'Erro ao criar análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao criar registro.';
       showToast(message, { variant: 'error' });
     } finally {
       setCreating(false);
@@ -124,9 +164,11 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     try {
       const response = await updateAnalysis(clientId, type, id, patch);
       const fresh = response?.analysis;
-      if (fresh) setEntries((previous) => previous.map((entry) => (entry.id === id ? fresh : entry)));
+      if (fresh) {
+        setEntries((previous) => previous.map((entry) => (entry.id === id ? fresh : entry)));
+      }
     } catch (error) {
-      const message = error instanceof ApiError ? error.message : 'Erro ao salvar análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao salvar registro.';
       showToast(message, { variant: 'error' });
     } finally {
       markSaving(id, false);
@@ -167,10 +209,10 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     setEntries((list) => list.filter((entry) => entry.id !== target.id));
     try {
       await deleteAnalysis(clientId, type, target.id);
-      showToast('Análise removida.');
+      showToast('Registro removido.', { variant: 'success' });
     } catch (error) {
       setEntries(previous);
-      const message = error instanceof ApiError ? error.message : 'Erro ao remover análise.';
+      const message = error instanceof ApiError ? error.message : 'Erro ao remover registro.';
       showToast(message, { variant: 'error' });
     }
   }
@@ -180,17 +222,21 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       <StateBlock
         variant="loading"
         compact
-        title="Carregando análises"
-        description="Buscando o histórico estratégico desta aba."
+        title={meta.loadingTitle}
+        description={meta.loadingDescription}
       />
     );
   }
 
   return (
-    <div className={`${styles.panel} ${titleClass}`.trim()}>
+    <div className={`${styles.panel} ${meta.className}`.trim()}>
       <div className={styles.header}>
         <div className={styles.titleBlock}>
-          <span className={styles.eyebrow}>{title}</span>
+          <span className={styles.eyebrow}>Etapa de análise</span>
+          <div className={styles.titleCopy}>
+            <strong className={styles.titleMain}>{meta.title}</strong>
+            <span className={styles.titleHint}>{meta.subtitle}</span>
+          </div>
         </div>
 
         <div className={styles.headerMeta}>
@@ -204,7 +250,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           </div>
           <div className={styles.heroMetric}>
             <strong>{entries.filter((entry) => String(entry.text || '').trim()).length}</strong>
-            <span>com conteúdo</span>
+            <span>preenchidos</span>
           </div>
         </div>
 
@@ -214,7 +260,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           onClick={handleCreate}
           disabled={creating || !canEdit}
         >
-          {creating ? 'Criando…' : '+ Nova análise'}
+          {creating ? 'Criando…' : meta.createLabel}
         </button>
       </div>
 
@@ -222,8 +268,8 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         <StateBlock
           variant="empty"
           compact
-          title="Nenhuma análise registrada"
-          description="Clique em + Nova análise para adicionar a primeira entrada estratégica."
+          title={meta.emptyTitle}
+          description={meta.emptyDescription}
         />
       ) : (
         entries.map((entry) => {
@@ -238,7 +284,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                     value={entry.date || ''}
                     onChange={(value) => onDateChange(entry.id, value)}
                     disabled={!canEdit}
-                    ariaLabel="Data da análise"
+                    ariaLabel={`Data do registro de ${meta.title}`}
                     className={styles.dateField}
                   />
                 </label>
@@ -258,7 +304,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 className={styles.textarea}
                 value={entry.text || ''}
                 disabled={!canEdit}
-                placeholder="Descreva a análise, observações, resultados…"
+                placeholder={meta.placeholder}
                 onChange={(event) => onTextChange(entry.id, event.target.value)}
               />
               {(isPending || isSaving) && (
@@ -277,14 +323,14 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
             className={styles.confirmModal}
             role="dialog"
             aria-modal="true"
-            aria-label="Remover análise"
+            aria-label={`Remover registro de ${meta.title}`}
             onClick={(event) => event.stopPropagation()}
           >
             <div className={styles.confirmHead}>
-              <span>Remover análise</span>
-              <strong>{title}</strong>
+              <span>{meta.deleteEyebrow}</span>
+              <strong>{meta.deleteTitle}</strong>
             </div>
-            <p>Esta ação remove o registro selecionado e não pode ser desfeita.</p>
+            <p>{meta.deleteDescription}</p>
             <div className={styles.confirmActions}>
               <button type="button" className={styles.cancelBtn} onClick={() => setDeleteTarget(null)}>
                 Cancelar
