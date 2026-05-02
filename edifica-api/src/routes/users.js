@@ -5,6 +5,7 @@ import { uuid, badRequest, notFound, conflict, forbidden, parseJson } from '../u
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { VALID_ROLES } from '../utils/domain.js';
 import { writeAuditLog } from '../utils/audit.js';
+import { normalizeSlug, isValidSlug } from '../utils/slugs.js';
 import { normalizePermissionList, resolvePermissions, PERMISSION_GROUPS } from '../utils/permissions.js';
 
 const router = Router();
@@ -25,11 +26,19 @@ async function ensureUserProfileColumns() {
       if (!names.has('avatar_data_url')) {
         await query('ALTER TABLE users ADD COLUMN avatar_data_url MEDIUMTEXT NULL AFTER avatar_color');
       }
+      if (!names.has('custom_slug')) {
+        await query('ALTER TABLE users ADD COLUMN custom_slug VARCHAR(96) NULL AFTER avatar_data_url');
+      }
       if (!names.has('permissions_override')) {
         await query('ALTER TABLE users ADD COLUMN permissions_override JSON NULL AFTER squads');
       }
       if (!names.has('secondary_roles')) {
         await query('ALTER TABLE users ADD COLUMN secondary_roles JSON NULL AFTER role');
+      }
+      const indexes = await query('SHOW INDEX FROM users');
+      const indexNames = new Set(indexes.map((idx) => idx.Key_name));
+      if (!indexNames.has('uk_users_custom_slug')) {
+        await query('ALTER TABLE users ADD UNIQUE KEY uk_users_custom_slug (custom_slug)');
       }
       await query("ALTER TABLE users MODIFY COLUMN role ENUM('ceo','suporte_tecnologia','admin','cap','gestor','gdv') NOT NULL DEFAULT 'gestor'");
     })().catch((err) => {
@@ -77,6 +86,7 @@ function serializeUser(row) {
     phone: row.phone || '',
     avatarColor: row.avatar_color || 'amber',
     avatarUrl: row.avatar_data_url || '',
+    customSlug: row.custom_slug || '',
     role: row.role,
     secondaryRoles,
     isMaster: Boolean(row.is_master),
@@ -93,7 +103,7 @@ router.get('/directory', requireAuth, requirePermission('profile.view'), async (
   try {
     await ensureUserProfileColumns();
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
          FROM users
         WHERE active = 1
         ORDER BY name ASC`
@@ -110,7 +120,7 @@ router.get('/', requirePermission('team.view'), async (req, res, next) => {
   try {
     await ensureUserProfileColumns();
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, role, secondary_roles, is_master, squads, permissions_override, active,
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active,
               created_at, updated_at
          FROM users
         ORDER BY is_master DESC, name ASC`
@@ -124,7 +134,7 @@ router.get('/', requirePermission('team.view'), async (req, res, next) => {
 router.post('/', requirePermission('team.manage'), async (req, res, next) => {
   try {
     await ensureUserProfileColumns();
-    const { name, email, phone, password, role, secondaryRoles, squads, avatarColor, avatarUrl, permissionsOverride } = req.body || {};
+    const { name, email, phone, password, role, secondaryRoles, squads, avatarColor, avatarUrl, customSlug, permissionsOverride } = req.body || {};
     if (!name || !email || !password) {
       throw badRequest('name, email e password são obrigatórios');
     }
@@ -143,6 +153,12 @@ router.post('/', requirePermission('team.manage'), async (req, res, next) => {
       throw badRequest('Imagem de avatar inválida');
     }
     const normalizedPermissions = normalizePermissionsOverride(permissionsOverride);
+    const normalizedSlug = customSlug != null ? normalizeSlug(customSlug) : '';
+    if (customSlug && !isValidSlug(normalizedSlug)) throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
+    if (normalizedSlug) {
+      const slugDup = await query('SELECT id FROM users WHERE custom_slug = ? LIMIT 1', [normalizedSlug]);
+      if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
+    }
 
     const exists = await query('SELECT id FROM users WHERE LOWER(email) = ? LIMIT 1', [normalizedEmail]);
     if (exists.length > 0) throw conflict('E-mail já cadastrado');
@@ -151,8 +167,8 @@ router.post('/', requirePermission('team.manage'), async (req, res, next) => {
     const passwordHash = await bcrypt.hash(String(password), 10);
 
     await query(
-      `INSERT INTO users (id, name, email, phone, avatar_color, avatar_data_url, password_hash, role, secondary_roles, is_master, squads, permissions_override, active)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 1)`,
+      `INSERT INTO users (id, name, email, phone, avatar_color, avatar_data_url, custom_slug, password_hash, role, secondary_roles, is_master, squads, permissions_override, active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 1)`,
       [
         id,
         name.trim(),
@@ -160,6 +176,7 @@ router.post('/', requirePermission('team.manage'), async (req, res, next) => {
         String(phone || '').trim() || null,
         normalizedAvatar,
         normalizedAvatarUrl || null,
+        normalizedSlug || null,
         passwordHash,
         normalizedRole,
         JSON.stringify(normalizedSecondaryRoles),
@@ -185,7 +202,7 @@ router.post('/', requirePermission('team.manage'), async (req, res, next) => {
     });
 
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
          FROM users WHERE id = ?`,
       [id]
     );
@@ -207,7 +224,7 @@ router.put('/:id', requirePermission('team.manage'), async (req, res, next) => {
       throw forbidden('Não é possível editar o Admin Master');
     }
 
-    const { name, email, phone, password, role, secondaryRoles, squads, avatarColor, avatarUrl, permissionsOverride } = req.body || {};
+    const { name, email, phone, password, role, secondaryRoles, squads, avatarColor, avatarUrl, customSlug, permissionsOverride } = req.body || {};
     const updates = [];
     const params = [];
 
@@ -243,6 +260,15 @@ router.put('/:id', requirePermission('team.manage'), async (req, res, next) => {
       if (cleanAvatar && !cleanAvatar.startsWith('data:image/')) throw badRequest('Imagem de avatar inválida');
       updates.push('avatar_data_url = ?'); params.push(cleanAvatar || null);
     }
+    if (customSlug !== undefined) {
+      const cleanSlug = normalizeSlug(customSlug);
+      if (customSlug && !isValidSlug(cleanSlug)) throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
+      if (cleanSlug) {
+        const slugDup = await query('SELECT id FROM users WHERE custom_slug = ? AND id <> ? LIMIT 1', [cleanSlug, id]);
+        if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
+      }
+      updates.push('custom_slug = ?'); params.push(cleanSlug || null);
+    }
 
     if (updates.length === 0) return res.json({ user: serializeUser(current) });
 
@@ -260,7 +286,7 @@ router.put('/:id', requirePermission('team.manage'), async (req, res, next) => {
     });
 
     const fresh = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
          FROM users WHERE id = ?`,
       [id]
     );
@@ -288,7 +314,7 @@ router.patch('/:id/toggle', requirePermission('team.manage'), async (req, res, n
 
     await writeAuditLog({ actor: req.user, action: newActive ? 'user.reactivate' : 'user.deactivate', entityType: 'user', entityId: id, entityLabel: current.name || current.email || id, summary: newActive ? 'Usuário reativado' : 'Usuário desativado', metadata: { email: current.email || null, role: current.role || null } });
 
-    const fresh = await query(`SELECT id, name, email, phone, avatar_color, avatar_data_url, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ?`, [id]);
+    const fresh = await query(`SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ?`, [id]);
     res.json({ user: serializeUser(fresh[0]) });
   } catch (err) { next(err); }
 });
@@ -296,7 +322,7 @@ router.patch('/:id/toggle', requirePermission('team.manage'), async (req, res, n
 router.post('/:id/reset-password', requirePermission('team.manage'), async (req, res, next) => {
   try {
     const { id } = req.params;
-    const rows = await query('SELECT id, name, email, phone, avatar_color, avatar_data_url, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ? LIMIT 1', [id]);
+    const rows = await query('SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ? LIMIT 1', [id]);
     const current = rows[0];
     if (!current) throw notFound('Usuário não encontrado');
     if (current.is_master && req.user.id !== id) throw forbidden('Não é possível redefinir o Admin Master por esta operação');
@@ -308,7 +334,7 @@ router.post('/:id/reset-password', requirePermission('team.manage'), async (req,
 
     await writeAuditLog({ actor: req.user, action: 'user.reset_password', entityType: 'user', entityId: id, entityLabel: current.name || current.email || id, summary: 'Senha temporária administrativa gerada', metadata: { email: current.email || null, role: current.role || null } });
 
-    const fresh = await query(`SELECT id, name, email, phone, avatar_color, avatar_data_url, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ?`, [id]);
+    const fresh = await query(`SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ?`, [id]);
     res.json({ user: serializeUser(fresh[0]), temporaryPassword });
   } catch (err) { next(err); }
 });

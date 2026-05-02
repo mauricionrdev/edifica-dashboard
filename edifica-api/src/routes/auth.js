@@ -10,6 +10,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { query } from '../db/pool.js';
 import { parseJson, unauthorized, badRequest, conflict } from '../utils/helpers.js';
+import { normalizeSlug, isValidSlug } from '../utils/slugs.js';
 import { normalizePermissionList, resolvePermissions, PERMISSION_GROUPS } from '../utils/permissions.js';
 import { signToken, requireAuth, requirePermission } from '../middleware/auth.js';
 
@@ -75,8 +76,16 @@ async function ensureProfileColumns() {
       if (!names.has('avatar_data_url')) {
         await query('ALTER TABLE users ADD COLUMN avatar_data_url MEDIUMTEXT NULL AFTER avatar_color');
       }
+      if (!names.has('custom_slug')) {
+        await query('ALTER TABLE users ADD COLUMN custom_slug VARCHAR(96) NULL AFTER avatar_data_url');
+      }
       if (!names.has('permissions_override')) {
         await query("ALTER TABLE users ADD COLUMN permissions_override JSON NULL AFTER squads");
+      }
+      const indexes = await query('SHOW INDEX FROM users');
+      const indexNames = new Set(indexes.map((idx) => idx.Key_name));
+      if (!indexNames.has('uk_users_custom_slug')) {
+        await query('ALTER TABLE users ADD UNIQUE KEY uk_users_custom_slug (custom_slug)');
       }
       await query("ALTER TABLE users MODIFY COLUMN role ENUM('ceo','suporte_tecnologia','admin','cap','gestor','gdv') NOT NULL DEFAULT 'gestor'");
     })().catch((err) => {
@@ -96,6 +105,7 @@ function serializeUser(row) {
     phone: row.phone || '',
     avatarColor: row.avatar_color || 'amber',
     avatarUrl: row.avatar_data_url || '',
+    customSlug: row.custom_slug || '',
     role: row.role,
     isMaster: Boolean(row.is_master),
     squads: parseJson(row.squads, []),
@@ -111,7 +121,7 @@ async function getUserById(id) {
   await ensureProfileColumns();
   const rows = await query(
     `SELECT id, name, email, phone, avatar_color, password_hash, role, is_master, squads, permissions_override, active,
-            avatar_data_url,
+            avatar_data_url, custom_slug,
             created_at, updated_at
        FROM users
       WHERE id = ?
@@ -130,7 +140,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, password_hash, role, is_master, squads, permissions_override, active,
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, password_hash, role, is_master, squads, permissions_override, active,
               created_at, updated_at
          FROM users
         WHERE (LOWER(email) = LOWER(?) OR LOWER(name) = LOWER(?))
@@ -169,7 +179,7 @@ router.patch('/profile', requireAuth, requirePermission('profile.edit'), async (
     const current = await getUserById(req.user.id);
     if (!current) throw unauthorized('Usuário não encontrado');
 
-    const { name, phone, avatarColor, avatarUrl } = req.body || {};
+    const { name, phone, avatarColor, avatarUrl, customSlug } = req.body || {};
     const updates = [];
     const params = [];
 
@@ -202,6 +212,19 @@ router.patch('/profile', requireAuth, requirePermission('profile.edit'), async (
       }
       updates.push('avatar_data_url = ?');
       params.push(cleanAvatar || null);
+    }
+
+    if (customSlug !== undefined) {
+      const cleanSlug = normalizeSlug(customSlug);
+      if (customSlug && !isValidSlug(cleanSlug)) {
+        throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
+      }
+      if (cleanSlug) {
+        const slugDup = await query('SELECT id FROM users WHERE custom_slug = ? AND id <> ? LIMIT 1', [cleanSlug, req.user.id]);
+        if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
+      }
+      updates.push('custom_slug = ?');
+      params.push(cleanSlug || null);
     }
 
     if (updates.length === 0) {

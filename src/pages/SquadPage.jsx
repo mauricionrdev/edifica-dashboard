@@ -36,6 +36,7 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { normalizeSlug } from '../utils/slugs.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import styles from './SquadPage.module.css';
@@ -173,11 +174,13 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
   const [name, setName] = useState(squad?.name || '');
   const [ownerUserId, setOwnerUserId] = useState(squad?.ownerUserId || squad?.owner?.id || '');
   const [logoUrl, setLogoUrl] = useState(getSquadAvatar(squad));
+  const [customSlug, setCustomSlug] = useState(squad?.customSlug || '');
 
   useEffect(() => {
     setName(squad?.name || '');
     setOwnerUserId(squad?.ownerUserId || squad?.owner?.id || '');
     setLogoUrl(getSquadAvatar(squad));
+    setCustomSlug(squad?.customSlug || '');
   }, [squad]);
 
   async function handleLogoFile(event) {
@@ -220,6 +223,19 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
           </section>
 
           <label className={styles.modalField}>
+            <span>Link personalizado</span>
+            <div className={styles.slugField}>
+              <small>/squads/</small>
+              <input
+                value={customSlug}
+                onChange={(event) => setCustomSlug(normalizeSlug(event.target.value))}
+                placeholder="ex: squad-crescimento"
+                maxLength={80}
+              />
+            </div>
+          </label>
+
+          <label className={styles.modalField}>
             <span>Proprietário do squad</span>
             <UserPicker
               users={users}
@@ -238,7 +254,7 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
           <button
             type="button"
             className={styles.modalPrimaryBtn}
-            onClick={() => onSubmit({ name, ownerUserId, logoUrl })}
+            onClick={() => onSubmit({ name, ownerUserId, logoUrl, customSlug })}
             disabled={busy || !name.trim()}
           >
             {busy ? 'Salvando...' : 'Salvar alterações'}
@@ -264,10 +280,13 @@ export default function SquadPage() {
   } = useOutletContext();
 
   const canManageSquads = hasPermission(user, 'squads.manage');
-  const hasSquadAccess = useMemo(() => canAccessSquad(user, squadId), [user, squadId]);
+  const hasSquadAccess = useMemo(() => {
+    if ((Array.isArray(squads) ? squads : []).some((item) => String(item.id) === String(squadId) || String(item.customSlug || '') === String(squadId))) return true;
+    return canAccessSquad(user, squadId);
+  }, [squads, user, squadId]);
 
   const squad = useMemo(
-    () => (Array.isArray(squads) ? squads.find((item) => item.id === squadId) : null),
+    () => (Array.isArray(squads) ? squads.find((item) => String(item.id) === String(squadId) || String(item.customSlug || '') === String(squadId)) : null),
     [squads, squadId]
   );
 
@@ -298,9 +317,9 @@ export default function SquadPage() {
   const squadClients = useMemo(
     () =>
       filterOperationalClientsForPeriod(clients, year, month0).filter(
-        (client) => client?.squadId === squadId
+        (client) => client?.squadId === squad?.id
       ),
-    [clients, month0, squadId, year]
+    [clients, month0, squad?.id, year]
   );
 
   useEffect(() => {
@@ -380,6 +399,7 @@ export default function SquadPage() {
         name: squad.name,
         ownerUserId: squad.ownerUserId || squad.owner?.id || '',
         logoUrl: dataUrl,
+        customSlug: squad.customSlug || '',
       });
       await refreshSquads?.();
       saveSquadAvatar(squad, dataUrl);
@@ -394,7 +414,7 @@ export default function SquadPage() {
 
 
   const handleSaveSquadSettings = useCallback(
-    async ({ name, ownerUserId, logoUrl: nextLogoUrl }) => {
+    async ({ name, ownerUserId, logoUrl: nextLogoUrl, customSlug }) => {
       if (!squad || !canManageSquads) return;
       setSettingsSaving(true);
       try {
@@ -402,6 +422,7 @@ export default function SquadPage() {
           name: String(name || '').trim(),
           ownerUserId: ownerUserId || '',
           logoUrl: nextLogoUrl || '',
+          customSlug: customSlug || '',
         });
         await refreshSquads?.();
         if (nextLogoUrl) {
@@ -622,7 +643,7 @@ export default function SquadPage() {
           <span className={styles.headerStat}>
             <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(squadClients.length)}</strong>
-            <small>{squadClients.length === 1 ? 'cliente' : 'clientes'}</small>
+            
           </span>
 
           <div className={styles.monthNav}>
@@ -686,11 +707,7 @@ export default function SquadPage() {
             <TrophyIcon size={14} aria-hidden="true" />
           </Link>
 
-          {metricsLoading ? (
-            <span className={styles.headerLoading}>
-              <LoadingIcon size="sm" label="Carregando métricas" />
-            </span>
-          ) : null}
+
         </div>
       </div>
     );

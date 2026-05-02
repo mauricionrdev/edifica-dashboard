@@ -2033,3 +2033,144 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.slugField {
+  min-height: 42px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.018);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.slugField small {
+  height: 100%;
+  padding: 0 0 0 12px;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.slugField input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  padding-left: 2px;
+}
+
+.complementaryButton {
+  min-height: 38px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  padding: 0 13px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 590;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive {
+  color: var(--text-primary);
+  border-color: var(--gdv-accent-line);
+  background: var(--gdv-accent-soft);
+}
+
+.drawerScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.complementaryDrawer {
+  position: fixed;
+  top: 96px;
+  right: 18px;
+  z-index: 170;
+  width: min(360px, calc(100vw - 36px));
+  max-height: calc(100vh - 124px);
+  border: 1px solid var(--line-subtle);
+  border-radius: 18px;
+  background: rgba(12, 13, 15, 0.98);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.complementaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.complementaryHead strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.drawerClose {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-secondary);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.drawerClose:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.complementaryList {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  scrollbar-width: none;
+}
+
+.complementaryList::-webkit-scrollbar {
+  display: none;
+}
+
+.complementaryMetricCard {
+  border: 1px solid var(--line-subtle);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+  padding: 12px;
+  display: grid;
+  gap: 5px;
+}
+
+.complementaryMetricCard span,
+.complementaryMetricCard small {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.complementaryMetricCard strong {
+  color: var(--text-primary);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 680;
+}

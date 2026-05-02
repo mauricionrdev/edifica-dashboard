@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { hasPermission } from '../utils/permissions.js';
 import { roleLabel } from '../utils/roles.js';
+import { normalizeSlug } from '../utils/slugs.js';
 import {
   getUserAvatar,
   readAvatarFile,
@@ -147,6 +148,7 @@ export default function ProfilePage() {
     name: user?.name || '',
     phone: user?.phone || '',
     avatarColor: user?.avatarColor || 'amber',
+    customSlug: user?.customSlug || '',
   });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
   const [savingProfile, setSavingProfile] = useState(false);
@@ -176,8 +178,9 @@ export default function ProfilePage() {
       name: user?.name || '',
       phone: user?.phone || '',
       avatarColor: user?.avatarColor || 'amber',
+      customSlug: user?.customSlug || '',
     });
-  }, [user?.name, user?.phone, user?.avatarColor]);
+  }, [user?.name, user?.phone, user?.avatarColor, user?.customSlug]);
 
   useEffect(() => {
     setAvatarUrl(getUserAvatar(user));
@@ -591,6 +594,19 @@ export default function ProfilePage() {
                         }
                         placeholder="Opcional"
                       />
+                    </label>
+
+                    <label className={styles.field}>
+                      <span>Link personalizado</span>
+                      <div className={styles.slugField}>
+                        <small>/perfil/</small>
+                        <input
+                          value={profileForm.customSlug}
+                          onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))}
+                          placeholder="ex: mauricio-nunes"
+                          maxLength={80}
+                        />
+                      </div>
                     </label>
 
                     <label className={styles.field}>

@@ -4,6 +4,7 @@ import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { badRequest, conflict, notFound, uuid } from '../utils/helpers.js';
 import { writeAuditLog } from '../utils/audit.js';
 import { hasPermission } from '../utils/permissions.js';
+import { normalizeSlug, isValidSlug } from '../utils/slugs.js';
 
 const router = Router();
 
@@ -23,11 +24,17 @@ async function ensureSquadSchema() {
       if (!names.has('logo_data_url')) {
         await query('ALTER TABLE squads ADD COLUMN logo_data_url MEDIUMTEXT NULL AFTER active');
       }
+      if (!names.has('custom_slug')) {
+        await query('ALTER TABLE squads ADD COLUMN custom_slug VARCHAR(96) NULL AFTER logo_data_url');
+      }
 
       const indexes = await query('SHOW INDEX FROM squads');
       const indexNames = new Set(indexes.map((idx) => idx.Key_name));
       if (!indexNames.has('idx_squads_owner')) {
         await query('ALTER TABLE squads ADD INDEX idx_squads_owner (owner_user_id)');
+      }
+      if (!indexNames.has('uk_squads_custom_slug')) {
+        await query('ALTER TABLE squads ADD UNIQUE KEY uk_squads_custom_slug (custom_slug)');
       }
     })().catch((err) => {
       schemaPromise = null;
@@ -71,6 +78,7 @@ function serialize(row) {
       : null,
     active: Boolean(row.active),
     logoUrl: row.logo_data_url || '',
+    customSlug: row.custom_slug || '',
     clientsCount: Number(row.clients_count) || 0,
     activeClients: Number(row.active_clients) || 0,
     createdAt: row.created_at,
@@ -81,14 +89,14 @@ function serialize(row) {
 async function listRows() {
   await ensureSquadSchema();
   return query(
-    `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.created_at, s.updated_at,
+    `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.custom_slug, s.created_at, s.updated_at,
             u.name AS owner_name, u.email AS owner_email, u.role AS owner_role, u.active AS owner_active,
             COUNT(c.id) AS clients_count,
             SUM(CASE WHEN c.status = 'active' THEN 1 ELSE 0 END) AS active_clients
        FROM squads s
        LEFT JOIN users u ON u.id = s.owner_user_id
        LEFT JOIN clients c ON c.squad_id = s.id
-      GROUP BY s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.created_at, s.updated_at,
+      GROUP BY s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.custom_slug, s.created_at, s.updated_at,
                u.name, u.email, u.role, u.active
       ORDER BY s.name ASC`
   );
@@ -114,6 +122,12 @@ router.post('/', requireAuth, requirePermission('squads.manage'), async (req, re
     const cleanLogo = String(req.body?.logoUrl || '').trim();
     if (cleanLogo && !cleanLogo.startsWith('data:image/')) throw badRequest('Imagem do squad inválida');
     if (!clean) throw badRequest('Informe o nome do squad');
+    const cleanSlug = req.body?.customSlug != null ? normalizeSlug(req.body.customSlug) : '';
+    if (req.body?.customSlug && !isValidSlug(cleanSlug)) throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
+    if (cleanSlug) {
+      const slugDup = await query('SELECT id FROM squads WHERE custom_slug = ? LIMIT 1', [cleanSlug]);
+      if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
+    }
 
     const owner = await validateOwner(req.body?.ownerUserId);
     const dup = await query('SELECT id FROM squads WHERE name = ? LIMIT 1', [clean]);
@@ -121,8 +135,8 @@ router.post('/', requireAuth, requirePermission('squads.manage'), async (req, re
 
     const id = uuid();
     await query(
-      'INSERT INTO squads (id, name, owner_user_id, active, logo_data_url) VALUES (?, ?, ?, ?, ?)',
-      [id, clean, owner?.id || null, owner ? 1 : 0, cleanLogo || null]
+      'INSERT INTO squads (id, name, owner_user_id, active, logo_data_url, custom_slug) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, clean, owner?.id || null, owner ? 1 : 0, cleanLogo || null, cleanSlug || null]
     );
 
     await writeAuditLog({
@@ -154,6 +168,12 @@ router.put('/:id', requireAuth, requirePermission('squads.manage'), async (req, 
     if (!nextName) throw badRequest('Informe o nome do squad');
     const nextLogo = req.body?.logoUrl !== undefined ? String(req.body.logoUrl || '').trim() : current.logo_data_url || '';
     if (nextLogo && !nextLogo.startsWith('data:image/')) throw badRequest('Imagem do squad inválida');
+    const nextSlug = req.body?.customSlug !== undefined ? normalizeSlug(req.body.customSlug) : current.custom_slug || '';
+    if (req.body?.customSlug && !isValidSlug(nextSlug)) throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
+    if (nextSlug) {
+      const slugDup = await query('SELECT id FROM squads WHERE custom_slug = ? AND id <> ? LIMIT 1', [nextSlug, id]);
+      if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
+    }
 
     const owner = req.body?.ownerUserId !== undefined
       ? await validateOwner(req.body.ownerUserId)
@@ -167,8 +187,8 @@ router.put('/:id', requireAuth, requirePermission('squads.manage'), async (req, 
     if (dup.length > 0) throw conflict('Já existe um squad com esse nome');
 
     await query(
-      'UPDATE squads SET name = ?, owner_user_id = ?, active = ?, logo_data_url = ? WHERE id = ?',
-      [nextName, ownerUserId, active, nextLogo || null, id]
+      'UPDATE squads SET name = ?, owner_user_id = ?, active = ?, logo_data_url = ?, custom_slug = ? WHERE id = ?',
+      [nextName, ownerUserId, active, nextLogo || null, nextSlug || null, id]
     );
 
     await writeAuditLog({
@@ -178,7 +198,7 @@ router.put('/:id', requireAuth, requirePermission('squads.manage'), async (req, 
       entityId: id,
       entityLabel: nextName,
       summary: `Squad ${nextName} atualizado`,
-      metadata: { ownerUserId },
+      metadata: { ownerUserId, customSlug: nextSlug || null },
     });
 
     const rows = await listRows();

@@ -4,6 +4,7 @@ import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { badRequest, conflict, notFound, uuid } from '../utils/helpers.js';
 import { writeAuditLog } from '../utils/audit.js';
 import { hasPermission } from '../utils/permissions.js';
+import { normalizeSlug, isValidSlug } from '../utils/slugs.js';
 
 const router = Router();
 
@@ -18,16 +19,32 @@ async function ensureGdvSchema() {
           name VARCHAR(160) NOT NULL,
           owner_user_id CHAR(36) NULL,
           active TINYINT(1) NOT NULL DEFAULT 0,
+          logo_data_url MEDIUMTEXT NULL,
+          custom_slug VARCHAR(96) NULL,
           created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           PRIMARY KEY (id),
           UNIQUE KEY uk_gdvs_name (name),
+          UNIQUE KEY uk_gdvs_custom_slug (custom_slug),
           KEY idx_gdvs_owner (owner_user_id),
           CONSTRAINT fk_gdvs_owner
             FOREIGN KEY (owner_user_id) REFERENCES users(id)
             ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
+      const cols = await query('SHOW COLUMNS FROM gdvs');
+      const names = new Set(cols.map((col) => col.Field));
+      if (!names.has('logo_data_url')) {
+        await query('ALTER TABLE gdvs ADD COLUMN logo_data_url MEDIUMTEXT NULL AFTER active');
+      }
+      if (!names.has('custom_slug')) {
+        await query('ALTER TABLE gdvs ADD COLUMN custom_slug VARCHAR(96) NULL AFTER logo_data_url');
+      }
+      const indexes = await query('SHOW INDEX FROM gdvs');
+      const indexNames = new Set(indexes.map((idx) => idx.Key_name));
+      if (!indexNames.has('uk_gdvs_custom_slug')) {
+        await query('ALTER TABLE gdvs ADD UNIQUE KEY uk_gdvs_custom_slug (custom_slug)');
+      }
     })().catch((err) => {
       schemaPromise = null;
       throw err;
@@ -84,6 +101,8 @@ function serialize(row) {
         }
       : null,
     active: Boolean(row.active),
+    logoUrl: row.logo_data_url || '',
+    customSlug: row.custom_slug || '',
     clientsCount: Number(row.clients_count) || 0,
     activeClients: Number(row.active_clients) || 0,
     createdAt: row.created_at,
@@ -94,14 +113,14 @@ function serialize(row) {
 async function listRows() {
   await ensureGdvSchema();
   return query(
-    `SELECT g.id, g.name, g.owner_user_id, g.active, g.created_at, g.updated_at,
+    `SELECT g.id, g.name, g.owner_user_id, g.active, g.logo_data_url, g.custom_slug, g.created_at, g.updated_at,
             u.name AS owner_name, u.email AS owner_email, u.role AS owner_role, u.active AS owner_active,
             COUNT(c.id) AS clients_count,
             SUM(CASE WHEN c.status = 'active' THEN 1 ELSE 0 END) AS active_clients
        FROM gdvs g
        LEFT JOIN users u ON u.id = g.owner_user_id
        LEFT JOIN clients c ON c.gdv_name = g.name
-      GROUP BY g.id, g.name, g.owner_user_id, g.active, g.created_at, g.updated_at,
+      GROUP BY g.id, g.name, g.owner_user_id, g.active, g.logo_data_url, g.custom_slug, g.created_at, g.updated_at,
                u.name, u.email, u.role, u.active
       ORDER BY g.name ASC`
   );
@@ -126,13 +145,21 @@ router.post('/', requireAuth, requirePermission('gdv.manage'), async (req, res, 
     if (!clean) throw badRequest('Informe o nome do GDV');
 
     const owner = await validateOwner(req.body?.ownerUserId);
+    const cleanLogo = String(req.body?.logoUrl || '').trim();
+    if (cleanLogo && !cleanLogo.startsWith('data:image/')) throw badRequest('Imagem do GDV inválida');
+    const cleanSlug = req.body?.customSlug != null ? normalizeSlug(req.body.customSlug) : '';
+    if (req.body?.customSlug && !isValidSlug(cleanSlug)) throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
+    if (cleanSlug) {
+      const slugDup = await query('SELECT id FROM gdvs WHERE custom_slug = ? LIMIT 1', [cleanSlug]);
+      if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
+    }
     const dup = await query('SELECT id FROM gdvs WHERE name = ? LIMIT 1', [clean]);
     if (dup.length > 0) throw conflict('Já existe um GDV com esse nome');
 
     const id = uuid();
     await query(
-      'INSERT INTO gdvs (id, name, owner_user_id, active) VALUES (?, ?, ?, ?)',
-      [id, clean, owner?.id || null, owner ? 1 : 0]
+      'INSERT INTO gdvs (id, name, owner_user_id, active, logo_data_url, custom_slug) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, clean, owner?.id || null, owner ? 1 : 0, cleanLogo || null, cleanSlug || null]
     );
 
     await writeAuditLog({
@@ -142,7 +169,7 @@ router.post('/', requireAuth, requirePermission('gdv.manage'), async (req, res, 
       entityId: id,
       entityLabel: clean,
       summary: `GDV ${clean} criado`,
-      metadata: { ownerUserId: owner?.id || null },
+      metadata: { ownerUserId: owner?.id || null, customSlug: cleanSlug || null },
     });
 
     const rows = await listRows();
@@ -163,6 +190,16 @@ router.put('/:id', requireAuth, requirePermission('gdv.manage'), async (req, res
     const nextName = req.body?.name != null ? String(req.body.name).trim() : current.name;
     if (!nextName) throw badRequest('Informe o nome do GDV');
 
+    const nextLogo = req.body?.logoUrl !== undefined ? String(req.body.logoUrl || '').trim() : current.logo_data_url || '';
+    if (nextLogo && !nextLogo.startsWith('data:image/')) throw badRequest('Imagem do GDV inválida');
+
+    const nextSlug = req.body?.customSlug !== undefined ? normalizeSlug(req.body.customSlug) : current.custom_slug || '';
+    if (req.body?.customSlug && !isValidSlug(nextSlug)) throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
+    if (nextSlug) {
+      const slugDup = await query('SELECT id FROM gdvs WHERE custom_slug = ? AND id <> ? LIMIT 1', [nextSlug, id]);
+      if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
+    }
+
     const owner = req.body?.ownerUserId !== undefined
       ? await validateOwner(req.body.ownerUserId)
       : null;
@@ -176,8 +213,8 @@ router.put('/:id', requireAuth, requirePermission('gdv.manage'), async (req, res
 
     await withTransaction(async (conn) => {
       await conn.query(
-        'UPDATE gdvs SET name = ?, owner_user_id = ?, active = ? WHERE id = ?',
-        [nextName, ownerUserId, active, id]
+        'UPDATE gdvs SET name = ?, owner_user_id = ?, active = ?, logo_data_url = ?, custom_slug = ? WHERE id = ?',
+        [nextName, ownerUserId, active, nextLogo || null, nextSlug || null, id]
       );
       if (nextName !== current.name) {
         await conn.query('UPDATE clients SET gdv_name = ? WHERE gdv_name = ?', [nextName, current.name]);
@@ -191,7 +228,7 @@ router.put('/:id', requireAuth, requirePermission('gdv.manage'), async (req, res
       entityId: id,
       entityLabel: nextName,
       summary: `GDV ${nextName} atualizado`,
-      metadata: { previousName: current.name, ownerUserId },
+      metadata: { previousName: current.name, ownerUserId, customSlug: nextSlug || null },
     });
 
     const rows = await listRows();

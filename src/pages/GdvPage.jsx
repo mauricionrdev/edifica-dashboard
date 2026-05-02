@@ -18,6 +18,7 @@ import LoadingIcon from '../components/ui/LoadingIcon.jsx';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, RotateCcwIcon, SearchIcon, Select, SettingsIcon, UsersIcon } from '../components/ui/index.js';
 import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
+import { normalizeSlug } from '../utils/slugs.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import {
   getGdvAvatar,
@@ -219,11 +220,13 @@ function GdvSettingsModal({ gdv, users = [], busy = false, onClose, onSubmit }) 
   const [name, setName] = useState(gdv?.name || '');
   const [ownerUserId, setOwnerUserId] = useState(gdv?.ownerUserId || gdv?.owner?.id || '');
   const [logoUrl, setLogoUrl] = useState(getGdvAvatar(gdv));
+  const [customSlug, setCustomSlug] = useState(gdv?.customSlug || '');
 
   useEffect(() => {
     setName(gdv?.name || '');
     setOwnerUserId(gdv?.ownerUserId || gdv?.owner?.id || '');
     setLogoUrl(getGdvAvatar(gdv));
+    setCustomSlug(gdv?.customSlug || '');
   }, [gdv]);
 
   async function handleLogoFile(event) {
@@ -268,6 +271,19 @@ function GdvSettingsModal({ gdv, users = [], busy = false, onClose, onSubmit }) 
           </section>
 
           <label className={styles.modalField}>
+            <span>Link personalizado</span>
+            <div className={styles.slugField}>
+              <small>/gdvs/</small>
+              <input
+                value={customSlug}
+                onChange={(event) => setCustomSlug(normalizeSlug(event.target.value))}
+                placeholder="ex: gdv-norte"
+                maxLength={80}
+              />
+            </div>
+          </label>
+
+          <label className={styles.modalField}>
             <span>Proprietário da GDV</span>
             <UserPicker
               users={users}
@@ -286,7 +302,7 @@ function GdvSettingsModal({ gdv, users = [], busy = false, onClose, onSubmit }) 
           <button
             type="button"
             className={styles.modalPrimaryBtn}
-            onClick={() => onSubmit({ name, ownerUserId, logoUrl })}
+            onClick={() => onSubmit({ name, ownerUserId, logoUrl, customSlug })}
             disabled={busy || !name.trim()}
           >
             {busy ? 'Salvando...' : 'Salvar alterações'}
@@ -326,6 +342,7 @@ export default function GdvPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
+  const [showComplementaryMetrics, setShowComplementaryMetrics] = useState(false);
 
   const gdvMenuRef = useRef(null);
   const gdvLogoInputRef = useRef(null);
@@ -368,7 +385,7 @@ export default function GdvPage() {
 
   useEffect(() => {
     if (gdvId) {
-      const routeGdv = (Array.isArray(gdvs) ? gdvs : []).find((entry) => String(entry.id) === String(gdvId));
+      const routeGdv = (Array.isArray(gdvs) ? gdvs : []).find((entry) => String(entry.id) === String(gdvId) || String(entry.customSlug || '') === String(gdvId));
       if (routeGdv?.name) {
         setSelectedGdv((current) => (current === routeGdv.name ? current : routeGdv.name));
       }
@@ -618,6 +635,43 @@ export default function GdvPage() {
     );
   }, [clientQuery, rows]);
 
+  const complementaryMetrics = useMemo(() => {
+    const activeRows = rows.filter((row) => isActiveClientStatus(row.client?.status));
+    const onboardingRows = rows.filter((row) => row.client?.status === CLIENT_STATUS.ONBOARDING);
+    const pausedRows = rows.filter((row) => row.client?.status === CLIENT_STATUS.PAUSED);
+    const activeTotal = activeRows.length;
+
+    const hitContracts = activeRows.filter((row) => {
+      const closed = Number(row.calc?.fec) || 0;
+      const target = Number(row.calc?.mEmp) || 0;
+      return target > 0 && closed >= target;
+    });
+
+    const hitProfit = activeRows.filter((row) => {
+      const closed = Number(row.calc?.fec) || 0;
+      const target = Number(row.calc?.mLuc) || 0;
+      return target > 0 && closed >= target;
+    });
+
+    const belowGoal = activeRows.filter((row) => {
+      const closed = Number(row.calc?.fec) || 0;
+      const contractTarget = Number(row.calc?.mEmp) || 0;
+      const profitTarget = Number(row.calc?.mLuc) || 0;
+      if (contractTarget > 0 && closed < contractTarget) return true;
+      if (profitTarget > 0 && closed < profitTarget) return true;
+      return false;
+    });
+
+    return [
+      { id: 'active', label: 'Clientes ativos', value: displayInt(activeTotal), sub: 'base da meta' },
+      { id: 'contracts', label: 'Bateram meta contratos', value: `${displayInt(hitContracts.length)} de ${displayInt(activeTotal)}`, sub: 'meta empate' },
+      { id: 'profit', label: 'Bateram meta lucro', value: `${displayInt(hitProfit.length)} de ${displayInt(activeTotal)}`, sub: 'meta lucro' },
+      { id: 'below', label: 'Abaixo da meta', value: `${displayInt(belowGoal.length)} de ${displayInt(activeTotal)}`, sub: 'clientes ativos' },
+      { id: 'onboarding', label: 'Onboarding', value: displayInt(onboardingRows.length), sub: 'fora da meta' },
+      { id: 'paused', label: 'Pausados', value: displayInt(pausedRows.length), sub: 'fora da meta' },
+    ];
+  }, [rows]);
+
   const totalPages = Math.max(1, Math.ceil(visibleRows.length / PAGE_SIZE));
 
   useEffect(() => {
@@ -761,7 +815,7 @@ export default function GdvPage() {
     }
   }, [activeGdvRecord, refreshGdvs, showToast]);
 
-  const handleSaveGdvSettings = useCallback(async ({ name, ownerUserId, logoUrl: nextLogoUrl }) => {
+  const handleSaveGdvSettings = useCallback(async ({ name, ownerUserId, logoUrl: nextLogoUrl, customSlug }) => {
     if (!activeGdvRecord?.id) return;
     setSettingsSaving(true);
 
@@ -771,6 +825,7 @@ export default function GdvPage() {
         name: nextName,
         ownerUserId: ownerUserId || '',
         logoUrl: nextLogoUrl || '',
+        customSlug: customSlug || '',
       });
 
       if (nextLogoUrl) saveGdvAvatar({ ...activeGdvRecord, name: nextName }, nextLogoUrl);
@@ -898,7 +953,7 @@ export default function GdvPage() {
           <span className={styles.headerStat} title={`${displayInt(gdvClients.length)} clientes`}>
             <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(gdvClients.length)}</strong>
-            <small>{gdvClients.length === 1 ? 'cliente' : 'clientes'}</small>
+            
           </span>
         </div>
 
@@ -967,11 +1022,7 @@ export default function GdvPage() {
               <RotateCcwIcon size={14} aria-hidden="true" />
             </button>
 
-            {fetchingKey === periodKey ? (
-              <span className={styles.headerLoading}>
-                <LoadingIcon size="sm" label="Carregando métricas" />
-              </span>
-            ) : null}
+
           </div>
         </div>
       </div>
@@ -1043,7 +1094,7 @@ export default function GdvPage() {
         />
       ) : null}
 
-      {selectedRow && renderStickyResult ? (
+      {false && selectedRow && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
           <span className={styles.clientAvatarMini}>{clientInitials(selectedRow.client.name)}</span>
           <strong>{selectedRow.client.name}</strong>
@@ -1107,12 +1158,50 @@ export default function GdvPage() {
           />
         </label>
 
+        <button
+          type="button"
+          className={`${styles.complementaryButton} ${showComplementaryMetrics ? styles.complementaryButtonActive : ''}`.trim()}
+          onClick={() => setShowComplementaryMetrics((open) => !open)}
+          aria-expanded={showComplementaryMetrics}
+        >
+          <span>Indicadores da carteira</span>
+        </button>
+
         {selectedRow ? (
           <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
             Limpar seleção
           </button>
         ) : null}
       </section>
+
+      {showComplementaryMetrics ? (
+        <>
+          <button
+            type="button"
+            className={styles.drawerScrim}
+            onClick={() => setShowComplementaryMetrics(false)}
+            aria-label="Fechar indicadores"
+          />
+          <section className={styles.complementaryDrawer} role="dialog" aria-modal="true" aria-label="Indicadores da carteira">
+            <div className={styles.complementaryHead}>
+              <strong>Indicadores</strong>
+              <button type="button" className={styles.drawerClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar indicadores">
+                <CloseIcon size={14} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className={styles.complementaryList}>
+              {complementaryMetrics.map((item) => (
+                <article key={item.id} className={styles.complementaryMetricCard}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                  <small>{item.sub}</small>
+                </article>
+              ))}
+            </div>
+          </section>
+        </>
+      ) : null}
 
       <section className={styles.listCard}>
         {fetchError ? (

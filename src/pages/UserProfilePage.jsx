@@ -60,7 +60,7 @@ export default function UserProfilePage() {
   }, [refreshUserDirectory, userDirectory]);
 
   const profileUser = useMemo(
-    () => (Array.isArray(userDirectory) ? userDirectory.find((entry) => entry?.id === userId) : null),
+    () => (Array.isArray(userDirectory) ? userDirectory.find((entry) => String(entry?.id) === String(userId) || String(entry?.customSlug || '') === String(userId)) : null),
     [userDirectory, userId]
   );
 
