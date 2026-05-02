@@ -412,7 +412,6 @@ export default function ClientDetailDrawer({
                   disabled={projectActionBusy}
                 >
                   <strong>Usar Modelo Oficial</strong>
-                  <span>Copia seções, tarefas, subtarefas e responsáveis padrão.</span>
                 </button>
 
                 <button
@@ -422,7 +421,6 @@ export default function ClientDetailDrawer({
                   disabled={projectActionBusy}
                 >
                   <strong>Criar do zero</strong>
-                  <span>Cria um projeto vazio vinculado a este cliente.</span>
                 </button>
               </div>
             </div>

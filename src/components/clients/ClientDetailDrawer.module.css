@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 9000;
   padding: 20px;
   display: flex;
   align-items: center;
@@ -12,12 +12,12 @@
 
 .modalCard {
   position: relative;
-  width: 70%;
-  height: 95%;
+  width: min(1120px, calc(100vw - 40px));
+  height: min(760px, calc(100vh - 40px));
   min-width: 0;
   color: var(--text-primary);
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-4);
+  border-radius: var(--radius-4, 18px);
   background: rgba(255, 255, 255, 0.02);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -26,8 +26,8 @@
 }
 
 .modalHead {
-  min-height: 64px;
-  padding: 10px 14px 10px 16px;
+  min-height: 60px;
+  padding: 9px 14px 9px 16px;
   border-bottom: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.012);
   display: flex;
@@ -40,10 +40,9 @@
   min-width: 0;
   min-height: 0;
   height: 100%;
-  max-height: calc(100vh - 126px);
   display: grid;
   grid-template-columns: 168px minmax(0, 1fr);
-  background: #08090a;
+  background: transparent;
 }
 
 .modalHeadActions,
@@ -70,10 +69,9 @@
 .btnGhost,
 .btnDanger {
   border: 1px solid var(--line-subtle);
-  border-radius: 10px;
+  border-radius: var(--radius-1, 10px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
-  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
 }
 
 .projectBtn,
@@ -135,14 +133,14 @@
 .identity {
   min-width: 0;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr);
   gap: 11px;
   align-items: center;
 }
 
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
   background: #08090a;
@@ -151,7 +149,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 620;
   letter-spacing: -0.04em;
 }
@@ -197,7 +195,7 @@
   margin: 0;
   max-width: min(520px, 100%);
   color: var(--text-primary);
-  font-size: clamp(19px, 1.5vw, 24px);
+  font-size: clamp(18px, 1.35vw, 22px);
   line-height: 1.04;
   font-weight: 620;
   letter-spacing: -0.038em;
@@ -219,7 +217,7 @@
 .section {
   padding: 14px 16px;
   border-top: 1px solid var(--line-subtle);
-  background: #08090a;
+  background: transparent;
 }
 
 .section:first-child {
@@ -243,11 +241,11 @@
 }
 
 .label {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 520;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .input,
@@ -257,7 +255,7 @@
   width: 100%;
   min-height: 36px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-1, 10px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-primary);
   font: inherit;
@@ -300,7 +298,7 @@
   align-items: center;
   padding: 12px;
   border: 1px solid rgba(255, 91, 115, 0.18);
-  border-radius: var(--radius-2);
+  border-radius: var(--radius-2, 12px);
   background: rgba(255, 91, 115, 0.045);
 }
 
@@ -327,18 +325,19 @@
 }
 
 .projectChoiceModal {
-  width: min(500px, calc(100% - 40px));
-  border: 1px solid var(--line);
-  border-radius: var(--radius-4);
-  background: #0b0c0d;
+  width: min(480px, calc(100% - 40px));
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 18px);
+  background: rgba(255, 255, 255, 0.02);
   overflow: hidden;
   box-shadow: none;
 }
 
 .projectChoiceHeader {
-  min-height: 56px;
-  padding: 13px 15px;
+  min-height: 54px;
+  padding: 0 14px 0 16px;
   border-bottom: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, 0.012);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -354,7 +353,7 @@
 }
 
 .projectChoiceHeader h3 {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   color: var(--text-primary);
   font-size: 17px;
   font-weight: 620;
@@ -367,15 +366,15 @@
 }
 
 .projectChoiceCard {
-  min-height: 70px;
-  padding: 13px 14px;
+  min-height: 50px;
+  padding: 0 14px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
+  border-radius: var(--radius-2, 12px);
   background: rgba(255, 255, 255, 0.018);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   text-align: left;
-  display: grid;
-  gap: 6px;
+  display: flex;
+  align-items: center;
   cursor: pointer;
 }
 
@@ -391,9 +390,7 @@
 }
 
 .projectChoiceCard span {
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.42;
+  display: none;
 }
 
 @media (max-width: 900px) {
@@ -403,11 +400,10 @@
 
   .modalCard {
     width: calc(100vw - 24px);
-    max-height: calc(100vh - 24px);
+    height: calc(100vh - 24px);
   }
 
   .modalBody {
-    max-height: calc(100vh - 100px);
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
   }
@@ -434,7 +430,7 @@
 
   .modalCard {
     width: calc(100vw - 16px);
-    max-height: calc(100vh - 16px);
+    height: calc(100vh - 16px);
   }
 
   .identity {
@@ -442,13 +438,8 @@
     gap: 10px;
   }
 
-  .avatar {
-    width: 42px;
-    height: 42px;
-  }
-
   .name {
-    font-size: 21px;
+    font-size: 20px;
   }
 
   .section {

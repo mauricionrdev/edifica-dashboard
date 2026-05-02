@@ -182,7 +182,6 @@ export default function ClientFormModal({
               </div>
               <div className={styles.avatarUploadText}>
                 <strong>Foto do cliente</strong>
-                <span>Opcional</span>
               </div>
               <label
                 className={styles.avatarUploadButton}

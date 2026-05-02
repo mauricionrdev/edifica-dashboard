@@ -11,7 +11,10 @@
   scrollbar-width: none;
 }
 
-.tabsBar::-webkit-scrollbar { display: none; }
+.tabsBar::-webkit-scrollbar,
+.tabBody::-webkit-scrollbar {
+  display: none;
+}
 
 .tab {
   position: relative;
@@ -19,7 +22,7 @@
   min-height: 34px;
   padding: 0 10px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-1, 10px);
   background: transparent;
   color: var(--text-tertiary);
   font: inherit;
@@ -30,7 +33,6 @@
   align-items: center;
   justify-content: flex-start;
   cursor: pointer;
-  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
 }
 
 .tab::before {
@@ -64,18 +66,16 @@
   height: 100%;
   max-height: inherit;
   overflow-y: auto;
-  background: #08090a;
+  background: transparent;
   scrollbar-width: none;
 }
-
-.tabBody::-webkit-scrollbar { display: none; }
 
 .emptyState,
 .loadingState {
   margin: 14px;
   padding: 18px;
   border: 1px solid var(--line-subtle);
-  border-radius: 12px;
+  border-radius: var(--radius-3, 16px);
   background: rgba(255, 255, 255, 0.018);
   color: var(--text-tertiary);
   font-size: 13px;
@@ -85,7 +85,9 @@
 
 .saveStatus,
 .tabCount,
-.saveDot { display: none; }
+.saveDot {
+  display: none;
+}
 
 @media (max-width: 900px) {
   .tabsBar {

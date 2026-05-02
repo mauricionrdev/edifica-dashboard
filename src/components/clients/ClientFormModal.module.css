@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 430;
+  z-index: 9000;
   padding: 20px;
   background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(12px);
@@ -11,16 +11,16 @@
 }
 
 .card {
-  width: min(660px, calc(100vw - 40px));
-  max-height: min(700px, calc(100vh - 40px));
+  width: min(680px, calc(100vw - 40px));
+  max-height: min(720px, calc(100vh - 40px));
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-4);
-  background: #0f1011;
+  border-radius: var(--radius-4, 18px);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
 }
 
 .header,
@@ -53,24 +53,25 @@
   letter-spacing: -0.02em;
 }
 
-.subtitle {
+.subtitle,
+.fieldHint {
   display: none;
 }
 
 .close,
 .avatarUploadButton {
   width: 34px;
+  min-width: 34px;
   height: 34px;
   padding: 0;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-1, 10px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-tertiary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
 }
 
 .close:hover,
@@ -97,7 +98,7 @@
   min-width: 0;
   padding: 13px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3);
+  border-radius: var(--radius-3, 16px);
   background: rgba(255, 255, 255, 0.012);
   display: grid;
   gap: 12px;
@@ -105,7 +106,6 @@
 
 .section + .section {
   padding-top: 13px;
-  border-top: 1px solid var(--line-subtle);
 }
 
 .sectionTitle {
@@ -162,11 +162,8 @@
   letter-spacing: -0.02em;
 }
 
-.avatarUploadText span,
-.fieldHint {
-  color: var(--text-tertiary);
-  font-size: 10.5px;
-  line-height: 1.35;
+.avatarUploadText span {
+  display: none;
 }
 
 .avatarUploadButton input {
@@ -190,27 +187,26 @@
 }
 
 .label {
-  color: var(--text-tertiary);
-  font-size: 11px;
+  color: var(--text-secondary);
+  font-size: 12px;
   line-height: 1.15;
-  font-weight: 520;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .input,
 .select {
   width: 100%;
   min-width: 0;
-  height: 34px;
+  height: 36px;
   padding: 0 11px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-1, 10px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-primary);
   font: inherit;
   font-size: 12.5px;
   outline: none;
-  transition: border-color 0.16s ease, background 0.16s ease;
 }
 
 .input:hover:not(:disabled),
@@ -229,6 +225,7 @@
 
 .input::placeholder {
   color: var(--text-quaternary);
+  opacity: 1;
 }
 
 .input[type='date'] {
@@ -247,7 +244,8 @@
 }
 
 .selectControl :global(button) {
-  min-height: 34px;
+  min-height: 36px;
+  border-radius: var(--radius-1, 10px);
 }
 
 .errorLine {
@@ -255,7 +253,7 @@
   min-height: 32px;
   padding: 8px 10px;
   border: 1px solid rgba(239, 68, 68, 0.22);
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-1, 10px);
   background: rgba(239, 68, 68, 0.08);
   color: var(--danger);
   display: flex;
@@ -267,17 +265,16 @@
 .btnPrimary,
 .btnSecondary,
 .btnDanger {
-  height: 34px;
+  min-height: 34px;
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-1, 10px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 520;
   cursor: pointer;
-  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
 }
 
 .btnPrimary {
