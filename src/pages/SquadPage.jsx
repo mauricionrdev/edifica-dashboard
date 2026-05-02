@@ -293,14 +293,8 @@ export default function SquadPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [renderStickyResult, setRenderStickyResult] = useState(false);
-  const [showComplementaryMetrics, setShowComplementaryMetrics] = useState(false);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
-
-  const allSquadClients = useMemo(
-    () => (Array.isArray(clients) ? clients : []).filter((client) => client?.squadId === squadId),
-    [clients, squadId]
-  );
 
   const squadClients = useMemo(
     () =>
@@ -510,34 +504,42 @@ export default function SquadPage() {
 
   const complementaryMetrics = useMemo(() => {
     const activeRows = clientRows.filter((row) => isActiveClientStatus(row.status));
-    const activeTotal = activeRows.length;
-    const onboardingTotal = allSquadClients.filter((client) => client.status === CLIENT_STATUS.ONBOARDING).length;
-    const pausedTotal = allSquadClients.filter((client) => client.status === CLIENT_STATUS.PAUSED).length;
+    const onboardingRows = clientRows.filter((row) => row.status === CLIENT_STATUS.ONBOARDING);
+    const pausedRows = clientRows.filter((row) => row.status === CLIENT_STATUS.PAUSED);
 
-    const contractGoalHits = activeRows.filter((row) => {
+    const hitContracts = activeRows.filter((row) => {
+      const closed = Number(row.calc?.fec) || 0;
       const target = Number(row.calc?.mEmp) || 0;
-      return target > 0 && (Number(row.calc?.fec) || 0) >= target;
-    }).length;
+      return target > 0 && closed >= target;
+    });
 
-    const profitGoalHits = activeRows.filter((row) => {
+    const hitProfit = activeRows.filter((row) => {
+      const closed = Number(row.calc?.fec) || 0;
       const target = Number(row.calc?.mLuc) || 0;
-      return target > 0 && (Number(row.calc?.fec) || 0) >= target;
-    }).length;
+      return target > 0 && closed >= target;
+    });
 
     const belowGoal = activeRows.filter((row) => {
-      const target = Number(row.calc?.mLuc) || 0;
-      return target > 0 && (Number(row.calc?.fec) || 0) < target;
-    }).length;
+      const closed = Number(row.calc?.fec) || 0;
+      const contractTarget = Number(row.calc?.mEmp) || 0;
+      const profitTarget = Number(row.calc?.mLuc) || 0;
+
+      if (contractTarget > 0 && closed < contractTarget) return true;
+      if (profitTarget > 0 && closed < profitTarget) return true;
+      return false;
+    });
+
+    const activeTotal = activeRows.length;
 
     return [
-      { id: 'active', label: 'Clientes ativos', value: displayInt(activeTotal), sub: 'contam na meta' },
-      { id: 'contractGoal', label: 'Bateram meta contratos', value: `${displayInt(contractGoalHits)} de ${displayInt(activeTotal)}`, sub: 'meta empate' },
-      { id: 'profitGoal', label: 'Bateram meta lucro', value: `${displayInt(profitGoalHits)} de ${displayInt(activeTotal)}`, sub: 'meta lucro' },
-      { id: 'belowGoal', label: 'Abaixo da meta', value: `${displayInt(belowGoal)} de ${displayInt(activeTotal)}`, sub: 'ativos com meta' },
-      { id: 'onboarding', label: 'Onboarding', value: displayInt(onboardingTotal), sub: 'fora da meta' },
-      { id: 'paused', label: 'Pausados', value: displayInt(pausedTotal), sub: 'fora da meta' },
+      { id: 'active', label: 'Clientes ativos', value: displayInt(activeTotal), sub: 'base da meta' },
+      { id: 'contracts', label: 'Bateram meta contratos', value: `${displayInt(hitContracts.length)} de ${displayInt(activeTotal)}`, sub: 'meta empate' },
+      { id: 'profit', label: 'Bateram meta lucro', value: `${displayInt(hitProfit.length)} de ${displayInt(activeTotal)}`, sub: 'meta lucro' },
+      { id: 'below', label: 'Abaixo da meta', value: `${displayInt(belowGoal.length)} de ${displayInt(activeTotal)}`, sub: 'clientes ativos' },
+      { id: 'onboarding', label: 'Onboarding', value: displayInt(onboardingRows.length), sub: 'fora da meta' },
+      { id: 'paused', label: 'Pausados', value: displayInt(pausedRows.length), sub: 'fora da meta' },
     ];
-  }, [allSquadClients, clientRows]);
+  }, [clientRows]);
 
   useEffect(() => {
     if (!selectedClientId) return;
@@ -716,18 +718,6 @@ export default function SquadPage() {
         ) : null}
 
         <div className={styles.headerCluster}>
-          {canManageSquads && logoUrl ? (
-            <button
-              type="button"
-              className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
-              onClick={handleRemoveLogo}
-              aria-label="Remover logo"
-              title="Remover logo"
-            >
-              <CloseIcon size={14} aria-hidden="true" />
-            </button>
-          ) : null}
-
           {canManageSquads ? (
             <button
               type="button"
@@ -956,7 +946,7 @@ export default function SquadPage() {
         />
       ) : null}
 
-      {selectedClient && renderStickyResult ? (
+      {false && selectedClient && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
           <span className={styles.clientAvatarMini}>{selectedClient.avatarUrl ? <img src={selectedClient.avatarUrl} alt="" /> : initialsFromClient(selectedClient.name)}</span>
           <strong>{selectedClient.name}</strong>
@@ -1001,48 +991,60 @@ export default function SquadPage() {
           ))}
         </section>
 
-        <section className={styles.complementaryHeader}>
-          <button
-            type="button"
-            className={`${styles.complementaryToggle} ${showComplementaryMetrics ? styles.complementaryToggleActive : ''}`.trim()}
-            onClick={() => setShowComplementaryMetrics((current) => !current)}
-            aria-expanded={showComplementaryMetrics}
-          >
-            <span>Métricas complementares</span>
-            <b>{showComplementaryMetrics ? 'Ocultar' : 'Ver indicadores'}</b>
-          </button>
-        </section>
-
-        {showComplementaryMetrics ? (
-          <section className={styles.complementaryPanel} aria-label="Métricas complementares do CAP">
-            {complementaryMetrics.map((item) => (
-              <article key={item.id} className={styles.complementaryCard}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-                <small>{item.sub}</small>
-              </article>
-            ))}
-          </section>
-        ) : null}
-
         <section className={styles.listToolbar}>
           <div className={styles.listTitle}>
             <span className={styles.cardEyebrow}>Clientes do squad</span>
             <span className={styles.listMeta}>{displayInt(filteredRows.length)} cliente(s)</span>
           </div>
 
-          <label className={styles.searchBox}>
-            <SearchIcon size={15} aria-hidden="true" />
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar cliente, gestor ou GDV..."
-              aria-label="Buscar cliente no squad"
-            />
-          </label>
+          <div className={styles.toolbarControls}>
+            <label className={styles.searchBox}>
+              <SearchIcon size={15} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar cliente, gestor ou GDV..."
+                aria-label="Buscar cliente no squad"
+              />
+            </label>
+
+            <button
+              type="button"
+              className={`${styles.complementaryButton} ${showComplementaryMetrics ? styles.complementaryButtonActive : ''}`.trim()}
+              onClick={() => setShowComplementaryMetrics((open) => !open)}
+              aria-expanded={showComplementaryMetrics}
+            >
+              <span>Métricas complementares</span>
+              <small>{showComplementaryMetrics ? 'Ocultar' : 'Ver indicadores'}</small>
+            </button>
+          </div>
         </section>
       </section>
+
+      {showComplementaryMetrics ? (
+        <aside className={styles.complementaryDrawer} aria-label="Métricas complementares do CAP">
+          <div className={styles.complementaryHead}>
+            <div>
+              <span>Performance do CAP</span>
+              <strong>Indicadores complementares</strong>
+            </div>
+            <button type="button" className={styles.drawerClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar métricas complementares">
+              <CloseIcon size={14} aria-hidden="true" />
+            </button>
+          </div>
+
+          <div className={styles.complementaryList}>
+            {complementaryMetrics.map((item) => (
+              <article key={item.id} className={styles.complementaryMetricCard}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+                <small>{item.sub}</small>
+              </article>
+            ))}
+          </div>
+        </aside>
+      ) : null}
 
       <section className={styles.listCard}>
         {metricsError ? (

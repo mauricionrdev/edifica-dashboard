@@ -1647,115 +1647,296 @@
   }
 }
 
-/* v72 — Métricas complementares do CAP */
-.complementaryHeader {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  min-height: 34px;
+/* v73 — Squad: topo fixo, lista rolável e métricas complementares em drawer */
+.page {
+  height: 100%;
+  max-height: calc(100vh - 78px);
+  overflow: hidden;
+  padding: 10px 14px 14px;
+  gap: 10px;
 }
 
-.complementaryToggle {
-  min-height: 32px;
-  padding: 0 10px;
+.topArea {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  flex: 0 0 auto;
+  padding-bottom: 8px;
+  background: var(--bg-app, #08090a);
+}
+
+.metricGrid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.metricCard {
+  min-height: 78px;
+  padding: 11px 12px 10px;
+  border-color: var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+}
+
+.metricLabel {
+  font-size: 9.5px;
+  letter-spacing: 0.075em;
+}
+
+.metricValue {
+  font-size: clamp(20px, 1.22vw, 24px);
+}
+
+.metricSub {
+  min-height: 14px;
+  font-size: 10.5px;
+}
+
+.listToolbar {
+  min-height: 42px;
+  padding: 8px 0 0;
+  border-bottom: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, max-content) minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbarControls {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchBox {
+  width: 100%;
+  height: 36px;
+}
+
+.complementaryButton {
+  height: 36px;
+  min-width: 246px;
+  padding: 0 13px;
   border: 1px solid var(--line-subtle);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.018);
   color: var(--text-secondary);
+  font: inherit;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font: inherit;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.032);
+  color: var(--text-primary);
+}
+
+.complementaryButton span {
+  color: inherit;
   font-size: 12px;
-  font-weight: 590;
+  font-weight: 620;
+  white-space: nowrap;
+}
+
+.complementaryButton small {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 520;
+  white-space: nowrap;
+}
+
+.listCard {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.clientList {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.clientList::-webkit-scrollbar {
+  display: none;
+}
+
+.pagination {
+  flex: 0 0 auto;
+}
+
+.stickyResultBar {
+  display: none !important;
+}
+
+.complementaryDrawer {
+  position: fixed;
+  top: 92px;
+  right: 18px;
+  z-index: 90;
+  width: min(330px, calc(100vw - 36px));
+  max-height: calc(100vh - 116px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(13, 14, 15, 0.98);
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
+  overflow: hidden;
+}
+
+.complementaryHead {
+  min-height: 58px;
+  padding: 12px 12px 11px 14px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.complementaryHead div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.complementaryHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 620;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.complementaryHead strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+
+.drawerClose {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-tertiary);
+  display: inline-grid;
+  place-items: center;
   cursor: pointer;
 }
 
-.complementaryToggle:hover,
-.complementaryToggleActive {
+.drawerClose:hover {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.036);
   color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.032);
 }
 
-.complementaryToggle b {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 590;
-}
-
-.complementaryPanel {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+.complementaryList {
+  max-height: calc(100vh - 176px);
   padding: 10px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.012);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
-.complementaryCard {
-  min-width: 0;
+.complementaryList::-webkit-scrollbar {
+  display: none;
+}
+
+.complementaryMetricCard {
   min-height: 72px;
   padding: 11px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.015);
-  display: grid;
-  align-content: space-between;
-  gap: 6px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
 }
 
-.complementaryCard span {
-  overflow: hidden;
+.complementaryMetricCard span {
   color: var(--text-tertiary);
-  font-size: 9px;
-  line-height: 1.2;
-  font-weight: 620;
-  letter-spacing: 0.09em;
+  font-size: 10px;
+  font-weight: 610;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
-.complementaryCard strong {
-  overflow: hidden;
+.complementaryMetricCard strong {
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1;
   font-weight: 620;
   letter-spacing: -0.03em;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   font-variant-numeric: tabular-nums;
 }
 
-.complementaryCard small {
-  overflow: hidden;
+.complementaryMetricCard small {
   color: var(--text-tertiary);
   font-size: 11px;
-  line-height: 1.25;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  font-weight: 500;
 }
 
-@media (max-width: 1280px) {
-  .complementaryPanel {
+@media (max-width: 1480px) {
+  .metricGrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1180px) {
+  .metricGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .toolbarControls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .complementaryButton {
+    width: 100%;
   }
 }
 
 @media (max-width: 760px) {
-  .complementaryHeader {
-    justify-content: stretch;
+  .page {
+    max-height: none;
+    overflow: visible;
   }
 
-  .complementaryToggle {
-    width: 100%;
-    justify-content: space-between;
+  .topArea {
+    position: static;
   }
 
-  .complementaryPanel {
+  .listToolbar {
     grid-template-columns: 1fr;
+  }
+
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .complementaryDrawer {
+    top: auto;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    max-height: 70vh;
   }
 }
