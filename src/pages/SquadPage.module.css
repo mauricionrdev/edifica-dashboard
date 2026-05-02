@@ -53,7 +53,7 @@
   object-fit: cover;
 }
 
-.headerLogo > span {
+.headerLogo>span {
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -195,7 +195,7 @@
   min-width: 0;
 }
 
-.ownerControl > span:first-child {
+.ownerControl>span:first-child {
   display: none;
 }
 
@@ -345,7 +345,7 @@
   animation: squadStickyExit 170ms ease-in both;
 }
 
-.stickyResultBar > strong {
+.stickyResultBar>strong {
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
@@ -894,7 +894,7 @@
 }
 
 .modalCard {
-  width: min(780px, calc(100vw - 64px));
+  width: min(600px, calc(100vw - 64px));
   max-height: min(780px, calc(100vh - 64px));
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -1023,7 +1023,7 @@
   gap: 8px;
 }
 
-.modalField > span {
+.modalField>span {
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 590;
@@ -1096,11 +1096,11 @@
   font-feature-settings: 'cv01', 'ss03';
 }
 
-.modalBody > .modalField {
+.modalBody>.modalField {
   padding: 2px 0 0;
 }
 
-.modalBody > .modalField > span {
+.modalBody>.modalField>span {
   margin-bottom: 2px;
 }
 
@@ -2096,6 +2096,7 @@
 }
 
 @media (max-width: 760px) {
+
   .listCard,
   .clientList {
     max-height: none;
@@ -2470,7 +2471,7 @@
   gap: 7px;
 }
 
-.modalField > span {
+.modalField>span {
   color: var(--text-tertiary);
   font-size: 10px;
   letter-spacing: 0.09em;
