@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  addTaskCollaborator,
   createClientProject,
   createProjectSection,
   createTask,
+  createTaskComment,
   deleteProjectSection,
   deleteTask,
   getClientProject,
   getProject,
+  listTaskCollaborators,
+  listTaskComments,
+  removeTaskCollaborator,
   updateProjectSection,
   updateTask,
 } from '../../api/projects.js';
@@ -27,11 +32,29 @@ function statusLabel(status) {
   return 'Aberta';
 }
 
+function priorityLabel(priority) {
+  if (priority === 'high') return 'Alta';
+  if (priority === 'low') return 'Baixa';
+  return 'Média';
+}
+
 function formatDate(value) {
   if (!value) return 'Sem prazo';
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return 'Sem prazo';
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date);
+}
+
+function formatDateTime(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
 }
 
 function normalizeProjectPayload(payload) {
@@ -54,7 +77,22 @@ function normalizeProjectPayload(payload) {
   };
 }
 
-export default function ClientProjectTab({ client, canCreateProject = false }) {
+function userName(users, userId, fallback = '') {
+  const user = (Array.isArray(users) ? users : []).find((entry) => entry.id === userId);
+  return user?.name || user?.email || fallback || 'Sem responsável';
+}
+
+function initials(value) {
+  return String(value || '?')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
+
+export default function ClientProjectTab({ client, users = [], canCreateProject = false }) {
   const { showToast } = useToast();
 
   const [detail, setDetail] = useState({ project: null, sections: [], members: [], events: [] });
@@ -64,14 +102,27 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
   const [taskDrafts, setTaskDrafts] = useState({});
   const [editingSectionId, setEditingSectionId] = useState('');
   const [editingSectionName, setEditingSectionName] = useState('');
+  const [selectedTaskId, setSelectedTaskId] = useState('');
+  const [taskComments, setTaskComments] = useState([]);
+  const [taskCollaborators, setTaskCollaborators] = useState([]);
+  const [taskPanelLoading, setTaskPanelLoading] = useState(false);
+  const [commentBody, setCommentBody] = useState('');
+  const [subtaskTitle, setSubtaskTitle] = useState('');
+  const [collaboratorUserId, setCollaboratorUserId] = useState('');
 
   const project = detail.project;
   const sections = Array.isArray(detail.sections) ? detail.sections : [];
   const members = Array.isArray(detail.members) ? detail.members : [];
 
-  const flatTasks = useMemo(
-    () => sections.flatMap((section) => section.tasks || []).filter((task) => !task.parentTaskId),
-    [sections]
+  const allTasks = useMemo(() => sections.flatMap((section) => section.tasks || []), [sections]);
+  const flatTasks = useMemo(() => allTasks.filter((task) => !task.parentTaskId), [allTasks]);
+  const selectedTask = useMemo(
+    () => allTasks.find((task) => task.id === selectedTaskId) || null,
+    [allTasks, selectedTaskId]
+  );
+  const selectedSubtasks = useMemo(
+    () => (selectedTask ? allTasks.filter((task) => task.parentTaskId === selectedTask.id) : []),
+    [allTasks, selectedTask]
   );
 
   const totalTasks = flatTasks.length || Number(project?.taskCount || 0);
@@ -94,6 +145,7 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
 
     let cancelled = false;
     setLoading(true);
+    setSelectedTaskId('');
 
     getClientProject(client.id)
       .then(async (response) => {
@@ -125,6 +177,38 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
       cancelled = true;
     };
   }, [client?.id, showToast]);
+
+  useEffect(() => {
+    if (!selectedTask?.id) {
+      setTaskComments([]);
+      setTaskCollaborators([]);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setTaskPanelLoading(true);
+
+    Promise.all([
+      listTaskComments(selectedTask.id).catch(() => ({ comments: [] })),
+      listTaskCollaborators(selectedTask.id).catch(() => ({ collaborators: [] })),
+    ])
+      .then(([commentsResponse, collaboratorsResponse]) => {
+        if (cancelled) return;
+        setTaskComments(Array.isArray(commentsResponse?.comments) ? commentsResponse.comments : []);
+        setTaskCollaborators(
+          Array.isArray(collaboratorsResponse?.collaborators)
+            ? collaboratorsResponse.collaborators
+            : []
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setTaskPanelLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTask?.id]);
 
   async function handleCreateProject(mode) {
     if (!client?.id || busy) return;
@@ -222,9 +306,9 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
     }
   }
 
-  async function handleCreateTask(event, sectionId) {
+  async function handleCreateTask(event, sectionId, parentTaskId = '') {
     event.preventDefault();
-    const title = String(taskDrafts[sectionId] || '').trim();
+    const title = parentTaskId ? subtaskTitle.trim() : String(taskDrafts[sectionId] || '').trim();
     if (!title || !project?.id || !sectionId || busy) return;
 
     try {
@@ -232,11 +316,14 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
       await createTask({
         projectId: project.id,
         sectionId,
+        clientId: client.id,
+        parentTaskId,
         title,
       });
-      setTaskDrafts((current) => ({ ...current, [sectionId]: '' }));
+      if (parentTaskId) setSubtaskTitle('');
+      else setTaskDrafts((current) => ({ ...current, [sectionId]: '' }));
       await refreshProject(project.id);
-      showToast('Tarefa criada.', { variant: 'success' });
+      showToast(parentTaskId ? 'Subtarefa criada.' : 'Tarefa criada.', { variant: 'success' });
     } catch (error) {
       showToast(error?.message || 'Não foi possível criar a tarefa.', { variant: 'error' });
     } finally {
@@ -244,13 +331,12 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
     }
   }
 
-  async function handleToggleTask(task) {
+  async function handleUpdateTask(task, patch) {
     if (!task?.id || busy) return;
-    const nextStatus = task.status === 'done' ? 'open' : 'done';
 
     try {
       setBusy(true);
-      await updateTask(task.id, { status: nextStatus, done: nextStatus === 'done' });
+      await updateTask(task.id, patch);
       await refreshProject(project.id);
     } catch (error) {
       showToast(error?.message || 'Não foi possível atualizar a tarefa.', { variant: 'error' });
@@ -259,12 +345,18 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
     }
   }
 
+  async function handleToggleTask(task) {
+    const nextStatus = task.status === 'done' ? 'todo' : 'done';
+    await handleUpdateTask(task, { status: nextStatus, done: nextStatus === 'done' });
+  }
+
   async function handleDeleteTask(task) {
     if (!task?.id || busy) return;
 
     try {
       setBusy(true);
       await deleteTask(task.id);
+      if (selectedTaskId === task.id) setSelectedTaskId('');
       await refreshProject(project.id);
       showToast('Tarefa removida.', { variant: 'success' });
     } catch (error) {
@@ -274,14 +366,60 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
     }
   }
 
+  async function handleCreateComment(event) {
+    event.preventDefault();
+    const body = commentBody.trim();
+    if (!selectedTask?.id || !body || busy) return;
+
+    try {
+      setBusy(true);
+      const response = await createTaskComment(selectedTask.id, { body });
+      setCommentBody('');
+      setTaskComments(Array.isArray(response?.comments) ? response.comments : []);
+      showToast('Comentário registrado.', { variant: 'success' });
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível registrar o comentário.', { variant: 'error' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleAddCollaborator(event) {
+    event.preventDefault();
+    if (!selectedTask?.id || !collaboratorUserId || busy) return;
+
+    try {
+      setBusy(true);
+      const response = await addTaskCollaborator(selectedTask.id, { userId: collaboratorUserId });
+      setCollaboratorUserId('');
+      setTaskCollaborators(Array.isArray(response?.collaborators) ? response.collaborators : []);
+      showToast('Colaborador adicionado.', { variant: 'success' });
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível adicionar colaborador.', { variant: 'error' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRemoveCollaborator(userId) {
+    if (!selectedTask?.id || !userId || busy) return;
+
+    try {
+      setBusy(true);
+      const response = await removeTaskCollaborator(selectedTask.id, userId);
+      setTaskCollaborators(Array.isArray(response?.collaborators) ? response.collaborators : []);
+      showToast('Colaborador removido.', { variant: 'success' });
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível remover colaborador.', { variant: 'error' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className={styles.wrap}>
-        <StateBlock
-          variant="loading"
-          compact
-          title="Carregando projeto"
-        />
+        <StateBlock variant="loading" compact title="Carregando projeto" />
       </div>
     );
   }
@@ -305,11 +443,7 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
               </button>
             </div>
           ) : (
-            <StateBlock
-              variant="empty"
-              compact
-              title="Projeto não criado"
-            />
+            <StateBlock variant="empty" compact title="Projeto não criado" />
           )}
         </section>
       </div>
@@ -352,107 +486,310 @@ export default function ClientProjectTab({ client, canCreateProject = false }) {
         </button>
       </form>
 
-      <section className={styles.sections}>
-        {sections.length === 0 ? (
-          <StateBlock
-            variant="empty"
-            compact
-            title="Nenhuma seção criada"
-          />
-        ) : (
-          sections.map((section) => {
-            const tasks = (section.tasks || []).filter((task) => !task.parentTaskId);
-            const isEditing = editingSectionId === section.id;
+      <section className={styles.workspace}>
+        <div className={styles.sections}>
+          {sections.length === 0 ? (
+            <StateBlock variant="empty" compact title="Nenhuma seção criada" />
+          ) : (
+            sections.map((section) => {
+              const tasks = (section.tasks || []).filter((task) => !task.parentTaskId);
+              const isEditing = editingSectionId === section.id;
 
-            return (
-              <article key={section.id} className={styles.sectionCard}>
-                <header className={styles.sectionHead}>
-                  {isEditing ? (
+              return (
+                <article key={section.id} className={styles.sectionCard}>
+                  <header className={styles.sectionHead}>
+                    {isEditing ? (
+                      <input
+                        value={editingSectionName}
+                        onChange={(event) => setEditingSectionName(event.target.value)}
+                        onBlur={() => handleSaveSection(section)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') handleSaveSection(section);
+                          if (event.key === 'Escape') {
+                            setEditingSectionId('');
+                            setEditingSectionName('');
+                          }
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.sectionName}
+                        onClick={() => {
+                          setEditingSectionId(section.id);
+                          setEditingSectionName(section.name || '');
+                        }}
+                      >
+                        {section.name}
+                      </button>
+                    )}
+
+                    <div className={styles.sectionActions}>
+                      <span>{tasks.length}</span>
+                      <button type="button" onClick={() => handleDeleteSection(section)} disabled={busy}>
+                        Remover
+                      </button>
+                    </div>
+                  </header>
+
+                  <form className={styles.taskForm} onSubmit={(event) => handleCreateTask(event, section.id)}>
                     <input
-                      value={editingSectionName}
-                      onChange={(event) => setEditingSectionName(event.target.value)}
-                      onBlur={() => handleSaveSection(section)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') handleSaveSection(section);
-                        if (event.key === 'Escape') {
-                          setEditingSectionId('');
-                          setEditingSectionName('');
-                        }
-                      }}
-                      autoFocus
+                      value={taskDrafts[section.id] || ''}
+                      onChange={(event) =>
+                        setTaskDrafts((current) => ({ ...current, [section.id]: event.target.value }))
+                      }
+                      placeholder="Nova tarefa"
+                      disabled={busy}
                     />
-                  ) : (
-                    <button
-                      type="button"
-                      className={styles.sectionName}
-                      onClick={() => {
-                        setEditingSectionId(section.id);
-                        setEditingSectionName(section.name || '');
-                      }}
-                    >
-                      {section.name}
+                    <button type="submit" disabled={busy || !String(taskDrafts[section.id] || '').trim()}>
+                      Adicionar
                     </button>
-                  )}
+                  </form>
 
-                  <div className={styles.sectionActions}>
-                    <span>{tasks.length}</span>
-                    <button type="button" onClick={() => handleDeleteSection(section)} disabled={busy}>
-                      Remover
-                    </button>
+                  <div className={styles.taskList}>
+                    {tasks.length === 0 ? (
+                      <div className={styles.noTasks}>Nenhuma tarefa nesta seção</div>
+                    ) : (
+                      tasks.map((task) => {
+                        const subtasks = allTasks.filter((entry) => entry.parentTaskId === task.id);
+                        return (
+                          <div
+                            key={task.id}
+                            className={`${styles.taskRow} ${task.status === 'done' ? styles.taskDone : ''} ${
+                              selectedTaskId === task.id ? styles.taskSelected : ''
+                            }`.trim()}
+                          >
+                            <button
+                              type="button"
+                              className={styles.taskCheck}
+                              onClick={() => handleToggleTask(task)}
+                              disabled={busy}
+                              aria-label="Alterar status da tarefa"
+                            >
+                              {task.status === 'done' ? '✓' : ''}
+                            </button>
+
+                            <button type="button" className={styles.taskMain} onClick={() => setSelectedTaskId(task.id)}>
+                              <strong>{task.title}</strong>
+                              <span>
+                                {statusLabel(task.status)} · {formatDate(task.dueDate)}
+                                {subtasks.length ? ` · ${subtasks.length} subtarefa(s)` : ''}
+                              </span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={styles.taskDelete}
+                              onClick={() => handleDeleteTask(task)}
+                              disabled={busy}
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
-                </header>
+                </article>
+              );
+            })
+          )}
+        </div>
 
-                <form className={styles.taskForm} onSubmit={(event) => handleCreateTask(event, section.id)}>
+        <aside className={styles.taskPanel}>
+          {!selectedTask ? (
+            <StateBlock variant="empty" compact title="Selecione uma tarefa" />
+          ) : (
+            <div className={styles.taskDetail}>
+              <header className={styles.taskDetailHead}>
+                <div>
+                  <span>Tarefa</span>
+                  <strong>{selectedTask.title}</strong>
+                </div>
+                <button type="button" onClick={() => setSelectedTaskId('')}>
+                  Fechar
+                </button>
+              </header>
+
+              <div className={styles.taskControls}>
+                <label>
+                  <span>Status</span>
+                  <select
+                    value={selectedTask.status || 'todo'}
+                    onChange={(event) => handleUpdateTask(selectedTask, { status: event.target.value, done: event.target.value === 'done' })}
+                    disabled={busy}
+                  >
+                    <option value="todo">Aberta</option>
+                    <option value="in_progress">Em andamento</option>
+                    <option value="done">Concluída</option>
+                    <option value="canceled">Cancelada</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Prioridade</span>
+                  <select
+                    value={selectedTask.priority || 'medium'}
+                    onChange={(event) => handleUpdateTask(selectedTask, { priority: event.target.value })}
+                    disabled={busy}
+                  >
+                    <option value="low">Baixa</option>
+                    <option value="medium">Média</option>
+                    <option value="high">Alta</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Responsável</span>
+                  <select
+                    value={selectedTask.assigneeUserId || ''}
+                    onChange={(event) => handleUpdateTask(selectedTask, { assigneeUserId: event.target.value })}
+                    disabled={busy}
+                  >
+                    <option value="">Sem responsável</option>
+                    {(Array.isArray(users) ? users : []).map((entry) => (
+                      <option key={entry.id} value={entry.id}>
+                        {entry.name || entry.email}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  <span>Prazo</span>
                   <input
-                    value={taskDrafts[section.id] || ''}
-                    onChange={(event) =>
-                      setTaskDrafts((current) => ({ ...current, [section.id]: event.target.value }))
-                    }
-                    placeholder="Nova tarefa"
+                    type="date"
+                    value={selectedTask.dueDate || ''}
+                    onChange={(event) => handleUpdateTask(selectedTask, { dueDate: event.target.value })}
                     disabled={busy}
                   />
-                  <button type="submit" disabled={busy || !String(taskDrafts[section.id] || '').trim()}>
+                </label>
+              </div>
+
+              <div className={styles.taskMetaLine}>
+                <span>{statusLabel(selectedTask.status)}</span>
+                <span>{priorityLabel(selectedTask.priority)}</span>
+                <span>{userName(users, selectedTask.assigneeUserId, selectedTask.assigneeName)}</span>
+              </div>
+
+              <section className={styles.taskDetailSection}>
+                <div className={styles.taskDetailTitle}>
+                  <span>Subtarefas</span>
+                  <strong>{selectedSubtasks.length}</strong>
+                </div>
+
+                <form className={styles.subtaskForm} onSubmit={(event) => handleCreateTask(event, selectedTask.sectionId, selectedTask.id)}>
+                  <input
+                    value={subtaskTitle}
+                    onChange={(event) => setSubtaskTitle(event.target.value)}
+                    placeholder="Nova subtarefa"
+                    disabled={busy}
+                  />
+                  <button type="submit" disabled={busy || !subtaskTitle.trim()}>
                     Adicionar
                   </button>
                 </form>
 
-                <div className={styles.taskList}>
-                  {tasks.length === 0 ? (
-                    <div className={styles.noTasks}>Nenhuma tarefa nesta seção</div>
+                <div className={styles.subtaskList}>
+                  {selectedSubtasks.length === 0 ? (
+                    <div className={styles.noTasks}>Nenhuma subtarefa</div>
                   ) : (
-                    tasks.map((task) => (
-                      <div key={task.id} className={`${styles.taskRow} ${task.status === 'done' ? styles.taskDone : ''}`.trim()}>
-                        <button
-                          type="button"
-                          className={styles.taskCheck}
-                          onClick={() => handleToggleTask(task)}
-                          disabled={busy}
-                          aria-label="Alterar status da tarefa"
-                        >
-                          {task.status === 'done' ? '✓' : ''}
+                    selectedSubtasks.map((subtask) => (
+                      <div key={subtask.id} className={styles.subtaskRow}>
+                        <button type="button" onClick={() => handleToggleTask(subtask)} disabled={busy}>
+                          {subtask.status === 'done' ? '✓' : ''}
                         </button>
-
-                        <div className={styles.taskMain}>
-                          <strong>{task.title}</strong>
-                          <span>{statusLabel(task.status)} · {formatDate(task.dueDate)}</span>
-                        </div>
-
-                        <button
-                          type="button"
-                          className={styles.taskDelete}
-                          onClick={() => handleDeleteTask(task)}
-                          disabled={busy}
-                        >
+                        <span>{subtask.title}</span>
+                        <button type="button" onClick={() => handleDeleteTask(subtask)} disabled={busy}>
                           Remover
                         </button>
                       </div>
                     ))
                   )}
                 </div>
-              </article>
-            );
-          })
-        )}
+              </section>
+
+              <section className={styles.taskDetailSection}>
+                <div className={styles.taskDetailTitle}>
+                  <span>Colaboradores</span>
+                  <strong>{taskCollaborators.length}</strong>
+                </div>
+
+                <form className={styles.collabForm} onSubmit={handleAddCollaborator}>
+                  <select
+                    value={collaboratorUserId}
+                    onChange={(event) => setCollaboratorUserId(event.target.value)}
+                    disabled={busy || taskPanelLoading}
+                  >
+                    <option value="">Adicionar colaborador</option>
+                    {(Array.isArray(users) ? users : [])
+                      .filter((entry) => !taskCollaborators.some((collab) => collab.userId === entry.id))
+                      .map((entry) => (
+                        <option key={entry.id} value={entry.id}>
+                          {entry.name || entry.email}
+                        </option>
+                      ))}
+                  </select>
+                  <button type="submit" disabled={busy || !collaboratorUserId}>
+                    Adicionar
+                  </button>
+                </form>
+
+                <div className={styles.collabList}>
+                  {taskCollaborators.length === 0 ? (
+                    <div className={styles.noTasks}>Nenhum colaborador</div>
+                  ) : (
+                    taskCollaborators.map((entry) => (
+                      <div key={entry.userId} className={styles.collabRow}>
+                        <span>{initials(entry.userName || entry.userEmail)}</span>
+                        <strong>{entry.userName || entry.userEmail}</strong>
+                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy}>
+                          Remover
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+
+              <section className={styles.taskDetailSection}>
+                <div className={styles.taskDetailTitle}>
+                  <span>Comentários</span>
+                  <strong>{taskComments.length}</strong>
+                </div>
+
+                <form className={styles.commentForm} onSubmit={handleCreateComment}>
+                  <textarea
+                    value={commentBody}
+                    onChange={(event) => setCommentBody(event.target.value)}
+                    placeholder="Novo comentário"
+                    disabled={busy || taskPanelLoading}
+                  />
+                  <button type="submit" disabled={busy || !commentBody.trim()}>
+                    Comentar
+                  </button>
+                </form>
+
+                <div className={styles.commentList}>
+                  {taskComments.length === 0 ? (
+                    <div className={styles.noTasks}>Nenhum comentário</div>
+                  ) : (
+                    taskComments.map((comment) => (
+                      <article key={comment.id} className={styles.commentCard}>
+                        <header>
+                          <strong>{comment.userName || comment.authorName || 'Usuário'}</strong>
+                          <span>{formatDateTime(comment.createdAt)}</span>
+                        </header>
+                        <p>{comment.body || comment.comment || comment.text}</p>
+                      </article>
+                    ))
+                  )}
+                </div>
+              </section>
+            </div>
+          )}
+        </aside>
       </section>
     </div>
   );
