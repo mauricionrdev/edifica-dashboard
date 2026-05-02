@@ -291,6 +291,7 @@ export default function SquadPage() {
   const cardsRef = useRef(null);
   const [showStickyResult, setShowStickyResult] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showComplementaryMetrics, setShowComplementaryMetrics] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [renderStickyResult, setRenderStickyResult] = useState(false);
 
