@@ -18,7 +18,9 @@ import {
   updateTask,
 } from '../../api/projects.js';
 import { ApiError } from '../../api/client.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
+import { hasPermission } from '../../utils/permissions.js';
 import StateBlock from '../ui/StateBlock.jsx';
 import { TrashIcon } from '../ui/Icons.jsx';
 import styles from './ClientProjectTab.module.css';
@@ -119,7 +121,22 @@ function initials(value) {
 }
 
 export default function ClientProjectTab({ client, users = [], canCreateProject = false }) {
+  const { user } = useAuth();
   const { showToast } = useToast();
+
+  const canEditProject =
+    hasPermission(user, 'projects.edit') ||
+    hasPermission(user, 'projects.edit.all') ||
+    hasPermission(user, 'projects.edit.own');
+  const canCreateTasks = hasPermission(user, 'tasks.create');
+  const canEditTasks =
+    hasPermission(user, 'tasks.edit') ||
+    hasPermission(user, 'tasks.edit.all') ||
+    hasPermission(user, 'tasks.edit.own');
+  const canCommentTasks =
+    hasPermission(user, 'tasks.comment') ||
+    hasPermission(user, 'tasks.comment.all') ||
+    hasPermission(user, 'tasks.comment.own');
 
   const [detail, setDetail] = useState({ project: null, sections: [], members: [], events: [] });
   const [loading, setLoading] = useState(true);
@@ -274,7 +291,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   async function handleCreateSection(event) {
     event.preventDefault();
     const name = sectionDraft.trim();
-    if (!name || !project?.id || busy) return;
+    if (!name || !project?.id || busy || !canEditProject) return;
 
     try {
       setBusy(true);
@@ -295,7 +312,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
 
   async function handleSaveSection(section) {
     const name = editingSectionName.trim();
-    if (!project?.id || !section?.id || !name) {
+    if (!project?.id || !section?.id || !name || !canEditProject) {
       setEditingSectionId('');
       setEditingSectionName('');
       return;
@@ -326,7 +343,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   }
 
   async function handleDeleteSection(section) {
-    if (!project?.id || !section?.id || busy) return;
+    if (!project?.id || !section?.id || busy || !canEditProject) return;
 
     try {
       setBusy(true);
@@ -346,7 +363,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   }
 
   async function handleMoveSection(sectionId, direction) {
-    if (!project?.id || busy) return;
+    if (!project?.id || busy || !canEditProject) return;
 
     const currentIndex = sections.findIndex((section) => section.id === sectionId);
     const targetIndex = currentIndex + direction;
@@ -374,7 +391,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   }
 
   async function handleMoveTask(sectionId, taskId, direction) {
-    if (!project?.id || !sectionId || !taskId || busy) return;
+    if (!project?.id || !sectionId || !taskId || busy || !canEditProject) return;
 
     const section = sections.find((entry) => entry.id === sectionId);
     const parentTasks = (section?.tasks || []).filter((task) => !task.parentTaskId);
@@ -426,7 +443,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   async function handleCreateTask(event, sectionId, parentTaskId = '') {
     event.preventDefault();
     const title = parentTaskId ? subtaskTitle.trim() : String(taskDrafts[sectionId] || '').trim();
-    if (!title || !project?.id || !sectionId || busy) return;
+    if (!title || !project?.id || !sectionId || busy || !canCreateTasks) return;
 
     try {
       setBusy(true);
@@ -449,7 +466,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   }
 
   async function handleSaveTaskDraft() {
-    if (!selectedTask?.id || busy) return;
+    if (!selectedTask?.id || busy || !canEditTasks) return;
 
     const title = taskDraft.title.trim();
     const description = String(taskDraft.description || '').trim();
@@ -468,7 +485,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   }
 
   async function handleUpdateTask(task, patch) {
-    if (!task?.id || busy) return;
+    if (!task?.id || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -487,7 +504,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   }
 
   async function handleDeleteTask(task) {
-    if (!task?.id || busy) return;
+    if (!task?.id || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -506,7 +523,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   async function handleCreateComment(event) {
     event.preventDefault();
     const body = commentBody.trim();
-    if (!selectedTask?.id || !body || busy) return;
+    if (!selectedTask?.id || !body || busy || !canCommentTasks) return;
 
     try {
       setBusy(true);
@@ -530,7 +547,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
 
   async function handleAddCollaborator(event) {
     event.preventDefault();
-    if (!selectedTask?.id || !collaboratorUserId || busy) return;
+    if (!selectedTask?.id || !collaboratorUserId || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -546,7 +563,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   }
 
   async function handleRemoveCollaborator(userId) {
-    if (!selectedTask?.id || !userId || busy) return;
+    if (!selectedTask?.id || !userId || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -627,9 +644,9 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
           value={sectionDraft}
           onChange={(event) => setSectionDraft(event.target.value)}
           placeholder="Nova seção"
-          disabled={busy}
+          disabled={busy || !canEditProject}
         />
-        <button type="submit" disabled={busy || !sectionDraft.trim()}>
+        <button type="submit" disabled={busy || !canEditProject || !sectionDraft.trim()}>
           Adicionar seção
         </button>
       </form>
@@ -659,6 +676,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                               setEditingSectionName('');
                             }
                           }}
+                          disabled={busy || !canEditProject}
                           autoFocus
                         />
                       ) : (
@@ -681,7 +699,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                         type="button"
                         className={styles.moveBtn}
                         onClick={() => handleMoveSection(section.id, -1)}
-                        disabled={busy}
+                        disabled={busy || !canEditProject}
                         aria-label="Mover seção para cima"
                       >
                         ↑
@@ -690,7 +708,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                         type="button"
                         className={styles.moveBtn}
                         onClick={() => handleMoveSection(section.id, 1)}
-                        disabled={busy}
+                        disabled={busy || !canEditProject}
                         aria-label="Mover seção para baixo"
                       >
                         ↓
@@ -699,7 +717,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                         type="button"
                         className={styles.actionIcon}
                         onClick={() => setDeleteSectionTarget(section)}
-                        disabled={busy}
+                        disabled={busy || !canEditProject}
                         aria-label="Remover seção"
                       >
                         <TrashIcon size={13} aria-hidden="true" />
@@ -714,9 +732,9 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                         setTaskDrafts((current) => ({ ...current, [section.id]: event.target.value }))
                       }
                       placeholder="Nova tarefa"
-                      disabled={busy}
+                      disabled={busy || !canCreateTasks}
                     />
-                    <button type="submit" disabled={busy || !String(taskDrafts[section.id] || '').trim()}>
+                    <button type="submit" disabled={busy || !canCreateTasks || !String(taskDrafts[section.id] || '').trim()}>
                       Adicionar
                     </button>
                   </form>
@@ -738,7 +756,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                               type="button"
                               className={styles.taskCheck}
                               onClick={() => handleToggleTask(task)}
-                              disabled={busy}
+                              disabled={busy || !canEditTasks}
                               aria-label="Alterar status da tarefa"
                             >
                               {task.status === 'done' ? '✓' : ''}
@@ -757,7 +775,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                                 type="button"
                                 className={styles.moveBtn}
                                 onClick={() => handleMoveTask(section.id, task.id, -1)}
-                                disabled={busy}
+                                disabled={busy || !canEditProject}
                                 aria-label="Mover tarefa para cima"
                               >
                                 ↑
@@ -766,7 +784,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                                 type="button"
                                 className={styles.moveBtn}
                                 onClick={() => handleMoveTask(section.id, task.id, 1)}
-                                disabled={busy}
+                                disabled={busy || !canEditProject}
                                 aria-label="Mover tarefa para baixo"
                               >
                                 ↓
@@ -775,7 +793,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                                 type="button"
                                 className={styles.actionIcon}
                                 onClick={() => setDeleteTaskTarget(task)}
-                                disabled={busy}
+                                disabled={busy || !canEditTasks}
                                 aria-label="Remover tarefa"
                               >
                                 <TrashIcon size={13} aria-hidden="true" />
@@ -805,7 +823,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') event.currentTarget.blur();
                     }}
-                    disabled={busy}
+                    disabled={busy || !canEditTasks}
                     aria-label="Título da tarefa"
                   />
                 </div>
@@ -821,7 +839,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                   onChange={(event) => setTaskDraft((current) => ({ ...current, description: event.target.value }))}
                   onBlur={handleSaveTaskDraft}
                   placeholder="Descrição da tarefa"
-                  disabled={busy}
+                  disabled={busy || !canEditTasks}
                 />
               </div>
 
@@ -831,7 +849,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                   <select
                     value={selectedTask.status || 'todo'}
                     onChange={(event) => handleUpdateTask(selectedTask, { status: event.target.value, done: event.target.value === 'done' })}
-                    disabled={busy}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="todo">Aberta</option>
                     <option value="in_progress">Em andamento</option>
@@ -845,7 +863,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                   <select
                     value={selectedTask.priority || 'medium'}
                     onChange={(event) => handleUpdateTask(selectedTask, { priority: event.target.value })}
-                    disabled={busy}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="low">Baixa</option>
                     <option value="medium">Média</option>
@@ -858,7 +876,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                   <select
                     value={selectedTask.assigneeUserId || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { assigneeUserId: event.target.value })}
-                    disabled={busy}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="">Sem responsável</option>
                     {(Array.isArray(users) ? users : []).map((entry) => (
@@ -875,7 +893,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                     type="date"
                     value={selectedTask.dueDate || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { dueDate: event.target.value })}
-                    disabled={busy}
+                    disabled={busy || !canEditTasks}
                   />
                 </label>
               </div>
@@ -897,9 +915,9 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                     value={subtaskTitle}
                     onChange={(event) => setSubtaskTitle(event.target.value)}
                     placeholder="Nova subtarefa"
-                    disabled={busy}
+                    disabled={busy || !canCreateTasks}
                   />
-                  <button type="submit" disabled={busy || !subtaskTitle.trim()}>
+                  <button type="submit" disabled={busy || !canCreateTasks || !subtaskTitle.trim()}>
                     Adicionar
                   </button>
                 </form>
@@ -910,11 +928,11 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                   ) : (
                     selectedSubtasks.map((subtask) => (
                       <div key={subtask.id} className={styles.subtaskRow}>
-                        <button type="button" onClick={() => handleToggleTask(subtask)} disabled={busy}>
+                        <button type="button" onClick={() => handleToggleTask(subtask)} disabled={busy || !canEditTasks}>
                           {subtask.status === 'done' ? '✓' : ''}
                         </button>
                         <span>{subtask.title}</span>
-                        <button type="button" onClick={() => setDeleteTaskTarget(subtask)} disabled={busy} aria-label="Remover subtarefa">
+                        <button type="button" onClick={() => setDeleteTaskTarget(subtask)} disabled={busy || !canEditTasks} aria-label="Remover subtarefa">
                           <TrashIcon size={12} aria-hidden="true" />
                         </button>
                       </div>
@@ -933,7 +951,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                   <select
                     value={collaboratorUserId}
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
-                    disabled={busy || taskPanelLoading}
+                    disabled={busy || taskPanelLoading || !canEditTasks}
                   >
                     <option value="">Adicionar colaborador</option>
                     {(Array.isArray(users) ? users : [])
@@ -944,7 +962,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                         </option>
                       ))}
                   </select>
-                  <button type="submit" disabled={busy || !collaboratorUserId}>
+                  <button type="submit" disabled={busy || !canEditTasks || !collaboratorUserId}>
                     Adicionar
                   </button>
                 </form>
@@ -957,7 +975,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                       <div key={entry.userId} className={styles.collabRow}>
                         <span>{initials(entry.userName || entry.userEmail)}</span>
                         <strong>{entry.userName || entry.userEmail}</strong>
-                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy} aria-label="Remover colaborador">
+                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy || !canEditTasks} aria-label="Remover colaborador">
                           <TrashIcon size={12} aria-hidden="true" />
                         </button>
                       </div>
@@ -977,9 +995,9 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
                     value={commentBody}
                     onChange={(event) => setCommentBody(event.target.value)}
                     placeholder="Novo comentário"
-                    disabled={busy || taskPanelLoading}
+                    disabled={busy || taskPanelLoading || !canCommentTasks}
                   />
-                  <button type="submit" disabled={busy || !commentBody.trim()}>
+                  <button type="submit" disabled={busy || !canCommentTasks || !commentBody.trim()}>
                     Comentar
                   </button>
                 </form>
@@ -1043,7 +1061,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
             </div>
             <div className={styles.confirmActions}>
               <button type="button" onClick={() => setDeleteSectionTarget(null)}>Cancelar</button>
-              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteSection(deleteSectionTarget)} disabled={busy}>
+              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteSection(deleteSectionTarget)} disabled={busy || !canEditProject}>
                 Remover
               </button>
             </div>
@@ -1060,7 +1078,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
             </div>
             <div className={styles.confirmActions}>
               <button type="button" onClick={() => setDeleteTaskTarget(null)}>Cancelar</button>
-              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy}>
+              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy || !canEditTasks}>
                 Remover
               </button>
             </div>
