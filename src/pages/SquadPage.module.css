@@ -2346,3 +2346,172 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v78 — Squad: indicadores em 3 colunas e refinamento do modal de configurações */
+.complementaryDrawer {
+  width: min(720px, calc(100vw - 56px));
+  max-height: min(560px, calc(100vh - 56px));
+  border-radius: 18px;
+  background: rgba(14, 15, 16, 0.99);
+}
+
+.complementaryHead {
+  min-height: 58px;
+  padding: 0 14px 0 18px;
+}
+
+.complementaryHead strong {
+  font-size: 16px;
+}
+
+.complementaryList {
+  padding: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.complementaryMetricCard {
+  min-height: 96px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+.complementaryMetricCard span {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-quaternary, var(--text-tertiary));
+  font-size: 10px;
+  letter-spacing: 0.085em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.complementaryMetricCard strong {
+  font-size: clamp(24px, 2.4vw, 30px);
+  letter-spacing: -0.045em;
+}
+
+.modalBackdrop {
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px);
+}
+
+.modalCard {
+  width: min(920px, calc(100vw - 56px));
+  max-height: min(760px, calc(100vh - 56px));
+  border-radius: 18px;
+  background: rgba(14, 15, 16, 0.99);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52);
+}
+
+.modalHead {
+  min-height: 62px;
+  padding: 0 16px 0 18px;
+}
+
+.modalHead span {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.modalHead h3 {
+  margin-top: 4px;
+  font-size: 20px;
+  letter-spacing: -0.04em;
+}
+
+.modalClose {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.modalBody {
+  padding: 16px;
+  gap: 14px;
+}
+
+.squadIdentityPanel {
+  padding: 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.016);
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.squadAvatarEditor {
+  width: 72px;
+  height: 72px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: #08090a;
+  box-shadow: none;
+}
+
+.squadIdentityFields {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.modalActionsInline {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.modalField {
+  gap: 7px;
+}
+
+.modalField > span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+}
+
+.modalField input,
+.modalField :global(button) {
+  min-height: 38px;
+}
+
+.modalActions {
+  min-height: 64px;
+  padding: 12px 16px;
+  gap: 8px;
+}
+
+.modalGhostBtn,
+.modalPrimaryBtn {
+  min-height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.modalPrimaryBtn {
+  border-color: var(--line-subtle);
+  color: var(--text-primary);
+}
+
+.modalPrimaryBtn:hover,
+.modalGhostBtn:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+@media (max-width: 760px) {
+  .complementaryList {
+    grid-template-columns: 1fr;
+  }
+
+  .squadIdentityPanel {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}
