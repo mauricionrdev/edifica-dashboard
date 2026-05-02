@@ -2,6 +2,7 @@ import { isActiveClientStatus } from '../../utils/clientStatus.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { updateGdv } from '../../api/gdvs.js';
+import { buildGdvPath, matchesEntityRouteSegment } from '../../utils/entityPaths.js';
 import { updateSquad } from '../../api/squads.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -107,6 +108,7 @@ export default function Sidebar({
     const match = location.pathname.match(/^\/gdvs\/([^/]+)/);
     return match ? decodeURIComponent(match[1]) : '';
   }, [location.pathname]);
+
 
   const activeCount = clients.filter((client) => isActiveClientStatus(client.status)).length;
   const totalCount = clients.length;
@@ -338,11 +340,11 @@ export default function Sidebar({
             {filteredGdvs.map((entry) => (
               <NavLink
                 key={entry.key}
-                to={`/gdvs/${encodeURIComponent(entry.id)}`}
+                to={buildGdvPath(entry)}
                 onClick={handleNavigate}
                 onDoubleClick={(event) => startGdvRename(event, entry)}
                 className={({ isActive }) =>
-                  `${styles.item} ${(isActive || activeGdvId === entry.id) ? styles.itemActive : ''} ${collapsed ? styles.itemCollapsed : ''}`.trim()
+                  `${styles.item} ${(isActive || matchesEntityRouteSegment(activeGdvId, entry)) ? styles.itemActive : ''} ${collapsed ? styles.itemCollapsed : ''}`.trim()
                 }
                 title={collapsed ? entry.name : undefined}
               >

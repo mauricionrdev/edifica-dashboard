@@ -4,53 +4,19 @@ import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { badRequest, conflict, notFound, uuid } from '../utils/helpers.js';
 import { writeAuditLog } from '../utils/audit.js';
 import { hasPermission } from '../utils/permissions.js';
-import { normalizeSlug, isValidSlug } from '../utils/slugs.js';
 
 const router = Router();
 
 let schemaPromise = null;
 
-async function ensureGdvSchema() {
-  if (!schemaPromise) {
-    schemaPromise = (async () => {
-      await query(`
-        CREATE TABLE IF NOT EXISTS gdvs (
-          id CHAR(36) NOT NULL,
-          name VARCHAR(160) NOT NULL,
-          owner_user_id CHAR(36) NULL,
-          active TINYINT(1) NOT NULL DEFAULT 0,
-          logo_data_url MEDIUMTEXT NULL,
-          custom_slug VARCHAR(96) NULL,
-          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          PRIMARY KEY (id),
-          UNIQUE KEY uk_gdvs_name (name),
-          UNIQUE KEY uk_gdvs_custom_slug (custom_slug),
-          KEY idx_gdvs_owner (owner_user_id),
-          CONSTRAINT fk_gdvs_owner
-            FOREIGN KEY (owner_user_id) REFERENCES users(id)
-            ON DELETE SET NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-      `);
-      const cols = await query('SHOW COLUMNS FROM gdvs');
-      const names = new Set(cols.map((col) => col.Field));
-      if (!names.has('logo_data_url')) {
-        await query('ALTER TABLE gdvs ADD COLUMN logo_data_url MEDIUMTEXT NULL AFTER active');
-      }
-      if (!names.has('custom_slug')) {
-        await query('ALTER TABLE gdvs ADD COLUMN custom_slug VARCHAR(96) NULL AFTER logo_data_url');
-      }
-      const indexes = await query('SHOW INDEX FROM gdvs');
-      const indexNames = new Set(indexes.map((idx) => idx.Key_name));
-      if (!indexNames.has('uk_gdvs_custom_slug')) {
-        await query('ALTER TABLE gdvs ADD UNIQUE KEY uk_gdvs_custom_slug (custom_slug)');
-      }
-    })().catch((err) => {
-      schemaPromise = null;
-      throw err;
-    });
-  }
-  return schemaPromise;
+function slugifySegment(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
 }
 
 function parseJson(value, fallback = []) {
@@ -63,9 +29,79 @@ function parseJson(value, fallback = []) {
   }
 }
 
+async function ensureGdvSchema() {
+  if (!schemaPromise) {
+    schemaPromise = (async () => {
+      const tables = await query("SHOW TABLES LIKE 'gdvs'");
+      if (tables.length === 0) {
+        await query(`
+          CREATE TABLE gdvs (
+            id CHAR(36) NOT NULL,
+            name VARCHAR(160) NOT NULL,
+            owner_user_id CHAR(36) NULL,
+            active TINYINT(1) NOT NULL DEFAULT 0,
+            logo_data_url MEDIUMTEXT NULL,
+            custom_slug VARCHAR(180) NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uk_gdvs_name (name),
+            UNIQUE KEY uk_gdvs_custom_slug (custom_slug),
+            KEY idx_gdvs_owner (owner_user_id),
+            CONSTRAINT fk_gdvs_owner
+              FOREIGN KEY (owner_user_id) REFERENCES users(id)
+              ON DELETE SET NULL
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+        return;
+      }
+
+      const cols = await query('SHOW COLUMNS FROM gdvs');
+      const names = new Set(cols.map((col) => col.Field));
+
+      if (!names.has('owner_user_id')) {
+        await query('ALTER TABLE gdvs ADD COLUMN owner_user_id CHAR(36) NULL AFTER name');
+      }
+      if (!names.has('active')) {
+        await query('ALTER TABLE gdvs ADD COLUMN active TINYINT(1) NOT NULL DEFAULT 0 AFTER owner_user_id');
+      }
+      if (!names.has('logo_data_url')) {
+        await query('ALTER TABLE gdvs ADD COLUMN logo_data_url MEDIUMTEXT NULL AFTER active');
+      }
+      if (!names.has('custom_slug')) {
+        await query('ALTER TABLE gdvs ADD COLUMN custom_slug VARCHAR(180) NULL AFTER logo_data_url');
+      }
+
+      const indexes = await query('SHOW INDEX FROM gdvs');
+      const indexNames = new Set(indexes.map((idx) => idx.Key_name));
+      if (!indexNames.has('idx_gdvs_owner')) {
+        await query('ALTER TABLE gdvs ADD INDEX idx_gdvs_owner (owner_user_id)');
+      }
+      if (!indexNames.has('uk_gdvs_custom_slug')) {
+        await query('ALTER TABLE gdvs ADD UNIQUE KEY uk_gdvs_custom_slug (custom_slug)');
+      }
+    })().catch((err) => {
+      schemaPromise = null;
+      throw err;
+    });
+  }
+  return schemaPromise;
+}
+
 function hasGdvRole(row) {
   const secondary = parseJson(row?.secondary_roles, []);
   return row?.role === 'gdv' || secondary.includes('gdv');
+}
+
+function normalizeLogo(value) {
+  const clean = String(value || '').trim();
+  if (!clean) return '';
+  if (!clean.startsWith('data:image/')) throw badRequest('Imagem do GDV inválida');
+  return clean;
+}
+
+function normalizeCustomSlug(value) {
+  return slugifySegment(value);
 }
 
 async function validateOwner(ownerUserId) {
@@ -103,6 +139,7 @@ function serialize(row) {
     active: Boolean(row.active),
     logoUrl: row.logo_data_url || '',
     customSlug: row.custom_slug || '',
+    slug: row.custom_slug || slugifySegment(row.name) || row.id,
     clientsCount: Number(row.clients_count) || 0,
     activeClients: Number(row.active_clients) || 0,
     createdAt: row.created_at,
@@ -126,6 +163,20 @@ async function listRows() {
   );
 }
 
+async function ensureUniqueCustomSlug(customSlug, excludeId = null) {
+  if (!customSlug) return;
+  const params = [customSlug];
+  let sql = 'SELECT id FROM gdvs WHERE custom_slug = ?';
+  if (excludeId) {
+    sql += ' AND id <> ?';
+    params.push(excludeId);
+  }
+  sql += ' LIMIT 1';
+
+  const rows = await query(sql, params);
+  if (rows.length > 0) throw conflict('Esse link personalizado já está em uso por outro GDV.');
+}
+
 router.get('/', requireAuth, requirePermission('gdv.view'), async (req, res, next) => {
   try {
     const rows = await listRows();
@@ -141,25 +192,21 @@ router.get('/', requireAuth, requirePermission('gdv.view'), async (req, res, nex
 router.post('/', requireAuth, requirePermission('gdv.manage'), async (req, res, next) => {
   try {
     await ensureGdvSchema();
-    const clean = String(req.body?.name || '').trim();
-    if (!clean) throw badRequest('Informe o nome do GDV');
+    const cleanName = String(req.body?.name || '').trim();
+    if (!cleanName) throw badRequest('Informe o nome do GDV');
 
     const owner = await validateOwner(req.body?.ownerUserId);
-    const cleanLogo = String(req.body?.logoUrl || '').trim();
-    if (cleanLogo && !cleanLogo.startsWith('data:image/')) throw badRequest('Imagem do GDV inválida');
-    const cleanSlug = req.body?.customSlug != null ? normalizeSlug(req.body.customSlug) : '';
-    if (req.body?.customSlug && !isValidSlug(cleanSlug)) throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
-    if (cleanSlug) {
-      const slugDup = await query('SELECT id FROM gdvs WHERE custom_slug = ? LIMIT 1', [cleanSlug]);
-      if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
-    }
-    const dup = await query('SELECT id FROM gdvs WHERE name = ? LIMIT 1', [clean]);
+    const cleanLogo = normalizeLogo(req.body?.logoUrl);
+    const customSlug = normalizeCustomSlug(req.body?.customSlug);
+
+    const dup = await query('SELECT id FROM gdvs WHERE name = ? LIMIT 1', [cleanName]);
     if (dup.length > 0) throw conflict('Já existe um GDV com esse nome');
+    await ensureUniqueCustomSlug(customSlug);
 
     const id = uuid();
     await query(
       'INSERT INTO gdvs (id, name, owner_user_id, active, logo_data_url, custom_slug) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, clean, owner?.id || null, owner ? 1 : 0, cleanLogo || null, cleanSlug || null]
+      [id, cleanName, owner?.id || null, owner ? 1 : 0, cleanLogo || null, customSlug || null]
     );
 
     await writeAuditLog({
@@ -167,9 +214,9 @@ router.post('/', requireAuth, requirePermission('gdv.manage'), async (req, res, 
       action: 'gdv.create',
       entityType: 'gdv',
       entityId: id,
-      entityLabel: clean,
-      summary: `GDV ${clean} criado`,
-      metadata: { ownerUserId: owner?.id || null, customSlug: cleanSlug || null },
+      entityLabel: cleanName,
+      summary: `GDV ${cleanName} criado`,
+      metadata: { ownerUserId: owner?.id || null, customSlug: customSlug || null },
     });
 
     const rows = await listRows();
@@ -190,15 +237,12 @@ router.put('/:id', requireAuth, requirePermission('gdv.manage'), async (req, res
     const nextName = req.body?.name != null ? String(req.body.name).trim() : current.name;
     if (!nextName) throw badRequest('Informe o nome do GDV');
 
-    const nextLogo = req.body?.logoUrl !== undefined ? String(req.body.logoUrl || '').trim() : current.logo_data_url || '';
-    if (nextLogo && !nextLogo.startsWith('data:image/')) throw badRequest('Imagem do GDV inválida');
-
-    const nextSlug = req.body?.customSlug !== undefined ? normalizeSlug(req.body.customSlug) : current.custom_slug || '';
-    if (req.body?.customSlug && !isValidSlug(nextSlug)) throw badRequest('Link personalizado inválido. Use letras, números e hífen, com no mínimo 3 caracteres.');
-    if (nextSlug) {
-      const slugDup = await query('SELECT id FROM gdvs WHERE custom_slug = ? AND id <> ? LIMIT 1', [nextSlug, id]);
-      if (slugDup.length > 0) throw conflict('Este link personalizado já está em uso.');
-    }
+    const nextLogo = req.body?.logoUrl !== undefined
+      ? normalizeLogo(req.body.logoUrl)
+      : (current.logo_data_url || '');
+    const nextCustomSlug = req.body?.customSlug !== undefined
+      ? normalizeCustomSlug(req.body.customSlug)
+      : (current.custom_slug || '');
 
     const owner = req.body?.ownerUserId !== undefined
       ? await validateOwner(req.body.ownerUserId)
@@ -210,11 +254,12 @@ router.put('/:id', requireAuth, requirePermission('gdv.manage'), async (req, res
 
     const dup = await query('SELECT id FROM gdvs WHERE name = ? AND id <> ? LIMIT 1', [nextName, id]);
     if (dup.length > 0) throw conflict('Já existe um GDV com esse nome');
+    await ensureUniqueCustomSlug(nextCustomSlug, id);
 
     await withTransaction(async (conn) => {
       await conn.query(
         'UPDATE gdvs SET name = ?, owner_user_id = ?, active = ?, logo_data_url = ?, custom_slug = ? WHERE id = ?',
-        [nextName, ownerUserId, active, nextLogo || null, nextSlug || null, id]
+        [nextName, ownerUserId, active, nextLogo || null, nextCustomSlug || null, id]
       );
       if (nextName !== current.name) {
         await conn.query('UPDATE clients SET gdv_name = ? WHERE gdv_name = ?', [nextName, current.name]);
@@ -228,7 +273,11 @@ router.put('/:id', requireAuth, requirePermission('gdv.manage'), async (req, res
       entityId: id,
       entityLabel: nextName,
       summary: `GDV ${nextName} atualizado`,
-      metadata: { previousName: current.name, ownerUserId, customSlug: nextSlug || null },
+      metadata: {
+        previousName: current.name,
+        ownerUserId,
+        customSlug: nextCustomSlug || null,
+      },
     });
 
     const rows = await listRows();
