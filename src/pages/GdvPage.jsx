@@ -4,7 +4,6 @@ import { getMetric } from '../api/metrics.js';
 import { updateGdv } from '../api/gdvs.js';
 import { ApiError } from '../api/client.js';
 import {
-  aggregateCarteira,
   buildPeriodKey,
   calcWeek,
   currentWeek,
@@ -246,6 +245,7 @@ export default function GdvPage() {
 
   const [showStickyResult, setShowStickyResult] = useState(false);
   const [renderStickyResult, setRenderStickyResult] = useState(false);
+  const [showComplementaryMetrics, setShowComplementaryMetrics] = useState(false);
 
   const now = useMemo(() => new Date(), []);
   const [year, setYear] = useState(now.getFullYear());
@@ -466,7 +466,45 @@ export default function GdvPage() {
     if (!exists) setSelectedClientId(null);
   }, [rows, selectedClientId]);
 
-  const agg = useMemo(() => aggregateCarteira(rows), [rows]);
+
+  const complementaryMetrics = useMemo(() => {
+    const activeRows = rows.filter((row) => isActiveClientStatus(row.client?.status));
+    const onboardingRows = rows.filter((row) => row.client?.status === CLIENT_STATUS.ONBOARDING);
+    const pausedRows = rows.filter((row) => row.client?.status === CLIENT_STATUS.PAUSED);
+
+    const hitContracts = activeRows.filter((row) => {
+      const closed = Number(row.calc?.fec) || 0;
+      const target = Number(row.calc?.mEmp) || 0;
+      return target > 0 && closed >= target;
+    });
+
+    const hitProfit = activeRows.filter((row) => {
+      const closed = Number(row.calc?.fec) || 0;
+      const target = Number(row.calc?.mLuc) || 0;
+      return target > 0 && closed >= target;
+    });
+
+    const belowGoal = activeRows.filter((row) => {
+      const closed = Number(row.calc?.fec) || 0;
+      const contractTarget = Number(row.calc?.mEmp) || 0;
+      const profitTarget = Number(row.calc?.mLuc) || 0;
+
+      if (contractTarget > 0 && closed < contractTarget) return true;
+      if (profitTarget > 0 && closed < profitTarget) return true;
+      return false;
+    });
+
+    const activeTotal = activeRows.length;
+
+    return [
+      { id: 'active', label: 'Clientes ativos', value: displayInt(activeTotal) },
+      { id: 'contracts', label: 'Bateram meta contratos', value: `${displayInt(hitContracts.length)} de ${displayInt(activeTotal)}` },
+      { id: 'profit', label: 'Bateram meta lucro', value: `${displayInt(hitProfit.length)} de ${displayInt(activeTotal)}` },
+      { id: 'below', label: 'Abaixo da meta', value: `${displayInt(belowGoal.length)} de ${displayInt(activeTotal)}` },
+      { id: 'onboarding', label: 'Onboarding', value: displayInt(onboardingRows.length) },
+      { id: 'paused', label: 'Pausados', value: displayInt(pausedRows.length) },
+    ];
+  }, [rows]);
 
   const selectedRow = useMemo(
     () => rows.find((row) => row.client.id === selectedClientId) || null,
@@ -711,62 +749,51 @@ export default function GdvPage() {
       ];
     }
 
-    const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
-    const gap = agg.tLuc > 0 ? Math.max(agg.tLuc - agg.tF, 0) : 0;
-    const goalRows = rows.filter((row) => isActiveClientStatus(row.client?.status) && goalState(row.calc).hasGoal);
-    const forecastGoalRows = goalRows.filter((row) => goalState(row.calc).forecast);
-    const hitGoalRows = goalRows.filter((row) => goalState(row.calc).hit);
-    const withoutGoalCount = rows.length - goalRows.length;
-
     return [
       {
         id: 'closed',
         label: 'Contratos fechados',
-        value: displayInt(agg.tF),
+        value: '0',
         sub: `Semana ${week}`,
-        tone: 'neutral',
+        tone: 'muted',
       },
       {
         id: 'profitGoal',
         label: 'Meta de lucro',
-        value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
-        sub: agg.tLuc > 0 ? `${displayInt(gap)} para bater` : 'Sem meta configurada',
-        tone: agg.tLuc > 0 ? 'neutral' : 'muted',
+        value: '0',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
       {
         id: 'predictedContracts',
         label: 'Contratos previstos',
-        value: agg.tCp > 0 ? displayInt(agg.tCp) : '0',
-        sub: prediction.sub,
-        tone: prediction.tone,
+        value: '0',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
       {
         id: 'conversion',
         label: 'Taxa de conversão',
-        value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
-        sub: agg.tVol > 0 ? `${displayInt(agg.tVol)} leads reais` : '',
-        tone: agg.taxa > 0 ? 'neutral' : 'muted',
+        value: '—',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
       {
         id: 'forecastGoal',
         label: 'Previsto bater meta',
-        value: displayInt(forecastGoalRows.length),
-        sub: goalRows.length
-          ? `${displayInt(goalRows.length)} com meta${withoutGoalCount > 0 ? ` · ${displayInt(withoutGoalCount)} sem meta` : ''}`
-          : 'Sem metas configuradas',
-        tone: forecastGoalRows.length > 0 ? 'green' : 'muted',
+        value: '—',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
       {
         id: 'hitGoal',
         label: 'Já bateu meta',
-        value: displayInt(hitGoalRows.length),
-        sub: goalRows.length
-          ? `${displayInt(goalRows.length)} com meta${withoutGoalCount > 0 ? ` · ${displayInt(withoutGoalCount)} sem meta` : ''}`
-          : 'Sem metas configuradas',
-        tone: hitGoalRows.length > 0 ? 'green' : 'muted',
+        value: '—',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
     ];
-  }, [agg, rows, selectedRow, week]);
+  }, [selectedRow, week]);
 
   const prevMonth = useCallback(() => {
     setMonth0((value) => {
@@ -1088,31 +1115,62 @@ export default function GdvPage() {
       </section>
 
       <section className={styles.listToolbar}>
-        <div className={styles.listTitle}>
-          <span className={styles.cardEyebrow}>Clientes da carteira</span>
-          <span className={styles.listMeta}>{displayInt(visibleRows.length)} cliente(s)</span>
-          {loadingMetricsPartial ? (
-            <span className={styles.listMeta}>{displayInt(currentResults.length)}/{displayInt(gdvClients.length)} métricas</span>
+        <div className={styles.toolbarControls}>
+          <label className={styles.searchBox}>
+            <SearchIcon size={15} aria-hidden="true" />
+            <input
+              type="search"
+              value={clientQuery}
+              onChange={(event) => setClientQuery(event.target.value)}
+              placeholder="Buscar cliente, squad ou gestor..."
+              aria-label="Buscar cliente da carteira GDV"
+            />
+          </label>
+
+          <button
+            type="button"
+            className={`${styles.complementaryButton} ${showComplementaryMetrics ? styles.complementaryButtonActive : ''}`.trim()}
+            onClick={() => setShowComplementaryMetrics((open) => !open)}
+            aria-expanded={showComplementaryMetrics}
+          >
+            <span>Indicadores da carteira</span>
+          </button>
+
+          {selectedRow ? (
+            <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
+              Limpar seleção
+            </button>
           ) : null}
         </div>
-
-        <label className={styles.searchBox}>
-          <SearchIcon size={15} aria-hidden="true" />
-          <input
-            type="search"
-            value={clientQuery}
-            onChange={(event) => setClientQuery(event.target.value)}
-            placeholder="Buscar cliente, squad ou gestor..."
-            aria-label="Buscar cliente da carteira GDV"
-          />
-        </label>
-
-        {selectedRow ? (
-          <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
-            Limpar seleção
-          </button>
-        ) : null}
       </section>
+
+      {showComplementaryMetrics ? (
+        <>
+          <button
+            type="button"
+            className={styles.drawerScrim}
+            onClick={() => setShowComplementaryMetrics(false)}
+            aria-label="Fechar indicadores"
+          />
+          <section className={styles.complementaryDrawer} role="dialog" aria-modal="true" aria-label="Indicadores da carteira">
+            <div className={styles.complementaryHead}>
+              <strong>Indicadores da carteira</strong>
+              <button type="button" className={styles.drawerClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar indicadores">
+                <CloseIcon size={14} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className={styles.complementaryList}>
+              {complementaryMetrics.map((item) => (
+                <article key={item.id} className={styles.complementaryMetricCard}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </article>
+              ))}
+            </div>
+          </section>
+        </>
+      ) : null}
 
       <section className={styles.listCard}>
         {fetchError ? (

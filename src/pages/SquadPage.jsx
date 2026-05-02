@@ -23,7 +23,6 @@ import { resolveClientFeeAtMonthEnd } from '../utils/feeSchedule.js';
 import { MONTHS, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
 import { resolveSquadOwner, subscribeOwnershipChange } from '../utils/ownershipStorage.js';
 import {
-  aggregateCarteira,
   buildPeriodKey,
   calcWeek,
   currentWeek,
@@ -459,10 +458,6 @@ export default function SquadPage() {
     });
   }, [metricRows, squadClients]);
 
-  const agg = useMemo(
-    () => aggregateCarteira(clientRows.map((row) => ({ client: row, metric: row.metric, calc: row.calc }))),
-    [clientRows]
-  );
 
   const complementaryMetrics = useMemo(() => {
     const activeRows = clientRows.filter((row) => isActiveClientStatus(row.status));
@@ -780,57 +775,51 @@ export default function SquadPage() {
       ];
     }
 
-    const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
-    const squadGap = agg.tLuc > 0 ? Math.max(agg.tLuc - agg.tF, 0) : 0;
-
     return [
       {
         id: 'closed',
         label: 'Contratos fechados',
-        value: displayInt(agg.tF),
+        value: '0',
         sub: `Semana ${week}`,
-        tone: 'neutral',
+        tone: 'muted',
       },
       {
         id: 'profitGoal',
         label: 'Meta de lucro',
-        value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
-        sub: agg.tLuc > 0 ? `${displayInt(squadGap)} para bater` : 'Sem meta configurada',
-        tone: agg.tLuc > 0 ? 'neutral' : 'muted',
+        value: '0',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
       {
         id: 'predictedContracts',
         label: 'Contratos previstos',
-        value: agg.tCp > 0 ? displayInt(agg.tCp) : '0',
-        sub: prediction.sub,
-        tone: prediction.tone,
+        value: '0',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
       {
         id: 'conversion',
         label: 'Taxa de conversão',
-        value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
-        sub: agg.tVol > 0 ? `${displayInt(agg.tVol)} leads reais` : '',
-        tone: agg.taxa > 0 ? 'neutral' : 'muted',
+        value: '—',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
       {
         id: 'cpl',
         label: 'CPL atual',
-        value: agg.cpl > 0 ? fmtMoney(agg.cpl) : '—',
-        sub: goalComparison(agg.cpl, agg.avgMC, {
-          lowerIsBetter: true,
-          format: fmtMoney,
-        }),
-        tone: comparisonTone(agg.cpl, agg.avgMC, { lowerIsBetter: true }),
+        value: '—',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
       {
         id: 'leads',
         label: 'Leads previstos',
-        value: agg.tLp > 0 ? displayInt(agg.tLp) : '0',
-        sub: goalComparison(agg.tLp, agg.tMV),
-        tone: comparisonTone(agg.tLp, agg.tMV),
+        value: '0',
+        sub: 'Selecione um cliente',
+        tone: 'muted',
       },
     ];
-  }, [agg, selectedClient, week]);
+  }, [selectedClient, week]);
 
   if (shellLoading && !squad) {
     return (

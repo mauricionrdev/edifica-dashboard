@@ -1811,3 +1811,162 @@
     width: min(100%, 260px);
   }
 }
+
+/* v79 — indicadores de carteira GDV e busca alinhada ao padrão Squad */
+.toolbarControls {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.complementaryButton {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 590;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.drawerScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  border: 0;
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(10px);
+  cursor: default;
+}
+
+.complementaryDrawer {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 1810;
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 40px));
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--line-subtle);
+  border-radius: 18px;
+  background: var(--bg-app, #08090a);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+}
+
+.complementaryHead {
+  min-height: 62px;
+  padding: 0 16px 0 18px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.complementaryHead strong {
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+
+.drawerClose {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-tertiary);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.drawerClose:hover {
+  border-color: var(--line);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.complementaryList {
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  scrollbar-width: none;
+}
+
+.complementaryList::-webkit-scrollbar {
+  display: none;
+}
+
+.complementaryMetricCard {
+  min-height: 112px;
+  padding: 15px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.complementaryMetricCard span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.complementaryMetricCard strong {
+  color: var(--text-primary);
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 860px) {
+  .toolbarControls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .complementaryButton,
+  .clearSelection {
+    width: 100%;
+  }
+
+  .complementaryList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .complementaryList {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
