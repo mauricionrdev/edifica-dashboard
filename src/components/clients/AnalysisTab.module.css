@@ -40,46 +40,26 @@
 
 .titleBlock {
   min-width: 0;
-  display: grid;
-  gap: 8px;
-  align-content: center;
+  display: flex;
+  align-items: center;
 }
 
 .eyebrow {
   width: max-content;
-  min-height: 24px;
-  padding: 0 10px;
+  min-height: 28px;
+  padding: 0 12px;
   border: 1px solid var(--analysis-accent-line);
   border-radius: 999px;
   color: var(--analysis-accent);
   background: var(--analysis-accent-soft);
   display: inline-flex;
   align-items: center;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.titleCopy {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-
-.titleMain {
-  color: var(--text-primary);
-  font-size: 18px;
-  line-height: 1.05;
-  font-weight: 620;
-  letter-spacing: -0.03em;
-}
-
-.titleHint {
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.45;
-}
 
 .headerMeta {
   min-width: 0;

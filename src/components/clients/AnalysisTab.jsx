@@ -16,7 +16,6 @@ const DEBOUNCE_MS = 500;
 const ANALYSIS_META = {
   icp: {
     title: 'Análise ICP',
-    subtitle: 'Leitura de aderência, perfil e posicionamento.',
     className: styles.icp,
     loadingTitle: 'Carregando Análise ICP',
     loadingDescription: 'Buscando o histórico estratégico de aderência e perfil deste cliente.',
@@ -30,7 +29,6 @@ const ANALYSIS_META = {
   },
   gdvanalise: {
     title: 'Análise GDV',
-    subtitle: 'Leitura comercial, maturidade e direcionamento.',
     className: styles.gdv,
     loadingTitle: 'Carregando Análise GDV',
     loadingDescription: 'Buscando o histórico estratégico comercial deste cliente.',
@@ -44,7 +42,6 @@ const ANALYSIS_META = {
   },
   route_summary: {
     title: 'Resumo de Rotas',
-    subtitle: 'Síntese de encaminhamentos, direção e próximos passos.',
     className: styles.routes,
     loadingTitle: 'Carregando Resumo de Rotas',
     loadingDescription: 'Buscando o histórico consolidado de rotas e direcionamentos deste cliente.',
@@ -232,11 +229,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     <div className={`${styles.panel} ${meta.className}`.trim()}>
       <div className={styles.header}>
         <div className={styles.titleBlock}>
-          <span className={styles.eyebrow}>Etapa de análise</span>
-          <div className={styles.titleCopy}>
-            <strong className={styles.titleMain}>{meta.title}</strong>
-            <span className={styles.titleHint}>{meta.subtitle}</span>
-          </div>
+          <span className={styles.eyebrow}>{meta.title}</span>
         </div>
 
         <div className={styles.headerMeta}>
