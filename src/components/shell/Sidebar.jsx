@@ -2,7 +2,7 @@ import { isActiveClientStatus } from '../../utils/clientStatus.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { updateGdv } from '../../api/gdvs.js';
-import { buildGdvPath, matchesEntityRouteSegment } from '../../utils/entityPaths.js';
+import { buildGdvPath, buildProfilePath, buildSquadPath, matchesEntityRouteSegment } from '../../utils/entityPaths.js';
 import { updateSquad } from '../../api/squads.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -59,7 +59,7 @@ function Item({ to, icon, label, meta, onClick, collapsed = false }) {
       to={to}
       onClick={onClick}
       className={({ isActive }) =>
-        `${styles.item} ${isActive ? styles.itemActive : ''} ${collapsed ? styles.itemCollapsed : ''}`.trim()
+        `${styles.item} ${(isActive || matchesEntityRouteSegment(activeSquadId, squad)) ? styles.itemActive : ''} ${collapsed ? styles.itemCollapsed : ''}`.trim()
       }
       title={collapsed ? label : undefined}
     >
@@ -106,6 +106,11 @@ export default function Sidebar({
   const normalizedQuery = normalizeSearch(query);
   const activeGdvId = useMemo(() => {
     const match = location.pathname.match(/^\/gdvs\/([^/]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }, [location.pathname]);
+
+  const activeSquadId = useMemo(() => {
+    const match = location.pathname.match(/^\/squads\/([^/]+)/);
     return match ? decodeURIComponent(match[1]) : '';
   }, [location.pathname]);
 
@@ -410,7 +415,7 @@ export default function Sidebar({
               filteredSquads.map((squad, index) => (
                 <NavLink
                   key={squad.id}
-                  to={`/squads/${encodeURIComponent(squad.id)}`}
+                  to={buildSquadPath(squad)}
                   onClick={handleNavigate}
                   onDoubleClick={(event) => startSquadRename(event, squad)}
                   className={({ isActive }) =>

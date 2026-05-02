@@ -972,3 +972,136 @@
     margin-left: 0;
   }
 }
+
+/* v4 — GDV alinhado ao visual de Perfil/Equipe, sem cards no header */
+.page {
+  padding: 14px 18px 22px;
+  gap: 12px;
+}
+
+.headerIdentity {
+  min-height: 54px;
+  gap: 12px;
+}
+
+.headerLogo {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
+
+.headerTitleText strong {
+  font-size: 18px;
+}
+
+.headerTitleText small {
+  font-size: 12px;
+}
+
+.headerActions {
+  align-items: center;
+  gap: 10px;
+}
+
+.headerCard {
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.headerCardLabel {
+  display: none;
+}
+
+.headerCard + .headerCard {
+  padding-left: 10px;
+  border-left: 1px solid var(--line-subtle);
+}
+
+.headerStat,
+.monthNav,
+.weekTabs,
+.headerUtilityRow {
+  min-height: 34px;
+}
+
+.monthLabel {
+  min-width: 96px;
+  font-size: 13px;
+}
+
+.weekTabs {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.metricGrid {
+  gap: 10px;
+}
+
+.metricCard {
+  min-height: 94px;
+  padding: 16px 16px 14px;
+  border-radius: 15px;
+}
+
+.metricValue {
+  font-size: 20px;
+}
+
+.listToolbar {
+  min-height: 38px;
+  padding-top: 2px;
+}
+
+.searchBox,
+.complementaryButton {
+  min-height: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+.complementaryButton {
+  min-width: 230px;
+}
+
+.listCard {
+  border-radius: 16px;
+}
+
+.clientList {
+  padding: 8px;
+  gap: 6px;
+}
+
+.clientRow {
+  min-height: 66px;
+  padding: 10px 14px;
+  border-radius: 14px;
+}
+
+.clientAvatarSmall {
+  width: 32px;
+  height: 32px;
+}
+
+.clientStats span {
+  font-size: 10px;
+}
+
+.clientStats strong,
+.clientMain strong {
+  font-size: 13px;
+}
+
+.badge {
+  min-height: 24px;
+  font-size: 11px;
+}

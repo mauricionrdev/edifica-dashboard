@@ -4,6 +4,7 @@ import { BellIcon, ChecklistIcon, MenuIcon, PanelLeftIcon, RotateCcwIcon } from 
 import Button from '../ui/Button.jsx';
 import LoadingIcon from '../ui/LoadingIcon.jsx';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
+import { buildProfilePath } from '../../utils/entityPaths.js';
 import { getRouteCrumbLabel } from '../../utils/routeMeta.js';
 import styles from './Topbar.module.css';
 
@@ -130,7 +131,7 @@ export default function Topbar({
                     key={entry.id}
                     type="button"
                     className={styles.userAvatar}
-                    onClick={() => navigate(`/perfil/${entry.id}`)}
+                    onClick={() => navigate(buildProfilePath(entry))}
                     aria-label={`Abrir perfil de ${entry.name}`}
                     title={entry.name}
                   >

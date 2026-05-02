@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
+import { buildProfilePath } from '../../utils/entityPaths.js';
 import styles from './UserHoverCard.module.css';
 
 function initials(value = '') {
@@ -27,9 +28,6 @@ function localTimeLabel() {
   }).format(new Date())} horário local`;
 }
 
-function profilePath(userId = '') {
-  return userId ? `/perfil/${encodeURIComponent(userId)}` : '/perfil';
-}
 
 function safeRect(element) {
   if (!element || typeof element.getBoundingClientRect !== 'function') return null;
@@ -168,7 +166,7 @@ export default function UserHoverCard({
           </Link>
         ) : null}
         {userId ? (
-          <Link to={profilePath(userId)} className={styles.action}>
+          <Link to={buildProfilePath({ id: userId, name })} className={styles.action}>
             Ver perfil
           </Link>
         ) : null}

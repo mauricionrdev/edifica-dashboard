@@ -834,11 +834,11 @@ export default function GdvPage() {
 
     return [
       { id: 'closed', label: 'Contratos fechados', value: '0', sub: `Semana ${week}`, tone: 'muted' },
-      { id: 'profitGoal', label: 'Meta de lucro', value: '0', sub: 'Selecione um cliente', tone: 'muted' },
-      { id: 'predictedContracts', label: 'Contratos previstos', value: '0', sub: 'Selecione um cliente', tone: 'muted' },
+      { id: 'profitGoal', label: 'Meta de lucro', value: '0', sub: '', tone: 'muted' },
+      { id: 'predictedContracts', label: 'Contratos previstos', value: '0', sub: '', tone: 'muted' },
       { id: 'conversion', label: 'Taxa de conversão', value: '—', sub: '', tone: 'muted' },
-      { id: 'forecastGoal', label: 'Previsto bater meta', value: '—', sub: 'Selecione um cliente', tone: 'muted' },
-      { id: 'hitGoal', label: 'Já bateu meta', value: '—', sub: 'Selecione um cliente', tone: 'muted' },
+      { id: 'forecastGoal', label: 'Previsto bater meta', value: '—', sub: '', tone: 'muted' },
+      { id: 'hitGoal', label: 'Já bateu meta', value: '—', sub: '', tone: 'muted' },
     ];
   }, [selectedRow, week]);
 
@@ -1063,7 +1063,7 @@ export default function GdvPage() {
               type="search"
               value={clientQuery}
               onChange={(event) => setClientQuery(event.target.value)}
-              placeholder="Buscar cliente, squad ou gestor..."
+              placeholder="Buscar"
               aria-label="Buscar cliente da carteira GDV"
             />
           </label>

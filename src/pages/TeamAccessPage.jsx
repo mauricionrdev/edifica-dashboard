@@ -23,8 +23,8 @@ import { Select } from '../components/ui/index.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import { readAvatarFile } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
-import { normalizeSlug, publicPath } from '../utils/slugs.js';
 import { isActiveClientStatus } from '../utils/clientStatus.js';
+import { buildProfilePath } from '../utils/entityPaths.js';
 import styles from './TeamAccessPage.module.css';
 
 const SECONDARY_ROLE_OPTIONS = ROLE_ORDER.filter((role) => !['ceo', 'suporte_tecnologia', 'admin'].includes(role));
@@ -37,13 +37,6 @@ function userHasRole(entry, role) {
 function effectiveRoleLabels(entry) {
   const secondary = Array.isArray(entry?.secondaryRoles) ? entry.secondaryRoles : [];
   return [entry?.role, ...secondary].filter(Boolean).map((role) => roleLabel(role));
-}
-
-function unitInitials(name = '', fallback = 'UN') {
-  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return fallback;
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 function squadInitials(name = '') {
@@ -157,7 +150,7 @@ function EnhancedSquadFormModal({
                 <strong>Ações do squad</strong>
               </div>
               <div className={styles.rowActions}>
-                <Link to={publicPath('squads', squad)} className={styles.dashboardLink} onClick={onClose}>
+                <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.dashboardLink} onClick={onClose}>
                   Abrir dashboard
                 </Link>
                 <button type="button" className={styles.dangerButton} onClick={() => onDelete?.(squad)} disabled={busy || deleting}>
@@ -193,14 +186,12 @@ function SquadOwnerFormModal({
   const [name, setName] = useState(squad?.name || '');
   const [ownerUserId, setOwnerUserId] = useState(squad?.ownerUserId || squad?.ownerId || squad?.owner?.id || '');
   const [logoUrl, setLogoUrl] = useState(squad?.logoUrl || '');
-  const [customSlug, setCustomSlug] = useState(squad?.customSlug || '');
 
   useEffect(() => {
     setName(squad?.name || '');
     setOwnerUserId(squad?.ownerUserId || squad?.ownerId || squad?.owner?.id || '');
     setLogoUrl(squad?.logoUrl || '');
-    setCustomSlug(squad?.customSlug || '');
-  }, [squad?.id, squad?.name, squad?.ownerUserId, squad?.ownerId, squad?.owner, squad?.logoUrl, squad?.customSlug]);
+  }, [squad?.id, squad?.name, squad?.ownerUserId, squad?.ownerId, squad?.owner, squad?.logoUrl]);
 
   const owner = users.find((entry) => entry.id === ownerUserId) || null;
   const statusLabel = owner ? 'Ativo' : 'Desativado';
@@ -255,19 +246,6 @@ function SquadOwnerFormModal({
             </div>
           </section>
 
-          <label className={styles.field}>
-            <span>Link personalizado</span>
-            <div className={styles.slugField}>
-              <small>/squads/</small>
-              <input
-                value={customSlug}
-                onChange={(event) => setCustomSlug(normalizeSlug(event.target.value))}
-                placeholder="ex: squad-crescimento"
-                maxLength={80}
-              />
-            </div>
-          </label>
-
           <div className={styles.formGrid}>
             <label className={styles.field}>
               <span>Status operacional</span>
@@ -298,7 +276,7 @@ function SquadOwnerFormModal({
                 <strong>Ações do squad</strong>
               </div>
               <div className={styles.rowActions}>
-                <Link to={publicPath('squads', squad)} className={styles.dashboardLink} onClick={onClose}>
+                <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.dashboardLink} onClick={onClose}>
                   Abrir dashboard
                 </Link>
                 <button type="button" className={styles.dangerButton} onClick={() => onDelete?.(squad)} disabled={busy || deleting}>
@@ -314,153 +292,10 @@ function SquadOwnerFormModal({
           <button
             type="button"
             className={styles.primaryButton}
-            onClick={() => onSubmit({ name, ownerUserId, active: Boolean(ownerUserId), logoUrl, customSlug })}
+            onClick={() => onSubmit({ name, ownerUserId, active: Boolean(ownerUserId), logoUrl })}
             disabled={busy || deleting || !name.trim()}
           >
             {busy ? 'Salvando...' : mode === 'create' ? 'Criar squad' : 'Salvar alterações'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-}
-
-function GdvOwnerFormModal({
-  mode = 'edit',
-  gdv = null,
-  users = [],
-  canEditOwner = false,
-  busy = false,
-  onClose,
-  onSubmit,
-}) {
-  const fileInputRef = useRef(null);
-  const [name, setName] = useState(gdv?.name || '');
-  const [ownerUserId, setOwnerUserId] = useState(gdv?.ownerUserId || gdv?.ownerId || gdv?.owner?.id || '');
-  const [logoUrl, setLogoUrl] = useState(gdv?.logoUrl || '');
-  const [customSlug, setCustomSlug] = useState(gdv?.customSlug || '');
-
-  useEffect(() => {
-    setName(gdv?.name || '');
-    setOwnerUserId(gdv?.ownerUserId || gdv?.ownerId || gdv?.owner?.id || '');
-    setLogoUrl(gdv?.logoUrl || '');
-    setCustomSlug(gdv?.customSlug || '');
-  }, [gdv?.id, gdv?.name, gdv?.ownerUserId, gdv?.ownerId, gdv?.owner, gdv?.logoUrl, gdv?.customSlug]);
-
-  const owner = users.find((entry) => entry.id === ownerUserId) || null;
-  const statusLabel = owner ? 'Ativo' : 'Desativado';
-
-  async function handleLogoFile(event) {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-    const dataUrl = await readAvatarFile(file);
-    setLogoUrl(dataUrl);
-  }
-
-  return (
-    <div className={styles.modalBackdrop} role="presentation" onClick={onClose}>
-      <div className={styles.modalCard} role="dialog" aria-modal="true" aria-labelledby="gdv-owner-form-title" onClick={(event) => event.stopPropagation()}>
-        <div className={styles.modalHead}>
-          <div>
-            <span className={styles.modalEyebrow}>Governança GDV</span>
-            <h3 id="gdv-owner-form-title">Configurar GDV</h3>
-          </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
-        </div>
-
-        <div className={styles.userModalBody}>
-          <section className={styles.squadIdentityPanel}>
-            <input ref={fileInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleLogoFile} />
-            <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()}>
-              {logoUrl ? <img src={logoUrl} alt="" /> : <span>{unitInitials(name, 'GD')}</span>}
-            </button>
-            <div className={styles.squadIdentityFields}>
-              <label className={styles.field}>
-                <span>Nome da GDV</span>
-                <input
-                  autoFocus
-                  type="text"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="Ex.: GDV Norte"
-                  maxLength={80}
-                />
-              </label>
-              <div className={styles.rowActions}>
-                <button type="button" className={styles.ghostButton} onClick={() => fileInputRef.current?.click()}>
-                  Alterar avatar
-                </button>
-                {logoUrl ? (
-                  <button type="button" className={styles.ghostButton} onClick={() => setLogoUrl('')}>
-                    Remover avatar
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          </section>
-
-          <label className={styles.field}>
-            <span>Link personalizado</span>
-            <div className={styles.slugField}>
-              <small>/gdvs/</small>
-              <input
-                value={customSlug}
-                onChange={(event) => setCustomSlug(normalizeSlug(event.target.value))}
-                placeholder="ex: gdv-norte"
-                maxLength={80}
-              />
-            </div>
-          </label>
-
-          <div className={styles.formGrid}>
-            <label className={styles.field}>
-              <span>Status operacional</span>
-              <input value={statusLabel} disabled />
-            </label>
-
-            <label className={styles.field}>
-              <span>Proprietário da GDV</span>
-              {canEditOwner ? (
-                <UserPicker
-                  users={users}
-                  value={ownerUserId}
-                  onChange={setOwnerUserId}
-                  placeholder="Sem proprietário"
-                  showRole
-                  portal
-                  disableHover
-                />
-              ) : (
-                <input value={owner?.name || 'Sem proprietário'} disabled />
-              )}
-            </label>
-          </div>
-
-          {mode === 'edit' && gdv?.id ? (
-            <div className={styles.selectorBlock}>
-              <div className={styles.selectorHead}>
-                <strong>Ações da GDV</strong>
-              </div>
-              <div className={styles.rowActions}>
-                <Link to={publicPath('gdvs', gdv)} className={styles.dashboardLink} onClick={onClose}>
-                  Abrir dashboard
-                </Link>
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        <div className={styles.modalActions}>
-          <button type="button" className={styles.ghostButton} onClick={onClose} disabled={busy}>Cancelar</button>
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={() => onSubmit({ name, ownerUserId, active: Boolean(ownerUserId), logoUrl, customSlug })}
-            disabled={busy || !name.trim()}
-          >
-            {busy ? 'Salvando...' : 'Salvar alterações'}
           </button>
         </div>
       </div>
@@ -977,7 +812,6 @@ export default function TeamAccessPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'users');
   const [squadModal, setSquadModal] = useState({ open: false, mode: 'create', squad: null });
-  const [gdvModal, setGdvModal] = useState({ open: false, mode: 'edit', gdv: null });
   const [userModal, setUserModal] = useState({ open: false, mode: 'create', user: null, initialRole: 'gestor' });
   const [userDeleteConfirm, setUserDeleteConfirm] = useState({ open: false, user: null });
   const [submitting, setSubmitting] = useState(false);
@@ -1123,16 +957,12 @@ export default function TeamAccessPage() {
         const linked = clientList.filter((client) => String(client?.gdvName || '').trim() === gdv.name);
         const owner = gdv.owner || userRows.find((entry) => entry.id === gdv.ownerUserId) || null;
         return {
-          ...gdv,
           id: gdv.id,
           name: gdv.name,
           clientsCount: linked.length,
           activeClients: linked.filter((client) => isActiveClientStatus(client?.status)).length,
           ownerId: gdv.ownerUserId || '',
-          ownerUserId: gdv.ownerUserId || '',
           owner,
-          logoUrl: gdv.logoUrl || '',
-          customSlug: gdv.customSlug || '',
           operationalStatus: gdv.active && owner ? 'Ativo' : 'Desativado',
         };
       });
@@ -1300,41 +1130,19 @@ export default function TeamAccessPage() {
     const ownerUserId = payload?.ownerUserId || '';
     const active = Boolean(ownerUserId);
     const logoUrl = typeof payload?.logoUrl === 'string' ? payload.logoUrl : '';
-    const customSlug = typeof payload?.customSlug === 'string' ? normalizeSlug(payload.customSlug) : '';
     setSubmitting(true);
     try {
       if (squadModal.mode === 'create') {
-        await createSquad({ name: safeName, ownerUserId, active, logoUrl, customSlug });
+        await createSquad({ name: safeName, ownerUserId, active, logoUrl });
         showToast(`"${safeName}" criado com sucesso.`);
       } else if (squadModal.squad?.id) {
-        await updateSquad(squadModal.squad.id, { name: safeName, ownerUserId, active, logoUrl, customSlug });
+        await updateSquad(squadModal.squad.id, { name: safeName, ownerUserId, active, logoUrl });
         showToast(`"${safeName}" atualizado com sucesso.`);
       }
       setSquadModal({ open: false, mode: 'create', squad: null });
       await refreshSquads?.();
     } catch (err) {
       showToast(err?.message || 'Não foi possível salvar o squad.', { variant: 'error' });
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-
-  async function handleGdvSubmit(payload) {
-    if (!canManageGdvs || !gdvModal.gdv?.id) return;
-    const safeName = String(payload?.name || '').trim();
-    const ownerUserId = payload?.ownerUserId || '';
-    const active = Boolean(ownerUserId);
-    const logoUrl = typeof payload?.logoUrl === 'string' ? payload.logoUrl : '';
-    const customSlug = typeof payload?.customSlug === 'string' ? normalizeSlug(payload.customSlug) : '';
-    setSubmitting(true);
-    try {
-      await updateGdv(gdvModal.gdv.id, { name: safeName, ownerUserId, active, logoUrl, customSlug });
-      showToast(`"${safeName}" atualizado com sucesso.`);
-      setGdvModal({ open: false, mode: 'edit', gdv: null });
-      await refreshGdvs?.();
-    } catch (err) {
-      showToast(err?.message || 'Não foi possível salvar a GDV.', { variant: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -1572,7 +1380,7 @@ export default function TeamAccessPage() {
                                   ? (
                                     <>
                                       proprietário:{' '}
-                                      <Link to={`/perfil/${encodeURIComponent(squad.owner.id)}`} className={styles.inlineProfileLink}>
+                                      <Link to={buildProfilePath(squad.owner)} className={styles.inlineProfileLink}>
                                         {squad.owner.name}
                                       </Link>
                                     </>
@@ -1693,7 +1501,7 @@ export default function TeamAccessPage() {
                             <div className={styles.squareIcon}><ShieldIcon size={16} /></div>
                             <div>
                               <strong>
-                                <Link to={`/perfil/${encodeURIComponent(entry.id)}`} className={styles.inlineProfileLink}>
+                                <Link to={buildProfilePath(entry)} className={styles.inlineProfileLink}>
                                   {entry.name}
                                 </Link>
                               </strong>
@@ -1810,7 +1618,7 @@ export default function TeamAccessPage() {
                               users={userRows.filter((item) => item.active)}
                               value={entry.ownerId}
                               onChange={async (userId) => {
-                                await updateGdv(entry.id, { name: entry.name, ownerUserId: userId, active: Boolean(userId), logoUrl: entry.logoUrl || '', customSlug: entry.customSlug || '' });
+                                await updateGdv(entry.id, { name: entry.name, ownerUserId: userId });
                                 await refreshGdvs?.();
                               }}
                               placeholder="Sem proprietário"
@@ -1819,7 +1627,7 @@ export default function TeamAccessPage() {
                               disableHover
                             />
                           ) : entry.owner ? (
-                            <Link to={`/perfil/${encodeURIComponent(entry.owner.id)}`} className={styles.inlineProfileLink}>
+                            <Link to={buildProfilePath(entry.owner)} className={styles.inlineProfileLink}>
                               {entry.owner.name}
                             </Link>
                           ) : (
@@ -1833,10 +1641,7 @@ export default function TeamAccessPage() {
                         </td>
                         <td>
                           <div className={styles.rowActions}>
-                            <Link to={publicPath('gdvs', entry)} className={styles.dashboardLink}>Abrir GDV</Link>
-                            {canManageGdvs ? (
-                              <button type="button" className={styles.ghostButton} onClick={() => setGdvModal({ open: true, mode: 'edit', gdv: entry })}>Editar</button>
-                            ) : null}
+                            <Link to={`/gdv?gdv=${encodeURIComponent(entry.name)}`} className={styles.dashboardLink}>Abrir GDV</Link>
                           </div>
                         </td>
                       </tr>
@@ -2157,19 +1962,6 @@ export default function TeamAccessPage() {
           onClose={() => setSquadModal({ open: false, mode: 'create', squad: null })}
           onSubmit={handleSquadSubmit}
           onDelete={handleDeleteSquad}
-        />
-      ) : null}
-
-
-      {gdvModal.open ? (
-        <GdvOwnerFormModal
-          mode={gdvModal.mode}
-          gdv={gdvModal.gdv}
-          users={userRows.filter((entry) => entry.active)}
-          canEditOwner={canManageGdvs}
-          busy={submitting}
-          onClose={() => setGdvModal({ open: false, mode: 'edit', gdv: null })}
-          onSubmit={handleGdvSubmit}
         />
       ) : null}
 
