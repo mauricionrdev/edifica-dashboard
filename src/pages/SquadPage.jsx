@@ -39,7 +39,6 @@ import {
 import { matchesAnySearch } from '../utils/search.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import UserPicker from '../components/users/UserPicker.jsx';
-import UserHoverCard from '../components/users/UserHoverCard.jsx';
 import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -394,23 +393,6 @@ export default function SquadPage() {
     }
   };
 
-  const handleRemoveLogo = useCallback(async () => {
-    if (!squad) return;
-
-    try {
-      await updateSquad(squad.id, {
-        name: squad.name,
-        ownerUserId: squad.ownerUserId || squad.owner?.id || '',
-        logoUrl: '',
-      });
-      await refreshSquads?.();
-      removeSquadAvatar(squad);
-      setLogoUrl('');
-      showToast('Logotipo do squad removido.', { variant: 'success' });
-    } catch (err) {
-      showToast(err?.message || 'Não foi possível remover o logotipo.', { variant: 'error' });
-    }
-  }, [refreshSquads, showToast, squad]);
 
   const handleSaveSquadSettings = useCallback(
     async ({ name, ownerUserId, logoUrl: nextLogoUrl }) => {
@@ -441,27 +423,6 @@ export default function SquadPage() {
     [canManageSquads, refreshSquads, showToast, squad]
   );
 
-  const handleOwnerChange = useCallback(
-    async (event) => {
-      if (!squad) return;
-
-      try {
-        await updateSquad(squad.id, {
-          name: squad.name,
-          ownerUserId: event.target.value,
-          logoUrl: logoUrl || squad.logoUrl || '',
-        });
-        await refreshSquads?.();
-        setOwnershipTick((current) => current + 1);
-        showToast('Responsável do squad atualizado.', { variant: 'success' });
-      } catch (err) {
-        showToast(err?.message || 'Não foi possível atualizar o responsável.', {
-          variant: 'error',
-        });
-      }
-    },
-    [logoUrl, refreshSquads, showToast, squad]
-  );
 
   const metricRows = metricsByKey[periodKey] || [];
 
@@ -655,14 +616,7 @@ export default function SquadPage() {
 
         <div className={styles.headerTitleText}>
           <strong>{squad.name}</strong>
-          <small>
-            {squadOwnership.owner ? (
-              <UserHoverCard user={squadOwnership.owner} placement="bottom">
-                <span>{`Responsável: ${squadOwnership.owner.name}`}</span>
-              </UserHoverCard>
-            ) : 'Sem responsável definido'} ·{' '}
-            {squadOwnership.active ? 'Ativo' : 'Desativado'}
-          </small>
+          <small>{squadOwnership.active ? 'Ativo' : 'Desativado'}</small>
         </div>
       </div>
     );
@@ -704,19 +658,6 @@ export default function SquadPage() {
           </div>
         </div>
 
-        {canManageSquads ? (
-          <div className={styles.headerCluster}>
-            <UserPicker
-              className={styles.ownerControl}
-              users={Array.isArray(userDirectory) ? userDirectory : []}
-              value={squad.ownerUserId || squad.owner?.id || ''}
-              onChange={(userId) => handleOwnerChange({ target: { value: userId } })}
-              placeholder="Sem responsável"
-              disableHover
-              portal
-            />
-          </div>
-        ) : null}
 
         <div className={styles.headerCluster}>
           {canManageSquads ? (
@@ -761,8 +702,6 @@ export default function SquadPage() {
 
     setPanelHeader({ title, actions });
   }, [
-    handleOwnerChange,
-    handleRemoveLogo,
     canManageSquads,
     logoUrl,
     metricsLoading,
@@ -774,9 +713,7 @@ export default function SquadPage() {
     squad,
     squadClients.length,
     squadOwnership.active,
-    squadOwnership.owner,
     uploadingLogo,
-    userDirectory,
     week,
     year,
   ]);
@@ -1016,35 +953,38 @@ export default function SquadPage() {
               onClick={() => setShowComplementaryMetrics((open) => !open)}
               aria-expanded={showComplementaryMetrics}
             >
-              <span>Métricas complementares</span>
-              <small>{showComplementaryMetrics ? 'Ocultar' : 'Ver indicadores'}</small>
+              <span>Indicadores</span>
             </button>
           </div>
         </section>
       </section>
 
       {showComplementaryMetrics ? (
-        <aside className={styles.complementaryDrawer} aria-label="Métricas complementares do CAP">
-          <div className={styles.complementaryHead}>
-            <div>
-              <span>Performance do CAP</span>
-              <strong>Indicadores complementares</strong>
+        <>
+          <button
+            type="button"
+            className={styles.drawerScrim}
+            onClick={() => setShowComplementaryMetrics(false)}
+            aria-label="Fechar indicadores"
+          />
+          <aside className={styles.complementaryDrawer} aria-label="Indicadores do CAP">
+            <div className={styles.complementaryHead}>
+              <strong>Indicadores</strong>
+              <button type="button" className={styles.drawerClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar indicadores">
+                <CloseIcon size={14} aria-hidden="true" />
+              </button>
             </div>
-            <button type="button" className={styles.drawerClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar métricas complementares">
-              <CloseIcon size={14} aria-hidden="true" />
-            </button>
-          </div>
 
-          <div className={styles.complementaryList}>
-            {complementaryMetrics.map((item) => (
-              <article key={item.id} className={styles.complementaryMetricCard}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-                <small>{item.sub}</small>
-              </article>
-            ))}
-          </div>
-        </aside>
+            <div className={styles.complementaryList}>
+              {complementaryMetrics.map((item) => (
+                <article key={item.id} className={styles.complementaryMetricCard}>
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </article>
+              ))}
+            </div>
+          </aside>
+        </>
       ) : null}
 
       <section className={styles.listCard}>

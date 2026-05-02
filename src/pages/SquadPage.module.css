@@ -1940,3 +1940,172 @@
     max-height: 70vh;
   }
 }
+
+/* v75 — Squad: correções de header, drawer e altura da lista */
+.headerIdentity {
+  min-height: 56px;
+}
+
+.headerLogo {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
+
+.headerTitleText {
+  gap: 3px;
+}
+
+.headerTitleText small {
+  color: var(--text-tertiary);
+}
+
+.headerActions .ownerControl,
+.headerCluster:has(.ownerControl) {
+  display: none !important;
+}
+
+.topArea {
+  z-index: 32;
+}
+
+.listToolbar {
+  min-height: 40px;
+  padding-top: 7px;
+  gap: 12px;
+}
+
+.toolbarControls {
+  grid-template-columns: minmax(280px, 1fr) max-content;
+  gap: 8px;
+}
+
+.complementaryButton {
+  min-width: 124px;
+  width: auto;
+  height: 34px;
+  padding: 0 12px;
+  justify-content: center;
+  gap: 0;
+}
+
+.complementaryButton small {
+  display: none;
+}
+
+.complementaryButton span {
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.listCard {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: calc(100vh - 315px);
+  overflow: hidden;
+}
+
+.clientList {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: calc(100vh - 382px);
+  overflow-y: auto;
+}
+
+.pagination {
+  min-height: 42px;
+}
+
+.drawerScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 86;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.complementaryDrawer {
+  top: 88px;
+  right: 18px;
+  z-index: 94;
+  width: min(276px, calc(100vw - 36px));
+  max-height: min(430px, calc(100vh - 112px));
+  border-color: var(--line-subtle);
+  border-radius: 13px;
+  background: rgba(13, 14, 15, 0.98);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
+}
+
+.complementaryHead {
+  min-height: 46px;
+  padding: 9px 10px 9px 12px;
+}
+
+.complementaryHead div,
+.complementaryHead span {
+  display: none;
+}
+
+.complementaryHead strong {
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.drawerClose {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+}
+
+.complementaryList {
+  max-height: 360px;
+  padding: 8px;
+  gap: 7px;
+}
+
+.complementaryMetricCard {
+  min-height: 58px;
+  padding: 9px 10px;
+  border-radius: 11px;
+  gap: 5px;
+}
+
+.complementaryMetricCard span {
+  font-size: 9.5px;
+  letter-spacing: 0.07em;
+}
+
+.complementaryMetricCard strong {
+  font-size: 19px;
+}
+
+.complementaryMetricCard small {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .toolbarControls {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  .complementaryButton {
+    width: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .listCard,
+  .clientList {
+    max-height: none;
+  }
+
+  .toolbarControls {
+    grid-template-columns: 1fr;
+  }
+
+  .complementaryButton {
+    width: 100%;
+  }
+}
