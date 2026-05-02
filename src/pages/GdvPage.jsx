@@ -895,7 +895,7 @@ export default function GdvPage() {
       <div className={styles.headerActions}>
         <div className={styles.headerCard}>
           <span className={styles.headerCardLabel}>Carteira</span>
-          <span className={styles.headerStat} title={`${displayInt(gdvClients.length)} clientes`}>
+          <span className={styles.headerStat} title={displayInt(gdvClients.length)}>
             <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(gdvClients.length)}</strong>
           </span>

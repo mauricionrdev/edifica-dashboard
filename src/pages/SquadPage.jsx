@@ -12,7 +12,6 @@ import {
   RotateCcwIcon,
   SearchIcon,
   Select,
-  LoadingIcon,
   StateBlock,
   SettingsIcon,
   TrophyIcon,
@@ -614,9 +613,7 @@ export default function SquadPage() {
           title={canManageSquads ? 'Clique para trocar o logotipo' : squad.name}
         >
           {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(squad.name)}</span>}
-          {canManageSquads ? (
-            <em>{uploadingLogo ? <LoadingIcon size="xs" label="Atualizando avatar" /> : 'Trocar'}</em>
-          ) : null}
+          {canManageSquads ? <em>Configurar</em> : null}
         </button>
 
         <div className={styles.headerTitleText}>
@@ -695,11 +692,6 @@ export default function SquadPage() {
             <TrophyIcon size={14} aria-hidden="true" />
           </Link>
 
-          {metricsLoading ? (
-            <span className={styles.headerLoading}>
-              <LoadingIcon size="sm" label="Carregando métricas" />
-            </span>
-          ) : null}
         </div>
       </div>
     );
@@ -708,7 +700,6 @@ export default function SquadPage() {
   }, [
     canManageSquads,
     logoUrl,
-    metricsLoading,
     month0,
     nextMonth,
     prevMonth,
@@ -953,31 +944,28 @@ export default function SquadPage() {
       </section>
 
       {showComplementaryMetrics ? (
-        <>
-          <button
-            type="button"
-            className={styles.drawerScrim}
-            onClick={() => setShowComplementaryMetrics(false)}
-            aria-label="Fechar indicadores"
-          />
-          <section className={styles.complementaryDrawer} role="dialog" aria-modal="true" aria-label="Indicadores da carteira">
-            <div className={styles.complementaryHead}>
-              <strong>Indicadores</strong>
-              <button type="button" className={styles.drawerClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar indicadores">
-                <CloseIcon size={14} aria-hidden="true" />
+        <div className={styles.modalBackdrop} role="presentation" onClick={() => setShowComplementaryMetrics(false)}>
+          <section className={styles.indicatorsModal} role="dialog" aria-modal="true" aria-label="Indicadores da carteira" onClick={(event) => event.stopPropagation()}>
+            <div className={styles.modalHead}>
+              <div>
+                <h3>Indicadores</h3>
+              </div>
+              <button type="button" className={styles.modalClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar indicadores">
+                <CloseIcon size={16} aria-hidden="true" />
               </button>
             </div>
 
-            <div className={styles.complementaryList}>
+            <div className={styles.indicatorsGrid}>
               {complementaryMetrics.map((item) => (
-                <article key={item.id} className={styles.complementaryMetricCard}>
+                <article key={item.id} className={styles.indicatorsCard}>
                   <span>{item.label}</span>
                   <strong>{item.value}</strong>
+                  <small>{item.sub}</small>
                 </article>
               ))}
             </div>
           </section>
-        </>
+        </div>
       ) : null}
 
       <section className={styles.listCard}>
