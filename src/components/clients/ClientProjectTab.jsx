@@ -389,15 +389,21 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
     }
   }
 
+  async function reloadTaskCollaborators(taskId = selectedTask?.id) {
+    if (!taskId) return;
+    const response = await listTaskCollaborators(taskId);
+    setTaskCollaborators(Array.isArray(response?.collaborators) ? response.collaborators : []);
+  }
+
   async function handleAddCollaborator(event) {
     event.preventDefault();
     if (!selectedTask?.id || !collaboratorUserId || busy) return;
 
     try {
       setBusy(true);
-      const response = await addTaskCollaborator(selectedTask.id, { userId: collaboratorUserId });
+      await addTaskCollaborator(selectedTask.id, { userId: collaboratorUserId });
       setCollaboratorUserId('');
-      setTaskCollaborators(Array.isArray(response?.collaborators) ? response.collaborators : []);
+      await reloadTaskCollaborators(selectedTask.id);
       showToast('Colaborador adicionado.', { variant: 'success' });
     } catch (error) {
       showToast(error?.message || 'Não foi possível adicionar colaborador.', { variant: 'error' });
@@ -411,8 +417,8 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
 
     try {
       setBusy(true);
-      const response = await removeTaskCollaborator(selectedTask.id, userId);
-      setTaskCollaborators(Array.isArray(response?.collaborators) ? response.collaborators : []);
+      await removeTaskCollaborator(selectedTask.id, userId);
+      await reloadTaskCollaborators(selectedTask.id);
       showToast('Colaborador removido.', { variant: 'success' });
     } catch (error) {
       showToast(error?.message || 'Não foi possível remover colaborador.', { variant: 'error' });
