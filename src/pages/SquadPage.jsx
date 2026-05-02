@@ -962,7 +962,7 @@ export default function SquadPage() {
             onClick={() => setShowComplementaryMetrics(false)}
             aria-label="Fechar indicadores"
           />
-          <aside className={styles.complementaryDrawer} aria-label="Indicadores do CAP">
+          <section className={styles.complementaryDrawer} role="dialog" aria-modal="true" aria-label="Indicadores da carteira">
             <div className={styles.complementaryHead}>
               <strong>Indicadores</strong>
               <button type="button" className={styles.drawerClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar indicadores">
@@ -978,7 +978,7 @@ export default function SquadPage() {
                 </article>
               ))}
             </div>
-          </aside>
+          </section>
         </>
       ) : null}
 

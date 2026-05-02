@@ -33,7 +33,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: var(--bg-canvas);
+  background: var(--bg-app, #08090a);
   border-left: 1px solid var(--line);
 }
 

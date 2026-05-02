@@ -53,7 +53,7 @@
   object-fit: cover;
 }
 
-.headerLogo>span {
+.headerLogo > span {
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -195,7 +195,7 @@
   min-width: 0;
 }
 
-.ownerControl>span:first-child {
+.ownerControl > span:first-child {
   display: none;
 }
 
@@ -345,7 +345,7 @@
   animation: squadStickyExit 170ms ease-in both;
 }
 
-.stickyResultBar>strong {
+.stickyResultBar > strong {
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
@@ -1023,7 +1023,7 @@
   gap: 8px;
 }
 
-.modalField>span {
+.modalField > span {
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 590;
@@ -1096,11 +1096,11 @@
   font-feature-settings: 'cv01', 'ss03';
 }
 
-.modalBody>.modalField {
+.modalBody > .modalField {
   padding: 2px 0 0;
 }
 
-.modalBody>.modalField>span {
+.modalBody > .modalField > span {
   margin-bottom: 2px;
 }
 
@@ -1782,7 +1782,7 @@
 
 .complementaryDrawer {
   position: fixed;
-  top: 120px;
+  top: 92px;
   right: 18px;
   z-index: 90;
   width: min(330px, calc(100vw - 36px));
@@ -1790,7 +1790,7 @@
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(13, 14, 15, 0.98);
-  box-shadow: 0 18px 52px #0000006b;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
   overflow: hidden;
 }
 
@@ -2096,7 +2096,6 @@
 }
 
 @media (max-width: 760px) {
-
   .listCard,
   .clientList {
     max-height: none;
@@ -2213,5 +2212,137 @@
 
   .complementaryList {
     max-height: calc(72vh - 54px);
+  }
+}
+
+
+/* v77 — Squad: indicadores em modal central e workspace com fundo app */
+.drawerScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  border: 0;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(10px);
+  cursor: default;
+}
+
+.complementaryDrawer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  z-index: 2410;
+  width: min(520px, calc(100vw - 44px));
+  max-height: min(680px, calc(100vh - 44px));
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  background: rgba(13, 14, 15, 0.985);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.54);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.complementaryHead {
+  flex: 0 0 auto;
+  min-height: 56px;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.complementaryHead strong {
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.1;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+
+.drawerClose {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-tertiary);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.drawerClose:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.complementaryList {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.complementaryList::-webkit-scrollbar {
+  display: none;
+}
+
+.complementaryMetricCard {
+  min-height: 76px;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+}
+
+.complementaryMetricCard span {
+  color: var(--text-tertiary);
+  font-size: 9.5px;
+  line-height: 1.2;
+  font-weight: 610;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.complementaryMetricCard strong {
+  color: var(--text-primary);
+  font-size: 23px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.complementaryMetricCard small,
+.complementaryHead div,
+.complementaryHead span {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .complementaryDrawer {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .complementaryList {
+    grid-template-columns: 1fr;
   }
 }
