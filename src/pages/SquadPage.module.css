@@ -53,7 +53,7 @@
   object-fit: cover;
 }
 
-.headerLogo > span {
+.headerLogo>span {
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -195,7 +195,7 @@
   min-width: 0;
 }
 
-.ownerControl > span:first-child {
+.ownerControl>span:first-child {
   display: none;
 }
 
@@ -345,7 +345,7 @@
   animation: squadStickyExit 170ms ease-in both;
 }
 
-.stickyResultBar > strong {
+.stickyResultBar>strong {
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
@@ -1023,7 +1023,7 @@
   gap: 8px;
 }
 
-.modalField > span {
+.modalField>span {
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 590;
@@ -1096,11 +1096,11 @@
   font-feature-settings: 'cv01', 'ss03';
 }
 
-.modalBody > .modalField {
+.modalBody>.modalField {
   padding: 2px 0 0;
 }
 
-.modalBody > .modalField > span {
+.modalBody>.modalField>span {
   margin-bottom: 2px;
 }
 
@@ -1782,7 +1782,7 @@
 
 .complementaryDrawer {
   position: fixed;
-  top: 92px;
+  top: 120px;
   right: 18px;
   z-index: 90;
   width: min(330px, calc(100vw - 36px));
@@ -1790,7 +1790,7 @@
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(13, 14, 15, 0.98);
-  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 18px 52px #0000006b;
   overflow: hidden;
 }
 
@@ -2096,6 +2096,7 @@
 }
 
 @media (max-width: 760px) {
+
   .listCard,
   .clientList {
     max-height: none;
