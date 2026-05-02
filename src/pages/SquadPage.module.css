@@ -1646,3 +1646,116 @@
     justify-content: start;
   }
 }
+
+/* v72 — Métricas complementares do CAP */
+.complementaryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 34px;
+}
+
+.complementaryToggle {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 590;
+  cursor: pointer;
+}
+
+.complementaryToggle:hover,
+.complementaryToggleActive {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.036);
+  color: var(--text-primary);
+}
+
+.complementaryToggle b {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 590;
+}
+
+.complementaryPanel {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.complementaryCard {
+  min-width: 0;
+  min-height: 72px;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.015);
+  display: grid;
+  align-content: space-between;
+  gap: 6px;
+}
+
+.complementaryCard span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 9px;
+  line-height: 1.2;
+  font-weight: 620;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.complementaryCard strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.complementaryCard small {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1280px) {
+  .complementaryPanel {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .complementaryHeader {
+    justify-content: stretch;
+  }
+
+  .complementaryToggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .complementaryPanel {
+    grid-template-columns: 1fr;
+  }
+}

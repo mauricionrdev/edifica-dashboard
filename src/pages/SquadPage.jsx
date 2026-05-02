@@ -293,8 +293,14 @@ export default function SquadPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [renderStickyResult, setRenderStickyResult] = useState(false);
+  const [showComplementaryMetrics, setShowComplementaryMetrics] = useState(false);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
+
+  const allSquadClients = useMemo(
+    () => (Array.isArray(clients) ? clients : []).filter((client) => client?.squadId === squadId),
+    [clients, squadId]
+  );
 
   const squadClients = useMemo(
     () =>
@@ -501,6 +507,37 @@ export default function SquadPage() {
     () => aggregateCarteira(clientRows.map((row) => ({ client: row, metric: row.metric, calc: row.calc }))),
     [clientRows]
   );
+
+  const complementaryMetrics = useMemo(() => {
+    const activeRows = clientRows.filter((row) => isActiveClientStatus(row.status));
+    const activeTotal = activeRows.length;
+    const onboardingTotal = allSquadClients.filter((client) => client.status === CLIENT_STATUS.ONBOARDING).length;
+    const pausedTotal = allSquadClients.filter((client) => client.status === CLIENT_STATUS.PAUSED).length;
+
+    const contractGoalHits = activeRows.filter((row) => {
+      const target = Number(row.calc?.mEmp) || 0;
+      return target > 0 && (Number(row.calc?.fec) || 0) >= target;
+    }).length;
+
+    const profitGoalHits = activeRows.filter((row) => {
+      const target = Number(row.calc?.mLuc) || 0;
+      return target > 0 && (Number(row.calc?.fec) || 0) >= target;
+    }).length;
+
+    const belowGoal = activeRows.filter((row) => {
+      const target = Number(row.calc?.mLuc) || 0;
+      return target > 0 && (Number(row.calc?.fec) || 0) < target;
+    }).length;
+
+    return [
+      { id: 'active', label: 'Clientes ativos', value: displayInt(activeTotal), sub: 'contam na meta' },
+      { id: 'contractGoal', label: 'Bateram meta contratos', value: `${displayInt(contractGoalHits)} de ${displayInt(activeTotal)}`, sub: 'meta empate' },
+      { id: 'profitGoal', label: 'Bateram meta lucro', value: `${displayInt(profitGoalHits)} de ${displayInt(activeTotal)}`, sub: 'meta lucro' },
+      { id: 'belowGoal', label: 'Abaixo da meta', value: `${displayInt(belowGoal)} de ${displayInt(activeTotal)}`, sub: 'ativos com meta' },
+      { id: 'onboarding', label: 'Onboarding', value: displayInt(onboardingTotal), sub: 'fora da meta' },
+      { id: 'paused', label: 'Pausados', value: displayInt(pausedTotal), sub: 'fora da meta' },
+    ];
+  }, [allSquadClients, clientRows]);
 
   useEffect(() => {
     if (!selectedClientId) return;
@@ -963,6 +1000,30 @@ export default function SquadPage() {
             </article>
           ))}
         </section>
+
+        <section className={styles.complementaryHeader}>
+          <button
+            type="button"
+            className={`${styles.complementaryToggle} ${showComplementaryMetrics ? styles.complementaryToggleActive : ''}`.trim()}
+            onClick={() => setShowComplementaryMetrics((current) => !current)}
+            aria-expanded={showComplementaryMetrics}
+          >
+            <span>Métricas complementares</span>
+            <b>{showComplementaryMetrics ? 'Ocultar' : 'Ver indicadores'}</b>
+          </button>
+        </section>
+
+        {showComplementaryMetrics ? (
+          <section className={styles.complementaryPanel} aria-label="Métricas complementares do CAP">
+            {complementaryMetrics.map((item) => (
+              <article key={item.id} className={styles.complementaryCard}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+                <small>{item.sub}</small>
+              </article>
+            ))}
+          </section>
+        ) : null}
 
         <section className={styles.listToolbar}>
           <div className={styles.listTitle}>
