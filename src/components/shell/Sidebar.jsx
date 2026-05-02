@@ -103,10 +103,10 @@ export default function Sidebar({
   const canViewTeam = canViewTeamArea(user);
 
   const normalizedQuery = normalizeSearch(query);
-  const activeGdvParam = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    return params.get('gdv') || '';
-  }, [location.search]);
+  const activeGdvId = useMemo(() => {
+    const match = location.pathname.match(/^\/gdvs\/([^/]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }, [location.pathname]);
 
   const activeCount = clients.filter((client) => isActiveClientStatus(client.status)).length;
   const totalCount = clients.length;
@@ -338,11 +338,11 @@ export default function Sidebar({
             {filteredGdvs.map((entry) => (
               <NavLink
                 key={entry.key}
-                to={`/gdv?gdv=${encodeURIComponent(entry.gdvName)}`}
+                to={`/gdvs/${encodeURIComponent(entry.id)}`}
                 onClick={handleNavigate}
                 onDoubleClick={(event) => startGdvRename(event, entry)}
                 className={({ isActive }) =>
-                  `${styles.item} ${isActive && activeGdvParam === entry.gdvName ? styles.itemActive : ''} ${collapsed ? styles.itemCollapsed : ''}`.trim()
+                  `${styles.item} ${(isActive || activeGdvId === entry.id) ? styles.itemActive : ''} ${collapsed ? styles.itemCollapsed : ''}`.trim()
                 }
                 title={collapsed ? entry.name : undefined}
               >

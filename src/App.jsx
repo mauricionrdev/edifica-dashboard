@@ -56,6 +56,7 @@ export default function App() {
                 element={<RequirePermissionRoute permission="metrics.view"><PreencherSemanaPage /></RequirePermissionRoute>}
               />
               <Route path="gdv" element={<RequirePermissionRoute permission="gdv.view"><GdvPage /></RequirePermissionRoute>} />
+              <Route path="gdvs/:gdvId" element={<RequirePermissionRoute permission="gdv.view"><GdvPage /></RequirePermissionRoute>} />
               <Route path="perfil" element={<RequirePermissionRoute permission="profile.view"><ProfilePage /></RequirePermissionRoute>} />
               <Route path="perfil/:userId" element={<RequirePermissionRoute permission="profile.view"><UserProfilePage /></RequirePermissionRoute>} />
               <Route path="squads/:squadId" element={<RequirePermissionRoute permission="squads.view"><SquadPage /></RequirePermissionRoute>} />
