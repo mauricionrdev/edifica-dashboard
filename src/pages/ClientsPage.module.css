@@ -521,3 +521,54 @@
     flex-direction: column;
   }
 }
+
+
+/* v18 — Clientes sem cards redundantes e contagem solta */
+.summaryStrip,
+.resultCount {
+  display: none !important;
+}
+
+.page {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workbench {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.clientTable {
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.clientTable::-webkit-scrollbar {
+  display: none;
+}
+
+.clientHeader {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #0f1011;
+}
+
+.paginationControl {
+  margin-left: auto;
+}
+
+@media (max-width: 1180px) {
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .paginationControl {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

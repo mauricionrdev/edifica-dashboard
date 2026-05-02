@@ -35,6 +35,7 @@ const TABS = [
   { key: 'fees', label: 'Mensalidades' },
   { key: 'icp', label: 'Análise ICP' },
   { key: 'gdv', label: 'Análise GDV' },
+  { key: 'routes', label: 'Resumo de Rotas' },
 ];
 
 export default function ClientDetailDrawer({
@@ -376,6 +377,10 @@ export default function ClientDetailDrawer({
 
             {activeTab === 'gdv' && (
               <AnalysisTab clientId={client.id} type="gdvanalise" canEdit={canEditClient} />
+            )}
+
+            {activeTab === 'routes' && (
+              <AnalysisTab clientId={client.id} type="route_summary" canEdit={canEditClient} />
             )}
           </main>
         </div>

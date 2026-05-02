@@ -20,6 +20,12 @@
   --analysis-accent-line: rgba(45, 212, 191, 0.22);
 }
 
+.routes {
+  --analysis-accent: #a78bfa;
+  --analysis-accent-soft: rgba(167, 139, 250, 0.08);
+  --analysis-accent-line: rgba(167, 139, 250, 0.24);
+}
+
 .header {
   min-width: 0;
   display: grid;

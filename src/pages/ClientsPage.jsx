@@ -245,21 +245,6 @@ export default function ClientsPage() {
   return (
     <>
       <div className={styles.page}>
-        <section className={styles.summaryStrip} aria-label="Resumo da carteira">
-          <div className={styles.summaryItem}>
-            <span>Total</span>
-            <strong>{counts.all}</strong>
-          </div>
-          <div className={styles.summaryItem}>
-            <span>Ativos</span>
-            <strong>{counts.active}</strong>
-          </div>
-          <div className={styles.summaryItem}>
-            <span>Vencendo em 30 dias</span>
-            <strong className={counts.ending > 0 ? styles.warningValue : ''}>{counts.ending}</strong>
-          </div>
-        </section>
-
         <section className={styles.workbench}>
           <div className={styles.toolbar}>
             <label className={styles.searchBox}>
@@ -290,7 +275,6 @@ export default function ClientsPage() {
             </div>
 
             <div className={styles.paginationControl}>
-              <span className={styles.resultCount}>{filtered.length} encontrados</span>
               <Select
                 className={styles.pageSizeSelect}
                 value={String(pageSize)}

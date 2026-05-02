@@ -1,6 +1,6 @@
 // ==============================================================
 //  /api/clients/:clientId/analyses/:type
-//  type: 'icp' | 'gdvanalise'
+//  type: 'icp' | 'gdvanalise' | 'route_summary'
 //
 //  GET    lista entradas, mais recentes primeiro
 //  POST   cria uma entrada (data + text)
@@ -19,7 +19,7 @@ import {
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { getAccessibleClientRow } from '../utils/access.js';
 
-const VALID_TYPES = new Set(['icp', 'gdvanalise']);
+const VALID_TYPES = new Set(['icp', 'gdvanalise', 'route_summary']);
 
 const router = Router({ mergeParams: true });
 router.use(requireAuth);
@@ -31,6 +31,10 @@ async function ensureAnalysisAuthorSchema() {
     analysisAuthorSchemaPromise = (async () => {
       const cols = await query('SHOW COLUMNS FROM analyses');
       const names = new Set(cols.map((column) => column.Field));
+      const typeColumn = cols.find((column) => column.Field === 'type');
+      if (typeColumn && !String(typeColumn.Type || '').includes('route_summary')) {
+        await query("ALTER TABLE analyses MODIFY COLUMN type ENUM('icp','gdvanalise','route_summary') NOT NULL");
+      }
 
       if (!names.has('created_by_user_id')) {
         await query('ALTER TABLE analyses ADD COLUMN created_by_user_id VARCHAR(64) NULL AFTER text');
@@ -69,7 +73,7 @@ async function assertClientExists(clientId, user) {
 }
 
 function validateType(type) {
-  if (!VALID_TYPES.has(type)) throw badRequest('type inválido. Use icp ou gdvanalise');
+  if (!VALID_TYPES.has(type)) throw badRequest('type inválido. Use icp, gdvanalise ou route_summary');
 }
 
 const ANALYSIS_SELECT = `

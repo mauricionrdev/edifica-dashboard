@@ -52,8 +52,12 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const timersRef = useRef(new Map());
   const fetchIdRef = useRef(0);
 
-  const title = type === 'icp' ? 'Análise ICP' : 'Análise GDV';
-  const titleClass = type === 'icp' ? styles.icp : styles.gdv;
+  const analysisMeta = {
+    icp: { title: 'Análise ICP', className: styles.icp },
+    gdvanalise: { title: 'Análise GDV', className: styles.gdv },
+    route_summary: { title: 'Resumo de Rotas', className: styles.routes },
+  };
+  const { title, className: titleClass } = analysisMeta[type] || analysisMeta.icp;
 
   useEffect(() => {
     if (!clientId) return undefined;
