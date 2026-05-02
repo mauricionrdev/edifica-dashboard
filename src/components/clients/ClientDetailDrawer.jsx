@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
 import {
   clientInitials,
   statusClass,
   statusLabel,
 } from '../../utils/clientHelpers.js';
 import { updateClient } from '../../api/clients.js';
-import { createClientProject, getClientProject } from '../../api/projects.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
@@ -25,11 +23,13 @@ import AvatarTab from './AvatarTab.jsx';
 import ContractTab from './ContractTab.jsx';
 import AnalysisTab from './AnalysisTab.jsx';
 import FeeScheduleTab from './FeeScheduleTab.jsx';
+import ClientProjectTab from './ClientProjectTab.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import tabStyles from './ClientTabs.module.css';
 
 const TABS = [
   { key: 'overview', label: 'Visão geral' },
+  { key: 'project', label: 'Projeto' },
   { key: 'avatar', label: 'Avatar' },
   { key: 'contract', label: 'Contrato' },
   { key: 'fees', label: 'Mensalidades' },
@@ -52,13 +52,8 @@ export default function ClientDetailDrawer({
 }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [avatarUrl, setAvatarUrl] = useState(() => getClientAvatar(client));
-  const [clientProject, setClientProject] = useState(null);
-  const [projectLoading, setProjectLoading] = useState(false);
-  const [projectActionBusy, setProjectActionBusy] = useState(false);
-  const [projectCreateOpen, setProjectCreateOpen] = useState(false);
   const avatarInputRef = useRef(null);
 
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useToast();
   const admin = canDelete || isAdminUser(user);
@@ -69,28 +64,7 @@ export default function ClientDetailDrawer({
   useEffect(() => {
     setActiveTab('overview');
     setAvatarUrl(getClientAvatar(client));
-    setClientProject(null);
-    setProjectCreateOpen(false);
   }, [client?.id]);
-
-  useEffect(() => {
-    if (!client?.id || !canViewProject) return undefined;
-    let cancelled = false;
-    setProjectLoading(true);
-    getClientProject(client.id)
-      .then((res) => {
-        if (!cancelled) setClientProject(res?.project || null);
-      })
-      .catch(() => {
-        if (!cancelled) setClientProject(null);
-      })
-      .finally(() => {
-        if (!cancelled) setProjectLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [canViewProject, client?.id]);
 
   useEffect(() => subscribeAvatarChange(() => setAvatarUrl(getClientAvatar(client))), [client]);
 
@@ -183,65 +157,26 @@ export default function ClientDetailDrawer({
     }
   }, [client, onUpdated, showToast]);
 
-  const handleProjectAction = useCallback(() => {
-    if (!client?.id) return;
-
-    if (clientProject?.id) {
-      onClose?.();
-      navigate(`/projetos?id=${encodeURIComponent(clientProject.id)}`);
-      return;
-    }
-
-    if (!canCreateProject) {
-      showToast('Você não tem permissão para criar projetos.', { variant: 'error' });
-      return;
-    }
-
-    setProjectCreateOpen(true);
-  }, [canCreateProject, client?.id, clientProject?.id, navigate, onClose, showToast]);
-
-  const handleCreateProject = useCallback(
-    async (mode) => {
-      if (!client?.id) return;
-
-      try {
-        setProjectActionBusy(true);
-        setProjectCreateOpen(false);
-
-        const res = await createClientProject(client.id, {
-          mode,
-          name: `Projeto - ${client.name}`,
-        });
-
-        const project = res?.project || null;
-        setClientProject(project);
-        showToast(res?.alreadyExists ? 'Projeto já existente aberto.' : 'Projeto criado.', {
-          variant: 'success',
-        });
-
-        if (project?.id) {
-          onClose?.();
-          navigate(`/projetos?id=${encodeURIComponent(project.id)}`);
-        }
-      } catch (error) {
-        showToast(error?.message || 'Não foi possível criar o projeto.', { variant: 'error' });
-      } finally {
-        setProjectActionBusy(false);
-      }
-    },
-    [client?.id, client?.name, navigate, onClose, showToast]
-  );
-
   const visibleTabs = useMemo(
-    () => TABS.filter((tab) => tab.key !== 'fees' || canViewFeeSchedule),
-    [canViewFeeSchedule]
+    () =>
+      TABS.filter((tab) => {
+        if (tab.key === 'fees') return canViewFeeSchedule;
+        if (tab.key === 'project') return canViewProject;
+        return true;
+      }),
+    [canViewFeeSchedule, canViewProject]
   );
 
   useEffect(() => {
     if (activeTab === 'fees' && !canViewFeeSchedule) {
       setActiveTab('overview');
+      return;
     }
-  }, [activeTab, canViewFeeSchedule]);
+
+    if (activeTab === 'project' && !canViewProject) {
+      setActiveTab('overview');
+    }
+  }, [activeTab, canViewFeeSchedule, canViewProject]);
 
   const node = (
     <div className={drawerStyles.overlay} role="presentation" onClick={onClose}>
@@ -283,16 +218,6 @@ export default function ClientDetailDrawer({
           </div>
 
           <div className={drawerStyles.modalHeadActions}>
-            {canViewProject && (clientProject?.id || canCreateProject) ? (
-              <button
-                type="button"
-                className={drawerStyles.projectBtn}
-                onClick={handleProjectAction}
-                disabled={projectLoading || projectActionBusy}
-              >
-                {projectLoading ? 'Projeto' : clientProject?.id ? 'Abrir projeto' : 'Criar projeto'}
-              </button>
-            ) : null}
             <button
               type="button"
               className={drawerStyles.iconBtn}
@@ -343,6 +268,14 @@ export default function ClientDetailDrawer({
               />
             )}
 
+            {activeTab === 'project' && canViewProject ? (
+              <ClientProjectTab
+                client={client}
+                users={users}
+                canCreateProject={canCreateProject}
+              />
+            ) : null}
+
             {activeTab === 'avatar' && (
               <AvatarTab
                 client={client}
@@ -384,53 +317,6 @@ export default function ClientDetailDrawer({
             )}
           </main>
         </div>
-
-        {projectCreateOpen ? (
-          <div className={drawerStyles.projectChoiceBackdrop} role="presentation" onClick={() => setProjectCreateOpen(false)}>
-            <div
-              className={drawerStyles.projectChoiceModal}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="project-choice-title"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className={drawerStyles.projectChoiceHeader}>
-                <div>
-                  <span>Criar projeto</span>
-                  <h3 id="project-choice-title">{client.name}</h3>
-                </div>
-                <button
-                  type="button"
-                  className={drawerStyles.iconBtn}
-                  onClick={() => setProjectCreateOpen(false)}
-                  aria-label="Fechar"
-                >
-                  <CloseIcon size={16} />
-                </button>
-              </div>
-
-              <div className={drawerStyles.projectChoiceGrid}>
-                <button
-                  type="button"
-                  className={drawerStyles.projectChoiceCard}
-                  onClick={() => handleCreateProject('template')}
-                  disabled={projectActionBusy}
-                >
-                  <strong>Usar Modelo Oficial</strong>
-                </button>
-
-                <button
-                  type="button"
-                  className={drawerStyles.projectChoiceCard}
-                  onClick={() => handleCreateProject('blank')}
-                  disabled={projectActionBusy}
-                >
-                  <strong>Criar do zero</strong>
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : null}
       </section>
     </div>
   );
@@ -438,4 +324,3 @@ export default function ClientDetailDrawer({
   if (typeof document === 'undefined') return null;
   return createPortal(node, document.body);
 }
-

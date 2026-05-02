@@ -1,13 +1,16 @@
 .tabsBar {
   min-width: 0;
-  min-height: 0;
-  padding: 12px;
-  border-right: 1px solid var(--line-subtle);
+  min-height: 48px;
+  padding: 8px 10px;
+  border-right: 0;
+  border-bottom: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.012);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 6px;
-  overflow-y: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
 }
 
@@ -18,9 +21,10 @@
 
 .tab {
   position: relative;
-  width: 100%;
-  min-height: 34px;
-  padding: 0 10px;
+  width: auto;
+  min-width: max-content;
+  min-height: 32px;
+  padding: 0 11px;
   border: 1px solid transparent;
   border-radius: var(--radius-1, 10px);
   background: transparent;
@@ -28,20 +32,15 @@
   font: inherit;
   font-size: 12px;
   font-weight: 560;
-  text-align: left;
-  display: flex;
+  text-align: center;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   cursor: pointer;
 }
 
 .tab::before {
-  content: '';
-  width: 3px;
-  height: 14px;
-  margin-right: 8px;
-  border-radius: 999px;
-  background: transparent;
+  display: none;
 }
 
 .tab:hover {
@@ -56,7 +55,14 @@
   border-color: var(--line-subtle);
 }
 
-.tabActive::before {
+.tabActive::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -9px;
+  height: 1px;
+  border-radius: 999px;
   background: var(--text-secondary);
 }
 
@@ -92,16 +98,5 @@
 @media (max-width: 900px) {
   .tabsBar {
     min-height: 50px;
-    padding: 8px 10px;
-    border-right: 0;
-    border-bottom: 1px solid var(--line-subtle);
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .tab {
-    width: auto;
-    min-width: max-content;
   }
 }

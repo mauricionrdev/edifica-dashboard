@@ -1,0 +1,367 @@
+.wrap {
+  min-width: 0;
+  min-height: 100%;
+  padding: 14px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  background: #08090a;
+}
+
+.projectHeader,
+.emptyCard,
+.sectionForm,
+.sectionCard {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 16px);
+  background: rgba(255, 255, 255, 0.016);
+}
+
+.projectHeader {
+  min-width: 0;
+  min-height: 82px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.projectTitle {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.projectTitle span,
+.emptyHead span,
+.projectStats span,
+.sectionActions span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.projectTitle strong,
+.emptyHead strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 20px;
+  line-height: 1.06;
+  font-weight: 620;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.projectStats {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  align-items: center;
+}
+
+.projectStats div {
+  min-height: 38px;
+  padding: 0 12px;
+  border-left: 1px solid var(--line-subtle);
+  display: grid;
+  align-content: center;
+  gap: 5px;
+}
+
+.projectStats div:first-child {
+  border-left: 0;
+}
+
+.projectStats strong {
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.emptyCard {
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.emptyHead {
+  display: grid;
+  gap: 8px;
+}
+
+.createGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.createGrid button,
+.sectionForm button,
+.taskForm button,
+.sectionActions button,
+.taskDelete {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.createGrid button {
+  min-height: 58px;
+  text-align: left;
+}
+
+.createGrid button strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 590;
+}
+
+.createGrid button:hover:not(:disabled),
+.sectionForm button:hover:not(:disabled),
+.taskForm button:hover:not(:disabled),
+.sectionActions button:hover:not(:disabled),
+.taskDelete:hover:not(:disabled) {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-primary);
+}
+
+.createGrid button:disabled,
+.sectionForm button:disabled,
+.taskForm button:disabled,
+.sectionActions button:disabled,
+.taskDelete:disabled,
+.taskCheck:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.sectionForm,
+.taskForm {
+  min-width: 0;
+  min-height: 42px;
+  padding: 6px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionForm input,
+.taskForm input,
+.sectionHead input {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  outline: 0;
+}
+
+.sectionForm input,
+.taskForm input {
+  padding: 0 11px;
+}
+
+.sectionHead input {
+  padding: 0 10px;
+}
+
+.sectionForm input:focus,
+.taskForm input:focus,
+.sectionHead input:focus {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.sectionForm input::placeholder,
+.taskForm input::placeholder {
+  color: var(--text-quaternary);
+  opacity: 1;
+}
+
+.sections {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.sectionCard {
+  overflow: hidden;
+}
+
+.sectionHead {
+  min-height: 48px;
+  padding: 8px 10px 8px 12px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.sectionName {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 620;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.sectionActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionActions button,
+.taskDelete {
+  min-height: 28px;
+  padding: 0 10px;
+  color: #ff9cad;
+  border-color: rgba(255, 91, 115, 0.22);
+  background: rgba(255, 91, 115, 0.055);
+}
+
+.taskForm {
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.taskList {
+  display: grid;
+}
+
+.noTasks {
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.taskRow {
+  min-width: 0;
+  min-height: 52px;
+  padding: 8px 10px 8px 12px;
+  border-top: 1px solid var(--line-subtle);
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.taskRow:first-child {
+  border-top: 0;
+}
+
+.taskRow:hover {
+  background: rgba(255, 255, 255, 0.024);
+}
+
+.taskCheck {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--success);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.taskDone .taskCheck {
+  border-color: rgba(94, 234, 145, 0.24);
+  background: rgba(94, 234, 145, 0.08);
+}
+
+.taskMain {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.taskMain strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.15;
+  font-weight: 590;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.taskDone .taskMain strong {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
+.taskMain span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 760px) {
+  .projectHeader,
+  .sectionForm,
+  .taskForm,
+  .sectionHead,
+  .taskRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .projectStats,
+  .createGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .projectStats div {
+    border-left: 0;
+    border-top: 1px solid var(--line-subtle);
+    padding: 10px 0 0;
+  }
+
+  .projectStats div:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+}

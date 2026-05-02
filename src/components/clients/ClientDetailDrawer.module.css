@@ -41,7 +41,7 @@
   min-height: 0;
   height: 100%;
   display: grid;
-  grid-template-columns: 168px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   background: transparent;
 }
 
@@ -401,11 +401,6 @@
   .modalCard {
     width: calc(100vw - 24px);
     height: calc(100vh - 24px);
-  }
-
-  .modalBody {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
   }
 
   .modalHead {
