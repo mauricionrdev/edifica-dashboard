@@ -12,7 +12,8 @@
 .emptyCard,
 .sectionForm,
 .sectionCard,
-.taskPanel {
+.taskPanel,
+.activityPanel {
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-3, 16px);
   background: rgba(255, 255, 255, 0.016);
@@ -717,6 +718,118 @@ textarea:disabled {
   font-size: 12px;
   line-height: 1.5;
   white-space: pre-wrap;
+}
+
+.activityPanel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.activityHead {
+  min-height: 50px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.activityHead div {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.activityHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.activityHead strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.05;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.activityHead em {
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+}
+
+.activityList {
+  display: grid;
+}
+
+.activityItem {
+  min-width: 0;
+  min-height: 48px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--line-subtle);
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.activityItem:first-child {
+  border-top: 0;
+}
+
+.activityItem > span {
+  width: 8px;
+  height: 8px;
+  border: 1px solid rgba(167, 139, 250, 0.34);
+  border-radius: 999px;
+  background: rgba(167, 139, 250, 0.12);
+  justify-self: center;
+}
+
+.activityItem div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.activityItem strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 590;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.activityItem small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .confirmBackdrop {

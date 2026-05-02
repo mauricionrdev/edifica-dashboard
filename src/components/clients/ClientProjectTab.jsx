@@ -58,6 +58,20 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+function eventLabel(event) {
+  const summary = String(event?.summary || '').trim();
+  if (summary) return summary;
+
+  const type = String(event?.type || event?.eventType || '').trim();
+  if (type.includes('comment')) return 'Comentário registrado';
+  if (type.includes('section')) return 'Seção atualizada';
+  if (type.includes('created')) return 'Registro criado';
+  if (type.includes('updated')) return 'Registro atualizado';
+  if (type.includes('deleted') || type.includes('removed')) return 'Registro removido';
+  if (type.includes('done') || type.includes('completed')) return 'Status atualizado';
+  return 'Atividade registrada';
+}
+
 function normalizeProjectPayload(payload) {
   if (!payload) return { project: null, sections: [], members: [], events: [] };
 
@@ -117,6 +131,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
   const project = detail.project;
   const sections = Array.isArray(detail.sections) ? detail.sections : [];
   const members = Array.isArray(detail.members) ? detail.members : [];
+  const events = Array.isArray(detail.events) ? detail.events : [];
 
   const allTasks = useMemo(() => sections.flatMap((section) => section.tasks || []), [sections]);
   const flatTasks = useMemo(() => allTasks.filter((task) => !task.parentTaskId), [allTasks]);
@@ -409,6 +424,7 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
       const response = await createTaskComment(selectedTask.id, { body });
       setCommentBody('');
       setTaskComments(Array.isArray(response?.comments) ? response.comments : []);
+      await refreshProject(project.id);
       showToast('Comentário registrado.', { variant: 'success' });
     } catch (error) {
       showToast(error?.message || 'Não foi possível registrar o comentário.', { variant: 'error' });
@@ -858,6 +874,35 @@ export default function ClientProjectTab({ client, users = [], canCreateProject 
             </div>
           </aside>
         ) : null}
+      </section>
+
+      <section className={styles.activityPanel}>
+        <header className={styles.activityHead}>
+          <div>
+            <span>Histórico</span>
+            <strong>Atividade recente</strong>
+          </div>
+          <em>{events.length}</em>
+        </header>
+
+        <div className={styles.activityList}>
+          {events.length === 0 ? (
+            <div className={styles.noTasks}>Nenhuma atividade registrada</div>
+          ) : (
+            events.slice(0, 12).map((event, index) => (
+              <article key={event.id || `${event.type || 'event'}-${index}`} className={styles.activityItem}>
+                <span aria-hidden="true" />
+                <div>
+                  <strong>{eventLabel(event)}</strong>
+                  <small>
+                    {event.actorName || 'Sistema'}
+                    {formatDateTime(event.createdAt) ? ` · ${formatDateTime(event.createdAt)}` : ''}
+                  </small>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
       </section>
 
       {deleteSectionTarget ? (
