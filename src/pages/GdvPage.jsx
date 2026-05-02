@@ -893,65 +893,91 @@ export default function GdvPage() {
 
     const actions = (
       <div className={styles.headerActions}>
-        <span className={styles.headerStat} title={`${displayInt(gdvClients.length)}`}>
-          <UsersIcon size={15} aria-hidden="true" />
-          <strong>{displayInt(gdvClients.length)}</strong>
-        </span>
-
-        <div className={styles.monthNav}>
-          <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
-            <ChevronLeftIcon size={15} aria-hidden="true" />
-          </button>
-          <div className={styles.monthLabel}>{MONTHS[month0]} {year}</div>
-          <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
-            <ChevronRightIcon size={15} aria-hidden="true" />
-          </button>
+        <div className={styles.headerCard}>
+          <span className={styles.headerCardLabel}>Carteira</span>
+          <span className={styles.headerStat} title={`${displayInt(gdvClients.length)} clientes`}>
+            <UsersIcon size={15} aria-hidden="true" />
+            <strong>{displayInt(gdvClients.length)}</strong>
+          </span>
         </div>
 
-        <div className={styles.weekTabs} role="tablist" aria-label="Semana">
-          {[1, 2, 3, 4].map((value) => (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={week === value}
-              className={`${styles.weekTab} ${week === value ? styles.weekTabActive : ''}`.trim()}
-              onClick={() => setWeek(value)}
-            >
-              {value}
+        <div className={styles.headerCard}>
+          <span className={styles.headerCardLabel}>Período</span>
+          <div className={styles.monthNav}>
+            <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
+              <ChevronLeftIcon size={15} aria-hidden="true" />
             </button>
-          ))}
+            <div className={styles.monthLabel}>{MONTHS[month0]} {year}</div>
+            <button type="button" className={styles.navBtn} onClick={nextMonth} aria-label="Próximo mês">
+              <ChevronRightIcon size={15} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
-        {admin && activeGdvRecord?.id ? (
-          <button
-            type="button"
-            className={styles.iconButton}
-            aria-label="Configurar GDV"
-            title="Configurar GDV"
-            onClick={() => setSettingsOpen(true)}
-          >
-            <SettingsIcon size={14} aria-hidden="true" />
-          </button>
-        ) : null}
+        <div className={styles.headerCard}>
+          <span className={styles.headerCardLabel}>Semana</span>
+          <div className={styles.weekTabs} role="tablist" aria-label="Semana">
+            {[1, 2, 3, 4].map((value) => (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={week === value}
+                className={`${styles.weekTab} ${week === value ? styles.weekTabActive : ''}`.trim()}
+                onClick={() => setWeek(value)}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <button
-          type="button"
-          className={styles.iconButton}
-          aria-label="Atualizar visão"
-          title="Atualizar visão"
-          onClick={() => {
-            refreshGdvs?.();
-            refreshClients?.();
-            setMetricsByKey((prev) => {
-              const next = { ...prev };
-              delete next[periodKey];
-              return next;
-            });
-          }}
-        >
-          <RotateCcwIcon size={14} aria-hidden="true" />
-        </button>
+        <div className={styles.headerCard}>
+          <span className={styles.headerCardLabel}>Ações</span>
+          <div className={styles.headerUtilityRow}>
+            {admin && activeGdvRecord?.id ? (
+              <button
+                type="button"
+                className={styles.iconButton}
+                aria-label="Configurar GDV"
+                title="Configurar GDV"
+                onClick={() => setSettingsOpen(true)}
+              >
+                <SettingsIcon size={14} aria-hidden="true" />
+              </button>
+            ) : null}
+
+            {admin && activeGdvRecord?.id && logoUrl ? (
+              <button
+                type="button"
+                className={styles.iconButton}
+                aria-label="Remover avatar do GDV"
+                title="Remover avatar"
+                onClick={handleRemoveLogo}
+              >
+                <CloseIcon size={14} aria-hidden="true" />
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              className={styles.iconButton}
+              aria-label="Atualizar visão"
+              title="Atualizar visão"
+              onClick={() => {
+                refreshGdvs?.();
+                refreshClients?.();
+                setMetricsByKey((prev) => {
+                  const next = { ...prev };
+                  delete next[periodKey];
+                  return next;
+                });
+              }}
+            >
+              <RotateCcwIcon size={14} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
       </div>
     );
 
@@ -1019,38 +1045,40 @@ export default function GdvPage() {
         </section>
       ) : null}
 
-      <section ref={cardsRef} className={styles.metricGrid}>
-        {topCards.map((item) => (
-          <article key={item.id} className={styles.metricCard}>
-            <span className={styles.metricLabel}>{item.label}</span>
-            <strong className={`${styles.metricValue} ${toneClass(item.tone)}`.trim()}>{item.value}</strong>
-            <span className={`${styles.metricSub} ${toneClass(item.tone)}`.trim()}>{item.sub}</span>
-          </article>
-        ))}
-      </section>
+      <section className={styles.topArea}>
+        <section ref={cardsRef} className={styles.metricGrid}>
+          {topCards.map((item) => (
+            <article key={item.id} className={styles.metricCard}>
+              <span className={styles.metricLabel}>{item.label}</span>
+              <strong className={`${styles.metricValue} ${toneClass(item.tone)}`.trim()}>{item.value}</strong>
+              <span className={`${styles.metricSub} ${toneClass(item.tone)}`.trim()}>{item.sub}</span>
+            </article>
+          ))}
+        </section>
 
-      <section className={styles.listToolbar}>
-        <div className={styles.toolbarControls}>
-          <label className={styles.searchBox}>
-            <SearchIcon size={15} aria-hidden="true" />
-            <input
-              type="search"
-              value={clientQuery}
-              onChange={(event) => setClientQuery(event.target.value)}
-              placeholder="Buscar"
-              aria-label="Buscar cliente da carteira GDV"
-            />
-          </label>
+        <section className={styles.listToolbar}>
+          <div className={styles.toolbarControls}>
+            <label className={styles.searchBox}>
+              <SearchIcon size={15} aria-hidden="true" />
+              <input
+                type="search"
+                value={clientQuery}
+                onChange={(event) => setClientQuery(event.target.value)}
+                placeholder="Buscar"
+                aria-label="Buscar cliente da carteira GDV"
+              />
+            </label>
 
-          <button
-            type="button"
-            className={`${styles.complementaryButton} ${showIndicators ? styles.complementaryButtonActive : ''}`.trim()}
-            onClick={() => setShowIndicators(true)}
-            aria-expanded={showIndicators}
-          >
-            <span>Indicadores da carteira</span>
-          </button>
-        </div>
+            <button
+              type="button"
+              className={`${styles.complementaryButton} ${showIndicators ? styles.complementaryButtonActive : ''}`.trim()}
+              onClick={() => setShowIndicators(true)}
+              aria-expanded={showIndicators}
+            >
+              <span>Indicadores da carteira</span>
+            </button>
+          </div>
+        </section>
       </section>
 
       <section className={styles.listCard}>
