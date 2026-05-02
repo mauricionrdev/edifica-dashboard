@@ -2174,3 +2174,84 @@
   line-height: 1;
   font-weight: 680;
 }
+
+/* v2 — alinhamento visual GDV/Squad */
+.topArea {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  flex: 0 0 auto;
+  padding-bottom: 8px;
+  background: var(--bg-app, #08090a);
+}
+
+.topArea .metricGrid,
+.metricGrid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.topArea .metricCard,
+.metricCard {
+  min-height: 78px;
+  padding: 11px 12px 10px;
+  border-color: var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+}
+
+.topArea .listToolbar,
+.listToolbar {
+  min-height: 42px;
+  padding: 8px 0 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbarControls {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.gdvAvatarEditor {
+  width: 76px;
+  height: 76px;
+  min-width: 76px;
+  padding: 0;
+}
+
+.gdvAvatarEditor img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 1120px) {
+  .topArea .metricGrid,
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .topArea .metricGrid,
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .topArea .listToolbar,
+  .listToolbar,
+  .toolbarControls {
+    grid-template-columns: 1fr;
+  }
+}

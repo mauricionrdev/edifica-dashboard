@@ -2115,3 +2115,39 @@ button:disabled,
     grid-template-columns: 1fr;
   }
 }
+
+/* v2 — configurações avançadas de GDV/Squad */
+.slugField {
+  min-height: 42px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.026);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+}
+
+.slugField small {
+  height: 100%;
+  padding: 0 12px;
+  border-right: 1px solid var(--line-subtle);
+  color: var(--text-tertiary);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+}
+
+.slugField input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+
+.squadAvatarEditor img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

@@ -878,14 +878,23 @@ export default function GdvPage() {
           tone: calc.taxa > 0 ? 'neutral' : 'muted',
         },
         {
-          id: 'forecastGoal',
-          label: 'Previsto bater meta',
-          ...yesNoCard(goalState(calc), { forecast: true }),
+          id: 'cpl',
+          label: 'CPL atual',
+          value: calc.cpl > 0 ? fmtMoney(calc.cpl) : '—',
+          sub: goalComparison(calc.cpl, calc.mCpl, {
+            lowerIsBetter: true,
+            format: fmtMoney,
+          }),
+          tone: comparisonTone(calc.cpl, calc.mCpl, {
+            lowerIsBetter: true,
+          }),
         },
         {
-          id: 'hitGoal',
-          label: 'Já bateu meta',
-          ...yesNoCard(goalState(calc)),
+          id: 'leads',
+          label: 'Leads previstos',
+          value: calc.lp > 0 ? displayInt(calc.lp) : '0',
+          sub: goalComparison(calc.lp, calc.mVol),
+          tone: comparisonTone(calc.lp, calc.mVol),
         },
       ];
     }
@@ -894,9 +903,9 @@ export default function GdvPage() {
       { id: 'closed', label: 'Contratos fechados', value: '0', sub: `Semana ${week}`, tone: 'muted' },
       { id: 'profitGoal', label: 'Meta de lucro', value: '0', sub: 'Selecione um cliente', tone: 'muted' },
       { id: 'predictedContracts', label: 'Contratos previstos', value: '0', sub: 'Selecione um cliente', tone: 'muted' },
-      { id: 'conversion', label: 'Taxa de conversão', value: '—', sub: '', tone: 'muted' },
-      { id: 'forecastGoal', label: 'Previsto bater meta', value: '—', sub: 'Selecione um cliente', tone: 'muted' },
-      { id: 'hitGoal', label: 'Já bateu meta', value: '—', sub: 'Selecione um cliente', tone: 'muted' },
+      { id: 'conversion', label: 'Taxa de conversão', value: '—', sub: 'Selecione um cliente', tone: 'muted' },
+      { id: 'cpl', label: 'CPL atual', value: '—', sub: 'Selecione um cliente', tone: 'muted' },
+      { id: 'leads', label: 'Leads previstos', value: '0', sub: 'Selecione um cliente', tone: 'muted' },
     ];
   }, [selectedRow, week]);
 
@@ -1124,54 +1133,50 @@ export default function GdvPage() {
         </section>
       ) : null}
 
-      <section ref={cardsRef} className={`${styles.metricGrid} ${fetchingKey === periodKey ? styles.metricGridLoading : ""}`.trim()}>
-        {topCards.map((item) => (
-          <article key={item.id} className={styles.metricCard}>
-            <span className={styles.metricLabel}>{item.label}</span>
-            <strong className={`${styles.metricValue} ${toneClass(item.tone)}`.trim()}>
-              {item.value}
-            </strong>
-            <span className={`${styles.metricSub} ${toneClass(item.tone)}`.trim()}>
-              {item.sub}
-            </span>
-          </article>
-        ))}
-      </section>
+      <section className={styles.topArea}>
+        <section ref={cardsRef} className={`${styles.metricGrid} ${fetchingKey === periodKey ? styles.metricGridLoading : ""}`.trim()}>
+          {topCards.map((item) => (
+            <article key={item.id} className={styles.metricCard}>
+              <span className={styles.metricLabel}>{item.label}</span>
+              <strong className={`${styles.metricValue} ${toneClass(item.tone)}`.trim()}>
+                {item.value}
+              </strong>
+              <span className={`${styles.metricSub} ${toneClass(item.tone)}`.trim()}>
+                {item.sub}
+              </span>
+            </article>
+          ))}
+        </section>
 
-      <section className={styles.listToolbar}>
-        <div className={styles.listTitle}>
-          <span className={styles.cardEyebrow}>Clientes da carteira</span>
-          <span className={styles.listMeta}>{displayInt(visibleRows.length)} cliente(s)</span>
-          {loadingMetricsPartial ? (
-            <span className={styles.listMeta}>{displayInt(currentResults.length)}/{displayInt(gdvClients.length)} métricas</span>
+        <section className={styles.listToolbar}>
+          <div className={styles.toolbarControls}>
+            <label className={styles.searchBox}>
+              <SearchIcon size={15} aria-hidden="true" />
+              <input
+                type="search"
+                value={clientQuery}
+                onChange={(event) => setClientQuery(event.target.value)}
+                placeholder="Buscar cliente, squad ou gestor..."
+                aria-label="Buscar cliente da carteira GDV"
+              />
+            </label>
+
+            <button
+              type="button"
+              className={`${styles.complementaryButton} ${showComplementaryMetrics ? styles.complementaryButtonActive : ''}`.trim()}
+              onClick={() => setShowComplementaryMetrics((open) => !open)}
+              aria-expanded={showComplementaryMetrics}
+            >
+              <span>Indicadores da carteira</span>
+            </button>
+          </div>
+
+          {selectedRow ? (
+            <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
+              Limpar seleção
+            </button>
           ) : null}
-        </div>
-
-        <label className={styles.searchBox}>
-          <SearchIcon size={15} aria-hidden="true" />
-          <input
-            type="search"
-            value={clientQuery}
-            onChange={(event) => setClientQuery(event.target.value)}
-            placeholder="Buscar cliente, squad ou gestor..."
-            aria-label="Buscar cliente da carteira GDV"
-          />
-        </label>
-
-        <button
-          type="button"
-          className={`${styles.complementaryButton} ${showComplementaryMetrics ? styles.complementaryButtonActive : ''}`.trim()}
-          onClick={() => setShowComplementaryMetrics((open) => !open)}
-          aria-expanded={showComplementaryMetrics}
-        >
-          <span>Indicadores da carteira</span>
-        </button>
-
-        {selectedRow ? (
-          <button type="button" className={styles.clearSelection} onClick={() => setSelectedClientId(null)}>
-            Limpar seleção
-          </button>
-        ) : null}
+        </section>
       </section>
 
       {showComplementaryMetrics ? (
