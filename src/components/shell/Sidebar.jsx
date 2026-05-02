@@ -2,7 +2,7 @@ import { isActiveClientStatus } from '../../utils/clientStatus.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { updateGdv } from '../../api/gdvs.js';
-import { buildGdvPath, buildProfilePath, buildSquadPath, matchesEntityRouteSegment } from '../../utils/entityPaths.js';
+import { buildGdvPath, buildSquadPath, matchesEntityRouteSegment } from '../../utils/entityPaths.js';
 import { updateSquad } from '../../api/squads.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -59,7 +59,7 @@ function Item({ to, icon, label, meta, onClick, collapsed = false }) {
       to={to}
       onClick={onClick}
       className={({ isActive }) =>
-        `${styles.item} ${(isActive || matchesEntityRouteSegment(activeSquadId, squad)) ? styles.itemActive : ''} ${collapsed ? styles.itemCollapsed : ''}`.trim()
+        `${styles.item} ${isActive ? styles.itemActive : ''} ${collapsed ? styles.itemCollapsed : ''}`.trim()
       }
       title={collapsed ? label : undefined}
     >
