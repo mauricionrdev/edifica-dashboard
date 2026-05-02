@@ -947,17 +947,6 @@ export default function GdvPage() {
               </button>
             ) : null}
 
-            {admin && activeGdvRecord?.id && logoUrl ? (
-              <button
-                type="button"
-                className={styles.iconButton}
-                aria-label="Remover avatar do GDV"
-                title="Remover avatar"
-                onClick={handleRemoveLogo}
-              >
-                <CloseIcon size={14} aria-hidden="true" />
-              </button>
-            ) : null}
 
             <button
               type="button"
@@ -989,7 +978,6 @@ export default function GdvPage() {
     gdvHeaderName,
     gdvHeaderSubtitle,
     handlePickLogo,
-    handleRemoveLogo,
     logoUrl,
     month0,
     nextMonth,
@@ -1045,40 +1033,38 @@ export default function GdvPage() {
         </section>
       ) : null}
 
-      <section className={styles.topArea}>
-        <section ref={cardsRef} className={styles.metricGrid}>
-          {topCards.map((item) => (
-            <article key={item.id} className={styles.metricCard}>
-              <span className={styles.metricLabel}>{item.label}</span>
-              <strong className={`${styles.metricValue} ${toneClass(item.tone)}`.trim()}>{item.value}</strong>
-              <span className={`${styles.metricSub} ${toneClass(item.tone)}`.trim()}>{item.sub}</span>
-            </article>
-          ))}
-        </section>
+      <section ref={cardsRef} className={styles.metricGrid}>
+        {topCards.map((item) => (
+          <article key={item.id} className={styles.metricCard}>
+            <span className={styles.metricLabel}>{item.label}</span>
+            <strong className={`${styles.metricValue} ${toneClass(item.tone)}`.trim()}>{item.value}</strong>
+            <span className={`${styles.metricSub} ${toneClass(item.tone)}`.trim()}>{item.sub}</span>
+          </article>
+        ))}
+      </section>
 
-        <section className={styles.listToolbar}>
-          <div className={styles.toolbarControls}>
-            <label className={styles.searchBox}>
-              <SearchIcon size={15} aria-hidden="true" />
-              <input
-                type="search"
-                value={clientQuery}
-                onChange={(event) => setClientQuery(event.target.value)}
-                placeholder="Buscar"
-                aria-label="Buscar cliente da carteira GDV"
-              />
-            </label>
+      <section className={styles.listToolbar}>
+        <div className={styles.toolbarControls}>
+          <label className={styles.searchBox}>
+            <SearchIcon size={15} aria-hidden="true" />
+            <input
+              type="search"
+              value={clientQuery}
+              onChange={(event) => setClientQuery(event.target.value)}
+              placeholder="Buscar cliente, squad ou gestor..."
+              aria-label="Buscar cliente da carteira GDV"
+            />
+          </label>
 
-            <button
-              type="button"
-              className={`${styles.complementaryButton} ${showIndicators ? styles.complementaryButtonActive : ''}`.trim()}
-              onClick={() => setShowIndicators(true)}
-              aria-expanded={showIndicators}
-            >
-              <span>Indicadores da carteira</span>
-            </button>
-          </div>
-        </section>
+          <button
+            type="button"
+            className={`${styles.complementaryButton} ${showIndicators ? styles.complementaryButtonActive : ''}`.trim()}
+            onClick={() => setShowIndicators(true)}
+            aria-expanded={showIndicators}
+          >
+            <span>Indicadores da carteira</span>
+          </button>
+        </div>
       </section>
 
       <section className={styles.listCard}>
