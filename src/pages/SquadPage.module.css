@@ -894,7 +894,7 @@
 }
 
 .modalCard {
-  width: min(600px, calc(100vw - 64px));
+  width: min(780px, calc(100vw - 64px));
   max-height: min(780px, calc(100vh - 64px));
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -2400,7 +2400,7 @@
 }
 
 .modalCard {
-  width: min(920px, calc(100vw - 56px));
+  width: min(600px, calc(100vw - 56px));
   max-height: min(760px, calc(100vh - 56px));
   border-radius: 18px;
   background: rgba(14, 15, 16, 0.99);
