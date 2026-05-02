@@ -711,11 +711,6 @@ export default function SquadPage() {
             <TrophyIcon size={14} aria-hidden="true" />
           </Link>
 
-          {metricsLoading ? (
-            <span className={styles.headerLoading}>
-              <LoadingIcon size="sm" label="Carregando métricas" />
-            </span>
-          ) : null}
         </div>
       </div>
     );
