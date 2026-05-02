@@ -38,7 +38,7 @@ import {
 import { matchesAnySearch } from '../utils/search.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import UserPicker from '../components/users/UserPicker.jsx';
-import { buildSquadPath, matchesEntityRouteSegment } from '../utils/entityPaths.js';
+import { buildSquadPath, matchesEntityRouteSegment, slugifySegment } from '../utils/entityPaths.js';
 import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -174,11 +174,13 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
   const [name, setName] = useState(squad?.name || '');
   const [ownerUserId, setOwnerUserId] = useState(squad?.ownerUserId || squad?.owner?.id || '');
   const [logoUrl, setLogoUrl] = useState(getSquadAvatar(squad));
+  const [customSlug, setCustomSlug] = useState(squad?.customSlug || squad?.slug || slugifySegment(squad?.name || ''));
 
   useEffect(() => {
     setName(squad?.name || '');
     setOwnerUserId(squad?.ownerUserId || squad?.owner?.id || '');
     setLogoUrl(getSquadAvatar(squad));
+    setCustomSlug(squad?.customSlug || squad?.slug || slugifySegment(squad?.name || ''));
   }, [squad]);
 
   async function handleLogoFile(event) {
@@ -232,6 +234,18 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
               disableHover
             />
           </label>
+
+          <label className={styles.modalField}>
+            <span>Link personalizado</span>
+            <div className={styles.slugField}>
+              <small>/squads/</small>
+              <input
+                value={customSlug}
+                onChange={(event) => setCustomSlug(slugifySegment(event.target.value))}
+                maxLength={120}
+              />
+            </div>
+          </label>
         </div>
 
         <div className={styles.modalActions}>
@@ -239,7 +253,7 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
           <button
             type="button"
             className={styles.modalPrimaryBtn}
-            onClick={() => onSubmit({ name, ownerUserId, logoUrl })}
+            onClick={() => onSubmit({ name, ownerUserId, logoUrl, customSlug })}
             disabled={busy || !name.trim()}
           >
             {busy ? 'Salvando...' : 'Salvar alterações'}
@@ -404,14 +418,16 @@ export default function SquadPage() {
 
 
   const handleSaveSquadSettings = useCallback(
-    async ({ name, ownerUserId, logoUrl: nextLogoUrl }) => {
+    async ({ name, ownerUserId, logoUrl: nextLogoUrl, customSlug }) => {
       if (!squad || !canManageSquads) return;
       setSettingsSaving(true);
       try {
-        await updateSquad(squad.id, {
-          name: String(name || '').trim(),
+        const nextName = String(name || '').trim();
+        const response = await updateSquad(squad.id, {
+          name: nextName,
           ownerUserId: ownerUserId || '',
           logoUrl: nextLogoUrl || '',
+          customSlug: customSlug || '',
         });
         await refreshSquads?.();
         if (nextLogoUrl) {
@@ -422,6 +438,7 @@ export default function SquadPage() {
         setLogoUrl(nextLogoUrl || '');
         setSettingsOpen(false);
         setOwnershipTick((current) => current + 1);
+        navigate(buildSquadPath(response?.squad || { ...squad, name: nextName, customSlug }), { replace: true });
         showToast('Squad atualizado.', { variant: 'success' });
       } catch (err) {
         showToast(err?.message || 'Não foi possível atualizar o squad.', { variant: 'error' });
@@ -429,7 +446,7 @@ export default function SquadPage() {
         setSettingsSaving(false);
       }
     },
-    [canManageSquads, refreshSquads, showToast, squad]
+    [canManageSquads, navigate, refreshSquads, showToast, squad]
   );
 
 
@@ -611,7 +628,7 @@ export default function SquadPage() {
           onClick={() => canManageSquads && logoInputRef.current?.click()}
           disabled={!canManageSquads || uploadingLogo}
           aria-label={canManageSquads ? 'Enviar logotipo do squad' : undefined}
-          title={canManageSquads ? 'Clique para trocar o logotipo' : squad.name}
+          title={squad.name}
         >
           {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(squad.name)}</span>}
           {canManageSquads ? (
@@ -632,6 +649,7 @@ export default function SquadPage() {
           <span className={styles.headerStat}>
             <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(squadClients.length)}</strong>
+            <small>{squadClients.length === 1 ? 'cliente' : 'clientes'}</small>
           </span>
 
           <div className={styles.monthNav}>
@@ -695,11 +713,6 @@ export default function SquadPage() {
             <TrophyIcon size={14} aria-hidden="true" />
           </Link>
 
-          {metricsLoading ? (
-            <span className={styles.headerLoading}>
-              <LoadingIcon size="sm" label="Carregando métricas" />
-            </span>
-          ) : null}
         </div>
       </div>
     );
@@ -796,35 +809,35 @@ export default function SquadPage() {
         id: 'profitGoal',
         label: 'Meta de lucro',
         value: '0',
-        sub: '',
+        sub: 'Selecione um cliente',
         tone: 'muted',
       },
       {
         id: 'predictedContracts',
         label: 'Contratos previstos',
         value: '0',
-        sub: '',
+        sub: 'Selecione um cliente',
         tone: 'muted',
       },
       {
         id: 'conversion',
         label: 'Taxa de conversão',
         value: '—',
-        sub: '',
+        sub: 'Selecione um cliente',
         tone: 'muted',
       },
       {
         id: 'cpl',
         label: 'CPL atual',
         value: '—',
-        sub: '',
+        sub: 'Selecione um cliente',
         tone: 'muted',
       },
       {
         id: 'leads',
         label: 'Leads previstos',
         value: '0',
-        sub: '',
+        sub: 'Selecione um cliente',
         tone: 'muted',
       },
     ];
