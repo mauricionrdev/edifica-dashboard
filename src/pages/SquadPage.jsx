@@ -37,7 +37,7 @@ import {
 import { matchesAnySearch } from '../utils/search.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import UserPicker from '../components/users/UserPicker.jsx';
-import { buildSquadPath, matchesEntityRouteSegment } from '../utils/entityPaths.js';
+import { buildSquadPath, matchesEntityRouteSegment, slugifySegment } from '../utils/entityPaths.js';
 import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -173,11 +173,13 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
   const [name, setName] = useState(squad?.name || '');
   const [ownerUserId, setOwnerUserId] = useState(squad?.ownerUserId || squad?.owner?.id || '');
   const [logoUrl, setLogoUrl] = useState(getSquadAvatar(squad));
+  const [customSlug, setCustomSlug] = useState(squad?.customSlug || squad?.slug || slugifySegment(squad?.name || ''));
 
   useEffect(() => {
     setName(squad?.name || '');
     setOwnerUserId(squad?.ownerUserId || squad?.owner?.id || '');
     setLogoUrl(getSquadAvatar(squad));
+    setCustomSlug(squad?.customSlug || squad?.slug || slugifySegment(squad?.name || ''));
   }, [squad]);
 
   async function handleLogoFile(event) {
@@ -198,7 +200,9 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
             <span>Estrutura operacional</span>
             <h3 id="squad-settings-title">Editar squad</h3>
           </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">×</button>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">
+            <CloseIcon size={16} aria-hidden="true" />
+          </button>
         </div>
 
         <div className={styles.modalBody}>
@@ -231,6 +235,18 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
               disableHover
             />
           </label>
+
+          <label className={styles.modalField}>
+            <span>Link personalizado</span>
+            <div className={styles.slugField}>
+              <small>/squads/</small>
+              <input
+                value={customSlug}
+                onChange={(event) => setCustomSlug(slugifySegment(event.target.value))}
+                maxLength={120}
+              />
+            </div>
+          </label>
         </div>
 
         <div className={styles.modalActions}>
@@ -238,7 +254,7 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
           <button
             type="button"
             className={styles.modalPrimaryBtn}
-            onClick={() => onSubmit({ name, ownerUserId, logoUrl })}
+            onClick={() => onSubmit({ name, ownerUserId, logoUrl, customSlug })}
             disabled={busy || !name.trim()}
           >
             {busy ? 'Salvando...' : 'Salvar alterações'}
@@ -389,6 +405,7 @@ export default function SquadPage() {
         name: squad.name,
         ownerUserId: squad.ownerUserId || squad.owner?.id || '',
         logoUrl: dataUrl,
+        customSlug: squad.customSlug || squad.slug || '',
       });
       await refreshSquads?.();
       saveSquadAvatar(squad, dataUrl);
@@ -403,16 +420,20 @@ export default function SquadPage() {
 
 
   const handleSaveSquadSettings = useCallback(
-    async ({ name, ownerUserId, logoUrl: nextLogoUrl }) => {
+    async ({ name, ownerUserId, logoUrl: nextLogoUrl, customSlug }) => {
       if (!squad || !canManageSquads) return;
       setSettingsSaving(true);
       try {
-        await updateSquad(squad.id, {
-          name: String(name || '').trim(),
+        const nextName = String(name || '').trim();
+        const response = await updateSquad(squad.id, {
+          name: nextName,
           ownerUserId: ownerUserId || '',
           logoUrl: nextLogoUrl || '',
+          customSlug: customSlug || '',
         });
         await refreshSquads?.();
+        const savedSquad = response?.squad || { ...squad, name: nextName, customSlug };
+        navigate(buildSquadPath(savedSquad, nextName), { replace: true });
         if (nextLogoUrl) {
           saveSquadAvatar(squad, nextLogoUrl);
         } else {
@@ -428,7 +449,7 @@ export default function SquadPage() {
         setSettingsSaving(false);
       }
     },
-    [canManageSquads, refreshSquads, showToast, squad]
+    [canManageSquads, navigate, refreshSquads, showToast, squad]
   );
 
 
@@ -948,6 +969,7 @@ export default function SquadPage() {
           <section className={styles.indicatorsModal} role="dialog" aria-modal="true" aria-label="Indicadores da carteira" onClick={(event) => event.stopPropagation()}>
             <div className={styles.modalHead}>
               <div>
+                <span>Carteira do squad</span>
                 <h3>Indicadores</h3>
               </div>
               <button type="button" className={styles.modalClose} onClick={() => setShowComplementaryMetrics(false)} aria-label="Fechar indicadores">
