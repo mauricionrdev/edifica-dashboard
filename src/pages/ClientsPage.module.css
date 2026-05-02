@@ -112,13 +112,13 @@
   border-bottom: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.008);
   display: grid;
-  grid-template-columns: minmax(260px, 390px) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(260px, 350px) minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
 }
 
 .searchBox {
-  width: 100%;
+  width: 80%;
   height: 36px;
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
@@ -238,7 +238,7 @@
 }
 
 .resultCount,
-.pagination > span {
+.pagination>span {
   color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1;
@@ -250,7 +250,7 @@
   min-width: 136px;
 }
 
-.pageSizeSelect > button {
+.pageSizeSelect>button {
   min-width: 136px;
   min-height: 32px;
   border-radius: var(--radius-1, 10px);
