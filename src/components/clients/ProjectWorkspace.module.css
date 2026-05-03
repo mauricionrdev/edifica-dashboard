@@ -362,6 +362,7 @@ textarea:disabled {
 }
 
 .taskRow {
+  transition: background 120ms ease;
   min-width: 0;
   min-height: 52px;
   padding: 8px 10px 8px 12px;
@@ -382,8 +383,7 @@ textarea:disabled {
 }
 
 .taskSelected {
-  outline: 1px solid rgba(255, 255, 255, 0.08);
-  outline-offset: -1px;
+  background: rgba(255, 255, 255, 0.028);
 }
 
 .taskCheck {
@@ -416,6 +416,26 @@ textarea:disabled {
   text-align: left;
   cursor: pointer;
 }
+
+.taskMain:focus,
+.taskMain:focus-visible,
+.taskCheck:focus,
+.taskCheck:focus-visible,
+.actionIcon:focus,
+.actionIcon:focus-visible,
+.moveBtn:focus,
+.moveBtn:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.taskCheck:focus-visible,
+.actionIcon:focus-visible,
+.moveBtn:focus-visible {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.035);
+}
+
 
 .taskMain strong {
   min-width: 0;
