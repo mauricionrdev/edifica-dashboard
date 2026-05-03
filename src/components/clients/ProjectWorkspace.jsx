@@ -120,7 +120,7 @@ function initials(value) {
     .toUpperCase();
 }
 
-export default function ProjectWorkspace({ client, users = [], canCreateProject = false }) {
+export default function ProjectWorkspace({ client = null, users = [], canCreateProject = false, projectId = '', projectLabel = '' }) {
   const { user } = useAuth();
   const { showToast } = useToast();
 
@@ -196,24 +196,25 @@ export default function ProjectWorkspace({ client, users = [], canCreateProject 
   );
 
   useEffect(() => {
-    if (!client?.id) return undefined;
+    if (!client?.id && !projectId) return undefined;
 
     let cancelled = false;
     setLoading(true);
     setSelectedTaskId('');
 
-    getClientProject(client.id)
-      .then(async (response) => {
-        if (cancelled) return;
-        const payload = normalizeProjectPayload(response);
-        const projectId = payload.project?.id;
-        if (projectId) {
-          const full = await getProject(projectId);
-          if (!cancelled) setDetail(normalizeProjectPayload(full));
-          return;
-        }
+    const loader = projectId
+      ? getProject(projectId)
+      : getClientProject(client.id).then(async (response) => {
+          const payload = normalizeProjectPayload(response);
+          const foundProjectId = payload.project?.id;
+          if (!foundProjectId) return payload;
+          return getProject(foundProjectId);
+        });
 
-        if (!cancelled) setDetail({ project: null, sections: [], members: [], events: [] });
+    loader
+      .then((response) => {
+        if (cancelled) return;
+        setDetail(normalizeProjectPayload(response));
       })
       .catch((error) => {
         if (cancelled) return;
@@ -231,7 +232,7 @@ export default function ProjectWorkspace({ client, users = [], canCreateProject 
     return () => {
       cancelled = true;
     };
-  }, [client?.id, showToast]);
+  }, [client?.id, projectId, showToast]);
 
   useEffect(() => {
     if (!selectedTask?.id) {
@@ -450,7 +451,7 @@ export default function ProjectWorkspace({ client, users = [], canCreateProject 
       await createTask({
         projectId: project.id,
         sectionId,
-        clientId: client.id,
+        clientId: client?.id || project?.clientId || '',
         parentTaskId,
         title,
       });
@@ -591,10 +592,10 @@ export default function ProjectWorkspace({ client, users = [], canCreateProject 
         <section className={styles.emptyCard}>
           <div className={styles.emptyHead}>
             <span>Projeto</span>
-            <strong>{client?.name}</strong>
+            <strong>{client?.name || projectLabel || 'Projeto'}</strong>
           </div>
 
-          {canCreateProject ? (
+          {client?.id && canCreateProject ? (
             <div className={styles.createGrid}>
               <button type="button" onClick={() => handleCreateProject('template')} disabled={busy}>
                 <strong>Usar Modelo Oficial</strong>
