@@ -21,7 +21,6 @@ import {
   BriefcaseIcon,
   ChartColumnIcon,
   CalendarIcon,
-  ClipboardListIcon,
   ChevronLeftIcon,
   CloseIcon,
   HomeIcon,
@@ -159,13 +158,6 @@ export default function Sidebar({
             icon: <BriefcaseIcon size={16} />,
             label: 'Clientes',
             meta: totalCount ? String(totalCount) : null,
-          }
-        : null,
-      hasPermission(user, 'projects.view')
-        ? {
-            to: '/projetos',
-            icon: <ClipboardListIcon size={16} />,
-            label: 'Projetos',
           }
         : null,
       canViewMetrics(user)
