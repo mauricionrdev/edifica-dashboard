@@ -25,6 +25,8 @@ import { ApiError } from '../../api/client.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
+import { getUserAvatar } from '../../utils/avatarStorage.js';
+import UserHoverCard from '../users/UserHoverCard.jsx';
 import StateBlock from '../ui/StateBlock.jsx';
 import { TrashIcon } from '../ui/Icons.jsx';
 import styles from './ProjectWorkspace.module.css';
@@ -71,13 +73,6 @@ function eventLabel(event) {
   if (summary) return summary;
 
   const type = String(event?.type || event?.eventType || '').trim();
-  if (type === 'task.status_changed') return 'Status da tarefa atualizado';
-  if (type === 'task.updated') return 'Tarefa atualizada';
-  if (type === 'task.commented') return 'Comentário adicionado';
-  if (type === 'task.comment_deleted') return 'Comentário excluído';
-  if (type === 'task.collaborator_added') return 'Colaborador adicionado';
-  if (type === 'task.collaborator_removed') return 'Colaborador removido';
-  if (type === 'task.deleted') return 'Tarefa removida';
   if (type.includes('comment')) return 'Comentário registrado';
   if (type.includes('section')) return 'Seção atualizada';
   if (type.includes('created')) return 'Registro criado';
@@ -85,89 +80,6 @@ function eventLabel(event) {
   if (type.includes('deleted') || type.includes('removed')) return 'Registro removido';
   if (type.includes('done') || type.includes('completed')) return 'Status atualizado';
   return 'Atividade registrada';
-}
-
-function userDisplayName(users, userId, fallback = '') {
-  if (!userId) return fallback;
-  const found = (Array.isArray(users) ? users : []).find((entry) => entry.id === userId);
-  return found?.name || found?.email || fallback;
-}
-
-function sectionDisplayName(sections, sectionId, fallback = '') {
-  if (!sectionId) return fallback;
-  const found = (Array.isArray(sections) ? sections : []).find((entry) => entry.id === sectionId);
-  return found?.name || fallback;
-}
-
-function roleLabel(role) {
-  if (role === 'owner') return 'Proprietário';
-  if (role === 'viewer') return 'Visualizador';
-  return 'Membro';
-}
-
-function eventDetailValue(field, value, { users = [], sections = [] } = {}) {
-  if (value === undefined || value === null || value === '') return '';
-  if (field === 'status') return statusLabel(value);
-  if (field === 'done') return value ? 'Concluída' : 'Aberta';
-  if (field === 'priority') return priorityLabel(value);
-  if (field === 'dueDate') return formatDate(value);
-  if (field === 'assigneeUserId') return userDisplayName(users, value, 'Responsável atualizado');
-  if (field === 'sectionId') return sectionDisplayName(sections, value, 'Seção atualizada');
-  if (field === 'role') return roleLabel(value);
-  if (field === 'deletedTasks') return `${value} tarefa(s) removida(s)`;
-  if (typeof value === 'boolean') return value ? 'Sim' : 'Não';
-  return String(value);
-}
-
-function eventDetails(event, { users = [], sections = [] } = {}) {
-  const metadata = event?.metadata && typeof event.metadata === 'object' ? event.metadata : {};
-  const type = String(event?.type || event?.eventType || '').trim();
-
-  if (type === 'task.status_changed') {
-    const status = metadata.status !== undefined ? metadata.status : metadata.done;
-    const value = metadata.status !== undefined ? statusLabel(status) : eventDetailValue('done', status);
-    return value ? [`Status: ${value}`] : [];
-  }
-
-  if (type === 'task.updated') {
-    const fields = [
-      ['title', 'Título'],
-      ['description', 'Descrição'],
-      ['priority', 'Prioridade'],
-      ['sectionId', 'Seção'],
-      ['dueDate', 'Prazo'],
-      ['assigneeUserId', 'Responsável'],
-    ];
-
-    return fields
-      .filter(([field]) => metadata[field] !== undefined)
-      .map(([field, label]) => {
-        const value = eventDetailValue(field, metadata[field], { users, sections });
-        return value ? `${label}: ${value}` : `${label} removido`;
-      })
-      .slice(0, 4);
-  }
-
-  if (type === 'project.member_added') {
-    const name = userDisplayName(users, metadata.userId, 'Membro');
-    return [`${name} · ${roleLabel(metadata.role)}`];
-  }
-
-  if (type === 'project.member_removed') {
-    const name = userDisplayName(users, metadata.userId, 'Membro');
-    return [`${name} removido`];
-  }
-
-  if (type === 'project.section_deleted' && metadata.deletedTasks !== undefined) {
-    return [eventDetailValue('deletedTasks', metadata.deletedTasks)];
-  }
-
-  if (type === 'task.comment_deleted') return ['Comentário removido da tarefa'];
-  if (type === 'task.commented') return ['Novo comentário na tarefa'];
-  if (type === 'task.collaborator_added') return ['Colaborador incluído na tarefa'];
-  if (type === 'task.collaborator_removed') return ['Colaborador removido da tarefa'];
-
-  return [];
 }
 
 function normalizeProjectPayload(payload) {
@@ -240,6 +152,67 @@ function taskMatchesFilter(task, filter) {
   return true;
 }
 
+
+function roleLabel(role) {
+  if (role === 'owner') return 'Proprietário';
+  if (role === 'viewer') return 'Visualizador';
+  return 'Membro';
+}
+
+function normalizeProjectUser(users, source = {}) {
+  const list = Array.isArray(users) ? users : [];
+  const sourceId = source?.id || source?.userId || source?.actorId || source?.actorUserId || source?.createdByUserId || '';
+  const sourceEmail = source?.email || source?.userEmail || source?.actorEmail || source?.createdByEmail || '';
+  const found = list.find((entry) => {
+    if (!entry) return false;
+    if (sourceId && entry.id === sourceId) return true;
+    if (sourceEmail && entry.email === sourceEmail) return true;
+    return false;
+  });
+
+  return {
+    ...(found || {}),
+    ...source,
+    id: found?.id || sourceId || source?.id || '',
+    name:
+      found?.name ||
+      source?.name ||
+      source?.userName ||
+      source?.authorName ||
+      source?.actorName ||
+      source?.createdByName ||
+      sourceEmail ||
+      'Usuário',
+    email: found?.email || sourceEmail || source?.email || '',
+    avatarUrl: found?.avatarUrl || source?.avatarUrl || source?.userAvatarUrl || source?.actorAvatarUrl || '',
+  };
+}
+
+function UserIdentity({ users = [], source = {}, meta = '', compact = false, className = '' }) {
+  const identity = normalizeProjectUser(users, source);
+  const name = identity.name || identity.email || 'Usuário';
+  const email = identity.email || '';
+  const avatarUrl = getUserAvatar(identity) || identity.avatarUrl || '';
+
+  return (
+    <UserHoverCard
+      user={identity}
+      placement="top"
+      className={`${styles.userHoverWrap} ${className}`.trim()}
+    >
+      <span className={`${styles.userIdentity} ${compact ? styles.userIdentityCompact : ''}`.trim()}>
+        <span className={styles.userAvatar} aria-hidden="true">
+          {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(name)}
+        </span>
+        <span className={styles.userText}>
+          <strong>{name}</strong>
+          {meta || email ? <small>{meta || email}</small> : null}
+        </span>
+      </span>
+    </UserHoverCard>
+  );
+}
+
 function initials(value) {
   return String(value || '?')
     .split(/\s+/)
@@ -254,19 +227,23 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   const { user } = useAuth();
   const { showToast } = useToast();
 
-  const hasAdminFull = hasPermission(user, 'admin.full');
-  const hasProjectEditLegacy = hasPermission(user, 'projects.edit');
-  const hasProjectEditAll = hasPermission(user, 'projects.edit.all');
-  const hasProjectEditOwn = hasPermission(user, 'projects.edit.own');
+  const canEditProject =
+    hasPermission(user, 'projects.edit') ||
+    hasPermission(user, 'projects.edit.all') ||
+    hasPermission(user, 'projects.edit.own');
   const canCreateTasks = hasPermission(user, 'tasks.create');
-  const hasTaskEditLegacy = hasPermission(user, 'tasks.edit');
-  const hasTaskEditAll = hasPermission(user, 'tasks.edit.all');
-  const hasTaskEditOwn = hasPermission(user, 'tasks.edit.own');
-  const hasTaskCommentLegacy = hasPermission(user, 'tasks.comment');
-  const hasTaskCommentAll = hasPermission(user, 'tasks.comment.all');
-  const hasTaskCommentOwn = hasPermission(user, 'tasks.comment.own');
-  const canCompleteAnyTask = hasPermission(user, 'tasks.complete.any');
-  const canCompleteOwnTask = hasPermission(user, 'tasks.complete.own');
+  const canEditTasks =
+    hasPermission(user, 'tasks.edit') ||
+    hasPermission(user, 'tasks.edit.all') ||
+    hasPermission(user, 'tasks.edit.own');
+  const canCommentTasks =
+    hasPermission(user, 'tasks.comment') ||
+    hasPermission(user, 'tasks.comment.all') ||
+    hasPermission(user, 'tasks.comment.own');
+  const canDeleteAnyComment =
+    hasPermission(user, 'tasks.comment.all') ||
+    hasPermission(user, 'tasks.edit.all') ||
+    hasPermission(user, 'admin.full');
 
   const [detail, setDetail] = useState({ project: null, sections: [], members: [], events: [] });
   const [loading, setLoading] = useState(true);
@@ -296,24 +273,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   const sections = Array.isArray(detail.sections) ? detail.sections : [];
   const members = Array.isArray(detail.members) ? detail.members : [];
   const events = Array.isArray(detail.events) ? detail.events : [];
-
-  const isProjectParticipant = useCallback(
-    (targetProject = project) => {
-      if (!targetProject || !user?.id) return false;
-      if (targetProject.ownerUserId === user.id || targetProject.createdByUserId === user.id) return true;
-      return members.some(
-        (member) => member.userId === user.id && ['owner', 'member'].includes(member.role || 'member')
-      );
-    },
-    [members, project, user?.id]
-  );
-
-  const canEditProject =
-    hasAdminFull ||
-    hasProjectEditLegacy ||
-    hasProjectEditAll ||
-    (hasProjectEditOwn && isProjectParticipant(project));
-
   const availableMemberUsers = useMemo(
     () =>
       (Array.isArray(users) ? users : []).filter(
@@ -356,50 +315,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     () => (selectedTask ? allTasks.filter((task) => task.parentTaskId === selectedTask.id) : []),
     [allTasks, selectedTask]
   );
-
-  const isTaskParticipant = useCallback(
-    (task) => {
-      if (!task || !user?.id) return false;
-      if (task.assigneeUserId === user.id || task.createdByUserId === user.id) return true;
-      if (isProjectParticipant(project)) return true;
-      if (selectedTask?.id === task.id) {
-        return taskCollaborators.some((entry) => entry.userId === user.id);
-      }
-      return false;
-    },
-    [isProjectParticipant, project, selectedTask?.id, taskCollaborators, user?.id]
-  );
-
-  const canEditTask = useCallback(
-    (task) => {
-      if (!task) return false;
-      if (hasAdminFull || hasTaskEditLegacy || hasTaskEditAll) return true;
-      return hasTaskEditOwn && isTaskParticipant(task);
-    },
-    [hasAdminFull, hasTaskEditAll, hasTaskEditLegacy, hasTaskEditOwn, isTaskParticipant]
-  );
-
-  const canCommentTask = useCallback(
-    (task) => {
-      if (!task) return false;
-      if (hasAdminFull || hasTaskCommentLegacy || hasTaskCommentAll) return true;
-      return hasTaskCommentOwn && isTaskParticipant(task);
-    },
-    [hasAdminFull, hasTaskCommentAll, hasTaskCommentLegacy, hasTaskCommentOwn, isTaskParticipant]
-  );
-
-  const canCompleteTask = useCallback(
-    (task) => {
-      if (!task) return false;
-      if (hasAdminFull || canCompleteAnyTask || canEditTask(task)) return true;
-      const ownTask = Boolean(user?.id && (task.assigneeUserId === user.id || task.createdByUserId === user.id));
-      return canCompleteOwnTask && ownTask;
-    },
-    [canCompleteAnyTask, canCompleteOwnTask, canEditTask, hasAdminFull, user?.id]
-  );
-
-  const canEditSelectedTask = selectedTask ? canEditTask(selectedTask) : false;
-  const canCommentSelectedTask = selectedTask ? canCommentTask(selectedTask) : false;
 
   useEffect(() => {
     setTaskDraft({
@@ -727,7 +642,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   async function handleSaveTaskDraft() {
-    if (!selectedTask?.id || busy || !canEditTask(selectedTask)) return;
+    if (!selectedTask?.id || busy || !canEditTasks) return;
 
     const title = taskDraft.title.trim();
     const description = String(taskDraft.description || '').trim();
@@ -746,10 +661,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   async function handleUpdateTask(task, patch) {
-    const patchKeys = Object.keys(patch || {});
-    const isCompletionOnly = patchKeys.length > 0 && patchKeys.every((key) => ['status', 'done'].includes(key));
-    const allowed = canEditTask(task) || (isCompletionOnly && canCompleteTask(task));
-    if (!task?.id || busy || !allowed) return;
+    if (!task?.id || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -763,13 +675,12 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   async function handleToggleTask(task) {
-    if (!canCompleteTask(task)) return;
     const nextStatus = task.status === 'done' ? 'todo' : 'done';
     await handleUpdateTask(task, { status: nextStatus, done: nextStatus === 'done' });
   }
 
   async function handleDeleteTask(task) {
-    if (!task?.id || busy || !canEditTask(task)) return;
+    if (!task?.id || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -788,7 +699,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   async function handleCreateComment(event) {
     event.preventDefault();
     const body = commentBody.trim();
-    if (!selectedTask?.id || !body || busy || !canCommentTask(selectedTask)) return;
+    if (!selectedTask?.id || !body || busy || !canCommentTasks) return;
 
     try {
       setBusy(true);
@@ -815,8 +726,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   function canDeleteComment(comment) {
-    if (!comment?.id) return false;
-    if (hasAdminFull || hasTaskCommentAll || hasTaskEditAll || hasTaskEditLegacy) return true;
+    if (!comment?.id || !canCommentTasks) return false;
+    if (canDeleteAnyComment) return true;
     return Boolean(user?.id && comment.userId === user.id);
   }
 
@@ -846,7 +757,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
   async function handleAddCollaborator(event) {
     event.preventDefault();
-    if (!selectedTask?.id || !collaboratorUserId || busy || !canEditTask(selectedTask)) return;
+    if (!selectedTask?.id || !collaboratorUserId || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -862,7 +773,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   async function handleRemoveCollaborator(userId) {
-    if (!selectedTask?.id || !userId || busy || !canEditTask(selectedTask)) return;
+    if (!selectedTask?.id || !userId || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -1026,11 +937,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           ) : (
             members.map((member) => (
               <article key={member.userId} className={styles.memberRow}>
-                <span>{initials(member.userName || member.userEmail)}</span>
-                <div>
-                  <strong>{member.userName || member.userEmail}</strong>
-                  <small>{member.role === 'owner' ? 'Proprietário' : member.role === 'viewer' ? 'Visualizador' : 'Membro'}</small>
-                </div>
+                <UserIdentity users={users} source={member} meta={roleLabel(member.role)} />
                 {canEditProject && member.role !== 'owner' ? (
                   <button
                     type="button"
@@ -1143,7 +1050,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           type="button"
                           className={styles.sectionName}
                           onClick={() => {
-                            if (!canEditProject) return;
                             setEditingSectionId(section.id);
                             setEditingSectionName(section.name || '');
                           }}
@@ -1244,7 +1150,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                               type="button"
                               className={styles.taskCheck}
                               onClick={() => handleToggleTask(task)}
-                              disabled={busy || !canCompleteTask(task)}
+                              disabled={busy || !canEditTasks}
                               aria-label="Alterar status da tarefa"
                             >
                               {task.status === 'done' ? '✓' : ''}
@@ -1281,7 +1187,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                                 type="button"
                                 className={styles.actionIcon}
                                 onClick={() => setDeleteTaskTarget(task)}
-                                disabled={busy || !canEditTask(task)}
+                                disabled={busy || !canEditTasks}
                                 aria-label="Remover tarefa"
                               >
                                 <TrashIcon size={13} aria-hidden="true" />
@@ -1311,7 +1217,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') event.currentTarget.blur();
                     }}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                     aria-label="Título da tarefa"
                   />
                 </div>
@@ -1327,7 +1233,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   onChange={(event) => setTaskDraft((current) => ({ ...current, description: event.target.value }))}
                   onBlur={handleSaveTaskDraft}
                   placeholder="Descrição da tarefa"
-                  disabled={busy || !canEditSelectedTask}
+                  disabled={busy || !canEditTasks}
                 />
               </div>
 
@@ -1337,7 +1243,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={selectedTask.status || 'todo'}
                     onChange={(event) => handleUpdateTask(selectedTask, { status: event.target.value, done: event.target.value === 'done' })}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="todo">Aberta</option>
                     <option value="in_progress">Em andamento</option>
@@ -1351,7 +1257,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={selectedTask.sectionId || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { sectionId: event.target.value })}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                   >
                     {sections.map((section) => (
                       <option key={section.id} value={section.id}>
@@ -1366,7 +1272,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={selectedTask.priority || 'medium'}
                     onChange={(event) => handleUpdateTask(selectedTask, { priority: event.target.value })}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="low">Baixa</option>
                     <option value="medium">Média</option>
@@ -1379,7 +1285,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={selectedTask.assigneeUserId || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { assigneeUserId: event.target.value })}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="">Sem responsável</option>
                     {(Array.isArray(users) ? users : []).map((entry) => (
@@ -1396,7 +1302,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     type="date"
                     value={selectedTask.dueDate || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { dueDate: event.target.value })}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                   />
                 </label>
               </div>
@@ -1404,7 +1310,16 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
               <div className={styles.taskMetaLine}>
                 <span>{statusLabel(selectedTask.status)}</span>
                 <span>{priorityLabel(selectedTask.priority)}</span>
-                <span>{userName(users, selectedTask.assigneeUserId, selectedTask.assigneeName)}</span>
+                {selectedTask.assigneeUserId || selectedTask.assigneeName ? (
+                  <UserIdentity
+                    users={users}
+                    source={{ id: selectedTask.assigneeUserId, name: selectedTask.assigneeName }}
+                    compact
+                    className={styles.taskMetaUser}
+                  />
+                ) : (
+                  <span>Sem responsável</span>
+                )}
               </div>
 
               <section className={styles.taskDetailSection}>
@@ -1431,11 +1346,11 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   ) : (
                     selectedSubtasks.map((subtask) => (
                       <div key={subtask.id} className={styles.subtaskRow}>
-                        <button type="button" onClick={() => handleToggleTask(subtask)} disabled={busy || !canCompleteTask(subtask)}>
+                        <button type="button" onClick={() => handleToggleTask(subtask)} disabled={busy || !canEditTasks}>
                           {subtask.status === 'done' ? '✓' : ''}
                         </button>
                         <span>{subtask.title}</span>
-                        <button type="button" onClick={() => setDeleteTaskTarget(subtask)} disabled={busy || !canEditTask(subtask)} aria-label="Remover subtarefa">
+                        <button type="button" onClick={() => setDeleteTaskTarget(subtask)} disabled={busy || !canEditTasks} aria-label="Remover subtarefa">
                           <TrashIcon size={12} aria-hidden="true" />
                         </button>
                       </div>
@@ -1454,7 +1369,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={collaboratorUserId}
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
-                    disabled={busy || taskPanelLoading || !canEditSelectedTask}
+                    disabled={busy || taskPanelLoading || !canEditTasks}
                   >
                     <option value="">Adicionar colaborador</option>
                     {(Array.isArray(users) ? users : [])
@@ -1465,7 +1380,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         </option>
                       ))}
                   </select>
-                  <button type="submit" disabled={busy || !canEditSelectedTask || !collaboratorUserId}>
+                  <button type="submit" disabled={busy || !canEditTasks || !collaboratorUserId}>
                     Adicionar
                   </button>
                 </form>
@@ -1476,9 +1391,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   ) : (
                     taskCollaborators.map((entry) => (
                       <div key={entry.userId} className={styles.collabRow}>
-                        <span>{initials(entry.userName || entry.userEmail)}</span>
-                        <strong>{entry.userName || entry.userEmail}</strong>
-                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy || !canEditSelectedTask} aria-label="Remover colaborador">
+                        <UserIdentity users={users} source={entry} compact />
+                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy || !canEditTasks} aria-label="Remover colaborador">
                           <TrashIcon size={12} aria-hidden="true" />
                         </button>
                       </div>
@@ -1498,9 +1412,9 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     value={commentBody}
                     onChange={(event) => setCommentBody(event.target.value)}
                     placeholder="Novo comentário"
-                    disabled={busy || taskPanelLoading || !canCommentSelectedTask}
+                    disabled={busy || taskPanelLoading || !canCommentTasks}
                   />
-                  <button type="submit" disabled={busy || !canCommentSelectedTask || !commentBody.trim()}>
+                  <button type="submit" disabled={busy || !canCommentTasks || !commentBody.trim()}>
                     Comentar
                   </button>
                 </form>
@@ -1512,10 +1426,12 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     taskComments.map((comment) => (
                       <article key={comment.id} className={styles.commentCard}>
                         <header>
-                          <div>
-                            <strong>{comment.userName || comment.authorName || 'Usuário'}</strong>
-                            <span>{formatDateTime(comment.createdAt)}</span>
-                          </div>
+                          <UserIdentity
+                            users={users}
+                            source={comment}
+                            meta={formatDateTime(comment.createdAt)}
+                            compact
+                          />
                           {canDeleteComment(comment) ? (
                             <button
                               type="button"
@@ -1553,29 +1469,25 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           {events.length === 0 ? (
             <div className={styles.noTasks}>Nenhuma atividade registrada</div>
           ) : (
-            events.slice(0, 12).map((event, index) => {
-              const details = eventDetails(event, { users, sections });
-
-              return (
-                <article key={event.id || `${event.type || 'event'}-${index}`} className={styles.activityItem}>
-                  <span aria-hidden="true" />
-                  <div>
-                    <strong>{eventLabel(event)}</strong>
-                    {details.length > 0 ? (
-                      <ul className={styles.activityMeta}>
-                        {details.map((detail) => (
-                          <li key={detail}>{detail}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    <small>
-                      {event.actorName || 'Sistema'}
-                      {formatDateTime(event.createdAt) ? ` · ${formatDateTime(event.createdAt)}` : ''}
-                    </small>
-                  </div>
-                </article>
-              );
-            })
+            events.slice(0, 12).map((event, index) => (
+              <article key={event.id || `${event.type || 'event'}-${index}`} className={styles.activityItem}>
+                <span aria-hidden="true" />
+                <div>
+                  <strong>{eventLabel(event)}</strong>
+                  {event.actorName || event.actorId || event.actorUserId ? (
+                    <UserIdentity
+                      users={users}
+                      source={{ id: event.actorId || event.actorUserId, name: event.actorName, email: event.actorEmail }}
+                      meta={formatDateTime(event.createdAt)}
+                      compact
+                      className={styles.activityUser}
+                    />
+                  ) : (
+                    <small>{formatDateTime(event.createdAt) ? `Sistema · ${formatDateTime(event.createdAt)}` : 'Sistema'}</small>
+                  )}
+                </div>
+              </article>
+            ))
           )}
         </div>
       </section>
@@ -1606,7 +1518,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
             </div>
             <div className={styles.confirmActions}>
               <button type="button" onClick={() => setDeleteTaskTarget(null)}>Cancelar</button>
-              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy || !canEditTask(deleteTaskTarget)}>
+              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy || !canEditTasks}>
                 Remover
               </button>
             </div>
