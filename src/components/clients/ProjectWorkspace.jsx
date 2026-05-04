@@ -25,9 +25,8 @@ import { ApiError } from '../../api/client.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
-import { getUserAvatar } from '../../utils/avatarStorage.js';
-import UserHoverCard from '../users/UserHoverCard.jsx';
 import StateBlock from '../ui/StateBlock.jsx';
+import DateField from '../ui/DateField.jsx';
 import { TrashIcon } from '../ui/Icons.jsx';
 import styles from './ProjectWorkspace.module.css';
 
@@ -150,67 +149,6 @@ function taskMatchesFilter(task, filter) {
   if (filter === 'withoutAssignee') return !task.assigneeUserId && !task.assigneeName;
   if (filter === 'withDueDate') return Boolean(task.dueDate);
   return true;
-}
-
-
-function roleLabel(role) {
-  if (role === 'owner') return 'Proprietário';
-  if (role === 'viewer') return 'Visualizador';
-  return 'Membro';
-}
-
-function normalizeProjectUser(users, source = {}) {
-  const list = Array.isArray(users) ? users : [];
-  const sourceId = source?.id || source?.userId || source?.actorId || source?.actorUserId || source?.createdByUserId || '';
-  const sourceEmail = source?.email || source?.userEmail || source?.actorEmail || source?.createdByEmail || '';
-  const found = list.find((entry) => {
-    if (!entry) return false;
-    if (sourceId && entry.id === sourceId) return true;
-    if (sourceEmail && entry.email === sourceEmail) return true;
-    return false;
-  });
-
-  return {
-    ...(found || {}),
-    ...source,
-    id: found?.id || sourceId || source?.id || '',
-    name:
-      found?.name ||
-      source?.name ||
-      source?.userName ||
-      source?.authorName ||
-      source?.actorName ||
-      source?.createdByName ||
-      sourceEmail ||
-      'Usuário',
-    email: found?.email || sourceEmail || source?.email || '',
-    avatarUrl: found?.avatarUrl || source?.avatarUrl || source?.userAvatarUrl || source?.actorAvatarUrl || '',
-  };
-}
-
-function UserIdentity({ users = [], source = {}, meta = '', compact = false, className = '' }) {
-  const identity = normalizeProjectUser(users, source);
-  const name = identity.name || identity.email || 'Usuário';
-  const email = identity.email || '';
-  const avatarUrl = getUserAvatar(identity) || identity.avatarUrl || '';
-
-  return (
-    <UserHoverCard
-      user={identity}
-      placement="top"
-      className={`${styles.userHoverWrap} ${className}`.trim()}
-    >
-      <span className={`${styles.userIdentity} ${compact ? styles.userIdentityCompact : ''}`.trim()}>
-        <span className={styles.userAvatar} aria-hidden="true">
-          {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(name)}
-        </span>
-        <span className={styles.userText}>
-          <strong>{name}</strong>
-          {meta || email ? <small>{meta || email}</small> : null}
-        </span>
-      </span>
-    </UserHoverCard>
-  );
 }
 
 function initials(value) {
@@ -937,7 +875,11 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           ) : (
             members.map((member) => (
               <article key={member.userId} className={styles.memberRow}>
-                <UserIdentity users={users} source={member} meta={roleLabel(member.role)} />
+                <span>{initials(member.userName || member.userEmail)}</span>
+                <div>
+                  <strong>{member.userName || member.userEmail}</strong>
+                  <small>{member.role === 'owner' ? 'Proprietário' : member.role === 'viewer' ? 'Visualizador' : 'Membro'}</small>
+                </div>
                 {canEditProject && member.role !== 'owner' ? (
                   <button
                     type="button"
@@ -1120,12 +1062,13 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           </option>
                         ))}
                       </select>
-                      <input
-                        type="date"
+                      <DateField
                         value={getTaskDraftValue(taskDrafts, section.id, 'dueDate')}
-                        onChange={(event) => handleTaskDraftChange(section.id, 'dueDate', event.target.value)}
+                        onChange={(value) => handleTaskDraftChange(section.id, 'dueDate', value)}
                         disabled={busy || !canCreateTasks}
-                        aria-label="Prazo da nova tarefa"
+                        ariaLabel="Prazo da nova tarefa"
+                        placeholder="Prazo"
+                        className={styles.taskDateField}
                       />
                       <button type="submit" disabled={busy || !canCreateTasks || !getTaskDraftValue(taskDrafts, section.id, 'title').trim()}>
                         Adicionar
@@ -1298,11 +1241,12 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
                 <label>
                   <span>Prazo</span>
-                  <input
-                    type="date"
+                  <DateField
                     value={selectedTask.dueDate || ''}
-                    onChange={(event) => handleUpdateTask(selectedTask, { dueDate: event.target.value })}
+                    onChange={(value) => handleUpdateTask(selectedTask, { dueDate: value })}
                     disabled={busy || !canEditTasks}
+                    ariaLabel="Prazo da tarefa"
+                    className={styles.taskDateField}
                   />
                 </label>
               </div>
@@ -1310,16 +1254,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
               <div className={styles.taskMetaLine}>
                 <span>{statusLabel(selectedTask.status)}</span>
                 <span>{priorityLabel(selectedTask.priority)}</span>
-                {selectedTask.assigneeUserId || selectedTask.assigneeName ? (
-                  <UserIdentity
-                    users={users}
-                    source={{ id: selectedTask.assigneeUserId, name: selectedTask.assigneeName }}
-                    compact
-                    className={styles.taskMetaUser}
-                  />
-                ) : (
-                  <span>Sem responsável</span>
-                )}
+                <span>{userName(users, selectedTask.assigneeUserId, selectedTask.assigneeName)}</span>
               </div>
 
               <section className={styles.taskDetailSection}>
@@ -1391,7 +1326,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   ) : (
                     taskCollaborators.map((entry) => (
                       <div key={entry.userId} className={styles.collabRow}>
-                        <UserIdentity users={users} source={entry} compact />
+                        <span>{initials(entry.userName || entry.userEmail)}</span>
+                        <strong>{entry.userName || entry.userEmail}</strong>
                         <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy || !canEditTasks} aria-label="Remover colaborador">
                           <TrashIcon size={12} aria-hidden="true" />
                         </button>
@@ -1426,12 +1362,10 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     taskComments.map((comment) => (
                       <article key={comment.id} className={styles.commentCard}>
                         <header>
-                          <UserIdentity
-                            users={users}
-                            source={comment}
-                            meta={formatDateTime(comment.createdAt)}
-                            compact
-                          />
+                          <div>
+                            <strong>{comment.userName || comment.authorName || 'Usuário'}</strong>
+                            <span>{formatDateTime(comment.createdAt)}</span>
+                          </div>
                           {canDeleteComment(comment) ? (
                             <button
                               type="button"
@@ -1474,17 +1408,10 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                 <span aria-hidden="true" />
                 <div>
                   <strong>{eventLabel(event)}</strong>
-                  {event.actorName || event.actorId || event.actorUserId ? (
-                    <UserIdentity
-                      users={users}
-                      source={{ id: event.actorId || event.actorUserId, name: event.actorName, email: event.actorEmail }}
-                      meta={formatDateTime(event.createdAt)}
-                      compact
-                      className={styles.activityUser}
-                    />
-                  ) : (
-                    <small>{formatDateTime(event.createdAt) ? `Sistema · ${formatDateTime(event.createdAt)}` : 'Sistema'}</small>
-                  )}
+                  <small>
+                    {event.actorName || 'Sistema'}
+                    {formatDateTime(event.createdAt) ? ` · ${formatDateTime(event.createdAt)}` : ''}
+                  </small>
                 </div>
               </article>
             ))

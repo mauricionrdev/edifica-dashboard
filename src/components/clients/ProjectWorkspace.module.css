@@ -153,66 +153,30 @@
   border-radius: var(--radius-1, 10px);
   background: rgba(255, 255, 255, 0.012);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
 }
 
-
-.userHoverWrap {
-  min-width: 0;
-  max-width: 100%;
-}
-
-.userIdentity {
-  min-width: 0;
-  max-width: 100%;
-  display: inline-grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
-  color: inherit;
-}
-
-.userIdentityCompact {
-  grid-template-columns: 24px minmax(0, 1fr);
-  gap: 7px;
-}
-
-.userAvatar {
+.memberRow > span {
   width: 26px;
   height: 26px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.035);
   color: var(--text-secondary);
-  display: inline-grid;
+  display: grid;
   place-items: center;
-  overflow: hidden;
   font-size: 10px;
   font-weight: 640;
-  letter-spacing: -0.03em;
-  flex: 0 0 auto;
 }
 
-.userIdentityCompact .userAvatar {
-  width: 24px;
-  height: 24px;
-  font-size: 9px;
-}
-
-.userAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.userText {
+.memberRow div {
   min-width: 0;
   display: grid;
   gap: 3px;
 }
 
-.userText strong {
+.memberRow strong {
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
@@ -223,7 +187,7 @@
   text-overflow: ellipsis;
 }
 
-.userText small {
+.memberRow small {
   min-width: 0;
   overflow: hidden;
   color: var(--text-tertiary);
@@ -231,16 +195,6 @@
   line-height: 1.1;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.userIdentityCompact .userText strong {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 560;
-}
-
-.userIdentityCompact .userText small {
-  font-size: 10.5px;
 }
 
 .memberRow:hover .actionIcon {
@@ -397,6 +351,26 @@ textarea:disabled {
   opacity: 1;
 }
 
+
+
+.taskDateField {
+  width: 100%;
+  min-width: 0;
+}
+
+.taskDateField button {
+  min-height: 34px;
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.018);
+  border-radius: var(--radius-1, 10px);
+  font-size: 13px;
+}
+
+.taskDateField button:hover:not(:disabled),
+.taskDateField button[aria-expanded='true'] {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.032);
+}
 
 .taskToolbar {
   min-width: 0;
@@ -827,29 +801,6 @@ textarea:disabled {
   font-weight: 560;
 }
 
-
-.taskMetaUser .userIdentity {
-  min-height: 24px;
-  padding: 0 8px 0 0;
-  border: 1px solid var(--line-subtle);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.018);
-}
-
-.taskMetaUser .userAvatar {
-  width: 22px;
-  height: 22px;
-  font-size: 8px;
-}
-
-.taskMetaUser .userText {
-  gap: 0;
-}
-
-.taskMetaUser .userText small {
-  display: none;
-}
-
 .taskDetailSection {
   padding: 12px;
   border-bottom: 1px solid var(--line-subtle);
@@ -893,10 +844,6 @@ textarea:disabled {
   grid-template-columns: 28px minmax(0, 1fr) 28px;
   align-items: center;
   gap: 8px;
-}
-
-.collabRow {
-  grid-template-columns: minmax(0, 1fr) 28px;
 }
 
 .subtaskRow > button:first-child {
@@ -946,6 +893,18 @@ textarea:disabled {
   text-overflow: ellipsis;
 }
 
+.collabRow > span {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: #08090a;
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 650;
+}
 
 .commentForm {
   display: grid;
@@ -979,10 +938,6 @@ textarea:disabled {
   background: rgba(255, 255, 255, 0.014);
   display: grid;
   gap: 8px;
-}
-
-.commentCard header .userHoverWrap {
-  flex: 1 1 auto;
 }
 
 .commentCard header {
@@ -1143,31 +1098,6 @@ textarea:disabled {
   font-weight: 590;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.activityUser .userIdentity {
-  grid-template-columns: 20px minmax(0, 1fr);
-  gap: 6px;
-}
-
-.activityUser .userAvatar {
-  width: 20px;
-  height: 20px;
-  font-size: 8px;
-}
-
-.activityUser .userText {
-  gap: 1px;
-}
-
-.activityUser .userText strong {
-  color: var(--text-tertiary);
-  font-size: 11px;
-}
-
-.activityUser .userText small {
-  color: var(--text-quaternary);
-  font-size: 10px;
 }
 
 .activityItem small {
