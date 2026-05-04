@@ -912,55 +912,74 @@ export default function GdvPage() {
       ];
     }
 
-    // Sem cliente selecionado: não exibimos totais automáticos da carteira.
-    // Importante: isso é apenas uma decisão visual dos cards principais.
-    // As métricas continuam carregando pelo useEffect acima para preencher
-    // a lista, os indicadores da carteira e os cards após clicar em um cliente.
+    // Sem cliente selecionado: exibe automaticamente o consolidado da carteira do GDV.
+    // O GDV precisa ver, ao entrar na tela, quantos clientes estão previstos
+    // para bater meta e quantos já bateram, sem depender do clique em cliente.
+    const totalClients = rows.length;
+    const filledRows = rows.filter((row) => row.calc?.hasData);
+    const goalRows = rows.filter((row) => Number(row.calc?.mLuc) > 0);
+    const willHitRows = goalRows.filter((row) => {
+      const target = Number(row.calc?.mLuc) || 0;
+      const projected = effectiveForecast(row.calc?.fec, row.calc?.cp);
+      return target > 0 && projected >= target;
+    });
+    const hitRows = goalRows.filter((row) => {
+      const target = Number(row.calc?.mLuc) || 0;
+      const closed = Number(row.calc?.fec) || 0;
+      return target > 0 && closed >= target;
+    });
+
     return [
       {
         id: 'closed',
         label: 'Contratos fechados',
-        value: '—',
-        sub: `Semana ${week}`,
-        tone: 'muted',
+        value: displayInt(agg.tF),
+        sub: `Semana ${week} · ${displayInt(filledRows.length)}/${displayInt(totalClients)} preencheram`,
+        tone: agg.tF > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'profitGoal',
         label: 'Meta de lucro',
-        value: '—',
-        sub: 'Selecione um cliente',
-        tone: 'muted',
+        value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
+        sub: goalRows.length > 0
+          ? `${displayInt(goalRows.length)} de ${displayInt(totalClients)} com meta`
+          : 'Sem meta configurada',
+        tone: agg.tLuc > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'predictedContracts',
         label: 'Contratos previstos',
-        value: '—',
-        sub: 'Selecione um cliente',
-        tone: 'muted',
+        value: agg.tCp > 0 ? displayInt(agg.tCp) : '0',
+        sub: agg.tCp > 0 ? 'projeção da carteira' : '',
+        tone: agg.tCp > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'conversion',
         label: 'Taxa de conversão',
-        value: '—',
-        sub: '',
-        tone: 'muted',
+        value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
+        sub: agg.tVol > 0 ? `${displayInt(agg.tVol)} leads reais` : '',
+        tone: agg.taxa > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'forecastGoal',
         label: 'Previsto bater meta',
-        value: '—',
-        sub: 'Selecione um cliente',
-        tone: 'muted',
+        value: goalRows.length > 0
+          ? `${displayInt(willHitRows.length)} de ${displayInt(goalRows.length)}`
+          : '—',
+        sub: goalRows.length > 0 ? 'pela projeção' : 'Sem meta configurada',
+        tone: goalRows.length === 0 ? 'muted' : willHitRows.length === goalRows.length ? 'green' : 'neutral',
       },
       {
         id: 'hitGoal',
         label: 'Já bateu meta',
-        value: '—',
-        sub: 'Selecione um cliente',
-        tone: 'muted',
+        value: goalRows.length > 0
+          ? `${displayInt(hitRows.length)} de ${displayInt(goalRows.length)}`
+          : '—',
+        sub: goalRows.length > 0 ? 'no fechado' : 'Sem meta configurada',
+        tone: goalRows.length === 0 ? 'muted' : hitRows.length === goalRows.length ? 'green' : 'neutral',
       },
     ];
-  }, [selectedRow, week]);
+  }, [agg, rows, selectedRow, week]);
 
   const prevMonth = useCallback(() => {
     setMonth0((value) => {
