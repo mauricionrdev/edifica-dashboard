@@ -22,6 +22,7 @@ import { resolveClientFeeAtMonthEnd } from '../utils/feeSchedule.js';
 import { MONTHS, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
 import { resolveSquadOwner, subscribeOwnershipChange } from '../utils/ownershipStorage.js';
 import {
+  aggregateCarteira,
   buildPeriodKey,
   calcWeek,
   currentWeek,
@@ -489,6 +490,8 @@ export default function SquadPage() {
   }, [metricRows, squadClients]);
 
 
+  const agg = useMemo(() => aggregateCarteira(clientRows), [clientRows]);
+
   const complementaryMetrics = useMemo(() => {
     const activeRows = clientRows.filter((row) => isActiveClientStatus(row.status));
     const onboardingRows = clientRows.filter((row) => row.status === CLIENT_STATUS.ONBOARDING);
@@ -647,15 +650,11 @@ export default function SquadPage() {
     const actions = (
       <div className={styles.headerActions}>
         <div className={styles.headerCluster}>
-          <span className={styles.headerClusterLabel}>Carteira</span>
-          <span className={styles.headerStat} title={displayInt(squadClients.length)}>
+          <span className={styles.headerStat}>
             <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(squadClients.length)}</strong>
           </span>
-        </div>
 
-        <div className={styles.headerCluster}>
-          <span className={styles.headerClusterLabel}>Período</span>
           <div className={styles.monthNav}>
             <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
               <ChevronLeftIcon size={15} aria-hidden="true" />
@@ -667,10 +666,7 @@ export default function SquadPage() {
               <ChevronRightIcon size={15} aria-hidden="true" />
             </button>
           </div>
-        </div>
 
-        <div className={styles.headerCluster}>
-          <span className={styles.headerClusterLabel}>Semana</span>
           <div className={styles.weekTabs} role="tablist" aria-label="Semana">
             {[1, 2, 3, 4].map((value) => (
               <button
@@ -687,40 +683,39 @@ export default function SquadPage() {
           </div>
         </div>
 
-        <div className={styles.headerCluster}>
-          <span className={styles.headerClusterLabel}>Ações</span>
-          <div className={styles.headerUtilityRow}>
-            {canManageSquads ? (
-              <button
-                type="button"
-                className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
-                onClick={() => setSettingsOpen(true)}
-                aria-label="Configurar squad"
-                title="Configurar squad"
-              >
-                <SettingsIcon size={14} aria-hidden="true" />
-              </button>
-            ) : null}
 
+        <div className={styles.headerCluster}>
+          {canManageSquads ? (
             <button
               type="button"
               className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
-              aria-label="Atualizar visão"
-              title="Atualizar visão"
-              onClick={() => refreshClients?.()}
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Configurar squad"
+              title="Configurar squad"
             >
-              <RotateCcwIcon size={14} aria-hidden="true" />
+              <SettingsIcon size={14} aria-hidden="true" />
             </button>
+          ) : null}
 
-            <Link
-              to="/ranking-squads"
-              className={`${styles.headerBtn} ${styles.iconButton}`.trim()}
-              aria-label="Ver ranking"
-              title="Ver ranking"
-            >
-              <TrophyIcon size={14} aria-hidden="true" />
-            </Link>
-          </div>
+          <button
+            type="button"
+            className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
+            aria-label="Atualizar visão"
+            title="Atualizar visão"
+            onClick={() => refreshClients?.()}
+          >
+            <RotateCcwIcon size={14} aria-hidden="true" />
+          </button>
+
+          <Link
+            to="/ranking-squads"
+            className={`${styles.headerBtn} ${styles.iconButton}`.trim()}
+            aria-label="Ver ranking"
+            title="Ver ranking"
+          >
+            <TrophyIcon size={14} aria-hidden="true" />
+          </Link>
+
         </div>
       </div>
     );
@@ -804,51 +799,61 @@ export default function SquadPage() {
       ];
     }
 
+    const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
+    const remainingContracts = Math.max((Number(agg.tLuc) || 0) - (Number(agg.tF) || 0), 0);
+
     return [
       {
         id: 'closed',
         label: 'Contratos fechados',
-        value: '0',
+        value: displayInt(agg.tF),
         sub: `Semana ${week}`,
-        tone: 'muted',
+        tone: agg.tF > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'profitGoal',
         label: 'Meta de lucro',
-        value: '0',
-        sub: '',
-        tone: 'muted',
+        value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
+        sub: agg.tLuc > 0
+          ? `${displayInt(remainingContracts)} para bater`
+          : 'Sem meta configurada',
+        tone: agg.tLuc > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'predictedContracts',
         label: 'Contratos previstos',
-        value: '0',
-        sub: '',
-        tone: 'muted',
+        value: agg.tCp > 0 ? displayInt(agg.tCp) : '0',
+        sub: agg.tLuc > 0 ? prediction.sub : 'Sem meta configurada',
+        tone: agg.tLuc > 0 ? prediction.tone : 'muted',
       },
       {
         id: 'conversion',
         label: 'Taxa de conversão',
-        value: '—',
-        sub: '',
-        tone: 'muted',
+        value: agg.taxa > 0 ? displayPct(agg.taxa) : '—',
+        sub: agg.tVol > 0 ? `${displayInt(agg.tVol)} leads reais` : '',
+        tone: agg.taxa > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'cpl',
         label: 'CPL atual',
-        value: '—',
-        sub: '',
-        tone: 'muted',
+        value: agg.cpl > 0 ? fmtMoney(agg.cpl) : '—',
+        sub: goalComparison(agg.cpl, agg.avgMC, {
+          lowerIsBetter: true,
+          format: fmtMoney,
+        }),
+        tone: comparisonTone(agg.cpl, agg.avgMC, {
+          lowerIsBetter: true,
+        }),
       },
       {
         id: 'leads',
         label: 'Leads previstos',
-        value: '0',
-        sub: '',
-        tone: 'muted',
+        value: agg.tLp > 0 ? displayInt(agg.tLp) : '0',
+        sub: goalComparison(agg.tLp, agg.tMV),
+        tone: comparisonTone(agg.tLp, agg.tMV),
       },
     ];
-  }, [selectedClient, week]);
+  }, [agg, selectedClient, week]);
 
   if (shellLoading && !squad) {
     return (
