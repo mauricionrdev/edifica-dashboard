@@ -69,6 +69,10 @@ export function createTaskComment(id, body) {
   return api.post(`/projects/tasks/${encodeURIComponent(id)}/comments`, body);
 }
 
+export function deleteTaskComment(taskId, commentId) {
+  return api.del(`/projects/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(commentId)}`);
+}
+
 export function listTaskCollaborators(id) {
   return api.get(`/projects/tasks/${encodeURIComponent(id)}/collaborators`);
 }

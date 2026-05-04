@@ -5,6 +5,7 @@ import {
   createProjectSection,
   createTask,
   createTaskComment,
+  deleteTaskComment,
   deleteProjectSection,
   deleteTask,
   getClientProject,
@@ -173,6 +174,10 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     hasPermission(user, 'tasks.comment') ||
     hasPermission(user, 'tasks.comment.all') ||
     hasPermission(user, 'tasks.comment.own');
+  const canDeleteAnyComment =
+    hasPermission(user, 'tasks.comment.all') ||
+    hasPermission(user, 'tasks.edit.all') ||
+    hasPermission(user, 'admin.full');
 
   const [detail, setDetail] = useState({ project: null, sections: [], members: [], events: [] });
   const [loading, setLoading] = useState(true);
@@ -639,6 +644,30 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
       showToast('Comentário registrado.', { variant: 'success' });
     } catch (error) {
       showToast(error?.message || 'Não foi possível registrar o comentário.', { variant: 'error' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function canDeleteComment(comment) {
+    if (!comment?.id || !canCommentTasks) return false;
+    if (canDeleteAnyComment) return true;
+    return Boolean(user?.id && comment.userId === user.id);
+  }
+
+  async function handleDeleteComment(comment) {
+    if (!selectedTask?.id || !comment?.id || busy || !canDeleteComment(comment)) return;
+    const confirmed = window.confirm('Excluir este comentário?');
+    if (!confirmed) return;
+
+    try {
+      setBusy(true);
+      await deleteTaskComment(selectedTask.id, comment.id);
+      setTaskComments((current) => current.filter((entry) => entry.id !== comment.id));
+      await refreshProject(project.id);
+      showToast('Comentário excluído.', { variant: 'success' });
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível excluir o comentário.', { variant: 'error' });
     } finally {
       setBusy(false);
     }
@@ -1177,8 +1206,22 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     taskComments.map((comment) => (
                       <article key={comment.id} className={styles.commentCard}>
                         <header>
-                          <strong>{comment.userName || comment.authorName || 'Usuário'}</strong>
-                          <span>{formatDateTime(comment.createdAt)}</span>
+                          <div>
+                            <strong>{comment.userName || comment.authorName || 'Usuário'}</strong>
+                            <span>{formatDateTime(comment.createdAt)}</span>
+                          </div>
+                          {canDeleteComment(comment) ? (
+                            <button
+                              type="button"
+                              className={styles.commentDeleteButton}
+                              onClick={() => handleDeleteComment(comment)}
+                              disabled={busy}
+                              aria-label="Excluir comentário"
+                              title="Excluir comentário"
+                            >
+                              <TrashIcon size={14} />
+                            </button>
+                          ) : null}
                         </header>
                         <p>{comment.body || comment.comment || comment.text}</p>
                       </article>

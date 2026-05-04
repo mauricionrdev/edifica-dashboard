@@ -1376,4 +1376,45 @@ router.post('/tasks/:id/comments', requirePermission('tasks.comment'), async (re
   }
 });
 
+router.delete('/tasks/:id/comments/:commentId', requirePermission('tasks.comment'), async (req, res, next) => {
+  try {
+    const task = await assertTaskAccess(req.params.id, req.user, 'tasks.comment');
+    const commentId = clean(req.params.commentId);
+    if (!commentId) throw badRequest('Comentário inválido');
+
+    const rows = await query(
+      `SELECT id, task_id, user_id, body
+         FROM task_comments
+        WHERE id = ? AND task_id = ?
+        LIMIT 1`,
+      [commentId, req.params.id]
+    );
+    const comment = rows[0];
+    if (!comment) return res.json({ ok: true });
+
+    const canDelete =
+      isAdminUser(req.user) ||
+      hasPermission(req.user, 'tasks.comment.all') ||
+      hasPermission(req.user, 'tasks.edit.all') ||
+      comment.user_id === req.user?.id;
+
+    if (!canDelete) throw forbidden('Sem permissão para excluir este comentário');
+
+    await withTransaction(async (conn) => {
+      await conn.query('DELETE FROM task_comments WHERE id = ? AND task_id = ?', [commentId, req.params.id]);
+      await logTaskEvent({
+        taskId: req.params.id,
+        projectId: task.project_id,
+        actorUserId: req.user.id,
+        eventType: 'task.comment_deleted',
+        summary: 'Comentário excluído',
+      }, conn);
+    });
+
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

@@ -798,9 +798,15 @@ textarea:disabled {
 
 .commentCard header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+}
+
+.commentCard header > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
 }
 
 .commentCard strong {
@@ -812,6 +818,31 @@ textarea:disabled {
 .commentCard header span {
   color: var(--text-tertiary);
   font-size: 11px;
+}
+
+.commentDeleteButton {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.commentDeleteButton:hover:not(:disabled) {
+  border-color: rgba(255, 91, 115, 0.2);
+  background: rgba(255, 91, 115, 0.055);
+  color: #ff9cad;
+}
+
+.commentDeleteButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .commentCard p {
