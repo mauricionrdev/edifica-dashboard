@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { getMetric } from '../api/metrics.js';
+import { getContractsSummary, getMetric } from '../api/metrics.js';
 import { updateGdv } from '../api/gdvs.js';
 import { ApiError } from '../api/client.js';
 import {
@@ -66,6 +66,36 @@ function clientInitials(name) {
 
 function effectiveForecast(closed, predicted) {
   return Math.max(Number(closed) || 0, Number(predicted) || 0);
+}
+
+function periodReferenceDate(year, month0, week) {
+  const dayByWeek = { 1: 1, 2: 8, 3: 15, 4: 22 };
+  const month = String(Number(month0) + 1).padStart(2, '0');
+  const day = String(dayByWeek[Number(week)] || 1).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeSummaryCalc(summary, baseCalc = {}) {
+  if (!summary) return baseCalc;
+
+  const weekClosed = Number(summary.weekClosed) || 0;
+  const weekGoal = Number(summary.weekGoal) || 0;
+  const monthGoal = Number(summary.monthGoal) || 0;
+  const resolvedGoal = weekGoal > 0 ? weekGoal : monthGoal > 0 ? Math.ceil(monthGoal / 4) : 0;
+
+  return {
+    ...baseCalc,
+    // O summary usa a mesma agregação da tela de Ranking/Summary e é mais
+    // estável para a visão consolidada do GDV, principalmente quando a
+    // carteira atravessa vários squads. Ele entra apenas como fallback para
+    // não quebrar o comportamento detalhado do clique no cliente.
+    fec: weekClosed > 0 || !baseCalc.fec ? weekClosed : baseCalc.fec,
+    mLuc: resolvedGoal > 0 || !baseCalc.mLuc ? resolvedGoal : baseCalc.mLuc,
+    hasData: Boolean(baseCalc.hasData || weekClosed > 0 || resolvedGoal > 0),
+    isHit: (weekClosed > 0 || resolvedGoal > 0)
+      ? weekClosed > 0 && resolvedGoal > 0 && weekClosed >= resolvedGoal
+      : baseCalc.isHit,
+  };
 }
 
 function predictionCard(closed, predicted, goal) {
@@ -356,6 +386,7 @@ export default function GdvPage() {
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
 
   const [metricsByKey, setMetricsByKey] = useState({});
+  const [summaryByKey, setSummaryByKey] = useState({});
   const [fetchingKey, setFetchingKey] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const fetchGenRef = useRef(0);
@@ -418,6 +449,11 @@ export default function GdvPage() {
   const gdvIdsKey = useMemo(
     () => gdvClients.map((client) => client.id).sort().join('|'),
     [gdvClients]
+  );
+
+  const summaryCacheKey = useMemo(
+    () => `${periodKey}::${gdvIdsKey}`,
+    [gdvIdsKey, periodKey]
   );
 
   useEffect(() => {
@@ -507,15 +543,52 @@ export default function GdvPage() {
     };
   }, [gdvClients, gdvIdsKey, metricsByKey, periodKey]);
 
+  useEffect(() => {
+    if (!gdvClients.length) {
+      setSummaryByKey((prev) => ({ ...prev, [summaryCacheKey]: [] }));
+      return;
+    }
+
+    const cached = summaryByKey[summaryCacheKey];
+    if (Array.isArray(cached)) return;
+
+    let cancelled = false;
+    const date = periodReferenceDate(year, month0, week);
+
+    getContractsSummary({ date })
+      .then((response) => {
+        if (cancelled) return;
+        const visibleClientIds = new Set(gdvClients.map((client) => client.id));
+        const summaries = Array.isArray(response?.clients)
+          ? response.clients.filter((summary) => visibleClientIds.has(summary.clientId))
+          : [];
+        setSummaryByKey((prev) => ({ ...prev, [summaryCacheKey]: summaries }));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // Fallback silencioso: a tela continua usando getMetric por cliente.
+        setSummaryByKey((prev) => ({ ...prev, [summaryCacheKey]: [] }));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [gdvClients, month0, summaryByKey, summaryCacheKey, week, year]);
+
   const currentResults = metricsByKey[periodKey] || [];
+  const currentSummaries = summaryByKey[summaryCacheKey] || [];
   const loadingMetrics = fetchingKey === periodKey && currentResults.length === 0;
   const hasActiveSearch = clientQuery.trim().length > 0;
 
   const rows = useMemo(() => {
+    const summariesByClientId = new Map(
+      currentSummaries.map((summary) => [summary.clientId, summary])
+    );
+
     return gdvClients.map((client) => {
       const entry = currentResults.find((result) => result.clientId === client.id);
       const metric = entry?.metric || { data: {}, computed: {} };
-      const calc = calcWeek(metric);
+      const calc = normalizeSummaryCalc(summariesByClientId.get(client.id), calcWeek(metric));
       const weeklyHasGoal = calc.mLuc > 0;
       const weeklyProgress = weeklyHasGoal ? (calc.fec / calc.mLuc) * 100 : 0;
       const weeklyGap = weeklyHasGoal ? Math.max(calc.mLuc - calc.fec, 0) : 0;
@@ -540,7 +613,7 @@ export default function GdvPage() {
         priorityScore: clientPriorityScore(row),
       };
     });
-  }, [currentResults, gdvClients]);
+  }, [currentResults, currentSummaries, gdvClients]);
 
   useEffect(() => {
     if (!selectedClientId) return;
@@ -1001,6 +1074,11 @@ export default function GdvPage() {
                 setMetricsByKey((prev) => {
                   const next = { ...prev };
                   delete next[periodKey];
+                  return next;
+                });
+                setSummaryByKey((prev) => {
+                  const next = { ...prev };
+                  delete next[summaryCacheKey];
                   return next;
                 });
               }}
