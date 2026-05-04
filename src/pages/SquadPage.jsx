@@ -22,7 +22,6 @@ import { resolveClientFeeAtMonthEnd } from '../utils/feeSchedule.js';
 import { MONTHS, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
 import { resolveSquadOwner, subscribeOwnershipChange } from '../utils/ownershipStorage.js';
 import {
-  aggregateCarteira,
   buildPeriodKey,
   calcWeek,
   currentWeek,
@@ -541,8 +540,6 @@ export default function SquadPage() {
     [clientRows, selectedClientId]
   );
 
-  const squadAgg = useMemo(() => aggregateCarteira(clientRows), [clientRows]);
-
   useEffect(() => {
     if (!selectedClient || !cardsRef.current) {
       setShowStickyResult(false);
@@ -654,7 +651,9 @@ export default function SquadPage() {
             <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(squadClients.length)}</strong>
           </span>
+        </div>
 
+        <div className={styles.headerCluster}>
           <div className={styles.monthNav}>
             <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
               <ChevronLeftIcon size={15} aria-hidden="true" />
@@ -666,7 +665,9 @@ export default function SquadPage() {
               <ChevronRightIcon size={15} aria-hidden="true" />
             </button>
           </div>
+        </div>
 
+        <div className={styles.headerCluster}>
           <div className={styles.weekTabs} role="tablist" aria-label="Semana">
             {[1, 2, 3, 4].map((value) => (
               <button
@@ -682,7 +683,6 @@ export default function SquadPage() {
             ))}
           </div>
         </div>
-
 
         <div className={styles.headerCluster}>
           {canManageSquads ? (
@@ -799,65 +799,51 @@ export default function SquadPage() {
       ];
     }
 
-    // Sem cliente selecionado: exibe automaticamente o consolidado do squad.
-    // Ao clicar em um cliente, os cards continuam mostrando o detalhe individual.
-    const filledRows = clientRows.filter((row) => row.calc?.hasData);
-    const goalRows = clientRows.filter((row) => Number(row.calc?.mLuc) > 0);
-    const goalGap = Math.max((Number(squadAgg.tLuc) || 0) - (Number(squadAgg.tF) || 0), 0);
-    const prediction = predictionCard(squadAgg.tF, squadAgg.tCp, squadAgg.tLuc);
-
     return [
       {
         id: 'closed',
         label: 'Contratos fechados',
-        value: displayInt(squadAgg.tF),
-        sub: `Semana ${week} · ${displayInt(filledRows.length)}/${displayInt(clientRows.length)} preencheram`,
-        tone: squadAgg.tF > 0 ? 'neutral' : 'muted',
+        value: '0',
+        sub: `Semana ${week}`,
+        tone: 'muted',
       },
       {
         id: 'profitGoal',
         label: 'Meta de lucro',
-        value: squadAgg.tLuc > 0 ? displayInt(squadAgg.tLuc) : '—',
-        sub: squadAgg.tLuc > 0
-          ? `${displayInt(goalGap)} para bater · ${displayInt(goalRows.length)} com meta`
-          : 'Sem meta configurada',
-        tone: squadAgg.tLuc > 0 ? 'neutral' : 'muted',
+        value: '0',
+        sub: '',
+        tone: 'muted',
       },
       {
         id: 'predictedContracts',
         label: 'Contratos previstos',
-        value: squadAgg.tCp > 0 ? displayInt(squadAgg.tCp) : '0',
-        sub: prediction.sub,
-        tone: prediction.tone,
+        value: '0',
+        sub: '',
+        tone: 'muted',
       },
       {
         id: 'conversion',
         label: 'Taxa de conversão',
-        value: squadAgg.taxa > 0 ? displayPct(squadAgg.taxa) : '—',
-        sub: squadAgg.tVol > 0 ? `${displayInt(squadAgg.tVol)} leads reais` : '',
-        tone: squadAgg.taxa > 0 ? 'neutral' : 'muted',
+        value: '—',
+        sub: '',
+        tone: 'muted',
       },
       {
         id: 'cpl',
         label: 'CPL atual',
-        value: squadAgg.cpl > 0 ? fmtMoney(squadAgg.cpl) : '—',
-        sub: goalComparison(squadAgg.cpl, squadAgg.avgMC, {
-          lowerIsBetter: true,
-          format: fmtMoney,
-        }),
-        tone: comparisonTone(squadAgg.cpl, squadAgg.avgMC, {
-          lowerIsBetter: true,
-        }),
+        value: '—',
+        sub: '',
+        tone: 'muted',
       },
       {
         id: 'leads',
         label: 'Leads previstos',
-        value: squadAgg.tLp > 0 ? displayInt(squadAgg.tLp) : '0',
-        sub: goalComparison(squadAgg.tLp, squadAgg.tMV),
-        tone: comparisonTone(squadAgg.tLp, squadAgg.tMV),
+        value: '0',
+        sub: '',
+        tone: 'muted',
       },
     ];
-  }, [clientRows, selectedClient, squadAgg, week]);
+  }, [selectedClient, week]);
 
   if (shellLoading && !squad) {
     return (

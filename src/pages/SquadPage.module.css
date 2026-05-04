@@ -203,41 +203,28 @@
 }
 .weekTabs {
   min-height: 34px;
-  padding: 3px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.025);
+  gap: 5px;
 }
 .weekTab {
   min-width: 30px;
-  height: 28px;
-  padding: 0 10px;
+  height: 30px;
+  padding: 0 9px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 10px;
   background: transparent;
   color: var(--text-tertiary);
   font-size: 13px;
   line-height: 1;
-  font-weight: 700;
-  transition: background .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease;
+  font-weight: 600;
 }
-.weekTabActive {
-  background: rgba(245, 184, 0, 0.14);
-  border-color: rgba(245, 184, 0, 0.45);
-  color: var(--text-primary);
-  box-shadow: 0 0 0 1px rgba(245, 184, 0, 0.10), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-}
+.weekTabActive,
 .complementaryButtonActive {
-  background: transparent;
-  color: var(--squad-accent);
-  box-shadow: inset 0 -1px 0 var(--squad-accent);
-}
-.weekTabActive:hover {
-  background: rgba(245, 184, 0, 0.18);
+  border-color: var(--squad-accent-line);
+  background: rgba(245, 184, 0, 0.1);
   color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px rgba(245, 184, 0, 0.06);
 }
 .headerUtilityRow {
   min-height: 34px;
