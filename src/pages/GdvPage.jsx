@@ -918,16 +918,26 @@ export default function GdvPage() {
     const totalClients = rows.length;
     const filledRows = rows.filter((row) => row.calc?.hasData);
     const goalRows = rows.filter((row) => Number(row.calc?.mLuc) > 0);
-    const willHitRows = goalRows.filter((row) => {
-      const target = Number(row.calc?.mLuc) || 0;
-      const projected = effectiveForecast(row.calc?.fec, row.calc?.cp);
-      return target > 0 && projected >= target;
-    });
     const hitRows = goalRows.filter((row) => {
       const target = Number(row.calc?.mLuc) || 0;
       const closed = Number(row.calc?.fec) || 0;
       return target > 0 && closed >= target;
     });
+    const inProgressRows = goalRows.filter((row) => {
+      const target = Number(row.calc?.mLuc) || 0;
+      const closed = Number(row.calc?.fec) || 0;
+      const progress = target > 0 ? (closed / target) * 100 : 0;
+
+      // Para o GDV, "Previsto bater meta" no consolidado não deve contar
+      // quem já bateu a meta. Esse card representa os clientes em andamento:
+      // ativos, com meta, ainda abaixo da meta e próximos de bater.
+      return target > 0 && closed < target && progress >= 55;
+    });
+    const inProgressGap = inProgressRows.reduce((total, row) => {
+      const target = Number(row.calc?.mLuc) || 0;
+      const closed = Number(row.calc?.fec) || 0;
+      return total + Math.max(target - closed, 0);
+    }, 0);
 
     return [
       {
@@ -964,10 +974,14 @@ export default function GdvPage() {
         id: 'forecastGoal',
         label: 'Previsto bater meta',
         value: goalRows.length > 0
-          ? `${displayInt(willHitRows.length)} de ${displayInt(goalRows.length)}`
+          ? `${displayInt(inProgressRows.length)} de ${displayInt(goalRows.length)}`
           : '—',
-        sub: goalRows.length > 0 ? 'pela projeção' : 'Sem meta configurada',
-        tone: goalRows.length === 0 ? 'muted' : willHitRows.length === goalRows.length ? 'green' : 'neutral',
+        sub: inProgressRows.length > 0
+          ? `${displayInt(inProgressGap)} contratos para bater`
+          : goalRows.length > 0
+            ? 'Nenhum cliente em andamento'
+            : 'Sem meta configurada',
+        tone: goalRows.length === 0 ? 'muted' : inProgressRows.length > 0 ? 'amber' : 'muted',
       },
       {
         id: 'hitGoal',
