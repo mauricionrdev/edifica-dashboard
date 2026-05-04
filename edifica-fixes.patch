@@ -1,0 +1,59 @@
+--- edifica-orig/src/components/clients/ProjectWorkspace.jsx	2026-05-03 00:28:17.000000000 +0000
++++ edifica-fixed/src/components/clients/ProjectWorkspace.jsx	2026-05-04 05:06:50.507273476 +0000
+@@ -530,7 +530,17 @@
+       setBusy(true);
+       const response = await createTaskComment(selectedTask.id, { body });
+       setCommentBody('');
+-      setTaskComments(Array.isArray(response?.comments) ? response.comments : []);
++      // Backend devolve { comment: {...} } (singular). Faz append local
++      // ao invés de substituir a lista, mantendo os comentários anteriores.
++      if (response?.comment?.id) {
++        setTaskComments((current) =>
++          current.some((entry) => entry.id === response.comment.id)
++            ? current
++            : [...current, response.comment]
++        );
++      } else if (Array.isArray(response?.comments)) {
++        setTaskComments(response.comments);
++      }
+       await refreshProject(project.id);
+       showToast('Comentário registrado.', { variant: 'success' });
+     } catch (error) {
+--- edifica-orig/edifica-api/src/routes/metrics.js	2026-05-01 23:18:37.000000000 +0000
++++ edifica-fixed/edifica-api/src/routes/metrics.js	2026-05-04 05:06:50.509028899 +0000
+@@ -484,6 +484,15 @@
+       clientSql += ' AND c.squad_id = ?';
+       clientParams.push(squadId);
+     } else if (allowedSquads) {
++      // Usuário sem squads visíveis: devolve resposta vazia em vez de
++      // montar `IN ()`, que é SQL inválido.
++      if (allowedSquads.length === 0) {
++        return res.json({
++          weekKey, prevWeekKey, monthPrefix, prevMonthPrefix,
++          clients: [],
++          totals: aggregatePortfolioSummary([]),
++        });
++      }
+       clientSql += ` AND c.squad_id IN (${allowedSquads.map(() => '?').join(',')})`;
+       clientParams.push(...allowedSquads);
+     }
+@@ -585,6 +594,8 @@
+     if (clientIdParam) { clientSql += ' AND id = ?'; clientParams.push(clientIdParam); }
+     if (squadId) { clientSql += ' AND squad_id = ?'; clientParams.push(squadId); }
+     else if (allowedSquads) {
++      // Usuário sem squads visíveis: nada a retornar, sem montar `IN ()`.
++      if (allowedSquads.length === 0) return res.json({ months: [] });
+       clientSql += ` AND squad_id IN (${allowedSquads.map(() => '?').join(',')})`;
+       clientParams.push(...allowedSquads);
+     }
+--- edifica-orig/edifica-api/src/routes/projects.js	2026-04-29 17:30:31.000000000 +0000
++++ edifica-fixed/edifica-api/src/routes/projects.js	2026-05-04 05:06:50.511933035 +0000
+@@ -569,7 +569,7 @@
+ router.get('/users/:userId/tasks', requirePermission('profile.view'), async (req, res, next) => {
+   try {
+     const targetUserId = clean(req.params.userId);
+-    if (!targetUserId) throw badRequest('UsuÃ¡rio invÃ¡lido');
++    if (!targetUserId) throw badRequest('Usuário inválido');
+ 
+     const params = [targetUserId];
+     let visibilityWhere = '';
