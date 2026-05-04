@@ -981,7 +981,7 @@ export default function GdvPage() {
           : goalRows.length > 0
             ? 'Nenhum cliente em andamento'
             : 'Sem meta configurada',
-        tone: goalRows.length === 0 ? 'muted' : inProgressRows.length > 0 ? 'amber' : 'muted',
+        tone: goalRows.length === 0 ? 'muted' : 'neutral',
       },
       {
         id: 'hitGoal',
