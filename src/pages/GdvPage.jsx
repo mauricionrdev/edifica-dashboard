@@ -386,12 +386,17 @@ export default function GdvPage() {
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
 
   const [metricsByKey, setMetricsByKey] = useState({});
+  const metricsByKeyRef = useRef(metricsByKey);
   const [summaryByKey, setSummaryByKey] = useState({});
   const [fetchingKey, setFetchingKey] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const fetchGenRef = useRef(0);
   const loadedMetricsKeyRef = useRef('');
   const inFlightMetricsKeyRef = useRef('');
+
+  useEffect(() => {
+    metricsByKeyRef.current = metricsByKey;
+  }, [metricsByKey]);
 
   const gdvList = Array.isArray(gdvs) ? gdvs : [];
   const cleanRouteSegment = decodeURIComponent(String(routeSegment || '').trim());
@@ -467,7 +472,7 @@ export default function GdvPage() {
       return undefined;
     }
 
-    const cached = metricsByKey[periodKey];
+    const cached = metricsByKeyRef.current[periodKey];
 
     if (loadedMetricsKeyRef.current === requestKey && Array.isArray(cached)) {
       const cachedIds = cached.map((entry) => entry.clientId).sort().join('|');
@@ -541,7 +546,7 @@ export default function GdvPage() {
     return () => {
       cancelled = true;
     };
-  }, [gdvClients, gdvIdsKey, metricsByKey, periodKey]);
+  }, [gdvClients, gdvIdsKey, periodKey]);
 
   useEffect(() => {
     if (!gdvClients.length) {
