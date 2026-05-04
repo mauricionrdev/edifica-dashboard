@@ -1228,3 +1228,30 @@ textarea:disabled {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.activityMeta {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  list-style: none;
+}
+
+.activityMeta li {
+  max-width: 100%;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.014);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 540;
+  white-space: nowrap;
+}
