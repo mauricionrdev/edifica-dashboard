@@ -83,7 +83,7 @@
 
 .popover {
   position: absolute;
-  z-index: 900;
+  z-index: 10050;
   top: calc(100% + 6px);
   left: 0;
   width: min(320px, calc(100vw - 48px));
@@ -333,7 +333,7 @@
 /* Patch 59 — popover portal para evitar clipping em cards, tabelas e modais */
 .popoverPortal {
   position: fixed !important;
-  z-index: 1200 !important;
+  z-index: 10050 !important;
   max-height: 312px;
 }
 

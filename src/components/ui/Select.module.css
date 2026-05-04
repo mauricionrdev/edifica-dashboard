@@ -77,7 +77,7 @@
 
 .menu {
   position: fixed;
-  z-index: 5000;
+  z-index: 10050;
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: 12px;

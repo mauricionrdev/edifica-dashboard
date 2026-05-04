@@ -59,7 +59,7 @@
 
 .popover {
   position: fixed;
-  z-index: 1200;
+  z-index: 10050;
   width: 252px;
   padding: 10px;
   border: 1px solid var(--line-strong);
