@@ -647,13 +647,15 @@ export default function SquadPage() {
     const actions = (
       <div className={styles.headerActions}>
         <div className={styles.headerCluster}>
-          <span className={styles.headerStat}>
+          <span className={styles.headerClusterLabel}>Carteira</span>
+          <span className={styles.headerStat} title={displayInt(squadClients.length)}>
             <UsersIcon size={15} aria-hidden="true" />
             <strong>{displayInt(squadClients.length)}</strong>
           </span>
         </div>
 
         <div className={styles.headerCluster}>
+          <span className={styles.headerClusterLabel}>Período</span>
           <div className={styles.monthNav}>
             <button type="button" className={styles.navBtn} onClick={prevMonth} aria-label="Mês anterior">
               <ChevronLeftIcon size={15} aria-hidden="true" />
@@ -668,6 +670,7 @@ export default function SquadPage() {
         </div>
 
         <div className={styles.headerCluster}>
+          <span className={styles.headerClusterLabel}>Semana</span>
           <div className={styles.weekTabs} role="tablist" aria-label="Semana">
             {[1, 2, 3, 4].map((value) => (
               <button
@@ -685,37 +688,39 @@ export default function SquadPage() {
         </div>
 
         <div className={styles.headerCluster}>
-          {canManageSquads ? (
+          <span className={styles.headerClusterLabel}>Ações</span>
+          <div className={styles.headerUtilityRow}>
+            {canManageSquads ? (
+              <button
+                type="button"
+                className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
+                onClick={() => setSettingsOpen(true)}
+                aria-label="Configurar squad"
+                title="Configurar squad"
+              >
+                <SettingsIcon size={14} aria-hidden="true" />
+              </button>
+            ) : null}
+
             <button
               type="button"
               className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
-              onClick={() => setSettingsOpen(true)}
-              aria-label="Configurar squad"
-              title="Configurar squad"
+              aria-label="Atualizar visão"
+              title="Atualizar visão"
+              onClick={() => refreshClients?.()}
             >
-              <SettingsIcon size={14} aria-hidden="true" />
+              <RotateCcwIcon size={14} aria-hidden="true" />
             </button>
-          ) : null}
 
-          <button
-            type="button"
-            className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
-            aria-label="Atualizar visão"
-            title="Atualizar visão"
-            onClick={() => refreshClients?.()}
-          >
-            <RotateCcwIcon size={14} aria-hidden="true" />
-          </button>
-
-          <Link
-            to="/ranking-squads"
-            className={`${styles.headerBtn} ${styles.iconButton}`.trim()}
-            aria-label="Ver ranking"
-            title="Ver ranking"
-          >
-            <TrophyIcon size={14} aria-hidden="true" />
-          </Link>
-
+            <Link
+              to="/ranking-squads"
+              className={`${styles.headerBtn} ${styles.iconButton}`.trim()}
+              aria-label="Ver ranking"
+              title="Ver ranking"
+            >
+              <TrophyIcon size={14} aria-hidden="true" />
+            </Link>
+          </div>
         </div>
       </div>
     );
