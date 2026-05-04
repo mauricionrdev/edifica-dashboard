@@ -110,6 +110,42 @@ function userName(users, userId, fallback = '') {
   return user?.name || user?.email || fallback || 'Sem responsável';
 }
 
+function getTaskDraftValue(drafts, sectionId, field) {
+  const draft = drafts?.[sectionId];
+  if (draft && typeof draft === 'object') return draft[field] || '';
+  return field === 'title' ? String(draft || '') : '';
+}
+
+function compareText(a, b) {
+  return String(a || '').localeCompare(String(b || ''), 'pt-BR', { sensitivity: 'base' });
+}
+
+function sortTasks(tasks, sortKey, users = []) {
+  const list = [...(Array.isArray(tasks) ? tasks : [])];
+  if (sortKey === 'dueDate') {
+    return list.sort((a, b) => {
+      const av = a.dueDate || '9999-12-31';
+      const bv = b.dueDate || '9999-12-31';
+      return compareText(av, bv) || compareText(a.title, b.title);
+    });
+  }
+  if (sortKey === 'assignee') {
+    return list.sort((a, b) => compareText(userName(users, a.assigneeUserId, a.assigneeName), userName(users, b.assigneeUserId, b.assigneeName)) || compareText(a.title, b.title));
+  }
+  if (sortKey === 'name') return list.sort((a, b) => compareText(a.title, b.title));
+  if (sortKey === 'status') return list.sort((a, b) => compareText(statusLabel(a.status), statusLabel(b.status)) || compareText(a.title, b.title));
+  return list;
+}
+
+function taskMatchesFilter(task, filter) {
+  if (filter === 'open') return task.status !== 'done';
+  if (filter === 'done') return task.status === 'done';
+  if (filter === 'withAssignee') return Boolean(task.assigneeUserId || task.assigneeName);
+  if (filter === 'withoutAssignee') return !task.assigneeUserId && !task.assigneeName;
+  if (filter === 'withDueDate') return Boolean(task.dueDate);
+  return true;
+}
+
 function initials(value) {
   return String(value || '?')
     .split(/\s+/)
@@ -143,6 +179,9 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   const [busy, setBusy] = useState(false);
   const [sectionDraft, setSectionDraft] = useState('');
   const [taskDrafts, setTaskDrafts] = useState({});
+  const [taskFilter, setTaskFilter] = useState('all');
+  const [taskSort, setTaskSort] = useState('default');
+  const [collapsedSections, setCollapsedSections] = useState(() => new Set());
   const [editingSectionId, setEditingSectionId] = useState('');
   const [editingSectionName, setEditingSectionName] = useState('');
   const [selectedTaskId, setSelectedTaskId] = useState('');
@@ -163,6 +202,30 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
   const allTasks = useMemo(() => sections.flatMap((section) => section.tasks || []), [sections]);
   const flatTasks = useMemo(() => allTasks.filter((task) => !task.parentTaskId), [allTasks]);
+  const visibleSections = useMemo(
+    () =>
+      sections.map((section) => {
+        const parentTasks = (section.tasks || []).filter((task) => !task.parentTaskId);
+        const visibleParentTasks = sortTasks(
+          parentTasks.filter((task) => taskMatchesFilter(task, taskFilter)),
+          taskSort,
+          users
+        );
+        const childTasks = (section.tasks || []).filter((task) => task.parentTaskId);
+        return {
+          ...section,
+          visibleTasks: visibleParentTasks,
+          visibleTaskCount: visibleParentTasks.length,
+          totalParentTasks: parentTasks.length,
+          childTasks,
+        };
+      }),
+    [sections, taskFilter, taskSort, users]
+  );
+  const visibleTaskCount = useMemo(
+    () => visibleSections.reduce((total, section) => total + Number(section.visibleTaskCount || 0), 0),
+    [visibleSections]
+  );
   const selectedTask = useMemo(
     () => allTasks.find((task) => task.id === selectedTaskId) || null,
     [allTasks, selectedTaskId]
@@ -443,7 +506,11 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
   async function handleCreateTask(event, sectionId, parentTaskId = '') {
     event.preventDefault();
-    const title = parentTaskId ? subtaskTitle.trim() : String(taskDrafts[sectionId] || '').trim();
+    const title = parentTaskId
+      ? subtaskTitle.trim()
+      : getTaskDraftValue(taskDrafts, sectionId, 'title').trim();
+    const assigneeUserId = parentTaskId ? '' : getTaskDraftValue(taskDrafts, sectionId, 'assigneeUserId');
+    const dueDate = parentTaskId ? '' : getTaskDraftValue(taskDrafts, sectionId, 'dueDate');
     if (!title || !project?.id || !sectionId || busy || !canCreateTasks) return;
 
     try {
@@ -454,9 +521,11 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         clientId: client?.id || project?.clientId || '',
         parentTaskId,
         title,
+        assigneeUserId: assigneeUserId || undefined,
+        dueDate: dueDate || undefined,
       });
       if (parentTaskId) setSubtaskTitle('');
-      else setTaskDrafts((current) => ({ ...current, [sectionId]: '' }));
+      else setTaskDrafts((current) => ({ ...current, [sectionId]: { title: '', assigneeUserId: '', dueDate: '' } }));
       await refreshProject(project.id);
       showToast(parentTaskId ? 'Subtarefa criada.' : 'Tarefa criada.', { variant: 'success' });
     } catch (error) {
@@ -464,6 +533,31 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     } finally {
       setBusy(false);
     }
+  }
+
+  function handleTaskDraftChange(sectionId, field, value) {
+    setTaskDrafts((current) => {
+      const previous = current?.[sectionId];
+      const draft = previous && typeof previous === 'object' ? previous : { title: String(previous || '') };
+      return {
+        ...current,
+        [sectionId]: {
+          title: draft.title || '',
+          assigneeUserId: draft.assigneeUserId || '',
+          dueDate: draft.dueDate || '',
+          [field]: value,
+        },
+      };
+    });
+  }
+
+  function handleToggleSectionCollapsed(sectionId) {
+    setCollapsedSections((current) => {
+      const next = new Set(current);
+      if (next.has(sectionId)) next.delete(sectionId);
+      else next.add(sectionId);
+      return next;
+    });
   }
 
   async function handleSaveTaskDraft() {
@@ -662,13 +756,33 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         </button>
       </form>
 
+      <div className={styles.taskToolbar}>
+        <select value={taskFilter} onChange={(event) => setTaskFilter(event.target.value)} aria-label="Filtrar tarefas">
+          <option value="all">Todas</option>
+          <option value="open">Abertas</option>
+          <option value="done">Concluídas</option>
+          <option value="withAssignee">Com responsável</option>
+          <option value="withoutAssignee">Sem responsável</option>
+          <option value="withDueDate">Com prazo</option>
+        </select>
+        <select value={taskSort} onChange={(event) => setTaskSort(event.target.value)} aria-label="Ordenar tarefas">
+          <option value="default">Ordem padrão</option>
+          <option value="dueDate">Prazo</option>
+          <option value="assignee">Responsável</option>
+          <option value="name">Nome</option>
+          <option value="status">Status</option>
+        </select>
+        <span>{visibleTaskCount}/{flatTasks.length} tarefa(s)</span>
+      </div>
+
       <section className={`${styles.workspace} ${selectedTask ? styles.workspaceWithPanel : ''}`.trim()}>
         <div className={styles.sections}>
           {sections.length === 0 ? (
             <StateBlock variant="empty" compact title="Nenhuma seção criada" />
           ) : (
-            sections.map((section) => {
-              const tasks = (section.tasks || []).filter((task) => !task.parentTaskId);
+            visibleSections.map((section) => {
+              const tasks = section.visibleTasks || [];
+              const isCollapsed = collapsedSections.has(section.id);
               const isEditing = editingSectionId === section.id;
 
               return (
@@ -702,10 +816,18 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           {section.name}
                         </button>
                       )}
-                      <span>{tasks.length} tarefa(s)</span>
+                      <span>{tasks.length}/{section.totalParentTasks || 0} tarefa(s)</span>
                     </div>
 
                     <div className={styles.rowActions}>
+                      <button
+                        type="button"
+                        className={styles.moveBtn}
+                        onClick={() => handleToggleSectionCollapsed(section.id)}
+                        aria-label={isCollapsed ? 'Expandir seção' : 'Recolher seção'}
+                      >
+                        {isCollapsed ? '+' : '−'}
+                      </button>
                       <button
                         type="button"
                         className={styles.moveBtn}
@@ -736,21 +858,41 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     </div>
                   </header>
 
-                  <form className={styles.taskForm} onSubmit={(event) => handleCreateTask(event, section.id)}>
-                    <input
-                      value={taskDrafts[section.id] || ''}
-                      onChange={(event) =>
-                        setTaskDrafts((current) => ({ ...current, [section.id]: event.target.value }))
-                      }
-                      placeholder="Nova tarefa"
-                      disabled={busy || !canCreateTasks}
-                    />
-                    <button type="submit" disabled={busy || !canCreateTasks || !String(taskDrafts[section.id] || '').trim()}>
-                      Adicionar
-                    </button>
-                  </form>
+                  {!isCollapsed ? (
+                    <form className={styles.taskForm} onSubmit={(event) => handleCreateTask(event, section.id)}>
+                      <input
+                        value={getTaskDraftValue(taskDrafts, section.id, 'title')}
+                        onChange={(event) => handleTaskDraftChange(section.id, 'title', event.target.value)}
+                        placeholder="Nova tarefa"
+                        disabled={busy || !canCreateTasks}
+                      />
+                      <select
+                        value={getTaskDraftValue(taskDrafts, section.id, 'assigneeUserId')}
+                        onChange={(event) => handleTaskDraftChange(section.id, 'assigneeUserId', event.target.value)}
+                        disabled={busy || !canCreateTasks}
+                        aria-label="Responsável da nova tarefa"
+                      >
+                        <option value="">Sem responsável</option>
+                        {(Array.isArray(users) ? users : []).map((entry) => (
+                          <option key={entry.id} value={entry.id}>
+                            {entry.name || entry.email}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="date"
+                        value={getTaskDraftValue(taskDrafts, section.id, 'dueDate')}
+                        onChange={(event) => handleTaskDraftChange(section.id, 'dueDate', event.target.value)}
+                        disabled={busy || !canCreateTasks}
+                        aria-label="Prazo da nova tarefa"
+                      />
+                      <button type="submit" disabled={busy || !canCreateTasks || !getTaskDraftValue(taskDrafts, section.id, 'title').trim()}>
+                        Adicionar
+                      </button>
+                    </form>
+                  ) : null}
 
-                  <div className={styles.taskList}>
+                  {!isCollapsed ? <div className={styles.taskList}>
                     {tasks.length === 0 ? (
                       <div className={styles.noTasks}>Nenhuma tarefa nesta seção</div>
                     ) : (
@@ -814,7 +956,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         );
                       })
                     )}
-                  </div>
+                  </div> : null}
                 </article>
               );
             })
@@ -866,6 +1008,21 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     <option value="in_progress">Em andamento</option>
                     <option value="done">Concluída</option>
                     <option value="canceled">Cancelada</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Seção</span>
+                  <select
+                    value={selectedTask.sectionId || ''}
+                    onChange={(event) => handleUpdateTask(selectedTask, { sectionId: event.target.value })}
+                    disabled={busy || !canEditTasks}
+                  >
+                    {sections.map((section) => (
+                      <option key={section.id} value={section.id}>
+                        {section.name}
+                      </option>
+                    ))}
                   </select>
                 </label>
 

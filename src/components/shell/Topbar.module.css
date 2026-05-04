@@ -1,4 +1,6 @@
 .topbar {
+  position: relative;
+  z-index: 5000;
   flex: 0 0 49px;
   height: 49px;
   min-height: 49px;
@@ -8,6 +10,8 @@
 }
 
 .rail {
+  position: relative;
+  z-index: 5001;
   height: 100%;
   padding: 0 16px 0 14px;
   display: flex;
@@ -84,6 +88,8 @@
 }
 
 .actions {
+  position: relative;
+  z-index: 5002;
   margin-left: auto;
   min-width: max-content;
   display: inline-flex;
@@ -137,6 +143,7 @@
 
 .notificationsWrap {
   position: relative;
+  z-index: 5003;
 }
 
 .notificationButton {
@@ -170,7 +177,7 @@
   border-radius: 12px;
   background: var(--surface);
   overflow: hidden;
-  z-index: 180;
+  z-index: 5010;
   box-shadow: var(--shadow-dialog);
 }
 
@@ -379,6 +386,7 @@
 /* v41 — topbar final */
 .topbar {
   box-shadow: none;
+  overflow: visible;
 }
 
 .menuButton svg,

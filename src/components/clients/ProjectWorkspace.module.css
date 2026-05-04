@@ -174,6 +174,7 @@ textarea:disabled {
 
 .sectionForm input,
 .taskForm input,
+.taskForm select,
 .subtaskForm input,
 .collabForm select,
 .sectionHead input,
@@ -193,6 +194,7 @@ textarea:disabled {
 
 .sectionForm input,
 .taskForm input,
+.taskForm select,
 .subtaskForm input,
 .collabForm select,
 .taskControls input,
@@ -206,6 +208,7 @@ textarea:disabled {
 
 .sectionForm input:focus,
 .taskForm input:focus,
+.taskForm select:focus,
 .subtaskForm input:focus,
 .collabForm select:focus,
 .sectionHead input:focus,
@@ -222,6 +225,47 @@ textarea:disabled {
 .commentForm textarea::placeholder {
   color: var(--text-quaternary);
   opacity: 1;
+}
+
+
+.taskToolbar {
+  min-width: 0;
+  min-height: 42px;
+  padding: 6px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 16px);
+  background: rgba(255, 255, 255, 0.014);
+  display: grid;
+  grid-template-columns: minmax(142px, 180px) minmax(142px, 180px) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.taskToolbar select {
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  outline: 0;
+}
+
+.taskToolbar select:focus {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.taskToolbar span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 560;
+  justify-self: end;
+  white-space: nowrap;
 }
 
 .workspace {
@@ -346,6 +390,7 @@ textarea:disabled {
 
 .taskForm {
   border-bottom: 1px solid var(--line-subtle);
+  grid-template-columns: minmax(180px, 1fr) minmax(132px, 190px) minmax(128px, 150px) auto;
 }
 
 .taskList {
@@ -887,6 +932,20 @@ textarea:disabled {
   font-size: 11px;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .taskToolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .taskToolbar span {
+    justify-self: start;
+  }
+
+  .taskForm {
+    grid-template-columns: 1fr;
+  }
 }
 
 .confirmBackdrop {
