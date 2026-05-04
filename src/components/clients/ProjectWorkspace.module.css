@@ -10,6 +10,7 @@
 
 .projectHeader,
 .emptyCard,
+.memberPanel,
 .sectionForm,
 .sectionCard,
 .taskPanel,
@@ -29,6 +30,14 @@
   gap: 14px;
 }
 
+.projectHeaderRight {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 .projectTitle {
   min-width: 0;
   display: grid;
@@ -38,6 +47,7 @@
 .projectTitle span,
 .emptyHead span,
 .projectStats span,
+.memberPanelHead span,
 .sectionTitleBlock span,
 .taskDetailHead span,
 .taskControls span,
@@ -92,6 +102,112 @@
   font-variant-numeric: tabular-nums;
 }
 
+
+.deleteProjectButton {
+  min-height: 30px;
+  padding: 0 10px;
+  color: var(--text-tertiary);
+}
+
+.deleteProjectButton:hover:not(:disabled) {
+  border-color: rgba(255, 91, 115, 0.22);
+  background: rgba(255, 91, 115, 0.045);
+  color: #ffb0bd;
+}
+
+.memberPanel {
+  min-width: 0;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.memberPanelHead {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.memberPanelHead strong {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+}
+
+.memberList {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px;
+}
+
+.memberRow {
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.012);
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.memberRow > span {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 640;
+}
+
+.memberRow div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.memberRow strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.12;
+  font-weight: 590;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.memberRow small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.memberRow:hover .actionIcon {
+  opacity: 1;
+}
+
+.memberForm {
+  grid-template-columns: minmax(160px, 1fr) minmax(124px, 150px) auto;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.01);
+}
+
 .emptyCard {
   padding: 16px;
   display: grid;
@@ -110,6 +226,8 @@
 }
 
 .createGrid button,
+.deleteProjectButton,
+.memberForm button,
 .sectionForm button,
 .taskForm button,
 .subtaskForm button,
@@ -140,6 +258,8 @@
 }
 
 .createGrid button:hover:not(:disabled),
+.deleteProjectButton:hover:not(:disabled),
+.memberForm button:hover:not(:disabled),
 .sectionForm button:hover:not(:disabled),
 .taskForm button:hover:not(:disabled),
 .subtaskForm button:hover:not(:disabled),
@@ -160,6 +280,7 @@ textarea:disabled {
 }
 
 .sectionForm,
+.memberForm,
 .taskForm,
 .subtaskForm,
 .collabForm {
@@ -173,6 +294,7 @@ textarea:disabled {
 }
 
 .sectionForm input,
+.memberForm select,
 .taskForm input,
 .taskForm select,
 .subtaskForm input,
@@ -193,6 +315,7 @@ textarea:disabled {
 }
 
 .sectionForm input,
+.memberForm select,
 .taskForm input,
 .taskForm select,
 .subtaskForm input,
@@ -207,6 +330,7 @@ textarea:disabled {
 }
 
 .sectionForm input:focus,
+.memberForm select:focus,
 .taskForm input:focus,
 .taskForm select:focus,
 .subtaskForm input:focus,
@@ -1078,5 +1202,29 @@ textarea:disabled {
   .actionIcon,
   .moveBtn {
     opacity: 1;
+  }
+}
+
+.confirmHead p {
+  margin: 2px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 940px) {
+  .projectHeader {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .projectHeaderRight {
+    justify-content: stretch;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+
+  .memberForm {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

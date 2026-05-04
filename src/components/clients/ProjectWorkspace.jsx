@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  addProjectMember,
   addTaskCollaborator,
   createClientProject,
   createProjectSection,
   createTask,
   createTaskComment,
-  deleteTaskComment,
+  deleteProject,
   deleteProjectSection,
+  deleteTaskComment,
   deleteTask,
   getClientProject,
   getProject,
   listTaskCollaborators,
   listTaskComments,
+  removeProjectMember,
   removeTaskCollaborator,
   reorderProjectSections,
   reorderProjectTasks,
@@ -196,14 +199,24 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   const [commentBody, setCommentBody] = useState('');
   const [subtaskTitle, setSubtaskTitle] = useState('');
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
+  const [memberUserId, setMemberUserId] = useState('');
+  const [memberRole, setMemberRole] = useState('member');
   const [taskDraft, setTaskDraft] = useState({ title: '', description: '' });
   const [deleteSectionTarget, setDeleteSectionTarget] = useState(null);
   const [deleteTaskTarget, setDeleteTaskTarget] = useState(null);
+  const [deleteProjectTarget, setDeleteProjectTarget] = useState(null);
 
   const project = detail.project;
   const sections = Array.isArray(detail.sections) ? detail.sections : [];
   const members = Array.isArray(detail.members) ? detail.members : [];
   const events = Array.isArray(detail.events) ? detail.events : [];
+  const availableMemberUsers = useMemo(
+    () =>
+      (Array.isArray(users) ? users : []).filter(
+        (entry) => entry?.id && !members.some((member) => member.userId === entry.id)
+      ),
+    [members, users]
+  );
 
   const allTasks = useMemo(() => sections.flatMap((section) => section.tasks || []), [sections]);
   const flatTasks = useMemo(() => allTasks.filter((task) => !task.parentTaskId), [allTasks]);
@@ -711,6 +724,69 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     }
   }
 
+  async function handleAddProjectMember(event) {
+    event.preventDefault();
+    if (!project?.id || !memberUserId || busy || !canEditProject) return;
+
+    try {
+      setBusy(true);
+      const response = await addProjectMember(project.id, { userId: memberUserId, role: memberRole });
+      setMemberUserId('');
+      setMemberRole('member');
+      if (Array.isArray(response?.members)) {
+        setDetail((current) => ({ ...current, members: response.members }));
+      } else {
+        await refreshProject(project.id);
+      }
+      await refreshProject(project.id);
+      showToast('Membro adicionado.', { variant: 'success' });
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível adicionar membro.', { variant: 'error' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRemoveProjectMember(member) {
+    const memberId = member?.userId;
+    if (!project?.id || !memberId || busy || !canEditProject || member.role === 'owner') return;
+
+    try {
+      setBusy(true);
+      const response = await removeProjectMember(project.id, memberId);
+      if (Array.isArray(response?.members)) {
+        setDetail((current) => ({ ...current, members: response.members }));
+      } else {
+        await refreshProject(project.id);
+      }
+      await refreshProject(project.id);
+      showToast('Membro removido.', { variant: 'success' });
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível remover membro.', { variant: 'error' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleDeleteProject() {
+    if (!project?.id || busy || !canEditProject) return;
+
+    try {
+      setBusy(true);
+      await deleteProject(project.id);
+      setDeleteProjectTarget(null);
+      setSelectedTaskId('');
+      setTaskComments([]);
+      setTaskCollaborators([]);
+      setDetail({ project: null, sections: [], members: [], events: [] });
+      showToast('Projeto removido.', { variant: 'success' });
+    } catch (error) {
+      showToast(error?.message || 'Não foi possível remover o projeto.', { variant: 'error' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className={styles.wrap}>
@@ -753,7 +829,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           <strong>{project.name}</strong>
         </div>
 
-        <div className={styles.projectStats}>
+        <div className={styles.projectHeaderRight}>
+          <div className={styles.projectStats}>
           <div>
             <strong>{progress}%</strong>
             <span>progresso</span>
@@ -766,11 +843,87 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
             <strong>{doneTasks}/{totalTasks}</strong>
             <span>concluídas</span>
           </div>
-          <div>
-            <strong>{members.length}</strong>
-            <span>membros</span>
+            <div>
+              <strong>{members.length}</strong>
+              <span>membros</span>
+            </div>
           </div>
+
+          {canEditProject ? (
+            <button
+              type="button"
+              className={styles.deleteProjectButton}
+              onClick={() => setDeleteProjectTarget(project)}
+              disabled={busy}
+            >
+              Excluir projeto
+            </button>
+          ) : null}
         </div>
+      </section>
+
+      <section className={styles.memberPanel}>
+        <div className={styles.memberPanelHead}>
+          <span>Membros</span>
+          <strong>{members.length}</strong>
+        </div>
+
+        <div className={styles.memberList}>
+          {members.length === 0 ? (
+            <div className={styles.noTasks}>Nenhum membro no projeto</div>
+          ) : (
+            members.map((member) => (
+              <article key={member.userId} className={styles.memberRow}>
+                <span>{initials(member.userName || member.userEmail)}</span>
+                <div>
+                  <strong>{member.userName || member.userEmail}</strong>
+                  <small>{member.role === 'owner' ? 'Proprietário' : member.role === 'viewer' ? 'Visualizador' : 'Membro'}</small>
+                </div>
+                {canEditProject && member.role !== 'owner' ? (
+                  <button
+                    type="button"
+                    className={styles.actionIcon}
+                    onClick={() => handleRemoveProjectMember(member)}
+                    disabled={busy}
+                    aria-label="Remover membro"
+                  >
+                    <TrashIcon size={13} aria-hidden="true" />
+                  </button>
+                ) : null}
+              </article>
+            ))
+          )}
+        </div>
+
+        {canEditProject ? (
+          <form className={styles.memberForm} onSubmit={handleAddProjectMember}>
+            <select
+              value={memberUserId}
+              onChange={(event) => setMemberUserId(event.target.value)}
+              disabled={busy || availableMemberUsers.length === 0}
+              aria-label="Adicionar membro ao projeto"
+            >
+              <option value="">Adicionar membro</option>
+              {availableMemberUsers.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.name || entry.email}
+                </option>
+              ))}
+            </select>
+            <select
+              value={memberRole}
+              onChange={(event) => setMemberRole(event.target.value)}
+              disabled={busy || availableMemberUsers.length === 0}
+              aria-label="Permissão do membro"
+            >
+              <option value="member">Membro</option>
+              <option value="viewer">Visualizador</option>
+            </select>
+            <button type="submit" disabled={busy || !memberUserId}>
+              Adicionar
+            </button>
+          </form>
+        ) : null}
       </section>
 
       <form className={styles.sectionForm} onSubmit={handleCreateSection}>
@@ -1291,6 +1444,24 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
               <button type="button" onClick={() => setDeleteTaskTarget(null)}>Cancelar</button>
               <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy || !canEditTasks}>
                 Remover
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {deleteProjectTarget ? (
+        <div className={styles.confirmBackdrop} role="presentation" onClick={() => setDeleteProjectTarget(null)}>
+          <section className={styles.confirmModal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className={styles.confirmHead}>
+              <span>Excluir projeto</span>
+              <strong>{deleteProjectTarget.name}</strong>
+              <p>Esta ação remove seções, tarefas, comentários, colaboradores e histórico do projeto.</p>
+            </div>
+            <div className={styles.confirmActions}>
+              <button type="button" onClick={() => setDeleteProjectTarget(null)}>Cancelar</button>
+              <button type="button" className={styles.confirmDanger} onClick={handleDeleteProject} disabled={busy || !canEditProject}>
+                Excluir projeto
               </button>
             </div>
           </section>
