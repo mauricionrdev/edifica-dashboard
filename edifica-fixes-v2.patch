@@ -1,0 +1,355 @@
+--- edi_v2_orig/src/pages/TeamAccessPage.jsx	2026-05-02 06:45:53.000000000 +0000
++++ edi_v2_fixed/src/pages/TeamAccessPage.jsx	2026-05-04 13:34:12.058368622 +0000
+@@ -460,6 +460,11 @@
+     permissionsOverride: normalizePermissionList(user?.permissionsOverride),
+   });
+ 
++  // Reseta o form apenas quando o usuário sendo editado realmente muda
++  // (id diferente) ou o role inicial muda. Antes a dep era `[user, initialRole]`
++  // — mas o array `users` é recriado a cada `loadUsers()`, fazendo com que o
++  // objeto `user` ficasse com referência nova mesmo com dados iguais e zerasse
++  // o que o admin estava digitando.
+   useEffect(() => {
+     setForm({
+       name: user?.name || '',
+@@ -470,7 +475,8 @@
+       squads: Array.isArray(user?.squads) ? user.squads : [],
+       permissionsOverride: normalizePermissionList(user?.permissionsOverride),
+     });
+-  }, [user, initialRole]);
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [user?.id, initialRole]);
+ 
+   function updateField(field, value) {
+     setForm((prev) => ({
+@@ -954,7 +960,12 @@
+   const [userModal, setUserModal] = useState({ open: false, mode: 'create', user: null, initialRole: 'gestor' });
+   const [userDeleteConfirm, setUserDeleteConfirm] = useState({ open: false, user: null });
+   const [submitting, setSubmitting] = useState(false);
+-  const [deleteId, setDeleteId] = useState(null);
++  // Identifica qual ação está em curso em qual linha (delete-squad, reset, toggle, delete-user).
++  // Um único `deleteId` antes fazia 4 botões diferentes mostrarem texto de loading
++  // simultaneamente quando qualquer ação era disparada. Discriminamos por `action`.
++  const [rowAction, setRowAction] = useState({ id: null, action: null });
++  const isRowBusy = (id) => rowAction.id === id;
++  const isRowAction = (id, action) => rowAction.id === id && rowAction.action === action;
+   const [usersLoading, setUsersLoading] = useState(false);
+   const [usersError, setUsersError] = useState(null);
+   const [users, setUsers] = useState([]);
+@@ -964,6 +975,11 @@
+   const [requests, setRequests] = useState([]);
+   const [requestReview, setRequestReview] = useState({ open: false, request: null });
+   const [lastApprovalResult, setLastApprovalResult] = useState(null);
++  // Modal global pra exibir senhas temporárias geradas (manualmente ou via aprovação),
++  // disponível em qualquer aba — antes a senha gerada via "Gerar senha" ficava só
++  // dentro da aba 'requests' e o admin perdia.
++  const [passwordRevealModal, setPasswordRevealModal] = useState(null);
++  const [passwordCopied, setPasswordCopied] = useState(false);
+   const [userSearch, setUserSearch] = useState('');
+   const [userRoleFilter, setUserRoleFilter] = useState('all');
+   const [userStatusFilter, setUserStatusFilter] = useState('all');
+@@ -1320,15 +1336,31 @@
+       if (userModal.mode === 'create') {
+         const response = await createUser(form);
+         const createdUser = response?.user || response;
++        // Quando o cargo é 'gdv', criamos automaticamente o GDV correspondente.
++        // Se essa segunda chamada falha, o usuário JÁ EXISTE — então separamos o
++        // erro para que o admin saiba o que rodou e o que não rodou, em vez de
++        // mostrar "Não foi possível salvar o usuário" (que é mentira).
++        let gdvCreationFailed = null;
+         if (form.role === 'gdv' && form.name?.trim() && createdUser?.id) {
+-          await createGdv({ name: form.name.trim(), ownerUserId: createdUser.id });
++          try {
++            await createGdv({ name: form.name.trim(), ownerUserId: createdUser.id });
++          } catch (gdvErr) {
++            gdvCreationFailed = gdvErr?.message || 'Não foi possível criar o GDV correspondente.';
++          }
++        }
++        if (gdvCreationFailed) {
++          showToast(
++            `Usuário "${form.name.trim()}" criado, mas o GDV não foi vinculado: ${gdvCreationFailed} Crie o GDV manualmente na aba GDVs.`,
++            { variant: 'error' }
++          );
++        } else {
++          showToast(`"${form.name.trim()}" criado com sucesso.`);
+         }
+-        showToast(`"${form.name.trim()}" criado com sucesso.`);
+       } else if (userModal.user?.id) {
+         const payload = { ...form };
+         if (!payload.password) delete payload.password;
+         await updateUser(userModal.user.id, payload);
+-        showToast(`"${form.name.trim()}" atualizado com sucesso.`);
++        showToast(`"${(form.name || '').trim() || 'Usuário'}" atualizado com sucesso.`);
+       }
+       setUserModal({ open: false, mode: 'create', user: null, initialRole: 'gestor' });
+       await loadUsers();
+@@ -1342,7 +1374,7 @@
+ 
+   async function handleDeleteSquad(squad) {
+     if (!canManageSquads || !squad?.id) return;
+-    setDeleteId(squad.id);
++    setRowAction({ id: squad.id, action: 'delete-squad' });
+     try {
+       await deleteSquad(squad.id);
+       showToast(`"${squad.name}" removido.`);
+@@ -1351,13 +1383,13 @@
+     } catch (err) {
+       showToast(err?.message || 'Não foi possível remover o squad.', { variant: 'error' });
+     } finally {
+-      setDeleteId(null);
++      setRowAction({ id: null, action: null });
+     }
+   }
+ 
+   async function handleToggleUser(target) {
+     if (!canManageTeam || !target?.id) return;
+-    setDeleteId(target.id);
++    setRowAction({ id: target.id, action: 'toggle' });
+     try {
+       const response = await toggleUserActive(target.id);
+       showToast(`${response?.user?.active ? 'Usuário reativado' : 'Usuário desativado'} com sucesso.`);
+@@ -1365,13 +1397,13 @@
+     } catch (err) {
+       showToast(err?.message || 'Não foi possível atualizar o status do usuário.', { variant: 'error' });
+     } finally {
+-      setDeleteId(null);
++      setRowAction({ id: null, action: null });
+     }
+   }
+ 
+   async function handleDeleteUser(target) {
+     if (!canManageTeam || !target?.id) return;
+-    setDeleteId(target.id);
++    setRowAction({ id: target.id, action: 'delete-user' });
+     try {
+       await deleteUser(target.id);
+       showToast(`"${target.name}" removido.`);
+@@ -1380,26 +1412,36 @@
+     } catch (err) {
+       showToast(err?.message || 'Não foi possível remover o usuário.', { variant: 'error' });
+     } finally {
+-      setDeleteId(null);
++      setRowAction({ id: null, action: null });
+     }
+   }
+ 
+   async function handleResetUserPassword(target) {
+     if (!canManageTeam || !target?.id) return;
+-    setDeleteId(target.id);
++    setRowAction({ id: target.id, action: 'reset' });
+     try {
+       const response = await resetUserPassword(target.id);
++      const reveal = {
++        kind: 'manual-reset',
++        userName: response?.user?.name || target.name || '',
++        userEmail: response?.user?.email || target.email || '',
++        temporaryPassword: response?.temporaryPassword || '',
++      };
+       setLastApprovalResult({
+         kind: 'manual-reset',
+         updatedUser: response?.user || target,
+         temporaryPassword: response?.temporaryPassword || '',
+       });
++      if (reveal.temporaryPassword) {
++        setPasswordCopied(false);
++        setPasswordRevealModal(reveal);
++      }
+       showToast(`Senha temporária gerada para ${target.name}.`);
+       await loadUsers();
+     } catch (err) {
+       showToast(err?.message || 'Não foi possível gerar a senha temporária.', { variant: 'error' });
+     } finally {
+-      setDeleteId(null);
++      setRowAction({ id: null, action: null });
+     }
+   }
+ 
+@@ -1410,6 +1452,18 @@
+       const response = await updateAccessRequest(target.id, payload);
+       const result = response?.approvalResult || null;
+       setLastApprovalResult(result);
++      // Também abre o modal global se houve geração de senha (invite/reset
++      // aprovados) — útil principalmente quando o admin não está na aba 'requests'
++      // depois de aprovar.
++      if (result?.temporaryPassword) {
++        setPasswordCopied(false);
++        setPasswordRevealModal({
++          kind: result.kind === 'invite' ? 'invite' : 'reset',
++          userName: result.createdUser?.name || result.updatedUser?.name || '',
++          userEmail: result.createdUser?.email || result.updatedUser?.email || '',
++          temporaryPassword: result.temporaryPassword,
++        });
++      }
+       setRequestReview({ open: false, request: null });
+       showToast(`Solicitação ${payload.status === 'approved' ? 'aprovada' : 'rejeitada'} com sucesso.`);
+       await Promise.all([loadRequests(), loadUsers()]);
+@@ -1570,8 +1624,8 @@
+                             {canManageSquads ? (
+                               <>
+                                 <button type="button" className={styles.ghostButton} onClick={() => setSquadModal({ open: true, mode: 'edit', squad })}>Editar</button>
+-                                <button type="button" className={styles.dangerButton} disabled={deleteId === squad.id} onClick={() => handleDeleteSquad(squad)}>
+-                                  {deleteId === squad.id ? 'Removendo...' : 'Excluir'}
++                                <button type="button" className={styles.dangerButton} disabled={isRowAction(squad.id, 'delete-squad')} onClick={() => handleDeleteSquad(squad)}>
++                                  {isRowAction(squad.id, 'delete-squad') ? 'Removendo...' : 'Excluir'}
+                                 </button>
+                               </>
+                             ) : <span className={styles.dimText}>Somente leitura</span>}
+@@ -1696,14 +1750,14 @@
+                             {canManageTeam ? (
+                               <>
+                                 <button type="button" className={styles.ghostButton} onClick={() => setUserModal({ open: true, mode: 'edit', user: entry })}>Editar</button>
+-                                <button type="button" className={styles.dashboardLink} disabled={Boolean(entry.isMaster) || deleteId === entry.id} onClick={() => handleResetUserPassword(entry)}>
+-                                  {deleteId === entry.id ? 'Gerando...' : 'Gerar senha'}
++                                <button type="button" className={styles.dashboardLink} disabled={Boolean(entry.isMaster) || isRowBusy(entry.id)} onClick={() => handleResetUserPassword(entry)}>
++                                  {isRowAction(entry.id, 'reset') ? 'Gerando...' : 'Gerar senha'}
+                                 </button>
+-                                <button type="button" className={styles.dashboardLink} disabled={Boolean(entry.isMaster) || deleteId === entry.id} onClick={() => handleToggleUser(entry)}>
+-                                  {deleteId === entry.id ? 'Salvando...' : entry.active ? 'Desativar' : 'Reativar'}
++                                <button type="button" className={styles.dashboardLink} disabled={Boolean(entry.isMaster) || isRowBusy(entry.id)} onClick={() => handleToggleUser(entry)}>
++                                  {isRowAction(entry.id, 'toggle') ? 'Salvando...' : entry.active ? 'Desativar' : 'Reativar'}
+                                 </button>
+-                                <button type="button" className={styles.dangerButton} disabled={Boolean(entry.isMaster) || deleteId === entry.id} onClick={() => setUserDeleteConfirm({ open: true, user: entry })}>
+-                                  {deleteId === entry.id ? 'Removendo...' : 'Excluir'}
++                                <button type="button" className={styles.dangerButton} disabled={Boolean(entry.isMaster) || isRowBusy(entry.id)} onClick={() => setUserDeleteConfirm({ open: true, user: entry })}>
++                                  {isRowAction(entry.id, 'delete-user') ? 'Removendo...' : 'Excluir'}
+                                 </button>
+                               </>
+                             ) : <span className={styles.dimText}>Somente leitura</span>}
+@@ -2126,7 +2180,7 @@
+           users={userRows.filter((entry) => entry.active)}
+           canEditOwner={canManageSquads}
+           busy={submitting}
+-          deleting={deleteId === squadModal.squad?.id}
++          deleting={isRowAction(squadModal.squad?.id, 'delete-squad')}
+           onClose={() => setSquadModal({ open: false, mode: 'create', squad: null })}
+           onSubmit={handleSquadSubmit}
+           onDelete={handleDeleteSquad}
+@@ -2159,7 +2213,7 @@
+       {userDeleteConfirm.open && userDeleteConfirm.user ? (
+         <ConfirmDeleteUserModal
+           user={userDeleteConfirm.user}
+-          busy={deleteId === userDeleteConfirm.user.id}
++          busy={isRowAction(userDeleteConfirm.user.id, 'delete-user')}
+           onClose={() => setUserDeleteConfirm({ open: false, user: null })}
+           onConfirm={handleDeleteUser}
+         />
+@@ -2174,6 +2228,96 @@
+           onSubmit={(payload) => handleRequestStatus(requestReview.request, payload)}
+         />
+       ) : null}
++
++      {passwordRevealModal ? (
++        <div
++          className={styles.modalBackdrop}
++          role="presentation"
++          onClick={() => setPasswordRevealModal(null)}
++        >
++          <div
++            className={styles.modalCard}
++            role="dialog"
++            aria-modal="true"
++            aria-labelledby="password-reveal-title"
++            onClick={(event) => event.stopPropagation()}
++          >
++            <div className={styles.modalHead}>
++              <div>
++                <span className={styles.modalEyebrow}>Acesso temporário</span>
++                <h3 id="password-reveal-title">
++                  {passwordRevealModal.kind === 'invite'
++                    ? 'Usuário criado com sucesso'
++                    : 'Senha temporária gerada'}
++                </h3>
++              </div>
++              <button
++                type="button"
++                className={styles.modalClose}
++                onClick={() => setPasswordRevealModal(null)}
++                aria-label="Fechar"
++              >
++                <CloseIcon size={16} />
++              </button>
++            </div>
++
++            <p className={styles.modalText}>
++              {passwordRevealModal.kind === 'invite'
++                ? `Compartilhe estes dados com ${passwordRevealModal.userName || 'o novo usuário'} de forma segura. A senha não poderá ser recuperada depois de fechar este aviso.`
++                : `Compartilhe a nova senha com ${passwordRevealModal.userName || 'o usuário'} de forma segura. Ela não poderá ser recuperada depois de fechar este aviso.`}
++            </p>
++
++            {passwordRevealModal.userEmail ? (
++              <label className={styles.field}>
++                <span>Usuário</span>
++                <input
++                  type="text"
++                  value={passwordRevealModal.userEmail}
++                  readOnly
++                  onFocus={(event) => event.target.select()}
++                />
++              </label>
++            ) : null}
++
++            <label className={styles.field}>
++              <span>Senha temporária</span>
++              <input
++                type="text"
++                value={passwordRevealModal.temporaryPassword}
++                readOnly
++                onFocus={(event) => event.target.select()}
++              />
++            </label>
++
++            <div className={styles.modalActions}>
++              <button
++                type="button"
++                className={styles.ghostButton}
++                onClick={() => setPasswordRevealModal(null)}
++              >
++                Fechar
++              </button>
++              <button
++                type="button"
++                className={styles.primaryButton}
++                onClick={async () => {
++                  try {
++                    if (navigator?.clipboard?.writeText) {
++                      await navigator.clipboard.writeText(passwordRevealModal.temporaryPassword);
++                    }
++                    setPasswordCopied(true);
++                    showToast('Senha copiada para a área de transferência.');
++                  } catch {
++                    showToast('Não foi possível copiar automaticamente. Selecione e copie manualmente.', { variant: 'error' });
++                  }
++                }}
++              >
++                {passwordCopied ? 'Copiado ✓' : 'Copiar senha'}
++              </button>
++            </div>
++          </div>
++        </div>
++      ) : null}
+     </>
+   );
+ }
+--- edi_v2_orig/src/pages/ClientsPage.jsx	2026-05-02 08:31:51.000000000 +0000
++++ edi_v2_fixed/src/pages/ClientsPage.jsx	2026-05-04 13:34:12.059655549 +0000
+@@ -61,7 +61,19 @@
+   const [pageSize, setPageSize] = useState(20);
+   const [page, setPage] = useState(1);
+ 
+-  const today = useMemo(() => new Date(), []);
++  // `today` precisa refletir a data atual ainda que a aba fique aberta a noite toda.
++  // Antes era `useMemo(() => new Date(), [])`, que travava no instante do mount —
++  // e cálculos de "vencendo em 30 dias" / "vencido" ficavam stale após meia-noite.
++  // Aqui guardamos a data e checamos uma vez por minuto se o dia (YYYY-MM-DD) mudou.
++  const [today, setToday] = useState(() => new Date());
++  useEffect(() => {
++    const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
++    const interval = setInterval(() => {
++      const now = new Date();
++      setToday((current) => (dayKey(current) === dayKey(now) ? current : now));
++    }, 60_000);
++    return () => clearInterval(interval);
++  }, []);
+ 
+   const counts = useMemo(() => {
+     const all = Array.isArray(clients) ? clients : [];
