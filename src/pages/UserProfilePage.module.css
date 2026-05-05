@@ -20,6 +20,7 @@
 
 .inlineLink,
 .primaryButton,
+.secondaryButton,
 .panelAction {
   min-height: 34px;
   padding: 0 12px;
@@ -38,6 +39,7 @@
 
 .inlineLink:hover,
 .primaryButton:hover,
+.secondaryButton:hover,
 .panelAction:hover {
   border-color: var(--line);
   background: rgba(255, 255, 255, 0.04);
@@ -51,6 +53,29 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+
+.heroActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.primaryButton svg,
+.secondaryButton svg {
+  flex: 0 0 auto;
+}
+
+.secondaryButton {
+  background: transparent;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .heroMain,
@@ -374,6 +399,147 @@
   text-overflow: ellipsis;
 }
 
+
+.taskModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.taskModal {
+  width: min(560px, calc(100vw - 40px));
+  max-height: min(720px, calc(100vh - 40px));
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4);
+  background: #141516;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+}
+
+.taskModalHeader {
+  min-height: 58px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.taskModalHeader > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.taskModalHeader span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.taskModalHeader strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iconButton {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButton:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.taskForm {
+  min-height: 0;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.taskForm input,
+.taskForm textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.taskForm input {
+  height: 38px;
+  padding: 0 11px;
+}
+
+.taskForm textarea {
+  min-height: 134px;
+  resize: vertical;
+  padding: 10px 11px;
+  line-height: 1.45;
+}
+
+.taskForm input:focus,
+.taskForm textarea:focus {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.taskForm input::placeholder,
+.taskForm textarea::placeholder {
+  color: var(--text-quaternary);
+}
+
+.taskDateField {
+  width: 180px;
+  max-width: 100%;
+}
+
+.taskDateField button {
+  height: 36px;
+}
+
+.taskModalFooter {
+  padding-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 1080px) {
   .layout {
     grid-template-columns: minmax(0, 1fr);
@@ -393,6 +559,20 @@
 
   .heroMain {
     align-items: flex-start;
+  }
+
+  .heroActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .taskModalOverlay {
+    padding: 10px;
+  }
+
+  .taskModal {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
   }
 
   .taskTableHead {
