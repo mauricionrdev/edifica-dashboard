@@ -10,8 +10,8 @@
 
 .projectHeader,
 .emptyCard,
+.memberPanel,
 .sectionForm,
-.projectTools,
 .sectionCard,
 .taskPanel,
 .activityPanel {
@@ -30,6 +30,14 @@
   gap: 14px;
 }
 
+.projectHeaderRight {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 .projectTitle {
   min-width: 0;
   display: grid;
@@ -39,6 +47,7 @@
 .projectTitle span,
 .emptyHead span,
 .projectStats span,
+.memberPanelHead span,
 .sectionTitleBlock span,
 .taskDetailHead span,
 .taskControls span,
@@ -93,6 +102,112 @@
   font-variant-numeric: tabular-nums;
 }
 
+
+.deleteProjectButton {
+  min-height: 30px;
+  padding: 0 10px;
+  color: var(--text-tertiary);
+}
+
+.deleteProjectButton:hover:not(:disabled) {
+  border-color: rgba(255, 91, 115, 0.22);
+  background: rgba(255, 91, 115, 0.045);
+  color: #ffb0bd;
+}
+
+.memberPanel {
+  min-width: 0;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.memberPanelHead {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.memberPanelHead strong {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+}
+
+.memberList {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px;
+}
+
+.memberRow {
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.012);
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.memberRow > span {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 640;
+}
+
+.memberRow div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.memberRow strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.12;
+  font-weight: 590;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.memberRow small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.memberRow:hover .actionIcon {
+  opacity: 1;
+}
+
+.memberForm {
+  grid-template-columns: minmax(160px, 1fr) minmax(124px, 150px) auto;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.01);
+}
+
 .emptyCard {
   padding: 16px;
   display: grid;
@@ -111,6 +226,8 @@
 }
 
 .createGrid button,
+.deleteProjectButton,
+.memberForm button,
 .sectionForm button,
 .taskForm button,
 .subtaskForm button,
@@ -141,6 +258,8 @@
 }
 
 .createGrid button:hover:not(:disabled),
+.deleteProjectButton:hover:not(:disabled),
+.memberForm button:hover:not(:disabled),
 .sectionForm button:hover:not(:disabled),
 .taskForm button:hover:not(:disabled),
 .subtaskForm button:hover:not(:disabled),
@@ -160,57 +279,8 @@ textarea:disabled {
   cursor: not-allowed;
 }
 
-
-.projectTools {
-  min-width: 0;
-  min-height: 42px;
-  padding: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.projectToolGroup {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.projectTools select,
-.taskForm select {
-  min-width: 0;
-  min-height: 34px;
-  padding: 0 10px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.018);
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 12px;
-  outline: 0;
-}
-
-.projectTools select:focus,
-.taskForm select:focus {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.032);
-}
-
-.projectTools > span {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 560;
-  white-space: nowrap;
-}
-
-.dateField {
-  width: 100%;
-  min-width: 0;
-}
-
 .sectionForm,
+.memberForm,
 .taskForm,
 .subtaskForm,
 .collabForm {
@@ -224,6 +294,7 @@ textarea:disabled {
 }
 
 .sectionForm input,
+.memberForm select,
 .taskForm input,
 .taskForm select,
 .subtaskForm input,
@@ -244,6 +315,7 @@ textarea:disabled {
 }
 
 .sectionForm input,
+.memberForm select,
 .taskForm input,
 .taskForm select,
 .subtaskForm input,
@@ -258,6 +330,7 @@ textarea:disabled {
 }
 
 .sectionForm input:focus,
+.memberForm select:focus,
 .taskForm input:focus,
 .taskForm select:focus,
 .subtaskForm input:focus,
@@ -276,6 +349,47 @@ textarea:disabled {
 .commentForm textarea::placeholder {
   color: var(--text-quaternary);
   opacity: 1;
+}
+
+
+.taskToolbar {
+  min-width: 0;
+  min-height: 42px;
+  padding: 6px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 16px);
+  background: rgba(255, 255, 255, 0.014);
+  display: grid;
+  grid-template-columns: minmax(142px, 180px) minmax(142px, 180px) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.taskToolbar select {
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  outline: 0;
+}
+
+.taskToolbar select:focus {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.taskToolbar span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 560;
+  justify-self: end;
+  white-space: nowrap;
 }
 
 .workspace {
@@ -400,7 +514,7 @@ textarea:disabled {
 
 .taskForm {
   border-bottom: 1px solid var(--line-subtle);
-  grid-template-columns: minmax(180px, 1fr) minmax(140px, 0.6fr) minmax(120px, 0.5fr) auto;
+  grid-template-columns: minmax(180px, 1fr) minmax(132px, 190px) minmax(128px, 150px) auto;
 }
 
 .taskList {
@@ -808,9 +922,15 @@ textarea:disabled {
 
 .commentCard header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+}
+
+.commentCard header > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
 }
 
 .commentCard strong {
@@ -822,6 +942,31 @@ textarea:disabled {
 .commentCard header span {
   color: var(--text-tertiary);
   font-size: 11px;
+}
+
+.commentDeleteButton {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.commentDeleteButton:hover:not(:disabled) {
+  border-color: rgba(255, 91, 115, 0.2);
+  background: rgba(255, 91, 115, 0.055);
+  color: #ff9cad;
+}
+
+.commentDeleteButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .commentCard p {
@@ -944,6 +1089,44 @@ textarea:disabled {
   text-overflow: ellipsis;
 }
 
+.activityDetails {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.activityDetails em {
+  min-height: 20px;
+  padding: 0 7px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.012);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 540;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .taskToolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .taskToolbar span {
+    justify-self: start;
+  }
+
+  .taskForm {
+    grid-template-columns: 1fr;
+  }
+}
+
 .confirmBackdrop {
   position: fixed;
   inset: 0;
@@ -1009,7 +1192,6 @@ textarea:disabled {
   .workspaceWithPanel,
   .projectHeader,
   .sectionForm,
-  .projectTools,
   .taskForm,
   .subtaskForm,
   .collabForm,
@@ -1041,18 +1223,32 @@ textarea:disabled {
     padding-top: 0;
   }
 
-  .projectToolGroup {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .projectTools > span {
-    white-space: normal;
-  }
-
   .actionIcon,
   .moveBtn {
     opacity: 1;
+  }
+}
+
+.confirmHead p {
+  margin: 2px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 940px) {
+  .projectHeader {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .projectHeaderRight {
+    justify-content: stretch;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+
+  .memberForm {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
