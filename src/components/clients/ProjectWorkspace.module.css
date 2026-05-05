@@ -1074,3 +1074,202 @@ textarea:disabled {
 .taskForm .projectInlineSelect {
   align-self: stretch;
 }
+
+.deleteProjectButton {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.012);
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.deleteProjectButton:hover:not(:disabled) {
+  border-color: rgba(255, 91, 115, 0.22);
+  background: rgba(255, 91, 115, 0.045);
+  color: #ffb0bd;
+}
+
+.memberPanel {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 16px);
+  background: rgba(255, 255, 255, 0.016);
+  display: grid;
+  gap: 10px;
+}
+
+.memberPanelHead {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.memberPanelHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.memberPanelHead strong {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+}
+
+.memberList {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px;
+}
+
+.memberRow {
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.012);
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.memberRow > span {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 640;
+}
+
+.memberRow div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.memberRow strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.12;
+  font-weight: 590;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.memberRow small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.memberRow:hover .actionIcon {
+  opacity: 1;
+}
+
+.memberForm {
+  padding: 8px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.01);
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(124px, 150px) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.memberForm button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.016);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 590;
+  cursor: pointer;
+}
+
+.memberForm button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.commentDelete {
+  width: max-content;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 590;
+  cursor: pointer;
+}
+
+.commentDelete:hover:not(:disabled) {
+  color: #ff9cad;
+}
+
+.commentDelete:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.activityMeta {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.activityMeta span {
+  max-width: 100%;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.014);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 540;
+}
+
+.confirmHead p {
+  margin: 2px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 980px) {
+  .memberForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
