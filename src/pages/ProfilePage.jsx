@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
 import { createTask, listMyProjectTasks, updateTask as updateProjectTask } from '../api/projects.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -7,7 +7,6 @@ import { useToast } from '../context/ToastContext.jsx';
 import { hasPermission } from '../utils/permissions.js';
 import { roleLabel } from '../utils/roles.js';
 import { normalizeSlug } from '../utils/slugs.js';
-import { buildProfilePath } from '../utils/entityPaths.js';
 import {
   getUserAvatar,
   readAvatarFile,
@@ -17,7 +16,7 @@ import {
 } from '../utils/avatarStorage.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import DateField from '../components/ui/DateField.jsx';
-import { CloseIcon, SearchIcon, SettingsIcon } from '../components/ui/Icons.jsx';
+import { CloseIcon, SettingsIcon } from '../components/ui/Icons.jsx';
 import UserPicker from '../components/users/UserPicker.jsx';
 import styles from './ProfilePage.module.css';
 
@@ -166,8 +165,6 @@ export default function ProfilePage() {
   const [newTask, setNewTask] = useState({ title: '', assigneeUserId: user?.id || '', dueDate: '' });
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
   const [collapsedTaskSections, setCollapsedTaskSections] = useState({});
-  const [peopleQuery, setPeopleQuery] = useState('');
-  const [peopleSearchOpen, setPeopleSearchOpen] = useState(false);
 
   useEffect(() => {
     setPanelHeader({
@@ -232,20 +229,6 @@ export default function ProfilePage() {
   const visibleTasks = useMemo(() => getVisibleTasks(tasks, taskTab), [taskTab, tasks]);
   const taskSections = useMemo(() => getTaskSections(tasks, taskTab), [taskTab, tasks]);
   const canCreateTasks = hasPermission(user, 'tasks.create');
-
-  const peopleResults = useMemo(() => {
-    const term = peopleQuery.trim().toLowerCase();
-    const source = Array.isArray(userDirectory) ? userDirectory : [];
-    if (!term) return source.filter((entry) => entry?.id !== user?.id).slice(0, 5);
-
-    return source
-      .filter((entry) => entry?.id !== user?.id)
-      .filter((entry) => [entry?.name, entry?.email, roleLabel(entry?.role)]
-        .join(' ')
-        .toLowerCase()
-        .includes(term))
-      .slice(0, 6);
-  }, [peopleQuery, user?.id, userDirectory]);
 
   useEffect(() => {
     setCollapsedTaskSections((current) => {
@@ -398,50 +381,6 @@ export default function ProfilePage() {
         </button>
       </section>
 
-      <section className={styles.collaborationBar}>
-        <div className={styles.collaborationCopy}>
-          <span>Pessoas</span>
-          <strong>Encontrar perfil</strong>
-        </div>
-
-        <div className={styles.peopleSearch}>
-          <SearchIcon size={15} aria-hidden="true" />
-          <input
-            value={peopleQuery}
-            onChange={(event) => {
-              setPeopleQuery(event.target.value);
-              setPeopleSearchOpen(true);
-            }}
-            onFocus={() => setPeopleSearchOpen(true)}
-            onBlur={() => window.setTimeout(() => setPeopleSearchOpen(false), 140)}
-            placeholder="Buscar pessoa por nome, e-mail ou cargo..."
-            aria-label="Buscar pessoa"
-          />
-
-          {peopleSearchOpen ? (
-            <div className={styles.peopleDropdown}>
-              {peopleResults.length === 0 ? (
-                <span className={styles.peopleEmpty}>Nenhum usuário encontrado.</span>
-              ) : peopleResults.map((entry) => {
-                const entryAvatar = getUserAvatar(entry);
-                return (
-                  <Link key={entry.id} to={buildProfilePath(entry)} className={styles.peopleResult}>
-                    <span className={styles.peopleAvatar}>
-                      {entryAvatar ? <img src={entryAvatar} alt="" /> : initials(entry.name)}
-                    </span>
-                    <span className={styles.peopleIdentity}>
-                      <strong>{entry.name}</strong>
-                      <small>{entry.email || roleLabel(entry.role)}</small>
-                    </span>
-                    <span className={styles.peopleAction}>Abrir</span>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : null}
-        </div>
-      </section>
-
       <section className={styles.tasksBoard}>
         <header className={styles.boardHeader}>
           <div className={styles.boardIdentity}>
@@ -491,7 +430,6 @@ export default function ProfilePage() {
                 placeholder="Responsável"
               />
               <DateField
-                className={styles.taskDateField}
                 value={newTask.dueDate}
                 onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))}
                 placeholder="Prazo"

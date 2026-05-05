@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { createTask, listUserProjectTasks, listUserProjects } from '../api/projects.js';
 import { getUserAvatar } from '../utils/avatarStorage.js';
 import { roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import DateField from '../components/ui/DateField.jsx';
-import { CloseIcon, PlusIcon, ProjectBoardIcon } from '../components/ui/Icons.jsx';
+import { CloseIcon, ProjectBoardIcon } from '../components/ui/Icons.jsx';
 import { buildProfilePath, matchesEntityRouteSegment } from '../utils/entityPaths.js';
-import { hasPermission } from '../utils/permissions.js';
-import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import styles from './UserProfilePage.module.css';
 
@@ -44,8 +42,6 @@ function getTaskStatusLabel(task) {
 }
 
 export default function UserProfilePage() {
-  const { user } = useAuth();
-  const { showToast } = useToast();
   const { userId } = useParams();
   const navigate = useNavigate();
   const {
@@ -60,9 +56,10 @@ export default function UserProfilePage() {
   const [profileProjects, setProfileProjects] = useState([]);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [projectsLoading, setProjectsLoading] = useState(false);
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [assigningTask, setAssigningTask] = useState(false);
-  const [taskDraft, setTaskDraft] = useState({ title: '', description: '', dueDate: '' });
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
+  const [newTask, setNewTask] = useState({ title: '', description: '', dueDate: '' });
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!Array.isArray(userDirectory) || userDirectory.length === 0) {
@@ -190,36 +187,34 @@ export default function UserProfilePage() {
     },
   ]).filter((section) => section.tasks.length > 0), [profileTasks]);
 
-  const canAssignTasks = hasPermission(user, 'tasks.create');
-
-  async function reloadProfileTasks(targetUserId = profileUser?.id) {
-    if (!targetUserId) return;
-    const res = await listUserProjectTasks(targetUserId);
+  async function reloadProfileTasks() {
+    if (!profileUser?.id) return;
+    const res = await listUserProjectTasks(profileUser.id);
     setProfileTasks(Array.isArray(res?.tasks) ? res.tasks : []);
   }
 
-  async function handleAssignTask(event) {
+  async function handleCreateTask(event) {
     event.preventDefault();
-    const title = taskDraft.title.trim();
+    const title = newTask.title.trim();
     if (!title || !profileUser?.id) return;
 
     try {
-      setAssigningTask(true);
+      setCreatingTask(true);
       await createTask({
         title,
-        description: taskDraft.description.trim(),
+        description: newTask.description.trim(),
         assigneeUserId: profileUser.id,
-        dueDate: taskDraft.dueDate || '',
+        dueDate: newTask.dueDate || '',
         source: 'profile',
       });
-      await reloadProfileTasks(profileUser.id);
-      setTaskDraft({ title: '', description: '', dueDate: '' });
-      setAssignModalOpen(false);
-      showToast('Tarefa atribuída.', { variant: 'success' });
+      await reloadProfileTasks();
+      setNewTask({ title: '', description: '', dueDate: '' });
+      setTaskModalOpen(false);
+      showToast('Tarefa criada.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Não foi possível atribuir a tarefa.', { variant: 'error' });
+      showToast(err?.message || 'Não foi possível criar a tarefa.', { variant: 'error' });
     } finally {
-      setAssigningTask(false);
+      setCreatingTask(false);
     }
   }
 
@@ -230,7 +225,7 @@ export default function UserProfilePage() {
           variant="empty"
           title="Usuário não encontrado"
           description="Esse perfil não está disponível no diretório carregado."
-          action={<button type="button" className={styles.inlineLink} onClick={() => navigate('/equipe')}>Voltar para Equipe</button>}
+          action={<Link to="/equipe" className={styles.inlineLink}>Voltar para Equipe</Link>}
         />
       </div>
     );
@@ -259,12 +254,12 @@ export default function UserProfilePage() {
         </div>
 
         <div className={styles.heroActions}>
-          {canAssignTasks ? (
-            <button type="button" className={styles.primaryButton} onClick={() => setAssignModalOpen(true)}>
-              <PlusIcon size={15} />
-              Atribuir tarefa
-            </button>
+          {profileUser.email ? (
+            <a href={`mailto:${profileUser.email}`} className={styles.secondaryButton}>E-mail</a>
           ) : null}
+          <button type="button" className={styles.primaryButton} onClick={() => setTaskModalOpen(true)}>
+            Atribuir tarefa
+          </button>
         </div>
       </section>
 
@@ -276,7 +271,7 @@ export default function UserProfilePage() {
                 <h2>Tarefas</h2>
                 <p>{profileTasks.length} vinculadas</p>
               </div>
-              <span className={styles.panelHint}>visível pelo cliente</span>
+
             </header>
 
             <div className={styles.taskTableHead}>
@@ -392,55 +387,55 @@ export default function UserProfilePage() {
         </aside>
       </div>
 
-      {assignModalOpen ? (
-        <div className={styles.modalOverlay} onClick={() => setAssignModalOpen(false)}>
+      {taskModalOpen ? (
+        <div className={styles.modalOverlay} onMouseDown={() => setTaskModalOpen(false)}>
           <section
-            className={styles.assignModal}
+            className={styles.taskModal}
             role="dialog"
             aria-modal="true"
-            aria-label={`Atribuir tarefa para ${profileUser.name}`}
-            onClick={(event) => event.stopPropagation()}
+            aria-label="Nova tarefa"
+            onMouseDown={(event) => event.stopPropagation()}
           >
-            <header className={styles.assignHeader}>
+            <header className={styles.modalHeader}>
               <div>
-                <span>Atribuir tarefa</span>
-                <h2>{profileUser.name}</h2>
+                <span className={styles.modalKicker}>Tarefa</span>
+                <h2>Nova tarefa</h2>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setAssignModalOpen(false)} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={() => setTaskModalOpen(false)} aria-label="Fechar">
                 <CloseIcon size={18} />
               </button>
             </header>
 
-            <form className={styles.assignForm} onSubmit={handleAssignTask}>
+            <form className={styles.taskForm} onSubmit={handleCreateTask}>
               <input
-                value={taskDraft.title}
-                onChange={(event) => setTaskDraft((prev) => ({ ...prev, title: event.target.value }))}
+                value={newTask.title}
+                onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
                 placeholder="Nome da tarefa"
                 aria-label="Nome da tarefa"
                 autoFocus
               />
               <textarea
-                value={taskDraft.description}
-                onChange={(event) => setTaskDraft((prev) => ({ ...prev, description: event.target.value }))}
+                value={newTask.description}
+                onChange={(event) => setNewTask((prev) => ({ ...prev, description: event.target.value }))}
                 placeholder="Descrição"
                 aria-label="Descrição"
+                rows={5}
               />
-              <div className={styles.assignMetaRow}>
-                <span className={styles.assigneePill}>{profileUser.name}</span>
+              <div className={styles.assignmentRow}>
+                <div className={styles.assigneeChip}>
+                  <span className={styles.miniAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileUser.name)}</span>
+                  <span>{profileUser.name}</span>
+                </div>
                 <DateField
-                  value={taskDraft.dueDate}
-                  onChange={(value) => setTaskDraft((prev) => ({ ...prev, dueDate: value }))}
+                  value={newTask.dueDate}
+                  onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))}
                   placeholder="Prazo"
                   ariaLabel="Prazo"
                 />
               </div>
-              <footer className={styles.assignFooter}>
-                <button type="button" className={styles.secondaryButton} onClick={() => setAssignModalOpen(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className={styles.primaryButton} disabled={assigningTask || !taskDraft.title.trim()}>
-                  Criar tarefa
-                </button>
+              <footer className={styles.modalFooter}>
+                <button type="button" className={styles.secondaryButton} onClick={() => setTaskModalOpen(false)}>Cancelar</button>
+                <button type="submit" className={styles.primaryButton} disabled={creatingTask || !newTask.title.trim()}>Criar tarefa</button>
               </footer>
             </form>
           </section>
