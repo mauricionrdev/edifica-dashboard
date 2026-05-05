@@ -2,7 +2,7 @@ import { isActiveClientStatus } from '../../utils/clientStatus.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { updateGdv } from '../../api/gdvs.js';
-import { buildGdvPath, buildSquadPath, matchesEntityRouteSegment } from '../../utils/entityPaths.js';
+import { buildGdvPath, buildProfilePath, buildSquadPath, matchesEntityRouteSegment } from '../../utils/entityPaths.js';
 import { updateSquad } from '../../api/squads.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -84,7 +84,7 @@ export default function Sidebar({
   onNavigate,
   onToggleCollapse,
 }) {
-  const searchVisible = false;
+  const searchVisible = true;
   const { user, logout } = useAuth();
   const { showToast } = useToast();
   const location = useLocation();
@@ -183,6 +183,27 @@ export default function Sidebar({
   );
 
   const filteredPrimary = primaryItems.filter((item) => matchesSearch(item.label, normalizedQuery));
+  const filteredPeople = useMemo(() => {
+    if (!normalizedQuery) return [];
+    const list = Array.isArray(userDirectory) ? userDirectory : [];
+    return list
+      .filter((entry) => entry?.id && entry?.name && entry.active !== false)
+      .filter((entry) => (
+        matchesSearch(entry.name, normalizedQuery)
+        || matchesSearch(entry.email, normalizedQuery)
+        || matchesSearch(entry.role, normalizedQuery)
+        || matchesSearch(roleLabel(entry.role), normalizedQuery)
+        || matchesSearch(entry.title, normalizedQuery)
+        || matchesSearch(entry.position, normalizedQuery)
+      ))
+      .sort((a, b) => {
+        const aIsCurrent = a.id === user?.id ? 1 : 0;
+        const bIsCurrent = b.id === user?.id ? 1 : 0;
+        if (aIsCurrent !== bIsCurrent) return aIsCurrent - bIsCurrent;
+        return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
+      })
+      .slice(0, 6);
+  }, [normalizedQuery, user?.id, userDirectory]);
   const filteredGdvs = visibleGdvs.filter((entry) => (
     matchesSearch(entry.name, normalizedQuery)
     || matchesSearch(entry.gdvName, normalizedQuery)
@@ -314,20 +335,45 @@ export default function Sidebar({
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar tarefas, clientes..."
-              aria-label="Buscar na navegação"
+              placeholder="Buscar"
+              aria-label="Buscar"
             />
-            <kbd>Ctrl K</kbd>
           </label>
         </div>
       ) : null}
 
       <nav className={`${styles.nav} sb-nav`} aria-label="Navegação principal">
-        <section className={styles.group}>
-          {filteredPrimary.map((item) => (
-            <Item key={item.to} {...item} onClick={handleNavigate} collapsed={collapsed} />
-          ))}
-        </section>
+        {filteredPrimary.length > 0 ? (
+          <section className={styles.group}>
+            {filteredPrimary.map((item) => (
+              <Item key={item.to} {...item} onClick={handleNavigate} collapsed={collapsed} />
+            ))}
+          </section>
+        ) : null}
+
+        {filteredPeople.length > 0 ? (
+          <section className={styles.group}>
+            <div className={styles.groupLabel}>
+              <span>Pessoas</span>
+            </div>
+            {filteredPeople.map((entry) => (
+              <NavLink
+                key={entry.id}
+                to={buildProfilePath(entry)}
+                onClick={handleNavigate}
+                className={({ isActive }) =>
+                  `${styles.item} ${styles.personItem} ${isActive ? styles.itemActive : ''}`.trim()
+                }
+              >
+                <span className={styles.personAvatar} aria-hidden="true">
+                  {getUserAvatar(entry) ? <img src={getUserAvatar(entry)} alt="" /> : initials(entry.name)}
+                </span>
+                <span className={styles.itemLabel} title={entry.name}>{entry.name}</span>
+                <span className={styles.itemMeta}>{roleLabel(entry.role)}</span>
+              </NavLink>
+            ))}
+          </section>
+        ) : null}
 
         {canViewGdv(user) && filteredGdvs.length > 0 ? (
           <section className={styles.group}>
