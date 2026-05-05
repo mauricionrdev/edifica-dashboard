@@ -165,19 +165,62 @@ function metadataLabel(key, value, users = [], sections = []) {
     role: 'Papel',
     taskCount: 'Tarefas',
     sectionCount: 'Seções',
+    taskIds: 'Tarefas',
+    sectionIds: 'Seções',
   };
 
-  let display = value;
-  if (key.toLowerCase().includes('status')) display = statusLabel(value);
-  if (key.toLowerCase().includes('priority')) display = priorityLabel(value);
-  if (key.toLowerCase().includes('duedate')) display = formatDate(value);
-  if (key.toLowerCase().includes('userid') || key === 'userId') display = userName(users, value, value);
-  if (key.toLowerCase().includes('sectionid')) {
-    const section = (Array.isArray(sections) ? sections : []).find((entry) => sameId(entry.id, value));
-    display = section?.name || value || 'Sem seção';
-  }
+  const resolveSectionName = (sectionId) => {
+    const section = (Array.isArray(sections) ? sections : []).find((entry) => sameId(entry.id, sectionId));
+    return section?.name || sectionId || 'Sem seção';
+  };
 
-  return { label: labels[key] || key, value: display || '—' };
+  const countLabel = (count, singular, plural) => {
+    const safeCount = Number(count) || 0;
+    return `${safeCount} ${safeCount === 1 ? singular : plural}`;
+  };
+
+  const safeDisplay = (rawValue, rawKey = key) => {
+    if (rawValue === undefined || rawValue === null || rawValue === '') return '—';
+
+    const normalizedKey = String(rawKey || '').toLowerCase();
+
+    if (Array.isArray(rawValue)) {
+      if (normalizedKey.includes('task')) return countLabel(rawValue.length, 'tarefa', 'tarefas');
+      if (normalizedKey.includes('section')) return countLabel(rawValue.length, 'seção', 'seções');
+      return rawValue.map((entry) => safeDisplay(entry, rawKey)).filter(Boolean).join(', ') || '—';
+    }
+
+    if (typeof rawValue === 'object') {
+      const sectionText = rawValue.sectionId ? resolveSectionName(rawValue.sectionId) : '';
+      const taskIds = Array.isArray(rawValue.taskIds) ? countLabel(rawValue.taskIds.length, 'tarefa', 'tarefas') : '';
+      const sectionIds = Array.isArray(rawValue.sectionIds) ? countLabel(rawValue.sectionIds.length, 'seção', 'seções') : '';
+      const taskCount = rawValue.taskCount !== undefined ? countLabel(rawValue.taskCount, 'tarefa', 'tarefas') : '';
+      const sectionCount = rawValue.sectionCount !== undefined ? countLabel(rawValue.sectionCount, 'seção', 'seções') : '';
+
+      const composed = [sectionText, taskIds, sectionIds, taskCount, sectionCount].filter(Boolean).join(' · ');
+      if (composed) return composed;
+
+      if (rawValue.label || rawValue.name || rawValue.title || rawValue.value) {
+        return String(rawValue.label || rawValue.name || rawValue.title || rawValue.value);
+      }
+
+      try {
+        return JSON.stringify(rawValue);
+      } catch {
+        return 'Registro atualizado';
+      }
+    }
+
+    if (normalizedKey.includes('status')) return statusLabel(rawValue);
+    if (normalizedKey.includes('priority')) return priorityLabel(rawValue);
+    if (normalizedKey.includes('duedate')) return formatDate(rawValue);
+    if (normalizedKey.includes('userid') || rawKey === 'userId') return userName(users, rawValue, rawValue);
+    if (normalizedKey.includes('sectionid')) return resolveSectionName(rawValue);
+
+    return String(rawValue);
+  };
+
+  return { label: labels[key] || key, value: safeDisplay(value) };
 }
 
 function eventMetadataItems(event, users = [], sections = []) {
