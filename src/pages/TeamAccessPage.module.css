@@ -1617,7 +1617,7 @@ button:disabled,
 }
 
 .modalBackdrop {
-  z-index: 1000;
+  z-index: 1020;
   padding: 20px;
   background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(12px);
