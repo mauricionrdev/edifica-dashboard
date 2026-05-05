@@ -918,39 +918,35 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           <strong>{project.name}</strong>
         </div>
 
-        <div className={styles.projectHeaderSide}>
-          <div className={styles.projectStats}>
-            <div>
-              <strong>{progress}%</strong>
-              <span>progresso</span>
-            </div>
-            <div>
-              <strong>{openTasks}</strong>
-              <span>abertas</span>
-            </div>
-            <div>
-              <strong>{doneTasks}/{totalTasks}</strong>
-              <span>concluídas</span>
-            </div>
-            <div>
-              <strong>{members.length}</strong>
-              <span>membros</span>
-            </div>
+        <div className={styles.projectStats}>
+          <div>
+            <strong>{progress}%</strong>
+            <span>progresso</span>
           </div>
-
-          {canEditProject ? (
-            <button
-              type="button"
-              className={styles.deleteProjectButton}
-              onClick={() => setDeleteProjectTarget(project)}
-              disabled={busy}
-              aria-label="Excluir projeto"
-              title="Excluir projeto"
-            >
-              <TrashIcon size={14} aria-hidden="true" />
-            </button>
-          ) : null}
+          <div>
+            <strong>{openTasks}</strong>
+            <span>abertas</span>
+          </div>
+          <div>
+            <strong>{doneTasks}/{totalTasks}</strong>
+            <span>concluídas</span>
+          </div>
+          <div>
+            <strong>{members.length}</strong>
+            <span>membros</span>
+          </div>
         </div>
+
+        {canEditProject ? (
+          <button
+            type="button"
+            className={styles.deleteProjectButton}
+            onClick={() => setDeleteProjectTarget(project)}
+            disabled={busy}
+          >
+            <TrashIcon size={14} aria-hidden="true" />
+          </button>
+        ) : null}
       </section>
 
       <section className={styles.memberPanel}>
@@ -1018,7 +1014,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
             </Select>
             <button
               type="submit"
-              className={styles.addIconButton}
+              className={styles.submitIconButton}
               disabled={busy || !memberUserId}
               aria-label="Adicionar membro"
               title="Adicionar membro"
@@ -1038,7 +1034,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         />
         <button
           type="submit"
-          className={styles.addIconButton}
+          className={styles.submitIconButton}
           disabled={busy || !canEditProject || !sectionDraft.trim()}
           aria-label="Adicionar seção"
           title="Adicionar seção"
@@ -1212,14 +1208,14 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         />
                         <button
                           type="submit"
-                          className={styles.addIconButton}
+                          className={styles.submitIconButton}
+                          aria-label="Adicionar tarefa"
+                          title="Adicionar tarefa"
                           disabled={
                             busy ||
                             !canCreateTasks ||
                             !String(taskDrafts[section.id] && typeof taskDrafts[section.id] === 'object' ? taskDrafts[section.id].title : taskDrafts[section.id] || '').trim()
                           }
-                          aria-label="Adicionar tarefa"
-                          title="Adicionar tarefa"
                         >
                           <PlusIcon size={15} aria-hidden="true" />
                         </button>
@@ -1432,7 +1428,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   />
                   <button
                     type="submit"
-                    className={styles.addIconButton}
+                    className={styles.submitIconButton}
                     disabled={busy || !canCreateTasks || !subtaskTitle.trim()}
                     aria-label="Adicionar subtarefa"
                     title="Adicionar subtarefa"
@@ -1485,7 +1481,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   </Select>
                   <button
                     type="submit"
-                    className={styles.addIconButton}
+                    className={styles.submitIconButton}
                     disabled={busy || !canEditSelectedTask || !collaboratorUserId}
                     aria-label="Adicionar colaborador"
                     title="Adicionar colaborador"

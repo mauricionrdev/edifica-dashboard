@@ -1274,173 +1274,164 @@ textarea:disabled {
   }
 }
 
-/* UX compacta da aba Projeto: preserva campos legíveis e evita inputs/ações gigantes. */
+/* Compactacao UX da aba Projeto: denso, legivel e sem barras gigantes. */
 .projectHeader {
-  grid-template-columns: minmax(220px, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-height: 68px;
+  padding: 10px 12px;
 }
 
-.projectHeaderSide {
-  min-width: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
+.projectStats {
+  gap: 0;
 }
 
-.deleteProjectButton,
-.addIconButton {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
+.deleteProjectButton {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
   padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-tertiary);
   display: inline-grid;
   place-items: center;
-  flex: 0 0 auto;
-}
-
-.deleteProjectButton svg,
-.addIconButton svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 1.85;
-}
-
-.addIconButton {
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.018);
-  color: var(--text-secondary);
   cursor: pointer;
 }
 
-.addIconButton:hover:not(:disabled) {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.045);
-  color: var(--text-primary);
+.deleteProjectButton:hover:not(:disabled) {
+  border-color: rgba(255, 91, 115, 0.18);
+  background: rgba(255, 91, 115, 0.045);
+  color: #ff9cad;
 }
 
 .memberPanel {
-  padding: 9px;
+  padding: 10px 12px 12px;
   gap: 9px;
 }
 
-.memberPanelHead > div {
+.memberPanelHead > div,
+.taskDetailTitle {
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
 }
 
 .memberList {
-  grid-template-columns: repeat(auto-fit, minmax(170px, max-content));
-  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 240px));
 }
 
-.memberRow {
-  width: min(100%, 248px);
+.memberForm,
+.sectionForm,
+.projectTools {
+  width: 100%;
+  max-width: 690px;
 }
 
 .memberForm {
-  width: min(100%, 680px);
   padding: 6px;
-  grid-template-columns: minmax(210px, 1fr) minmax(128px, 150px) 36px;
-  justify-self: start;
+  grid-template-columns: minmax(240px, 1fr) minmax(140px, 160px) 34px;
 }
 
 .sectionForm {
-  width: min(100%, 640px);
-  grid-template-columns: minmax(260px, 1fr) 36px;
-  justify-self: start;
+  min-height: 42px;
+  padding: 6px;
+  grid-template-columns: minmax(280px, 1fr) 34px;
 }
 
 .projectTools {
-  width: max-content;
-  max-width: 100%;
-  padding: 6px 8px;
+  min-height: 42px;
+  padding: 6px;
+  display: inline-flex;
   justify-content: flex-start;
+  gap: 12px;
 }
 
 .projectToolGroup {
-  flex: 0 0 auto;
-}
-
-.projectTools > span {
-  padding-left: 8px;
+  flex: 0 1 auto;
 }
 
 .projectToolSelect {
-  width: 178px !important;
-  max-width: 178px !important;
+  width: 190px !important;
+  min-width: 170px !important;
+  max-width: 210px !important;
+}
+
+.projectTools > span {
+  margin-left: auto;
+  align-self: center;
+}
+
+.projectInlineSelect {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+.submitIconButton {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: var(--text-tertiary) !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  cursor: pointer;
+}
+
+.submitIconButton:hover:not(:disabled) {
+  border-color: var(--line-subtle) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  color: var(--text-primary) !important;
 }
 
 .taskForm {
-  grid-template-columns: minmax(240px, 1fr) minmax(156px, 210px) minmax(126px, 150px) 36px;
-  gap: 8px;
+  min-height: 44px;
+  grid-template-columns: minmax(260px, 1fr) minmax(170px, 220px) minmax(138px, 160px) 34px;
 }
 
 .taskForm .dateField {
-  width: 150px;
-  max-width: 150px;
-}
-
-.taskForm .projectInlineSelect {
-  width: min(210px, 100%) !important;
-  max-width: 210px !important;
+  min-width: 138px;
 }
 
 .subtaskForm,
 .collabForm {
-  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-columns: minmax(0, 1fr) 34px;
 }
 
-.collabForm .projectInlineSelect {
-  width: 100% !important;
-  max-width: none !important;
-}
-
-.taskControls .projectInlineSelect,
-.taskControls .dateField {
-  width: 100% !important;
-  max-width: none !important;
+.commentForm button {
+  width: max-content;
+  justify-self: end;
 }
 
 @media (max-width: 980px) {
   .projectHeader,
-  .projectHeaderSide,
   .memberForm,
   .sectionForm,
   .projectTools,
   .taskForm,
   .subtaskForm,
   .collabForm {
-    width: 100%;
-  }
-
-  .projectHeader {
+    max-width: none;
     grid-template-columns: 1fr;
   }
 
-  .projectHeaderSide {
-    justify-content: space-between;
+  .projectTools {
+    display: grid;
   }
 
-  .memberForm,
-  .sectionForm,
-  .taskForm,
-  .subtaskForm,
-  .collabForm {
-    grid-template-columns: minmax(0, 1fr) 36px;
-  }
-
-  .memberForm .projectInlineSelect:nth-of-type(2) {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .taskForm .projectInlineSelect,
-  .taskForm .dateField,
   .projectToolSelect {
     width: 100% !important;
     max-width: none !important;
+  }
+
+  .submitIconButton,
+  .deleteProjectButton {
+    justify-self: end;
   }
 }
