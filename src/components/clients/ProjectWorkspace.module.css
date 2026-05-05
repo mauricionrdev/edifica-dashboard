@@ -1273,3 +1273,156 @@ textarea:disabled {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+
+/* UX compact pass: keep project controls dense inside the client detail modal. */
+.projectHeader {
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  min-height: 64px;
+  padding: 12px 16px;
+}
+
+.projectStats {
+  gap: 0;
+}
+
+.deleteProjectButton {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+.memberPanel {
+  padding: 8px;
+  gap: 8px;
+}
+
+.memberPanelHead div {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.memberPanelHead span,
+.memberPanelHead strong {
+  line-height: 1;
+}
+
+.memberList {
+  grid-template-columns: repeat(auto-fit, minmax(180px, max-content));
+  align-items: center;
+}
+
+.memberRow {
+  width: min(260px, 100%);
+  min-height: 36px;
+  padding: 5px 7px;
+}
+
+.memberForm {
+  width: min(620px, 100%);
+  padding: 6px;
+  grid-template-columns: minmax(180px, 1fr) minmax(116px, 142px) 36px;
+}
+
+.memberForm button,
+.sectionForm button,
+.taskForm button,
+.subtaskForm button,
+.collabForm button {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+.sectionForm {
+  width: min(560px, 100%);
+  grid-template-columns: minmax(220px, 1fr) 36px;
+  justify-self: start;
+}
+
+.projectTools {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 5px;
+  justify-content: flex-start;
+}
+
+.projectToolGroup {
+  gap: 6px;
+}
+
+.projectToolSelect {
+  width: 168px !important;
+}
+
+.projectTools > span {
+  padding-left: 8px;
+}
+
+.taskForm {
+  min-height: 40px;
+  padding: 5px 8px;
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 230px) minmax(130px, 170px) 36px;
+}
+
+.taskForm input,
+.taskForm .projectInlineSelect,
+.taskForm .dateField {
+  max-width: 100%;
+}
+
+.sectionHead {
+  min-height: 46px;
+}
+
+.taskRow {
+  min-height: 48px;
+}
+
+.taskPanel {
+  max-height: calc(100vh - 190px);
+}
+
+.subtaskForm,
+.collabForm {
+  grid-template-columns: minmax(0, 1fr) 36px;
+}
+
+@media (max-width: 980px) {
+  .projectHeader,
+  .sectionForm,
+  .taskForm,
+  .subtaskForm,
+  .collabForm,
+  .memberForm {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+
+  .deleteProjectButton,
+  .memberForm button,
+  .sectionForm button,
+  .taskForm button,
+  .subtaskForm button,
+  .collabForm button {
+    width: 100%;
+  }
+
+  .memberList {
+    grid-template-columns: 1fr;
+  }
+
+  .projectTools {
+    width: 100%;
+  }
+}

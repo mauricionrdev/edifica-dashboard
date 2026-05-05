@@ -28,7 +28,7 @@ import { hasPermission } from '../../utils/permissions.js';
 import StateBlock from '../ui/StateBlock.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
-import { TrashIcon } from '../ui/Icons.jsx';
+import { PlusIcon, TrashIcon } from '../ui/Icons.jsx';
 import styles from './ProjectWorkspace.module.css';
 
 function percent(done, total) {
@@ -943,8 +943,10 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
             className={styles.deleteProjectButton}
             onClick={() => setDeleteProjectTarget(project)}
             disabled={busy}
+            aria-label="Excluir projeto"
+            title="Excluir projeto"
           >
-            Excluir projeto
+            <TrashIcon size={14} aria-hidden="true" />
           </button>
         ) : null}
       </section>
@@ -1012,7 +1014,9 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
               <option value="member">Membro</option>
               <option value="viewer">Visualizador</option>
             </Select>
-            <button type="submit" disabled={busy || !memberUserId}>Adicionar</button>
+            <button type="submit" disabled={busy || !memberUserId} aria-label="Adicionar membro" title="Adicionar membro">
+              <PlusIcon size={14} aria-hidden="true" />
+            </button>
           </form>
         ) : null}
       </section>
@@ -1024,8 +1028,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           placeholder="Nova seção"
           disabled={busy || !canEditProject}
         />
-        <button type="submit" disabled={busy || !canEditProject || !sectionDraft.trim()}>
-          Adicionar seção
+        <button type="submit" disabled={busy || !canEditProject || !sectionDraft.trim()} aria-label="Adicionar seção" title="Adicionar seção">
+          <PlusIcon size={14} aria-hidden="true" />
         </button>
       </form>
 
@@ -1199,8 +1203,10 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                             !canCreateTasks ||
                             !String(taskDrafts[section.id] && typeof taskDrafts[section.id] === 'object' ? taskDrafts[section.id].title : taskDrafts[section.id] || '').trim()
                           }
+                          aria-label="Adicionar tarefa"
+                          title="Adicionar tarefa"
                         >
-                          Adicionar
+                          <PlusIcon size={14} aria-hidden="true" />
                         </button>
                       </form>
 
@@ -1409,8 +1415,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     placeholder="Nova subtarefa"
                     disabled={busy || !canCreateTasks}
                   />
-                  <button type="submit" disabled={busy || !canCreateTasks || !subtaskTitle.trim()}>
-                    Adicionar
+                  <button type="submit" disabled={busy || !canCreateTasks || !subtaskTitle.trim()} aria-label="Adicionar subtarefa" title="Adicionar subtarefa">
+                    <PlusIcon size={14} aria-hidden="true" />
                   </button>
                 </form>
 
@@ -1456,8 +1462,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         </option>
                       ))}
                   </Select>
-                  <button type="submit" disabled={busy || !canEditSelectedTask || !collaboratorUserId}>
-                    Adicionar
+                  <button type="submit" disabled={busy || !canEditSelectedTask || !collaboratorUserId} aria-label="Adicionar colaborador" title="Adicionar colaborador">
+                    <PlusIcon size={14} aria-hidden="true" />
                   </button>
                 </form>
 
