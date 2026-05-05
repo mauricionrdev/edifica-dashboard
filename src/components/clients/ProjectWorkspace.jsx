@@ -1019,41 +1019,43 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         ) : null}
       </section>
 
-      <form className={styles.sectionForm} onSubmit={handleCreateSection}>
-        <input
-          value={sectionDraft}
-          onChange={(event) => setSectionDraft(event.target.value)}
-          placeholder="Nova seção"
-          disabled={busy || !canEditProject}
-        />
-        <button type="submit" className={styles.inlineAddButton} disabled={busy || !canEditProject || !sectionDraft.trim()} aria-label="Adicionar seção" title="Adicionar seção">+</button>
-      </form>
+      <div className={styles.projectTopTools}>
+        <form className={styles.sectionForm} onSubmit={handleCreateSection}>
+          <input
+            value={sectionDraft}
+            onChange={(event) => setSectionDraft(event.target.value)}
+            placeholder="Nova seção"
+            disabled={busy || !canEditProject}
+          />
+          <button type="submit" className={styles.inlineAddButton} disabled={busy || !canEditProject || !sectionDraft.trim()} aria-label="Adicionar seção" title="Adicionar seção">+</button>
+        </form>
 
-      <section className={styles.projectTools}>
-        <div className={styles.projectToolGroup}>
-          <Select
-            className={styles.projectToolSelect}
-            value={taskFilter}
-            onChange={(event) => setTaskFilter(event.target.value)}
-            aria-label="Filtrar tarefas"
-          >
-            {TASK_FILTERS.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </Select>
-          <Select
-            className={styles.projectToolSelect}
-            value={taskSort}
-            onChange={(event) => setTaskSort(event.target.value)}
-            aria-label="Ordenar tarefas"
-          >
-            {TASK_SORTS.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </Select>
-        </div>
-        <span>{visibleFlatTasks.length} de {flatTasks.length} tarefa(s)</span>
-      </section>
+        <section className={styles.projectTools}>
+          <div className={styles.projectToolGroup}>
+            <Select
+              className={styles.projectToolSelect}
+              value={taskFilter}
+              onChange={(event) => setTaskFilter(event.target.value)}
+              aria-label="Filtrar tarefas"
+            >
+              {TASK_FILTERS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </Select>
+            <Select
+              className={styles.projectToolSelect}
+              value={taskSort}
+              onChange={(event) => setTaskSort(event.target.value)}
+              aria-label="Ordenar tarefas"
+            >
+              {TASK_SORTS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </Select>
+          </div>
+          <span>{visibleFlatTasks.length} de {flatTasks.length} tarefa(s)</span>
+        </section>
+      </div>
 
       <section className={`${styles.workspace} ${selectedTask ? styles.workspaceWithPanel : ''}`.trim()}>
         <div className={styles.sections}>

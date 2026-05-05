@@ -1511,3 +1511,76 @@ textarea:disabled {
     grid-template-columns: minmax(0, 1fr) 28px;
   }
 }
+
+/* Project top layout lock — keep the exact compact hierarchy from the approved print */
+.projectTopTools {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(420px, 0.72fr) minmax(480px, 1fr);
+  align-items: center;
+  column-gap: 18px;
+  row-gap: 8px;
+}
+
+.projectTopTools .sectionForm {
+  width: 100%;
+  max-width: 600px;
+}
+
+.projectTopTools .projectTools {
+  width: 100%;
+  justify-self: end;
+  justify-content: flex-end;
+}
+
+.projectTopTools .projectToolGroup {
+  flex: 0 0 auto;
+}
+
+.projectTopTools .projectToolSelect {
+  width: 224px !important;
+}
+
+.projectTopTools .projectTools > span {
+  margin-left: 22px;
+  min-width: 126px;
+  text-align: right;
+}
+
+@media (max-width: 1180px) {
+  .projectTopTools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .projectTopTools .sectionForm,
+  .projectTopTools .projectTools {
+    max-width: none;
+    width: 100%;
+  }
+
+  .projectTopTools .projectTools {
+    justify-self: stretch;
+    justify-content: flex-start;
+  }
+
+  .projectTopTools .projectTools > span {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .projectTopTools .projectTools,
+  .projectTopTools .projectToolGroup {
+    flex-wrap: wrap;
+  }
+
+  .projectTopTools .projectToolSelect {
+    width: 100% !important;
+  }
+
+  .projectTopTools .projectTools > span {
+    width: 100%;
+    margin-left: 0;
+    text-align: left;
+  }
+}
