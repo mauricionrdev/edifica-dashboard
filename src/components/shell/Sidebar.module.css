@@ -119,6 +119,7 @@
 .search {
   flex: 0 0 auto;
   padding: 10px 10px 6px;
+  background: #0b0c0d;
 }
 
 .searchBox {
@@ -300,10 +301,21 @@
   letter-spacing: -0.06em;
 }
 
-.squadLogo[data-tone="1"] { color: var(--accent-cyan); }
-.squadLogo[data-tone="2"] { color: var(--vivid-purple); }
-.squadLogo[data-tone="3"] { color: var(--success); }
-.squadLogo[data-tone="4"] { color: var(--vivid-pink); }
+.squadLogo[data-tone="1"] {
+  color: var(--accent-cyan);
+}
+
+.squadLogo[data-tone="2"] {
+  color: var(--vivid-purple);
+}
+
+.squadLogo[data-tone="3"] {
+  color: var(--success);
+}
+
+.squadLogo[data-tone="4"] {
+  color: var(--vivid-pink);
+}
 
 .squadLogo img {
   width: 100%;
