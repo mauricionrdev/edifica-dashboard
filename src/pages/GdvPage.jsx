@@ -197,8 +197,8 @@ function yesNoCard(state, { forecast = false } = {}) {
 }
 
 function clientPriorityScore(row) {
-  if (!row) return -1;
-  if (!isActiveClientStatus(row.client?.status)) return 100000;
+  if (!row) return -100000;
+  if (!isActiveClientStatus(row.client?.status)) return -1000;
 
   const calc = row.calc || {};
   const goal = Number(calc.mLuc) || 0;
@@ -208,12 +208,15 @@ function clientPriorityScore(row) {
   const gap = goal > 0 ? Math.max(goal - closed, 0) : 0;
   const forecastGap = goal > 0 ? Math.max(goal - projected, 0) : 0;
   const progress = goal > 0 ? (closed / goal) * 100 : 0;
+  const severity = forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
 
-  if (!goal) return 100;
+  // Quanto maior a pontuação, mais alto o cliente aparece na lista.
+  // Prioridade: crítico/fora da projeção > em andamento/vai bater > sem meta > meta batida > inativos.
+  if (!goal) return 1000;
   if (closed >= goal) return 0;
-  if (projected >= goal) return 3000 + gap * 20 + Math.max(0, 100 - progress);
+  if (projected >= goal) return 5000 + gap * 20 + Math.max(0, 100 - progress);
 
-  return 6000 + forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
+  return 9000 + severity;
 }
 
 function toneClass(tone) {
