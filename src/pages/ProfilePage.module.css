@@ -726,76 +726,71 @@
   padding-left: 2px;
 }
 
-/* Profile UX polish: people discovery and compact task creation */
-.peopleCommand {
-  min-height: 64px;
+.collaborationBar {
+  min-height: 58px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4);
   background: rgba(255, 255, 255, 0.018);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
-  padding: 10px 14px;
   display: grid;
-  grid-template-columns: minmax(260px, 0.34fr) minmax(360px, 0.66fr);
+  grid-template-columns: 148px minmax(280px, 520px) minmax(0, 1fr);
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  padding: 10px 14px;
+  position: relative;
+  z-index: 5;
 }
 
-.peopleCommandCopy {
+.collaborationCopy {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
-.peopleCommandCopy strong {
-  color: var(--text-primary);
-  font-size: 15px;
-  line-height: 1.15;
+.collaborationCopy span {
+  color: var(--text-tertiary);
+  font-size: 10px;
   font-weight: 620;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.collaborationCopy strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
-.peopleCommandCopy > span:last-child {
-  max-width: 420px;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.peopleSearchWrap {
-  position: relative;
-  min-width: 0;
-  justify-self: stretch;
-}
-
 .peopleSearch {
-  height: 38px;
   min-width: 0;
-  width: 100%;
+  position: relative;
+  height: 38px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.024);
-  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.018);
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 0 12px;
-  box-sizing: border-box;
+  gap: 8px;
+  padding: 0 11px;
 }
 
 .peopleSearch:focus-within {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.038);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.peopleSearch svg {
+  color: var(--text-quaternary);
+  flex: 0 0 auto;
 }
 
 .peopleSearch input {
   min-width: 0;
   width: 100%;
+  height: 100%;
   border: 0;
-  outline: none;
+  outline: 0;
   background: transparent;
   color: var(--text-primary);
   font: inherit;
@@ -806,125 +801,109 @@
   color: var(--text-quaternary);
 }
 
-.peopleResults {
+.peopleDropdown {
   position: absolute;
-  z-index: 120;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   left: 0;
-  right: 0;
-  max-height: 306px;
+  width: min(520px, calc(100vw - 44px));
+  max-height: 292px;
   overflow-y: auto;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3);
+  border-radius: var(--radius-2);
   background: #141516;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.36);
   padding: 6px;
+  z-index: 40;
   scrollbar-width: none;
 }
 
-.peopleResults::-webkit-scrollbar {
+.peopleDropdown::-webkit-scrollbar {
   display: none;
 }
 
-.personResult {
-  min-width: 0;
-  min-height: 48px;
-  padding: 0 10px;
-  border-radius: var(--radius-2);
+.peopleResult {
+  min-height: 46px;
+  padding: 6px 8px;
+  border-radius: var(--radius-1);
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
   color: inherit;
   text-decoration: none;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  transition: background 0.16s ease, color 0.16s ease;
 }
 
-.personResult:hover {
-  background: rgba(255, 255, 255, 0.045);
+.peopleResult:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.personAvatar {
-  width: 28px;
-  height: 28px;
+.peopleAvatar {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-subtle);
   border-radius: 999px;
   overflow: hidden;
   display: grid;
   place-items: center;
-  flex: 0 0 auto;
-  background: #111214;
+  background: #08090a;
   color: var(--text-primary);
   font-size: 10px;
-  font-weight: 620;
+  font-weight: 700;
 }
 
-.personAvatar img {
+.peopleAvatar img {
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
 }
 
-.personCopy {
+.peopleIdentity {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.personCopy strong {
+.peopleIdentity strong {
   color: var(--text-primary);
   font-size: 13px;
-  line-height: 1.15;
-  font-weight: 560;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.personCopy span,
+.peopleIdentity small,
 .peopleEmpty {
   color: var(--text-tertiary);
   font-size: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.personAction {
-  color: var(--text-quaternary);
+.peopleAction {
+  color: var(--text-tertiary);
   font-size: 11px;
-  font-weight: 560;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .peopleEmpty {
-  min-height: 42px;
-  padding: 0 10px;
-  display: inline-flex;
+  min-height: 40px;
+  display: flex;
   align-items: center;
-}
-
-.createTaskBar {
-  grid-template-columns: minmax(240px, 1fr) minmax(190px, 0.22fr) 142px auto;
+  padding: 0 10px;
 }
 
 .taskDateField {
-  width: 100%;
+  min-width: 0;
 }
 
-@media (max-width: 1180px) {
-  .peopleCommand {
+@media (max-width: 860px) {
+  .collaborationBar {
     grid-template-columns: minmax(0, 1fr);
     align-items: stretch;
   }
-}
 
-@media (max-width: 720px) {
-  .peopleCommand {
-    padding: 10px;
-  }
-
-  .peopleCommandCopy > span:last-child {
-    white-space: normal;
+  .peopleSearch {
+    width: 100%;
   }
 }

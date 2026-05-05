@@ -233,18 +233,17 @@ export default function ProfilePage() {
   const taskSections = useMemo(() => getTaskSections(tasks, taskTab), [taskTab, tasks]);
   const canCreateTasks = hasPermission(user, 'tasks.create');
 
-  const visiblePeople = useMemo(() => {
-    const query = peopleQuery.trim().toLowerCase();
-    const directory = Array.isArray(userDirectory) ? userDirectory : [];
-    return directory
-      .filter((entry) => entry?.id && entry.id !== user?.id)
-      .filter((entry) => {
-        if (!query) return true;
-        return [entry.name, entry.email, roleLabel(entry.role)]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(query));
-      })
-      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'))
+  const peopleResults = useMemo(() => {
+    const term = peopleQuery.trim().toLowerCase();
+    const source = Array.isArray(userDirectory) ? userDirectory : [];
+    if (!term) return source.filter((entry) => entry?.id !== user?.id).slice(0, 5);
+
+    return source
+      .filter((entry) => entry?.id !== user?.id)
+      .filter((entry) => [entry?.name, entry?.email, roleLabel(entry?.role)]
+        .join(' ')
+        .toLowerCase()
+        .includes(term))
       .slice(0, 6);
   }, [peopleQuery, user?.id, userDirectory]);
 
@@ -399,46 +398,45 @@ export default function ProfilePage() {
         </button>
       </section>
 
-      <section className={styles.peopleCommand} aria-label="Encontrar pessoas">
-        <div className={styles.peopleCommandCopy}>
-          <span className={styles.boardMeta}>Pessoas</span>
+      <section className={styles.collaborationBar}>
+        <div className={styles.collaborationCopy}>
+          <span>Pessoas</span>
           <strong>Encontrar perfil</strong>
-          <span>Abra um perfil para ver atuação, projetos e atribuir tarefas.</span>
         </div>
 
-        <div className={styles.peopleSearchWrap}>
-          <label className={styles.peopleSearch}>
-            <SearchIcon size={15} />
-            <input
-              value={peopleQuery}
-              onChange={(event) => {
-                setPeopleQuery(event.target.value);
-                setPeopleSearchOpen(true);
-              }}
-              onFocus={() => setPeopleSearchOpen(true)}
-              onBlur={() => window.setTimeout(() => setPeopleSearchOpen(false), 120)}
-              placeholder="Buscar pessoa por nome, e-mail ou cargo"
-              aria-label="Buscar pessoa"
-            />
-          </label>
+        <div className={styles.peopleSearch}>
+          <SearchIcon size={15} aria-hidden="true" />
+          <input
+            value={peopleQuery}
+            onChange={(event) => {
+              setPeopleQuery(event.target.value);
+              setPeopleSearchOpen(true);
+            }}
+            onFocus={() => setPeopleSearchOpen(true)}
+            onBlur={() => window.setTimeout(() => setPeopleSearchOpen(false), 140)}
+            placeholder="Buscar pessoa por nome, e-mail ou cargo..."
+            aria-label="Buscar pessoa"
+          />
 
           {peopleSearchOpen ? (
-            <div className={styles.peopleResults} role="listbox">
-              {visiblePeople.length > 0 ? visiblePeople.map((person) => {
-                const personAvatar = getUserAvatar(person);
+            <div className={styles.peopleDropdown}>
+              {peopleResults.length === 0 ? (
+                <span className={styles.peopleEmpty}>Nenhum usuário encontrado.</span>
+              ) : peopleResults.map((entry) => {
+                const entryAvatar = getUserAvatar(entry);
                 return (
-                  <Link key={person.id} to={buildProfilePath(person)} className={styles.personResult}>
-                    <span className={`${styles.personAvatar} ${styles[`avatar_${person.avatarColor || 'slate'}`]}`}>
-                      {personAvatar ? <img src={personAvatar} alt="" /> : initials(person.name)}
+                  <Link key={entry.id} to={buildProfilePath(entry)} className={styles.peopleResult}>
+                    <span className={styles.peopleAvatar}>
+                      {entryAvatar ? <img src={entryAvatar} alt="" /> : initials(entry.name)}
                     </span>
-                    <span className={styles.personCopy}>
-                      <strong>{person.name}</strong>
-                      <span>{person.email || roleLabel(person.role)}</span>
+                    <span className={styles.peopleIdentity}>
+                      <strong>{entry.name}</strong>
+                      <small>{entry.email || roleLabel(entry.role)}</small>
                     </span>
-                    <span className={styles.personAction}>Abrir</span>
+                    <span className={styles.peopleAction}>Abrir</span>
                   </Link>
                 );
-              }) : <span className={styles.peopleEmpty}>Nenhum perfil encontrado.</span>}
+              })}
             </div>
           ) : null}
         </div>
@@ -495,7 +493,7 @@ export default function ProfilePage() {
               <DateField
                 className={styles.taskDateField}
                 value={newTask.dueDate}
-                onChange={(dueDate) => setNewTask((prev) => ({ ...prev, dueDate }))}
+                onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))}
                 placeholder="Prazo"
                 ariaLabel="Prazo"
               />
