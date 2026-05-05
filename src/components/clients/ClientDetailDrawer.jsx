@@ -19,8 +19,6 @@ import {
 } from '../../utils/avatarStorage.js';
 import { CloseIcon } from '../ui/Icons.jsx';
 import OverviewTab from './OverviewTab.jsx';
-import AvatarTab from './AvatarTab.jsx';
-import ContractTab from './ContractTab.jsx';
 import AnalysisTab from './AnalysisTab.jsx';
 import FeeScheduleTab from './FeeScheduleTab.jsx';
 import ClientProjectTab from './ClientProjectTab.jsx';
@@ -30,8 +28,6 @@ import tabStyles from './ClientTabs.module.css';
 const TABS = [
   { key: 'overview', label: 'Visão geral' },
   { key: 'project', label: 'Projeto' },
-  { key: 'avatar', label: 'Avatar' },
-  { key: 'contract', label: 'Contrato' },
   { key: 'fees', label: 'Mensalidades' },
   { key: 'icp', label: 'Análise ICP' },
   { key: 'gdv', label: 'Análise GDV' },
@@ -263,6 +259,10 @@ export default function ClientDetailDrawer({
                 users={users}
                 canEdit={canEditClient}
                 canDelete={admin}
+                avatarUrl={avatarUrl}
+                canManageAvatar={canManageAvatar}
+                onPickAvatar={() => avatarInputRef.current?.click()}
+                onRemoveAvatar={handleRemoveAvatar}
                 onUpdated={onUpdated}
                 onDeleted={onDeleted}
               />
@@ -276,25 +276,6 @@ export default function ClientDetailDrawer({
               />
             ) : null}
 
-            {activeTab === 'avatar' && (
-              <AvatarTab
-                client={client}
-                avatarUrl={avatarUrl}
-                canManageAvatar={canManageAvatar}
-                onPickAvatar={() => avatarInputRef.current?.click()}
-                onRemoveAvatar={handleRemoveAvatar}
-              />
-            )}
-
-            {activeTab === 'contract' && (
-              <ContractTab
-                client={client}
-                squads={squads}
-                users={users}
-                canEdit={canEditClient}
-                onUpdated={onUpdated}
-              />
-            )}
 
             {activeTab === 'fees' && canViewFeeSchedule ? (
               <FeeScheduleTab

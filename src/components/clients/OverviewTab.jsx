@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { updateClient, deleteClient } from '../../api/clients.js';
+import { clientInitials } from '../../utils/clientHelpers.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
-import { LogOutIcon } from '../ui/Icons.jsx';
+import { CameraIcon, LogOutIcon, TrashIcon } from '../ui/Icons.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
 import UserPicker from '../users/UserPicker.jsx';
@@ -48,6 +49,10 @@ export default function OverviewTab({
   users = [],
   canEdit = false,
   canDelete = false,
+  avatarUrl = '',
+  canManageAvatar = false,
+  onPickAvatar,
+  onRemoveAvatar,
   onUpdated,
   onDeleted,
 }) {
@@ -227,6 +232,41 @@ export default function OverviewTab({
               portal
             />
           </div>
+        </div>
+      </div>
+
+
+      <div className={drawerStyles.section}>
+        <div className={drawerStyles.sectionTitle}>Imagem do cliente</div>
+        <div className={styles.avatarBlock}>
+          <div className={styles.avatarPreview} aria-label={`Imagem de ${client.name}`}>
+            {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
+          </div>
+
+          <div className={styles.avatarInfo}>
+            <strong>{client.name}</strong>
+            <span>{avatarUrl ? 'Imagem configurada' : 'Sem imagem configurada'}</span>
+          </div>
+
+          {canManageAvatar ? (
+            <div className={styles.avatarActions}>
+              <button type="button" onClick={onPickAvatar} disabled={deleting}>
+                <CameraIcon size={14} />
+                Enviar imagem
+              </button>
+              {avatarUrl ? (
+                <button
+                  type="button"
+                  className={styles.dangerButton}
+                  onClick={onRemoveAvatar}
+                  disabled={deleting}
+                >
+                  <TrashIcon size={14} />
+                  Remover imagem
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
