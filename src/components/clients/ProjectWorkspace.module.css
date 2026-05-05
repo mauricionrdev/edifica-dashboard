@@ -1584,3 +1584,199 @@ textarea:disabled {
     text-align: left;
   }
 }
+
+/* Final UX pass — project tab approved top area */
+.projectHeader {
+  min-height: 70px;
+  padding: 12px 16px;
+  grid-template-columns: minmax(0, 1fr) auto 28px;
+  align-items: center;
+  gap: 18px;
+}
+
+.projectTitle {
+  gap: 6px;
+}
+
+.projectTitle strong {
+  font-size: 20px;
+}
+
+.projectStats {
+  justify-self: end;
+}
+
+.projectStats div {
+  min-height: 34px;
+  padding: 0 14px;
+}
+
+.projectStats strong {
+  font-size: 15px;
+}
+
+.deleteProjectButton {
+  justify-self: end;
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  display: inline-grid;
+  place-items: center;
+  opacity: 0.78;
+}
+
+.deleteProjectButton:hover:not(:disabled) {
+  background: transparent;
+  color: #ff9cad;
+  opacity: 1;
+}
+
+.memberPanel {
+  min-height: 62px;
+  padding: 10px 16px;
+  grid-template-columns: max-content minmax(210px, max-content) minmax(380px, 520px);
+  align-items: center;
+  gap: 14px;
+}
+
+.memberPanelHead div {
+  gap: 9px;
+}
+
+.memberList {
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.memberRow {
+  min-width: 220px;
+  max-width: 260px;
+  min-height: 42px;
+}
+
+.memberForm {
+  width: 100%;
+  max-width: 520px;
+  grid-template-columns: minmax(220px, 1fr) 150px 28px;
+}
+
+.projectTopTools {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: minmax(360px, 0.88fr) minmax(520px, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.projectTopTools .sectionForm {
+  max-width: 560px;
+}
+
+.projectTopTools .projectTools {
+  justify-content: flex-end;
+}
+
+.projectTopTools .projectToolSelect {
+  width: 220px !important;
+}
+
+.projectTopTools .projectTools > span {
+  margin-left: 18px;
+  min-width: 128px;
+}
+
+.inlineAddButton,
+.memberForm .inlineAddButton,
+.sectionForm .inlineAddButton,
+.taskForm .inlineAddButton,
+.subtaskForm .inlineAddButton,
+.collabForm .inlineAddButton {
+  width: 26px;
+  min-width: 26px;
+  height: 34px;
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 18px;
+  font-weight: 420;
+}
+
+.inlineAddButton:hover:not(:disabled),
+.memberForm .inlineAddButton:hover:not(:disabled),
+.sectionForm .inlineAddButton:hover:not(:disabled),
+.taskForm .inlineAddButton:hover:not(:disabled),
+.subtaskForm .inlineAddButton:hover:not(:disabled),
+.collabForm .inlineAddButton:hover:not(:disabled) {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+@media (max-width: 1180px) {
+  .projectHeader {
+    grid-template-columns: minmax(0, 1fr) auto 28px;
+  }
+
+  .memberPanel {
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  .memberForm {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+
+  .projectTopTools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .projectTopTools .projectTools {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .projectHeader {
+    grid-template-columns: minmax(0, 1fr) 28px;
+  }
+
+  .projectStats {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .deleteProjectButton {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .memberPanel,
+  .memberForm,
+  .sectionForm,
+  .projectTools {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .memberList {
+    flex-wrap: wrap;
+  }
+
+  .projectTopTools .projectToolSelect {
+    width: 100% !important;
+  }
+
+  .projectTopTools .projectTools > span {
+    min-width: 0;
+    margin-left: 0;
+    text-align: left;
+  }
+}
