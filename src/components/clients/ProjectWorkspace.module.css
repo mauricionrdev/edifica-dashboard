@@ -1229,7 +1229,7 @@ textarea:disabled {
   color: var(--text-tertiary);
   display: inline-grid;
   place-items: center;
-  justify-self: start;
+  justify-self: end;
   cursor: pointer;
 }
 

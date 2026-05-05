@@ -219,7 +219,7 @@ button:disabled,
   flex-wrap: wrap;
 }
 
-.sectionHead > div {
+.sectionHead>div {
   min-width: 0;
 }
 
@@ -585,15 +585,29 @@ button:disabled,
 }
 
 .gdvAdminTable .table th:nth-child(1),
-.gdvAdminTable .table td:nth-child(1) { width: 32%; }
+.gdvAdminTable .table td:nth-child(1) {
+  width: 32%;
+}
+
 .gdvAdminTable .table th:nth-child(2),
-.gdvAdminTable .table td:nth-child(2) { width: 11%; }
+.gdvAdminTable .table td:nth-child(2) {
+  width: 11%;
+}
+
 .gdvAdminTable .table th:nth-child(3),
-.gdvAdminTable .table td:nth-child(3) { width: 30%; }
+.gdvAdminTable .table td:nth-child(3) {
+  width: 30%;
+}
+
 .gdvAdminTable .table th:nth-child(4),
-.gdvAdminTable .table td:nth-child(4) { width: 14%; }
+.gdvAdminTable .table td:nth-child(4) {
+  width: 14%;
+}
+
 .gdvAdminTable .table th:nth-child(5),
-.gdvAdminTable .table td:nth-child(5) { width: 13%; }
+.gdvAdminTable .table td:nth-child(5) {
+  width: 13%;
+}
 
 .rolesMatrixCard {
   overflow: hidden;
@@ -655,7 +669,7 @@ button:disabled,
 .modalBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 1020;
   padding: 28px;
   background: rgba(8, 9, 10, 0.78);
   backdrop-filter: blur(12px);
@@ -769,6 +783,7 @@ button:disabled,
 }
 
 @media (max-width: 1180px) {
+
   .metricGrid,
   .gdvAdminMetricGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -780,6 +795,7 @@ button:disabled,
 }
 
 @media (max-width: 860px) {
+
   .filterBar,
   .formGrid,
   .requestSummary,
@@ -862,7 +878,7 @@ button:disabled,
   vertical-align: middle;
 }
 
-.primaryCell > div,
+.primaryCell>div,
 .textStack {
   min-width: 0;
   display: grid;
@@ -936,15 +952,29 @@ button:disabled,
 }
 
 .gdvAdminTable .table th:nth-child(1),
-.gdvAdminTable .table td:nth-child(1) { width: 30%; }
+.gdvAdminTable .table td:nth-child(1) {
+  width: 30%;
+}
+
 .gdvAdminTable .table th:nth-child(2),
-.gdvAdminTable .table td:nth-child(2) { width: 12%; }
+.gdvAdminTable .table td:nth-child(2) {
+  width: 12%;
+}
+
 .gdvAdminTable .table th:nth-child(3),
-.gdvAdminTable .table td:nth-child(3) { width: 30%; }
+.gdvAdminTable .table td:nth-child(3) {
+  width: 30%;
+}
+
 .gdvAdminTable .table th:nth-child(4),
-.gdvAdminTable .table td:nth-child(4) { width: 13%; }
+.gdvAdminTable .table td:nth-child(4) {
+  width: 13%;
+}
+
 .gdvAdminTable .table th:nth-child(5),
-.gdvAdminTable .table td:nth-child(5) { width: 15%; }
+.gdvAdminTable .table td:nth-child(5) {
+  width: 15%;
+}
 
 .gdvAdminTable .primaryCell strong,
 .gdvAdminTable .primaryCell small {
@@ -1043,6 +1073,7 @@ button:disabled,
 }
 
 @media (max-width: 1180px) {
+
   .metricGrid,
   .gdvAdminMetricGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1050,6 +1081,7 @@ button:disabled,
 }
 
 @media (max-width: 680px) {
+
   .metricGrid,
   .gdvAdminMetricGrid {
     grid-template-columns: 1fr;
@@ -1069,7 +1101,7 @@ button:disabled,
   gap: 14px;
 }
 
-.paginationBar > span {
+.paginationBar>span {
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 560;
@@ -1170,7 +1202,7 @@ button:disabled,
   gap: 12px;
 }
 
-.primaryCell > div,
+.primaryCell>div,
 .textStack {
   min-width: 0;
   display: grid;
@@ -1358,6 +1390,7 @@ button:disabled,
 }
 
 @media (max-width: 1180px) {
+
   .metricGrid,
   .gdvAdminMetricGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1365,6 +1398,7 @@ button:disabled,
 }
 
 @media (max-width: 680px) {
+
   .metricGrid,
   .gdvAdminMetricGrid {
     grid-template-columns: 1fr;
@@ -1656,8 +1690,8 @@ button:disabled,
   gap: 6px;
 }
 
-.field > span,
-.filterField > span {
+.field>span,
+.filterField>span {
   color: var(--text-tertiary);
   font-size: 11px;
   line-height: 1.2;
@@ -1906,7 +1940,7 @@ button:disabled,
   color: var(--text-tertiary);
 }
 
-.primaryCell > div,
+.primaryCell>div,
 .textStack {
   gap: 2px;
 }
@@ -1996,15 +2030,29 @@ button:disabled,
 }
 
 .gdvAdminTable .table th:nth-child(1),
-.gdvAdminTable .table td:nth-child(1) { width: 31%; }
+.gdvAdminTable .table td:nth-child(1) {
+  width: 31%;
+}
+
 .gdvAdminTable .table th:nth-child(2),
-.gdvAdminTable .table td:nth-child(2) { width: 12%; }
+.gdvAdminTable .table td:nth-child(2) {
+  width: 12%;
+}
+
 .gdvAdminTable .table th:nth-child(3),
-.gdvAdminTable .table td:nth-child(3) { width: 29%; }
+.gdvAdminTable .table td:nth-child(3) {
+  width: 29%;
+}
+
 .gdvAdminTable .table th:nth-child(4),
-.gdvAdminTable .table td:nth-child(4) { width: 13%; }
+.gdvAdminTable .table td:nth-child(4) {
+  width: 13%;
+}
+
 .gdvAdminTable .table th:nth-child(5),
-.gdvAdminTable .table td:nth-child(5) { width: 15%; }
+.gdvAdminTable .table td:nth-child(5) {
+  width: 15%;
+}
 
 .rolesMatrixCard .tableWrap {
   max-height: calc(100vh - 245px);
