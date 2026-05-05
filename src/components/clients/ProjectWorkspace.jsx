@@ -1,20 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  addProjectMember,
   addTaskCollaborator,
   createClientProject,
   createProjectSection,
   createTask,
   createTaskComment,
-  deleteProject,
   deleteProjectSection,
-  deleteTaskComment,
   deleteTask,
   getClientProject,
   getProject,
   listTaskCollaborators,
   listTaskComments,
-  removeProjectMember,
   removeTaskCollaborator,
   reorderProjectSections,
   reorderProjectTasks,
@@ -27,6 +23,7 @@ import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
 import StateBlock from '../ui/StateBlock.jsx';
 import DateField from '../ui/DateField.jsx';
+import Select from '../ui/Select.jsx';
 import { TrashIcon } from '../ui/Icons.jsx';
 import styles from './ProjectWorkspace.module.css';
 
@@ -46,6 +43,58 @@ function priorityLabel(priority) {
   if (priority === 'high') return 'Alta';
   if (priority === 'low') return 'Baixa';
   return 'Média';
+}
+
+
+const TASK_FILTERS = [
+  { value: 'all', label: 'Todas' },
+  { value: 'open', label: 'Abertas' },
+  { value: 'done', label: 'Concluídas' },
+  { value: 'assigned', label: 'Com responsável' },
+  { value: 'unassigned', label: 'Sem responsável' },
+  { value: 'due', label: 'Com prazo' },
+];
+
+const TASK_SORTS = [
+  { value: 'default', label: 'Ordem padrão' },
+  { value: 'dueDate', label: 'Prazo' },
+  { value: 'assignee', label: 'Responsável' },
+  { value: 'title', label: 'Nome' },
+  { value: 'status', label: 'Status' },
+];
+
+function emptyTaskDraft() {
+  return { title: '', assigneeUserId: '', dueDate: '' };
+}
+
+function filterTask(task, filter) {
+  if (filter === 'open') return task.status !== 'done';
+  if (filter === 'done') return task.status === 'done';
+  if (filter === 'assigned') return Boolean(task.assigneeUserId);
+  if (filter === 'unassigned') return !task.assigneeUserId;
+  if (filter === 'due') return Boolean(task.dueDate);
+  return true;
+}
+
+function sortTasks(tasks, sort, users = []) {
+  const list = Array.isArray(tasks) ? [...tasks] : [];
+  if (sort === 'default') return list;
+
+  const text = (value) => String(value || '').trim().toLocaleLowerCase('pt-BR');
+  const dateValue = (value) => (value ? String(value).slice(0, 10) : '9999-12-31');
+
+  return list.sort((a, b) => {
+    if (sort === 'dueDate') return dateValue(a.dueDate).localeCompare(dateValue(b.dueDate));
+    if (sort === 'assignee') {
+      return text(userName(users, a.assigneeUserId, a.assigneeName)).localeCompare(
+        text(userName(users, b.assigneeUserId, b.assigneeName)),
+        'pt-BR'
+      );
+    }
+    if (sort === 'title') return text(a.title).localeCompare(text(b.title), 'pt-BR');
+    if (sort === 'status') return text(statusLabel(a.status)).localeCompare(text(statusLabel(b.status)), 'pt-BR');
+    return 0;
+  });
 }
 
 function formatDate(value) {
@@ -79,65 +128,6 @@ function eventLabel(event) {
   if (type.includes('deleted') || type.includes('removed')) return 'Registro removido';
   if (type.includes('done') || type.includes('completed')) return 'Status atualizado';
   return 'Atividade registrada';
-}
-
-
-function metadataValue(metadata, keys) {
-  const source = metadata && typeof metadata === 'object' ? metadata : {};
-  for (const key of keys) {
-    const value = source[key];
-    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
-  }
-  return '';
-}
-
-function eventDetails(event, users = []) {
-  const metadata = event?.metadata && typeof event.metadata === 'object' ? event.metadata : {};
-  const type = String(event?.type || event?.eventType || '').trim();
-  const details = [];
-
-  const fromStatus = metadataValue(metadata, ['fromStatus', 'previousStatus', 'oldStatus']);
-  const toStatus = metadataValue(metadata, ['toStatus', 'status', 'newStatus']);
-  if ((type.includes('status') || toStatus) && (fromStatus || toStatus)) {
-    details.push(`Status: ${fromStatus ? statusLabel(fromStatus) : '—'} → ${toStatus ? statusLabel(toStatus) : '—'}`);
-  }
-
-  const fromPriority = metadataValue(metadata, ['fromPriority', 'previousPriority', 'oldPriority']);
-  const toPriority = metadataValue(metadata, ['toPriority', 'priority', 'newPriority']);
-  if ((type.includes('priority') || toPriority) && (fromPriority || toPriority)) {
-    details.push(`Prioridade: ${fromPriority ? priorityLabel(fromPriority) : '—'} → ${toPriority ? priorityLabel(toPriority) : '—'}`);
-  }
-
-  const fromDueDate = metadataValue(metadata, ['fromDueDate', 'previousDueDate', 'oldDueDate']);
-  const toDueDate = metadataValue(metadata, ['toDueDate', 'dueDate', 'newDueDate']);
-  if ((type.includes('due') || type.includes('prazo') || toDueDate) && (fromDueDate || toDueDate)) {
-    details.push(`Prazo: ${fromDueDate ? formatDate(fromDueDate) : 'Sem prazo'} → ${toDueDate ? formatDate(toDueDate) : 'Sem prazo'}`);
-  }
-
-  const fromSection = metadataValue(metadata, ['fromSectionName', 'previousSectionName', 'oldSectionName']);
-  const toSection = metadataValue(metadata, ['toSectionName', 'sectionName', 'newSectionName']);
-  if ((type.includes('section') || toSection) && (fromSection || toSection)) {
-    details.push(`Seção: ${fromSection || '—'} → ${toSection || '—'}`);
-  }
-
-  const fromAssignee = metadataValue(metadata, ['fromAssigneeName', 'previousAssigneeName', 'oldAssigneeName']);
-  const toAssignee = metadataValue(metadata, ['toAssigneeName', 'assigneeName', 'newAssigneeName']);
-  const assigneeUserId = metadataValue(metadata, ['assigneeUserId', 'toAssigneeUserId', 'userId']);
-  if ((type.includes('assignee') || type.includes('respons') || toAssignee || assigneeUserId) && (fromAssignee || toAssignee || assigneeUserId)) {
-    details.push(`Responsável: ${fromAssignee || '—'} → ${toAssignee || userName(users, assigneeUserId, 'Sem responsável')}`);
-  }
-
-  const role = metadataValue(metadata, ['role']);
-  const userId = metadataValue(metadata, ['userId']);
-  if ((type.includes('member') || type.includes('collaborator')) && (userId || role)) {
-    const label = userName(users, userId, metadata.userName || metadata.name || 'Usuário');
-    details.push(`${label}${role ? ` · ${role === 'viewer' ? 'Visualizador' : role === 'owner' ? 'Proprietário' : 'Membro'}` : ''}`);
-  }
-
-  const deletedTasks = metadataValue(metadata, ['deletedTasks', 'tasksDeleted', 'taskCount']);
-  if (deletedTasks !== '') details.push(`${deletedTasks} tarefa(s) impactada(s)`);
-
-  return details.filter(Boolean).slice(0, 3);
 }
 
 function normalizeProjectPayload(payload) {
@@ -174,42 +164,6 @@ function userName(users, userId, fallback = '') {
   return user?.name || user?.email || fallback || 'Sem responsável';
 }
 
-function getTaskDraftValue(drafts, sectionId, field) {
-  const draft = drafts?.[sectionId];
-  if (draft && typeof draft === 'object') return draft[field] || '';
-  return field === 'title' ? String(draft || '') : '';
-}
-
-function compareText(a, b) {
-  return String(a || '').localeCompare(String(b || ''), 'pt-BR', { sensitivity: 'base' });
-}
-
-function sortTasks(tasks, sortKey, users = []) {
-  const list = [...(Array.isArray(tasks) ? tasks : [])];
-  if (sortKey === 'dueDate') {
-    return list.sort((a, b) => {
-      const av = a.dueDate || '9999-12-31';
-      const bv = b.dueDate || '9999-12-31';
-      return compareText(av, bv) || compareText(a.title, b.title);
-    });
-  }
-  if (sortKey === 'assignee') {
-    return list.sort((a, b) => compareText(userName(users, a.assigneeUserId, a.assigneeName), userName(users, b.assigneeUserId, b.assigneeName)) || compareText(a.title, b.title));
-  }
-  if (sortKey === 'name') return list.sort((a, b) => compareText(a.title, b.title));
-  if (sortKey === 'status') return list.sort((a, b) => compareText(statusLabel(a.status), statusLabel(b.status)) || compareText(a.title, b.title));
-  return list;
-}
-
-function taskMatchesFilter(task, filter) {
-  if (filter === 'open') return task.status !== 'done';
-  if (filter === 'done') return task.status === 'done';
-  if (filter === 'withAssignee') return Boolean(task.assigneeUserId || task.assigneeName);
-  if (filter === 'withoutAssignee') return !task.assigneeUserId && !task.assigneeName;
-  if (filter === 'withDueDate') return Boolean(task.dueDate);
-  return true;
-}
-
 function initials(value) {
   return String(value || '?')
     .split(/\s+/)
@@ -237,10 +191,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     hasPermission(user, 'tasks.comment') ||
     hasPermission(user, 'tasks.comment.all') ||
     hasPermission(user, 'tasks.comment.own');
-  const canDeleteAnyComment =
-    hasPermission(user, 'tasks.comment.all') ||
-    hasPermission(user, 'tasks.edit.all') ||
-    hasPermission(user, 'admin.full');
 
   const [detail, setDetail] = useState({ project: null, sections: [], members: [], events: [] });
   const [loading, setLoading] = useState(true);
@@ -249,7 +199,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   const [taskDrafts, setTaskDrafts] = useState({});
   const [taskFilter, setTaskFilter] = useState('all');
   const [taskSort, setTaskSort] = useState('default');
-  const [collapsedSections, setCollapsedSections] = useState(() => new Set());
+  const [collapsedSections, setCollapsedSections] = useState([]);
   const [editingSectionId, setEditingSectionId] = useState('');
   const [editingSectionName, setEditingSectionName] = useState('');
   const [selectedTaskId, setSelectedTaskId] = useState('');
@@ -259,51 +209,20 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   const [commentBody, setCommentBody] = useState('');
   const [subtaskTitle, setSubtaskTitle] = useState('');
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
-  const [memberUserId, setMemberUserId] = useState('');
-  const [memberRole, setMemberRole] = useState('member');
   const [taskDraft, setTaskDraft] = useState({ title: '', description: '' });
   const [deleteSectionTarget, setDeleteSectionTarget] = useState(null);
   const [deleteTaskTarget, setDeleteTaskTarget] = useState(null);
-  const [deleteProjectTarget, setDeleteProjectTarget] = useState(null);
-  const [deleteCommentTarget, setDeleteCommentTarget] = useState(null);
 
   const project = detail.project;
   const sections = Array.isArray(detail.sections) ? detail.sections : [];
   const members = Array.isArray(detail.members) ? detail.members : [];
   const events = Array.isArray(detail.events) ? detail.events : [];
-  const availableMemberUsers = useMemo(
-    () =>
-      (Array.isArray(users) ? users : []).filter(
-        (entry) => entry?.id && !members.some((member) => member.userId === entry.id)
-      ),
-    [members, users]
-  );
 
   const allTasks = useMemo(() => sections.flatMap((section) => section.tasks || []), [sections]);
   const flatTasks = useMemo(() => allTasks.filter((task) => !task.parentTaskId), [allTasks]);
-  const visibleSections = useMemo(
-    () =>
-      sections.map((section) => {
-        const parentTasks = (section.tasks || []).filter((task) => !task.parentTaskId);
-        const visibleParentTasks = sortTasks(
-          parentTasks.filter((task) => taskMatchesFilter(task, taskFilter)),
-          taskSort,
-          users
-        );
-        const childTasks = (section.tasks || []).filter((task) => task.parentTaskId);
-        return {
-          ...section,
-          visibleTasks: visibleParentTasks,
-          visibleTaskCount: visibleParentTasks.length,
-          totalParentTasks: parentTasks.length,
-          childTasks,
-        };
-      }),
-    [sections, taskFilter, taskSort, users]
-  );
-  const visibleTaskCount = useMemo(
-    () => visibleSections.reduce((total, section) => total + Number(section.visibleTaskCount || 0), 0),
-    [visibleSections]
+  const visibleFlatTasks = useMemo(
+    () => sortTasks(flatTasks.filter((task) => filterTask(task, taskFilter)), taskSort, users),
+    [flatTasks, taskFilter, taskSort, users]
   );
   const selectedTask = useMemo(
     () => allTasks.find((task) => task.id === selectedTaskId) || null,
@@ -533,6 +452,12 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     }
   }
 
+  function toggleSectionCollapse(sectionId) {
+    setCollapsedSections((current) =>
+      current.includes(sectionId) ? current.filter((id) => id !== sectionId) : [...current, sectionId]
+    );
+  }
+
   async function handleMoveTask(sectionId, taskId, direction) {
     if (!project?.id || !sectionId || !taskId || busy || !canEditProject) return;
 
@@ -585,26 +510,30 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
   async function handleCreateTask(event, sectionId, parentTaskId = '') {
     event.preventDefault();
-    const title = parentTaskId
-      ? subtaskTitle.trim()
-      : getTaskDraftValue(taskDrafts, sectionId, 'title').trim();
-    const assigneeUserId = parentTaskId ? '' : getTaskDraftValue(taskDrafts, sectionId, 'assigneeUserId');
-    const dueDate = parentTaskId ? '' : getTaskDraftValue(taskDrafts, sectionId, 'dueDate');
+    const draft = taskDrafts[sectionId] && typeof taskDrafts[sectionId] === 'object'
+      ? taskDrafts[sectionId]
+      : { ...emptyTaskDraft(), title: String(taskDrafts[sectionId] || '') };
+    const title = parentTaskId ? subtaskTitle.trim() : String(draft.title || '').trim();
     if (!title || !project?.id || !sectionId || busy || !canCreateTasks) return;
+
+    const payload = {
+      projectId: project.id,
+      sectionId,
+      clientId: client?.id || project?.clientId || '',
+      parentTaskId,
+      title,
+    };
+
+    if (!parentTaskId) {
+      if (draft.assigneeUserId) payload.assigneeUserId = draft.assigneeUserId;
+      if (draft.dueDate) payload.dueDate = draft.dueDate;
+    }
 
     try {
       setBusy(true);
-      await createTask({
-        projectId: project.id,
-        sectionId,
-        clientId: client?.id || project?.clientId || '',
-        parentTaskId,
-        title,
-        assigneeUserId: assigneeUserId || undefined,
-        dueDate: dueDate || undefined,
-      });
+      await createTask(payload);
       if (parentTaskId) setSubtaskTitle('');
-      else setTaskDrafts((current) => ({ ...current, [sectionId]: { title: '', assigneeUserId: '', dueDate: '' } }));
+      else setTaskDrafts((current) => ({ ...current, [sectionId]: emptyTaskDraft() }));
       await refreshProject(project.id);
       showToast(parentTaskId ? 'Subtarefa criada.' : 'Tarefa criada.', { variant: 'success' });
     } catch (error) {
@@ -612,31 +541,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     } finally {
       setBusy(false);
     }
-  }
-
-  function handleTaskDraftChange(sectionId, field, value) {
-    setTaskDrafts((current) => {
-      const previous = current?.[sectionId];
-      const draft = previous && typeof previous === 'object' ? previous : { title: String(previous || '') };
-      return {
-        ...current,
-        [sectionId]: {
-          title: draft.title || '',
-          assigneeUserId: draft.assigneeUserId || '',
-          dueDate: draft.dueDate || '',
-          [field]: value,
-        },
-      };
-    });
-  }
-
-  function handleToggleSectionCollapsed(sectionId) {
-    setCollapsedSections((current) => {
-      const next = new Set(current);
-      if (next.has(sectionId)) next.delete(sectionId);
-      else next.add(sectionId);
-      return next;
-    });
   }
 
   async function handleSaveTaskDraft() {
@@ -723,29 +627,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     }
   }
 
-  function canDeleteComment(comment) {
-    if (!comment?.id || !canCommentTasks) return false;
-    if (canDeleteAnyComment) return true;
-    return Boolean(user?.id && comment.userId === user.id);
-  }
-
-  async function handleDeleteComment(comment = deleteCommentTarget) {
-    if (!selectedTask?.id || !comment?.id || busy || !canDeleteComment(comment)) return;
-
-    try {
-      setBusy(true);
-      await deleteTaskComment(selectedTask.id, comment.id);
-      setTaskComments((current) => current.filter((entry) => entry.id !== comment.id));
-      await refreshProject(project.id);
-      setDeleteCommentTarget(null);
-      showToast('Comentário excluído.', { variant: 'success' });
-    } catch (error) {
-      showToast(error?.message || 'Não foi possível excluir o comentário.', { variant: 'error' });
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function reloadTaskCollaborators(taskId = selectedTask?.id) {
     if (!taskId) return;
     const response = await listTaskCollaborators(taskId);
@@ -779,65 +660,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
       showToast('Colaborador removido.', { variant: 'success' });
     } catch (error) {
       showToast(error?.message || 'Não foi possível remover colaborador.', { variant: 'error' });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleAddProjectMember(event) {
-    event.preventDefault();
-    if (!project?.id || !memberUserId || busy || !canEditProject) return;
-
-    try {
-      setBusy(true);
-      const response = await addProjectMember(project.id, { userId: memberUserId, role: memberRole });
-      setMemberUserId('');
-      setMemberRole('member');
-      if (Array.isArray(response?.members)) {
-        setDetail((current) => ({ ...current, members: response.members }));
-      }
-      await refreshProject(project.id);
-      showToast('Membro adicionado.', { variant: 'success' });
-    } catch (error) {
-      showToast(error?.message || 'Não foi possível adicionar membro.', { variant: 'error' });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleRemoveProjectMember(member) {
-    const memberId = member?.userId;
-    if (!project?.id || !memberId || busy || !canEditProject || member.role === 'owner') return;
-
-    try {
-      setBusy(true);
-      const response = await removeProjectMember(project.id, memberId);
-      if (Array.isArray(response?.members)) {
-        setDetail((current) => ({ ...current, members: response.members }));
-      }
-      await refreshProject(project.id);
-      showToast('Membro removido.', { variant: 'success' });
-    } catch (error) {
-      showToast(error?.message || 'Não foi possível remover membro.', { variant: 'error' });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleDeleteProject() {
-    if (!project?.id || busy || !canEditProject) return;
-
-    try {
-      setBusy(true);
-      await deleteProject(project.id);
-      setDeleteProjectTarget(null);
-      setSelectedTaskId('');
-      setTaskComments([]);
-      setTaskCollaborators([]);
-      setDetail({ project: null, sections: [], members: [], events: [] });
-      showToast('Projeto removido.', { variant: 'success' });
-    } catch (error) {
-      showToast(error?.message || 'Não foi possível remover o projeto.', { variant: 'error' });
     } finally {
       setBusy(false);
     }
@@ -885,8 +707,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           <strong>{project.name}</strong>
         </div>
 
-        <div className={styles.projectHeaderRight}>
-          <div className={styles.projectStats}>
+        <div className={styles.projectStats}>
           <div>
             <strong>{progress}%</strong>
             <span>progresso</span>
@@ -899,87 +720,11 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
             <strong>{doneTasks}/{totalTasks}</strong>
             <span>concluídas</span>
           </div>
-            <div>
-              <strong>{members.length}</strong>
-              <span>membros</span>
-            </div>
+          <div>
+            <strong>{members.length}</strong>
+            <span>membros</span>
           </div>
-
-          {canEditProject ? (
-            <button
-              type="button"
-              className={styles.deleteProjectButton}
-              onClick={() => setDeleteProjectTarget(project)}
-              disabled={busy}
-            >
-              Excluir projeto
-            </button>
-          ) : null}
         </div>
-      </section>
-
-      <section className={styles.memberPanel}>
-        <div className={styles.memberPanelHead}>
-          <span>Membros</span>
-          <strong>{members.length}</strong>
-        </div>
-
-        <div className={styles.memberList}>
-          {members.length === 0 ? (
-            <div className={styles.noTasks}>Nenhum membro no projeto</div>
-          ) : (
-            members.map((member) => (
-              <article key={member.userId} className={styles.memberRow}>
-                <span>{initials(member.userName || member.userEmail)}</span>
-                <div>
-                  <strong>{member.userName || member.userEmail}</strong>
-                  <small>{member.role === 'owner' ? 'Proprietário' : member.role === 'viewer' ? 'Visualizador' : 'Membro'}</small>
-                </div>
-                {canEditProject && member.role !== 'owner' ? (
-                  <button
-                    type="button"
-                    className={styles.actionIcon}
-                    onClick={() => handleRemoveProjectMember(member)}
-                    disabled={busy}
-                    aria-label="Remover membro"
-                  >
-                    <TrashIcon size={13} aria-hidden="true" />
-                  </button>
-                ) : null}
-              </article>
-            ))
-          )}
-        </div>
-
-        {canEditProject ? (
-          <form className={styles.memberForm} onSubmit={handleAddProjectMember}>
-            <select
-              value={memberUserId}
-              onChange={(event) => setMemberUserId(event.target.value)}
-              disabled={busy || availableMemberUsers.length === 0}
-              aria-label="Adicionar membro ao projeto"
-            >
-              <option value="">Adicionar membro</option>
-              {availableMemberUsers.map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {entry.name || entry.email}
-                </option>
-              ))}
-            </select>
-            <select
-              value={memberRole}
-              onChange={(event) => setMemberRole(event.target.value)}
-              disabled={busy || availableMemberUsers.length === 0}
-              aria-label="Permissão do membro"
-            >
-              <option value="member">Membro</option>
-              <option value="viewer">Visualizador</option>
-            </select>
-            <button type="submit" disabled={busy || !memberUserId}>
-              Adicionar
-            </button>
-          </form>
-        ) : null}
       </section>
 
       <form className={styles.sectionForm} onSubmit={handleCreateSection}>
@@ -994,34 +739,42 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         </button>
       </form>
 
-      <div className={styles.taskToolbar}>
-        <select value={taskFilter} onChange={(event) => setTaskFilter(event.target.value)} aria-label="Filtrar tarefas">
-          <option value="all">Todas</option>
-          <option value="open">Abertas</option>
-          <option value="done">Concluídas</option>
-          <option value="withAssignee">Com responsável</option>
-          <option value="withoutAssignee">Sem responsável</option>
-          <option value="withDueDate">Com prazo</option>
-        </select>
-        <select value={taskSort} onChange={(event) => setTaskSort(event.target.value)} aria-label="Ordenar tarefas">
-          <option value="default">Ordem padrão</option>
-          <option value="dueDate">Prazo</option>
-          <option value="assignee">Responsável</option>
-          <option value="name">Nome</option>
-          <option value="status">Status</option>
-        </select>
-        <span>{visibleTaskCount}/{flatTasks.length} tarefa(s)</span>
-      </div>
+      <section className={styles.projectTools}>
+        <div className={styles.projectToolGroup}>
+          <Select
+            className={styles.projectToolSelect}
+            value={taskFilter}
+            onChange={(event) => setTaskFilter(event.target.value)}
+            aria-label="Filtrar tarefas"
+          >
+            {TASK_FILTERS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </Select>
+          <Select
+            className={styles.projectToolSelect}
+            value={taskSort}
+            onChange={(event) => setTaskSort(event.target.value)}
+            aria-label="Ordenar tarefas"
+          >
+            {TASK_SORTS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </Select>
+        </div>
+        <span>{visibleFlatTasks.length} de {flatTasks.length} tarefa(s)</span>
+      </section>
 
       <section className={`${styles.workspace} ${selectedTask ? styles.workspaceWithPanel : ''}`.trim()}>
         <div className={styles.sections}>
           {sections.length === 0 ? (
             <StateBlock variant="empty" compact title="Nenhuma seção criada" />
           ) : (
-            visibleSections.map((section) => {
-              const tasks = section.visibleTasks || [];
-              const isCollapsed = collapsedSections.has(section.id);
+            sections.map((section) => {
+              const rawTasks = (section.tasks || []).filter((task) => !task.parentTaskId);
+              const tasks = sortTasks(rawTasks.filter((task) => filterTask(task, taskFilter)), taskSort, users);
               const isEditing = editingSectionId === section.id;
+              const isCollapsed = collapsedSections.includes(section.id);
 
               return (
                 <article key={section.id} className={styles.sectionCard}>
@@ -1054,14 +807,14 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           {section.name}
                         </button>
                       )}
-                      <span>{tasks.length}/{section.totalParentTasks || 0} tarefa(s)</span>
+                      <span>{tasks.length} de {rawTasks.length} tarefa(s)</span>
                     </div>
 
                     <div className={styles.rowActions}>
                       <button
                         type="button"
                         className={styles.moveBtn}
-                        onClick={() => handleToggleSectionCollapsed(section.id)}
+                        onClick={() => toggleSectionCollapse(section.id)}
                         aria-label={isCollapsed ? 'Expandir seção' : 'Recolher seção'}
                       >
                         {isCollapsed ? '+' : '−'}
@@ -1097,41 +850,71 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   </header>
 
                   {!isCollapsed ? (
-                    <form className={styles.taskForm} onSubmit={(event) => handleCreateTask(event, section.id)}>
-                      <input
-                        value={getTaskDraftValue(taskDrafts, section.id, 'title')}
-                        onChange={(event) => handleTaskDraftChange(section.id, 'title', event.target.value)}
-                        placeholder="Nova tarefa"
-                        disabled={busy || !canCreateTasks}
-                      />
-                      <select
-                        value={getTaskDraftValue(taskDrafts, section.id, 'assigneeUserId')}
-                        onChange={(event) => handleTaskDraftChange(section.id, 'assigneeUserId', event.target.value)}
-                        disabled={busy || !canCreateTasks}
-                        aria-label="Responsável da nova tarefa"
-                      >
-                        <option value="">Sem responsável</option>
-                        {(Array.isArray(users) ? users : []).map((entry) => (
-                          <option key={entry.id} value={entry.id}>
-                            {entry.name || entry.email}
-                          </option>
-                        ))}
-                      </select>
-                      <DateField
-                        value={getTaskDraftValue(taskDrafts, section.id, 'dueDate')}
-                        onChange={(value) => handleTaskDraftChange(section.id, 'dueDate', value)}
-                        disabled={busy || !canCreateTasks}
-                        ariaLabel="Prazo da nova tarefa"
-                        placeholder="Prazo"
-                        className={styles.dateField}
-                      />
-                      <button type="submit" disabled={busy || !canCreateTasks || !getTaskDraftValue(taskDrafts, section.id, 'title').trim()}>
-                        Adicionar
-                      </button>
-                    </form>
-                  ) : null}
+                    <>
+                      <form className={styles.taskForm} onSubmit={(event) => handleCreateTask(event, section.id)}>
+                        <input
+                          value={(taskDrafts[section.id] && typeof taskDrafts[section.id] === 'object' ? taskDrafts[section.id].title : taskDrafts[section.id]) || ''}
+                          onChange={(event) =>
+                            setTaskDrafts((current) => ({
+                              ...current,
+                              [section.id]: {
+                                ...(current[section.id] && typeof current[section.id] === 'object' ? current[section.id] : emptyTaskDraft()),
+                                title: event.target.value,
+                              },
+                            }))
+                          }
+                          placeholder="Nova tarefa"
+                          disabled={busy || !canCreateTasks}
+                        />
+                        <Select
+                          className={styles.projectInlineSelect}
+                          value={(taskDrafts[section.id] && typeof taskDrafts[section.id] === 'object' ? taskDrafts[section.id].assigneeUserId : '') || ''}
+                          onChange={(event) =>
+                            setTaskDrafts((current) => ({
+                              ...current,
+                              [section.id]: {
+                                ...(current[section.id] && typeof current[section.id] === 'object' ? current[section.id] : emptyTaskDraft()),
+                                assigneeUserId: event.target.value,
+                              },
+                            }))
+                          }
+                          disabled={busy || !canCreateTasks}
+                          aria-label="Responsável da nova tarefa"
+                        >
+                          <option value="">Sem responsável</option>
+                          {(Array.isArray(users) ? users : []).map((entry) => (
+                            <option key={entry.id} value={entry.id}>{entry.name || entry.email}</option>
+                          ))}
+                        </Select>
+                        <DateField
+                          value={(taskDrafts[section.id] && typeof taskDrafts[section.id] === 'object' ? taskDrafts[section.id].dueDate : '') || ''}
+                          onChange={(value) =>
+                            setTaskDrafts((current) => ({
+                              ...current,
+                              [section.id]: {
+                                ...(current[section.id] && typeof current[section.id] === 'object' ? current[section.id] : emptyTaskDraft()),
+                                dueDate: value,
+                              },
+                            }))
+                          }
+                          disabled={busy || !canCreateTasks}
+                          placeholder="Prazo"
+                          ariaLabel="Prazo da nova tarefa"
+                          className={styles.dateField}
+                        />
+                        <button
+                          type="submit"
+                          disabled={
+                            busy ||
+                            !canCreateTasks ||
+                            !String(taskDrafts[section.id] && typeof taskDrafts[section.id] === 'object' ? taskDrafts[section.id].title : taskDrafts[section.id] || '').trim()
+                          }
+                        >
+                          Adicionar
+                        </button>
+                      </form>
 
-                  {!isCollapsed ? <div className={styles.taskList}>
+                  <div className={styles.taskList}>
                     {tasks.length === 0 ? (
                       <div className={styles.noTasks}>Nenhuma tarefa nesta seção</div>
                     ) : (
@@ -1195,7 +978,9 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         );
                       })
                     )}
-                  </div> : null}
+                  </div>
+                    </>
+                  ) : null}
                 </article>
               );
             })
@@ -1237,53 +1022,59 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
               <div className={styles.taskControls}>
                 <label>
+                  <span>Seção</span>
+                  <Select
+                    className={styles.projectInlineSelect}
+                    value={selectedTask.sectionId || ''}
+                    onChange={(event) => handleUpdateTask(selectedTask, { sectionId: event.target.value })}
+                    disabled={busy || !canEditTasks}
+                    aria-label="Seção da tarefa"
+                  >
+                    {sections.map((section) => (
+                      <option key={section.id} value={section.id}>{section.name}</option>
+                    ))}
+                  </Select>
+                </label>
+
+                <label>
                   <span>Status</span>
-                  <select
+                  <Select
+                    className={styles.projectInlineSelect}
                     value={selectedTask.status || 'todo'}
                     onChange={(event) => handleUpdateTask(selectedTask, { status: event.target.value, done: event.target.value === 'done' })}
                     disabled={busy || !canEditTasks}
+                    aria-label="Status da tarefa"
                   >
                     <option value="todo">Aberta</option>
                     <option value="in_progress">Em andamento</option>
                     <option value="done">Concluída</option>
                     <option value="canceled">Cancelada</option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>Seção</span>
-                  <select
-                    value={selectedTask.sectionId || ''}
-                    onChange={(event) => handleUpdateTask(selectedTask, { sectionId: event.target.value })}
-                    disabled={busy || !canEditTasks}
-                  >
-                    {sections.map((section) => (
-                      <option key={section.id} value={section.id}>
-                        {section.name}
-                      </option>
-                    ))}
-                  </select>
+                  </Select>
                 </label>
 
                 <label>
                   <span>Prioridade</span>
-                  <select
+                  <Select
+                    className={styles.projectInlineSelect}
                     value={selectedTask.priority || 'medium'}
                     onChange={(event) => handleUpdateTask(selectedTask, { priority: event.target.value })}
                     disabled={busy || !canEditTasks}
+                    aria-label="Prioridade da tarefa"
                   >
                     <option value="low">Baixa</option>
                     <option value="medium">Média</option>
                     <option value="high">Alta</option>
-                  </select>
+                  </Select>
                 </label>
 
                 <label>
                   <span>Responsável</span>
-                  <select
+                  <Select
+                    className={styles.projectInlineSelect}
                     value={selectedTask.assigneeUserId || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { assigneeUserId: event.target.value })}
                     disabled={busy || !canEditTasks}
+                    aria-label="Responsável da tarefa"
                   >
                     <option value="">Sem responsável</option>
                     {(Array.isArray(users) ? users : []).map((entry) => (
@@ -1291,7 +1082,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         {entry.name || entry.email}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
 
                 <label>
@@ -1300,8 +1091,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     value={selectedTask.dueDate || ''}
                     onChange={(value) => handleUpdateTask(selectedTask, { dueDate: value })}
                     disabled={busy || !canEditTasks}
-                    ariaLabel="Prazo da tarefa"
                     placeholder="Sem prazo"
+                    ariaLabel="Prazo da tarefa"
                     className={styles.dateField}
                   />
                 </label>
@@ -1357,10 +1148,12 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                 </div>
 
                 <form className={styles.collabForm} onSubmit={handleAddCollaborator}>
-                  <select
+                  <Select
+                    className={styles.projectInlineSelect}
                     value={collaboratorUserId}
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
                     disabled={busy || taskPanelLoading || !canEditTasks}
+                    aria-label="Adicionar colaborador"
                   >
                     <option value="">Adicionar colaborador</option>
                     {(Array.isArray(users) ? users : [])
@@ -1370,7 +1163,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           {entry.name || entry.email}
                         </option>
                       ))}
-                  </select>
+                  </Select>
                   <button type="submit" disabled={busy || !canEditTasks || !collaboratorUserId}>
                     Adicionar
                   </button>
@@ -1418,22 +1211,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     taskComments.map((comment) => (
                       <article key={comment.id} className={styles.commentCard}>
                         <header>
-                          <div>
-                            <strong>{comment.userName || comment.authorName || 'Usuário'}</strong>
-                            <span>{formatDateTime(comment.createdAt)}</span>
-                          </div>
-                          {canDeleteComment(comment) ? (
-                            <button
-                              type="button"
-                              className={styles.commentDeleteButton}
-                              onClick={() => setDeleteCommentTarget(comment)}
-                              disabled={busy}
-                              aria-label="Excluir comentário"
-                              title="Excluir comentário"
-                            >
-                              <TrashIcon size={14} />
-                            </button>
-                          ) : null}
+                          <strong>{comment.userName || comment.authorName || 'Usuário'}</strong>
+                          <span>{formatDateTime(comment.createdAt)}</span>
                         </header>
                         <p>{comment.body || comment.comment || comment.text}</p>
                       </article>
@@ -1459,28 +1238,18 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           {events.length === 0 ? (
             <div className={styles.noTasks}>Nenhuma atividade registrada</div>
           ) : (
-            events.slice(0, 12).map((event, index) => {
-              const details = eventDetails(event, users);
-              return (
-                <article key={event.id || `${event.type || 'event'}-${index}`} className={styles.activityItem}>
-                  <span aria-hidden="true" />
-                  <div>
-                    <strong>{eventLabel(event)}</strong>
-                    <small>
-                      {event.actorName || 'Sistema'}
-                      {formatDateTime(event.createdAt) ? ` · ${formatDateTime(event.createdAt)}` : ''}
-                    </small>
-                    {details.length > 0 ? (
-                      <div className={styles.activityDetails}>
-                        {details.map((detail) => (
-                          <em key={detail}>{detail}</em>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                </article>
-              );
-            })
+            events.slice(0, 12).map((event, index) => (
+              <article key={event.id || `${event.type || 'event'}-${index}`} className={styles.activityItem}>
+                <span aria-hidden="true" />
+                <div>
+                  <strong>{eventLabel(event)}</strong>
+                  <small>
+                    {event.actorName || 'Sistema'}
+                    {formatDateTime(event.createdAt) ? ` · ${formatDateTime(event.createdAt)}` : ''}
+                  </small>
+                </div>
+              </article>
+            ))
           )}
         </div>
       </section>
@@ -1513,42 +1282,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
               <button type="button" onClick={() => setDeleteTaskTarget(null)}>Cancelar</button>
               <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy || !canEditTasks}>
                 Remover
-              </button>
-            </div>
-          </section>
-        </div>
-      ) : null}
-
-      {deleteCommentTarget ? (
-        <div className={styles.confirmBackdrop} role="presentation" onClick={() => setDeleteCommentTarget(null)}>
-          <section className={styles.confirmModal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
-            <div className={styles.confirmHead}>
-              <span>Excluir comentário</span>
-              <strong>{deleteCommentTarget.userName || deleteCommentTarget.authorName || 'Comentário'}</strong>
-              <p>Essa ação remove o comentário da tarefa e registra a atividade no histórico.</p>
-            </div>
-            <div className={styles.confirmActions}>
-              <button type="button" onClick={() => setDeleteCommentTarget(null)}>Cancelar</button>
-              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteComment(deleteCommentTarget)} disabled={busy}>
-                Excluir comentário
-              </button>
-            </div>
-          </section>
-        </div>
-      ) : null}
-
-      {deleteProjectTarget ? (
-        <div className={styles.confirmBackdrop} role="presentation" onClick={() => setDeleteProjectTarget(null)}>
-          <section className={styles.confirmModal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
-            <div className={styles.confirmHead}>
-              <span>Excluir projeto</span>
-              <strong>{deleteProjectTarget.name}</strong>
-              <p>Esta ação remove seções, tarefas, comentários, colaboradores e histórico do projeto.</p>
-            </div>
-            <div className={styles.confirmActions}>
-              <button type="button" onClick={() => setDeleteProjectTarget(null)}>Cancelar</button>
-              <button type="button" className={styles.confirmDanger} onClick={handleDeleteProject} disabled={busy || !canEditProject}>
-                Excluir projeto
               </button>
             </div>
           </section>
