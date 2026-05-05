@@ -9,7 +9,6 @@
 }
 
 .hero,
-.peoplePanel,
 .tasksBoard,
 .settingsModal {
   border: 1px solid var(--line-subtle);
@@ -266,140 +265,6 @@
   font-weight: 600;
 }
 
-
-.peoplePanel {
-  min-height: 76px;
-  padding: 10px 12px;
-  display: grid;
-  grid-template-columns: minmax(260px, 0.34fr) minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-}
-
-.peopleHeader {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(120px, auto) minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-}
-
-.peopleHeader > div {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.peopleHeader strong {
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.peopleHeader input {
-  min-width: 0;
-  height: 34px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.018);
-  color: var(--text-primary);
-  padding: 0 11px;
-  font: inherit;
-  font-size: 13px;
-  outline: none;
-}
-
-.peopleHeader input:focus {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.035);
-}
-
-.peopleHeader input::placeholder {
-  color: var(--text-quaternary);
-}
-
-.peopleList {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.peopleCard {
-  min-width: 0;
-  min-height: 42px;
-  padding: 6px 8px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.012);
-  color: inherit;
-  text-decoration: none;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
-  transition: border-color 0.18s ease, background 0.18s ease;
-}
-
-.peopleCard:hover {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.032);
-}
-
-.peopleAvatar {
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 999px;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  background: #08090a;
-  color: var(--text-primary);
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.peopleAvatar img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-.peopleCopy {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.peopleCopy strong {
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 560;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.peopleCopy small,
-.peopleEmpty {
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 11px;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.peopleEmpty {
-  padding: 0 4px;
-}
-
 .tasksBody {
   min-height: 280px;
   padding: 12px 14px 14px;
@@ -428,15 +293,6 @@
   font-size: 13px;
   outline: none;
   box-sizing: border-box;
-}
-
-.createTaskDate {
-  min-width: 0;
-  width: 100%;
-}
-
-.createTaskDate button {
-  height: 34px;
 }
 
 .createTaskBar input:focus,
@@ -781,15 +637,9 @@
 }
 
 @media (max-width: 860px) {
-  .peoplePanel,
-  .peopleHeader,
   .createTaskBar,
   .formGrid {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .peopleList {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .settingsModal {
@@ -812,10 +662,6 @@
 
   .photoBlock {
     display: flex;
-  }
-
-  .peopleList {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .hero {
@@ -878,4 +724,161 @@
   background: transparent;
   color: var(--text-primary);
   padding-left: 2px;
+}
+
+/* Profile UX polish: people discovery and compact task creation */
+.peoplePanel {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4);
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.38fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.peopleHeader {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(120px, 0.55fr) minmax(220px, 1fr);
+  align-items: end;
+  gap: 12px;
+}
+
+.peopleHeader h2 {
+  margin: 3px 0 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+}
+
+.peopleSearch {
+  height: 36px;
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.022);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 11px;
+}
+
+.peopleSearch input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+}
+
+.peopleSearch input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.peopleGrid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.personCard {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.014);
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.personCard:hover {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.036);
+}
+
+.personAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: #111214;
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: 620;
+}
+
+.personAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.personCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.personCopy strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.15;
+  font-weight: 560;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.personCopy span,
+.peopleEmpty {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.createTaskBar {
+  grid-template-columns: minmax(240px, 1fr) minmax(190px, 0.22fr) 142px auto;
+}
+
+.taskDateField {
+  width: 100%;
+}
+
+@media (max-width: 1180px) {
+  .peoplePanel,
+  .peopleHeader {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .peopleGrid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .peopleGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

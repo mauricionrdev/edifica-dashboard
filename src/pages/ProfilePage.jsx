@@ -6,8 +6,8 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { hasPermission } from '../utils/permissions.js';
 import { roleLabel } from '../utils/roles.js';
-import { buildProfilePath } from '../utils/entityPaths.js';
 import { normalizeSlug } from '../utils/slugs.js';
+import { buildProfilePath } from '../utils/entityPaths.js';
 import {
   getUserAvatar,
   readAvatarFile,
@@ -17,7 +17,7 @@ import {
 } from '../utils/avatarStorage.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import DateField from '../components/ui/DateField.jsx';
-import { CloseIcon, SettingsIcon } from '../components/ui/Icons.jsx';
+import { CloseIcon, SearchIcon, SettingsIcon } from '../components/ui/Icons.jsx';
 import UserPicker from '../components/users/UserPicker.jsx';
 import styles from './ProfilePage.module.css';
 
@@ -166,7 +166,7 @@ export default function ProfilePage() {
   const [newTask, setNewTask] = useState({ title: '', assigneeUserId: user?.id || '', dueDate: '' });
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
   const [collapsedTaskSections, setCollapsedTaskSections] = useState({});
-  const [directoryQuery, setDirectoryQuery] = useState('');
+  const [peopleQuery, setPeopleQuery] = useState('');
 
   useEffect(() => {
     setPanelHeader({
@@ -231,20 +231,21 @@ export default function ProfilePage() {
   const visibleTasks = useMemo(() => getVisibleTasks(tasks, taskTab), [taskTab, tasks]);
   const taskSections = useMemo(() => getTaskSections(tasks, taskTab), [taskTab, tasks]);
   const canCreateTasks = hasPermission(user, 'tasks.create');
-  const visibleDirectoryUsers = useMemo(() => {
-    const currentUserId = user?.id || '';
-    const term = directoryQuery.trim().toLowerCase();
-    return (Array.isArray(userDirectory) ? userDirectory : [])
-      .filter((entry) => entry?.id && entry?.name && entry.active !== false && entry.id !== currentUserId)
+
+  const visiblePeople = useMemo(() => {
+    const query = peopleQuery.trim().toLowerCase();
+    const directory = Array.isArray(userDirectory) ? userDirectory : [];
+    return directory
+      .filter((entry) => entry?.id && entry.id !== user?.id)
       .filter((entry) => {
-        if (!term) return true;
-        return [entry.name, entry.email, entry.role]
+        if (!query) return true;
+        return [entry.name, entry.email, roleLabel(entry.role)]
           .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(term));
+          .some((value) => String(value).toLowerCase().includes(query));
       })
       .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'))
-      .slice(0, 6);
-  }, [directoryQuery, user?.id, userDirectory]);
+      .slice(0, 8);
+  }, [peopleQuery, user?.id, userDirectory]);
 
   useEffect(() => {
     setCollapsedTaskSections((current) => {
@@ -397,37 +398,39 @@ export default function ProfilePage() {
         </button>
       </section>
 
-      <section className={styles.peoplePanel} aria-label="Diretório de pessoas">
+      <section className={styles.peoplePanel} aria-label="Encontrar pessoas">
         <div className={styles.peopleHeader}>
           <div>
             <span className={styles.boardMeta}>Pessoas</span>
-            <strong>Encontrar perfil</strong>
+            <h2>Encontrar perfil</h2>
           </div>
-          <input
-            value={directoryQuery}
-            onChange={(event) => setDirectoryQuery(event.target.value)}
-            placeholder="Buscar por nome, e-mail ou cargo..."
-            aria-label="Buscar pessoa"
-          />
+          <label className={styles.peopleSearch}>
+            <SearchIcon size={15} />
+            <input
+              value={peopleQuery}
+              onChange={(event) => setPeopleQuery(event.target.value)}
+              placeholder="Buscar por nome, e-mail ou cargo"
+              aria-label="Buscar pessoa"
+            />
+          </label>
         </div>
 
-        <div className={styles.peopleList}>
-          {visibleDirectoryUsers.length === 0 ? (
-            <span className={styles.peopleEmpty}>Nenhum usuário encontrado.</span>
-          ) : visibleDirectoryUsers.map((entry) => {
-            const entryAvatar = getUserAvatar(entry);
+        <div className={styles.peopleGrid}>
+          {visiblePeople.map((person) => {
+            const personAvatar = getUserAvatar(person);
             return (
-              <Link key={entry.id} to={buildProfilePath(entry)} className={styles.peopleCard}>
-                <span className={styles.peopleAvatar}>
-                  {entryAvatar ? <img src={entryAvatar} alt="" /> : initials(entry.name)}
+              <Link key={person.id} to={buildProfilePath(person)} className={styles.personCard}>
+                <span className={`${styles.personAvatar} ${styles[`avatar_${person.avatarColor || 'slate'}`]}`}>
+                  {personAvatar ? <img src={personAvatar} alt="" /> : initials(person.name)}
                 </span>
-                <span className={styles.peopleCopy}>
-                  <strong>{entry.name}</strong>
-                  <small>{entry.email || roleLabel(entry.role)}</small>
+                <span className={styles.personCopy}>
+                  <strong>{person.name}</strong>
+                  <span>{person.email || roleLabel(person.role)}</span>
                 </span>
               </Link>
             );
           })}
+          {visiblePeople.length === 0 ? <span className={styles.peopleEmpty}>Nenhum perfil encontrado.</span> : null}
         </div>
       </section>
 
@@ -480,11 +483,11 @@ export default function ProfilePage() {
                 placeholder="Responsável"
               />
               <DateField
+                className={styles.taskDateField}
                 value={newTask.dueDate}
-                onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))}
+                onChange={(dueDate) => setNewTask((prev) => ({ ...prev, dueDate }))}
                 placeholder="Prazo"
                 ariaLabel="Prazo"
-                className={styles.createTaskDate}
               />
               <button type="submit" disabled={creatingTask || !newTask.title.trim()}>
                 Criar

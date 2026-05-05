@@ -1,8 +1,7 @@
-
 .page {
   min-height: 100%;
   min-width: 0;
-  padding: 12px 14px 20px;
+  padding: 14px 16px 22px;
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -11,71 +10,66 @@
 }
 
 .hero,
+.summaryStrip,
 .panel {
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.018);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
 }
 
 .inlineLink,
 .primaryButton,
 .secondaryButton,
-.panelAction {
+.panelAction,
+.iconButton {
   min-height: 34px;
   padding: 0 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 7px;
   border-radius: var(--radius-1);
   border: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
+  font: inherit;
   font-size: 12px;
-  font-weight: 520;
+  font-weight: 560;
   text-decoration: none;
-  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.primaryButton {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.055);
 }
 
 .inlineLink:hover,
 .primaryButton:hover,
 .secondaryButton:hover,
-.panelAction:hover {
+.panelAction:hover,
+.iconButton:hover {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.055);
   color: var(--text-primary);
 }
 
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .hero {
-  min-height: 74px;
-  padding: 10px 12px;
+  min-height: 94px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-}
-
-
-.heroActions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.primaryButton svg,
-.secondaryButton svg {
-  flex: 0 0 auto;
-}
-
-.secondaryButton {
-  background: transparent;
-}
-
-.primaryButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
+  gap: 16px;
 }
 
 .heroMain,
@@ -90,7 +84,7 @@
 
 .heroMain {
   align-items: center;
-  gap: 10px;
+  gap: 13px;
 }
 
 .heroCopy,
@@ -102,31 +96,28 @@
 }
 
 .heroCopy,
-.mainColumn,
-.sideColumn,
-.taskCopy,
-.projectCopy {
-  gap: 4px;
+.projectCopy,
+.taskCopy {
+  gap: 3px;
 }
 
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  outline: none;
-  box-shadow: none;
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: #08090a;
+  background: #111214;
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 640;
   flex: 0 0 auto;
 }
 
-.avatar img {
+.avatar img,
+.assigneeAvatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -144,26 +135,27 @@
 .nameRow h1 {
   margin: 0;
   color: var(--text-primary);
-  font-size: clamp(20px, 2vw, 24px);
+  font-size: clamp(24px, 2.4vw, 32px);
   line-height: 1.05;
-  font-weight: 600;
-  letter-spacing: -0.04em;
+  font-weight: 620;
+  letter-spacing: -0.05em;
 }
 
 .roleBadge,
 .taskTag,
 .projectProgress {
-  min-height: 24px;
-  padding: 0 9px;
+  min-height: 22px;
+  padding: 0 8px;
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.018);
   color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 520;
-  letter-spacing: 0.03em;
+  font-size: 10px;
+  font-weight: 580;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .profileMeta {
@@ -174,9 +166,68 @@
   font-size: 12px;
 }
 
+.heroActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.summaryStrip {
+  min-height: 66px;
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(112px, 0.36fr)) minmax(260px, 1fr);
+  align-items: center;
+  overflow: hidden;
+}
+
+.summaryItem,
+.summaryWide {
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  border-left: 1px solid var(--line-subtle);
+}
+
+.summaryItem:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.summaryItem strong,
+.summaryWide strong {
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 640;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summaryWide strong {
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.summaryItem span,
+.summaryWide span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 580;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.72fr) minmax(260px, 0.72fr);
+  grid-template-columns: minmax(0, 1.64fr) minmax(280px, 0.62fr);
   gap: 10px;
   align-items: start;
 }
@@ -191,8 +242,8 @@
 }
 
 .panelHeader {
-  min-height: 54px;
-  padding: 12px 14px;
+  min-height: 56px;
+  padding: 11px 14px;
   border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
@@ -205,16 +256,17 @@
   color: var(--text-primary);
   font-size: 15px;
   line-height: 1.15;
-  font-weight: 600;
+  font-weight: 620;
   letter-spacing: -0.02em;
 }
 
-.panelHeading p {
+.panelHeading p,
+.kicker {
   margin: 4px 0 0;
   color: var(--text-tertiary);
   font-size: 10px;
-  font-weight: 520;
-  letter-spacing: 0.1em;
+  font-weight: 580;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -230,13 +282,14 @@
   min-height: 32px;
   border-bottom: 1px solid var(--line-subtle);
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) minmax(140px, 0.4fr) auto 74px;
+  grid-template-columns: 20px minmax(0, 1fr) minmax(140px, 0.34fr) 86px 82px;
   align-items: center;
-  padding: 0 12px;
+  padding: 0 14px;
+  gap: 10px;
   color: var(--text-quaternary);
   font-size: 10px;
-  font-weight: 520;
-  letter-spacing: 0.11em;
+  font-weight: 580;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -256,23 +309,21 @@
 }
 
 .taskSectionHeader {
-  min-height: 32px;
-  padding: 0 12px;
+  min-height: 30px;
+  padding: 0 14px;
   border-bottom: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.012);
+  background: rgba(255, 255, 255, 0.01);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 520;
 }
 
 .taskSectionHeader strong {
   color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 520;
+  font-weight: 560;
 }
 
 .taskSectionHeader span {
@@ -283,10 +334,10 @@
 }
 
 .taskRow {
-  min-height: 42px;
-  padding: 0 12px;
+  min-height: 44px;
+  padding: 0 14px;
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) minmax(140px, 0.4fr) auto 74px;
+  grid-template-columns: 20px minmax(0, 1fr) minmax(140px, 0.34fr) 86px 82px;
   align-items: center;
   gap: 10px;
   color: inherit;
@@ -300,7 +351,7 @@
 
 .taskRow:hover,
 .projectRow:hover {
-  background: rgba(255, 255, 255, 0.024);
+  background: rgba(255, 255, 255, 0.022);
 }
 
 .checkCircle {
@@ -317,7 +368,7 @@
   color: var(--text-primary);
   font-size: 13px;
   line-height: 1.25;
-  font-weight: 520;
+  font-weight: 560;
 }
 
 .taskProject,
@@ -347,8 +398,8 @@
 }
 
 .projectRow {
-  min-height: 46px;
-  padding: 0 12px;
+  min-height: 50px;
+  padding: 0 14px;
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr) auto;
   align-items: center;
@@ -364,16 +415,12 @@
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
 }
 
 .projectArrow {
   color: var(--text-tertiary);
   font-size: 12px;
-  font-weight: 520;
+  font-weight: 560;
   font-variant-numeric: tabular-nums;
 }
 
@@ -399,34 +446,32 @@
   text-overflow: ellipsis;
 }
 
-
-.taskModalOverlay {
+.modalOverlay {
   position: fixed;
   inset: 0;
-  z-index: 9500;
+  z-index: 10000;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.68);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.taskModal {
-  width: min(560px, calc(100vw - 40px));
+.assignModal {
+  width: min(620px, calc(100vw - 40px));
   max-height: min(720px, calc(100vh - 40px));
+  overflow: hidden;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4);
-  background: #141516;
-  overflow: hidden;
+  background: #18191b;
   display: flex;
   flex-direction: column;
-  box-shadow: none;
 }
 
-.taskModalHeader {
-  min-height: 58px;
-  padding: 0 12px 0 16px;
+.assignHeader {
+  min-height: 62px;
+  padding: 0 14px 0 16px;
   border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
@@ -434,105 +479,121 @@
   gap: 12px;
 }
 
-.taskModalHeader > div {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.taskModalHeader span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.taskModalHeader strong {
-  overflow: hidden;
+.assignHeader h2 {
+  margin: 3px 0 0;
   color: var(--text-primary);
-  font-size: 17px;
-  line-height: 1.15;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 18px;
+  line-height: 1.12;
+  font-weight: 620;
+  letter-spacing: -0.03em;
 }
 
 .iconButton {
   width: 34px;
-  height: 34px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.018);
-  color: var(--text-tertiary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0;
 }
 
-.iconButton:hover {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-primary);
-}
-
-.taskForm {
-  min-height: 0;
-  padding: 14px;
+.assignForm {
+  min-width: 0;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.taskForm input,
-.taskForm textarea {
+.field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field > span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 580;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.field input,
+.field textarea {
   width: 100%;
   min-width: 0;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.018);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.025);
   color: var(--text-primary);
-  font: inherit;
-  font-size: 13px;
   outline: none;
   box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
 }
 
-.taskForm input {
-  height: 38px;
-  padding: 0 11px;
+.field input {
+  height: 42px;
+  padding: 0 12px;
 }
 
-.taskForm textarea {
-  min-height: 134px;
-  resize: vertical;
-  padding: 10px 11px;
+.field textarea {
+  min-height: 116px;
+  padding: 11px 12px;
   line-height: 1.45;
+  resize: vertical;
 }
 
-.taskForm input:focus,
-.taskForm textarea:focus {
+.field input:focus,
+.field textarea:focus {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.taskForm input::placeholder,
-.taskForm textarea::placeholder {
+.field input::placeholder,
+.field textarea::placeholder {
   color: var(--text-quaternary);
 }
 
-.taskDateField {
-  width: 180px;
-  max-width: 100%;
+.assignMetaRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 10px;
+  align-items: center;
 }
 
-.taskDateField button {
-  height: 36px;
+.assigneeChip {
+  min-width: 0;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.018);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 560;
 }
 
-.taskModalFooter {
+.assigneeAvatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #111214;
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: 620;
+  flex: 0 0 auto;
+}
+
+.assignDate {
+  width: 100%;
+}
+
+.assignFooter {
   padding-top: 2px;
   display: flex;
   align-items: center;
@@ -541,8 +602,21 @@
 }
 
 @media (max-width: 1080px) {
-  .layout {
+  .layout,
+  .summaryStrip {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .summaryItem,
+  .summaryWide {
+    min-height: 48px;
+    border-left: 0;
+    border-top: 1px solid var(--line-subtle);
+    padding: 0;
+  }
+
+  .summaryItem:first-child {
+    border-top: 0;
   }
 }
 
@@ -557,22 +631,12 @@
     flex-direction: column;
   }
 
-  .heroMain {
-    align-items: flex-start;
-  }
-
   .heroActions {
     width: 100%;
-    justify-content: flex-start;
   }
 
-  .taskModalOverlay {
-    padding: 10px;
-  }
-
-  .taskModal {
-    width: calc(100vw - 20px);
-    max-height: calc(100vh - 20px);
+  .heroActions > * {
+    flex: 1 1 0;
   }
 
   .taskTableHead {
@@ -596,5 +660,9 @@
 
   .taskDue {
     text-align: left;
+  }
+
+  .assignMetaRow {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

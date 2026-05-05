@@ -5,11 +5,11 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { getUserAvatar } from '../utils/avatarStorage.js';
 import { roleLabel } from '../utils/roles.js';
+import { hasPermission } from '../utils/permissions.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import DateField from '../components/ui/DateField.jsx';
 import { CloseIcon, PlusIcon, ProjectBoardIcon } from '../components/ui/Icons.jsx';
 import { buildProfilePath, matchesEntityRouteSegment } from '../utils/entityPaths.js';
-import { hasPermission } from '../utils/permissions.js';
 import styles from './UserProfilePage.module.css';
 
 function initials(name) {
@@ -44,10 +44,10 @@ function getTaskStatusLabel(task) {
 }
 
 export default function UserProfilePage() {
-  const { userId } = useParams();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { userId } = useParams();
+  const navigate = useNavigate();
   const {
     clients = [],
     squads = [],
@@ -60,9 +60,9 @@ export default function UserProfilePage() {
   const [profileProjects, setProfileProjects] = useState([]);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [projectsLoading, setProjectsLoading] = useState(false);
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [assigningTask, setAssigningTask] = useState(false);
-  const [taskForm, setTaskForm] = useState({ title: '', description: '', dueDate: '' });
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
+  const [assignForm, setAssignForm] = useState({ title: '', description: '', dueDate: '' });
 
   useEffect(() => {
     if (!Array.isArray(userDirectory) || userDirectory.length === 0) {
@@ -91,7 +91,6 @@ export default function UserProfilePage() {
   }, [profileUser, setPanelHeader]);
 
   const avatarUrl = getUserAvatar(profileUser);
-  const canCreateTasks = hasPermission(user, 'tasks.create');
 
   useEffect(() => {
     if (!profileUser?.id) {
@@ -191,34 +190,36 @@ export default function UserProfilePage() {
     },
   ]).filter((section) => section.tasks.length > 0), [profileTasks]);
 
-  async function reloadProfileTasks() {
+  const canAssignTasks = hasPermission(user, 'tasks.create');
+  const nextTask = useMemo(() => profileTasks.find((task) => task?.status !== 'done'), [profileTasks]);
+  const loadProfileTasks = async () => {
     if (!profileUser?.id) return;
     const res = await listUserProjectTasks(profileUser.id);
     setProfileTasks(Array.isArray(res?.tasks) ? res.tasks : []);
-  }
+  };
 
-  async function handleAssignTask(event) {
+  async function handleCreateAssignedTask(event) {
     event.preventDefault();
-    const title = taskForm.title.trim();
+    const title = assignForm.title.trim();
     if (!title || !profileUser?.id) return;
 
     try {
-      setAssigningTask(true);
+      setCreatingTask(true);
       await createTask({
         title,
-        description: taskForm.description.trim(),
-        dueDate: taskForm.dueDate || '',
+        description: assignForm.description.trim(),
         assigneeUserId: profileUser.id,
-        source: 'profile',
+        dueDate: assignForm.dueDate || '',
+        source: 'profile_assignment',
       });
-      await reloadProfileTasks();
-      setTaskForm({ title: '', description: '', dueDate: '' });
-      setAssignModalOpen(false);
-      showToast(`Tarefa atribuída para ${profileUser.name}.`, { variant: 'success' });
+      await loadProfileTasks();
+      setAssignForm({ title: '', description: '', dueDate: '' });
+      setAssignOpen(false);
+      showToast('Tarefa atribuída.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Não foi possível atribuir a tarefa.', { variant: 'error' });
     } finally {
-      setAssigningTask(false);
+      setCreatingTask(false);
     }
   }
 
@@ -258,17 +259,36 @@ export default function UserProfilePage() {
         </div>
 
         <div className={styles.heroActions}>
-          {canCreateTasks ? (
-            <button
-              type="button"
-              className={styles.primaryButton}
-              onClick={() => setAssignModalOpen(true)}
-            >
+          {canAssignTasks ? (
+            <button type="button" className={styles.primaryButton} onClick={() => setAssignOpen(true)}>
               <PlusIcon size={15} />
               Atribuir tarefa
             </button>
           ) : null}
           <Link to="/projetos" className={styles.secondaryButton}>Projetos</Link>
+        </div>
+      </section>
+
+      <section className={styles.summaryStrip} aria-label="Resumo do perfil">
+        <div className={styles.summaryItem}>
+          <strong>{openTasksCount}</strong>
+          <span>Tarefas abertas</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <strong>{completedTasksCount}</strong>
+          <span>Concluídas</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <strong>{profileProjects.length}</strong>
+          <span>Projetos</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <strong>{relatedClients.length}</strong>
+          <span>Clientes relacionados</span>
+        </div>
+        <div className={styles.summaryWide}>
+          <span>Próxima entrega</span>
+          <strong>{nextTask ? `${nextTask.title} · ${formatDateLabel(nextTask.dueDate)}` : 'Sem próximas tarefas'}</strong>
         </div>
       </section>
 
@@ -398,58 +418,64 @@ export default function UserProfilePage() {
         </aside>
       </div>
 
-      {assignModalOpen ? (
-        <div className={styles.taskModalOverlay} onClick={() => setAssignModalOpen(false)}>
+      {assignOpen ? (
+        <div className={styles.modalOverlay} onMouseDown={() => setAssignOpen(false)}>
           <section
-            className={styles.taskModal}
+            className={styles.assignModal}
             role="dialog"
             aria-modal="true"
             aria-label={`Atribuir tarefa para ${profileUser.name}`}
-            onClick={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
           >
-            <header className={styles.taskModalHeader}>
+            <header className={styles.assignHeader}>
               <div>
-                <span>Atribuir tarefa</span>
-                <strong>{profileUser.name}</strong>
+                <span className={styles.kicker}>Nova tarefa</span>
+                <h2>Atribuir para {profileUser.name}</h2>
               </div>
-              <button
-                type="button"
-                className={styles.iconButton}
-                onClick={() => setAssignModalOpen(false)}
-                aria-label="Fechar"
-              >
+              <button type="button" className={styles.iconButton} onClick={() => setAssignOpen(false)} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
 
-            <form className={styles.taskForm} onSubmit={handleAssignTask}>
-              <input
-                value={taskForm.title}
-                onChange={(event) => setTaskForm((prev) => ({ ...prev, title: event.target.value }))}
-                placeholder="Nome da tarefa"
-                aria-label="Nome da tarefa"
-                autoFocus
-              />
-              <textarea
-                value={taskForm.description}
-                onChange={(event) => setTaskForm((prev) => ({ ...prev, description: event.target.value }))}
-                placeholder="Descrição"
-                aria-label="Descrição"
-                rows={6}
-              />
-              <DateField
-                value={taskForm.dueDate}
-                onChange={(value) => setTaskForm((prev) => ({ ...prev, dueDate: value }))}
-                placeholder="Prazo"
-                ariaLabel="Prazo"
-                className={styles.taskDateField}
-              />
-              <footer className={styles.taskModalFooter}>
-                <button type="button" className={styles.secondaryButton} onClick={() => setAssignModalOpen(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className={styles.primaryButton} disabled={assigningTask || !taskForm.title.trim()}>
-                  {assigningTask ? 'Atribuindo' : 'Atribuir tarefa'}
+            <form className={styles.assignForm} onSubmit={handleCreateAssignedTask}>
+              <label className={styles.field}>
+                <span>Nome da tarefa</span>
+                <input
+                  value={assignForm.title}
+                  onChange={(event) => setAssignForm((prev) => ({ ...prev, title: event.target.value }))}
+                  placeholder="Ex.: Revisar materiais do cliente"
+                  autoFocus
+                />
+              </label>
+
+              <label className={styles.field}>
+                <span>Descrição</span>
+                <textarea
+                  value={assignForm.description}
+                  onChange={(event) => setAssignForm((prev) => ({ ...prev, description: event.target.value }))}
+                  placeholder="Contexto, critérios de conclusão ou links importantes"
+                  rows={5}
+                />
+              </label>
+
+              <div className={styles.assignMetaRow}>
+                <div className={styles.assigneeChip}>
+                  <span className={styles.assigneeAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileUser.name)}</span>
+                  <span>{profileUser.name}</span>
+                </div>
+                <DateField
+                  className={styles.assignDate}
+                  value={assignForm.dueDate}
+                  onChange={(dueDate) => setAssignForm((prev) => ({ ...prev, dueDate }))}
+                  placeholder="Prazo"
+                  ariaLabel="Prazo da tarefa"
+                />
+              </div>
+
+              <footer className={styles.assignFooter}>
+                <button type="button" className={styles.secondaryButton} onClick={() => setAssignOpen(false)}>Cancelar</button>
+                <button type="submit" className={styles.primaryButton} disabled={creatingTask || !assignForm.title.trim()}>
+                  {creatingTask ? 'Criando' : 'Criar tarefa'}
                 </button>
               </footer>
             </form>
