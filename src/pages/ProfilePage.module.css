@@ -727,46 +727,68 @@
 }
 
 /* Profile UX polish: people discovery and compact task creation */
-.peoplePanel {
+.peopleCommand {
+  min-height: 64px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4);
   background: rgba(255, 255, 255, 0.018);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
-  padding: 12px 14px;
+  padding: 10px 14px;
   display: grid;
-  grid-template-columns: minmax(260px, 0.38fr) minmax(0, 1fr);
+  grid-template-columns: minmax(260px, 0.34fr) minmax(360px, 0.66fr);
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
-.peopleHeader {
+.peopleCommandCopy {
   min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(120px, 0.55fr) minmax(220px, 1fr);
-  align-items: end;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.peopleHeader h2 {
-  margin: 3px 0 0;
+.peopleCommandCopy strong {
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.15;
   font-weight: 620;
   letter-spacing: -0.02em;
 }
 
-.peopleSearch {
-  height: 36px;
+.peopleCommandCopy > span:last-child {
+  max-width: 420px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.peopleSearchWrap {
+  position: relative;
   min-width: 0;
+  justify-self: stretch;
+}
+
+.peopleSearch {
+  height: 38px;
+  min-width: 0;
+  width: 100%;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.022);
+  background: rgba(255, 255, 255, 0.024);
   color: var(--text-tertiary);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 11px;
+  gap: 9px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.peopleSearch:focus-within {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.038);
 }
 
 .peopleSearch input {
@@ -784,36 +806,47 @@
   color: var(--text-quaternary);
 }
 
-.peopleGrid {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(150px, 1fr));
-  gap: 8px;
+.peopleResults {
+  position: absolute;
+  z-index: 120;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 306px;
+  overflow-y: auto;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3);
+  background: #141516;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+  padding: 6px;
+  scrollbar-width: none;
 }
 
-.personCard {
+.peopleResults::-webkit-scrollbar {
+  display: none;
+}
+
+.personResult {
   min-width: 0;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 10px;
-  border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.014);
   color: inherit;
   text-decoration: none;
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
-  transition: border-color 0.16s ease, background 0.16s ease;
+  gap: 10px;
+  transition: background 0.16s ease, color 0.16s ease;
 }
 
-.personCard:hover {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.036);
+.personResult:hover {
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .personAvatar {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   overflow: hidden;
   display: grid;
@@ -858,6 +891,19 @@
   white-space: nowrap;
 }
 
+.personAction {
+  color: var(--text-quaternary);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.peopleEmpty {
+  min-height: 42px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+}
+
 .createTaskBar {
   grid-template-columns: minmax(240px, 1fr) minmax(190px, 0.22fr) 142px auto;
 }
@@ -867,18 +913,18 @@
 }
 
 @media (max-width: 1180px) {
-  .peoplePanel,
-  .peopleHeader {
+  .peopleCommand {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .peopleGrid {
-    grid-template-columns: repeat(2, minmax(150px, 1fr));
+    align-items: stretch;
   }
 }
 
 @media (max-width: 720px) {
-  .peopleGrid {
-    grid-template-columns: minmax(0, 1fr);
+  .peopleCommand {
+    padding: 10px;
+  }
+
+  .peopleCommandCopy > span:last-child {
+    white-space: normal;
   }
 }

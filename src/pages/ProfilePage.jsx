@@ -167,6 +167,7 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
   const [collapsedTaskSections, setCollapsedTaskSections] = useState({});
   const [peopleQuery, setPeopleQuery] = useState('');
+  const [peopleSearchOpen, setPeopleSearchOpen] = useState(false);
 
   useEffect(() => {
     setPanelHeader({
@@ -244,7 +245,7 @@ export default function ProfilePage() {
           .some((value) => String(value).toLowerCase().includes(query));
       })
       .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'))
-      .slice(0, 8);
+      .slice(0, 6);
   }, [peopleQuery, user?.id, userDirectory]);
 
   useEffect(() => {
@@ -398,39 +399,48 @@ export default function ProfilePage() {
         </button>
       </section>
 
-      <section className={styles.peoplePanel} aria-label="Encontrar pessoas">
-        <div className={styles.peopleHeader}>
-          <div>
-            <span className={styles.boardMeta}>Pessoas</span>
-            <h2>Encontrar perfil</h2>
-          </div>
+      <section className={styles.peopleCommand} aria-label="Encontrar pessoas">
+        <div className={styles.peopleCommandCopy}>
+          <span className={styles.boardMeta}>Pessoas</span>
+          <strong>Encontrar perfil</strong>
+          <span>Abra um perfil para ver atuação, projetos e atribuir tarefas.</span>
+        </div>
+
+        <div className={styles.peopleSearchWrap}>
           <label className={styles.peopleSearch}>
             <SearchIcon size={15} />
             <input
               value={peopleQuery}
-              onChange={(event) => setPeopleQuery(event.target.value)}
-              placeholder="Buscar por nome, e-mail ou cargo"
+              onChange={(event) => {
+                setPeopleQuery(event.target.value);
+                setPeopleSearchOpen(true);
+              }}
+              onFocus={() => setPeopleSearchOpen(true)}
+              onBlur={() => window.setTimeout(() => setPeopleSearchOpen(false), 120)}
+              placeholder="Buscar pessoa por nome, e-mail ou cargo"
               aria-label="Buscar pessoa"
             />
           </label>
-        </div>
 
-        <div className={styles.peopleGrid}>
-          {visiblePeople.map((person) => {
-            const personAvatar = getUserAvatar(person);
-            return (
-              <Link key={person.id} to={buildProfilePath(person)} className={styles.personCard}>
-                <span className={`${styles.personAvatar} ${styles[`avatar_${person.avatarColor || 'slate'}`]}`}>
-                  {personAvatar ? <img src={personAvatar} alt="" /> : initials(person.name)}
-                </span>
-                <span className={styles.personCopy}>
-                  <strong>{person.name}</strong>
-                  <span>{person.email || roleLabel(person.role)}</span>
-                </span>
-              </Link>
-            );
-          })}
-          {visiblePeople.length === 0 ? <span className={styles.peopleEmpty}>Nenhum perfil encontrado.</span> : null}
+          {peopleSearchOpen ? (
+            <div className={styles.peopleResults} role="listbox">
+              {visiblePeople.length > 0 ? visiblePeople.map((person) => {
+                const personAvatar = getUserAvatar(person);
+                return (
+                  <Link key={person.id} to={buildProfilePath(person)} className={styles.personResult}>
+                    <span className={`${styles.personAvatar} ${styles[`avatar_${person.avatarColor || 'slate'}`]}`}>
+                      {personAvatar ? <img src={personAvatar} alt="" /> : initials(person.name)}
+                    </span>
+                    <span className={styles.personCopy}>
+                      <strong>{person.name}</strong>
+                      <span>{person.email || roleLabel(person.role)}</span>
+                    </span>
+                    <span className={styles.personAction}>Abrir</span>
+                  </Link>
+                );
+              }) : <span className={styles.peopleEmpty}>Nenhum perfil encontrado.</span>}
+            </div>
+          ) : null}
         </div>
       </section>
 
