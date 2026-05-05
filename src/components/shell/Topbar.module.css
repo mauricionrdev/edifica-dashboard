@@ -1,6 +1,6 @@
 .topbar {
   position: relative;
-  z-index: 1000;
+  z-index: 1010;
   flex: 0 0 49px;
   height: 49px;
   min-height: 49px;

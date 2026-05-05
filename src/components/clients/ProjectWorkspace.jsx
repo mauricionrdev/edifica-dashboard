@@ -1512,6 +1512,8 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           type="button"
                           className={styles.commentDelete}
                           onClick={() => setDeleteCommentTarget(comment)}
+                          aria-label="Excluir comentário"
+                          title="Excluir comentário"
                           disabled={
                             busy ||
                             (!sameId(comment.userId || comment.authorUserId || comment.createdByUserId, user?.id) &&
@@ -1519,7 +1521,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                               !canEditSelectedTask)
                           }
                         >
-                          Excluir
+                          <TrashIcon size={14} strokeWidth={1.8} aria-hidden="true" />
                         </button>
                       </article>
                     ))

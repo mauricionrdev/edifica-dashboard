@@ -1219,18 +1219,27 @@ textarea:disabled {
 }
 
 .commentDelete {
-  width: max-content;
-  min-height: 24px;
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
   padding: 0;
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 590;
+  display: inline-grid;
+  place-items: center;
+  justify-self: start;
   cursor: pointer;
 }
 
+.commentDelete svg {
+  display: block;
+}
+
 .commentDelete:hover:not(:disabled) {
+  border-color: rgba(255, 91, 115, 0.22);
+  background: rgba(255, 91, 115, 0.055);
   color: #ff9cad;
 }
 
