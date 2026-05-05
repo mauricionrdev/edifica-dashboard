@@ -1,6 +1,6 @@
 .topbar {
   position: relative;
-  z-index: 5000;
+  z-index: 1000;
   flex: 0 0 49px;
   height: 49px;
   min-height: 49px;
@@ -127,10 +127,21 @@
   margin-left: 0;
 }
 
-.userAvatar:nth-child(2) { background: var(--accent-cyan); }
-.userAvatar:nth-child(3) { background: var(--vivid-purple); }
-.userAvatar:nth-child(4) { background: var(--success); }
-.userAvatar:nth-child(5) { background: var(--vivid-pink); }
+.userAvatar:nth-child(2) {
+  background: var(--accent-cyan);
+}
+
+.userAvatar:nth-child(3) {
+  background: var(--vivid-purple);
+}
+
+.userAvatar:nth-child(4) {
+  background: var(--success);
+}
+
+.userAvatar:nth-child(5) {
+  background: var(--vivid-pink);
+}
 
 .userAvatar img {
   width: 100%;
