@@ -297,11 +297,14 @@ textarea:disabled {
 .memberForm select,
 .taskForm input,
 .taskForm select,
+.taskForm .dateField > button,
+.taskForm .dateField > button,
 .subtaskForm input,
 .collabForm select,
 .sectionHead input,
 .taskControls input,
-.taskControls select {
+.taskControls select,
+.taskControls .dateField > button {
   width: 100%;
   min-width: 0;
   min-height: 34px;
@@ -318,10 +321,13 @@ textarea:disabled {
 .memberForm select,
 .taskForm input,
 .taskForm select,
+.taskForm .dateField > button,
+.taskForm .dateField > button,
 .subtaskForm input,
 .collabForm select,
 .taskControls input,
-.taskControls select {
+.taskControls select,
+.taskControls .dateField > button {
   padding: 0 11px;
 }
 
@@ -333,11 +339,13 @@ textarea:disabled {
 .memberForm select:focus,
 .taskForm input:focus,
 .taskForm select:focus,
+.taskForm .dateField > button:focus,
 .subtaskForm input:focus,
 .collabForm select:focus,
 .sectionHead input:focus,
 .taskControls input:focus,
 .taskControls select:focus,
+.taskControls .dateField > button:focus,
 .commentForm textarea:focus {
   border-color: var(--line);
   background: rgba(255, 255, 255, 0.032);
@@ -515,6 +523,24 @@ textarea:disabled {
 .taskForm {
   border-bottom: 1px solid var(--line-subtle);
   grid-template-columns: minmax(180px, 1fr) minmax(132px, 190px) minmax(128px, 150px) auto;
+}
+
+.dateField {
+  min-width: 0;
+}
+
+.dateField > button {
+  height: 34px;
+  border-color: transparent;
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.018);
+  font-size: 13px;
+}
+
+.dateField > button:hover:not(:disabled),
+.dateField > button[aria-expanded='true'] {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.032);
 }
 
 .taskList {
@@ -1087,30 +1113,6 @@ textarea:disabled {
   font-size: 11px;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.activityDetails {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.activityDetails em {
-  min-height: 20px;
-  padding: 0 7px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.012);
-  color: var(--text-tertiary);
-  display: inline-flex;
-  align-items: center;
-  font-style: normal;
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 540;
-  white-space: nowrap;
 }
 
 @media (max-width: 900px) {

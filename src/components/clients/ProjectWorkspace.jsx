@@ -26,6 +26,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
 import StateBlock from '../ui/StateBlock.jsx';
+import DateField from '../ui/DateField.jsx';
 import { TrashIcon } from '../ui/Icons.jsx';
 import styles from './ProjectWorkspace.module.css';
 
@@ -78,6 +79,65 @@ function eventLabel(event) {
   if (type.includes('deleted') || type.includes('removed')) return 'Registro removido';
   if (type.includes('done') || type.includes('completed')) return 'Status atualizado';
   return 'Atividade registrada';
+}
+
+
+function metadataValue(metadata, keys) {
+  const source = metadata && typeof metadata === 'object' ? metadata : {};
+  for (const key of keys) {
+    const value = source[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+  }
+  return '';
+}
+
+function eventDetails(event, users = []) {
+  const metadata = event?.metadata && typeof event.metadata === 'object' ? event.metadata : {};
+  const type = String(event?.type || event?.eventType || '').trim();
+  const details = [];
+
+  const fromStatus = metadataValue(metadata, ['fromStatus', 'previousStatus', 'oldStatus']);
+  const toStatus = metadataValue(metadata, ['toStatus', 'status', 'newStatus']);
+  if ((type.includes('status') || toStatus) && (fromStatus || toStatus)) {
+    details.push(`Status: ${fromStatus ? statusLabel(fromStatus) : '—'} → ${toStatus ? statusLabel(toStatus) : '—'}`);
+  }
+
+  const fromPriority = metadataValue(metadata, ['fromPriority', 'previousPriority', 'oldPriority']);
+  const toPriority = metadataValue(metadata, ['toPriority', 'priority', 'newPriority']);
+  if ((type.includes('priority') || toPriority) && (fromPriority || toPriority)) {
+    details.push(`Prioridade: ${fromPriority ? priorityLabel(fromPriority) : '—'} → ${toPriority ? priorityLabel(toPriority) : '—'}`);
+  }
+
+  const fromDueDate = metadataValue(metadata, ['fromDueDate', 'previousDueDate', 'oldDueDate']);
+  const toDueDate = metadataValue(metadata, ['toDueDate', 'dueDate', 'newDueDate']);
+  if ((type.includes('due') || type.includes('prazo') || toDueDate) && (fromDueDate || toDueDate)) {
+    details.push(`Prazo: ${fromDueDate ? formatDate(fromDueDate) : 'Sem prazo'} → ${toDueDate ? formatDate(toDueDate) : 'Sem prazo'}`);
+  }
+
+  const fromSection = metadataValue(metadata, ['fromSectionName', 'previousSectionName', 'oldSectionName']);
+  const toSection = metadataValue(metadata, ['toSectionName', 'sectionName', 'newSectionName']);
+  if ((type.includes('section') || toSection) && (fromSection || toSection)) {
+    details.push(`Seção: ${fromSection || '—'} → ${toSection || '—'}`);
+  }
+
+  const fromAssignee = metadataValue(metadata, ['fromAssigneeName', 'previousAssigneeName', 'oldAssigneeName']);
+  const toAssignee = metadataValue(metadata, ['toAssigneeName', 'assigneeName', 'newAssigneeName']);
+  const assigneeUserId = metadataValue(metadata, ['assigneeUserId', 'toAssigneeUserId', 'userId']);
+  if ((type.includes('assignee') || type.includes('respons') || toAssignee || assigneeUserId) && (fromAssignee || toAssignee || assigneeUserId)) {
+    details.push(`Responsável: ${fromAssignee || '—'} → ${toAssignee || userName(users, assigneeUserId, 'Sem responsável')}`);
+  }
+
+  const role = metadataValue(metadata, ['role']);
+  const userId = metadataValue(metadata, ['userId']);
+  if ((type.includes('member') || type.includes('collaborator')) && (userId || role)) {
+    const label = userName(users, userId, metadata.userName || metadata.name || 'Usuário');
+    details.push(`${label}${role ? ` · ${role === 'viewer' ? 'Visualizador' : role === 'owner' ? 'Proprietário' : 'Membro'}` : ''}`);
+  }
+
+  const deletedTasks = metadataValue(metadata, ['deletedTasks', 'tasksDeleted', 'taskCount']);
+  if (deletedTasks !== '') details.push(`${deletedTasks} tarefa(s) impactada(s)`);
+
+  return details.filter(Boolean).slice(0, 3);
 }
 
 function normalizeProjectPayload(payload) {
@@ -160,65 +220,26 @@ function initials(value) {
     .toUpperCase();
 }
 
-function parseMetadata(value) {
-  if (!value) return {};
-  if (typeof value === 'object') return value;
-  try {
-    const parsed = JSON.parse(value);
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function metadataLabel(key, value, users = [], sections = []) {
-  if (value === undefined || value === null || value === '') return '';
-  if (key === 'status') return `Status: ${statusLabel(value)}`;
-  if (key === 'priority') return `Prioridade: ${priorityLabel(value)}`;
-  if (key === 'dueDate') return `Prazo: ${formatDate(value)}`;
-  if (key === 'sectionId') {
-    const section = sections.find((entry) => entry.id === value);
-    return `Seção: ${section?.name || 'alterada'}`;
-  }
-  if (key === 'assigneeUserId' || key === 'userId') return `Usuário: ${userName(users, value, 'não informado')}`;
-  if (key === 'role') return `Papel: ${value === 'owner' ? 'Proprietário' : value === 'viewer' ? 'Visualizador' : 'Membro'}`;
-  if (key === 'deleteTasks') return value ? 'Tarefas da seção removidas' : '';
-  if (key === 'taskId') return '';
-  if (key === 'commentId') return '';
-  if (key === 'groups') return 'Ordem atualizada';
-  if (key === 'title') return 'Título alterado';
-  if (key === 'description') return 'Descrição alterada';
-  if (typeof value === 'boolean') return value ? key : '';
-  if (typeof value === 'string' || typeof value === 'number') return `${key}: ${value}`;
-  return '';
-}
-
-function eventDetails(event, users = [], sections = []) {
-  const metadata = parseMetadata(event?.metadata);
-  return Object.entries(metadata)
-    .map(([key, value]) => metadataLabel(key, value, users, sections))
-    .filter(Boolean)
-    .slice(0, 4);
-}
-
 export default function ProjectWorkspace({ client = null, users = [], canCreateProject = false, projectId = '', projectLabel = '' }) {
   const { user } = useAuth();
   const { showToast } = useToast();
 
-  const currentUserId = user?.id || '';
-  const canEditProjectsAll = hasPermission(user, 'projects.edit') || hasPermission(user, 'projects.edit.all');
-  const canEditProjectsOwn = hasPermission(user, 'projects.edit.own');
+  const canEditProject =
+    hasPermission(user, 'projects.edit') ||
+    hasPermission(user, 'projects.edit.all') ||
+    hasPermission(user, 'projects.edit.own');
   const canCreateTasks = hasPermission(user, 'tasks.create');
-  const canEditTasksAll = hasPermission(user, 'tasks.edit') || hasPermission(user, 'tasks.edit.all');
-  const canEditTasksOwn = hasPermission(user, 'tasks.edit.own');
-  const canCommentTasksAll = hasPermission(user, 'tasks.comment') || hasPermission(user, 'tasks.comment.all');
-  const canCommentTasksOwn = hasPermission(user, 'tasks.comment.own');
-  const canCompleteTasksAny = hasPermission(user, 'tasks.complete.any') || canEditTasksAll;
-  const canCompleteTasksOwn = hasPermission(user, 'tasks.complete.own') || canEditTasksOwn;
+  const canEditTasks =
+    hasPermission(user, 'tasks.edit') ||
+    hasPermission(user, 'tasks.edit.all') ||
+    hasPermission(user, 'tasks.edit.own');
+  const canCommentTasks =
+    hasPermission(user, 'tasks.comment') ||
+    hasPermission(user, 'tasks.comment.all') ||
+    hasPermission(user, 'tasks.comment.own');
   const canDeleteAnyComment =
     hasPermission(user, 'tasks.comment.all') ||
     hasPermission(user, 'tasks.edit.all') ||
-    hasPermission(user, 'tasks.edit') ||
     hasPermission(user, 'admin.full');
 
   const [detail, setDetail] = useState({ project: null, sections: [], members: [], events: [] });
@@ -244,6 +265,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   const [deleteSectionTarget, setDeleteSectionTarget] = useState(null);
   const [deleteTaskTarget, setDeleteTaskTarget] = useState(null);
   const [deleteProjectTarget, setDeleteProjectTarget] = useState(null);
+  const [deleteCommentTarget, setDeleteCommentTarget] = useState(null);
 
   const project = detail.project;
   const sections = Array.isArray(detail.sections) ? detail.sections : [];
@@ -256,13 +278,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
       ),
     [members, users]
   );
-
-  const isProjectOwner = useMemo(() => {
-    if (!currentUserId) return false;
-    if (project?.ownerUserId === currentUserId || project?.createdByUserId === currentUserId) return true;
-    return members.some((member) => member.userId === currentUserId && member.role === 'owner');
-  }, [currentUserId, members, project?.createdByUserId, project?.ownerUserId]);
-  const canEditProject = canEditProjectsAll || (canEditProjectsOwn && isProjectOwner);
 
   const allTasks = useMemo(() => sections.flatMap((section) => section.tasks || []), [sections]);
   const flatTasks = useMemo(() => allTasks.filter((task) => !task.parentTaskId), [allTasks]);
@@ -298,41 +313,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
     () => (selectedTask ? allTasks.filter((task) => task.parentTaskId === selectedTask.id) : []),
     [allTasks, selectedTask]
   );
-
-  const selectedTaskCollaboratorIds = useMemo(
-    () => new Set(taskCollaborators.map((entry) => entry.userId).filter(Boolean)),
-    [taskCollaborators]
-  );
-
-  const isOwnTask = useCallback(
-    (task) => {
-      if (!task?.id || !currentUserId) return false;
-      if (task.assigneeUserId === currentUserId) return true;
-      if (task.createdByUserId === currentUserId || task.createdById === currentUserId) return true;
-      if (task.id === selectedTaskId && selectedTaskCollaboratorIds.has(currentUserId)) return true;
-      return false;
-    },
-    [currentUserId, selectedTaskCollaboratorIds, selectedTaskId]
-  );
-
-  const canEditTask = useCallback(
-    (task) => canEditTasksAll || (canEditTasksOwn && isOwnTask(task)),
-    [canEditTasksAll, canEditTasksOwn, isOwnTask]
-  );
-
-  const canCompleteTask = useCallback(
-    (task) => canCompleteTasksAny || canEditTask(task) || (canCompleteTasksOwn && isOwnTask(task)),
-    [canCompleteTasksAny, canCompleteTasksOwn, canEditTask, isOwnTask]
-  );
-
-  const canCommentTask = useCallback(
-    (task) => canCommentTasksAll || (canCommentTasksOwn && isOwnTask(task)),
-    [canCommentTasksAll, canCommentTasksOwn, isOwnTask]
-  );
-
-  const canEditSelectedTask = selectedTask ? canEditTask(selectedTask) : false;
-  const canCompleteSelectedTask = selectedTask ? canCompleteTask(selectedTask) : false;
-  const canCommentSelectedTask = selectedTask ? canCommentTask(selectedTask) : false;
 
   useEffect(() => {
     setTaskDraft({
@@ -660,7 +640,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   async function handleSaveTaskDraft() {
-    if (!selectedTask?.id || busy || !canEditSelectedTask) return;
+    if (!selectedTask?.id || busy || !canEditTasks) return;
 
     const title = taskDraft.title.trim();
     const description = String(taskDraft.description || '').trim();
@@ -679,9 +659,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   async function handleUpdateTask(task, patch) {
-    const keys = Object.keys(patch || {});
-    const isStatusOnly = keys.length > 0 && keys.every((key) => key === 'status' || key === 'done');
-    if (!task?.id || busy || (!canEditTask(task) && !(isStatusOnly && canCompleteTask(task)))) return;
+    if (!task?.id || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -700,7 +678,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   async function handleDeleteTask(task) {
-    if (!task?.id || busy || !canEditTask(task)) return;
+    if (!task?.id || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -719,7 +697,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   async function handleCreateComment(event) {
     event.preventDefault();
     const body = commentBody.trim();
-    if (!selectedTask?.id || !body || busy || !canCommentSelectedTask) return;
+    if (!selectedTask?.id || !body || busy || !canCommentTasks) return;
 
     try {
       setBusy(true);
@@ -746,21 +724,20 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   function canDeleteComment(comment) {
-    if (!comment?.id || !canCommentSelectedTask) return false;
+    if (!comment?.id || !canCommentTasks) return false;
     if (canDeleteAnyComment) return true;
     return Boolean(user?.id && comment.userId === user.id);
   }
 
-  async function handleDeleteComment(comment) {
+  async function handleDeleteComment(comment = deleteCommentTarget) {
     if (!selectedTask?.id || !comment?.id || busy || !canDeleteComment(comment)) return;
-    const confirmed = window.confirm('Excluir este comentário?');
-    if (!confirmed) return;
 
     try {
       setBusy(true);
       await deleteTaskComment(selectedTask.id, comment.id);
       setTaskComments((current) => current.filter((entry) => entry.id !== comment.id));
       await refreshProject(project.id);
+      setDeleteCommentTarget(null);
       showToast('Comentário excluído.', { variant: 'success' });
     } catch (error) {
       showToast(error?.message || 'Não foi possível excluir o comentário.', { variant: 'error' });
@@ -777,7 +754,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
   async function handleAddCollaborator(event) {
     event.preventDefault();
-    if (!selectedTask?.id || !collaboratorUserId || busy || !canEditSelectedTask) return;
+    if (!selectedTask?.id || !collaboratorUserId || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -793,7 +770,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   }
 
   async function handleRemoveCollaborator(userId) {
-    if (!selectedTask?.id || !userId || busy || !canEditSelectedTask) return;
+    if (!selectedTask?.id || !userId || busy || !canEditTasks) return;
 
     try {
       setBusy(true);
@@ -818,8 +795,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
       setMemberRole('member');
       if (Array.isArray(response?.members)) {
         setDetail((current) => ({ ...current, members: response.members }));
-      } else {
-        await refreshProject(project.id);
       }
       await refreshProject(project.id);
       showToast('Membro adicionado.', { variant: 'success' });
@@ -839,8 +814,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
       const response = await removeProjectMember(project.id, memberId);
       if (Array.isArray(response?.members)) {
         setDetail((current) => ({ ...current, members: response.members }));
-      } else {
-        await refreshProject(project.id);
       }
       await refreshProject(project.id);
       showToast('Membro removido.', { variant: 'success' });
@@ -1144,12 +1117,13 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           </option>
                         ))}
                       </select>
-                      <input
-                        type="date"
+                      <DateField
                         value={getTaskDraftValue(taskDrafts, section.id, 'dueDate')}
-                        onChange={(event) => handleTaskDraftChange(section.id, 'dueDate', event.target.value)}
+                        onChange={(value) => handleTaskDraftChange(section.id, 'dueDate', value)}
                         disabled={busy || !canCreateTasks}
-                        aria-label="Prazo da nova tarefa"
+                        ariaLabel="Prazo da nova tarefa"
+                        placeholder="Prazo"
+                        className={styles.dateField}
                       />
                       <button type="submit" disabled={busy || !canCreateTasks || !getTaskDraftValue(taskDrafts, section.id, 'title').trim()}>
                         Adicionar
@@ -1163,8 +1137,6 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     ) : (
                       tasks.map((task) => {
                         const subtasks = allTasks.filter((entry) => entry.parentTaskId === task.id);
-                        const canEditThisTask = canEditTask(task);
-                        const canCompleteThisTask = canCompleteTask(task);
                         return (
                           <div
                             key={task.id}
@@ -1176,7 +1148,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                               type="button"
                               className={styles.taskCheck}
                               onClick={() => handleToggleTask(task)}
-                              disabled={busy || !canCompleteThisTask}
+                              disabled={busy || !canEditTasks}
                               aria-label="Alterar status da tarefa"
                             >
                               {task.status === 'done' ? '✓' : ''}
@@ -1213,7 +1185,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                                 type="button"
                                 className={styles.actionIcon}
                                 onClick={() => setDeleteTaskTarget(task)}
-                                disabled={busy || !canEditThisTask}
+                                disabled={busy || !canEditTasks}
                                 aria-label="Remover tarefa"
                               >
                                 <TrashIcon size={13} aria-hidden="true" />
@@ -1243,7 +1215,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     onKeyDown={(event) => {
                       if (event.key === 'Enter') event.currentTarget.blur();
                     }}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                     aria-label="Título da tarefa"
                   />
                 </div>
@@ -1259,7 +1231,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   onChange={(event) => setTaskDraft((current) => ({ ...current, description: event.target.value }))}
                   onBlur={handleSaveTaskDraft}
                   placeholder="Descrição da tarefa"
-                  disabled={busy || !canEditSelectedTask}
+                  disabled={busy || !canEditTasks}
                 />
               </div>
 
@@ -1269,7 +1241,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={selectedTask.status || 'todo'}
                     onChange={(event) => handleUpdateTask(selectedTask, { status: event.target.value, done: event.target.value === 'done' })}
-                    disabled={busy || !canCompleteSelectedTask}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="todo">Aberta</option>
                     <option value="in_progress">Em andamento</option>
@@ -1283,7 +1255,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={selectedTask.sectionId || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { sectionId: event.target.value })}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                   >
                     {sections.map((section) => (
                       <option key={section.id} value={section.id}>
@@ -1298,7 +1270,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={selectedTask.priority || 'medium'}
                     onChange={(event) => handleUpdateTask(selectedTask, { priority: event.target.value })}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="low">Baixa</option>
                     <option value="medium">Média</option>
@@ -1311,7 +1283,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={selectedTask.assigneeUserId || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { assigneeUserId: event.target.value })}
-                    disabled={busy || !canEditSelectedTask}
+                    disabled={busy || !canEditTasks}
                   >
                     <option value="">Sem responsável</option>
                     {(Array.isArray(users) ? users : []).map((entry) => (
@@ -1324,11 +1296,13 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
                 <label>
                   <span>Prazo</span>
-                  <input
-                    type="date"
+                  <DateField
                     value={selectedTask.dueDate || ''}
-                    onChange={(event) => handleUpdateTask(selectedTask, { dueDate: event.target.value })}
-                    disabled={busy || !canEditSelectedTask}
+                    onChange={(value) => handleUpdateTask(selectedTask, { dueDate: value })}
+                    disabled={busy || !canEditTasks}
+                    ariaLabel="Prazo da tarefa"
+                    placeholder="Sem prazo"
+                    className={styles.dateField}
                   />
                 </label>
               </div>
@@ -1363,11 +1337,11 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   ) : (
                     selectedSubtasks.map((subtask) => (
                       <div key={subtask.id} className={styles.subtaskRow}>
-                        <button type="button" onClick={() => handleToggleTask(subtask)} disabled={busy || !canEditSelectedTask}>
+                        <button type="button" onClick={() => handleToggleTask(subtask)} disabled={busy || !canEditTasks}>
                           {subtask.status === 'done' ? '✓' : ''}
                         </button>
                         <span>{subtask.title}</span>
-                        <button type="button" onClick={() => setDeleteTaskTarget(subtask)} disabled={busy || !canEditSelectedTask} aria-label="Remover subtarefa">
+                        <button type="button" onClick={() => setDeleteTaskTarget(subtask)} disabled={busy || !canEditTasks} aria-label="Remover subtarefa">
                           <TrashIcon size={12} aria-hidden="true" />
                         </button>
                       </div>
@@ -1386,7 +1360,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   <select
                     value={collaboratorUserId}
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
-                    disabled={busy || taskPanelLoading || !canEditSelectedTask}
+                    disabled={busy || taskPanelLoading || !canEditTasks}
                   >
                     <option value="">Adicionar colaborador</option>
                     {(Array.isArray(users) ? users : [])
@@ -1397,7 +1371,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         </option>
                       ))}
                   </select>
-                  <button type="submit" disabled={busy || !canEditSelectedTask || !collaboratorUserId}>
+                  <button type="submit" disabled={busy || !canEditTasks || !collaboratorUserId}>
                     Adicionar
                   </button>
                 </form>
@@ -1410,7 +1384,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                       <div key={entry.userId} className={styles.collabRow}>
                         <span>{initials(entry.userName || entry.userEmail)}</span>
                         <strong>{entry.userName || entry.userEmail}</strong>
-                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy || !canEditSelectedTask} aria-label="Remover colaborador">
+                        <button type="button" onClick={() => handleRemoveCollaborator(entry.userId)} disabled={busy || !canEditTasks} aria-label="Remover colaborador">
                           <TrashIcon size={12} aria-hidden="true" />
                         </button>
                       </div>
@@ -1430,9 +1404,9 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     value={commentBody}
                     onChange={(event) => setCommentBody(event.target.value)}
                     placeholder="Novo comentário"
-                    disabled={busy || taskPanelLoading || !canCommentSelectedTask}
+                    disabled={busy || taskPanelLoading || !canCommentTasks}
                   />
-                  <button type="submit" disabled={busy || !canCommentSelectedTask || !commentBody.trim()}>
+                  <button type="submit" disabled={busy || !canCommentTasks || !commentBody.trim()}>
                     Comentar
                   </button>
                 </form>
@@ -1452,7 +1426,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                             <button
                               type="button"
                               className={styles.commentDeleteButton}
-                              onClick={() => handleDeleteComment(comment)}
+                              onClick={() => setDeleteCommentTarget(comment)}
                               disabled={busy}
                               aria-label="Excluir comentário"
                               title="Excluir comentário"
@@ -1486,7 +1460,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
             <div className={styles.noTasks}>Nenhuma atividade registrada</div>
           ) : (
             events.slice(0, 12).map((event, index) => {
-              const details = eventDetails(event, users, sections);
+              const details = eventDetails(event, users);
               return (
                 <article key={event.id || `${event.type || 'event'}-${index}`} className={styles.activityItem}>
                   <span aria-hidden="true" />
@@ -1496,7 +1470,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                       {event.actorName || 'Sistema'}
                       {formatDateTime(event.createdAt) ? ` · ${formatDateTime(event.createdAt)}` : ''}
                     </small>
-                    {details.length ? (
+                    {details.length > 0 ? (
                       <div className={styles.activityDetails}>
                         {details.map((detail) => (
                           <em key={detail}>{detail}</em>
@@ -1537,8 +1511,26 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
             </div>
             <div className={styles.confirmActions}>
               <button type="button" onClick={() => setDeleteTaskTarget(null)}>Cancelar</button>
-              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy || !canEditTask(deleteTaskTarget)}>
+              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteTask(deleteTaskTarget)} disabled={busy || !canEditTasks}>
                 Remover
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {deleteCommentTarget ? (
+        <div className={styles.confirmBackdrop} role="presentation" onClick={() => setDeleteCommentTarget(null)}>
+          <section className={styles.confirmModal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+            <div className={styles.confirmHead}>
+              <span>Excluir comentário</span>
+              <strong>{deleteCommentTarget.userName || deleteCommentTarget.authorName || 'Comentário'}</strong>
+              <p>Essa ação remove o comentário da tarefa e registra a atividade no histórico.</p>
+            </div>
+            <div className={styles.confirmActions}>
+              <button type="button" onClick={() => setDeleteCommentTarget(null)}>Cancelar</button>
+              <button type="button" className={styles.confirmDanger} onClick={() => handleDeleteComment(deleteCommentTarget)} disabled={busy}>
+                Excluir comentário
               </button>
             </div>
           </section>
