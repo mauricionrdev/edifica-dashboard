@@ -141,9 +141,34 @@ function comparisonTone(current, goal, { lowerIsBetter = false } = {}) {
   return isGood ? 'green' : 'red';
 }
 
+function clientPriorityRank(row) {
+  if (!row) return 0;
+
+  const clientStatus = row.client?.status ?? row.status;
+  if (!isActiveClientStatus(clientStatus)) return 0;
+
+  const calc = row.calc || {};
+  const goal = Number(calc.mLuc) || 0;
+  const closed = Number(calc.fec) || 0;
+  const predicted = Number(calc.cp) || 0;
+  const projected = effectiveForecast(closed, predicted);
+  const progress = goal > 0 ? (closed / goal) * 100 : 0;
+
+  // Quanto maior o rank, mais alto o cliente aparece na lista.
+  // A categoria é obrigatoriamente mais importante que qualquer pontuação numérica.
+  if (goal <= 0) return 3; // Sem meta
+  if (closed >= goal) return 2; // Meta batida
+  if (projected >= goal) return 4; // Vai bater
+  if (progress >= 55) return 5; // Em andamento
+
+  return 6; // Crítico
+}
+
 function clientPriorityScore(row) {
   if (!row) return -100000;
-  if (!isActiveClientStatus(row.status)) return -1000;
+
+  const clientStatus = row.client?.status ?? row.status;
+  if (!isActiveClientStatus(clientStatus)) return -100000;
 
   const calc = row.calc || {};
   const goal = Number(calc.mLuc) || 0;
@@ -153,15 +178,10 @@ function clientPriorityScore(row) {
   const gap = goal > 0 ? Math.max(goal - closed, 0) : 0;
   const forecastGap = goal > 0 ? Math.max(goal - projected, 0) : 0;
   const progress = goal > 0 ? (closed / goal) * 100 : 0;
-  const severity = forecastGap * 60 + gap * 20 + Math.max(0, 100 - progress);
 
-  // Quanto maior a pontuação, mais alto o cliente aparece na lista.
-  // Prioridade: crítico/fora da projeção > em andamento/vai bater > sem meta > meta batida > inativos.
-  if (!goal) return 1000;
-  if (closed >= goal) return 0;
-  if (projected >= goal) return 5000 + gap * 20 + Math.max(0, 100 - progress);
-
-  return 9000 + severity;
+  // Usado apenas como desempate dentro da mesma categoria.
+  // Prioriza menor progresso, maior distância da projeção e maior distância da meta.
+  return forecastGap * 10000 + gap * 100 + Math.max(0, 100 - progress);
 }
 
 function initialsFromClient(name) {
@@ -487,6 +507,7 @@ export default function SquadPage() {
 
       return {
         ...row,
+        priorityRank: clientPriorityRank(row),
         priorityScore: clientPriorityScore(row),
       };
     });
@@ -583,8 +604,12 @@ export default function SquadPage() {
   const filteredRows = useMemo(() => {
     const normalized = query.trim();
     const base = [...clientRows].sort((a, b) => {
+      const rankDiff = b.priorityRank - a.priorityRank;
+      if (rankDiff !== 0) return rankDiff;
+
       const scoreDiff = b.priorityScore - a.priorityScore;
       if (scoreDiff !== 0) return scoreDiff;
+
       return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
     });
 
