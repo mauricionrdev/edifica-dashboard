@@ -918,37 +918,39 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           <strong>{project.name}</strong>
         </div>
 
-        <div className={styles.projectStats}>
-          <div>
-            <strong>{progress}%</strong>
-            <span>progresso</span>
+        <div className={styles.projectHeaderSide}>
+          <div className={styles.projectStats}>
+            <div>
+              <strong>{progress}%</strong>
+              <span>progresso</span>
+            </div>
+            <div>
+              <strong>{openTasks}</strong>
+              <span>abertas</span>
+            </div>
+            <div>
+              <strong>{doneTasks}/{totalTasks}</strong>
+              <span>concluídas</span>
+            </div>
+            <div>
+              <strong>{members.length}</strong>
+              <span>membros</span>
+            </div>
           </div>
-          <div>
-            <strong>{openTasks}</strong>
-            <span>abertas</span>
-          </div>
-          <div>
-            <strong>{doneTasks}/{totalTasks}</strong>
-            <span>concluídas</span>
-          </div>
-          <div>
-            <strong>{members.length}</strong>
-            <span>membros</span>
-          </div>
-        </div>
 
-        {canEditProject ? (
-          <button
-            type="button"
-            className={styles.deleteProjectButton}
-            onClick={() => setDeleteProjectTarget(project)}
-            disabled={busy}
-            aria-label="Excluir projeto"
-            title="Excluir projeto"
-          >
-            <TrashIcon size={14} aria-hidden="true" />
-          </button>
-        ) : null}
+          {canEditProject ? (
+            <button
+              type="button"
+              className={styles.deleteProjectButton}
+              onClick={() => setDeleteProjectTarget(project)}
+              disabled={busy}
+              aria-label="Excluir projeto"
+              title="Excluir projeto"
+            >
+              <TrashIcon size={14} aria-hidden="true" />
+            </button>
+          ) : null}
+        </div>
       </section>
 
       <section className={styles.memberPanel}>
@@ -1014,8 +1016,14 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
               <option value="member">Membro</option>
               <option value="viewer">Visualizador</option>
             </Select>
-            <button type="submit" disabled={busy || !memberUserId} aria-label="Adicionar membro" title="Adicionar membro">
-              <PlusIcon size={14} aria-hidden="true" />
+            <button
+              type="submit"
+              className={styles.addIconButton}
+              disabled={busy || !memberUserId}
+              aria-label="Adicionar membro"
+              title="Adicionar membro"
+            >
+              <PlusIcon size={15} aria-hidden="true" />
             </button>
           </form>
         ) : null}
@@ -1028,8 +1036,14 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
           placeholder="Nova seção"
           disabled={busy || !canEditProject}
         />
-        <button type="submit" disabled={busy || !canEditProject || !sectionDraft.trim()} aria-label="Adicionar seção" title="Adicionar seção">
-          <PlusIcon size={14} aria-hidden="true" />
+        <button
+          type="submit"
+          className={styles.addIconButton}
+          disabled={busy || !canEditProject || !sectionDraft.trim()}
+          aria-label="Adicionar seção"
+          title="Adicionar seção"
+        >
+          <PlusIcon size={15} aria-hidden="true" />
         </button>
       </form>
 
@@ -1198,6 +1212,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         />
                         <button
                           type="submit"
+                          className={styles.addIconButton}
                           disabled={
                             busy ||
                             !canCreateTasks ||
@@ -1206,7 +1221,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           aria-label="Adicionar tarefa"
                           title="Adicionar tarefa"
                         >
-                          <PlusIcon size={14} aria-hidden="true" />
+                          <PlusIcon size={15} aria-hidden="true" />
                         </button>
                       </form>
 
@@ -1415,8 +1430,14 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     placeholder="Nova subtarefa"
                     disabled={busy || !canCreateTasks}
                   />
-                  <button type="submit" disabled={busy || !canCreateTasks || !subtaskTitle.trim()} aria-label="Adicionar subtarefa" title="Adicionar subtarefa">
-                    <PlusIcon size={14} aria-hidden="true" />
+                  <button
+                    type="submit"
+                    className={styles.addIconButton}
+                    disabled={busy || !canCreateTasks || !subtaskTitle.trim()}
+                    aria-label="Adicionar subtarefa"
+                    title="Adicionar subtarefa"
+                  >
+                    <PlusIcon size={15} aria-hidden="true" />
                   </button>
                 </form>
 
@@ -1462,8 +1483,14 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                         </option>
                       ))}
                   </Select>
-                  <button type="submit" disabled={busy || !canEditSelectedTask || !collaboratorUserId} aria-label="Adicionar colaborador" title="Adicionar colaborador">
-                    <PlusIcon size={14} aria-hidden="true" />
+                  <button
+                    type="submit"
+                    className={styles.addIconButton}
+                    disabled={busy || !canEditSelectedTask || !collaboratorUserId}
+                    aria-label="Adicionar colaborador"
+                    title="Adicionar colaborador"
+                  >
+                    <PlusIcon size={15} aria-hidden="true" />
                   </button>
                 </form>
 
