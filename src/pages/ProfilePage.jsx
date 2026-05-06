@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
-import { createTask, listMyProjectTasks, updateTask as updateProjectTask } from '../api/projects.js';
+import {
+  createTask,
+  createTaskComment,
+  listMyProjectTasks,
+  listTaskComments,
+  updateTask as updateProjectTask,
+} from '../api/projects.js';
 import { listUserDirectory } from '../api/users.js';
 import { listClients } from '../api/clients.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -303,6 +309,12 @@ export default function ProfilePage() {
   const [demandUsers, setDemandUsers] = useState([]);
   const [demandClients, setDemandClients] = useState([]);
   const [demandSaving, setDemandSaving] = useState(false);
+  const [taskComments, setTaskComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentDraft, setCommentDraft] = useState('');
+  const [commentSaving, setCommentSaving] = useState(false);
+  const [subtaskDraft, setSubtaskDraft] = useState('');
+  const [subtaskSaving, setSubtaskSaving] = useState(false);
 
   useEffect(() => {
     setPanelHeader({ title: 'Perfil', description: null, actions: null });
@@ -359,6 +371,32 @@ export default function ProfilePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+
+  useEffect(() => {
+    setCommentDraft('');
+    setSubtaskDraft('');
+    setTaskComments([]);
+
+    if (!activeTaskId) return undefined;
+
+    let cancelled = false;
+    setCommentsLoading(true);
+    listTaskComments(activeTaskId)
+      .then((res) => {
+        if (!cancelled) setTaskComments(Array.isArray(res?.comments) ? res.comments : []);
+      })
+      .catch(() => {
+        if (!cancelled) setTaskComments([]);
+      })
+      .finally(() => {
+        if (!cancelled) setCommentsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTaskId]);
+
   const squadNames = useMemo(() => {
     const map = new Map((squads || []).map((item) => [item.id, item.name]));
     return (user?.squads || []).map((id) => map.get(id) || id);
@@ -367,6 +405,7 @@ export default function ProfilePage() {
   const operationCounts = useMemo(() => getOperationCounts(tasks), [tasks]);
   const visibleTasks = useMemo(() => getVisibleTasks(tasks, operationTab), [operationTab, tasks]);
   const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
+  const activeSubtasks = useMemo(() => (activeTask ? tasks.filter((task) => task.parentTaskId === activeTask.id) : []), [activeTask, tasks]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
 
   async function handleSaveProfile() {
@@ -440,6 +479,52 @@ export default function ProfilePage() {
     }
   }
 
+
+  async function handleCreateSubtask(event) {
+    event.preventDefault();
+    if (!activeTask) return;
+    const title = subtaskDraft.trim();
+    if (!title) return;
+
+    try {
+      setSubtaskSaving(true);
+      const res = await createTask({
+        title,
+        parentTaskId: activeTask.id,
+        projectId: activeTask.projectId || undefined,
+        sectionId: activeTask.sectionId || undefined,
+        clientId: activeTask.clientId || undefined,
+        assigneeUserId: activeTask.assigneeUserId || user?.id || undefined,
+        priority: activeTask.priority || 'medium',
+      });
+      if (res?.task) setTasks((prev) => [...prev, res.task]);
+      setSubtaskDraft('');
+      showToast('Subtarefa criada.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao criar subtarefa.', { variant: 'error' });
+    } finally {
+      setSubtaskSaving(false);
+    }
+  }
+
+  async function handleCreateComment(event) {
+    event.preventDefault();
+    if (!activeTask) return;
+    const body = commentDraft.trim();
+    if (!body) return;
+
+    try {
+      setCommentSaving(true);
+      const res = await createTaskComment(activeTask.id, { body });
+      if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
+      setCommentDraft('');
+      showToast('Comentário adicionado.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao comentar.', { variant: 'error' });
+    } finally {
+      setCommentSaving(false);
+    }
+  }
 
   async function handleOpenDemandModal() {
     setDemandForm((prev) => ({ ...emptyDemandForm(user?.id || ''), assigneeUserId: prev.assigneeUserId || user?.id || '' }));
@@ -684,6 +769,61 @@ export default function ProfilePage() {
                   <div className={styles.descriptionBox}>{activeTask.description}</div>
                 </section>
               ) : null}
+
+              <section className={styles.drawerSection}>
+                <div className={styles.sectionTitleRow}>
+                  <h4>Subtarefas</h4>
+                  <span>{activeSubtasks.length}</span>
+                </div>
+                <form className={styles.inlineComposer} onSubmit={handleCreateSubtask}>
+                  <input value={subtaskDraft} onChange={(event) => setSubtaskDraft(event.target.value)} placeholder="Subtarefa" />
+                  <button type="submit" disabled={subtaskSaving || !subtaskDraft.trim()}>+</button>
+                </form>
+                {activeSubtasks.length ? (
+                  <div className={styles.subtaskList}>
+                    {activeSubtasks.map((subtask) => (
+                      <div key={subtask.id} className={styles.subtaskItem}>
+                        <button
+                          type="button"
+                          className={`${styles.statusCheck} ${isDone(subtask) ? styles.statusCheckDone : ''}`.trim()}
+                          onClick={() => handleToggleTask(subtask)}
+                          disabled={taskUpdatingId === subtask.id}
+                          aria-label={isDone(subtask) ? 'Reabrir' : 'Concluir'}
+                        >
+                          {isDone(subtask) ? '✓' : ''}
+                        </button>
+                        <span>{subtask.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+
+              <section className={styles.drawerSection}>
+                <div className={styles.sectionTitleRow}>
+                  <h4>Comentários</h4>
+                  <span>{taskComments.length}</span>
+                </div>
+                <form className={styles.commentForm} onSubmit={handleCreateComment}>
+                  <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Comentário" />
+                  <button type="submit" disabled={commentSaving || !commentDraft.trim()}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
+                </form>
+                {commentsLoading ? (
+                  <div className={styles.commentState}>Carregando</div>
+                ) : taskComments.length ? (
+                  <div className={styles.commentList}>
+                    {taskComments.map((comment) => (
+                      <article key={comment.id} className={styles.commentItem}>
+                        <div>
+                          <strong>{comment.authorName || comment.userName || 'Usuário'}</strong>
+                          <span>{formatDateTime(comment.createdAt)}</span>
+                        </div>
+                        <p>{comment.body || comment.content || ''}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
 
               <section className={styles.drawerSection}>
                 <h4>Atividade</h4>
