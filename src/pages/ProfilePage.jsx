@@ -422,6 +422,27 @@ function getVisibleTasks(tasks, tab) {
   });
 }
 
+function taskSearchText(task) {
+  return normalizeText([
+    task?.title,
+    task?.description,
+    task?.clientName,
+    task?.projectName,
+    task?.sectionName,
+    task?.assigneeName,
+    task?.createdByName,
+    kindLabel(getTaskKind(task)),
+    statusLabel(task),
+    formatDueLabel(task?.dueDate),
+  ].filter(Boolean).join(' '));
+}
+
+function filterOperationTasks(tasks, query) {
+  const term = normalizeText(query).trim();
+  if (!term) return tasks;
+  return tasks.filter((task) => taskSearchText(task).includes(term));
+}
+
 function formatDateTime(value) {
   if (!value) return '';
   const date = new Date(value);
@@ -457,6 +478,7 @@ export default function ProfilePage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('profile');
   const [operationTab, setOperationTab] = useState('waiting');
+  const [operationSearch, setOperationSearch] = useState('');
   const [tasks, setTasks] = useState([]);
   const [taskUpdatingId, setTaskUpdatingId] = useState('');
   const [tasksLoading, setTasksLoading] = useState(true);
@@ -610,7 +632,8 @@ export default function ProfilePage() {
   }, [squads, user?.squads]);
 
   const operationCounts = useMemo(() => getOperationCounts(tasks), [tasks]);
-  const visibleTasks = useMemo(() => getVisibleTasks(tasks, operationTab), [operationTab, tasks]);
+  const tabTasks = useMemo(() => getVisibleTasks(tasks, operationTab), [operationTab, tasks]);
+  const visibleTasks = useMemo(() => filterOperationTasks(tabTasks, operationSearch), [operationSearch, tabTasks]);
   const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
   const activeSubtasks = useMemo(() => (activeTask ? tasks.filter((task) => task.parentTaskId === activeTask.id) : []), [activeTask, tasks]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
@@ -1040,6 +1063,18 @@ export default function ProfilePage() {
               </button>
             ))}
           </nav>
+          <div className={styles.operationToolbar}>
+            <label className={styles.operationSearch}>
+              <input
+                type="search"
+                value={operationSearch}
+                onChange={(event) => setOperationSearch(event.target.value)}
+                placeholder="Buscar"
+                aria-label="Buscar demandas"
+              />
+            </label>
+            <span>{visibleTasks.length} de {tabTasks.length}</span>
+          </div>
         </header>
 
         <div className={styles.operationBody}>
@@ -1049,7 +1084,7 @@ export default function ProfilePage() {
             <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
             <div className={styles.emptyOperation}>
-              <span>Sem demandas</span>
+              <span>{operationSearch.trim() ? 'Sem resultados' : 'Sem demandas'}</span>
             </div>
           ) : (
             <div className={styles.operationList}>
