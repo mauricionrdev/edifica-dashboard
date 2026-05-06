@@ -1180,3 +1180,91 @@
   line-height: 1.45;
   white-space: pre-wrap;
 }
+
+.status_active {
+  color: #9dcaff !important;
+  border-color: rgba(90, 169, 255, 0.24) !important;
+  background: rgba(90, 169, 255, 0.07) !important;
+}
+
+.status_canceled {
+  color: var(--profile-faint) !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+}
+
+.drawerHero p {
+  margin: 10px 0 0;
+  color: var(--profile-muted);
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 560;
+}
+
+.workflowGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workflowField {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.workflowField > span {
+  color: var(--profile-faint);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.workflowSelect,
+.workflowDate {
+  width: 100%;
+}
+
+.contextGrid {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--profile-line);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+}
+
+.contextItem {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.contextItem span {
+  color: var(--profile-faint);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.contextItem strong {
+  min-width: 0;
+  color: var(--profile-soft);
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 610;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .workflowGrid,
+  .contextGrid {
+    grid-template-columns: 1fr;
+  }
+}

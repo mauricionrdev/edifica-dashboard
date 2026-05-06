@@ -57,6 +57,13 @@ const DEMAND_PRIORITIES = [
   { value: 'high', label: 'Alta' },
 ];
 
+const TASK_STATUS_OPTIONS = [
+  { value: 'todo', label: 'Aberta' },
+  { value: 'in_progress', label: 'Em andamento' },
+  { value: 'done', label: 'Concluída' },
+  { value: 'canceled', label: 'Cancelada' },
+];
+
 function emptyDemandForm(userId = '') {
   return {
     type: 'support',
@@ -212,15 +219,19 @@ function kindLabel(kind) {
 }
 
 function statusLabel(task) {
+  if (task?.status === 'canceled') return 'Cancelada';
   if (isDone(task)) return 'Concluída';
   if (isOverdue(task)) return 'Atrasada';
+  if (task?.status === 'in_progress') return 'Em andamento';
   if (isToday(task)) return 'Hoje';
   return 'Aguardando';
 }
 
 function statusKey(task) {
+  if (task?.status === 'canceled') return 'canceled';
   if (isDone(task)) return 'done';
   if (isOverdue(task)) return 'overdue';
+  if (task?.status === 'in_progress') return 'active';
   if (isToday(task)) return 'today';
   return 'waiting';
 }
@@ -228,6 +239,19 @@ function statusKey(task) {
 function priorityLabel(value) {
   const labels = { low: 'Baixa', medium: 'Normal', high: 'Alta', critical: 'Crítica' };
   return labels[value] || labels.medium;
+}
+
+function nextActionLabel(task) {
+  if (!task) return '';
+  if (isDone(task)) return 'Demanda concluída';
+  if (task.status === 'canceled') return 'Demanda cancelada';
+  const kind = getTaskKind(task);
+  if (isOverdue(task)) return 'Regularizar prazo';
+  if (kind === 'briefing') return 'Validar briefing';
+  if (kind === 'routine') return 'Executar rotina';
+  if (kind === 'support') return 'Analisar solicitação';
+  if (kind === 'project') return 'Executar tarefa do projeto';
+  return 'Executar demanda';
 }
 
 function getOperationCounts(tasks) {
@@ -337,6 +361,24 @@ export default function ProfilePage() {
     setAvatarUrl(getUserAvatar(user));
     return subscribeAvatarChange(() => setAvatarUrl(getUserAvatar(user)));
   }, [user]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.allSettled([listUserDirectory(), listClients()]).then(([usersRes, clientsRes]) => {
+      if (cancelled) return;
+      if (usersRes.status === 'fulfilled') {
+        setDemandUsers(Array.isArray(usersRes.value?.users) ? usersRes.value.users : []);
+      }
+      if (clientsRes.status === 'fulfilled') {
+        setDemandClients(Array.isArray(clientsRes.value?.clients) ? clientsRes.value.clients : []);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -464,6 +506,22 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleUpdateTaskFields(task, patch, successMessage = 'Demanda atualizada.') {
+    if (!task?.id) return;
+
+    try {
+      setTaskUpdatingId(task.id);
+      const res = await updateProjectTask(task.id, patch);
+      const nextTask = res?.task || { ...task, ...patch };
+      setTasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, ...nextTask } : item)));
+      showToast(successMessage, { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao atualizar demanda.', { variant: 'error' });
+    } finally {
+      setTaskUpdatingId('');
+    }
+  }
+
   async function handleToggleTask(task) {
     try {
       setTaskUpdatingId(task.id);
@@ -588,18 +646,25 @@ export default function ProfilePage() {
   const activeStatus = activeTask ? statusKey(activeTask) : 'waiting';
   const activeAssignee = activeTask ? activeTask.assigneeName || profileForm.name || user?.name || '' : '';
   const activeRequester = activeTask ? activeTask.createdByName || '' : '';
-  const activeDetailItems = activeTask
+  const activeContextItems = activeTask
     ? [
         ['Tipo', kindLabel(activeKind)],
-        ['Responsável', activeAssignee || '—'],
         ...(activeRequester && activeRequester !== activeAssignee ? [['Solicitante', activeRequester]] : []),
         ...(activeTask.clientName ? [['Cliente', activeTask.clientName]] : []),
         ...(activeTask.projectName ? [['Projeto', activeTask.projectName]] : []),
         ...(activeTask.sectionName ? [['Seção', activeTask.sectionName]] : []),
-        ['Prazo', formatDueLabel(activeTask.dueDate), styles[`due_${activeStatus}`] || ''],
-        ['Prioridade', priorityLabel(activeTask.priority)],
       ]
     : [];
+  const assigneeOptions = useMemo(() => {
+    const map = new Map();
+    [...(demandUsers || []), user].filter(Boolean).forEach((item) => {
+      if (item?.id) map.set(item.id, item);
+    });
+    if (activeTask?.assigneeUserId && activeTask?.assigneeName && !map.has(activeTask.assigneeUserId)) {
+      map.set(activeTask.assigneeUserId, { id: activeTask.assigneeUserId, name: activeTask.assigneeName });
+    }
+    return Array.from(map.values());
+  }, [activeTask?.assigneeName, activeTask?.assigneeUserId, demandUsers, user]);
 
   return (
     <div className={styles.page}>
@@ -750,17 +815,70 @@ export default function ProfilePage() {
               <div className={styles.drawerHero}>
                 <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
                 <h3>{activeTask.title}</h3>
+                <p>{nextActionLabel(activeTask)}</p>
               </div>
 
               <section className={styles.drawerSection}>
-                <div className={styles.detailGrid}>
-                  {activeDetailItems.map(([label, value, className]) => (
-                    <div key={label} className={styles.detailItem}>
-                      <span>{label}</span>
-                      <strong className={className || ''}>{value || '—'}</strong>
-                    </div>
-                  ))}
+                <div className={styles.workflowGrid}>
+                  <label className={styles.workflowField}>
+                    <span>Status</span>
+                    <Select
+                      value={activeTask.status || (isDone(activeTask) ? 'done' : 'todo')}
+                      onChange={(event) => handleUpdateTaskFields(activeTask, { status: event.target.value }, 'Status atualizado.')}
+                      aria-label="Status"
+                      className={styles.workflowSelect}
+                    >
+                      {TASK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    </Select>
+                  </label>
+
+                  <label className={styles.workflowField}>
+                    <span>Responsável</span>
+                    <Select
+                      value={activeTask.assigneeUserId || ''}
+                      onChange={(event) => handleUpdateTaskFields(activeTask, { assigneeUserId: event.target.value }, 'Responsável atualizado.')}
+                      aria-label="Responsável"
+                      className={styles.workflowSelect}
+                    >
+                      <option value="">Sem responsável</option>
+                      {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                    </Select>
+                  </label>
+
+                  <label className={styles.workflowField}>
+                    <span>Prazo</span>
+                    <DateField
+                      value={activeTask.dueDate || ''}
+                      onChange={(value) => handleUpdateTaskFields(activeTask, { dueDate: value || '' }, 'Prazo atualizado.')}
+                      placeholder="Prazo"
+                      ariaLabel="Prazo"
+                      className={styles.workflowDate}
+                    />
+                  </label>
+
+                  <label className={styles.workflowField}>
+                    <span>Prioridade</span>
+                    <Select
+                      value={activeTask.priority || 'medium'}
+                      onChange={(event) => handleUpdateTaskFields(activeTask, { priority: event.target.value }, 'Prioridade atualizada.')}
+                      aria-label="Prioridade"
+                      className={styles.workflowSelect}
+                    >
+                      {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    </Select>
+                  </label>
                 </div>
+
+                {activeContextItems.length ? (
+                  <div className={styles.contextGrid}>
+                    {activeContextItems.map(([label, value]) => (
+                      <div key={label} className={styles.contextItem}>
+                        <span>{label}</span>
+                        <strong>{value || '—'}</strong>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </section>
 
               {activeTask.description ? (
