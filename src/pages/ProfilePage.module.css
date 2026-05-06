@@ -2040,3 +2040,186 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Profile comments — final isolated timeline layer */
+.drawerSection:has(.commentForm) {
+  padding-top: 18px;
+}
+
+.drawerSection:has(.commentForm) .sectionTitleRow {
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.drawerSection:has(.commentForm) .sectionTitleRow h4 {
+  letter-spacing: 0.16em;
+  color: var(--profile-muted);
+}
+
+.drawerSection:has(.commentForm) .sectionTitleRow span {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--profile-soft);
+  font-size: 11px;
+  font-weight: 680;
+}
+
+.commentForm {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.commentForm textarea {
+  min-height: 42px !important;
+  max-height: 118px;
+  padding: 11px 12px !important;
+  border: 0 !important;
+  border-radius: 11px !important;
+  background: transparent !important;
+  color: var(--profile-text);
+  box-shadow: none !important;
+}
+
+.commentForm textarea:focus {
+  background: rgba(255, 255, 255, 0.018) !important;
+}
+
+.commentForm button {
+  align-self: end;
+  justify-self: end;
+  min-width: 96px;
+  min-height: 38px !important;
+  padding: 0 14px !important;
+  border-radius: 12px !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--profile-text) !important;
+}
+
+.commentForm button:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.commentForm button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.commentList {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0 !important;
+  margin-top: 14px !important;
+  padding-left: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.commentItem {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 0 14px 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.commentItem + .commentItem {
+  border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
+}
+
+.commentAvatar {
+  width: 30px !important;
+  height: 30px !important;
+  margin-left: -30px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 999px;
+  background: #15171a !important;
+  color: var(--profile-soft) !important;
+  font-size: 10px !important;
+  font-weight: 720 !important;
+}
+
+.commentBody {
+  display: block !important;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.commentHeader {
+  display: grid !important;
+  grid-template-columns: minmax(0, auto) auto 28px;
+  justify-content: start;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 5px 0 !important;
+}
+
+.commentHeader strong {
+  color: var(--profile-text) !important;
+  font-size: 12.5px !important;
+  line-height: 1.2;
+  font-weight: 680 !important;
+}
+
+.commentHeader span {
+  color: var(--profile-faint) !important;
+  font-size: 11.5px !important;
+  line-height: 1.2;
+}
+
+.commentBody p {
+  display: block !important;
+  margin: 0 !important;
+  color: var(--profile-soft) !important;
+  font-size: 13.5px !important;
+  line-height: 1.5 !important;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.commentDeleteButton {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
+  color: var(--profile-faint) !important;
+  opacity: 0.68;
+}
+
+.commentItem:hover .commentDeleteButton {
+  opacity: 1;
+}
+
+.commentDeleteButton:hover {
+  color: var(--profile-red) !important;
+  background: rgba(255, 77, 85, 0.065) !important;
+  border-color: rgba(255, 77, 85, 0.16) !important;
+}
+
+@media (max-width: 720px) {
+  .commentForm {
+    grid-template-columns: 1fr;
+  }
+
+  .commentForm button {
+    width: 100%;
+  }
+}
