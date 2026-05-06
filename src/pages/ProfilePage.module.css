@@ -1268,3 +1268,216 @@
     grid-template-columns: 1fr;
   }
 }
+
+.clientSearchField {
+  position: relative;
+  min-width: 0;
+}
+
+.clientSearchField input {
+  padding-right: 38px;
+}
+
+.clientSearchField > button {
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--profile-faint);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.clientSearchField > button:hover {
+  color: var(--profile-text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.clientSearchResults {
+  position: absolute;
+  z-index: 10070;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 238px;
+  overflow: auto;
+  padding: 6px;
+  border: 1px solid var(--profile-line-strong);
+  border-radius: 12px;
+  background: #0d0e10;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.clientSearchResults button {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--profile-soft);
+  display: grid;
+  gap: 3px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.clientSearchResults button:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.clientSearchResults strong {
+  min-width: 0;
+  color: var(--profile-text);
+  font-size: 12.5px;
+  font-weight: 620;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clientSearchResults span,
+.clientSearchEmpty {
+  color: var(--profile-faint);
+  font-size: 11px;
+}
+
+.clientSearchEmpty {
+  display: block;
+  padding: 10px 9px;
+}
+
+.briefingSummary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin: -1px 0 13px;
+}
+
+.briefingSummary i {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.briefingSummary b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--profile-green);
+}
+
+.briefingSummary span {
+  color: var(--profile-faint);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+}
+
+.briefingDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.briefingDetailItem {
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid var(--profile-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.012);
+  display: grid;
+  gap: 5px;
+}
+
+.briefingDetailItem span {
+  color: var(--profile-faint);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.briefingDetailItem strong {
+  min-width: 0;
+  color: var(--profile-soft);
+  font-size: 13px;
+  line-height: 1.32;
+  font-weight: 560;
+  overflow-wrap: anywhere;
+}
+
+.briefingComplete,
+.briefingIncomplete {
+  min-width: auto !important;
+  height: 22px !important;
+  padding: 0 8px !important;
+  border: 1px solid transparent;
+  font-size: 10px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.briefingComplete {
+  border-color: rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.08) !important;
+  color: var(--profile-green) !important;
+}
+
+.briefingIncomplete {
+  border-color: rgba(245, 184, 0, 0.24);
+  background: rgba(245, 184, 0, 0.08) !important;
+  color: #e5c76c !important;
+}
+
+.commentItem div {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.commentDeleteButton {
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--profile-faint);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.commentDeleteButton:hover {
+  color: var(--profile-red);
+  border-color: rgba(255, 77, 85, 0.18);
+  background: rgba(255, 77, 85, 0.06);
+}
+
+.confirmModal {
+  width: min(380px, calc(100vw - 48px));
+}
+
+.confirmModal .settingsFooter {
+  padding: 14px 18px 18px;
+  gap: 8px;
+}
+
+.confirmModal .settingsFooter button:last-child {
+  border-color: rgba(255, 77, 85, 0.2);
+  color: #ff9ba0;
+  background: rgba(255, 77, 85, 0.07);
+}
+
+@media (max-width: 760px) {
+  .briefingDetailsGrid {
+    grid-template-columns: 1fr;
+  }
+}

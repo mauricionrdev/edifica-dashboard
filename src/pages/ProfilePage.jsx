@@ -4,6 +4,7 @@ import { changePassword, updateProfile } from '../api/auth.js';
 import {
   createTask,
   createTaskComment,
+  deleteTaskComment,
   listMyProjectTasks,
   listTaskComments,
   updateTask as updateProjectTask,
@@ -24,7 +25,7 @@ import {
 import Select from '../components/ui/Select.jsx';
 import DateField from '../components/ui/DateField.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
-import { CloseIcon, SettingsIcon } from '../components/ui/Icons.jsx';
+import { CloseIcon, SettingsIcon, TrashIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
 
 const AVATAR_OPTIONS = [
@@ -117,6 +118,59 @@ function buildDemandDescription(form, clientName = '') {
   if (freeDescription) lines.push('', freeDescription);
 
   return lines.join('\n');
+}
+
+
+const BRIEFING_FIELDS = [
+  { key: 'officeName', label: 'Escritório', source: 'Nome do escritório', required: true },
+  { key: 'objective', label: 'Objetivo', source: 'Objetivo', required: true },
+  { key: 'campaign', label: 'Nicho/campanha', source: 'Nicho/campanha', required: true },
+  { key: 'channels', label: 'Canais', source: 'Canais', required: true },
+  { key: 'attendants', label: 'Atendentes', source: 'Atendentes', required: true },
+  { key: 'greeting', label: 'Saudação', source: 'Saudação', required: true },
+  { key: 'location', label: 'Localização', source: 'Localização', required: true },
+  { key: 'notes', label: 'Observações', source: 'Observações', required: false },
+];
+
+function parseBriefingDescription(description = '') {
+  const rawLines = String(description || '').split(/\r?\n/);
+  const values = {};
+  const consumed = new Set();
+
+  rawLines.forEach((line, index) => {
+    const trimmed = line.trim();
+    BRIEFING_FIELDS.forEach((field) => {
+      const prefix = `${field.source}:`;
+      if (trimmed.toLowerCase().startsWith(prefix.toLowerCase())) {
+        values[field.key] = trimmed.slice(prefix.length).trim();
+        consumed.add(index);
+      }
+    });
+
+    if (/^(tipo|cliente):/i.test(trimmed) || /^briefing$/i.test(trimmed) || !trimmed) {
+      consumed.add(index);
+    }
+  });
+
+  const required = BRIEFING_FIELDS.filter((field) => field.required);
+  const filledRequired = required.filter((field) => String(values[field.key] || '').trim()).length;
+  const extraDescription = rawLines
+    .filter((line, index) => !consumed.has(index) && line.trim())
+    .join('\n')
+    .trim();
+
+  return {
+    values,
+    extraDescription,
+    completion: required.length ? Math.round((filledRequired / required.length) * 100) : 100,
+    isComplete: filledRequired === required.length,
+    filledRequired,
+    requiredTotal: required.length,
+  };
+}
+
+function clientSearchText(client) {
+  return normalizeText([client?.name, client?.companyName, client?.squadName, client?.managerName, client?.gdvName].filter(Boolean).join(' '));
 }
 
 
@@ -333,10 +387,14 @@ export default function ProfilePage() {
   const [demandUsers, setDemandUsers] = useState([]);
   const [demandClients, setDemandClients] = useState([]);
   const [demandSaving, setDemandSaving] = useState(false);
+  const [clientQuery, setClientQuery] = useState('');
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [taskComments, setTaskComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentDraft, setCommentDraft] = useState('');
   const [commentSaving, setCommentSaving] = useState(false);
+  const [commentDeleteTarget, setCommentDeleteTarget] = useState(null);
+  const [commentDeleting, setCommentDeleting] = useState(false);
   const [subtaskDraft, setSubtaskDraft] = useState('');
   const [subtaskSaving, setSubtaskSaving] = useState(false);
 
@@ -584,8 +642,27 @@ export default function ProfilePage() {
     }
   }
 
+
+  async function handleDeleteComment() {
+    if (!activeTask || !commentDeleteTarget?.id) return;
+
+    try {
+      setCommentDeleting(true);
+      await deleteTaskComment(activeTask.id, commentDeleteTarget.id);
+      setTaskComments((prev) => prev.filter((comment) => comment.id !== commentDeleteTarget.id));
+      setCommentDeleteTarget(null);
+      showToast('Comentário excluído.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao excluir comentário.', { variant: 'error' });
+    } finally {
+      setCommentDeleting(false);
+    }
+  }
+
   async function handleOpenDemandModal() {
     setDemandForm((prev) => ({ ...emptyDemandForm(user?.id || ''), assigneeUserId: prev.assigneeUserId || user?.id || '' }));
+    setClientQuery('');
+    setClientSearchOpen(false);
     setDemandModalOpen(true);
 
     try {
@@ -634,6 +711,8 @@ export default function ProfilePage() {
       }
       setDemandModalOpen(false);
       setDemandForm(emptyDemandForm(user?.id || ''));
+      setClientQuery('');
+      setClientSearchOpen(false);
       showToast('Demanda criada.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao criar demanda.', { variant: 'error' });
@@ -665,6 +744,29 @@ export default function ProfilePage() {
     }
     return Array.from(map.values());
   }, [activeTask?.assigneeName, activeTask?.assigneeUserId, demandUsers, user]);
+
+  const selectedDemandClient = useMemo(
+    () => demandClients.find((client) => client.id === demandForm.clientId) || null,
+    [demandClients, demandForm.clientId]
+  );
+
+  const filteredDemandClients = useMemo(() => {
+    const query = normalizeText(clientQuery);
+    const source = Array.isArray(demandClients) ? demandClients : [];
+    if (!query) return source.slice(0, 8);
+    return source.filter((client) => clientSearchText(client).includes(query)).slice(0, 8);
+  }, [clientQuery, demandClients]);
+
+  const activeBriefing = useMemo(
+    () => (activeTask && getTaskKind(activeTask) === 'briefing' ? parseBriefingDescription(activeTask.description || '') : null),
+    [activeTask]
+  );
+
+  const activeDescription = activeTask
+    ? activeBriefing
+      ? activeBriefing.extraDescription
+      : activeTask.description
+    : '';
 
   return (
     <div className={styles.page}>
@@ -881,10 +983,36 @@ export default function ProfilePage() {
                 ) : null}
               </section>
 
-              {activeTask.description ? (
+              {activeBriefing ? (
+                <section className={styles.drawerSection}>
+                  <div className={styles.sectionTitleRow}>
+                    <h4>Briefing</h4>
+                    <span className={activeBriefing.isComplete ? styles.briefingComplete : styles.briefingIncomplete}>
+                      {activeBriefing.isComplete ? 'Completo' : 'Incompleto'}
+                    </span>
+                  </div>
+                  <div className={styles.briefingSummary}>
+                    <i><b style={{ width: `${activeBriefing.completion}%` }} /></i>
+                    <span>{activeBriefing.filledRequired}/{activeBriefing.requiredTotal}</span>
+                  </div>
+                  <div className={styles.briefingDetailsGrid}>
+                    {BRIEFING_FIELDS.map((field) => {
+                      const value = activeBriefing.values[field.key];
+                      return value ? (
+                        <div key={field.key} className={styles.briefingDetailItem}>
+                          <span>{field.label}</span>
+                          <strong>{value}</strong>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </section>
+              ) : null}
+
+              {activeDescription ? (
                 <section className={styles.drawerSection}>
                   <h4>Descrição</h4>
-                  <div className={styles.descriptionBox}>{activeTask.description}</div>
+                  <div className={styles.descriptionBox}>{activeDescription}</div>
                 </section>
               ) : null}
 
@@ -935,6 +1063,15 @@ export default function ProfilePage() {
                         <div>
                           <strong>{comment.authorName || comment.userName || 'Usuário'}</strong>
                           <span>{formatDateTime(comment.createdAt)}</span>
+                          <button
+                            type="button"
+                            className={styles.commentDeleteButton}
+                            onClick={() => setCommentDeleteTarget(comment)}
+                            aria-label="Excluir comentário"
+                            title="Excluir comentário"
+                          >
+                            <TrashIcon size={14} />
+                          </button>
                         </div>
                         <p>{comment.body || comment.content || ''}</p>
                       </article>
@@ -994,10 +1131,57 @@ export default function ProfilePage() {
                 <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={styles.formSelect}>
                   {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </Select>
-                <Select value={demandForm.clientId} onChange={(event) => setDemandForm((prev) => ({ ...prev, clientId: event.target.value }))} aria-label="Cliente" className={styles.formSelect}>
-                  <option value="">Cliente</option>
-                  {demandClients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}
-                </Select>
+                <div className={styles.clientSearchField}>
+                  <input
+                    value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
+                    onFocus={() => {
+                      setClientSearchOpen(true);
+                      if (selectedDemandClient && !clientQuery) setClientQuery(selectedDemandClient.name || '');
+                    }}
+                    onChange={(event) => {
+                      setClientQuery(event.target.value);
+                      setClientSearchOpen(true);
+                      if (demandForm.clientId) setDemandForm((prev) => ({ ...prev, clientId: '' }));
+                    }}
+                    placeholder="Cliente"
+                    aria-label="Cliente"
+                  />
+                  {(selectedDemandClient || clientQuery) ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDemandForm((prev) => ({ ...prev, clientId: '' }));
+                        setClientQuery('');
+                        setClientSearchOpen(false);
+                      }}
+                      aria-label="Limpar cliente"
+                    >
+                      <CloseIcon size={13} />
+                    </button>
+                  ) : null}
+                  {clientSearchOpen ? (
+                    <div className={styles.clientSearchResults}>
+                      {filteredDemandClients.length ? filteredDemandClients.map((client) => (
+                        <button
+                          key={client.id}
+                          type="button"
+                          onClick={() => {
+                            setDemandForm((prev) => ({ ...prev, clientId: client.id }));
+                            setClientQuery(client.name || '');
+                            setClientSearchOpen(false);
+                          }}
+                        >
+                          <strong>{client.name}</strong>
+                          {client.squadName || client.managerName || client.gdvName ? (
+                            <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span>
+                          ) : null}
+                        </button>
+                      )) : (
+                        <span className={styles.clientSearchEmpty}>Sem cliente</span>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
                 <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
               </div>
 
@@ -1021,6 +1205,26 @@ export default function ProfilePage() {
               </footer>
             </div>
           </form>
+        </div>
+      ) : null}
+
+
+      {commentDeleteTarget ? (
+        <div className={styles.settingsOverlay} onClick={() => setCommentDeleteTarget(null)}>
+          <section className={`${styles.settingsModal} ${styles.confirmModal}`} role="dialog" aria-modal="true" aria-label="Excluir comentário" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.settingsHeader}>
+              <div>
+                <h2>Excluir comentário</h2>
+              </div>
+              <button type="button" className={styles.iconButton} onClick={() => setCommentDeleteTarget(null)} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+            <footer className={styles.settingsFooter}>
+              <button type="button" onClick={() => setCommentDeleteTarget(null)}>Cancelar</button>
+              <button type="button" onClick={handleDeleteComment} disabled={commentDeleting}>{commentDeleting ? 'Excluindo' : 'Excluir'}</button>
+            </footer>
+          </section>
         </div>
       ) : null}
 
