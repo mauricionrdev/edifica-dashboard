@@ -120,10 +120,10 @@
 .identityTitle h1 {
   margin: 0;
   color: var(--profile-text);
-  font-size: clamp(24px, 2.4vw, 34px);
-  line-height: 0.95;
-  letter-spacing: -0.06em;
-  font-weight: 680;
+  font-size: clamp(24px, 2vw, 30px);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-weight: 670;
 }
 
 .identityTitle span {
@@ -266,10 +266,10 @@
 .operationHeader h2 {
   margin: 0;
   color: var(--profile-text);
-  font-size: 21px;
+  font-size: 20px;
   line-height: 1;
-  letter-spacing: -0.045em;
-  font-weight: 670;
+  letter-spacing: -0.035em;
+  font-weight: 650;
 }
 
 .operationHeader > div > span {
@@ -484,6 +484,34 @@
   color: var(--profile-soft) !important;
 }
 
+
+.emptyOperation {
+  min-height: 116px;
+  border: 1px solid var(--profile-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.008);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  color: var(--profile-faint);
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.emptyOperation span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptyOperation span::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
 .drawerOverlay,
 .settingsOverlay {
   position: fixed;
@@ -500,7 +528,7 @@
 }
 
 .drawerPanel {
-  width: min(620px, 100vw);
+  width: min(600px, 100vw);
   height: 100%;
   border-top: 0;
   border-right: 0;
@@ -531,11 +559,11 @@
 .drawerScroll {
   min-height: 0;
   overflow: auto;
-  padding: 24px 30px 34px;
+  padding: 22px 28px 34px;
 }
 
 .drawerHero {
-  padding-bottom: 18px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--profile-line);
 }
 
@@ -551,14 +579,14 @@
   margin: 0;
   max-width: 96%;
   color: var(--profile-text);
-  font-size: clamp(26px, 2.5vw, 36px);
-  line-height: 1.02;
-  letter-spacing: -0.065em;
-  font-weight: 720;
+  font-size: clamp(22px, 1.7vw, 27px);
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  font-weight: 680;
 }
 
 .drawerSection {
-  padding: 19px 0;
+  padding: 17px 0;
   border-bottom: 1px solid var(--profile-line);
 }
 
@@ -578,34 +606,45 @@
 
 .detailGrid {
   display: grid;
-  grid-template-columns: 116px minmax(0, 1fr);
-  gap: 11px 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
 }
 
-.detailGrid span {
+.detailItem {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.detailItem span {
   color: var(--profile-faint);
-  font-size: 12px;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.detailGrid strong {
+.detailItem strong {
   min-width: 0;
   color: var(--profile-soft);
   font-size: 13px;
-  font-weight: 620;
+  line-height: 1.25;
+  font-weight: 610;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .descriptionBox {
-  min-height: 94px;
-  padding: 15px 16px;
+  min-height: 74px;
+  padding: 14px 15px;
   border: 1px solid var(--profile-line);
   border-radius: 14px;
   background: var(--profile-panel-2);
   color: var(--profile-soft);
-  font-size: 14px;
-  line-height: 1.58;
+  font-size: 13.5px;
+  line-height: 1.54;
   white-space: pre-wrap;
 }
 

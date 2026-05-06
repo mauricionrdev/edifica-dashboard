@@ -357,6 +357,20 @@ export default function ProfilePage() {
 
   const activeKind = activeTask ? getTaskKind(activeTask) : 'demand';
   const activeStatus = activeTask ? statusKey(activeTask) : 'waiting';
+  const activeAssignee = activeTask ? activeTask.assigneeName || profileForm.name || user?.name || '' : '';
+  const activeRequester = activeTask ? activeTask.createdByName || '' : '';
+  const activeDetailItems = activeTask
+    ? [
+        ['Tipo', kindLabel(activeKind)],
+        ['Responsável', activeAssignee || '—'],
+        ...(activeRequester && activeRequester !== activeAssignee ? [['Solicitante', activeRequester]] : []),
+        ...(activeTask.clientName ? [['Cliente', activeTask.clientName]] : []),
+        ...(activeTask.projectName ? [['Projeto', activeTask.projectName]] : []),
+        ...(activeTask.sectionName ? [['Seção', activeTask.sectionName]] : []),
+        ['Prazo', formatDueLabel(activeTask.dueDate), styles[`due_${activeStatus}`] || ''],
+        ['Prioridade', priorityLabel(activeTask.priority)],
+      ]
+    : [];
 
   return (
     <div className={styles.page}>
@@ -416,7 +430,6 @@ export default function ProfilePage() {
         <header className={styles.operationHeader}>
           <div>
             <h2>Minha operação</h2>
-            <span>{visibleTasks.length}</span>
           </div>
           <nav className={styles.operationTabs} aria-label="Operação">
             {OPERATION_TABS.map((tab) => (
@@ -440,7 +453,9 @@ export default function ProfilePage() {
           ) : tasksError ? (
             <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
-            <StateBlock variant="empty" compact title="Vazio" />
+            <div className={styles.emptyOperation}>
+              <span>Sem demandas</span>
+            </div>
           ) : (
             <div className={styles.operationList}>
               {visibleTasks.map((task) => {
@@ -509,41 +524,21 @@ export default function ProfilePage() {
 
               <section className={styles.drawerSection}>
                 <div className={styles.detailGrid}>
-                  <span>Tipo</span>
-                  <strong>{kindLabel(activeKind)}</strong>
-                  <span>Origem</span>
-                  <strong>{activeTask.projectId ? 'Projeto' : activeKind === 'routine' ? 'Rotina' : activeKind === 'briefing' ? 'Briefing' : 'Demanda'}</strong>
-                  <span>Responsável</span>
-                  <strong>{activeTask.assigneeName || profileForm.name || user?.name || '—'}</strong>
-                  <span>Solicitante</span>
-                  <strong>{metaValue(activeTask.createdByName)}</strong>
-                  <span>Cliente</span>
-                  <strong>{metaValue(activeTask.clientName)}</strong>
-                  <span>Projeto</span>
-                  <strong>{metaValue(activeTask.projectName)}</strong>
-                  <span>Seção</span>
-                  <strong>{metaValue(activeTask.sectionName)}</strong>
-                  <span>Prazo</span>
-                  <strong className={styles[`due_${activeStatus}`] || ''}>{formatDueLabel(activeTask.dueDate)}</strong>
-                  <span>Prioridade</span>
-                  <strong>{priorityLabel(activeTask.priority)}</strong>
+                  {activeDetailItems.map(([label, value, className]) => (
+                    <div key={label} className={styles.detailItem}>
+                      <span>{label}</span>
+                      <strong className={className || ''}>{value || '—'}</strong>
+                    </div>
+                  ))}
                 </div>
               </section>
 
-              <section className={styles.drawerSection}>
-                <h4>Descrição</h4>
-                <div className={styles.descriptionBox}>{activeTask.description || '—'}</div>
-              </section>
-
-              <section className={styles.drawerSection}>
-                <h4>Subtarefas</h4>
-                <div className={styles.emptyStrip}>—</div>
-              </section>
-
-              <section className={styles.drawerSection}>
-                <h4>Comentários</h4>
-                <div className={styles.commentComposer}>Adicionar comentário</div>
-              </section>
+              {activeTask.description ? (
+                <section className={styles.drawerSection}>
+                  <h4>Descrição</h4>
+                  <div className={styles.descriptionBox}>{activeTask.description}</div>
+                </section>
+              ) : null}
 
               <section className={styles.drawerSection}>
                 <h4>Atividade</h4>
