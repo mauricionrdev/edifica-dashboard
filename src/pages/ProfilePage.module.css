@@ -1557,3 +1557,289 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v10 — demanda modal e comentários refinados */
+.settingsOverlay:has(.demandModal) {
+  align-items: center;
+  padding: 22px;
+}
+
+.demandModal {
+  width: min(860px, calc(100vw - 48px));
+  max-height: min(760px, calc(100vh - 44px));
+  overflow: hidden;
+  border-radius: 20px;
+  background: #0b0c0e;
+  border-color: rgba(255, 255, 255, 0.075);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.62);
+}
+
+.demandModal .settingsHeader {
+  min-height: 76px;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent);
+}
+
+.demandModal .settingsHeader h2 {
+  margin: 0 0 4px;
+  font-size: 21px;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  font-weight: 680;
+}
+
+.demandModal .settingsHeader span {
+  color: var(--profile-faint);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.demandModal .settingsContent {
+  padding: 20px 22px 18px;
+  overflow: visible;
+}
+
+.demandModal .settingsFooter {
+  padding: 0 22px 22px;
+  gap: 8px;
+}
+
+.demandFormGrid {
+  display: grid;
+  grid-template-columns: 180px 180px minmax(220px, 1fr) minmax(180px, 0.8fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.demandFormGrid .fieldWide {
+  grid-column: 1 / -1;
+}
+
+.demandFormGrid input,
+.briefingGrid input,
+.demandTextarea {
+  min-height: 40px;
+  border-radius: 12px;
+  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.015);
+}
+
+.demandFormGrid input:focus,
+.briefingGrid input:focus,
+.demandTextarea:focus,
+.clientSearchField:focus-within input {
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.028);
+}
+
+.clientSearchField {
+  z-index: 2;
+}
+
+.clientSearchField input {
+  width: 100%;
+  padding-right: 36px;
+}
+
+.clientSearchResults {
+  top: calc(100% + 8px);
+  max-height: 262px;
+  padding: 7px;
+  border-radius: 14px;
+  border-color: rgba(255, 255, 255, 0.105);
+  background: #101114;
+  box-shadow: 0 24px 68px rgba(0, 0, 0, 0.7);
+}
+
+.clientSearchResults button {
+  min-height: 48px;
+  padding: 9px 10px;
+  border-radius: 10px;
+}
+
+.clientSearchResults strong {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.clientSearchResults span,
+.clientSearchEmpty {
+  font-size: 11.5px;
+  line-height: 1.25;
+}
+
+.briefingGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-top: 2px;
+}
+
+.briefingGrid .fieldWide {
+  grid-column: 1 / -1;
+}
+
+.demandTextarea {
+  min-height: 122px;
+  max-height: 210px;
+  margin-top: 2px;
+}
+
+.commentForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.commentForm textarea {
+  min-height: 44px;
+  max-height: 130px;
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.016);
+}
+
+.commentForm button {
+  min-height: 40px;
+  border-radius: 12px;
+  padding: 0 14px;
+}
+
+.commentList {
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.commentItem {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.commentAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--profile-soft);
+  font-size: 10px;
+  font-weight: 720;
+}
+
+.commentBody {
+  min-width: 0;
+  padding: 10px 11px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.commentHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.commentHeader strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--profile-text);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.commentHeader span {
+  color: var(--profile-faint);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.commentBody p {
+  margin: 0;
+  color: var(--profile-soft);
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.commentDeleteButton {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+}
+
+@media (max-width: 980px) {
+  .demandFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .demandModal {
+    width: calc(100vw - 24px);
+  }
+
+  .demandFormGrid,
+  .briefingGrid,
+  .commentForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+.drawerHeroActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.drawerHeroActions button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--profile-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.024);
+  color: var(--profile-soft);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 620;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.drawerHeroActions button:hover {
+  border-color: var(--profile-line-strong);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--profile-text);
+}
+
+.handoffModal {
+  width: min(560px, calc(100vw - 34px));
+}
+
+.handoffGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 12px;
+}
+
+.handoffGrid textarea {
+  min-height: 116px;
+  resize: vertical;
+}
+
+@media (max-width: 760px) {
+  .handoffGrid {
+    grid-template-columns: 1fr;
+  }
+}

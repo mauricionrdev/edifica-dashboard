@@ -112,6 +112,14 @@ function emptyDemandForm(userId = '') {
   };
 }
 
+function emptyHandoffForm(userId = '', status = 'in_progress') {
+  return {
+    assigneeUserId: userId,
+    status,
+    note: '',
+  };
+}
+
 function demandTypeLabel(type) {
   return DEMAND_TYPES.find((item) => item.value === type)?.label || 'Demanda';
 }
@@ -435,6 +443,7 @@ export default function ProfilePage() {
   const { user, reloadUser } = useAuth();
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
+  const clientSearchRef = useRef(null);
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -469,6 +478,9 @@ export default function ProfilePage() {
   const [commentDeleting, setCommentDeleting] = useState(false);
   const [subtaskDraft, setSubtaskDraft] = useState('');
   const [subtaskSaving, setSubtaskSaving] = useState(false);
+  const [handoffOpen, setHandoffOpen] = useState(false);
+  const [handoffForm, setHandoffForm] = useState(() => emptyHandoffForm(user?.id || ''));
+  const [handoffSaving, setHandoffSaving] = useState(false);
 
   useEffect(() => {
     setPanelHeader({ title: 'Perfil', description: null, actions: null });
@@ -537,17 +549,36 @@ export default function ProfilePage() {
       setActiveTaskId('');
       setSettingsOpen(false);
       setDemandModalOpen(false);
+      setClientSearchOpen(false);
+      setHandoffOpen(false);
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (!clientSearchOpen) return undefined;
+
+    function handlePointerDown(event) {
+      if (clientSearchRef.current?.contains(event.target)) return;
+      setClientSearchOpen(false);
+    }
+
+    window.addEventListener('pointerdown', handlePointerDown, true);
+    return () => window.removeEventListener('pointerdown', handlePointerDown, true);
+  }, [clientSearchOpen]);
+
+  useEffect(() => {
+    if (demandModalOpen) return;
+    setClientSearchOpen(false);
+  }, [demandModalOpen]);
 
   useEffect(() => {
     setCommentDraft('');
     setSubtaskDraft('');
     setTaskComments([]);
+    setHandoffOpen(false);
 
     if (!activeTaskId) return undefined;
 
@@ -714,6 +745,52 @@ export default function ProfilePage() {
     }
   }
 
+
+  function openHandoff(task = activeTask) {
+    if (!task) return;
+    const nextStatus = isDone(task) ? 'done' : task.status || 'in_progress';
+    setHandoffForm(emptyHandoffForm(task.assigneeUserId || user?.id || '', nextStatus));
+    setHandoffOpen(true);
+  }
+
+  async function handleSubmitHandoff(event) {
+    event.preventDefault();
+    if (!activeTask || !handoffForm.assigneeUserId) return;
+
+    const nextAssignee = assigneeOptions.find((item) => item.id === handoffForm.assigneeUserId);
+    const nextStatusLabel = statusOptionsForKind(activeKind).find((option) => option.value === handoffForm.status)?.label || handoffForm.status;
+    const lines = [
+      `Handoff: ${nextAssignee?.name || 'Responsável'}`,
+      `Status: ${nextStatusLabel}`,
+      handoffForm.note.trim(),
+    ].filter(Boolean);
+
+    try {
+      setHandoffSaving(true);
+      const updateBody = {
+        assigneeUserId: handoffForm.assigneeUserId,
+        status: handoffForm.status,
+        done: handoffForm.status === 'done',
+      };
+      const [taskRes, commentRes] = await Promise.allSettled([
+        updateProjectTask(activeTask.id, updateBody),
+        createTaskComment(activeTask.id, { body: lines.join('\n') }),
+      ]);
+
+      if (taskRes.status === 'rejected') throw taskRes.reason;
+      const updated = taskRes.value?.task || { ...activeTask, ...updateBody, assigneeName: nextAssignee?.name || activeTask.assigneeName };
+      setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...updated } : item)));
+      if (commentRes.status === 'fulfilled' && commentRes.value?.comment) {
+        setTaskComments((prev) => [...prev, commentRes.value.comment]);
+      }
+      setHandoffOpen(false);
+      showToast('Handoff registrado.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao registrar handoff.', { variant: 'error' });
+    } finally {
+      setHandoffSaving(false);
+    }
+  }
 
   async function handleDeleteComment() {
     if (!activeTask || !commentDeleteTarget?.id) return;
@@ -992,6 +1069,9 @@ export default function ProfilePage() {
                 <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
                 <h3>{activeTask.title}</h3>
                 <p>{nextActionLabel(activeTask)}</p>
+                <div className={styles.drawerHeroActions}>
+                  <button type="button" onClick={() => openHandoff(activeTask)}>Handoff</button>
+                </div>
               </div>
 
               <section className={styles.drawerSection}>
@@ -1149,24 +1229,30 @@ export default function ProfilePage() {
                   <div className={styles.commentState}>Carregando</div>
                 ) : taskComments.length ? (
                   <div className={styles.commentList}>
-                    {taskComments.map((comment) => (
-                      <article key={comment.id} className={styles.commentItem}>
-                        <div>
-                          <strong>{comment.authorName || comment.userName || 'Usuário'}</strong>
-                          <span>{formatDateTime(comment.createdAt)}</span>
-                          <button
-                            type="button"
-                            className={styles.commentDeleteButton}
-                            onClick={() => setCommentDeleteTarget(comment)}
-                            aria-label="Excluir comentário"
-                            title="Excluir comentário"
-                          >
-                            <TrashIcon size={14} />
-                          </button>
-                        </div>
-                        <p>{comment.body || comment.content || ''}</p>
-                      </article>
-                    ))}
+                    {taskComments.map((comment) => {
+                      const commentAuthor = comment.authorName || comment.userName || 'Usuário';
+                      return (
+                        <article key={comment.id} className={styles.commentItem}>
+                          <span className={styles.commentAvatar}>{initials(commentAuthor)}</span>
+                          <div className={styles.commentBody}>
+                            <header className={styles.commentHeader}>
+                              <strong>{commentAuthor}</strong>
+                              <span>{formatDateTime(comment.createdAt)}</span>
+                              <button
+                                type="button"
+                                className={styles.commentDeleteButton}
+                                onClick={() => setCommentDeleteTarget(comment)}
+                                aria-label="Excluir comentário"
+                                title="Excluir comentário"
+                              >
+                                <TrashIcon size={13} />
+                              </button>
+                            </header>
+                            <p>{comment.body || comment.content || ''}</p>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 ) : null}
               </section>
@@ -1222,12 +1308,12 @@ export default function ProfilePage() {
                 <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={styles.formSelect}>
                   {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </Select>
-                <div className={styles.clientSearchField}>
+                <div className={styles.clientSearchField} ref={clientSearchRef}>
                   <input
                     value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
                     onFocus={() => {
                       setClientSearchOpen(true);
-                      if (selectedDemandClient && !clientQuery) setClientQuery(selectedDemandClient.name || '');
+                      if (selectedDemandClient) setClientQuery(selectedDemandClient.name || '');
                     }}
                     onChange={(event) => {
                       setClientQuery(event.target.value);
@@ -1256,6 +1342,7 @@ export default function ProfilePage() {
                         <button
                           key={client.id}
                           type="button"
+                          onMouseDown={(event) => event.preventDefault()}
                           onClick={() => {
                             setDemandForm((prev) => ({ ...prev, clientId: client.id }));
                             setClientQuery(client.name || '');
@@ -1316,6 +1403,53 @@ export default function ProfilePage() {
               <button type="button" onClick={handleDeleteComment} disabled={commentDeleting}>{commentDeleting ? 'Excluindo' : 'Excluir'}</button>
             </footer>
           </section>
+        </div>
+      ) : null}
+
+
+      {handoffOpen && activeTask ? (
+        <div className={styles.settingsOverlay} onClick={() => setHandoffOpen(false)}>
+          <form className={`${styles.settingsModal} ${styles.handoffModal}`} onSubmit={handleSubmitHandoff} role="dialog" aria-modal="true" aria-label="Handoff" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.settingsHeader}>
+              <div>
+                <h2>Handoff</h2>
+                <span>{activeTask.title}</span>
+              </div>
+              <button type="button" className={styles.iconButton} onClick={() => setHandoffOpen(false)} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+            <div className={styles.settingsContent}>
+              <div className={styles.handoffGrid}>
+                <Select
+                  value={handoffForm.assigneeUserId}
+                  onChange={(event) => setHandoffForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))}
+                  aria-label="Responsável"
+                  className={styles.formSelect}
+                >
+                  {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                </Select>
+                <Select
+                  value={handoffForm.status}
+                  onChange={(event) => setHandoffForm((prev) => ({ ...prev, status: event.target.value }))}
+                  aria-label="Status"
+                  className={styles.formSelect}
+                >
+                  {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </Select>
+                <textarea
+                  className={styles.fieldWide}
+                  value={handoffForm.note}
+                  onChange={(event) => setHandoffForm((prev) => ({ ...prev, note: event.target.value }))}
+                  placeholder="Nota"
+                />
+              </div>
+            </div>
+            <footer className={styles.settingsFooter}>
+              <button type="button" onClick={() => setHandoffOpen(false)}>Cancelar</button>
+              <button type="submit" disabled={handoffSaving || !handoffForm.assigneeUserId}>{handoffSaving ? 'Salvando' : 'Registrar'}</button>
+            </footer>
+          </form>
         </div>
       ) : null}
 
