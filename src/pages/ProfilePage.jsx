@@ -58,12 +58,39 @@ const DEMAND_PRIORITIES = [
   { value: 'high', label: 'Alta' },
 ];
 
-const TASK_STATUS_OPTIONS = [
+const BASE_STATUS_OPTIONS = [
   { value: 'todo', label: 'Aberta' },
   { value: 'in_progress', label: 'Em andamento' },
   { value: 'done', label: 'Concluída' },
   { value: 'canceled', label: 'Cancelada' },
 ];
+
+const STATUS_OPTIONS_BY_KIND = {
+  briefing: [
+    { value: 'todo', label: 'Novo' },
+    { value: 'in_progress', label: 'Em execução' },
+    { value: 'done', label: 'Implementado' },
+    { value: 'canceled', label: 'Cancelado' },
+  ],
+  routine: [
+    { value: 'todo', label: 'Pendente' },
+    { value: 'in_progress', label: 'Em execução' },
+    { value: 'done', label: 'Feita' },
+    { value: 'canceled', label: 'Pulada' },
+  ],
+  support: [
+    { value: 'todo', label: 'Aberto' },
+    { value: 'in_progress', label: 'Em análise' },
+    { value: 'done', label: 'Resolvido' },
+    { value: 'canceled', label: 'Cancelado' },
+  ],
+  bug: [
+    { value: 'todo', label: 'Aberto' },
+    { value: 'in_progress', label: 'Em correção' },
+    { value: 'done', label: 'Resolvido' },
+    { value: 'canceled', label: 'Cancelado' },
+  ],
+};
 
 function emptyDemandForm(userId = '') {
   return {
@@ -272,11 +299,16 @@ function kindLabel(kind) {
   return labels[kind] || 'Demanda';
 }
 
+function statusOptionsForKind(kind) {
+  return STATUS_OPTIONS_BY_KIND[kind] || BASE_STATUS_OPTIONS;
+}
+
 function statusLabel(task) {
-  if (task?.status === 'canceled') return 'Cancelada';
-  if (isDone(task)) return 'Concluída';
-  if (isOverdue(task)) return 'Atrasada';
-  if (task?.status === 'in_progress') return 'Em andamento';
+  const kind = getTaskKind(task);
+  if (isOverdue(task) && !isDone(task) && task?.status !== 'canceled') return 'Atrasada';
+  const value = isDone(task) ? 'done' : task?.status || 'todo';
+  const label = statusOptionsForKind(kind).find((option) => option.value === value)?.label;
+  if (label) return label;
   if (isToday(task)) return 'Hoje';
   return 'Aguardando';
 }
@@ -297,15 +329,55 @@ function priorityLabel(value) {
 
 function nextActionLabel(task) {
   if (!task) return '';
-  if (isDone(task)) return 'Demanda concluída';
-  if (task.status === 'canceled') return 'Demanda cancelada';
+  if (task.status === 'canceled') return 'Encerrada';
   const kind = getTaskKind(task);
+  if (kind === 'briefing' && isDone(task)) return 'Aguardando ativação';
+  if (kind === 'support' && isDone(task)) return 'Resolvido';
+  if (kind === 'routine' && isDone(task)) return 'Rotina feita';
+  if (isDone(task)) return 'Concluída';
   if (isOverdue(task)) return 'Regularizar prazo';
   if (kind === 'briefing') return 'Validar briefing';
   if (kind === 'routine') return 'Executar rotina';
   if (kind === 'support') return 'Analisar solicitação';
   if (kind === 'project') return 'Executar tarefa do projeto';
   return 'Executar demanda';
+}
+
+function workflowStepsForTask(task) {
+  const kind = getTaskKind(task);
+  const status = task?.status || 'todo';
+  const done = isDone(task);
+
+  if (kind === 'briefing') {
+    return [
+      { key: 'briefing', label: 'Briefing', state: done || status !== 'todo' ? 'done' : 'current' },
+      { key: 'execution', label: 'Execução', state: done ? 'done' : status === 'in_progress' ? 'current' : 'pending' },
+      { key: 'implemented', label: 'Implementado', state: done ? 'current' : 'pending' },
+      { key: 'activation', label: 'Ativação', state: done ? 'pending' : 'locked' },
+    ];
+  }
+
+  if (kind === 'routine') {
+    return [
+      { key: 'pending', label: 'Pendente', state: done || status !== 'todo' ? 'done' : 'current' },
+      { key: 'execution', label: 'Execução', state: done ? 'done' : status === 'in_progress' ? 'current' : 'pending' },
+      { key: 'done', label: 'Feita', state: done ? 'current' : 'pending' },
+    ];
+  }
+
+  if (kind === 'support') {
+    return [
+      { key: 'open', label: 'Aberto', state: done || status !== 'todo' ? 'done' : 'current' },
+      { key: 'analysis', label: 'Análise', state: done ? 'done' : status === 'in_progress' ? 'current' : 'pending' },
+      { key: 'resolved', label: 'Resolvido', state: done ? 'current' : 'pending' },
+    ];
+  }
+
+  return [
+    { key: 'open', label: 'Aberta', state: done || status !== 'todo' ? 'done' : 'current' },
+    { key: 'progress', label: 'Execução', state: done ? 'done' : status === 'in_progress' ? 'current' : 'pending' },
+    { key: 'done', label: 'Concluída', state: done ? 'current' : 'pending' },
+  ];
 }
 
 function getOperationCounts(tasks) {
@@ -723,6 +795,8 @@ export default function ProfilePage() {
 
   const activeKind = activeTask ? getTaskKind(activeTask) : 'demand';
   const activeStatus = activeTask ? statusKey(activeTask) : 'waiting';
+  const activeStatusOptions = activeTask ? statusOptionsForKind(activeKind) : BASE_STATUS_OPTIONS;
+  const activeWorkflowSteps = activeTask ? workflowStepsForTask(activeTask) : [];
   const activeAssignee = activeTask ? activeTask.assigneeName || profileForm.name || user?.name || '' : '';
   const activeRequester = activeTask ? activeTask.createdByName || '' : '';
   const activeContextItems = activeTask
@@ -930,7 +1004,7 @@ export default function ProfilePage() {
                       aria-label="Status"
                       className={styles.workflowSelect}
                     >
-                      {TASK_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                      {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                     </Select>
                   </label>
 
@@ -982,6 +1056,23 @@ export default function ProfilePage() {
                   </div>
                 ) : null}
               </section>
+
+              {activeWorkflowSteps.length ? (
+                <section className={styles.drawerSection}>
+                  <div className={styles.sectionTitleRow}>
+                    <h4>Fluxo</h4>
+                    <span>{kindLabel(activeKind)}</span>
+                  </div>
+                  <div className={styles.workflowTimeline}>
+                    {activeWorkflowSteps.map((step, index) => (
+                      <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''}`.trim()}>
+                        <i>{index + 1}</i>
+                        <span>{step.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
 
               {activeBriefing ? (
                 <section className={styles.drawerSection}>

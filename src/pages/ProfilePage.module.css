@@ -1481,3 +1481,79 @@
     grid-template-columns: 1fr;
   }
 }
+
+.workflowTimeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.workflowStep {
+  min-width: 0;
+  min-height: 44px;
+  padding: 9px 10px;
+  border: 1px solid var(--profile-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.012);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--profile-faint);
+}
+
+.workflowStep i {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  display: grid;
+  place-items: center;
+  color: var(--profile-faint);
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 720;
+}
+
+.workflowStep span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.workflowStep_done {
+  color: var(--profile-soft);
+  border-color: rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.045);
+}
+
+.workflowStep_done i {
+  border-color: rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--profile-green);
+}
+
+.workflowStep_current {
+  color: var(--profile-text);
+  border-color: rgba(245, 184, 0, 0.18);
+  background: rgba(245, 184, 0, 0.055);
+}
+
+.workflowStep_current i {
+  border-color: rgba(245, 184, 0, 0.26);
+  background: rgba(245, 184, 0, 0.12);
+  color: #e5c76c;
+}
+
+.workflowStep_locked {
+  opacity: 0.55;
+}
+
+@media (max-width: 760px) {
+  .workflowTimeline {
+    grid-template-columns: 1fr;
+  }
+}
