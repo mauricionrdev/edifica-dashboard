@@ -336,6 +336,17 @@ export default function ProfilePage() {
 
   const activeStatus = activeTask ? getTaskStatus(activeTask) : '';
 
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key !== 'Escape') return;
+      if (activeTaskId) setActiveTaskId('');
+      if (settingsOpen) setSettingsOpen(false);
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTaskId, settingsOpen]);
+
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -468,8 +479,8 @@ export default function ProfilePage() {
       </section>
 
       {activeTask ? (
-        <aside className={styles.taskDrawer} aria-label="Demanda">
-          <div className={styles.drawerPanel}>
+        <aside className={styles.taskDrawer} aria-label="Demanda" onClick={() => setActiveTaskId('')}>
+          <div className={styles.drawerPanel} onClick={(event) => event.stopPropagation()}>
             <header className={styles.drawerHeader}>
               <button
                 type="button"
