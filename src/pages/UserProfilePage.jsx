@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { createTask, listUserProjectTasks, listUserProjects } from '../api/projects.js';
+import { useToast } from '../context/ToastContext.jsx';
 import { getUserAvatar } from '../utils/avatarStorage.js';
 import { roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import DateField from '../components/ui/DateField.jsx';
-import { CloseIcon, ProjectBoardIcon } from '../components/ui/Icons.jsx';
+import { CloseIcon, PlusIcon, ProjectBoardIcon } from '../components/ui/Icons.jsx';
 import { buildProfilePath, matchesEntityRouteSegment } from '../utils/entityPaths.js';
-import { useToast } from '../context/ToastContext.jsx';
 import styles from './UserProfilePage.module.css';
 
 function initials(name) {
@@ -22,11 +22,19 @@ function initials(name) {
   );
 }
 
-
 function formatDateLabel(value) {
   if (!value) return 'Sem prazo';
   const parsed = new Date(`${value}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return 'Sem prazo';
+
+  const now = new Date();
+  const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const valueKey = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()).getTime();
+  const diff = Math.round((valueKey - todayKey) / 86400000);
+  if (diff === 0) return 'Hoje';
+  if (diff === 1) return 'Amanhã';
+  if (diff === -1) return 'Ontem';
+
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'short',
@@ -37,13 +45,46 @@ function sameName(a, b) {
   return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
 }
 
+function isOverdue(task) {
+  if (task?.done || task?.status === 'done' || !task?.dueDate) return false;
+  const today = new Date();
+  const due = new Date(`${task.dueDate}T00:00:00`);
+  if (Number.isNaN(due.getTime())) return false;
+  const todayKey = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+  const dueKey = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+  return dueKey < todayKey;
+}
+
+function getTaskStatus(task) {
+  if (task?.done || task?.status === 'done') return 'done';
+  if (isOverdue(task)) return 'overdue';
+  return 'open';
+}
+
 function getTaskStatusLabel(task) {
-  return task?.status === 'done' ? 'Concluída' : 'Aberta';
+  const status = getTaskStatus(task);
+  if (status === 'done') return 'Concluída';
+  if (status === 'overdue') return 'Atrasada';
+  return 'Aberta';
+}
+
+function orderTasks(tasks) {
+  return [...tasks].sort((a, b) => {
+    const order = { overdue: 0, open: 1, done: 2 };
+    const aStatus = getTaskStatus(a);
+    const bStatus = getTaskStatus(b);
+    if (order[aStatus] !== order[bStatus]) return order[aStatus] - order[bStatus];
+    const aDue = a.dueDate || '9999-12-31';
+    const bDue = b.dueDate || '9999-12-31';
+    if (aDue !== bDue) return aDue.localeCompare(bDue);
+    return String(a.title || '').localeCompare(String(b.title || ''), 'pt-BR');
+  });
 }
 
 export default function UserProfilePage() {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const {
     clients = [],
     squads = [],
@@ -52,14 +93,14 @@ export default function UserProfilePage() {
     refreshUserDirectory,
     setPanelHeader,
   } = useOutletContext();
+
   const [profileTasks, setProfileTasks] = useState([]);
   const [profileProjects, setProfileProjects] = useState([]);
   const [tasksLoading, setTasksLoading] = useState(false);
   const [projectsLoading, setProjectsLoading] = useState(false);
-  const [taskModalOpen, setTaskModalOpen] = useState(false);
-  const [creatingTask, setCreatingTask] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignSaving, setAssignSaving] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', description: '', dueDate: '' });
-  const { showToast } = useToast();
 
   useEffect(() => {
     if (!Array.isArray(userDirectory) || userDirectory.length === 0) {
@@ -88,6 +129,15 @@ export default function UserProfilePage() {
   }, [profileUser, setPanelHeader]);
 
   const avatarUrl = getUserAvatar(profileUser);
+
+  async function reloadProfileTasks(user) {
+    if (!user?.id) {
+      setProfileTasks([]);
+      return;
+    }
+    const res = await listUserProjectTasks(user.id);
+    setProfileTasks(Array.isArray(res?.tasks) ? res.tasks : []);
+  }
 
   useEffect(() => {
     if (!profileUser?.id) {
@@ -171,35 +221,19 @@ export default function UserProfilePage() {
     [profileUser?.name, relatedClients]
   );
 
-  const visibleProfileTasks = useMemo(() => profileTasks.slice(0, 10), [profileTasks]);
-  const openTasksCount = useMemo(() => profileTasks.filter((task) => task?.status !== 'done').length, [profileTasks]);
-  const completedTasksCount = useMemo(() => profileTasks.filter((task) => task?.status === 'done').length, [profileTasks]);
-  const groupedProfileTasks = useMemo(() => ([
-    {
-      key: 'open',
-      title: 'Abertas',
-      tasks: profileTasks.filter((task) => task?.status !== 'done').slice(0, 6),
-    },
-    {
-      key: 'done',
-      title: 'Concluídas',
-      tasks: profileTasks.filter((task) => task?.status === 'done').slice(0, 4),
-    },
-  ]).filter((section) => section.tasks.length > 0), [profileTasks]);
+  const orderedTasks = useMemo(() => orderTasks(profileTasks).slice(0, 12), [profileTasks]);
+  const openTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) !== 'done').length, [profileTasks]);
+  const overdueTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) === 'overdue').length, [profileTasks]);
+  const completedTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) === 'done').length, [profileTasks]);
+  const completionRate = profileTasks.length ? Math.round((completedTasksCount / profileTasks.length) * 100) : 0;
 
-  async function reloadProfileTasks() {
-    if (!profileUser?.id) return;
-    const res = await listUserProjectTasks(profileUser.id);
-    setProfileTasks(Array.isArray(res?.tasks) ? res.tasks : []);
-  }
-
-  async function handleCreateTask(event) {
+  async function handleAssignTask(event) {
     event.preventDefault();
     const title = newTask.title.trim();
     if (!title || !profileUser?.id) return;
 
     try {
-      setCreatingTask(true);
+      setAssignSaving(true);
       await createTask({
         title,
         description: newTask.description.trim(),
@@ -207,14 +241,14 @@ export default function UserProfilePage() {
         dueDate: newTask.dueDate || '',
         source: 'profile',
       });
-      await reloadProfileTasks();
+      await reloadProfileTasks(profileUser);
       setNewTask({ title: '', description: '', dueDate: '' });
-      setTaskModalOpen(false);
-      showToast('Tarefa criada.', { variant: 'success' });
+      setAssignOpen(false);
+      showToast('Tarefa atribuída.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Não foi possível criar a tarefa.', { variant: 'error' });
+      showToast(err?.message || 'Erro ao atribuir tarefa.', { variant: 'error' });
     } finally {
-      setCreatingTask(false);
+      setAssignSaving(false);
     }
   }
 
@@ -224,8 +258,7 @@ export default function UserProfilePage() {
         <StateBlock
           variant="empty"
           title="Usuário não encontrado"
-          description="Esse perfil não está disponível no diretório carregado."
-          action={<Link to="/equipe" className={styles.inlineLink}>Voltar para Equipe</Link>}
+          action={<Link to="/equipe" className={styles.inlineLink}>Equipe</Link>}
         />
       </div>
     );
@@ -245,21 +278,35 @@ export default function UserProfilePage() {
               <span className={styles.roleBadge}>{roleLabel(profileUser.role)}</span>
             </div>
 
-            {profileUser.email ? (
-              <div className={styles.profileMeta}>
-                <span>{profileUser.email}</span>
-              </div>
-            ) : null}
+            <div className={styles.profileMeta}>
+              {profileUser.email ? <span>{profileUser.email}</span> : null}
+              {userSquads.length ? <span>{userSquads.map((squad) => squad.name).join(', ')}</span> : null}
+            </div>
           </div>
         </div>
 
-        <div className={styles.heroActions}>
-          {profileUser.email ? (
-            <a href={`mailto:${profileUser.email}`} className={styles.secondaryButton}>E-mail</a>
-          ) : null}
-          <button type="button" className={styles.primaryButton} onClick={() => setTaskModalOpen(true)}>
-            Atribuir tarefa
-          </button>
+        <button type="button" className={styles.primaryButton} onClick={() => setAssignOpen(true)}>
+          Atribuir tarefa
+        </button>
+
+        <div className={styles.heroStats}>
+          <div className={styles.heroStat}>
+            <span>Abertas</span>
+            <strong>{openTasksCount}</strong>
+          </div>
+          <div className={styles.heroStat}>
+            <span>Atrasadas</span>
+            <strong className={overdueTasksCount ? styles.critical : ''}>{overdueTasksCount}</strong>
+          </div>
+          <div className={styles.heroStat}>
+            <span>Concluídas</span>
+            <strong>{completedTasksCount}</strong>
+          </div>
+          <div className={styles.heroStat}>
+            <span>Conclusão</span>
+            <strong>{completionRate}%</strong>
+            <i><b style={{ width: `${completionRate}%` }} /></i>
+          </div>
         </div>
       </section>
 
@@ -269,14 +316,13 @@ export default function UserProfilePage() {
             <header className={styles.panelHeader}>
               <div className={styles.panelHeading}>
                 <h2>Tarefas</h2>
-                <p>{profileTasks.length} vinculadas</p>
+                <p>{profileTasks.length}</p>
               </div>
-
             </header>
 
             <div className={styles.taskTableHead}>
               <span>Nome</span>
-              <span>Projeto</span>
+              <span>Contexto</span>
               <span>Status</span>
               <span>Prazo</span>
             </div>
@@ -284,30 +330,22 @@ export default function UserProfilePage() {
             <div className={styles.taskList}>
               {tasksLoading ? (
                 <StateBlock variant="loading" compact title="Carregando tarefas" />
-              ) : visibleProfileTasks.length === 0 ? (
+              ) : orderedTasks.length === 0 ? (
                 <StateBlock variant="empty" compact title="Sem tarefas" />
               ) : (
-                groupedProfileTasks.map((section) => (
-                  <section key={section.key} className={styles.taskSection}>
-                    <header className={styles.taskSectionHeader}>
-                      <strong>{section.title}</strong>
-                      <span>{section.tasks.length}</span>
-                    </header>
-                    {section.tasks.map((task) => (
-                      <article
-                        key={task.id}
-                        className={styles.taskRow}
-                      >
-                        <span className={styles.checkCircle} aria-hidden="true" />
-                        <div className={styles.taskCopy}>
-                          <strong>{task.title}</strong>
-                        </div>
-                        <span className={styles.taskProject}>{task.projectName || task.clientName || 'Projeto'}</span>
-                        <span className={styles.taskTag}>{getTaskStatusLabel(task)}</span>
-                        <span className={styles.taskDue}>{formatDateLabel(task.dueDate)}</span>
-                      </article>
-                    ))}
-                  </section>
+                orderedTasks.map((task) => (
+                  <article key={task.id} className={styles.taskRow}>
+                    <span className={`${styles.checkCircle} ${getTaskStatus(task) === 'done' ? styles.checkCircleDone : ''}`} aria-hidden="true">
+                      {getTaskStatus(task) === 'done' ? '✓' : ''}
+                    </span>
+                    <div className={styles.taskCopy}>
+                      <strong>{task.title}</strong>
+                      {task.description ? <span>{task.description}</span> : null}
+                    </div>
+                    <span className={styles.taskProject}>{task.projectName || task.clientName || '—'}</span>
+                    <span className={`${styles.taskTag} ${styles[`taskTag_${getTaskStatus(task)}`] || ''}`.trim()}>{getTaskStatusLabel(task)}</span>
+                    <span className={styles.taskDue}>{formatDateLabel(task.dueDate)}</span>
+                  </article>
                 ))
               )}
             </div>
@@ -317,7 +355,7 @@ export default function UserProfilePage() {
             <header className={styles.panelHeader}>
               <div className={styles.panelHeading}>
                 <h2>Projetos</h2>
-                <p>{profileProjects.length} ativos</p>
+                <p>{profileProjects.length}</p>
               </div>
             </header>
 
@@ -328,22 +366,17 @@ export default function UserProfilePage() {
                 <span className={styles.emptyText}>Sem projetos vinculados.</span>
               ) : (
                 profileProjects.map((project) => (
-                  <article
-                    key={project.id}
-                    className={styles.projectRow}
-                  >
-                    <span className={styles.projectIcon}><ProjectBoardIcon size={18} /></span>
+                  <article key={project.id} className={styles.projectRow}>
+                    <span className={styles.projectIcon}><ProjectBoardIcon size={16} /></span>
                     <div className={styles.projectCopy}>
                       <strong>{project.name}</strong>
-                      <span>{project.clientName || project.squadName || 'Projeto vinculado'}</span>
+                      <span>{project.clientName || project.squadName || '—'}</span>
                     </div>
                     <div className={styles.projectMeta}>
                       <span className={styles.projectProgress}>
                         {project.taskCount ? Math.round(((project.doneCount || 0) / project.taskCount) * 100) : 0}%
                       </span>
-                      <span className={styles.projectArrow}>
-                        {project.doneCount}/{project.taskCount}
-                      </span>
+                      <span className={styles.projectArrow}>{project.doneCount || 0}/{project.taskCount || 0}</span>
                     </div>
                   </article>
                 ))
@@ -357,92 +390,84 @@ export default function UserProfilePage() {
             <header className={styles.panelHeader}>
               <div className={styles.panelHeading}>
                 <h2>Atuação</h2>
-                <p>Resumo operacional</p>
+                <p>Resumo</p>
               </div>
             </header>
 
             <div className={styles.infoList}>
               <div className={styles.infoRow}>
                 <span>Carteira GDV</span>
-                <strong>{gdvClients.length} clientes</strong>
+                <strong>{gdvClients.length}</strong>
               </div>
               <div className={styles.infoRow}>
                 <span>Carteira gestor</span>
-                <strong>{gestorClients.length} clientes</strong>
+                <strong>{gestorClients.length}</strong>
               </div>
               <div className={styles.infoRow}>
                 <span>Squads</span>
-                <strong>{userSquads.length ? userSquads.map((squad) => squad.name).join(', ') : 'Sem vínculo'}</strong>
+                <strong>{userSquads.length ? userSquads.map((squad) => squad.name).join(', ') : '—'}</strong>
               </div>
               <div className={styles.infoRow}>
                 <span>Squads próprios</span>
-                <strong>{ownedSquads.length ? ownedSquads.map((squad) => squad.name).join(', ') : 'Nenhum'}</strong>
+                <strong>{ownedSquads.length ? ownedSquads.map((squad) => squad.name).join(', ') : '—'}</strong>
               </div>
               <div className={styles.infoRow}>
                 <span>GDVs próprios</span>
-                <strong>{ownedGdvs.length ? ownedGdvs.map((gdv) => gdv.name).join(', ') : 'Nenhum'}</strong>
+                <strong>{ownedGdvs.length ? ownedGdvs.map((gdv) => gdv.name).join(', ') : '—'}</strong>
               </div>
             </div>
           </section>
         </aside>
       </div>
 
-      {taskModalOpen ? (
-        <div className={styles.modalOverlay} onMouseDown={() => setTaskModalOpen(false)}>
-          <section
-            className={styles.taskModal}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Nova tarefa"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
+      {assignOpen ? (
+        <div className={styles.modalOverlay} onClick={() => setAssignOpen(false)}>
+          <form className={styles.taskModal} onSubmit={handleAssignTask} onClick={(event) => event.stopPropagation()}>
             <header className={styles.modalHeader}>
               <div>
-                <span className={styles.modalKicker}>Tarefa</span>
                 <h2>Nova tarefa</h2>
+                <span>{profileUser.name}</span>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setTaskModalOpen(false)} aria-label="Fechar">
-                <CloseIcon size={18} />
+              <button type="button" className={styles.iconButton} onClick={() => setAssignOpen(false)} aria-label="Fechar">
+                <CloseIcon size={16} />
               </button>
             </header>
 
-            <form className={styles.taskForm} onSubmit={handleCreateTask}>
-              <input
-                value={newTask.title}
-                onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
-                placeholder="Nome da tarefa"
-                aria-label="Nome da tarefa"
-                autoFocus
-              />
-              <textarea
-                value={newTask.description}
-                onChange={(event) => setNewTask((prev) => ({ ...prev, description: event.target.value }))}
-                placeholder="Descrição"
-                aria-label="Descrição"
-                rows={5}
-              />
-              <div className={styles.assignmentRow}>
-                <div className={styles.assigneeChip}>
-                  <span className={styles.miniAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileUser.name)}</span>
-                  <span>{profileUser.name}</span>
-                </div>
-                <DateField
-                  value={newTask.dueDate}
-                  onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))}
-                  placeholder="Prazo"
-                  ariaLabel="Prazo"
-                />
+            <input
+              value={newTask.title}
+              onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
+              placeholder="Tarefa"
+              aria-label="Tarefa"
+            />
+            <textarea
+              value={newTask.description}
+              onChange={(event) => setNewTask((prev) => ({ ...prev, description: event.target.value }))}
+              placeholder="Descrição"
+              aria-label="Descrição"
+              rows={5}
+            />
+            <div className={styles.modalGrid}>
+              <div>
+                <span>Responsável</span>
+                <strong>{profileUser.name}</strong>
               </div>
-              <footer className={styles.modalFooter}>
-                <button type="button" className={styles.secondaryButton} onClick={() => setTaskModalOpen(false)}>Cancelar</button>
-                <button type="submit" className={styles.primaryButton} disabled={creatingTask || !newTask.title.trim()}>Criar tarefa</button>
-              </footer>
-            </form>
-          </section>
+              <DateField
+                value={newTask.dueDate}
+                onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))}
+                placeholder="Prazo"
+                ariaLabel="Prazo"
+              />
+            </div>
+
+            <footer className={styles.modalFooter}>
+              <button type="submit" disabled={assignSaving || !newTask.title.trim()}>
+                <PlusIcon size={15} />
+                Criar
+              </button>
+            </footer>
+          </form>
         </div>
       ) : null}
-
     </div>
   );
 }
-

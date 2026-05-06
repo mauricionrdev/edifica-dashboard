@@ -14,10 +14,9 @@ import {
   saveUserAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
-import StateBlock from '../components/ui/StateBlock.jsx';
 import DateField from '../components/ui/DateField.jsx';
-import { CloseIcon, SettingsIcon } from '../components/ui/Icons.jsx';
-import UserPicker from '../components/users/UserPicker.jsx';
+import StateBlock from '../components/ui/StateBlock.jsx';
+import { CloseIcon, PlusIcon, SettingsIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
 
 const AVATAR_OPTIONS = [
@@ -49,7 +48,6 @@ function initials(name) {
     .map((part) => part[0]?.toUpperCase() || '')
     .join('') || '?';
 }
-
 
 function formatDueLabel(value) {
   if (!value) return 'Sem prazo';
@@ -132,15 +130,15 @@ function getTaskSections(tasks, tab) {
   });
 
   return [
-    { key: 'today', title: 'A fazer hoje', tasks: today },
-    { key: 'next', title: 'Próxima semana', tasks: next },
-    { key: 'later', title: 'Mais tarde', tasks: later },
+    { key: 'today', title: 'Hoje', tasks: today },
+    { key: 'next', title: 'Semana', tasks: next },
+    { key: 'later', title: 'Depois', tasks: later },
     { key: 'no-date', title: 'Sem prazo', tasks: withoutDate },
   ].filter((section) => section.tasks.length > 0);
 }
 
 export default function ProfilePage() {
-  const { setPanelHeader, squads = [], userDirectory = [] } = useOutletContext();
+  const { setPanelHeader, squads = [] } = useOutletContext();
   const { user, reloadUser } = useAuth();
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
@@ -162,16 +160,13 @@ export default function ProfilePage() {
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState('');
   const [creatingTask, setCreatingTask] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', assigneeUserId: user?.id || '', dueDate: '' });
+  const [newTask, setNewTask] = useState({ title: '', dueDate: '' });
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
   const [collapsedTaskSections, setCollapsedTaskSections] = useState({});
+  const [activeTaskId, setActiveTaskId] = useState('');
 
   useEffect(() => {
-    setPanelHeader({
-      title: 'Perfil',
-      description: null,
-      actions: null,
-    });
+    setPanelHeader({ title: 'Perfil', description: null, actions: null });
   }, [setPanelHeader]);
 
   useEffect(() => {
@@ -188,6 +183,11 @@ export default function ProfilePage() {
     return subscribeAvatarChange(() => setAvatarUrl(getUserAvatar(user)));
   }, [user]);
 
+  async function reloadTasks() {
+    const res = await listMyProjectTasks();
+    setTasks(Array.isArray(res?.tasks) ? res.tasks : []);
+  }
+
   useEffect(() => {
     let cancelled = false;
     setTasksLoading(true);
@@ -198,7 +198,7 @@ export default function ProfilePage() {
         if (!cancelled) setTasks(Array.isArray(res?.tasks) ? res.tasks : []);
       })
       .catch((err) => {
-        if (!cancelled) setTasksError(err?.message || 'Não foi possível carregar suas tarefas.');
+        if (!cancelled) setTasksError(err?.message || 'Erro');
       })
       .finally(() => {
         if (!cancelled) setTasksLoading(false);
@@ -208,11 +208,6 @@ export default function ProfilePage() {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    setNewTask((prev) => ({ ...prev, assigneeUserId: prev.assigneeUserId || user?.id || '' }));
-  }, [user?.id]);
-
 
   const squadNames = useMemo(() => {
     const map = new Map((squads || []).map((item) => [item.id, item.name]));
@@ -228,7 +223,9 @@ export default function ProfilePage() {
 
   const visibleTasks = useMemo(() => getVisibleTasks(tasks, taskTab), [taskTab, tasks]);
   const taskSections = useMemo(() => getTaskSections(tasks, taskTab), [taskTab, tasks]);
+  const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
   const canCreateTasks = hasPermission(user, 'tasks.create');
+  const completionRate = tasks.length ? Math.round((taskGroups.done.length / tasks.length) * 100) : 0;
 
   useEffect(() => {
     setCollapsedTaskSections((current) => {
@@ -245,9 +242,9 @@ export default function ProfilePage() {
       setSavingProfile(true);
       await updateProfile(profileForm);
       await reloadUser();
-      showToast('Perfil atualizado com sucesso.', { variant: 'success' });
+      showToast('Perfil atualizado.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Não foi possível salvar o perfil.', { variant: 'error' });
+      showToast(err?.message || 'Erro ao salvar.', { variant: 'error' });
     } finally {
       setSavingProfile(false);
     }
@@ -258,9 +255,9 @@ export default function ProfilePage() {
       setSavingPassword(true);
       await changePassword(passwordForm);
       setPasswordForm({ currentPassword: '', newPassword: '' });
-      showToast('Senha atualizada com sucesso.', { variant: 'success' });
+      showToast('Senha atualizada.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Não foi possível alterar a senha.', { variant: 'error' });
+      showToast(err?.message || 'Erro ao alterar senha.', { variant: 'error' });
     } finally {
       setSavingPassword(false);
     }
@@ -276,11 +273,11 @@ export default function ProfilePage() {
       await updateProfile({ avatarUrl: dataUrl });
       await reloadUser();
       const saved = saveUserAvatar(user, dataUrl) || true;
-      if (!saved) throw new Error('Não foi possível salvar a foto.');
+      if (!saved) throw new Error('Erro');
       setAvatarUrl(dataUrl);
-      showToast('Foto do perfil atualizada.', { variant: 'success' });
+      showToast('Foto atualizada.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Não foi possível usar esta imagem.', { variant: 'error' });
+      showToast(err?.message || 'Erro ao salvar foto.', { variant: 'error' });
     }
   }
 
@@ -290,9 +287,9 @@ export default function ProfilePage() {
       await reloadUser();
       removeUserAvatar(user);
       setAvatarUrl('');
-      showToast('Foto do perfil removida.', { variant: 'success' });
+      showToast('Foto removida.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Não foi possível remover a foto.', { variant: 'error' });
+      showToast(err?.message || 'Erro ao remover foto.', { variant: 'error' });
     }
   }
 
@@ -301,26 +298,14 @@ export default function ProfilePage() {
       setTaskUpdatingId(task.id);
       const nextDone = getTaskStatus(task) !== 'done';
       const nextStatus = nextDone ? 'done' : 'todo';
-
       await updateProjectTask(task.id, { done: nextDone });
-
-      setTasks((prev) =>
-        prev.map((item) =>
-          item.id === task.id ? { ...item, done: nextDone, status: nextStatus } : item
-        )
-      );
-
+      setTasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, done: nextDone, status: nextStatus } : item)));
       showToast(nextDone ? 'Tarefa concluída.' : 'Tarefa reaberta.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Não foi possível atualizar a tarefa.', { variant: 'error' });
+      showToast(err?.message || 'Erro ao atualizar tarefa.', { variant: 'error' });
     } finally {
       setTaskUpdatingId('');
     }
-  }
-
-  async function reloadTasks() {
-    const res = await listMyProjectTasks();
-    setTasks(Array.isArray(res?.tasks) ? res.tasks : []);
   }
 
   async function handleCreateTask(event) {
@@ -332,15 +317,15 @@ export default function ProfilePage() {
       setCreatingTask(true);
       await createTask({
         title,
-        assigneeUserId: newTask.assigneeUserId || user?.id || '',
+        assigneeUserId: user?.id || '',
         dueDate: newTask.dueDate || '',
         source: 'personal',
       });
       await reloadTasks();
-      setNewTask((prev) => ({ ...prev, title: '', dueDate: '' }));
+      setNewTask({ title: '', dueDate: '' });
       showToast('Tarefa criada.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Não foi possível criar a tarefa.', { variant: 'error' });
+      showToast(err?.message || 'Erro ao criar tarefa.', { variant: 'error' });
     } finally {
       setCreatingTask(false);
     }
@@ -357,61 +342,72 @@ export default function ProfilePage() {
           <div className={styles.heroCopy}>
             <div className={styles.heroHeading}>
               <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
-              <span className={styles.boardMeta}>{roleLabel(user?.role)}</span>
+              <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
             </div>
-            {user?.email ? (
-              <div className={styles.heroMeta}>
-                <span>{user.email}</span>
-              </div>
-            ) : null}
+            <div className={styles.heroMeta}>
+              {user?.email ? <span>{user.email}</span> : null}
+              {squadNames.length ? <span>{squadNames.join(', ')}</span> : null}
+            </div>
           </div>
         </div>
 
         <button
           type="button"
-          className={styles.settingsButton}
+          className={styles.iconButton}
           onClick={() => {
             setSettingsTab('profile');
             setSettingsOpen(true);
           }}
-          aria-label="Abrir configurações do perfil"
+          aria-label="Configurações"
           title="Configurações"
         >
           <SettingsIcon size={16} />
         </button>
+
+        <div className={styles.heroStats}>
+          <div className={styles.heroStat}>
+            <span>Abertas</span>
+            <strong>{taskGroups.upcoming.length}</strong>
+          </div>
+          <div className={styles.heroStat}>
+            <span>Atrasadas</span>
+            <strong className={taskGroups.overdue.length ? styles.critical : ''}>{taskGroups.overdue.length}</strong>
+          </div>
+          <div className={styles.heroStat}>
+            <span>Concluídas</span>
+            <strong>{taskGroups.done.length}</strong>
+          </div>
+          <div className={styles.heroStat}>
+            <span>Conclusão</span>
+            <strong>{completionRate}%</strong>
+            <i><b style={{ width: `${completionRate}%` }} /></i>
+          </div>
+        </div>
       </section>
 
       <section className={styles.tasksBoard}>
         <header className={styles.boardHeader}>
-          <div className={styles.boardIdentity}>
-            <div className={styles.boardTitle}>
-              <div className={styles.boardHeadingRow}>
-                <h2>Minhas tarefas</h2>
-                <span className={styles.boardMeta}>{visibleTasks.length}</span>
-              </div>
-              <div className={styles.taskTabs} role="tablist" aria-label="Filtros de tarefas">
-                {TASK_TABS.map((tab) => (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    role="tab"
-                    aria-selected={taskTab === tab.value}
-                    className={`${styles.taskTab} ${taskTab === tab.value ? styles.taskTabActive : ''}`.trim()}
-                    onClick={() => setTaskTab(tab.value)}
-                  >
-                    {tab.label}
-                    <span>{taskGroups[tab.value]?.length || 0}</span>
-                  </button>
-                ))}
-              </div>
+          <div className={styles.boardTitle}>
+            <div className={styles.boardHeadingRow}>
+              <h2>Minhas tarefas</h2>
+              <span>{visibleTasks.length}</span>
+            </div>
+            <div className={styles.taskTabs} role="tablist" aria-label="Tarefas">
+              {TASK_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={taskTab === tab.value}
+                  className={`${styles.taskTab} ${taskTab === tab.value ? styles.taskTabActive : ''}`.trim()}
+                  onClick={() => setTaskTab(tab.value)}
+                >
+                  {tab.label}
+                  <span>{taskGroups[tab.value]?.length || 0}</span>
+                </button>
+              ))}
             </div>
           </div>
-
-          {canCreateTasks ? (
-            <button type="button" className={styles.addTaskButton} onClick={() => setTaskTab('upcoming')}>
-              Nova tarefa
-            </button>
-          ) : null}
         </header>
 
         <div className={styles.tasksBody}>
@@ -420,23 +416,18 @@ export default function ProfilePage() {
               <input
                 value={newTask.title}
                 onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
-                placeholder="Adicionar tarefa"
-                aria-label="Nova tarefa"
-              />
-              <UserPicker
-                users={Array.isArray(userDirectory) ? userDirectory : []}
-                value={newTask.assigneeUserId}
-                onChange={(userId) => setNewTask((prev) => ({ ...prev, assigneeUserId: userId || user?.id || '' }))}
-                placeholder="Responsável"
+                placeholder="Tarefa"
+                aria-label="Tarefa"
               />
               <DateField
                 value={newTask.dueDate}
                 onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))}
                 placeholder="Prazo"
                 ariaLabel="Prazo"
+                className={styles.taskDateField}
               />
-              <button type="submit" disabled={creatingTask || !newTask.title.trim()}>
-                Criar
+              <button type="submit" disabled={creatingTask || !newTask.title.trim()} aria-label="Criar" title="Criar">
+                <PlusIcon size={15} />
               </button>
             </form>
           ) : null}
@@ -452,7 +443,7 @@ export default function ProfilePage() {
               <div className={styles.taskTableHead}>
                 <span>Nome</span>
                 <span>Prazo</span>
-                <span>Projeto</span>
+                <span>Contexto</span>
               </div>
 
               {taskSections.map((section) => (
@@ -460,20 +451,10 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     className={styles.taskSectionTitle}
-                    onClick={() =>
-                      setCollapsedTaskSections((current) => ({
-                        ...current,
-                        [section.key]: !current[section.key],
-                      }))
-                    }
+                    onClick={() => setCollapsedTaskSections((current) => ({ ...current, [section.key]: !current[section.key] }))}
                     aria-expanded={!collapsedTaskSections[section.key]}
                   >
-                    <span
-                      aria-hidden="true"
-                      className={`${styles.taskSectionArrow} ${collapsedTaskSections[section.key] ? styles.taskSectionArrowCollapsed : ''}`.trim()}
-                    >
-                      ▾
-                    </span>
+                    <span aria-hidden="true" className={`${styles.taskSectionArrow} ${collapsedTaskSections[section.key] ? styles.taskSectionArrowCollapsed : ''}`.trim()}>▾</span>
                     <strong>{section.title}</strong>
                     <span>{section.tasks.length}</span>
                   </button>
@@ -482,11 +463,15 @@ export default function ProfilePage() {
                     <article
                       key={task.id}
                       className={`${styles.taskRow} ${getTaskStatus(task) === 'done' ? styles.taskRowDone : ''}`.trim()}
+                      onClick={() => setActiveTaskId(task.id)}
                     >
                       <button
                         type="button"
                         className={`${styles.taskCheck} ${getTaskStatus(task) === 'done' ? styles.taskCheckDone : ''}`.trim()}
-                        onClick={() => handleToggleTask(task)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleToggleTask(task);
+                        }}
                         disabled={taskUpdatingId === task.id}
                         aria-label={getTaskStatus(task) === 'done' ? 'Reabrir tarefa' : 'Concluir tarefa'}
                       >
@@ -495,12 +480,9 @@ export default function ProfilePage() {
 
                       <div className={styles.taskNameWrap}>
                         <strong className={styles.taskName}>{task.title}</strong>
-                        {task.clientName && !task.projectName ? (
-                          <span className={styles.taskContext}>{task.clientName}</span>
-                        ) : null}
                       </div>
                       <span className={`${styles.taskDue} ${styles[`taskDue_${getTaskStatus(task)}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
-                      <span className={styles.taskProject}>{task.projectName || task.clientName || 'Projeto'}</span>
+                      <span className={styles.taskProject}>{task.projectName || task.clientName || '—'}</span>
                     </article>
                   )) : null}
                 </section>
@@ -510,25 +492,48 @@ export default function ProfilePage() {
         </div>
       </section>
 
+      {activeTask ? (
+        <aside className={styles.taskDrawer} aria-label="Tarefa">
+          <div className={styles.drawerPanel}>
+            <header className={styles.drawerHeader}>
+              <button
+                type="button"
+                className={`${styles.taskCheck} ${getTaskStatus(activeTask) === 'done' ? styles.taskCheckDone : ''}`.trim()}
+                onClick={() => handleToggleTask(activeTask)}
+                disabled={taskUpdatingId === activeTask.id}
+                aria-label={getTaskStatus(activeTask) === 'done' ? 'Reabrir tarefa' : 'Concluir tarefa'}
+              >
+                {getTaskStatus(activeTask) === 'done' ? '✓' : ''}
+              </button>
+              <button type="button" className={styles.iconButton} onClick={() => setActiveTaskId('')} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+            <h3>{activeTask.title}</h3>
+            <div className={styles.drawerGrid}>
+              <span>Status</span>
+              <strong>{getTaskStatus(activeTask) === 'done' ? 'Concluída' : getTaskStatus(activeTask) === 'overdue' ? 'Atrasada' : 'Aberta'}</strong>
+              <span>Prazo</span>
+              <strong>{formatDueLabel(activeTask.dueDate)}</strong>
+              <span>Contexto</span>
+              <strong>{activeTask.projectName || activeTask.clientName || '—'}</strong>
+            </div>
+            {activeTask.description ? (
+              <div className={styles.drawerText}>{activeTask.description}</div>
+            ) : null}
+          </div>
+        </aside>
+      ) : null}
+
       {settingsOpen ? (
         <div className={styles.settingsOverlay} onClick={() => setSettingsOpen(false)}>
-          <section
-            className={styles.settingsModal}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Configurações do perfil"
-            onClick={(event) => event.stopPropagation()}
-          >
+          <section className={styles.settingsModal} role="dialog" aria-modal="true" aria-label="Configurações" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Configurações</h2>
+                <span>{profileForm.name || user?.name}</span>
               </div>
-              <button
-                type="button"
-                className={styles.closeButton}
-                onClick={() => setSettingsOpen(false)}
-                aria-label="Fechar configurações"
-              >
+              <button type="button" className={styles.iconButton} onClick={() => setSettingsOpen(false)} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
@@ -546,168 +551,46 @@ export default function ProfilePage() {
               ))}
             </div>
 
-            <div className={styles.settingsBody}>
-              {settingsTab === 'profile' ? (
-                <div className={styles.settingsSection}>
-                  <div className={styles.photoBlock}>
-                    <span className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
-                      {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileForm.name || user?.name)}
-                    </span>
-
-                    <div className={styles.photoInfo}>
-                      <div className={styles.photoActions}>
-                        <button type="button" className={styles.linkButton} onClick={() => avatarInputRef.current?.click()}>
-                          Enviar nova foto
-                        </button>
-                        <span>·</span>
-                        <button type="button" className={styles.linkButton} onClick={handleRemoveAvatar} disabled={!avatarUrl}>
-                          Remover foto
-                        </button>
-                      </div>
-                      
-                    </div>
-                    <input
-                      ref={avatarInputRef}
-                      className={styles.fileInput}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarFile}
-                    />
-                  </div>
-
-                  <div className={styles.formGrid}>
-                    <label className={styles.field}>
-                      <span>Nome completo</span>
-                      <input
-                        value={profileForm.name}
-                        onChange={(event) =>
-                          setProfileForm((prev) => ({ ...prev, name: event.target.value }))
-                        }
-                      />
-                    </label>
-
-                    <label className={styles.field}>
-                      <span>Telefone</span>
-                      <input
-                        value={profileForm.phone}
-                        onChange={(event) =>
-                          setProfileForm((prev) => ({ ...prev, phone: event.target.value }))
-                        }
-                        placeholder="Opcional"
-                      />
-                    </label>
-
-                    <label className={styles.field}>
-                      <span>Link personalizado</span>
-                      <div className={styles.slugField}>
-                        <small>/perfil/</small>
-                        <input
-                          value={profileForm.customSlug}
-                          onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))}
-                          placeholder="ex: mauricio-nunes"
-                          maxLength={80}
-                        />
-                      </div>
-                    </label>
-
-                    <label className={styles.field}>
-                      <span>Cargo</span>
-                      <input value={roleLabel(user?.role)} disabled />
-                    </label>
-
-                    <label className={styles.field}>
-                      <span>E-mail</span>
-                      <input value={user?.email || ''} disabled />
-                    </label>
-
-                    <label className={styles.field}>
-                      <span>Equipe ou departamento</span>
-                      <input value={squadNames.join(', ') || 'Sem squads'} disabled />
-                    </label>
-
-                    <label className={styles.field}>
-                      <span>Cor do avatar</span>
-                      <div className={styles.avatarChoices}>
-                        {AVATAR_OPTIONS.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            className={`${styles.avatarChoice} ${styles[`avatar_${option.value}`]} ${
-                              profileForm.avatarColor === option.value ? styles.avatarChoiceActive : ''
-                            }`.trim()}
-                            onClick={() => setProfileForm((prev) => ({ ...prev, avatarColor: option.value }))}
-                            aria-label={`Usar avatar ${option.label}`}
-                            title={option.label}
-                          >
-                            {initials(profileForm.name || user?.name)}
-                          </button>
-                        ))}
-                      </div>
-                    </label>
-                  </div>
-
-                  <div className={styles.modalFooter}>
-                    <button
-                      type="button"
-                      className={styles.primaryButton}
-                      onClick={handleSaveProfile}
-                      disabled={savingProfile}
-                    >
-                      {savingProfile ? 'Salvando' : 'Salvar alterações'}
-                    </button>
+            {settingsTab === 'profile' ? (
+              <div className={styles.settingsContent}>
+                <div className={styles.photoRow}>
+                  <span className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
+                    {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileForm.name || user?.name)}
+                  </span>
+                  <div className={styles.photoActions}>
+                    <button type="button" onClick={() => avatarInputRef.current?.click()}>Alterar foto</button>
+                    {avatarUrl ? <button type="button" onClick={handleRemoveAvatar}>Remover</button> : null}
+                    <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFile} hidden />
                   </div>
                 </div>
-              ) : null}
 
-              {settingsTab === 'account' ? (
-                <div className={styles.settingsSection}>
-                  <div className={styles.sectionCopy}>
-                    <h3>Conta e segurança</h3>
-                    
-                  </div>
-
-                  <div className={styles.formGrid}>
-                    <label className={styles.field}>
-                      <span>Senha atual</span>
-                      <input
-                        type="password"
-                        value={passwordForm.currentPassword}
-                        onChange={(event) =>
-                          setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))
-                        }
-                      />
-                    </label>
-
-                    <label className={styles.field}>
-                      <span>Nova senha</span>
-                      <input
-                        type="password"
-                        value={passwordForm.newPassword}
-                        onChange={(event) =>
-                          setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))
-                        }
-                      />
-                    </label>
-                  </div>
-
-                  <div className={styles.modalFooter}>
-                    <button
-                      type="button"
-                      className={styles.primaryButton}
-                      onClick={handleChangePassword}
-                      disabled={savingPassword || !passwordForm.currentPassword || !passwordForm.newPassword}
-                    >
-                      {savingPassword ? 'Atualizando' : 'Atualizar senha'}
-                    </button>
-                  </div>
+                <div className={styles.formGrid}>
+                  <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" />
+                  <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" />
+                  <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" />
+                  <select value={profileForm.avatarColor} onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}>
+                    {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </select>
                 </div>
-              ) : null}
 
-            </div>
+                <footer className={styles.settingsFooter}>
+                  <button type="button" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
+                </footer>
+              </div>
+            ) : (
+              <div className={styles.settingsContent}>
+                <div className={styles.formGrid}>
+                  <input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))} placeholder="Senha atual" />
+                  <input type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))} placeholder="Nova senha" />
+                </div>
+                <footer className={styles.settingsFooter}>
+                  <button type="button" onClick={handleChangePassword} disabled={savingPassword}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
+                </footer>
+              </div>
+            )}
           </section>
         </div>
       ) : null}
     </div>
   );
 }
-
