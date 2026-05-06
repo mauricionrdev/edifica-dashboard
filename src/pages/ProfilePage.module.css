@@ -1843,3 +1843,56 @@
     grid-template-columns: 1fr;
   }
 }
+
+.completionModal {
+  width: min(540px, calc(100vw - 34px));
+}
+
+.completionSummary {
+  min-height: 52px;
+  padding: 12px 13px;
+  border: 1px solid var(--profile-line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
+  display: grid;
+  gap: 5px;
+}
+
+.completionSummary span {
+  color: var(--profile-faint);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.completionSummary strong {
+  min-width: 0;
+  color: var(--profile-soft);
+  font-size: 13px;
+  font-weight: 610;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.completionTextarea {
+  width: 100%;
+  min-height: 118px;
+  resize: vertical;
+  border: 1px solid var(--profile-line);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.014);
+  color: var(--profile-text);
+  padding: 12px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  outline: none;
+}
+
+.completionTextarea:focus {
+  border-color: var(--profile-line-strong);
+  background: rgba(255, 255, 255, 0.026);
+}

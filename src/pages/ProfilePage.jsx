@@ -481,6 +481,9 @@ export default function ProfilePage() {
   const [handoffOpen, setHandoffOpen] = useState(false);
   const [handoffForm, setHandoffForm] = useState(() => emptyHandoffForm(user?.id || ''));
   const [handoffSaving, setHandoffSaving] = useState(false);
+  const [completionTarget, setCompletionTarget] = useState(null);
+  const [completionDraft, setCompletionDraft] = useState('');
+  const [completionSaving, setCompletionSaving] = useState(false);
 
   useEffect(() => {
     setPanelHeader({ title: 'Perfil', description: null, actions: null });
@@ -551,6 +554,7 @@ export default function ProfilePage() {
       setDemandModalOpen(false);
       setClientSearchOpen(false);
       setHandoffOpen(false);
+      setCompletionTarget(null);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -684,17 +688,59 @@ export default function ProfilePage() {
   }
 
   async function handleToggleTask(task) {
+    if (!task?.id) return;
+
+    if (!isDone(task) && !task.parentTaskId) {
+      setCompletionTarget(task);
+      setCompletionDraft('');
+      return;
+    }
+
     try {
       setTaskUpdatingId(task.id);
       const nextDone = !isDone(task);
       const nextStatus = nextDone ? 'done' : 'todo';
-      await updateProjectTask(task.id, { done: nextDone });
+      await updateProjectTask(task.id, { done: nextDone, status: nextStatus });
       setTasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, done: nextDone, status: nextStatus } : item)));
       showToast(nextDone ? 'Tarefa concluída.' : 'Tarefa reaberta.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao atualizar tarefa.', { variant: 'error' });
     } finally {
       setTaskUpdatingId('');
+    }
+  }
+
+  async function handleCompleteWithRecord(event) {
+    event.preventDefault();
+    if (!completionTarget?.id) return;
+
+    const record = completionDraft.trim();
+    const kind = getTaskKind(completionTarget);
+    const body = [
+      kind === 'briefing' ? 'Implementação concluída.' : 'Demanda concluída.',
+      record,
+    ].filter(Boolean).join('\n\n');
+
+    try {
+      setCompletionSaving(true);
+      const [taskRes, commentRes] = await Promise.allSettled([
+        updateProjectTask(completionTarget.id, { done: true, status: 'done' }),
+        body ? createTaskComment(completionTarget.id, { body }) : Promise.resolve(null),
+      ]);
+
+      if (taskRes.status === 'rejected') throw taskRes.reason;
+      const updated = taskRes.value?.task || { ...completionTarget, done: true, status: 'done' };
+      setTasks((prev) => prev.map((item) => (item.id === completionTarget.id ? { ...item, ...updated, done: true, status: 'done' } : item)));
+      if (activeTaskId === completionTarget.id && commentRes.status === 'fulfilled' && commentRes.value?.comment) {
+        setTaskComments((prev) => [...prev, commentRes.value.comment]);
+      }
+      setCompletionTarget(null);
+      setCompletionDraft('');
+      showToast('Demanda concluída.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao concluir demanda.', { variant: 'error' });
+    } finally {
+      setCompletionSaving(false);
     }
   }
 
@@ -784,6 +830,7 @@ export default function ProfilePage() {
         setTaskComments((prev) => [...prev, commentRes.value.comment]);
       }
       setHandoffOpen(false);
+      setCompletionTarget(null);
       showToast('Handoff registrado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao registrar handoff.', { variant: 'error' });
@@ -1406,6 +1453,39 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
+
+
+      {completionTarget ? (
+        <div className={styles.settingsOverlay} onClick={() => setCompletionTarget(null)}>
+          <form className={`${styles.settingsModal} ${styles.completionModal}`} onSubmit={handleCompleteWithRecord} role="dialog" aria-modal="true" aria-label="Concluir demanda" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.settingsHeader}>
+              <div>
+                <h2>Concluir demanda</h2>
+                <span>{completionTarget.title}</span>
+              </div>
+              <button type="button" className={styles.iconButton} onClick={() => setCompletionTarget(null)} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+            <div className={styles.settingsContent}>
+              <div className={styles.completionSummary}>
+                <span>{kindLabel(getTaskKind(completionTarget))}</span>
+                <strong>{completionTarget.clientName || completionTarget.projectName || '—'}</strong>
+              </div>
+              <textarea
+                className={styles.completionTextarea}
+                value={completionDraft}
+                onChange={(event) => setCompletionDraft(event.target.value)}
+                placeholder="Registro"
+              />
+            </div>
+            <footer className={styles.settingsFooter}>
+              <button type="button" onClick={() => setCompletionTarget(null)}>Cancelar</button>
+              <button type="submit" disabled={completionSaving}>{completionSaving ? 'Concluindo' : 'Concluir'}</button>
+            </footer>
+          </form>
+        </div>
+      ) : null}
 
       {handoffOpen && activeTask ? (
         <div className={styles.settingsOverlay} onClick={() => setHandoffOpen(false)}>
