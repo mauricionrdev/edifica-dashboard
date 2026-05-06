@@ -15,6 +15,7 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import DateField from '../components/ui/DateField.jsx';
+import Select from '../components/ui/Select.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { CloseIcon, PlusIcon, SettingsIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
@@ -509,18 +510,20 @@ export default function ProfilePage() {
                 <CloseIcon size={16} />
               </button>
             </header>
-            <h3>{activeTask.title}</h3>
-            <div className={styles.drawerGrid}>
-              <span>Status</span>
-              <strong>{getTaskStatus(activeTask) === 'done' ? 'Concluída' : getTaskStatus(activeTask) === 'overdue' ? 'Atrasada' : 'Aberta'}</strong>
-              <span>Prazo</span>
-              <strong>{formatDueLabel(activeTask.dueDate)}</strong>
-              <span>Contexto</span>
-              <strong>{activeTask.projectName || activeTask.clientName || '—'}</strong>
+            <div className={styles.drawerContent}>
+              <h3>{activeTask.title}</h3>
+              <div className={styles.drawerGrid}>
+                <span>Status</span>
+                <strong>{getTaskStatus(activeTask) === 'done' ? 'Concluída' : getTaskStatus(activeTask) === 'overdue' ? 'Atrasada' : 'Aberta'}</strong>
+                <span>Prazo</span>
+                <strong>{formatDueLabel(activeTask.dueDate)}</strong>
+                <span>Contexto</span>
+                <strong>{activeTask.projectName || activeTask.clientName || '—'}</strong>
+              </div>
+              {activeTask.description ? (
+                <div className={styles.drawerText}>{activeTask.description}</div>
+              ) : null}
             </div>
-            {activeTask.description ? (
-              <div className={styles.drawerText}>{activeTask.description}</div>
-            ) : null}
           </div>
         </aside>
       ) : null}
@@ -568,9 +571,14 @@ export default function ProfilePage() {
                   <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" />
                   <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" />
                   <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" />
-                  <select value={profileForm.avatarColor} onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}>
+                  <Select
+                    value={profileForm.avatarColor}
+                    onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
+                    aria-label="Cor"
+                    className={styles.formSelect}
+                  >
                     {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </select>
+                  </Select>
                 </div>
 
                 <footer className={styles.settingsFooter}>

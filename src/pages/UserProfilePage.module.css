@@ -587,3 +587,119 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* public profile polish v2 */
+.hero {
+  padding: 14px 14px 12px;
+  gap: 12px 16px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.024), rgba(255,255,255,0.014));
+}
+
+.hero::before { opacity: 0.55; }
+.avatar { width: 52px; height: 52px; }
+
+.nameRow h1 {
+  font-size: clamp(21px, 1.8vw, 25px);
+  letter-spacing: -0.045em;
+}
+
+.primaryButton {
+  min-height: 32px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.026);
+}
+
+.heroStats {
+  padding-top: 12px;
+  gap: 0;
+}
+
+.heroStat {
+  padding: 0 18px 0 0;
+  border-right: 1px solid var(--line-subtle);
+}
+
+.heroStat:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.panel {
+  border-radius: 14px;
+  background: rgba(255,255,255,0.016);
+}
+
+.panelHeader { min-height: 50px; padding: 10px 14px; }
+.taskTableHead { min-height: 30px; }
+.taskRow { min-height: 42px; }
+.projectRow { min-height: 50px; }
+.infoRow { min-height: 38px; }
+
+.modalOverlay {
+  z-index: 2400;
+  padding: calc(var(--app-frame-padding, 8px) + 49px + 58px) 20px 20px;
+  background: rgba(8, 9, 10, 0.66);
+  backdrop-filter: blur(8px);
+  place-items: start center;
+}
+
+.taskModal {
+  width: min(560px, calc(100vw - 40px));
+  border-radius: 14px;
+  background: rgba(15, 16, 17, 0.985);
+  box-shadow: 0 22px 80px rgba(0,0,0,0.42);
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+.modalHeader {
+  min-height: 54px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: rgba(255,255,255,0.014);
+  margin: 0;
+}
+
+.taskModal > input,
+.taskModal > textarea,
+.modalGrid,
+.modalFooter {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+.taskModal > input { margin-top: 16px; }
+
+.taskModal input,
+.taskModal textarea {
+  border-radius: 10px;
+  background: rgba(255,255,255,0.018);
+}
+
+.taskModal textarea { min-height: 128px; }
+
+.modalGrid {
+  margin-top: 10px;
+  grid-template-columns: minmax(0, 1fr) 142px;
+}
+
+.modalGrid > div {
+  border-radius: 10px;
+  background: rgba(255,255,255,0.018);
+}
+
+.modalFooter {
+  margin-top: 12px;
+  padding: 0 0 16px;
+}
+
+.modalFooter button {
+  min-height: 32px;
+  border-radius: 10px;
+}
+
+@media (max-width: 720px) {
+  .modalOverlay { padding: 12px; place-items: center; }
+}

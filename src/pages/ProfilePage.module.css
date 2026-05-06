@@ -677,3 +677,199 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* profile polish v2 — operational density */
+.hero {
+  padding: 14px 14px 12px;
+  gap: 12px 16px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.024), rgba(255,255,255,0.014));
+}
+
+.hero::before { opacity: 0.55; }
+
+.avatar { width: 52px; height: 52px; }
+
+.heroHeading h1 {
+  font-size: clamp(21px, 1.8vw, 25px);
+  letter-spacing: -0.045em;
+}
+
+.roleBadge {
+  min-height: 21px;
+  padding-inline: 9px;
+  background: rgba(255,255,255,0.028);
+}
+
+.heroStats {
+  padding-top: 12px;
+  gap: 0;
+}
+
+.heroStat {
+  padding: 0 18px 0 0;
+  border-right: 1px solid var(--line-subtle);
+}
+
+.heroStat:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.tasksBoard {
+  border-radius: 14px;
+  background: rgba(255,255,255,0.016);
+}
+
+.boardHeader { min-height: 56px; padding: 12px 16px 10px; }
+.boardTitle { gap: 8px; }
+.tasksBody { padding: 10px 14px 14px; }
+
+.createTaskBar {
+  grid-template-columns: minmax(220px, 1fr) 126px 32px;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.createTaskBar input,
+.formGrid input {
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.018);
+}
+
+.createTaskBar button {
+  width: 32px;
+  min-height: 32px;
+  border-radius: 10px;
+}
+
+.taskList {
+  border-radius: 12px;
+  background: rgba(0,0,0,0.08);
+}
+
+.taskTableHead,
+.taskRow {
+  grid-template-columns: 24px minmax(0, 1fr) 112px minmax(120px, 0.32fr);
+}
+
+.taskTableHead { min-height: 30px; }
+.taskSectionTitle { min-height: 30px; }
+.taskRow { min-height: 40px; }
+
+.taskDrawer,
+.settingsOverlay {
+  z-index: 2400;
+  background: rgba(8, 9, 10, 0.66);
+  backdrop-filter: blur(8px);
+}
+
+.taskDrawer {
+  padding: calc(var(--app-frame-padding, 8px) + 49px + 58px) var(--app-frame-padding, 8px) var(--app-frame-padding, 8px) 0;
+  align-items: stretch;
+}
+
+.drawerPanel {
+  width: min(438px, calc(100vw - 28px));
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--line-subtle);
+  background: rgba(15, 16, 17, 0.98);
+  box-shadow: -18px 0 50px rgba(0,0,0,0.32);
+  padding: 0;
+  overflow: hidden;
+}
+
+.drawerHeader {
+  min-height: 50px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: rgba(255,255,255,0.014);
+  flex: 0 0 auto;
+}
+
+.drawerHeader .iconButton,
+.settingsHeader .iconButton {
+  width: 30px;
+  min-height: 30px;
+}
+
+.drawerContent {
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.drawerPanel h3 {
+  font-size: 22px;
+  line-height: 1.12;
+  letter-spacing: -0.05em;
+}
+
+.drawerGrid {
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 10px 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.015);
+}
+
+.drawerText {
+  padding: 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.015);
+}
+
+.settingsOverlay {
+  padding: calc(var(--app-frame-padding, 8px) + 49px + 58px) 20px 20px;
+  place-items: start center;
+}
+
+.settingsModal {
+  width: min(640px, calc(100vw - 40px));
+  border-radius: 14px;
+  background: rgba(15, 16, 17, 0.985);
+  box-shadow: 0 22px 80px rgba(0,0,0,0.42);
+  overflow: hidden;
+}
+
+.settingsHeader {
+  min-height: 54px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.014);
+}
+
+.settingsTabs { padding: 10px 16px 0; }
+.settingsContent { padding: 16px; gap: 14px; }
+
+.photoRow {
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.014);
+}
+
+.photoAvatar { width: 58px; height: 58px; }
+
+.photoActions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.formGrid { gap: 9px; }
+.formSelect { width: 100%; }
+.settingsFooter { padding-top: 0; }
+.settingsFooter button { min-height: 32px; border-radius: 10px; }
+
+@media (max-width: 780px) {
+  .taskDrawer { padding: 0; }
+  .drawerPanel { width: 100vw; border-radius: 0; }
+  .settingsOverlay { padding: 12px; place-items: center; }
+}
