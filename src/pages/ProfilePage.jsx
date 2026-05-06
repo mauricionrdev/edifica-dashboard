@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
-import { createTask, listMyProjectTasks, updateTask as updateProjectTask } from '../api/projects.js';
+import { listMyProjectTasks, updateTask as updateProjectTask } from '../api/projects.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { hasPermission } from '../utils/permissions.js';
 import { roleLabel } from '../utils/roles.js';
 import { normalizeSlug } from '../utils/slugs.js';
 import {
@@ -14,10 +13,9 @@ import {
   saveUserAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
-import DateField from '../components/ui/DateField.jsx';
 import Select from '../components/ui/Select.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
-import { CloseIcon, PlusIcon, SettingsIcon } from '../components/ui/Icons.jsx';
+import { CloseIcon, SettingsIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
 
 const AVATAR_OPTIONS = [
@@ -34,9 +32,13 @@ const SETTINGS_TABS = [
   { value: 'account', label: 'Conta' },
 ];
 
-const TASK_TABS = [
-  { value: 'upcoming', label: 'Próximas' },
+const OPERATION_TABS = [
+  { value: 'today', label: 'Hoje' },
   { value: 'overdue', label: 'Atrasadas' },
+  { value: 'briefing', label: 'Briefings' },
+  { value: 'routine', label: 'Rotinas' },
+  { value: 'support', label: 'Suporte' },
+  { value: 'waiting', label: 'Aguardando' },
   { value: 'done', label: 'Concluídas' },
 ];
 
@@ -83,59 +85,102 @@ function isOverdue(task) {
 function getTaskStatus(task) {
   if (task?.done || task?.status === 'done') return 'done';
   if (isOverdue(task)) return 'overdue';
-  return 'upcoming';
+  if (task?.status === 'in_progress') return 'active';
+  return 'open';
 }
 
-function getVisibleTasks(tasks, tab) {
-  const ordered = [...tasks].sort((a, b) => {
-    const aDone = a.done || a.status === 'done';
-    const bDone = b.done || b.status === 'done';
-    if (aDone !== bDone) return aDone ? 1 : -1;
+function getTaskStatusLabel(task) {
+  const status = getTaskStatus(task);
+  if (status === 'done') return 'Concluída';
+  if (status === 'overdue') return 'Atrasada';
+  if (status === 'active') return 'Em andamento';
+  return 'Aberta';
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function taskSearchText(task) {
+  return normalizeText([
+    task?.title,
+    task?.description,
+    task?.source,
+    task?.projectName,
+    task?.clientName,
+    task?.sectionName,
+    task?.createdByName,
+  ].filter(Boolean).join(' '));
+}
+
+function getOperationType(task) {
+  const text = taskSearchText(task);
+  if (/pente fino|rotina|diario|diaria|semanal|mensal|auditoria|checklist/.test(text)) return 'routine';
+  if (/briefing|implementacao|onboarding|setup|crm\/ia|crm ia|agente|whatsapp|campanha/.test(text)) return 'briefing';
+  if (/suporte|bug|erro|acesso|permissao|permissao|ajuste|integracao|conexao|desconect/.test(text)) return 'support';
+  if (task?.projectId || task?.projectName) return 'project';
+  return 'task';
+}
+
+function getOperationTypeLabel(task) {
+  const type = getOperationType(task);
+  if (type === 'briefing') return 'Briefing';
+  if (type === 'routine') return 'Rotina';
+  if (type === 'support') return 'Suporte';
+  if (type === 'project') return 'Projeto';
+  return 'Demanda';
+}
+
+function getOriginLabel(task) {
+  if (task?.projectName) return 'Projeto';
+  if (task?.clientName) return 'Cliente';
+  if (getOperationType(task) === 'routine') return 'Rotina';
+  if (getOperationType(task) === 'briefing') return 'Briefing';
+  return 'Direta';
+}
+
+function isWaiting(task) {
+  const text = taskSearchText(task);
+  return /aguardando|pendente de|retorno|terceiro|cliente/.test(text) || task?.status === 'waiting';
+}
+
+function orderTasks(tasks) {
+  return [...tasks].sort((a, b) => {
+    const order = { overdue: 0, active: 1, open: 2, done: 3 };
+    const aStatus = getTaskStatus(a);
+    const bStatus = getTaskStatus(b);
+    if (order[aStatus] !== order[bStatus]) return order[aStatus] - order[bStatus];
     const aDue = a.dueDate || '9999-12-31';
     const bDue = b.dueDate || '9999-12-31';
     if (aDue !== bDue) return aDue.localeCompare(bDue);
     return String(a.title || '').localeCompare(String(b.title || ''), 'pt-BR');
   });
-
-  if (tab === 'done') return ordered.filter((task) => getTaskStatus(task) === 'done');
-  if (tab === 'overdue') return ordered.filter((task) => getTaskStatus(task) === 'overdue');
-  return ordered.filter((task) => getTaskStatus(task) === 'upcoming');
 }
 
-function getTaskSections(tasks, tab) {
-  const visible = getVisibleTasks(tasks, tab);
-  if (tab === 'done') return [{ key: 'done', title: 'Concluídas', tasks: visible }];
-  if (tab === 'overdue') return [{ key: 'overdue', title: 'Atrasadas', tasks: visible }];
+function filterTasksByTab(tasks, tab) {
+  const ordered = orderTasks(tasks);
+  if (tab === 'done') return ordered.filter((task) => getTaskStatus(task) === 'done');
+  if (tab === 'overdue') return ordered.filter((task) => getTaskStatus(task) === 'overdue');
+  if (tab === 'briefing') return ordered.filter((task) => getTaskStatus(task) !== 'done' && getOperationType(task) === 'briefing');
+  if (tab === 'routine') return ordered.filter((task) => getTaskStatus(task) !== 'done' && getOperationType(task) === 'routine');
+  if (tab === 'support') return ordered.filter((task) => getTaskStatus(task) !== 'done' && getOperationType(task) === 'support');
+  if (tab === 'waiting') return ordered.filter((task) => getTaskStatus(task) !== 'done' && isWaiting(task));
+  return ordered.filter((task) => getTaskStatus(task) !== 'done' && getTaskStatus(task) !== 'overdue');
+}
 
-  const today = [];
-  const next = [];
-  const later = [];
-  const withoutDate = [];
-  const todayKey = new Date();
-  todayKey.setHours(0, 0, 0, 0);
-
-  visible.forEach((task) => {
-    if (!task.dueDate) {
-      withoutDate.push(task);
-      return;
-    }
-    const due = new Date(`${task.dueDate}T00:00:00`);
-    if (Number.isNaN(due.getTime())) {
-      withoutDate.push(task);
-      return;
-    }
-    const diff = Math.round((due.getTime() - todayKey.getTime()) / 86400000);
-    if (diff <= 0) today.push(task);
-    else if (diff <= 7) next.push(task);
-    else later.push(task);
-  });
-
-  return [
-    { key: 'today', title: 'Hoje', tasks: today },
-    { key: 'next', title: 'Semana', tasks: next },
-    { key: 'later', title: 'Depois', tasks: later },
-    { key: 'no-date', title: 'Sem prazo', tasks: withoutDate },
-  ].filter((section) => section.tasks.length > 0);
+function buildTaskCounters(tasks) {
+  return {
+    today: filterTasksByTab(tasks, 'today').length,
+    overdue: filterTasksByTab(tasks, 'overdue').length,
+    briefing: filterTasksByTab(tasks, 'briefing').length,
+    routine: filterTasksByTab(tasks, 'routine').length,
+    support: filterTasksByTab(tasks, 'support').length,
+    waiting: filterTasksByTab(tasks, 'waiting').length,
+    done: filterTasksByTab(tasks, 'done').length,
+  };
 }
 
 export default function ProfilePage() {
@@ -155,15 +200,12 @@ export default function ProfilePage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('profile');
-  const [taskTab, setTaskTab] = useState('upcoming');
+  const [operationTab, setOperationTab] = useState('today');
   const [tasks, setTasks] = useState([]);
   const [taskUpdatingId, setTaskUpdatingId] = useState('');
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState('');
-  const [creatingTask, setCreatingTask] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', dueDate: '' });
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
-  const [collapsedTaskSections, setCollapsedTaskSections] = useState({});
   const [activeTaskId, setActiveTaskId] = useState('');
 
   useEffect(() => {
@@ -215,28 +257,10 @@ export default function ProfilePage() {
     return (user?.squads || []).map((id) => map.get(id) || id);
   }, [squads, user?.squads]);
 
-  const taskGroups = useMemo(() => {
-    const upcoming = tasks.filter((task) => getTaskStatus(task) === 'upcoming');
-    const overdue = tasks.filter((task) => getTaskStatus(task) === 'overdue');
-    const done = tasks.filter((task) => getTaskStatus(task) === 'done');
-    return { upcoming, overdue, done };
-  }, [tasks]);
-
-  const visibleTasks = useMemo(() => getVisibleTasks(tasks, taskTab), [taskTab, tasks]);
-  const taskSections = useMemo(() => getTaskSections(tasks, taskTab), [taskTab, tasks]);
+  const taskCounters = useMemo(() => buildTaskCounters(tasks), [tasks]);
+  const visibleTasks = useMemo(() => filterTasksByTab(tasks, operationTab), [operationTab, tasks]);
   const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
-  const canCreateTasks = hasPermission(user, 'tasks.create');
-  const completionRate = tasks.length ? Math.round((taskGroups.done.length / tasks.length) * 100) : 0;
-
-  useEffect(() => {
-    setCollapsedTaskSections((current) => {
-      const next = {};
-      taskSections.forEach((section) => {
-        next[section.key] = current[section.key] ?? false;
-      });
-      return next;
-    });
-  }, [taskSections]);
+  const completionRate = tasks.length ? Math.round((taskCounters.done / tasks.length) * 100) : 0;
 
   async function handleSaveProfile() {
     try {
@@ -302,6 +326,7 @@ export default function ProfilePage() {
       await updateProjectTask(task.id, { done: nextDone });
       setTasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, done: nextDone, status: nextStatus } : item)));
       showToast(nextDone ? 'Tarefa concluída.' : 'Tarefa reaberta.', { variant: 'success' });
+      await reloadTasks();
     } catch (err) {
       showToast(err?.message || 'Erro ao atualizar tarefa.', { variant: 'error' });
     } finally {
@@ -309,28 +334,7 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleCreateTask(event) {
-    event.preventDefault();
-    const title = newTask.title.trim();
-    if (!title) return;
-
-    try {
-      setCreatingTask(true);
-      await createTask({
-        title,
-        assigneeUserId: user?.id || '',
-        dueDate: newTask.dueDate || '',
-        source: 'personal',
-      });
-      await reloadTasks();
-      setNewTask({ title: '', dueDate: '' });
-      showToast('Tarefa criada.', { variant: 'success' });
-    } catch (err) {
-      showToast(err?.message || 'Erro ao criar tarefa.', { variant: 'error' });
-    } finally {
-      setCreatingTask(false);
-    }
-  }
+  const activeStatus = activeTask ? getTaskStatus(activeTask) : '';
 
   return (
     <div className={styles.page}>
@@ -367,16 +371,16 @@ export default function ProfilePage() {
 
         <div className={styles.heroStats}>
           <div className={styles.heroStat}>
-            <span>Abertas</span>
-            <strong>{taskGroups.upcoming.length}</strong>
+            <span>Hoje</span>
+            <strong>{taskCounters.today}</strong>
           </div>
           <div className={styles.heroStat}>
             <span>Atrasadas</span>
-            <strong className={taskGroups.overdue.length ? styles.critical : ''}>{taskGroups.overdue.length}</strong>
+            <strong className={taskCounters.overdue ? styles.critical : ''}>{taskCounters.overdue}</strong>
           </div>
           <div className={styles.heroStat}>
-            <span>Concluídas</span>
-            <strong>{taskGroups.done.length}</strong>
+            <span>Briefings</span>
+            <strong>{taskCounters.briefing}</strong>
           </div>
           <div className={styles.heroStat}>
             <span>Conclusão</span>
@@ -390,21 +394,21 @@ export default function ProfilePage() {
         <header className={styles.boardHeader}>
           <div className={styles.boardTitle}>
             <div className={styles.boardHeadingRow}>
-              <h2>Minhas tarefas</h2>
+              <h2>Minha operação</h2>
               <span>{visibleTasks.length}</span>
             </div>
-            <div className={styles.taskTabs} role="tablist" aria-label="Tarefas">
-              {TASK_TABS.map((tab) => (
+            <div className={styles.operationTabs} role="tablist" aria-label="Operação">
+              {OPERATION_TABS.map((tab) => (
                 <button
                   key={tab.value}
                   type="button"
                   role="tab"
-                  aria-selected={taskTab === tab.value}
-                  className={`${styles.taskTab} ${taskTab === tab.value ? styles.taskTabActive : ''}`.trim()}
-                  onClick={() => setTaskTab(tab.value)}
+                  aria-selected={operationTab === tab.value}
+                  className={`${styles.operationTab} ${operationTab === tab.value ? styles.operationTabActive : ''}`.trim()}
+                  onClick={() => setOperationTab(tab.value)}
                 >
                   {tab.label}
-                  <span>{taskGroups[tab.value]?.length || 0}</span>
+                  <span>{taskCounters[tab.value] || 0}</span>
                 </button>
               ))}
             </div>
@@ -412,116 +416,103 @@ export default function ProfilePage() {
         </header>
 
         <div className={styles.tasksBody}>
-          {canCreateTasks ? (
-            <form className={styles.createTaskBar} onSubmit={handleCreateTask}>
-              <input
-                value={newTask.title}
-                onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
-                placeholder="Tarefa"
-                aria-label="Tarefa"
-              />
-              <DateField
-                value={newTask.dueDate}
-                onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))}
-                placeholder="Prazo"
-                ariaLabel="Prazo"
-                className={styles.taskDateField}
-              />
-              <button type="submit" disabled={creatingTask || !newTask.title.trim()} aria-label="Criar" title="Criar">
-                <PlusIcon size={15} />
-              </button>
-            </form>
-          ) : null}
-
           {tasksLoading ? (
-            <StateBlock variant="loading" compact title="Carregando tarefas" />
+            <StateBlock variant="loading" compact title="Carregando" />
           ) : tasksError ? (
-            <StateBlock variant="error" compact title="Erro ao carregar tarefas" />
+            <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
-            <StateBlock variant="empty" compact title="Nenhuma tarefa" />
+            <StateBlock variant="empty" compact title="Sem demandas" />
           ) : (
             <div className={styles.taskList}>
               <div className={styles.taskTableHead}>
-                <span>Nome</span>
+                <span>Demanda</span>
+                <span>Tipo</span>
                 <span>Prazo</span>
                 <span>Contexto</span>
               </div>
 
-              {taskSections.map((section) => (
-                <section key={section.key} className={styles.taskSection}>
-                  <button
-                    type="button"
-                    className={styles.taskSectionTitle}
-                    onClick={() => setCollapsedTaskSections((current) => ({ ...current, [section.key]: !current[section.key] }))}
-                    aria-expanded={!collapsedTaskSections[section.key]}
+              {visibleTasks.map((task) => {
+                const status = getTaskStatus(task);
+                return (
+                  <article
+                    key={task.id}
+                    className={`${styles.taskRow} ${status === 'done' ? styles.taskRowDone : ''}`.trim()}
+                    onClick={() => setActiveTaskId(task.id)}
                   >
-                    <span aria-hidden="true" className={`${styles.taskSectionArrow} ${collapsedTaskSections[section.key] ? styles.taskSectionArrowCollapsed : ''}`.trim()}>▾</span>
-                    <strong>{section.title}</strong>
-                    <span>{section.tasks.length}</span>
-                  </button>
-
-                  {!collapsedTaskSections[section.key] ? section.tasks.map((task) => (
-                    <article
-                      key={task.id}
-                      className={`${styles.taskRow} ${getTaskStatus(task) === 'done' ? styles.taskRowDone : ''}`.trim()}
-                      onClick={() => setActiveTaskId(task.id)}
+                    <button
+                      type="button"
+                      className={`${styles.taskCheck} ${status === 'done' ? styles.taskCheckDone : ''}`.trim()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleToggleTask(task);
+                      }}
+                      disabled={taskUpdatingId === task.id}
+                      aria-label={status === 'done' ? 'Reabrir' : 'Concluir'}
                     >
-                      <button
-                        type="button"
-                        className={`${styles.taskCheck} ${getTaskStatus(task) === 'done' ? styles.taskCheckDone : ''}`.trim()}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleToggleTask(task);
-                        }}
-                        disabled={taskUpdatingId === task.id}
-                        aria-label={getTaskStatus(task) === 'done' ? 'Reabrir tarefa' : 'Concluir tarefa'}
-                      >
-                        {getTaskStatus(task) === 'done' ? '✓' : ''}
-                      </button>
+                      {status === 'done' ? '✓' : ''}
+                    </button>
 
-                      <div className={styles.taskNameWrap}>
-                        <strong className={styles.taskName}>{task.title}</strong>
-                      </div>
-                      <span className={`${styles.taskDue} ${styles[`taskDue_${getTaskStatus(task)}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
-                      <span className={styles.taskProject}>{task.projectName || task.clientName || '—'}</span>
-                    </article>
-                  )) : null}
-                </section>
-              ))}
+                    <div className={styles.taskNameWrap}>
+                      <strong className={styles.taskName}>{task.title}</strong>
+                      {task.createdByName ? <span>{task.createdByName}</span> : null}
+                    </div>
+                    <span className={`${styles.taskKind} ${styles[`taskKind_${getOperationType(task)}`] || ''}`.trim()}>{getOperationTypeLabel(task)}</span>
+                    <span className={`${styles.taskDue} ${styles[`taskDue_${status}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
+                    <span className={styles.taskProject}>{task.clientName || task.projectName || task.sectionName || '—'}</span>
+                  </article>
+                );
+              })}
             </div>
           )}
         </div>
       </section>
 
       {activeTask ? (
-        <aside className={styles.taskDrawer} aria-label="Tarefa">
+        <aside className={styles.taskDrawer} aria-label="Demanda">
           <div className={styles.drawerPanel}>
             <header className={styles.drawerHeader}>
               <button
                 type="button"
-                className={`${styles.taskCheck} ${getTaskStatus(activeTask) === 'done' ? styles.taskCheckDone : ''}`.trim()}
+                className={`${styles.taskCheck} ${activeStatus === 'done' ? styles.taskCheckDone : ''}`.trim()}
                 onClick={() => handleToggleTask(activeTask)}
                 disabled={taskUpdatingId === activeTask.id}
-                aria-label={getTaskStatus(activeTask) === 'done' ? 'Reabrir tarefa' : 'Concluir tarefa'}
+                aria-label={activeStatus === 'done' ? 'Reabrir' : 'Concluir'}
               >
-                {getTaskStatus(activeTask) === 'done' ? '✓' : ''}
+                {activeStatus === 'done' ? '✓' : ''}
               </button>
               <button type="button" className={styles.iconButton} onClick={() => setActiveTaskId('')} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
+
             <div className={styles.drawerContent}>
-              <h3>{activeTask.title}</h3>
+              <div className={styles.drawerTitleBlock}>
+                <span className={`${styles.statusPill} ${styles[`statusPill_${activeStatus}`] || ''}`.trim()}>{getTaskStatusLabel(activeTask)}</span>
+                <h3>{activeTask.title}</h3>
+              </div>
+
               <div className={styles.drawerGrid}>
-                <span>Status</span>
-                <strong>{getTaskStatus(activeTask) === 'done' ? 'Concluída' : getTaskStatus(activeTask) === 'overdue' ? 'Atrasada' : 'Aberta'}</strong>
+                <span>Tipo</span>
+                <strong>{getOperationTypeLabel(activeTask)}</strong>
+                <span>Origem</span>
+                <strong>{getOriginLabel(activeTask)}</strong>
+                <span>Solicitante</span>
+                <strong>{activeTask.createdByName || '—'}</strong>
+                <span>Cliente</span>
+                <strong>{activeTask.clientName || '—'}</strong>
+                <span>Projeto</span>
+                <strong>{activeTask.projectName || '—'}</strong>
+                <span>Seção</span>
+                <strong>{activeTask.sectionName || '—'}</strong>
                 <span>Prazo</span>
                 <strong>{formatDueLabel(activeTask.dueDate)}</strong>
-                <span>Contexto</span>
-                <strong>{activeTask.projectName || activeTask.clientName || '—'}</strong>
               </div>
+
               {activeTask.description ? (
-                <div className={styles.drawerText}>{activeTask.description}</div>
+                <section className={styles.drawerSection}>
+                  <h4>Descrição</h4>
+                  <div className={styles.drawerText}>{activeTask.description}</div>
+                </section>
               ) : null}
             </div>
           </div>

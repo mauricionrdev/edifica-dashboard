@@ -332,8 +332,8 @@
 }
 
 .checkCircleDone {
-  border-color: var(--accent-amber, #f5b800);
-  background: var(--accent-amber, #f5b800);
+  border-color: var(--success, #27a644);
+  background: var(--success, #27a644);
 }
 
 .taskCopy,
@@ -371,7 +371,7 @@
 
 .taskTag_open { color: var(--text-secondary); }
 .taskTag_overdue { color: var(--danger, #f26d6d); border-color: rgba(242, 109, 109, 0.22); }
-.taskTag_done { color: var(--accent-amber, #f5b800); border-color: rgba(245, 184, 0, 0.22); }
+.taskTag_done { color: var(--success, #27a644); border-color: rgba(39, 166, 68, 0.24); }
 
 .projectRow {
   min-height: 50px;
