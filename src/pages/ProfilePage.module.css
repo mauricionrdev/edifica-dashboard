@@ -256,10 +256,11 @@
   border-bottom: 1px solid var(--profile-line);
 }
 
-.operationHeader > div {
+.operationHeaderTop {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
@@ -272,11 +273,25 @@
   font-weight: 650;
 }
 
-.operationHeader > div > span {
-  color: var(--profile-amber);
-  font-size: 11px;
+.primaryAction {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--profile-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-text);
+  font: inherit;
+  font-size: 12px;
   font-weight: 650;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
 }
+
+.primaryAction:hover {
+  border-color: var(--profile-line-strong);
+  background: rgba(255, 255, 255, 0.04);
+}
+
 
 .operationTabs {
   display: flex;
@@ -807,7 +822,9 @@
   gap: 10px;
 }
 
-.formGrid input {
+.formGrid input,
+.demandFormGrid input,
+.briefingGrid input {
   width: 100%;
   min-width: 0;
   height: 36px;
@@ -821,7 +838,10 @@
   outline: none;
 }
 
-.formGrid input:focus {
+.formGrid input:focus,
+.demandFormGrid input:focus,
+.briefingGrid input:focus,
+.demandTextarea:focus {
   border-color: var(--profile-line-strong);
   background: rgba(255, 255, 255, 0.026);
 }
@@ -847,6 +867,57 @@
 .settingsFooter button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+
+.demandModal {
+  width: min(720px, calc(100vw - 48px));
+}
+
+.demandFormGrid,
+.briefingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.dateField {
+  width: 100%;
+}
+
+.demandTextarea {
+  width: 100%;
+  min-height: 128px;
+  resize: vertical;
+  border: 1px solid var(--profile-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.014);
+  color: var(--profile-text);
+  padding: 12px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  outline: none;
+}
+
+.demandTextarea::placeholder,
+.demandFormGrid input::placeholder,
+.briefingGrid input::placeholder {
+  color: var(--profile-faint);
+}
+
+.settingsFooter button[type='button'] {
+  color: var(--profile-muted);
+  background: transparent;
+}
+
+.settingsFooter button[type='submit'] {
+  color: var(--profile-text);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 @media (max-width: 980px) {
@@ -908,7 +979,9 @@
   }
 
   .detailGrid,
-  .formGrid {
+  .formGrid,
+  .demandFormGrid,
+  .briefingGrid {
     grid-template-columns: 1fr;
   }
 

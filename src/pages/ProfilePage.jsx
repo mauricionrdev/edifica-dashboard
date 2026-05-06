@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
-import { listMyProjectTasks, updateTask as updateProjectTask } from '../api/projects.js';
+import { createTask, listMyProjectTasks, updateTask as updateProjectTask } from '../api/projects.js';
+import { listUserDirectory } from '../api/users.js';
+import { listClients } from '../api/clients.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { roleLabel } from '../utils/roles.js';
@@ -14,6 +16,7 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import Select from '../components/ui/Select.jsx';
+import DateField from '../components/ui/DateField.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { CloseIcon, SettingsIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
@@ -31,6 +34,78 @@ const SETTINGS_TABS = [
   { value: 'profile', label: 'Perfil' },
   { value: 'account', label: 'Conta' },
 ];
+
+const DEMAND_TYPES = [
+  { value: 'support', label: 'Suporte' },
+  { value: 'briefing', label: 'Briefing' },
+  { value: 'routine', label: 'Rotina' },
+  { value: 'bug', label: 'Bug' },
+  { value: 'adjustment', label: 'Ajuste' },
+  { value: 'access', label: 'Acesso' },
+  { value: 'other', label: 'Outro' },
+];
+
+const DEMAND_PRIORITIES = [
+  { value: 'low', label: 'Baixa' },
+  { value: 'medium', label: 'Normal' },
+  { value: 'high', label: 'Alta' },
+];
+
+function emptyDemandForm(userId = '') {
+  return {
+    type: 'support',
+    title: '',
+    description: '',
+    assigneeUserId: userId,
+    clientId: '',
+    dueDate: '',
+    priority: 'medium',
+    officeName: '',
+    objective: '',
+    campaign: '',
+    channels: '',
+    attendants: '',
+    greeting: '',
+    location: '',
+    notes: '',
+  };
+}
+
+function demandTypeLabel(type) {
+  return DEMAND_TYPES.find((item) => item.value === type)?.label || 'Demanda';
+}
+
+function buildDemandDescription(form, clientName = '') {
+  const type = demandTypeLabel(form.type);
+  const lines = [`Tipo: ${type}`];
+
+  if (clientName) lines.push(`Cliente: ${clientName}`);
+
+  if (form.type === 'briefing') {
+    const briefingLines = [
+      ['Nome do escritório', form.officeName],
+      ['Objetivo', form.objective],
+      ['Nicho/campanha', form.campaign],
+      ['Canais', form.channels],
+      ['Atendentes', form.attendants],
+      ['Saudação', form.greeting],
+      ['Localização', form.location],
+      ['Observações', form.notes],
+    ]
+      .filter(([, value]) => String(value || '').trim())
+      .map(([label, value]) => `${label}: ${String(value).trim()}`);
+
+    if (briefingLines.length) {
+      lines.push('', 'Briefing', ...briefingLines);
+    }
+  }
+
+  const freeDescription = String(form.description || '').trim();
+  if (freeDescription) lines.push('', freeDescription);
+
+  return lines.join('\n');
+}
+
 
 const OPERATION_TABS = [
   { value: 'today', label: 'Hoje' },
@@ -223,6 +298,11 @@ export default function ProfilePage() {
   const [tasksError, setTasksError] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
   const [activeTaskId, setActiveTaskId] = useState('');
+  const [demandModalOpen, setDemandModalOpen] = useState(false);
+  const [demandForm, setDemandForm] = useState(() => emptyDemandForm(user?.id || ''));
+  const [demandUsers, setDemandUsers] = useState([]);
+  const [demandClients, setDemandClients] = useState([]);
+  const [demandSaving, setDemandSaving] = useState(false);
 
   useEffect(() => {
     setPanelHeader({ title: 'Perfil', description: null, actions: null });
@@ -236,6 +316,10 @@ export default function ProfilePage() {
       customSlug: user?.customSlug || '',
     });
   }, [user?.name, user?.phone, user?.avatarColor, user?.customSlug]);
+
+  useEffect(() => {
+    setDemandForm((prev) => ({ ...prev, assigneeUserId: prev.assigneeUserId || user?.id || '' }));
+  }, [user?.id]);
 
   useEffect(() => {
     setAvatarUrl(getUserAvatar(user));
@@ -268,6 +352,7 @@ export default function ProfilePage() {
       if (event.key !== 'Escape') return;
       setActiveTaskId('');
       setSettingsOpen(false);
+      setDemandModalOpen(false);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -355,6 +440,65 @@ export default function ProfilePage() {
     }
   }
 
+
+  async function handleOpenDemandModal() {
+    setDemandForm((prev) => ({ ...emptyDemandForm(user?.id || ''), assigneeUserId: prev.assigneeUserId || user?.id || '' }));
+    setDemandModalOpen(true);
+
+    try {
+      const [usersRes, clientsRes] = await Promise.allSettled([listUserDirectory(), listClients()]);
+      if (usersRes.status === 'fulfilled') {
+        const nextUsers = Array.isArray(usersRes.value?.users) ? usersRes.value.users : [];
+        setDemandUsers(nextUsers);
+        setDemandForm((prev) => ({ ...prev, assigneeUserId: prev.assigneeUserId || nextUsers[0]?.id || user?.id || '' }));
+      }
+      if (clientsRes.status === 'fulfilled') {
+        setDemandClients(Array.isArray(clientsRes.value?.clients) ? clientsRes.value.clients : []);
+      }
+    } catch {
+      // silencioso: a criação de demanda continua com dados disponíveis.
+    }
+  }
+
+  async function handleCreateDemand(event) {
+    event.preventDefault();
+    const title = demandForm.title.trim();
+    if (!title) {
+      showToast('Título obrigatório.', { variant: 'error' });
+      return;
+    }
+    if (!demandForm.assigneeUserId) {
+      showToast('Responsável obrigatório.', { variant: 'error' });
+      return;
+    }
+
+    const selectedClient = demandClients.find((client) => client.id === demandForm.clientId);
+    const description = buildDemandDescription(demandForm, selectedClient?.name || '');
+
+    try {
+      setDemandSaving(true);
+      const res = await createTask({
+        title,
+        description,
+        assigneeUserId: demandForm.assigneeUserId,
+        clientId: demandForm.clientId || undefined,
+        dueDate: demandForm.dueDate || undefined,
+        priority: demandForm.priority,
+      });
+      const createdTask = res?.task;
+      if (createdTask?.assigneeUserId === user?.id) {
+        setTasks((prev) => [createdTask, ...prev]);
+      }
+      setDemandModalOpen(false);
+      setDemandForm(emptyDemandForm(user?.id || ''));
+      showToast('Demanda criada.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao criar demanda.', { variant: 'error' });
+    } finally {
+      setDemandSaving(false);
+    }
+  }
+
   const activeKind = activeTask ? getTaskKind(activeTask) : 'demand';
   const activeStatus = activeTask ? statusKey(activeTask) : 'waiting';
   const activeAssignee = activeTask ? activeTask.assigneeName || profileForm.name || user?.name || '' : '';
@@ -428,8 +572,9 @@ export default function ProfilePage() {
 
       <section className={styles.operationBoard}>
         <header className={styles.operationHeader}>
-          <div>
+          <div className={styles.operationHeaderTop}>
             <h2>Minha operação</h2>
+            <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal}>Nova demanda</button>
           </div>
           <nav className={styles.operationTabs} aria-label="Operação">
             {OPERATION_TABS.map((tab) => (
@@ -563,6 +708,62 @@ export default function ProfilePage() {
             </div>
           </section>
         </aside>
+      ) : null}
+
+
+      {demandModalOpen ? (
+        <div className={styles.settingsOverlay} onClick={() => setDemandModalOpen(false)}>
+          <form className={`${styles.settingsModal} ${styles.demandModal}`} onSubmit={handleCreateDemand} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.settingsHeader}>
+              <div>
+                <h2>Nova demanda</h2>
+                <span>{demandTypeLabel(demandForm.type)}</span>
+              </div>
+              <button type="button" className={styles.iconButton} onClick={() => setDemandModalOpen(false)} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+
+            <div className={styles.settingsContent}>
+              <div className={styles.demandFormGrid}>
+                <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
+                  {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </Select>
+                <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
+                  {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </Select>
+                <input className={styles.fieldWide} value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
+                <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={styles.formSelect}>
+                  {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                </Select>
+                <Select value={demandForm.clientId} onChange={(event) => setDemandForm((prev) => ({ ...prev, clientId: event.target.value }))} aria-label="Cliente" className={styles.formSelect}>
+                  <option value="">Cliente</option>
+                  {demandClients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}
+                </Select>
+                <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
+              </div>
+
+              {demandForm.type === 'briefing' ? (
+                <div className={styles.briefingGrid}>
+                  <input value={demandForm.officeName} onChange={(event) => setDemandForm((prev) => ({ ...prev, officeName: event.target.value }))} placeholder="Escritório" />
+                  <input value={demandForm.objective} onChange={(event) => setDemandForm((prev) => ({ ...prev, objective: event.target.value }))} placeholder="Objetivo" />
+                  <input value={demandForm.campaign} onChange={(event) => setDemandForm((prev) => ({ ...prev, campaign: event.target.value }))} placeholder="Nicho/campanha" />
+                  <input value={demandForm.channels} onChange={(event) => setDemandForm((prev) => ({ ...prev, channels: event.target.value }))} placeholder="Canais" />
+                  <input value={demandForm.attendants} onChange={(event) => setDemandForm((prev) => ({ ...prev, attendants: event.target.value }))} placeholder="Atendentes" />
+                  <input value={demandForm.greeting} onChange={(event) => setDemandForm((prev) => ({ ...prev, greeting: event.target.value }))} placeholder="Saudação" />
+                  <input className={styles.fieldWide} value={demandForm.location} onChange={(event) => setDemandForm((prev) => ({ ...prev, location: event.target.value }))} placeholder="Localização" />
+                </div>
+              ) : null}
+
+              <textarea value={demandForm.description} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
+
+              <footer className={styles.settingsFooter}>
+                <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
+                <button type="submit" disabled={demandSaving}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
+              </footer>
+            </div>
+          </form>
+        </div>
       ) : null}
 
       {settingsOpen ? (
