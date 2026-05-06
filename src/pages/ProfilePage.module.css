@@ -1969,3 +1969,74 @@
     width: 100%;
   }
 }
+
+.routineFormGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.routineFormGrid input,
+.routineFormGrid textarea {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--profile-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--profile-text);
+  padding: 0 14px;
+  font: inherit;
+  outline: none;
+}
+
+.routineFormGrid textarea {
+  min-height: 96px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.routineFormGrid input:focus,
+.routineFormGrid textarea:focus {
+  border-color: rgba(245, 184, 0, 0.3);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.routineDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.routineChecklistItem {
+  grid-column: 1 / -1;
+  padding: 13px 14px;
+  border: 1px solid var(--profile-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.routineChecklistItem span {
+  color: var(--profile-faint);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.routineChecklistItem strong {
+  color: var(--profile-soft);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 760px) {
+  .routineFormGrid,
+  .routineDetailsGrid {
+    grid-template-columns: 1fr;
+  }
+}

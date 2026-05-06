@@ -56,6 +56,7 @@ const DEMAND_PRIORITIES = [
   { value: 'low', label: 'Baixa' },
   { value: 'medium', label: 'Normal' },
   { value: 'high', label: 'Alta' },
+  { value: 'critical', label: 'Crítica' },
 ];
 
 const BASE_STATUS_OPTIONS = [
@@ -109,6 +110,9 @@ function emptyDemandForm(userId = '') {
     greeting: '',
     location: '',
     notes: '',
+    recurrence: 'daily',
+    routineScope: '',
+    routineChecklist: '',
   };
 }
 
@@ -149,10 +153,34 @@ function buildDemandDescription(form, clientName = '') {
     }
   }
 
+  if (form.type === 'routine') {
+    const routineLines = [
+      ['Recorrência', recurrenceLabel(form.recurrence)],
+      ['Escopo', form.routineScope],
+      ['Checklist', form.routineChecklist],
+    ]
+      .filter(([, value]) => String(value || '').trim())
+      .map(([label, value]) => `${label}: ${String(value).trim()}`);
+
+    if (routineLines.length) {
+      lines.push('', 'Rotina', ...routineLines);
+    }
+  }
+
   const freeDescription = String(form.description || '').trim();
   if (freeDescription) lines.push('', freeDescription);
 
   return lines.join('\n');
+}
+
+const ROUTINE_RECURRENCES = [
+  { value: 'daily', label: 'Diária' },
+  { value: 'weekly', label: 'Semanal' },
+  { value: 'monthly', label: 'Mensal' },
+];
+
+function recurrenceLabel(value) {
+  return ROUTINE_RECURRENCES.find((item) => item.value === value)?.label || value || '';
 }
 
 
@@ -202,6 +230,44 @@ function parseBriefingDescription(description = '') {
     filledRequired,
     requiredTotal: required.length,
   };
+}
+
+const ROUTINE_FIELDS = [
+  { key: 'recurrence', label: 'Recorrência', source: 'Recorrência' },
+  { key: 'scope', label: 'Escopo', source: 'Escopo' },
+  { key: 'checklist', label: 'Checklist', source: 'Checklist' },
+];
+
+function parseStructuredBlock(description = '', title = '', fields = []) {
+  const rawLines = String(description || '').split(/\r?\n/);
+  const values = {};
+  const consumed = new Set();
+
+  rawLines.forEach((line, index) => {
+    const trimmed = line.trim();
+    fields.forEach((field) => {
+      const prefix = `${field.source}:`;
+      if (trimmed.toLowerCase().startsWith(prefix.toLowerCase())) {
+        values[field.key] = trimmed.slice(prefix.length).trim();
+        consumed.add(index);
+      }
+    });
+
+    if (/^(tipo|cliente):/i.test(trimmed) || trimmed.toLowerCase() === title.toLowerCase() || !trimmed) {
+      consumed.add(index);
+    }
+  });
+
+  const extraDescription = rawLines
+    .filter((line, index) => !consumed.has(index) && line.trim())
+    .join('\n')
+    .trim();
+
+  return { values, extraDescription };
+}
+
+function parseRoutineDescription(description = '') {
+  return parseStructuredBlock(description, 'Rotina', ROUTINE_FIELDS);
 }
 
 function clientSearchText(client) {
@@ -982,11 +1048,17 @@ export default function ProfilePage() {
     () => (activeTask && getTaskKind(activeTask) === 'briefing' ? parseBriefingDescription(activeTask.description || '') : null),
     [activeTask]
   );
+  const activeRoutine = useMemo(
+    () => (activeTask && getTaskKind(activeTask) === 'routine' ? parseRoutineDescription(activeTask.description || '') : null),
+    [activeTask]
+  );
 
   const activeDescription = activeTask
     ? activeBriefing
       ? activeBriefing.extraDescription
-      : activeTask.description
+      : activeRoutine
+        ? activeRoutine.extraDescription
+        : activeTask.description
     : '';
 
   return (
@@ -1262,6 +1334,26 @@ export default function ProfilePage() {
                 </section>
               ) : null}
 
+              {activeRoutine ? (
+                <section className={styles.drawerSection}>
+                  <div className={styles.sectionTitleRow}>
+                    <h4>Rotina</h4>
+                    <span>{activeRoutine.values.recurrence || 'Recorrente'}</span>
+                  </div>
+                  <div className={styles.routineDetailsGrid}>
+                    {ROUTINE_FIELDS.map((field) => {
+                      const value = activeRoutine.values[field.key];
+                      return value ? (
+                        <div key={field.key} className={field.key === 'checklist' ? styles.routineChecklistItem : styles.briefingDetailItem}>
+                          <span>{field.label}</span>
+                          <strong>{value}</strong>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </section>
+              ) : null}
+
               {activeDescription ? (
                 <section className={styles.drawerSection}>
                   <h4>Descrição</h4>
@@ -1454,6 +1546,16 @@ export default function ProfilePage() {
                   <input value={demandForm.attendants} onChange={(event) => setDemandForm((prev) => ({ ...prev, attendants: event.target.value }))} placeholder="Atendentes" />
                   <input value={demandForm.greeting} onChange={(event) => setDemandForm((prev) => ({ ...prev, greeting: event.target.value }))} placeholder="Saudação" />
                   <input className={styles.fieldWide} value={demandForm.location} onChange={(event) => setDemandForm((prev) => ({ ...prev, location: event.target.value }))} placeholder="Localização" />
+                </div>
+              ) : null}
+
+              {demandForm.type === 'routine' ? (
+                <div className={styles.routineFormGrid}>
+                  <Select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={styles.formSelect}>
+                    {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </Select>
+                  <input value={demandForm.routineScope} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineScope: event.target.value }))} placeholder="Escopo" />
+                  <textarea className={styles.fieldWide} value={demandForm.routineChecklist} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineChecklist: event.target.value }))} placeholder="Checklist" />
                 </div>
               ) : null}
 
