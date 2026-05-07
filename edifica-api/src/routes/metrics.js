@@ -293,6 +293,12 @@ function churnRankScore(churnRate, churnTarget = DEFAULT_CHURN_TARGET_RATE) {
   return Math.max(0, 100 - (safeChurn - safeTarget) * 12.5);
 }
 
+function goalDistance(progress, goalPercent) {
+  const safeProgress = Math.max(0, Number(progress) || 0);
+  const safeGoal = Math.max(1, Number(goalPercent) || DEFAULT_RANKING_GOAL_PERCENT);
+  return Math.abs(safeGoal - safeProgress);
+}
+
 function compareRankingRows(a, b) {
   const aProgress = Math.max(0, Number(a.metaActiveProgress) || Number(a.metaIndex) || 0);
   const bProgress = Math.max(0, Number(b.metaActiveProgress) || Number(b.metaIndex) || 0);
@@ -300,14 +306,15 @@ function compareRankingRows(a, b) {
   const bGoal = Math.max(1, Number(b.goalPercent) || DEFAULT_RANKING_GOAL_PERCENT);
   const aReached = aProgress >= aGoal;
   const bReached = bProgress >= bGoal;
-
-  if (aReached !== bReached) return aReached ? -1 : 1;
-
   const aChurn = Math.max(0, Number(a.churnRate) || 0);
   const bChurn = Math.max(0, Number(b.churnRate) || 0);
+  const aDistance = goalDistance(aProgress, aGoal);
+  const bDistance = goalDistance(bProgress, bGoal);
 
-  if (aReached && bReached && aChurn !== bChurn) return aChurn - bChurn;
-  if (!aReached && !bReached && bProgress !== aProgress) return bProgress - aProgress;
+  // Prioridade do Leonardo: meta atingida/proximidade da meta em clientes ativos,
+  // depois menor churn. O alvo configurado altera o ranking de verdade.
+  if (aReached !== bReached) return aReached ? -1 : 1;
+  if (aDistance !== bDistance) return aDistance - bDistance;
   if (aChurn !== bChurn) return aChurn - bChurn;
   if (bProgress !== aProgress) return bProgress - aProgress;
 
@@ -581,6 +588,8 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const totals = aggregatePortfolioSummary(clientSummaries);
       const metaIndex = Number(totals.monthProgress) || 0;
       const metaActiveProgress = metaIndex;
+      const metaActiveTargetProgress = goalPercent > 0 ? (metaActiveProgress / goalPercent) * 100 : metaActiveProgress;
+      const metaActiveDistance = goalDistance(metaActiveProgress, goalPercent);
       const hitRate = Number(totals.hitRateMonth) || 0;
       const legacyPerformanceScore = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
       const rankingScore = metaTargetRankScore(metaActiveProgress, goalPercent);
@@ -613,6 +622,8 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         churnTarget,
         goalOnTarget: metaActiveProgress >= goalPercent,
         churnOnTarget: churnRate <= churnTarget,
+        metaActiveTargetProgress,
+        metaActiveDistance,
         rankingScore,
         performanceScore: legacyPerformanceScore,
         totals,

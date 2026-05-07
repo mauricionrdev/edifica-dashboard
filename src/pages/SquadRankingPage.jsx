@@ -27,6 +27,12 @@ function clampProgress(value) {
   return Math.min(100, Math.max(3, n));
 }
 
+function targetBarProgress(progress, goalPercent) {
+  const safeGoal = Math.max(1, Number(goalPercent) || 80);
+  const safeProgress = Math.max(0, Number(progress) || 0);
+  return clampProgress((safeProgress / safeGoal) * 100);
+}
+
 function normalizePercentInput(value, fallback) {
   const n = Number(String(value ?? '').replace(',', '.'));
   if (!Number.isFinite(n)) return fallback;
@@ -36,7 +42,7 @@ function normalizePercentInput(value, fallback) {
 function PodiumCard({ row, variant = 'default', onOpen }) {
   if (!row) return null;
 
-  const relative = clampProgress(row.metaActiveProgress);
+  const relative = targetBarProgress(row.metaActiveProgress, row.goalPercent);
   const avatarLabel = row.ownerName || row.squad.name;
 
   return (
@@ -206,6 +212,8 @@ export default function SquadRankingPage() {
         mrr: Number(row.mrr) || 0,
         metaIndex,
         metaActiveProgress,
+        metaActiveTargetProgress: Number(row.metaActiveTargetProgress) || 0,
+        metaActiveDistance: Number(row.metaActiveDistance) || 0,
         metaActiveClosed: Number(row.metaActiveClosed) || 0,
         metaActiveGoal: Number(row.metaActiveGoal) || 0,
         goalPercent,
