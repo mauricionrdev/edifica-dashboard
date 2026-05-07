@@ -716,6 +716,23 @@ export default function ProfilePage() {
   const [completionTarget, setCompletionTarget] = useState(null);
   const [completionDraft, setCompletionDraft] = useState('');
   const [completionSaving, setCompletionSaving] = useState(false);
+  const [contentEditing, setContentEditing] = useState(false);
+  const [contentSaving, setContentSaving] = useState(false);
+  const [contentForm, setContentForm] = useState({
+    title: '',
+    description: '',
+    officeName: '',
+    objective: '',
+    campaign: '',
+    channels: '',
+    attendants: '',
+    greeting: '',
+    location: '',
+    notes: '',
+    recurrence: '',
+    routineScope: '',
+    routineChecklist: '',
+  });
 
   useEffect(() => {
     setPanelHeader({ title: 'Perfil', description: null, actions: null });
@@ -787,6 +804,7 @@ export default function ProfilePage() {
       setClientSearchOpen(false);
       setHandoffOpen(false);
       setCompletionTarget(null);
+      setContentEditing(false);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -815,6 +833,7 @@ export default function ProfilePage() {
     setSubtaskDraft('');
     setTaskComments([]);
     setHandoffOpen(false);
+    setContentEditing(false);
 
     if (!activeTaskId) return undefined;
 
@@ -919,6 +938,97 @@ export default function ProfilePage() {
       showToast(err?.message || 'Erro ao atualizar demanda.', { variant: 'error' });
     } finally {
       setTaskUpdatingId('');
+    }
+  }
+
+  function openContentEditor(task = activeTask) {
+    if (!task) return;
+    const kind = getTaskKind(task);
+    const briefing = kind === 'briefing' ? parseBriefingDescription(task.description || '') : null;
+    const routine = kind === 'routine' ? parseRoutineDescription(task.description || '') : null;
+
+    setContentForm({
+      title: task.title || '',
+      description: briefing ? briefing.extraDescription : routine ? routine.extraDescription : task.description || '',
+      officeName: briefing?.values.officeName || '',
+      objective: briefing?.values.objective || '',
+      campaign: briefing?.values.campaign || '',
+      channels: briefing?.values.channels || '',
+      attendants: briefing?.values.attendants || '',
+      greeting: briefing?.values.greeting || '',
+      location: briefing?.values.location || '',
+      notes: briefing?.values.notes || '',
+      recurrence: routine?.values.recurrence || 'Diária',
+      routineScope: routine?.values.scope || '',
+      routineChecklist: routine?.values.checklist || '',
+    });
+    setContentEditing(true);
+  }
+
+  function buildContentDescription(task, form) {
+    const kind = getTaskKind(task);
+    const lines = [];
+
+    if (kind === 'briefing') {
+      lines.push('Tipo: Briefing');
+      if (task?.clientName) lines.push(`Cliente: ${task.clientName}`);
+      lines.push('', 'Briefing');
+      [
+        ['Nome do escritório', form.officeName],
+        ['Objetivo', form.objective],
+        ['Nicho/campanha', form.campaign],
+        ['Canais', form.channels],
+        ['Atendentes', form.attendants],
+        ['Saudação', form.greeting],
+        ['Localização', form.location],
+        ['Observações', form.notes],
+      ].forEach(([label, value]) => {
+        const cleanValue = String(value || '').trim();
+        if (cleanValue) lines.push(`${label}: ${cleanValue}`);
+      });
+    } else if (kind === 'routine') {
+      lines.push('Tipo: Rotina');
+      if (task?.clientName) lines.push(`Cliente: ${task.clientName}`);
+      lines.push('', 'Rotina');
+      [
+        ['Recorrência', form.recurrence],
+        ['Escopo', form.routineScope],
+        ['Checklist', form.routineChecklist],
+      ].forEach(([label, value]) => {
+        const cleanValue = String(value || '').trim();
+        if (cleanValue) lines.push(`${label}: ${cleanValue}`);
+      });
+    }
+
+    const extra = String(form.description || '').trim();
+    if (extra) lines.push('', extra);
+
+    return lines.join('\n').trim();
+  }
+
+  async function handleSaveContent(event) {
+    event.preventDefault();
+    if (!activeTask?.id) return;
+
+    const nextTitle = contentForm.title.trim();
+    if (!nextTitle) {
+      showToast('Título obrigatório.', { variant: 'error' });
+      return;
+    }
+
+    const description = buildContentDescription(activeTask, contentForm);
+
+    try {
+      setContentSaving(true);
+      const res = await updateProjectTask(activeTask.id, { title: nextTitle, description });
+      const nextTask = res?.task || { ...activeTask, title: nextTitle, description };
+      setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...nextTask } : item)));
+      setContentEditing(false);
+      showToast('Conteúdo atualizado.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao salvar conteúdo.', { variant: 'error' });
+    } finally {
+      setContentSaving(false);
     }
   }
 
@@ -1416,7 +1526,16 @@ export default function ProfilePage() {
             <div className={styles.drawerScroll}>
               <div className={styles.drawerHero}>
                 <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
-                <h3>{activeTask.title}</h3>
+                {contentEditing ? (
+                  <input
+                    className={styles.titleEditor}
+                    value={contentForm.title}
+                    onChange={(event) => setContentForm((prev) => ({ ...prev, title: event.target.value }))}
+                    aria-label="Título"
+                  />
+                ) : (
+                  <h3>{activeTask.title}</h3>
+                )}
                 <p>{nextActionLabel(activeTask)}</p>
                 <div className={styles.drawerHeroActions}>
                   {activeKind === 'briefing' && activeBriefing && !activeBriefing.isComplete ? (
@@ -1429,6 +1548,16 @@ export default function ProfilePage() {
                     <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)}>Ativação</button>
                   ) : null}
                   <button type="button" onClick={() => openHandoff(activeTask)}>Handoff</button>
+                  {contentEditing ? (
+                    <>
+                      <button type="button" onClick={() => setContentEditing(false)} disabled={contentSaving}>Cancelar</button>
+                      <button type="button" className={styles.heroActionPrimary} onClick={handleSaveContent} disabled={contentSaving}>
+                        {contentSaving ? 'Salvando' : 'Salvar'}
+                      </button>
+                    </>
+                  ) : (
+                    <button type="button" onClick={() => openContentEditor(activeTask)}>Editar</button>
+                  )}
                 </div>
               </div>
 
@@ -1537,17 +1666,31 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   ) : null}
-                  <div className={styles.briefingDetailsGrid}>
-                    {BRIEFING_FIELDS.map((field) => {
-                      const value = activeBriefing.values[field.key];
-                      return value ? (
-                        <div key={field.key} className={styles.briefingDetailItem}>
+                  {contentEditing ? (
+                    <div className={styles.structuredEditGrid}>
+                      {BRIEFING_FIELDS.map((field) => (
+                        <label key={field.key} className={field.key === 'notes' ? styles.fieldFull : ''}>
                           <span>{field.label}</span>
-                          <strong>{value}</strong>
-                        </div>
-                      ) : null;
-                    })}
-                  </div>
+                          <input
+                            value={contentForm[field.key] || ''}
+                            onChange={(event) => setContentForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.briefingDetailsGrid}>
+                      {BRIEFING_FIELDS.map((field) => {
+                        const value = activeBriefing.values[field.key];
+                        return value ? (
+                          <div key={field.key} className={styles.briefingDetailItem}>
+                            <span>{field.label}</span>
+                            <strong>{value}</strong>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
                 </section>
               ) : null}
 
@@ -1557,24 +1700,56 @@ export default function ProfilePage() {
                     <h4>Rotina</h4>
                     <span>{activeRoutine.values.recurrence || 'Recorrente'}</span>
                   </div>
-                  <div className={styles.routineDetailsGrid}>
-                    {ROUTINE_FIELDS.map((field) => {
-                      const value = activeRoutine.values[field.key];
-                      return value ? (
-                        <div key={field.key} className={field.key === 'checklist' ? styles.routineChecklistItem : styles.briefingDetailItem}>
-                          <span>{field.label}</span>
-                          <strong>{value}</strong>
-                        </div>
-                      ) : null;
-                    })}
-                  </div>
+                  {contentEditing ? (
+                    <div className={styles.structuredEditGrid}>
+                      <label>
+                        <span>Recorrência</span>
+                        <Select
+                          value={contentForm.recurrence}
+                          onChange={(event) => setContentForm((prev) => ({ ...prev, recurrence: event.target.value }))}
+                          aria-label="Recorrência"
+                          className={styles.formSelect}
+                        >
+                          {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.label}>{option.label}</option>)}
+                        </Select>
+                      </label>
+                      <label>
+                        <span>Escopo</span>
+                        <input value={contentForm.routineScope} onChange={(event) => setContentForm((prev) => ({ ...prev, routineScope: event.target.value }))} />
+                      </label>
+                      <label className={styles.fieldFull}>
+                        <span>Checklist</span>
+                        <textarea value={contentForm.routineChecklist} onChange={(event) => setContentForm((prev) => ({ ...prev, routineChecklist: event.target.value }))} />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className={styles.routineDetailsGrid}>
+                      {ROUTINE_FIELDS.map((field) => {
+                        const value = activeRoutine.values[field.key];
+                        return value ? (
+                          <div key={field.key} className={field.key === 'checklist' ? styles.routineChecklistItem : styles.briefingDetailItem}>
+                            <span>{field.label}</span>
+                            <strong>{value}</strong>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
                 </section>
               ) : null}
 
-              {activeDescription ? (
+              {(contentEditing || activeDescription) ? (
                 <section className={styles.drawerSection}>
                   <h4>Descrição</h4>
-                  <div className={styles.descriptionBox}>{activeDescription}</div>
+                  {contentEditing ? (
+                    <textarea
+                      className={styles.descriptionEditor}
+                      value={contentForm.description}
+                      onChange={(event) => setContentForm((prev) => ({ ...prev, description: event.target.value }))}
+                    />
+                  ) : (
+                    <div className={styles.descriptionBox}>{activeDescription}</div>
+                  )}
                 </section>
               ) : null}
 
