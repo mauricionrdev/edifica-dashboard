@@ -53,6 +53,14 @@ export function getSquadRanking({ date, squadId } = {}) {
   return api.get(`/metrics/ranking${qs ? `?${qs}` : ''}`);
 }
 
+export function getRankingSettings() {
+  return api.get('/metrics/ranking/settings');
+}
+
+export function updateRankingSettings(data) {
+  return api.put('/metrics/ranking/settings', data);
+}
+
 export function listClientMetrics(clientId) {
   return api.get(`/metrics/${encodeURIComponent(clientId)}`);
 }
