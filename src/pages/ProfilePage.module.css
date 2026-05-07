@@ -437,7 +437,7 @@
 .operationMeta {
   min-width: 0;
   display: grid;
-  grid-template-columns: 92px 112px minmax(120px, 1fr);
+  grid-template-columns: 92px 90px 106px minmax(120px, 1fr);
   align-items: center;
   gap: 14px;
   color: var(--profile-muted);
@@ -452,6 +452,7 @@
 }
 
 .kindPill,
+.priorityPill,
 .statusBadge {
   width: fit-content;
   max-width: 100%;
@@ -473,6 +474,32 @@
 .kind_routine { border-color: rgba(90, 169, 255, 0.22); color: #9dcaff; }
 .kind_support { border-color: rgba(255, 77, 85, 0.22); color: #ff9ba0; }
 .kind_project { border-color: rgba(255, 255, 255, 0.07); color: var(--profile-soft); }
+
+.priorityPill {
+  color: var(--profile-muted);
+  border-color: rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.priority_critical {
+  color: #ff9ba0;
+  border-color: rgba(255, 77, 85, 0.28);
+  background: rgba(255, 77, 85, 0.075);
+}
+
+.priority_high {
+  color: #e5c76c;
+  border-color: rgba(245, 184, 0, 0.25);
+  background: rgba(245, 184, 0, 0.055);
+}
+
+.priority_medium {
+  color: var(--profile-soft);
+}
+
+.priority_low {
+  color: var(--profile-faint);
+}
 
 .dueLabel {
   color: var(--profile-muted);

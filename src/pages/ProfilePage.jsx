@@ -281,12 +281,49 @@ function clientSearchText(client) {
 const OPERATION_TABS = [
   { value: 'today', label: 'Hoje' },
   { value: 'overdue', label: 'Atrasadas' },
+  { value: 'critical', label: 'Críticas' },
   { value: 'briefing', label: 'Briefings' },
   { value: 'routine', label: 'Rotinas' },
   { value: 'support', label: 'Suporte' },
   { value: 'waiting', label: 'Aguardando' },
   { value: 'done', label: 'Concluídas' },
 ];
+
+
+const PRIORITY_WEIGHT = {
+  critical: 4,
+  high: 3,
+  medium: 2,
+  low: 1,
+};
+
+function priorityKey(task) {
+  return task?.priority || 'medium';
+}
+
+function isCriticalTask(task) {
+  return !isDone(task) && priorityKey(task) === 'critical';
+}
+
+function compareOperationTasks(a, b) {
+  const aDone = isDone(a);
+  const bDone = isDone(b);
+  if (aDone !== bDone) return aDone ? 1 : -1;
+
+  const aOverdue = isOverdue(a);
+  const bOverdue = isOverdue(b);
+  if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+
+  const aPriority = PRIORITY_WEIGHT[priorityKey(a)] || PRIORITY_WEIGHT.medium;
+  const bPriority = PRIORITY_WEIGHT[priorityKey(b)] || PRIORITY_WEIGHT.medium;
+  if (aPriority !== bPriority) return bPriority - aPriority;
+
+  const aDue = a?.dueDate || '9999-12-31';
+  const bDue = b?.dueDate || '9999-12-31';
+  if (aDue !== bDue) return aDue.localeCompare(bDue);
+
+  return String(a?.title || '').localeCompare(String(b?.title || ''), 'pt-BR');
+}
 
 function initials(name) {
   return String(name || '')
@@ -461,6 +498,7 @@ function getOperationCounts(tasks) {
   return {
     today: tasks.filter(isToday).length,
     overdue: tasks.filter(isOverdue).length,
+    critical: tasks.filter(isCriticalTask).length,
     briefing: tasks.filter((task) => !isDone(task) && getTaskKind(task) === 'briefing').length,
     routine: tasks.filter((task) => !isDone(task) && getTaskKind(task) === 'routine').length,
     support: tasks.filter((task) => !isDone(task) && getTaskKind(task) === 'support').length,
@@ -474,21 +512,14 @@ function getVisibleTasks(tasks, tab) {
     if (tab === 'done') return isDone(task);
     if (tab === 'overdue') return isOverdue(task);
     if (tab === 'today') return isToday(task);
+    if (tab === 'critical') return isCriticalTask(task);
     if (tab === 'briefing') return !isDone(task) && getTaskKind(task) === 'briefing';
     if (tab === 'routine') return !isDone(task) && getTaskKind(task) === 'routine';
     if (tab === 'support') return !isDone(task) && getTaskKind(task) === 'support';
     return !isDone(task) && !isToday(task) && !isOverdue(task);
   });
 
-  return filtered.sort((a, b) => {
-    const aDone = isDone(a);
-    const bDone = isDone(b);
-    if (aDone !== bDone) return aDone ? 1 : -1;
-    const aDue = a.dueDate || '9999-12-31';
-    const bDue = b.dueDate || '9999-12-31';
-    if (aDue !== bDue) return aDue.localeCompare(bDue);
-    return String(a.title || '').localeCompare(String(b.title || ''), 'pt-BR');
-  });
+  return filtered.sort(compareOperationTasks);
 }
 
 function taskSearchText(task) {
@@ -501,6 +532,7 @@ function taskSearchText(task) {
     task?.assigneeName,
     task?.createdByName,
     kindLabel(getTaskKind(task)),
+    priorityLabel(priorityKey(task)),
     statusLabel(task),
     formatDueLabel(task?.dueDate),
   ].filter(Boolean).join(' '));
@@ -1351,6 +1383,7 @@ export default function ProfilePage() {
 
                     <div className={styles.operationMeta}>
                       <span className={`${styles.kindPill} ${styles[`kind_${itemKind}`] || ''}`.trim()}>{kindLabel(itemKind)}</span>
+                      <span className={`${styles.priorityPill} ${styles[`priority_${priorityKey(task)}`] || ''}`.trim()}>{priorityLabel(priorityKey(task))}</span>
                       <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
                       <span>{task.projectName || task.sectionName || '—'}</span>
                     </div>
