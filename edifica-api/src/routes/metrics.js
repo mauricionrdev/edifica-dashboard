@@ -311,12 +311,11 @@ function compareRankingRows(a, b) {
   const aDistance = goalDistance(aProgress, aGoal);
   const bDistance = goalDistance(bProgress, bGoal);
 
-  // Prioridade do Leonardo: meta atingida/proximidade da meta em clientes ativos,
-  // depois menor churn. O alvo configurado altera o ranking de verdade.
+  // Prioridade do Leonardo: Meta Ativos é o score real principal.
+  // A meta configurada define o alvo mínimo esperado; ultrapassar o alvo nunca penaliza.
   if (aReached !== bReached) return aReached ? -1 : 1;
-  if (aDistance !== bDistance) return aDistance - bDistance;
-  if (aChurn !== bChurn) return aChurn - bChurn;
   if (bProgress !== aProgress) return bProgress - aProgress;
+  if (aChurn !== bChurn) return aChurn - bChurn;
 
   const aMrr = Number(a.mrr) || 0;
   const bMrr = Number(b.mrr) || 0;
