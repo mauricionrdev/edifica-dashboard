@@ -154,27 +154,98 @@ function clampPercent(value, fallback) {
   return Math.max(0, Math.min(100, n));
 }
 
+async function getRankingSettingsColumns() {
+  const columns = await query('SHOW COLUMNS FROM ranking_settings');
+  return columns.map((column) => ({
+    name: column.Field,
+    extra: String(column.Extra || '').toLowerCase(),
+  }));
+}
+
+function hasRankingSettingsColumn(columns, name) {
+  return columns.some((column) => column.name === name);
+}
+
+function isRankingSettingsAutoIncrement(columns, name) {
+  return columns.some((column) => column.name === name && column.extra.includes('auto_increment'));
+}
+
 async function ensureRankingSettingsSchema() {
   if (!rankingSettingsInitPromise) {
-    rankingSettingsInitPromise = query(`
-      CREATE TABLE IF NOT EXISTS ranking_settings (
-        setting_key VARCHAR(32) NOT NULL PRIMARY KEY,
-        goal_percent DECIMAL(5,2) NOT NULL DEFAULT 80.00,
-        churn_target DECIMAL(5,2) NOT NULL DEFAULT 8.00,
-        updated_by CHAR(36) NULL,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        KEY idx_ranking_settings_updated_by (updated_by)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    `)
-      .then(() => query(
-        `INSERT IGNORE INTO ranking_settings (setting_key, goal_percent, churn_target)
-         VALUES (?, ?, ?)`,
-        [RANKING_SETTINGS_KEY, DEFAULT_RANKING_GOAL_PERCENT, DEFAULT_CHURN_TARGET_RATE]
-      ))
-      .catch((err) => {
-        rankingSettingsInitPromise = null;
-        throw err;
-      });
+    rankingSettingsInitPromise = (async () => {
+      await query(`
+        CREATE TABLE IF NOT EXISTS ranking_settings (
+          setting_key VARCHAR(32) NOT NULL PRIMARY KEY,
+          goal_percent DECIMAL(5,2) NOT NULL DEFAULT 80.00,
+          churn_target DECIMAL(5,2) NOT NULL DEFAULT 8.00,
+          updated_by CHAR(36) NULL,
+          updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          KEY idx_ranking_settings_updated_by (updated_by)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+
+      let columns = await getRankingSettingsColumns();
+
+      if (!hasRankingSettingsColumn(columns, 'setting_key')) {
+        await query('ALTER TABLE ranking_settings ADD COLUMN setting_key VARCHAR(32) NULL FIRST');
+        columns = await getRankingSettingsColumns();
+      }
+      if (!hasRankingSettingsColumn(columns, 'goal_percent')) {
+        await query('ALTER TABLE ranking_settings ADD COLUMN goal_percent DECIMAL(5,2) NOT NULL DEFAULT 80.00');
+        columns = await getRankingSettingsColumns();
+      }
+      if (!hasRankingSettingsColumn(columns, 'churn_target')) {
+        await query('ALTER TABLE ranking_settings ADD COLUMN churn_target DECIMAL(5,2) NOT NULL DEFAULT 8.00');
+        columns = await getRankingSettingsColumns();
+      }
+      if (!hasRankingSettingsColumn(columns, 'updated_by')) {
+        await query('ALTER TABLE ranking_settings ADD COLUMN updated_by CHAR(36) NULL');
+        columns = await getRankingSettingsColumns();
+      }
+      if (!hasRankingSettingsColumn(columns, 'updated_at')) {
+        await query('ALTER TABLE ranking_settings ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
+        columns = await getRankingSettingsColumns();
+      }
+
+      await query(
+        `UPDATE ranking_settings
+            SET setting_key = ?
+          WHERE setting_key IS NULL OR setting_key = ''`,
+        [RANKING_SETTINGS_KEY]
+      );
+
+      const existing = await query(
+        `SELECT COUNT(*) AS total
+           FROM ranking_settings
+          WHERE setting_key = ?`,
+        [RANKING_SETTINGS_KEY]
+      );
+
+      if ((Number(existing?.[0]?.total) || 0) === 0) {
+        const hasId = hasRankingSettingsColumn(columns, 'id');
+        const idAutoIncrement = isRankingSettingsAutoIncrement(columns, 'id');
+        if (hasId && !idAutoIncrement) {
+          await query(
+            `INSERT INTO ranking_settings (id, setting_key, goal_percent, churn_target)
+             VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE
+               setting_key = VALUES(setting_key),
+               goal_percent = VALUES(goal_percent),
+               churn_target = VALUES(churn_target)`,
+            [1, RANKING_SETTINGS_KEY, DEFAULT_RANKING_GOAL_PERCENT, DEFAULT_CHURN_TARGET_RATE]
+          );
+        } else {
+          await query(
+            `INSERT INTO ranking_settings (setting_key, goal_percent, churn_target)
+             VALUES (?, ?, ?)`,
+            [RANKING_SETTINGS_KEY, DEFAULT_RANKING_GOAL_PERCENT, DEFAULT_CHURN_TARGET_RATE]
+          );
+        }
+      }
+    })().catch((err) => {
+      rankingSettingsInitPromise = null;
+      throw err;
+    });
   }
   return rankingSettingsInitPromise;
 }
@@ -185,6 +256,7 @@ async function getRankingSettings() {
     `SELECT setting_key, goal_percent, churn_target, updated_by, updated_at
        FROM ranking_settings
       WHERE setting_key = ?
+      ORDER BY updated_at DESC
       LIMIT 1`,
     [RANKING_SETTINGS_KEY]
   );
@@ -365,16 +437,23 @@ router.put('/ranking/settings', requirePermission('ranking.view.all'), async (re
     if (goalPercent <= 0) throw badRequest('Meta ativos deve ser maior que zero');
 
     await ensureRankingSettingsSchema();
-    await query(
-      `INSERT INTO ranking_settings (setting_key, goal_percent, churn_target, updated_by)
-       VALUES (?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-         goal_percent = VALUES(goal_percent),
-         churn_target = VALUES(churn_target),
-         updated_by = VALUES(updated_by),
-         updated_at = CURRENT_TIMESTAMP`,
-      [RANKING_SETTINGS_KEY, goalPercent, churnTarget, req.user?.id || null]
+    const result = await query(
+      `UPDATE ranking_settings
+          SET goal_percent = ?,
+              churn_target = ?,
+              updated_by = ?,
+              updated_at = CURRENT_TIMESTAMP
+        WHERE setting_key = ?`,
+      [goalPercent, churnTarget, req.user?.id || null, RANKING_SETTINGS_KEY]
     );
+
+    if ((Number(result?.affectedRows) || 0) === 0) {
+      await query(
+        `INSERT INTO ranking_settings (setting_key, goal_percent, churn_target, updated_by)
+         VALUES (?, ?, ?, ?)`,
+        [RANKING_SETTINGS_KEY, goalPercent, churnTarget, req.user?.id || null]
+      );
+    }
 
     const settings = await getRankingSettings();
     res.json({ settings });
