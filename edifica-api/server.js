@@ -28,16 +28,44 @@ const app = express();
 // --------------------------------------------------------------
 app.set('trust proxy', 1);
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const normalizeOrigin = (value) => String(value || '').trim().replace(/\/$/, '');
+
+const defaultAllowedOrigins = [
+  'https://edificacentral.com.br',
+  'https://www.edificacentral.com.br',
+  'https://orchid-kingfisher-994032.hostingersite.com',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+];
+
+const configuredAllowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URLS,
+  process.env.CORS_ORIGINS,
+]
+  .filter(Boolean)
+  .flatMap((value) => String(value).split(','))
+  .map(normalizeOrigin)
+  .filter(Boolean);
+
+const allowedOrigins = new Set(
+  [...defaultAllowedOrigins, ...configuredAllowedOrigins].map(normalizeOrigin)
+);
+
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Permite chamadas sem origin (curl, health checks) e a origem do frontend.
+      // Permite chamadas sem origin, como curl, health checks e chamadas server-to-server.
       if (!origin) return cb(null, true);
-      if (origin === FRONTEND_URL) return cb(null, true);
+
+      const normalizedOrigin = normalizeOrigin(origin);
+      if (allowedOrigins.has(normalizedOrigin)) return cb(null, true);
+
       return cb(new Error(`CORS bloqueou origem ${origin}`));
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -86,5 +114,5 @@ app.use(errorHandler);
 const PORT = Number(process.env.PORT || 3001);
 app.listen(PORT, () => {
   console.log(`→ Edifica API rodando em http://localhost:${PORT}`);
-  console.log(`  Frontend permitido: ${FRONTEND_URL}`);
+  console.log(`  Frontends permitidos: ${Array.from(allowedOrigins).join(', ')}`);
 });

@@ -2323,3 +2323,66 @@
   font-size: 11px;
   letter-spacing: 0.01em;
 }
+
+/* Minha operação — briefing operacional v17 */
+.drawerHeroActions .heroActionPrimary {
+  border-color: rgba(34, 197, 94, 0.2) !important;
+  background: rgba(34, 197, 94, 0.09) !important;
+  color: var(--profile-green) !important;
+}
+
+.drawerHeroActions .heroActionPrimary:hover {
+  border-color: rgba(34, 197, 94, 0.32) !important;
+  background: rgba(34, 197, 94, 0.14) !important;
+  color: #7ef0a2 !important;
+}
+
+.drawerHeroActions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.briefingMissing {
+  margin: -2px 0 13px;
+  padding: 11px 12px;
+  border: 1px solid rgba(245, 184, 0, 0.13);
+  border-radius: 13px;
+  background: rgba(245, 184, 0, 0.045);
+  display: grid;
+  gap: 9px;
+}
+
+.briefingMissing > span {
+  color: #e5c76c;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.briefingMissing > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.briefingMissing em {
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid rgba(245, 184, 0, 0.16);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.16);
+  color: rgba(255, 255, 255, 0.76);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 590;
+  display: inline-flex;
+  align-items: center;
+}
+
+.activityMark_briefing {
+  color: #e5c76c;
+  background: rgba(245, 184, 0, 0.11);
+  border-color: rgba(245, 184, 0, 0.18);
+}

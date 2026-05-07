@@ -222,6 +222,8 @@ function parseBriefingDescription(description = '') {
     .join('\n')
     .trim();
 
+  const missingRequired = required.filter((field) => !String(values[field.key] || '').trim());
+
   return {
     values,
     extraDescription,
@@ -229,6 +231,7 @@ function parseBriefingDescription(description = '') {
     isComplete: filledRequired === required.length,
     filledRequired,
     requiredTotal: required.length,
+    missingRequired,
   };
 }
 
@@ -558,6 +561,19 @@ function parseSystemActivityComment(comment) {
       id: `done-${comment.id}`,
       type: 'done',
       title: lines[0].replace(/\.$/, ''),
+      meta: author,
+      note,
+      author,
+      createdAt,
+    };
+  }
+
+  if (/^Briefing incompleto\./i.test(lines[0] || '')) {
+    const note = lines.slice(1).join('\n');
+    return {
+      id: `briefing-issues-${comment.id}`,
+      type: 'briefing',
+      title: 'Briefing incompleto',
       meta: author,
       note,
       author,
@@ -978,6 +994,54 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleRegisterBriefingIssues() {
+    if (!activeTask || !activeBriefing || activeBriefing.isComplete) return;
+
+    const missing = activeBriefing.missingRequired.map((field) => field.label).join(', ');
+    const body = ['Briefing incompleto.', missing ? `Pendências: ${missing}` : ''].filter(Boolean).join('\n');
+
+    try {
+      setCommentSaving(true);
+      const res = await createTaskComment(activeTask.id, { body });
+      if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
+      showToast('Pendências registradas.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao registrar pendências.', { variant: 'error' });
+    } finally {
+      setCommentSaving(false);
+    }
+  }
+
+  async function handleMarkBriefingImplemented() {
+    if (!activeTask) return;
+
+    const body = [
+      'Implementação concluída.',
+      'Cliente implementado no CRM/IA.',
+      'Próxima ação: Aguardando ativação GDV.',
+    ].join('\n');
+
+    try {
+      setTaskUpdatingId(activeTask.id);
+      const [taskRes, commentRes] = await Promise.allSettled([
+        updateProjectTask(activeTask.id, { done: true, status: 'done' }),
+        createTaskComment(activeTask.id, { body }),
+      ]);
+
+      if (taskRes.status === 'rejected') throw taskRes.reason;
+      const updated = taskRes.value?.task || { ...activeTask, done: true, status: 'done' };
+      setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...updated, done: true, status: 'done' } : item)));
+      if (commentRes.status === 'fulfilled' && commentRes.value?.comment) {
+        setTaskComments((prev) => [...prev, commentRes.value.comment]);
+      }
+      showToast('Implementação marcada.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao marcar implementação.', { variant: 'error' });
+    } finally {
+      setTaskUpdatingId('');
+    }
+  }
+
 
   function openHandoff(task = activeTask) {
     if (!task) return;
@@ -1322,6 +1386,15 @@ export default function ProfilePage() {
                 <h3>{activeTask.title}</h3>
                 <p>{nextActionLabel(activeTask)}</p>
                 <div className={styles.drawerHeroActions}>
+                  {activeKind === 'briefing' && activeBriefing && !activeBriefing.isComplete ? (
+                    <button type="button" onClick={handleRegisterBriefingIssues} disabled={commentSaving}>Pendências</button>
+                  ) : null}
+                  {activeKind === 'briefing' && activeBriefing?.isComplete && !isDone(activeTask) ? (
+                    <button type="button" className={styles.heroActionPrimary} onClick={handleMarkBriefingImplemented} disabled={taskUpdatingId === activeTask.id}>Implementado</button>
+                  ) : null}
+                  {activeKind === 'briefing' && isDone(activeTask) ? (
+                    <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)}>Ativação</button>
+                  ) : null}
                   <button type="button" onClick={() => openHandoff(activeTask)}>Handoff</button>
                 </div>
               </div>
@@ -1332,7 +1405,10 @@ export default function ProfilePage() {
                     <span>Status</span>
                     <Select
                       value={activeTask.status || (isDone(activeTask) ? 'done' : 'todo')}
-                      onChange={(event) => handleUpdateTaskFields(activeTask, { status: event.target.value }, 'Status atualizado.')}
+                      onChange={(event) => {
+                        const nextStatus = event.target.value;
+                        handleUpdateTaskFields(activeTask, { status: nextStatus, done: nextStatus === 'done' }, 'Status atualizado.');
+                      }}
                       aria-label="Status"
                       className={styles.workflowSelect}
                     >
@@ -1418,6 +1494,16 @@ export default function ProfilePage() {
                     <i><b style={{ width: `${activeBriefing.completion}%` }} /></i>
                     <span>{activeBriefing.filledRequired}/{activeBriefing.requiredTotal}</span>
                   </div>
+                  {!activeBriefing.isComplete ? (
+                    <div className={styles.briefingMissing}>
+                      <span>Pendências</span>
+                      <div>
+                        {activeBriefing.missingRequired.map((field) => (
+                          <em key={field.key}>{field.label}</em>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                   <div className={styles.briefingDetailsGrid}>
                     {BRIEFING_FIELDS.map((field) => {
                       const value = activeBriefing.values[field.key];
