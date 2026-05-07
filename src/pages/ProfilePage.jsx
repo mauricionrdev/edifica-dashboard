@@ -521,6 +521,102 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+
+function commentBody(comment) {
+  return String(comment?.body || comment?.content || '').trim();
+}
+
+function isSystemActivityComment(comment) {
+  const body = commentBody(comment);
+  return /^(Handoff:|Status:|Demanda concluída\.|Implementação concluída\.)/i.test(body);
+}
+
+function parseSystemActivityComment(comment) {
+  const body = commentBody(comment);
+  const lines = body.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const author = comment?.authorName || comment?.userName || 'Sistema';
+  const createdAt = comment?.createdAt || comment?.updatedAt;
+
+  if (/^Handoff:/i.test(lines[0] || '')) {
+    const target = (lines.find((line) => /^Handoff:/i.test(line)) || '').replace(/^Handoff:\s*/i, '').trim();
+    const status = (lines.find((line) => /^Status:/i.test(line)) || '').replace(/^Status:\s*/i, '').trim();
+    const note = lines.filter((line) => !/^Handoff:/i.test(line) && !/^Status:/i.test(line)).join('\n');
+    return {
+      id: `handoff-${comment.id}`,
+      type: 'handoff',
+      title: target ? `Handoff para ${target}` : 'Handoff registrado',
+      meta: status || 'Responsável atualizado',
+      note,
+      author,
+      createdAt,
+    };
+  }
+
+  if (/^(Demanda concluída\.|Implementação concluída\.)/i.test(lines[0] || '')) {
+    const note = lines.slice(1).join('\n');
+    return {
+      id: `done-${comment.id}`,
+      type: 'done',
+      title: lines[0].replace(/\.$/, ''),
+      meta: author,
+      note,
+      author,
+      createdAt,
+    };
+  }
+
+  return null;
+}
+
+function buildActivityEvents(task, comments = []) {
+  if (!task) return [];
+
+  const events = [];
+  if (task.createdByName) {
+    events.push({
+      id: 'created',
+      type: 'created',
+      title: 'Demanda criada',
+      meta: task.createdByName,
+      createdAt: task.createdAt,
+    });
+  }
+
+  comments.forEach((comment) => {
+    const parsed = parseSystemActivityComment(comment);
+    if (parsed) events.push(parsed);
+  });
+
+  if (isDone(task) && !events.some((event) => event.type === 'done')) {
+    events.push({
+      id: 'done-current',
+      type: 'done',
+      title: 'Demanda concluída',
+      meta: task.completedByName || task.assigneeName || 'Responsável',
+      createdAt: task.updatedAt,
+    });
+  }
+
+  if (task.updatedAt) {
+    events.push({
+      id: 'updated',
+      type: 'updated',
+      title: 'Última atualização',
+      meta: formatDateTime(task.updatedAt),
+      createdAt: task.updatedAt,
+      quiet: true,
+    });
+  }
+
+  const timeValue = (event) => {
+    if (!event.createdAt) return 0;
+    const date = new Date(event.createdAt);
+    return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+  };
+
+  return events.sort((a, b) => timeValue(b) - timeValue(a));
+}
+
 function metaValue(value) {
   return value || '—';
 }
@@ -702,6 +798,8 @@ export default function ProfilePage() {
   const visibleTasks = useMemo(() => filterOperationTasks(tabTasks, operationSearch), [operationSearch, tabTasks]);
   const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
   const activeSubtasks = useMemo(() => (activeTask ? tasks.filter((task) => task.parentTaskId === activeTask.id) : []), [activeTask, tasks]);
+  const visibleTaskComments = useMemo(() => taskComments.filter((comment) => !isSystemActivityComment(comment)), [taskComments]);
+  const activeActivityEvents = useMemo(() => buildActivityEvents(activeTask, taskComments), [activeTask, taskComments]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
 
   async function handleSaveProfile() {
@@ -1393,7 +1491,7 @@ export default function ProfilePage() {
               <section className={styles.drawerSection}>
                 <div className={styles.sectionTitleRow}>
                   <h4>Comentários</h4>
-                  <span>{taskComments.length}</span>
+                  <span>{visibleTaskComments.length}</span>
                 </div>
                 <form className={styles.commentForm} onSubmit={handleCreateComment}>
                   <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Comentário" />
@@ -1401,9 +1499,9 @@ export default function ProfilePage() {
                 </form>
                 {commentsLoading ? (
                   <div className={styles.commentState}>Carregando</div>
-                ) : taskComments.length ? (
+                ) : visibleTaskComments.length ? (
                   <div className={styles.commentList}>
-                    {taskComments.map((comment) => {
+                    {visibleTaskComments.map((comment) => {
                       const commentAuthor = comment.authorName || comment.userName || 'Usuário';
                       return (
                         <article key={comment.id} className={styles.commentItem}>
@@ -1432,23 +1530,23 @@ export default function ProfilePage() {
               </section>
 
               <section className={styles.drawerSection}>
-                <h4>Atividade</h4>
+                <div className={styles.sectionTitleRow}>
+                  <h4>Atividade</h4>
+                  <span>{activeActivityEvents.length}</span>
+                </div>
                 <div className={styles.activityList}>
-                  {activeTask.createdByName ? (
-                    <div className={styles.activityItem}>
-                      <span>{initials(activeTask.createdByName)}</span>
-                      <p><strong>{activeTask.createdByName}</strong> criou esta demanda.</p>
+                  {activeActivityEvents.map((event) => (
+                    <div key={event.id} className={`${styles.activityItem} ${event.quiet ? styles.activityItemQuiet : ''}`.trim()}>
+                      <span className={`${styles.activityMark} ${styles[`activityMark_${event.type}`] || ''}`.trim()}>
+                        {event.type === 'done' ? '✓' : event.type === 'handoff' ? '↗' : event.type === 'updated' ? '·' : initials(event.meta || event.author)}
+                      </span>
+                      <div className={styles.activityContent}>
+                        <p><strong>{event.title}</strong>{event.meta ? <em>{event.meta}</em> : null}</p>
+                        {event.note ? <small>{event.note}</small> : null}
+                        {event.createdAt ? <time>{formatDateTime(event.createdAt)}</time> : null}
+                      </div>
                     </div>
-                  ) : null}
-                  {isDone(activeTask) ? (
-                    <div className={styles.activityItem}>
-                      <span className={styles.activityDone}>✓</span>
-                      <p><strong>{activeTask.completedByName || activeTask.assigneeName || profileForm.name || user?.name}</strong> concluiu esta demanda.</p>
-                    </div>
-                  ) : null}
-                  {activeTask.updatedAt ? (
-                    <div className={styles.activityMeta}>{formatDateTime(activeTask.updatedAt)}</div>
-                  ) : null}
+                  ))}
                 </div>
               </section>
             </div>

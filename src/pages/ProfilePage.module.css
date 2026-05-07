@@ -2223,3 +2223,103 @@
     width: 100%;
   }
 }
+
+/* Minha operação — atividade operacional v16 */
+.activityList {
+  display: grid;
+  gap: 0;
+  padding: 2px 0 0;
+}
+
+.activityItem {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.activityItem:last-child {
+  border-bottom: 0;
+}
+
+.activityItemQuiet {
+  opacity: 0.72;
+}
+
+.activityMark {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 10px;
+  font-weight: 650;
+  margin-top: 1px;
+}
+
+.activityMark_done {
+  color: #36d46a;
+  background: rgba(54, 212, 106, 0.12);
+  border-color: rgba(54, 212, 106, 0.2);
+}
+
+.activityMark_handoff {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.activityMark_created {
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.activityMark_updated {
+  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.activityContent {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.activityContent p {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.activityContent strong {
+  font-weight: 590;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.activityContent em {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.activityContent small {
+  white-space: pre-wrap;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.activityContent time {
+  color: rgba(255, 255, 255, 0.36);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+}
