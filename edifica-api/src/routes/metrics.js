@@ -27,7 +27,7 @@ import {
   aggregateClientSummary,
   aggregatePortfolioSummary,
 } from '../utils/domain.js';
-import { requireAdmin, requireAuth, requirePermission } from '../middleware/auth.js';
+import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { getAccessibleClientRow, getAllowedSquads } from '../utils/access.js';
 
 const router = Router();
@@ -145,74 +145,63 @@ function dateInMonth(value, monthPrefix) {
 
 const DEFAULT_RANKING_GOAL_PERCENT = 80;
 const DEFAULT_CHURN_TARGET_RATE = 8;
+const RANKING_SETTINGS_KEY = 'global';
 let rankingSettingsInitPromise = null;
 
-function sanitizePercent(value, fallback) {
-  const parsed = parseLocaleNumber(value);
-  const number = Number.isFinite(parsed) ? parsed : Number(fallback);
-  return Math.min(100, Math.max(0, Number.isFinite(number) ? number : 0));
+function clampPercent(value, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(100, n));
 }
 
 async function ensureRankingSettingsSchema() {
   if (!rankingSettingsInitPromise) {
     rankingSettingsInitPromise = query(`
       CREATE TABLE IF NOT EXISTS ranking_settings (
-        id VARCHAR(32) NOT NULL,
+        setting_key VARCHAR(32) NOT NULL PRIMARY KEY,
         goal_percent DECIMAL(5,2) NOT NULL DEFAULT 80.00,
         churn_target DECIMAL(5,2) NOT NULL DEFAULT 8.00,
         updated_by CHAR(36) NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY idx_ranking_settings_updated_by (updated_by),
-        CONSTRAINT fk_ranking_settings_updated_by FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+        KEY idx_ranking_settings_updated_by (updated_by)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    `).then(() => query(
-      `INSERT INTO ranking_settings (id, goal_percent, churn_target)
-       VALUES ('default', ?, ?)
-       ON DUPLICATE KEY UPDATE id = id`,
-      [DEFAULT_RANKING_GOAL_PERCENT, DEFAULT_CHURN_TARGET_RATE]
-    )).catch((err) => {
-      rankingSettingsInitPromise = null;
-      throw err;
-    });
+    `)
+      .then(() => query(
+        `INSERT IGNORE INTO ranking_settings (setting_key, goal_percent, churn_target)
+         VALUES (?, ?, ?)`,
+        [RANKING_SETTINGS_KEY, DEFAULT_RANKING_GOAL_PERCENT, DEFAULT_CHURN_TARGET_RATE]
+      ))
+      .catch((err) => {
+        rankingSettingsInitPromise = null;
+        throw err;
+      });
   }
   return rankingSettingsInitPromise;
 }
 
-async function readRankingSettings() {
+async function getRankingSettings() {
   await ensureRankingSettingsSchema();
   const rows = await query(
-    `SELECT rs.id, rs.goal_percent, rs.churn_target, rs.updated_by, rs.updated_at,
-            u.name AS updated_by_name
-       FROM ranking_settings rs
-       LEFT JOIN users u ON u.id = rs.updated_by
-      WHERE rs.id = 'default'
-      LIMIT 1`
+    `SELECT setting_key, goal_percent, churn_target, updated_by, updated_at
+       FROM ranking_settings
+      WHERE setting_key = ?
+      LIMIT 1`,
+    [RANKING_SETTINGS_KEY]
   );
   const row = rows[0] || {};
   return {
-    goalPercent: sanitizePercent(row.goal_percent, DEFAULT_RANKING_GOAL_PERCENT),
-    churnTarget: sanitizePercent(row.churn_target, DEFAULT_CHURN_TARGET_RATE),
+    goalPercent: clampPercent(row.goal_percent, DEFAULT_RANKING_GOAL_PERCENT),
+    churnTarget: clampPercent(row.churn_target, DEFAULT_CHURN_TARGET_RATE),
     updatedBy: row.updated_by || null,
-    updatedByName: row.updated_by_name || '',
     updatedAt: row.updated_at || null,
   };
 }
 
-function goalRankScore({ activeClients, hitMonth, goalPercent }) {
-  const active = Math.max(0, Number(activeClients) || 0);
-  const hit = Math.max(0, Number(hitMonth) || 0);
-  const target = active > 0 ? Math.ceil(active * (sanitizePercent(goalPercent, DEFAULT_RANKING_GOAL_PERCENT) / 100)) : 0;
-  if (active <= 0 || target <= 0) return { targetClients: 0, goalAchievement: 0, targetHit: false };
-  const achievement = (hit / target) * 100;
-  return {
-    targetClients: target,
-    goalAchievement: achievement,
-    targetHit: hit >= target,
-  };
+function metaTargetRankScore(progress, goalPercent) {
+  const safeProgress = Math.max(0, Number(progress) || 0);
+  const safeGoal = Math.max(1, Number(goalPercent) || DEFAULT_RANKING_GOAL_PERCENT);
+  return Math.min(200, (safeProgress / safeGoal) * 100);
 }
-
 
 function performanceScore({ mrr, metaIndex, churnRate, activeClients }) {
   const safeMrr = Math.max(0, Number(mrr) || 0);
@@ -223,27 +212,32 @@ function performanceScore({ mrr, metaIndex, churnRate, activeClients }) {
   return Math.round(safeMrr * (safeMeta / 100) * Math.max(0, 1 - safeChurn / 100));
 }
 
-function churnRankScore(churnRate, churnTarget) {
+function churnRankScore(churnRate, churnTarget = DEFAULT_CHURN_TARGET_RATE) {
   const safeChurn = Math.max(0, Number(churnRate) || 0);
-  const target = Math.max(0.01, sanitizePercent(churnTarget, DEFAULT_CHURN_TARGET_RATE));
-  if (safeChurn <= target) {
-    return 100 + Math.max(0, target - safeChurn);
+  const safeTarget = Math.max(1, Number(churnTarget) || DEFAULT_CHURN_TARGET_RATE);
+  if (safeChurn <= safeTarget) {
+    return 100 + ((safeTarget - safeChurn) / safeTarget) * 100;
   }
-  return Math.max(0, 100 - (safeChurn - target) * 12.5);
+  return Math.max(0, 100 - (safeChurn - safeTarget) * 12.5);
 }
 
 function compareRankingRows(a, b) {
-  const aGoal = Number(a.goalAchievement) || 0;
-  const bGoal = Number(b.goalAchievement) || 0;
-  if (bGoal !== aGoal) return bGoal - aGoal;
+  const aProgress = Math.max(0, Number(a.metaActiveProgress) || Number(a.metaIndex) || 0);
+  const bProgress = Math.max(0, Number(b.metaActiveProgress) || Number(b.metaIndex) || 0);
+  const aGoal = Math.max(1, Number(a.goalPercent) || DEFAULT_RANKING_GOAL_PERCENT);
+  const bGoal = Math.max(1, Number(b.goalPercent) || DEFAULT_RANKING_GOAL_PERCENT);
+  const aReached = aProgress >= aGoal;
+  const bReached = bProgress >= bGoal;
+
+  if (aReached !== bReached) return aReached ? -1 : 1;
 
   const aChurn = Math.max(0, Number(a.churnRate) || 0);
   const bChurn = Math.max(0, Number(b.churnRate) || 0);
-  if (aChurn !== bChurn) return aChurn - bChurn;
 
-  const aMeta = Number(a.metaIndex) || 0;
-  const bMeta = Number(b.metaIndex) || 0;
-  if (bMeta !== aMeta) return bMeta - aMeta;
+  if (aReached && bReached && aChurn !== bChurn) return aChurn - bChurn;
+  if (!aReached && !bReached && bProgress !== aProgress) return bProgress - aProgress;
+  if (aChurn !== bChurn) return aChurn - bChurn;
+  if (bProgress !== aProgress) return bProgress - aProgress;
 
   const aMrr = Number(a.mrr) || 0;
   const bMrr = Number(b.mrr) || 0;
@@ -350,34 +344,39 @@ router.get('/presence', requirePermission('metrics.view'), async (req, res, next
   }
 });
 
-
+// --------------------------------------------------------------
+//  GET/PUT /api/metrics/ranking/settings
+//  Configuração persistida usada pelo cálculo do ranking.
+// --------------------------------------------------------------
 router.get('/ranking/settings', requirePermission('ranking.view'), async (req, res, next) => {
   try {
-    const settings = await readRankingSettings();
+    const settings = await getRankingSettings();
     res.json({ settings });
   } catch (err) {
     next(err);
   }
 });
 
-router.put('/ranking/settings', requireAdmin, async (req, res, next) => {
+router.put('/ranking/settings', requirePermission('ranking.view.all'), async (req, res, next) => {
   try {
-    await ensureRankingSettingsSchema();
-    const goalPercent = sanitizePercent(req.body?.goalPercent, DEFAULT_RANKING_GOAL_PERCENT);
-    const churnTarget = sanitizePercent(req.body?.churnTarget, DEFAULT_CHURN_TARGET_RATE);
+    const goalPercent = clampPercent(req.body?.goalPercent, DEFAULT_RANKING_GOAL_PERCENT);
+    const churnTarget = clampPercent(req.body?.churnTarget, DEFAULT_CHURN_TARGET_RATE);
 
+    if (goalPercent <= 0) throw badRequest('Meta ativos deve ser maior que zero');
+
+    await ensureRankingSettingsSchema();
     await query(
-      `INSERT INTO ranking_settings (id, goal_percent, churn_target, updated_by)
-       VALUES ('default', ?, ?, ?)
+      `INSERT INTO ranking_settings (setting_key, goal_percent, churn_target, updated_by)
+       VALUES (?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          goal_percent = VALUES(goal_percent),
          churn_target = VALUES(churn_target),
          updated_by = VALUES(updated_by),
          updated_at = CURRENT_TIMESTAMP`,
-      [goalPercent, churnTarget, req.user?.id || null]
+      [RANKING_SETTINGS_KEY, goalPercent, churnTarget, req.user?.id || null]
     );
 
-    const settings = await readRankingSettings();
+    const settings = await getRankingSettings();
     res.json({ settings });
   } catch (err) {
     next(err);
@@ -392,6 +391,9 @@ router.put('/ranking/settings', requireAdmin, async (req, res, next) => {
 router.get('/ranking', requirePermission('ranking.view'), async (req, res, next) => {
   try {
     const { date: dateParam, squadId } = req.query;
+    const rankingSettings = await getRankingSettings();
+    const goalPercent = rankingSettings.goalPercent;
+    const churnTarget = rankingSettings.churnTarget;
     let ref;
     if (dateParam) {
       ref = new Date(String(dateParam) + 'T00:00:00Z');
@@ -406,7 +408,6 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     const prevMonthPrefix = previousMonthPrefix(monthPrefix);
     const bounds = monthBoundsFromPrefix(monthPrefix);
     const referenceDateSql = monthPrefix + '-01';
-    const rankingSettings = await readRankingSettings();
 
     const squadScope = getAllowedSquads(req.user, 'ranking.view.all');
     const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
@@ -500,15 +501,10 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
 
       const totals = aggregatePortfolioSummary(clientSummaries);
       const metaIndex = Number(totals.monthProgress) || 0;
+      const metaActiveProgress = metaIndex;
       const hitRate = Number(totals.hitRateMonth) || 0;
-      const goalMetrics = goalRankScore({
-        activeClients: activeClients.length,
-        hitMonth: Number(totals.hitMonth) || 0,
-        goalPercent: rankingSettings.goalPercent,
-      });
       const legacyPerformanceScore = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
-      const churnScore = churnRankScore(churnRate, rankingSettings.churnTarget);
-      const rankingScore = Math.round((goalMetrics.goalAchievement * 1000) + churnScore + Math.min(metaIndex, 200) + Math.min(mrr / 1000, 100));
+      const rankingScore = metaTargetRankScore(metaActiveProgress, goalPercent);
 
       return {
         squad: {
@@ -531,19 +527,20 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         mrr,
         metaIndex,
         hitRate,
-        goalPercent: rankingSettings.goalPercent,
-        goalTargetClients: goalMetrics.targetClients,
-        goalAchievement: goalMetrics.goalAchievement,
-        goalTargetHit: goalMetrics.targetHit,
-        churnTarget: rankingSettings.churnTarget,
-        churnOnTarget: churnRate <= rankingSettings.churnTarget,
+        metaActiveProgress,
+        metaActiveClosed: Number(totals.monthClosed) || 0,
+        metaActiveGoal: Number(totals.monthGoal) || 0,
+        goalPercent,
+        churnTarget,
+        goalOnTarget: metaActiveProgress >= goalPercent,
+        churnOnTarget: churnRate <= churnTarget,
         rankingScore,
         performanceScore: legacyPerformanceScore,
         totals,
       };
     }).sort(compareRankingRows).map((row, index) => ({ ...row, position: index + 1 }));
 
-    res.json({ weekKey, monthPrefix, settings: rankingSettings, churnTarget: rankingSettings.churnTarget, rows });
+    res.json({ weekKey, monthPrefix, settings: rankingSettings, goalPercent, churnTarget, rows });
   } catch (err) {
     next(err);
   }

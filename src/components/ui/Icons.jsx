@@ -4,6 +4,7 @@ export {
   BookOpenText as BookTemplateIcon,
   Briefcase as BriefcaseIcon,
   Building2 as BuildingIcon,
+  Calculator as CalculatorIcon,
   CalendarDays as CalendarIcon,
   Camera as CameraIcon,
   ChartColumn as ChartColumnIcon,

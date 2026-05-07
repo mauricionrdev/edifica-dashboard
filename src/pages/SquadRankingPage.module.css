@@ -17,6 +17,12 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.026);
 }
 
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .headerAction,
 .inlineButton {
   width: 34px;
@@ -495,6 +501,164 @@
   background: var(--accent);
 }
 
+
+.settingsOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(10px);
+}
+
+.settingsModal {
+  width: min(440px, 100%);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    var(--bg-canvas);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
+  overflow: hidden;
+}
+
+.settingsHeader {
+  min-height: 66px;
+  padding: 16px 16px 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.settingsHeader h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.15;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+}
+
+.settingsHeader span {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.settingsClose {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-1);
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.settingsClose:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.settingsGrid {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.settingsGrid label {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.settingsGrid label > span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.settingsGrid input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: var(--radius-1);
+  outline: none;
+  background: rgba(255, 255, 255, 0.024);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.settingsGrid input:focus {
+  border-color: rgba(245, 184, 0, 0.38);
+}
+
+.settingsError {
+  margin: 0 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 82, 82, 0.22);
+  border-radius: var(--radius-1);
+  background: rgba(255, 82, 82, 0.08);
+  color: #ffb4b4;
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.settingsFooter {
+  padding: 14px 16px 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.settingsFooter button {
+  min-width: 86px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.024);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 620;
+  cursor: pointer;
+}
+
+.settingsFooter button[type="submit"] {
+  border-color: rgba(245, 184, 0, 0.24);
+  background: rgba(245, 184, 0, 0.12);
+  color: var(--text-primary);
+}
+
+.settingsFooter button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.settingsFooter button[type="submit"]:hover:not(:disabled) {
+  background: rgba(245, 184, 0, 0.18);
+}
+
+.settingsFooter button:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1120px) {
   .surface {
     padding: 14px;
@@ -573,178 +737,5 @@
   .metricCell,
   .scoreCell strong {
     font-size: 14px;
-  }
-}
-
-.headerActions {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10040;
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  background: rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(6px);
-}
-
-.settingsModal {
-  width: min(360px, 100%);
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: var(--radius-3);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.014)),
-    var(--bg-canvas);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.035);
-  color: var(--text-secondary);
-  overflow: hidden;
-}
-
-.modalHeader {
-  min-height: 58px;
-  padding: 14px 14px 12px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.modalHeader > div {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-
-.modalHeader strong {
-  color: var(--text-primary);
-  font-size: 15px;
-  line-height: 1.15;
-  font-weight: 620;
-  letter-spacing: -0.018em;
-}
-
-.modalHeader span {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.modalClose {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  border: 0;
-  border-radius: var(--radius-1);
-  background: transparent;
-  color: var(--text-tertiary);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.modalClose:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-primary);
-}
-
-.settingsGrid {
-  padding: 14px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.fieldGroup {
-  min-width: 0;
-  display: grid;
-  gap: 7px;
-}
-
-.fieldGroup span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1.2;
-  font-weight: 620;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.fieldGroup input {
-  width: 100%;
-  height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.074);
-  border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.026);
-  color: var(--text-primary);
-  padding: 0 10px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  outline: none;
-  font-variant-numeric: tabular-nums;
-}
-
-.fieldGroup input:focus {
-  border-color: rgba(245, 184, 0, 0.28);
-  background: rgba(255, 255, 255, 0.035);
-}
-
-.modalFooter {
-  padding: 12px 14px 14px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  border-top: 1px solid var(--line-subtle);
-}
-
-.secondaryAction,
-.primaryAction {
-  height: 32px;
-  border-radius: var(--radius-1);
-  padding: 0 12px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 620;
-  cursor: pointer;
-}
-
-.secondaryAction {
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-.secondaryAction:hover {
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--text-primary);
-}
-
-.primaryAction {
-  border: 1px solid rgba(245, 184, 0, 0.32);
-  background: rgba(245, 184, 0, 0.12);
-  color: var(--accent);
-}
-
-.primaryAction:hover:not(:disabled) {
-  background: rgba(245, 184, 0, 0.16);
-}
-
-.primaryAction:disabled {
-  cursor: wait;
-  opacity: 0.65;
-}
-
-@media (max-width: 560px) {
-  .settingsGrid {
-    grid-template-columns: 1fr;
   }
 }

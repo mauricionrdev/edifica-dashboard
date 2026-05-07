@@ -1,21 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { getRankingSettings, getSquadRanking, updateRankingSettings } from '../api/metrics.js';
-import { CloseIcon, RotateCcwIcon, StateBlock, TargetIcon } from '../components/ui/index.js';
+import { CalculatorIcon, CloseIcon, RotateCcwIcon, StateBlock } from '../components/ui/index.js';
 import { MONTHS_FULL, fmtMoney, fmtPct } from '../utils/format.js';
 import { getSquadAvatar, getUserAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import { resolveSquadOwner } from '../utils/ownershipStorage.js';
 import styles from './SquadRankingPage.module.css';
-
-const SCORE_FORMATTER = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
-const DEFAULT_RANKING_SETTINGS = { goalPercent: 80, churnTarget: 8 };
-
-function normalizePercent(value, fallback = 0) {
-  const normalized = String(value ?? '').replace(',', '.').trim();
-  const parsed = Number(normalized);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(100, Math.max(0, parsed));
-}
 
 function buildReferenceDate(year, month0) {
   return `${year}-${String(month0 + 1).padStart(2, '0')}-15`;
@@ -31,14 +21,22 @@ function rankLabel(position) {
   return String(position).padStart(2, '0');
 }
 
-function formatScore(value) {
-  return SCORE_FORMATTER.format(Math.max(0, Math.round(Number(value) || 0)));
+function clampProgress(value) {
+  const n = Number(value) || 0;
+  if (n <= 0) return 0;
+  return Math.min(100, Math.max(3, n));
 }
 
-function PodiumCard({ row, variant = 'default', maxScore = 1, onOpen }) {
+function normalizePercentInput(value, fallback) {
+  const n = Number(String(value ?? '').replace(',', '.'));
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(100, n));
+}
+
+function PodiumCard({ row, variant = 'default', onOpen }) {
   if (!row) return null;
 
-  const relative = maxScore > 0 ? Math.max(18, (row.rankingScore / maxScore) * 100) : 18;
+  const relative = clampProgress(row.metaActiveProgress);
   const avatarLabel = row.ownerName || row.squad.name;
 
   return (
@@ -66,12 +64,12 @@ function PodiumCard({ row, variant = 'default', maxScore = 1, onOpen }) {
         <span>{row.ownerName}</span>
       </div>
 
-      <div className={styles.podiumScore}>{row.goalAchievementDisplay}</div>
+      <div className={styles.podiumScore}>{row.metaActiveDisplay}</div>
 
       <div className={styles.podiumMeta}>
         <div>
-          <span>Meta Lucro</span>
-          <strong>{row.hitRateDisplay}</strong>
+          <span>Meta Ativos</span>
+          <strong>{row.metaActiveDisplay}</strong>
         </div>
         <div>
           <span>MRR</span>
@@ -79,7 +77,7 @@ function PodiumCard({ row, variant = 'default', maxScore = 1, onOpen }) {
         </div>
       </div>
 
-      <div className={styles.podiumBar}>
+      <div className={styles.podiumBar} aria-hidden="true">
         <span style={{ width: `${relative}%` }} />
       </div>
     </button>
@@ -97,53 +95,59 @@ export default function SquadRankingPage() {
   const now = useMemo(() => new Date(), []);
   const [period] = useState(() => ({ y: now.getFullYear(), m: now.getMonth() }));
   const [rows, setRows] = useState([]);
+  const [rankingSettings, setRankingSettings] = useState({ goalPercent: 80, churnTarget: 8 });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsForm, setSettingsForm] = useState({ goalPercent: '80', churnTarget: '8' });
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsError, setSettingsError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [assetVersion, setAssetVersion] = useState(0);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState(DEFAULT_RANKING_SETTINGS);
-  const [settingsForm, setSettingsForm] = useState({ goalPercent: '80', churnTarget: '8' });
-  const [settingsSaving, setSettingsSaving] = useState(false);
+
+  const syncSettings = useCallback((settings) => {
+    const next = {
+      goalPercent: normalizePercentInput(settings?.goalPercent, 80),
+      churnTarget: normalizePercentInput(settings?.churnTarget, 8),
+    };
+    setRankingSettings(next);
+    setSettingsForm({
+      goalPercent: String(next.goalPercent),
+      churnTarget: String(next.churnTarget),
+    });
+  }, []);
 
   const fetchRanking = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await getSquadRanking({ date: buildReferenceDate(period.y, period.m) });
-      const nextSettings = response?.settings || DEFAULT_RANKING_SETTINGS;
-      setSettings(nextSettings);
-      setSettingsForm({
-        goalPercent: String(normalizePercent(nextSettings.goalPercent, DEFAULT_RANKING_SETTINGS.goalPercent)),
-        churnTarget: String(normalizePercent(nextSettings.churnTarget, DEFAULT_RANKING_SETTINGS.churnTarget)),
-      });
       setRows(Array.isArray(response?.rows) ? response.rows : []);
+      if (response?.settings || response?.goalPercent !== undefined || response?.churnTarget !== undefined) {
+        syncSettings(response.settings || response);
+      }
     } catch (err) {
       setRows([]);
       setError(err instanceof Error ? err : new Error('Não foi possível consolidar o ranking.'));
     } finally {
       setLoading(false);
     }
-  }, [period.m, period.y]);
+  }, [period.m, period.y, syncSettings]);
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      const response = await getRankingSettings();
+      syncSettings(response?.settings || response);
+    } catch {
+      // O ranking também devolve as configurações. Falha isolada aqui não deve quebrar a tela validada.
+    }
+  }, [syncSettings]);
 
   useEffect(() => {
     fetchRanking();
-  }, [fetchRanking]);
+    fetchSettings();
+  }, [fetchRanking, fetchSettings]);
 
-  useEffect(() => {
-    let cancelled = false;
-    getRankingSettings()
-      .then((response) => {
-        if (cancelled) return;
-        const nextSettings = response?.settings || DEFAULT_RANKING_SETTINGS;
-        setSettings(nextSettings);
-        setSettingsForm({
-          goalPercent: String(normalizePercent(nextSettings.goalPercent, DEFAULT_RANKING_SETTINGS.goalPercent)),
-          churnTarget: String(normalizePercent(nextSettings.churnTarget, DEFAULT_RANKING_SETTINGS.churnTarget)),
-        });
-      })
-      .catch(() => null);
-    return () => { cancelled = true; };
-  }, []);
+  useEffect(() => subscribeAvatarChange(() => setAssetVersion((current) => current + 1)), []);
 
   useEffect(() => {
     if (!settingsOpen) return undefined;
@@ -153,8 +157,6 @@ export default function SquadRankingPage() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [settingsOpen]);
-
-  useEffect(() => subscribeAvatarChange(() => setAssetVersion((current) => current + 1)), []);
 
   useEffect(() => {
     setPanelHeader({
@@ -169,7 +171,7 @@ export default function SquadRankingPage() {
             aria-label="Cálculo de meta"
             title="Cálculo de meta"
           >
-            <TargetIcon size={14} aria-hidden="true" />
+            <CalculatorIcon size={14} aria-hidden="true" />
           </button>
           <button type="button" className={styles.headerAction} onClick={fetchRanking} aria-label="Atualizar ranking" title="Atualizar ranking">
             <RotateCcwIcon size={14} aria-hidden="true" />
@@ -179,28 +181,6 @@ export default function SquadRankingPage() {
     });
   }, [fetchRanking, setPanelHeader]);
 
-  const handleSaveSettings = useCallback(async (event) => {
-    event.preventDefault();
-    setSettingsSaving(true);
-    try {
-      const payload = {
-        goalPercent: normalizePercent(settingsForm.goalPercent, settings.goalPercent || DEFAULT_RANKING_SETTINGS.goalPercent),
-        churnTarget: normalizePercent(settingsForm.churnTarget, settings.churnTarget || DEFAULT_RANKING_SETTINGS.churnTarget),
-      };
-      const response = await updateRankingSettings(payload);
-      const nextSettings = response?.settings || payload;
-      setSettings(nextSettings);
-      setSettingsForm({
-        goalPercent: String(normalizePercent(nextSettings.goalPercent, payload.goalPercent)),
-        churnTarget: String(normalizePercent(nextSettings.churnTarget, payload.churnTarget)),
-      });
-      setSettingsOpen(false);
-      await fetchRanking();
-    } finally {
-      setSettingsSaving(false);
-    }
-  }, [fetchRanking, settings.churnTarget, settings.goalPercent, settingsForm.churnTarget, settingsForm.goalPercent]);
-
   const rankingRows = useMemo(() => {
     const safeRows = Array.isArray(rows) ? rows : [];
     return safeRows.map((row, index) => {
@@ -209,10 +189,11 @@ export default function SquadRankingPage() {
       const owner = squad.owner || ownership.owner || null;
       const ownerName = row.ownerName || owner?.name || 'Sem responsável';
       const metaIndex = Number(row.metaIndex) || 0;
+      const metaActiveProgress = Number(row.metaActiveProgress ?? row.metaIndex) || 0;
       const churnRate = Number(row.churnRate) || 0;
       const hitRate = Number(row.hitRate) || 0;
-      const goalAchievement = Number(row.goalAchievement) || 0;
       const rankingScore = Number(row.rankingScore) || 0;
+      const goalPercent = Number(row.goalPercent ?? rankingSettings.goalPercent) || 80;
       const displayAvatar = getSquadAvatar(squad) || getUserAvatar(owner) || '';
 
       return {
@@ -224,31 +205,32 @@ export default function SquadRankingPage() {
         clientsWithGoal: Number(row.clientsWithGoal) || 0,
         mrr: Number(row.mrr) || 0,
         metaIndex,
+        metaActiveProgress,
+        metaActiveClosed: Number(row.metaActiveClosed) || 0,
+        metaActiveGoal: Number(row.metaActiveGoal) || 0,
+        goalPercent,
+        goalOnTarget: row.goalOnTarget === true || metaActiveProgress >= goalPercent,
         hitRate,
         churnRate,
-        goalPercent: Number(row.goalPercent) || Number(settings.goalPercent) || DEFAULT_RANKING_SETTINGS.goalPercent,
-        goalTargetClients: Number(row.goalTargetClients) || 0,
-        goalAchievement,
-        goalTargetHit: row.goalTargetHit === true,
-        churnTarget: Number(row.churnTarget) || Number(settings.churnTarget) || DEFAULT_RANKING_SETTINGS.churnTarget,
+        churnTarget: Number(row.churnTarget ?? rankingSettings.churnTarget) || 8,
         churnOnTarget: row.churnOnTarget !== false,
         rankingScore,
         performanceScore: Number(row.performanceScore) || 0,
         displayAvatar,
         position: Number(row.position) || index + 1,
-        metaDisplay: metaIndex > 0 ? fmtPct(metaIndex) : '—',
+        metaDisplay: metaIndex > 0 ? fmtPct(metaIndex) : '0,00%',
+        metaActiveDisplay: metaActiveProgress > 0 ? fmtPct(metaActiveProgress) : '0,00%',
         hitRateDisplay: hitRate > 0 ? fmtPct(hitRate) : '0,00%',
-        goalAchievementDisplay: goalAchievement > 0 ? fmtPct(goalAchievement) : '0,00%',
         churnDisplay: churnRate > 0 ? fmtPct(churnRate) : '0,00%',
       };
     });
-  }, [assetVersion, rows, settings.churnTarget, settings.goalPercent, userDirectory]);
+  }, [assetVersion, rankingSettings.churnTarget, rankingSettings.goalPercent, rows, userDirectory]);
 
   const filteredRows = rankingRows;
 
   const podiumRows = useMemo(() => filteredRows.slice(0, 3), [filteredRows]);
-  const maxScore = useMemo(
-    () => Math.max(...filteredRows.map((row) => row.rankingScore), 0),
+  const maxMrr = useMemo(
+    () => Math.max(...filteredRows.map((row) => Number(row.mrr) || 0), 0),
     [filteredRows]
   );
 
@@ -256,6 +238,29 @@ export default function SquadRankingPage() {
     (squadId) => navigate(`/squads/${encodeURIComponent(squadId)}`),
     [navigate]
   );
+
+  const handleSaveSettings = useCallback(async (event) => {
+    event.preventDefault();
+    const goalPercent = normalizePercentInput(settingsForm.goalPercent, rankingSettings.goalPercent);
+    const churnTarget = normalizePercentInput(settingsForm.churnTarget, rankingSettings.churnTarget);
+    if (goalPercent <= 0) {
+      setSettingsError(new Error('Meta ativos deve ser maior que zero.'));
+      return;
+    }
+
+    setSettingsSaving(true);
+    setSettingsError(null);
+    try {
+      const response = await updateRankingSettings({ goalPercent, churnTarget });
+      syncSettings(response?.settings || response);
+      setSettingsOpen(false);
+      await fetchRanking();
+    } catch (err) {
+      setSettingsError(err instanceof Error ? err : new Error('Não foi possível salvar.'));
+    } finally {
+      setSettingsSaving(false);
+    }
+  }, [fetchRanking, rankingSettings.churnTarget, rankingSettings.goalPercent, settingsForm.churnTarget, settingsForm.goalPercent, syncSettings]);
 
   if (shellLoading && !rankingRows.length) {
     return (
@@ -298,9 +303,9 @@ export default function SquadRankingPage() {
             <StateBlock compact variant="empty" title="Nenhum squad encontrado" />
           ) : (
             <div className={styles.podiumGrid}>
-              <PodiumCard row={podiumRows[1]} variant="runnerUp" maxScore={maxScore} onOpen={openSquad} />
-              <PodiumCard row={podiumRows[0]} variant="champion" maxScore={maxScore} onOpen={openSquad} />
-              <PodiumCard row={podiumRows[2]} variant="third" maxScore={maxScore} onOpen={openSquad} />
+              <PodiumCard row={podiumRows[1]} variant="runnerUp" onOpen={openSquad} />
+              <PodiumCard row={podiumRows[0]} variant="champion" onOpen={openSquad} />
+              <PodiumCard row={podiumRows[2]} variant="third" onOpen={openSquad} />
             </div>
           )}
         </section>
@@ -320,7 +325,7 @@ export default function SquadRankingPage() {
           ) : filteredRows.length === 0 ? null : (
             <div className={styles.rankList}>
               {filteredRows.map((row) => {
-                const relative = maxScore > 0 ? Math.max(8, (row.rankingScore / maxScore) * 100) : 8;
+                const relative = maxMrr > 0 ? Math.max(8, (row.mrr / maxMrr) * 100) : 8;
                 return (
                   <button
                     key={row.squad.id}
@@ -350,7 +355,7 @@ export default function SquadRankingPage() {
                     </div>
 
                     <strong className={styles.metricCell}>{row.churnDisplay}</strong>
-                    <strong className={styles.metricCell}>{row.goalAchievementDisplay}</strong>
+                    <strong className={styles.metricCell}>{row.metaActiveDisplay}</strong>
 
                     <div className={styles.scoreCell}>
                       <strong>{fmtMoney(row.mrr)}</strong>
@@ -367,31 +372,31 @@ export default function SquadRankingPage() {
       </section>
 
       {settingsOpen ? (
-        <div className={styles.modalOverlay} onMouseDown={() => setSettingsOpen(false)}>
-          <form className={styles.settingsModal} onSubmit={handleSaveSettings} onMouseDown={(event) => event.stopPropagation()}>
-            <header className={styles.modalHeader}>
+        <div className={styles.settingsOverlay} role="presentation" onClick={() => setSettingsOpen(false)}>
+          <form className={styles.settingsModal} onClick={(event) => event.stopPropagation()} onSubmit={handleSaveSettings}>
+            <header className={styles.settingsHeader}>
               <div>
-                <strong>Cálculo de meta</strong>
-                <span>Ranking</span>
+                <h2>Cálculo de meta</h2>
+                <span>{MONTHS_FULL[period.m]} {period.y}</span>
               </div>
-              <button type="button" className={styles.modalClose} onClick={() => setSettingsOpen(false)} aria-label="Fechar">
-                <CloseIcon size={14} aria-hidden="true" />
+              <button type="button" className={styles.settingsClose} onClick={() => setSettingsOpen(false)} aria-label="Fechar">
+                <CloseIcon size={16} aria-hidden="true" />
               </button>
             </header>
 
             <div className={styles.settingsGrid}>
-              <label className={styles.fieldGroup}>
+              <label>
                 <span>Meta ativos</span>
                 <input
                   type="number"
-                  min="0"
+                  min="1"
                   max="100"
                   step="0.01"
                   value={settingsForm.goalPercent}
                   onChange={(event) => setSettingsForm((current) => ({ ...current, goalPercent: event.target.value }))}
                 />
               </label>
-              <label className={styles.fieldGroup}>
+              <label>
                 <span>Churn</span>
                 <input
                   type="number"
@@ -404,13 +409,11 @@ export default function SquadRankingPage() {
               </label>
             </div>
 
-            <footer className={styles.modalFooter}>
-              <button type="button" className={styles.secondaryAction} onClick={() => setSettingsOpen(false)}>
-                Cancelar
-              </button>
-              <button type="submit" className={styles.primaryAction} disabled={settingsSaving}>
-                {settingsSaving ? 'Salvando' : 'Salvar'}
-              </button>
+            {settingsError ? <p className={styles.settingsError}>{settingsError.message}</p> : null}
+
+            <footer className={styles.settingsFooter}>
+              <button type="button" onClick={() => setSettingsOpen(false)} disabled={settingsSaving}>Cancelar</button>
+              <button type="submit" disabled={settingsSaving}>{settingsSaving ? 'Salvando' : 'Salvar'}</button>
             </footer>
           </form>
         </div>
