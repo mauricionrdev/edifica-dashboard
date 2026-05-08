@@ -68,10 +68,18 @@ function fmtDelta(value, formatter = fmtInt) {
   return `${numeric > 0 ? '+' : '-'}${formatter(Math.abs(numeric))}`;
 }
 
+const CHURN_PROGRESS_REFERENCE = 8;
+
 function toneFromChurn(pct) {
   if (pct >= 10) return 'risk';
   if (pct >= 4) return 'warning';
   return 'good';
+}
+
+function progressFromChurn(pct) {
+  const value = Number(pct) || 0;
+  if (value <= 0) return 0;
+  return Math.max(0, Math.min((value / CHURN_PROGRESS_REFERENCE) * 100, 100));
 }
 
 function previousPeriod(year, month0) {
@@ -128,6 +136,7 @@ function MetricCard({
   deltaTone,
   icon,
   progress,
+  progressTone,
   tone = 'neutral',
   detail,
   draggable = false,
@@ -171,7 +180,7 @@ function MetricCard({
       {typeof progress === 'number' ? (
         <div className={styles.metricProgress}>
           <span
-            className={`${styles.metricProgressBar} ${styles[`metricProgressBar_${tone}`]}`}
+            className={`${styles.metricProgressBar} ${styles[`metricProgressBar_${progressTone || tone}`]}`}
             style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }}
           />
         </div>
@@ -689,7 +698,8 @@ export default function CentralPage() {
           delta: churnedPeriod > 0 ? churnDelta.delta : '',
           deltaTone: churnDelta.deltaTone,
           icon: <ChartColumnIcon size={14} />,
-          progress: Math.min(churnRate, 100),
+          progress: progressFromChurn(churnRate),
+          progressTone: 'risk',
           tone: toneFromChurn(churnRate),
         },
       ];
