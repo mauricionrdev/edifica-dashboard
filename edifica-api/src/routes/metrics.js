@@ -133,7 +133,9 @@ function churnedOnOrBefore(row, date) {
 }
 
 function activeAt(row, date) {
-  return row?.status === 'active' && startedOnOrBefore(row, date) && !churnedOnOrBefore(row, date);
+  const status = String(row?.status || '').trim();
+  const canBeActiveAtDate = status === 'active' || status === 'churn';
+  return canBeActiveAtDate && startedOnOrBefore(row, date) && !churnedOnOrBefore(row, date);
 }
 
 function dateInMonth(value, monthPrefix) {

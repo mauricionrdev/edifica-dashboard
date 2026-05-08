@@ -36,6 +36,7 @@ const SCOPES = [
   { key: 'active', label: 'Ativos' },
   { key: 'onboarding', label: 'Onboard' },
   { key: 'paused', label: 'Pausados' },
+  { key: 'churn', label: 'Churn' },
   { key: 'expired', label: 'Vencidos' },
   { key: 'ending', label: 'Vencendo' },
 ];
@@ -81,6 +82,7 @@ export default function ClientsPage() {
       active: all.filter((c) => isActiveClientStatus(c.status) && !isExpired(c, today)).length,
       onboarding: all.filter((c) => c.status === CLIENT_STATUS.ONBOARDING).length,
       paused: all.filter((c) => c.status === CLIENT_STATUS.PAUSED).length,
+      churn: all.filter((c) => c.status === CLIENT_STATUS.CHURN).length,
       expired: all.filter((c) => isExpired(c, today)).length,
       ending: all.filter((c) => isEndingSoon(c, 30, today)).length,
       squad: all.filter((c) => c.squadId).length,
@@ -95,6 +97,7 @@ export default function ClientsPage() {
       if (scope === 'active' && (!isActiveClientStatus(c.status) || isExpired(c, today))) return false;
       if (scope === 'onboarding' && c.status !== CLIENT_STATUS.ONBOARDING) return false;
       if (scope === 'paused' && c.status !== CLIENT_STATUS.PAUSED) return false;
+      if (scope === 'churn' && c.status !== CLIENT_STATUS.CHURN) return false;
       if (scope === 'expired' && !isExpired(c, today)) return false;
       if (scope === 'ending' && !isEndingSoon(c, 30, today)) return false;
       if (!q) return true;

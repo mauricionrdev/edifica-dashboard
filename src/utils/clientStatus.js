@@ -26,8 +26,8 @@ export function isRevenueClientStatus(status) {
   return normalized === CLIENT_STATUS.ACTIVE || normalized === CLIENT_STATUS.ONBOARDING;
 }
 
-export function isVisibleClientStatus(status) {
-  return normalizeClientStatus(status) !== CLIENT_STATUS.CHURN;
+export function isVisibleClientStatus() {
+  return true;
 }
 
 export function isInactiveClientStatus(status) {
