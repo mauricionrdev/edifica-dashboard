@@ -2876,89 +2876,8 @@
   line-height: 1;
 }
 
-/* V25 — Perfil: correção fiel ao design system
-   Sem gradiente, sem focus ring e sem regras genéricas quebrando Select interno. */
-.hero::before {
-  display: none;
-}
-
-.settingsOverlay {
-  background: rgba(0, 0, 0, 0.52);
-  backdrop-filter: blur(5px);
-}
-
-.settingsModal,
-.demandModal,
-.confirmModal,
-.completionModal,
-.handoffModal,
-.drawerPanel {
-  border: 1px solid var(--profile-line);
-  background: #0b0c0e;
-  box-shadow: none;
-}
-
-.drawerPanel {
-  border-top: 0;
-  border-right: 0;
-  border-bottom: 0;
-}
-
-.settingsHeader,
-.demandModal .settingsHeader,
-.drawerTopbar {
-  background: #0b0c0e;
-}
-
-.demandModal {
-  display: flex;
-  flex-direction: column;
-  width: min(860px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
-}
-
-.demandModal .settingsHeader {
-  flex: 0 0 auto;
-}
-
-.demandModal .settingsContent {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  padding: 20px 22px 18px;
-}
-
-.demandModal .settingsFooter {
-  position: sticky;
-  bottom: 0;
-  margin-top: 2px;
-  padding: 14px 0 0;
-  border-top: 1px solid var(--profile-line);
-  background: #0b0c0e;
-}
-
-.formGrid input:focus,
-.demandFormGrid input:focus,
-.briefingGrid input:focus,
-.routineFormGrid input:focus,
-.routineFormGrid textarea:focus,
-.demandTextarea:focus,
-.commentForm textarea:focus,
-.inlineComposer input:focus,
-.titleEditor:focus,
-.descriptionEditor:focus,
-.structuredEditGrid input:focus,
-.structuredEditGrid textarea:focus,
-.formInput:focus,
-.formSelect:focus,
-.clientSearchField:focus-within input,
-.operationSearch:focus-within {
-  border-color: var(--profile-line);
-  background: rgba(255, 255, 255, 0.018);
-  box-shadow: none;
-  outline: none;
-}
-
+/* V25 — correção final do Select de colaboradores no drawer
+   Mantém o padrão flat: sem gradiente, sem focus ring e sem botão interno herdando regra do +. */
 .formSelect,
 .workflowSelect {
   min-width: 0;
@@ -2971,39 +2890,39 @@
 }
 
 .formSelect > button,
-.workflowSelect > button,
-.collaboratorComposer .formSelect > button {
+.workflowSelect > button {
   width: 100%;
   min-width: 0;
   border-color: var(--profile-line);
   background: rgba(255, 255, 255, 0.018);
   box-shadow: none;
+  text-align: left;
+  justify-content: space-between;
 }
 
 .formSelect > button:hover,
 .formSelect > button[aria-expanded='true'],
 .workflowSelect > button:hover,
-.workflowSelect > button[aria-expanded='true'],
-.collaboratorComposer .formSelect > button:hover,
-.collaboratorComposer .formSelect > button[aria-expanded='true'] {
+.workflowSelect > button[aria-expanded='true'] {
   border-color: var(--profile-line-strong);
   background: rgba(255, 255, 255, 0.026);
   box-shadow: none;
 }
 
+.formSelect > button:focus,
 .formSelect > button:focus-visible,
-.workflowSelect > button:focus-visible,
-.collaboratorComposer .formSelect > button:focus-visible {
+.workflowSelect > button:focus,
+.workflowSelect > button:focus-visible {
+  outline: none;
   border-color: var(--profile-line);
   background: rgba(255, 255, 255, 0.018);
   box-shadow: none;
-  outline: none;
 }
 
 .collaboratorComposer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 46px;
-  gap: 10px;
+  gap: 12px;
   align-items: stretch;
 }
 
@@ -3015,84 +2934,57 @@
 }
 
 .collaboratorComposer .formSelect > button {
-  height: 46px;
-  min-height: 46px;
-  padding: 0 14px;
-  border-radius: 14px;
+  width: 100%;
+  height: 56px;
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
 }
 
-.collaboratorComposer > button,
-.tinyIconButton,
-.inlineComposer > button {
+.collaboratorComposer .formSelect > button span {
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.collaboratorComposer .formSelect > button svg {
+  flex: 0 0 auto;
+}
+
+.collaboratorComposer > button[type='submit'] {
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  min-height: 56px;
+  padding: 0;
   border: 1px solid var(--profile-line);
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.018);
   color: var(--profile-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
   box-shadow: none;
-}
-
-.collaboratorComposer > button {
-  width: 46px;
-  min-width: 46px;
-  height: 46px;
-  min-height: 46px;
-  border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  font-size: 20px;
-  line-height: 1;
-}
-
-.inlineComposer {
-  grid-template-columns: minmax(0, 1fr) 40px;
-}
-
-.inlineComposer > button {
-  width: 40px;
-  min-width: 40px;
-  height: 40px;
-  min-height: 40px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  font-size: 18px;
-  line-height: 1;
-}
-
-.collaboratorComposer > button:hover:not(:disabled),
-.tinyIconButton:hover:not(:disabled),
-.inlineComposer > button:hover:not(:disabled) {
-  border-color: var(--profile-line-strong);
-  background: rgba(255, 255, 255, 0.032);
-  color: var(--profile-text);
   transform: none;
 }
 
-.collaboratorList,
-.subtaskList {
-  border: 0;
-  overflow: visible;
-}
-
-.collaboratorItem,
-.subtaskItem {
-  min-width: 0;
-  border: 1px solid var(--profile-line);
-  background: rgba(255, 255, 255, 0.012);
+.collaboratorComposer > button[type='submit']:hover:not(:disabled) {
+  border-color: var(--profile-line-strong);
+  background: rgba(255, 255, 255, 0.032);
+  color: var(--profile-text);
   box-shadow: none;
+  transform: none;
 }
 
-@media (max-width: 720px) {
-  .demandModal {
-    width: calc(100vw - 20px);
-    max-height: calc(100vh - 20px);
-  }
-
-  .demandFormGrid,
-  .briefingGrid {
-    grid-template-columns: 1fr;
-  }
+.collaboratorComposer > button[type='submit']:focus,
+.collaboratorComposer > button[type='submit']:focus-visible {
+  outline: none;
+  border-color: var(--profile-line);
+  box-shadow: none;
 }

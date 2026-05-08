@@ -46,6 +46,7 @@
   border-color: var(--line-strong);
 }
 
+.select:focus,
 .select:focus-visible {
   outline: none;
   border-color: var(--field-line);
