@@ -149,6 +149,16 @@ function dateInMonth(value, monthPrefix) {
   return prefix === monthPrefix;
 }
 
+function monthEndFromPrefix(prefix) {
+  const bounds = monthBoundsFromPrefix(prefix);
+  return bounds?.end || null;
+}
+
+function activeAtMonthEnd(row, prefix) {
+  const end = monthEndFromPrefix(prefix);
+  return end ? activeAt(row, end) : false;
+}
+
 const DEFAULT_RANKING_GOAL_PERCENT = 80;
 const DEFAULT_CHURN_TARGET_RATE = 8;
 const RANKING_SETTINGS_KEY = 'global';
@@ -718,10 +728,11 @@ router.get('/summary', requirePermission('metrics.view'), async (req, res, next)
     // [Fase 2] Seleciona c.meta_lucro para usar no fallback
     let clientSql = `
       SELECT c.id, c.name, c.squad_id, c.gdv_name, c.gestor, c.meta_lucro,
+             c.status, c.start_date, c.churn_date, c.created_at,
              s.name AS squad_name
         FROM clients c
         LEFT JOIN squads s ON s.id = c.squad_id
-       WHERE c.status = 'active'
+       WHERE c.status IN ('active', 'churn')
          AND COALESCE(c.start_date, DATE(c.created_at)) <= LAST_DAY(?)
     `;
     const clientParams = [referenceDateSql];
@@ -749,7 +760,9 @@ router.get('/summary', requirePermission('metrics.view'), async (req, res, next)
 
     clientSql += ' ORDER BY c.name ASC';
 
-    const clients = await query(clientSql, clientParams);
+    const allClients = await query(clientSql, clientParams);
+    const summaryBounds = monthBoundsFromPrefix(monthPrefix);
+    const clients = allClients.filter((client) => summaryBounds && activeAt(client, summaryBounds.end));
 
     if (clients.length === 0) {
       return res.json({
@@ -836,9 +849,9 @@ router.get('/summary/history', requirePermission('metrics.view'), async (req, re
     const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
 
     let clientSql = `
-      SELECT id, meta_lucro, start_date, created_at
+      SELECT id, meta_lucro, status, start_date, churn_date, created_at
         FROM clients
-       WHERE status = 'active'
+       WHERE status IN ('active', 'churn')
     `;
     const clientParams = [];
     if (clientIdParam) { clientSql += ' AND id = ?'; clientParams.push(clientIdParam); }
@@ -850,11 +863,11 @@ router.get('/summary/history', requirePermission('metrics.view'), async (req, re
       clientParams.push(...allowedSquads);
     }
 
-    const activeClients = await query(clientSql, clientParams);
-    if (activeClients.length === 0) return res.json({ months: [] });
-    const activeClientsById = new Map(activeClients.map((c) => [c.id, c]));
+    const potentialClients = await query(clientSql, clientParams);
+    if (potentialClients.length === 0) return res.json({ months: [] });
+    const activeClientsById = new Map(potentialClients.map((c) => [c.id, c]));
 
-    const clientIds = activeClients.map((c) => c.id);
+    const clientIds = potentialClients.map((c) => c.id);
     const placeholders = clientIds.map(() => '?').join(',');
 
     const prefixes = [];
@@ -899,7 +912,7 @@ router.get('/summary/history', requirePermission('metrics.view'), async (req, re
       const pk = String(row.period_key || '');
       const prefix = pk.slice(0, 7);
       const client = activeClientsById.get(row.client_id);
-      if (!clientStartedOnOrBeforePrefix(client, prefix)) continue;
+      if (!clientStartedOnOrBeforePrefix(client, prefix) || !activeAtMonthEnd(client, prefix)) continue;
       if (!sumByPrefix[prefix]) sumByPrefix[prefix] = { fechados: 0, meta: 0, filled: 0 };
       const data = typeof row.data === 'object' ? row.data : JSON.parse(row.data || '{}');
       const fec  = Number(data.fechados) || 0;
@@ -917,10 +930,10 @@ router.get('/summary/history', requirePermission('metrics.view'), async (req, re
     }
 
     const refPrefix = `${refYear}-${String(refMonth + 1).padStart(2, '0')}`;
-    for (const c of activeClients) {
+    for (const c of potentialClients) {
       const metaLucro = Number(c.meta_lucro) || 0;
       if (metaLucro <= 0) continue;
-      if (!clientStartedOnOrBeforePrefix(c, refPrefix)) continue;
+      if (!clientStartedOnOrBeforePrefix(c, refPrefix) || !activeAtMonthEnd(c, refPrefix)) continue;
       const key = `${c.id}|${refPrefix}`;
       if (!metaByClientPrefix[key]) {
         if (!sumByPrefix[refPrefix]) sumByPrefix[refPrefix] = { fechados: 0, meta: 0, filled: 0 };

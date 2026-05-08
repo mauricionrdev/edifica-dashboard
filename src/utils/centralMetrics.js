@@ -9,7 +9,7 @@
 // ================================================================
 
 import { monthKey } from './format.js';
-import { isActiveClientStatus, isRevenueClientStatus } from './clientStatus.js';
+import { CLIENT_STATUS, isActiveClientStatus, isRevenueClientStatus, normalizeClientStatus } from './clientStatus.js';
 import { resolveClientFeeAtDate } from './feeSchedule.js';
 
 function parseClientDate(value) {
@@ -31,17 +31,27 @@ function startedOnOrBefore(client, date) {
   return Boolean(start && start <= date);
 }
 
+function churnDateFor(client) {
+  return parseClientDate(client?.churnDate);
+}
+
 function churnedOnOrBefore(client, date) {
-  const churn = parseClientDate(client.churnDate);
+  const churn = churnDateFor(client);
   return Boolean(churn && churn <= date);
 }
 
+function isHistoricalChurnClient(client, date) {
+  return normalizeClientStatus(client?.status) === CLIENT_STATUS.CHURN && !churnedOnOrBefore(client, date);
+}
+
 function activeAt(client, date) {
-  return isActiveClientStatus(client?.status) && startedOnOrBefore(client, date) && !churnedOnOrBefore(client, date);
+  if (!startedOnOrBefore(client, date) || churnedOnOrBefore(client, date)) return false;
+  return isActiveClientStatus(client?.status) || isHistoricalChurnClient(client, date);
 }
 
 function revenueAt(client, date) {
-  return isRevenueClientStatus(client?.status) && startedOnOrBefore(client, date) && !churnedOnOrBefore(client, date);
+  if (!startedOnOrBefore(client, date) || churnedOnOrBefore(client, date)) return false;
+  return isRevenueClientStatus(client?.status) || isHistoricalChurnClient(client, date);
 }
 
 function dateInMonth(value, year, month0) {
@@ -242,7 +252,7 @@ export function buildClientGoalReport(marketingData, limit = 6) {
 export function computeCentralMetrics(clients, year, month0) {
   const all = Array.isArray(clients) ? clients : [];
   const { start, end } = monthBounds(year, month0);
-  const signedToDate = all.filter((client) => startedOnOrBefore(client, end) && client.status !== 'churn');
+  const signedToDate = all.filter((client) => startedOnOrBefore(client, end) && !churnedOnOrBefore(client, end));
   const active = signedToDate.filter((client) => activeAt(client, end));
   const revenueClients = all.filter((client) => revenueAt(client, end));
   const activeAtStart = all.filter((client) => activeAt(client, start));
