@@ -9,7 +9,7 @@
 // ================================================================
 
 import { monthKey } from './format.js';
-import { isActiveClientStatus } from './clientStatus.js';
+import { isActiveClientStatus, isRevenueClientStatus } from './clientStatus.js';
 import { resolveClientFeeAtDate } from './feeSchedule.js';
 
 function parseClientDate(value) {
@@ -38,6 +38,10 @@ function churnedOnOrBefore(client, date) {
 
 function activeAt(client, date) {
   return isActiveClientStatus(client?.status) && startedOnOrBefore(client, date) && !churnedOnOrBefore(client, date);
+}
+
+function revenueAt(client, date) {
+  return isRevenueClientStatus(client?.status) && startedOnOrBefore(client, date) && !churnedOnOrBefore(client, date);
 }
 
 function dateInMonth(value, year, month0) {
@@ -238,11 +242,12 @@ export function buildClientGoalReport(marketingData, limit = 6) {
 export function computeCentralMetrics(clients, year, month0) {
   const all = Array.isArray(clients) ? clients : [];
   const { start, end } = monthBounds(year, month0);
-  const signedToDate = all.filter((client) => startedOnOrBefore(client, end));
+  const signedToDate = all.filter((client) => startedOnOrBefore(client, end) && client.status !== 'churn');
   const active = signedToDate.filter((client) => activeAt(client, end));
+  const revenueClients = all.filter((client) => revenueAt(client, end));
   const activeAtStart = all.filter((client) => activeAt(client, start));
 
-  const mrr = active.reduce((sum, client) => sum + resolveClientFeeAtDate(client, end), 0);
+  const mrr = revenueClients.reduce((sum, client) => sum + resolveClientFeeAtDate(client, end), 0);
 
   const newInPeriod = all.filter((c) => dateInMonth(c.startDate, year, month0));
   const revenueNew = newInPeriod.reduce((sum, client) => {

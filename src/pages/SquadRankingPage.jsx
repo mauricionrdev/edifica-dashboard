@@ -74,12 +74,12 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
 
       <div className={styles.podiumMeta}>
         <div>
-          <span>Meta Ativos</span>
+          <span>Meta Lucro</span>
           <strong>{row.metaActiveDisplay}</strong>
         </div>
         <div>
-          <span>MRR</span>
-          <strong>{fmtMoney(row.mrr)}</strong>
+          <span>Churn</span>
+          <strong>{row.churnDisplay}</strong>
         </div>
       </div>
 
@@ -103,7 +103,7 @@ export default function SquadRankingPage() {
   const [rows, setRows] = useState([]);
   const [rankingSettings, setRankingSettings] = useState({ goalPercent: 80, churnTarget: 8 });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingsForm, setSettingsForm] = useState({ goalPercent: '80', churnTarget: '8' });
+  const [settingsForm, setSettingsForm] = useState({});
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsError, setSettingsError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -116,10 +116,7 @@ export default function SquadRankingPage() {
       churnTarget: normalizePercentInput(settings?.churnTarget, 8),
     };
     setRankingSettings(next);
-    setSettingsForm({
-      goalPercent: String(next.goalPercent),
-      churnTarget: String(next.churnTarget),
-    });
+    setSettingsForm({});
   }, []);
 
   const fetchRanking = useCallback(async () => {
@@ -236,6 +233,20 @@ export default function SquadRankingPage() {
 
   const filteredRows = rankingRows;
 
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    setSettingsForm(
+      rankingRows.reduce((acc, row) => {
+        acc[row.squad.id] = {
+          goalPercent: String(row.goalPercent || rankingSettings.goalPercent || 80),
+          churnTarget: String(row.churnTarget || rankingSettings.churnTarget || 8),
+        };
+        return acc;
+      }, {})
+    );
+  }, [rankingRows, rankingSettings.churnTarget, rankingSettings.goalPercent, settingsOpen]);
+
   const podiumRows = useMemo(() => filteredRows.slice(0, 3), [filteredRows]);
   const maxMrr = useMemo(
     () => Math.max(...filteredRows.map((row) => Number(row.mrr) || 0), 0),
@@ -249,17 +260,24 @@ export default function SquadRankingPage() {
 
   const handleSaveSettings = useCallback(async (event) => {
     event.preventDefault();
-    const goalPercent = normalizePercentInput(settingsForm.goalPercent, rankingSettings.goalPercent);
-    const churnTarget = normalizePercentInput(settingsForm.churnTarget, rankingSettings.churnTarget);
-    if (goalPercent <= 0) {
-      setSettingsError(new Error('Meta ativos deve ser maior que zero.'));
+    const squadSettings = rankingRows.map((row) => {
+      const form = settingsForm[row.squad.id] || {};
+      return {
+        squadId: row.squad.id,
+        goalPercent: normalizePercentInput(form.goalPercent, row.goalPercent || rankingSettings.goalPercent),
+        churnTarget: normalizePercentInput(form.churnTarget, row.churnTarget || rankingSettings.churnTarget),
+      };
+    });
+
+    if (squadSettings.some((item) => item.goalPercent <= 0)) {
+      setSettingsError(new Error('Meta lucro deve ser maior que zero.'));
       return;
     }
 
     setSettingsSaving(true);
     setSettingsError(null);
     try {
-      const response = await updateRankingSettings({ goalPercent, churnTarget });
+      const response = await updateRankingSettings({ squadSettings });
       syncSettings(response?.settings || response);
       setSettingsOpen(false);
       await fetchRanking();
@@ -268,7 +286,7 @@ export default function SquadRankingPage() {
     } finally {
       setSettingsSaving(false);
     }
-  }, [fetchRanking, rankingSettings.churnTarget, rankingSettings.goalPercent, settingsForm.churnTarget, settingsForm.goalPercent, syncSettings]);
+  }, [fetchRanking, rankingRows, rankingSettings.churnTarget, rankingSettings.goalPercent, settingsForm, syncSettings]);
 
   if (shellLoading && !rankingRows.length) {
     return (
@@ -324,7 +342,7 @@ export default function SquadRankingPage() {
             <span>Líder</span>
             <span>Squad</span>
             <span>Churn</span>
-            <span>Meta Ativos</span>
+            <span>Meta Lucro</span>
             <span>MRR</span>
           </div>
 
@@ -393,28 +411,42 @@ export default function SquadRankingPage() {
             </header>
 
             <div className={styles.settingsGrid}>
-              <label>
-                <span>Meta ativos</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  step="0.01"
-                  value={settingsForm.goalPercent}
-                  onChange={(event) => setSettingsForm((current) => ({ ...current, goalPercent: event.target.value }))}
-                />
-              </label>
-              <label>
-                <span>Churn</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  value={settingsForm.churnTarget}
-                  onChange={(event) => setSettingsForm((current) => ({ ...current, churnTarget: event.target.value }))}
-                />
-              </label>
+              {rankingRows.map((row) => {
+                const form = settingsForm[row.squad.id] || {};
+                return (
+                  <div className={styles.settingsRow} key={row.squad.id}>
+                    <strong>{row.squad.name}</strong>
+                    <label>
+                      <span>% meta lucro</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        step="0.01"
+                        value={form.goalPercent ?? ''}
+                        onChange={(event) => setSettingsForm((current) => ({
+                          ...current,
+                          [row.squad.id]: { ...(current[row.squad.id] || {}), goalPercent: event.target.value },
+                        }))}
+                      />
+                    </label>
+                    <label>
+                      <span>Meta churn</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={form.churnTarget ?? ''}
+                        onChange={(event) => setSettingsForm((current) => ({
+                          ...current,
+                          [row.squad.id]: { ...(current[row.squad.id] || {}), churnTarget: event.target.value },
+                        }))}
+                      />
+                    </label>
+                  </div>
+                );
+              })}
             </div>
 
             {settingsError ? <p className={styles.settingsError}>{settingsError.message}</p> : null}

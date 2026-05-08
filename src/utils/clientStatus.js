@@ -21,6 +21,15 @@ export function isActiveClientStatus(status) {
   return normalizeClientStatus(status) === CLIENT_STATUS.ACTIVE;
 }
 
+export function isRevenueClientStatus(status) {
+  const normalized = normalizeClientStatus(status);
+  return normalized === CLIENT_STATUS.ACTIVE || normalized === CLIENT_STATUS.ONBOARDING;
+}
+
+export function isVisibleClientStatus(status) {
+  return normalizeClientStatus(status) !== CLIENT_STATUS.CHURN;
+}
+
 export function isInactiveClientStatus(status) {
   return !isActiveClientStatus(status);
 }
