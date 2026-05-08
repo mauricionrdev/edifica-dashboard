@@ -205,3 +205,27 @@
     width: min(252px, calc(100vw - 42px));
   }
 }
+
+/* V25 — calendário alinhado aos modais escuros */
+.popover {
+  z-index: 12050;
+  border-color: rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 58px),
+    #101114;
+  box-shadow: 0 26px 78px rgba(0, 0, 0, 0.68), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.trigger:focus-visible {
+  outline: none;
+  border-color: rgba(245, 184, 0, 0.52);
+  box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.085);
+}
+
+.daySelected,
+.daySelected:hover {
+  border-color: rgba(245, 184, 0, 0.64);
+  background: rgba(245, 184, 0, 0.16);
+  color: #f8fafc;
+}

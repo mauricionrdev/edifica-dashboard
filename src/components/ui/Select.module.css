@@ -121,4 +121,56 @@
 .optionActive {
   outline: 1px solid var(--line-subtle);
 }
-
+
+/* V25 — popover alinhado ao dark system */
+.menu {
+  z-index: 12050;
+  padding: 7px;
+  border-color: rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 52px),
+    #101114;
+  box-shadow: 0 26px 78px rgba(0, 0, 0, 0.68), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  background-clip: padding-box;
+}
+
+.option {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: rgba(199, 204, 211, 0.88);
+  font-size: 12.5px;
+  font-weight: 620;
+}
+
+.option:hover {
+  border-color: rgba(255, 255, 255, 0.065);
+  background: rgba(255, 255, 255, 0.045);
+  color: #f3f5f6;
+}
+
+.optionActive {
+  border-color: rgba(245, 184, 0, 0.27);
+  background: rgba(245, 184, 0, 0.105);
+  color: #f3f5f6;
+  outline: none;
+}
+
+.option:disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
+}

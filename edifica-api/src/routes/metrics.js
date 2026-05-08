@@ -162,6 +162,9 @@ function activeAtMonthEnd(row, prefix) {
 const DEFAULT_RANKING_GOAL_PERCENT = 80;
 const DEFAULT_CHURN_TARGET_RATE = 8;
 const RANKING_SETTINGS_KEY = 'global';
+// Chaves por squad usam o formato `squad:<uuid>`; UUID tem 36 caracteres.
+// O tamanho antigo (VARCHAR(32)) truncava a chave e fazia a calculadora voltar para 80/8.
+const RANKING_SETTINGS_KEY_MAX_LENGTH = 96;
 let rankingSettingsInitPromise = null;
 
 function clampPercent(value, fallback) {
@@ -174,12 +177,22 @@ async function getRankingSettingsColumns() {
   const columns = await query('SHOW COLUMNS FROM ranking_settings');
   return columns.map((column) => ({
     name: column.Field,
+    type: String(column.Type || '').toLowerCase(),
+    nullable: String(column.Null || '').toUpperCase() === 'YES',
     extra: String(column.Extra || '').toLowerCase(),
   }));
 }
 
 function hasRankingSettingsColumn(columns, name) {
   return columns.some((column) => column.name === name);
+}
+
+function rankingSettingsKeyNeedsResize(columns) {
+  const column = columns.find((item) => item.name === 'setting_key');
+  if (!column) return false;
+  const match = column.type.match(/varchar\((\d+)\)/i);
+  const size = match ? Number(match[1]) : 0;
+  return size > 0 && size < RANKING_SETTINGS_KEY_MAX_LENGTH;
 }
 
 function isRankingSettingsAutoIncrement(columns, name) {
@@ -191,7 +204,7 @@ async function ensureRankingSettingsSchema() {
     rankingSettingsInitPromise = (async () => {
       await query(`
         CREATE TABLE IF NOT EXISTS ranking_settings (
-          setting_key VARCHAR(32) NOT NULL PRIMARY KEY,
+          setting_key VARCHAR(96) NOT NULL PRIMARY KEY,
           goal_percent DECIMAL(5,2) NOT NULL DEFAULT 80.00,
           churn_target DECIMAL(5,2) NOT NULL DEFAULT 8.00,
           updated_by CHAR(36) NULL,
@@ -203,7 +216,7 @@ async function ensureRankingSettingsSchema() {
       let columns = await getRankingSettingsColumns();
 
       if (!hasRankingSettingsColumn(columns, 'setting_key')) {
-        await query('ALTER TABLE ranking_settings ADD COLUMN setting_key VARCHAR(32) NULL FIRST');
+        await query('ALTER TABLE ranking_settings ADD COLUMN setting_key VARCHAR(96) NULL FIRST');
         columns = await getRankingSettingsColumns();
       }
       if (!hasRankingSettingsColumn(columns, 'goal_percent')) {
@@ -229,6 +242,12 @@ async function ensureRankingSettingsSchema() {
           WHERE setting_key IS NULL OR setting_key = ''`,
         [RANKING_SETTINGS_KEY]
       );
+
+      columns = await getRankingSettingsColumns();
+      if (rankingSettingsKeyNeedsResize(columns)) {
+        await query(`ALTER TABLE ranking_settings MODIFY COLUMN setting_key VARCHAR(${RANKING_SETTINGS_KEY_MAX_LENGTH}) NOT NULL`);
+        columns = await getRankingSettingsColumns();
+      }
 
       const existing = await query(
         `SELECT COUNT(*) AS total

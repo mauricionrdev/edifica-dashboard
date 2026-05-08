@@ -2875,3 +2875,353 @@
   justify-content: center;
   line-height: 1;
 }
+
+/* V25 — checkup senior de modais/drawer do Perfil */
+.drawerPanel,
+.settingsModal {
+  border-color: rgba(255, 255, 255, 0.078);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 160px),
+    #0b0c0e;
+  color: var(--profile-soft);
+}
+
+.drawerPanel {
+  width: min(620px, 100vw);
+  box-shadow: -28px 0 90px rgba(0, 0, 0, 0.58);
+}
+
+.drawerTopbar,
+.settingsHeader {
+  background: rgba(255, 255, 255, 0.012);
+  border-color: rgba(255, 255, 255, 0.062);
+}
+
+.drawerScroll,
+.settingsContent {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.drawerScroll::-webkit-scrollbar,
+.settingsContent::-webkit-scrollbar {
+  width: 8px;
+}
+
+.drawerScroll::-webkit-scrollbar-thumb,
+.settingsContent::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  background-clip: padding-box;
+}
+
+.drawerSection {
+  border-color: rgba(255, 255, 255, 0.058);
+}
+
+.workflowGrid {
+  gap: 12px;
+}
+
+.workflowField {
+  gap: 7px;
+}
+
+.workflowField > span,
+.structuredEditGrid label > span,
+.demandFormGrid label > span,
+.briefingGrid label > span {
+  color: rgba(154, 161, 170, 0.92);
+  font-size: 10px;
+  font-weight: 730;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.formSelect,
+.workflowSelect {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  background-image: none;
+  color: inherit;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  flex: 1 1 auto;
+  overflow: visible;
+}
+
+.formSelect > button,
+.workflowSelect > button {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  min-height: 46px;
+  padding: 0 40px 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.078);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012)),
+    #111214;
+  color: var(--profile-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 670;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.026);
+  transform: translateZ(0);
+}
+
+.workflowSelect > button,
+.workflowDate > button {
+  height: 40px;
+  min-height: 40px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  padding-right: 36px;
+}
+
+.formSelect > button svg,
+.workflowSelect > button svg,
+.workflowDate > button svg {
+  flex: 0 0 auto;
+  color: rgba(199, 204, 211, 0.72);
+  stroke-width: 1.9;
+}
+
+.formSelect > button:hover,
+.formSelect > button[aria-expanded='true'],
+.workflowSelect > button:hover,
+.workflowSelect > button[aria-expanded='true'],
+.workflowDate > button:hover,
+.workflowDate > button[aria-expanded='true'] {
+  border-color: rgba(245, 184, 0, 0.32);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.018)),
+    #131417;
+  color: var(--profile-text);
+}
+
+.formSelect > button:focus-visible,
+.workflowSelect > button:focus-visible,
+.workflowDate > button:focus-visible {
+  outline: none;
+  border-color: rgba(245, 184, 0, 0.52);
+  box-shadow:
+    0 0 0 3px rgba(245, 184, 0, 0.085),
+    inset 0 1px 0 rgba(255, 255, 255, 0.028);
+}
+
+.workflowDate {
+  min-width: 0;
+  width: 100%;
+}
+
+.workflowDate > button {
+  border: 1px solid rgba(255, 255, 255, 0.078);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012)),
+    #111214;
+  color: var(--profile-text);
+  font: inherit;
+  font-weight: 670;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.026);
+}
+
+.formGrid input,
+.demandFormGrid input,
+.briefingGrid input,
+.structuredEditGrid input,
+.demandTextarea,
+.commentForm textarea,
+.completionTextarea,
+.handoffGrid textarea,
+.titleEditor {
+  border-color: rgba(255, 255, 255, 0.078);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.024), rgba(255, 255, 255, 0.012)),
+    #111214;
+  color: var(--profile-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.formGrid input:focus,
+.demandFormGrid input:focus,
+.briefingGrid input:focus,
+.structuredEditGrid input:focus,
+.demandTextarea:focus,
+.commentForm textarea:focus,
+.completionTextarea:focus,
+.handoffGrid textarea:focus,
+.titleEditor:focus {
+  outline: none;
+  border-color: rgba(245, 184, 0, 0.42);
+  background: #131417;
+  box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.075);
+}
+
+.settingsModal {
+  display: flex;
+  flex-direction: column;
+}
+
+.settingsContent {
+  min-height: 0;
+  overflow: auto;
+}
+
+.settingsFooter {
+  flex: 0 0 auto;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.demandModal .settingsFooter,
+.confirmModal .settingsFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.settingsFooter button,
+.drawerHeroActions button,
+.commentForm button,
+.inlineComposer button,
+.collaboratorComposer button {
+  border-color: rgba(255, 255, 255, 0.078);
+  background: rgba(255, 255, 255, 0.022);
+  color: var(--profile-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.022);
+}
+
+.settingsFooter button:hover:not(:disabled),
+.drawerHeroActions button:hover:not(:disabled),
+.commentForm button:hover:not(:disabled),
+.inlineComposer button:hover:not(:disabled),
+.collaboratorComposer button:hover:not(:disabled) {
+  border-color: rgba(245, 184, 0, 0.34);
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--profile-text);
+}
+
+.settingsFooter button[type='submit'],
+.drawerHeroActions .heroActionPrimary {
+  border-color: rgba(245, 184, 0, 0.36);
+  background: rgba(245, 184, 0, 0.11);
+  color: var(--profile-text);
+}
+
+.collaboratorComposer,
+.inlineComposer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: 10px;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+
+.inlineComposer {
+  grid-template-columns: minmax(0, 1fr) 42px;
+}
+
+.collaboratorComposer button,
+.inlineComposer button {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  min-height: 46px;
+  padding: 0;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.inlineComposer button {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  border-radius: 13px;
+}
+
+.inlineComposer input {
+  height: 42px;
+  min-height: 42px;
+  border-radius: 13px;
+}
+
+.collaboratorList,
+.subtaskList {
+  border: 0;
+  overflow: visible;
+  gap: 8px;
+}
+
+.collaboratorItem,
+.subtaskItem {
+  border-color: rgba(255, 255, 255, 0.068);
+  background: rgba(255, 255, 255, 0.014);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
+}
+
+.subtaskItem:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.068);
+}
+
+.removeButton,
+.collaboratorItem button {
+  flex: 0 0 auto;
+}
+
+.commentForm {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.commentForm button {
+  min-height: 42px;
+  border-radius: 13px;
+}
+
+.clientSearchResults,
+.clientSearchEmpty {
+  z-index: 3;
+}
+
+@media (max-width: 760px) {
+  .drawerPanel {
+    width: 100vw;
+  }
+
+  .workflowGrid,
+  .handoffGrid,
+  .demandFormGrid,
+  .briefingGrid,
+  .commentForm {
+    grid-template-columns: 1fr;
+  }
+
+  .settingsFooter {
+    flex-wrap: wrap;
+  }
+
+  .settingsFooter button {
+    flex: 1 1 140px;
+  }
+}
