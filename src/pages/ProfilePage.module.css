@@ -2780,3 +2780,98 @@
   background: rgba(248, 113, 113, 0.08);
   color: #fecaca;
 }
+
+/* V24 — correção do Select customizado dentro do Perfil
+   O className do Select é aplicado no wrapper, não no botão interno. */
+.formSelect,
+.workflowSelect {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  background-image: none;
+  color: inherit;
+  display: flex;
+  flex: 1 1 auto;
+}
+
+.formSelect > button,
+.workflowSelect > button {
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  border: 1px solid var(--profile-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-text);
+  padding: 0 38px 0 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.workflowSelect > button {
+  height: 38px;
+  min-height: 38px;
+  border-radius: 12px;
+  font-size: 13px;
+  padding-right: 34px;
+}
+
+.formSelect > button:hover,
+.formSelect > button[aria-expanded='true'],
+.workflowSelect > button:hover,
+.workflowSelect > button[aria-expanded='true'] {
+  border-color: var(--profile-line-strong);
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.formSelect > button:focus-visible,
+.workflowSelect > button:focus-visible {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.52);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
+}
+
+.collaboratorComposer {
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.collaboratorComposer button {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.inlineComposer {
+  grid-template-columns: minmax(0, 1fr) 40px;
+  gap: 10px;
+}
+
+.inlineComposer input,
+.inlineComposer button {
+  height: 40px;
+  min-height: 40px;
+  border-radius: 12px;
+}
+
+.inlineComposer button {
+  width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
