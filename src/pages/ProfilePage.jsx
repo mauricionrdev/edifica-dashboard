@@ -5,6 +5,9 @@ import {
   createTask,
   createTaskComment,
   deleteTaskComment,
+  listTaskCollaborators,
+  addTaskCollaborator,
+  removeTaskCollaborator,
   listMyProjectTasks,
   listTaskComments,
   updateTask as updateProjectTask,
@@ -718,6 +721,11 @@ export default function ProfilePage() {
   const [completionSaving, setCompletionSaving] = useState(false);
   const [contentEditing, setContentEditing] = useState(false);
   const [contentSaving, setContentSaving] = useState(false);
+  const [collaborators, setCollaborators] = useState([]);
+  const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
+  const [collaboratorUserId, setCollaboratorUserId] = useState('');
+  const [collaboratorSaving, setCollaboratorSaving] = useState(false);
+  const [collaboratorRemovingId, setCollaboratorRemovingId] = useState('');
   const [contentForm, setContentForm] = useState({
     title: '',
     description: '',
@@ -832,6 +840,8 @@ export default function ProfilePage() {
     setCommentDraft('');
     setSubtaskDraft('');
     setTaskComments([]);
+    setCollaborators([]);
+    setCollaboratorUserId('');
     setHandoffOpen(false);
     setContentEditing(false);
 
@@ -839,15 +849,27 @@ export default function ProfilePage() {
 
     let cancelled = false;
     setCommentsLoading(true);
-    listTaskComments(activeTaskId)
-      .then((res) => {
-        if (!cancelled) setTaskComments(Array.isArray(res?.comments) ? res.comments : []);
-      })
-      .catch(() => {
-        if (!cancelled) setTaskComments([]);
+    setCollaboratorsLoading(true);
+
+    Promise.allSettled([listTaskComments(activeTaskId), listTaskCollaborators(activeTaskId)])
+      .then(([commentsRes, collaboratorsRes]) => {
+        if (cancelled) return;
+        if (commentsRes.status === 'fulfilled') {
+          setTaskComments(Array.isArray(commentsRes.value?.comments) ? commentsRes.value.comments : []);
+        } else {
+          setTaskComments([]);
+        }
+        if (collaboratorsRes.status === 'fulfilled') {
+          setCollaborators(Array.isArray(collaboratorsRes.value?.collaborators) ? collaboratorsRes.value.collaborators : []);
+        } else {
+          setCollaborators([]);
+        }
       })
       .finally(() => {
-        if (!cancelled) setCommentsLoading(false);
+        if (!cancelled) {
+          setCommentsLoading(false);
+          setCollaboratorsLoading(false);
+        }
       });
 
     return () => {
@@ -865,6 +887,20 @@ export default function ProfilePage() {
   const visibleTasks = useMemo(() => filterOperationTasks(tabTasks, operationSearch), [operationSearch, tabTasks]);
   const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
   const activeSubtasks = useMemo(() => (activeTask ? tasks.filter((task) => task.parentTaskId === activeTask.id) : []), [activeTask, tasks]);
+  const collaboratorOptions = useMemo(() => {
+    if (!activeTask) return [];
+    const usedIds = new Set([
+      activeTask.assigneeUserId,
+      activeTask.assignee_user_id,
+      activeTask.createdByUserId,
+      activeTask.created_by_user_id,
+      ...collaborators.map((item) => item.userId),
+    ].filter(Boolean));
+
+    return demandUsers
+      .filter((item) => item?.id && !usedIds.has(item.id))
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
+  }, [activeTask, collaborators, demandUsers]);
   const visibleTaskComments = useMemo(() => taskComments.filter((comment) => !isSystemActivityComment(comment)), [taskComments]);
   const activeActivityEvents = useMemo(() => buildActivityEvents(activeTask, taskComments), [activeTask, taskComments]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
@@ -1247,6 +1283,55 @@ export default function ProfilePage() {
       setCommentDeleting(false);
     }
   }
+
+
+  async function handleAddCollaborator(event) {
+    event.preventDefault();
+    if (!activeTask || !collaboratorUserId) return;
+
+    try {
+      setCollaboratorSaving(true);
+      await addTaskCollaborator(activeTask.id, { userId: collaboratorUserId, role: 'follower' });
+      const selectedUser = demandUsers.find((item) => item.id === collaboratorUserId);
+      setCollaborators((prev) => {
+        if (prev.some((item) => item.userId === collaboratorUserId)) return prev;
+        return [
+          ...prev,
+          {
+            taskId: activeTask.id,
+            userId: collaboratorUserId,
+            role: 'follower',
+            userName: selectedUser?.name || 'Usuário',
+            userEmail: selectedUser?.email || '',
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      });
+      setCollaboratorUserId('');
+      showToast('Colaborador adicionado.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao adicionar colaborador.', { variant: 'error' });
+    } finally {
+      setCollaboratorSaving(false);
+    }
+  }
+
+  async function handleRemoveCollaborator(userId) {
+    if (!activeTask || !userId) return;
+
+    try {
+      setCollaboratorRemovingId(userId);
+      await removeTaskCollaborator(activeTask.id, userId);
+      setCollaborators((prev) => prev.filter((item) => item.userId !== userId));
+      if (collaboratorUserId === userId) setCollaboratorUserId('');
+      showToast('Colaborador removido.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao remover colaborador.', { variant: 'error' });
+    } finally {
+      setCollaboratorRemovingId('');
+    }
+  }
+
 
   async function handleOpenDemandModal() {
     setDemandForm((prev) => ({ ...emptyDemandForm(user?.id || ''), assigneeUserId: prev.assigneeUserId || user?.id || '' }));
@@ -1752,6 +1837,54 @@ export default function ProfilePage() {
                   )}
                 </section>
               ) : null}
+
+              <section className={styles.drawerSection}>
+                <div className={styles.sectionTitleRow}>
+                  <h4>Colaboradores</h4>
+                  <span>{collaborators.length}</span>
+                </div>
+                <form className={styles.collaboratorComposer} onSubmit={handleAddCollaborator}>
+                  <Select
+                    value={collaboratorUserId}
+                    onChange={(event) => setCollaboratorUserId(event.target.value)}
+                    aria-label="Colaborador"
+                    className={styles.formSelect}
+                  >
+                    <option value="">Adicionar colaborador</option>
+                    {collaboratorOptions.map((option) => (
+                      <option key={option.id} value={option.id}>{option.name}</option>
+                    ))}
+                  </Select>
+                  <button type="submit" disabled={collaboratorSaving || !collaboratorUserId}>+</button>
+                </form>
+                {collaboratorsLoading ? (
+                  <div className={styles.commentState}>Carregando</div>
+                ) : collaborators.length ? (
+                  <div className={styles.collaboratorList}>
+                    {collaborators.map((collaborator) => {
+                      const collaboratorName = collaborator.userName || collaborator.name || 'Usuário';
+                      return (
+                        <div key={collaborator.userId} className={styles.collaboratorItem}>
+                          <span className={styles.collaboratorAvatar}>{initials(collaboratorName)}</span>
+                          <div>
+                            <strong>{collaboratorName}</strong>
+                            {collaborator.userEmail ? <small>{collaborator.userEmail}</small> : null}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCollaborator(collaborator.userId)}
+                            disabled={collaboratorRemovingId === collaborator.userId}
+                            aria-label="Remover colaborador"
+                            title="Remover colaborador"
+                          >
+                            <TrashIcon size={13} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </section>
 
               <section className={styles.drawerSection}>
                 <div className={styles.sectionTitleRow}>

@@ -2506,3 +2506,115 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* V23 — colaboradores no drawer */
+.collaboratorComposer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  gap: 8px;
+  align-items: center;
+}
+
+.collaboratorComposer button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--profile-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--profile-soft);
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 520;
+}
+
+.collaboratorComposer button:hover:not(:disabled) {
+  border-color: rgba(245, 184, 0, 0.34);
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--profile-text);
+}
+
+.collaboratorComposer button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.collaboratorList {
+  display: grid;
+  gap: 8px;
+}
+
+.collaboratorItem {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.052);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.collaboratorAvatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--profile-soft);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+}
+
+.collaboratorItem strong {
+  display: block;
+  min-width: 0;
+  color: var(--profile-soft);
+  font-size: 12.5px;
+  line-height: 1.15;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collaboratorItem small {
+  display: block;
+  min-width: 0;
+  margin-top: 3px;
+  color: var(--profile-faint);
+  font-size: 11.5px;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collaboratorItem button {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--profile-faint);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+}
+
+.collaboratorItem:hover button,
+.collaboratorItem button:focus-visible {
+  opacity: 1;
+}
+
+.collaboratorItem button:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ff8d8d;
+}
+
+.collaboratorItem button:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
