@@ -245,6 +245,7 @@ router.get('/', requirePermission('clients.view'), async (req, res, next) => {
       `SELECT c.*, s.name AS squad_name
          FROM clients c
          LEFT JOIN squads s ON s.id = c.squad_id
+        WHERE c.status <> 'churn'
         ORDER BY c.created_at DESC, c.name ASC`
     );
     const visible = filterRowsBySquadAccess(req.user, rows, 'clients.view.all');

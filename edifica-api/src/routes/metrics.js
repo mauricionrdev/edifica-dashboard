@@ -250,7 +250,17 @@ async function ensureRankingSettingsSchema() {
   return rankingSettingsInitPromise;
 }
 
-async function getRankingSettings() {
+function serializeRankingSettings(row = {}) {
+  return {
+    settingKey: row.setting_key || RANKING_SETTINGS_KEY,
+    goalPercent: clampPercent(row.goal_percent, DEFAULT_RANKING_GOAL_PERCENT),
+    churnTarget: clampPercent(row.churn_target, DEFAULT_CHURN_TARGET_RATE),
+    updatedBy: row.updated_by || null,
+    updatedAt: row.updated_at || null,
+  };
+}
+
+async function getRankingSettings(settingKey = RANKING_SETTINGS_KEY) {
   await ensureRankingSettingsSchema();
   const rows = await query(
     `SELECT setting_key, goal_percent, churn_target, updated_by, updated_at
@@ -258,15 +268,28 @@ async function getRankingSettings() {
       WHERE setting_key = ?
       ORDER BY updated_at DESC
       LIMIT 1`,
-    [RANKING_SETTINGS_KEY]
+    [settingKey]
   );
-  const row = rows[0] || {};
-  return {
-    goalPercent: clampPercent(row.goal_percent, DEFAULT_RANKING_GOAL_PERCENT),
-    churnTarget: clampPercent(row.churn_target, DEFAULT_CHURN_TARGET_RATE),
-    updatedBy: row.updated_by || null,
-    updatedAt: row.updated_at || null,
-  };
+  return serializeRankingSettings(rows[0]);
+}
+
+function squadRankingSettingKey(squadId) {
+  return `squad:${String(squadId || '').trim()}`;
+}
+
+async function getRankingSettingsMap(squadIds = []) {
+  await ensureRankingSettingsSchema();
+  const keys = [RANKING_SETTINGS_KEY, ...squadIds.map(squadRankingSettingKey)];
+  const placeholders = keys.map(() => '?').join(',');
+  const rows = await query(
+    `SELECT setting_key, goal_percent, churn_target, updated_by, updated_at
+       FROM ranking_settings
+      WHERE setting_key IN (${placeholders})`,
+    keys
+  );
+  const map = new Map(rows.map((row) => [row.setting_key, serializeRankingSettings(row)]));
+  const global = map.get(RANKING_SETTINGS_KEY) || serializeRankingSettings();
+  return { global, map };
 }
 
 function metaTargetRankScore(progress, goalPercent) {
@@ -435,31 +458,49 @@ router.get('/ranking/settings', requirePermission('ranking.view'), async (req, r
   }
 });
 
+async function upsertRankingSetting(settingKey, goalPercent, churnTarget, userId) {
+  const result = await query(
+    `UPDATE ranking_settings
+        SET goal_percent = ?,
+            churn_target = ?,
+            updated_by = ?,
+            updated_at = CURRENT_TIMESTAMP
+      WHERE setting_key = ?`,
+    [goalPercent, churnTarget, userId || null, settingKey]
+  );
+
+  if ((Number(result?.affectedRows) || 0) === 0) {
+    await query(
+      `INSERT INTO ranking_settings (setting_key, goal_percent, churn_target, updated_by)
+       VALUES (?, ?, ?, ?)`,
+      [settingKey, goalPercent, churnTarget, userId || null]
+    );
+  }
+}
+
 router.put('/ranking/settings', requirePermission('ranking.view.all'), async (req, res, next) => {
   try {
+    await ensureRankingSettingsSchema();
+    const squadSettings = Array.isArray(req.body?.squadSettings) ? req.body.squadSettings : null;
+
+    if (squadSettings) {
+      for (const item of squadSettings) {
+        const squadId = String(item?.squadId || '').trim();
+        if (!squadId) continue;
+        const goalPercent = clampPercent(item?.goalPercent, DEFAULT_RANKING_GOAL_PERCENT);
+        const churnTarget = clampPercent(item?.churnTarget, DEFAULT_CHURN_TARGET_RATE);
+        if (goalPercent <= 0) throw badRequest('Meta lucro deve ser maior que zero');
+        await upsertRankingSetting(squadRankingSettingKey(squadId), goalPercent, churnTarget, req.user?.id);
+      }
+      return res.json({ settings: await getRankingSettings() });
+    }
+
     const goalPercent = clampPercent(req.body?.goalPercent, DEFAULT_RANKING_GOAL_PERCENT);
     const churnTarget = clampPercent(req.body?.churnTarget, DEFAULT_CHURN_TARGET_RATE);
 
-    if (goalPercent <= 0) throw badRequest('Meta ativos deve ser maior que zero');
+    if (goalPercent <= 0) throw badRequest('Meta lucro deve ser maior que zero');
 
-    await ensureRankingSettingsSchema();
-    const result = await query(
-      `UPDATE ranking_settings
-          SET goal_percent = ?,
-              churn_target = ?,
-              updated_by = ?,
-              updated_at = CURRENT_TIMESTAMP
-        WHERE setting_key = ?`,
-      [goalPercent, churnTarget, req.user?.id || null, RANKING_SETTINGS_KEY]
-    );
-
-    if ((Number(result?.affectedRows) || 0) === 0) {
-      await query(
-        `INSERT INTO ranking_settings (setting_key, goal_percent, churn_target, updated_by)
-         VALUES (?, ?, ?, ?)`,
-        [RANKING_SETTINGS_KEY, goalPercent, churnTarget, req.user?.id || null]
-      );
-    }
+    await upsertRankingSetting(RANKING_SETTINGS_KEY, goalPercent, churnTarget, req.user?.id);
 
     const settings = await getRankingSettings();
     res.json({ settings });
@@ -476,9 +517,9 @@ router.put('/ranking/settings', requirePermission('ranking.view.all'), async (re
 router.get('/ranking', requirePermission('ranking.view'), async (req, res, next) => {
   try {
     const { date: dateParam, squadId } = req.query;
-    const rankingSettings = await getRankingSettings();
-    const goalPercent = rankingSettings.goalPercent;
-    const churnTarget = rankingSettings.churnTarget;
+    const globalRankingSettings = await getRankingSettings();
+    const goalPercent = globalRankingSettings.goalPercent;
+    const churnTarget = globalRankingSettings.churnTarget;
     let ref;
     if (dateParam) {
       ref = new Date(String(dateParam) + 'T00:00:00Z');
@@ -519,6 +560,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     if (squads.length === 0) return res.json({ weekKey, monthPrefix, rows: [] });
 
     const squadIds = squads.map((squad) => squad.id);
+    const { global: rankingSettings, map: rankingSettingsMap } = await getRankingSettingsMap(squadIds);
     const squadPlaceholders = squadIds.map(() => '?').join(',');
 
     const clients = await query(
@@ -560,6 +602,9 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     }
 
     const rows = squads.map((squad) => {
+      const squadSettings = rankingSettingsMap.get(squadRankingSettingKey(squad.id)) || rankingSettings;
+      const squadGoalPercent = squadSettings.goalPercent;
+      const squadChurnTarget = squadSettings.churnTarget;
       const squadClients = clientsBySquad.get(squad.id) || [];
       const activeClients = squadClients.filter((client) => activeAt(client, bounds.end));
       const activeAtStart = squadClients.filter((client) => activeAt(client, bounds.start));
@@ -587,11 +632,11 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const totals = aggregatePortfolioSummary(clientSummaries);
       const metaIndex = Number(totals.monthProgress) || 0;
       const metaActiveProgress = metaIndex;
-      const metaActiveTargetProgress = goalPercent > 0 ? (metaActiveProgress / goalPercent) * 100 : metaActiveProgress;
-      const metaActiveDistance = goalDistance(metaActiveProgress, goalPercent);
+      const metaActiveTargetProgress = squadGoalPercent > 0 ? (metaActiveProgress / squadGoalPercent) * 100 : metaActiveProgress;
+      const metaActiveDistance = goalDistance(metaActiveProgress, squadGoalPercent);
       const hitRate = Number(totals.hitRateMonth) || 0;
       const legacyPerformanceScore = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
-      const rankingScore = metaTargetRankScore(metaActiveProgress, goalPercent);
+      const rankingScore = metaTargetRankScore(metaActiveProgress, squadGoalPercent);
 
       return {
         squad: {
@@ -617,10 +662,10 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         metaActiveProgress,
         metaActiveClosed: Number(totals.monthClosed) || 0,
         metaActiveGoal: Number(totals.monthGoal) || 0,
-        goalPercent,
-        churnTarget,
-        goalOnTarget: metaActiveProgress >= goalPercent,
-        churnOnTarget: churnRate <= churnTarget,
+        goalPercent: squadGoalPercent,
+        churnTarget: squadChurnTarget,
+        goalOnTarget: metaActiveProgress >= squadGoalPercent,
+        churnOnTarget: churnRate <= squadChurnTarget,
         metaActiveTargetProgress,
         metaActiveDistance,
         rankingScore,
@@ -629,7 +674,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       };
     }).sort(compareRankingRows).map((row, index) => ({ ...row, position: index + 1 }));
 
-    res.json({ weekKey, monthPrefix, settings: rankingSettings, goalPercent, churnTarget, rows });
+    res.json({ weekKey, monthPrefix, settings: rankingSettings, goalPercent: rankingSettings.goalPercent, churnTarget: rankingSettings.churnTarget, rows });
   } catch (err) {
     next(err);
   }
