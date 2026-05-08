@@ -2618,3 +2618,165 @@
   opacity: 0.45;
   cursor: wait;
 }
+
+/* Refinamento do drawer: colaboradores e subtarefas */
+.drawerUtilityRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: 10px;
+  align-items: stretch;
+  margin: 10px 0 12px;
+}
+
+.drawerUtilityRow .formInput,
+.drawerUtilityRow .formSelect {
+  width: 100%;
+  min-width: 0;
+}
+
+.formInput,
+.formSelect {
+  min-height: 46px;
+  border: 1px solid var(--profile-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-text);
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  outline: none;
+}
+
+.formSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 38px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--profile-muted) 50%), linear-gradient(135deg, var(--profile-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 19px, calc(100% - 12px) 19px;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.formInput::placeholder {
+  color: rgba(148, 163, 184, 0.72);
+  font-weight: 560;
+}
+
+.formInput:focus,
+.formSelect:focus {
+  border-color: rgba(212, 175, 55, 0.52);
+  background-color: rgba(255, 255, 255, 0.028);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08);
+}
+
+.formSelect option {
+  background: #101113;
+  color: #f8fafc;
+}
+
+.tinyIconButton {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  border: 1px solid var(--profile-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.tinyIconButton:hover:not(:disabled) {
+  border-color: rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.tinyIconButton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.tinyIconButton:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.collaboratorList,
+.subtaskList {
+  display: grid;
+  gap: 9px;
+}
+
+.collaboratorItem,
+.subtaskItem {
+  border: 1px solid var(--profile-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.012);
+  min-height: 58px;
+  padding: 12px 14px;
+}
+
+.collaboratorItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.collaboratorItem strong,
+.subtaskText {
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 720;
+  color: var(--profile-text);
+}
+
+.collaboratorItem small {
+  display: block;
+  margin-top: 3px;
+  color: var(--profile-muted);
+  font-size: 13px;
+}
+
+.subtaskItem {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 10px;
+}
+
+.subtaskContent {
+  min-width: 0;
+}
+
+.subtaskText {
+  overflow-wrap: anywhere;
+}
+
+.subtaskMeta {
+  margin-top: 3px;
+  color: var(--profile-muted);
+  font-size: 12px;
+}
+
+.removeButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--profile-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.removeButton:hover {
+  border-color: rgba(248, 113, 113, 0.25);
+  background: rgba(248, 113, 113, 0.08);
+  color: #fecaca;
+}
