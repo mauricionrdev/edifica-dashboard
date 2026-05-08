@@ -159,6 +159,46 @@ function activeAtMonthEnd(row, prefix) {
   return end ? activeAt(row, end) : false;
 }
 
+function metricData(row) {
+  if (!row?.data) return {};
+  if (typeof row.data === 'object') return row.data;
+  try { return JSON.parse(row.data || '{}'); } catch { return {}; }
+}
+
+function explicitWeeklyGoal(data = {}) {
+  // Para o ranking mensal, contar somente a meta informada na tela de
+  // preenchimento semanal atual. O campo legado `metaLucro` pode existir em
+  // registros antigos e inflar o ranking de CAPs com histórico antigo.
+  const weeklyGoal = Number(data?.metaSemanal) || 0;
+  return weeklyGoal > 0 ? weeklyGoal : 0;
+}
+
+function clientHitGoalInMonth(client, rows = [], monthPrefix) {
+  const prefix = `${monthPrefix}-S`;
+
+  return rows.some((row) => {
+    const periodKey = String(row?.period_key || '');
+    if (!periodKey.startsWith(prefix)) return false;
+
+    const data = metricData(row);
+    const closed = Number(data?.fechados) || 0;
+    const goal = explicitWeeklyGoal(data);
+    const numericHit = closed > 0 && goal > 0 && closed >= goal;
+    const savedStatus = String(data?.weekStatus || '').trim().toLowerCase();
+
+    // Regra única para todos os CAPs:
+    // - só conta cliente ATIVO;
+    // - só usa metaSemanal real da tela de preenchimento semanal;
+    // - só conta uma vez no mês;
+    // - se a semana tem status salvo, ele precisa confirmar `vai`;
+    // - mesmo com `vai`, fechados reais precisam ser >= metaSemanal.
+    // Isso impede que registros antigos ou recalculados por fallback inflem Samara/Humberto,
+    // mantendo o João pela mesma regra: clientes únicos com Meta batida real.
+    if (savedStatus) return savedStatus === 'vai' && numericHit;
+    return numericHit;
+  });
+}
+
 const DEFAULT_RANKING_GOAL_PERCENT = 80;
 const DEFAULT_CHURN_TARGET_RATE = 8;
 const RANKING_SETTINGS_KEY = 'global';
@@ -642,34 +682,37 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const squadChurnTarget = squadSettings.churnTarget;
       const squadClients = clientsBySquad.get(squad.id) || [];
       const activeClients = squadClients.filter((client) => activeAt(client, bounds.end));
-      const activeAtStart = squadClients.filter((client) => activeAt(client, bounds.start));
+      const portfolioClients = squadClients;
       const churnedInPeriod = squadClients.filter((client) => client.status === 'churn' && dateInMonth(client.churn_date, monthPrefix));
       const mrr = activeClients.reduce((sum, client) => sum + (Number(client.fee) || 0), 0);
-      const churnRate = activeAtStart.length > 0 ? (churnedInPeriod.length / activeAtStart.length) * 100 : 0;
+      const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
 
       const clientSummaries = activeClients.map((client) => {
-        const summary = aggregateClientSummary(metricsByClient.get(client.id) || [], weekKey, monthPrefix, {
+        const clientRows = metricsByClient.get(client.id) || [];
+        const summary = aggregateClientSummary(clientRows, weekKey, monthPrefix, {
           prevWeekKey,
           prevMonthPrefix,
           clientMetaLucro: Number(client.meta_lucro) || 0,
         });
+        const hit = clientHitGoalInMonth(client, clientRows, monthPrefix);
         return {
           clientId: client.id,
           name: client.name,
           squadId: client.squad_id,
           clientMetaLucro: Number(client.meta_lucro) || 0,
           ...summary,
-          hit: summary.monthGoal > 0 && summary.monthClosed >= summary.monthGoal,
-          hasGoal: summary.monthGoalSeen,
+          hit,
+          hasGoal: hit || summary.monthGoalSeen,
         };
       });
 
       const totals = aggregatePortfolioSummary(clientSummaries);
-      const metaIndex = Number(totals.monthProgress) || 0;
+      const clientsHitGoal = clientSummaries.filter((client) => client.hit).length;
+      const metaIndex = activeClients.length > 0 ? (clientsHitGoal / activeClients.length) * 100 : 0;
       const metaActiveProgress = metaIndex;
       const metaActiveTargetProgress = squadGoalPercent > 0 ? (metaActiveProgress / squadGoalPercent) * 100 : metaActiveProgress;
       const metaActiveDistance = goalDistance(metaActiveProgress, squadGoalPercent);
-      const hitRate = Number(totals.hitRateMonth) || 0;
+      const hitRate = metaActiveProgress;
       const legacyPerformanceScore = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
       const rankingScore = metaTargetRankScore(metaActiveProgress, squadGoalPercent);
 
@@ -690,7 +733,9 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         ownerName: squad.owner_name || 'Sem responsável',
         ownerRole: squad.owner_role || '',
         activeClients: activeClients.length,
-        clientsWithGoal: Number(totals.clientsWithGoal) || 0,
+        clientsWithGoal: clientsHitGoal,
+        rankingGoalClients: clientsHitGoal,
+        rankingGoalBaseClients: activeClients.length,
         mrr,
         metaIndex,
         hitRate,
@@ -700,7 +745,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         goalPercent: squadGoalPercent,
         churnRate,
         churnedClients: churnedInPeriod.length,
-        churnBaseClients: activeAtStart.length,
+        churnBaseClients: portfolioClients.length,
         churnTarget: squadChurnTarget,
         goalOnTarget: metaActiveProgress >= squadGoalPercent,
         churnOnTarget: churnRate <= squadChurnTarget,
