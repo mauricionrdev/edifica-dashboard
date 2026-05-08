@@ -133,9 +133,13 @@ function churnedOnOrBefore(row, date) {
 }
 
 function activeAt(row, date) {
-  const status = String(row?.status || '').trim();
-  const canBeActiveAtDate = status === 'active' || status === 'churn';
-  return canBeActiveAtDate && startedOnOrBefore(row, date) && !churnedOnOrBefore(row, date);
+  if (!startedOnOrBefore(row, date)) return false;
+
+  const status = String(row?.status || '').trim().toLowerCase();
+  const churn = parseClientDate(row?.churn_date);
+
+  if (churn) return churn > date;
+  return status === 'active';
 }
 
 function dateInMonth(value, monthPrefix) {
@@ -665,6 +669,9 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         metaActiveClosed: Number(totals.monthClosed) || 0,
         metaActiveGoal: Number(totals.monthGoal) || 0,
         goalPercent: squadGoalPercent,
+        churnRate,
+        churnedClients: churnedInPeriod.length,
+        churnBaseClients: activeAtStart.length,
         churnTarget: squadChurnTarget,
         goalOnTarget: metaActiveProgress >= squadGoalPercent,
         churnOnTarget: churnRate <= squadChurnTarget,
