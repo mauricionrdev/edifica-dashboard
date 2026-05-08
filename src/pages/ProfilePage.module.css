@@ -2876,352 +2876,223 @@
   line-height: 1;
 }
 
-/* V25 — checkup senior de modais/drawer do Perfil */
-.drawerPanel,
-.settingsModal {
-  border-color: rgba(255, 255, 255, 0.078);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 160px),
-    #0b0c0e;
-  color: var(--profile-soft);
+/* V25 — Perfil: correção fiel ao design system
+   Sem gradiente, sem focus ring e sem regras genéricas quebrando Select interno. */
+.hero::before {
+  display: none;
+}
+
+.settingsOverlay {
+  background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(5px);
+}
+
+.settingsModal,
+.demandModal,
+.confirmModal,
+.completionModal,
+.handoffModal,
+.drawerPanel {
+  border: 1px solid var(--profile-line);
+  background: #0b0c0e;
+  box-shadow: none;
 }
 
 .drawerPanel {
-  width: min(620px, 100vw);
-  box-shadow: -28px 0 90px rgba(0, 0, 0, 0.58);
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
 }
 
-.drawerTopbar,
-.settingsHeader {
-  background: rgba(255, 255, 255, 0.012);
-  border-color: rgba(255, 255, 255, 0.062);
+.settingsHeader,
+.demandModal .settingsHeader,
+.drawerTopbar {
+  background: #0b0c0e;
 }
 
-.drawerScroll,
-.settingsContent {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+.demandModal {
+  display: flex;
+  flex-direction: column;
+  width: min(860px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
 }
 
-.drawerScroll::-webkit-scrollbar,
-.settingsContent::-webkit-scrollbar {
-  width: 8px;
+.demandModal .settingsHeader {
+  flex: 0 0 auto;
 }
 
-.drawerScroll::-webkit-scrollbar-thumb,
-.settingsContent::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  background-clip: padding-box;
+.demandModal .settingsContent {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 22px 18px;
 }
 
-.drawerSection {
-  border-color: rgba(255, 255, 255, 0.058);
+.demandModal .settingsFooter {
+  position: sticky;
+  bottom: 0;
+  margin-top: 2px;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--profile-line);
+  background: #0b0c0e;
 }
 
-.workflowGrid {
-  gap: 12px;
-}
-
-.workflowField {
-  gap: 7px;
-}
-
-.workflowField > span,
-.structuredEditGrid label > span,
-.demandFormGrid label > span,
-.briefingGrid label > span {
-  color: rgba(154, 161, 170, 0.92);
-  font-size: 10px;
-  font-weight: 730;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.formGrid input:focus,
+.demandFormGrid input:focus,
+.briefingGrid input:focus,
+.routineFormGrid input:focus,
+.routineFormGrid textarea:focus,
+.demandTextarea:focus,
+.commentForm textarea:focus,
+.inlineComposer input:focus,
+.titleEditor:focus,
+.descriptionEditor:focus,
+.structuredEditGrid input:focus,
+.structuredEditGrid textarea:focus,
+.formInput:focus,
+.formSelect:focus,
+.clientSearchField:focus-within input,
+.operationSearch:focus-within {
+  border-color: var(--profile-line);
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
+  outline: none;
 }
 
 .formSelect,
 .workflowSelect {
-  width: 100%;
   min-width: 0;
   max-width: none;
-  min-height: 0;
   padding: 0;
   border: 0;
-  border-radius: 0;
   background: transparent;
   background-image: none;
-  color: inherit;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 0;
-  flex: 1 1 auto;
-  overflow: visible;
+  box-shadow: none;
 }
 
 .formSelect > button,
-.workflowSelect > button {
-  position: relative;
+.workflowSelect > button,
+.collaboratorComposer .formSelect > button {
   width: 100%;
   min-width: 0;
-  height: 46px;
-  min-height: 46px;
-  padding: 0 40px 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.078);
-  border-radius: 14px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012)),
-    #111214;
-  color: var(--profile-text);
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 670;
-  line-height: 1;
-  letter-spacing: -0.015em;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.026);
-  transform: translateZ(0);
-}
-
-.workflowSelect > button,
-.workflowDate > button {
-  height: 40px;
-  min-height: 40px;
-  border-radius: 12px;
-  font-size: 12.5px;
-  padding-right: 36px;
-}
-
-.formSelect > button svg,
-.workflowSelect > button svg,
-.workflowDate > button svg {
-  flex: 0 0 auto;
-  color: rgba(199, 204, 211, 0.72);
-  stroke-width: 1.9;
+  border-color: var(--profile-line);
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
 }
 
 .formSelect > button:hover,
 .formSelect > button[aria-expanded='true'],
 .workflowSelect > button:hover,
 .workflowSelect > button[aria-expanded='true'],
-.workflowDate > button:hover,
-.workflowDate > button[aria-expanded='true'] {
-  border-color: rgba(245, 184, 0, 0.32);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.018)),
-    #131417;
-  color: var(--profile-text);
+.collaboratorComposer .formSelect > button:hover,
+.collaboratorComposer .formSelect > button[aria-expanded='true'] {
+  border-color: var(--profile-line-strong);
+  background: rgba(255, 255, 255, 0.026);
+  box-shadow: none;
 }
 
 .formSelect > button:focus-visible,
 .workflowSelect > button:focus-visible,
-.workflowDate > button:focus-visible {
+.collaboratorComposer .formSelect > button:focus-visible {
+  border-color: var(--profile-line);
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
   outline: none;
-  border-color: rgba(245, 184, 0, 0.52);
-  box-shadow:
-    0 0 0 3px rgba(245, 184, 0, 0.085),
-    inset 0 1px 0 rgba(255, 255, 255, 0.028);
 }
 
-.workflowDate {
-  min-width: 0;
-  width: 100%;
-}
-
-.workflowDate > button {
-  border: 1px solid rgba(255, 255, 255, 0.078);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012)),
-    #111214;
-  color: var(--profile-text);
-  font: inherit;
-  font-weight: 670;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.026);
-}
-
-.formGrid input,
-.demandFormGrid input,
-.briefingGrid input,
-.structuredEditGrid input,
-.demandTextarea,
-.commentForm textarea,
-.completionTextarea,
-.handoffGrid textarea,
-.titleEditor {
-  border-color: rgba(255, 255, 255, 0.078);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.024), rgba(255, 255, 255, 0.012)),
-    #111214;
-  color: var(--profile-text);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
-}
-
-.formGrid input:focus,
-.demandFormGrid input:focus,
-.briefingGrid input:focus,
-.structuredEditGrid input:focus,
-.demandTextarea:focus,
-.commentForm textarea:focus,
-.completionTextarea:focus,
-.handoffGrid textarea:focus,
-.titleEditor:focus {
-  outline: none;
-  border-color: rgba(245, 184, 0, 0.42);
-  background: #131417;
-  box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.075);
-}
-
-.settingsModal {
-  display: flex;
-  flex-direction: column;
-}
-
-.settingsContent {
-  min-height: 0;
-  overflow: auto;
-}
-
-.settingsFooter {
-  flex: 0 0 auto;
-  gap: 8px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.055);
-}
-
-.demandModal .settingsFooter,
-.confirmModal .settingsFooter {
-  border-top: 1px solid rgba(255, 255, 255, 0.055);
-}
-
-.settingsFooter button,
-.drawerHeroActions button,
-.commentForm button,
-.inlineComposer button,
-.collaboratorComposer button {
-  border-color: rgba(255, 255, 255, 0.078);
-  background: rgba(255, 255, 255, 0.022);
-  color: var(--profile-soft);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.022);
-}
-
-.settingsFooter button:hover:not(:disabled),
-.drawerHeroActions button:hover:not(:disabled),
-.commentForm button:hover:not(:disabled),
-.inlineComposer button:hover:not(:disabled),
-.collaboratorComposer button:hover:not(:disabled) {
-  border-color: rgba(245, 184, 0, 0.34);
-  background: rgba(245, 184, 0, 0.08);
-  color: var(--profile-text);
-}
-
-.settingsFooter button[type='submit'],
-.drawerHeroActions .heroActionPrimary {
-  border-color: rgba(245, 184, 0, 0.36);
-  background: rgba(245, 184, 0, 0.11);
-  color: var(--profile-text);
-}
-
-.collaboratorComposer,
-.inlineComposer {
+.collaboratorComposer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 46px;
   gap: 10px;
   align-items: stretch;
-  margin-bottom: 12px;
 }
 
-.inlineComposer {
-  grid-template-columns: minmax(0, 1fr) 42px;
+.collaboratorComposer .formSelect {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  display: flex;
 }
 
-.collaboratorComposer button,
-.inlineComposer button {
+.collaboratorComposer .formSelect > button {
+  height: 46px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+}
+
+.collaboratorComposer > button,
+.tinyIconButton,
+.inlineComposer > button {
+  border: 1px solid var(--profile-line);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-soft);
+  box-shadow: none;
+}
+
+.collaboratorComposer > button {
   width: 46px;
   min-width: 46px;
   height: 46px;
   min-height: 46px;
-  padding: 0;
   border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
   font-size: 20px;
   line-height: 1;
 }
 
-.inlineComposer button {
-  width: 42px;
-  min-width: 42px;
-  height: 42px;
-  min-height: 42px;
-  border-radius: 13px;
+.inlineComposer {
+  grid-template-columns: minmax(0, 1fr) 40px;
 }
 
-.inlineComposer input {
-  height: 42px;
-  min-height: 42px;
-  border-radius: 13px;
+.inlineComposer > button {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.collaboratorComposer > button:hover:not(:disabled),
+.tinyIconButton:hover:not(:disabled),
+.inlineComposer > button:hover:not(:disabled) {
+  border-color: var(--profile-line-strong);
+  background: rgba(255, 255, 255, 0.032);
+  color: var(--profile-text);
+  transform: none;
 }
 
 .collaboratorList,
 .subtaskList {
   border: 0;
   overflow: visible;
-  gap: 8px;
 }
 
 .collaboratorItem,
 .subtaskItem {
-  border-color: rgba(255, 255, 255, 0.068);
-  background: rgba(255, 255, 255, 0.014);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
+  min-width: 0;
+  border: 1px solid var(--profile-line);
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: none;
 }
 
-.subtaskItem:last-child {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.068);
-}
-
-.removeButton,
-.collaboratorItem button {
-  flex: 0 0 auto;
-}
-
-.commentForm {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-}
-
-.commentForm button {
-  min-height: 42px;
-  border-radius: 13px;
-}
-
-.clientSearchResults,
-.clientSearchEmpty {
-  z-index: 3;
-}
-
-@media (max-width: 760px) {
-  .drawerPanel {
-    width: 100vw;
+@media (max-width: 720px) {
+  .demandModal {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
   }
 
-  .workflowGrid,
-  .handoffGrid,
   .demandFormGrid,
-  .briefingGrid,
-  .commentForm {
+  .briefingGrid {
     grid-template-columns: 1fr;
-  }
-
-  .settingsFooter {
-    flex-wrap: wrap;
-  }
-
-  .settingsFooter button {
-    flex: 1 1 140px;
   }
 }
