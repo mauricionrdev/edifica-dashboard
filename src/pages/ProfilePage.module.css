@@ -2507,29 +2507,89 @@
   }
 }
 
-/* V23 — colaboradores no drawer */
+
+/* Operação do drawer — colaboradores, subtarefas e selects internos */
 .collaboratorComposer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  gap: 10px;
+  align-items: stretch;
+  margin: 0 0 12px;
+}
+
+.collaboratorComposer .formSelect {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  display: flex;
+}
+
+.collaboratorComposer .formSelect > button {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 12px;
+  display: inline-flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--profile-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 610;
+  line-height: 1;
+  text-align: left;
+  box-shadow: none;
+}
+
+.collaboratorComposer .formSelect > button span {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.collaboratorComposer .formSelect > button:hover,
+.collaboratorComposer .formSelect > button[aria-expanded='true'] {
+  border-color: var(--profile-line-strong);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.collaboratorComposer .formSelect > button:focus,
+.collaboratorComposer .formSelect > button:focus-visible {
+  outline: none;
+  border-color: var(--profile-line-strong);
+  box-shadow: none;
 }
 
 .collaboratorComposer > button[type='submit'] {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
   border: 1px solid var(--profile-line);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.018);
   color: var(--profile-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
   font-size: 18px;
   line-height: 1;
-  font-weight: 520;
+  cursor: pointer;
 }
 
 .collaboratorComposer > button[type='submit']:hover:not(:disabled) {
-  border-color: rgba(245, 184, 0, 0.34);
-  background: rgba(245, 184, 0, 0.08);
+  border-color: rgba(245, 184, 0, 0.28);
+  background: rgba(245, 184, 0, 0.075);
   color: var(--profile-text);
 }
 
@@ -2602,6 +2662,7 @@
   display: grid;
   place-items: center;
   opacity: 0;
+  cursor: pointer;
 }
 
 .collaboratorItem:hover button,
@@ -2619,311 +2680,73 @@
   cursor: wait;
 }
 
-/* Refinamento do drawer: colaboradores e subtarefas */
-.drawerUtilityRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 46px;
-  gap: 10px;
-  align-items: stretch;
-  margin: 10px 0 12px;
-}
-
-.drawerUtilityRow .formInput,
-.drawerUtilityRow .formSelect {
-  width: 100%;
-  min-width: 0;
-}
-
-.formInput,
-.formSelect {
-  min-height: 46px;
-  border: 1px solid var(--profile-line);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.018);
-  color: var(--profile-text);
-  padding: 0 14px;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 650;
-  outline: none;
-}
-
-.formSelect {
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: 38px;
-  background-image: linear-gradient(45deg, transparent 50%, var(--profile-muted) 50%), linear-gradient(135deg, var(--profile-muted) 50%, transparent 50%);
-  background-position: calc(100% - 18px) 19px, calc(100% - 12px) 19px;
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-}
-
-.formInput::placeholder {
-  color: rgba(148, 163, 184, 0.72);
-  font-weight: 560;
-}
-
-.formInput:focus,
-.formSelect:focus {
-  border-color: var(--profile-line);
-  background-color: rgba(255, 255, 255, 0.018);
-  box-shadow: none;
-}
-
-.formSelect option {
-  background: #101113;
-  color: #f8fafc;
-}
-
-.tinyIconButton {
-  width: 46px;
-  min-width: 46px;
-  height: 46px;
-  border: 1px solid var(--profile-line);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.018);
-  color: var(--profile-text);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
-}
-
-.tinyIconButton:hover:not(:disabled) {
-  border-color: rgba(212, 175, 55, 0.45);
-  background: rgba(212, 175, 55, 0.08);
-}
-
-.tinyIconButton:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.tinyIconButton:disabled {
-  opacity: 0.42;
-  cursor: not-allowed;
-}
-
-.collaboratorList,
-.subtaskList {
-  display: grid;
+.inlineComposer {
+  grid-template-columns: minmax(0, 1fr) 38px;
   gap: 9px;
 }
 
-.collaboratorItem,
-.subtaskItem {
-  border: 1px solid var(--profile-line);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.012);
-  min-height: 58px;
-  padding: 12px 14px;
-}
-
-.collaboratorItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.collaboratorItem strong,
-.subtaskText {
-  font-size: 14px;
-  line-height: 1.25;
-  font-weight: 720;
-  color: var(--profile-text);
-}
-
-.collaboratorItem small {
-  display: block;
-  margin-top: 3px;
-  color: var(--profile-muted);
-  font-size: 13px;
-}
-
-.subtaskItem {
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) 30px;
-  align-items: center;
-  gap: 10px;
-}
-
-.subtaskContent {
-  min-width: 0;
-}
-
-.subtaskText {
-  overflow-wrap: anywhere;
-}
-
-.subtaskMeta {
-  margin-top: 3px;
-  color: var(--profile-muted);
-  font-size: 12px;
-}
-
-.removeButton {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--profile-muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.removeButton:hover {
-  border-color: rgba(248, 113, 113, 0.25);
-  background: rgba(248, 113, 113, 0.08);
-  color: #fecaca;
-}
-
-/* V24 — correção do Select customizado dentro do Perfil
-   O className do Select é aplicado no wrapper, não no botão interno. */
-.formSelect,
-.workflowSelect {
-  width: 100%;
-  min-width: 0;
-  max-width: none;
-  min-height: auto;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  background-image: none;
-  color: inherit;
-  display: flex;
-  flex: 1 1 auto;
-}
-
-.formSelect > button,
-.workflowSelect > button {
-  width: 100%;
-  height: 46px;
-  min-height: 46px;
-  border: 1px solid var(--profile-line);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.018);
-  color: var(--profile-text);
-  padding: 0 38px 0 14px;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 650;
-  line-height: 1;
-  box-shadow: none;
-}
-
-.workflowSelect > button {
+.inlineComposer input {
   height: 38px;
   min-height: 38px;
   border-radius: 12px;
-  font-size: 13px;
-  padding-right: 34px;
 }
 
-.formSelect > button:hover,
-.formSelect > button[aria-expanded='true'],
-.workflowSelect > button:hover,
-.workflowSelect > button[aria-expanded='true'] {
-  border-color: var(--profile-line-strong);
-  background: rgba(255, 255, 255, 0.032);
-}
-
-.formSelect > button:focus,
-.formSelect > button:focus-visible,
-.workflowSelect > button:focus,
-.workflowSelect > button:focus-visible {
-  outline: none;
-  border-color: var(--profile-line);
-  box-shadow: none;
-}
-
-.collaboratorComposer {
-  grid-template-columns: minmax(0, 1fr) 46px;
-  gap: 10px;
-  align-items: stretch;
-}
-
-.collaboratorComposer > button[type='submit'] {
-  width: 46px;
-  height: 46px;
-  min-width: 46px;
-  border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.inlineComposer {
-  grid-template-columns: minmax(0, 1fr) 40px;
-  gap: 10px;
-}
-
-.inlineComposer input,
 .inlineComposer button {
-  height: 40px;
-  min-height: 40px;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
   border-radius: 12px;
-}
-
-.inlineComposer button {
-  width: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
 }
 
-
-/* V25 — correção escopada: Select de colaboradores no drawer sem afetar selects globais */
-.collaboratorComposer {
-  grid-template-columns: minmax(0, 1fr) 46px;
-  gap: 12px;
-  align-items: stretch;
+.subtaskList {
+  display: grid;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
 }
 
-.collaboratorComposer .formSelect {
-  width: 100%;
-  min-width: 0;
-  max-width: none;
-  display: flex;
-}
-
-.collaboratorComposer .formSelect > button {
-  width: 100%;
-  height: 46px;
-  min-height: 46px;
-  padding: 0 14px;
-  display: inline-flex;
+.subtaskItem {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
   align-items: center;
-  justify-content: space-between;
-  text-align: left;
-  border-color: var(--profile-line);
-  background: rgba(255, 255, 255, 0.018);
-  box-shadow: none;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.052);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
 }
 
-.collaboratorComposer .formSelect > button span {
+.subtaskItem span {
   min-width: 0;
-  flex: 1 1 auto;
-  text-align: left;
+  color: var(--profile-soft);
+  font-size: 13px;
+  font-weight: 560;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.collaboratorComposer .formSelect > button:focus,
-.collaboratorComposer .formSelect > button:focus-visible {
-  outline: none;
-  border-color: var(--profile-line);
-  box-shadow: none;
-}
+@media (max-width: 560px) {
+  .collaboratorComposer {
+    grid-template-columns: minmax(0, 1fr) 40px;
+    gap: 8px;
+  }
 
-.collaboratorComposer > button[type='submit'] {
-  width: 46px;
-  min-width: 46px;
-  height: 46px;
-  min-height: 46px;
-  padding: 0;
+  .collaboratorComposer .formSelect > button,
+  .collaboratorComposer > button[type='submit'] {
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .collaboratorComposer > button[type='submit'] {
+    width: 40px;
+    min-width: 40px;
+  }
 }
