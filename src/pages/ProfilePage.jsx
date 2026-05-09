@@ -1766,9 +1766,9 @@ export default function ProfilePage() {
             <span className={styles.identityGreeting}>{greetingForDate(profileDate)} · {formatProfileDate(profileDate)}</span>
             <div className={styles.identityTitle}>
               <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
+              <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
             </div>
             <div className={styles.identityMeta}>
-              <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
               {user?.email ? <span>{user.email}</span> : null}
             </div>
             <div className={styles.profileStatRail}>
