@@ -192,7 +192,12 @@ export default function SquadRankingPage() {
       const owner = squad.owner || ownership.owner || null;
       const ownerName = row.ownerName || owner?.name || 'Sem responsável';
       const metaIndex = Number(row.metaIndex) || 0;
-      const metaActiveProgress = Number(row.metaActiveProgress ?? row.metaIndex) || 0;
+      const rankingGoalClients = Number(row.rankingGoalClients ?? row.clientsWithGoal) || 0;
+      const rankingGoalBaseClients = Number(row.rankingGoalBaseClients ?? row.activeClients) || 0;
+      const directMetaActiveProgress = rankingGoalBaseClients > 0 ? (rankingGoalClients / rankingGoalBaseClients) * 100 : 0;
+      const metaActiveProgress = rankingGoalBaseClients > 0
+        ? directMetaActiveProgress
+        : (Number(row.metaActiveProgress ?? row.metaIndex) || 0);
       const churnRate = Number(row.churnRate) || 0;
       const hitRate = Number(row.hitRate) || 0;
       const rankingScore = Number(row.rankingScore) || 0;
@@ -205,7 +210,9 @@ export default function SquadRankingPage() {
         ownerName,
         ownerRole: row.ownerRole || owner?.role || '',
         activeClients: Number(row.activeClients) || 0,
-        clientsWithGoal: Number(row.clientsWithGoal) || 0,
+        clientsWithGoal: rankingGoalClients,
+        rankingGoalClients,
+        rankingGoalBaseClients,
         mrr: Number(row.mrr) || 0,
         metaIndex,
         metaActiveProgress,

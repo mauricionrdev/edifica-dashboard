@@ -149,24 +149,51 @@ function dateInMonth(value, monthPrefix) {
   return prefix === monthPrefix;
 }
 
+
 function metricNumber(value) {
   if (value === '' || value === null || value === undefined) return 0;
   const parsed = typeof value === 'number' ? value : parseLocaleNumber(value);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function hasRankingMetaHit(data = {}) {
-  const metaSemanal = metricNumber(data?.metaSemanal);
-  const fechados = metricNumber(data?.fechados);
-  return metaSemanal > 0 && fechados >= metaSemanal;
+function metricData(row) {
+  if (!row?.data) return {};
+  if (typeof row.data === 'object') return row.data;
+  try { return JSON.parse(row.data || '{}'); } catch { return {}; }
 }
 
-function clientHitRankingMetaInMonth(clientMetrics = [], monthPrefix = '') {
+function normalizedClientStatus(status) {
+  return String(status || '').trim().toLowerCase();
+}
+
+function isActiveClientStatus(client) {
+  return normalizedClientStatus(client?.status) === 'active';
+}
+
+function rankingWeeklyGoal(data = {}) {
+  // Ranking de Meta Lucro: usa somente a meta informada no preenchimento semanal.
+  // Não usa meta_lucro do cadastro, progresso mensal, projeção, weekStatus ou status legado.
+  const metaSemanal = metricNumber(data?.metaSemanal);
+  if (metaSemanal > 0) return metaSemanal;
+
+  // Compatibilidade para registros que ainda foram salvos pelo campo antigo da própria semana.
+  // Continua sem usar clients.meta_lucro.
+  const metaLucroLegacy = metricNumber(data?.metaLucro);
+  return metaLucroLegacy > 0 ? metaLucroLegacy : 0;
+}
+
+function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '') {
   const prefix = `${monthPrefix}-S`;
+
   return clientMetrics.some((row) => {
     const periodKey = String(row?.period_key || '');
     if (!periodKey.startsWith(prefix)) return false;
-    return hasRankingMetaHit(row?.data || {});
+
+    const data = metricData(row);
+    const goal = rankingWeeklyGoal(data);
+    const closed = metricNumber(data?.fechados);
+
+    return goal > 0 && closed > 0 && closed >= goal;
   });
 }
 
@@ -663,17 +690,14 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const squadChurnTarget = squadSettings.churnTarget;
       const squadClients = clientsBySquad.get(squad.id) || [];
       const portfolioClients = squadClients;
-      const activeClients = squadClients.filter((client) => activeAt(client, bounds.end));
-      const churnedInPeriod = squadClients.filter((client) => client.status === 'churn' && dateInMonth(client.churn_date, monthPrefix));
+      const activeClients = squadClients.filter(isActiveClientStatus);
+      const churnedInPeriod = squadClients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
       const mrr = activeClients.reduce((sum, client) => sum + (Number(client.fee) || 0), 0);
       const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
 
-      const rankingMetaHitClientIds = new Set();
       const clientSummaries = activeClients.map((client) => {
         const clientMetricRows = metricsByClient.get(client.id) || [];
-        const rankingMetaHit = clientHitRankingMetaInMonth(clientMetricRows, monthPrefix);
-        if (rankingMetaHit) rankingMetaHitClientIds.add(client.id);
-
+        const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix);
         const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
           prevWeekKey,
           prevMonthPrefix,
@@ -685,18 +709,19 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
           squadId: client.squad_id,
           clientMetaLucro: Number(client.meta_lucro) || 0,
           ...summary,
-          hit: rankingMetaHit,
-          hasGoal: rankingMetaHit,
+          hit,
+          hasGoal: hit,
         };
       });
 
       const totals = aggregatePortfolioSummary(clientSummaries);
-      const rankingMetaHitClients = rankingMetaHitClientIds.size;
-      const metaIndex = activeClients.length > 0 ? (rankingMetaHitClients / activeClients.length) * 100 : 0;
+      const rankingGoalClients = clientSummaries.filter((client) => client.hit).length;
+      const rankingGoalBaseClients = activeClients.length;
+      const metaIndex = rankingGoalBaseClients > 0 ? (rankingGoalClients / rankingGoalBaseClients) * 100 : 0;
       const metaActiveProgress = metaIndex;
       const metaActiveTargetProgress = squadGoalPercent > 0 ? (metaActiveProgress / squadGoalPercent) * 100 : metaActiveProgress;
       const metaActiveDistance = goalDistance(metaActiveProgress, squadGoalPercent);
-      const hitRate = Number(totals.hitRateMonth) || 0;
+      const hitRate = metaActiveProgress;
       const legacyPerformanceScore = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
       const rankingScore = metaTargetRankScore(metaActiveProgress, squadGoalPercent);
 
@@ -717,13 +742,15 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         ownerName: squad.owner_name || 'Sem responsável',
         ownerRole: squad.owner_role || '',
         activeClients: activeClients.length,
-        clientsWithGoal: rankingMetaHitClients,
+        clientsWithGoal: rankingGoalClients,
+        rankingGoalClients,
+        rankingGoalBaseClients,
         mrr,
         metaIndex,
         hitRate,
         metaActiveProgress,
-        metaActiveClosed: rankingMetaHitClients,
-        metaActiveGoal: activeClients.length,
+        metaActiveClosed: rankingGoalClients,
+        metaActiveGoal: rankingGoalBaseClients,
         goalPercent: squadGoalPercent,
         churnRate,
         churnedClients: churnedInPeriod.length,
