@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
 import {
@@ -822,6 +823,7 @@ export default function ProfilePage() {
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
   const clientSearchRef = useRef(null);
+  const clientSearchPanelRef = useRef(null);
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -849,6 +851,7 @@ export default function ProfilePage() {
   const [demandSaving, setDemandSaving] = useState(false);
   const [clientQuery, setClientQuery] = useState('');
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [clientSearchPosition, setClientSearchPosition] = useState({ top: 0, left: 0, width: 320 });
   const [taskComments, setTaskComments] = useState([]);
   const [taskEvents, setTaskEvents] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -913,6 +916,23 @@ export default function ProfilePage() {
     return subscribeAvatarChange(() => setAvatarUrl(getUserAvatar(user)));
   }, [user]);
 
+  function updateClientSearchPosition() {
+    const field = clientSearchRef.current;
+    if (!field) return;
+
+    const rect = field.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    const preferredWidth = Math.max(rect.width, 320);
+    const safeWidth = Math.min(preferredWidth, Math.max(280, viewportWidth - 24));
+    const safeLeft = Math.max(12, Math.min(rect.left, viewportWidth - safeWidth - 12));
+
+    setClientSearchPosition({
+      top: rect.bottom + 6,
+      left: safeLeft,
+      width: safeWidth,
+    });
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -972,13 +992,26 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!clientSearchOpen) return undefined;
 
+    updateClientSearchPosition();
+
     function handlePointerDown(event) {
       if (clientSearchRef.current?.contains(event.target)) return;
+      if (clientSearchPanelRef.current?.contains(event.target)) return;
       setClientSearchOpen(false);
     }
 
+    function handleViewportChange() {
+      updateClientSearchPosition();
+    }
+
     window.addEventListener('pointerdown', handlePointerDown, true);
-    return () => window.removeEventListener('pointerdown', handlePointerDown, true);
+    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener('scroll', handleViewportChange, true);
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown, true);
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('scroll', handleViewportChange, true);
+    };
   }, [clientSearchOpen]);
 
   useEffect(() => {
@@ -2270,11 +2303,13 @@ export default function ProfilePage() {
                     onFocus={() => {
                       setClientSearchOpen(true);
                       if (selectedDemandClient) setClientQuery(selectedDemandClient.name || '');
+                      window.requestAnimationFrame(updateClientSearchPosition);
                     }}
                     onChange={(event) => {
                       setClientQuery(event.target.value);
                       setClientSearchOpen(true);
                       if (demandForm.clientId) setDemandForm((prev) => ({ ...prev, clientId: '' }));
+                      window.requestAnimationFrame(updateClientSearchPosition);
                     }}
                     placeholder="Cliente"
                     aria-label="Cliente"
@@ -2291,29 +2326,6 @@ export default function ProfilePage() {
                     >
                       <CloseIcon size={13} />
                     </button>
-                  ) : null}
-                  {clientSearchOpen ? (
-                    <div className={styles.clientSearchResults}>
-                      {filteredDemandClients.length ? filteredDemandClients.map((client) => (
-                        <button
-                          key={client.id}
-                          type="button"
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => {
-                            setDemandForm((prev) => ({ ...prev, clientId: client.id }));
-                            setClientQuery(client.name || '');
-                            setClientSearchOpen(false);
-                          }}
-                        >
-                          <strong>{client.name}</strong>
-                          {client.squadName || client.managerName || client.gdvName ? (
-                            <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span>
-                          ) : null}
-                        </button>
-                      )) : (
-                        <span className={styles.clientSearchEmpty}>Sem cliente</span>
-                      )}
-                    </div>
                   ) : null}
                 </div>
                 <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
@@ -2350,6 +2362,34 @@ export default function ProfilePage() {
               </footer>
             </div>
           </form>
+          {clientSearchOpen ? createPortal(
+            <div
+              ref={clientSearchPanelRef}
+              className={`${styles.clientSearchResults} ${styles.clientSearchFloating}`}
+              style={{ top: clientSearchPosition.top, left: clientSearchPosition.left, width: clientSearchPosition.width }}
+            >
+              {filteredDemandClients.length ? filteredDemandClients.map((client) => (
+                <button
+                  key={client.id}
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    setDemandForm((prev) => ({ ...prev, clientId: client.id }));
+                    setClientQuery(client.name || '');
+                    setClientSearchOpen(false);
+                  }}
+                >
+                  <strong>{client.name}</strong>
+                  {client.squadName || client.managerName || client.gdvName ? (
+                    <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span>
+                  ) : null}
+                </button>
+              )) : (
+                <span className={styles.clientSearchEmpty}>Sem cliente</span>
+              )}
+            </div>,
+            document.body
+          ) : null}
         </div>
       ) : null}
 

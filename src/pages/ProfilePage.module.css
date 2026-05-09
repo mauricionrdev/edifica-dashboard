@@ -2942,3 +2942,83 @@
   opacity: 0.42;
   cursor: not-allowed;
 }
+
+/* V36 — Nova demanda: rolagem real e dropdown de cliente fora do recorte */
+.settingsOverlay:has(.demandModal) {
+  overflow: auto;
+  place-items: start center;
+  padding: clamp(12px, 2.6vh, 24px);
+}
+
+.demandModal {
+  width: min(1080px, calc(100vw - 40px));
+  max-height: calc(100dvh - clamp(24px, 5.2vh, 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.demandModal .settingsHeader {
+  flex: 0 0 auto;
+}
+
+.demandModal .settingsContent {
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 0;
+  scrollbar-width: thin;
+}
+
+.demandModal .settingsFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  background: linear-gradient(180deg, rgba(11, 12, 14, 0.90), #0b0c0e 34%);
+  backdrop-filter: blur(8px);
+}
+
+.clientSearchFloating {
+  position: fixed;
+  inset: auto auto auto auto;
+  right: auto;
+  max-height: min(292px, calc(100dvh - 96px));
+  max-width: calc(100vw - 24px);
+  z-index: 16000;
+  overscroll-behavior: contain;
+}
+
+.clientSearchFloating strong {
+  white-space: normal;
+  line-height: 1.22;
+}
+
+.clientSearchFloating span {
+  line-height: 1.25;
+}
+
+@media (max-width: 920px) {
+  .demandModal {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .settingsOverlay:has(.demandModal) {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .demandModal .settingsContent {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .demandModal .settingsFooter {
+    margin-left: -14px;
+    margin-right: -14px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+}
