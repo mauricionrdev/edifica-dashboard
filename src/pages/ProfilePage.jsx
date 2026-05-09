@@ -299,6 +299,9 @@ const OPERATION_TABS = [
   { value: 'done', label: 'Concluídas' },
 ];
 
+const OPERATION_PAGE_SIZE = 8;
+
+
 
 const PRIORITY_WEIGHT = {
   critical: 4,
@@ -860,7 +863,7 @@ export default function ProfilePage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('profile');
   const [operationTab, setOperationTab] = useState('waiting');
-  const [operationSearch, setOperationSearch] = useState('');
+  const [operationPage, setOperationPage] = useState(1);
   const [tasks, setTasks] = useState([]);
   const [taskUpdatingId, setTaskUpdatingId] = useState('');
   const [tasksLoading, setTasksLoading] = useState(true);
@@ -1104,8 +1107,19 @@ export default function ProfilePage() {
 
   const operationCounts = useMemo(() => getOperationCounts(tasks), [tasks]);
   const tabTasks = useMemo(() => getVisibleTasks(tasks, operationTab), [operationTab, tasks]);
-  const visibleTasks = useMemo(() => filterOperationTasks(tabTasks, operationSearch), [operationSearch, tabTasks]);
+  const operationTotalPages = Math.max(1, Math.ceil(tabTasks.length / OPERATION_PAGE_SIZE));
+  const safeOperationPage = Math.min(operationPage, operationTotalPages);
+  const visibleTasks = useMemo(() => {
+    const start = (safeOperationPage - 1) * OPERATION_PAGE_SIZE;
+    return tabTasks.slice(start, start + OPERATION_PAGE_SIZE);
+  }, [safeOperationPage, tabTasks]);
+  const operationRangeStart = tabTasks.length ? ((safeOperationPage - 1) * OPERATION_PAGE_SIZE) + 1 : 0;
+  const operationRangeEnd = tabTasks.length ? Math.min(tabTasks.length, safeOperationPage * OPERATION_PAGE_SIZE) : 0;
   const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
+
+  useEffect(() => {
+    setOperationPage(1);
+  }, [operationTab]);
   const activeSubtasks = useMemo(() => {
     if (!activeTask) return [];
     const merged = new Map();
@@ -1807,7 +1821,7 @@ export default function ProfilePage() {
           <div className={styles.operationHeaderTop}>
             <div className={styles.operationTitleBlock}>
               <h2><ChecklistIcon size={18} /> <span>Minha operação</span></h2>
-              {tabTasks.length ? <small>{visibleTasks.length} de {tabTasks.length} demandas</small> : null}
+              {tabTasks.length ? <small>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</small> : null}
             </div>
             <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal}>Nova demanda</button>
           </div>
@@ -1819,7 +1833,7 @@ export default function ProfilePage() {
                   key={tab.value}
                   type="button"
                   className={`${styles.operationTab} ${operationTab === tab.value ? styles.operationTabActive : ''}`.trim()}
-                  onClick={() => setOperationTab(tab.value)}
+                  onClick={() => { setOperationTab(tab.value); setOperationPage(1); }}
                   aria-current={operationTab === tab.value ? 'page' : undefined}
                 >
                   <span className={styles.operationTabLabel}>{tab.label}</span>
@@ -1828,17 +1842,6 @@ export default function ProfilePage() {
               ))}
             </nav>
 
-            <div className={styles.operationToolbar}>
-              <label className={styles.operationSearch}>
-                <input
-                  type="search"
-                  value={operationSearch}
-                  onChange={(event) => setOperationSearch(event.target.value)}
-                  placeholder="Buscar demanda, cliente ou responsável"
-                  aria-label="Buscar demandas"
-                />
-              </label>
-            </div>
           </div>
         </header>
 
@@ -1849,49 +1852,61 @@ export default function ProfilePage() {
             <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
             <div className={styles.emptyOperation}>
-              <span>{operationSearch.trim() ? 'Sem resultados' : 'Fila limpa'}</span>
+              <span>Fila limpa</span>
             </div>
           ) : (
-            <div className={styles.operationList}>
-              {visibleTasks.map((task) => {
-                const itemKind = getTaskKind(task);
-                const itemStatus = statusKey(task);
-                return (
-                  <article
-                    key={task.id}
-                    className={`${styles.operationRow} ${isDone(task) ? styles.operationRowDone : ''}`.trim()}
-                    onClick={() => setActiveTaskId(task.id)}
-                  >
-                    <button
-                      type="button"
-                      className={`${styles.statusCheck} ${isDone(task) ? styles.statusCheckDone : ''}`.trim()}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleToggleTask(task);
-                      }}
-                      disabled={taskUpdatingId === task.id}
-                      aria-label={isDone(task) ? 'Reabrir' : 'Concluir'}
+            <>
+              <div className={styles.operationList}>
+                {visibleTasks.map((task) => {
+                  const itemKind = getTaskKind(task);
+                  const itemStatus = statusKey(task);
+                  return (
+                    <article
+                      key={task.id}
+                      className={`${styles.operationRow} ${isDone(task) ? styles.operationRowDone : ''}`.trim()}
+                      onClick={() => setActiveTaskId(task.id)}
                     >
-                      {isDone(task) ? '✓' : ''}
-                    </button>
+                      <button
+                        type="button"
+                        className={`${styles.statusCheck} ${isDone(task) ? styles.statusCheckDone : ''}`.trim()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleToggleTask(task);
+                        }}
+                        disabled={taskUpdatingId === task.id}
+                        aria-label={isDone(task) ? 'Reabrir' : 'Concluir'}
+                      >
+                        {isDone(task) ? '✓' : ''}
+                      </button>
 
-                    <div className={styles.operationMain}>
-                      <strong>{displayTaskTitle(task)}</strong>
-                      <span>{task.clientName || task.projectName || task.createdByName || '—'}</span>
-                    </div>
+                      <div className={styles.operationMain}>
+                        <strong>{displayTaskTitle(task)}</strong>
+                        <span>{task.clientName || task.projectName || task.createdByName || '—'}</span>
+                      </div>
 
-                    <div className={styles.operationMeta}>
-                      <span className={`${styles.kindPill} ${styles[`kind_${itemKind}`] || ''}`.trim()}>{kindLabel(itemKind)}</span>
-                      <span className={`${styles.priorityPill} ${styles[`priority_${priorityKey(task)}`] || ''}`.trim()}>{priorityLabel(priorityKey(task))}</span>
-                      <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
-                      <span className={`${styles.relationPill} ${task.profileRelation === 'collaborator' ? styles.relationWatching : styles.relationResponsible}`.trim()}>
-                        {relationLabel(task)}
-                      </span>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+                      <div className={styles.operationMeta}>
+                        <span className={`${styles.kindPill} ${styles[`kind_${itemKind}`] || ''}`.trim()}>{kindLabel(itemKind)}</span>
+                        <span className={`${styles.priorityPill} ${styles[`priority_${priorityKey(task)}`] || ''}`.trim()}>{priorityLabel(priorityKey(task))}</span>
+                        <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
+                        <span className={`${styles.relationPill} ${task.profileRelation === 'collaborator' ? styles.relationWatching : styles.relationResponsible}`.trim()}>
+                          {relationLabel(task)}
+                        </span>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              {tabTasks.length > OPERATION_PAGE_SIZE ? (
+                <div className={styles.operationPagination} aria-label="Paginação da operação">
+                  <span>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</span>
+                  <div>
+                    <button type="button" onClick={() => setOperationPage((page) => Math.max(1, page - 1))} disabled={safeOperationPage <= 1}>Anterior</button>
+                    <button type="button" onClick={() => setOperationPage((page) => Math.min(operationTotalPages, page + 1))} disabled={safeOperationPage >= operationTotalPages}>Próxima</button>
+                  </div>
+                </div>
+              ) : null}
+            </>
           )}
         </div>
       </section>
