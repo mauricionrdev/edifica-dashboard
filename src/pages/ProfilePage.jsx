@@ -1805,34 +1805,40 @@ export default function ProfilePage() {
       <section className={styles.operationBoard}>
         <header className={styles.operationHeader}>
           <div className={styles.operationHeaderTop}>
-            <h2>Minha operação</h2>
+            <div className={styles.operationTitleBlock}>
+              <h2>Minha operação</h2>
+              <span>{visibleTasks.length} de {tabTasks.length} demandas</span>
+            </div>
             <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal}>Nova demanda</button>
           </div>
-          <nav className={styles.operationTabs} aria-label="Operação">
-            {OPERATION_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                className={`${styles.operationTab} ${operationTab === tab.value ? styles.operationTabActive : ''}`.trim()}
-                onClick={() => setOperationTab(tab.value)}
-                aria-current={operationTab === tab.value ? 'page' : undefined}
-              >
-                {tab.label}
-                <span>{operationCounts[tab.value] || 0}</span>
-              </button>
-            ))}
-          </nav>
-          <div className={styles.operationToolbar}>
-            <label className={styles.operationSearch}>
-              <input
-                type="search"
-                value={operationSearch}
-                onChange={(event) => setOperationSearch(event.target.value)}
-                placeholder="Buscar"
-                aria-label="Buscar demandas"
-              />
-            </label>
-            <span>{visibleTasks.length} de {tabTasks.length}</span>
+
+          <div className={styles.operationControlPanel}>
+            <nav className={styles.operationTabs} aria-label="Operação">
+              {OPERATION_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  className={`${styles.operationTab} ${operationTab === tab.value ? styles.operationTabActive : ''}`.trim()}
+                  onClick={() => setOperationTab(tab.value)}
+                  aria-current={operationTab === tab.value ? 'page' : undefined}
+                >
+                  <span className={styles.operationTabLabel}>{tab.label}</span>
+                  <span className={styles.operationTabCount}>{operationCounts[tab.value] || 0}</span>
+                </button>
+              ))}
+            </nav>
+
+            <div className={styles.operationToolbar}>
+              <label className={styles.operationSearch}>
+                <input
+                  type="search"
+                  value={operationSearch}
+                  onChange={(event) => setOperationSearch(event.target.value)}
+                  placeholder="Buscar demanda, cliente ou responsável"
+                  aria-label="Buscar demandas"
+                />
+              </label>
+            </div>
           </div>
         </header>
 
