@@ -3549,3 +3549,242 @@
     font-size: 9px;
   }
 }
+
+/* V41 — UX/UI premium: topo limpo, chips com ícones e sem letras espaçadas */
+.hero {
+  padding: 18px 20px;
+  border-radius: 18px;
+  border-color: rgba(255, 255, 255, 0.055);
+  background:
+    radial-gradient(560px 160px at 0% -34%, rgba(245, 184, 0, 0.035), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0.003)),
+    var(--profile-panel);
+}
+
+.identityRow {
+  grid-template-columns: 56px minmax(0, 1fr) 34px;
+  gap: 14px;
+  align-items: center;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border: 0;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.identityCopy {
+  gap: 5px;
+}
+
+.identityGreeting {
+  color: var(--profile-muted);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 540;
+  letter-spacing: 0;
+}
+
+.identityTitle {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.identityTitle h1 {
+  font-size: clamp(20px, 1.35vw, 24px);
+  line-height: 1.03;
+  font-weight: 670;
+  letter-spacing: -0.035em;
+}
+
+.roleBadge {
+  min-height: 21px;
+  padding: 0 9px;
+  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-muted);
+  font-size: 11px;
+  font-weight: 620;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.identityMeta {
+  color: var(--profile-muted);
+  font-size: 12.5px;
+  line-height: 1.1;
+  font-weight: 520;
+}
+
+.profileStatRail {
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.profileStat {
+  min-height: 27px;
+  gap: 6px;
+  padding: 0 9px;
+  border-color: rgba(255, 255, 255, 0.058);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.012);
+  color: var(--profile-muted);
+  font-size: 12px;
+  font-weight: 540;
+  letter-spacing: 0;
+}
+
+.profileStat svg {
+  width: 13px;
+  height: 13px;
+  color: rgba(148, 163, 184, 0.88);
+  flex: 0 0 auto;
+}
+
+.profileStat strong {
+  color: var(--profile-text);
+  font-weight: 680;
+  letter-spacing: -0.01em;
+}
+
+.profileStat > span {
+  color: var(--profile-muted);
+}
+
+.profileStat i {
+  display: none;
+}
+
+.profileStat_amber svg { color: rgba(245, 184, 0, 0.86); }
+.profileStat_red svg { color: rgba(255, 107, 115, 0.9); }
+.profileStat_green svg { color: rgba(101, 217, 154, 0.9); }
+.profileStat_blue svg { color: rgba(90, 169, 255, 0.88); }
+.profileStat_violet svg { color: rgba(183, 132, 240, 0.9); }
+.profileStat_completion svg { color: rgba(148, 163, 184, 0.9); }
+
+.iconButton {
+  width: 33px;
+  height: 33px;
+  border-radius: 11px;
+  color: var(--profile-muted);
+  background: transparent;
+}
+
+.iconButton:hover {
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--profile-text);
+}
+
+.operationBoard {
+  border-color: rgba(255, 255, 255, 0.055);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0.003)),
+    var(--profile-panel);
+}
+
+.operationHeader {
+  gap: 14px;
+  padding: 22px 26px 16px;
+}
+
+.operationHeaderTop h2 {
+  font-size: clamp(21px, 1.5vw, 25px);
+  line-height: 1.05;
+  font-weight: 670;
+  letter-spacing: -0.04em;
+}
+
+.operationTabs {
+  gap: 7px;
+}
+
+.operationTab {
+  min-height: 32px;
+  border-radius: 999px;
+  padding: 0 12px;
+  color: var(--profile-muted);
+  font-size: 13px;
+  font-weight: 620;
+  letter-spacing: 0;
+}
+
+.operationTab span {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 670;
+  letter-spacing: 0;
+}
+
+.operationTabActive {
+  color: var(--profile-text);
+  background: rgba(255, 255, 255, 0.038);
+  border-color: rgba(255, 255, 255, 0.095);
+}
+
+.primaryAction {
+  min-height: 38px;
+  padding: 0 15px;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.operationToolbar {
+  margin-top: 0;
+}
+
+.operationSearch {
+  width: min(450px, 100%);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.operationBody {
+  padding: 16px 26px 24px;
+}
+
+.operationEmpty {
+  min-height: 118px;
+  border-style: solid;
+  background: rgba(255, 255, 255, 0.006);
+}
+
+.operationEmpty span,
+.emptyText {
+  letter-spacing: 0;
+}
+
+@media (max-width: 760px) {
+  .hero {
+    padding: 16px;
+  }
+
+  .identityRow {
+    grid-template-columns: 50px minmax(0, 1fr) 32px;
+    gap: 11px;
+  }
+
+  .avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .identityTitle h1 {
+    font-size: 20px;
+  }
+
+  .profileStatRail {
+    margin-top: 7px;
+  }
+
+  .operationHeader,
+  .operationBody {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

@@ -32,7 +32,7 @@ import {
 import Select from '../components/ui/Select.jsx';
 import DateField from '../components/ui/DateField.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
-import { CloseIcon, SettingsIcon, TrashIcon } from '../components/ui/Icons.jsx';
+import { BellIcon, BuildingIcon, CalendarIcon, ChecklistIcon, CloseIcon, SettingsIcon, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
 
 const AVATAR_OPTIONS = [
@@ -1132,11 +1132,11 @@ export default function ProfilePage() {
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
   const profileDate = useMemo(() => new Date(), []);
   const profileStats = useMemo(() => ([
-    { label: 'hoje', value: operationCounts.today, tone: 'amber' },
-    { label: 'atrasadas', value: operationCounts.overdue, tone: 'red' },
-    { label: 'concluídas', value: operationCounts.done, tone: 'green' },
-    { label: 'squads', value: squadNames.length, tone: 'blue' },
-    { label: 'clientes', value: demandClients.length, tone: 'violet' },
+    { label: 'Hoje', value: operationCounts.today, tone: 'amber', Icon: CalendarIcon },
+    { label: 'Atrasadas', value: operationCounts.overdue, tone: 'red', Icon: BellIcon },
+    { label: 'Concluídas', value: operationCounts.done, tone: 'green', Icon: ChecklistIcon },
+    { label: 'Squads', value: squadNames.length, tone: 'blue', Icon: UsersIcon },
+    { label: 'Clientes', value: demandClients.length, tone: 'violet', Icon: BuildingIcon },
   ]), [demandClients.length, operationCounts.done, operationCounts.overdue, operationCounts.today, squadNames.length]);
 
   async function handleSaveProfile() {
@@ -1772,15 +1772,17 @@ export default function ProfilePage() {
               {user?.email ? <span>{user.email}</span> : null}
             </div>
             <div className={styles.profileStatRail}>
-              {profileStats.map((item) => (
+              {profileStats.map(({ Icon, ...item }) => (
                 <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
-                  <i aria-hidden="true" />
-                  <strong>{item.value}</strong> {item.label}
+                  <Icon size={13} strokeWidth={2} aria-hidden="true" />
+                  <strong>{item.value}</strong>
+                  <span>{item.label}</span>
                 </span>
               ))}
-              <span className={styles.profileStat}>
-                <i aria-hidden="true" />
-                <strong>{completionRate}%</strong> conclusão
+              <span className={`${styles.profileStat} ${styles.profileStat_completion}`.trim()}>
+                <TargetIcon size={13} strokeWidth={2} aria-hidden="true" />
+                <strong>{completionRate}%</strong>
+                <span>Conclusão</span>
               </span>
             </div>
           </div>
