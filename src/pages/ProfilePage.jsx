@@ -460,6 +460,12 @@ function priorityLabel(value) {
   return labels[value] || labels.medium;
 }
 
+function displayTaskTitle(task) {
+  return String(task?.title || '')
+    .replace(/^\s*(?:[→↗➜»]+|[-–—]>?)\s*/u, '')
+    .trim() || 'Sem título';
+}
+
 function nextActionLabel(task) {
   if (!task) return '';
   if (task.status === 'canceled') return 'Encerrada';
@@ -522,7 +528,7 @@ function getOperationCounts(tasks) {
     routine: tasks.filter((task) => !isDone(task) && getTaskKind(task) === 'routine').length,
     support: tasks.filter((task) => !isDone(task) && getTaskKind(task) === 'support').length,
     watching: tasks.filter(isCollaboratorTask).length,
-    waiting: tasks.filter((task) => !isDone(task) && !isToday(task) && !isOverdue(task)).length,
+    waiting: tasks.filter((task) => !isDone(task) && !isToday(task) && !isOverdue(task) && task?.profileRelation !== 'collaborator').length,
     done: tasks.filter(isDone).length,
   };
 }
@@ -1845,7 +1851,7 @@ export default function ProfilePage() {
                     </button>
 
                     <div className={styles.operationMain}>
-                      <strong>{task.title}</strong>
+                      <strong>{displayTaskTitle(task)}</strong>
                       <span>{task.clientName || task.projectName || task.createdByName || '—'}</span>
                     </div>
 
