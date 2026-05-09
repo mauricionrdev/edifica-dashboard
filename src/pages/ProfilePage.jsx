@@ -1806,8 +1806,8 @@ export default function ProfilePage() {
         <header className={styles.operationHeader}>
           <div className={styles.operationHeaderTop}>
             <div className={styles.operationTitleBlock}>
-              <h2>Minha operação</h2>
-              <span>{visibleTasks.length} de {tabTasks.length} demandas</span>
+              <h2><ChecklistIcon size={18} /> <span>Minha operação</span></h2>
+              {tabTasks.length ? <small>{visibleTasks.length} de {tabTasks.length} demandas</small> : null}
             </div>
             <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal}>Nova demanda</button>
           </div>
@@ -2302,7 +2302,7 @@ export default function ProfilePage() {
 
       {demandModalOpen ? (
         <div className={styles.settingsOverlay} onClick={() => setDemandModalOpen(false)}>
-          <form className={`${styles.settingsModal} ${styles.demandModal}`} onSubmit={handleCreateDemand} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
+          <form className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()} onSubmit={handleCreateDemand} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Nova demanda</h2>
