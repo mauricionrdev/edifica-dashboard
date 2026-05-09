@@ -437,7 +437,7 @@
 .operationMeta {
   min-width: 0;
   display: grid;
-  grid-template-columns: 92px 90px 106px minmax(120px, 1fr);
+  grid-template-columns: 92px 90px 106px 112px minmax(120px, 1fr);
   align-items: center;
   gap: 14px;
   color: var(--profile-muted);
@@ -453,6 +453,7 @@
 
 .kindPill,
 .priorityPill,
+.relationPill,
 .statusBadge {
   width: fit-content;
   max-width: 100%;
@@ -498,6 +499,16 @@
 }
 
 .priority_low {
+  color: var(--profile-faint);
+}
+
+.relationPill {
+  color: #a8d5ff;
+  border-color: rgba(96, 165, 250, 0.26);
+  background: rgba(96, 165, 250, 0.075);
+}
+
+.relationGhost {
   color: var(--profile-faint);
 }
 
@@ -904,7 +915,7 @@
 .demandFormGrid,
 .briefingGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -955,7 +966,7 @@
 
   .operationMeta {
     grid-column: 2;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

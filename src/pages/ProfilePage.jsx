@@ -292,6 +292,7 @@ const OPERATION_TABS = [
   { value: 'briefing', label: 'Briefings' },
   { value: 'routine', label: 'Rotinas' },
   { value: 'support', label: 'Suporte' },
+  { value: 'watching', label: 'Acompanhando' },
   { value: 'waiting', label: 'Aguardando' },
   { value: 'done', label: 'Concluídas' },
 ];
@@ -310,6 +311,15 @@ function priorityKey(task) {
 
 function isCriticalTask(task) {
   return !isDone(task) && priorityKey(task) === 'critical';
+}
+
+function isCollaboratorTask(task) {
+  return !isDone(task) && task?.profileRelation === 'collaborator';
+}
+
+function relationLabel(task) {
+  if (task?.profileRelation === 'collaborator') return 'Acompanhando';
+  return 'Responsável';
 }
 
 function compareOperationTasks(a, b) {
@@ -509,6 +519,7 @@ function getOperationCounts(tasks) {
     briefing: tasks.filter((task) => !isDone(task) && getTaskKind(task) === 'briefing').length,
     routine: tasks.filter((task) => !isDone(task) && getTaskKind(task) === 'routine').length,
     support: tasks.filter((task) => !isDone(task) && getTaskKind(task) === 'support').length,
+    watching: tasks.filter(isCollaboratorTask).length,
     waiting: tasks.filter((task) => !isDone(task) && !isToday(task) && !isOverdue(task)).length,
     done: tasks.filter(isDone).length,
   };
@@ -523,7 +534,8 @@ function getVisibleTasks(tasks, tab) {
     if (tab === 'briefing') return !isDone(task) && getTaskKind(task) === 'briefing';
     if (tab === 'routine') return !isDone(task) && getTaskKind(task) === 'routine';
     if (tab === 'support') return !isDone(task) && getTaskKind(task) === 'support';
-    return !isDone(task) && !isToday(task) && !isOverdue(task);
+    if (tab === 'watching') return isCollaboratorTask(task);
+    return !isDone(task) && !isToday(task) && !isOverdue(task) && task?.profileRelation !== 'collaborator';
   });
 
   return filtered.sort(compareOperationTasks);
@@ -540,6 +552,7 @@ function taskSearchText(task) {
     task?.createdByName,
     kindLabel(getTaskKind(task)),
     priorityLabel(priorityKey(task)),
+    relationLabel(task),
     statusLabel(task),
     formatDueLabel(task?.dueDate),
   ].filter(Boolean).join(' '));
@@ -1746,6 +1759,11 @@ export default function ProfilePage() {
                       <span className={`${styles.kindPill} ${styles[`kind_${itemKind}`] || ''}`.trim()}>{kindLabel(itemKind)}</span>
                       <span className={`${styles.priorityPill} ${styles[`priority_${priorityKey(task)}`] || ''}`.trim()}>{priorityLabel(priorityKey(task))}</span>
                       <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
+                      {task.profileRelation === 'collaborator' ? (
+                        <span className={styles.relationPill}>{relationLabel(task)}</span>
+                      ) : (
+                        <span className={styles.relationGhost}>{relationLabel(task)}</span>
+                      )}
                       <span>{task.projectName || task.sectionName || '—'}</span>
                     </div>
                   </article>
