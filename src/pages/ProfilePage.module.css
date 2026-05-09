@@ -1915,24 +1915,67 @@
   white-space: nowrap;
 }
 
-.completionTextarea {
+.completionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.completionField {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.completionField span {
+  color: var(--profile-faint);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.completionField input,
+.completionField textarea {
   width: 100%;
-  min-height: 118px;
-  resize: vertical;
   border: 1px solid var(--profile-line);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.014);
   color: var(--profile-text);
-  padding: 12px;
+  padding: 0 12px;
   font: inherit;
   font-size: 13px;
   line-height: 1.45;
   outline: none;
 }
 
-.completionTextarea:focus {
+.completionField input {
+  min-height: 40px;
+}
+
+.completionField textarea {
+  min-height: 86px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  resize: vertical;
+}
+
+.completionField:first-child,
+.completionField:last-child {
+  grid-column: 1 / -1;
+}
+
+.completionField input:focus,
+.completionField textarea:focus {
   border-color: var(--profile-line-strong);
   background: rgba(255, 255, 255, 0.026);
+}
+
+@media (max-width: 720px) {
+  .completionGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .operationToolbar {

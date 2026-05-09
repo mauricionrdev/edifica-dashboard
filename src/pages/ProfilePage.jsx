@@ -863,7 +863,7 @@ export default function ProfilePage() {
   const [handoffForm, setHandoffForm] = useState(() => emptyHandoffForm(user?.id || ''));
   const [handoffSaving, setHandoffSaving] = useState(false);
   const [completionTarget, setCompletionTarget] = useState(null);
-  const [completionDraft, setCompletionDraft] = useState('');
+  const [completionForm, setCompletionForm] = useState({ result: '', pending: '', nextAction: '', notes: '' });
   const [completionSaving, setCompletionSaving] = useState(false);
   const [contentEditing, setContentEditing] = useState(false);
   const [contentSaving, setContentSaving] = useState(false);
@@ -958,6 +958,7 @@ export default function ProfilePage() {
       setClientSearchOpen(false);
       setHandoffOpen(false);
       setCompletionTarget(null);
+      setCompletionForm({ result: '', pending: '', nextAction: '', notes: '' });
       setContentEditing(false);
     }
 
@@ -1234,12 +1235,55 @@ export default function ProfilePage() {
     }
   }
 
+  function buildCompletionPrefill(task) {
+    const openSubtasks = (task?.id ? drawerSubtasks.filter((item) => item.parentTaskId === task.id && !isDone(item)) : [])
+      .map((item) => item.title)
+      .filter(Boolean);
+    const kind = getTaskKind(task);
+    const result = kind === 'briefing'
+      ? 'Implementação concluída no CRM/IA.'
+      : kind === 'routine'
+        ? 'Rotina executada.'
+        : 'Demanda concluída.';
+
+    return {
+      result,
+      pending: openSubtasks.length ? openSubtasks.map((title) => `- ${title}`).join('\n') : '',
+      nextAction: kind === 'briefing'
+        ? 'Avisar responsável para seguir com a próxima etapa da ativação.'
+        : '',
+      notes: '',
+    };
+  }
+
+  function buildCompletionRecord(task, form) {
+    const kind = getTaskKind(task);
+    const header = kind === 'briefing' ? 'Implementação concluída.' : 'Demanda concluída.';
+    const lines = [header];
+
+    const details = [
+      ['Resultado', form.result],
+      ['Pendências', form.pending],
+      ['Próxima ação', form.nextAction],
+      ['Observações', form.notes],
+    ].filter(([, value]) => String(value || '').trim());
+
+    if (details.length) {
+      lines.push('', 'Registro de conclusão');
+      details.forEach(([label, value]) => {
+        lines.push(`${label}: ${String(value || '').trim()}`);
+      });
+    }
+
+    return lines.join('\n').trim();
+  }
+
   async function handleToggleTask(task) {
     if (!task?.id) return;
 
     if (!isDone(task) && !task.parentTaskId) {
       setCompletionTarget(task);
-      setCompletionDraft('');
+      setCompletionForm(buildCompletionPrefill(task));
       return;
     }
 
@@ -1262,12 +1306,7 @@ export default function ProfilePage() {
     event.preventDefault();
     if (!completionTarget?.id) return;
 
-    const record = completionDraft.trim();
-    const kind = getTaskKind(completionTarget);
-    const body = [
-      kind === 'briefing' ? 'Implementação concluída.' : 'Demanda concluída.',
-      record,
-    ].filter(Boolean).join('\n\n');
+    const body = buildCompletionRecord(completionTarget, completionForm);
 
     try {
       setCompletionSaving(true);
@@ -1283,7 +1322,7 @@ export default function ProfilePage() {
         setTaskComments((prev) => [...prev, commentRes.value.comment]);
       }
       setCompletionTarget(null);
-      setCompletionDraft('');
+      setCompletionForm({ result: '', pending: '', nextAction: '', notes: '' });
       showToast('Demanda concluída.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao concluir demanda.', { variant: 'error' });
@@ -2321,12 +2360,36 @@ export default function ProfilePage() {
                 <span>{kindLabel(getTaskKind(completionTarget))}</span>
                 <strong>{completionTarget.clientName || completionTarget.projectName || '—'}</strong>
               </div>
-              <textarea
-                className={styles.completionTextarea}
-                value={completionDraft}
-                onChange={(event) => setCompletionDraft(event.target.value)}
-                placeholder="Registro"
-              />
+              <div className={styles.completionGrid}>
+                <label className={styles.completionField}>
+                  <span>Resultado</span>
+                  <textarea
+                    value={completionForm.result}
+                    onChange={(event) => setCompletionForm((prev) => ({ ...prev, result: event.target.value }))}
+                  />
+                </label>
+                <label className={styles.completionField}>
+                  <span>Pendências</span>
+                  <textarea
+                    value={completionForm.pending}
+                    onChange={(event) => setCompletionForm((prev) => ({ ...prev, pending: event.target.value }))}
+                  />
+                </label>
+                <label className={styles.completionField}>
+                  <span>Próxima ação</span>
+                  <input
+                    value={completionForm.nextAction}
+                    onChange={(event) => setCompletionForm((prev) => ({ ...prev, nextAction: event.target.value }))}
+                  />
+                </label>
+                <label className={styles.completionField}>
+                  <span>Observações</span>
+                  <textarea
+                    value={completionForm.notes}
+                    onChange={(event) => setCompletionForm((prev) => ({ ...prev, notes: event.target.value }))}
+                  />
+                </label>
+              </div>
             </div>
             <footer className={styles.settingsFooter}>
               <button type="button" onClick={() => setCompletionTarget(null)}>Cancelar</button>
