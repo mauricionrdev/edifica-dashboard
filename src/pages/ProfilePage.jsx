@@ -1852,7 +1852,7 @@ export default function ProfilePage() {
             <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
             <div className={styles.emptyOperation}>
-              <span>Fila limpa</span>
+              <span>Sem demandas</span>
             </div>
           ) : (
             <>
