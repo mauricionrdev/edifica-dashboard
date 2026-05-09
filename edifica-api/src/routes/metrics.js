@@ -197,89 +197,6 @@ function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '') {
   });
 }
 
-
-
-function isDebugRequest(req) {
-  const raw = String(req?.query?.debug || '').trim().toLowerCase();
-  return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'sim';
-}
-
-function safeIsoDate(value) {
-  const date = parseClientDate(value);
-  return date ? date.toISOString().slice(0, 10) : null;
-}
-
-function debugClientBase(client) {
-  return {
-    clientId: client?.id || '',
-    name: client?.name || '',
-    squadId: client?.squad_id || null,
-    status: normalizedClientStatus(client?.status),
-    startDate: safeIsoDate(client?.start_date || client?.created_at),
-    churnDate: safeIsoDate(client?.churn_date),
-    fee: Number(client?.fee) || 0,
-    clientMetaLucro: Number(client?.meta_lucro) || 0,
-  };
-}
-
-function debugWeeklyMetric(row, monthPrefix = '') {
-  const periodKey = String(row?.period_key || '');
-  const data = metricData(row);
-  const fechados = metricNumber(data?.fechados);
-  const metaSemanal = metricNumber(data?.metaSemanal);
-  const metaLucro = metricNumber(data?.metaLucro);
-  const rankingGoal = rankingWeeklyGoal(data);
-  const metaSemanalOnlyHit = metaSemanal > 0 && fechados > 0 && fechados >= metaSemanal;
-  const metaSemanalOrLegacyHit = rankingGoal > 0 && fechados > 0 && fechados >= rankingGoal;
-
-  return {
-    periodKey,
-    inSelectedMonth: monthPrefix ? periodKey.startsWith(`${monthPrefix}-S`) : false,
-    fechados,
-    metaSemanal,
-    metaLucro,
-    rankingGoal,
-    weekStatus: data?.weekStatus || '',
-    hasAnyInput: Boolean(
-      fechados > 0 ||
-      metricNumber(data?.investimento) > 0 ||
-      metricNumber(data?.cpl) > 0 ||
-      metricNumber(data?.volume) > 0 ||
-      metaSemanal > 0 ||
-      metaLucro > 0
-    ),
-    hitByMetaSemanalOnly: metaSemanalOnlyHit,
-    hitByMetaSemanalOrLegacy: metaSemanalOrLegacyHit,
-  };
-}
-
-function debugRankingClient(client, clientMetricRows = [], monthPrefix = '') {
-  const weeks = clientMetricRows
-    .filter((row) => String(row?.period_key || '').startsWith(`${monthPrefix}-S`))
-    .map((row) => debugWeeklyMetric(row, monthPrefix));
-
-  const hitWeeksByMetaSemanalOnly = weeks.filter((week) => week.hitByMetaSemanalOnly);
-  const hitWeeksByMetaSemanalOrLegacy = weeks.filter((week) => week.hitByMetaSemanalOrLegacy);
-
-  return {
-    ...debugClientBase(client),
-    isActiveForRankingBase: isActiveClientStatus(client),
-    countedByCurrentRankingRule: clientHitRankingGoalInMonth(clientMetricRows, monthPrefix),
-    countedByMetaSemanalOnly: hitWeeksByMetaSemanalOnly.length > 0,
-    countedByMetaSemanalOrLegacy: hitWeeksByMetaSemanalOrLegacy.length > 0,
-    hitWeeksByMetaSemanalOnly: hitWeeksByMetaSemanalOnly.map((week) => week.periodKey),
-    hitWeeksByMetaSemanalOrLegacy: hitWeeksByMetaSemanalOrLegacy.map((week) => week.periodKey),
-    weeks,
-  };
-}
-
-function debugChurnClient(client, monthPrefix = '') {
-  return {
-    ...debugClientBase(client),
-    countedAsChurnInPeriod: normalizedClientStatus(client?.status) === 'churn' && dateInMonth(client?.churn_date, monthPrefix),
-  };
-}
-
 function monthEndFromPrefix(prefix) {
   const bounds = monthBoundsFromPrefix(prefix);
   return bounds?.end || null;
@@ -683,7 +600,6 @@ router.put('/ranking/settings', requirePermission('ranking.view.all'), async (re
 router.get('/ranking', requirePermission('ranking.view'), async (req, res, next) => {
   try {
     const { date: dateParam, squadId } = req.query;
-    const debugEnabled = isDebugRequest(req);
     const globalRankingSettings = await getRankingSettings();
     const goalPercent = globalRankingSettings.goalPercent;
     const churnTarget = globalRankingSettings.churnTarget;
@@ -717,14 +633,14 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       squadParams.push(squadId);
     }
     if (allowedSquads) {
-      if (allowedSquads.length === 0) return res.json({ weekKey, monthPrefix, debug: debugEnabled ? { reason: 'Sem squads permitidos para o usuário.' } : undefined, rows: [] });
+      if (allowedSquads.length === 0) return res.json({ weekKey, monthPrefix, rows: [] });
       squadSql += ` AND s.id IN (${allowedSquads.map(() => '?').join(',')})`;
       squadParams.push(...allowedSquads);
     }
     squadSql += ' ORDER BY s.name ASC';
 
     const squads = await query(squadSql, squadParams);
-    if (squads.length === 0) return res.json({ weekKey, monthPrefix, debug: debugEnabled ? { reason: 'Nenhum squad encontrado no escopo.' } : undefined, rows: [] });
+    if (squads.length === 0) return res.json({ weekKey, monthPrefix, rows: [] });
 
     const squadIds = squads.map((squad) => squad.id);
     const { global: rankingSettings, map: rankingSettingsMap } = await getRankingSettingsMap(squadIds);
@@ -778,29 +694,29 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const churnedInPeriod = squadClients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
       const mrr = activeClients.reduce((sum, client) => sum + (Number(client.fee) || 0), 0);
       const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
-      const rankingDebugClients = debugEnabled
-        ? squadClients.map((client) => debugRankingClient(client, metricsByClient.get(client.id) || [], monthPrefix))
-        : [];
-      const churnDebugClients = debugEnabled
-        ? squadClients.map((client) => debugChurnClient(client, monthPrefix))
-        : [];
 
       const clientSummaries = activeClients.map((client) => {
         const clientMetricRows = metricsByClient.get(client.id) || [];
-        const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix);
+        const clientMetaLucro = Number(client.meta_lucro) || 0;
         const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
           prevWeekKey,
           prevMonthPrefix,
-          clientMetaLucro: Number(client.meta_lucro) || 0,
+          clientMetaLucro,
         });
+
+        // Ranking e Summary precisam usar a mesma verdade operacional.
+        // Portanto, a Meta Lucro do ranking não roda uma fórmula paralela:
+        // conta o mesmo `hit` consolidado exibido no preenchimento/summary.
+        const hit = summary.monthGoal > 0 && summary.monthClosed >= summary.monthGoal;
+
         return {
           clientId: client.id,
           name: client.name,
           squadId: client.squad_id,
-          clientMetaLucro: Number(client.meta_lucro) || 0,
+          clientMetaLucro,
           ...summary,
           hit,
-          hasGoal: hit,
+          hasGoal: summary.monthGoalSeen,
         };
       });
 
@@ -853,84 +769,10 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         rankingScore,
         performanceScore: legacyPerformanceScore,
         totals,
-        debug: debugEnabled ? {
-          formula: 'clientes ativos únicos que bateram meta semanal no mês / total de clientes ativos da carteira * 100',
-          monthPrefix,
-          weekKey,
-          activeBase: {
-            count: activeClients.length,
-            clients: rankingDebugClients.filter((client) => client.isActiveForRankingBase).map((client) => ({
-              clientId: client.clientId,
-              name: client.name,
-              status: client.status,
-            })),
-          },
-          metaHit: {
-            currentRuleCount: rankingGoalClients,
-            currentRuleClients: rankingDebugClients
-              .filter((client) => client.isActiveForRankingBase && client.countedByCurrentRankingRule)
-              .map((client) => ({
-                clientId: client.clientId,
-                name: client.name,
-                hitWeeks: client.hitWeeksByMetaSemanalOrLegacy,
-              })),
-            metaSemanalOnlyCount: rankingDebugClients
-              .filter((client) => client.isActiveForRankingBase && client.countedByMetaSemanalOnly)
-              .length,
-            metaSemanalOnlyClients: rankingDebugClients
-              .filter((client) => client.isActiveForRankingBase && client.countedByMetaSemanalOnly)
-              .map((client) => ({
-                clientId: client.clientId,
-                name: client.name,
-                hitWeeks: client.hitWeeksByMetaSemanalOnly,
-              })),
-            metaSemanalOrLegacyCount: rankingDebugClients
-              .filter((client) => client.isActiveForRankingBase && client.countedByMetaSemanalOrLegacy)
-              .length,
-          },
-          churn: {
-            portfolioBaseCount: portfolioClients.length,
-            churnedInPeriodCount: churnedInPeriod.length,
-            churnedInPeriodClients: churnDebugClients
-              .filter((client) => client.countedAsChurnInPeriod)
-              .map((client) => ({
-                clientId: client.clientId,
-                name: client.name,
-                status: client.status,
-                churnDate: client.churnDate,
-              })),
-          },
-          clients: rankingDebugClients,
-        } : undefined,
       };
     }).sort(compareRankingRows).map((row, index) => ({ ...row, position: index + 1 }));
 
-    res.json({
-      weekKey,
-      monthPrefix,
-      settings: rankingSettings,
-      goalPercent: rankingSettings.goalPercent,
-      churnTarget: rankingSettings.churnTarget,
-      debug: debugEnabled ? {
-        enabled: true,
-        dateParam: dateParam || null,
-        weekKey,
-        monthPrefix,
-        squads: rows.map((row) => ({
-          squadId: row.squad?.id || '',
-          squadName: row.squad?.name || '',
-          position: row.position,
-          activeClients: row.activeClients,
-          rankingGoalClients: row.rankingGoalClients,
-          rankingGoalBaseClients: row.rankingGoalBaseClients,
-          metaActiveProgress: row.metaActiveProgress,
-          churnRate: row.churnRate,
-          churnedClients: row.churnedClients,
-          churnBaseClients: row.churnBaseClients,
-        })),
-      } : undefined,
-      rows,
-    });
+    res.json({ weekKey, monthPrefix, settings: rankingSettings, goalPercent: rankingSettings.goalPercent, churnTarget: rankingSettings.churnTarget, rows });
   } catch (err) {
     next(err);
   }
@@ -942,7 +784,6 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
 router.get('/summary', requirePermission('metrics.view'), async (req, res, next) => {
   try {
     const { date: dateParam, squadId, clientId: clientIdParam } = req.query;
-    const debugEnabled = isDebugRequest(req);
 
     let ref;
     if (dateParam) {
@@ -990,7 +831,6 @@ router.get('/summary', requirePermission('metrics.view'), async (req, res, next)
           weekKey, prevWeekKey, monthPrefix, prevMonthPrefix,
           clients: [],
           totals: aggregatePortfolioSummary([]),
-          debug: debugEnabled ? { reason: 'Sem squads permitidos para o usuário.' } : undefined,
         });
       }
       clientSql += ` AND c.squad_id IN (${allowedSquads.map(() => '?').join(',')})`;
@@ -1008,13 +848,6 @@ router.get('/summary', requirePermission('metrics.view'), async (req, res, next)
         weekKey, prevWeekKey, monthPrefix, prevMonthPrefix,
         clients: [],
         totals: aggregatePortfolioSummary([]),
-        debug: debugEnabled ? {
-          reason: 'Nenhum cliente ativo no fim do mês para o escopo.',
-          candidateClients: allClients.map((client) => ({
-            ...debugClientBase(client),
-            activeAtMonthEnd: summaryBounds ? activeAt(client, summaryBounds.end) : false,
-          })),
-        } : undefined,
       });
     }
 
@@ -1067,32 +900,6 @@ router.get('/summary', requirePermission('metrics.view'), async (req, res, next)
     res.json({
       weekKey, prevWeekKey, monthPrefix, prevMonthPrefix,
       clients: clientSummaries, totals,
-      debug: debugEnabled ? {
-        enabled: true,
-        dateParam: dateParam || null,
-        monthPrefix,
-        weekKey,
-        prevWeekKey,
-        candidateClientsCount: allClients.length,
-        activeAtMonthEndCount: clients.length,
-        candidateClients: allClients.map((client) => ({
-          ...debugClientBase(client),
-          squadName: client.squad_name || null,
-          gdvName: client.gdv_name || '',
-          gestor: client.gestor || '',
-          activeAtMonthEnd: summaryBounds ? activeAt(client, summaryBounds.end) : false,
-          includedInSummary: clients.some((included) => included.id === client.id),
-        })),
-        includedClients: clients.map((client) => ({
-          ...debugClientBase(client),
-          squadName: client.squad_name || null,
-          gdvName: client.gdv_name || '',
-          gestor: client.gestor || '',
-          weeks: (metricsByClient[client.id] || [])
-            .filter((row) => String(row.period_key || '').startsWith(`${monthPrefix}-S`))
-            .map((row) => debugWeeklyMetric(row, monthPrefix)),
-        })),
-      } : undefined,
     });
   } catch (err) { next(err); }
 });
