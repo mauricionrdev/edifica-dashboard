@@ -1864,7 +1864,6 @@ export default function ProfilePage() {
                       ) : (
                         <span className={styles.relationGhost}>{relationLabel(task)}</span>
                       )}
-                      <span>{task.projectName || task.sectionName || '—'}</span>
                     </div>
                   </article>
                 );
