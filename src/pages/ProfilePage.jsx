@@ -1849,7 +1849,7 @@ export default function ProfilePage() {
             <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
             <div className={styles.emptyOperation}>
-              <span>{operationSearch.trim() ? 'Sem resultados' : 'Sem demandas'}</span>
+              <span>{operationSearch.trim() ? 'Sem resultados' : 'Fila limpa'}</span>
             </div>
           ) : (
             <div className={styles.operationList}>

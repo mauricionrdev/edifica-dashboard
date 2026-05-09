@@ -4074,3 +4074,325 @@
     grid-template-columns: repeat(2, max-content);
   }
 }
+
+/* V43 — Minha operação e Nova demanda: limpeza visual sênior */
+.operationBoard {
+  border-color: rgba(255, 255, 255, 0.045);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.010), rgba(255, 255, 255, 0.002)),
+    var(--profile-panel);
+  box-shadow: none;
+}
+
+.operationHeader {
+  padding: 22px 26px 16px;
+  gap: 18px;
+  border-bottom-color: rgba(255, 255, 255, 0.035);
+}
+
+.operationHeaderTop {
+  align-items: center;
+}
+
+.operationTitleBlock {
+  gap: 3px;
+}
+
+.operationTitleBlock h2,
+.operationHeaderTop h2 {
+  font-size: clamp(20px, 1.35vw, 22px);
+  line-height: 1.08;
+  font-weight: 670;
+  letter-spacing: -0.04em;
+}
+
+.operationTitleBlock > span {
+  color: rgba(148, 163, 184, 0.72);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.operationControlPanel {
+  gap: 14px;
+}
+
+.operationTabs {
+  gap: 18px;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.operationTab {
+  min-height: 28px;
+  gap: 7px;
+  padding: 0 0 7px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.82);
+  box-shadow: inset 0 -1px 0 transparent;
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.operationTab:hover {
+  background: transparent;
+  color: var(--profile-soft);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.operationTabActive {
+  background: transparent;
+  color: var(--profile-text);
+  border-color: transparent;
+  box-shadow: inset 0 -1px 0 rgba(245, 184, 0, 0.55);
+}
+
+.operationTabCount,
+.operationTab span,
+.operationTabActive span {
+  min-width: auto;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.78);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.operationTabActive .operationTabCount,
+.operationTabActive span {
+  background: transparent;
+  color: var(--profile-text);
+}
+
+.operationToolbar {
+  margin: 0;
+}
+
+.operationSearch {
+  width: min(430px, 100%);
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.010);
+  border-color: rgba(255, 255, 255, 0.050);
+}
+
+.operationSearch input {
+  font-size: 13px;
+  font-weight: 540;
+}
+
+.operationBody {
+  padding: 0 26px 24px;
+}
+
+.operationEmpty,
+.emptyOperation {
+  min-height: 128px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.operationEmpty span,
+.emptyOperation span,
+.emptyText {
+  color: rgba(148, 163, 184, 0.82);
+  font-size: 13.5px;
+  font-weight: 590;
+}
+
+.operationEmpty span::before,
+.emptyOperation span::before {
+  width: 6px;
+  height: 6px;
+  background: rgba(148, 163, 184, 0.42);
+}
+
+.operationList {
+  margin-top: 2px;
+  border-radius: 14px;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.045);
+}
+
+.operationRow {
+  min-height: 66px;
+  padding: 12px 16px;
+}
+
+.operationMain strong {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.012em;
+}
+
+.operationMain span {
+  margin-top: 4px;
+  font-size: 12.3px;
+}
+
+.operationMeta > span,
+.kindPill,
+.priorityPill,
+.relationPill,
+.relationGhost {
+  box-shadow: none;
+}
+
+.settingsOverlay:has(.demandModal) {
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+}
+
+.demandModal {
+  width: min(920px, calc(100vw - 56px));
+  max-height: min(720px, calc(100vh - 56px));
+  border-radius: 20px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.demandModal .settingsHeader {
+  padding: 20px 24px 16px;
+}
+
+.demandModal .settingsHeader h2 {
+  font-size: 20px;
+  line-height: 1.1;
+  font-weight: 680;
+  letter-spacing: -0.035em;
+}
+
+.demandModal .settingsHeader span {
+  margin-top: 5px;
+  color: rgba(148, 163, 184, 0.72);
+  font-size: 12.5px;
+  font-weight: 580;
+}
+
+.demandModal .settingsContent {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 20px 24px 0;
+}
+
+.demandModal .settingsContent::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.demandFormGrid,
+.briefingGrid,
+.routineFormGrid {
+  gap: 10px;
+}
+
+.demandFormGrid {
+  grid-template-columns: minmax(170px, 0.7fr) minmax(170px, 0.7fr) minmax(0, 1fr);
+}
+
+.demandFormGrid .fieldWide {
+  grid-column: 1 / -1;
+}
+
+.demandFormGrid input,
+.briefingGrid input,
+.routineFormGrid input,
+.demandModal .clientSearchField input,
+.demandModal .formSelect > button,
+.demandModal .dateField > button {
+  min-height: 41px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.briefingGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.briefingGrid textarea,
+.routineFormGrid textarea {
+  min-height: 74px;
+}
+
+.demandTextarea {
+  min-height: 92px;
+  border-radius: 13px;
+  margin-top: 14px;
+  font-size: 13px;
+}
+
+.demandModal .settingsFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin: 18px -24px 0;
+  padding: 14px 24px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.045);
+  background:
+    linear-gradient(180deg, rgba(15, 16, 18, 0.75), rgba(15, 16, 18, 0.98)),
+    var(--profile-panel);
+}
+
+.demandModal .settingsFooter button {
+  min-height: 38px;
+  border-radius: 12px;
+  padding: 0 15px;
+  font-size: 13px;
+}
+
+.clientSearchFloating {
+  max-height: 250px;
+  border-radius: 14px;
+  scrollbar-width: none;
+}
+
+.clientSearchFloating::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 920px) {
+  .demandFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .operationHeader,
+  .operationBody {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .operationTabs {
+    gap: 14px;
+  }
+
+  .settingsOverlay:has(.demandModal) {
+    padding: 14px;
+  }
+
+  .demandModal {
+    width: calc(100vw - 28px);
+    max-height: calc(100vh - 28px);
+  }
+
+  .demandFormGrid,
+  .briefingGrid,
+  .routineFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
