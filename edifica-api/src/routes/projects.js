@@ -1182,6 +1182,29 @@ router.delete('/tasks/:id', requirePermission('tasks.edit'), async (req, res, ne
   }
 });
 
+
+router.get('/tasks/:id/subtasks', requirePermission('tasks.view'), async (req, res, next) => {
+  try {
+    const parentTask = await assertTaskAccess(req.params.id, req.user, 'tasks.view');
+    const rows = await query(
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+              au.name AS assignee_name, cu.name AS created_by_name
+         FROM tasks t
+         LEFT JOIN projects p ON p.id = t.project_id
+         LEFT JOIN project_sections ps ON ps.id = t.section_id
+         LEFT JOIN clients c ON c.id = t.client_id
+         LEFT JOIN users au ON au.id = t.assignee_user_id
+         LEFT JOIN users cu ON cu.id = t.created_by_user_id
+        WHERE t.parent_task_id = ?
+        ORDER BY t.status = 'done', COALESCE(t.due_date, '9999-12-31') ASC, t.position ASC, t.created_at ASC`,
+      [req.params.id]
+    );
+    res.json({ task: serializeTask(parentTask), subtasks: rows.map(serializeTask) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/tasks/:id/comments', requirePermission('tasks.view'), async (req, res, next) => {
   try {
     await assertTaskAccess(req.params.id, req.user, 'tasks.view');

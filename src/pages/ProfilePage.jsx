@@ -6,6 +6,7 @@ import {
   createTaskComment,
   deleteTaskComment,
   listTaskCollaborators,
+  listTaskSubtasks,
   addTaskCollaborator,
   removeTaskCollaborator,
   listMyProjectTasks,
@@ -713,6 +714,8 @@ export default function ProfilePage() {
   const [commentDeleting, setCommentDeleting] = useState(false);
   const [subtaskDraft, setSubtaskDraft] = useState('');
   const [subtaskSaving, setSubtaskSaving] = useState(false);
+  const [drawerSubtasks, setDrawerSubtasks] = useState([]);
+  const [subtasksLoading, setSubtasksLoading] = useState(false);
   const [handoffOpen, setHandoffOpen] = useState(false);
   const [handoffForm, setHandoffForm] = useState(() => emptyHandoffForm(user?.id || ''));
   const [handoffSaving, setHandoffSaving] = useState(false);
@@ -840,6 +843,7 @@ export default function ProfilePage() {
     setCommentDraft('');
     setSubtaskDraft('');
     setTaskComments([]);
+    setDrawerSubtasks([]);
     setCollaborators([]);
     setCollaboratorUserId('');
     setHandoffOpen(false);
@@ -849,15 +853,21 @@ export default function ProfilePage() {
 
     let cancelled = false;
     setCommentsLoading(true);
+    setSubtasksLoading(true);
     setCollaboratorsLoading(true);
 
-    Promise.allSettled([listTaskComments(activeTaskId), listTaskCollaborators(activeTaskId)])
-      .then(([commentsRes, collaboratorsRes]) => {
+    Promise.allSettled([listTaskComments(activeTaskId), listTaskSubtasks(activeTaskId), listTaskCollaborators(activeTaskId)])
+      .then(([commentsRes, subtasksRes, collaboratorsRes]) => {
         if (cancelled) return;
         if (commentsRes.status === 'fulfilled') {
           setTaskComments(Array.isArray(commentsRes.value?.comments) ? commentsRes.value.comments : []);
         } else {
           setTaskComments([]);
+        }
+        if (subtasksRes.status === 'fulfilled') {
+          setDrawerSubtasks(Array.isArray(subtasksRes.value?.subtasks) ? subtasksRes.value.subtasks : []);
+        } else {
+          setDrawerSubtasks([]);
         }
         if (collaboratorsRes.status === 'fulfilled') {
           setCollaborators(Array.isArray(collaboratorsRes.value?.collaborators) ? collaboratorsRes.value.collaborators : []);
@@ -868,6 +878,7 @@ export default function ProfilePage() {
       .finally(() => {
         if (!cancelled) {
           setCommentsLoading(false);
+          setSubtasksLoading(false);
           setCollaboratorsLoading(false);
         }
       });
@@ -886,7 +897,13 @@ export default function ProfilePage() {
   const tabTasks = useMemo(() => getVisibleTasks(tasks, operationTab), [operationTab, tasks]);
   const visibleTasks = useMemo(() => filterOperationTasks(tabTasks, operationSearch), [operationSearch, tabTasks]);
   const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
-  const activeSubtasks = useMemo(() => (activeTask ? tasks.filter((task) => task.parentTaskId === activeTask.id) : []), [activeTask, tasks]);
+  const activeSubtasks = useMemo(() => {
+    if (!activeTask) return [];
+    const merged = new Map();
+    tasks.filter((task) => task.parentTaskId === activeTask.id).forEach((task) => merged.set(task.id, task));
+    drawerSubtasks.forEach((task) => merged.set(task.id, { ...(merged.get(task.id) || {}), ...task }));
+    return Array.from(merged.values()).sort(compareOperationTasks);
+  }, [activeTask, drawerSubtasks, tasks]);
   const collaboratorOptions = useMemo(() => {
     if (!activeTask) return [];
     const usedIds = new Set([
@@ -1083,6 +1100,7 @@ export default function ProfilePage() {
       const nextStatus = nextDone ? 'done' : 'todo';
       await updateProjectTask(task.id, { done: nextDone, status: nextStatus });
       setTasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, done: nextDone, status: nextStatus } : item)));
+      setDrawerSubtasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, done: nextDone, status: nextStatus } : item)));
       showToast(nextDone ? 'Tarefa concluída.' : 'Tarefa reaberta.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao atualizar tarefa.', { variant: 'error' });
@@ -1143,7 +1161,10 @@ export default function ProfilePage() {
         assigneeUserId: activeTask.assigneeUserId || user?.id || undefined,
         priority: activeTask.priority || 'medium',
       });
-      if (res?.task) setTasks((prev) => [...prev, res.task]);
+      if (res?.task) {
+        setTasks((prev) => (prev.some((item) => item.id === res.task.id) ? prev : [...prev, res.task]));
+        setDrawerSubtasks((prev) => (prev.some((item) => item.id === res.task.id) ? prev : [...prev, res.task]));
+      }
       setSubtaskDraft('');
       showToast('Subtarefa criada.', { variant: 'success' });
     } catch (err) {
@@ -1895,7 +1916,9 @@ export default function ProfilePage() {
                   <input value={subtaskDraft} onChange={(event) => setSubtaskDraft(event.target.value)} placeholder="Subtarefa" />
                   <button type="submit" disabled={subtaskSaving || !subtaskDraft.trim()}>+</button>
                 </form>
-                {activeSubtasks.length ? (
+                {subtasksLoading ? (
+                  <div className={styles.commentState}>Carregando</div>
+                ) : activeSubtasks.length ? (
                   <div className={styles.subtaskList}>
                     {activeSubtasks.map((subtask) => (
                       <div key={subtask.id} className={styles.subtaskItem}>

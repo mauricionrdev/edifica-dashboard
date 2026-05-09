@@ -61,6 +61,10 @@ export function deleteTask(id) {
   return api.del(`/projects/tasks/${encodeURIComponent(id)}`);
 }
 
+export function listTaskSubtasks(id) {
+  return api.get(`/projects/tasks/${encodeURIComponent(id)}/subtasks`);
+}
+
 export function listTaskComments(id) {
   return api.get(`/projects/tasks/${encodeURIComponent(id)}/comments`);
 }
