@@ -2750,3 +2750,12 @@
     min-width: 40px;
   }
 }
+
+/* V30 — handoff operacional avançado */
+.handoffContextField {
+  min-height: 132px;
+}
+
+.handoffGrid .fieldWide {
+  line-height: 1.45;
+}

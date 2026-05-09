@@ -124,6 +124,8 @@ function emptyHandoffForm(userId = '', status = 'in_progress') {
   return {
     assigneeUserId: userId,
     status,
+    nextAction: '',
+    pending: '',
     note: '',
   };
 }
@@ -560,6 +562,51 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+
+function summarizeOpenSubtasks(subtasks = []) {
+  const openItems = subtasks.filter((item) => !isDone(item));
+  if (!openItems.length) return 'Sem pendências abertas';
+  return openItems.slice(0, 6).map((item) => `- ${item.title || 'Subtarefa'}`).join('\n');
+}
+
+function summarizeRecentComments(comments = []) {
+  const items = comments
+    .filter((comment) => !isSystemActivityComment(comment))
+    .slice(-3)
+    .map((comment) => {
+      const author = comment?.authorName || comment?.userName || 'Usuário';
+      const body = commentBody(comment).replace(/\s+/g, ' ').trim();
+      return body ? `- ${author}: ${body.slice(0, 180)}` : '';
+    })
+    .filter(Boolean);
+
+  return items.length ? items.join('\n') : 'Sem comentários recentes';
+}
+
+function buildHandoffBody({ task, assigneeName, statusLabelText, nextAction, pending, note, subtasks, comments }) {
+  const lines = [
+    `Handoff: ${assigneeName || 'Responsável'}`,
+    `Status: ${statusLabelText}`,
+    `Tipo: ${kindLabel(getTaskKind(task))}`,
+    `Prioridade: ${priorityLabel(priorityKey(task))}`,
+    `Prazo: ${formatDueLabel(task?.dueDate)}`,
+  ];
+
+  if (task?.clientName) lines.push(`Cliente: ${task.clientName}`);
+  if (task?.projectName) lines.push(`Projeto: ${task.projectName}`);
+  if (task?.sectionName) lines.push(`Seção: ${task.sectionName}`);
+
+  const cleanNextAction = String(nextAction || '').trim();
+  const cleanPending = String(pending || '').trim();
+  const cleanNote = String(note || '').trim();
+
+  if (cleanNextAction) lines.push('', 'Próxima ação', cleanNextAction);
+  lines.push('', 'Pendências', cleanPending || summarizeOpenSubtasks(subtasks));
+  if (cleanNote) lines.push('', 'Contexto', cleanNote);
+  lines.push('', 'Comentários recentes', summarizeRecentComments(comments));
+
+  return lines.join('\n').trim();
+}
 
 function commentBody(comment) {
   return String(comment?.body || comment?.content || '').trim();
@@ -1245,7 +1292,11 @@ export default function ProfilePage() {
   function openHandoff(task = activeTask) {
     if (!task) return;
     const nextStatus = isDone(task) ? 'done' : task.status || 'in_progress';
-    setHandoffForm(emptyHandoffForm(task.assigneeUserId || user?.id || '', nextStatus));
+    const nextForm = emptyHandoffForm(task.assigneeUserId || user?.id || '', nextStatus);
+    nextForm.nextAction = nextActionLabel(task);
+    nextForm.pending = summarizeOpenSubtasks(activeSubtasks);
+    nextForm.note = activeDescription || '';
+    setHandoffForm(nextForm);
     setHandoffOpen(true);
   }
 
@@ -1255,11 +1306,16 @@ export default function ProfilePage() {
 
     const nextAssignee = assigneeOptions.find((item) => item.id === handoffForm.assigneeUserId);
     const nextStatusLabel = statusOptionsForKind(activeKind).find((option) => option.value === handoffForm.status)?.label || handoffForm.status;
-    const lines = [
-      `Handoff: ${nextAssignee?.name || 'Responsável'}`,
-      `Status: ${nextStatusLabel}`,
-      handoffForm.note.trim(),
-    ].filter(Boolean);
+    const handoffBody = buildHandoffBody({
+      task: activeTask,
+      assigneeName: nextAssignee?.name || 'Responsável',
+      statusLabelText: nextStatusLabel,
+      nextAction: handoffForm.nextAction,
+      pending: handoffForm.pending,
+      note: handoffForm.note,
+      subtasks: activeSubtasks,
+      comments: visibleTaskComments,
+    });
 
     try {
       setHandoffSaving(true);
@@ -1270,7 +1326,7 @@ export default function ProfilePage() {
       };
       const [taskRes, commentRes] = await Promise.allSettled([
         updateProjectTask(activeTask.id, updateBody),
-        createTaskComment(activeTask.id, { body: lines.join('\n') }),
+        createTaskComment(activeTask.id, { body: handoffBody }),
       ]);
 
       if (taskRes.status === 'rejected') throw taskRes.reason;
@@ -2204,9 +2260,21 @@ export default function ProfilePage() {
                 </Select>
                 <textarea
                   className={styles.fieldWide}
+                  value={handoffForm.nextAction}
+                  onChange={(event) => setHandoffForm((prev) => ({ ...prev, nextAction: event.target.value }))}
+                  placeholder="Próxima ação"
+                />
+                <textarea
+                  className={styles.fieldWide}
+                  value={handoffForm.pending}
+                  onChange={(event) => setHandoffForm((prev) => ({ ...prev, pending: event.target.value }))}
+                  placeholder="Pendências"
+                />
+                <textarea
+                  className={`${styles.fieldWide} ${styles.handoffContextField}`.trim()}
                   value={handoffForm.note}
                   onChange={(event) => setHandoffForm((prev) => ({ ...prev, note: event.target.value }))}
-                  placeholder="Nota"
+                  placeholder="Contexto"
                 />
               </div>
             </div>
