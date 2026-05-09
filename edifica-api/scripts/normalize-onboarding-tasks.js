@@ -2,7 +2,7 @@ import 'dotenv/config';
 import mysql from 'mysql2/promise';
 
 const VALID_STATUSES = new Set(['todo', 'in_progress', 'done']);
-const VALID_PRIORITIES = new Set(['low', 'medium', 'high']);
+const VALID_PRIORITIES = new Set(['low', 'medium', 'high', 'critical']);
 
 function normalizeStatus(task = {}) {
   const raw = String(task.status || '').trim().toLowerCase();

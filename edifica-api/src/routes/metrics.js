@@ -26,6 +26,7 @@ import {
   previousMonthPrefix,
   aggregateClientSummary,
   aggregatePortfolioSummary,
+  weekOfMonth,
 } from '../utils/domain.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { getAccessibleClientRow, getAllowedSquads } from '../utils/access.js';
@@ -182,12 +183,23 @@ function rankingWeeklyGoal(data = {}) {
   return metaLucroLegacy > 0 ? metaLucroLegacy : 0;
 }
 
-function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '') {
-  const prefix = `${monthPrefix}-S`;
+function rankingMaxWeekForMonth(monthPrefix = '', now = new Date()) {
+  const currentPrefix = monthPrefixFromDate(now);
+  if (!/^\d{4}-\d{2}$/.test(String(monthPrefix))) return 0;
+  if (monthPrefix < currentPrefix) return 4;
+  if (monthPrefix > currentPrefix) return 0;
+  return weekOfMonth(now);
+}
 
+function rankingMetricWeek(periodKey = '', monthPrefix = '') {
+  const match = new RegExp(`^${monthPrefix}-S([1-4])$`).exec(String(periodKey || ''));
+  return match ? Number(match[1]) : 0;
+}
+
+function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '', maxWeek = 4) {
   return clientMetrics.some((row) => {
-    const periodKey = String(row?.period_key || '');
-    if (!periodKey.startsWith(prefix)) return false;
+    const week = rankingMetricWeek(row?.period_key, monthPrefix);
+    if (!week || week > maxWeek) return false;
 
     const data = metricData(row);
     const goal = rankingWeeklyGoal(data);
@@ -615,6 +627,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     const monthPrefix = monthPrefixFromDate(ref);
     const prevWeekKey = previousPeriodKey(weekKey);
     const prevMonthPrefix = previousMonthPrefix(monthPrefix);
+    const rankingMaxWeek = rankingMaxWeekForMonth(monthPrefix);
     const bounds = monthBoundsFromPrefix(monthPrefix);
     const referenceDateSql = monthPrefix + '-01';
 
@@ -697,7 +710,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
 
       const clientSummaries = activeClients.map((client) => {
         const clientMetricRows = metricsByClient.get(client.id) || [];
-        const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix);
+        const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek);
         const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
           prevWeekKey,
           prevMonthPrefix,

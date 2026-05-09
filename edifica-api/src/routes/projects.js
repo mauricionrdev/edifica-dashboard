@@ -31,7 +31,7 @@ function normalizeStatus(value) {
 
 function normalizePriority(value) {
   const priority = clean(value);
-  return ['low', 'medium', 'high'].includes(priority) ? priority : 'medium';
+  return ['low', 'medium', 'high', 'critical'].includes(priority) ? priority : 'medium';
 }
 
 function normalizeTemplateStatus(task = {}) {
@@ -493,17 +493,23 @@ router.get('/tasks/my/list', requirePermission('tasks.view'), async (req, res, n
   try {
     const rows = await query(
       `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
-              au.name AS assignee_name, cu.name AS created_by_name
+              au.name AS assignee_name, cu.name AS created_by_name,
+              CASE
+                WHEN t.assignee_user_id = ? THEN 'responsible'
+                WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator'
+                ELSE ''
+              END AS profile_relation
          FROM tasks t
          LEFT JOIN projects p ON p.id = t.project_id
          LEFT JOIN project_sections ps ON ps.id = t.section_id
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-        WHERE t.assignee_user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+        WHERE (t.assignee_user_id = ? OR tc_profile.user_id IS NOT NULL)
         ORDER BY t.status = 'done', COALESCE(t.due_date, '9999-12-31') ASC, t.created_at DESC
         LIMIT 300`,
-      [req.user.id]
+      [req.user.id, req.user.id, req.user.id]
     );
     res.json({ tasks: rows.map(serializeTask) });
   } catch (err) {
@@ -571,7 +577,7 @@ router.get('/users/:userId/tasks', requirePermission('profile.view'), async (req
     const targetUserId = clean(req.params.userId);
     if (!targetUserId) throw badRequest('Usuário inválido');
 
-    const params = [targetUserId];
+    const params = [targetUserId, targetUserId, targetUserId];
     let visibilityWhere = '';
 
     if (!isAdminUser(req.user) && !hasPermission(req.user, 'tasks.view.all') && req.user.id !== targetUserId) {
@@ -594,14 +600,20 @@ router.get('/users/:userId/tasks', requirePermission('profile.view'), async (req
 
     const rows = await query(
       `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
-              au.name AS assignee_name, cu.name AS created_by_name
+              au.name AS assignee_name, cu.name AS created_by_name,
+              CASE
+                WHEN t.assignee_user_id = ? THEN 'responsible'
+                WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator'
+                ELSE ''
+              END AS profile_relation
          FROM tasks t
          LEFT JOIN projects p ON p.id = t.project_id
          LEFT JOIN project_sections ps ON ps.id = t.section_id
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-        WHERE t.assignee_user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+        WHERE (t.assignee_user_id = ? OR tc_profile.user_id IS NOT NULL)
           ${visibilityWhere}
         ORDER BY t.status = 'done', COALESCE(t.due_date, '9999-12-31') ASC, t.created_at DESC
         LIMIT 200`,

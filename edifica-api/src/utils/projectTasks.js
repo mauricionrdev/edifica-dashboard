@@ -79,7 +79,7 @@ function normalizeTaskStatus(value, done = false) {
 
 function normalizePriority(value) {
   const priority = clean(value);
-  return ['low', 'medium', 'high'].includes(priority) ? priority : 'medium';
+  return ['low', 'medium', 'high', 'critical'].includes(priority) ? priority : 'medium';
 }
 
 function normalizeDate(value) {
@@ -130,6 +130,7 @@ export function serializeTask(row) {
     createdByUserId: row.created_by_user_id || '',
     createdByName: row.created_by_name || '',
     completedByUserId: row.completed_by_user_id || '',
+    profileRelation: row.profile_relation || '',
     dueDate: row.due_date
       ? (row.due_date instanceof Date
         ? row.due_date.toISOString().slice(0, 10)
