@@ -5,6 +5,7 @@ import {
   createTask,
   createTaskComment,
   deleteTaskComment,
+  listTaskEvents,
   listTaskCollaborators,
   listTaskSubtasks,
   addTaskCollaborator,
@@ -667,12 +668,93 @@ function parseSystemActivityComment(comment) {
   return null;
 }
 
-function buildActivityEvents(task, comments = []) {
+function formatEventTypeLabel(type) {
+  const labels = {
+    'task.created': 'Demanda criada',
+    'task.updated': 'Demanda atualizada',
+    'task.status_changed': 'Status alterado',
+    'task.priority_changed': 'Prioridade alterada',
+    'task.assignee_changed': 'Responsável alterado',
+    'task.due_date_changed': 'Prazo alterado',
+    'task.comment_added': 'Comentário adicionado',
+    'task.comment_deleted': 'Comentário excluído',
+    'task.collaborator_added': 'Colaborador adicionado',
+    'task.collaborator_removed': 'Colaborador removido',
+    'task.subtask_created': 'Subtarefa criada',
+    'task.completed': 'Demanda concluída',
+    'task.reopened': 'Demanda reaberta',
+  };
+  return labels[type] || 'Atividade registrada';
+}
+
+function eventTypeKey(type = '') {
+  if (String(type).includes('collaborator')) return 'collaborator';
+  if (String(type).includes('comment')) return 'comment';
+  if (String(type).includes('subtask')) return 'subtask';
+  if (String(type).includes('complete') || String(type).includes('done')) return 'done';
+  if (String(type).includes('status') || String(type).includes('priority') || String(type).includes('assignee') || String(type).includes('due')) return 'updated';
+  return 'created';
+}
+
+function formatEventMetadataValue(key, value) {
+  if (value === null || value === undefined || value === '') return '';
+  if (Array.isArray(value)) {
+    if (/task/i.test(key)) return value.length === 1 ? '1 tarefa' : `${value.length} tarefas`;
+    if (/section/i.test(key)) return value.length === 1 ? '1 seção' : `${value.length} seções`;
+    if (/user|collaborator/i.test(key)) return value.length === 1 ? '1 usuário' : `${value.length} usuários`;
+    return value.map((item) => formatEventMetadataValue(key, item)).filter(Boolean).join(', ');
+  }
+  if (typeof value === 'object') {
+    const entries = Object.entries(value)
+      .map(([childKey, childValue]) => formatEventMetadataValue(childKey, childValue))
+      .filter(Boolean);
+    return entries.join(' · ');
+  }
+  if (/status/i.test(key)) return statusLabel({ status: value });
+  if (/priority/i.test(key)) return priorityLabel(value);
+  if (/due|date/i.test(key)) return formatDueLabel(value);
+  return String(value);
+}
+
+function formatEventMetadata(metadata) {
+  if (!metadata || typeof metadata !== 'object') return '';
+  const hidden = new Set(['taskId', 'projectId', 'clientId', 'sectionId', 'userId']);
+  return Object.entries(metadata)
+    .filter(([key]) => !hidden.has(key))
+    .map(([key, value]) => formatEventMetadataValue(key, value))
+    .filter(Boolean)
+    .join(' · ');
+}
+
+function parseTaskEvent(event) {
+  if (!event?.id) return null;
+  const note = formatEventMetadata(event.metadata);
+  return {
+    id: `event-${event.id}`,
+    type: eventTypeKey(event.type),
+    title: event.summary || formatEventTypeLabel(event.type),
+    meta: event.actorName || 'Sistema',
+    note,
+    author: event.actorName || 'Sistema',
+    createdAt: event.createdAt,
+  };
+}
+
+function buildActivityEvents(task, comments = [], taskEvents = []) {
   if (!task) return [];
 
   const events = [];
+  const seen = new Set();
+  const pushEvent = (event) => {
+    if (!event?.id || seen.has(event.id)) return;
+    seen.add(event.id);
+    events.push(event);
+  };
+
+  taskEvents.map(parseTaskEvent).filter(Boolean).forEach(pushEvent);
+
   if (task.createdByName) {
-    events.push({
+    pushEvent({
       id: 'created',
       type: 'created',
       title: 'Demanda criada',
@@ -683,11 +765,11 @@ function buildActivityEvents(task, comments = []) {
 
   comments.forEach((comment) => {
     const parsed = parseSystemActivityComment(comment);
-    if (parsed) events.push(parsed);
+    if (parsed) pushEvent(parsed);
   });
 
   if (isDone(task) && !events.some((event) => event.type === 'done')) {
-    events.push({
+    pushEvent({
       id: 'done-current',
       type: 'done',
       title: 'Demanda concluída',
@@ -697,7 +779,7 @@ function buildActivityEvents(task, comments = []) {
   }
 
   if (task.updatedAt) {
-    events.push({
+    pushEvent({
       id: 'updated',
       type: 'updated',
       title: 'Última atualização',
@@ -754,6 +836,7 @@ export default function ProfilePage() {
   const [clientQuery, setClientQuery] = useState('');
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [taskComments, setTaskComments] = useState([]);
+  const [taskEvents, setTaskEvents] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentDraft, setCommentDraft] = useState('');
   const [commentSaving, setCommentSaving] = useState(false);
@@ -890,6 +973,7 @@ export default function ProfilePage() {
     setCommentDraft('');
     setSubtaskDraft('');
     setTaskComments([]);
+    setTaskEvents([]);
     setDrawerSubtasks([]);
     setCollaborators([]);
     setCollaboratorUserId('');
@@ -903,13 +987,18 @@ export default function ProfilePage() {
     setSubtasksLoading(true);
     setCollaboratorsLoading(true);
 
-    Promise.allSettled([listTaskComments(activeTaskId), listTaskSubtasks(activeTaskId), listTaskCollaborators(activeTaskId)])
-      .then(([commentsRes, subtasksRes, collaboratorsRes]) => {
+    Promise.allSettled([listTaskComments(activeTaskId), listTaskEvents(activeTaskId), listTaskSubtasks(activeTaskId), listTaskCollaborators(activeTaskId)])
+      .then(([commentsRes, eventsRes, subtasksRes, collaboratorsRes]) => {
         if (cancelled) return;
         if (commentsRes.status === 'fulfilled') {
           setTaskComments(Array.isArray(commentsRes.value?.comments) ? commentsRes.value.comments : []);
         } else {
           setTaskComments([]);
+        }
+        if (eventsRes.status === 'fulfilled') {
+          setTaskEvents(Array.isArray(eventsRes.value?.events) ? eventsRes.value.events : []);
+        } else {
+          setTaskEvents([]);
         }
         if (subtasksRes.status === 'fulfilled') {
           setDrawerSubtasks(Array.isArray(subtasksRes.value?.subtasks) ? subtasksRes.value.subtasks : []);
@@ -966,7 +1055,7 @@ export default function ProfilePage() {
       .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
   }, [activeTask, collaborators, demandUsers]);
   const visibleTaskComments = useMemo(() => taskComments.filter((comment) => !isSystemActivityComment(comment)), [taskComments]);
-  const activeActivityEvents = useMemo(() => buildActivityEvents(activeTask, taskComments), [activeTask, taskComments]);
+  const activeActivityEvents = useMemo(() => buildActivityEvents(activeTask, taskComments, taskEvents), [activeTask, taskComments, taskEvents]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
 
   async function handleSaveProfile() {

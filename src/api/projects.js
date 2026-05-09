@@ -69,6 +69,10 @@ export function listTaskComments(id) {
   return api.get(`/projects/tasks/${encodeURIComponent(id)}/comments`);
 }
 
+export function listTaskEvents(id) {
+  return api.get(`/projects/tasks/${encodeURIComponent(id)}/events`);
+}
+
 export function createTaskComment(id, body) {
   return api.post(`/projects/tasks/${encodeURIComponent(id)}/comments`, body);
 }

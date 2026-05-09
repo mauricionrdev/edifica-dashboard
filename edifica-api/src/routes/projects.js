@@ -291,6 +291,31 @@ async function loadProjectEvents(projectId) {
   }));
 }
 
+
+async function loadTaskEvents(taskId) {
+  const rows = await query(
+    `SELECT te.*, u.name AS actor_name
+       FROM task_events te
+       LEFT JOIN users u ON u.id = te.actor_user_id
+      WHERE te.task_id = ?
+      ORDER BY te.created_at DESC
+      LIMIT 60`,
+    [taskId]
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    taskId: row.task_id || '',
+    projectId: row.project_id || '',
+    actorUserId: row.actor_user_id || '',
+    actorName: row.actor_name || '',
+    type: row.event_type,
+    summary: row.summary,
+    metadata: parseJson(row.metadata_json, null),
+    createdAt: row.created_at,
+  }));
+}
+
 router.get('/', requirePermission('projects.view'), async (req, res, next) => {
   try {
     const rows = await query(
@@ -1200,6 +1225,16 @@ router.get('/tasks/:id/subtasks', requirePermission('tasks.view'), async (req, r
       [req.params.id]
     );
     res.json({ task: serializeTask(parentTask), subtasks: rows.map(serializeTask) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/tasks/:id/events', requirePermission('tasks.view'), async (req, res, next) => {
+  try {
+    await assertTaskAccess(req.params.id, req.user, 'tasks.view');
+    const events = await loadTaskEvents(req.params.id);
+    res.json({ events });
   } catch (err) {
     next(err);
   }

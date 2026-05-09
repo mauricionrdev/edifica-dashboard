@@ -2759,3 +2759,22 @@
 .handoffGrid .fieldWide {
   line-height: 1.45;
 }
+
+/* V31 — atividade real da demanda */
+.activityMark_collaborator {
+  color: #a7c7ff;
+  background: rgba(59, 130, 246, 0.11);
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
+.activityMark_comment {
+  color: #d6c7ff;
+  background: rgba(139, 92, 246, 0.11);
+  border-color: rgba(139, 92, 246, 0.18);
+}
+
+.activityMark_subtask {
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.09);
+}
