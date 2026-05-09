@@ -182,18 +182,19 @@ function rankingWeeklyGoal(data = {}) {
   return metaLucroLegacy > 0 ? metaLucroLegacy : 0;
 }
 
-function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '') {
-  const prefix = `${monthPrefix}-S`;
+function clientHitRankingGoalInWeek(clientMetrics = [], weekKey = '') {
+  const targetWeekKey = String(weekKey || '');
+  if (!targetWeekKey) return false;
 
   return clientMetrics.some((row) => {
     const periodKey = String(row?.period_key || '');
-    if (!periodKey.startsWith(prefix)) return false;
+    if (periodKey !== targetWeekKey) return false;
 
     const data = metricData(row);
     const goal = rankingWeeklyGoal(data);
     const closed = metricNumber(data?.fechados);
 
-    return goal > 0 && closed > 0 && closed >= goal;
+    return goal > 0 && closed >= goal;
   });
 }
 
@@ -697,26 +698,20 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
 
       const clientSummaries = activeClients.map((client) => {
         const clientMetricRows = metricsByClient.get(client.id) || [];
-        const clientMetaLucro = Number(client.meta_lucro) || 0;
+        const hit = clientHitRankingGoalInWeek(clientMetricRows, weekKey);
         const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
           prevWeekKey,
           prevMonthPrefix,
-          clientMetaLucro,
+          clientMetaLucro: Number(client.meta_lucro) || 0,
         });
-
-        // Ranking e Summary precisam usar a mesma verdade operacional.
-        // Portanto, a Meta Lucro do ranking não roda uma fórmula paralela:
-        // conta o mesmo `hit` consolidado exibido no preenchimento/summary.
-        const hit = summary.monthGoal > 0 && summary.monthClosed >= summary.monthGoal;
-
         return {
           clientId: client.id,
           name: client.name,
           squadId: client.squad_id,
-          clientMetaLucro,
+          clientMetaLucro: Number(client.meta_lucro) || 0,
           ...summary,
           hit,
-          hasGoal: summary.monthGoalSeen,
+          hasGoal: hit,
         };
       });
 
