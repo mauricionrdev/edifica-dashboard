@@ -4,6 +4,7 @@ import { changePassword, updateProfile } from '../api/auth.js';
 import {
   createTask,
   createTaskComment,
+  deleteTask,
   deleteTaskComment,
   listTaskEvents,
   listTaskCollaborators,
@@ -855,6 +856,8 @@ export default function ProfilePage() {
   const [commentSaving, setCommentSaving] = useState(false);
   const [commentDeleteTarget, setCommentDeleteTarget] = useState(null);
   const [commentDeleting, setCommentDeleting] = useState(false);
+  const [subtaskDeleteTarget, setSubtaskDeleteTarget] = useState(null);
+  const [subtaskDeleting, setSubtaskDeleting] = useState(false);
   const [subtaskDraft, setSubtaskDraft] = useState('');
   const [subtaskSaving, setSubtaskSaving] = useState(false);
   const [drawerSubtasks, setDrawerSubtasks] = useState([]);
@@ -1494,6 +1497,7 @@ export default function ProfilePage() {
       await deleteTaskComment(activeTask.id, commentDeleteTarget.id);
       setTaskComments((prev) => prev.filter((comment) => comment.id !== commentDeleteTarget.id));
       setCommentDeleteTarget(null);
+      setSubtaskDeleteTarget(null);
       showToast('Comentário excluído.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao excluir comentário.', { variant: 'error' });
@@ -1550,6 +1554,24 @@ export default function ProfilePage() {
     }
   }
 
+
+
+  async function handleDeleteSubtask() {
+    if (!subtaskDeleteTarget?.id) return;
+
+    try {
+      setSubtaskDeleting(true);
+      await deleteTask(subtaskDeleteTarget.id);
+      setTasks((prev) => prev.filter((task) => task.id !== subtaskDeleteTarget.id));
+      setDrawerSubtasks((prev) => prev.filter((task) => task.id !== subtaskDeleteTarget.id));
+      setSubtaskDeleteTarget(null);
+      showToast('Subtarefa excluída.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao excluir subtarefa.', { variant: 'error' });
+    } finally {
+      setSubtaskDeleting(false);
+    }
+  }
 
   async function handleOpenDemandModal() {
     setDemandForm((prev) => ({ ...emptyDemandForm(user?.id || ''), assigneeUserId: prev.assigneeUserId || user?.id || '' }));
@@ -2134,6 +2156,16 @@ export default function ProfilePage() {
                           {isDone(subtask) ? '✓' : ''}
                         </button>
                         <span>{subtask.title}</span>
+                        <button
+                          type="button"
+                          className={styles.subtaskDeleteButton}
+                          onClick={() => setSubtaskDeleteTarget(subtask)}
+                          disabled={taskUpdatingId === subtask.id}
+                          aria-label="Excluir subtarefa"
+                          title="Excluir subtarefa"
+                        >
+                          <TrashIcon size={13} />
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -2341,6 +2373,27 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
+
+
+      {subtaskDeleteTarget ? (
+        <div className={styles.settingsOverlay} onClick={() => setSubtaskDeleteTarget(null)}>
+          <section className={`${styles.settingsModal} ${styles.confirmModal}`} role="dialog" aria-modal="true" aria-label="Excluir subtarefa" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.settingsHeader}>
+              <div>
+                <h2>Excluir subtarefa</h2>
+                <span>{subtaskDeleteTarget.title}</span>
+              </div>
+              <button type="button" className={styles.iconButton} onClick={() => setSubtaskDeleteTarget(null)} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+            <footer className={styles.settingsFooter}>
+              <button type="button" onClick={() => setSubtaskDeleteTarget(null)}>Cancelar</button>
+              <button type="button" onClick={handleDeleteSubtask} disabled={subtaskDeleting}>{subtaskDeleting ? 'Excluindo' : 'Excluir'}</button>
+            </footer>
+          </section>
+        </div>
+      ) : null}
 
 
       {completionTarget ? (

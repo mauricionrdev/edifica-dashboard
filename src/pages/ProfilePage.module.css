@@ -2908,3 +2908,37 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* V35 — exclusão de subtarefas no drawer */
+.subtaskItem {
+  grid-template-columns: 20px minmax(0, 1fr) 30px;
+}
+
+.subtaskDeleteButton {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--profile-faint);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.subtaskItem:hover .subtaskDeleteButton,
+.subtaskDeleteButton:focus-visible {
+  opacity: 1;
+}
+
+.subtaskDeleteButton:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ff8d8d;
+}
+
+.subtaskDeleteButton:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
