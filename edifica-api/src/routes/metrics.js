@@ -182,19 +182,18 @@ function rankingWeeklyGoal(data = {}) {
   return metaLucroLegacy > 0 ? metaLucroLegacy : 0;
 }
 
-function clientHitRankingGoalInWeek(clientMetrics = [], weekKey = '') {
-  const targetWeekKey = String(weekKey || '');
-  if (!targetWeekKey) return false;
+function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '') {
+  const prefix = `${monthPrefix}-S`;
 
   return clientMetrics.some((row) => {
     const periodKey = String(row?.period_key || '');
-    if (periodKey !== targetWeekKey) return false;
+    if (!periodKey.startsWith(prefix)) return false;
 
     const data = metricData(row);
     const goal = rankingWeeklyGoal(data);
     const closed = metricNumber(data?.fechados);
 
-    return goal > 0 && closed >= goal;
+    return goal > 0 && closed > 0 && closed >= goal;
   });
 }
 
@@ -698,7 +697,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
 
       const clientSummaries = activeClients.map((client) => {
         const clientMetricRows = metricsByClient.get(client.id) || [];
-        const hit = clientHitRankingGoalInWeek(clientMetricRows, weekKey);
+        const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix);
         const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
           prevWeekKey,
           prevMonthPrefix,
