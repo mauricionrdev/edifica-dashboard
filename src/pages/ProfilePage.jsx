@@ -2238,7 +2238,8 @@ export default function ProfilePage() {
                   <input value={demandForm.channels} onChange={(event) => setDemandForm((prev) => ({ ...prev, channels: event.target.value }))} placeholder="Canais" />
                   <input value={demandForm.attendants} onChange={(event) => setDemandForm((prev) => ({ ...prev, attendants: event.target.value }))} placeholder="Atendentes" />
                   <input value={demandForm.greeting} onChange={(event) => setDemandForm((prev) => ({ ...prev, greeting: event.target.value }))} placeholder="Saudação" />
-                  <input className={styles.fieldWide} value={demandForm.location} onChange={(event) => setDemandForm((prev) => ({ ...prev, location: event.target.value }))} placeholder="Localização" />
+                  <input value={demandForm.location} onChange={(event) => setDemandForm((prev) => ({ ...prev, location: event.target.value }))} placeholder="Localização" />
+                  <textarea className={styles.fieldWide} value={demandForm.notes} onChange={(event) => setDemandForm((prev) => ({ ...prev, notes: event.target.value }))} placeholder="Observações" />
                 </div>
               ) : null}
 

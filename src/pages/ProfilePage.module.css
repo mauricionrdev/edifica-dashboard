@@ -2778,3 +2778,79 @@
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.09);
 }
+
+/* v32 — Nova demanda refinada */
+.demandModal .settingsContent {
+  gap: 12px;
+}
+
+.demandFormGrid {
+  grid-template-columns: minmax(0, 150px) minmax(0, 150px) minmax(0, 1fr) minmax(0, 190px);
+  align-items: stretch;
+}
+
+.demandFormGrid input,
+.briefingGrid input,
+.briefingGrid textarea,
+.routineFormGrid input,
+.routineFormGrid textarea,
+.demandTextarea,
+.clientSearchField input {
+  border-color: rgba(255, 255, 255, 0.068);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-text);
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.briefingGrid textarea {
+  width: 100%;
+  min-height: 78px;
+  padding: 11px 12px;
+  border: 1px solid var(--profile-line);
+  border-radius: 12px;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.45;
+  outline: none;
+}
+
+.briefingGrid textarea:focus {
+  border-color: rgba(245, 184, 0, 0.30);
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.clientSearchField {
+  isolation: isolate;
+}
+
+.clientSearchResults {
+  z-index: 10070;
+}
+
+.demandModal .formSelect > button,
+.demandModal .dateField > button,
+.demandModal .clientSearchField input,
+.demandFormGrid input {
+  min-height: 40px;
+}
+
+.demandModal .settingsFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.045);
+  margin: 2px -22px 0;
+  padding: 14px 22px 0;
+}
+
+@media (max-width: 920px) {
+  .demandFormGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .demandFormGrid,
+  .briefingGrid,
+  .routineFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
