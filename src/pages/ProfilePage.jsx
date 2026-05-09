@@ -585,6 +585,23 @@ function formatDateTime(value) {
 }
 
 
+function formatProfileDate(value) {
+  const date = value instanceof Date ? value : new Date();
+  return new Intl.DateTimeFormat('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+}
+
+function greetingForDate(value) {
+  const hour = (value instanceof Date ? value : new Date()).getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
 function summarizeOpenSubtasks(subtasks = []) {
   const openItems = subtasks.filter((item) => !isDone(item));
   if (!openItems.length) return 'Sem pendências abertas';
@@ -1113,6 +1130,14 @@ export default function ProfilePage() {
   const visibleTaskComments = useMemo(() => taskComments.filter((comment) => !isSystemActivityComment(comment)), [taskComments]);
   const activeActivityEvents = useMemo(() => buildActivityEvents(activeTask, taskComments, taskEvents), [activeTask, taskComments, taskEvents]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
+  const profileDate = useMemo(() => new Date(), []);
+  const profileStats = useMemo(() => ([
+    { label: 'hoje', value: operationCounts.today, tone: 'amber' },
+    { label: 'atrasadas', value: operationCounts.overdue, tone: 'red' },
+    { label: 'concluídas', value: operationCounts.done, tone: 'green' },
+    { label: 'squads', value: squadNames.length, tone: 'blue' },
+    { label: 'clientes', value: demandClients.length, tone: 'violet' },
+  ]), [demandClients.length, operationCounts.done, operationCounts.overdue, operationCounts.today, squadNames.length]);
 
   async function handleSaveProfile() {
     try {
@@ -1738,13 +1763,25 @@ export default function ProfilePage() {
           </span>
 
           <div className={styles.identityCopy}>
+            <span className={styles.identityGreeting}>{greetingForDate(profileDate)} · {formatProfileDate(profileDate)}</span>
             <div className={styles.identityTitle}>
               <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
-              <span>{roleLabel(user?.role)}</span>
             </div>
             <div className={styles.identityMeta}>
+              <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
               {user?.email ? <span>{user.email}</span> : null}
-              {squadNames.length ? <span>{squadNames.join(', ')}</span> : null}
+            </div>
+            <div className={styles.profileStatRail}>
+              {profileStats.map((item) => (
+                <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
+                  <i aria-hidden="true" />
+                  <strong>{item.value}</strong> {item.label}
+                </span>
+              ))}
+              <span className={styles.profileStat}>
+                <i aria-hidden="true" />
+                <strong>{completionRate}%</strong> conclusão
+              </span>
             </div>
           </div>
 
@@ -1760,26 +1797,6 @@ export default function ProfilePage() {
           >
             <SettingsIcon size={16} />
           </button>
-        </div>
-
-        <div className={styles.metricRail}>
-          <div className={styles.metricItem}>
-            <span>Hoje</span>
-            <strong>{operationCounts.today}</strong>
-          </div>
-          <div className={styles.metricItem}>
-            <span>Atrasadas</span>
-            <strong className={operationCounts.overdue ? styles.dangerText : ''}>{operationCounts.overdue}</strong>
-          </div>
-          <div className={styles.metricItem}>
-            <span>Aguardando</span>
-            <strong>{operationCounts.waiting}</strong>
-          </div>
-          <div className={styles.metricItem}>
-            <span>Conclusão</span>
-            <strong>{completionRate}%</strong>
-            <i><b style={{ width: `${completionRate}%` }} /></i>
-          </div>
         </div>
       </section>
 
@@ -1859,11 +1876,9 @@ export default function ProfilePage() {
                       <span className={`${styles.kindPill} ${styles[`kind_${itemKind}`] || ''}`.trim()}>{kindLabel(itemKind)}</span>
                       <span className={`${styles.priorityPill} ${styles[`priority_${priorityKey(task)}`] || ''}`.trim()}>{priorityLabel(priorityKey(task))}</span>
                       <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
-                      {task.profileRelation === 'collaborator' ? (
-                        <span className={styles.relationPill}>{relationLabel(task)}</span>
-                      ) : (
-                        <span className={styles.relationGhost}>{relationLabel(task)}</span>
-                      )}
+                      <span className={`${styles.relationPill} ${task.profileRelation === 'collaborator' ? styles.relationWatching : styles.relationResponsible}`.trim()}>
+                        {relationLabel(task)}
+                      </span>
                     </div>
                   </article>
                 );

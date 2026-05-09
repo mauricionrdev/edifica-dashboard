@@ -3276,3 +3276,157 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* V39 — topo do Perfil e relação operacional na lista */
+.hero {
+  padding: 22px 22px 20px;
+  border-radius: 18px;
+  background:
+    radial-gradient(720px 220px at 0% -40%, rgba(245, 184, 0, 0.075), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.004)),
+    var(--profile-panel);
+}
+
+.identityRow {
+  grid-template-columns: 70px minmax(0, 1fr) 34px;
+  gap: 16px;
+  align-items: start;
+}
+
+.avatar {
+  width: 70px;
+  height: 70px;
+  border: 2px solid rgba(245, 184, 0, 0.64);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.28),
+    0 0 0 4px rgba(245, 184, 0, 0.055);
+  font-size: 18px;
+  font-weight: 760;
+}
+
+.identityCopy {
+  gap: 7px;
+  padding-top: 1px;
+}
+
+.identityGreeting {
+  color: var(--profile-faint);
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 560;
+}
+
+.identityTitle h1 {
+  font-size: clamp(24px, 2.05vw, 32px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  font-weight: 720;
+}
+
+.identityMeta {
+  gap: 8px;
+  font-size: 13px;
+}
+
+.roleBadge {
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 9px;
+  border: 1px solid rgba(245, 184, 0, 0.28);
+  border-radius: 999px;
+  background: rgba(245, 184, 0, 0.085);
+  color: #f7c943;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 780;
+  letter-spacing: 0.02em;
+}
+
+.profileStatRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.profileStat {
+  min-height: 27px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.072);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--profile-soft);
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 560;
+}
+
+.profileStat strong {
+  color: var(--profile-text);
+  font-weight: 720;
+}
+
+.profileStat i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.7);
+}
+
+.profileStat_amber i { background: var(--profile-amber); }
+.profileStat_red i { background: #ff6b73; }
+.profileStat_green i { background: #65d99a; }
+.profileStat_blue i { background: #5aa9ff; }
+.profileStat_violet i { background: #b784f0; }
+
+.operationMeta {
+  grid-template-columns: 76px 72px 88px 116px;
+}
+
+.operationMeta .relationPill {
+  max-width: 116px;
+}
+
+.relationPill {
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.006em;
+}
+
+.relationWatching {
+  color: #9fd0ff;
+  border-color: rgba(90, 169, 255, 0.36);
+  background: rgba(90, 169, 255, 0.095);
+}
+
+.relationResponsible {
+  color: #8ee7ad;
+  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.085);
+}
+
+@media (max-width: 760px) {
+  .identityRow {
+    grid-template-columns: 58px minmax(0, 1fr) 34px;
+    gap: 12px;
+  }
+
+  .avatar {
+    width: 58px;
+    height: 58px;
+  }
+
+  .profileStatRail {
+    gap: 6px;
+  }
+
+  .profileStat {
+    min-height: 25px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+}
