@@ -1151,7 +1151,8 @@ export default function ProfilePage() {
     { label: 'Concluídas', value: operationCounts.done, tone: 'green', Icon: ChecklistIcon },
     { label: 'Squads', value: squadNames.length, tone: 'blue', Icon: UsersIcon },
     { label: 'Clientes', value: demandClients.length, tone: 'violet', Icon: BuildingIcon },
-  ]), [demandClients.length, operationCounts.done, operationCounts.overdue, operationCounts.today, squadNames.length]);
+    { label: 'Conclusão', value: `${completionRate}%`, tone: 'completion', Icon: TargetIcon },
+  ]), [completionRate, demandClients.length, operationCounts.done, operationCounts.overdue, operationCounts.today, squadNames.length]);
 
   async function handleSaveProfile() {
     try {
@@ -1788,16 +1789,13 @@ export default function ProfilePage() {
             <div className={styles.profileStatRail}>
               {profileStats.map(({ Icon, ...item }) => (
                 <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
-                  <Icon size={13} strokeWidth={2} aria-hidden="true" />
+                  <span>
+                    <Icon size={12} strokeWidth={2} aria-hidden="true" />
+                    {item.label}
+                  </span>
                   <strong>{item.value}</strong>
-                  <span>{item.label}</span>
                 </span>
               ))}
-              <span className={`${styles.profileStat} ${styles.profileStat_completion}`.trim()}>
-                <TargetIcon size={13} strokeWidth={2} aria-hidden="true" />
-                <strong>{completionRate}%</strong>
-                <span>Conclusão</span>
-              </span>
             </div>
           </div>
 
