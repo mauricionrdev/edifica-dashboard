@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
@@ -29,6 +29,7 @@ import {
   saveUserAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
+import Select from '../components/ui/Select.jsx';
 import DateField from '../components/ui/DateField.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { BellIcon, BuildingIcon, CalendarIcon, ChecklistIcon, CloseIcon, SettingsIcon, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/Icons.jsx';
@@ -736,13 +737,10 @@ function eventTypeKey(type = '') {
   return 'created';
 }
 
-function looksLikeTechnicalId(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ''));
-}
-
 function formatEventMetadataValue(key, value) {
   if (value === null || value === undefined || value === '') return '';
-  if (/id$/i.test(key) || /_id$/i.test(key) || looksLikeTechnicalId(value)) return '';
+  if (/id$/i.test(String(key || ''))) return '';
+  if (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.trim())) return '';
   if (Array.isArray(value)) {
     if (/task/i.test(key)) return value.length === 1 ? '1 tarefa' : `${value.length} tarefas`;
     if (/section/i.test(key)) return value.length === 1 ? '1 seção' : `${value.length} seções`;
@@ -845,161 +843,6 @@ function buildActivityEvents(task, comments = [], taskEvents = []) {
 
 function metaValue(value) {
   return value || '—';
-}
-
-
-function Select({ value, onChange, children, className = '', disabled = false, placeholder = 'Selecionar', ...props }) {
-  const buttonRef = useRef(null);
-  const menuRef = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState(null);
-
-  const options = useMemo(() => {
-    const items = [];
-
-    function collect(nodes) {
-      (Array.isArray(nodes) ? nodes : [nodes]).forEach((node) => {
-        if (!node) return;
-        if (Array.isArray(node)) {
-          collect(node);
-          return;
-        }
-        if (node?.type === 'option') {
-          const label = Array.isArray(node.props.children)
-            ? node.props.children.join('')
-            : String(node.props.children ?? '');
-          items.push({
-            value: String(node.props.value ?? ''),
-            label,
-            disabled: Boolean(node.props.disabled),
-          });
-          return;
-        }
-        if (node?.props?.children) collect(node.props.children);
-      });
-    }
-
-    collect(children);
-    return items;
-  }, [children]);
-
-  const selected = options.find((option) => option.value === String(value ?? ''));
-  const ariaLabel = props['aria-label'] || props.ariaLabel || placeholder;
-
-  function computePosition() {
-    const anchor = buttonRef.current;
-    if (!anchor || typeof window === 'undefined') return null;
-
-    const rect = anchor.getBoundingClientRect();
-    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-    const width = Math.min(Math.max(rect.width, 220), Math.max(220, viewportWidth - 24));
-    const left = Math.max(12, Math.min(rect.left, viewportWidth - width - 12));
-    const spaceBelow = viewportHeight - rect.bottom - 12;
-    const spaceAbove = rect.top - 12;
-    const maxHeight = Math.max(150, Math.min(280, Math.max(spaceBelow, spaceAbove)));
-    const top = spaceBelow >= 168 || spaceBelow >= spaceAbove
-      ? rect.bottom + 6
-      : Math.max(12, rect.top - maxHeight - 6);
-
-    return {
-      top: Math.round(top),
-      left: Math.round(left),
-      width: Math.round(width),
-      maxHeight: Math.round(maxHeight),
-    };
-  }
-
-  function updatePosition() {
-    const next = computePosition();
-    if (next) setPosition(next);
-    return next;
-  }
-
-  useLayoutEffect(() => {
-    if (!open) return undefined;
-    updatePosition();
-    return undefined;
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return undefined;
-
-    function handlePointerDown(event) {
-      if (buttonRef.current?.contains(event.target)) return;
-      if (menuRef.current?.contains(event.target)) return;
-      setOpen(false);
-    }
-
-    function handleKeyDown(event) {
-      if (event.key === 'Escape') setOpen(false);
-    }
-
-    window.addEventListener('pointerdown', handlePointerDown, true);
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, true);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('pointerdown', handlePointerDown, true);
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open]);
-
-  function selectValue(nextValue) {
-    onChange?.({ target: { value: nextValue } });
-    setOpen(false);
-  }
-
-  return (
-    <div className={`${styles.profileSelect} ${className || ''}`.trim()}>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={styles.profileSelectButton}
-        onClick={() => {
-          if (disabled) return;
-          if (open) {
-            setOpen(false);
-            return;
-          }
-          const next = updatePosition();
-          if (next) setOpen(true);
-        }}
-        disabled={disabled}
-        aria-label={ariaLabel}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-      >
-        <span>{selected?.label || placeholder}</span>
-      </button>
-      {open && position ? createPortal(
-        <div
-          ref={menuRef}
-          className={styles.profileSelectMenu}
-          style={{ top: position.top, left: position.left, width: position.width, maxHeight: position.maxHeight }}
-          role="listbox"
-          aria-label={ariaLabel}
-        >
-          {options.map((option) => (
-            <button
-              key={`${option.value}-${option.label}`}
-              type="button"
-              className={`${styles.profileSelectOption} ${String(value ?? '') === option.value ? styles.profileSelectOptionActive : ''}`.trim()}
-              onClick={() => !option.disabled && selectValue(option.value)}
-              disabled={option.disabled}
-              role="option"
-              aria-selected={String(value ?? '') === option.value}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>,
-        document.body,
-      ) : null}
-    </div>
-  );
 }
 
 export default function ProfilePage() {
@@ -2072,15 +1915,18 @@ export default function ProfilePage() {
         <aside className={styles.drawerOverlay} aria-label="Demanda" onClick={() => setActiveTaskId('')}>
           <section className={styles.drawerPanel} onClick={(event) => event.stopPropagation()}>
             <header className={styles.drawerTopbar}>
-              <button
-                type="button"
-                className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
-                onClick={() => handleToggleTask(activeTask)}
-                disabled={taskUpdatingId === activeTask.id}
-                aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
-              >
-                {isDone(activeTask) ? '✓' : ''}
-              </button>
+              <div className={styles.drawerStatusGroup}>
+                <button
+                  type="button"
+                  className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
+                  onClick={() => handleToggleTask(activeTask)}
+                  disabled={taskUpdatingId === activeTask.id}
+                  aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
+                >
+                  {isDone(activeTask) ? '✓' : ''}
+                </button>
+                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
+              </div>
               <button type="button" className={styles.iconButton} onClick={() => setActiveTaskId('')} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
@@ -2088,7 +1934,6 @@ export default function ProfilePage() {
 
             <div className={styles.drawerScroll}>
               <div className={styles.drawerHero}>
-                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
                 {contentEditing ? (
                   <input
                     className={styles.titleEditor}
@@ -2346,7 +2191,6 @@ export default function ProfilePage() {
                           <span className={styles.collaboratorAvatar}>{initials(collaboratorName)}</span>
                           <div>
                             <strong>{collaboratorName}</strong>
-                            {collaborator.userEmail ? <small>{collaborator.userEmail}</small> : null}
                           </div>
                           <button
                             type="button"
@@ -2454,8 +2298,8 @@ export default function ProfilePage() {
                 <div className={styles.activityList}>
                   {activeActivityEvents.map((event) => (
                     <div key={event.id} className={`${styles.activityItem} ${event.quiet ? styles.activityItemQuiet : ''}`.trim()}>
-                      <span className={`${styles.activityMark} ${styles[`activityMark_${event.type}`] || ''}`.trim()}>
-                        {event.type === 'done' ? '✓' : event.type === 'handoff' ? '↗' : event.type === 'updated' ? '·' : initials(event.meta || event.author)}
+                      <span className={`${styles.activityMark} ${styles[`activityMark_${event.type}`] || ''}`.trim()} aria-hidden="true">
+                        {event.type === 'done' ? '✓' : ''}
                       </span>
                       <div className={styles.activityContent}>
                         <p><strong>{event.title}</strong>{event.meta ? <em>{event.meta}</em> : null}</p>
