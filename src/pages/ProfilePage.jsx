@@ -736,8 +736,13 @@ function eventTypeKey(type = '') {
   return 'created';
 }
 
+function looksLikeTechnicalId(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ''));
+}
+
 function formatEventMetadataValue(key, value) {
   if (value === null || value === undefined || value === '') return '';
+  if (/id$/i.test(key) || /_id$/i.test(key) || looksLikeTechnicalId(value)) return '';
   if (Array.isArray(value)) {
     if (/task/i.test(key)) return value.length === 1 ? '1 tarefa' : `${value.length} tarefas`;
     if (/section/i.test(key)) return value.length === 1 ? '1 seção' : `${value.length} seções`;
@@ -842,6 +847,7 @@ function metaValue(value) {
   return value || '—';
 }
 
+
 function Select({ value, onChange, children, className = '', disabled = false, placeholder = 'Selecionar', ...props }) {
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
@@ -850,12 +856,18 @@ function Select({ value, onChange, children, className = '', disabled = false, p
 
   const options = useMemo(() => {
     const items = [];
+
     function collect(nodes) {
       (Array.isArray(nodes) ? nodes : [nodes]).forEach((node) => {
         if (!node) return;
-        if (Array.isArray(node)) return collect(node);
+        if (Array.isArray(node)) {
+          collect(node);
+          return;
+        }
         if (node?.type === 'option') {
-          const label = Array.isArray(node.props.children) ? node.props.children.join('') : String(node.props.children ?? '');
+          const label = Array.isArray(node.props.children)
+            ? node.props.children.join('')
+            : String(node.props.children ?? '');
           items.push({
             value: String(node.props.value ?? ''),
             label,
@@ -866,6 +878,7 @@ function Select({ value, onChange, children, className = '', disabled = false, p
         if (node?.props?.children) collect(node.props.children);
       });
     }
+
     collect(children);
     return items;
   }, [children]);
@@ -873,27 +886,34 @@ function Select({ value, onChange, children, className = '', disabled = false, p
   const selected = options.find((option) => option.value === String(value ?? ''));
   const ariaLabel = props['aria-label'] || props.ariaLabel || placeholder;
 
-  function computeSelectPosition() {
-    const button = buttonRef.current;
-    if (!button || typeof window === 'undefined') return null;
-    const rect = button.getBoundingClientRect();
+  function computePosition() {
+    const anchor = buttonRef.current;
+    if (!anchor || typeof window === 'undefined') return null;
+
+    const rect = anchor.getBoundingClientRect();
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
     const width = Math.min(Math.max(rect.width, 220), Math.max(220, viewportWidth - 24));
     const left = Math.max(12, Math.min(rect.left, viewportWidth - width - 12));
     const spaceBelow = viewportHeight - rect.bottom - 12;
     const spaceAbove = rect.top - 12;
-    const maxHeight = Math.max(160, Math.min(280, Math.max(spaceBelow, spaceAbove)));
-    const top = spaceBelow >= 180 || spaceBelow >= spaceAbove
+    const maxHeight = Math.max(150, Math.min(280, Math.max(spaceBelow, spaceAbove)));
+    const top = spaceBelow >= 168 || spaceBelow >= spaceAbove
       ? rect.bottom + 6
       : Math.max(12, rect.top - maxHeight - 6);
-    return { top, left, width, maxHeight };
+
+    return {
+      top: Math.round(top),
+      left: Math.round(left),
+      width: Math.round(width),
+      maxHeight: Math.round(maxHeight),
+    };
   }
 
   function updatePosition() {
-    const nextPosition = computeSelectPosition();
-    if (nextPosition) setPosition(nextPosition);
-    return nextPosition;
+    const next = computePosition();
+    if (next) setPosition(next);
+    return next;
   }
 
   useLayoutEffect(() => {
@@ -944,8 +964,8 @@ function Select({ value, onChange, children, className = '', disabled = false, p
             setOpen(false);
             return;
           }
-          const nextPosition = updatePosition();
-          if (nextPosition) setOpen(true);
+          const next = updatePosition();
+          if (next) setOpen(true);
         }}
         disabled={disabled}
         aria-label={ariaLabel}

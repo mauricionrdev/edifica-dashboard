@@ -2223,18 +2223,115 @@
     padding: 14px 18px;
   }
 }
+
 /* -------------------------------------------------------------------------
-   Correção: Select customizado escopado ao Perfil
+   V53 — Correção consolidada: não regredir ajustes visuais do Perfil
    ------------------------------------------------------------------------- */
+.page input:focus,
+.page select:focus,
+.page textarea:focus,
+.page input:focus-visible,
+.page select:focus-visible,
+.page textarea:focus-visible,
+.titleEditor:focus,
+.titleEditor:focus-visible,
+.descriptionEditor:focus,
+.descriptionEditor:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--edf-border-strong) !important;
+  background: var(--edf-surface-1) !important;
+}
+
+.settingsOverlay {
+  z-index: 12000 !important;
+}
+
+.drawerOverlay {
+  z-index: 11900 !important;
+}
+
+.settingsModal {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.settingsContent,
+.drawerScroll,
+.clientSearchResults,
+.profileSelectMenu {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.settingsContent::-webkit-scrollbar,
+.drawerScroll::-webkit-scrollbar,
+.clientSearchResults::-webkit-scrollbar,
+.profileSelectMenu::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+
+.settingsContent {
+  min-height: 0;
+}
+
+.settingsContent > .settingsFooter {
+  margin: 2px -22px -20px;
+  padding: 14px 22px;
+  background: rgba(255, 255, 255, 0.012);
+  border-top: 1px solid var(--edf-border);
+}
+
+.demandModal .settingsContent,
+.settingsModal .settingsContent {
+  overflow-y: auto;
+}
+
+.demandModal .settingsContent {
+  padding-bottom: 20px;
+}
+
+.demandModal .settingsContent > .settingsFooter {
+  margin-top: auto;
+}
+
+.clientSearchResults {
+  background: #101113 !important;
+  border: 1px solid var(--edf-border-strong) !important;
+  box-shadow: 0 22px 72px rgba(0, 0, 0, 0.66) !important;
+  z-index: 13050 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.clientSearchResults button {
+  background: #101113 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 0 !important;
+}
+
+.clientSearchResults button:last-child {
+  border-bottom: 0;
+}
+
+.clientSearchResults button:hover,
+.clientSearchResults button:focus-visible {
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
 .profileSelect.formSelect,
 .profileSelect.workflowSelect {
-  height: auto;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  background-image: none;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  background-image: none !important;
   position: relative;
   display: block;
   width: 100%;
@@ -2242,22 +2339,22 @@
 
 .profileSelectButton {
   width: 100%;
-  height: 44px;
   min-width: 0;
+  height: 44px;
   border: 1px solid var(--edf-border-strong);
   border-radius: 12px;
   background: var(--edf-surface-1);
   color: var(--edf-text);
-  padding: 0 38px 0 14px;
+  padding: 0 36px 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  text-align: left;
-  cursor: pointer;
+  line-height: 1;
   position: relative;
-  display: flex;
-  align-items: center;
-  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
 .profileSelectButton::after {
@@ -2267,8 +2364,8 @@
   top: 50%;
   width: 7px;
   height: 7px;
-  border-right: 1.5px solid var(--edf-text-muted);
-  border-bottom: 1.5px solid var(--edf-text-muted);
+  border-right: 1.6px solid var(--edf-text-muted);
+  border-bottom: 1.6px solid var(--edf-text-muted);
   transform: translateY(-65%) rotate(45deg);
   pointer-events: none;
 }
@@ -2276,22 +2373,23 @@
 .profileSelectButton span {
   display: block;
   min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.profileSelectButton:hover {
+.profileSelectButton:hover:not(:disabled),
+.profileSelectButton[aria-expanded='true'] {
   border-color: var(--edf-border-strong);
   background: var(--edf-surface-2);
 }
 
+.profileSelectButton:focus,
 .profileSelectButton:focus-visible,
 .profileSelectButton[aria-expanded='true'] {
-  outline: none;
-  border-color: var(--edf-amber-border-strong);
-  box-shadow: 0 0 0 3px var(--edf-amber-focus);
-  background: var(--edf-surface-2);
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .profileSelectButton:disabled {
@@ -2301,35 +2399,28 @@
 
 .profileSelectMenu {
   position: fixed;
-  z-index: 9000;
-  padding: 6px;
+  z-index: 13060 !important;
+  overflow-y: auto;
+  padding: 4px;
   border: 1px solid var(--edf-border-strong);
   border-radius: 12px;
   background: #101113;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-}
-
-.profileSelectMenu::-webkit-scrollbar {
-  display: none;
+  box-shadow: 0 22px 72px rgba(0, 0, 0, 0.68);
 }
 
 .profileSelectOption {
   width: 100%;
-  min-height: 34px;
+  min-height: 36px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 8px;
   background: transparent;
   color: var(--edf-text-secondary);
-  padding: 8px 10px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   text-align: left;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 560;
   cursor: pointer;
 }
@@ -2341,146 +2432,176 @@
   color: var(--edf-text);
 }
 
-.profileSelectOptionActive {
+.profileSelectOptionActive,
+.profileSelectOptionActive:hover,
+.profileSelectOptionActive:focus-visible {
   background: rgba(212, 175, 55, 0.10);
   color: var(--edf-text);
 }
 
-.profileSelectOptionActive:hover,
-.profileSelectOptionActive:focus-visible {
-  background: rgba(212, 175, 55, 0.14);
-}
-
-.profileSelectOption:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.photoRow {
-  outline: 0;
-  box-shadow: none;
-  contain: paint;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
 .photoRow,
-.photoRow * {
-  -webkit-tap-highlight-color: transparent;
-}
-
+.photoRow *,
 .photoAvatar,
 .photoAvatar img {
-  outline: 0;
-  box-shadow: none;
-  border: 0;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* V52 — camadas, foco e menus flutuantes do Perfil */
-.page input:focus,
-.page input:focus-visible,
-.page select:focus,
-.page select:focus-visible,
-.page textarea:focus,
-.page textarea:focus-visible,
-.formSelect:focus,
-.formSelect:focus-visible,
-.workflowSelect:focus,
-.workflowSelect:focus-visible,
-.profileSelectButton:focus,
-.profileSelectButton:focus-visible,
-.profileSelectButton[aria-expanded='true'] {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.page input:focus,
-.page select:focus,
-.page textarea:focus,
-.profileSelectButton[aria-expanded='true'] {
-  border-color: var(--edf-border-strong) !important;
-  background: var(--edf-surface-1) !important;
-}
-
-.settingsOverlay {
-  z-index: 20000 !important;
-}
-
-.drawerOverlay {
-  z-index: 19900 !important;
-}
-
-.profileSelectMenu {
-  z-index: 22000 !important;
-  background: #101113 !important;
-  border-color: rgba(255, 255, 255, 0.11) !important;
-}
-
-.clientSearchResults,
-.clientSearchFloating {
-  z-index: 22010 !important;
-}
-
-.clientSearchResults {
-  background: #101113 !important;
-  border: 1px solid rgba(255, 255, 255, 0.11) !important;
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.74) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  scrollbar-width: none !important;
-}
-
-.clientSearchResults::-webkit-scrollbar {
-  display: none !important;
-}
-
-.clientSearchResults button {
-  background: #101113;
-  border-radius: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
-}
-
-.clientSearchResults button:last-child {
-  border-bottom: 0;
-}
-
-.clientSearchResults button:hover,
-.clientSearchResults button:focus-visible {
-  outline: none !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  box-shadow: none !important;
-}
-
-.photoRow,
-.photoRow * {
   outline: none !important;
   box-shadow: none !important;
   -webkit-tap-highlight-color: transparent;
 }
 
 .photoRow {
-  background: rgba(255, 255, 255, 0.014) !important;
-  border-color: var(--edf-border) !important;
-  contain: paint;
-  transform: translateZ(0);
+  contain: layout paint;
   backface-visibility: hidden;
-  transition: none !important;
+  transform: translateZ(0);
 }
 
 .photoRow:focus,
 .photoRow:focus-within,
 .photoRow:hover {
-  border-color: var(--edf-border) !important;
+  outline: none !important;
   box-shadow: none !important;
 }
 
-.photoRow img,
-.photoAvatar,
-.photoAvatar img {
-  outline: none !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  backface-visibility: hidden;
+.commentItem {
+  display: grid !important;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.commentHeader {
+  display: grid !important;
+  grid-template-columns: minmax(0, auto) 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.commentHeader strong,
+.commentHeader > span,
+.commentHeader time {
+  min-width: 0;
+}
+
+.commentBody > p {
+  overflow-wrap: anywhere;
+}
+
+.activityList {
+  gap: 0 !important;
+  position: relative;
+}
+
+.activityItem,
+.activityItemQuiet {
+  display: grid !important;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0 !important;
+  border-bottom: 1px solid var(--edf-border-soft);
+  color: var(--edf-text-secondary);
+}
+
+.activityItem:last-child,
+.activityItemQuiet:last-child {
+  border-bottom: 0;
+}
+
+.activityMark {
+  width: 18px !important;
+  height: 18px !important;
+  margin-top: 2px !important;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: var(--edf-text-muted);
+  font-size: 0 !important;
+  line-height: 0;
+  overflow: hidden;
+}
+
+.activityMark::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--edf-text-faint);
+}
+
+.activityMark_done::after {
+  background: var(--edf-success-soft);
+}
+
+.activityMark_created::after,
+.activityMark_create::after {
+  background: var(--edf-amber);
+}
+
+.activityMark_updated::after,
+.activityMark_update::after {
+  background: var(--edf-info-soft);
+}
+
+.activityMark_comment::after {
+  background: var(--edf-info-soft);
+}
+
+.activityMark_subtask::after,
+.activityMark_collaborator::after {
+  background: var(--edf-success-soft);
+}
+
+.activityContent {
+  min-width: 0;
+  display: grid !important;
+  gap: 5px !important;
+}
+
+.activityContent > p {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.activityContent strong {
+  color: var(--edf-text);
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.activityContent em {
+  color: var(--edf-text-muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.activityContent small {
+  display: block;
+  max-width: 100%;
+  color: var(--edf-text-faint);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.activityContent time {
+  color: var(--edf-text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .settingsContent > .settingsFooter {
+    margin: 2px -18px -16px;
+    padding: 12px 18px;
+  }
 }
