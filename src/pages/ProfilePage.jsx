@@ -2402,12 +2402,12 @@ export default function ProfilePage() {
               ) : null}
 
               <textarea value={demandForm.description} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
-
-              <footer className={styles.settingsFooter}>
-                <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
-                <button type="submit" disabled={demandSaving}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
-              </footer>
             </div>
+
+            <footer className={styles.settingsFooter}>
+              <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
+              <button type="submit" disabled={demandSaving}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
+            </footer>
           </form>
           {clientSearchOpen ? createPortal(
             <div
@@ -2650,9 +2650,6 @@ export default function ProfilePage() {
                   </select>
                 </div>
 
-                <footer className={styles.settingsFooter}>
-                  <button type="button" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
-                </footer>
               </div>
             ) : (
               <div className={styles.settingsContent}>
@@ -2660,11 +2657,16 @@ export default function ProfilePage() {
                   <input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))} placeholder="Senha atual" />
                   <input type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))} placeholder="Nova senha" />
                 </div>
-                <footer className={styles.settingsFooter}>
-                  <button type="button" onClick={handleChangePassword} disabled={savingPassword}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
-                </footer>
               </div>
             )}
+
+            <footer className={styles.settingsFooter}>
+              {settingsTab === 'profile' ? (
+                <button type="button" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
+              ) : (
+                <button type="button" onClick={handleChangePassword} disabled={savingPassword}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
+              )}
+            </footer>
           </section>
         </div>
       ) : null}

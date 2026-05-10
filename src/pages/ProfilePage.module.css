@@ -2457,3 +2457,49 @@
 .drawerOverlay {
   z-index: 9990;
 }
+
+/* V50 — footers full-width e scrollbars ocultas em modais */
+.settingsModal {
+  overflow: hidden;
+}
+
+.settingsContent {
+  min-height: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.settingsContent::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.settingsFooter {
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 14px 22px;
+  border-top: 1px solid var(--edf-border);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.demandModal .settingsContent {
+  padding-bottom: 18px;
+}
+
+.demandModal .settingsFooter {
+  padding: 14px 22px;
+  justify-content: flex-end;
+}
+
+.clientSearchResults {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.clientSearchResults::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
