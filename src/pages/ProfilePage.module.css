@@ -5505,3 +5505,293 @@
     padding-inline: 18px !important;
   }
 }
+
+/* V47 — correção sem invenção: Minha operação seguindo sobriedade da sidebar */
+.operationBoard {
+  --op-bg: #0d0e10;
+  --op-panel: rgba(255, 255, 255, 0.018);
+  --op-line: rgba(255, 255, 255, 0.06);
+  --op-line-soft: rgba(255, 255, 255, 0.04);
+  --op-text: #f4f6f8;
+  --op-muted: #7f8b9a;
+  --op-soft: #a9b6c7;
+  --op-amber: #d6a900;
+  border: 1px solid var(--op-line) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0.009)) !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+
+.operationHeader {
+  padding: 24px 28px 18px !important;
+  border-bottom: 1px solid var(--op-line-soft) !important;
+  background: transparent !important;
+}
+
+.operationHeaderTop {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  margin: 0 0 20px !important;
+}
+
+.operationTitleBlock {
+  display: grid !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+}
+
+.operationTitleBlock h2,
+.operationTitleBlock h2 span {
+  display: block !important;
+  margin: 0 !important;
+  color: var(--op-text) !important;
+  font-size: 22px !important;
+  line-height: 1.05 !important;
+  font-weight: 720 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.operationTitleBlock h2::before,
+.operationTitleBlock h2 svg {
+  display: none !important;
+  content: none !important;
+}
+
+.operationTitleBlock small,
+.operationTitleBlock > span {
+  color: var(--op-muted) !important;
+  font-size: 12.5px !important;
+  line-height: 1.25 !important;
+  font-weight: 560 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.primaryAction {
+  min-height: 36px !important;
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: 11px !important;
+  border: 1px solid var(--op-line) !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+  color: var(--op-text) !important;
+  font-size: 13px !important;
+  font-weight: 690 !important;
+  letter-spacing: -0.02em !important;
+  box-shadow: none !important;
+}
+
+.primaryAction:hover {
+  border-color: rgba(214, 169, 0, 0.28) !important;
+  background: rgba(214, 169, 0, 0.055) !important;
+}
+
+.operationControlPanel {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.operationTabs {
+  display: flex !important;
+  align-items: center !important;
+  gap: 24px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+}
+
+.operationTabs::-webkit-scrollbar {
+  display: none !important;
+}
+
+.operationTab {
+  position: relative !important;
+  min-width: 0 !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  color: var(--op-muted) !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.operationTab::before,
+.operationTab::after {
+  content: none !important;
+  display: none !important;
+}
+
+.operationTab:hover {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--op-soft) !important;
+}
+
+.operationTabActive {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--op-text) !important;
+}
+
+.operationTabActive::after {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: -1px !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+  background: var(--op-amber) !important;
+  opacity: 0.95 !important;
+}
+
+.operationTabLabel,
+.operationTab span,
+.operationTabActive span {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  font-size: 13.5px !important;
+  line-height: 1 !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.015em !important;
+}
+
+.operationTabActive .operationTabLabel,
+.operationTabActive span {
+  color: var(--op-text) !important;
+  font-weight: 720 !important;
+}
+
+.operationTabCount,
+.operationTabActive .operationTabCount,
+.operationTabCount span {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--op-muted) !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  font-weight: 650 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.operationTabCount::before {
+  content: '' !important;
+  display: block !important;
+  width: 1px !important;
+  height: 12px !important;
+  background: rgba(255, 255, 255, 0.11) !important;
+  margin-right: 1px !important;
+}
+
+.operationTabActive .operationTabCount {
+  color: var(--op-amber) !important;
+}
+
+.operationBody {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.emptyOperation,
+.operationEmpty {
+  min-height: 92px !important;
+  margin: 0 !important;
+  padding: 26px 28px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+}
+
+.emptyOperation span,
+.operationEmpty span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  color: var(--op-muted) !important;
+  font-size: 13px !important;
+  font-weight: 610 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.emptyOperation span::before,
+.operationEmpty span::before {
+  content: '' !important;
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 999px !important;
+  background: rgba(127, 139, 154, 0.58) !important;
+}
+
+.operationList {
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  overflow: hidden !important;
+}
+
+.operationRow {
+  min-height: 56px !important;
+  padding: 0 28px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--op-line-soft) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.operationRow:hover {
+  background: rgba(255, 255, 255, 0.016) !important;
+}
+
+@media (max-width: 860px) {
+  .operationHeader {
+    padding: 20px 20px 16px !important;
+  }
+  .operationHeaderTop {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .operationTabs {
+    gap: 18px !important;
+  }
+  .operationRow,
+  .emptyOperation,
+  .operationEmpty {
+    padding-inline: 20px !important;
+  }
+}

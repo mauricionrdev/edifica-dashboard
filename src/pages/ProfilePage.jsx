@@ -1820,7 +1820,7 @@ export default function ProfilePage() {
         <header className={styles.operationHeader}>
           <div className={styles.operationHeaderTop}>
             <div className={styles.operationTitleBlock}>
-              <h2><ChecklistIcon size={18} /> <span>Minha operação</span></h2>
+              <h2>Minha operação</h2>
               {tabTasks.length ? <small>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</small> : null}
             </div>
             <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal}>Nova demanda</button>
