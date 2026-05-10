@@ -739,6 +739,13 @@ function eventTypeKey(type = '') {
 
 function formatEventMetadataValue(key, value) {
   if (value === null || value === undefined || value === '') return '';
+
+  if (typeof value !== 'object') {
+    const rawValue = String(value).trim();
+    if (!rawValue || /^undefined$/i.test(rawValue)) return '';
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawValue)) return '';
+  }
+
   if (Array.isArray(value)) {
     if (/task/i.test(key)) return value.length === 1 ? '1 tarefa' : `${value.length} tarefas`;
     if (/section/i.test(key)) return value.length === 1 ? '1 seção' : `${value.length} seções`;

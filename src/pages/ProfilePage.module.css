@@ -2223,3 +2223,212 @@
     padding: 14px 18px;
   }
 }
+
+/* -------------------------------------------------------------------------
+   11. Correções visuais finais do drawer atual
+   ------------------------------------------------------------------------- */
+.drawerPanel {
+  width: min(720px, calc(100vw - 24px));
+}
+
+.drawerTopbar {
+  min-height: 58px;
+  padding: 12px 22px;
+  background: rgba(16, 17, 19, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.drawerTopbar .iconButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.drawerHero {
+  gap: 9px;
+}
+
+.drawerHero h3,
+.titleEditor {
+  max-width: 100%;
+}
+
+.drawerSection {
+  gap: 13px;
+}
+
+.descriptionBox {
+  overflow-wrap: anywhere;
+}
+
+.commentItem {
+  align-items: flex-start;
+}
+
+.commentHeader {
+  justify-content: flex-start;
+}
+
+.commentHeader strong {
+  margin-right: 2px;
+}
+
+.commentHeader > span,
+.commentHeader time {
+  margin-left: auto;
+}
+
+.commentDeleteButton {
+  flex: 0 0 auto;
+}
+
+.activityList {
+  position: relative;
+  gap: 0;
+  padding-left: 0;
+}
+
+.activityItem,
+.activityItemQuiet {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--edf-border-soft);
+  color: var(--edf-text-secondary);
+}
+
+.activityItem:last-child,
+.activityItemQuiet:last-child {
+  border-bottom: 0;
+}
+
+.activityItemQuiet {
+  opacity: 0.78;
+}
+
+.activityMark {
+  width: 28px;
+  height: 28px;
+  margin-top: 1px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--edf-surface-2);
+  border: 1px solid var(--edf-border-strong);
+  color: var(--edf-text-muted);
+  font-size: 9.5px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.activityMark_done {
+  background: var(--edf-success-bg);
+  border-color: var(--edf-success-border);
+  color: var(--edf-success-soft);
+}
+
+.activityMark_created,
+.activityMark_create,
+.activityMark_handoff {
+  background: var(--edf-amber-bg);
+  border-color: var(--edf-amber-border);
+  color: var(--edf-amber);
+}
+
+.activityMark_updated,
+.activityMark_update,
+.activityMark_comment,
+.activityMark_subtask,
+.activityMark_collaborator {
+  background: var(--edf-info-bg);
+  border-color: var(--edf-info-border);
+  color: var(--edf-info-soft);
+}
+
+.activityMark_delete {
+  background: var(--edf-danger-bg);
+  border-color: var(--edf-danger-border);
+  color: var(--edf-danger-soft);
+}
+
+.activityContent {
+  min-width: 0;
+  gap: 5px;
+}
+
+.activityContent p {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+  row-gap: 2px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--edf-text-secondary);
+}
+
+.activityContent p strong {
+  color: var(--edf-text);
+  font-weight: 650;
+}
+
+.activityContent p em {
+  color: var(--edf-text-muted);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.activityContent small {
+  display: block;
+  max-width: 100%;
+  color: var(--edf-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.activityContent time {
+  display: block;
+  color: var(--edf-text-faint);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.activityContent > span,
+.activityContent > strong {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .drawerPanel {
+    width: 100%;
+  }
+
+  .drawerTopbar {
+    padding: 10px 18px;
+  }
+
+  .activityItem,
+  .activityItemQuiet {
+    grid-template-columns: 26px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .activityMark {
+    width: 26px;
+    height: 26px;
+    font-size: 9px;
+  }
+}
