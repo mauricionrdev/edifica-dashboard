@@ -738,13 +738,6 @@ function eventTypeKey(type = '') {
 
 function formatEventMetadataValue(key, value) {
   if (value === null || value === undefined || value === '') return '';
-
-  if (typeof value !== 'object') {
-    const rawValue = String(value).trim();
-    if (!rawValue || /^undefined$/i.test(rawValue)) return '';
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawValue)) return '';
-  }
-
   if (Array.isArray(value)) {
     if (/task/i.test(key)) return value.length === 1 ? '1 tarefa' : `${value.length} tarefas`;
     if (/section/i.test(key)) return value.length === 1 ? '1 seção' : `${value.length} seções`;
@@ -847,6 +840,130 @@ function buildActivityEvents(task, comments = [], taskEvents = []) {
 
 function metaValue(value) {
   return value || '—';
+}
+
+function Select({ value, onChange, children, className = '', disabled = false, placeholder = 'Selecionar', ...props }) {
+  const buttonRef = useRef(null);
+  const menuRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 220, maxHeight: 260 });
+
+  const options = useMemo(() => {
+    const items = [];
+    function collect(nodes) {
+      (Array.isArray(nodes) ? nodes : [nodes]).forEach((node) => {
+        if (!node) return;
+        if (Array.isArray(node)) return collect(node);
+        if (node?.type === 'option') {
+          const label = Array.isArray(node.props.children) ? node.props.children.join('') : String(node.props.children ?? '');
+          items.push({
+            value: String(node.props.value ?? ''),
+            label,
+            disabled: Boolean(node.props.disabled),
+          });
+          return;
+        }
+        if (node?.props?.children) collect(node.props.children);
+      });
+    }
+    collect(children);
+    return items;
+  }, [children]);
+
+  const selected = options.find((option) => option.value === String(value ?? ''));
+  const ariaLabel = props['aria-label'] || props.ariaLabel || placeholder;
+
+  function updatePosition() {
+    const button = buttonRef.current;
+    if (!button) return;
+    const rect = button.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    const width = Math.min(Math.max(rect.width, 220), Math.max(220, viewportWidth - 24));
+    const left = Math.max(12, Math.min(rect.left, viewportWidth - width - 12));
+    const spaceBelow = viewportHeight - rect.bottom - 12;
+    const spaceAbove = rect.top - 12;
+    const maxHeight = Math.max(160, Math.min(280, Math.max(spaceBelow, spaceAbove)));
+    const top = spaceBelow >= 180 || spaceBelow >= spaceAbove
+      ? rect.bottom + 6
+      : Math.max(12, rect.top - maxHeight - 6);
+    setPosition({ top, left, width, maxHeight });
+  }
+
+  useEffect(() => {
+    if (!open) return undefined;
+    updatePosition();
+
+    function handlePointerDown(event) {
+      if (buttonRef.current?.contains(event.target)) return;
+      if (menuRef.current?.contains(event.target)) return;
+      setOpen(false);
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') setOpen(false);
+    }
+
+    window.addEventListener('pointerdown', handlePointerDown, true);
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown, true);
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  function selectValue(nextValue) {
+    onChange?.({ target: { value: nextValue } });
+    setOpen(false);
+  }
+
+  return (
+    <div className={`${styles.profileSelect} ${className || ''}`.trim()}>
+      <button
+        ref={buttonRef}
+        type="button"
+        className={styles.profileSelectButton}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((current) => !current);
+        }}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span>{selected?.label || placeholder}</span>
+      </button>
+      {open ? createPortal(
+        <div
+          ref={menuRef}
+          className={styles.profileSelectMenu}
+          style={{ top: position.top, left: position.left, width: position.width, maxHeight: position.maxHeight }}
+          role="listbox"
+          aria-label={ariaLabel}
+        >
+          {options.map((option) => (
+            <button
+              key={`${option.value}-${option.label}`}
+              type="button"
+              className={`${styles.profileSelectOption} ${String(value ?? '') === option.value ? styles.profileSelectOptionActive : ''}`.trim()}
+              onClick={() => !option.disabled && selectValue(option.value)}
+              disabled={option.disabled}
+              role="option"
+              aria-selected={String(value ?? '') === option.value}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>,
+        document.body,
+      ) : null}
+    </div>
+  );
 }
 
 export default function ProfilePage() {
@@ -1975,7 +2092,7 @@ export default function ProfilePage() {
                 <div className={styles.workflowGrid}>
                   <label className={styles.workflowField}>
                     <span>Status</span>
-                    <select
+                    <Select
                       value={activeTask.status || (isDone(activeTask) ? 'done' : 'todo')}
                       onChange={(event) => {
                         const nextStatus = event.target.value;
@@ -1985,12 +2102,12 @@ export default function ProfilePage() {
                       className={styles.workflowSelect}
                     >
                       {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                    </select>
+                    </Select>
                   </label>
 
                   <label className={styles.workflowField}>
                     <span>Responsável</span>
-                    <select
+                    <Select
                       value={activeTask.assigneeUserId || ''}
                       onChange={(event) => handleUpdateTaskFields(activeTask, { assigneeUserId: event.target.value }, 'Responsável atualizado.')}
                       aria-label="Responsável"
@@ -1998,7 +2115,7 @@ export default function ProfilePage() {
                     >
                       <option value="">Sem responsável</option>
                       {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </select>
+                    </Select>
                   </label>
 
                   <label className={styles.workflowField}>
@@ -2014,14 +2131,14 @@ export default function ProfilePage() {
 
                   <label className={styles.workflowField}>
                     <span>Prioridade</span>
-                    <select
+                    <Select
                       value={activeTask.priority || 'medium'}
                       onChange={(event) => handleUpdateTaskFields(activeTask, { priority: event.target.value }, 'Prioridade atualizada.')}
                       aria-label="Prioridade"
                       className={styles.workflowSelect}
                     >
                       {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                    </select>
+                    </Select>
                   </label>
                 </div>
 
@@ -2114,14 +2231,14 @@ export default function ProfilePage() {
                     <div className={styles.structuredEditGrid}>
                       <label>
                         <span>Recorrência</span>
-                        <select
+                        <Select
                           value={contentForm.recurrence}
                           onChange={(event) => setContentForm((prev) => ({ ...prev, recurrence: event.target.value }))}
                           aria-label="Recorrência"
                           className={styles.formSelect}
                         >
                           {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.label}>{option.label}</option>)}
-                        </select>
+                        </Select>
                       </label>
                       <label>
                         <span>Escopo</span>
@@ -2169,7 +2286,7 @@ export default function ProfilePage() {
                   <span>{collaborators.length}</span>
                 </div>
                 <form className={styles.collaboratorComposer} onSubmit={handleAddCollaborator}>
-                  <select
+                  <Select
                     value={collaboratorUserId}
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
                     aria-label="Colaborador"
@@ -2179,7 +2296,7 @@ export default function ProfilePage() {
                     {collaboratorOptions.map((option) => (
                       <option key={option.id} value={option.id}>{option.name}</option>
                     ))}
-                  </select>
+                  </Select>
                   <button type="submit" disabled={collaboratorSaving || !collaboratorUserId}>+</button>
                 </form>
                 {collaboratorsLoading ? (
@@ -2334,16 +2451,16 @@ export default function ProfilePage() {
 
             <div className={styles.settingsContent}>
               <div className={styles.demandFormGrid}>
-                <select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
+                <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
                   {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
-                <select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
+                </Select>
+                <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
                   {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
+                </Select>
                 <input className={styles.fieldWide} value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
-                <select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={styles.formSelect}>
+                <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={styles.formSelect}>
                   {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                </select>
+                </Select>
                 <div className={styles.clientSearchField} ref={clientSearchRef}>
                   <input
                     value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
@@ -2393,21 +2510,21 @@ export default function ProfilePage() {
 
               {demandForm.type === 'routine' ? (
                 <div className={styles.routineFormGrid}>
-                  <select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={styles.formSelect}>
+                  <Select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={styles.formSelect}>
                     {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </select>
+                  </Select>
                   <input value={demandForm.routineScope} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineScope: event.target.value }))} placeholder="Escopo" />
                   <textarea className={styles.fieldWide} value={demandForm.routineChecklist} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineChecklist: event.target.value }))} placeholder="Checklist" />
                 </div>
               ) : null}
 
               <textarea value={demandForm.description} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
-            </div>
 
-            <footer className={styles.settingsFooter}>
-              <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
-              <button type="submit" disabled={demandSaving}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
-            </footer>
+              <footer className={styles.settingsFooter}>
+                <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
+                <button type="submit" disabled={demandSaving}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
+              </footer>
+            </div>
           </form>
           {clientSearchOpen ? createPortal(
             <div
@@ -2553,22 +2670,22 @@ export default function ProfilePage() {
             </header>
             <div className={styles.settingsContent}>
               <div className={styles.handoffGrid}>
-                <select
+                <Select
                   value={handoffForm.assigneeUserId}
                   onChange={(event) => setHandoffForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))}
                   aria-label="Responsável"
                   className={styles.formSelect}
                 >
                   {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                </select>
-                <select
+                </Select>
+                <Select
                   value={handoffForm.status}
                   onChange={(event) => setHandoffForm((prev) => ({ ...prev, status: event.target.value }))}
                   aria-label="Status"
                   className={styles.formSelect}
                 >
                   {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
+                </Select>
                 <textarea
                   className={styles.fieldWide}
                   value={handoffForm.nextAction}
@@ -2640,16 +2757,19 @@ export default function ProfilePage() {
                   <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" />
                   <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" />
                   <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" />
-                  <select
+                  <Select
                     value={profileForm.avatarColor}
                     onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
                     aria-label="Cor"
                     className={styles.formSelect}
                   >
                     {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </select>
+                  </Select>
                 </div>
 
+                <footer className={styles.settingsFooter}>
+                  <button type="button" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
+                </footer>
               </div>
             ) : (
               <div className={styles.settingsContent}>
@@ -2657,16 +2777,11 @@ export default function ProfilePage() {
                   <input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))} placeholder="Senha atual" />
                   <input type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))} placeholder="Nova senha" />
                 </div>
+                <footer className={styles.settingsFooter}>
+                  <button type="button" onClick={handleChangePassword} disabled={savingPassword}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
+                </footer>
               </div>
             )}
-
-            <footer className={styles.settingsFooter}>
-              {settingsTab === 'profile' ? (
-                <button type="button" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
-              ) : (
-                <button type="button" onClick={handleChangePassword} disabled={savingPassword}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
-              )}
-            </footer>
           </section>
         </div>
       ) : null}
