@@ -29,7 +29,6 @@ import {
   saveUserAvatar,
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
-import Select from '../components/ui/Select.jsx';
 import DateField from '../components/ui/DateField.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { BellIcon, BuildingIcon, CalendarIcon, ChecklistIcon, CloseIcon, SettingsIcon, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/Icons.jsx';
@@ -1976,7 +1975,7 @@ export default function ProfilePage() {
                 <div className={styles.workflowGrid}>
                   <label className={styles.workflowField}>
                     <span>Status</span>
-                    <Select
+                    <select
                       value={activeTask.status || (isDone(activeTask) ? 'done' : 'todo')}
                       onChange={(event) => {
                         const nextStatus = event.target.value;
@@ -1986,12 +1985,12 @@ export default function ProfilePage() {
                       className={styles.workflowSelect}
                     >
                       {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                    </Select>
+                    </select>
                   </label>
 
                   <label className={styles.workflowField}>
                     <span>Responsável</span>
-                    <Select
+                    <select
                       value={activeTask.assigneeUserId || ''}
                       onChange={(event) => handleUpdateTaskFields(activeTask, { assigneeUserId: event.target.value }, 'Responsável atualizado.')}
                       aria-label="Responsável"
@@ -1999,7 +1998,7 @@ export default function ProfilePage() {
                     >
                       <option value="">Sem responsável</option>
                       {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </Select>
+                    </select>
                   </label>
 
                   <label className={styles.workflowField}>
@@ -2015,14 +2014,14 @@ export default function ProfilePage() {
 
                   <label className={styles.workflowField}>
                     <span>Prioridade</span>
-                    <Select
+                    <select
                       value={activeTask.priority || 'medium'}
                       onChange={(event) => handleUpdateTaskFields(activeTask, { priority: event.target.value }, 'Prioridade atualizada.')}
                       aria-label="Prioridade"
                       className={styles.workflowSelect}
                     >
                       {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                    </Select>
+                    </select>
                   </label>
                 </div>
 
@@ -2115,14 +2114,14 @@ export default function ProfilePage() {
                     <div className={styles.structuredEditGrid}>
                       <label>
                         <span>Recorrência</span>
-                        <Select
+                        <select
                           value={contentForm.recurrence}
                           onChange={(event) => setContentForm((prev) => ({ ...prev, recurrence: event.target.value }))}
                           aria-label="Recorrência"
                           className={styles.formSelect}
                         >
                           {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.label}>{option.label}</option>)}
-                        </Select>
+                        </select>
                       </label>
                       <label>
                         <span>Escopo</span>
@@ -2170,7 +2169,7 @@ export default function ProfilePage() {
                   <span>{collaborators.length}</span>
                 </div>
                 <form className={styles.collaboratorComposer} onSubmit={handleAddCollaborator}>
-                  <Select
+                  <select
                     value={collaboratorUserId}
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
                     aria-label="Colaborador"
@@ -2180,7 +2179,7 @@ export default function ProfilePage() {
                     {collaboratorOptions.map((option) => (
                       <option key={option.id} value={option.id}>{option.name}</option>
                     ))}
-                  </Select>
+                  </select>
                   <button type="submit" disabled={collaboratorSaving || !collaboratorUserId}>+</button>
                 </form>
                 {collaboratorsLoading ? (
@@ -2335,16 +2334,16 @@ export default function ProfilePage() {
 
             <div className={styles.settingsContent}>
               <div className={styles.demandFormGrid}>
-                <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
+                <select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
                   {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </Select>
-                <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
+                </select>
+                <select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
                   {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </Select>
+                </select>
                 <input className={styles.fieldWide} value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
-                <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={styles.formSelect}>
+                <select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={styles.formSelect}>
                   {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                </Select>
+                </select>
                 <div className={styles.clientSearchField} ref={clientSearchRef}>
                   <input
                     value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
@@ -2394,9 +2393,9 @@ export default function ProfilePage() {
 
               {demandForm.type === 'routine' ? (
                 <div className={styles.routineFormGrid}>
-                  <Select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={styles.formSelect}>
+                  <select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={styles.formSelect}>
                     {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
+                  </select>
                   <input value={demandForm.routineScope} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineScope: event.target.value }))} placeholder="Escopo" />
                   <textarea className={styles.fieldWide} value={demandForm.routineChecklist} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineChecklist: event.target.value }))} placeholder="Checklist" />
                 </div>
@@ -2554,22 +2553,22 @@ export default function ProfilePage() {
             </header>
             <div className={styles.settingsContent}>
               <div className={styles.handoffGrid}>
-                <Select
+                <select
                   value={handoffForm.assigneeUserId}
                   onChange={(event) => setHandoffForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))}
                   aria-label="Responsável"
                   className={styles.formSelect}
                 >
                   {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                </Select>
-                <Select
+                </select>
+                <select
                   value={handoffForm.status}
                   onChange={(event) => setHandoffForm((prev) => ({ ...prev, status: event.target.value }))}
                   aria-label="Status"
                   className={styles.formSelect}
                 >
                   {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </Select>
+                </select>
                 <textarea
                   className={styles.fieldWide}
                   value={handoffForm.nextAction}
@@ -2641,14 +2640,14 @@ export default function ProfilePage() {
                   <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" />
                   <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" />
                   <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" />
-                  <Select
+                  <select
                     value={profileForm.avatarColor}
                     onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
                     aria-label="Cor"
                     className={styles.formSelect}
                   >
                     {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
+                  </select>
                 </div>
 
                 <footer className={styles.settingsFooter}>
