@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
@@ -846,7 +846,7 @@ function Select({ value, onChange, children, className = '', disabled = false, p
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 220, maxHeight: 260 });
+  const [position, setPosition] = useState(null);
 
   const options = useMemo(() => {
     const items = [];
@@ -873,9 +873,9 @@ function Select({ value, onChange, children, className = '', disabled = false, p
   const selected = options.find((option) => option.value === String(value ?? ''));
   const ariaLabel = props['aria-label'] || props.ariaLabel || placeholder;
 
-  function updatePosition() {
+  function computeSelectPosition() {
     const button = buttonRef.current;
-    if (!button) return;
+    if (!button || typeof window === 'undefined') return null;
     const rect = button.getBoundingClientRect();
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
@@ -887,12 +887,23 @@ function Select({ value, onChange, children, className = '', disabled = false, p
     const top = spaceBelow >= 180 || spaceBelow >= spaceAbove
       ? rect.bottom + 6
       : Math.max(12, rect.top - maxHeight - 6);
-    setPosition({ top, left, width, maxHeight });
+    return { top, left, width, maxHeight };
   }
+
+  function updatePosition() {
+    const nextPosition = computeSelectPosition();
+    if (nextPosition) setPosition(nextPosition);
+    return nextPosition;
+  }
+
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+    updatePosition();
+    return undefined;
+  }, [open]);
 
   useEffect(() => {
     if (!open) return undefined;
-    updatePosition();
 
     function handlePointerDown(event) {
       if (buttonRef.current?.contains(event.target)) return;
@@ -929,7 +940,12 @@ function Select({ value, onChange, children, className = '', disabled = false, p
         className={styles.profileSelectButton}
         onClick={() => {
           if (disabled) return;
-          setOpen((current) => !current);
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          const nextPosition = updatePosition();
+          if (nextPosition) setOpen(true);
         }}
         disabled={disabled}
         aria-label={ariaLabel}
@@ -938,7 +954,7 @@ function Select({ value, onChange, children, className = '', disabled = false, p
       >
         <span>{selected?.label || placeholder}</span>
       </button>
-      {open ? createPortal(
+      {open && position ? createPortal(
         <div
           ref={menuRef}
           className={styles.profileSelectMenu}

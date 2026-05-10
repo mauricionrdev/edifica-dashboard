@@ -229,3 +229,20 @@
   background: rgba(245, 184, 0, 0.16);
   color: #f8fafc;
 }
+
+/* V52 — evita piscada no canto da tela e remove foco visual agressivo */
+.trigger:focus,
+.trigger:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--line-strong) !important;
+}
+
+.popover {
+  z-index: 22020 !important;
+  scrollbar-width: none;
+}
+
+.popover::-webkit-scrollbar {
+  display: none;
+}

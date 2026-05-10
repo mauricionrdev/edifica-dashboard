@@ -2377,3 +2377,110 @@
   transform: translateZ(0);
   backface-visibility: hidden;
 }
+
+/* V52 — camadas, foco e menus flutuantes do Perfil */
+.page input:focus,
+.page input:focus-visible,
+.page select:focus,
+.page select:focus-visible,
+.page textarea:focus,
+.page textarea:focus-visible,
+.formSelect:focus,
+.formSelect:focus-visible,
+.workflowSelect:focus,
+.workflowSelect:focus-visible,
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+.profileSelectButton[aria-expanded='true'] {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.page input:focus,
+.page select:focus,
+.page textarea:focus,
+.profileSelectButton[aria-expanded='true'] {
+  border-color: var(--edf-border-strong) !important;
+  background: var(--edf-surface-1) !important;
+}
+
+.settingsOverlay {
+  z-index: 20000 !important;
+}
+
+.drawerOverlay {
+  z-index: 19900 !important;
+}
+
+.profileSelectMenu {
+  z-index: 22000 !important;
+  background: #101113 !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+}
+
+.clientSearchResults,
+.clientSearchFloating {
+  z-index: 22010 !important;
+}
+
+.clientSearchResults {
+  background: #101113 !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.74) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  scrollbar-width: none !important;
+}
+
+.clientSearchResults::-webkit-scrollbar {
+  display: none !important;
+}
+
+.clientSearchResults button {
+  background: #101113;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.clientSearchResults button:last-child {
+  border-bottom: 0;
+}
+
+.clientSearchResults button:hover,
+.clientSearchResults button:focus-visible {
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-shadow: none !important;
+}
+
+.photoRow,
+.photoRow * {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.photoRow {
+  background: rgba(255, 255, 255, 0.014) !important;
+  border-color: var(--edf-border) !important;
+  contain: paint;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  transition: none !important;
+}
+
+.photoRow:focus,
+.photoRow:focus-within,
+.photoRow:hover {
+  border-color: var(--edf-border) !important;
+  box-shadow: none !important;
+}
+
+.photoRow img,
+.photoAvatar,
+.photoAvatar img {
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backface-visibility: hidden;
+}

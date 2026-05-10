@@ -98,7 +98,7 @@ export default function DateField({
 
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState(() => selectedDate || today);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [position, setPosition] = useState(null);
   const rootRef = useRef(null);
   const popoverRef = useRef(null);
 
@@ -161,7 +161,7 @@ export default function DateField({
     setOpen(false);
   }
 
-  const popover = open ? (
+  const popover = open && position ? (
     <div
       ref={popoverRef}
       className={styles.popover}
@@ -225,7 +225,15 @@ export default function DateField({
         id={id}
         type="button"
         className={styles.trigger}
-        onClick={() => !disabled && setOpen((current) => !current)}
+        onClick={() => {
+          if (disabled) return;
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          setPosition(computePosition(rootRef.current));
+          setOpen(true);
+        }}
         disabled={disabled}
         aria-label={ariaLabel}
         aria-haspopup="dialog"
