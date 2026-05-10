@@ -742,6 +742,7 @@ function looksLikeTechnicalId(value) {
 
 function formatEventMetadataValue(key, value) {
   if (value === null || value === undefined || value === '') return '';
+  if (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.trim())) return '';
   if (/id$/i.test(key) || /_id$/i.test(key) || looksLikeTechnicalId(value)) return '';
   if (Array.isArray(value)) {
     if (/task/i.test(key)) return value.length === 1 ? '1 tarefa' : `${value.length} tarefas`;
@@ -2072,15 +2073,18 @@ export default function ProfilePage() {
         <aside className={styles.drawerOverlay} aria-label="Demanda" onClick={() => setActiveTaskId('')}>
           <section className={styles.drawerPanel} onClick={(event) => event.stopPropagation()}>
             <header className={styles.drawerTopbar}>
-              <button
-                type="button"
-                className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
-                onClick={() => handleToggleTask(activeTask)}
-                disabled={taskUpdatingId === activeTask.id}
-                aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
-              >
-                {isDone(activeTask) ? '✓' : ''}
-              </button>
+              <div className={styles.drawerStatusCluster}>
+                <button
+                  type="button"
+                  className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
+                  onClick={() => handleToggleTask(activeTask)}
+                  disabled={taskUpdatingId === activeTask.id}
+                  aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
+                >
+                  {isDone(activeTask) ? '✓' : ''}
+                </button>
+                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
+              </div>
               <button type="button" className={styles.iconButton} onClick={() => setActiveTaskId('')} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
@@ -2088,7 +2092,6 @@ export default function ProfilePage() {
 
             <div className={styles.drawerScroll}>
               <div className={styles.drawerHero}>
-                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
                 {contentEditing ? (
                   <input
                     className={styles.titleEditor}
@@ -2344,9 +2347,8 @@ export default function ProfilePage() {
                       return (
                         <div key={collaborator.userId} className={styles.collaboratorItem}>
                           <span className={styles.collaboratorAvatar}>{initials(collaboratorName)}</span>
-                          <div>
+                          <div className={styles.collaboratorInfo}>
                             <strong>{collaboratorName}</strong>
-                            {collaborator.userEmail ? <small>{collaborator.userEmail}</small> : null}
                           </div>
                           <button
                             type="button"

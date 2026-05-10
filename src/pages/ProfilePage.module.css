@@ -2605,3 +2605,220 @@
     padding: 12px 18px;
   }
 }
+
+/* -------------------------------------------------------------------------
+   Correções finais sem regressão — drawer/header/colaboradores/timeline
+   Base: edi-dash(10).zip
+   ------------------------------------------------------------------------- */
+.drawerTopbar {
+  min-height: 56px;
+  padding: 14px 22px;
+}
+
+.drawerStatusCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.drawerStatusCluster .statusCheck {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+}
+
+.drawerStatusCluster .statusBadge {
+  margin: 0;
+  max-width: min(260px, 52vw);
+}
+
+.drawerHero {
+  padding-top: 16px;
+}
+
+.collaboratorList {
+  gap: 8px !important;
+}
+
+.collaboratorItem {
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 9px 10px !important;
+  background: rgba(255, 255, 255, 0.014) !important;
+  border: 1px solid var(--edf-border) !important;
+  border-radius: 12px !important;
+}
+
+.collaboratorInfo {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.collaboratorInfo strong {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--edf-text-secondary);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.collaboratorItem small {
+  display: none !important;
+}
+
+.collaboratorItem button {
+  justify-self: end;
+  opacity: 0;
+}
+
+.collaboratorItem:hover button,
+.collaboratorItem button:focus-visible {
+  opacity: 1;
+}
+
+.activityList {
+  position: relative;
+  display: grid !important;
+  gap: 0 !important;
+  padding: 2px 0 0 0;
+}
+
+.activityItem,
+.activityItemQuiet {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+  padding: 0 0 18px 0 !important;
+  border: 0 !important;
+  color: var(--edf-text-secondary);
+}
+
+.activityItem::before,
+.activityItemQuiet::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 23px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--edf-border);
+}
+
+.activityItem:last-child::before,
+.activityItemQuiet:last-child::before {
+  display: none;
+}
+
+.activityItemQuiet {
+  opacity: 0.72;
+}
+
+.activityMark {
+  position: relative;
+  z-index: 1;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 1px 0 0 0 !important;
+  border-radius: 999px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  background: var(--edf-surface-solid-2) !important;
+  border: 1px solid var(--edf-border-strong);
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  overflow: hidden;
+}
+
+.activityMark::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--edf-text-faint);
+}
+
+.activityMark_done::after {
+  background: var(--edf-success-soft);
+}
+
+.activityMark_handoff::after,
+.activityMark_created::after,
+.activityMark_create::after {
+  background: var(--edf-amber);
+}
+
+.activityMark_updated::after,
+.activityMark_update::after,
+.activityMark_comment::after {
+  background: var(--edf-info-soft);
+}
+
+.activityMark_subtask::after,
+.activityMark_collaborator::after {
+  background: var(--edf-success-soft);
+}
+
+.activityMark_delete::after {
+  background: var(--edf-danger-soft);
+}
+
+.activityContent {
+  min-width: 0;
+  display: grid !important;
+  gap: 5px !important;
+  padding-top: 1px;
+}
+
+.activityContent > p {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+  line-height: 1.35;
+}
+
+.activityContent strong {
+  color: var(--edf-text-secondary);
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.activityContent em {
+  color: var(--edf-text-muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.activityContent small {
+  display: block;
+  max-width: 100%;
+  color: var(--edf-text-faint);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.activityContent time {
+  color: var(--edf-text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
