@@ -3659,3 +3659,254 @@
     inset: 18px 18px auto 18px;
   }
 }
+
+/* -------------------------------------------------------------------------
+   V63 – QA Minha operação: lista, tabs, paginação e estados
+   ------------------------------------------------------------------------- */
+.operationBoard {
+  background: var(--edf-surface-1);
+  border-color: var(--edf-border);
+  box-shadow: none;
+}
+
+.operationHeader {
+  padding: 18px 22px 0;
+}
+
+.operationHeaderTop {
+  margin-bottom: 12px;
+}
+
+.operationTitleBlock {
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.operationTitleBlock h2,
+.operationHeaderTop h2 {
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.operationTitleBlock small,
+.operationTitleBlock > span {
+  color: var(--edf-text-faint);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.operationControlPanel {
+  min-width: 0;
+}
+
+.operationTabs {
+  gap: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-right: 6px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.operationTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.operationTab {
+  gap: 6px;
+  padding: 10px 0 11px;
+  min-height: 38px;
+  color: var(--edf-text-muted);
+  border-bottom-width: 1px;
+}
+
+.operationTab:hover {
+  color: var(--edf-text-secondary);
+}
+
+.operationTabActive {
+  color: var(--edf-text);
+  border-bottom-color: var(--edf-amber);
+}
+
+.operationTabCount {
+  color: var(--edf-text-faint);
+  font-size: 11.5px;
+  opacity: 0.9;
+}
+
+.operationTabActive .operationTabCount {
+  color: var(--edf-text-muted);
+}
+
+.operationBody {
+  min-width: 0;
+}
+
+.emptyOperation {
+  min-height: 86px;
+  padding: 22px;
+  border-top: 0;
+}
+
+.emptyOperation span {
+  gap: 0;
+  color: var(--edf-text-faint);
+  font-size: 12.5px;
+}
+
+.emptyOperation span::before {
+  display: none;
+}
+
+.operationList {
+  min-width: 0;
+}
+
+.operationRow {
+  grid-template-columns: 18px minmax(0, 1fr) minmax(430px, auto);
+  gap: 14px;
+  min-width: 0;
+  padding: 12px 22px;
+}
+
+.operationRow:focus-within,
+.operationRow:hover {
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.statusCheck {
+  width: 17px;
+  height: 17px;
+  align-self: center;
+}
+
+.operationMain strong {
+  font-size: 13px;
+  font-weight: 620;
+  line-height: 1.35;
+  max-width: 100%;
+}
+
+.operationMain span {
+  font-size: 11.5px;
+  color: var(--edf-text-faint);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operationMeta {
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.operationMeta > span {
+  font-size: 10.75px;
+  padding: 2px 8px;
+  line-height: 1.55;
+}
+
+.dueLabel {
+  min-width: 62px;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.relationPill {
+  min-width: 92px;
+  justify-content: center;
+  text-align: center;
+}
+
+.operationPagination {
+  padding: 12px 22px 16px;
+  border-top-color: var(--edf-border-soft);
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+}
+
+.operationPagination > span {
+  font-size: 11.5px;
+}
+
+.operationPageIndicator {
+  color: var(--edf-text-faint);
+  justify-self: end;
+  margin-right: 4px;
+}
+
+.operationPagination button {
+  height: 32px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  font-size: 11.5px;
+}
+
+@media (max-width: 1180px) {
+  .operationRow {
+    grid-template-columns: 18px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    row-gap: 8px;
+  }
+
+  .operationMeta {
+    grid-column: 2 / -1;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .dueLabel {
+    text-align: left;
+    min-width: auto;
+  }
+
+  .relationPill {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .operationHeader {
+    padding: 16px 16px 0;
+  }
+
+  .operationHeaderTop {
+    align-items: flex-start;
+  }
+
+  .operationTitleBlock {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .operationTabs {
+    gap: 14px;
+  }
+
+  .operationRow {
+    padding: 12px 16px;
+  }
+
+  .operationPagination {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 8px;
+    padding: 12px 16px 16px;
+  }
+
+  .operationPageIndicator {
+    justify-self: start;
+  }
+
+  .operationPagination > div {
+    width: 100%;
+  }
+
+  .operationPagination button {
+    flex: 1;
+  }
+}

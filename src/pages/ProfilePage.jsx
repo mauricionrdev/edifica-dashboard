@@ -2068,6 +2068,7 @@ export default function ProfilePage() {
               {tabTasks.length > OPERATION_PAGE_SIZE ? (
                 <div className={styles.operationPagination} aria-label="Paginação da operação">
                   <span>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</span>
+                  <span className={styles.operationPageIndicator}>Página {safeOperationPage} de {operationTotalPages}</span>
                   <div>
                     <button type="button" onClick={() => setOperationPage((page) => Math.max(1, page - 1))} disabled={safeOperationPage <= 1}>Anterior</button>
                     <button type="button" onClick={() => setOperationPage((page) => Math.min(operationTotalPages, page + 1))} disabled={safeOperationPage >= operationTotalPages}>Próxima</button>
