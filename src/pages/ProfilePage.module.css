@@ -2706,3 +2706,32 @@
   outline: 0 !important;
   box-shadow: none !important;
 }
+
+/* V57 — Mantém status principal no header do drawer */
+.drawerTopbar {
+  min-height: 66px;
+}
+
+.drawerStatusGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.drawerStatusGroup .statusBadge {
+  max-width: min(240px, 42vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawerHero > .statusBadge {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .drawerStatusGroup .statusBadge {
+    max-width: 160px;
+  }
+}

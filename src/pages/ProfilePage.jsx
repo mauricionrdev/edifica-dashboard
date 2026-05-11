@@ -2072,15 +2072,18 @@ export default function ProfilePage() {
         <aside className={styles.drawerOverlay} aria-label="Demanda" onClick={() => setActiveTaskId('')}>
           <section className={styles.drawerPanel} onClick={(event) => event.stopPropagation()}>
             <header className={styles.drawerTopbar}>
-              <button
-                type="button"
-                className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
-                onClick={() => handleToggleTask(activeTask)}
-                disabled={taskUpdatingId === activeTask.id}
-                aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
-              >
-                {isDone(activeTask) ? '✓' : ''}
-              </button>
+              <div className={styles.drawerStatusGroup}>
+                <button
+                  type="button"
+                  className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
+                  onClick={() => handleToggleTask(activeTask)}
+                  disabled={taskUpdatingId === activeTask.id}
+                  aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
+                >
+                  {isDone(activeTask) ? '✓' : ''}
+                </button>
+                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
+              </div>
               <button type="button" className={styles.iconButton} onClick={() => setActiveTaskId('')} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
@@ -2088,7 +2091,6 @@ export default function ProfilePage() {
 
             <div className={styles.drawerScroll}>
               <div className={styles.drawerHero}>
-                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
                 {contentEditing ? (
                   <input
                     className={styles.titleEditor}
