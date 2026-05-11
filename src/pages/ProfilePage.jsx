@@ -2500,17 +2500,17 @@ export default function ProfilePage() {
 
             <div className={styles.settingsContent}>
               <div className={styles.demandFormGrid}>
-                <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
+                <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={`${styles.formSelect} ${styles.fieldHalf}`}>
                   {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </Select>
-                <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
+                <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={`${styles.formSelect} ${styles.fieldHalf}`}>
                   {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </Select>
                 <input className={styles.fieldWide} value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
-                <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={styles.formSelect}>
+                <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={`${styles.formSelect} ${styles.fieldThird}`}>
                   {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </Select>
-                <div className={styles.clientSearchField} ref={clientSearchRef}>
+                <div className={`${styles.clientSearchField} ${styles.fieldThird}`} ref={clientSearchRef}>
                   <input
                     value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
                     onFocus={() => {
@@ -2541,7 +2541,7 @@ export default function ProfilePage() {
                     </button>
                   ) : null}
                 </div>
-                <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
+                <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={`${styles.dateField} ${styles.fieldThird}`} />
               </div>
 
               {demandForm.type === 'briefing' ? (
@@ -2559,7 +2559,7 @@ export default function ProfilePage() {
 
               {demandForm.type === 'routine' ? (
                 <div className={styles.routineFormGrid}>
-                  <Select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={styles.formSelect}>
+                  <Select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={`${styles.formSelect} ${styles.fieldThird}`}>
                     {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
                   <input value={demandForm.routineScope} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineScope: event.target.value }))} placeholder="Escopo" />
@@ -2568,12 +2568,12 @@ export default function ProfilePage() {
               ) : null}
 
               <textarea value={demandForm.description} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
-
-              <footer className={styles.settingsFooter}>
-                <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
-                <button type="submit" disabled={demandSaving}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
-              </footer>
             </div>
+
+            <footer className={styles.settingsFooter}>
+              <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
+              <button type="submit" disabled={demandSaving}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
+            </footer>
           </form>
           {clientSearchOpen ? createPortal(
             <div
