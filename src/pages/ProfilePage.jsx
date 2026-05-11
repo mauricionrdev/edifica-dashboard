@@ -737,24 +737,35 @@ function eventTypeKey(type = '') {
 }
 
 function looksLikeTechnicalId(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || ''));
+  const text = String(value || '').trim();
+  if (!text) return false;
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)) return true;
+  if (/^[0-9a-f]{24,}$/i.test(text)) return true;
+  if (/^sk-[a-z0-9_-]{16,}$/i.test(text)) return true;
+  return false;
 }
 
 function formatEventMetadataValue(key, value) {
   if (value === null || value === undefined || value === '') return '';
   if (/id$/i.test(key) || /_id$/i.test(key) || looksLikeTechnicalId(value)) return '';
+
   if (Array.isArray(value)) {
-    if (/task/i.test(key)) return value.length === 1 ? '1 tarefa' : `${value.length} tarefas`;
-    if (/section/i.test(key)) return value.length === 1 ? '1 seção' : `${value.length} seções`;
-    if (/user|collaborator/i.test(key)) return value.length === 1 ? '1 usuário' : `${value.length} usuários`;
-    return value.map((item) => formatEventMetadataValue(key, item)).filter(Boolean).join(', ');
+    const visibleItems = value.map((item) => formatEventMetadataValue(key, item)).filter(Boolean);
+    if (!visibleItems.length) return '';
+    if (/task/i.test(key)) return visibleItems.length === 1 ? '1 tarefa' : `${visibleItems.length} tarefas`;
+    if (/section/i.test(key)) return visibleItems.length === 1 ? '1 seção' : `${visibleItems.length} seções`;
+    if (/user|collaborator/i.test(key)) return visibleItems.length === 1 ? '1 usuário' : `${visibleItems.length} usuários`;
+    return visibleItems.join(', ');
   }
+
   if (typeof value === 'object') {
     const entries = Object.entries(value)
+      .filter(([childKey]) => !/id$/i.test(childKey) && !/_id$/i.test(childKey))
       .map(([childKey, childValue]) => formatEventMetadataValue(childKey, childValue))
       .filter(Boolean);
     return entries.join(' · ');
   }
+
   if (/status/i.test(key)) return statusLabel({ status: value });
   if (/priority/i.test(key)) return priorityLabel(value);
   if (/due|date/i.test(key)) return formatDueLabel(value);
@@ -763,9 +774,9 @@ function formatEventMetadataValue(key, value) {
 
 function formatEventMetadata(metadata) {
   if (!metadata || typeof metadata !== 'object') return '';
-  const hidden = new Set(['taskId', 'projectId', 'clientId', 'sectionId', 'userId']);
+  const hidden = new Set(['taskId', 'projectId', 'clientId', 'sectionId', 'userId', 'id']);
   return Object.entries(metadata)
-    .filter(([key]) => !hidden.has(key))
+    .filter(([key]) => !hidden.has(key) && !/id$/i.test(key) && !/_id$/i.test(key))
     .map(([key, value]) => formatEventMetadataValue(key, value))
     .filter(Boolean)
     .join(' · ');
@@ -2346,9 +2357,8 @@ export default function ProfilePage() {
                       return (
                         <div key={collaborator.userId} className={styles.collaboratorItem}>
                           <span className={styles.collaboratorAvatar}>{initials(collaboratorName)}</span>
-                          <div>
+                          <div className={styles.collaboratorInfo}>
                             <strong>{collaboratorName}</strong>
-                            {collaborator.userEmail ? <small>{collaborator.userEmail}</small> : null}
                           </div>
                           <button
                             type="button"
@@ -2456,12 +2466,13 @@ export default function ProfilePage() {
                 <div className={styles.activityList}>
                   {activeActivityEvents.map((event) => (
                     <div key={event.id} className={`${styles.activityItem} ${event.quiet ? styles.activityItemQuiet : ''}`.trim()}>
-                      <span className={`${styles.activityMark} ${styles[`activityMark_${event.type}`] || ''}`.trim()}>
-                        {event.type === 'done' ? '✓' : event.type === 'handoff' ? '↗' : event.type === 'updated' ? '·' : initials(event.meta || event.author)}
-                      </span>
+                      <span className={`${styles.activityMark} ${styles[`activityMark_${event.type}`] || ''}`.trim()} aria-hidden="true" />
                       <div className={styles.activityContent}>
-                        <p><strong>{event.title}</strong>{event.meta ? <em>{event.meta}</em> : null}</p>
-                        {event.note ? <small>{event.note}</small> : null}
+                        <p>
+                          <strong>{event.title}</strong>
+                          {event.meta && !looksLikeTechnicalId(event.meta) ? <em>{event.meta}</em> : null}
+                        </p>
+                        {event.note && !looksLikeTechnicalId(event.note) ? <small>{event.note}</small> : null}
                         {event.createdAt ? <time>{formatDateTime(event.createdAt)}</time> : null}
                       </div>
                     </div>

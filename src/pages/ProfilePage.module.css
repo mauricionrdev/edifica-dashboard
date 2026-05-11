@@ -2735,3 +2735,244 @@
     max-width: 160px;
   }
 }
+
+/* Drawer refinements — consolidado em cima do estado atual */
+.drawerTopbar {
+  min-height: 64px;
+  padding: 15px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.drawerStatusGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.drawerStatusGroup .statusCheck {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+}
+
+.drawerStatusGroup .statusBadge {
+  max-width: min(240px, 42vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawerHero > .statusBadge {
+  display: none !important;
+}
+
+.workflowSelect,
+.formSelect {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.workflowField .workflowSelect,
+.workflowField .formSelect,
+.collaboratorComposer .formSelect,
+.structuredEditGrid .formSelect {
+  width: 100%;
+  max-width: none;
+}
+
+.collaboratorList {
+  display: grid;
+  gap: 8px;
+}
+
+.collaboratorItem {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px solid var(--edf-border);
+  border-radius: 12px;
+  background: var(--edf-surface-1);
+}
+
+.collaboratorInfo {
+  min-width: 0;
+}
+
+.collaboratorInfo strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--edf-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.collaboratorItem small,
+.collaboratorItem > span:not(.collaboratorAvatar) {
+  display: none !important;
+}
+
+.collaboratorItem button {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--edf-text-faint);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.72;
+}
+
+.collaboratorItem:hover button,
+.collaboratorItem button:focus-visible {
+  opacity: 1;
+}
+
+.activityList {
+  display: grid;
+  gap: 0;
+  position: relative;
+}
+
+.activityItem,
+.activityItemQuiet {
+  display: grid !important;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+  padding: 11px 0 !important;
+  border-bottom: 1px solid var(--edf-border-soft);
+  color: var(--edf-text-secondary);
+  position: relative;
+}
+
+.activityItem:last-child,
+.activityItemQuiet:last-child {
+  border-bottom: 0;
+}
+
+.activityMark {
+  position: relative;
+  width: 18px !important;
+  height: 18px !important;
+  margin-top: 2px !important;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0;
+  overflow: visible;
+}
+
+.activityItem:not(:last-child) .activityMark::before,
+.activityItemQuiet:not(:last-child) .activityMark::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: 1px;
+  height: calc(100% + 17px);
+  transform: translateX(-50%);
+  background: var(--edf-border-soft);
+}
+
+.activityMark::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--edf-text-faint);
+}
+
+.activityMark_done::after {
+  background: var(--edf-success-soft);
+}
+
+.activityMark_created::after,
+.activityMark_create::after {
+  background: var(--edf-amber);
+}
+
+.activityMark_updated::after,
+.activityMark_update::after {
+  background: var(--edf-info-soft);
+}
+
+.activityMark_comment::after {
+  background: var(--edf-info-soft);
+}
+
+.activityMark_subtask::after,
+.activityMark_collaborator::after,
+.activityMark_handoff::after {
+  background: var(--edf-success-soft);
+}
+
+.activityContent {
+  min-width: 0;
+  display: grid !important;
+  gap: 5px !important;
+}
+
+.activityContent > p {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 7px;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.activityContent strong {
+  color: var(--edf-text);
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.activityContent em {
+  color: var(--edf-text-muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.activityContent small {
+  display: block;
+  max-width: 100%;
+  color: var(--edf-text-faint);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.activityContent time {
+  color: var(--edf-text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .drawerStatusGroup .statusBadge {
+    max-width: 160px;
+  }
+}
