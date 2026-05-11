@@ -182,6 +182,39 @@ function buildDemandDescription(form, clientName = '') {
   return lines.join('\n');
 }
 
+function compactMissingFields(fields = []) {
+  if (!fields.length) return '';
+  if (fields.length === 1) return fields[0];
+  if (fields.length === 2) return `${fields[0]} e ${fields[1]}`;
+  return `${fields.slice(0, -1).join(', ')} e ${fields.at(-1)}`;
+}
+
+function validateDemandForm(form) {
+  const missing = [];
+  const hasValue = (value) => String(value || '').trim().length > 0;
+
+  if (!hasValue(form.title)) missing.push('Título');
+  if (!hasValue(form.assigneeUserId)) missing.push('Responsável');
+
+  if (form.type === 'briefing') {
+    if (!hasValue(form.clientId)) missing.push('Cliente');
+    if (!hasValue(form.officeName)) missing.push('Escritório');
+    if (!hasValue(form.objective)) missing.push('Objetivo');
+    if (!hasValue(form.campaign)) missing.push('Nicho/campanha');
+    if (!hasValue(form.channels)) missing.push('Canais');
+    if (!hasValue(form.attendants)) missing.push('Atendentes');
+    if (!hasValue(form.greeting)) missing.push('Saudação');
+    if (!hasValue(form.location)) missing.push('Localização');
+  }
+
+  if (form.type === 'routine') {
+    if (!hasValue(form.routineScope)) missing.push('Escopo');
+    if (!hasValue(form.routineChecklist)) missing.push('Checklist');
+  }
+
+  return missing;
+}
+
 const ROUTINE_RECURRENCES = [
   { value: 'daily', label: 'Diária' },
   { value: 'weekly', label: 'Semanal' },
@@ -2045,12 +2078,9 @@ export default function ProfilePage() {
       return;
     }
     const title = demandForm.title.trim();
-    if (!title) {
-      showToast('Título obrigatório.', { variant: 'error' });
-      return;
-    }
-    if (!demandForm.assigneeUserId) {
-      showToast('Responsável obrigatório.', { variant: 'error' });
+    const missingFields = validateDemandForm(demandForm);
+    if (missingFields.length) {
+      showToast(`Preencha: ${compactMissingFields(missingFields)}.`, { variant: 'error' });
       return;
     }
 
