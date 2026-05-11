@@ -22,6 +22,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { roleLabel } from '../utils/roles.js';
 import { normalizeSlug } from '../utils/slugs.js';
+import { hasPermission } from '../utils/permissions.js';
 import {
   getUserAvatar,
   readAvatarFile,
@@ -858,6 +859,40 @@ function metaValue(value) {
   return value || '—';
 }
 
+function isTaskOwner(user, task) {
+  if (!user?.id || !task) return false;
+  return task.assigneeUserId === user.id || task.createdByUserId === user.id;
+}
+
+function canCreateProfileTask(user) {
+  return hasPermission(user, 'tasks.create');
+}
+
+function canEditProfileTask(user, task) {
+  if (!task) return false;
+  if (hasPermission(user, 'tasks.edit.all')) return true;
+  if (!hasPermission(user, 'tasks.edit.own')) return false;
+  if (task.profileRelation === 'collaborator') return false;
+  return isTaskOwner(user, task) || task.profileRelation === 'responsible';
+}
+
+function canCommentProfileTask(user, task) {
+  if (!task) return false;
+  return hasPermission(user, 'tasks.comment.all') || hasPermission(user, 'tasks.comment.own');
+}
+
+function canCompleteProfileTask(user, task) {
+  if (!task) return false;
+  if (hasPermission(user, 'tasks.complete.any') || hasPermission(user, 'tasks.edit.all')) return true;
+  if (canEditProfileTask(user, task)) return true;
+  return hasPermission(user, 'tasks.complete.own') && isTaskOwner(user, task);
+}
+
+function canDeleteProfileComment(user, comment) {
+  if (!comment) return false;
+  return hasPermission(user, 'tasks.comment.all') || hasPermission(user, 'tasks.edit.all') || comment.userId === user?.id;
+}
+
 
 function Select({ value, onChange, children, className = '', disabled = false, placeholder = 'Selecionar', ...props }) {
   const buttonRef = useRef(null);
@@ -1323,6 +1358,12 @@ export default function ProfilePage() {
     { label: 'Clientes', value: demandClients.length, tone: 'violet', Icon: BuildingIcon },
     { label: 'Conclusão', value: `${completionRate}%`, tone: 'completion', Icon: TargetIcon },
   ]), [completionRate, demandClients.length, operationCounts.done, operationCounts.overdue, operationCounts.today, squadNames.length]);
+  const canCreateDemand = canCreateProfileTask(user);
+  const canEditActiveTask = canEditProfileTask(user, activeTask);
+  const canCommentActiveTask = canCommentProfileTask(user, activeTask);
+  const canCompleteActiveTask = canCompleteProfileTask(user, activeTask);
+  const canManageActiveCollaborators = canEditActiveTask;
+  const canCreateActiveSubtask = canCreateDemand && canEditActiveTask;
 
   async function handleSaveProfile() {
     try {
@@ -1382,6 +1423,10 @@ export default function ProfilePage() {
 
   async function handleUpdateTaskFields(task, patch, successMessage = 'Demanda atualizada.') {
     if (!task?.id) return;
+    if (!canEditProfileTask(user, task)) {
+      showToast('Sem permissão para editar esta demanda.', { variant: 'error' });
+      return;
+    }
 
     try {
       setTaskUpdatingId(task.id);
@@ -1398,6 +1443,10 @@ export default function ProfilePage() {
 
   function openContentEditor(task = activeTask) {
     if (!task) return;
+    if (!canEditProfileTask(user, task)) {
+      showToast('Sem permissão para editar esta demanda.', { variant: 'error' });
+      return;
+    }
     const kind = getTaskKind(task);
     const briefing = kind === 'briefing' ? parseBriefingDescription(task.description || '') : null;
     const routine = kind === 'routine' ? parseRoutineDescription(task.description || '') : null;
@@ -1464,6 +1513,10 @@ export default function ProfilePage() {
   async function handleSaveContent(event) {
     event.preventDefault();
     if (!activeTask?.id) return;
+    if (!canEditActiveTask) {
+      showToast('Sem permissão para editar esta demanda.', { variant: 'error' });
+      return;
+    }
 
     const nextTitle = contentForm.title.trim();
     if (!nextTitle) {
@@ -1532,6 +1585,10 @@ export default function ProfilePage() {
 
   async function handleToggleTask(task) {
     if (!task?.id) return;
+    if (!canCompleteProfileTask(user, task)) {
+      showToast('Sem permissão para alterar o status desta demanda.', { variant: 'error' });
+      return;
+    }
 
     if (!isDone(task) && !task.parentTaskId) {
       setCompletionTarget(task);
@@ -1587,6 +1644,10 @@ export default function ProfilePage() {
   async function handleCreateSubtask(event) {
     event.preventDefault();
     if (!activeTask) return;
+    if (!canCreateActiveSubtask) {
+      showToast('Sem permissão para criar subtarefa nesta demanda.', { variant: 'error' });
+      return;
+    }
     const title = subtaskDraft.trim();
     if (!title) return;
 
@@ -1617,6 +1678,10 @@ export default function ProfilePage() {
   async function handleCreateComment(event) {
     event.preventDefault();
     if (!activeTask) return;
+    if (!canCommentActiveTask) {
+      showToast('Sem permissão para comentar nesta demanda.', { variant: 'error' });
+      return;
+    }
     const body = commentDraft.trim();
     if (!body) return;
 
@@ -1635,6 +1700,10 @@ export default function ProfilePage() {
 
   async function handleRegisterBriefingIssues() {
     if (!activeTask || !activeBriefing || activeBriefing.isComplete) return;
+    if (!canCommentActiveTask) {
+      showToast('Sem permissão para registrar pendências.', { variant: 'error' });
+      return;
+    }
 
     const missing = activeBriefing.missingRequired.map((field) => field.label).join(', ');
     const body = ['Briefing incompleto.', missing ? `Pendências: ${missing}` : ''].filter(Boolean).join('\n');
@@ -1653,6 +1722,10 @@ export default function ProfilePage() {
 
   async function handleMarkBriefingImplemented() {
     if (!activeTask) return;
+    if (!canCompleteActiveTask) {
+      showToast('Sem permissão para marcar implementação.', { variant: 'error' });
+      return;
+    }
 
     const body = [
       'Implementação concluída.',
@@ -1684,6 +1757,10 @@ export default function ProfilePage() {
 
   function openHandoff(task = activeTask) {
     if (!task) return;
+    if (!canEditProfileTask(user, task) || !canCommentProfileTask(user, task)) {
+      showToast('Sem permissão para registrar handoff nesta demanda.', { variant: 'error' });
+      return;
+    }
     const nextStatus = isDone(task) ? 'done' : task.status || 'in_progress';
     const nextForm = emptyHandoffForm(task.assigneeUserId || user?.id || '', nextStatus);
     nextForm.nextAction = nextActionLabel(task);
@@ -1696,6 +1773,10 @@ export default function ProfilePage() {
   async function handleSubmitHandoff(event) {
     event.preventDefault();
     if (!activeTask || !handoffForm.assigneeUserId) return;
+    if (!canEditActiveTask || !canCommentActiveTask) {
+      showToast('Sem permissão para registrar handoff nesta demanda.', { variant: 'error' });
+      return;
+    }
 
     const nextAssignee = assigneeOptions.find((item) => item.id === handoffForm.assigneeUserId);
     const nextStatusLabel = statusOptionsForKind(activeKind).find((option) => option.value === handoffForm.status)?.label || handoffForm.status;
@@ -1759,6 +1840,10 @@ export default function ProfilePage() {
   async function handleAddCollaborator(event) {
     event.preventDefault();
     if (!activeTask || !collaboratorUserId) return;
+    if (!canManageActiveCollaborators) {
+      showToast('Sem permissão para adicionar colaborador.', { variant: 'error' });
+      return;
+    }
 
     try {
       setCollaboratorSaving(true);
@@ -1789,6 +1874,10 @@ export default function ProfilePage() {
 
   async function handleRemoveCollaborator(userId) {
     if (!activeTask || !userId) return;
+    if (!canManageActiveCollaborators) {
+      showToast('Sem permissão para remover colaborador.', { variant: 'error' });
+      return;
+    }
 
     try {
       setCollaboratorRemovingId(userId);
@@ -1807,6 +1896,10 @@ export default function ProfilePage() {
 
   async function handleDeleteSubtask() {
     if (!subtaskDeleteTarget?.id) return;
+    if (!canEditProfileTask(user, subtaskDeleteTarget)) {
+      showToast('Sem permissão para excluir subtarefa.', { variant: 'error' });
+      return;
+    }
 
     try {
       setSubtaskDeleting(true);
@@ -1823,6 +1916,10 @@ export default function ProfilePage() {
   }
 
   async function handleOpenDemandModal() {
+    if (!canCreateDemand) {
+      showToast('Sem permissão para criar demanda.', { variant: 'error' });
+      return;
+    }
     setDemandForm((prev) => ({ ...emptyDemandForm(user?.id || ''), assigneeUserId: prev.assigneeUserId || user?.id || '' }));
     setClientQuery('');
     setClientSearchOpen(false);
@@ -1845,6 +1942,10 @@ export default function ProfilePage() {
 
   async function handleCreateDemand(event) {
     event.preventDefault();
+    if (!canCreateDemand) {
+      showToast('Sem permissão para criar demanda.', { variant: 'error' });
+      return;
+    }
     const title = demandForm.title.trim();
     if (!title) {
       showToast('Título obrigatório.', { variant: 'error' });
@@ -1991,7 +2092,7 @@ export default function ProfilePage() {
               <h2>Minha operação</h2>
               {tabTasks.length ? <small>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</small> : null}
             </div>
-            <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal}>Nova demanda</button>
+            <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
           </div>
 
           <div className={styles.operationControlPanel}>
@@ -2068,7 +2169,6 @@ export default function ProfilePage() {
               {tabTasks.length > OPERATION_PAGE_SIZE ? (
                 <div className={styles.operationPagination} aria-label="Paginação da operação">
                   <span>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</span>
-                  <span className={styles.operationPageIndicator}>Página {safeOperationPage} de {operationTotalPages}</span>
                   <div>
                     <button type="button" onClick={() => setOperationPage((page) => Math.max(1, page - 1))} disabled={safeOperationPage <= 1}>Anterior</button>
                     <button type="button" onClick={() => setOperationPage((page) => Math.min(operationTotalPages, page + 1))} disabled={safeOperationPage >= operationTotalPages}>Próxima</button>
@@ -2089,7 +2189,7 @@ export default function ProfilePage() {
                   type="button"
                   className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
                   onClick={() => handleToggleTask(activeTask)}
-                  disabled={taskUpdatingId === activeTask.id}
+                  disabled={taskUpdatingId === activeTask.id || !canCompleteActiveTask}
                   aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
                 >
                   {isDone(activeTask) ? '✓' : ''}
@@ -2116,24 +2216,24 @@ export default function ProfilePage() {
                 <p>{nextActionLabel(activeTask)}</p>
                 <div className={styles.drawerHeroActions}>
                   {activeKind === 'briefing' && activeBriefing && !activeBriefing.isComplete ? (
-                    <button type="button" onClick={handleRegisterBriefingIssues} disabled={commentSaving}>Pendências</button>
+                    <button type="button" onClick={handleRegisterBriefingIssues} disabled={commentSaving || !canCommentActiveTask}>Pendências</button>
                   ) : null}
                   {activeKind === 'briefing' && activeBriefing?.isComplete && !isDone(activeTask) ? (
-                    <button type="button" className={styles.heroActionPrimary} onClick={handleMarkBriefingImplemented} disabled={taskUpdatingId === activeTask.id}>Implementado</button>
+                    <button type="button" className={styles.heroActionPrimary} onClick={handleMarkBriefingImplemented} disabled={taskUpdatingId === activeTask.id || !canCompleteActiveTask}>Implementado</button>
                   ) : null}
                   {activeKind === 'briefing' && isDone(activeTask) ? (
-                    <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)}>Ativação</button>
+                    <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Ativação</button>
                   ) : null}
-                  <button type="button" onClick={() => openHandoff(activeTask)}>Handoff</button>
+                  <button type="button" onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Handoff</button>
                   {contentEditing ? (
                     <>
                       <button type="button" onClick={() => setContentEditing(false)} disabled={contentSaving}>Cancelar</button>
-                      <button type="button" className={styles.heroActionPrimary} onClick={handleSaveContent} disabled={contentSaving}>
+                      <button type="button" className={styles.heroActionPrimary} onClick={handleSaveContent} disabled={contentSaving || !canEditActiveTask}>
                         {contentSaving ? 'Salvando' : 'Salvar'}
                       </button>
                     </>
                   ) : (
-                    <button type="button" onClick={() => openContentEditor(activeTask)}>Editar</button>
+                    <button type="button" onClick={() => openContentEditor(activeTask)} disabled={!canEditActiveTask}>Editar</button>
                   )}
                 </div>
               </div>
@@ -2150,6 +2250,7 @@ export default function ProfilePage() {
                       }}
                       aria-label="Status"
                       className={styles.workflowSelect}
+                      disabled={!canEditActiveTask}
                     >
                       {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                     </Select>
@@ -2162,6 +2263,7 @@ export default function ProfilePage() {
                       onChange={(event) => handleUpdateTaskFields(activeTask, { assigneeUserId: event.target.value }, 'Responsável atualizado.')}
                       aria-label="Responsável"
                       className={styles.workflowSelect}
+                      disabled={!canEditActiveTask}
                     >
                       <option value="">Sem responsável</option>
                       {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
@@ -2176,6 +2278,7 @@ export default function ProfilePage() {
                       placeholder="Prazo"
                       ariaLabel="Prazo"
                       className={styles.workflowDate}
+                      disabled={!canEditActiveTask}
                     />
                   </label>
 
@@ -2186,6 +2289,7 @@ export default function ProfilePage() {
                       onChange={(event) => handleUpdateTaskFields(activeTask, { priority: event.target.value }, 'Prioridade atualizada.')}
                       aria-label="Prioridade"
                       className={styles.workflowSelect}
+                      disabled={!canEditActiveTask}
                     >
                       {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                     </Select>
@@ -2341,13 +2445,14 @@ export default function ProfilePage() {
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
                     aria-label="Colaborador"
                     className={styles.formSelect}
+                    disabled={!canManageActiveCollaborators}
                   >
                     <option value="">Adicionar colaborador</option>
                     {collaboratorOptions.map((option) => (
                       <option key={option.id} value={option.id}>{option.name}</option>
                     ))}
                   </Select>
-                  <button type="submit" disabled={collaboratorSaving || !collaboratorUserId}>+</button>
+                  <button type="submit" disabled={collaboratorSaving || !collaboratorUserId || !canManageActiveCollaborators}>+</button>
                 </form>
                 {collaboratorsLoading ? (
                   <div className={styles.commentState}>Carregando</div>
@@ -2364,7 +2469,7 @@ export default function ProfilePage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveCollaborator(collaborator.userId)}
-                            disabled={collaboratorRemovingId === collaborator.userId}
+                            disabled={collaboratorRemovingId === collaborator.userId || !canManageActiveCollaborators}
                             aria-label="Remover colaborador"
                             title="Remover colaborador"
                           >
@@ -2383,8 +2488,8 @@ export default function ProfilePage() {
                   <span>{activeSubtasks.length}</span>
                 </div>
                 <form className={styles.inlineComposer} onSubmit={handleCreateSubtask}>
-                  <input value={subtaskDraft} onChange={(event) => setSubtaskDraft(event.target.value)} placeholder="Subtarefa" />
-                  <button type="submit" disabled={subtaskSaving || !subtaskDraft.trim()}>+</button>
+                  <input value={subtaskDraft} onChange={(event) => setSubtaskDraft(event.target.value)} placeholder="Subtarefa" disabled={!canCreateActiveSubtask} />
+                  <button type="submit" disabled={subtaskSaving || !subtaskDraft.trim() || !canCreateActiveSubtask}>+</button>
                 </form>
                 {subtasksLoading ? (
                   <div className={styles.commentState}>Carregando</div>
@@ -2396,7 +2501,7 @@ export default function ProfilePage() {
                           type="button"
                           className={`${styles.statusCheck} ${isDone(subtask) ? styles.statusCheckDone : ''}`.trim()}
                           onClick={() => handleToggleTask(subtask)}
-                          disabled={taskUpdatingId === subtask.id}
+                          disabled={taskUpdatingId === subtask.id || !canCompleteProfileTask(user, subtask)}
                           aria-label={isDone(subtask) ? 'Reabrir' : 'Concluir'}
                         >
                           {isDone(subtask) ? '✓' : ''}
@@ -2406,7 +2511,7 @@ export default function ProfilePage() {
                           type="button"
                           className={styles.subtaskDeleteButton}
                           onClick={() => setSubtaskDeleteTarget(subtask)}
-                          disabled={taskUpdatingId === subtask.id}
+                          disabled={taskUpdatingId === subtask.id || !canEditProfileTask(user, subtask)}
                           aria-label="Excluir subtarefa"
                           title="Excluir subtarefa"
                         >
@@ -2424,8 +2529,8 @@ export default function ProfilePage() {
                   <span>{visibleTaskComments.length}</span>
                 </div>
                 <form className={styles.commentForm} onSubmit={handleCreateComment}>
-                  <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Comentário" />
-                  <button type="submit" disabled={commentSaving || !commentDraft.trim()}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
+                  <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Comentário" disabled={!canCommentActiveTask} />
+                  <button type="submit" disabled={commentSaving || !commentDraft.trim() || !canCommentActiveTask}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
                 </form>
                 {commentsLoading ? (
                   <div className={styles.commentState}>Carregando</div>
@@ -2444,6 +2549,7 @@ export default function ProfilePage() {
                                 type="button"
                                 className={styles.commentDeleteButton}
                                 onClick={() => setCommentDeleteTarget(comment)}
+                                disabled={!canDeleteProfileComment(user, comment)}
                                 aria-label="Excluir comentário"
                                 title="Excluir comentário"
                               >
@@ -2573,7 +2679,7 @@ export default function ProfilePage() {
 
             <footer className={styles.settingsFooter}>
               <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
-              <button type="submit" disabled={demandSaving}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
+              <button type="submit" disabled={demandSaving || !canCreateDemand}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
             </footer>
           </form>
           {clientSearchOpen ? createPortal(
