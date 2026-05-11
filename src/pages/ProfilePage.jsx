@@ -742,7 +742,6 @@ function looksLikeTechnicalId(value) {
 
 function formatEventMetadataValue(key, value) {
   if (value === null || value === undefined || value === '') return '';
-  if (typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.trim())) return '';
   if (/id$/i.test(key) || /_id$/i.test(key) || looksLikeTechnicalId(value)) return '';
   if (Array.isArray(value)) {
     if (/task/i.test(key)) return value.length === 1 ? '1 tarefa' : `${value.length} tarefas`;
@@ -2073,18 +2072,15 @@ export default function ProfilePage() {
         <aside className={styles.drawerOverlay} aria-label="Demanda" onClick={() => setActiveTaskId('')}>
           <section className={styles.drawerPanel} onClick={(event) => event.stopPropagation()}>
             <header className={styles.drawerTopbar}>
-              <div className={styles.drawerStatusCluster}>
-                <button
-                  type="button"
-                  className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
-                  onClick={() => handleToggleTask(activeTask)}
-                  disabled={taskUpdatingId === activeTask.id}
-                  aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
-                >
-                  {isDone(activeTask) ? '✓' : ''}
-                </button>
-                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
-              </div>
+              <button
+                type="button"
+                className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
+                onClick={() => handleToggleTask(activeTask)}
+                disabled={taskUpdatingId === activeTask.id}
+                aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
+              >
+                {isDone(activeTask) ? '✓' : ''}
+              </button>
               <button type="button" className={styles.iconButton} onClick={() => setActiveTaskId('')} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
@@ -2092,6 +2088,7 @@ export default function ProfilePage() {
 
             <div className={styles.drawerScroll}>
               <div className={styles.drawerHero}>
+                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
                 {contentEditing ? (
                   <input
                     className={styles.titleEditor}
@@ -2347,8 +2344,9 @@ export default function ProfilePage() {
                       return (
                         <div key={collaborator.userId} className={styles.collaboratorItem}>
                           <span className={styles.collaboratorAvatar}>{initials(collaboratorName)}</span>
-                          <div className={styles.collaboratorInfo}>
+                          <div>
                             <strong>{collaboratorName}</strong>
+                            {collaborator.userEmail ? <small>{collaborator.userEmail}</small> : null}
                           </div>
                           <button
                             type="button"
@@ -2778,48 +2776,53 @@ export default function ProfilePage() {
               ))}
             </div>
 
-            {settingsTab === 'profile' ? (
-              <div className={styles.settingsContent}>
-                <div className={styles.photoRow}>
-                  <span className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
-                    {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileForm.name || user?.name)}
-                  </span>
-                  <div className={styles.photoActions}>
-                    <button type="button" onClick={() => avatarInputRef.current?.click()}>Alterar foto</button>
-                    {avatarUrl ? <button type="button" onClick={handleRemoveAvatar}>Remover</button> : null}
-                    <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFile} hidden />
-                  </div>
+            <div
+              className={`${styles.settingsContent} ${styles.settingsPane} ${settingsTab !== 'profile' ? styles.settingsPaneHidden : ''}`.trim()}
+              aria-hidden={settingsTab !== 'profile'}
+            >
+              <div className={styles.photoRow}>
+                <span className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
+                  {avatarUrl ? <img src={avatarUrl} alt="" decoding="async" draggable="false" /> : initials(profileForm.name || user?.name)}
+                </span>
+                <div className={styles.photoActions}>
+                  <button type="button" onClick={() => avatarInputRef.current?.click()} tabIndex={settingsTab === 'profile' ? 0 : -1}>Alterar foto</button>
+                  {avatarUrl ? <button type="button" onClick={handleRemoveAvatar} tabIndex={settingsTab === 'profile' ? 0 : -1}>Remover</button> : null}
+                  <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFile} hidden tabIndex={-1} />
                 </div>
-
-                <div className={styles.formGrid}>
-                  <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" />
-                  <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" />
-                  <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" />
-                  <Select
-                    value={profileForm.avatarColor}
-                    onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
-                    aria-label="Cor"
-                    className={styles.formSelect}
-                  >
-                    {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
-                </div>
-
-                <footer className={styles.settingsFooter}>
-                  <button type="button" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
-                </footer>
               </div>
-            ) : (
-              <div className={styles.settingsContent}>
-                <div className={styles.formGrid}>
-                  <input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))} placeholder="Senha atual" />
-                  <input type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))} placeholder="Nova senha" />
-                </div>
-                <footer className={styles.settingsFooter}>
-                  <button type="button" onClick={handleChangePassword} disabled={savingPassword}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
-                </footer>
+
+              <div className={styles.formGrid}>
+                <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                <Select
+                  value={profileForm.avatarColor}
+                  onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
+                  aria-label="Cor"
+                  className={styles.formSelect}
+                  disabled={settingsTab !== 'profile'}
+                >
+                  {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </Select>
               </div>
-            )}
+
+              <footer className={styles.settingsFooter}>
+                <button type="button" onClick={handleSaveProfile} disabled={savingProfile || settingsTab !== 'profile'} tabIndex={settingsTab === 'profile' ? 0 : -1}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
+              </footer>
+            </div>
+
+            <div
+              className={`${styles.settingsContent} ${styles.settingsPane} ${settingsTab !== 'account' ? styles.settingsPaneHidden : ''}`.trim()}
+              aria-hidden={settingsTab !== 'account'}
+            >
+              <div className={styles.formGrid}>
+                <input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))} placeholder="Senha atual" tabIndex={settingsTab === 'account' ? 0 : -1} />
+                <input type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))} placeholder="Nova senha" tabIndex={settingsTab === 'account' ? 0 : -1} />
+              </div>
+              <footer className={styles.settingsFooter}>
+                <button type="button" onClick={handleChangePassword} disabled={savingPassword || settingsTab !== 'account'} tabIndex={settingsTab === 'account' ? 0 : -1}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
+              </footer>
+            </div>
           </section>
         </div>
       ) : null}
