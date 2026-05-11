@@ -331,7 +331,7 @@ export async function createTaskRecord(input, actorUser = null, db = null) {
       entityType: 'task',
       entityId: id,
       entityLabel: title,
-      actionUrl: projectId ? `/projetos?id=${projectId}` : '/perfil',
+      actionUrl: `/perfil?task=${encodeURIComponent(id)}`,
       metadata: { projectId, clientId },
     });
   }

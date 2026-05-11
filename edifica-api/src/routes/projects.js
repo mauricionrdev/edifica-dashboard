@@ -34,6 +34,119 @@ function normalizePriority(value) {
   return ['low', 'medium', 'high', 'critical'].includes(priority) ? priority : 'medium';
 }
 
+function backendStatusLabel(value) {
+  const labels = {
+    todo: 'Aberta',
+    in_progress: 'Em andamento',
+    done: 'Concluída',
+    canceled: 'Cancelada',
+  };
+  return labels[value] || labels.todo;
+}
+
+function backendPriorityLabel(value) {
+  const labels = {
+    low: 'Baixa',
+    medium: 'Normal',
+    high: 'Alta',
+    critical: 'Crítica',
+  };
+  return labels[value] || labels.medium;
+}
+
+function backendDateLabel(value) {
+  if (!value) return 'Sem prazo';
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+  return clean(value) || 'Sem prazo';
+}
+
+async function resolveUserName(userId) {
+  const id = clean(userId);
+  if (!id) return 'Sem responsável';
+  const rows = await query('SELECT name FROM users WHERE id = ? LIMIT 1', [id]);
+  return rows?.[0]?.name || 'Usuário';
+}
+
+function compactText(value, max = 120) {
+  const text = clean(value).replace(/\s+/g, ' ');
+  if (!text) return '';
+  return text.length > max ? `${text.slice(0, max - 1).trim()}…` : text;
+}
+
+function buildTaskUpdateEventDescriptor({ task, body, nextStatus, previousAssigneeName, nextAssigneeName }) {
+  const metadata = {};
+  const summaries = [];
+  let eventType = 'task.updated';
+  let summary = 'Tarefa atualizada';
+
+  if (body?.status !== undefined || body?.done !== undefined) {
+    const from = backendStatusLabel(task.status);
+    const to = backendStatusLabel(nextStatus);
+    metadata.status = from === to ? to : `${from} → ${to}`;
+    if (nextStatus === 'done') {
+      eventType = 'task.completed';
+      summary = 'Demanda concluída';
+    } else if (task.status === 'done' && nextStatus !== 'done') {
+      eventType = 'task.reopened';
+      summary = 'Demanda reaberta';
+    } else {
+      eventType = 'task.status_changed';
+      summary = 'Status alterado';
+    }
+  }
+
+  if (body?.assigneeUserId !== undefined) {
+    const from = previousAssigneeName || 'Sem responsável';
+    const to = nextAssigneeName || 'Sem responsável';
+    metadata.responsavel = from === to ? to : `${from} → ${to}`;
+    if (eventType === 'task.updated') {
+      eventType = 'task.assignee_changed';
+      summary = 'Responsável alterado';
+    }
+  }
+
+  if (body?.priority !== undefined) {
+    const nextPriority = normalizePriority(body.priority);
+    const from = backendPriorityLabel(task.priority);
+    const to = backendPriorityLabel(nextPriority);
+    metadata.prioridade = from === to ? to : `${from} → ${to}`;
+    if (eventType === 'task.updated') {
+      eventType = 'task.priority_changed';
+      summary = 'Prioridade alterada';
+    }
+  }
+
+  if (body?.dueDate !== undefined) {
+    const from = backendDateLabel(task.due_date);
+    const dueDate = clean(body.dueDate);
+    const to = /^\d{4}-\d{2}-\d{2}$/.test(dueDate) ? dueDate : 'Sem prazo';
+    metadata.prazo = from === to ? to : `${from} → ${to}`;
+    if (eventType === 'task.updated') {
+      eventType = 'task.due_date_changed';
+      summary = 'Prazo alterado';
+    }
+  }
+
+  if (body?.title !== undefined) {
+    const title = compactText(body.title);
+    if (title) metadata.titulo = title;
+    summaries.push('título');
+  }
+
+  if (body?.description !== undefined) {
+    metadata.descricao = compactText(body.description, 96) || 'Descrição removida';
+    summaries.push('descrição');
+  }
+
+  if (body?.sectionId !== undefined) summaries.push('seção');
+
+  if (eventType === 'task.updated' && summaries.length) {
+    summary = `Tarefa atualizada: ${summaries.join(', ')}`;
+  }
+
+  return { eventType, summary, metadata };
+}
+
 function normalizeTemplateStatus(task = {}) {
   if (task?.done === true) return 'done';
   const status = clean(task?.status);
@@ -1056,6 +1169,9 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
     const updates = [];
     const params = [];
     const changingStatus = req.body?.status !== undefined || req.body?.done !== undefined;
+    let nextStatus = task.status || 'todo';
+    let previousAssigneeName = 'Sem responsável';
+    let nextAssigneeName = 'Sem responsável';
     const editableFields = ['title', 'description', 'priority', 'sectionId', 'dueDate', 'assigneeUserId'];
     const changingEditableFields = editableFields.some((field) => req.body?.[field] !== undefined);
     const canEditTasks = hasPermission(req.user, 'tasks.edit');
@@ -1104,11 +1220,14 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
       params.push(/^\d{4}-\d{2}-\d{2}$/.test(dueDate) ? dueDate : null);
     }
     if (req.body?.assigneeUserId !== undefined) {
+      const nextAssigneeId = clean(req.body.assigneeUserId) || null;
+      previousAssigneeName = task.assignee_user_id ? await resolveUserName(task.assignee_user_id) : 'Sem responsável';
       updates.push('assignee_user_id = ?');
-      params.push(clean(req.body.assigneeUserId) || null);
+      params.push(nextAssigneeId);
+      nextAssigneeName = nextAssigneeId ? await resolveUserName(nextAssigneeId) : 'Sem responsável';
     }
     if (changingStatus) {
-      const nextStatus = req.body?.status ? normalizeStatus(req.body.status) : (req.body.done ? 'done' : 'todo');
+      nextStatus = req.body?.status ? normalizeStatus(req.body.status) : (req.body.done ? 'done' : 'todo');
       const ownTask = task.assignee_user_id === req.user.id || task.created_by_user_id === req.user.id;
       const canCompleteOwn = hasPermission(req.user, 'tasks.complete.own');
       const canCompleteAny = hasPermission(req.user, 'tasks.complete.any') || canEditAllTasks;
@@ -1130,22 +1249,29 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
     if (req.body?.assigneeUserId !== undefined) {
       await addTaskCollaborators(req.params.id, [clean(req.body.assigneeUserId)].filter(Boolean), 'follower');
     }
+    const eventDescriptor = buildTaskUpdateEventDescriptor({
+      task,
+      body: req.body || {},
+      nextStatus,
+      previousAssigneeName,
+      nextAssigneeName,
+    });
     await logTaskEvent({
       taskId: req.params.id,
       projectId: task.project_id,
       actorUserId: req.user.id,
-      eventType: changingStatus ? 'task.status_changed' : 'task.updated',
-      summary: changingStatus ? 'Status da tarefa atualizado' : 'Tarefa atualizada',
-      metadata: req.body || {},
+      eventType: eventDescriptor.eventType,
+      summary: eventDescriptor.summary,
+      metadata: eventDescriptor.metadata,
     });
 
     const recipients = await getTaskRecipients(req.params.id, req.user.id);
     if (recipients.length > 0) {
       await notifyUsers({
         ids: recipients,
-        type: changingStatus ? 'task.status_changed' : 'task.updated',
-        level: changingStatus && (req.body?.status === 'done' || req.body?.done) ? 'success' : 'info',
-        title: changingStatus ? 'Tarefa atualizada' : 'Tarefa alterada',
+        type: eventDescriptor.eventType,
+        level: eventDescriptor.eventType === 'task.completed' ? 'success' : 'info',
+        title: eventDescriptor.summary,
         body: task.title,
         entityType: 'task',
         entityId: req.params.id,
@@ -1197,7 +1323,7 @@ router.delete('/tasks/:id', requirePermission('tasks.edit'), async (req, res, ne
         entityType: 'project',
         entityId: task.project_id,
         entityLabel: task.title,
-        actionUrl: task.project_id ? `/projetos?id=${task.project_id}` : '/perfil',
+        actionUrl: `/perfil?task=${encodeURIComponent(req.params.id)}`,
       });
     }
 
@@ -1316,7 +1442,7 @@ router.post('/tasks/:id/collaborators', requirePermission('tasks.edit'), async (
         actorUserId: req.user.id,
         eventType: 'task.collaborator_added',
         summary: `Colaborador adicionado: ${users[0].name}`,
-        metadata: { userId, role },
+        metadata: { colaborador: users[0].name, perfil: role },
       }, conn);
     });
 
@@ -1330,7 +1456,7 @@ router.post('/tasks/:id/collaborators', requirePermission('tasks.edit'), async (
         entityType: 'task',
         entityId: req.params.id,
         entityLabel: task.title,
-        actionUrl: task.project_id ? `/projetos?id=${task.project_id}` : '/perfil',
+        actionUrl: `/perfil?task=${encodeURIComponent(req.params.id)}`,
       });
     }
 
@@ -1364,7 +1490,7 @@ router.delete('/tasks/:id/collaborators/:userId', requirePermission('tasks.edit'
         actorUserId: req.user.id,
         eventType: 'task.collaborator_removed',
         summary: `Colaborador removido: ${existing[0].user_name}`,
-        metadata: { userId },
+        metadata: { colaborador: existing[0].user_name },
       }, conn);
     });
 
@@ -1378,7 +1504,7 @@ router.delete('/tasks/:id/collaborators/:userId', requirePermission('tasks.edit'
         entityType: 'task',
         entityId: req.params.id,
         entityLabel: task.title,
-        actionUrl: task.project_id ? `/projetos?id=${task.project_id}` : '/perfil',
+        actionUrl: `/perfil?task=${encodeURIComponent(req.params.id)}`,
       });
     }
 
@@ -1405,22 +1531,23 @@ router.post('/tasks/:id/comments', requirePermission('tasks.comment'), async (re
         taskId: req.params.id,
         projectId: task.project_id,
         actorUserId: req.user.id,
-        eventType: 'task.commented',
+        eventType: 'task.comment_added',
         summary: 'Comentário adicionado',
+        metadata: { comentario: compactText(body, 140) },
       }, conn);
     });
 
     const recipients = await getTaskRecipients(req.params.id, req.user.id);
     await notifyUsers({
       ids: recipients,
-      type: 'task.commented',
+      type: 'task.comment_added',
       level: 'info',
       title: 'Novo comentário em tarefa',
       body: task.title,
       entityType: 'task',
       entityId: req.params.id,
       entityLabel: task.title,
-      actionUrl: task.project_id ? `/projetos?id=${task.project_id}` : '/perfil',
+      actionUrl: `/perfil?task=${encodeURIComponent(req.params.id)}`,
     });
 
     const rows = await query(
@@ -1478,6 +1605,7 @@ router.delete('/tasks/:id/comments/:commentId', requirePermission('tasks.comment
         actorUserId: req.user.id,
         eventType: 'task.comment_deleted',
         summary: 'Comentário excluído',
+        metadata: { comentario: compactText(comment.body, 120) },
       }, conn);
     });
 

@@ -718,6 +718,7 @@ function formatEventTypeLabel(type) {
     'task.assignee_changed': 'Responsável alterado',
     'task.due_date_changed': 'Prazo alterado',
     'task.comment_added': 'Comentário adicionado',
+    'task.commented': 'Comentário adicionado',
     'task.comment_deleted': 'Comentário excluído',
     'task.collaborator_added': 'Colaborador adicionado',
     'task.collaborator_removed': 'Colaborador removido',
@@ -768,8 +769,9 @@ function formatEventMetadataValue(key, value) {
   }
 
   if (/status/i.test(key)) return statusLabel({ status: value });
-  if (/priority/i.test(key)) return priorityLabel(value);
-  if (/due|date/i.test(key)) return formatDueLabel(value);
+  if (/priority|prioridade/i.test(key)) return priorityLabel(value);
+  if (/role|perfil/i.test(key)) return value === 'creator' ? 'Criador' : value === 'follower' ? 'Acompanhando' : String(value);
+  if (/due|date|prazo/i.test(key)) return /^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? formatDueLabel(value) : String(value);
   return String(value);
 }
 
