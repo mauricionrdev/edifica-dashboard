@@ -3553,3 +3553,109 @@
     grid-column: 1 / -1;
   }
 }
+
+/* V62 — QA final do modal Configurações sem regressão */
+.settingsPaneStack {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 210px;
+  padding: 20px 22px;
+  overflow: hidden;
+  background: transparent;
+  isolation: isolate;
+}
+
+.settingsPaneStack::-webkit-scrollbar,
+.settingsPane::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.settingsPane {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none !important;
+  transition: opacity 90ms ease;
+  contain: layout paint;
+}
+
+.settingsPaneHidden {
+  position: absolute !important;
+  inset: 20px 22px auto 22px;
+  z-index: 0;
+  display: flex !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.settingsModal > .settingsFooter {
+  flex: 0 0 auto;
+  margin: 0;
+  width: 100%;
+  border-top: 1px solid var(--edf-border);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.settingsPaneStack + .settingsFooter {
+  border-radius: 0 0 18px 18px;
+}
+
+.settingsPaneStack .formGrid {
+  align-items: start;
+}
+
+.settingsPaneStack .formSelect {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+.settingsPaneStack .formSelect [aria-haspopup='listbox'] {
+  width: 100%;
+  max-width: none;
+}
+
+.photoRow {
+  min-height: 86px;
+  flex: 0 0 auto;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.photoAvatar {
+  transform: none !important;
+  will-change: auto !important;
+  background-clip: padding-box;
+}
+
+.photoAvatar img {
+  transform: none !important;
+  will-change: auto !important;
+  background-color: transparent !important;
+}
+
+.settingsTabs,
+.settingsTab,
+.settingsPaneStack,
+.settingsFooter {
+  transform: none !important;
+  backface-visibility: hidden;
+}
+
+@media (max-width: 720px) {
+  .settingsPaneStack {
+    padding: 18px;
+  }
+
+  .settingsPaneHidden {
+    inset: 18px 18px auto 18px;
+  }
+}

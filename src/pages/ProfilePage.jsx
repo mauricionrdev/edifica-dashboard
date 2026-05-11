@@ -2789,53 +2789,56 @@ export default function ProfilePage() {
               ))}
             </div>
 
-            <div
-              className={`${styles.settingsContent} ${styles.settingsPane} ${settingsTab !== 'profile' ? styles.settingsPaneHidden : ''}`.trim()}
-              aria-hidden={settingsTab !== 'profile'}
-            >
-              <div className={styles.photoRow}>
-                <span className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
-                  {avatarUrl ? <img src={avatarUrl} alt="" decoding="async" draggable="false" /> : initials(profileForm.name || user?.name)}
-                </span>
-                <div className={styles.photoActions}>
-                  <button type="button" onClick={() => avatarInputRef.current?.click()} tabIndex={settingsTab === 'profile' ? 0 : -1}>Alterar foto</button>
-                  {avatarUrl ? <button type="button" onClick={handleRemoveAvatar} tabIndex={settingsTab === 'profile' ? 0 : -1}>Remover</button> : null}
-                  <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFile} hidden tabIndex={-1} />
+            <div className={styles.settingsPaneStack}>
+              <div
+                className={`${styles.settingsPane} ${settingsTab !== 'profile' ? styles.settingsPaneHidden : ''}`.trim()}
+                aria-hidden={settingsTab !== 'profile'}
+              >
+                <div className={styles.photoRow}>
+                  <span className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
+                    {avatarUrl ? <img src={avatarUrl} alt="" decoding="async" draggable="false" /> : initials(profileForm.name || user?.name)}
+                  </span>
+                  <div className={styles.photoActions}>
+                    <button type="button" onClick={() => avatarInputRef.current?.click()} tabIndex={settingsTab === 'profile' ? 0 : -1}>Alterar foto</button>
+                    {avatarUrl ? <button type="button" onClick={handleRemoveAvatar} tabIndex={settingsTab === 'profile' ? 0 : -1}>Remover</button> : null}
+                    <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFile} hidden tabIndex={-1} />
+                  </div>
+                </div>
+
+                <div className={styles.formGrid}>
+                  <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                  <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                  <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                  <Select
+                    value={profileForm.avatarColor}
+                    onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
+                    aria-label="Cor"
+                    className={styles.formSelect}
+                    disabled={settingsTab !== 'profile'}
+                  >
+                    {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </Select>
                 </div>
               </div>
 
-              <div className={styles.formGrid}>
-                <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                <Select
-                  value={profileForm.avatarColor}
-                  onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
-                  aria-label="Cor"
-                  className={styles.formSelect}
-                  disabled={settingsTab !== 'profile'}
-                >
-                  {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </Select>
+              <div
+                className={`${styles.settingsPane} ${settingsTab !== 'account' ? styles.settingsPaneHidden : ''}`.trim()}
+                aria-hidden={settingsTab !== 'account'}
+              >
+                <div className={styles.formGrid}>
+                  <input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))} placeholder="Senha atual" tabIndex={settingsTab === 'account' ? 0 : -1} />
+                  <input type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))} placeholder="Nova senha" tabIndex={settingsTab === 'account' ? 0 : -1} />
+                </div>
               </div>
-
-              <footer className={styles.settingsFooter}>
-                <button type="button" onClick={handleSaveProfile} disabled={savingProfile || settingsTab !== 'profile'} tabIndex={settingsTab === 'profile' ? 0 : -1}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
-              </footer>
             </div>
 
-            <div
-              className={`${styles.settingsContent} ${styles.settingsPane} ${settingsTab !== 'account' ? styles.settingsPaneHidden : ''}`.trim()}
-              aria-hidden={settingsTab !== 'account'}
-            >
-              <div className={styles.formGrid}>
-                <input type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, currentPassword: event.target.value }))} placeholder="Senha atual" tabIndex={settingsTab === 'account' ? 0 : -1} />
-                <input type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((prev) => ({ ...prev, newPassword: event.target.value }))} placeholder="Nova senha" tabIndex={settingsTab === 'account' ? 0 : -1} />
-              </div>
-              <footer className={styles.settingsFooter}>
-                <button type="button" onClick={handleChangePassword} disabled={savingPassword || settingsTab !== 'account'} tabIndex={settingsTab === 'account' ? 0 : -1}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
-              </footer>
-            </div>
+            <footer className={styles.settingsFooter}>
+              {settingsTab === 'profile' ? (
+                <button type="button" onClick={handleSaveProfile} disabled={savingProfile}>{savingProfile ? 'Salvando' : 'Salvar'}</button>
+              ) : (
+                <button type="button" onClick={handleChangePassword} disabled={savingPassword}>{savingPassword ? 'Salvando' : 'Salvar'}</button>
+              )}
+            </footer>
           </section>
         </div>
       ) : null}
