@@ -2976,3 +2976,334 @@
     max-width: 160px;
   }
 }
+
+/* -------------------------------------------------------------------------
+   V59 — QA visual final do drawer / sem regressão
+   ------------------------------------------------------------------------- */
+.drawerOverlay {
+  z-index: 4200;
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.drawerPanel {
+  width: min(760px, 100vw);
+  max-width: min(760px, 100vw);
+  background: #101113;
+  border-left: 1px solid rgba(255, 255, 255, 0.075);
+  box-shadow: -28px 0 80px rgba(0, 0, 0, 0.32);
+}
+
+.drawerTopbar {
+  min-height: 58px;
+  padding: 14px 22px;
+  background: rgba(255, 255, 255, 0.006);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.drawerStatusGroup {
+  max-width: calc(100% - 54px);
+}
+
+.drawerStatusGroup .statusCheck {
+  width: 22px;
+  height: 22px;
+  flex-basis: 22px;
+}
+
+.drawerStatusGroup .statusBadge {
+  height: 26px;
+  max-width: min(260px, 52vw);
+  padding: 4px 10px;
+  font-size: 10.5px;
+  letter-spacing: 0.035em;
+}
+
+.drawerTopbar .iconButton {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+
+.drawerScroll {
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+
+.drawerScroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.drawerHero {
+  padding: 18px 22px 16px;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.drawerHero h3 {
+  max-width: 100%;
+  font-size: 18px;
+  line-height: 1.28;
+  overflow-wrap: anywhere;
+}
+
+.drawerHero p {
+  color: #9fb0c4;
+  font-size: 12.5px;
+}
+
+.drawerHeroActions {
+  margin-top: 7px;
+  gap: 7px;
+}
+
+.drawerHeroActions button {
+  height: 34px;
+  padding: 0 13px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.drawerSection {
+  padding: 17px 22px;
+  gap: 13px;
+  border-bottom-color: rgba(255, 255, 255, 0.055);
+}
+
+.sectionTitleRow h4 {
+  font-size: 10.5px;
+  letter-spacing: 0.045em;
+  color: #8da0b8;
+}
+
+.sectionTitleRow > span {
+  font-size: 11px;
+  color: #7890aa;
+}
+
+.workflowGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.workflowField {
+  min-width: 0;
+}
+
+.workflowField > span,
+.contextItem span,
+.briefingDetailItem span {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: #8da0b8;
+}
+
+.workflowSelect,
+.workflowDate,
+.workflowField .profileSelectButton {
+  min-width: 0;
+  height: 40px;
+  border-radius: 11px;
+}
+
+.contextGrid {
+  margin-top: 2px;
+  padding-top: 13px;
+  gap: 12px;
+}
+
+.contextItem strong,
+.briefingDetailItem strong {
+  font-size: 12.5px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.workflowTimeline {
+  gap: 7px;
+}
+
+.workflowStep {
+  min-height: 30px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+}
+
+.workflowStep i {
+  width: 17px;
+  height: 17px;
+  font-size: 9.5px;
+}
+
+.briefingSummary {
+  gap: 8px;
+}
+
+.briefingDetailsGrid,
+.routineDetailsGrid {
+  gap: 12px 14px;
+}
+
+.descriptionBox {
+  padding: 14px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.014);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  color: #cbd5e1;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.collaboratorComposer,
+.inlineComposer {
+  gap: 8px;
+}
+
+.collaboratorComposer .profileSelectButton,
+.inlineComposer input {
+  height: 40px;
+  border-radius: 11px;
+}
+
+.collaboratorComposer button,
+.inlineComposer button {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+}
+
+.collaboratorItem,
+.subtaskItem,
+.commentItem {
+  border-color: rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.subtaskItem {
+  min-height: 44px;
+  padding: 8px 10px;
+}
+
+.subtaskItem > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #cbd5e1;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.commentForm {
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.commentForm textarea {
+  min-height: 82px;
+  border-radius: 13px;
+}
+
+.commentForm button {
+  height: 40px;
+  border-radius: 11px;
+}
+
+.commentList {
+  gap: 9px;
+}
+
+.commentItem {
+  padding: 11px 12px;
+  border-radius: 13px;
+}
+
+.commentHeader {
+  gap: 7px;
+}
+
+.commentHeader strong {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityList {
+  padding-left: 0;
+}
+
+.activityItem,
+.activityItemQuiet {
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 11px;
+  padding: 10px 0 !important;
+}
+
+.activityMark {
+  width: 16px !important;
+  height: 16px !important;
+  margin-top: 3px !important;
+}
+
+.activityItem:not(:last-child) .activityMark::before,
+.activityItemQuiet:not(:last-child) .activityMark::before {
+  top: 16px;
+  height: calc(100% + 15px);
+}
+
+.activityContent > p {
+  gap: 3px 6px;
+}
+
+.activityContent strong {
+  font-size: 12.3px;
+  font-weight: 650;
+}
+
+.activityContent em,
+.activityContent small {
+  font-size: 11.8px;
+}
+
+.activityContent time {
+  font-size: 11px;
+}
+
+.drawerHero > .statusBadge {
+  display: none !important;
+}
+
+@media (max-width: 920px) {
+  .workflowGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .drawerPanel {
+    max-width: 100vw;
+  }
+
+  .drawerTopbar,
+  .drawerHero,
+  .drawerSection {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .workflowGrid,
+  .structuredEditGrid,
+  .briefingDetailsGrid,
+  .routineDetailsGrid,
+  .contextGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .drawerStatusGroup .statusBadge {
+    max-width: 190px;
+  }
+}
