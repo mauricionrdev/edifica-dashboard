@@ -1991,14 +1991,22 @@ export default function ProfilePage() {
         priority: demandForm.priority,
       });
       const createdTask = res?.task;
-      if (createdTask?.assigneeUserId === user?.id) {
-        setTasks((prev) => [createdTask, ...prev]);
+      if (createdTask?.id) {
+        const createdForCurrentUser = createdTask.assigneeUserId === user?.id;
+        const visibleCreatedTask = {
+          ...createdTask,
+          profileRelation: createdForCurrentUser ? 'responsible' : (createdTask.profileRelation || 'collaborator'),
+        };
+        setTasks((prev) => (prev.some((item) => item.id === visibleCreatedTask.id) ? prev : [visibleCreatedTask, ...prev]));
+        setActiveTaskId(visibleCreatedTask.id);
+        setOperationTab(createdForCurrentUser ? 'waiting' : 'watching');
+        setOperationPage(1);
       }
       setDemandModalOpen(false);
       setDemandForm(emptyDemandForm(user?.id || ''));
       setClientQuery('');
       setClientSearchOpen(false);
-      showToast('Demanda criada.', { variant: 'success' });
+      showToast(createdTask?.assigneeUserId && createdTask.assigneeUserId !== user?.id ? 'Demanda criada e acompanhada.' : 'Demanda criada.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao criar demanda.', { variant: 'error' });
     } finally {
