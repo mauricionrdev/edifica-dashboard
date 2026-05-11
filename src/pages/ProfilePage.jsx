@@ -1676,6 +1676,29 @@ export default function ProfilePage() {
     }
   }
 
+  function handleChangeTaskStatus(task, nextStatus) {
+    if (!task?.id) return;
+
+    if (!canEditProfileTask(user, task)) {
+      showToast('Sem permissão para alterar o status desta demanda.', { variant: 'error' });
+      return;
+    }
+
+    const shouldCompleteWithRecord = nextStatus === 'done' && !isDone(task) && !task.parentTaskId;
+    if (shouldCompleteWithRecord) {
+      setCompletionTarget(task);
+      setCompletionForm(buildCompletionPrefill(task));
+      return;
+    }
+
+    const wasDone = isDone(task);
+    const successMessage = wasDone && nextStatus !== 'done'
+      ? 'Demanda reaberta.'
+      : 'Status atualizado.';
+
+    handleUpdateTaskFields(task, { status: nextStatus, done: nextStatus === 'done' }, successMessage);
+  }
+
   async function handleCompleteWithRecord(event) {
     event.preventDefault();
     if (!completionTarget?.id) return;
@@ -2327,10 +2350,7 @@ export default function ProfilePage() {
                     <span>Status</span>
                     <Select
                       value={activeTask.status || (isDone(activeTask) ? 'done' : 'todo')}
-                      onChange={(event) => {
-                        const nextStatus = event.target.value;
-                        handleUpdateTaskFields(activeTask, { status: nextStatus, done: nextStatus === 'done' }, 'Status atualizado.');
-                      }}
+                      onChange={(event) => handleChangeTaskStatus(activeTask, event.target.value)}
                       aria-label="Status"
                       className={styles.workflowSelect}
                       disabled={!canEditActiveTask}

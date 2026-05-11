@@ -1253,7 +1253,16 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
     params.push(req.params.id);
     await query(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`, params);
     if (req.body?.assigneeUserId !== undefined) {
-      await addTaskCollaborators(req.params.id, [clean(req.body.assigneeUserId)].filter(Boolean), 'follower');
+      const nextAssigneeId = clean(req.body.assigneeUserId) || '';
+      const actorShouldKeepFollowing =
+        nextAssigneeId &&
+        nextAssigneeId !== req.user.id &&
+        (task.assignee_user_id === req.user.id || task.created_by_user_id === req.user.id);
+      await addTaskCollaborators(
+        req.params.id,
+        [nextAssigneeId, actorShouldKeepFollowing ? req.user.id : ''].filter(Boolean),
+        'follower'
+      );
     }
     const eventDescriptor = buildTaskUpdateEventDescriptor({
       task,
@@ -1288,15 +1297,21 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
 
     const rows = await query(
       `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
-              au.name AS assignee_name, cu.name AS created_by_name
+              au.name AS assignee_name, cu.name AS created_by_name,
+              CASE
+                WHEN t.assignee_user_id = ? THEN 'responsible'
+                WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator'
+                ELSE ''
+              END AS profile_relation
          FROM tasks t
          LEFT JOIN projects p ON p.id = t.project_id
          LEFT JOIN project_sections ps ON ps.id = t.section_id
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
         WHERE t.id = ?`,
-      [req.params.id]
+      [req.user.id, req.user.id, req.params.id]
     );
     res.json({ task: serializeTask(rows[0]) });
   } catch (err) {
