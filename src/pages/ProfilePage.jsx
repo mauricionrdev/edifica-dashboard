@@ -1055,6 +1055,7 @@ export default function ProfilePage() {
   const avatarInputRef = useRef(null);
   const clientSearchRef = useRef(null);
   const clientSearchPanelRef = useRef(null);
+  const taskDeepLinkHandledRef = useRef(false);
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -1202,6 +1203,24 @@ export default function ProfilePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (taskDeepLinkHandledRef.current || tasksLoading) return;
+    const params = new URLSearchParams(window.location.search);
+    const taskId = params.get('task');
+    if (!taskId) return;
+
+    const taskExists = tasks.some((task) => task.id === taskId);
+    taskDeepLinkHandledRef.current = true;
+
+    if (taskExists) {
+      setActiveTaskId(taskId);
+      params.delete('task');
+      const nextSearch = params.toString();
+      const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash || ''}`;
+      window.history.replaceState({}, '', nextUrl);
+    }
+  }, [tasks, tasksLoading]);
 
   useEffect(() => {
     function handleKeyDown(event) {

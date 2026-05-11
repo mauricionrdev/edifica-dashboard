@@ -1150,7 +1150,7 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
         entityType: 'task',
         entityId: req.params.id,
         entityLabel: task.title,
-        actionUrl: task.project_id ? `/projetos?id=${task.project_id}` : '/perfil',
+        actionUrl: `/perfil?task=${encodeURIComponent(req.params.id)}`,
       });
     }
 
