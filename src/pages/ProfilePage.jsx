@@ -1386,6 +1386,47 @@ export default function ProfilePage() {
   const canManageActiveCollaborators = canEditActiveTask;
   const canCreateActiveSubtask = canCreateDemand && canEditActiveTask;
 
+  async function refreshActiveTaskPanels(taskId = activeTaskId, options = {}) {
+    if (!taskId || taskId !== activeTaskId) return;
+
+    const { comments = false, events = true, subtasks = false, collaborators: shouldRefreshCollaborators = false } = options;
+    const requests = [];
+
+    if (comments) {
+      requests.push(
+        listTaskComments(taskId)
+          .then((res) => setTaskComments(Array.isArray(res?.comments) ? res.comments : []))
+          .catch(() => {})
+      );
+    }
+
+    if (events) {
+      requests.push(
+        listTaskEvents(taskId)
+          .then((res) => setTaskEvents(Array.isArray(res?.events) ? res.events : []))
+          .catch(() => {})
+      );
+    }
+
+    if (subtasks) {
+      requests.push(
+        listTaskSubtasks(taskId)
+          .then((res) => setDrawerSubtasks(Array.isArray(res?.subtasks) ? res.subtasks : []))
+          .catch(() => {})
+      );
+    }
+
+    if (shouldRefreshCollaborators) {
+      requests.push(
+        listTaskCollaborators(taskId)
+          .then((res) => setCollaborators(Array.isArray(res?.collaborators) ? res.collaborators : []))
+          .catch(() => {})
+      );
+    }
+
+    await Promise.allSettled(requests);
+  }
+
   async function handleSaveProfile() {
     try {
       setSavingProfile(true);
@@ -1454,6 +1495,7 @@ export default function ProfilePage() {
       const res = await updateProjectTask(task.id, patch);
       const nextTask = res?.task || { ...task, ...patch };
       setTasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, ...nextTask } : item)));
+      await refreshActiveTaskPanels(task.id, { events: true });
       showToast(successMessage, { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao atualizar demanda.', { variant: 'error' });
@@ -1552,6 +1594,7 @@ export default function ProfilePage() {
       const res = await updateProjectTask(activeTask.id, { title: nextTitle, description });
       const nextTask = res?.task || { ...activeTask, title: nextTitle, description };
       setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...nextTask } : item)));
+      await refreshActiveTaskPanels(activeTask.id, { events: true });
       setContentEditing(false);
       showToast('Conteúdo atualizado.', { variant: 'success' });
     } catch (err) {
@@ -1624,6 +1667,7 @@ export default function ProfilePage() {
       await updateProjectTask(task.id, { done: nextDone, status: nextStatus });
       setTasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, done: nextDone, status: nextStatus } : item)));
       setDrawerSubtasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, done: nextDone, status: nextStatus } : item)));
+      await refreshActiveTaskPanels(task.parentTaskId ? activeTaskId : task.id, { events: true, subtasks: Boolean(task.parentTaskId) });
       showToast(nextDone ? 'Tarefa concluída.' : 'Tarefa reaberta.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao atualizar tarefa.', { variant: 'error' });
@@ -1651,6 +1695,7 @@ export default function ProfilePage() {
       if (activeTaskId === completionTarget.id && commentRes.status === 'fulfilled' && commentRes.value?.comment) {
         setTaskComments((prev) => [...prev, commentRes.value.comment]);
       }
+      await refreshActiveTaskPanels(completionTarget.id, { comments: true, events: true });
       setCompletionTarget(null);
       setCompletionForm({ result: '', pending: '', nextAction: '', notes: '' });
       showToast('Demanda concluída.', { variant: 'success' });
@@ -1687,6 +1732,7 @@ export default function ProfilePage() {
         setTasks((prev) => (prev.some((item) => item.id === res.task.id) ? prev : [...prev, res.task]));
         setDrawerSubtasks((prev) => (prev.some((item) => item.id === res.task.id) ? prev : [...prev, res.task]));
       }
+      await refreshActiveTaskPanels(activeTask.id, { events: true, subtasks: true });
       setSubtaskDraft('');
       showToast('Subtarefa criada.', { variant: 'success' });
     } catch (err) {
@@ -1710,6 +1756,7 @@ export default function ProfilePage() {
       setCommentSaving(true);
       const res = await createTaskComment(activeTask.id, { body });
       if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
+      await refreshActiveTaskPanels(activeTask.id, { events: true });
       setCommentDraft('');
       showToast('Comentário adicionado.', { variant: 'success' });
     } catch (err) {
@@ -1733,6 +1780,7 @@ export default function ProfilePage() {
       setCommentSaving(true);
       const res = await createTaskComment(activeTask.id, { body });
       if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
+      await refreshActiveTaskPanels(activeTask.id, { events: true });
       showToast('Pendências registradas.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao registrar pendências.', { variant: 'error' });
@@ -1767,6 +1815,7 @@ export default function ProfilePage() {
       if (commentRes.status === 'fulfilled' && commentRes.value?.comment) {
         setTaskComments((prev) => [...prev, commentRes.value.comment]);
       }
+      await refreshActiveTaskPanels(activeTask.id, { comments: true, events: true });
       showToast('Implementação marcada.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao marcar implementação.', { variant: 'error' });
@@ -1830,6 +1879,7 @@ export default function ProfilePage() {
       if (commentRes.status === 'fulfilled' && commentRes.value?.comment) {
         setTaskComments((prev) => [...prev, commentRes.value.comment]);
       }
+      await refreshActiveTaskPanels(activeTask.id, { comments: true, events: true });
       setHandoffOpen(false);
       setCompletionTarget(null);
       showToast('Handoff registrado.', { variant: 'success' });
@@ -1847,6 +1897,7 @@ export default function ProfilePage() {
       setCommentDeleting(true);
       await deleteTaskComment(activeTask.id, commentDeleteTarget.id);
       setTaskComments((prev) => prev.filter((comment) => comment.id !== commentDeleteTarget.id));
+      await refreshActiveTaskPanels(activeTask.id, { events: true });
       setCommentDeleteTarget(null);
       setSubtaskDeleteTarget(null);
       showToast('Comentário excluído.', { variant: 'success' });
@@ -1885,6 +1936,7 @@ export default function ProfilePage() {
         ];
       });
       setCollaboratorUserId('');
+      await refreshActiveTaskPanels(activeTask.id, { events: true, collaborators: true });
       showToast('Colaborador adicionado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao adicionar colaborador.', { variant: 'error' });
@@ -1905,6 +1957,7 @@ export default function ProfilePage() {
       await removeTaskCollaborator(activeTask.id, userId);
       setCollaborators((prev) => prev.filter((item) => item.userId !== userId));
       if (collaboratorUserId === userId) setCollaboratorUserId('');
+      await refreshActiveTaskPanels(activeTask.id, { events: true, collaborators: true });
       showToast('Colaborador removido.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao remover colaborador.', { variant: 'error' });
@@ -1927,6 +1980,7 @@ export default function ProfilePage() {
       await deleteTask(subtaskDeleteTarget.id);
       setTasks((prev) => prev.filter((task) => task.id !== subtaskDeleteTarget.id));
       setDrawerSubtasks((prev) => prev.filter((task) => task.id !== subtaskDeleteTarget.id));
+      await refreshActiveTaskPanels(activeTaskId, { events: true, subtasks: true });
       setSubtaskDeleteTarget(null);
       showToast('Subtarefa excluída.', { variant: 'success' });
     } catch (err) {
