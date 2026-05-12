@@ -1277,6 +1277,8 @@ export default function ProfilePage() {
   const [commentDeleting, setCommentDeleting] = useState(false);
   const [subtaskDeleteTarget, setSubtaskDeleteTarget] = useState(null);
   const [subtaskDeleting, setSubtaskDeleting] = useState(false);
+  const [taskDeleteTarget, setTaskDeleteTarget] = useState(null);
+  const [taskDeleting, setTaskDeleting] = useState(false);
   const [subtaskDraft, setSubtaskDraft] = useState('');
   const [subtaskSaving, setSubtaskSaving] = useState(false);
   const [drawerSubtasks, setDrawerSubtasks] = useState([]);
@@ -1342,6 +1344,7 @@ export default function ProfilePage() {
     setCollaboratorUserId('');
     setCommentDeleteTarget(null);
     setSubtaskDeleteTarget(null);
+    setTaskDeleteTarget(null);
     setCompletionTarget(null);
     setCompletionForm({ result: '', pending: '', nextAction: '', notes: '' });
     setHandoffOpen(false);
@@ -1409,6 +1412,10 @@ export default function ProfilePage() {
 
   function closeSubtaskDeleteModal() {
     setSubtaskDeleteTarget(null);
+  }
+
+  function closeTaskDeleteModal() {
+    setTaskDeleteTarget(null);
   }
 
   function updateClientSearchPosition() {
@@ -1552,6 +1559,10 @@ export default function ProfilePage() {
       }
       if (subtaskDeleteTarget) {
         closeSubtaskDeleteModal();
+        return;
+      }
+      if (taskDeleteTarget) {
+        closeTaskDeleteModal();
         return;
       }
       if (completionTarget) {
@@ -2383,6 +2394,26 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleDeleteActiveTask() {
+    if (!taskDeleteTarget?.id) return;
+    if (!canEditProfileTask(user, taskDeleteTarget)) {
+      showToast('Sem permissão para excluir esta demanda.', { variant: 'error' });
+      return;
+    }
+
+    try {
+      setTaskDeleting(true);
+      await deleteTask(taskDeleteTarget.id);
+      setTasks((prev) => prev.filter((task) => task.id !== taskDeleteTarget.id && task.parentTaskId !== taskDeleteTarget.id));
+      closeActiveTaskDrawer();
+      showToast('Demanda excluída.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao excluir demanda.', { variant: 'error' });
+    } finally {
+      setTaskDeleting(false);
+    }
+  }
+
   async function handleOpenDemandModal() {
     if (!canCreateDemand) {
       showToast('Sem permissão para criar demanda.', { variant: 'error' });
@@ -2705,6 +2736,7 @@ export default function ProfilePage() {
                   ) : (
                     <button type="button" onClick={() => openContentEditor(activeTask)} disabled={!canEditActiveTask}>Editar</button>
                   )}
+                  <button type="button" onClick={() => setTaskDeleteTarget(activeTask)} disabled={!canEditActiveTask}>Excluir</button>
                 </div>
               </div>
 
@@ -3214,6 +3246,27 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
+
+
+      {taskDeleteTarget ? (
+        <div className={styles.settingsOverlay} onClick={closeTaskDeleteModal}>
+          <section className={`${styles.settingsModal} ${styles.confirmModal}`} role="dialog" aria-modal="true" aria-label="Excluir demanda" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.settingsHeader}>
+              <div>
+                <h2>Excluir demanda</h2>
+                <span>{taskDeleteTarget.title}</span>
+              </div>
+              <button type="button" className={styles.iconButton} onClick={closeTaskDeleteModal} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+            <footer className={styles.settingsFooter}>
+              <button type="button" onClick={closeTaskDeleteModal}>Cancelar</button>
+              <button type="button" onClick={handleDeleteActiveTask} disabled={taskDeleting}>{taskDeleting ? 'Excluindo' : 'Excluir'}</button>
+            </footer>
+          </section>
+        </div>
+      ) : null}
 
 
       {subtaskDeleteTarget ? (
