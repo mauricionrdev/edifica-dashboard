@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useOutletContext } from 'react-router-dom';
+import { useLocation, useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
 import {
   createTask,
@@ -1105,12 +1105,13 @@ function Select({ value, onChange, children, className = '', disabled = false, p
 
 export default function ProfilePage() {
   const { setPanelHeader, squads = [] } = useOutletContext();
+  const location = useLocation();
   const { user, reloadUser } = useAuth();
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
   const clientSearchRef = useRef(null);
   const clientSearchPanelRef = useRef(null);
-  const taskDeepLinkHandledRef = useRef(false);
+  const taskDeepLinkHandledRef = useRef('');
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -1260,25 +1261,39 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (taskDeepLinkHandledRef.current || tasksLoading) return undefined;
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const taskId = params.get('task');
-    if (!taskId) return undefined;
 
-    taskDeepLinkHandledRef.current = true;
+    if (!taskId) {
+      taskDeepLinkHandledRef.current = '';
+      return undefined;
+    }
+
+    if (tasksLoading || taskDeepLinkHandledRef.current === taskId) return undefined;
+
+    taskDeepLinkHandledRef.current = taskId;
     let cancelled = false;
 
     function clearTaskParam() {
-      params.delete('task');
-      const nextSearch = params.toString();
+      const nextParams = new URLSearchParams(window.location.search);
+      nextParams.delete('task');
+      const nextSearch = nextParams.toString();
       const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash || ''}`;
       window.history.replaceState({}, '', nextUrl);
+    }
+
+    function openTaskFromDeepLink(task) {
+      setTasks((prev) => (prev.some((item) => item.id === task.id) ? prev.map((item) => (item.id === task.id ? { ...item, ...task } : item)) : [task, ...prev]));
+      setActiveTaskId(task.id);
+      if (task.profileRelation === 'collaborator') setOperationTab('watching');
+      else if (isDone(task)) setOperationTab('done');
+      setOperationPage(1);
     }
 
     const taskFromList = tasks.find((task) => task.id === taskId);
 
     if (taskFromList) {
-      setActiveTaskId(taskId);
+      openTaskFromDeepLink(taskFromList);
       clearTaskParam();
       return undefined;
     }
@@ -1291,9 +1306,7 @@ export default function ProfilePage() {
           showToast('Demanda não encontrada.', { variant: 'error' });
           return;
         }
-        setTasks((prev) => (prev.some((item) => item.id === task.id) ? prev : [task, ...prev]));
-        setActiveTaskId(task.id);
-        if (task.profileRelation === 'collaborator') setOperationTab('watching');
+        openTaskFromDeepLink(task);
       })
       .catch((err) => {
         if (!cancelled) showToast(err?.message || 'Não foi possível abrir a demanda.', { variant: 'error' });
@@ -1305,7 +1318,7 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [showToast, tasks, tasksLoading]);
+  }, [location.search, showToast, tasks, tasksLoading]);
 
   useEffect(() => {
     function handleKeyDown(event) {
