@@ -182,37 +182,56 @@ function buildDemandDescription(form, clientName = '') {
   return lines.join('\n');
 }
 
-function compactMissingFields(fields = []) {
-  if (!fields.length) return '';
-  if (fields.length === 1) return fields[0];
-  if (fields.length === 2) return `${fields[0]} e ${fields[1]}`;
-  return `${fields.slice(0, -1).join(', ')} e ${fields.at(-1)}`;
+function joinMissingFields(items = []) {
+  const list = items.filter(Boolean);
+  if (list.length <= 1) return list.join('');
+  if (list.length === 2) return `${list[0]} e ${list[1]}`;
+  return `${list.slice(0, -1).join(', ')} e ${list[list.length - 1]}`;
 }
 
-function validateDemandForm(form) {
+function validateDemandForm(form = {}) {
   const missing = [];
-  const hasValue = (value) => String(value || '').trim().length > 0;
+  const requiredText = (key, label) => {
+    if (!String(form[key] || '').trim()) missing.push(label);
+  };
 
-  if (!hasValue(form.title)) missing.push('Título');
-  if (!hasValue(form.assigneeUserId)) missing.push('Responsável');
+  requiredText('title', 'Título');
+  if (!String(form.assigneeUserId || '').trim()) missing.push('Responsável');
 
   if (form.type === 'briefing') {
-    if (!hasValue(form.clientId)) missing.push('Cliente');
-    if (!hasValue(form.officeName)) missing.push('Escritório');
-    if (!hasValue(form.objective)) missing.push('Objetivo');
-    if (!hasValue(form.campaign)) missing.push('Nicho/campanha');
-    if (!hasValue(form.channels)) missing.push('Canais');
-    if (!hasValue(form.attendants)) missing.push('Atendentes');
-    if (!hasValue(form.greeting)) missing.push('Saudação');
-    if (!hasValue(form.location)) missing.push('Localização');
+    if (!String(form.clientId || '').trim()) missing.push('Cliente');
+    [
+      ['officeName', 'Escritório'],
+      ['objective', 'Objetivo'],
+      ['campaign', 'Nicho/campanha'],
+      ['channels', 'Canais'],
+      ['attendants', 'Atendentes'],
+      ['greeting', 'Saudação'],
+      ['location', 'Localização'],
+    ].forEach(([key, label]) => requiredText(key, label));
   }
 
   if (form.type === 'routine') {
-    if (!hasValue(form.routineScope)) missing.push('Escopo');
-    if (!hasValue(form.routineChecklist)) missing.push('Checklist');
+    requiredText('routineScope', 'Escopo');
+    requiredText('routineChecklist', 'Checklist');
   }
 
   return missing;
+}
+
+function emptyOperationLabel(tab) {
+  const labels = {
+    today: 'Nada para hoje',
+    overdue: 'Sem atrasadas',
+    critical: 'Sem críticas',
+    briefing: 'Sem briefings',
+    routine: 'Sem rotinas',
+    support: 'Sem suporte',
+    watching: 'Sem acompanhamentos',
+    waiting: 'Sem demandas',
+    done: 'Sem concluídas',
+  };
+  return labels[tab] || 'Sem demandas';
 }
 
 const ROUTINE_RECURRENCES = [
@@ -1379,6 +1398,10 @@ export default function ProfilePage() {
   useEffect(() => {
     setOperationPage(1);
   }, [operationTab]);
+
+  useEffect(() => {
+    if (operationPage > operationTotalPages) setOperationPage(operationTotalPages);
+  }, [operationPage, operationTotalPages]);
   const activeSubtasks = useMemo(() => {
     if (!activeTask) return [];
     const merged = new Map();
@@ -2077,13 +2100,13 @@ export default function ProfilePage() {
       showToast('Sem permissão para criar demanda.', { variant: 'error' });
       return;
     }
-    const title = demandForm.title.trim();
     const missingFields = validateDemandForm(demandForm);
     if (missingFields.length) {
-      showToast(`Preencha: ${compactMissingFields(missingFields)}.`, { variant: 'error' });
+      showToast(`Preencha: ${joinMissingFields(missingFields)}.`, { variant: 'error' });
       return;
     }
 
+    const title = demandForm.title.trim();
     const selectedClient = demandClients.find((client) => client.id === demandForm.clientId);
     const description = buildDemandDescription(demandForm, selectedClient?.name || '');
 
@@ -2257,7 +2280,7 @@ export default function ProfilePage() {
             <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
             <div className={styles.emptyOperation}>
-              <span>Sem demandas</span>
+              <span>{emptyOperationLabel(operationTab)}</span>
             </div>
           ) : (
             <>
@@ -2305,6 +2328,7 @@ export default function ProfilePage() {
               {tabTasks.length > OPERATION_PAGE_SIZE ? (
                 <div className={styles.operationPagination} aria-label="Paginação da operação">
                   <span>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</span>
+                  <span className={styles.operationPageIndicator}>Página {safeOperationPage} de {operationTotalPages}</span>
                   <div>
                     <button type="button" onClick={() => setOperationPage((page) => Math.max(1, page - 1))} disabled={safeOperationPage <= 1}>Anterior</button>
                     <button type="button" onClick={() => setOperationPage((page) => Math.min(operationTotalPages, page + 1))} disabled={safeOperationPage >= operationTotalPages}>Próxima</button>

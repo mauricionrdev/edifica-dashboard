@@ -3910,3 +3910,212 @@
     flex: 1;
   }
 }
+
+/* -------------------------------------------------------------------------
+   V72 – QA final de estabilidade do Perfil
+   Consolida estados sem alterar a direção visual validada.
+   ------------------------------------------------------------------------- */
+.settingsOverlay,
+.drawerOverlay {
+  isolation: isolate;
+}
+
+.settingsOverlay {
+  z-index: 30000;
+}
+
+.drawerOverlay {
+  z-index: 29900;
+}
+
+.profileSelectMenu,
+.clientSearchFloating,
+.clientSearchResults {
+  z-index: 32000;
+  background: #101113;
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.58);
+}
+
+.profileSelectMenu,
+.clientSearchResults,
+.settingsContent,
+.settingsPaneStack,
+.drawerScroll,
+.operationTabs,
+.demandModal .settingsContent {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.profileSelectMenu::-webkit-scrollbar,
+.clientSearchResults::-webkit-scrollbar,
+.settingsContent::-webkit-scrollbar,
+.settingsPaneStack::-webkit-scrollbar,
+.drawerScroll::-webkit-scrollbar,
+.operationTabs::-webkit-scrollbar,
+.demandModal .settingsContent::-webkit-scrollbar {
+  display: none;
+}
+
+.page input:focus,
+.page input:focus-visible,
+.page textarea:focus,
+.page textarea:focus-visible,
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+.statusCheck:focus,
+.statusCheck:focus-visible,
+.iconButton:focus,
+.iconButton:focus-visible,
+.primaryAction:focus,
+.primaryAction:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.operationHeaderTop,
+.operationTitleBlock,
+.operationBody,
+.operationList,
+.operationRow,
+.operationMain,
+.operationMeta {
+  min-width: 0;
+}
+
+.operationTab {
+  letter-spacing: 0;
+}
+
+.operationRow {
+  overflow: hidden;
+}
+
+.operationMain strong,
+.operationMain span,
+.activityContent p,
+.activityContent small,
+.commentBubble p,
+.descriptionBox,
+.briefingDetailItem strong,
+.routineChecklistItem strong {
+  overflow-wrap: anywhere;
+}
+
+.operationPagination {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.operationPageIndicator {
+  color: var(--edf-text-faint);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.drawerPanel,
+.settingsModal {
+  max-height: calc(100dvh - 32px);
+}
+
+.drawerTopbar,
+.settingsHeader,
+.settingsFooter {
+  flex-shrink: 0;
+}
+
+.drawerStatusGroup {
+  min-width: 0;
+}
+
+.drawerStatusGroup .statusBadge {
+  max-width: min(220px, 52vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settingsPaneHidden {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.photoRow,
+.photoAvatar,
+.photoAvatar img {
+  outline: 0 !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+  backface-visibility: hidden;
+}
+
+.photoAvatar {
+  contain: layout paint;
+}
+
+.collaboratorComposer {
+  grid-template-columns: minmax(0, 1fr) 38px;
+}
+
+.collaboratorComposer .profileSelect,
+.collaboratorComposer .profileSelectButton {
+  min-width: 0;
+  width: 100%;
+}
+
+.collaboratorItem {
+  min-width: 0;
+}
+
+.collaboratorItem strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityList {
+  padding-left: 0;
+}
+
+.activityItem,
+.activityItemQuiet {
+  border-bottom: 0 !important;
+}
+
+.activityContent em,
+.activityContent small,
+.activityContent time {
+  word-break: break-word;
+}
+
+.clientSearchField {
+  min-width: 0;
+}
+
+.clientSearchField input {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .operationPagination {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .operationPagination {
+    grid-template-columns: 1fr;
+  }
+
+  .operationPageIndicator {
+    justify-self: start;
+  }
+
+  .settingsModal,
+  .drawerPanel {
+    max-height: calc(100dvh - 18px);
+  }
+}
