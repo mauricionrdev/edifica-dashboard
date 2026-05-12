@@ -73,6 +73,30 @@ function compactText(value, max = 120) {
   return text.length > max ? `${text.slice(0, max - 1).trim()}…` : text;
 }
 
+
+function handoffText(value, max = 220) {
+  return compactText(value, max);
+}
+
+function buildHandoffEventMetadata({ task, body, nextStatus, nextAssigneeName }) {
+  const handoff = body?.handoff && typeof body.handoff === 'object' ? body.handoff : {};
+  const metadata = {
+    destino: nextAssigneeName || handoff.assigneeName || 'Responsável',
+    status: handoff.statusLabel || backendStatusLabel(nextStatus),
+    cliente: handoff.clientName || task.client_name || '',
+    projeto: handoff.projectName || task.project_name || '',
+    tipo: handoff.kindLabel || '',
+    prioridade: handoff.priorityLabel || backendPriorityLabel(task.priority),
+    prazo: handoff.dueLabel || backendDateLabel(task.due_date),
+    proximaAcao: handoffText(handoff.nextAction, 180),
+    pendencias: handoffText(handoff.pending, 260),
+    contexto: handoffText(handoff.note, 320),
+    comentariosRecentes: handoffText(handoff.recentComments, 320),
+  };
+
+  return Object.fromEntries(Object.entries(metadata).filter(([, value]) => clean(value)));
+}
+
 function buildTaskUpdateEventDescriptor({ task, body, nextStatus, previousAssigneeName, nextAssigneeName }) {
   const metadata = {};
   const summaries = [];
@@ -1293,13 +1317,25 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
         'follower'
       );
     }
-    const eventDescriptor = buildTaskUpdateEventDescriptor({
-      task,
-      body: req.body || {},
-      nextStatus,
-      previousAssigneeName,
-      nextAssigneeName,
-    });
+    const isHandoffUpdate = clean(req.body?.source) === 'handoff';
+    const eventDescriptor = isHandoffUpdate
+      ? {
+          eventType: 'task.handoff_registered',
+          summary: `Handoff para ${nextAssigneeName || 'Responsável'}`,
+          metadata: buildHandoffEventMetadata({
+            task,
+            body: req.body || {},
+            nextStatus,
+            nextAssigneeName,
+          }),
+        }
+      : buildTaskUpdateEventDescriptor({
+          task,
+          body: req.body || {},
+          nextStatus,
+          previousAssigneeName,
+          nextAssigneeName,
+        });
     await logTaskEvent({
       taskId: req.params.id,
       projectId: task.project_id,
@@ -1577,28 +1613,34 @@ router.post('/tasks/:id/comments', requirePermission('tasks.comment'), async (re
         [id, req.params.id, req.user.id, body]
       );
       await addTaskCollaborators(req.params.id, [req.user.id], 'follower', conn);
-      await logTaskEvent({
-        taskId: req.params.id,
-        projectId: task.project_id,
-        actorUserId: req.user.id,
-        eventType: 'task.comment_added',
-        summary: 'Comentário adicionado',
-        metadata: { comentario: compactText(body, 140) },
-      }, conn);
+      const isSystemComment = /^(Handoff:|Status:|Demanda concluída\.|Implementação concluída\.|Briefing incompleto\.)/i.test(body);
+      if (!isSystemComment) {
+        await logTaskEvent({
+          taskId: req.params.id,
+          projectId: task.project_id,
+          actorUserId: req.user.id,
+          eventType: 'task.comment_added',
+          summary: 'Comentário adicionado',
+          metadata: { comentario: compactText(body, 140) },
+        }, conn);
+      }
     });
 
-    const recipients = await getTaskRecipients(req.params.id, req.user.id);
-    await notifyUsers({
-      ids: recipients,
-      type: 'task.comment_added',
-      level: 'info',
-      title: 'Novo comentário em tarefa',
-      body: task.title,
-      entityType: 'task',
-      entityId: req.params.id,
-      entityLabel: task.title,
-      actionUrl: `/perfil?task=${encodeURIComponent(req.params.id)}`,
-    });
+    const isSystemComment = /^(Handoff:|Status:|Demanda concluída\.|Implementação concluída\.|Briefing incompleto\.)/i.test(body);
+    if (!isSystemComment) {
+      const recipients = await getTaskRecipients(req.params.id, req.user.id);
+      await notifyUsers({
+        ids: recipients,
+        type: 'task.comment_added',
+        level: 'info',
+        title: 'Novo comentário em tarefa',
+        body: task.title,
+        entityType: 'task',
+        entityId: req.params.id,
+        entityLabel: task.title,
+        actionUrl: `/perfil?task=${encodeURIComponent(req.params.id)}`,
+      });
+    }
 
     const rows = await query(
       `SELECT tc.*, u.name AS user_name

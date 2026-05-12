@@ -4139,3 +4139,9 @@
 .activityContent small {
   white-space: pre-line;
 }
+
+
+/* V82 — atividade/handoff: preservar blocos estruturados da timeline */
+.activityContent small {
+  white-space: pre-line;
+}

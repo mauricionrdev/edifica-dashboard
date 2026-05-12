@@ -831,6 +831,7 @@ function formatEventTypeLabel(type) {
     'task.comment_added': 'Comentário na demanda',
     'task.commented': 'Comentário na demanda',
     'task.comment_deleted': 'Comentário removido',
+    'task.handoff_registered': 'Handoff registrado',
     'task.collaborator_added': 'Colaborador adicionado',
     'task.collaborator_removed': 'Colaborador removido',
     'task.subtask_created': 'Subtarefa criada',
@@ -841,6 +842,7 @@ function formatEventTypeLabel(type) {
 }
 
 function eventTypeKey(type = '') {
+  if (String(type).includes('handoff')) return 'handoff';
   if (String(type).includes('collaborator')) return 'collaborator';
   if (String(type).includes('comment')) return 'comment';
   if (String(type).includes('subtask')) return 'subtask';
@@ -901,8 +903,42 @@ function eventCommentPreview(metadata = {}) {
   return compactInlineText(metadata.comentario || metadata.comment || metadata.body || metadata.content || '');
 }
 
+function buildStructuredHandoffNote(metadata = {}) {
+  if (!metadata || typeof metadata !== 'object') return '';
+  const summary = [
+    metadata.cliente ? `Cliente: ${metadata.cliente}` : '',
+    metadata.projeto ? `Projeto: ${metadata.projeto}` : '',
+    [
+      metadata.tipo ? `Tipo: ${metadata.tipo}` : '',
+      metadata.prioridade ? `Prioridade: ${metadata.prioridade}` : '',
+      metadata.prazo ? `Prazo: ${metadata.prazo}` : '',
+    ].filter(Boolean).join(' · '),
+  ].filter(Boolean);
+
+  return [
+    ...summary,
+    metadata.proximaAcao ? `Próxima ação: ${metadata.proximaAcao}` : '',
+    metadata.pendencias ? `Pendências: ${metadata.pendencias}` : '',
+    metadata.contexto ? `Contexto: ${metadata.contexto}` : '',
+    metadata.comentariosRecentes ? `Comentários recentes: ${metadata.comentariosRecentes}` : '',
+  ].filter(Boolean).join('\n');
+}
+
 function parseTaskEvent(event) {
   if (!event?.id) return null;
+
+  if (/^task\.handoff_registered$/i.test(String(event.type || ''))) {
+    const metadata = event.metadata || {};
+    return {
+      id: `event-${event.id}`,
+      type: 'handoff',
+      title: event.summary || (metadata.destino ? `Handoff para ${metadata.destino}` : 'Handoff registrado'),
+      meta: metadata.status || event.actorName || 'Sistema',
+      note: buildStructuredHandoffNote(metadata),
+      author: event.actorName || 'Sistema',
+      createdAt: event.createdAt,
+    };
+  }
 
   if (/^task\.(comment_added|commented)$/i.test(String(event.type || ''))) {
     const preview = eventCommentPreview(event.metadata);
@@ -2128,16 +2164,7 @@ export default function ProfilePage() {
 
     const nextAssignee = assigneeOptions.find((item) => item.id === handoffForm.assigneeUserId);
     const nextStatusLabel = statusOptionsForKind(activeKind).find((option) => option.value === handoffForm.status)?.label || handoffForm.status;
-    const handoffBody = buildHandoffBody({
-      task: activeTask,
-      assigneeName: nextAssignee?.name || 'Responsável',
-      statusLabelText: nextStatusLabel,
-      nextAction: handoffForm.nextAction,
-      pending: handoffForm.pending,
-      note: handoffForm.note,
-      subtasks: activeSubtasks,
-      comments: visibleTaskComments,
-    });
+    const recentComments = summarizeRecentComments(visibleTaskComments);
 
     try {
       setHandoffSaving(true);
@@ -2145,18 +2172,25 @@ export default function ProfilePage() {
         assigneeUserId: handoffForm.assigneeUserId,
         status: handoffForm.status,
         done: handoffForm.status === 'done',
+        source: 'handoff',
+        handoff: {
+          assigneeName: nextAssignee?.name || 'Responsável',
+          statusLabel: nextStatusLabel,
+          kindLabel: kindLabel(activeKind),
+          priorityLabel: priorityLabel(priorityKey(activeTask)),
+          dueLabel: formatDueLabel(activeTask?.dueDate),
+          clientName: activeTask?.clientName || '',
+          projectName: activeTask?.projectName || '',
+          nextAction: handoffForm.nextAction,
+          pending: handoffForm.pending || summarizeOpenSubtasks(activeSubtasks),
+          note: handoffForm.note,
+          recentComments,
+        },
       };
-      const [taskRes, commentRes] = await Promise.allSettled([
-        updateProjectTask(activeTask.id, updateBody),
-        createTaskComment(activeTask.id, { body: handoffBody }),
-      ]);
+      const taskRes = await updateProjectTask(activeTask.id, updateBody);
 
-      if (taskRes.status === 'rejected') throw taskRes.reason;
-      const updated = taskRes.value?.task || { ...activeTask, ...updateBody, assigneeName: nextAssignee?.name || activeTask.assigneeName };
+      const updated = taskRes?.task || { ...activeTask, ...updateBody, assigneeName: nextAssignee?.name || activeTask.assigneeName };
       setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...updated } : item)));
-      if (commentRes.status === 'fulfilled' && commentRes.value?.comment) {
-        setTaskComments((prev) => [...prev, commentRes.value.comment]);
-      }
       await refreshActiveTaskPanels(activeTask.id, { comments: true, events: true });
       setHandoffOpen(false);
       setCompletionTarget(null);
