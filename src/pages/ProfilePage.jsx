@@ -1369,6 +1369,48 @@ export default function ProfilePage() {
     resetDrawerState();
   }
 
+  function resetDemandModalState() {
+    setClientQuery('');
+    setClientSearchOpen(false);
+    setClientSearchPosition(null);
+    setDemandForm(emptyDemandForm(user?.id || ''));
+  }
+
+  function closeDemandModal() {
+    setDemandModalOpen(false);
+    resetDemandModalState();
+  }
+
+  function closeSettingsModal() {
+    setSettingsOpen(false);
+    setSettingsTab('profile');
+    setPasswordForm({ currentPassword: '', newPassword: '' });
+    setProfileForm({
+      name: user?.name || '',
+      phone: user?.phone || '',
+      avatarColor: user?.avatarColor || 'amber',
+      customSlug: user?.customSlug || '',
+    });
+  }
+
+  function closeCompletionModal() {
+    setCompletionTarget(null);
+    setCompletionForm({ result: '', pending: '', nextAction: '', notes: '' });
+  }
+
+  function closeHandoffModal() {
+    setHandoffOpen(false);
+    setHandoffForm(emptyHandoffForm(user?.id || activeTask?.assigneeUserId || ''));
+  }
+
+  function closeCommentDeleteModal() {
+    setCommentDeleteTarget(null);
+  }
+
+  function closeSubtaskDeleteModal() {
+    setSubtaskDeleteTarget(null);
+  }
+
   function updateClientSearchPosition() {
     const field = clientSearchRef.current;
     if (!field) return null;
@@ -1504,16 +1546,36 @@ export default function ProfilePage() {
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key !== 'Escape') return;
+      if (commentDeleteTarget) {
+        closeCommentDeleteModal();
+        return;
+      }
+      if (subtaskDeleteTarget) {
+        closeSubtaskDeleteModal();
+        return;
+      }
+      if (completionTarget) {
+        closeCompletionModal();
+        return;
+      }
+      if (handoffOpen) {
+        closeHandoffModal();
+        return;
+      }
+      if (demandModalOpen) {
+        closeDemandModal();
+        return;
+      }
+      if (settingsOpen) {
+        closeSettingsModal();
+        return;
+      }
       closeActiveTaskDrawer();
-      setSettingsOpen(false);
-      setDemandModalOpen(false);
-      setClientSearchOpen(false);
-      setClientSearchPosition(null);
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  });
 
   useEffect(() => {
     if (!clientSearchOpen) return undefined;
@@ -2326,9 +2388,8 @@ export default function ProfilePage() {
       showToast('Sem permissão para criar demanda.', { variant: 'error' });
       return;
     }
+    resetDemandModalState();
     setDemandForm((prev) => ({ ...emptyDemandForm(user?.id || ''), assigneeUserId: prev.assigneeUserId || user?.id || '' }));
-    setClientQuery('');
-    setClientSearchOpen(false);
     setDemandModalOpen(true);
 
     try {
@@ -2384,10 +2445,7 @@ export default function ProfilePage() {
         setOperationTab(createdForCurrentUser ? 'waiting' : 'watching');
         setOperationPage(1);
       }
-      setDemandModalOpen(false);
-      setDemandForm(emptyDemandForm(user?.id || ''));
-      setClientQuery('');
-      setClientSearchOpen(false);
+      closeDemandModal();
       showToast(createdTask?.assigneeUserId && createdTask.assigneeUserId !== user?.id ? 'Demanda criada e acompanhada.' : 'Demanda criada.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao criar demanda.', { variant: 'error' });
@@ -3012,7 +3070,7 @@ export default function ProfilePage() {
                 <h2>Nova demanda</h2>
                 <span>{demandTypeLabel(demandForm.type)}</span>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setDemandModalOpen(false)} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={closeDemandModal} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
@@ -3092,7 +3150,7 @@ export default function ProfilePage() {
             </div>
 
             <footer className={styles.settingsFooter}>
-              <button type="button" onClick={() => setDemandModalOpen(false)}>Cancelar</button>
+              <button type="button" onClick={closeDemandModal}>Cancelar</button>
               <button type="submit" disabled={demandSaving || !canCreateDemand}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
             </footer>
           </form>
@@ -3138,18 +3196,18 @@ export default function ProfilePage() {
 
 
       {commentDeleteTarget ? (
-        <div className={styles.settingsOverlay} onClick={() => setCommentDeleteTarget(null)}>
+        <div className={styles.settingsOverlay} onClick={closeCommentDeleteModal}>
           <section className={`${styles.settingsModal} ${styles.confirmModal}`} role="dialog" aria-modal="true" aria-label="Excluir comentário" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Excluir comentário</h2>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setCommentDeleteTarget(null)} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={closeCommentDeleteModal} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
             <footer className={styles.settingsFooter}>
-              <button type="button" onClick={() => setCommentDeleteTarget(null)}>Cancelar</button>
+              <button type="button" onClick={closeCommentDeleteModal}>Cancelar</button>
               <button type="button" onClick={handleDeleteComment} disabled={commentDeleting}>{commentDeleting ? 'Excluindo' : 'Excluir'}</button>
             </footer>
           </section>
@@ -3159,19 +3217,19 @@ export default function ProfilePage() {
 
 
       {subtaskDeleteTarget ? (
-        <div className={styles.settingsOverlay} onClick={() => setSubtaskDeleteTarget(null)}>
+        <div className={styles.settingsOverlay} onClick={closeSubtaskDeleteModal}>
           <section className={`${styles.settingsModal} ${styles.confirmModal}`} role="dialog" aria-modal="true" aria-label="Excluir subtarefa" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Excluir subtarefa</h2>
                 <span>{subtaskDeleteTarget.title}</span>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setSubtaskDeleteTarget(null)} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={closeSubtaskDeleteModal} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
             <footer className={styles.settingsFooter}>
-              <button type="button" onClick={() => setSubtaskDeleteTarget(null)}>Cancelar</button>
+              <button type="button" onClick={closeSubtaskDeleteModal}>Cancelar</button>
               <button type="button" onClick={handleDeleteSubtask} disabled={subtaskDeleting}>{subtaskDeleting ? 'Excluindo' : 'Excluir'}</button>
             </footer>
           </section>
@@ -3180,14 +3238,14 @@ export default function ProfilePage() {
 
 
       {completionTarget ? (
-        <div className={styles.settingsOverlay} onClick={() => setCompletionTarget(null)}>
+        <div className={styles.settingsOverlay} onClick={closeCompletionModal}>
           <form className={`${styles.settingsModal} ${styles.completionModal}`} onSubmit={handleCompleteWithRecord} role="dialog" aria-modal="true" aria-label="Concluir demanda" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Concluir demanda</h2>
                 <span>{completionTarget.title}</span>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setCompletionTarget(null)} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={closeCompletionModal} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
@@ -3228,7 +3286,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <footer className={styles.settingsFooter}>
-              <button type="button" onClick={() => setCompletionTarget(null)}>Cancelar</button>
+              <button type="button" onClick={closeCompletionModal}>Cancelar</button>
               <button type="submit" disabled={completionSaving}>{completionSaving ? 'Concluindo' : 'Concluir'}</button>
             </footer>
           </form>
@@ -3236,14 +3294,14 @@ export default function ProfilePage() {
       ) : null}
 
       {handoffOpen && activeTask ? (
-        <div className={styles.settingsOverlay} onClick={() => setHandoffOpen(false)}>
+        <div className={styles.settingsOverlay} onClick={closeHandoffModal}>
           <form className={`${styles.settingsModal} ${styles.handoffModal}`} onSubmit={handleSubmitHandoff} role="dialog" aria-modal="true" aria-label="Handoff" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Handoff</h2>
                 <span>{activeTask.title}</span>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setHandoffOpen(false)} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={closeHandoffModal} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
@@ -3286,7 +3344,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <footer className={styles.settingsFooter}>
-              <button type="button" onClick={() => setHandoffOpen(false)}>Cancelar</button>
+              <button type="button" onClick={closeHandoffModal}>Cancelar</button>
               <button type="submit" disabled={handoffSaving || !handoffForm.assigneeUserId}>{handoffSaving ? 'Salvando' : 'Registrar'}</button>
             </footer>
           </form>
@@ -3294,14 +3352,14 @@ export default function ProfilePage() {
       ) : null}
 
       {settingsOpen ? (
-        <div className={styles.settingsOverlay} onClick={() => setSettingsOpen(false)}>
+        <div className={styles.settingsOverlay} onClick={closeSettingsModal}>
           <section className={styles.settingsModal} role="dialog" aria-modal="true" aria-label="Configurações" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Configurações</h2>
                 <span>{profileForm.name || user?.name}</span>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setSettingsOpen(false)} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={closeSettingsModal} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
