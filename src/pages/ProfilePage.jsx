@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation, useOutletContext } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
 import {
   createTask,
@@ -1285,17 +1285,17 @@ export default function ProfilePage() {
       return undefined;
     }
 
-    if (tasksLoading || taskDeepLinkHandledRef.current === taskId) return undefined;
+    if (tasksLoading) return undefined;
 
     taskDeepLinkHandledRef.current = taskId;
     let cancelled = false;
 
     function clearTaskParam() {
-      const nextParams = new URLSearchParams(window.location.search);
+      const nextParams = new URLSearchParams(location.search);
       nextParams.delete('task');
       const nextSearch = nextParams.toString();
-      const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash || ''}`;
-      window.history.replaceState({}, '', nextUrl);
+      const nextUrl = `${location.pathname}${nextSearch ? `?${nextSearch}` : ''}${location.hash || ''}`;
+      navigate(nextUrl, { replace: true });
     }
 
     function openTaskFromDeepLink(task) {
@@ -1334,7 +1334,7 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [location.search, showToast, tasks, tasksLoading]);
+  }, [location.hash, location.pathname, location.search, navigate, showToast, tasks, tasksLoading]);
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -2859,9 +2859,7 @@ export default function ProfilePage() {
       {demandModalOpen ? (
         <div
           className={styles.settingsOverlay}
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setDemandModalOpen(false);
-          }}
+          onClick={(event) => event.stopPropagation()}
         >
           <form className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()} onSubmit={handleCreateDemand} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
@@ -2886,7 +2884,7 @@ export default function ProfilePage() {
                 <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={`${styles.formSelect} ${styles.fieldThird}`}>
                   {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </Select>
-                <div className={`${styles.clientSearchField} ${styles.fieldThird}`} ref={clientSearchRef}>
+                <div className={`${styles.clientSearchField} ${styles.fieldThird}`} ref={clientSearchRef} onPointerDown={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
                   <input
                     value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
                     onFocus={() => {

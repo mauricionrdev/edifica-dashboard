@@ -4119,3 +4119,18 @@
     max-height: calc(100dvh - 18px);
   }
 }
+
+/* V78 — correção pontual: drawer full-height e cliente do modal sem regressão visual */
+.drawerOverlay {
+  min-height: 100dvh;
+}
+
+.drawerPanel {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+}
+
+.clientSearchFloating,
+.clientSearchResults {
+  pointer-events: auto;
+}
