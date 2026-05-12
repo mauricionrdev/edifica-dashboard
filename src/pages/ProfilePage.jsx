@@ -1125,7 +1125,7 @@ export default function ProfilePage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('profile');
-  const [operationTab, setOperationTab] = useState('waiting');
+  const [operationTab, setOperationTab] = useState('today');
   const [operationPage, setOperationPage] = useState(1);
   const [tasks, setTasks] = useState([]);
   const [taskUpdatingId, setTaskUpdatingId] = useState('');
