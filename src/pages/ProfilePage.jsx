@@ -1106,6 +1106,7 @@ function Select({ value, onChange, children, className = '', disabled = false, p
 export default function ProfilePage() {
   const { setPanelHeader, squads = [] } = useOutletContext();
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, reloadUser } = useAuth();
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
