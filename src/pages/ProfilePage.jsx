@@ -1332,6 +1332,43 @@ export default function ProfilePage() {
     return subscribeAvatarChange(() => setAvatarUrl(getUserAvatar(user)));
   }, [user]);
 
+  function resetDrawerState() {
+    setCommentDraft('');
+    setSubtaskDraft('');
+    setTaskComments([]);
+    setTaskEvents([]);
+    setDrawerSubtasks([]);
+    setCollaborators([]);
+    setCollaboratorUserId('');
+    setCommentDeleteTarget(null);
+    setSubtaskDeleteTarget(null);
+    setCompletionTarget(null);
+    setCompletionForm({ result: '', pending: '', nextAction: '', notes: '' });
+    setHandoffOpen(false);
+    setHandoffForm(emptyHandoffForm(user?.id || ''));
+    setContentEditing(false);
+    setContentForm({
+      title: '',
+      description: '',
+      officeName: '',
+      objective: '',
+      campaign: '',
+      channels: '',
+      attendants: '',
+      greeting: '',
+      location: '',
+      notes: '',
+      recurrence: '',
+      routineScope: '',
+      routineChecklist: '',
+    });
+  }
+
+  function closeActiveTaskDrawer() {
+    setActiveTaskId('');
+    resetDrawerState();
+  }
+
   function updateClientSearchPosition() {
     const field = clientSearchRef.current;
     if (!field) return null;
@@ -1467,14 +1504,11 @@ export default function ProfilePage() {
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key !== 'Escape') return;
-      setActiveTaskId('');
+      closeActiveTaskDrawer();
       setSettingsOpen(false);
       setDemandModalOpen(false);
       setClientSearchOpen(false);
-      setHandoffOpen(false);
-      setCompletionTarget(null);
-      setCompletionForm({ result: '', pending: '', nextAction: '', notes: '' });
-      setContentEditing(false);
+      setClientSearchPosition(null);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -1516,15 +1550,7 @@ export default function ProfilePage() {
   }, [demandModalOpen]);
 
   useEffect(() => {
-    setCommentDraft('');
-    setSubtaskDraft('');
-    setTaskComments([]);
-    setTaskEvents([]);
-    setDrawerSubtasks([]);
-    setCollaborators([]);
-    setCollaboratorUserId('');
-    setHandoffOpen(false);
-    setContentEditing(false);
+    resetDrawerState();
 
     if (!activeTaskId) return undefined;
 
@@ -1538,11 +1564,7 @@ export default function ProfilePage() {
         if (cancelled) return;
         const allRejected = [commentsRes, eventsRes, subtasksRes, collaboratorsRes].every((result) => result.status === 'rejected');
         if (allRejected) {
-          setActiveTaskId('');
-          setTaskComments([]);
-          setTaskEvents([]);
-          setDrawerSubtasks([]);
-          setCollaborators([]);
+          closeActiveTaskDrawer();
           showToast('Não foi possível carregar esta demanda.', { variant: 'error' });
           return;
         }
@@ -1613,7 +1635,7 @@ export default function ProfilePage() {
         if (cancelled) return;
         const task = res?.task;
         if (!task?.id) {
-          setActiveTaskId('');
+          closeActiveTaskDrawer();
           return;
         }
         setTasks((prev) => (prev.some((item) => item.id === task.id) ? prev.map((item) => (item.id === task.id ? { ...item, ...task } : item)) : [task, ...prev]));
@@ -1622,10 +1644,7 @@ export default function ProfilePage() {
       })
       .catch(() => {
         if (cancelled) return;
-        setActiveTaskId('');
-        setHandoffOpen(false);
-        setCompletionTarget(null);
-        setContentEditing(false);
+        closeActiveTaskDrawer();
         showToast('A demanda aberta não está mais disponível.', { variant: 'error' });
       });
 
@@ -2574,7 +2593,7 @@ export default function ProfilePage() {
       </section>
 
       {activeTask ? (
-        <aside className={styles.drawerOverlay} aria-label="Demanda" onClick={() => setActiveTaskId('')}>
+        <aside className={styles.drawerOverlay} aria-label="Demanda" onClick={closeActiveTaskDrawer}>
           <section className={styles.drawerPanel} onClick={(event) => event.stopPropagation()}>
             <header className={styles.drawerTopbar}>
               <div className={styles.drawerStatusGroup}>
@@ -2589,7 +2608,7 @@ export default function ProfilePage() {
                 </button>
                 <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
               </div>
-              <button type="button" className={styles.iconButton} onClick={() => setActiveTaskId('')} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={closeActiveTaskDrawer} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
