@@ -4137,3 +4137,379 @@
 .activityContent small {
   white-space: pre-line;
 }
+
+/* -------------------------------------------------------------------------
+   V88 — Variação cockpit da tela principal do Perfil
+   Escopo: somente hero, régua operacional, Minha operação, tabs, lista e paginação.
+   ------------------------------------------------------------------------- */
+.hero {
+  padding: 18px 20px 0 !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.010) 48%, rgba(212, 175, 55, 0.020)) !important;
+  border-color: rgba(255, 255, 255, 0.065) !important;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.70), rgba(212, 175, 55, 0.08));
+  pointer-events: none;
+}
+
+.identityRow {
+  align-items: start !important;
+  gap: 14px !important;
+}
+
+.avatar {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 15px !important;
+  margin-top: 2px;
+}
+
+.identityCopy {
+  gap: 4px !important;
+  min-width: 0;
+}
+
+.identityGreeting {
+  color: var(--edf-text-faint) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.identityTitle {
+  gap: 9px !important;
+}
+
+.identityTitle h1 {
+  font-size: 21px !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.roleBadge {
+  padding: 2px 8px !important;
+  font-size: 10px !important;
+  letter-spacing: 0.045em !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+}
+
+.identityMeta {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  gap: 6px 12px !important;
+  margin-top: 1px;
+}
+
+.identityMeta span:first-child {
+  color: var(--edf-text-secondary) !important;
+}
+
+.identityMeta span {
+  font-size: 12px !important;
+  color: var(--edf-text-faint) !important;
+  line-height: 1.35 !important;
+}
+
+.profileStatRail {
+  margin: 16px -20px 0 !important;
+  padding: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.055) !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  background: rgba(0, 0, 0, 0.10);
+}
+
+.profileStat {
+  min-height: 64px;
+  padding: 12px 14px 11px !important;
+  gap: 6px !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.profileStat:last-child {
+  border-right: 0;
+}
+
+.profileStat > span:first-child {
+  font-size: 10.5px !important;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  color: var(--edf-text-faint) !important;
+}
+
+.profileStat strong {
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+.operationBoard {
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.014) !important;
+  border-color: rgba(255, 255, 255, 0.060) !important;
+}
+
+.operationHeader {
+  padding: 0 !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.operationHeaderTop {
+  padding: 15px 20px 12px !important;
+  margin: 0 !important;
+  align-items: flex-start !important;
+}
+
+.operationTitleBlock {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 2px !important;
+}
+
+.operationTitleBlock h2 {
+  font-size: 17px !important;
+  letter-spacing: -0.025em !important;
+}
+
+.operationTitleBlock small {
+  font-size: 11.5px !important;
+  color: var(--edf-text-faint) !important;
+}
+
+.primaryAction {
+  height: 34px !important;
+  padding: 0 12px !important;
+  border-radius: 9px !important;
+  background: rgba(212, 175, 55, 0.075) !important;
+}
+
+.operationControlPanel {
+  padding: 0 20px !important;
+}
+
+.operationTabs {
+  gap: 18px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  border-bottom: 0 !important;
+  scrollbar-width: none !important;
+}
+
+.operationTabs::-webkit-scrollbar {
+  display: none !important;
+}
+
+.operationTab {
+  padding: 0 0 12px !important;
+  gap: 6px !important;
+  border-bottom-width: 1px !important;
+  font-size: 12.5px !important;
+  color: var(--edf-text-muted) !important;
+}
+
+.operationTabActive {
+  color: var(--edf-text) !important;
+  border-bottom-color: var(--edf-amber) !important;
+}
+
+.operationTabCount {
+  font-size: 11px !important;
+  color: var(--edf-text-faint) !important;
+}
+
+.operationList {
+  background: rgba(0, 0, 0, 0.055);
+}
+
+.operationRow {
+  grid-template-columns: 18px minmax(0, 1fr) minmax(360px, auto) !important;
+  padding: 11px 20px !important;
+  gap: 12px !important;
+  border-bottom-color: rgba(255, 255, 255, 0.045) !important;
+  background: transparent !important;
+}
+
+.operationRow:hover,
+.operationRow:focus-within {
+  background: rgba(255, 255, 255, 0.014) !important;
+}
+
+.statusCheck {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.operationMain {
+  gap: 1px !important;
+}
+
+.operationMain strong {
+  font-size: 13px !important;
+  font-weight: 620 !important;
+}
+
+.operationMain span {
+  font-size: 11.5px !important;
+}
+
+.operationMeta {
+  justify-content: flex-end !important;
+  gap: 5px !important;
+  min-width: 0;
+}
+
+.operationMeta > span {
+  font-size: 10.5px !important;
+  padding: 2px 8px !important;
+  line-height: 1.5 !important;
+}
+
+.dueLabel {
+  min-width: 58px !important;
+}
+
+.relationPill {
+  min-width: 92px;
+  justify-content: center;
+  text-align: center;
+}
+
+.emptyOperation {
+  min-height: 90px !important;
+  padding: 24px 20px !important;
+  background: rgba(0, 0, 0, 0.045);
+}
+
+.emptyOperation span::before {
+  display: none !important;
+}
+
+.operationPagination {
+  padding: 12px 20px 14px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto !important;
+  border-top-color: rgba(255, 255, 255, 0.055) !important;
+}
+
+.operationPagination > span {
+  font-size: 11.5px !important;
+}
+
+.operationPagination button {
+  height: 31px !important;
+  padding: 0 11px !important;
+  border-radius: 9px !important;
+}
+
+@media (max-width: 1180px) {
+  .profileStatRail {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .profileStat:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .profileStat:nth-child(n + 4) {
+    border-top: 1px solid rgba(255, 255, 255, 0.045);
+  }
+
+  .operationRow {
+    grid-template-columns: 18px minmax(0, 1fr) !important;
+  }
+
+  .operationMeta {
+    grid-column: 2 / -1;
+    justify-content: flex-start !important;
+    flex-wrap: wrap;
+  }
+
+  .relationPill,
+  .dueLabel {
+    min-width: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding: 16px 16px 0 !important;
+  }
+
+  .identityRow {
+    grid-template-columns: auto 1fr auto !important;
+    gap: 11px !important;
+  }
+
+  .avatar {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .identityTitle h1 {
+    font-size: 18px !important;
+  }
+
+  .identityMeta {
+    flex-direction: column !important;
+    gap: 1px !important;
+  }
+
+  .profileStatRail {
+    margin-left: -16px !important;
+    margin-right: -16px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .profileStat:nth-child(3n) {
+    border-right: 1px solid rgba(255, 255, 255, 0.045);
+  }
+
+  .profileStat:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .profileStat:nth-child(n + 3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.045);
+  }
+
+  .operationHeaderTop,
+  .operationControlPanel,
+  .operationRow,
+  .operationPagination,
+  .emptyOperation {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .operationHeaderTop {
+    gap: 12px !important;
+  }
+
+  .operationTabs {
+    gap: 14px !important;
+  }
+
+  .operationPagination {
+    grid-template-columns: 1fr !important;
+    justify-items: start;
+    gap: 8px !important;
+  }
+
+  .operationPagination > div {
+    width: 100%;
+  }
+
+  .operationPagination button {
+    flex: 1;
+  }
+}

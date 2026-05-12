@@ -1757,11 +1757,11 @@ export default function ProfilePage() {
   const profileStats = useMemo(() => ([
     { label: 'Hoje', value: operationCounts.today, tone: 'amber', Icon: CalendarIcon },
     { label: 'Atrasadas', value: operationCounts.overdue, tone: 'red', Icon: BellIcon },
+    { label: 'Críticas', value: operationCounts.critical, tone: 'red', Icon: BellIcon },
+    { label: 'Acompanhando', value: operationCounts.watching, tone: 'blue', Icon: UsersIcon },
     { label: 'Concluídas', value: operationCounts.done, tone: 'green', Icon: ChecklistIcon },
-    { label: 'Squads', value: squadNames.length, tone: 'blue', Icon: UsersIcon },
-    { label: 'Clientes', value: demandClients.length, tone: 'violet', Icon: BuildingIcon },
     { label: 'Conclusão', value: `${completionRate}%`, tone: 'completion', Icon: TargetIcon },
-  ]), [completionRate, demandClients.length, operationCounts.done, operationCounts.overdue, operationCounts.today, squadNames.length]);
+  ]), [completionRate, operationCounts.critical, operationCounts.done, operationCounts.overdue, operationCounts.today, operationCounts.watching]);
   const canCreateDemand = canCreateProfileTask(user);
   const canEditActiveTask = canEditProfileTask(user, activeTask);
   const canCommentActiveTask = canCommentProfileTask(user, activeTask);
@@ -2549,12 +2549,13 @@ export default function ProfilePage() {
           </span>
 
           <div className={styles.identityCopy}>
-            <span className={styles.identityGreeting}>{greetingForDate(profileDate)} · {formatProfileDate(profileDate)}</span>
+            <span className={styles.identityGreeting}>{greetingForDate(profileDate)} · sua operação hoje</span>
             <div className={styles.identityTitle}>
               <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
               <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
             </div>
             <div className={styles.identityMeta}>
+              <span>{operationCounts.today} para hoje · {operationCounts.overdue} atrasadas · {operationCounts.critical} críticas</span>
               {user?.email ? <span>{user.email}</span> : null}
             </div>
             <div className={styles.profileStatRail}>
@@ -2590,7 +2591,7 @@ export default function ProfilePage() {
           <div className={styles.operationHeaderTop}>
             <div className={styles.operationTitleBlock}>
               <h2>Minha operação</h2>
-              {tabTasks.length ? <small>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</small> : null}
+              <small>{OPERATION_TABS.find((tab) => tab.value === operationTab)?.label || 'Hoje'} · {tabTasks.length ? `${operationRangeStart}-${operationRangeEnd} de ${tabTasks.length}` : 'sem itens'}</small>
             </div>
             <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
           </div>
