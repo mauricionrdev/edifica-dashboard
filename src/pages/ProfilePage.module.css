@@ -4015,7 +4015,6 @@
   white-space: nowrap;
 }
 
-.drawerPanel,
 .settingsModal {
   max-height: calc(100dvh - 32px);
 }
@@ -4114,13 +4113,12 @@
     justify-self: start;
   }
 
-  .settingsModal,
-  .drawerPanel {
+  .settingsModal {
     max-height: calc(100dvh - 18px);
   }
 }
 
-/* V78 — correção pontual: drawer full-height e cliente do modal sem regressão visual */
+/* V78/V84 — drawer deve manter altura total validada */
 .drawerOverlay {
   min-height: 100dvh;
 }
@@ -4135,13 +4133,7 @@
   pointer-events: auto;
 }
 
-/* V81 — Atividade: handoff e comentários mais legíveis */
-.activityContent small {
-  white-space: pre-line;
-}
-
-
-/* V82 — atividade/handoff: preservar blocos estruturados da timeline */
+/* V84 — saneamento: mantém blocos estruturados da timeline sem duplicidade */
 .activityContent small {
   white-space: pre-line;
 }

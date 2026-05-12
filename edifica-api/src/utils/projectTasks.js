@@ -37,7 +37,11 @@ function isProjectWritePermission(permission = '') {
 
 function isTaskWritePermission(permission = '') {
   const key = String(permission || '');
-  return key.startsWith('tasks.edit') || key.startsWith('tasks.comment');
+  return key.startsWith('tasks.edit');
+}
+
+function isTaskCommentPermission(permission = '') {
+  return String(permission || '').startsWith('tasks.comment');
 }
 
 async function hasProjectParticipation(projectId, userId) {
@@ -212,12 +216,13 @@ export async function assertTaskAccess(taskId, user, permission = 'tasks.view') 
   if (isAdminUser(user) || hasGlobalScope(user, allPermission)) return task;
 
   const isWritePermission = isTaskWritePermission(permission);
+  const isCommentPermission = isTaskCommentPermission(permission);
   const participates =
     task.assignee_user_id === user?.id ||
     task.created_by_user_id === user?.id ||
     task.project_owner_user_id === user?.id ||
     task.project_created_by_user_id === user?.id ||
-    await hasTaskParticipation(task, user?.id, { includeCollaborator: !isWritePermission });
+    await hasTaskParticipation(task, user?.id, { includeCollaborator: !isWritePermission || isCommentPermission });
 
   if (participates) return task;
 
