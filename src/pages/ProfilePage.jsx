@@ -1139,7 +1139,7 @@ export default function ProfilePage() {
   const [demandSaving, setDemandSaving] = useState(false);
   const [clientQuery, setClientQuery] = useState('');
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
-  const [clientSearchPosition, setClientSearchPosition] = useState({ top: 0, left: 0, width: 320 });
+  const [clientSearchPosition, setClientSearchPosition] = useState(null);
   const [taskComments, setTaskComments] = useState([]);
   const [taskEvents, setTaskEvents] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -1206,19 +1206,35 @@ export default function ProfilePage() {
 
   function updateClientSearchPosition() {
     const field = clientSearchRef.current;
-    if (!field) return;
+    if (!field) return null;
 
     const rect = field.getBoundingClientRect();
     const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
     const preferredWidth = Math.max(rect.width, 320);
     const safeWidth = Math.min(preferredWidth, Math.max(280, viewportWidth - 24));
     const safeLeft = Math.max(12, Math.min(rect.left, viewportWidth - safeWidth - 12));
+    const spaceBelow = viewportHeight - rect.bottom - 12;
+    const spaceAbove = rect.top - 12;
+    const maxHeight = Math.max(150, Math.min(280, Math.max(spaceBelow, spaceAbove)));
+    const safeTop = spaceBelow >= 160 || spaceBelow >= spaceAbove
+      ? rect.bottom + 6
+      : Math.max(12, rect.top - maxHeight - 6);
 
-    setClientSearchPosition({
-      top: rect.bottom + 6,
-      left: safeLeft,
-      width: safeWidth,
-    });
+    const nextPosition = {
+      top: Math.round(safeTop),
+      left: Math.round(safeLeft),
+      width: Math.round(safeWidth),
+      maxHeight: Math.round(maxHeight),
+    };
+
+    setClientSearchPosition(nextPosition);
+    return nextPosition;
+  }
+
+  function openClientSearch() {
+    const nextPosition = updateClientSearchPosition();
+    if (nextPosition) setClientSearchOpen(true);
   }
 
   useEffect(() => {
@@ -1340,7 +1356,10 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!clientSearchOpen) return undefined;
 
-    updateClientSearchPosition();
+    if (!updateClientSearchPosition()) {
+      setClientSearchOpen(false);
+      return undefined;
+    }
 
     function handlePointerDown(event) {
       if (clientSearchRef.current?.contains(event.target)) return;
@@ -1349,7 +1368,7 @@ export default function ProfilePage() {
     }
 
     function handleViewportChange() {
-      updateClientSearchPosition();
+      if (!updateClientSearchPosition()) setClientSearchOpen(false);
     }
 
     window.addEventListener('pointerdown', handlePointerDown, true);
@@ -1365,6 +1384,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (demandModalOpen) return;
     setClientSearchOpen(false);
+    setClientSearchPosition(null);
   }, [demandModalOpen]);
 
   useEffect(() => {
@@ -2837,7 +2857,12 @@ export default function ProfilePage() {
 
 
       {demandModalOpen ? (
-        <div className={styles.settingsOverlay} onClick={() => setDemandModalOpen(false)}>
+        <div
+          className={styles.settingsOverlay}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setDemandModalOpen(false);
+          }}
+        >
           <form className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()} onSubmit={handleCreateDemand} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
@@ -2865,15 +2890,16 @@ export default function ProfilePage() {
                   <input
                     value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
                     onFocus={() => {
-                      setClientSearchOpen(true);
                       if (selectedDemandClient) setClientQuery(selectedDemandClient.name || '');
-                      window.requestAnimationFrame(updateClientSearchPosition);
+                      openClientSearch();
+                    }}
+                    onMouseDown={() => {
+                      if (!clientSearchOpen) openClientSearch();
                     }}
                     onChange={(event) => {
                       setClientQuery(event.target.value);
-                      setClientSearchOpen(true);
                       if (demandForm.clientId) setDemandForm((prev) => ({ ...prev, clientId: '' }));
-                      window.requestAnimationFrame(updateClientSearchPosition);
+                      openClientSearch();
                     }}
                     placeholder="Cliente"
                     aria-label="Cliente"
@@ -2885,6 +2911,7 @@ export default function ProfilePage() {
                         setDemandForm((prev) => ({ ...prev, clientId: '' }));
                         setClientQuery('');
                         setClientSearchOpen(false);
+                        setClientSearchPosition(null);
                       }}
                       aria-label="Limpar cliente"
                     >
@@ -2926,11 +2953,19 @@ export default function ProfilePage() {
               <button type="submit" disabled={demandSaving || !canCreateDemand}>{demandSaving ? 'Criando' : 'Criar demanda'}</button>
             </footer>
           </form>
-          {clientSearchOpen ? createPortal(
+          {clientSearchOpen && clientSearchPosition ? createPortal(
             <div
               ref={clientSearchPanelRef}
               className={`${styles.clientSearchResults} ${styles.clientSearchFloating}`}
-              style={{ top: clientSearchPosition.top, left: clientSearchPosition.left, width: clientSearchPosition.width }}
+              style={{
+                top: clientSearchPosition.top,
+                left: clientSearchPosition.left,
+                width: clientSearchPosition.width,
+                maxHeight: clientSearchPosition.maxHeight,
+              }}
+              onPointerDown={(event) => event.stopPropagation()}
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
             >
               {filteredDemandClients.length ? filteredDemandClients.map((client) => (
                 <button
@@ -2941,6 +2976,7 @@ export default function ProfilePage() {
                     setDemandForm((prev) => ({ ...prev, clientId: client.id }));
                     setClientQuery(client.name || '');
                     setClientSearchOpen(false);
+                    setClientSearchPosition(null);
                   }}
                 >
                   <strong>{client.name}</strong>
