@@ -53,6 +53,10 @@ export function createTask(body) {
   return api.post('/projects/tasks', body);
 }
 
+export function getTask(id) {
+  return api.get(`/projects/tasks/${encodeURIComponent(id)}`);
+}
+
 export function updateTask(id, body) {
   return api.patch(`/projects/tasks/${encodeURIComponent(id)}`, body);
 }

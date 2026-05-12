@@ -7,6 +7,7 @@ import {
   createTaskComment,
   deleteTask,
   deleteTaskComment,
+  getTask,
   listTaskEvents,
   listTaskCollaborators,
   listTaskSubtasks,
@@ -1259,22 +1260,52 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (taskDeepLinkHandledRef.current || tasksLoading) return;
+    if (taskDeepLinkHandledRef.current || tasksLoading) return undefined;
     const params = new URLSearchParams(window.location.search);
     const taskId = params.get('task');
-    if (!taskId) return;
+    if (!taskId) return undefined;
 
-    const taskExists = tasks.some((task) => task.id === taskId);
     taskDeepLinkHandledRef.current = true;
+    let cancelled = false;
 
-    if (taskExists) {
-      setActiveTaskId(taskId);
+    function clearTaskParam() {
       params.delete('task');
       const nextSearch = params.toString();
       const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}${window.location.hash || ''}`;
       window.history.replaceState({}, '', nextUrl);
     }
-  }, [tasks, tasksLoading]);
+
+    const taskFromList = tasks.find((task) => task.id === taskId);
+
+    if (taskFromList) {
+      setActiveTaskId(taskId);
+      clearTaskParam();
+      return undefined;
+    }
+
+    getTask(taskId)
+      .then((res) => {
+        if (cancelled) return;
+        const task = res?.task;
+        if (!task?.id) {
+          showToast('Demanda não encontrada.', { variant: 'error' });
+          return;
+        }
+        setTasks((prev) => (prev.some((item) => item.id === task.id) ? prev : [task, ...prev]));
+        setActiveTaskId(task.id);
+        if (task.profileRelation === 'collaborator') setOperationTab('watching');
+      })
+      .catch((err) => {
+        if (!cancelled) showToast(err?.message || 'Não foi possível abrir a demanda.', { variant: 'error' });
+      })
+      .finally(() => {
+        if (!cancelled) clearTaskParam();
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showToast, tasks, tasksLoading]);
 
   useEffect(() => {
     function handleKeyDown(event) {
