@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { query, withTransaction } from '../db/pool.js';
 import { requireAnyPermission, requireAuth, requirePermission } from '../middleware/auth.js';
-import { badRequest, forbidden, parseJson, uuid } from '../utils/helpers.js';
+import { badRequest, forbidden, notFound, parseJson, uuid } from '../utils/helpers.js';
 import { getAccessibleClientRow, getAllowedSquads, isAdminUser } from '../utils/access.js';
 import { notifyUsers } from '../utils/notifications.js';
 import { hasPermission } from '../utils/permissions.js';
@@ -786,6 +786,7 @@ router.get('/tasks/:id([0-9a-fA-F-]{36})', requirePermission('tasks.view'), asyn
         LIMIT 1`,
       [req.user.id, req.user.id, req.params.id]
     );
+    if (!rows[0]) throw notFound('Demanda não encontrada');
     res.json({ task: serializeTask(rows[0]) });
   } catch (err) {
     next(err);

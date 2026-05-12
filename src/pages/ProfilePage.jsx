@@ -1303,13 +1303,13 @@ export default function ProfilePage() {
         if (cancelled) return;
         const task = res?.task;
         if (!task?.id) {
-          showToast('Demanda não encontrada.', { variant: 'error' });
+          showToast('Demanda não encontrada ou sem acesso.', { variant: 'error' });
           return;
         }
         openTaskFromDeepLink(task);
       })
       .catch((err) => {
-        if (!cancelled) showToast(err?.message || 'Não foi possível abrir a demanda.', { variant: 'error' });
+        if (!cancelled) showToast(err?.message || 'Demanda não encontrada ou sem acesso.', { variant: 'error' });
       })
       .finally(() => {
         if (!cancelled) clearTaskParam();
