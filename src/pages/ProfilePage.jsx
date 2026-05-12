@@ -1388,6 +1388,17 @@ export default function ProfilePage() {
     Promise.allSettled([listTaskComments(activeTaskId), listTaskEvents(activeTaskId), listTaskSubtasks(activeTaskId), listTaskCollaborators(activeTaskId)])
       .then(([commentsRes, eventsRes, subtasksRes, collaboratorsRes]) => {
         if (cancelled) return;
+        const allRejected = [commentsRes, eventsRes, subtasksRes, collaboratorsRes].every((result) => result.status === 'rejected');
+        if (allRejected) {
+          setActiveTaskId('');
+          setTaskComments([]);
+          setTaskEvents([]);
+          setDrawerSubtasks([]);
+          setCollaborators([]);
+          showToast('Não foi possível carregar esta demanda.', { variant: 'error' });
+          return;
+        }
+
         if (commentsRes.status === 'fulfilled') {
           setTaskComments(Array.isArray(commentsRes.value?.comments) ? commentsRes.value.comments : []);
         } else {
@@ -1442,6 +1453,38 @@ export default function ProfilePage() {
   useEffect(() => {
     setOperationPage(1);
   }, [operationTab]);
+
+  useEffect(() => {
+    if (!activeTaskId || tasksLoading) return undefined;
+    if (tasks.some((task) => task.id === activeTaskId)) return undefined;
+
+    let cancelled = false;
+
+    getTask(activeTaskId)
+      .then((res) => {
+        if (cancelled) return;
+        const task = res?.task;
+        if (!task?.id) {
+          setActiveTaskId('');
+          return;
+        }
+        setTasks((prev) => (prev.some((item) => item.id === task.id) ? prev.map((item) => (item.id === task.id ? { ...item, ...task } : item)) : [task, ...prev]));
+        if (task.profileRelation === 'collaborator') setOperationTab('watching');
+        else if (isDone(task)) setOperationTab('done');
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setActiveTaskId('');
+        setHandoffOpen(false);
+        setCompletionTarget(null);
+        setContentEditing(false);
+        showToast('A demanda aberta não está mais disponível.', { variant: 'error' });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTaskId, showToast, tasks, tasksLoading]);
 
   useEffect(() => {
     if (operationPage > operationTotalPages) setOperationPage(operationTotalPages);
