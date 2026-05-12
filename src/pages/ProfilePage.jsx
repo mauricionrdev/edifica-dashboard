@@ -2554,10 +2554,11 @@ export default function ProfilePage() {
               <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
               <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
             </div>
-            <div className={styles.identityMeta}>
-              <span>{operationCounts.today} para hoje · {operationCounts.overdue} atrasadas · {operationCounts.critical} críticas</span>
-              {user?.email ? <span>{user.email}</span> : null}
-            </div>
+            {user?.email ? (
+              <div className={styles.identityMeta}>
+                <span>{user.email}</span>
+              </div>
+            ) : null}
             <div className={styles.profileStatRail}>
               {profileStats.map(({ Icon, ...item }) => (
                 <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
@@ -2590,8 +2591,10 @@ export default function ProfilePage() {
         <header className={styles.operationHeader}>
           <div className={styles.operationHeaderTop}>
             <div className={styles.operationTitleBlock}>
-              <h2>Minha operação</h2>
-              <small>{OPERATION_TABS.find((tab) => tab.value === operationTab)?.label || 'Hoje'} · {tabTasks.length ? `${operationRangeStart}-${operationRangeEnd} de ${tabTasks.length}` : 'sem itens'}</small>
+              <h2 className={styles.operationHeading}>
+                <ChecklistIcon size={17} strokeWidth={2.1} aria-hidden="true" />
+                <span>Minhas tarefas</span>
+              </h2>
             </div>
             <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
           </div>
