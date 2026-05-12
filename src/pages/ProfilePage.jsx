@@ -707,9 +707,67 @@ function commentBody(comment) {
   return String(comment?.body || comment?.content || '').trim();
 }
 
+function isSystemCommentBody(body = '') {
+  return /^(Handoff:|Status:|Demanda concluída\.|Implementação concluída\.|Briefing incompleto\.)/i.test(String(body || '').trim());
+}
+
 function isSystemActivityComment(comment) {
-  const body = commentBody(comment);
-  return /^(Handoff:|Status:|Demanda concluída\.|Implementação concluída\.)/i.test(body);
+  return isSystemCommentBody(commentBody(comment));
+}
+
+function compactInlineText(value = '') {
+  return String(value || '')
+    .replace(/^[-•]\s*/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function readLabeledLine(lines = [], label = '') {
+  const pattern = new RegExp(`^${label}:\\s*`, 'i');
+  const line = lines.find((item) => pattern.test(item));
+  return line ? line.replace(pattern, '').trim() : '';
+}
+
+function readHandoffSection(lines = [], label = '') {
+  const index = lines.findIndex((item) => item.toLowerCase() === label.toLowerCase());
+  if (index < 0) return '';
+
+  const values = [];
+  for (let position = index + 1; position < lines.length; position += 1) {
+    const current = lines[position];
+    if (/^(Próxima ação|Pendências|Contexto|Comentários recentes)$/i.test(current)) break;
+    values.push(current);
+  }
+
+  return compactInlineText(values.join(' '));
+}
+
+function buildHandoffActivityNote(lines = []) {
+  const type = readLabeledLine(lines, 'Tipo');
+  const priority = readLabeledLine(lines, 'Prioridade');
+  const deadline = readLabeledLine(lines, 'Prazo');
+  const client = readLabeledLine(lines, 'Cliente');
+  const project = readLabeledLine(lines, 'Projeto');
+  const nextAction = readHandoffSection(lines, 'Próxima ação');
+  const pending = readHandoffSection(lines, 'Pendências');
+  const context = readHandoffSection(lines, 'Contexto');
+  const recentComments = readHandoffSection(lines, 'Comentários recentes');
+
+  const summary = [
+    client ? `Cliente: ${client}` : '',
+    project ? `Projeto: ${project}` : '',
+    [type ? `Tipo: ${type}` : '', priority ? `Prioridade: ${priority}` : '', deadline ? `Prazo: ${deadline}` : ''].filter(Boolean).join(' · '),
+  ].filter(Boolean);
+
+  const sections = [
+    ...summary,
+    nextAction ? `Próxima ação: ${nextAction}` : '',
+    pending ? `Pendências: ${pending}` : '',
+    context ? `Contexto: ${context}` : '',
+    recentComments ? `Comentários recentes: ${recentComments}` : '',
+  ].filter(Boolean);
+
+  return sections.join('\n');
 }
 
 function parseSystemActivityComment(comment) {
@@ -719,9 +777,9 @@ function parseSystemActivityComment(comment) {
   const createdAt = comment?.createdAt || comment?.updatedAt;
 
   if (/^Handoff:/i.test(lines[0] || '')) {
-    const target = (lines.find((line) => /^Handoff:/i.test(line)) || '').replace(/^Handoff:\s*/i, '').trim();
-    const status = (lines.find((line) => /^Status:/i.test(line)) || '').replace(/^Status:\s*/i, '').trim();
-    const note = lines.filter((line) => !/^Handoff:/i.test(line) && !/^Status:/i.test(line)).join('\n');
+    const target = readLabeledLine(lines, 'Handoff');
+    const status = readLabeledLine(lines, 'Status');
+    const note = buildHandoffActivityNote(lines);
     return {
       id: `handoff-${comment.id}`,
       type: 'handoff',
@@ -770,9 +828,9 @@ function formatEventTypeLabel(type) {
     'task.priority_changed': 'Prioridade alterada',
     'task.assignee_changed': 'Responsável alterado',
     'task.due_date_changed': 'Prazo alterado',
-    'task.comment_added': 'Comentário adicionado',
-    'task.commented': 'Comentário adicionado',
-    'task.comment_deleted': 'Comentário excluído',
+    'task.comment_added': 'Comentário na demanda',
+    'task.commented': 'Comentário na demanda',
+    'task.comment_deleted': 'Comentário removido',
     'task.collaborator_added': 'Colaborador adicionado',
     'task.collaborator_removed': 'Colaborador removido',
     'task.subtask_created': 'Subtarefa criada',
@@ -838,8 +896,41 @@ function formatEventMetadata(metadata) {
     .join(' · ');
 }
 
+function eventCommentPreview(metadata = {}) {
+  if (!metadata || typeof metadata !== 'object') return '';
+  return compactInlineText(metadata.comentario || metadata.comment || metadata.body || metadata.content || '');
+}
+
 function parseTaskEvent(event) {
   if (!event?.id) return null;
+
+  if (/^task\.(comment_added|commented)$/i.test(String(event.type || ''))) {
+    const preview = eventCommentPreview(event.metadata);
+    if (isSystemCommentBody(preview)) return null;
+    return {
+      id: `event-${event.id}`,
+      type: 'comment',
+      title: 'Comentário na demanda',
+      meta: event.actorName || 'Sistema',
+      note: preview ? `Comentário: ${preview}` : '',
+      author: event.actorName || 'Sistema',
+      createdAt: event.createdAt,
+    };
+  }
+
+  if (/^task\.comment_deleted$/i.test(String(event.type || ''))) {
+    const preview = eventCommentPreview(event.metadata);
+    return {
+      id: `event-${event.id}`,
+      type: 'comment',
+      title: 'Comentário removido',
+      meta: event.actorName || 'Sistema',
+      note: preview ? `Comentário: ${preview}` : '',
+      author: event.actorName || 'Sistema',
+      createdAt: event.createdAt,
+    };
+  }
+
   const note = formatEventMetadata(event.metadata);
   return {
     id: `event-${event.id}`,

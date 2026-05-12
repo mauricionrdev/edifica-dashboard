@@ -4134,3 +4134,8 @@
 .clientSearchResults {
   pointer-events: auto;
 }
+
+/* V81 — Atividade: handoff e comentários mais legíveis */
+.activityContent small {
+  white-space: pre-line;
+}
