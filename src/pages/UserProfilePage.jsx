@@ -401,7 +401,7 @@ export default function UserProfilePage() {
             <header className={styles.sectionHeader}>
               <div>
                 <h2>Projetos</h2>
-                <p>{profileProjects.length ? `${profileProjects.length} projetos relacionados` : 'Nenhum projeto relacionado'}</p>
+                {/* <p>{profileProjects.length ? `${profileProjects.length} projetos relacionados` : 'Nenhum projeto relacionado'}</p> */}
               </div>
             </header>
 
