@@ -4531,3 +4531,155 @@
 .operationTitleBlock small {
   display: none !important;
 }
+/* Profile cockpit final visual pass: stronger main area without touching modals/drawers */
+.operationSection {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006)),
+    var(--edf-panel);
+}
+
+.operationHeaderTop {
+  padding: 20px 24px 16px !important;
+  align-items: flex-start !important;
+}
+
+.operationTitleBlock {
+  align-items: flex-start !important;
+  gap: 9px !important;
+}
+
+.operationTitleBlock h2 {
+  gap: 10px !important;
+  font-size: 20px !important;
+  line-height: 1.1 !important;
+}
+
+.operationTitleIcon {
+  color: var(--edf-text-muted) !important;
+  opacity: 0.9;
+}
+
+.operationControlPanel {
+  padding: 0 24px !important;
+}
+
+.operationTabs {
+  gap: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+}
+
+.operationTab {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 0 13px 14px 0 !important;
+  margin-right: 22px !important;
+  min-height: 34px !important;
+  white-space: nowrap !important;
+  color: var(--edf-text-muted) !important;
+  border-bottom: 1px solid transparent !important;
+  transform: translateY(1px);
+}
+
+.operationTab svg {
+  width: 14px !important;
+  height: 14px !important;
+  color: currentColor !important;
+  opacity: 0.72;
+}
+
+.operationTab:hover {
+  color: var(--edf-text-secondary) !important;
+}
+
+.operationTabActive {
+  color: var(--edf-text) !important;
+  border-bottom-color: var(--edf-amber) !important;
+}
+
+.operationTabActive svg {
+  color: var(--edf-amber) !important;
+  opacity: 1;
+}
+
+.operationTabLabel {
+  font-size: 12.5px !important;
+  font-weight: 650 !important;
+}
+
+.operationTabCount {
+  margin-left: 1px !important;
+  padding-left: 7px !important;
+  color: var(--edf-text-faint) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.09) !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+
+.operationBody {
+  padding: 0 !important;
+}
+
+.operationList {
+  min-height: 132px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.operationRow {
+  padding: 14px 24px !important;
+}
+
+.emptyOperation {
+  min-height: 130px !important;
+  padding: 26px 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  background:
+    radial-gradient(circle at 26px 50%, rgba(212, 175, 55, 0.055), transparent 120px),
+    transparent !important;
+  border-top: 0 !important;
+}
+
+.emptyOperationMark {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  color: var(--edf-text-muted) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.emptyOperation > span:not(.emptyOperationMark) {
+  color: var(--edf-text-muted) !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+.emptyOperation span::before {
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  .operationHeaderTop {
+    padding: 18px 18px 14px !important;
+  }
+
+  .operationControlPanel {
+    padding: 0 18px !important;
+  }
+
+  .operationTab {
+    margin-right: 18px !important;
+  }
+
+  .operationRow {
+    padding: 13px 18px !important;
+  }
+}

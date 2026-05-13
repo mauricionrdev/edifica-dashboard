@@ -341,15 +341,15 @@ function clientSearchText(client) {
 
 
 const OPERATION_TABS = [
-  { value: 'today', label: 'Hoje' },
-  { value: 'overdue', label: 'Atrasadas' },
-  { value: 'critical', label: 'Críticas' },
-  { value: 'briefing', label: 'Briefings' },
-  { value: 'routine', label: 'Rotinas' },
-  { value: 'support', label: 'Suporte' },
-  { value: 'watching', label: 'Acompanhando' },
-  { value: 'waiting', label: 'Aguardando' },
-  { value: 'done', label: 'Concluídas' },
+  { value: 'today', label: 'Hoje', icon: CalendarIcon },
+  { value: 'overdue', label: 'Atrasadas', icon: BellIcon },
+  { value: 'critical', label: 'Críticas', icon: BellIcon },
+  { value: 'briefing', label: 'Briefings', icon: ChecklistIcon },
+  { value: 'routine', label: 'Rotinas', icon: CalendarIcon },
+  { value: 'support', label: 'Suporte', icon: UsersIcon },
+  { value: 'watching', label: 'Acompanhando', icon: TargetIcon },
+  { value: 'waiting', label: 'Aguardando', icon: BellIcon },
+  { value: 'done', label: 'Concluídas', icon: ChecklistIcon },
 ];
 
 const OPERATION_PAGE_SIZE = 8;
@@ -2601,18 +2601,22 @@ export default function ProfilePage() {
 
           <div className={styles.operationControlPanel}>
             <nav className={styles.operationTabs} aria-label="Operação">
-              {OPERATION_TABS.map((tab) => (
-                <button
-                  key={tab.value}
-                  type="button"
-                  className={`${styles.operationTab} ${operationTab === tab.value ? styles.operationTabActive : ''}`.trim()}
-                  onClick={() => { setOperationTab(tab.value); setOperationPage(1); }}
-                  aria-current={operationTab === tab.value ? 'page' : undefined}
-                >
-                  <span className={styles.operationTabLabel}>{tab.label}</span>
-                  <span className={styles.operationTabCount}>{operationCounts[tab.value] || 0}</span>
-                </button>
-              ))}
+              {OPERATION_TABS.map((tab) => {
+                const TabIcon = tab.icon;
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    className={`${styles.operationTab} ${operationTab === tab.value ? styles.operationTabActive : ''}`.trim()}
+                    onClick={() => { setOperationTab(tab.value); setOperationPage(1); }}
+                    aria-current={operationTab === tab.value ? 'page' : undefined}
+                  >
+                    <TabIcon size={15} />
+                    <span className={styles.operationTabLabel}>{tab.label}</span>
+                    <span className={styles.operationTabCount}>{operationCounts[tab.value] || 0}</span>
+                  </button>
+                );
+              })}
             </nav>
 
           </div>
@@ -2625,6 +2629,7 @@ export default function ProfilePage() {
             <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
             <div className={styles.emptyOperation}>
+              <span className={styles.emptyOperationMark}><ChecklistIcon size={18} /></span>
               <span>{emptyOperationLabel(operationTab)}</span>
             </div>
           ) : (
