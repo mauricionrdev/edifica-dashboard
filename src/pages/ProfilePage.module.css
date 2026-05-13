@@ -4138,102 +4138,128 @@
   white-space: pre-line;
 }
 
+
 /* -------------------------------------------------------------------------
-   V88 — Variação cockpit da tela principal do Perfil
-   Escopo: somente hero, régua operacional, Minha operação, tabs, lista e paginação.
+   V92 — Perfil cockpit Linear-like sem clone
+   Escopo: apenas tela principal. Modais, drawer e fluxos seguem intocados.
    ------------------------------------------------------------------------- */
 .hero {
   padding: 18px 20px 0 !important;
-  border-radius: 18px !important;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.010) 48%, rgba(212, 175, 55, 0.020)) !important;
-  border-color: rgba(255, 255, 255, 0.065) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.016) !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
   overflow: hidden;
 }
 
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 2px;
-  background: linear-gradient(180deg, rgba(212, 175, 55, 0.70), rgba(212, 175, 55, 0.08));
-  pointer-events: none;
+.hero::before,
+.hero::after {
+  display: none !important;
+  content: none !important;
+}
+
+.heroTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+  padding-bottom: 16px;
 }
 
 .identityRow {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
   align-items: start !important;
-  gap: 14px !important;
+  gap: 12px !important;
+  min-width: 0;
 }
 
 .avatar {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 15px !important;
-  margin-top: 2px;
+  width: 42px !important;
+  height: 42px !important;
+  margin: 1px 0 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  font-size: 14px !important;
 }
 
 .identityCopy {
-  gap: 4px !important;
   min-width: 0;
+  gap: 3px !important;
 }
 
 .identityGreeting {
   color: var(--edf-text-faint) !important;
   font-size: 11px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 
 .identityTitle {
-  gap: 9px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0;
 }
 
 .identityTitle h1 {
-  font-size: 21px !important;
+  min-width: 0;
+  font-size: 20px !important;
+  font-weight: 700 !important;
   line-height: 1.12 !important;
-  letter-spacing: -0.035em !important;
+  letter-spacing: -0.025em !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .roleBadge {
+  flex: 0 0 auto;
   padding: 2px 8px !important;
+  border-radius: 999px !important;
   font-size: 10px !important;
-  letter-spacing: 0.045em !important;
+  letter-spacing: 0.035em !important;
+  color: var(--edf-text-muted) !important;
   background: rgba(255, 255, 255, 0.018) !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
 }
 
 .identityMeta {
-  flex-direction: row !important;
-  flex-wrap: wrap;
-  gap: 6px 12px !important;
-  margin-top: 1px;
-}
-
-.identityMeta span:first-child {
-  color: var(--edf-text-secondary) !important;
+  display: block !important;
+  min-width: 0;
 }
 
 .identityMeta span {
-  font-size: 12px !important;
+  display: block;
+  min-width: 0;
   color: var(--edf-text-faint) !important;
+  font-size: 12px !important;
   line-height: 1.35 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.heroTop .iconButton {
+  align-self: start !important;
 }
 
 .profileStatRail {
-  margin: 16px -20px 0 !important;
+  margin: 0 -20px !important;
   padding: 0 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.055) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.052) !important;
   display: grid !important;
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   gap: 0 !important;
-  background: rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.006) !important;
 }
 
 .profileStat {
-  min-height: 64px;
-  padding: 12px 14px 11px !important;
-  gap: 6px !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.045);
+  min-height: 58px !important;
+  padding: 11px 14px 10px !important;
+  gap: 5px !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.044);
 }
 
 .profileStat:last-child {
@@ -4241,68 +4267,99 @@
 }
 
 .profileStat > span:first-child {
-  font-size: 10.5px !important;
-  letter-spacing: 0.035em;
-  text-transform: uppercase;
+  display: block !important;
   color: var(--edf-text-faint) !important;
+  font-size: 10.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  line-height: 1.2 !important;
+}
+
+.profileStat svg {
+  display: none !important;
 }
 
 .profileStat strong {
-  font-size: 20px !important;
+  color: var(--edf-text) !important;
+  font-size: 19px !important;
+  font-weight: 700 !important;
   line-height: 1 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.profileStat_red strong {
+  color: var(--edf-danger-soft) !important;
+}
+
+.profileStat_amber strong {
+  color: var(--edf-amber-strong) !important;
+}
+
+.profileStat_green strong,
+.profileStat_completion strong {
+  color: var(--edf-success-soft) !important;
 }
 
 .operationBoard {
-  border-radius: 18px !important;
+  border-radius: 16px !important;
   background: rgba(255, 255, 255, 0.014) !important;
-  border-color: rgba(255, 255, 255, 0.060) !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
+  overflow: hidden;
 }
 
 .operationHeader {
   padding: 0 !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.006) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052) !important;
 }
 
 .operationHeaderTop {
-  padding: 15px 20px 12px !important;
+  padding: 14px 20px 11px !important;
   margin: 0 !important;
-  align-items: flex-start !important;
+  align-items: center !important;
+  gap: 14px !important;
 }
 
 .operationTitleBlock {
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 2px !important;
+  min-width: 0;
 }
 
-.operationTitleBlock h2 {
+.operationHeading {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  color: var(--edf-text) !important;
   font-size: 17px !important;
-  letter-spacing: -0.025em !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.02em !important;
 }
 
-.operationTitleBlock small {
-  font-size: 11.5px !important;
-  color: var(--edf-text-faint) !important;
+.operationHeading svg {
+  flex: 0 0 auto;
+  color: var(--edf-text-muted) !important;
 }
 
 .primaryAction {
   height: 34px !important;
   padding: 0 12px !important;
   border-radius: 9px !important;
-  background: rgba(212, 175, 55, 0.075) !important;
 }
 
 .operationControlPanel {
   padding: 0 20px !important;
+  min-width: 0;
 }
 
 .operationTabs {
   gap: 18px !important;
+  width: 100%;
   overflow-x: auto !important;
   overflow-y: hidden !important;
   border-bottom: 0 !important;
   scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .operationTabs::-webkit-scrollbar {
@@ -4310,32 +4367,47 @@
 }
 
 .operationTab {
-  padding: 0 0 12px !important;
+  padding: 0 0 11px !important;
   gap: 6px !important;
-  border-bottom-width: 1px !important;
-  font-size: 12.5px !important;
+  border-bottom: 1px solid transparent !important;
   color: var(--edf-text-muted) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+}
+
+.operationTab:hover {
+  color: var(--edf-text-secondary) !important;
 }
 
 .operationTabActive {
   color: var(--edf-text) !important;
-  border-bottom-color: var(--edf-amber) !important;
+  border-bottom-color: var(--edf-text-muted) !important;
 }
 
 .operationTabCount {
-  font-size: 11px !important;
   color: var(--edf-text-faint) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+
+.operationTabActive .operationTabCount {
+  color: var(--edf-text-muted) !important;
+}
+
+.operationBody,
+.operationList {
+  min-width: 0;
 }
 
 .operationList {
-  background: rgba(0, 0, 0, 0.055);
+  background: rgba(0, 0, 0, 0.035);
 }
 
 .operationRow {
-  grid-template-columns: 18px minmax(0, 1fr) minmax(360px, auto) !important;
-  padding: 11px 20px !important;
+  grid-template-columns: 18px minmax(0, 1fr) minmax(380px, auto) !important;
   gap: 12px !important;
-  border-bottom-color: rgba(255, 255, 255, 0.045) !important;
+  padding: 11px 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.044) !important;
   background: transparent !important;
 }
 
@@ -4344,22 +4416,37 @@
   background: rgba(255, 255, 255, 0.014) !important;
 }
 
+.operationRowDone {
+  opacity: 0.62 !important;
+}
+
 .statusCheck {
   width: 16px !important;
   height: 16px !important;
+  align-self: center;
 }
 
 .operationMain {
-  gap: 1px !important;
+  min-width: 0;
+  gap: 2px !important;
 }
 
 .operationMain strong {
+  color: var(--edf-text-secondary) !important;
   font-size: 13px !important;
   font-weight: 620 !important;
+  line-height: 1.32 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .operationMain span {
+  color: var(--edf-text-faint) !important;
   font-size: 11.5px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .operationMeta {
@@ -4370,12 +4457,13 @@
 
 .operationMeta > span {
   font-size: 10.5px !important;
+  line-height: 1.45 !important;
   padding: 2px 8px !important;
-  line-height: 1.5 !important;
 }
 
 .dueLabel {
   min-width: 58px !important;
+  text-align: center;
 }
 
 .relationPill {
@@ -4385,9 +4473,14 @@
 }
 
 .emptyOperation {
-  min-height: 90px !important;
-  padding: 24px 20px !important;
-  background: rgba(0, 0, 0, 0.045);
+  min-height: 84px !important;
+  padding: 22px 20px !important;
+  background: rgba(0, 0, 0, 0.030) !important;
+}
+
+.emptyOperation span {
+  color: var(--edf-text-faint) !important;
+  font-size: 12.5px !important;
 }
 
 .emptyOperation span::before {
@@ -4398,10 +4491,13 @@
   padding: 12px 20px 14px !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto auto !important;
-  border-top-color: rgba(255, 255, 255, 0.055) !important;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.052) !important;
 }
 
-.operationPagination > span {
+.operationPagination > span,
+.operationPageIndicator {
+  color: var(--edf-text-faint) !important;
   font-size: 11.5px !important;
 }
 
@@ -4421,11 +4517,12 @@
   }
 
   .profileStat:nth-child(n + 4) {
-    border-top: 1px solid rgba(255, 255, 255, 0.045);
+    border-top: 1px solid rgba(255, 255, 255, 0.044);
   }
 
   .operationRow {
     grid-template-columns: 18px minmax(0, 1fr) !important;
+    row-gap: 8px !important;
   }
 
   .operationMeta {
@@ -4445,23 +4542,26 @@
     padding: 16px 16px 0 !important;
   }
 
+  .heroTop {
+    gap: 12px;
+  }
+
   .identityRow {
-    grid-template-columns: auto 1fr auto !important;
-    gap: 11px !important;
+    gap: 10px !important;
   }
 
   .avatar {
-    width: 42px !important;
-    height: 42px !important;
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 13px !important;
   }
 
   .identityTitle h1 {
     font-size: 18px !important;
   }
 
-  .identityMeta {
-    flex-direction: column !important;
-    gap: 1px !important;
+  .roleBadge {
+    display: none;
   }
 
   .profileStatRail {
@@ -4470,8 +4570,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
+  .profileStat {
+    min-height: 54px !important;
+  }
+
   .profileStat:nth-child(3n) {
-    border-right: 1px solid rgba(255, 255, 255, 0.045);
+    border-right: 1px solid rgba(255, 255, 255, 0.044);
   }
 
   .profileStat:nth-child(2n) {
@@ -4479,7 +4583,7 @@
   }
 
   .profileStat:nth-child(n + 3) {
-    border-top: 1px solid rgba(255, 255, 255, 0.045);
+    border-top: 1px solid rgba(255, 255, 255, 0.044);
   }
 
   .operationHeaderTop,
@@ -4492,7 +4596,7 @@
   }
 
   .operationHeaderTop {
-    gap: 12px !important;
+    align-items: flex-start !important;
   }
 
   .operationTabs {
@@ -4514,19 +4618,510 @@
   }
 }
 
-/* V89 — ajuste pontual do cockpit: remove textos redundantes e renomeia seção */
+/* -------------------------------------------------------------------------
+   V93 — Perfil como issue list operacional (Linear-like sem clone)
+   Escopo: apenas tela principal. Modais/drawer permanecem intactos.
+   ------------------------------------------------------------------------- */
+.page {
+  gap: 18px !important;
+}
+
+.hero {
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.012) !important;
+  border: 1px solid rgba(255, 255, 255, 0.055) !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+
+.heroTop {
+  min-height: auto !important;
+  padding: 18px 18px 16px !important;
+  align-items: flex-start !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045) !important;
+}
+
+.identityRow {
+  align-items: flex-start !important;
+  gap: 12px !important;
+  min-width: 0;
+}
+
+.avatar {
+  width: 38px !important;
+  height: 38px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  margin-top: 1px;
+}
+
+.avatar img {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.identityCopy {
+  gap: 4px !important;
+  min-width: 0;
+}
+
+.identityGreeting {
+  display: none !important;
+}
+
+.identityTitle {
+  gap: 8px !important;
+  align-items: center !important;
+  min-width: 0;
+}
+
+.identityTitle h1 {
+  font-size: 19px !important;
+  line-height: 1.12 !important;
+  letter-spacing: -0.03em !important;
+  font-weight: 650 !important;
+  margin: 0 !important;
+}
+
+.roleBadge {
+  height: 22px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
+  color: var(--edf-text-muted) !important;
+  font-size: 10.5px !important;
+  font-weight: 560 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identityMeta {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  color: var(--edf-text-faint) !important;
+}
+
+.heroTop .iconButton {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 9px !important;
+  align-self: flex-start !important;
+}
+
+.profileStatRail {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  border-top: 0 !important;
+  background: rgba(0, 0, 0, 0.055) !important;
+}
+
+.profileStat {
+  min-height: 82px !important;
+  padding: 15px 18px !important;
+  gap: 8px !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.045) !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.profileStat:last-child {
+  border-right: 0 !important;
+}
+
+.profileStat > span:first-child {
+  color: var(--edf-text-faint) !important;
+  font-size: 10.5px !important;
+  line-height: 1.2 !important;
+  font-weight: 560 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+}
+
+.profileStat strong {
+  color: var(--edf-text) !important;
+  font-size: 23px !important;
+  line-height: 1 !important;
+  font-weight: 720 !important;
+  letter-spacing: -0.03em !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.profileStat em {
+  color: var(--edf-text-faint) !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  font-style: normal !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profileStat svg {
+  display: none !important;
+}
+
+.profileStat_red strong {
+  color: var(--edf-danger-soft) !important;
+}
+
+.profileStat_amber strong {
+  color: var(--edf-amber-strong) !important;
+}
+
+.profileStat_green strong,
+.profileStat_completion strong {
+  color: var(--edf-success-soft) !important;
+}
+
+.profileStat_blue strong {
+  color: var(--edf-blue-soft) !important;
+}
+
+.operationBoard {
+  border-radius: 12px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.operationHeader {
+  padding: 0 !important;
+  background: transparent !important;
+  border-bottom: 0 !important;
+}
+
+.operationHeaderTop {
+  padding: 0 0 18px !important;
+  align-items: center !important;
+  margin: 0 !important;
+  gap: 16px !important;
+}
+
 .operationHeading {
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
   margin: 0 !important;
+  color: var(--edf-text) !important;
+  font-size: 20px !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.035em !important;
+  font-weight: 660 !important;
 }
 
 .operationHeading svg {
-  flex: 0 0 auto;
-  color: var(--edf-text-muted);
+  color: var(--edf-text-faint) !important;
 }
 
-.operationTitleBlock small {
+.primaryAction {
+  height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.operationControlPanel {
+  padding: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.operationTabs {
+  gap: 22px !important;
+  width: 100%;
+  min-height: 42px;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.operationTabs::-webkit-scrollbar {
   display: none !important;
+}
+
+.operationTab {
+  padding: 0 0 12px !important;
+  gap: 7px !important;
+  border: 0 !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--edf-text-muted) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+.operationTab:hover {
+  color: var(--edf-text-secondary) !important;
+  background: transparent !important;
+}
+
+.operationTabActive {
+  color: var(--edf-text) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.62) !important;
+}
+
+.operationTabCount {
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--edf-text-faint) !important;
+  font-size: 10.5px !important;
+  line-height: 1 !important;
+  font-weight: 560 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.operationTabActive .operationTabCount {
+  color: var(--edf-text-secondary) !important;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.operationBody {
+  min-width: 0;
+  padding-top: 26px;
+}
+
+.operationList {
+  overflow: hidden;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.012) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.operationListHeader {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(160px, 0.34fr) minmax(210px, 0.42fr) minmax(88px, 0.16fr);
+  align-items: center;
+  min-height: 40px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  color: var(--edf-text-faint);
+  font-size: 10.5px;
+  font-weight: 560;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.operationListHeader span:last-child {
+  text-align: right;
+}
+
+.operationRow {
+  display: grid !important;
+  grid-template-columns: 18px minmax(240px, 1fr) minmax(160px, 0.34fr) minmax(210px, 0.42fr) minmax(88px, 0.16fr) !important;
+  align-items: center !important;
+  gap: 14px !important;
+  min-height: 56px !important;
+  padding: 10px 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.047) !important;
+  background: transparent !important;
+}
+
+.operationRow:last-child {
+  border-bottom: 0 !important;
+}
+
+.operationRow:hover,
+.operationRow:focus-within {
+  background: rgba(255, 255, 255, 0.018) !important;
+}
+
+.operationRowDone {
+  opacity: 0.72 !important;
+}
+
+.statusCheck {
+  width: 13px !important;
+  height: 13px !important;
+  align-self: center !important;
+  border-radius: 999px !important;
+}
+
+.statusCheckDone {
+  width: 17px !important;
+  height: 17px !important;
+}
+
+.operationMain {
+  min-width: 0;
+  gap: 4px !important;
+}
+
+.operationMain strong {
+  color: var(--edf-text-secondary) !important;
+  font-size: 13.5px !important;
+  line-height: 1.28 !important;
+  font-weight: 640 !important;
+  letter-spacing: -0.01em !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.operationRowDone .operationMain strong {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
+}
+
+.operationMain span,
+.operationClientCell span {
+  color: var(--edf-text-faint) !important;
+  font-size: 11.5px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.operationClientCell {
+  min-width: 0;
+}
+
+.operationClientCell span {
+  display: block;
+  color: var(--edf-text-secondary) !important;
+}
+
+.operationMeta {
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  min-width: 0;
+  flex-wrap: nowrap !important;
+}
+
+.operationMeta > span {
+  height: 22px !important;
+  padding: 0 8px !important;
+  font-size: 10.5px !important;
+  line-height: 20px !important;
+  border-radius: 6px !important;
+  white-space: nowrap;
+}
+
+.operationDueCell {
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dueLabel {
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  text-align: right;
+  font-size: 11.5px !important;
+  line-height: 1.2 !important;
+}
+
+.emptyOperation {
+  min-height: 118px !important;
+  display: flex;
+  align-items: center;
+  padding: 24px 20px !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.012) !important;
+  border: 1px solid rgba(255, 255, 255, 0.055) !important;
+}
+
+.emptyOperation span {
+  color: var(--edf-text-faint) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.operationPagination {
+  padding: 12px 0 0 !important;
+  border: 0 !important;
+}
+
+@media (max-width: 1180px) {
+  .profileStatRail {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .profileStat:nth-child(2n) {
+    border-right: 0 !important;
+  }
+
+  .profileStat:nth-child(n+3) {
+    border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
+  }
+
+  .operationListHeader {
+    display: none;
+  }
+
+  .operationRow {
+    grid-template-columns: 18px minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto;
+    row-gap: 8px !important;
+  }
+
+  .operationClientCell,
+  .operationMeta,
+  .operationDueCell {
+    grid-column: 2 / -1;
+  }
+
+  .operationMeta {
+    flex-wrap: wrap !important;
+  }
+
+  .operationDueCell {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .heroTop {
+    padding: 16px !important;
+  }
+
+  .identityTitle {
+    flex-wrap: wrap;
+  }
+
+  .profileStatRail {
+    grid-template-columns: 1fr !important;
+  }
+
+  .profileStat {
+    border-right: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
+    min-height: 70px !important;
+  }
+
+  .profileStat:first-child {
+    border-top: 0 !important;
+  }
+
+  .operationHeaderTop {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .primaryAction {
+    width: 100%;
+  }
 }
