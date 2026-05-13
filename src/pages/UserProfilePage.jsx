@@ -343,6 +343,127 @@ export default function UserProfilePage() {
         </div>
       </section>
 
+      <div className={styles.profileGrid}>
+        <main className={styles.mainColumn}>
+          <section className={styles.workPanel}>
+            <header className={styles.sectionHeader}>
+              <div>
+                <h2>Tarefas atribuídas</h2>
+                <p>{profileTasks.length ? `${profileTasks.length} registros vinculados ao perfil` : 'Nenhuma tarefa vinculada'}</p>
+              </div>
+            </header>
+
+            <div className={styles.issueTable}>
+              <div className={styles.issueHead} aria-hidden="true">
+                <span />
+                <span>Tarefa</span>
+                <span>Contexto</span>
+                <span>Propriedades</span>
+                <span>Prazo</span>
+              </div>
+
+              <div className={styles.issueList}>
+                {tasksLoading ? (
+                  <StateBlock variant="loading" compact title="Carregando tarefas" />
+                ) : orderedTasks.length === 0 ? (
+                  <div className={styles.emptyState}>Sem tarefas vinculadas.</div>
+                ) : (
+                  orderedTasks.map((task) => {
+                    const status = getTaskStatus(task);
+                    return (
+                      <article key={task.id} className={styles.issueRow}>
+                        <span className={`${styles.checkCircle} ${status === 'done' ? styles.checkCircleDone : ''}`} aria-hidden="true">
+                          {status === 'done' ? '✓' : ''}
+                        </span>
+
+                        <div className={styles.issueTitle}>
+                          <strong>{compactText(task.title, 'Tarefa sem título')}</strong>
+                          {task.description ? <span>{task.description}</span> : null}
+                        </div>
+
+                        <span className={styles.issueContext}>{task.clientName || task.projectName || '—'}</span>
+
+                        <div className={styles.issueProperties}>
+                          <span className={`${styles.tag} ${styles[`tag_${status}`] || ''}`.trim()}>{getTaskStatusLabel(task)}</span>
+                          <span className={`${styles.tag} ${styles.tagKind}`}>{taskKindLabel(task)}</span>
+                        </div>
+
+                        <span className={`${styles.issueDue} ${isOverdue(task) ? styles.issueDueLate : ''}`.trim()}>{formatDateLabel(task.dueDate)}</span>
+                      </article>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.workPanel}>
+            <header className={styles.sectionHeader}>
+              <div>
+                <h2>Projetos</h2>
+                <p>{profileProjects.length ? `${profileProjects.length} projetos relacionados` : 'Nenhum projeto relacionado'}</p>
+              </div>
+            </header>
+
+            <div className={styles.projectList}>
+              {projectsLoading ? (
+                <StateBlock variant="loading" compact title="Carregando projetos" />
+              ) : profileProjects.length === 0 ? (
+                <div className={styles.emptyState}>Sem projetos vinculados.</div>
+              ) : (
+                profileProjects.map((project) => (
+                  <article key={project.id} className={styles.projectRow}>
+                    <span className={styles.projectIcon}><ProjectBoardIcon size={15} /></span>
+                    <div className={styles.projectCopy}>
+                      <strong>{project.name}</strong>
+                      <span>{project.clientName || project.squadName || '—'}</span>
+                    </div>
+                    <div className={styles.projectMeta}>
+                      <strong>{project.taskCount ? Math.round(((project.doneCount || 0) / project.taskCount) * 100) : 0}%</strong>
+                      <span>{project.doneCount || 0}/{project.taskCount || 0}</span>
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        </main>
+
+        <aside className={styles.sideColumn}>
+          <section className={styles.workPanel}>
+            <header className={styles.sectionHeader}>
+              <div>
+                <h2>Atuação</h2>
+                <p>Resumo operacional</p>
+              </div>
+            </header>
+
+            <div className={styles.infoList}>
+              <div className={styles.infoRow}>
+                <span>Carteira GDV</span>
+                <strong>{gdvClients.length}</strong>
+              </div>
+              <div className={styles.infoRow}>
+                <span>Carteira gestor</span>
+                <strong>{gestorClients.length}</strong>
+              </div>
+              <div className={styles.infoRow}>
+                <span>Squads</span>
+                <strong>{userSquads.length ? userSquads.map((squad) => squad.name).join(', ') : '—'}</strong>
+              </div>
+              <div className={styles.infoRow}>
+                <span>Squads próprios</span>
+                <strong>{ownedSquads.length ? ownedSquads.map((squad) => squad.name).join(', ') : '—'}</strong>
+              </div>
+              <div className={styles.infoRow}>
+                <span>GDVs próprios</span>
+                <strong>{ownedGdvs.length ? ownedGdvs.map((gdv) => gdv.name).join(', ') : '—'}</strong>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+
       {assignOpen ? (
         <div className={styles.modalOverlay} onClick={() => setAssignOpen(false)}>
           <form className={styles.taskModal} onSubmit={handleAssignTask} onClick={(event) => event.stopPropagation()}>
