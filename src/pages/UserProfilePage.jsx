@@ -349,7 +349,7 @@ export default function UserProfilePage() {
             <header className={styles.sectionHeader}>
               <div>
                 <h2>Tarefas atribuídas</h2>
-                <p>{profileTasks.length ? `${profileTasks.length} registros vinculados ao perfil` : 'Nenhuma tarefa vinculada'}</p>
+                {/* <p>{profileTasks.length ? `${profileTasks.length} registros vinculados ao perfil` : 'Nenhuma tarefa vinculada'}</p> */}
               </div>
             </header>
 
