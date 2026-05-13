@@ -2543,32 +2543,23 @@ export default function ProfilePage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
-        <div className={styles.identityRow}>
-          <span className={`${styles.avatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
-            {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileForm.name || user?.name)}
-          </span>
+        <div className={styles.heroTop}>
+          <div className={styles.identityRow}>
+            <span className={`${styles.avatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileForm.name || user?.name)}
+            </span>
 
-          <div className={styles.identityCopy}>
-            <span className={styles.identityGreeting}>{greetingForDate(profileDate)} · sua operação hoje</span>
-            <div className={styles.identityTitle}>
-              <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
-              <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
-            </div>
-            {user?.email ? (
-              <div className={styles.identityMeta}>
-                <span>{user.email}</span>
+            <div className={styles.identityCopy}>
+              <span className={styles.identityGreeting}>{greetingForDate(profileDate)}</span>
+              <div className={styles.identityTitle}>
+                <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
+                <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
               </div>
-            ) : null}
-            <div className={styles.profileStatRail}>
-              {profileStats.map(({ Icon, ...item }) => (
-                <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
-                  <span>
-                    <Icon size={12} strokeWidth={2} aria-hidden="true" />
-                    {item.label}
-                  </span>
-                  <strong>{item.value}</strong>
-                </span>
-              ))}
+              {user?.email ? (
+                <div className={styles.identityMeta}>
+                  <span>{user.email}</span>
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -2584,6 +2575,15 @@ export default function ProfilePage() {
           >
             <SettingsIcon size={16} />
           </button>
+        </div>
+
+        <div className={styles.profileStatRail}>
+          {profileStats.map(({ Icon, ...item }) => (
+            <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </span>
+          ))}
         </div>
       </section>
 

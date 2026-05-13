@@ -4138,102 +4138,128 @@
   white-space: pre-line;
 }
 
+
 /* -------------------------------------------------------------------------
-   V88 — Variação cockpit da tela principal do Perfil
-   Escopo: somente hero, régua operacional, Minha operação, tabs, lista e paginação.
+   V92 — Perfil cockpit Linear-like sem clone
+   Escopo: apenas tela principal. Modais, drawer e fluxos seguem intocados.
    ------------------------------------------------------------------------- */
 .hero {
   padding: 18px 20px 0 !important;
-  border-radius: 18px !important;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.010) 48%, rgba(212, 175, 55, 0.020)) !important;
-  border-color: rgba(255, 255, 255, 0.065) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.016) !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
   overflow: hidden;
 }
 
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 2px;
-  background: linear-gradient(180deg, rgba(212, 175, 55, 0.70), rgba(212, 175, 55, 0.08));
-  pointer-events: none;
+.hero::before,
+.hero::after {
+  display: none !important;
+  content: none !important;
+}
+
+.heroTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+  padding-bottom: 16px;
 }
 
 .identityRow {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
   align-items: start !important;
-  gap: 14px !important;
+  gap: 12px !important;
+  min-width: 0;
 }
 
 .avatar {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 15px !important;
-  margin-top: 2px;
+  width: 42px !important;
+  height: 42px !important;
+  margin: 1px 0 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  font-size: 14px !important;
 }
 
 .identityCopy {
-  gap: 4px !important;
   min-width: 0;
+  gap: 3px !important;
 }
 
 .identityGreeting {
   color: var(--edf-text-faint) !important;
   font-size: 11px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 
 .identityTitle {
-  gap: 9px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0;
 }
 
 .identityTitle h1 {
-  font-size: 21px !important;
+  min-width: 0;
+  font-size: 20px !important;
+  font-weight: 700 !important;
   line-height: 1.12 !important;
-  letter-spacing: -0.035em !important;
+  letter-spacing: -0.025em !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .roleBadge {
+  flex: 0 0 auto;
   padding: 2px 8px !important;
+  border-radius: 999px !important;
   font-size: 10px !important;
-  letter-spacing: 0.045em !important;
+  letter-spacing: 0.035em !important;
+  color: var(--edf-text-muted) !important;
   background: rgba(255, 255, 255, 0.018) !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
 }
 
 .identityMeta {
-  flex-direction: row !important;
-  flex-wrap: wrap;
-  gap: 6px 12px !important;
-  margin-top: 1px;
-}
-
-.identityMeta span:first-child {
-  color: var(--edf-text-secondary) !important;
+  display: block !important;
+  min-width: 0;
 }
 
 .identityMeta span {
-  font-size: 12px !important;
+  display: block;
+  min-width: 0;
   color: var(--edf-text-faint) !important;
+  font-size: 12px !important;
   line-height: 1.35 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.heroTop .iconButton {
+  align-self: start !important;
 }
 
 .profileStatRail {
-  margin: 16px -20px 0 !important;
+  margin: 0 -20px !important;
   padding: 0 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.055) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.052) !important;
   display: grid !important;
   grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   gap: 0 !important;
-  background: rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.006) !important;
 }
 
 .profileStat {
-  min-height: 64px;
-  padding: 12px 14px 11px !important;
-  gap: 6px !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.045);
+  min-height: 58px !important;
+  padding: 11px 14px 10px !important;
+  gap: 5px !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.044);
 }
 
 .profileStat:last-child {
@@ -4241,68 +4267,99 @@
 }
 
 .profileStat > span:first-child {
-  font-size: 10.5px !important;
-  letter-spacing: 0.035em;
-  text-transform: uppercase;
+  display: block !important;
   color: var(--edf-text-faint) !important;
+  font-size: 10.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  line-height: 1.2 !important;
+}
+
+.profileStat svg {
+  display: none !important;
 }
 
 .profileStat strong {
-  font-size: 20px !important;
+  color: var(--edf-text) !important;
+  font-size: 19px !important;
+  font-weight: 700 !important;
   line-height: 1 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.profileStat_red strong {
+  color: var(--edf-danger-soft) !important;
+}
+
+.profileStat_amber strong {
+  color: var(--edf-amber-strong) !important;
+}
+
+.profileStat_green strong,
+.profileStat_completion strong {
+  color: var(--edf-success-soft) !important;
 }
 
 .operationBoard {
-  border-radius: 18px !important;
+  border-radius: 16px !important;
   background: rgba(255, 255, 255, 0.014) !important;
-  border-color: rgba(255, 255, 255, 0.060) !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
+  overflow: hidden;
 }
 
 .operationHeader {
   padding: 0 !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.006) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052) !important;
 }
 
 .operationHeaderTop {
-  padding: 15px 20px 12px !important;
+  padding: 14px 20px 11px !important;
   margin: 0 !important;
-  align-items: flex-start !important;
+  align-items: center !important;
+  gap: 14px !important;
 }
 
 .operationTitleBlock {
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 2px !important;
+  min-width: 0;
 }
 
-.operationTitleBlock h2 {
+.operationHeading {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  color: var(--edf-text) !important;
   font-size: 17px !important;
-  letter-spacing: -0.025em !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.02em !important;
 }
 
-.operationTitleBlock small {
-  font-size: 11.5px !important;
-  color: var(--edf-text-faint) !important;
+.operationHeading svg {
+  flex: 0 0 auto;
+  color: var(--edf-text-muted) !important;
 }
 
 .primaryAction {
   height: 34px !important;
   padding: 0 12px !important;
   border-radius: 9px !important;
-  background: rgba(212, 175, 55, 0.075) !important;
 }
 
 .operationControlPanel {
   padding: 0 20px !important;
+  min-width: 0;
 }
 
 .operationTabs {
   gap: 18px !important;
+  width: 100%;
   overflow-x: auto !important;
   overflow-y: hidden !important;
   border-bottom: 0 !important;
   scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .operationTabs::-webkit-scrollbar {
@@ -4310,32 +4367,47 @@
 }
 
 .operationTab {
-  padding: 0 0 12px !important;
+  padding: 0 0 11px !important;
   gap: 6px !important;
-  border-bottom-width: 1px !important;
-  font-size: 12.5px !important;
+  border-bottom: 1px solid transparent !important;
   color: var(--edf-text-muted) !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+}
+
+.operationTab:hover {
+  color: var(--edf-text-secondary) !important;
 }
 
 .operationTabActive {
   color: var(--edf-text) !important;
-  border-bottom-color: var(--edf-amber) !important;
+  border-bottom-color: var(--edf-text-muted) !important;
 }
 
 .operationTabCount {
-  font-size: 11px !important;
   color: var(--edf-text-faint) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+}
+
+.operationTabActive .operationTabCount {
+  color: var(--edf-text-muted) !important;
+}
+
+.operationBody,
+.operationList {
+  min-width: 0;
 }
 
 .operationList {
-  background: rgba(0, 0, 0, 0.055);
+  background: rgba(0, 0, 0, 0.035);
 }
 
 .operationRow {
-  grid-template-columns: 18px minmax(0, 1fr) minmax(360px, auto) !important;
-  padding: 11px 20px !important;
+  grid-template-columns: 18px minmax(0, 1fr) minmax(380px, auto) !important;
   gap: 12px !important;
-  border-bottom-color: rgba(255, 255, 255, 0.045) !important;
+  padding: 11px 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.044) !important;
   background: transparent !important;
 }
 
@@ -4344,22 +4416,37 @@
   background: rgba(255, 255, 255, 0.014) !important;
 }
 
+.operationRowDone {
+  opacity: 0.62 !important;
+}
+
 .statusCheck {
   width: 16px !important;
   height: 16px !important;
+  align-self: center;
 }
 
 .operationMain {
-  gap: 1px !important;
+  min-width: 0;
+  gap: 2px !important;
 }
 
 .operationMain strong {
+  color: var(--edf-text-secondary) !important;
   font-size: 13px !important;
   font-weight: 620 !important;
+  line-height: 1.32 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .operationMain span {
+  color: var(--edf-text-faint) !important;
   font-size: 11.5px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .operationMeta {
@@ -4370,12 +4457,13 @@
 
 .operationMeta > span {
   font-size: 10.5px !important;
+  line-height: 1.45 !important;
   padding: 2px 8px !important;
-  line-height: 1.5 !important;
 }
 
 .dueLabel {
   min-width: 58px !important;
+  text-align: center;
 }
 
 .relationPill {
@@ -4385,9 +4473,14 @@
 }
 
 .emptyOperation {
-  min-height: 90px !important;
-  padding: 24px 20px !important;
-  background: rgba(0, 0, 0, 0.045);
+  min-height: 84px !important;
+  padding: 22px 20px !important;
+  background: rgba(0, 0, 0, 0.030) !important;
+}
+
+.emptyOperation span {
+  color: var(--edf-text-faint) !important;
+  font-size: 12.5px !important;
 }
 
 .emptyOperation span::before {
@@ -4398,10 +4491,13 @@
   padding: 12px 20px 14px !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto auto !important;
-  border-top-color: rgba(255, 255, 255, 0.055) !important;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.052) !important;
 }
 
-.operationPagination > span {
+.operationPagination > span,
+.operationPageIndicator {
+  color: var(--edf-text-faint) !important;
   font-size: 11.5px !important;
 }
 
@@ -4421,11 +4517,12 @@
   }
 
   .profileStat:nth-child(n + 4) {
-    border-top: 1px solid rgba(255, 255, 255, 0.045);
+    border-top: 1px solid rgba(255, 255, 255, 0.044);
   }
 
   .operationRow {
     grid-template-columns: 18px minmax(0, 1fr) !important;
+    row-gap: 8px !important;
   }
 
   .operationMeta {
@@ -4445,23 +4542,26 @@
     padding: 16px 16px 0 !important;
   }
 
+  .heroTop {
+    gap: 12px;
+  }
+
   .identityRow {
-    grid-template-columns: auto 1fr auto !important;
-    gap: 11px !important;
+    gap: 10px !important;
   }
 
   .avatar {
-    width: 42px !important;
-    height: 42px !important;
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 13px !important;
   }
 
   .identityTitle h1 {
     font-size: 18px !important;
   }
 
-  .identityMeta {
-    flex-direction: column !important;
-    gap: 1px !important;
+  .roleBadge {
+    display: none;
   }
 
   .profileStatRail {
@@ -4470,8 +4570,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
+  .profileStat {
+    min-height: 54px !important;
+  }
+
   .profileStat:nth-child(3n) {
-    border-right: 1px solid rgba(255, 255, 255, 0.045);
+    border-right: 1px solid rgba(255, 255, 255, 0.044);
   }
 
   .profileStat:nth-child(2n) {
@@ -4479,7 +4583,7 @@
   }
 
   .profileStat:nth-child(n + 3) {
-    border-top: 1px solid rgba(255, 255, 255, 0.045);
+    border-top: 1px solid rgba(255, 255, 255, 0.044);
   }
 
   .operationHeaderTop,
@@ -4492,7 +4596,7 @@
   }
 
   .operationHeaderTop {
-    gap: 12px !important;
+    align-items: flex-start !important;
   }
 
   .operationTabs {
@@ -4512,21 +4616,4 @@
   .operationPagination button {
     flex: 1;
   }
-}
-
-/* V89 — ajuste pontual do cockpit: remove textos redundantes e renomeia seção */
-.operationHeading {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  margin: 0 !important;
-}
-
-.operationHeading svg {
-  flex: 0 0 auto;
-  color: var(--edf-text-muted);
-}
-
-.operationTitleBlock small {
-  display: none !important;
 }
