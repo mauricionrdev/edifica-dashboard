@@ -5588,7 +5588,7 @@
 
 .emptyOperation {
   margin: 0 4px !important;
-  min-height: 148px !important;
+  /* min-height: 148px !important; */
   padding: 28px !important;
   border-radius: 8px !important;
   background: rgba(255, 255, 255, 0.006) !important;
