@@ -2542,10 +2542,10 @@ export default function ProfilePage() {
   const displayProfileName = profileForm.name || user?.name || 'Perfil';
   const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
   const todaySummary = operationCounts.today === 1
-    ? 'Você tem 1 tarefa para hoje.'
+    ? 'Você possui 1 demanda agendada para hoje.'
     : operationCounts.today > 1
-      ? `Você tem ${operationCounts.today} tarefas para hoje.`
-      : 'Sua fila de hoje está tranquila.';
+      ? `Você possui ${operationCounts.today} demandas agendadas para hoje.`
+      : 'Você não possui demandas agendadas para hoje.';
 
   return (
     <div className={styles.page}>
@@ -2561,7 +2561,7 @@ export default function ProfilePage() {
                 <h1>{displayProfileName}</h1>
                 <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
               </div>
-              <span className={styles.identityGreeting}>{greetingForDate(new Date())}, {profileFirstName}. {todaySummary}</span>
+              <span className={styles.identityGreeting}>{todaySummary}</span>
               {user?.email ? (
                 <div className={styles.identityMeta}>
                   <span>{user.email}</span>
