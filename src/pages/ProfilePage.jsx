@@ -231,6 +231,7 @@ function emptyOperationLabel(tab) {
     watching: 'Sem acompanhamentos',
     waiting: 'Sem demandas',
     done: 'Sem concluídas',
+    all: 'Sem tarefas',
   };
   return labels[tab] || 'Sem demandas';
 }
@@ -344,12 +345,8 @@ const OPERATION_TABS = [
   { value: 'today', label: 'Hoje' },
   { value: 'overdue', label: 'Atrasadas' },
   { value: 'critical', label: 'Críticas' },
-  { value: 'briefing', label: 'Briefings' },
-  { value: 'routine', label: 'Rotinas' },
-  { value: 'support', label: 'Suporte' },
-  { value: 'watching', label: 'Acompanhando' },
-  { value: 'waiting', label: 'Aguardando' },
   { value: 'done', label: 'Concluídas' },
+  { value: 'all', label: 'Todas' },
 ];
 
 const OPERATION_PAGE_SIZE = 8;
@@ -576,7 +573,11 @@ function workflowStepsForTask(task) {
 }
 
 function getOperationCounts(tasks) {
+  const openTasks = tasks.filter((task) => !isDone(task));
   return {
+    all: tasks.length,
+    open: openTasks.length,
+    risk: tasks.filter((task) => isOverdue(task) || isCriticalTask(task)).length,
     today: tasks.filter(isToday).length,
     overdue: tasks.filter(isOverdue).length,
     critical: tasks.filter(isCriticalTask).length,
@@ -591,6 +592,7 @@ function getOperationCounts(tasks) {
 
 function getVisibleTasks(tasks, tab) {
   const filtered = tasks.filter((task) => {
+    if (tab === 'all') return true;
     if (tab === 'done') return isDone(task);
     if (tab === 'overdue') return isOverdue(task);
     if (tab === 'today') return isToday(task);
@@ -1755,13 +1757,11 @@ export default function ProfilePage() {
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
   const profileDate = useMemo(() => new Date(), []);
   const profileStats = useMemo(() => ([
-    { label: 'Hoje', value: operationCounts.today, tone: 'amber', Icon: CalendarIcon },
-    { label: 'Atrasadas', value: operationCounts.overdue, tone: 'red', Icon: BellIcon },
-    { label: 'Críticas', value: operationCounts.critical, tone: 'red', Icon: BellIcon },
-    { label: 'Acompanhando', value: operationCounts.watching, tone: 'blue', Icon: UsersIcon },
-    { label: 'Concluídas', value: operationCounts.done, tone: 'green', Icon: ChecklistIcon },
-    { label: 'Conclusão', value: `${completionRate}%`, tone: 'completion', Icon: TargetIcon },
-  ]), [completionRate, operationCounts.critical, operationCounts.done, operationCounts.overdue, operationCounts.today, operationCounts.watching]);
+    { label: 'Taxa de conclusão', value: `${completionRate}%`, hint: `${operationCounts.done} concluídas`, tone: 'completion', Icon: TargetIcon },
+    { label: 'Em aberto', value: operationCounts.open, hint: `${operationCounts.today} para hoje`, tone: 'amber', Icon: CalendarIcon },
+    { label: 'Risco operacional', value: operationCounts.risk, hint: `${operationCounts.overdue} atrasadas`, tone: 'red', Icon: BellIcon },
+    { label: 'Acompanhando', value: operationCounts.watching, hint: 'colaborações', tone: 'blue', Icon: UsersIcon },
+  ]), [completionRate, operationCounts.done, operationCounts.open, operationCounts.overdue, operationCounts.risk, operationCounts.today, operationCounts.watching]);
   const canCreateDemand = canCreateProfileTask(user);
   const canEditActiveTask = canEditProfileTask(user, activeTask);
   const canCommentActiveTask = canCommentProfileTask(user, activeTask);
@@ -2550,7 +2550,6 @@ export default function ProfilePage() {
             </span>
 
             <div className={styles.identityCopy}>
-              <span className={styles.identityGreeting}>{greetingForDate(profileDate)}</span>
               <div className={styles.identityTitle}>
                 <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
                 <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
@@ -2582,6 +2581,7 @@ export default function ProfilePage() {
             <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
               <span>{item.label}</span>
               <strong>{item.value}</strong>
+              <em>{item.hint}</em>
             </span>
           ))}
         </div>
@@ -2592,7 +2592,7 @@ export default function ProfilePage() {
           <div className={styles.operationHeaderTop}>
             <div className={styles.operationTitleBlock}>
               <h2 className={styles.operationHeading}>
-                <ChecklistIcon size={17} strokeWidth={2.1} aria-hidden="true" />
+                <ChecklistIcon size={16} strokeWidth={2} aria-hidden="true" />
                 <span>Minhas tarefas</span>
               </h2>
             </div>
@@ -2614,7 +2614,6 @@ export default function ProfilePage() {
                 </button>
               ))}
             </nav>
-
           </div>
         </header>
 
@@ -2630,6 +2629,12 @@ export default function ProfilePage() {
           ) : (
             <>
               <div className={styles.operationList}>
+                <div className={styles.operationListHeader} aria-hidden="true">
+                  <span>Tarefa</span>
+                  <span>Cliente</span>
+                  <span>Propriedades</span>
+                  <span>Prazo</span>
+                </div>
                 {visibleTasks.map((task) => {
                   const itemKind = getTaskKind(task);
                   const itemStatus = statusKey(task);
@@ -2654,16 +2659,20 @@ export default function ProfilePage() {
 
                       <div className={styles.operationMain}>
                         <strong>{displayTaskTitle(task)}</strong>
+                        <span>{relationLabel(task)}</span>
+                      </div>
+
+                      <div className={styles.operationClientCell}>
                         <span>{task.clientName || task.projectName || task.createdByName || '—'}</span>
                       </div>
 
                       <div className={styles.operationMeta}>
                         <span className={`${styles.kindPill} ${styles[`kind_${itemKind}`] || ''}`.trim()}>{kindLabel(itemKind)}</span>
                         <span className={`${styles.priorityPill} ${styles[`priority_${priorityKey(task)}`] || ''}`.trim()}>{priorityLabel(priorityKey(task))}</span>
+                      </div>
+
+                      <div className={styles.operationDueCell}>
                         <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
-                        <span className={`${styles.relationPill} ${task.profileRelation === 'collaborator' ? styles.relationWatching : styles.relationResponsible}`.trim()}>
-                          {relationLabel(task)}
-                        </span>
                       </div>
                     </article>
                   );
@@ -2684,416 +2693,6 @@ export default function ProfilePage() {
           )}
         </div>
       </section>
-
-      {activeTask ? (
-        <aside className={styles.drawerOverlay} aria-label="Demanda" onClick={closeActiveTaskDrawer}>
-          <section className={styles.drawerPanel} onClick={(event) => event.stopPropagation()}>
-            <header className={styles.drawerTopbar}>
-              <div className={styles.drawerStatusGroup}>
-                <button
-                  type="button"
-                  className={`${styles.statusCheck} ${isDone(activeTask) ? styles.statusCheckDone : ''}`.trim()}
-                  onClick={() => handleToggleTask(activeTask)}
-                  disabled={taskUpdatingId === activeTask.id || !canCompleteActiveTask}
-                  aria-label={isDone(activeTask) ? 'Reabrir' : 'Concluir'}
-                >
-                  {isDone(activeTask) ? '✓' : ''}
-                </button>
-                <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
-              </div>
-              <button type="button" className={styles.iconButton} onClick={closeActiveTaskDrawer} aria-label="Fechar">
-                <CloseIcon size={16} />
-              </button>
-            </header>
-
-            <div className={styles.drawerScroll}>
-              <div className={styles.drawerHero}>
-                {contentEditing ? (
-                  <input
-                    className={styles.titleEditor}
-                    value={contentForm.title}
-                    onChange={(event) => setContentForm((prev) => ({ ...prev, title: event.target.value }))}
-                    aria-label="Título"
-                  />
-                ) : (
-                  <h3>{activeTask.title}</h3>
-                )}
-                <p>{nextActionLabel(activeTask)}</p>
-                <div className={styles.drawerHeroActions}>
-                  {activeKind === 'briefing' && activeBriefing && !activeBriefing.isComplete ? (
-                    <button type="button" onClick={handleRegisterBriefingIssues} disabled={commentSaving || !canCommentActiveTask}>Pendências</button>
-                  ) : null}
-                  {activeKind === 'briefing' && activeBriefing?.isComplete && !isDone(activeTask) ? (
-                    <button type="button" className={styles.heroActionPrimary} onClick={handleMarkBriefingImplemented} disabled={taskUpdatingId === activeTask.id || !canCompleteActiveTask}>Implementado</button>
-                  ) : null}
-                  {activeKind === 'briefing' && isDone(activeTask) ? (
-                    <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Ativação</button>
-                  ) : null}
-                  <button type="button" onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Handoff</button>
-                  {contentEditing ? (
-                    <>
-                      <button type="button" onClick={() => setContentEditing(false)} disabled={contentSaving}>Cancelar</button>
-                      <button type="button" className={styles.heroActionPrimary} onClick={handleSaveContent} disabled={contentSaving || !canEditActiveTask}>
-                        {contentSaving ? 'Salvando' : 'Salvar'}
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" onClick={() => openContentEditor(activeTask)} disabled={!canEditActiveTask}>Editar</button>
-                  )}
-                  <button type="button" onClick={() => setTaskDeleteTarget(activeTask)} disabled={!canEditActiveTask}>Excluir</button>
-                </div>
-              </div>
-
-              <section className={styles.drawerSection}>
-                <div className={styles.workflowGrid}>
-                  <label className={styles.workflowField}>
-                    <span>Status</span>
-                    <Select
-                      value={activeTask.status || (isDone(activeTask) ? 'done' : 'todo')}
-                      onChange={(event) => handleChangeTaskStatus(activeTask, event.target.value)}
-                      aria-label="Status"
-                      className={styles.workflowSelect}
-                      disabled={!canEditActiveTask}
-                    >
-                      {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                    </Select>
-                  </label>
-
-                  <label className={styles.workflowField}>
-                    <span>Responsável</span>
-                    <Select
-                      value={activeTask.assigneeUserId || ''}
-                      onChange={(event) => handleUpdateTaskFields(activeTask, { assigneeUserId: event.target.value }, 'Responsável atualizado.')}
-                      aria-label="Responsável"
-                      className={styles.workflowSelect}
-                      disabled={!canEditActiveTask}
-                    >
-                      <option value="">Sem responsável</option>
-                      {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                    </Select>
-                  </label>
-
-                  <label className={styles.workflowField}>
-                    <span>Prazo</span>
-                    <DateField
-                      value={activeTask.dueDate || ''}
-                      onChange={(value) => handleUpdateTaskFields(activeTask, { dueDate: value || '' }, 'Prazo atualizado.')}
-                      placeholder="Prazo"
-                      ariaLabel="Prazo"
-                      className={styles.workflowDate}
-                      disabled={!canEditActiveTask}
-                    />
-                  </label>
-
-                  <label className={styles.workflowField}>
-                    <span>Prioridade</span>
-                    <Select
-                      value={activeTask.priority || 'medium'}
-                      onChange={(event) => handleUpdateTaskFields(activeTask, { priority: event.target.value }, 'Prioridade atualizada.')}
-                      aria-label="Prioridade"
-                      className={styles.workflowSelect}
-                      disabled={!canEditActiveTask}
-                    >
-                      {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                    </Select>
-                  </label>
-                </div>
-
-                {activeContextItems.length ? (
-                  <div className={styles.contextGrid}>
-                    {activeContextItems.map(([label, value]) => (
-                      <div key={label} className={styles.contextItem}>
-                        <span>{label}</span>
-                        <strong>{value || '—'}</strong>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </section>
-
-              {activeWorkflowSteps.length ? (
-                <section className={styles.drawerSection}>
-                  <div className={styles.sectionTitleRow}>
-                    <h4>Fluxo</h4>
-                    <span>{kindLabel(activeKind)}</span>
-                  </div>
-                  <div className={styles.workflowTimeline}>
-                    {activeWorkflowSteps.map((step, index) => (
-                      <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''}`.trim()}>
-                        <i>{index + 1}</i>
-                        <span>{step.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              ) : null}
-
-              {activeBriefing ? (
-                <section className={styles.drawerSection}>
-                  <div className={styles.sectionTitleRow}>
-                    <h4>Briefing</h4>
-                    <span className={activeBriefing.isComplete ? styles.briefingComplete : styles.briefingIncomplete}>
-                      {activeBriefing.isComplete ? 'Completo' : 'Incompleto'}
-                    </span>
-                  </div>
-                  <div className={styles.briefingSummary}>
-                    <i><b style={{ width: `${activeBriefing.completion}%` }} /></i>
-                    <span>{activeBriefing.filledRequired}/{activeBriefing.requiredTotal}</span>
-                  </div>
-                  {!activeBriefing.isComplete ? (
-                    <div className={styles.briefingMissing}>
-                      <span>Pendências</span>
-                      <div>
-                        {activeBriefing.missingRequired.map((field) => (
-                          <em key={field.key}>{field.label}</em>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                  {contentEditing ? (
-                    <div className={styles.structuredEditGrid}>
-                      {BRIEFING_FIELDS.map((field) => (
-                        <label key={field.key} className={field.key === 'notes' ? styles.fieldFull : ''}>
-                          <span>{field.label}</span>
-                          <input
-                            value={contentForm[field.key] || ''}
-                            onChange={(event) => setContentForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
-                          />
-                        </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className={styles.briefingDetailsGrid}>
-                      {BRIEFING_FIELDS.map((field) => {
-                        const value = activeBriefing.values[field.key];
-                        return value ? (
-                          <div key={field.key} className={styles.briefingDetailItem}>
-                            <span>{field.label}</span>
-                            <strong>{value}</strong>
-                          </div>
-                        ) : null;
-                      })}
-                    </div>
-                  )}
-                </section>
-              ) : null}
-
-              {activeRoutine ? (
-                <section className={styles.drawerSection}>
-                  <div className={styles.sectionTitleRow}>
-                    <h4>Rotina</h4>
-                    <span>{activeRoutine.values.recurrence || 'Recorrente'}</span>
-                  </div>
-                  {contentEditing ? (
-                    <div className={styles.structuredEditGrid}>
-                      <label>
-                        <span>Recorrência</span>
-                        <Select
-                          value={contentForm.recurrence}
-                          onChange={(event) => setContentForm((prev) => ({ ...prev, recurrence: event.target.value }))}
-                          aria-label="Recorrência"
-                          className={styles.formSelect}
-                        >
-                          {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.label}>{option.label}</option>)}
-                        </Select>
-                      </label>
-                      <label>
-                        <span>Escopo</span>
-                        <input value={contentForm.routineScope} onChange={(event) => setContentForm((prev) => ({ ...prev, routineScope: event.target.value }))} />
-                      </label>
-                      <label className={styles.fieldFull}>
-                        <span>Checklist</span>
-                        <textarea value={contentForm.routineChecklist} onChange={(event) => setContentForm((prev) => ({ ...prev, routineChecklist: event.target.value }))} />
-                      </label>
-                    </div>
-                  ) : (
-                    <div className={styles.routineDetailsGrid}>
-                      {ROUTINE_FIELDS.map((field) => {
-                        const value = activeRoutine.values[field.key];
-                        return value ? (
-                          <div key={field.key} className={field.key === 'checklist' ? styles.routineChecklistItem : styles.briefingDetailItem}>
-                            <span>{field.label}</span>
-                            <strong>{value}</strong>
-                          </div>
-                        ) : null;
-                      })}
-                    </div>
-                  )}
-                </section>
-              ) : null}
-
-              {(contentEditing || activeDescription) ? (
-                <section className={styles.drawerSection}>
-                  <h4>Descrição</h4>
-                  {contentEditing ? (
-                    <textarea
-                      className={styles.descriptionEditor}
-                      value={contentForm.description}
-                      onChange={(event) => setContentForm((prev) => ({ ...prev, description: event.target.value }))}
-                    />
-                  ) : (
-                    <div className={styles.descriptionBox}>{activeDescription}</div>
-                  )}
-                </section>
-              ) : null}
-
-              <section className={styles.drawerSection}>
-                <div className={styles.sectionTitleRow}>
-                  <h4>Colaboradores</h4>
-                  <span>{collaborators.length}</span>
-                </div>
-                <form className={styles.collaboratorComposer} onSubmit={handleAddCollaborator}>
-                  <Select
-                    value={collaboratorUserId}
-                    onChange={(event) => setCollaboratorUserId(event.target.value)}
-                    aria-label="Colaborador"
-                    className={styles.formSelect}
-                    disabled={!canManageActiveCollaborators}
-                  >
-                    <option value="">Adicionar colaborador</option>
-                    {collaboratorOptions.map((option) => (
-                      <option key={option.id} value={option.id}>{option.name}</option>
-                    ))}
-                  </Select>
-                  <button type="submit" disabled={collaboratorSaving || !collaboratorUserId || !canManageActiveCollaborators}>+</button>
-                </form>
-                {collaboratorsLoading ? (
-                  <div className={styles.commentState}>Carregando</div>
-                ) : collaborators.length ? (
-                  <div className={styles.collaboratorList}>
-                    {collaborators.map((collaborator) => {
-                      const collaboratorName = collaborator.userName || collaborator.name || 'Usuário';
-                      return (
-                        <div key={collaborator.userId} className={styles.collaboratorItem}>
-                          <span className={styles.collaboratorAvatar}>{initials(collaboratorName)}</span>
-                          <div className={styles.collaboratorInfo}>
-                            <strong>{collaboratorName}</strong>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCollaborator(collaborator.userId)}
-                            disabled={collaboratorRemovingId === collaborator.userId || !canManageActiveCollaborators}
-                            aria-label="Remover colaborador"
-                            title="Remover colaborador"
-                          >
-                            <TrashIcon size={13} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </section>
-
-              <section className={styles.drawerSection}>
-                <div className={styles.sectionTitleRow}>
-                  <h4>Subtarefas</h4>
-                  <span>{activeSubtasks.length}</span>
-                </div>
-                <form className={styles.inlineComposer} onSubmit={handleCreateSubtask}>
-                  <input value={subtaskDraft} onChange={(event) => setSubtaskDraft(event.target.value)} placeholder="Subtarefa" disabled={!canCreateActiveSubtask} />
-                  <button type="submit" disabled={subtaskSaving || !subtaskDraft.trim() || !canCreateActiveSubtask}>+</button>
-                </form>
-                {subtasksLoading ? (
-                  <div className={styles.commentState}>Carregando</div>
-                ) : activeSubtasks.length ? (
-                  <div className={styles.subtaskList}>
-                    {activeSubtasks.map((subtask) => (
-                      <div key={subtask.id} className={styles.subtaskItem}>
-                        <button
-                          type="button"
-                          className={`${styles.statusCheck} ${isDone(subtask) ? styles.statusCheckDone : ''}`.trim()}
-                          onClick={() => handleToggleTask(subtask)}
-                          disabled={taskUpdatingId === subtask.id || !canCompleteProfileTask(user, subtask)}
-                          aria-label={isDone(subtask) ? 'Reabrir' : 'Concluir'}
-                        >
-                          {isDone(subtask) ? '✓' : ''}
-                        </button>
-                        <span>{subtask.title}</span>
-                        <button
-                          type="button"
-                          className={styles.subtaskDeleteButton}
-                          onClick={() => setSubtaskDeleteTarget(subtask)}
-                          disabled={taskUpdatingId === subtask.id || !canEditProfileTask(user, subtask)}
-                          aria-label="Excluir subtarefa"
-                          title="Excluir subtarefa"
-                        >
-                          <TrashIcon size={13} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </section>
-
-              <section className={styles.drawerSection}>
-                <div className={styles.sectionTitleRow}>
-                  <h4>Comentários</h4>
-                  <span>{visibleTaskComments.length}</span>
-                </div>
-                <form className={styles.commentForm} onSubmit={handleCreateComment}>
-                  <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Comentário" disabled={!canCommentActiveTask} />
-                  <button type="submit" disabled={commentSaving || !commentDraft.trim() || !canCommentActiveTask}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
-                </form>
-                {commentsLoading ? (
-                  <div className={styles.commentState}>Carregando</div>
-                ) : visibleTaskComments.length ? (
-                  <div className={styles.commentList}>
-                    {visibleTaskComments.map((comment) => {
-                      const commentAuthor = comment.authorName || comment.userName || 'Usuário';
-                      return (
-                        <article key={comment.id} className={styles.commentItem}>
-                          <span className={styles.commentAvatar}>{initials(commentAuthor)}</span>
-                          <div className={styles.commentBody}>
-                            <header className={styles.commentHeader}>
-                              <strong>{commentAuthor}</strong>
-                              <span>{formatDateTime(comment.createdAt)}</span>
-                              <button
-                                type="button"
-                                className={styles.commentDeleteButton}
-                                onClick={() => setCommentDeleteTarget(comment)}
-                                disabled={!canDeleteProfileComment(user, comment)}
-                                aria-label="Excluir comentário"
-                                title="Excluir comentário"
-                              >
-                                <TrashIcon size={13} />
-                              </button>
-                            </header>
-                            <p>{comment.body || comment.content || ''}</p>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </section>
-
-              <section className={styles.drawerSection}>
-                <div className={styles.sectionTitleRow}>
-                  <h4>Atividade</h4>
-                  <span>{activeActivityEvents.length}</span>
-                </div>
-                <div className={styles.activityList}>
-                  {activeActivityEvents.map((event) => (
-                    <div key={event.id} className={`${styles.activityItem} ${event.quiet ? styles.activityItemQuiet : ''}`.trim()}>
-                      <span className={`${styles.activityMark} ${styles[`activityMark_${event.type}`] || ''}`.trim()} aria-hidden="true" />
-                      <div className={styles.activityContent}>
-                        <p>
-                          <strong>{event.title}</strong>
-                          {event.meta && !looksLikeTechnicalId(event.meta) ? <em>{event.meta}</em> : null}
-                        </p>
-                        {event.note && !looksLikeTechnicalId(event.note) ? <small>{event.note}</small> : null}
-                        {event.createdAt ? <time>{formatDateTime(event.createdAt)}</time> : null}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </div>
-          </section>
-        </aside>
-      ) : null}
-
 
       {demandModalOpen ? (
         <div
