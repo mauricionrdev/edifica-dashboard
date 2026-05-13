@@ -5252,7 +5252,7 @@
 }
 
 .heroTop {
-  padding: 22px 24px 20px !important;
+  /* padding: 22px 24px 20px !important; */
   align-items: flex-start !important;
 }
 
@@ -5418,7 +5418,7 @@
 
 /* V96 — Implementação fiel ao ajuste validado no DevTools */
 .hero {
-  margin: 0 4px 24px !important;
+  margin: 0 4px 0 !important;
   border-radius: 12px !important;
   background: rgba(255, 255, 255, 0.010) !important;
   border-color: rgba(255, 255, 255, 0.060) !important;
@@ -5427,7 +5427,7 @@
 
 .heroTop {
   min-height: 124px !important;
-  padding: 28px 28px 24px !important;
+  /* padding: 28px 28px 24px !important; */
   align-items: flex-start !important;
 }
 
