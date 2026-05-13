@@ -2560,12 +2560,9 @@ export default function ProfilePage() {
               </div>
             ) : null}
             <div className={styles.profileStatRail}>
-              {profileStats.map(({ Icon, ...item }) => (
+              {profileStats.map((item) => (
                 <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
-                  <span>
-                    <Icon size={12} strokeWidth={2} aria-hidden="true" />
-                    {item.label}
-                  </span>
+                  <span>{item.label}</span>
                   <strong>{item.value}</strong>
                 </span>
               ))}
