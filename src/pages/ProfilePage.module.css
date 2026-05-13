@@ -4047,7 +4047,7 @@
 .photoAvatar img {
   outline: 0 !important;
   box-shadow: none !important;
-  border-color: transparent !important;
+  /* border-color: transparent !important; */
   backface-visibility: hidden;
 }
 
