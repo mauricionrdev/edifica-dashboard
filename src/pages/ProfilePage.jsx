@@ -2539,6 +2539,13 @@ export default function ProfilePage() {
         ? activeRoutine.extraDescription
         : activeTask.description
     : '';
+  const displayProfileName = profileForm.name || user?.name || 'Perfil';
+  const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
+  const todaySummary = operationCounts.today === 1
+    ? 'Você tem 1 tarefa para hoje.'
+    : operationCounts.today > 1
+      ? `Você tem ${operationCounts.today} tarefas para hoje.`
+      : 'Sua fila de hoje está tranquila.';
 
   return (
     <div className={styles.page}>
@@ -2551,9 +2558,10 @@ export default function ProfilePage() {
 
             <div className={styles.identityCopy}>
               <div className={styles.identityTitle}>
-                <h1>{profileForm.name || user?.name || 'Perfil'}</h1>
+                <h1>{displayProfileName}</h1>
                 <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
               </div>
+              <span className={styles.identityGreeting}>{greetingForDate(new Date())}, {profileFirstName}. {todaySummary}</span>
               {user?.email ? (
                 <div className={styles.identityMeta}>
                   <span>{user.email}</span>

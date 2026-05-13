@@ -5245,3 +5245,175 @@
     justify-content: flex-start !important;
   }
 }
+
+/* V95 — Ajustes de espaçamento, saudação e filtros em cards compactos */
+.hero {
+  border-radius: 12px !important;
+}
+
+.heroTop {
+  padding: 22px 24px 20px !important;
+  align-items: flex-start !important;
+}
+
+.identityRow {
+  gap: 14px !important;
+}
+
+.identityCopy {
+  gap: 5px !important;
+}
+
+.identityGreeting {
+  display: block !important;
+  color: var(--edf-text-muted) !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  max-width: 520px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identityMeta {
+  margin-top: 0 !important;
+}
+
+.profileStatRail {
+  border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
+}
+
+.profileStat {
+  min-height: 76px !important;
+  padding: 14px 22px !important;
+}
+
+.operationBoard {
+  margin-top: 2px !important;
+}
+
+.operationHeader {
+  padding: 18px 24px 16px !important;
+  background: rgba(255, 255, 255, 0.008) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052) !important;
+}
+
+.operationHeaderTop {
+  display: grid !important;
+  grid-template-columns: auto auto !important;
+  justify-content: start !important;
+  align-items: center !important;
+  gap: 18px !important;
+  padding: 0 !important;
+  margin: 0 0 18px !important;
+}
+
+.operationHeading {
+  font-size: 18px !important;
+}
+
+.operationHeaderTop .primaryAction {
+  height: 36px !important;
+  padding: 0 13px !important;
+  border-radius: 9px !important;
+}
+
+.operationControlPanel {
+  padding: 0 !important;
+}
+
+.operationTabs {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+  width: auto !important;
+  max-width: 100%;
+  padding: 0 !important;
+  overflow-x: auto !important;
+}
+
+.operationTab {
+  min-height: 34px !important;
+  padding: 0 10px !important;
+  gap: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.055) !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.012) !important;
+  color: var(--edf-text-muted) !important;
+  line-height: 1 !important;
+}
+
+.operationTab:hover {
+  background: rgba(255, 255, 255, 0.020) !important;
+  border-color: rgba(255, 255, 255, 0.085) !important;
+  color: var(--edf-text-secondary) !important;
+}
+
+.operationTabActive {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.120) !important;
+  color: var(--edf-text) !important;
+}
+
+.operationTabLabel {
+  font-size: 12.5px !important;
+  font-weight: 560 !important;
+}
+
+.operationTabCount {
+  min-width: 18px !important;
+  height: 18px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 6px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: var(--edf-text-faint) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.operationTabActive .operationTabCount {
+  background: rgba(255, 255, 255, 0.075) !important;
+  color: var(--edf-text-secondary) !important;
+}
+
+.operationBody {
+  padding-top: 18px !important;
+}
+
+.operationList {
+  border-radius: 10px !important;
+}
+
+.operationPagination {
+  padding: 12px 4px 0 !important;
+}
+
+@media (max-width: 720px) {
+  .heroTop {
+    padding: 18px 16px 16px !important;
+  }
+
+  .identityGreeting {
+    white-space: normal;
+  }
+
+  .operationHeader {
+    padding: 16px !important;
+  }
+
+  .operationHeaderTop {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .operationHeaderTop .primaryAction {
+    width: 100% !important;
+  }
+}
