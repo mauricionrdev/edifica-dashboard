@@ -378,7 +378,7 @@ export default function UserProfilePage() {
 
                         <div className={styles.issueTitle}>
                           <strong>{compactText(task.title, 'Tarefa sem título')}</strong>
-                          {task.description ? <span>{task.description}</span> : null}
+                          {/* {task.description ? <span>{task.description}</span> : null} */}
                         </div>
 
                         <span className={styles.issueContext}>{task.clientName || task.projectName || '—'}</span>
