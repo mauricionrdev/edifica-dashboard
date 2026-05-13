@@ -310,7 +310,6 @@ export default function UserProfilePage() {
             {/* <p>{profileTasks.length ? `${profileUser.name.split(' ')[0]} possui ${openTasksCount} tarefas em aberto.` : `${profileUser.name.split(' ')[0]} não possui tarefas em aberto.`}</p> */}
             <div className={styles.profileMeta}>
               {profileUser.email ? <span>{profileUser.email}</span> : null}
-              {profileContext ? <span>{profileContext}</span> : null}
             </div>
           </div>
         </div>
