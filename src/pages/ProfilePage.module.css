@@ -92,7 +92,7 @@
    2. Hero / Identidade
    ------------------------------------------------------------------------- */
 .hero {
-  padding: 20px 22px 18px;
+  /* padding: 20px 22px 18px; */
   position: relative;
 }
 
@@ -4145,7 +4145,7 @@
    Escopo: apenas tela principal. Modais, drawer e fluxos seguem intocados.
    ------------------------------------------------------------------------- */
 .hero {
-  padding: 18px 20px 0 !important;
+  /* padding: 18px 20px 0 !important; */
   border-radius: 16px !important;
   background: rgba(255, 255, 255, 0.016) !important;
   border: 1px solid rgba(255, 255, 255, 0.060) !important;
@@ -5459,7 +5459,7 @@
 
 .roleBadge {
   height: 22px !important;
-  padding: 0 10px !important;
+  padding: 2px 10px !important;
   border-radius: 999px !important;
   background: rgba(255, 255, 255, 0.012) !important;
   border-color: rgba(255, 255, 255, 0.065) !important;
