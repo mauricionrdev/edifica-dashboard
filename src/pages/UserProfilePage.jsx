@@ -328,7 +328,7 @@ export default function UserProfilePage() {
           <div className={styles.statItem}>
             <span>Risco</span>
             <strong className={overdueTasksCount ? styles.critical : ''}>{overdueTasksCount}</strong>
-            <em>{overdueTasksCount === 1 ? 'atrasada' : 'atrasadas'}</em>
+            {/* <em>{overdueTasksCount === 1 ? 'atrasada' : 'atrasadas'}</em> */}
           </div>
           <div className={styles.statItem}>
             <span>Concluídas</span>
