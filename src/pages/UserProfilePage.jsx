@@ -68,6 +68,27 @@ function getTaskStatusLabel(task) {
   return 'Aberta';
 }
 
+function isTodayTask(task) {
+  if (!task?.dueDate || task?.done || task?.status === 'done') return false;
+  const today = new Date();
+  const due = new Date(`${task.dueDate}T00:00:00`);
+  if (Number.isNaN(due.getTime())) return false;
+  return today.getFullYear() === due.getFullYear() && today.getMonth() === due.getMonth() && today.getDate() === due.getDate();
+}
+
+function taskKindLabel(task) {
+  const text = `${task?.title || ''} ${task?.description || ''}`.toLowerCase();
+  if (text.includes('briefing')) return 'Briefing';
+  if (text.includes('rotina')) return 'Rotina';
+  if (text.includes('suporte')) return 'Suporte';
+  return 'Tarefa';
+}
+
+function compactText(value, fallback = '—') {
+  const text = String(value || '').trim();
+  return text || fallback;
+}
+
 function orderTasks(tasks) {
   return [...tasks].sort((a, b) => {
     const order = { overdue: 0, open: 1, done: 2 };
@@ -226,6 +247,15 @@ export default function UserProfilePage() {
   const overdueTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) === 'overdue').length, [profileTasks]);
   const completedTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) === 'done').length, [profileTasks]);
   const completionRate = profileTasks.length ? Math.round((completedTasksCount / profileTasks.length) * 100) : 0;
+  const todayTasksCount = useMemo(() => profileTasks.filter(isTodayTask).length, [profileTasks]);
+  const activeProjectsCount = useMemo(
+    () => profileProjects.filter((project) => Number(project.taskCount || 0) !== Number(project.doneCount || 0)).length,
+    [profileProjects]
+  );
+  const portfolioCount = gdvClients.length + gestorClients.length;
+  const profileContext = userSquads.length
+    ? userSquads.map((squad) => squad.name).join(', ')
+    : roleLabel(profileUser?.role);
 
   async function handleAssignTask(event) {
     event.preventDefault();
@@ -266,8 +296,8 @@ export default function UserProfilePage() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.hero}>
-        <div className={styles.heroMain}>
+      <section className={styles.profileHero}>
+        <div className={styles.heroIdentity}>
           <span className={styles.avatar}>
             {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileUser.name)}
           </span>
@@ -277,10 +307,10 @@ export default function UserProfilePage() {
               <h1>{profileUser.name}</h1>
               <span className={styles.roleBadge}>{roleLabel(profileUser.role)}</span>
             </div>
-
+            <p>{profileTasks.length ? `${profileUser.name.split(' ')[0]} possui ${openTasksCount} tarefas em aberto.` : `${profileUser.name.split(' ')[0]} não possui tarefas em aberto.`}</p>
             <div className={styles.profileMeta}>
               {profileUser.email ? <span>{profileUser.email}</span> : null}
-              {userSquads.length ? <span>{userSquads.map((squad) => squad.name).join(', ')}</span> : null}
+              {profileContext ? <span>{profileContext}</span> : null}
             </div>
           </div>
         </div>
@@ -289,73 +319,89 @@ export default function UserProfilePage() {
           Atribuir tarefa
         </button>
 
-        <div className={styles.heroStats}>
-          <div className={styles.heroStat}>
-            <span>Abertas</span>
+        <div className={styles.statRail}>
+          <div className={styles.statItem}>
+            <span>Em aberto</span>
             <strong>{openTasksCount}</strong>
+            <em>{todayTasksCount} para hoje</em>
           </div>
-          <div className={styles.heroStat}>
-            <span>Atrasadas</span>
+          <div className={styles.statItem}>
+            <span>Risco</span>
             <strong className={overdueTasksCount ? styles.critical : ''}>{overdueTasksCount}</strong>
+            <em>{overdueTasksCount === 1 ? 'atrasada' : 'atrasadas'}</em>
           </div>
-          <div className={styles.heroStat}>
+          <div className={styles.statItem}>
             <span>Concluídas</span>
             <strong>{completedTasksCount}</strong>
+            <em>{completionRate}% de conclusão</em>
           </div>
-          <div className={styles.heroStat}>
-            <span>Conclusão</span>
-            <strong>{completionRate}%</strong>
-            <i><b style={{ width: `${completionRate}%` }} /></i>
+          <div className={styles.statItem}>
+            <span>Carteira</span>
+            <strong>{portfolioCount}</strong>
+            <em>{activeProjectsCount} projetos ativos</em>
           </div>
         </div>
       </section>
 
-      <div className={styles.layout}>
+      <div className={styles.profileGrid}>
         <main className={styles.mainColumn}>
-          <section className={styles.panel}>
-            <header className={styles.panelHeader}>
-              <div className={styles.panelHeading}>
-                <h2>Tarefas</h2>
-                <p>{profileTasks.length}</p>
+          <section className={styles.workPanel}>
+            <header className={styles.sectionHeader}>
+              <div>
+                <h2>Tarefas atribuídas</h2>
+                <p>{profileTasks.length ? `${profileTasks.length} registros vinculados ao perfil` : 'Nenhuma tarefa vinculada'}</p>
               </div>
             </header>
 
-            <div className={styles.taskTableHead}>
-              <span>Nome</span>
-              <span>Contexto</span>
-              <span>Status</span>
-              <span>Prazo</span>
-            </div>
+            <div className={styles.issueTable}>
+              <div className={styles.issueHead} aria-hidden="true">
+                <span />
+                <span>Tarefa</span>
+                <span>Contexto</span>
+                <span>Propriedades</span>
+                <span>Prazo</span>
+              </div>
 
-            <div className={styles.taskList}>
-              {tasksLoading ? (
-                <StateBlock variant="loading" compact title="Carregando tarefas" />
-              ) : orderedTasks.length === 0 ? (
-                <StateBlock variant="empty" compact title="Sem tarefas" />
-              ) : (
-                orderedTasks.map((task) => (
-                  <article key={task.id} className={styles.taskRow}>
-                    <span className={`${styles.checkCircle} ${getTaskStatus(task) === 'done' ? styles.checkCircleDone : ''}`} aria-hidden="true">
-                      {getTaskStatus(task) === 'done' ? '✓' : ''}
-                    </span>
-                    <div className={styles.taskCopy}>
-                      <strong>{task.title}</strong>
-                      {task.description ? <span>{task.description}</span> : null}
-                    </div>
-                    <span className={styles.taskProject}>{task.projectName || task.clientName || '—'}</span>
-                    <span className={`${styles.taskTag} ${styles[`taskTag_${getTaskStatus(task)}`] || ''}`.trim()}>{getTaskStatusLabel(task)}</span>
-                    <span className={styles.taskDue}>{formatDateLabel(task.dueDate)}</span>
-                  </article>
-                ))
-              )}
+              <div className={styles.issueList}>
+                {tasksLoading ? (
+                  <StateBlock variant="loading" compact title="Carregando tarefas" />
+                ) : orderedTasks.length === 0 ? (
+                  <div className={styles.emptyState}>Sem tarefas vinculadas.</div>
+                ) : (
+                  orderedTasks.map((task) => {
+                    const status = getTaskStatus(task);
+                    return (
+                      <article key={task.id} className={styles.issueRow}>
+                        <span className={`${styles.checkCircle} ${status === 'done' ? styles.checkCircleDone : ''}`} aria-hidden="true">
+                          {status === 'done' ? '✓' : ''}
+                        </span>
+
+                        <div className={styles.issueTitle}>
+                          <strong>{compactText(task.title, 'Tarefa sem título')}</strong>
+                          {task.description ? <span>{task.description}</span> : null}
+                        </div>
+
+                        <span className={styles.issueContext}>{task.clientName || task.projectName || '—'}</span>
+
+                        <div className={styles.issueProperties}>
+                          <span className={`${styles.tag} ${styles[`tag_${status}`] || ''}`.trim()}>{getTaskStatusLabel(task)}</span>
+                          <span className={`${styles.tag} ${styles.tagKind}`}>{taskKindLabel(task)}</span>
+                        </div>
+
+                        <span className={`${styles.issueDue} ${isOverdue(task) ? styles.issueDueLate : ''}`.trim()}>{formatDateLabel(task.dueDate)}</span>
+                      </article>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </section>
 
-          <section className={styles.panel}>
-            <header className={styles.panelHeader}>
-              <div className={styles.panelHeading}>
+          <section className={styles.workPanel}>
+            <header className={styles.sectionHeader}>
+              <div>
                 <h2>Projetos</h2>
-                <p>{profileProjects.length}</p>
+                <p>{profileProjects.length ? `${profileProjects.length} projetos relacionados` : 'Nenhum projeto relacionado'}</p>
               </div>
             </header>
 
@@ -363,20 +409,18 @@ export default function UserProfilePage() {
               {projectsLoading ? (
                 <StateBlock variant="loading" compact title="Carregando projetos" />
               ) : profileProjects.length === 0 ? (
-                <span className={styles.emptyText}>Sem projetos vinculados.</span>
+                <div className={styles.emptyState}>Sem projetos vinculados.</div>
               ) : (
                 profileProjects.map((project) => (
                   <article key={project.id} className={styles.projectRow}>
-                    <span className={styles.projectIcon}><ProjectBoardIcon size={16} /></span>
+                    <span className={styles.projectIcon}><ProjectBoardIcon size={15} /></span>
                     <div className={styles.projectCopy}>
                       <strong>{project.name}</strong>
                       <span>{project.clientName || project.squadName || '—'}</span>
                     </div>
                     <div className={styles.projectMeta}>
-                      <span className={styles.projectProgress}>
-                        {project.taskCount ? Math.round(((project.doneCount || 0) / project.taskCount) * 100) : 0}%
-                      </span>
-                      <span className={styles.projectArrow}>{project.doneCount || 0}/{project.taskCount || 0}</span>
+                      <strong>{project.taskCount ? Math.round(((project.doneCount || 0) / project.taskCount) * 100) : 0}%</strong>
+                      <span>{project.doneCount || 0}/{project.taskCount || 0}</span>
                     </div>
                   </article>
                 ))
@@ -386,11 +430,11 @@ export default function UserProfilePage() {
         </main>
 
         <aside className={styles.sideColumn}>
-          <section className={styles.panel}>
-            <header className={styles.panelHeader}>
-              <div className={styles.panelHeading}>
+          <section className={styles.workPanel}>
+            <header className={styles.sectionHeader}>
+              <div>
                 <h2>Atuação</h2>
-                <p>Resumo</p>
+                <p>Resumo operacional</p>
               </div>
             </header>
 
