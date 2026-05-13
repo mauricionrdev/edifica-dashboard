@@ -428,40 +428,6 @@ export default function UserProfilePage() {
             </div>
           </section>
         </main>
-
-        <aside className={styles.sideColumn}>
-          <section className={styles.workPanel}>
-            <header className={styles.sectionHeader}>
-              <div>
-                <h2>Atuação</h2>
-                <p>Resumo operacional</p>
-              </div>
-            </header>
-
-            <div className={styles.infoList}>
-              <div className={styles.infoRow}>
-                <span>Carteira GDV</span>
-                <strong>{gdvClients.length}</strong>
-              </div>
-              <div className={styles.infoRow}>
-                <span>Carteira gestor</span>
-                <strong>{gestorClients.length}</strong>
-              </div>
-              <div className={styles.infoRow}>
-                <span>Squads</span>
-                <strong>{userSquads.length ? userSquads.map((squad) => squad.name).join(', ') : '—'}</strong>
-              </div>
-              <div className={styles.infoRow}>
-                <span>Squads próprios</span>
-                <strong>{ownedSquads.length ? ownedSquads.map((squad) => squad.name).join(', ') : '—'}</strong>
-              </div>
-              <div className={styles.infoRow}>
-                <span>GDVs próprios</span>
-                <strong>{ownedGdvs.length ? ownedGdvs.map((gdv) => gdv.name).join(', ') : '—'}</strong>
-              </div>
-            </div>
-          </section>
-        </aside>
       </div>
 
       {assignOpen ? (
