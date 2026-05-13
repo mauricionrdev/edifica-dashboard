@@ -125,7 +125,7 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     if (!Array.isArray(userDirectory) || userDirectory.length === 0) {
-      refreshUserDirectory?.().catch(() => {});
+      refreshUserDirectory?.().catch(() => { });
     }
   }, [refreshUserDirectory, userDirectory]);
 
@@ -307,7 +307,7 @@ export default function UserProfilePage() {
               <h1>{profileUser.name}</h1>
               <span className={styles.roleBadge}>{roleLabel(profileUser.role)}</span>
             </div>
-            <p>{profileTasks.length ? `${profileUser.name.split(' ')[0]} possui ${openTasksCount} tarefas em aberto.` : `${profileUser.name.split(' ')[0]} não possui tarefas em aberto.`}</p>
+            {/* <p>{profileTasks.length ? `${profileUser.name.split(' ')[0]} possui ${openTasksCount} tarefas em aberto.` : `${profileUser.name.split(' ')[0]} não possui tarefas em aberto.`}</p> */}
             <div className={styles.profileMeta}>
               {profileUser.email ? <span>{profileUser.email}</span> : null}
               {profileContext ? <span>{profileContext}</span> : null}
