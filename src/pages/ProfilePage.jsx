@@ -78,11 +78,10 @@ const STATUS_OPTIONS_BY_KIND = {
   briefing: [
     { value: 'todo', label: 'Briefing' },
     { value: 'in_progress', label: 'Implementação' },
-    { value: 'implemented', label: 'Implementado' },
     { value: 'activation_gdv', label: 'Ativação GDV' },
-    { value: 'access_delivery', label: 'Envio de acessos' },
-    { value: 'traffic_activation', label: 'Ativação tráfego' },
-    { value: 'final_validation', label: 'Validação final' },
+    { value: 'access_delivery', label: 'Acessos' },
+    { value: 'traffic_activation', label: 'Tráfego' },
+    { value: 'final_validation', label: 'Validação' },
     { value: 'done', label: 'Concluída' },
     { value: 'canceled', label: 'Cancelado' },
   ],
@@ -532,7 +531,6 @@ function nextActionLabel(task) {
   if (kind === 'briefing') {
     const stage = task.status || 'todo';
     if (stage === 'done') return 'Operação concluída';
-    if (stage === 'implemented') return 'Enviar para ativação GDV';
     if (stage === 'activation_gdv') return 'GDV ativa WhatsApp na DKW';
     if (stage === 'access_delivery') return 'Enviar login e senha ao cliente';
     if (stage === 'traffic_activation') return 'CAP ativa tráfego pago';
@@ -586,7 +584,6 @@ function briefingStageAction(task, briefing) {
   const nextByStatus = {
     todo: { status: 'in_progress', label: 'Iniciar implementação', nextAction: 'Implementar cliente na DKW' },
     in_progress: { status: 'activation_gdv', label: 'Enviar para ativação', nextAction: 'GDV faz reunião de ativação e conecta QR Code na DKW' },
-    implemented: { status: 'activation_gdv', label: 'Enviar para ativação', nextAction: 'GDV faz reunião de ativação e conecta QR Code na DKW' },
     activation_gdv: { status: 'access_delivery', label: 'Enviar acessos', nextAction: 'Suporte envia login e senha da DKW ao cliente' },
     access_delivery: { status: 'traffic_activation', label: 'Enviar para tráfego', nextAction: 'CAP ativa tráfego pago para iniciar recebimento de leads' },
     traffic_activation: { status: 'final_validation', label: 'Validar operação', nextAction: 'Suporte valida operação completa antes de concluir' },
@@ -608,12 +605,11 @@ function workflowStepsForTask(task) {
   const done = isDone(task);
 
   if (kind === 'briefing') {
-    const order = ['todo', 'in_progress', 'implemented', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
+    const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
     const currentIndex = Math.max(0, order.indexOf(status));
     const labels = {
       todo: 'Briefing',
       in_progress: 'Implementação',
-      implemented: 'Implementado',
       activation_gdv: 'Ativação GDV',
       access_delivery: 'Acessos',
       traffic_activation: 'Tráfego',
@@ -2889,9 +2885,8 @@ export default function ProfilePage() {
                     ) : (
                       <button type="button" onClick={() => openContentEditor(activeTask)} disabled={!canEditActiveTask}>Editar</button>
                     )}
-                    <button type="button" className={styles.heroActionDanger} onClick={() => setTaskDeleteTarget(activeTask)} disabled={!canEditActiveTask} aria-label="Excluir demanda">
-                      <TrashIcon size={13} />
-                      Excluir
+                    <button type="button" className={styles.heroActionDanger} onClick={() => setTaskDeleteTarget(activeTask)} disabled={!canEditActiveTask} aria-label="Excluir tarefa">
+                      Excluir tarefa
                     </button>
                   </div>
                 </div>
@@ -2899,7 +2894,7 @@ export default function ProfilePage() {
 
               <section className={styles.drawerSection}>
                 <div className={styles.workflowGrid}>
-                  <label className={styles.workflowField}>
+                  <div className={styles.workflowField}>
                     <span>Status</span>
                     <Select
                       value={activeTask.status || (isDone(activeTask) ? 'done' : 'todo')}
@@ -2910,9 +2905,9 @@ export default function ProfilePage() {
                     >
                       {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                     </Select>
-                  </label>
+                  </div>
 
-                  <label className={styles.workflowField}>
+                  <div className={styles.workflowField}>
                     <span>Responsável</span>
                     <Select
                       value={activeTask.assigneeUserId || ''}
@@ -2924,21 +2919,9 @@ export default function ProfilePage() {
                       <option value="">Sem responsável</option>
                       {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                     </Select>
-                  </label>
+                  </div>
 
-                  <label className={styles.workflowField}>
-                    <span>Prazo</span>
-                    <DateField
-                      value={activeTask.dueDate || ''}
-                      onChange={(value) => handleUpdateTaskFields(activeTask, { dueDate: value || '' }, 'Prazo atualizado.')}
-                      placeholder="Prazo"
-                      ariaLabel="Prazo"
-                      className={styles.workflowDate}
-                      disabled={!canEditActiveTask}
-                    />
-                  </label>
-
-                  <label className={styles.workflowField}>
+                  <div className={styles.workflowField}>
                     <span>Prioridade</span>
                     <Select
                       value={activeTask.priority || 'medium'}
@@ -2949,7 +2932,19 @@ export default function ProfilePage() {
                     >
                       {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                     </Select>
-                  </label>
+                  </div>
+
+                  <div className={styles.workflowField}>
+                    <span>Prazo</span>
+                    <DateField
+                      value={activeTask.dueDate || ''}
+                      onChange={(value) => handleUpdateTaskFields(activeTask, { dueDate: value || '' }, 'Prazo atualizado.')}
+                      placeholder="Prazo"
+                      ariaLabel="Prazo"
+                      className={styles.workflowDate}
+                      disabled={!canEditActiveTask}
+                    />
+                  </div>
                 </div>
 
                 {activeContextItems.length ? (

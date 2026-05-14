@@ -24,9 +24,20 @@ function clean(value) {
   return String(value || '').trim();
 }
 
+const TASK_STATUS_VALUES = [
+  'todo',
+  'in_progress',
+  'activation_gdv',
+  'access_delivery',
+  'traffic_activation',
+  'final_validation',
+  'done',
+  'canceled',
+];
+
 function normalizeStatus(value) {
   const status = clean(value);
-  return ['todo', 'in_progress', 'done', 'canceled'].includes(status) ? status : 'todo';
+  return TASK_STATUS_VALUES.includes(status) ? status : 'todo';
 }
 
 function normalizePriority(value) {
@@ -38,6 +49,10 @@ function backendStatusLabel(value) {
   const labels = {
     todo: 'Aberta',
     in_progress: 'Em andamento',
+    activation_gdv: 'Ativação GDV',
+    access_delivery: 'Acessos',
+    traffic_activation: 'Tráfego',
+    final_validation: 'Validação',
     done: 'Concluída',
     canceled: 'Cancelada',
   };

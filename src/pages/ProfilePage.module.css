@@ -6254,3 +6254,36 @@
 .drawerHeroActions {
   padding-top: 0 !important;
 }
+/* v103 — refinamento do drawer e campos de workflow */
+.workflowGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  align-items: end !important;
+  gap: 14px !important;
+}
+
+.workflowField {
+  min-width: 0 !important;
+}
+
+.workflowField > span {
+  display: block !important;
+  margin-bottom: 8px !important;
+  pointer-events: none !important;
+}
+
+.workflowField .profileSelectButton,
+.workflowDate > button {
+  width: 100% !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  border-radius: 12px !important;
+}
+
+.workflowDate {
+  height: auto !important;
+}
+
+.heroActionDanger {
+  min-width: 118px !important;
+  padding-inline: 16px !important;
+}

@@ -77,9 +77,20 @@ function clean(value) {
   return String(value || '').trim();
 }
 
+const TASK_STATUS_VALUES = [
+  'todo',
+  'in_progress',
+  'activation_gdv',
+  'access_delivery',
+  'traffic_activation',
+  'final_validation',
+  'done',
+  'canceled',
+];
+
 function normalizeTaskStatus(value, done = false) {
   const status = clean(value);
-  if (['todo', 'in_progress', 'done', 'canceled'].includes(status)) return status;
+  if (TASK_STATUS_VALUES.includes(status)) return status;
   return done ? 'done' : 'todo';
 }
 
