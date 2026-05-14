@@ -1368,6 +1368,7 @@ export default function ProfilePage() {
   const [completionSaving, setCompletionSaving] = useState(false);
   const [contentEditing, setContentEditing] = useState(false);
   const [contentSaving, setContentSaving] = useState(false);
+  const [descriptionCopied, setDescriptionCopied] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
@@ -2059,6 +2060,33 @@ export default function ProfilePage() {
       showToast(err?.message || 'Erro ao salvar conteúdo.', { variant: 'error' });
     } finally {
       setContentSaving(false);
+    }
+  }
+
+
+  async function handleCopyDescription() {
+    const text = String(activeDescription || '').trim();
+    if (!text) return;
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setDescriptionCopied(true);
+      window.setTimeout(() => setDescriptionCopied(false), 1400);
+      showToast('Descrição copiada.', { variant: 'success' });
+    } catch (err) {
+      showToast('Erro ao copiar descrição.', { variant: 'error' });
     }
   }
 
@@ -3072,7 +3100,14 @@ export default function ProfilePage() {
 
               {(contentEditing || activeDescription) ? (
                 <section className={styles.drawerSection}>
-                  <h4>Descrição</h4>
+                  <div className={styles.descriptionHeader}>
+                    <h4>Descrição</h4>
+                    {!contentEditing && activeDescription ? (
+                      <button type="button" onClick={handleCopyDescription} className={styles.copyDescriptionButton}>
+                        {descriptionCopied ? 'Copiado' : 'Copiar'}
+                      </button>
+                    ) : null}
+                  </div>
                   {contentEditing ? (
                     <textarea
                       className={styles.descriptionEditor}
@@ -3080,7 +3115,11 @@ export default function ProfilePage() {
                       onChange={(event) => setContentForm((prev) => ({ ...prev, description: event.target.value }))}
                     />
                   ) : (
-                    <div className={styles.descriptionBox}>{activeDescription}</div>
+                    <pre
+                      className={styles.descriptionBox}
+                      onDoubleClick={() => openContentEditor(activeTask)}
+                      title={canEditActiveTask ? 'Clique duas vezes para editar' : undefined}
+                    >{activeDescription}</pre>
                   )}
                 </section>
               ) : null}
@@ -3108,25 +3147,22 @@ export default function ProfilePage() {
                 {collaboratorsLoading ? (
                   <div className={styles.commentState}>Carregando</div>
                 ) : collaborators.length ? (
-                  <div className={styles.collaboratorList}>
+                  <div className={styles.collaboratorChips}>
                     {collaborators.map((collaborator) => {
                       const collaboratorName = collaborator.userName || collaborator.name || 'Usuário';
                       return (
-                        <div key={collaborator.userId} className={styles.collaboratorItem}>
-                          <span className={styles.collaboratorAvatar}>{initials(collaboratorName)}</span>
-                          <div className={styles.collaboratorInfo}>
-                            <strong>{collaboratorName}</strong>
-                          </div>
+                        <span key={collaborator.userId}>
+                          {collaboratorName}
                           <button
                             type="button"
                             onClick={() => handleRemoveCollaborator(collaborator.userId)}
                             disabled={collaboratorRemovingId === collaborator.userId || !canManageActiveCollaborators}
-                            aria-label="Remover colaborador"
+                            aria-label={`Remover ${collaboratorName}`}
                             title="Remover colaborador"
                           >
-                            <TrashIcon size={13} />
+                            ×
                           </button>
-                        </div>
+                        </span>
                       );
                     })}
                   </div>
@@ -3367,11 +3403,6 @@ export default function ProfilePage() {
                     ))}
                   </div>
                 ) : null}
-                <div className={`${styles.assignmentPreview} ${styles.fieldWide}`}>
-                  <span>{profileForm.name || user?.name || 'Você'} cria</span>
-                  <span>{(demandUsers.find((item) => item.id === demandForm.assigneeUserId)?.name || user?.name || 'Responsável')} executa</span>
-                  <span>{selectedDemandCollaborators.length ? `${selectedDemandCollaborators.length} acompanham` : 'Sem colaboradores'}</span>
-                </div>
               </div>
 
               {demandForm.type === 'briefing' ? (
