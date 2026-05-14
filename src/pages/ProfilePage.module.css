@@ -3136,7 +3136,6 @@
 .workflowStep i {
   width: 17px;
   height: 17px;
-  font-size: 9.5px;
 }
 
 .briefingSummary {
@@ -5663,6 +5662,7 @@
     width: 100% !important;
   }
 }
+
 /* v98 - clareza operacional de atribuição, tags e passagem de etapa */
 .statusPill {
   background: var(--edf-surface-2);
@@ -5876,6 +5876,7 @@
 }
 
 @media (max-width: 760px) {
+
   .demandFormGrid>.labeledField,
   .demandFormGrid>.fieldCompact {
     grid-column: span 3;
@@ -5887,6 +5888,7 @@
 }
 
 @media (max-width: 560px) {
+
   .demandFormGrid>.labeledField,
   .demandFormGrid>.fieldCompact {
     grid-column: 1 / -1;
