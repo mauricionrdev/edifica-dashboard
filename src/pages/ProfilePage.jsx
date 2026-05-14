@@ -121,6 +121,7 @@ function emptyDemandForm(userId = '') {
     recurrence: 'daily',
     routineScope: '',
     routineChecklist: '',
+    collaboratorUserIds: [],
   };
 }
 
@@ -533,6 +534,36 @@ function nextActionLabel(task) {
   if (kind === 'support') return 'Analisar solicitação';
   if (kind === 'project') return 'Executar tarefa do projeto';
   return 'Executar demanda';
+}
+
+function taskAssigneeName(task, users = []) {
+  if (!task) return 'Sem responsável';
+  const assigneeId = task.assigneeUserId || task.assignee_user_id;
+  return task.assigneeName || users.find((item) => item.id === assigneeId)?.name || 'Sem responsável';
+}
+
+function taskRequesterName(task, fallback = 'Solicitante') {
+  if (!task) return fallback;
+  return task.createdByName || task.requesterName || task.authorName || fallback;
+}
+
+function visibleOperationTags(task) {
+  const kind = getTaskKind(task);
+  const tags = [
+    { key: 'kind', label: kindLabel(kind), className: 'kindPill', tone: `kind_${kind}` },
+    { key: 'priority', label: priorityLabel(priorityKey(task)), className: 'priorityPill', tone: `priority_${priorityKey(task)}` },
+    { key: 'status', label: statusLabel(task), className: 'statusPill', tone: `status_${statusKey(task)}` },
+    { key: 'relation', label: relationLabel(task), className: 'relationPill', tone: task?.profileRelation === 'collaborator' ? 'relation_watching' : 'relation_responsible' },
+  ];
+
+  return tags.filter((tag, index, list) => list.findIndex((item) => item.label === tag.label) === index).slice(0, 4);
+}
+
+function demandCollaboratorOptions(users = [], form = {}) {
+  const blocked = new Set([form.assigneeUserId, ...(form.collaboratorUserIds || [])].filter(Boolean));
+  return users
+    .filter((item) => item?.id && !blocked.has(item.id))
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
 }
 
 function workflowStepsForTask(task) {
@@ -2466,6 +2497,10 @@ export default function ProfilePage() {
       });
       const createdTask = res?.task;
       if (createdTask?.id) {
+        const collaboratorIds = [...new Set((demandForm.collaboratorUserIds || []).filter((id) => id && id !== createdTask.assigneeUserId))];
+        if (collaboratorIds.length) {
+          await Promise.allSettled(collaboratorIds.map((id) => addTaskCollaborator(createdTask.id, { userId: id, role: 'follower' })));
+        }
         const createdForCurrentUser = createdTask.assigneeUserId === user?.id;
         const visibleCreatedTask = {
           ...createdTask,
@@ -2489,8 +2524,10 @@ export default function ProfilePage() {
   const activeStatus = activeTask ? statusKey(activeTask) : 'waiting';
   const activeStatusOptions = activeTask ? statusOptionsForKind(activeKind) : BASE_STATUS_OPTIONS;
   const activeWorkflowSteps = activeTask ? workflowStepsForTask(activeTask) : [];
-  const activeAssignee = activeTask ? activeTask.assigneeName || profileForm.name || user?.name || '' : '';
-  const activeRequester = activeTask ? activeTask.createdByName || '' : '';
+  const activeAssignee = activeTask ? taskAssigneeName(activeTask, demandUsers) : '';
+  const activeRequester = activeTask ? taskRequesterName(activeTask, '') : '';
+  const activeNextAction = activeTask ? nextActionLabel(activeTask) : '';
+  const activeCollaboratorNames = collaborators.map((item) => item.userName || item.name).filter(Boolean);
   const activeContextItems = activeTask
     ? [
         ['Tipo', kindLabel(activeKind)],
@@ -2514,6 +2551,18 @@ export default function ProfilePage() {
   const selectedDemandClient = useMemo(
     () => demandClients.find((client) => client.id === demandForm.clientId) || null,
     [demandClients, demandForm.clientId]
+  );
+
+  const selectedDemandCollaborators = useMemo(
+    () => (demandForm.collaboratorUserIds || [])
+      .map((id) => demandUsers.find((item) => item.id === id))
+      .filter(Boolean),
+    [demandForm.collaboratorUserIds, demandUsers]
+  );
+
+  const availableDemandCollaborators = useMemo(
+    () => demandCollaboratorOptions(demandUsers.length ? demandUsers : [user].filter(Boolean), demandForm),
+    [demandForm, demandUsers, user]
   );
 
   const filteredDemandClients = useMemo(() => {
@@ -2684,8 +2733,14 @@ export default function ProfilePage() {
                       </div>
 
                       <div className={styles.operationMeta}>
-                        <span className={`${styles.kindPill} ${styles[`kind_${itemKind}`] || ''}`.trim()}>{kindLabel(itemKind)}</span>
-                        <span className={`${styles.priorityPill} ${styles[`priority_${priorityKey(task)}`] || ''}`.trim()}>{priorityLabel(priorityKey(task))}</span>
+                        {visibleOperationTags(task).map((tag) => (
+                          <span
+                            key={tag.key}
+                            className={`${styles[tag.className] || ''} ${styles[tag.tone] || ''}`.trim()}
+                          >
+                            {tag.label}
+                          </span>
+                        ))}
                       </div>
 
                       <div className={styles.operationDueCell}>
@@ -2744,7 +2799,25 @@ export default function ProfilePage() {
                 ) : (
                   <h3>{activeTask.title}</h3>
                 )}
-                <p>{nextActionLabel(activeTask)}</p>
+                <p>{activeNextAction}</p>
+                <div className={styles.drawerFlowSummary}>
+                  <div>
+                    <span>Solicitante</span>
+                    <strong>{activeRequester || '—'}</strong>
+                  </div>
+                  <div>
+                    <span>Agora com</span>
+                    <strong>{activeAssignee}</strong>
+                  </div>
+                  <div>
+                    <span>Próximo passo</span>
+                    <strong>{activeNextAction || '—'}</strong>
+                  </div>
+                  <div>
+                    <span>Acompanhando</span>
+                    <strong>{activeCollaboratorNames.length ? activeCollaboratorNames.slice(0, 2).join(', ') : '—'}{activeCollaboratorNames.length > 2 ? ` +${activeCollaboratorNames.length - 2}` : ''}</strong>
+                  </div>
+                </div>
                 <div className={styles.drawerHeroActions}>
                   {activeKind === 'briefing' && activeBriefing && !activeBriefing.isComplete ? (
                     <button type="button" onClick={handleRegisterBriefingIssues} disabled={commentSaving || !canCommentActiveTask}>Pendências</button>
@@ -2755,7 +2828,7 @@ export default function ProfilePage() {
                   {activeKind === 'briefing' && isDone(activeTask) ? (
                     <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Ativação</button>
                   ) : null}
-                  <button type="button" onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Handoff</button>
+                  <button type="button" onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Passar etapa</button>
                   {contentEditing ? (
                     <>
                       <button type="button" onClick={() => setContentEditing(false)} disabled={contentSaving}>Cancelar</button>
@@ -3139,50 +3212,117 @@ export default function ProfilePage() {
 
             <div className={styles.settingsContent}>
               <div className={styles.demandFormGrid}>
-                <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={`${styles.formSelect} ${styles.fieldHalf}`}>
-                  {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </Select>
-                <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={`${styles.formSelect} ${styles.fieldHalf}`}>
-                  {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </Select>
-                <input className={styles.fieldWide} value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
-                <Select value={demandForm.assigneeUserId} onChange={(event) => setDemandForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))} aria-label="Responsável" className={`${styles.formSelect} ${styles.fieldThird}`}>
-                  {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                </Select>
-                <div className={`${styles.clientSearchField} ${styles.fieldThird}`} ref={clientSearchRef} onPointerDown={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
-                  <input
-                    value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
-                    onFocus={() => {
-                      if (selectedDemandClient) setClientQuery(selectedDemandClient.name || '');
-                      openClientSearch();
-                    }}
-                    onMouseDown={() => {
-                      if (!clientSearchOpen) openClientSearch();
-                    }}
-                    onChange={(event) => {
-                      setClientQuery(event.target.value);
-                      if (demandForm.clientId) setDemandForm((prev) => ({ ...prev, clientId: '' }));
-                      openClientSearch();
-                    }}
-                    placeholder="Cliente"
-                    aria-label="Cliente"
-                  />
-                  {(selectedDemandClient || clientQuery) ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDemandForm((prev) => ({ ...prev, clientId: '' }));
-                        setClientQuery('');
-                        setClientSearchOpen(false);
-                        setClientSearchPosition(null);
+                <label className={styles.labeledField}>
+                  <span>Tipo</span>
+                  <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
+                    {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </Select>
+                </label>
+                <label className={styles.labeledField}>
+                  <span>Prioridade</span>
+                  <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
+                    {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </Select>
+                </label>
+                <label className={`${styles.labeledField} ${styles.fieldWide}`}>
+                  <span>Título</span>
+                  <input value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
+                </label>
+                <label className={styles.labeledField}>
+                  <span>Responsável</span>
+                  <Select
+                    value={demandForm.assigneeUserId}
+                    onChange={(event) => setDemandForm((prev) => ({
+                      ...prev,
+                      assigneeUserId: event.target.value,
+                      collaboratorUserIds: (prev.collaboratorUserIds || []).filter((id) => id !== event.target.value),
+                    }))}
+                    aria-label="Responsável"
+                    className={styles.formSelect}
+                  >
+                    {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </Select>
+                </label>
+                <label className={styles.labeledField}>
+                  <span>Cliente</span>
+                  <div className={styles.clientSearchField} ref={clientSearchRef} onPointerDown={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
+                    <input
+                      value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
+                      onFocus={() => {
+                        if (selectedDemandClient) setClientQuery(selectedDemandClient.name || '');
+                        openClientSearch();
                       }}
-                      aria-label="Limpar cliente"
-                    >
-                      <CloseIcon size={13} />
-                    </button>
-                  ) : null}
+                      onMouseDown={() => {
+                        if (!clientSearchOpen) openClientSearch();
+                      }}
+                      onChange={(event) => {
+                        setClientQuery(event.target.value);
+                        if (demandForm.clientId) setDemandForm((prev) => ({ ...prev, clientId: '' }));
+                        openClientSearch();
+                      }}
+                      placeholder="Cliente"
+                      aria-label="Cliente"
+                    />
+                    {(selectedDemandClient || clientQuery) ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDemandForm((prev) => ({ ...prev, clientId: '' }));
+                          setClientQuery('');
+                          setClientSearchOpen(false);
+                          setClientSearchPosition(null);
+                        }}
+                        aria-label="Limpar cliente"
+                      >
+                        <CloseIcon size={13} />
+                      </button>
+                    ) : null}
+                  </div>
+                </label>
+                <label className={styles.labeledField}>
+                  <span>Prazo</span>
+                  <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
+                </label>
+                <label className={`${styles.labeledField} ${styles.fieldWide}`}>
+                  <span>Colaboradores</span>
+                  <Select
+                    value=""
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (!value) return;
+                      setDemandForm((prev) => ({
+                        ...prev,
+                        collaboratorUserIds: [...new Set([...(prev.collaboratorUserIds || []), value])],
+                      }));
+                    }}
+                    aria-label="Colaboradores"
+                    className={styles.formSelect}
+                  >
+                    <option value="">Adicionar colaborador</option>
+                    {availableDemandCollaborators.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </Select>
+                </label>
+                {selectedDemandCollaborators.length ? (
+                  <div className={`${styles.selectedCollaborators} ${styles.fieldWide}`}>
+                    {selectedDemandCollaborators.map((item) => (
+                      <span key={item.id}>
+                        {item.name}
+                        <button
+                          type="button"
+                          onClick={() => setDemandForm((prev) => ({ ...prev, collaboratorUserIds: (prev.collaboratorUserIds || []).filter((id) => id !== item.id) }))}
+                          aria-label={`Remover ${item.name}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                <div className={`${styles.assignmentPreview} ${styles.fieldWide}`}>
+                  <span>{profileForm.name || user?.name || 'Você'} cria</span>
+                  <span>{(demandUsers.find((item) => item.id === demandForm.assigneeUserId)?.name || user?.name || 'Responsável')} executa</span>
+                  <span>{selectedDemandCollaborators.length ? `${selectedDemandCollaborators.length} acompanham` : 'Sem colaboradores'}</span>
                 </div>
-                <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={`${styles.dateField} ${styles.fieldThird}`} />
               </div>
 
               {demandForm.type === 'briefing' ? (
@@ -3378,10 +3518,10 @@ export default function ProfilePage() {
 
       {handoffOpen && activeTask ? (
         <div className={styles.settingsOverlay} onClick={closeHandoffModal}>
-          <form className={`${styles.settingsModal} ${styles.handoffModal}`} onSubmit={handleSubmitHandoff} role="dialog" aria-modal="true" aria-label="Handoff" onClick={(event) => event.stopPropagation()}>
+          <form className={`${styles.settingsModal} ${styles.handoffModal}`} onSubmit={handleSubmitHandoff} role="dialog" aria-modal="true" aria-label="Passar etapa" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
-                <h2>Handoff</h2>
+                <h2>Passar etapa</h2>
                 <span>{activeTask.title}</span>
               </div>
               <button type="button" className={styles.iconButton} onClick={closeHandoffModal} aria-label="Fechar">
@@ -3390,22 +3530,28 @@ export default function ProfilePage() {
             </header>
             <div className={styles.settingsContent}>
               <div className={styles.handoffGrid}>
-                <Select
-                  value={handoffForm.assigneeUserId}
-                  onChange={(event) => setHandoffForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))}
-                  aria-label="Responsável"
-                  className={styles.formSelect}
-                >
-                  {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-                </Select>
-                <Select
-                  value={handoffForm.status}
-                  onChange={(event) => setHandoffForm((prev) => ({ ...prev, status: event.target.value }))}
-                  aria-label="Status"
-                  className={styles.formSelect}
-                >
-                  {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </Select>
+                <label className={styles.labeledField}>
+                  <span>Quem assume agora</span>
+                  <Select
+                    value={handoffForm.assigneeUserId}
+                    onChange={(event) => setHandoffForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))}
+                    aria-label="Quem assume agora"
+                    className={styles.formSelect}
+                  >
+                    {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </Select>
+                </label>
+                <label className={styles.labeledField}>
+                  <span>Novo status</span>
+                  <Select
+                    value={handoffForm.status}
+                    onChange={(event) => setHandoffForm((prev) => ({ ...prev, status: event.target.value }))}
+                    aria-label="Novo status"
+                    className={styles.formSelect}
+                  >
+                    {activeStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </Select>
+                </label>
                 <textarea
                   className={styles.fieldWide}
                   value={handoffForm.nextAction}
@@ -3422,13 +3568,13 @@ export default function ProfilePage() {
                   className={`${styles.fieldWide} ${styles.handoffContextField}`.trim()}
                   value={handoffForm.note}
                   onChange={(event) => setHandoffForm((prev) => ({ ...prev, note: event.target.value }))}
-                  placeholder="Contexto"
+                  placeholder="Contexto para quem assume"
                 />
               </div>
             </div>
             <footer className={styles.settingsFooter}>
               <button type="button" onClick={closeHandoffModal}>Cancelar</button>
-              <button type="submit" disabled={handoffSaving || !handoffForm.assigneeUserId}>{handoffSaving ? 'Salvando' : 'Registrar'}</button>
+              <button type="submit" disabled={handoffSaving || !handoffForm.assigneeUserId}>{handoffSaving ? 'Salvando' : 'Passar etapa'}</button>
             </footer>
           </form>
         </div>

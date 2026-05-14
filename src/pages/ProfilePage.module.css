@@ -5663,3 +5663,154 @@
     width: 100% !important;
   }
 }
+/* v98 - clareza operacional de atribuição, tags e passagem de etapa */
+.statusPill {
+  background: var(--edf-surface-2);
+  color: var(--edf-text-secondary);
+  border-color: var(--edf-border-strong) !important;
+}
+
+.relationPill {
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--edf-text-muted);
+  border-color: var(--edf-border) !important;
+}
+
+.relation_responsible {
+  color: var(--edf-text-secondary);
+}
+
+.relation_watching {
+  background: var(--edf-info-bg);
+  color: var(--edf-info-soft);
+  border-color: var(--edf-info-border) !important;
+}
+
+.operationMeta {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.drawerFlowSummary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.drawerFlowSummary>div {
+  min-width: 0;
+  border: 1px solid var(--edf-border);
+  background: rgba(255, 255, 255, 0.018);
+  border-radius: 12px;
+  padding: 9px 10px;
+}
+
+.drawerFlowSummary span,
+.labeledField>span {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--edf-text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.drawerFlowSummary strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--edf-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.labeledField {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.labeledField input,
+.labeledField textarea,
+.labeledField .dateField,
+.labeledField .formSelect,
+.labeledField .clientSearchField {
+  width: 100%;
+}
+
+.selectedCollaborators {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -2px;
+}
+
+.selectedCollaborators>span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 6px 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--edf-info-border);
+  background: var(--edf-info-bg);
+  color: var(--edf-info-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.selectedCollaborators button {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.assignmentPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 9px 10px;
+  border: 1px solid var(--edf-border);
+  background: rgba(255, 255, 255, 0.014);
+  border-radius: 12px;
+}
+
+.assignmentPreview span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--edf-border);
+  color: var(--edf-text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.handoffGrid .labeledField {
+  grid-column: span 1;
+}
+
+@media (max-width: 760px) {
+  .drawerFlowSummary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .drawerFlowSummary {
+    grid-template-columns: 1fr;
+  }
+}
