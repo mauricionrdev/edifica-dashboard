@@ -507,7 +507,7 @@ function statusLabel(task) {
 
 function statusKey(task) {
   if (task?.status === 'canceled') return 'canceled';
-  if (isDone(task) || task?.status === 'implemented') return 'done';
+  if (isDone(task)) return 'done';
   if (isOverdue(task)) return 'overdue';
   if (['in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation'].includes(task?.status)) return 'active';
   if (isToday(task)) return 'today';
@@ -2583,9 +2583,12 @@ export default function ProfilePage() {
     : '—';
   const activeContextItems = activeTask
     ? [
+        [activeOwnerLabel, activeAssignee || '—'],
+        [activeIsDone ? 'Resultado' : 'Próximo passo', activeStageLabel || '—'],
         ['Tipo', kindLabel(activeKind)],
-        ...(activeRequester && activeRequester !== activeAssignee ? [['Solicitante', activeRequester]] : []),
+        ...(activeRequester ? [['Solicitante', activeRequester]] : []),
         ...(activeTask.clientName ? [['Cliente', activeTask.clientName]] : []),
+        ['Acompanhando', activeFollowerLabel],
         ...(activeTask.projectName ? [['Projeto', activeTask.projectName]] : []),
         ...(activeTask.sectionName ? [['Seção', activeTask.sectionName]] : []),
       ]
@@ -2853,29 +2856,6 @@ export default function ProfilePage() {
                 ) : (
                   <h3>{activeTask.title}</h3>
                 )}
-                <div className={styles.drawerCommandCenter}>
-                  <div className={styles.drawerCommandMain}>
-                    <span>{activeOwnerLabel}</span>
-                    <strong>{activeAssignee || '—'}</strong>
-                    <em>{activeStageLabel}</em>
-                  </div>
-                  <div className={styles.drawerCommandMeta}>
-                    <span>
-                      <small>Solicitante</small>
-                      <strong>{activeRequester || '—'}</strong>
-                    </span>
-                    {activeTask.clientName ? (
-                      <span>
-                        <small>Cliente</small>
-                        <strong>{activeTask.clientName}</strong>
-                      </span>
-                    ) : null}
-                    <span>
-                      <small>Acompanhando</small>
-                      <strong>{activeFollowerLabel}</strong>
-                    </span>
-                  </div>
-                </div>
                 <div className={styles.drawerHeroActions}>
                   <div className={styles.drawerHeroActionGroup}>
                     {activeKind === 'briefing' && activeBriefingAction?.type === 'issues' ? (
@@ -2992,7 +2972,7 @@ export default function ProfilePage() {
                   </div>
                   <div className={styles.workflowTimeline}>
                     {activeWorkflowSteps.map((step, index) => (
-                      <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''}`.trim()}>
+                      <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''} ${styles[`workflowKey_${step.key}`] || ''}`.trim()}>
                         <i>{index + 1}</i>
                         <span>{step.label}</span>
                       </div>

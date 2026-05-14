@@ -6149,3 +6149,106 @@
     padding: 0;
   }
 }
+
+/* v102 — cores operacionais e contexto sem card no topo */
+.statusPill.status_done,
+.statusBadge.status_done {
+  background: var(--edf-success-bg) !important;
+  color: var(--edf-success-soft) !important;
+  border-color: var(--edf-success-border) !important;
+}
+
+.statusPill.status_done::before,
+.statusBadge.status_done::before {
+  background: var(--edf-success-soft) !important;
+}
+
+.statusPill.status_active,
+.statusBadge.status_active,
+.statusPill.status_today,
+.statusBadge.status_today {
+  background: var(--edf-amber-bg) !important;
+  color: var(--edf-amber) !important;
+  border-color: var(--edf-amber-border) !important;
+}
+
+.statusPill.status_active::before,
+.statusBadge.status_active::before,
+.statusPill.status_today::before,
+.statusBadge.status_today::before {
+  background: var(--edf-amber) !important;
+}
+
+.statusPill.status_waiting,
+.statusBadge.status_waiting {
+  background: rgba(234, 179, 8, 0.08) !important;
+  color: var(--edf-amber) !important;
+  border-color: rgba(234, 179, 8, 0.20) !important;
+}
+
+.statusPill.status_overdue,
+.statusBadge.status_overdue {
+  background: var(--edf-danger-bg) !important;
+  color: var(--edf-danger-soft) !important;
+  border-color: var(--edf-danger-border) !important;
+}
+
+.workflowStep_done {
+  background: var(--edf-amber-bg) !important;
+  border-color: var(--edf-amber-border) !important;
+  color: var(--edf-amber) !important;
+}
+
+.workflowStep_done i {
+  background: var(--edf-amber) !important;
+  color: #1a1300 !important;
+}
+
+.workflowStep_current.workflowKey_done,
+.workflowStep_active.workflowKey_done {
+  background: var(--edf-success-bg) !important;
+  border-color: var(--edf-success-border) !important;
+  color: var(--edf-success-soft) !important;
+}
+
+.workflowStep_current.workflowKey_done i,
+.workflowStep_active.workflowKey_done i {
+  background: var(--edf-success) !important;
+  color: #04150b !important;
+}
+
+.drawerCommandCenter {
+  display: none !important;
+}
+
+.contextGrid {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  gap: 18px 28px !important;
+  padding-top: 0 !important;
+  border-top: 0 !important;
+}
+
+.contextItem {
+  min-height: 42px;
+}
+
+.contextItem span {
+  color: var(--edf-text-muted) !important;
+  font-size: 10.5px !important;
+  font-weight: 750 !important;
+  letter-spacing: 0.07em !important;
+}
+
+.contextItem strong {
+  color: var(--edf-text) !important;
+  font-size: 13.5px !important;
+  line-height: 1.3 !important;
+}
+
+.drawerHero {
+  gap: 14px !important;
+}
+
+.drawerHeroActions {
+  padding-top: 0 !important;
+}
