@@ -5896,3 +5896,123 @@
     width: 100%;
   }
 }
+
+/* v100 — correção de overflow da issue list + refinamento de ações do drawer */
+.operationListHeader {
+  grid-template-columns: 20px minmax(300px, 1.05fr) minmax(150px, 0.32fr) minmax(280px, 0.54fr) minmax(96px, 0.16fr) !important;
+}
+
+.operationRow {
+  grid-template-columns: 20px minmax(300px, 1.05fr) minmax(150px, 0.32fr) minmax(280px, 0.54fr) minmax(96px, 0.16fr) !important;
+  min-height: 66px !important;
+}
+
+.operationMeta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-content: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.operationMeta>span {
+  max-width: 118px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.operationDueCell {
+  position: relative;
+  z-index: 1;
+  padding-left: 8px;
+  background: linear-gradient(90deg, transparent, var(--edf-bg) 18px);
+}
+
+.dueLabel {
+  white-space: nowrap;
+}
+
+.drawerHeroActions {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 10px !important;
+}
+
+.drawerHeroActions button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  white-space: nowrap !important;
+}
+
+.drawerHeroActionGroup:last-child {
+  justify-content: flex-end;
+}
+
+.heroActionDanger {
+  margin-left: 12px !important;
+  min-width: 94px !important;
+  border-color: rgba(239, 68, 68, 0.28) !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #ff8f8f !important;
+  font-weight: 650 !important;
+}
+
+.drawerFlowSummary {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  margin-top: 8px !important;
+}
+
+.drawerFlowSummary>div {
+  min-height: 64px;
+}
+
+.workflowTimeline {
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.workflowStep {
+  white-space: nowrap;
+}
+
+@media (max-width: 1320px) {
+  .operationListHeader {
+    grid-template-columns: 20px minmax(260px, 1fr) minmax(140px, 0.3fr) minmax(240px, 0.52fr) minmax(92px, 0.16fr) !important;
+  }
+
+  .operationRow {
+    grid-template-columns: 20px minmax(260px, 1fr) minmax(140px, 0.3fr) minmax(240px, 0.52fr) minmax(92px, 0.16fr) !important;
+  }
+
+  .operationMeta>span {
+    max-width: 104px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .operationDueCell {
+    padding-left: 0;
+    background: transparent;
+  }
+}
+
+@media (max-width: 760px) {
+  .drawerHeroActions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .drawerHeroActionGroup:last-child {
+    justify-content: flex-start;
+  }
+
+  .heroActionDanger {
+    margin-left: 0 !important;
+  }
+}

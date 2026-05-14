@@ -76,9 +76,14 @@ const BASE_STATUS_OPTIONS = [
 
 const STATUS_OPTIONS_BY_KIND = {
   briefing: [
-    { value: 'todo', label: 'Novo' },
-    { value: 'in_progress', label: 'Em execução' },
-    { value: 'done', label: 'Implementado' },
+    { value: 'todo', label: 'Briefing' },
+    { value: 'in_progress', label: 'Implementação' },
+    { value: 'implemented', label: 'Implementado' },
+    { value: 'activation_gdv', label: 'Ativação GDV' },
+    { value: 'access_delivery', label: 'Envio de acessos' },
+    { value: 'traffic_activation', label: 'Ativação tráfego' },
+    { value: 'final_validation', label: 'Validação final' },
+    { value: 'done', label: 'Concluída' },
     { value: 'canceled', label: 'Cancelado' },
   ],
   routine: [
@@ -493,7 +498,7 @@ function statusOptionsForKind(kind) {
 function statusLabel(task) {
   const kind = getTaskKind(task);
   if (isOverdue(task) && !isDone(task) && task?.status !== 'canceled') return 'Atrasada';
-  const value = isDone(task) ? 'done' : task?.status || 'todo';
+  const value = task?.status || (isDone(task) ? 'done' : 'todo');
   const label = statusOptionsForKind(kind).find((option) => option.value === value)?.label;
   if (label) return label;
   if (isToday(task)) return 'Hoje';
@@ -502,9 +507,9 @@ function statusLabel(task) {
 
 function statusKey(task) {
   if (task?.status === 'canceled') return 'canceled';
-  if (isDone(task)) return 'done';
+  if (isDone(task) || task?.status === 'implemented') return 'done';
   if (isOverdue(task)) return 'overdue';
-  if (task?.status === 'in_progress') return 'active';
+  if (['in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation'].includes(task?.status)) return 'active';
   if (isToday(task)) return 'today';
   return 'waiting';
 }
@@ -524,12 +529,22 @@ function nextActionLabel(task) {
   if (!task) return '';
   if (task.status === 'canceled') return 'Encerrada';
   const kind = getTaskKind(task);
-  if (kind === 'briefing' && isDone(task)) return 'Aguardando ativação';
+  if (kind === 'briefing') {
+    const stage = task.status || 'todo';
+    if (stage === 'done') return 'Operação concluída';
+    if (stage === 'implemented') return 'Enviar para ativação GDV';
+    if (stage === 'activation_gdv') return 'GDV ativa WhatsApp na DKW';
+    if (stage === 'access_delivery') return 'Enviar login e senha ao cliente';
+    if (stage === 'traffic_activation') return 'CAP ativa tráfego pago';
+    if (stage === 'final_validation') return 'Validar operação e encerrar';
+    if (isDone(task)) return 'Operação concluída';
+    if (isOverdue(task)) return 'Regularizar prazo';
+    return stage === 'in_progress' ? 'Implementar cliente na DKW' : 'Validar briefing';
+  }
   if (kind === 'support' && isDone(task)) return 'Resolvido';
   if (kind === 'routine' && isDone(task)) return 'Rotina feita';
   if (isDone(task)) return 'Concluída';
   if (isOverdue(task)) return 'Regularizar prazo';
-  if (kind === 'briefing') return 'Validar briefing';
   if (kind === 'routine') return 'Executar rotina';
   if (kind === 'support') return 'Analisar solicitação';
   if (kind === 'project') return 'Executar tarefa do projeto';
@@ -559,6 +574,27 @@ function visibleOperationTags(task) {
   return tags.filter((tag, index, list) => list.findIndex((item) => item.label === tag.label) === index).slice(0, 4);
 }
 
+
+function briefingStageAction(task, briefing) {
+  if (!task || getTaskKind(task) !== 'briefing' || task.status === 'canceled') return null;
+  const status = task.status || 'todo';
+
+  if (status === 'done') return null;
+  if (briefing && !briefing.isComplete) return { type: 'issues', label: 'Pendências' };
+  if (status === 'final_validation') return { type: 'complete', label: 'Concluir tarefa' };
+
+  const nextByStatus = {
+    todo: { status: 'in_progress', label: 'Iniciar implementação', nextAction: 'Implementar cliente na DKW' },
+    in_progress: { status: 'activation_gdv', label: 'Enviar para ativação', nextAction: 'GDV faz reunião de ativação e conecta QR Code na DKW' },
+    implemented: { status: 'activation_gdv', label: 'Enviar para ativação', nextAction: 'GDV faz reunião de ativação e conecta QR Code na DKW' },
+    activation_gdv: { status: 'access_delivery', label: 'Enviar acessos', nextAction: 'Suporte envia login e senha da DKW ao cliente' },
+    access_delivery: { status: 'traffic_activation', label: 'Enviar para tráfego', nextAction: 'CAP ativa tráfego pago para iniciar recebimento de leads' },
+    traffic_activation: { status: 'final_validation', label: 'Validar operação', nextAction: 'Suporte valida operação completa antes de concluir' },
+  };
+
+  return { type: 'handoff', ...(nextByStatus[status] || nextByStatus.in_progress) };
+}
+
 function demandCollaboratorOptions(users = [], form = {}) {
   const blocked = new Set([form.assigneeUserId, ...(form.collaboratorUserIds || [])].filter(Boolean));
   return users
@@ -572,12 +608,24 @@ function workflowStepsForTask(task) {
   const done = isDone(task);
 
   if (kind === 'briefing') {
-    return [
-      { key: 'briefing', label: 'Briefing', state: done || status !== 'todo' ? 'done' : 'current' },
-      { key: 'execution', label: 'Execução', state: done ? 'done' : status === 'in_progress' ? 'current' : 'pending' },
-      { key: 'implemented', label: 'Implementado', state: done ? 'current' : 'pending' },
-      { key: 'activation', label: 'Ativação', state: done ? 'pending' : 'locked' },
-    ];
+    const order = ['todo', 'in_progress', 'implemented', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
+    const currentIndex = Math.max(0, order.indexOf(status));
+    const labels = {
+      todo: 'Briefing',
+      in_progress: 'Implementação',
+      implemented: 'Implementado',
+      activation_gdv: 'Ativação GDV',
+      access_delivery: 'Acessos',
+      traffic_activation: 'Tráfego',
+      final_validation: 'Validação',
+      done: 'Concluída',
+    };
+
+    return order.map((key, index) => ({
+      key,
+      label: labels[key],
+      state: done && key === 'done' ? 'current' : index < currentIndex ? 'done' : index === currentIndex ? 'current' : 'pending',
+    }));
   }
 
   if (kind === 'routine') {
@@ -2226,17 +2274,16 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleMarkBriefingImplemented() {
+  async function handleCompleteBriefingOperation() {
     if (!activeTask) return;
     if (!canCompleteActiveTask) {
-      showToast('Sem permissão para marcar implementação.', { variant: 'error' });
+      showToast('Sem permissão para concluir esta demanda.', { variant: 'error' });
       return;
     }
 
     const body = [
-      'Implementação concluída.',
-      'Cliente implementado no CRM/IA.',
-      'Próxima ação: Aguardando ativação GDV.',
+      'Operação concluída.',
+      'Implementação, ativação, acessos, tráfego e validação final concluídos.',
     ].join('\n');
 
     try {
@@ -2253,26 +2300,26 @@ export default function ProfilePage() {
         setTaskComments((prev) => [...prev, commentRes.value.comment]);
       }
       await refreshActiveTaskPanels(activeTask.id, { comments: true, events: true });
-      showToast('Implementação marcada.', { variant: 'success' });
+      showToast('Demanda concluída.', { variant: 'success' });
     } catch (err) {
-      showToast(err?.message || 'Erro ao marcar implementação.', { variant: 'error' });
+      showToast(err?.message || 'Erro ao concluir demanda.', { variant: 'error' });
     } finally {
       setTaskUpdatingId('');
     }
   }
 
 
-  function openHandoff(task = activeTask) {
+  function openHandoff(task = activeTask, overrides = {}) {
     if (!task) return;
     if (!canEditProfileTask(user, task) || !canCommentProfileTask(user, task)) {
       showToast('Sem permissão para registrar handoff nesta demanda.', { variant: 'error' });
       return;
     }
-    const nextStatus = isDone(task) ? 'done' : task.status || 'in_progress';
-    const nextForm = emptyHandoffForm(task.assigneeUserId || user?.id || '', nextStatus);
-    nextForm.nextAction = nextActionLabel(task);
-    nextForm.pending = summarizeOpenSubtasks(activeSubtasks);
-    nextForm.note = activeDescription || '';
+    const nextStatus = overrides.status || (isDone(task) ? 'done' : task.status || 'in_progress');
+    const nextForm = emptyHandoffForm(overrides.assigneeUserId || task.assigneeUserId || user?.id || '', nextStatus);
+    nextForm.nextAction = overrides.nextAction || nextActionLabel({ ...task, status: nextStatus, done: nextStatus === 'done' });
+    nextForm.pending = overrides.pending || summarizeOpenSubtasks(activeSubtasks);
+    nextForm.note = overrides.note || activeDescription || '';
     setHandoffForm(nextForm);
     setHandoffOpen(true);
   }
@@ -2588,6 +2635,7 @@ export default function ProfilePage() {
         ? activeRoutine.extraDescription
         : activeTask.description
     : '';
+  const activeBriefingAction = activeTask ? briefingStageAction(activeTask, activeBriefing) : null;
   const displayProfileName = profileForm.name || user?.name || 'Perfil';
   const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
   const todaySummary = operationCounts.today === 1
@@ -2820,17 +2868,25 @@ export default function ProfilePage() {
                 </div>
                 <div className={styles.drawerHeroActions}>
                   <div className={styles.drawerHeroActionGroup}>
-                    {activeKind === 'briefing' && activeBriefing && !activeBriefing.isComplete ? (
+                    {activeKind === 'briefing' && activeBriefingAction?.type === 'issues' ? (
                       <button type="button" onClick={handleRegisterBriefingIssues} disabled={commentSaving || !canCommentActiveTask}>Pendências</button>
                     ) : null}
-                    {activeKind === 'briefing' && activeBriefing?.isComplete && !isDone(activeTask) ? (
-                      <button type="button" className={styles.heroActionPrimary} onClick={handleMarkBriefingImplemented} disabled={taskUpdatingId === activeTask.id || !canCompleteActiveTask}>Implementado</button>
+                    {activeKind === 'briefing' && activeBriefingAction?.type === 'complete' ? (
+                      <button type="button" className={styles.heroActionPrimary} onClick={handleCompleteBriefingOperation} disabled={taskUpdatingId === activeTask.id || !canCompleteActiveTask}>Concluir tarefa</button>
                     ) : null}
-                    {activeKind === 'briefing' && isDone(activeTask) ? (
-                      <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Enviar para ativação</button>
-                    ) : (
+                    {activeKind === 'briefing' && activeBriefingAction?.type === 'handoff' ? (
+                      <button
+                        type="button"
+                        className={styles.heroActionPrimary}
+                        onClick={() => openHandoff(activeTask, { status: activeBriefingAction.status, nextAction: activeBriefingAction.nextAction })}
+                        disabled={!canEditActiveTask || !canCommentActiveTask}
+                      >
+                        {activeBriefingAction.label}
+                      </button>
+                    ) : null}
+                    {activeKind !== 'briefing' ? (
                       <button type="button" onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Passar etapa</button>
-                    )}
+                    ) : null}
                   </div>
                   <div className={styles.drawerHeroActionGroup}>
                     {contentEditing ? (
