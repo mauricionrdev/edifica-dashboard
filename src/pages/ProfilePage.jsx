@@ -2835,9 +2835,24 @@ export default function ProfilePage() {
                 </button>
                 <span className={`${styles.statusBadge} ${styles[`status_${activeStatus}`] || ''}`.trim()}>{statusLabel(activeTask)}</span>
               </div>
-              <button type="button" className={styles.iconButton} onClick={closeActiveTaskDrawer} aria-label="Fechar">
-                <CloseIcon size={16} />
-              </button>
+              <div className={styles.drawerTopbarActions}>
+                {contentEditing ? (
+                  <>
+                    <button type="button" className={styles.drawerTopbarButton} onClick={() => setContentEditing(false)} disabled={contentSaving}>Cancelar</button>
+                    <button type="button" className={`${styles.drawerTopbarButton} ${styles.drawerTopbarPrimary}`} onClick={handleSaveContent} disabled={contentSaving || !canEditActiveTask}>
+                      {contentSaving ? 'Salvando' : 'Salvar'}
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" className={styles.drawerTopbarButton} onClick={() => openContentEditor(activeTask)} disabled={!canEditActiveTask}>Editar</button>
+                )}
+                <button type="button" className={styles.drawerTopbarDanger} onClick={() => setTaskDeleteTarget(activeTask)} disabled={!canEditActiveTask} aria-label="Excluir tarefa" title="Excluir tarefa">
+                  <TrashIcon size={15} />
+                </button>
+                <button type="button" className={styles.iconButton} onClick={closeActiveTaskDrawer} aria-label="Fechar">
+                  <CloseIcon size={16} />
+                </button>
+              </div>
             </header>
 
             <div className={styles.drawerScroll}>
@@ -2873,21 +2888,6 @@ export default function ProfilePage() {
                     {activeKind !== 'briefing' ? (
                       <button type="button" onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Passar etapa</button>
                     ) : null}
-                  </div>
-                  <div className={styles.drawerHeroActionGroup}>
-                    {contentEditing ? (
-                      <>
-                        <button type="button" onClick={() => setContentEditing(false)} disabled={contentSaving}>Cancelar</button>
-                        <button type="button" className={styles.heroActionPrimary} onClick={handleSaveContent} disabled={contentSaving || !canEditActiveTask}>
-                          {contentSaving ? 'Salvando' : 'Salvar'}
-                        </button>
-                      </>
-                    ) : (
-                      <button type="button" onClick={() => openContentEditor(activeTask)} disabled={!canEditActiveTask}>Editar</button>
-                    )}
-                    <button type="button" className={styles.heroActionDanger} onClick={() => setTaskDeleteTarget(activeTask)} disabled={!canEditActiveTask} aria-label="Excluir tarefa">
-                      Excluir tarefa
-                    </button>
                   </div>
                 </div>
               </div>

@@ -6287,3 +6287,105 @@
   min-width: 118px !important;
   padding-inline: 16px !important;
 }
+
+/* v104 — ações no header e separação do conteúdo do drawer */
+.drawerTopbarActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.drawerTopbarButton,
+.drawerTopbarDanger {
+  appearance: none;
+  height: 34px;
+  border-radius: 11px;
+  border: 1px solid var(--edf-border);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--edf-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .16s ease, border-color .16s ease, color .16s ease, transform .16s ease;
+}
+
+.drawerTopbarButton {
+  padding: 0 13px;
+}
+
+.drawerTopbarPrimary {
+  border-color: var(--edf-amber-border);
+  background: var(--edf-amber-bg);
+  color: var(--edf-text);
+}
+
+.drawerTopbarDanger {
+  width: 34px;
+  padding: 0;
+  color: var(--edf-danger-soft);
+  border-color: rgba(239, 68, 68, 0.26);
+  background: rgba(239, 68, 68, 0.055);
+}
+
+.drawerTopbarButton:hover:not(:disabled),
+.drawerTopbarDanger:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: var(--edf-border-strong);
+  color: var(--edf-text);
+}
+
+.drawerTopbarDanger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.11);
+  border-color: rgba(239, 68, 68, 0.38);
+  color: #fecaca;
+}
+
+.drawerTopbarButton:disabled,
+.drawerTopbarDanger:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+}
+
+.drawerTopbarActions .iconButton {
+  margin-left: 2px;
+}
+
+.drawerHeroActions {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.drawerHeroActionGroup:empty,
+.drawerHeroActions:empty {
+  display: none !important;
+}
+
+.contextGrid {
+  margin-top: 18px !important;
+  padding-top: 18px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.075) !important;
+}
+
+@media (max-width: 640px) {
+  .drawerTopbarActions {
+    gap: 6px;
+  }
+
+  .drawerTopbarButton {
+    padding: 0 10px;
+  }
+
+  .drawerTopbarDanger {
+    width: 34px;
+  }
+}
