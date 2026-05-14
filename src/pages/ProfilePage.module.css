@@ -6016,3 +6016,136 @@
     margin-left: 0 !important;
   }
 }
+
+/* v101 — topo do drawer mais operacional e menos redundante */
+.drawerHero {
+  gap: 12px !important;
+}
+
+.drawerHero h3 {
+  margin-bottom: 0 !important;
+}
+
+.drawerCommandCenter {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.86fr) minmax(0, 1.34fr);
+  gap: 12px;
+  align-items: stretch;
+  margin-top: 2px;
+  padding: 12px;
+  border: 1px solid var(--edf-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.drawerCommandMain {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding-right: 12px;
+  border-right: 1px solid var(--edf-border);
+}
+
+.drawerCommandMain span,
+.drawerCommandMeta small {
+  color: var(--edf-text-muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.drawerCommandMain strong {
+  min-width: 0;
+  color: var(--edf-text);
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawerCommandMain em {
+  min-width: 0;
+  color: var(--edf-text-secondary);
+  font-size: 12.5px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawerCommandMeta {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+
+.drawerCommandMeta span {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  padding: 0 2px;
+}
+
+.drawerCommandMeta strong {
+  min-width: 0;
+  color: var(--edf-text-secondary);
+  font-size: 12.5px;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawerHeroActions {
+  padding-top: 2px !important;
+  margin-top: 0 !important;
+}
+
+.drawerHeroActionGroup:first-child:empty {
+  display: none;
+}
+
+.drawerHeroActionGroup:last-child {
+  margin-left: auto;
+}
+
+.heroActionDanger {
+  margin-left: 10px !important;
+}
+
+@media (max-width: 980px) {
+  .drawerCommandCenter {
+    grid-template-columns: 1fr;
+  }
+
+  .drawerCommandMain {
+    padding-right: 0;
+    padding-bottom: 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--edf-border);
+  }
+}
+
+@media (max-width: 640px) {
+  .drawerCommandCenter {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .drawerCommandMeta {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .drawerCommandMeta span {
+    padding: 0;
+  }
+}

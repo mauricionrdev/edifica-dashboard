@@ -2575,6 +2575,12 @@ export default function ProfilePage() {
   const activeRequester = activeTask ? taskRequesterName(activeTask, '') : '';
   const activeNextAction = activeTask ? nextActionLabel(activeTask) : '';
   const activeCollaboratorNames = collaborators.map((item) => item.userName || item.name).filter(Boolean);
+  const activeIsDone = activeTask ? isDone(activeTask) : false;
+  const activeOwnerLabel = activeIsDone ? 'Responsável final' : 'Agora com';
+  const activeStageLabel = activeIsDone ? 'Operação concluída' : (activeNextAction || statusLabel(activeTask));
+  const activeFollowerLabel = activeCollaboratorNames.length
+    ? `${activeCollaboratorNames.slice(0, 2).join(', ')}${activeCollaboratorNames.length > 2 ? ` +${activeCollaboratorNames.length - 2}` : ''}`
+    : '—';
   const activeContextItems = activeTask
     ? [
         ['Tipo', kindLabel(activeKind)],
@@ -2847,23 +2853,27 @@ export default function ProfilePage() {
                 ) : (
                   <h3>{activeTask.title}</h3>
                 )}
-                <p>{activeNextAction}</p>
-                <div className={styles.drawerFlowSummary}>
-                  <div>
-                    <span>Solicitante</span>
-                    <strong>{activeRequester || '—'}</strong>
+                <div className={styles.drawerCommandCenter}>
+                  <div className={styles.drawerCommandMain}>
+                    <span>{activeOwnerLabel}</span>
+                    <strong>{activeAssignee || '—'}</strong>
+                    <em>{activeStageLabel}</em>
                   </div>
-                  <div>
-                    <span>Agora com</span>
-                    <strong>{activeAssignee}</strong>
-                  </div>
-                  <div>
-                    <span>Próximo passo</span>
-                    <strong>{activeNextAction || '—'}</strong>
-                  </div>
-                  <div>
-                    <span>Acompanhando</span>
-                    <strong>{activeCollaboratorNames.length ? activeCollaboratorNames.slice(0, 2).join(', ') : '—'}{activeCollaboratorNames.length > 2 ? ` +${activeCollaboratorNames.length - 2}` : ''}</strong>
+                  <div className={styles.drawerCommandMeta}>
+                    <span>
+                      <small>Solicitante</small>
+                      <strong>{activeRequester || '—'}</strong>
+                    </span>
+                    {activeTask.clientName ? (
+                      <span>
+                        <small>Cliente</small>
+                        <strong>{activeTask.clientName}</strong>
+                      </span>
+                    ) : null}
+                    <span>
+                      <small>Acompanhando</small>
+                      <strong>{activeFollowerLabel}</strong>
+                    </span>
                   </div>
                 </div>
                 <div className={styles.drawerHeroActions}>
