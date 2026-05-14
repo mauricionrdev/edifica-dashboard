@@ -5814,3 +5814,85 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v99 — refinamento de modal, topo do drawer e ação destrutiva */
+.demandFormGrid>.labeledField {
+  grid-column: span 2;
+}
+
+.demandFormGrid>.fieldCompact {
+  grid-column: span 1;
+}
+
+.drawerHero {
+  gap: 10px;
+}
+
+.drawerFlowSummary {
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.drawerFlowSummary>div {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.014);
+  border-color: var(--edf-border-strong);
+}
+
+.drawerFlowSummary strong {
+  color: var(--edf-text);
+}
+
+.drawerHeroActions {
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 8px;
+}
+
+.drawerHeroActionGroup {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.heroActionDanger {
+  margin-left: 6px;
+  border-color: var(--edf-danger-border) !important;
+  background: rgba(239, 68, 68, 0.055) !important;
+  color: var(--edf-danger-soft) !important;
+}
+
+.heroActionDanger svg {
+  flex: 0 0 auto;
+}
+
+.heroActionDanger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.11) !important;
+  border-color: rgba(239, 68, 68, 0.34) !important;
+  color: #fecaca !important;
+}
+
+@media (max-width: 760px) {
+  .demandFormGrid>.labeledField,
+  .demandFormGrid>.fieldCompact {
+    grid-column: span 3;
+  }
+
+  .drawerHeroActions {
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 560px) {
+  .demandFormGrid>.labeledField,
+  .demandFormGrid>.fieldCompact {
+    grid-column: 1 / -1;
+  }
+
+  .drawerHeroActionGroup {
+    width: 100%;
+  }
+}

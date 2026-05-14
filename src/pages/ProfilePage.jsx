@@ -2819,27 +2819,35 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className={styles.drawerHeroActions}>
-                  {activeKind === 'briefing' && activeBriefing && !activeBriefing.isComplete ? (
-                    <button type="button" onClick={handleRegisterBriefingIssues} disabled={commentSaving || !canCommentActiveTask}>Pendências</button>
-                  ) : null}
-                  {activeKind === 'briefing' && activeBriefing?.isComplete && !isDone(activeTask) ? (
-                    <button type="button" className={styles.heroActionPrimary} onClick={handleMarkBriefingImplemented} disabled={taskUpdatingId === activeTask.id || !canCompleteActiveTask}>Implementado</button>
-                  ) : null}
-                  {activeKind === 'briefing' && isDone(activeTask) ? (
-                    <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Ativação</button>
-                  ) : null}
-                  <button type="button" onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Passar etapa</button>
-                  {contentEditing ? (
-                    <>
-                      <button type="button" onClick={() => setContentEditing(false)} disabled={contentSaving}>Cancelar</button>
-                      <button type="button" className={styles.heroActionPrimary} onClick={handleSaveContent} disabled={contentSaving || !canEditActiveTask}>
-                        {contentSaving ? 'Salvando' : 'Salvar'}
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" onClick={() => openContentEditor(activeTask)} disabled={!canEditActiveTask}>Editar</button>
-                  )}
-                  <button type="button" onClick={() => setTaskDeleteTarget(activeTask)} disabled={!canEditActiveTask}>Excluir</button>
+                  <div className={styles.drawerHeroActionGroup}>
+                    {activeKind === 'briefing' && activeBriefing && !activeBriefing.isComplete ? (
+                      <button type="button" onClick={handleRegisterBriefingIssues} disabled={commentSaving || !canCommentActiveTask}>Pendências</button>
+                    ) : null}
+                    {activeKind === 'briefing' && activeBriefing?.isComplete && !isDone(activeTask) ? (
+                      <button type="button" className={styles.heroActionPrimary} onClick={handleMarkBriefingImplemented} disabled={taskUpdatingId === activeTask.id || !canCompleteActiveTask}>Implementado</button>
+                    ) : null}
+                    {activeKind === 'briefing' && isDone(activeTask) ? (
+                      <button type="button" className={styles.heroActionPrimary} onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Enviar para ativação</button>
+                    ) : (
+                      <button type="button" onClick={() => openHandoff(activeTask)} disabled={!canEditActiveTask || !canCommentActiveTask}>Passar etapa</button>
+                    )}
+                  </div>
+                  <div className={styles.drawerHeroActionGroup}>
+                    {contentEditing ? (
+                      <>
+                        <button type="button" onClick={() => setContentEditing(false)} disabled={contentSaving}>Cancelar</button>
+                        <button type="button" className={styles.heroActionPrimary} onClick={handleSaveContent} disabled={contentSaving || !canEditActiveTask}>
+                          {contentSaving ? 'Salvando' : 'Salvar'}
+                        </button>
+                      </>
+                    ) : (
+                      <button type="button" onClick={() => openContentEditor(activeTask)} disabled={!canEditActiveTask}>Editar</button>
+                    )}
+                    <button type="button" className={styles.heroActionDanger} onClick={() => setTaskDeleteTarget(activeTask)} disabled={!canEditActiveTask} aria-label="Excluir demanda">
+                      <TrashIcon size={13} />
+                      Excluir
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -3212,13 +3220,13 @@ export default function ProfilePage() {
 
             <div className={styles.settingsContent}>
               <div className={styles.demandFormGrid}>
-                <label className={styles.labeledField}>
+                <label className={`${styles.labeledField} ${styles.fieldCompact}`}>
                   <span>Tipo</span>
                   <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
                     {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
                 </label>
-                <label className={styles.labeledField}>
+                <label className={`${styles.labeledField} ${styles.fieldCompact}`}>
                   <span>Prioridade</span>
                   <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
                     {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
