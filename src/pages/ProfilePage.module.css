@@ -8214,3 +8214,174 @@ input[type="date"]:focus {
     grid-template-columns: 20px minmax(220px, 1fr) minmax(128px, .28fr) minmax(360px, .78fr) minmax(72px, .12fr) !important;
   }
 }
+
+/* v116 — ajuste cirúrgico: descrição do drawer e selects
+   Não altera badges/tags. */
+.descriptionSection {
+  padding-top: 0 !important;
+}
+
+.descriptionSection .sectionTitleRow {
+  margin-bottom: 14px !important;
+}
+
+.descriptionBox {
+  display: block !important;
+  margin: 0 !important;
+  min-height: auto !important;
+  padding: 16px 18px !important;
+  border: 1px solid var(--edf-border) !important;
+  border-radius: 12px !important;
+  background: var(--edf-surface-1) !important;
+  color: var(--edf-text-secondary) !important;
+  font-family: inherit !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.72 !important;
+  letter-spacing: 0 !important;
+  white-space: pre-wrap !important;
+  overflow: auto !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: default !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.descriptionBox:hover,
+.descriptionBox:focus,
+.descriptionBox:focus-visible {
+  border-color: var(--edf-border) !important;
+  background: var(--edf-surface-1) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.descriptionBox br,
+.descriptionBox p {
+  line-height: inherit !important;
+}
+
+.profileSelect.formSelect,
+.profileSelect.workflowSelect,
+.profileSelect.demandSelect {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+.profileSelectButton,
+.workflowSelect,
+.formSelect,
+.demandSelect,
+.workflowDate,
+.demandModal .dateField button,
+.demandModal .dateField input,
+select[class*="Select"],
+input[type="date"] {
+  height: 42px !important;
+  min-height: 42px !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--edf-border-strong) !important;
+  background: var(--edf-surface-1) !important;
+  color: var(--edf-text) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transition: border-color 120ms ease, background 120ms ease !important;
+}
+
+.profileSelectButton {
+  width: 100% !important;
+  padding: 0 36px 0 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+}
+
+.profileSelectButton:hover:not(:disabled),
+.profileSelectButton[aria-expanded='true'],
+.workflowSelect:hover,
+.formSelect:hover,
+.demandSelect:hover,
+.workflowDate:hover,
+.demandModal .dateField button:hover,
+.demandModal .dateField input:hover,
+select[class*="Select"]:hover,
+input[type="date"]:hover {
+  border-color: var(--edf-border-strong) !important;
+  background: var(--edf-surface-1) !important;
+  box-shadow: none !important;
+}
+
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+.profileSelectButton[aria-expanded='true'],
+.workflowSelect:focus,
+.workflowSelect:focus-visible,
+.formSelect:focus,
+.formSelect:focus-visible,
+.demandSelect:focus,
+.demandSelect:focus-visible,
+.workflowDate:focus,
+.workflowDate:focus-visible,
+.demandModal .dateField button:focus,
+.demandModal .dateField button:focus-visible,
+.demandModal .dateField input:focus,
+.demandModal .dateField input:focus-visible,
+select[class*="Select"]:focus,
+select[class*="Select"]:focus-visible,
+input[type="date"]:focus,
+input[type="date"]:focus-visible {
+  border-color: var(--edf-border-strong) !important;
+  background: var(--edf-surface-1) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.profileSelectButton::after {
+  border-right-color: var(--edf-text-muted) !important;
+  border-bottom-color: var(--edf-text-muted) !important;
+}
+
+.profileSelectMenu {
+  border-radius: 12px !important;
+  border: 1px solid var(--edf-border-strong) !important;
+  background: #101113 !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.58) !important;
+  padding: 4px !important;
+}
+
+.profileSelectOption {
+  min-height: 36px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--edf-text-secondary) !important;
+  font-family: inherit !important;
+  font-size: 12.5px !important;
+  font-weight: 560 !important;
+  box-shadow: none !important;
+  transition: none !important;
+}
+
+.profileSelectOption:hover,
+.profileSelectOption:focus-visible {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: var(--edf-text) !important;
+  outline: none !important;
+}
+
+.profileSelectOptionActive,
+.profileSelectOptionActive:hover,
+.profileSelectOptionActive:focus-visible {
+  background: rgba(255, 255, 255, 0.055) !important;
+  color: var(--edf-text) !important;
+}
