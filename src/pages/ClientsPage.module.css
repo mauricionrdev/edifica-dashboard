@@ -570,3 +570,125 @@
     justify-content: flex-end;
   }
 }
+/* v131 — Clientes alinhado ao padrão visual validado do Perfil */
+.headerActionButton {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.headerActionButton:hover {
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  background: rgba(255, 255, 255, 0.032) !important;
+}
+
+.workbench {
+  border-color: rgba(255, 255, 255, 0.055);
+  border-radius: 18px;
+  background: #080809;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+.toolbar {
+  min-height: 62px;
+  padding: 12px 14px;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+  background: #080809;
+}
+
+.searchBox {
+  height: 38px;
+  border-color: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.searchBox:hover,
+.searchBox:focus-within {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.024);
+  box-shadow: none;
+}
+
+.scopeTabs {
+  gap: 8px;
+  padding: 0;
+}
+
+.scopeTab {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.006);
+  color: var(--text-secondary);
+}
+
+.scopeTab:hover {
+  border-color: rgba(255, 255, 255, 0.085);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+}
+
+.scopeTabActive {
+  border-color: rgba(245, 184, 0, 0.38);
+  background: rgba(245, 184, 0, 0.055);
+  color: var(--accent-amber-strong, #f5b800);
+}
+
+.scopeTabActive:hover {
+  border-color: rgba(245, 184, 0, 0.42);
+  background: rgba(245, 184, 0, 0.075);
+  color: var(--accent-amber-strong, #f5b800);
+}
+
+.scopeCount {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-tertiary);
+}
+
+.scopeTabActive .scopeCount {
+  background: rgba(245, 184, 0, 0.10);
+  color: var(--accent-amber-strong, #f5b800);
+}
+
+.clientHeader {
+  min-height: 42px;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+  background: #080809;
+}
+
+.clientRow {
+  min-height: 58px;
+  border-bottom-color: rgba(255, 255, 255, 0.042);
+}
+
+.clientRow:hover {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.clientRow:focus-visible {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.avatar {
+  border-color: rgba(255, 255, 255, 0.055);
+  background: #09090a;
+}
+
+.statusPill {
+  border-color: rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.pagination {
+  min-height: 50px;
+  border-top-color: rgba(255, 255, 255, 0.05);
+  background: #080809;
+}
+
+.pageButton:hover,
+.pageButtonActive {
+  background: rgba(255, 255, 255, 0.028);
+}

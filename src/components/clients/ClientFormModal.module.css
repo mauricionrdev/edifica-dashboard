@@ -338,3 +338,105 @@
     width: 100%;
   }
 }
+
+/* v131 — Modal de cliente no padrão visual do Perfil */
+.overlay {
+  background: rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(10px);
+}
+
+.card {
+  border-color: rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  background: #080809;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+.header,
+.footer {
+  min-height: 60px;
+  padding: 0 18px;
+  background: #080809;
+}
+
+.header {
+  border-bottom-color: rgba(255, 255, 255, 0.055);
+}
+
+.footer {
+  border-top-color: rgba(255, 255, 255, 0.055);
+}
+
+.close,
+.avatarUploadButton,
+.btnPrimary,
+.btnSecondary,
+.btnDanger {
+  border-color: rgba(255, 255, 255, 0.065);
+  background: rgba(255, 255, 255, 0.014);
+  box-shadow: none;
+}
+
+.close:hover,
+.avatarUploadButton:hover,
+.btnPrimary:hover:not(:disabled),
+.btnSecondary:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.095);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.body {
+  padding: 16px 18px 18px;
+  gap: 14px;
+  background: #080809;
+}
+
+.section {
+  padding: 15px;
+  border-color: rgba(255, 255, 255, 0.055);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.avatarBlock,
+.avatarPreview {
+  border-color: rgba(255, 255, 255, 0.055);
+  background: #09090a;
+}
+
+.input,
+.select,
+.selectControl :global(button) {
+  min-height: 38px;
+  border-color: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.014);
+  box-shadow: none;
+}
+
+.input:hover:not(:disabled),
+.select:hover:not(:disabled),
+.selectControl :global(button:hover),
+.input:focus,
+.select:focus,
+.selectControl :global(button:focus-visible) {
+  border-color: rgba(255, 255, 255, 0.095);
+  background: rgba(255, 255, 255, 0.024);
+  box-shadow: none;
+}
+
+.btnPrimary {
+  color: var(--text-primary);
+}
+
+.btnDanger {
+  border-color: rgba(239, 68, 68, 0.22);
+  background: rgba(239, 68, 68, 0.055);
+  color: #ff8fa3;
+}
+
+.btnDanger:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.32);
+  background: rgba(239, 68, 68, 0.085);
+  color: #ffc4cf;
+}

@@ -100,3 +100,49 @@
     min-height: 50px;
   }
 }
+
+/* v131 — Abas internas do drawer no padrão do Perfil */
+.tabsBar {
+  min-height: 54px;
+  padding: 10px 12px;
+  border-bottom-color: rgba(255, 255, 255, 0.055);
+  background: #080809;
+  gap: 8px;
+}
+
+.tab {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.006);
+  color: var(--text-secondary);
+}
+
+.tab:hover {
+  border-color: rgba(255, 255, 255, 0.085);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+}
+
+.tabActive {
+  border-color: rgba(245, 184, 0, 0.36);
+  background: rgba(245, 184, 0, 0.055);
+  color: var(--accent-amber-strong, #f5b800);
+}
+
+.tabActive:hover {
+  border-color: rgba(245, 184, 0, 0.42);
+  background: rgba(245, 184, 0, 0.075);
+  color: var(--accent-amber-strong, #f5b800);
+}
+
+.tabActive::after {
+  display: none;
+}
+
+.emptyState,
+.loadingState {
+  border-color: rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.012);
+}
