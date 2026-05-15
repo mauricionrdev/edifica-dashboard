@@ -6861,3 +6861,91 @@
   background: rgba(255, 255, 255, 0.055) !important;
   color: rgba(248, 250, 252, 0.96) !important;
 }
+
+/* v118 — colaboradores do drawer alinhados ao padrão de tabs/chips */
+.collaboratorChips,
+.selectedCollaborators {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: 14px !important;
+}
+
+.collaboratorChips > span,
+.selectedCollaborators > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 30px !important;
+  min-width: 0 !important;
+  max-width: 220px !important;
+  padding: 0 8px 0 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(146, 155, 176, 0.18) !important;
+  background: transparent !important;
+  color: #9AA6BA !important;
+  box-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  font-size: 12px !important;
+  font-weight: 560 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.005em !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: none !important;
+}
+
+.collaboratorChips > span:hover,
+.selectedCollaborators > span:hover {
+  border-color: rgba(146, 155, 176, 0.18) !important;
+  background: transparent !important;
+  color: #9AA6BA !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.collaboratorChips > span > button,
+.selectedCollaborators > span > button {
+  width: 17px !important;
+  height: 17px !important;
+  min-width: 17px !important;
+  min-height: 17px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(203, 213, 225, 0.82) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: none !important;
+}
+
+.collaboratorChips > span > button:hover:not(:disabled),
+.collaboratorChips > span > button:focus-visible,
+.selectedCollaborators > span > button:hover:not(:disabled),
+.selectedCollaborators > span > button:focus-visible {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(203, 213, 225, 0.82) !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.collaboratorChips > span > button:disabled,
+.selectedCollaborators > span > button:disabled {
+  opacity: 0.45 !important;
+  cursor: default !important;
+}
