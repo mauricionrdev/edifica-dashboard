@@ -69,7 +69,7 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '20mb' }));
 
 // --------------------------------------------------------------
 //  Health check

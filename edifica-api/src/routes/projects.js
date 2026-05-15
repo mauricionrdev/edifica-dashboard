@@ -20,6 +20,73 @@ import {
 const router = Router();
 router.use(requireAuth);
 
+
+let projectTaskSchemaUpgradePromise = null;
+
+async function ensureProjectTaskSchemaUpgrades() {
+  if (!projectTaskSchemaUpgradePromise) {
+    projectTaskSchemaUpgradePromise = (async () => {
+      try {
+        await query("ALTER TABLE tasks MODIFY priority ENUM('low','medium','high','critical') NOT NULL DEFAULT 'medium'");
+      } catch {
+        // The database may already be migrated or may not support this syntax in a local fixture.
+      }
+
+      await query(`
+        CREATE TABLE IF NOT EXISTS task_attachments (
+          id CHAR(36) PRIMARY KEY,
+          task_id CHAR(36) NOT NULL,
+          file_name VARCHAR(255) NOT NULL,
+          mime_type VARCHAR(120) NOT NULL,
+          size_bytes INT UNSIGNED NOT NULL DEFAULT 0,
+          data_url LONGTEXT NOT NULL,
+          created_by_user_id CHAR(36) NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT fk_task_attachments_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+          CONSTRAINT fk_task_attachments_user FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+    })().finally(() => {
+      projectTaskSchemaUpgradePromise = null;
+    });
+  }
+
+  return projectTaskSchemaUpgradePromise;
+}
+
+function normalizeAttachmentPayload(body = {}) {
+  const fileName = clean(body.fileName || body.name || 'imagem.png').slice(0, 180) || 'imagem.png';
+  const mimeType = clean(body.mimeType || body.type || 'image/png').toLowerCase();
+  const sizeBytes = Math.max(0, Math.min(Number(body.sizeBytes || body.size || 0) || 0, 50 * 1024 * 1024));
+  const dataUrl = String(body.dataUrl || '').trim();
+
+  if (!['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'].includes(mimeType)) {
+    throw badRequest('Anexe apenas imagens PNG, JPG, WEBP ou GIF');
+  }
+  if (!dataUrl || !/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(dataUrl)) {
+    throw badRequest('Imagem inválida');
+  }
+  if (dataUrl.length > 18_000_000) {
+    throw badRequest('Imagem muito grande');
+  }
+
+  return { fileName, mimeType, sizeBytes, dataUrl };
+}
+
+function serializeTaskAttachment(row = {}) {
+  return {
+    id: row.id,
+    taskId: row.task_id,
+    fileName: row.file_name,
+    mimeType: row.mime_type,
+    sizeBytes: Number(row.size_bytes || 0),
+    dataUrl: row.data_url,
+    createdByUserId: row.created_by_user_id,
+    createdByName: row.created_by_name || '',
+    createdAt: row.created_at,
+  };
+}
+
 function clean(value) {
   return String(value || '').trim();
 }
@@ -834,6 +901,7 @@ router.get('/tasks/:id([0-9a-fA-F-]{36})', requirePermission('tasks.view'), asyn
 
 router.post('/tasks', requirePermission('tasks.create'), async (req, res, next) => {
   try {
+    await ensureProjectTaskSchemaUpgrades();
     const projectId = clean(req.body?.projectId);
     if (projectId) await assertProjectAccess(projectId, req.user, 'tasks.create');
     const taskId = await createTaskRecord(
@@ -1239,6 +1307,7 @@ router.delete('/:id/members/:userId', requirePermission('projects.edit'), async 
 
 router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.own', 'tasks.complete.any']), async (req, res, next) => {
   try {
+    await ensureProjectTaskSchemaUpgrades();
     const task = await assertTaskAccess(req.params.id, req.user, 'tasks.view');
     const updates = [];
     const params = [];
@@ -1394,6 +1463,82 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
       [req.user.id, req.user.id, req.params.id]
     );
     res.json({ task: serializeTask(rows[0]) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+router.get('/tasks/:id/attachments', requirePermission('tasks.view'), async (req, res, next) => {
+  try {
+    await ensureProjectTaskSchemaUpgrades();
+    await assertTaskAccess(req.params.id, req.user, 'tasks.view');
+    const rows = await query(
+      `SELECT ta.*, u.name AS created_by_name
+         FROM task_attachments ta
+         LEFT JOIN users u ON u.id = ta.created_by_user_id
+        WHERE ta.task_id = ?
+        ORDER BY ta.created_at ASC`,
+      [req.params.id]
+    );
+    res.json({ attachments: rows.map(serializeTaskAttachment) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/tasks/:id/attachments', requireAnyPermission(['tasks.edit', 'tasks.edit.own', 'tasks.edit.all']), async (req, res, next) => {
+  try {
+    await ensureProjectTaskSchemaUpgrades();
+    const task = await assertTaskAccess(req.params.id, req.user, 'tasks.edit');
+    const payload = normalizeAttachmentPayload(req.body || {});
+    const id = uuid();
+
+    await query(
+      `INSERT INTO task_attachments (id, task_id, file_name, mime_type, size_bytes, data_url, created_by_user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, req.params.id, payload.fileName, payload.mimeType, payload.sizeBytes, payload.dataUrl, req.user.id || null]
+    );
+
+    await logTaskEvent({
+      projectId: task.project_id,
+      taskId: req.params.id,
+      actorUserId: req.user.id,
+      eventType: 'task.attachment_added',
+      summary: 'Anexo adicionado',
+      metadata: { arquivo: payload.fileName },
+    });
+
+    const rows = await query(
+      `SELECT ta.*, u.name AS created_by_name
+         FROM task_attachments ta
+         LEFT JOIN users u ON u.id = ta.created_by_user_id
+        WHERE ta.id = ?`,
+      [id]
+    );
+    res.status(201).json({ attachment: serializeTaskAttachment(rows[0]) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/tasks/:id/attachments/:attachmentId', requireAnyPermission(['tasks.edit', 'tasks.edit.own', 'tasks.edit.all']), async (req, res, next) => {
+  try {
+    await ensureProjectTaskSchemaUpgrades();
+    const task = await assertTaskAccess(req.params.id, req.user, 'tasks.edit');
+    const rows = await query('SELECT * FROM task_attachments WHERE id = ? AND task_id = ? LIMIT 1', [req.params.attachmentId, req.params.id]);
+    if (!rows[0]) return res.json({ ok: true });
+
+    await query('DELETE FROM task_attachments WHERE id = ? AND task_id = ?', [req.params.attachmentId, req.params.id]);
+    await logTaskEvent({
+      projectId: task.project_id,
+      taskId: req.params.id,
+      actorUserId: req.user.id,
+      eventType: 'task.attachment_removed',
+      summary: 'Anexo removido',
+      metadata: { arquivo: rows[0].file_name },
+    });
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

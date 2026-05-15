@@ -6949,3 +6949,128 @@
   opacity: 0.45 !important;
   cursor: default !important;
 }
+
+/* Task image attachments */
+.attachmentComposer {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 2px;
+}
+
+.attachmentComposer>div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--profile-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.attachmentComposer>div:first-child strong {
+  color: var(--profile-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.attachmentComposer>button {
+  width: max-content;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--profile-line);
+  background: var(--profile-panel-2);
+  color: var(--profile-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.attachmentPreviewGrid,
+.attachmentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 12px;
+}
+
+.attachmentPreviewItem,
+.attachmentCard {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--profile-line);
+  background: var(--profile-panel-2);
+}
+
+.attachmentPreviewItem img,
+.attachmentCard img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: #0b0c10;
+}
+
+.attachmentPreviewItem figcaption,
+.attachmentCard figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--profile-line);
+  color: var(--profile-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.attachmentPreviewItem figcaption,
+.attachmentCard figcaption span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachmentPreviewItem>button,
+.attachmentCard figcaption button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid var(--profile-line);
+  background: rgba(255, 255, 255, .04);
+  color: var(--profile-muted);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.attachmentPreviewItem>button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(10, 11, 14, .78);
+}
+
+.attachmentsEmpty {
+  border: 1px solid var(--profile-line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--profile-muted);
+  background: var(--profile-panel-2);
+  font-size: 13px;
+  font-weight: 600;
+}

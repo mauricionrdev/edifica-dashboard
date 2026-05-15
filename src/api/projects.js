@@ -61,6 +61,18 @@ export function updateTask(id, body) {
   return api.patch(`/projects/tasks/${encodeURIComponent(id)}`, body);
 }
 
+export function listTaskAttachments(id) {
+  return api.get(`/projects/tasks/${encodeURIComponent(id)}/attachments`);
+}
+
+export function createTaskAttachment(id, body) {
+  return api.post(`/projects/tasks/${encodeURIComponent(id)}/attachments`, body);
+}
+
+export function deleteTaskAttachment(taskId, attachmentId) {
+  return api.del(`/projects/tasks/${encodeURIComponent(taskId)}/attachments/${encodeURIComponent(attachmentId)}`);
+}
+
 export function deleteTask(id) {
   return api.del(`/projects/tasks/${encodeURIComponent(id)}`);
 }

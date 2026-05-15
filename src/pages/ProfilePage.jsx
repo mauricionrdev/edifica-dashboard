@@ -4,11 +4,14 @@ import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { changePassword, updateProfile } from '../api/auth.js';
 import {
   createTask,
+  createTaskAttachment,
   createTaskComment,
   deleteTask,
+  deleteTaskAttachment,
   deleteTaskComment,
   getTask,
   listTaskEvents,
+  listTaskAttachments,
   listTaskCollaborators,
   listTaskSubtasks,
   addTaskCollaborator,
@@ -126,7 +129,38 @@ function emptyDemandForm(userId = '') {
     routineScope: '',
     routineChecklist: '',
     collaboratorUserIds: [],
+    attachments: [],
   };
+}
+
+const TASK_ATTACHMENT_MAX_BYTES = 6 * 1024 * 1024;
+
+function readTaskAttachmentFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      reject(new Error('Arquivo inválido.'));
+      return;
+    }
+    if (!String(file.type || '').startsWith('image/')) {
+      reject(new Error('Envie apenas imagens.'));
+      return;
+    }
+    if (file.size > TASK_ATTACHMENT_MAX_BYTES) {
+      reject(new Error('Imagem maior que 6 MB.'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => resolve({
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      fileName: file.name || 'imagem.png',
+      mimeType: file.type || 'image/png',
+      sizeBytes: file.size || 0,
+      dataUrl: String(reader.result || ''),
+    });
+    reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 function emptyHandoffForm(userId = '', status = 'in_progress') {
@@ -1314,6 +1348,7 @@ export default function ProfilePage() {
   const { user, reloadUser } = useAuth();
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
+  const demandAttachmentInputRef = useRef(null);
   const clientSearchRef = useRef(null);
   const clientSearchPanelRef = useRef(null);
   const taskDeepLinkHandledRef = useRef('');
@@ -1369,6 +1404,9 @@ export default function ProfilePage() {
   const [contentEditing, setContentEditing] = useState(false);
   const [contentSaving, setContentSaving] = useState(false);
   const [descriptionCopied, setDescriptionCopied] = useState(false);
+  const [taskAttachments, setTaskAttachments] = useState([]);
+  const [taskAttachmentsLoading, setTaskAttachmentsLoading] = useState(false);
+  const [taskAttachmentDeletingId, setTaskAttachmentDeletingId] = useState('');
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
@@ -1418,6 +1456,7 @@ export default function ProfilePage() {
     setTaskComments([]);
     setTaskEvents([]);
     setDrawerSubtasks([]);
+    setTaskAttachments([]);
     setCollaborators([]);
     setCollaboratorUserId('');
     setCommentDeleteTarget(null);
@@ -1455,6 +1494,7 @@ export default function ProfilePage() {
     setClientSearchOpen(false);
     setClientSearchPosition(null);
     setDemandForm(emptyDemandForm(user?.id || ''));
+    if (demandAttachmentInputRef.current) demandAttachmentInputRef.current.value = '';
   }
 
   function closeDemandModal() {
@@ -1709,11 +1749,12 @@ export default function ProfilePage() {
     setCommentsLoading(true);
     setSubtasksLoading(true);
     setCollaboratorsLoading(true);
+    setTaskAttachmentsLoading(true);
 
-    Promise.allSettled([listTaskComments(activeTaskId), listTaskEvents(activeTaskId), listTaskSubtasks(activeTaskId), listTaskCollaborators(activeTaskId)])
-      .then(([commentsRes, eventsRes, subtasksRes, collaboratorsRes]) => {
+    Promise.allSettled([listTaskComments(activeTaskId), listTaskEvents(activeTaskId), listTaskSubtasks(activeTaskId), listTaskCollaborators(activeTaskId), listTaskAttachments(activeTaskId)])
+      .then(([commentsRes, eventsRes, subtasksRes, collaboratorsRes, attachmentsRes]) => {
         if (cancelled) return;
-        const allRejected = [commentsRes, eventsRes, subtasksRes, collaboratorsRes].every((result) => result.status === 'rejected');
+        const allRejected = [commentsRes, eventsRes, subtasksRes, collaboratorsRes, attachmentsRes].every((result) => result.status === 'rejected');
         if (allRejected) {
           closeActiveTaskDrawer();
           showToast('Não foi possível carregar esta demanda.', { variant: 'error' });
@@ -1740,12 +1781,18 @@ export default function ProfilePage() {
         } else {
           setCollaborators([]);
         }
+        if (attachmentsRes.status === 'fulfilled') {
+          setTaskAttachments(Array.isArray(attachmentsRes.value?.attachments) ? attachmentsRes.value.attachments : []);
+        } else {
+          setTaskAttachments([]);
+        }
       })
       .finally(() => {
         if (!cancelled) {
           setCommentsLoading(false);
           setSubtasksLoading(false);
           setCollaboratorsLoading(false);
+          setTaskAttachmentsLoading(false);
         }
       });
 
@@ -1848,7 +1895,7 @@ export default function ProfilePage() {
   async function refreshActiveTaskPanels(taskId = activeTaskId, options = {}) {
     if (!taskId || taskId !== activeTaskId) return;
 
-    const { comments = false, events = true, subtasks = false, collaborators: shouldRefreshCollaborators = false } = options;
+    const { comments = false, events = true, subtasks = false, collaborators: shouldRefreshCollaborators = false, attachments = false } = options;
     const requests = [];
 
     if (comments) {
@@ -1879,6 +1926,14 @@ export default function ProfilePage() {
       requests.push(
         listTaskCollaborators(taskId)
           .then((res) => setCollaborators(Array.isArray(res?.collaborators) ? res.collaborators : []))
+          .catch(() => {})
+      );
+    }
+
+    if (attachments) {
+      requests.push(
+        listTaskAttachments(taskId)
+          .then((res) => setTaskAttachments(Array.isArray(res?.attachments) ? res.attachments : []))
           .catch(() => {})
       );
     }
@@ -2538,6 +2593,50 @@ export default function ProfilePage() {
     }
   }
 
+
+  async function handleDemandAttachmentFiles(event) {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+
+    try {
+      const parsed = await Promise.all(files.map(readTaskAttachmentFile));
+      setDemandForm((prev) => ({
+        ...prev,
+        attachments: [...(prev.attachments || []), ...parsed].slice(0, 8),
+      }));
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível anexar a imagem.', { variant: 'error' });
+    } finally {
+      if (event.target) event.target.value = '';
+    }
+  }
+
+  function handleRemoveDemandAttachment(attachmentId) {
+    setDemandForm((prev) => ({
+      ...prev,
+      attachments: (prev.attachments || []).filter((item) => item.id !== attachmentId),
+    }));
+  }
+
+  async function handleDeleteTaskAttachment(attachment) {
+    if (!activeTask?.id || !attachment?.id) return;
+    if (!canEditActiveTask) {
+      showToast('Sem permissão para remover anexo.', { variant: 'error' });
+      return;
+    }
+
+    try {
+      setTaskAttachmentDeletingId(attachment.id);
+      await deleteTaskAttachment(activeTask.id, attachment.id);
+      setTaskAttachments((prev) => prev.filter((item) => item.id !== attachment.id));
+      showToast('Anexo removido.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao remover anexo.', { variant: 'error' });
+    } finally {
+      setTaskAttachmentDeletingId('');
+    }
+  }
+
   async function handleCreateDemand(event) {
     event.preventDefault();
     if (!canCreateDemand) {
@@ -2569,6 +2668,19 @@ export default function ProfilePage() {
         const collaboratorIds = [...new Set((demandForm.collaboratorUserIds || []).filter((id) => id && id !== createdTask.assigneeUserId))];
         if (collaboratorIds.length) {
           await Promise.allSettled(collaboratorIds.map((id) => addTaskCollaborator(createdTask.id, { userId: id, role: 'follower' })));
+        }
+        const attachments = Array.isArray(demandForm.attachments) ? demandForm.attachments : [];
+        if (attachments.length) {
+          const uploaded = await Promise.allSettled(attachments.map((item) => createTaskAttachment(createdTask.id, {
+            fileName: item.fileName,
+            mimeType: item.mimeType,
+            sizeBytes: item.sizeBytes,
+            dataUrl: item.dataUrl,
+          })));
+          const savedAttachments = uploaded
+            .filter((result) => result.status === 'fulfilled' && result.value?.attachment)
+            .map((result) => result.value.attachment);
+          setTaskAttachments(savedAttachments);
         }
         const createdForCurrentUser = createdTask.assigneeUserId === user?.id;
         const visibleCreatedTask = {
@@ -3105,6 +3217,41 @@ export default function ProfilePage() {
                 </section>
               ) : null}
 
+              {(taskAttachmentsLoading || taskAttachments.length) ? (
+                <section className={`${styles.drawerSection} ${styles.attachmentsSection}`.trim()}>
+                  <div className={styles.sectionTitleRow}>
+                    <h4>Anexos</h4>
+                    <span>{taskAttachments.length}</span>
+                  </div>
+                  {taskAttachmentsLoading ? (
+                    <div className={styles.attachmentsEmpty}>Carregando anexos</div>
+                  ) : (
+                    <div className={styles.attachmentGrid}>
+                      {taskAttachments.map((item) => (
+                        <figure key={item.id} className={styles.attachmentCard}>
+                          <a href={item.dataUrl} target="_blank" rel="noreferrer" title={item.fileName || 'Abrir imagem'}>
+                            <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" />
+                          </a>
+                          <figcaption>
+                            <span>{item.fileName || 'Imagem'}</span>
+                            {canEditActiveTask ? (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTaskAttachment(item)}
+                                disabled={taskAttachmentDeletingId === item.id}
+                                aria-label={`Remover ${item.fileName || 'anexo'}`}
+                              >
+                                ×
+                              </button>
+                            ) : null}
+                          </figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              ) : null}
+
               <section className={styles.drawerSection}>
                 <div className={styles.sectionTitleRow}>
                   <h4>Colaboradores</h4>
@@ -3410,6 +3557,33 @@ export default function ProfilePage() {
               ) : null}
 
               <textarea value={demandForm.description} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
+
+              <div className={styles.attachmentComposer}>
+                <div>
+                  <span>Anexos</span>
+                  <strong>{(demandForm.attachments || []).length}</strong>
+                </div>
+                <input
+                  ref={demandAttachmentInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleDemandAttachmentFiles}
+                  hidden
+                />
+                <button type="button" onClick={() => demandAttachmentInputRef.current?.click()}>Anexar imagem</button>
+                {(demandForm.attachments || []).length ? (
+                  <div className={styles.attachmentPreviewGrid}>
+                    {(demandForm.attachments || []).map((item) => (
+                      <figure key={item.id} className={styles.attachmentPreviewItem}>
+                        <img src={item.dataUrl} alt={item.fileName || 'Anexo'} />
+                        <figcaption>{item.fileName || 'Imagem'}</figcaption>
+                        <button type="button" onClick={() => handleRemoveDemandAttachment(item.id)} aria-label={`Remover ${item.fileName || 'anexo'}`}>×</button>
+                      </figure>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <footer className={styles.settingsFooter}>
