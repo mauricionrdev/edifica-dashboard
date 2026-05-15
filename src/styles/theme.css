@@ -42,66 +42,60 @@
 }
 
 
-/* v138 — teste visual Claude Dark adaptado ao Edifica
-   Mantém tipografia atual. Ajusta apenas atmosfera, superfícies,
-   bordas e acentos globais para uma paleta dark mais quente e homogênea. */
+/* v139 — Linear dark visual test / Edifica typography and amber accent preserved */
 :root {
-  --bg-app: #0b0a09;
-  --bg-canvas: #11100e;
-  --bg-elevated: #151412;
-  --bg-raised: #1a1815;
-  --bg-hover: #211f1c;
-  --bg-selected: #252320;
-  --bg-soft: #13120f;
+  --bg-app: #010102;
+  --bg-canvas: #050506;
+  --bg-elevated: #0a0b0c;
+  --bg-raised: #0f1011;
+  --bg-hover: #151619;
+  --bg-selected: #1b1d21;
+  --bg-soft: #08090a;
 
-  --surface: #11100e;
-  --surface-subtle: #151412;
-  --surface-panel: rgba(250, 249, 245, 0.026);
-  --surface-raised: rgba(250, 249, 245, 0.042);
-  --surface-card: #151412;
-  --surface-card-soft: #11100e;
-  --surface-strong: #1f1e1b;
+  --surface: #08090a;
+  --surface-subtle: #0c0d0f;
+  --surface-panel: rgba(247, 248, 248, 0.018);
+  --surface-raised: rgba(247, 248, 248, 0.03);
+  --surface-card: #0a0b0d;
+  --surface-card-soft: #070809;
+  --surface-strong: #111215;
 
-  --text-primary: #faf9f5;
-  --text-secondary: #d8d3ca;
-  --text-tertiary: #a09d96;
-  --text-quaternary: #6f6b63;
+  --text-primary: #f7f8f8;
+  --text-secondary: #d0d6e0;
+  --text-tertiary: #8a8f98;
+  --text-quaternary: #62666d;
 
-  --line-subtle: rgba(250, 249, 245, 0.045);
-  --line: rgba(250, 249, 245, 0.075);
-  --line-strong: rgba(250, 249, 245, 0.12);
+  --line-subtle: rgba(247, 248, 248, 0.042);
+  --line: rgba(247, 248, 248, 0.066);
+  --line-strong: rgba(247, 248, 248, 0.095);
   --border-subtle: var(--line-subtle);
   --border-default: var(--line);
   --border-strong: var(--line-strong);
 
-  --field-bg: rgba(250, 249, 245, 0.028);
-  --field-bg-hover: rgba(250, 249, 245, 0.04);
-  --field-line: rgba(250, 249, 245, 0.08);
+  --field-bg: rgba(247, 248, 248, 0.022);
+  --field-bg-hover: rgba(247, 248, 248, 0.034);
+  --field-line: rgba(247, 248, 248, 0.068);
 
-  --chart-bar: rgba(250, 249, 245, 0.075);
-  --progress-track: rgba(250, 249, 245, 0.075);
+  --chart-bar: rgba(247, 248, 248, 0.058);
+  --progress-track: rgba(247, 248, 248, 0.065);
 
-  --accent-amber: #e8a55a;
-  --accent-amber-strong: #f0b76d;
-  --accent-amber-soft: rgba(232, 165, 90, 0.09);
-  --accent-amber-line: rgba(232, 165, 90, 0.24);
+  --accent-amber: #f5b800;
+  --accent-amber-strong: #ffc400;
+  --accent-amber-soft: rgba(245, 184, 0, 0.08);
+  --accent-amber-line: rgba(245, 184, 0, 0.24);
   --accent-amber-border: var(--accent-amber-line);
 
-  --accent-coral: #cc785c;
-  --accent-coral-soft: rgba(204, 120, 92, 0.11);
-  --accent-coral-line: rgba(204, 120, 92, 0.26);
+  --accent-cyan: #55edf6;
+  --accent-cyan-soft: rgba(85, 237, 246, 0.08);
+  --info: #55edf6;
+  --info-soft: rgba(85, 237, 246, 0.08);
 
-  --accent-cyan: #5db8a6;
-  --accent-cyan-soft: rgba(93, 184, 166, 0.09);
-  --info: #5db8a6;
-  --info-soft: rgba(93, 184, 166, 0.09);
-
-  --success: #5db872;
-  --success-soft: rgba(93, 184, 114, 0.1);
-  --warning: #e8a55a;
-  --warning-soft: rgba(232, 165, 90, 0.1);
-  --danger: #c64545;
-  --danger-soft: rgba(198, 69, 69, 0.1);
+  --success: #27a644;
+  --success-soft: rgba(39, 166, 68, 0.1);
+  --warning: #f5b800;
+  --warning-soft: rgba(245, 184, 0, 0.1);
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.1);
 
   --shadow-soft: none;
   --shadow-panel: none;
