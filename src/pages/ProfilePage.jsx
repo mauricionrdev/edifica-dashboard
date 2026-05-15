@@ -3098,40 +3098,20 @@ export default function ProfilePage() {
                 </section>
               ) : null}
 
-              {(contentEditing || activeDescription) ? (
+              {activeDescription ? (
                 <section className={`${styles.drawerSection} ${styles.descriptionSection}`.trim()}>
-                  <div
-                    className={`${styles.descriptionCard} ${contentEditing ? styles.descriptionCardEditing : ''}`.trim()}
-                    onDoubleClick={() => !contentEditing && openContentEditor(activeTask)}
-                  >
+                  <div className={styles.descriptionCard}>
                     <div className={styles.descriptionCardTopbar}>
                       <div className={styles.descriptionFileMeta}>
                         <span className={styles.descriptionFileIcon} aria-hidden="true" />
-                        <span>Descrição da demanda</span>
+                        <span>Descrição</span>
                       </div>
-                      {!contentEditing && activeDescription ? (
-                        <button type="button" onClick={handleCopyDescription} className={styles.copyDescriptionButton}>
-                          {descriptionCopied ? 'Copiado' : 'Copiar'}
-                        </button>
-                      ) : (
-                        <span className={styles.descriptionEditState}>{contentSaving ? 'Salvando' : 'Editando'}</span>
-                      )}
+                      <button type="button" onClick={handleCopyDescription} className={styles.copyDescriptionButton}>
+                        {descriptionCopied ? 'Copiado' : 'Copiar'}
+                      </button>
                     </div>
                     <div className={styles.descriptionBody}>
-                      {contentEditing ? (
-                        <textarea
-                          className={styles.descriptionEditor}
-                          value={contentForm.description}
-                          onChange={(event) => setContentForm((prev) => ({ ...prev, description: event.target.value }))}
-                          rows={Math.max(8, String(contentForm.description || '').split(/\r?\n/).length)}
-                          autoFocus
-                        />
-                      ) : (
-                        <pre
-                          className={styles.descriptionBox}
-                          title={canEditActiveTask ? 'Clique duas vezes para editar' : undefined}
-                        >{activeDescription}</pre>
-                      )}
+                      <pre className={styles.descriptionBox}>{activeDescription}</pre>
                     </div>
                   </div>
                 </section>
