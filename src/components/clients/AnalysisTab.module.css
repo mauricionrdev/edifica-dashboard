@@ -666,3 +666,136 @@
   border: 0;
   background: #111;
 }
+
+
+/* v134 — refinamento de anexos e loading das análises */
+.analysisLoading {
+  min-height: 260px;
+  padding: 18px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.012);
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.loadingHeader {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.38fr) 112px;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.loadingHeader span,
+.loadingRows span {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,.032), rgba(255,255,255,.06), rgba(255,255,255,.032));
+  background-size: 240% 100%;
+  animation: analysisSkeleton 1.4s ease-in-out infinite;
+}
+
+.loadingHeader span:first-child { height: 18px; max-width: 260px; }
+
+.loadingRows {
+  display: grid;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.loadingRows span:nth-child(1) { width: 92%; }
+.loadingRows span:nth-child(2) { width: 76%; }
+.loadingRows span:nth-child(3) { width: 58%; }
+
+.analysisLoading p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+@keyframes analysisSkeleton {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+
+.attachmentsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 12px;
+}
+
+.attachmentCard {
+  background: rgba(255,255,255,.012);
+}
+
+.attachmentActions {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.attachmentActions button,
+.attachmentActions a,
+.attachButton {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 999px;
+  color: #ff9cad;
+  border-color: rgba(255, 91, 115, 0.22);
+  background: transparent;
+}
+
+.attachmentActions .attachmentRemove:hover:not(:disabled) {
+  color: #ffd0d8;
+  border-color: rgba(255, 91, 115, 0.34);
+  background: rgba(255, 91, 115, 0.055);
+}
+
+.attachmentActions .attachmentRemove svg {
+  width: 13px;
+  height: 13px;
+}
+
+.viewer header > div:last-child {
+  flex: 0 0 auto;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.viewer header a,
+.viewer header button {
+  min-width: 78px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.02);
+  color: var(--text-secondary);
+  font-weight: 560;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.viewer header a:hover,
+.viewer header button:hover {
+  color: var(--text-primary);
+  border-color: var(--line);
+  background: rgba(255,255,255,.04);
+}

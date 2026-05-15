@@ -10,6 +10,7 @@ import {
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import DateField from '../ui/DateField.jsx';
+import { TrashIcon } from '../ui/Icons.jsx';
 import StateBlock from '../ui/StateBlock.jsx';
 import styles from './AnalysisTab.module.css';
 
@@ -320,12 +321,20 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
 
   if (loading) {
     return (
-      <StateBlock
-        variant="loading"
-        compact
-        title={meta.loadingTitle}
-        description={meta.loadingDescription}
-      />
+      <div className={`${styles.panel} ${meta.className}`.trim()}>
+        <div className={styles.analysisLoading} role="status" aria-live="polite">
+          <div className={styles.loadingHeader}>
+            <span />
+            <span />
+          </div>
+          <div className={styles.loadingRows}>
+            <span />
+            <span />
+            <span />
+          </div>
+          <p>{meta.loadingTitle}</p>
+        </div>
+      </div>
     );
   }
 
@@ -448,8 +457,10 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                                 className={styles.attachmentRemove}
                                 onClick={() => handleRemoveAttachment(entry.id, attachment)}
                                 disabled={isDeleting}
+                                aria-label={isDeleting ? 'Removendo anexo' : 'Remover anexo'}
+                                title={isDeleting ? 'Removendo…' : 'Remover'}
                               >
-                                {isDeleting ? 'Removendo…' : 'Remover'}
+                                <TrashIcon size={13} aria-hidden="true" />
                               </button>
                             ) : null}
                           </div>

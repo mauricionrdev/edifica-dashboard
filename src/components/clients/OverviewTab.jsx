@@ -205,7 +205,7 @@ export default function OverviewTab({
             </Select>
           </div>
 
-          <div className={`${drawerStyles.field} ${styles.fieldHalf}`}>
+          <div className={`${drawerStyles.field} ${styles.fieldGestor}`}>
             <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor</label>
             <UserPicker
               className={drawerStyles.selectControl}
@@ -219,7 +219,7 @@ export default function OverviewTab({
             />
           </div>
 
-          <div className={`${drawerStyles.field} ${styles.fieldHalf}`}>
+          <div className={`${drawerStyles.field} ${styles.fieldGdv}`}>
             <label className={drawerStyles.label} htmlFor="cd-gdv">GDV</label>
             <UserPicker
               className={drawerStyles.selectControl}
@@ -232,41 +232,40 @@ export default function OverviewTab({
               portal
             />
           </div>
-        </div>
-      </div>
 
+          <div className={`${drawerStyles.field} ${styles.fieldAvatar}`}>
+            <label className={drawerStyles.label}>Imagem</label>
+            <div className={styles.avatarBlock}>
+              <div className={styles.avatarPreview} aria-label={`Imagem de ${client.name}`}>
+                {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
+              </div>
 
-      <div className={drawerStyles.section}>
-        <div className={drawerStyles.sectionTitle}>Imagem do cliente</div>
-        <div className={styles.avatarBlock}>
-          <div className={styles.avatarPreview} aria-label={`Imagem de ${client.name}`}>
-            {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
-          </div>
+              <div className={styles.avatarInfo}>
+                <strong>{client.name}</strong>
+                <span>{avatarUrl ? 'Imagem configurada' : 'Sem imagem configurada'}</span>
+              </div>
 
-          <div className={styles.avatarInfo}>
-            <strong>{client.name}</strong>
-            <span>{avatarUrl ? 'Imagem configurada' : 'Sem imagem configurada'}</span>
-          </div>
-
-          {canManageAvatar ? (
-            <div className={styles.avatarActions}>
-              <button type="button" onClick={onPickAvatar} disabled={deleting}>
-                <CameraIcon size={14} />
-                Enviar imagem
-              </button>
-              {avatarUrl ? (
-                <button
-                  type="button"
-                  className={styles.dangerButton}
-                  onClick={onRemoveAvatar}
-                  disabled={deleting}
-                >
-                  <TrashIcon size={14} />
-                  Remover imagem
-                </button>
+              {canManageAvatar ? (
+                <div className={styles.avatarActions}>
+                  <button type="button" onClick={onPickAvatar} disabled={deleting} title="Enviar imagem" aria-label="Enviar imagem">
+                    <CameraIcon size={14} />
+                  </button>
+                  {avatarUrl ? (
+                    <button
+                      type="button"
+                      className={styles.dangerButton}
+                      onClick={onRemoveAvatar}
+                      disabled={deleting}
+                      title="Remover imagem"
+                      aria-label="Remover imagem"
+                    >
+                      <TrashIcon size={14} />
+                    </button>
+                  ) : null}
+                </div>
               ) : null}
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
 
