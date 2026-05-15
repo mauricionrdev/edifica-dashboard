@@ -1883,11 +1883,12 @@ export default function ProfilePage() {
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
   const profileDate = useMemo(() => new Date(), []);
   const profileStats = useMemo(() => ([
+    { label: 'Total de tarefas', value: operationCounts.all, hint: 'no perfil', tone: 'neutral', Icon: ChecklistIcon },
     { label: 'Taxa de conclusão', value: `${completionRate}%`, hint: `${operationCounts.done} concluídas`, tone: 'completion', Icon: TargetIcon },
     { label: 'Em aberto', value: operationCounts.open, hint: `${operationCounts.today} para hoje`, tone: 'amber', Icon: CalendarIcon },
     { label: 'Risco operacional', value: operationCounts.risk, hint: `${operationCounts.overdue} atrasadas`, tone: 'red', Icon: BellIcon },
     { label: 'Acompanhando', value: operationCounts.watching, hint: 'colaborações', tone: 'blue', Icon: UsersIcon },
-  ]), [completionRate, operationCounts.done, operationCounts.open, operationCounts.overdue, operationCounts.risk, operationCounts.today, operationCounts.watching]);
+  ]), [completionRate, operationCounts.all, operationCounts.done, operationCounts.open, operationCounts.overdue, operationCounts.risk, operationCounts.today, operationCounts.watching]);
   const canCreateDemand = canCreateProfileTask(user);
   const canEditActiveTask = canEditProfileTask(user, activeTask);
   const canCommentActiveTask = canCommentProfileTask(user, activeTask);
