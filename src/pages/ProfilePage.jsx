@@ -3100,20 +3100,10 @@ export default function ProfilePage() {
 
               {activeDescription ? (
                 <section className={`${styles.drawerSection} ${styles.descriptionSection}`.trim()}>
-                  <div className={styles.descriptionCard}>
-                    <div className={styles.descriptionCardTopbar}>
-                      <div className={styles.descriptionFileMeta}>
-                        <span className={styles.descriptionFileIcon} aria-hidden="true" />
-                        <span>Descrição</span>
-                      </div>
-                      <button type="button" onClick={handleCopyDescription} className={styles.copyDescriptionButton}>
-                        {descriptionCopied ? 'Copiado' : 'Copiar'}
-                      </button>
-                    </div>
-                    <div className={styles.descriptionBody}>
-                      <pre className={styles.descriptionBox}>{activeDescription}</pre>
-                    </div>
+                  <div className={styles.sectionTitleRow}>
+                    <h4>Descrição</h4>
                   </div>
+                  <pre className={styles.descriptionBox}>{activeDescription}</pre>
                 </section>
               ) : null}
 
