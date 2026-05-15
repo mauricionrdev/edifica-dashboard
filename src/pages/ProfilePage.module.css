@@ -6224,7 +6224,8 @@
 }
 
 .contextGrid {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  /* grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important; */
+  grid-template-columns: repeat(3, minmax(160px, 1fr)) !important;
   gap: 18px 28px !important;
   padding-top: 0 !important;
   border-top: 0 !important;
@@ -6254,6 +6255,7 @@
 .drawerHeroActions {
   padding-top: 0 !important;
 }
+
 /* v103 — refinamento do drawer e campos de workflow */
 .workflowGrid {
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -6265,14 +6267,14 @@
   min-width: 0 !important;
 }
 
-.workflowField > span {
+.workflowField>span {
   display: block !important;
   margin-bottom: 8px !important;
   pointer-events: none !important;
 }
 
 .workflowField .profileSelectButton,
-.workflowDate > button {
+.workflowDate>button {
   width: 100% !important;
   height: 44px !important;
   min-height: 44px !important;
@@ -6423,15 +6425,15 @@
   overflow: visible !important;
 }
 
-.operationMeta > span,
+.operationMeta>span,
 .kindPill,
 .priorityPill,
 .statusPill,
 .relationPill,
 .operationTab,
 .workflowStep,
-.selectedCollaborators > span,
-.collaboratorChips > span {
+.selectedCollaborators>span,
+.collaboratorChips>span {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -6457,14 +6459,14 @@
   transition: none !important;
 }
 
-.operationMeta > span:hover,
+.operationMeta>span:hover,
 .kindPill:hover,
 .priorityPill:hover,
 .statusPill:hover,
 .relationPill:hover,
 .workflowStep:hover,
-.selectedCollaborators > span:hover,
-.collaboratorChips > span:hover {
+.selectedCollaborators>span:hover,
+.collaboratorChips>span:hover {
   transform: none !important;
   box-shadow: none !important;
 }
@@ -6522,8 +6524,8 @@
 .priority_medium,
 .priority_low,
 .relation_responsible,
-.selectedCollaborators > span,
-.collaboratorChips > span {
+.selectedCollaborators>span,
+.collaboratorChips>span {
   color: #9AA6BA !important;
   border-color: rgba(146, 155, 176, .18) !important;
   background: transparent !important;
@@ -6536,8 +6538,8 @@
 .priority_medium:hover,
 .priority_low:hover,
 .relation_responsible:hover,
-.selectedCollaborators > span:hover,
-.collaboratorChips > span:hover {
+.selectedCollaborators>span:hover,
+.collaboratorChips>span:hover {
   color: #9AA6BA !important;
   border-color: rgba(146, 155, 176, .18) !important;
   background: transparent !important;
@@ -6713,6 +6715,7 @@
 }
 
 @media (max-width: 1180px) {
+
   .operationListHeader,
   .operationRow {
     grid-template-columns: 20px minmax(220px, 1fr) minmax(128px, .28fr) minmax(360px, .78fr) minmax(72px, .12fr) !important;
@@ -6794,8 +6797,8 @@
 
 .workflowField .profileSelectButton,
 .profileSelectButton,
-.workflowDate > button,
-.dateField > button {
+.workflowDate>button,
+.dateField>button {
   height: 40px !important;
   min-height: 40px !important;
   border-radius: 11px !important;
@@ -6809,10 +6812,10 @@
 .workflowField .profileSelectButton:hover:not(:disabled),
 .profileSelectButton:hover:not(:disabled),
 .profileSelectButton[aria-expanded='true'],
-.workflowDate > button:hover:not(:disabled),
-.workflowDate > button[aria-expanded='true'],
-.dateField > button:hover:not(:disabled),
-.dateField > button[aria-expanded='true'] {
+.workflowDate>button:hover:not(:disabled),
+.workflowDate>button[aria-expanded='true'],
+.dateField>button:hover:not(:disabled),
+.dateField>button[aria-expanded='true'] {
   border-color: rgba(146, 155, 176, 0.16) !important;
   background: rgba(255, 255, 255, 0.018) !important;
   box-shadow: none !important;
@@ -6822,10 +6825,10 @@
 .workflowField .profileSelectButton:focus-visible,
 .profileSelectButton:focus,
 .profileSelectButton:focus-visible,
-.workflowDate > button:focus,
-.workflowDate > button:focus-visible,
-.dateField > button:focus,
-.dateField > button:focus-visible {
+.workflowDate>button:focus,
+.workflowDate>button:focus-visible,
+.dateField>button:focus,
+.dateField>button:focus-visible {
   outline: none !important;
   border-color: rgba(146, 155, 176, 0.16) !important;
   background: rgba(255, 255, 255, 0.018) !important;
@@ -6872,8 +6875,8 @@
   margin-top: 14px !important;
 }
 
-.collaboratorChips > span,
-.selectedCollaborators > span {
+.collaboratorChips>span,
+.selectedCollaborators>span {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -6900,8 +6903,8 @@
   transition: none !important;
 }
 
-.collaboratorChips > span:hover,
-.selectedCollaborators > span:hover {
+.collaboratorChips>span:hover,
+.selectedCollaborators>span:hover {
   border-color: rgba(146, 155, 176, 0.18) !important;
   background: transparent !important;
   color: #9AA6BA !important;
@@ -6909,8 +6912,8 @@
   transform: none !important;
 }
 
-.collaboratorChips > span > button,
-.selectedCollaborators > span > button {
+.collaboratorChips>span>button,
+.selectedCollaborators>span>button {
   width: 17px !important;
   height: 17px !important;
   min-width: 17px !important;
@@ -6933,10 +6936,10 @@
   transition: none !important;
 }
 
-.collaboratorChips > span > button:hover:not(:disabled),
-.collaboratorChips > span > button:focus-visible,
-.selectedCollaborators > span > button:hover:not(:disabled),
-.selectedCollaborators > span > button:focus-visible {
+.collaboratorChips>span>button:hover:not(:disabled),
+.collaboratorChips>span>button:focus-visible,
+.selectedCollaborators>span>button:hover:not(:disabled),
+.selectedCollaborators>span>button:focus-visible {
   background: rgba(255, 255, 255, 0.07) !important;
   color: rgba(203, 213, 225, 0.82) !important;
   outline: none !important;
@@ -6944,8 +6947,8 @@
   transform: none !important;
 }
 
-.collaboratorChips > span > button:disabled,
-.selectedCollaborators > span > button:disabled {
+.collaboratorChips>span>button:disabled,
+.selectedCollaborators>span>button:disabled {
   opacity: 0.45 !important;
   cursor: default !important;
 }
@@ -7683,6 +7686,7 @@
 }
 
 @media (max-width: 720px) {
+
   .heroTop,
   .operationHeader {
     padding: 18px 16px !important;
@@ -7977,7 +7981,7 @@
 .settingsFooter button,
 .photoActions button,
 .drawerHeroActions button,
-.attachmentComposer > button {
+.attachmentComposer>button {
   height: 38px !important;
   border-radius: 10px !important;
   border: 1px solid rgba(255, 255, 255, 0.078) !important;
@@ -7990,7 +7994,7 @@
 .settingsFooter button:hover:not(:disabled),
 .photoActions button:hover:not(:disabled),
 .drawerHeroActions button:hover:not(:disabled),
-.attachmentComposer > button:hover:not(:disabled) {
+.attachmentComposer>button:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.040) !important;
   border-color: rgba(255, 255, 255, 0.105) !important;
   color: var(--edf-text-primary) !important;
@@ -8015,7 +8019,7 @@
 .settingsFooter button:focus-visible,
 .photoActions button:focus-visible,
 .drawerHeroActions button:focus-visible,
-.attachmentComposer > button:focus-visible,
+.attachmentComposer>button:focus-visible,
 .settingsHeader .iconButton:focus-visible,
 .drawerTopbarButton:focus-visible,
 .drawerTopbarDanger:focus-visible {
@@ -8091,8 +8095,8 @@
 .demandModal input,
 .demandModal textarea,
 .profileSelectButton,
-.dateField > button,
-.workflowDate > button {
+.dateField>button,
+.workflowDate>button {
   border: 1px solid rgba(255, 255, 255, 0.078) !important;
   background: #0b0b0d !important;
   color: var(--edf-text-primary) !important;
@@ -8102,8 +8106,8 @@
 .settingsModal input,
 .demandModal input,
 .profileSelectButton,
-.dateField > button,
-.workflowDate > button {
+.dateField>button,
+.workflowDate>button {
   min-height: 40px !important;
   height: 40px !important;
   border-radius: 11px !important;
@@ -8120,8 +8124,8 @@
 .settingsModal input:hover:not(:disabled),
 .settingsModal textarea:hover:not(:disabled),
 .profileSelectButton:hover:not(:disabled),
-.dateField > button:hover:not(:disabled),
-.workflowDate > button:hover:not(:disabled) {
+.dateField>button:hover:not(:disabled),
+.workflowDate>button:hover:not(:disabled) {
   border-color: rgba(255, 255, 255, 0.105) !important;
   background: #0d0d0f !important;
 }
@@ -8132,10 +8136,10 @@
 .settingsModal textarea:focus-visible,
 .profileSelectButton:focus,
 .profileSelectButton:focus-visible,
-.dateField > button:focus,
-.dateField > button:focus-visible,
-.workflowDate > button:focus,
-.workflowDate > button:focus-visible {
+.dateField>button:focus,
+.dateField>button:focus-visible,
+.workflowDate>button:focus,
+.workflowDate>button:focus-visible {
   outline: none !important;
   border-color: rgba(212, 175, 55, 0.30) !important;
   background: #0d0d0f !important;
@@ -8286,6 +8290,7 @@
 }
 
 @media (max-width: 760px) {
+
   .settingsModal,
   .demandModal,
   .demandModal_briefing {
@@ -8318,10 +8323,10 @@
 .page :is(input, textarea, select):focus-visible,
 .profileSelectButton:focus,
 .profileSelectButton:focus-visible,
-.dateField > button:focus,
-.dateField > button:focus-visible,
-.workflowDate > button:focus,
-.workflowDate > button:focus-visible {
+.dateField>button:focus,
+.dateField>button:focus-visible,
+.workflowDate>button:focus,
+.workflowDate>button:focus-visible {
   border-color: rgba(212, 175, 55, 0.26) !important;
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.07) !important;
 }
@@ -8329,7 +8334,7 @@
 .settingsFooter button:focus-visible,
 .photoActions button:focus-visible,
 .drawerHeroActions button:focus-visible,
-.attachmentComposer > button:focus-visible,
+.attachmentComposer>button:focus-visible,
 .settingsHeader .iconButton:focus-visible,
 .drawerTopbarButton:focus-visible,
 .drawerTopbarDanger:focus-visible {
@@ -8385,10 +8390,10 @@
 .page :is(input, textarea, select, button, [role="button"]):focus-visible,
 .profileSelectButton:focus,
 .profileSelectButton:focus-visible,
-.dateField > button:focus,
-.dateField > button:focus-visible,
-.workflowDate > button:focus,
-.workflowDate > button:focus-visible,
+.dateField>button:focus,
+.dateField>button:focus-visible,
+.workflowDate>button:focus,
+.workflowDate>button:focus-visible,
 .formSelect:focus,
 .formSelect:focus-visible,
 .workflowSelect:focus,
@@ -8396,7 +8401,7 @@
 .settingsFooter button:focus-visible,
 .photoActions button:focus-visible,
 .drawerHeroActions button:focus-visible,
-.attachmentComposer > button:focus-visible,
+.attachmentComposer>button:focus-visible,
 .settingsHeader .iconButton:focus-visible,
 .drawerTopbarButton:focus-visible,
 .drawerTopbarDanger:focus-visible,
@@ -8412,10 +8417,10 @@
 .page :is(input, textarea, select):focus-visible,
 .profileSelectButton:focus,
 .profileSelectButton:focus-visible,
-.dateField > button:focus,
-.dateField > button:focus-visible,
-.workflowDate > button:focus,
-.workflowDate > button:focus-visible,
+.dateField>button:focus,
+.dateField>button:focus-visible,
+.workflowDate>button:focus,
+.workflowDate>button:focus-visible,
 .formSelect:focus,
 .formSelect:focus-visible,
 .workflowSelect:focus,
@@ -8427,7 +8432,7 @@
 .settingsFooter button:focus-visible,
 .photoActions button:focus-visible,
 .drawerHeroActions button:focus-visible,
-.attachmentComposer > button:focus-visible,
+.attachmentComposer>button:focus-visible,
 .settingsHeader .iconButton:focus-visible,
 .drawerTopbarButton:focus-visible,
 .drawerTopbarDanger:focus-visible,
@@ -8488,8 +8493,8 @@
 }
 
 .settingsFooter,
-.demandModal > .settingsFooter,
-.settingsModal > .settingsFooter {
+.demandModal>.settingsFooter,
+.settingsModal>.settingsFooter {
   background: rgba(255, 255, 255, 0.006) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.065) !important;
   padding: 14px 24px !important;
@@ -8559,8 +8564,8 @@
 .formSelect,
 .workflowSelect,
 .profileSelectButton,
-.dateField > button,
-.workflowDate > button,
+.dateField>button,
+.workflowDate>button,
 .demandModal input,
 .demandModal textarea,
 .demandModal .profileSelectButton,
@@ -8577,8 +8582,8 @@
 .formSelect:hover,
 .workflowSelect:hover,
 .profileSelectButton:hover,
-.dateField > button:hover,
-.workflowDate > button:hover,
+.dateField>button:hover,
+.workflowDate>button:hover,
 .demandModal input:hover,
 .demandModal textarea:hover,
 .demandModal .profileSelectButton:hover,
@@ -8599,10 +8604,10 @@
 .workflowSelect:focus-visible,
 .profileSelectButton:focus,
 .profileSelectButton:focus-visible,
-.dateField > button:focus,
-.dateField > button:focus-visible,
-.workflowDate > button:focus,
-.workflowDate > button:focus-visible,
+.dateField>button:focus,
+.dateField>button:focus-visible,
+.workflowDate>button:focus,
+.workflowDate>button:focus-visible,
 .titleEditor:focus,
 .titleEditor:focus-visible {
   outline: none !important;
@@ -8632,7 +8637,7 @@
 .settingsFooter button,
 .drawerHeroActions button,
 .photoActions button,
-.attachmentComposer > button,
+.attachmentComposer>button,
 .collaboratorComposer button,
 .inlineComposer button,
 .commentForm button,
@@ -8647,7 +8652,7 @@
 .settingsFooter button:hover:not(:disabled),
 .drawerHeroActions button:hover:not(:disabled),
 .photoActions button:hover:not(:disabled),
-.attachmentComposer > button:hover:not(:disabled),
+.attachmentComposer>button:hover:not(:disabled),
 .collaboratorComposer button:hover:not(:disabled),
 .inlineComposer button:hover:not(:disabled),
 .commentForm button:hover:not(:disabled),
