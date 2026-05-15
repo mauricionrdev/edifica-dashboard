@@ -161,7 +161,7 @@ export default function OverviewTab({
       <div className={drawerStyles.section}>
         <div className={drawerStyles.sectionTitle}>Dados principais</div>
         <div className={styles.formGrid}>
-          <div className={`${drawerStyles.field} ${styles.fieldCompact}`}>
+          <div className={`${drawerStyles.field} ${styles.fieldName}`}>
             <label className={drawerStyles.label} htmlFor="cd-name">Nome</label>
             <input
               id="cd-name"
@@ -173,7 +173,7 @@ export default function OverviewTab({
             />
           </div>
 
-          <div className={drawerStyles.field}>
+          <div className={`${drawerStyles.field} ${styles.fieldSquad}`}>
             <label className={drawerStyles.label} htmlFor="cd-squad">Squad</label>
             <Select
               className={drawerStyles.selectControl}
@@ -190,7 +190,7 @@ export default function OverviewTab({
             </Select>
           </div>
 
-          <div className={drawerStyles.field}>
+          <div className={`${drawerStyles.field} ${styles.fieldStatus}`}>
             <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
             <Select
               className={drawerStyles.selectControl}
@@ -205,7 +205,7 @@ export default function OverviewTab({
             </Select>
           </div>
 
-          <div className={drawerStyles.field}>
+          <div className={`${drawerStyles.field} ${styles.fieldHalf}`}>
             <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor</label>
             <UserPicker
               className={drawerStyles.selectControl}
@@ -219,7 +219,7 @@ export default function OverviewTab({
             />
           </div>
 
-          <div className={drawerStyles.field}>
+          <div className={`${drawerStyles.field} ${styles.fieldHalf}`}>
             <label className={drawerStyles.label} htmlFor="cd-gdv">GDV</label>
             <UserPicker
               className={drawerStyles.selectControl}
@@ -273,7 +273,7 @@ export default function OverviewTab({
       <div className={drawerStyles.section}>
         <div className={drawerStyles.sectionTitle}>Contrato</div>
         <div className={styles.formGrid}>
-          <div className={drawerStyles.field}>
+          <div className={`${drawerStyles.field} ${styles.fieldQuarter}`}>
             <label className={drawerStyles.label} htmlFor="cd-start">Início</label>
             <DateField
               id="cd-start"
@@ -284,7 +284,7 @@ export default function OverviewTab({
             />
           </div>
 
-          <div className={drawerStyles.field}>
+          <div className={`${drawerStyles.field} ${styles.fieldQuarter}`}>
             <label className={drawerStyles.label} htmlFor="cd-end">Término</label>
             <DateField
               id="cd-end"
@@ -295,7 +295,7 @@ export default function OverviewTab({
             />
           </div>
 
-          <div className={drawerStyles.field}>
+          <div className={`${drawerStyles.field} ${styles.fieldQuarter}`}>
             <label className={drawerStyles.label} htmlFor="cd-fee">Mensalidade (R$)</label>
             <input
               id="cd-fee"
@@ -309,7 +309,7 @@ export default function OverviewTab({
             />
           </div>
 
-          <div className={drawerStyles.field}>
+          <div className={`${drawerStyles.field} ${styles.fieldQuarter}`}>
             <label className={drawerStyles.label} htmlFor="cd-meta">Meta base</label>
             <input
               id="cd-meta"

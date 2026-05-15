@@ -34,3 +34,17 @@ export function deleteAnalysis(clientId, type, analysisId) {
     `/clients/${encodeURIComponent(clientId)}/analyses/${encodeURIComponent(type)}/${encodeURIComponent(analysisId)}`
   );
 }
+
+
+export function createAnalysisAttachment(clientId, type, analysisId, body) {
+  return api.post(
+    `/clients/${encodeURIComponent(clientId)}/analyses/${encodeURIComponent(type)}/${encodeURIComponent(analysisId)}/attachments`,
+    body
+  );
+}
+
+export function deleteAnalysisAttachment(clientId, type, analysisId, attachmentId) {
+  return api.del(
+    `/clients/${encodeURIComponent(clientId)}/analyses/${encodeURIComponent(type)}/${encodeURIComponent(analysisId)}/attachments/${encodeURIComponent(attachmentId)}`
+  );
+}

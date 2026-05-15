@@ -138,3 +138,39 @@
     justify-items: start;
   }
 }
+
+/* v133 — visão geral organizada por largura real de conteúdo */
+.formGrid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 14px;
+  align-items: end;
+}
+
+.fieldName { grid-column: span 7; }
+.fieldStatus { grid-column: span 2; }
+.fieldSquad { grid-column: span 3; }
+.fieldHalf { grid-column: span 6; }
+.fieldQuarter { grid-column: span 3; }
+
+.avatarBlock {
+  min-height: 82px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+@media (max-width: 860px) {
+  .fieldName,
+  .fieldHalf { grid-column: span 12; }
+  .fieldStatus,
+  .fieldSquad,
+  .fieldQuarter { grid-column: span 6; }
+}
+
+@media (max-width: 560px) {
+  .fieldName,
+  .fieldStatus,
+  .fieldSquad,
+  .fieldHalf,
+  .fieldQuarter { grid-column: span 12; }
+}

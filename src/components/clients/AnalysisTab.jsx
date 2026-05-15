@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   createAnalysis,
+  createAnalysisAttachment,
   deleteAnalysis,
+  deleteAnalysisAttachment,
   listAnalyses,
   updateAnalysis,
 } from '../../api/analyses.js';
@@ -81,6 +83,39 @@ function analysisAuthor(entry) {
   );
 }
 
+function isPreviewableAttachment(item) {
+  const mime = String(item?.mimeType || '');
+  return mime.startsWith('image/') || mime === 'application/pdf';
+}
+
+function attachmentKind(item) {
+  const mime = String(item?.mimeType || '');
+  if (mime === 'application/pdf') return 'PDF';
+  if (mime.startsWith('image/')) return 'Imagem';
+  return 'Arquivo';
+}
+
+function formatBytes(value) {
+  const bytes = Number(value) || 0;
+  if (bytes <= 0) return '—';
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function readAttachmentFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({
+      fileName: file.name,
+      mimeType: file.type || 'application/octet-stream',
+      sizeBytes: file.size || 0,
+      dataUrl: String(reader.result || ''),
+    });
+    reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const { showToast } = useToast();
 
@@ -89,6 +124,9 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const [creating, setCreating] = useState(false);
   const [pendingIds, setPendingIds] = useState(new Set());
   const [savingIds, setSavingIds] = useState(new Set());
+  const [uploadingIds, setUploadingIds] = useState(new Set());
+  const [deletingAttachmentIds, setDeletingAttachmentIds] = useState(new Set());
+  const [previewAttachment, setPreviewAttachment] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const timersRef = useRef(new Map());
@@ -136,6 +174,72 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       else next.delete(id);
       return next;
     });
+
+  const markUploading = (id, enabled) =>
+    setUploadingIds((previous) => {
+      const next = new Set(previous);
+      if (enabled) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+  const markDeletingAttachment = (id, enabled) =>
+    setDeletingAttachmentIds((previous) => {
+      const next = new Set(previous);
+      if (enabled) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+  function updateEntryAttachments(entryId, updater) {
+    setEntries((previous) => previous.map((entry) => {
+      if (entry.id !== entryId) return entry;
+      const current = Array.isArray(entry.attachments) ? entry.attachments : [];
+      return { ...entry, attachments: updater(current) };
+    }));
+  }
+
+  async function handleAttachmentFiles(entryId, files) {
+    const selected = Array.from(files || []).filter(Boolean);
+    if (!entryId || selected.length === 0) return;
+
+    const validFiles = selected.filter((file) => file.type.startsWith('image/') || file.type === 'application/pdf');
+    if (validFiles.length !== selected.length) {
+      showToast('Use apenas imagens ou PDF.', { variant: 'error' });
+    }
+    if (validFiles.length === 0) return;
+
+    markUploading(entryId, true);
+    try {
+      const parsed = await Promise.all(validFiles.slice(0, 6).map(readAttachmentFile));
+      const uploaded = await Promise.all(parsed.map((item) => createAnalysisAttachment(clientId, type, entryId, item)));
+      const attachments = uploaded.map((response) => response?.attachment).filter(Boolean);
+      if (attachments.length) {
+        updateEntryAttachments(entryId, (current) => [...current, ...attachments]);
+      }
+      showToast('Anexo adicionado.', { variant: 'success' });
+    } catch (error) {
+      const message = error instanceof ApiError ? error.message : error?.message || 'Erro ao anexar arquivo.';
+      showToast(message, { variant: 'error' });
+    } finally {
+      markUploading(entryId, false);
+    }
+  }
+
+  async function handleRemoveAttachment(entryId, attachment) {
+    if (!entryId || !attachment?.id) return;
+    markDeletingAttachment(attachment.id, true);
+    try {
+      await deleteAnalysisAttachment(clientId, type, entryId, attachment.id);
+      updateEntryAttachments(entryId, (current) => current.filter((item) => item.id !== attachment.id));
+      if (previewAttachment?.id === attachment.id) setPreviewAttachment(null);
+    } catch (error) {
+      const message = error instanceof ApiError ? error.message : 'Erro ao remover anexo.';
+      showToast(message, { variant: 'error' });
+    } finally {
+      markDeletingAttachment(attachment.id, false);
+    }
+  }
 
   async function handleCreate() {
     if (creating || !clientId) return;
@@ -300,6 +404,80 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 placeholder={meta.placeholder}
                 onChange={(event) => onTextChange(entry.id, event.target.value)}
               />
+
+              <div className={styles.attachmentsArea}>
+                <div className={styles.attachmentsHead}>
+                  <span>Anexos</span>
+                  <strong>{(entry.attachments || []).length}</strong>
+                </div>
+
+                {(entry.attachments || []).length ? (
+                  <div className={styles.attachmentsGrid}>
+                    {(entry.attachments || []).map((attachment) => {
+                      const isPdf = attachment.mimeType === 'application/pdf';
+                      const isDeleting = deletingAttachmentIds.has(attachment.id);
+                      return (
+                        <article key={attachment.id} className={styles.attachmentCard}>
+                          <button
+                            type="button"
+                            className={styles.attachmentPreview}
+                            onClick={() => isPreviewableAttachment(attachment) && setPreviewAttachment(attachment)}
+                            disabled={!isPreviewableAttachment(attachment)}
+                            aria-label={`Visualizar ${attachment.fileName}`}
+                          >
+                            {isPdf ? (
+                              <span className={styles.pdfMark}>PDF</span>
+                            ) : (
+                              <img src={attachment.dataUrl} alt="" />
+                            )}
+                          </button>
+                          <div className={styles.attachmentInfo}>
+                            <strong title={attachment.fileName}>{attachment.fileName}</strong>
+                            <span>{attachmentKind(attachment)} · {formatBytes(attachment.sizeBytes)}</span>
+                          </div>
+                          <div className={styles.attachmentActions}>
+                            <button type="button" onClick={() => setPreviewAttachment(attachment)}>
+                              Visualizar
+                            </button>
+                            <a href={attachment.dataUrl} download={attachment.fileName || 'anexo'}>
+                              Baixar
+                            </a>
+                            {canEdit ? (
+                              <button
+                                type="button"
+                                className={styles.attachmentRemove}
+                                onClick={() => handleRemoveAttachment(entry.id, attachment)}
+                                disabled={isDeleting}
+                              >
+                                {isDeleting ? 'Removendo…' : 'Remover'}
+                              </button>
+                            ) : null}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className={styles.attachmentsEmpty}>Nenhum anexo</div>
+                )}
+
+                {canEdit ? (
+                  <label className={styles.attachButton}>
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      multiple
+                      disabled={uploadingIds.has(entry.id)}
+                      onChange={(event) => {
+                        handleAttachmentFiles(entry.id, event.target.files);
+                        event.target.value = '';
+                      }}
+                    />
+                    {uploadingIds.has(entry.id) ? 'Anexando…' : 'Anexar imagem ou PDF'}
+                  </label>
+                ) : null}
+              </div>
+
               {(isPending || isSaving) && (
                 <div className={`${styles.savingHint} ${isPending && !isSaving ? styles.pending : ''}`.trim()}>
                   {isSaving ? 'Salvando…' : 'Alterações pendentes…'}
@@ -309,6 +487,38 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           );
         })
       )}
+
+      {previewAttachment ? (
+        <div className={styles.viewerOverlay} role="presentation" onClick={() => setPreviewAttachment(null)}>
+          <section
+            className={styles.viewer}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Visualização de ${previewAttachment.fileName}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header>
+              <div>
+                <strong>{previewAttachment.fileName}</strong>
+                <span>{attachmentKind(previewAttachment)} · {formatBytes(previewAttachment.sizeBytes)}</span>
+              </div>
+              <div>
+                <a href={previewAttachment.dataUrl} download={previewAttachment.fileName || 'anexo'}>
+                  Baixar
+                </a>
+                <button type="button" onClick={() => setPreviewAttachment(null)}>Fechar</button>
+              </div>
+            </header>
+            <div className={styles.viewerBody}>
+              {previewAttachment.mimeType === 'application/pdf' ? (
+                <iframe title={previewAttachment.fileName} src={previewAttachment.dataUrl} />
+              ) : (
+                <img src={previewAttachment.dataUrl} alt="" />
+              )}
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {deleteTarget ? (
         <div className={styles.confirmOverlay} role="presentation" onClick={() => setDeleteTarget(null)}>
