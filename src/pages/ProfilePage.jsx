@@ -3123,6 +3123,7 @@ export default function ProfilePage() {
                           className={styles.descriptionEditor}
                           value={contentForm.description}
                           onChange={(event) => setContentForm((prev) => ({ ...prev, description: event.target.value }))}
+                          rows={Math.max(8, String(contentForm.description || '').split(/\r?\n/).length)}
                           autoFocus
                         />
                       ) : (

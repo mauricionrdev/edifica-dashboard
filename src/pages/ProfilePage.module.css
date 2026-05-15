@@ -6989,3 +6989,255 @@
     animation: none !important;
   }
 }
+
+/* v108 — badges lineares e descrição integrada */
+.operationListHeader {
+  grid-template-columns: 20px minmax(250px, 1fr) minmax(135px, .28fr) minmax(336px, .58fr) minmax(78px, .12fr) !important;
+}
+
+.operationRow {
+  grid-template-columns: 20px minmax(250px, 1fr) minmax(135px, .28fr) minmax(336px, .58fr) minmax(78px, .12fr) !important;
+}
+
+.operationMeta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.operationMeta > span,
+.kindPill,
+.priorityPill,
+.statusPill,
+.relationPill {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 28px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 620 !important;
+  line-height: 1 !important;
+  letter-spacing: .005em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  text-transform: none !important;
+  background: rgba(255, 255, 255, .03) !important;
+  color: rgba(203, 213, 225, .76) !important;
+  border: 1px solid rgba(255, 255, 255, .08) !important;
+  box-shadow: none !important;
+  animation: none !important;
+  transform: none !important;
+  transition: color .18s cubic-bezier(.16, 1, .3, 1), background .18s cubic-bezier(.16, 1, .3, 1), border-color .18s cubic-bezier(.16, 1, .3, 1) !important;
+}
+
+.operationMeta > span::before,
+.operationMeta > span::after,
+.relation_responsible::before,
+.relation_responsible::after,
+.statusPill::before,
+.statusBadge::before {
+  display: none !important;
+  content: none !important;
+}
+
+.operationMeta > span:hover {
+  color: rgba(248, 250, 252, .95) !important;
+  background: rgba(255, 255, 255, .055) !important;
+  border-color: rgba(255, 255, 255, .14) !important;
+}
+
+.kind_briefing,
+.priority_high,
+.status_in_progress,
+.status_active,
+.status_today,
+.status_activation_gdv,
+.status_access_delivery,
+.status_traffic_activation,
+.status_final_validation {
+  color: #d6b85f !important;
+  border-color: rgba(214, 184, 95, .24) !important;
+  background: rgba(214, 184, 95, .055) !important;
+}
+
+.status_done,
+.status_concluida,
+.operationMeta .status_done {
+  color: #4ade80 !important;
+  border-color: rgba(74, 222, 128, .22) !important;
+  background: rgba(74, 222, 128, .055) !important;
+}
+
+.priority_critical,
+.priority_high.priority_critical,
+.status_overdue {
+  color: #ff8f8f !important;
+  border-color: rgba(239, 68, 68, .24) !important;
+  background: rgba(239, 68, 68, .055) !important;
+}
+
+.relation_responsible {
+  color: #d7e1f1 !important;
+  border-color: rgba(148, 163, 184, .16) !important;
+  background: rgba(255, 255, 255, .035) !important;
+}
+
+.relation_watching {
+  color: #7db7ff !important;
+  border-color: rgba(96, 165, 250, .22) !important;
+  background: rgba(96, 165, 250, .055) !important;
+}
+
+.operationDueCell {
+  padding-left: 0 !important;
+  background: transparent !important;
+  justify-self: end !important;
+}
+
+.dueLabel {
+  min-width: 0 !important;
+  text-align: right !important;
+}
+
+.descriptionSection {
+  padding-top: 0 !important;
+}
+
+.descriptionCard {
+  overflow: hidden !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, .075) !important;
+  background: #101216 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: border-color .14s ease, background .14s ease !important;
+}
+
+.descriptionCard:hover,
+.descriptionCardEditing {
+  border-color: rgba(255, 255, 255, .105) !important;
+  background: #101216 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.descriptionCardTopbar {
+  min-height: 38px !important;
+  padding: 0 12px 0 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, .065) !important;
+  background: #121419 !important;
+}
+
+.descriptionFileMeta {
+  color: rgba(203, 213, 225, .68) !important;
+  font-size: 12px !important;
+  font-weight: 680 !important;
+  letter-spacing: 0 !important;
+}
+
+.descriptionFileIcon {
+  width: 14px !important;
+  height: 16px !important;
+  border-radius: 3px !important;
+  border-color: rgba(148, 163, 184, .56) !important;
+}
+
+.descriptionFileIcon::after {
+  border-left-color: rgba(148, 163, 184, .56) !important;
+  border-bottom-color: rgba(148, 163, 184, .56) !important;
+  background: #121419 !important;
+}
+
+.descriptionBody {
+  background: #0f1115 !important;
+}
+
+.descriptionBox,
+.descriptionEditor {
+  display: block !important;
+  width: 100% !important;
+  min-height: 288px !important;
+  margin: 0 !important;
+  padding: 18px 20px 20px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: rgba(226, 232, 240, .88) !important;
+  font-family: inherit !important;
+  font-size: 13.5px !important;
+  font-weight: 480 !important;
+  line-height: 1.72 !important;
+  letter-spacing: -.003em !important;
+  white-space: pre-wrap !important;
+  box-shadow: none !important;
+  outline: none !important;
+  resize: none !important;
+  animation: none !important;
+  transition: opacity .12s ease !important;
+}
+
+.descriptionBox:hover,
+.descriptionEditor:hover,
+.descriptionEditor:focus,
+.descriptionEditor:focus-visible {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.descriptionEditor {
+  overflow: hidden !important;
+  caret-color: var(--edf-amber) !important;
+}
+
+.copyDescriptionButton,
+.descriptionEditState {
+  height: 24px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, .08) !important;
+  background: rgba(255, 255, 255, .035) !important;
+  color: rgba(203, 213, 225, .74) !important;
+  font-size: 11px !important;
+  font-weight: 680 !important;
+  transform: none !important;
+  transition: background .14s ease, border-color .14s ease, color .14s ease !important;
+}
+
+.copyDescriptionButton:hover {
+  background: rgba(255, 255, 255, .06) !important;
+  border-color: rgba(255, 255, 255, .13) !important;
+  color: rgba(248, 250, 252, .92) !important;
+  transform: none !important;
+}
+
+@media (max-width: 1180px) {
+  .operationListHeader,
+  .operationRow {
+    grid-template-columns: 20px minmax(220px, 1fr) minmax(120px, .28fr) minmax(310px, .62fr) minmax(72px, .12fr) !important;
+  }
+
+  .operationMeta > span,
+  .kindPill,
+  .priorityPill,
+  .statusPill,
+  .relationPill {
+    height: 26px !important;
+    padding: 0 10px !important;
+    font-size: 10.5px !important;
+  }
+}
