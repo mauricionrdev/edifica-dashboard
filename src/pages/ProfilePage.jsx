@@ -3099,28 +3099,40 @@ export default function ProfilePage() {
               ) : null}
 
               {(contentEditing || activeDescription) ? (
-                <section className={styles.drawerSection}>
-                  <div className={styles.descriptionHeader}>
-                    <h4>Descrição</h4>
-                    {!contentEditing && activeDescription ? (
-                      <button type="button" onClick={handleCopyDescription} className={styles.copyDescriptionButton}>
-                        {descriptionCopied ? 'Copiado' : 'Copiar'}
-                      </button>
-                    ) : null}
+                <section className={`${styles.drawerSection} ${styles.descriptionSection}`.trim()}>
+                  <div
+                    className={`${styles.descriptionCard} ${contentEditing ? styles.descriptionCardEditing : ''}`.trim()}
+                    onDoubleClick={() => !contentEditing && openContentEditor(activeTask)}
+                  >
+                    <div className={styles.descriptionCardTopbar}>
+                      <div className={styles.descriptionFileMeta}>
+                        <span className={styles.descriptionFileIcon} aria-hidden="true" />
+                        <span>Descrição da demanda</span>
+                      </div>
+                      {!contentEditing && activeDescription ? (
+                        <button type="button" onClick={handleCopyDescription} className={styles.copyDescriptionButton}>
+                          {descriptionCopied ? 'Copiado' : 'Copiar'}
+                        </button>
+                      ) : (
+                        <span className={styles.descriptionEditState}>{contentSaving ? 'Salvando' : 'Editando'}</span>
+                      )}
+                    </div>
+                    <div className={styles.descriptionBody}>
+                      {contentEditing ? (
+                        <textarea
+                          className={styles.descriptionEditor}
+                          value={contentForm.description}
+                          onChange={(event) => setContentForm((prev) => ({ ...prev, description: event.target.value }))}
+                          autoFocus
+                        />
+                      ) : (
+                        <pre
+                          className={styles.descriptionBox}
+                          title={canEditActiveTask ? 'Clique duas vezes para editar' : undefined}
+                        >{activeDescription}</pre>
+                      )}
+                    </div>
                   </div>
-                  {contentEditing ? (
-                    <textarea
-                      className={styles.descriptionEditor}
-                      value={contentForm.description}
-                      onChange={(event) => setContentForm((prev) => ({ ...prev, description: event.target.value }))}
-                    />
-                  ) : (
-                    <pre
-                      className={styles.descriptionBox}
-                      onDoubleClick={() => openContentEditor(activeTask)}
-                      title={canEditActiveTask ? 'Clique duas vezes para editar' : undefined}
-                    >{activeDescription}</pre>
-                  )}
                 </section>
               ) : null}
 

@@ -6534,3 +6534,250 @@
 .assignmentPreview {
   display: none !important;
 }
+
+/* v106 — descrição premium e badge responsável refinado */
+.relation_responsible {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding-left: 24px !important;
+  font-weight: 760 !important;
+  letter-spacing: 0.015em;
+  color: #e2c591 !important;
+  background: rgba(22, 20, 16, 0.96) !important;
+  border-color: rgba(226, 197, 145, 0.32) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.025), 0 8px 22px rgba(0, 0, 0, 0.18);
+  animation: responsibleOrbitBreath 4.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  transition: color .28s ease, border-color .28s ease, background .28s ease, transform .28s ease, box-shadow .28s ease;
+}
+
+.relation_responsible::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: translateY(-50%);
+  box-shadow: 0 0 10px rgba(226, 197, 145, 0.3);
+}
+
+.relation_responsible::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 16px;
+  height: 5px;
+  border: 1px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 999px;
+  opacity: .58;
+  transform: translateY(-50%) rotate(-24deg);
+  filter: drop-shadow(0 0 6px rgba(226, 197, 145, 0.16));
+  animation: responsibleRingFloat 3.4s ease-in-out infinite;
+}
+
+.relation_responsible:hover {
+  color: #fff4d6 !important;
+  border-color: rgba(226, 197, 145, 0.62) !important;
+  background: rgba(30, 26, 17, 0.98) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(226, 197, 145, 0.055), 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+@keyframes responsibleOrbitBreath {
+  0%, 100% {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.025), 0 0 0 0 rgba(226, 197, 145, 0.04), 0 8px 22px rgba(0, 0, 0, 0.18);
+    border-color: rgba(226, 197, 145, 0.28);
+  }
+  50% {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.035), 0 0 0 4px rgba(226, 197, 145, 0.07), 0 14px 30px rgba(0, 0, 0, 0.24);
+    border-color: rgba(226, 197, 145, 0.48);
+  }
+}
+
+@keyframes responsibleRingFloat {
+  0%, 100% { transform: translateY(-50%) rotate(-24deg) scaleX(1); opacity: .48; }
+  50% { transform: translateY(-50%) rotate(-18deg) scaleX(1.16); opacity: .88; }
+}
+
+.descriptionSection {
+  padding-top: 2px;
+}
+
+.descriptionCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006)), var(--edf-surface-1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025), 0 18px 50px rgba(0, 0, 0, 0.18);
+  transition: border-color .24s ease, background .24s ease, box-shadow .24s ease, transform .24s ease;
+}
+
+.descriptionCard::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(234, 179, 8, 0.28), transparent);
+  opacity: 0;
+  transition: opacity .24s ease;
+}
+
+.descriptionCard:hover,
+.descriptionCardEditing {
+  border-color: rgba(234, 179, 8, 0.28);
+  background: linear-gradient(180deg, rgba(234, 179, 8, 0.02), rgba(255, 255, 255, 0.006)), var(--edf-surface-1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 22px 58px rgba(0, 0, 0, 0.24);
+}
+
+.descriptionCard:hover::before,
+.descriptionCardEditing::before {
+  opacity: 1;
+}
+
+.descriptionCardTopbar {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.11);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.descriptionFileMeta {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(165, 176, 199, 0.66);
+  font-size: 12.5px;
+  font-weight: 720;
+  letter-spacing: 0.01em;
+}
+
+.descriptionFileIcon {
+  position: relative;
+  width: 14px;
+  height: 16px;
+  border: 1.5px solid rgba(165, 176, 199, 0.62);
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.descriptionFileIcon::after {
+  content: '';
+  position: absolute;
+  right: -1.5px;
+  top: -1.5px;
+  width: 6px;
+  height: 6px;
+  border-left: 1.5px solid rgba(165, 176, 199, 0.62);
+  border-bottom: 1.5px solid rgba(165, 176, 199, 0.62);
+  background: var(--edf-surface-1);
+  border-bottom-left-radius: 3px;
+}
+
+.descriptionBody {
+  position: relative;
+}
+
+.descriptionBox,
+.descriptionEditor {
+  display: block;
+  width: 100%;
+  min-height: 164px;
+  margin: 0;
+  padding: 18px 20px 20px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--edf-text-secondary) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace !important;
+  font-size: 13px !important;
+  line-height: 1.72 !important;
+  white-space: pre-wrap;
+  overflow: auto;
+  box-shadow: none !important;
+  transition: opacity .22s ease, transform .22s ease, background .22s ease;
+}
+
+.descriptionBox {
+  cursor: text;
+  animation: descriptionReveal .26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.descriptionEditor {
+  resize: vertical;
+  outline: none !important;
+  color: var(--edf-text-primary) !important;
+  caret-color: var(--edf-amber);
+  animation: descriptionEditorIn .28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.descriptionEditor:focus,
+.descriptionEditor:focus-visible {
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.022), transparent 22%) !important;
+  border: 0 !important;
+  box-shadow: inset 2px 0 0 rgba(234, 179, 8, 0.45) !important;
+}
+
+.copyDescriptionButton {
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.018);
+  color: rgba(165, 176, 199, 0.78);
+  font-size: 11px;
+  font-weight: 780;
+  transition: color .2s ease, background .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.copyDescriptionButton:hover {
+  color: var(--edf-amber);
+  background: rgba(234, 179, 8, 0.07);
+  border-color: rgba(234, 179, 8, 0.28);
+  transform: translateY(-1px);
+}
+
+.descriptionEditState {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(234, 179, 8, 0.22);
+  background: rgba(234, 179, 8, 0.055);
+  color: var(--edf-amber);
+  font-size: 11px;
+  font-weight: 780;
+}
+
+@keyframes descriptionReveal {
+  from { opacity: .55; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes descriptionEditorIn {
+  from { opacity: .5; transform: translateY(5px) scale(.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relation_responsible,
+  .relation_responsible::after,
+  .descriptionBox,
+  .descriptionEditor {
+    animation: none !important;
+  }
+}
