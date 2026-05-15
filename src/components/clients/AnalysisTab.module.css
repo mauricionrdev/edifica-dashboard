@@ -668,16 +668,24 @@
 }
 
 
-/* v134 — refinamento de anexos e loading das análises */
-.analysisLoading {
+/* v135 — loading estável sem flash claro na troca de abas */
+.loadingShell {
   min-height: 260px;
-  padding: 18px;
+  padding: 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.012);
   display: grid;
   align-content: start;
-  gap: 16px;
+  gap: 14px;
+}
+
+.analysisLoading {
+  min-height: 190px;
+  padding: 4px 0 0;
+  display: grid;
+  align-content: start;
+  gap: 14px;
 }
 
 .loadingHeader {
@@ -691,12 +699,10 @@
 .loadingRows span {
   height: 12px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255,255,255,.032), rgba(255,255,255,.06), rgba(255,255,255,.032));
-  background-size: 240% 100%;
-  animation: analysisSkeleton 1.4s ease-in-out infinite;
+  background: rgba(255,255,255,.035);
 }
 
-.loadingHeader span:first-child { height: 18px; max-width: 260px; }
+.loadingHeader span:first-child { height: 16px; max-width: 260px; }
 
 .loadingRows {
   display: grid;
@@ -707,19 +713,6 @@
 .loadingRows span:nth-child(1) { width: 92%; }
 .loadingRows span:nth-child(2) { width: 76%; }
 .loadingRows span:nth-child(3) { width: 58%; }
-
-.analysisLoading p {
-  margin: 0;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.45;
-  font-weight: 500;
-}
-
-@keyframes analysisSkeleton {
-  0% { background-position: 120% 0; }
-  100% { background-position: -120% 0; }
-}
 
 .attachmentsGrid {
   grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
@@ -761,7 +754,7 @@
 .attachmentActions .attachmentRemove:hover:not(:disabled) {
   color: #ffd0d8;
   border-color: rgba(255, 91, 115, 0.34);
-  background: rgba(255, 91, 115, 0.055);
+  background: rgba(255, 91, 115, 0.045);
 }
 
 .attachmentActions .attachmentRemove svg {

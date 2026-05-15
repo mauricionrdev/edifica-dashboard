@@ -322,17 +322,19 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   if (loading) {
     return (
       <div className={`${styles.panel} ${meta.className}`.trim()}>
-        <div className={styles.analysisLoading} role="status" aria-live="polite">
-          <div className={styles.loadingHeader}>
-            <span />
-            <span />
+        <div className={styles.loadingShell} role="status" aria-live="polite">
+          <span className={styles.eyebrow}>{meta.title}</span>
+          <div className={styles.analysisLoading}>
+            <div className={styles.loadingHeader}>
+              <span />
+              <span />
+            </div>
+            <div className={styles.loadingRows}>
+              <span />
+              <span />
+              <span />
+            </div>
           </div>
-          <div className={styles.loadingRows}>
-            <span />
-            <span />
-            <span />
-          </div>
-          <p>{meta.loadingTitle}</p>
         </div>
       </div>
     );
