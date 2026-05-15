@@ -416,22 +416,20 @@ function relationLabel(task) {
   return 'Responsável';
 }
 
+function taskCreatedTime(task) {
+  const raw = task?.createdAt || task?.created_at || task?.createdDate || task?.created_date || null;
+  if (!raw) return 0;
+  const parsed = new Date(raw).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 function compareOperationTasks(a, b) {
-  const aDone = isDone(a);
-  const bDone = isDone(b);
-  if (aDone !== bDone) return aDone ? 1 : -1;
+  const createdDiff = taskCreatedTime(b) - taskCreatedTime(a);
+  if (createdDiff !== 0) return createdDiff;
 
-  const aOverdue = isOverdue(a);
-  const bOverdue = isOverdue(b);
-  if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
-
-  const aPriority = PRIORITY_WEIGHT[priorityKey(a)] || PRIORITY_WEIGHT.medium;
-  const bPriority = PRIORITY_WEIGHT[priorityKey(b)] || PRIORITY_WEIGHT.medium;
-  if (aPriority !== bPriority) return bPriority - aPriority;
-
-  const aDue = a?.dueDate || '9999-12-31';
-  const bDue = b?.dueDate || '9999-12-31';
-  if (aDue !== bDue) return aDue.localeCompare(bDue);
+  const aId = Number(a?.id);
+  const bId = Number(b?.id);
+  if (!Number.isNaN(aId) && !Number.isNaN(bId) && aId !== bId) return bId - aId;
 
   return String(a?.title || '').localeCompare(String(b?.title || ''), 'pt-BR');
 }
@@ -1884,10 +1882,10 @@ export default function ProfilePage() {
   const profileDate = useMemo(() => new Date(), []);
   const profileStats = useMemo(() => ([
     { label: 'Total de tarefas', value: operationCounts.all, hint: 'no perfil', tone: 'neutral', Icon: ChecklistIcon },
-    { label: 'Taxa de conclusão', value: `${completionRate}%`, hint: `${operationCounts.done} concluídas`, tone: 'completion', Icon: TargetIcon },
+    { label: 'Acompanhando', value: operationCounts.watching, hint: 'colaborações', tone: 'blue', Icon: UsersIcon },
     { label: 'Em aberto', value: operationCounts.open, hint: `${operationCounts.today} para hoje`, tone: 'amber', Icon: CalendarIcon },
     { label: 'Risco operacional', value: operationCounts.risk, hint: `${operationCounts.overdue} atrasadas`, tone: 'red', Icon: BellIcon },
-    { label: 'Acompanhando', value: operationCounts.watching, hint: 'colaborações', tone: 'blue', Icon: UsersIcon },
+    { label: 'Taxa de conclusão', value: `${completionRate}%`, hint: `${operationCounts.done} concluídas`, tone: 'completion', Icon: TargetIcon },
   ]), [completionRate, operationCounts.all, operationCounts.done, operationCounts.open, operationCounts.overdue, operationCounts.risk, operationCounts.today, operationCounts.watching]);
   const canCreateDemand = canCreateProfileTask(user);
   const canEditActiveTask = canEditProfileTask(user, activeTask);

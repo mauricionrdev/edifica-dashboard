@@ -7348,3 +7348,100 @@
     border-bottom: 0 !important;
   }
 }
+
+/* v122 — ordem das métricas e refinamento Linear do card superior */
+.hero {
+  position: relative !important;
+  overflow: hidden !important;
+  background: rgba(255, 255, 255, 0.012) !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+}
+
+.heroTop {
+  padding: 26px 28px 24px !important;
+  min-height: 118px !important;
+}
+
+.heroTop .iconButton {
+  background: rgba(255, 255, 255, 0.018) !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+}
+
+.profileStatRail {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  background: rgba(255, 255, 255, 0.006) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.055) !important;
+}
+
+.profileStat {
+  min-height: 88px !important;
+  padding: 18px 22px !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.045) !important;
+}
+
+.profileStat:last-child {
+  border-right: 0 !important;
+}
+
+.profileStat span {
+  color: var(--edf-text-muted) !important;
+}
+
+.profileStat strong {
+  margin-top: 7px !important;
+}
+
+.profileStat_neutral strong {
+  color: var(--edf-text-primary) !important;
+}
+
+.profileStat_blue strong {
+  color: var(--edf-info-soft) !important;
+}
+
+.profileStat_amber strong {
+  color: var(--edf-warning-soft) !important;
+}
+
+.profileStat_red strong {
+  color: var(--edf-danger-soft) !important;
+}
+
+.profileStat_completion strong {
+  color: var(--edf-success-soft) !important;
+}
+
+@media (max-width: 1180px) {
+  .profileStatRail {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .profileStat:nth-child(3n) {
+    border-right: 0 !important;
+  }
+
+  .profileStat:nth-child(n + 4) {
+    border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .heroTop {
+    padding: 18px 16px !important;
+  }
+
+  .profileStatRail {
+    grid-template-columns: 1fr !important;
+  }
+
+  .profileStat,
+  .profileStat:nth-child(3n),
+  .profileStat:nth-child(2n) {
+    border-right: 0 !important;
+  }
+
+  .profileStat:nth-child(n + 2) {
+    border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
+  }
+}
