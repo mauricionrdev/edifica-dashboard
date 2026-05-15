@@ -7892,3 +7892,417 @@
     padding: 22px !important;
   }
 }
+
+/* v126 — refinamento visual de Modal Nova demanda, Configurações e Drawer
+   Referência: tela de Perfil validada. Escopo visual: sem alterar badges, lógica ou backend. */
+.settingsOverlay,
+.drawerOverlay {
+  background: rgba(0, 0, 0, 0.66) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+.settingsModal {
+  background: #09090b !important;
+  border: 1px solid rgba(255, 255, 255, 0.074) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.022),
+    0 24px 80px rgba(0, 0, 0, 0.54) !important;
+}
+
+.settingsHeader {
+  min-height: 64px !important;
+  padding: 18px 22px 16px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.058) !important;
+  background: #09090b !important;
+}
+
+.settingsHeader h2 {
+  color: var(--edf-text-primary) !important;
+  font-size: 16px !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.022em !important;
+}
+
+.settingsHeader span {
+  color: var(--edf-text-muted) !important;
+  font-size: 12px !important;
+  font-weight: 520 !important;
+}
+
+.settingsHeader .iconButton,
+.drawerTopbar .iconButton,
+.drawerTopbarButton,
+.drawerTopbarDanger {
+  border: 1px solid rgba(255, 255, 255, 0.074) !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+  color: var(--edf-text-muted) !important;
+  box-shadow: none !important;
+}
+
+.settingsHeader .iconButton:hover:not(:disabled),
+.drawerTopbar .iconButton:hover:not(:disabled),
+.drawerTopbarButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  color: var(--edf-text-primary) !important;
+}
+
+.drawerTopbarDanger {
+  color: var(--edf-danger-soft) !important;
+  border-color: rgba(255, 116, 116, 0.24) !important;
+  background: rgba(255, 80, 80, 0.045) !important;
+}
+
+.drawerTopbarDanger:hover:not(:disabled) {
+  color: var(--edf-danger-soft) !important;
+  border-color: rgba(255, 116, 116, 0.34) !important;
+  background: rgba(255, 80, 80, 0.075) !important;
+}
+
+.settingsContent {
+  padding: 20px 22px 22px !important;
+  gap: 14px !important;
+  background: #09090b !important;
+}
+
+.settingsFooter {
+  min-height: 64px !important;
+  padding: 14px 22px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.058) !important;
+  background: #09090b !important;
+}
+
+.settingsFooter button,
+.photoActions button,
+.drawerHeroActions button,
+.attachmentComposer > button {
+  height: 38px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.078) !important;
+  background: rgba(255, 255, 255, 0.020) !important;
+  color: var(--edf-text-secondary) !important;
+  box-shadow: none !important;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease !important;
+}
+
+.settingsFooter button:hover:not(:disabled),
+.photoActions button:hover:not(:disabled),
+.drawerHeroActions button:hover:not(:disabled),
+.attachmentComposer > button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.040) !important;
+  border-color: rgba(255, 255, 255, 0.105) !important;
+  color: var(--edf-text-primary) !important;
+}
+
+.settingsFooter button[type='submit'],
+.settingsFooter button:last-child:not(:only-child),
+.heroActionPrimary {
+  border-color: rgba(255, 255, 255, 0.092) !important;
+  background: rgba(255, 255, 255, 0.038) !important;
+  color: var(--edf-text-primary) !important;
+  font-weight: 620 !important;
+}
+
+.settingsFooter button[type='submit']:hover:not(:disabled),
+.settingsFooter button:last-child:not(:only-child):hover:not(:disabled),
+.heroActionPrimary:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.135) !important;
+  background: rgba(255, 255, 255, 0.060) !important;
+}
+
+.settingsFooter button:focus-visible,
+.photoActions button:focus-visible,
+.drawerHeroActions button:focus-visible,
+.attachmentComposer > button:focus-visible,
+.settingsHeader .iconButton:focus-visible,
+.drawerTopbarButton:focus-visible,
+.drawerTopbarDanger:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.34) !important;
+}
+
+.settingsTabs {
+  gap: 14px !important;
+  padding: 0 22px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.058) !important;
+  background: #09090b !important;
+}
+
+.settingsTab {
+  margin: 0 !important;
+  padding: 13px 0 12px !important;
+  color: var(--edf-text-faint) !important;
+  font-size: 12.5px !important;
+  font-weight: 560 !important;
+  border-bottom: 1px solid transparent !important;
+  transition: color 120ms ease, border-color 120ms ease !important;
+}
+
+.settingsTab:hover {
+  color: var(--edf-text-muted) !important;
+}
+
+.settingsTabActive {
+  color: var(--edf-text-primary) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.54) !important;
+  background: transparent !important;
+}
+
+.photoRow,
+.settingsPane,
+.confirmModal .settingsContent,
+.completionModal .settingsContent,
+.handoffModal .settingsContent {
+  background: #0b0b0d !important;
+  border-color: rgba(255, 255, 255, 0.060) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014) !important;
+}
+
+.settingsPane {
+  border-radius: 14px !important;
+  padding: 16px !important;
+}
+
+.formGrid,
+.demandFormGrid,
+.briefingGrid,
+.routineFormGrid {
+  gap: 12px !important;
+}
+
+.demandModal {
+  max-width: 744px !important;
+}
+
+.demandModal_briefing {
+  max-width: 904px !important;
+}
+
+.demandModal .settingsContent {
+  padding: 20px 22px 22px !important;
+  gap: 12px !important;
+}
+
+.settingsModal input,
+.settingsModal textarea,
+.settingsModal select,
+.demandModal input,
+.demandModal textarea,
+.profileSelectButton,
+.dateField > button,
+.workflowDate > button {
+  border: 1px solid rgba(255, 255, 255, 0.078) !important;
+  background: #0b0b0d !important;
+  color: var(--edf-text-primary) !important;
+  box-shadow: none !important;
+}
+
+.settingsModal input,
+.demandModal input,
+.profileSelectButton,
+.dateField > button,
+.workflowDate > button {
+  min-height: 40px !important;
+  height: 40px !important;
+  border-radius: 11px !important;
+}
+
+.settingsModal textarea,
+.demandModal textarea {
+  border-radius: 12px !important;
+  padding: 12px 13px !important;
+  line-height: 1.55 !important;
+  resize: vertical !important;
+}
+
+.settingsModal input:hover:not(:disabled),
+.settingsModal textarea:hover:not(:disabled),
+.profileSelectButton:hover:not(:disabled),
+.dateField > button:hover:not(:disabled),
+.workflowDate > button:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.105) !important;
+  background: #0d0d0f !important;
+}
+
+.settingsModal input:focus,
+.settingsModal input:focus-visible,
+.settingsModal textarea:focus,
+.settingsModal textarea:focus-visible,
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+.dateField > button:focus,
+.dateField > button:focus-visible,
+.workflowDate > button:focus,
+.workflowDate > button:focus-visible {
+  outline: none !important;
+  border-color: rgba(94, 106, 210, 0.46) !important;
+  background: #0d0d0f !important;
+  box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.18) !important;
+}
+
+.profileSelectMenu,
+.clientResults {
+  background: #0b0b0d !important;
+  border: 1px solid rgba(255, 255, 255, 0.086) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.58) !important;
+  overflow: hidden !important;
+}
+
+.profileSelectOption,
+.clientResultItem {
+  color: var(--edf-text-secondary) !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+}
+
+.profileSelectOption:hover,
+.profileSelectOption:focus-visible,
+.clientResultItem:hover,
+.clientResultItem:focus-visible {
+  background: rgba(255, 255, 255, 0.044) !important;
+  color: var(--edf-text-primary) !important;
+}
+
+.profileSelectOptionActive,
+.profileSelectOptionActive:hover,
+.profileSelectOptionActive:focus-visible {
+  background: rgba(255, 255, 255, 0.060) !important;
+  color: var(--edf-text-primary) !important;
+}
+
+.drawerPanel {
+  max-width: 748px !important;
+  background: #09090b !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.074) !important;
+  box-shadow: -24px 0 80px rgba(0, 0, 0, 0.50) !important;
+}
+
+.drawerTopbar {
+  min-height: 62px !important;
+  padding: 14px 22px !important;
+  background: #09090b !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.058) !important;
+}
+
+.drawerHero {
+  padding: 22px 24px 20px !important;
+  background: #09090b !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.058) !important;
+  gap: 10px !important;
+}
+
+.drawerHero h3 {
+  color: var(--edf-text-primary) !important;
+  font-size: 19px !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.025em !important;
+}
+
+.drawerHero p {
+  color: var(--edf-text-muted) !important;
+}
+
+.drawerSection {
+  padding: 20px 24px !important;
+  background: #09090b !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.054) !important;
+  gap: 14px !important;
+}
+
+.sectionTitleRow h4 {
+  color: var(--edf-text-muted) !important;
+  font-size: 11px !important;
+  font-weight: 680 !important;
+  letter-spacing: 0.075em !important;
+}
+
+.workflowGrid {
+  gap: 12px !important;
+}
+
+.drawerMetaGrid,
+.briefingDetailGrid {
+  gap: 16px 22px !important;
+}
+
+.descriptionBox {
+  padding: 20px 22px !important;
+  border-radius: 14px !important;
+  border-color: rgba(255, 255, 255, 0.062) !important;
+  background: #0b0b0d !important;
+  color: rgba(203, 213, 225, 0.90) !important;
+  font-size: 13px !important;
+  font-weight: 560 !important;
+  line-height: 1.72 !important;
+}
+
+.descriptionBox:hover,
+.descriptionBox:focus,
+.descriptionBox:focus-visible {
+  border-color: rgba(255, 255, 255, 0.062) !important;
+  background: #0b0b0d !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.attachmentPreviewItem,
+.attachmentCard,
+.attachmentsEmpty {
+  background: #0b0b0d !important;
+  border-color: rgba(255, 255, 255, 0.064) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.attachmentPreviewItem figcaption,
+.attachmentCard figcaption {
+  border-top-color: rgba(255, 255, 255, 0.054) !important;
+  background: #0b0b0d !important;
+}
+
+.attachmentViewerOverlay {
+  background: rgba(0, 0, 0, 0.70) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.attachmentViewer {
+  background: #09090b !important;
+  border-color: rgba(255, 255, 255, 0.082) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 88px rgba(0, 0, 0, 0.64) !important;
+}
+
+.attachmentViewer header {
+  border-bottom-color: rgba(255, 255, 255, 0.058) !important;
+  background: #09090b !important;
+}
+
+.attachmentViewerImage {
+  background: #050506 !important;
+}
+
+@media (max-width: 760px) {
+  .settingsModal,
+  .demandModal,
+  .demandModal_briefing {
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .drawerPanel {
+    max-width: 100% !important;
+  }
+
+  .settingsHeader,
+  .settingsContent,
+  .settingsFooter,
+  .drawerTopbar,
+  .drawerHero,
+  .drawerSection {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
