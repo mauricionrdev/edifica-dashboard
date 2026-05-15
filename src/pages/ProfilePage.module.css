@@ -8336,3 +8336,102 @@
   border-color: rgba(212, 175, 55, 0.22) !important;
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.07) !important;
 }
+
+/* V128 — inverter estado ativo/hover das abas e remover foco amarelo global
+   Escopo: somente CSS visual da tela de Perfil. */
+.operationTab {
+  background: transparent !important;
+  border-color: rgba(146, 155, 176, 0.16) !important;
+  color: #9AA6BA !important;
+  box-shadow: none !important;
+}
+
+.operationTab:hover:not(.operationTabActive) {
+  background: rgba(244, 196, 48, 0.10) !important;
+  border-color: rgba(244, 196, 48, 0.34) !important;
+  color: #F4C430 !important;
+  box-shadow: none !important;
+}
+
+.operationTabActive,
+.operationTabActive:hover {
+  background: transparent !important;
+  border-color: rgba(244, 196, 48, 0.24) !important;
+  color: #F4C430 !important;
+  box-shadow: none !important;
+}
+
+.operationTabCount {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-color: rgba(255, 255, 255, 0.055) !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+
+.operationTab:hover:not(.operationTabActive) .operationTabCount {
+  background: rgba(244, 196, 48, 0.14) !important;
+  border-color: rgba(244, 196, 48, 0.18) !important;
+  color: #F4C430 !important;
+}
+
+.operationTabActive .operationTabCount,
+.operationTabActive:hover .operationTabCount {
+  background: rgba(244, 196, 48, 0.08) !important;
+  border-color: rgba(244, 196, 48, 0.12) !important;
+  color: #F4C430 !important;
+}
+
+.page :is(input, textarea, select, button, [role="button"]):focus,
+.page :is(input, textarea, select, button, [role="button"]):focus-visible,
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+.dateField > button:focus,
+.dateField > button:focus-visible,
+.workflowDate > button:focus,
+.workflowDate > button:focus-visible,
+.formSelect:focus,
+.formSelect:focus-visible,
+.workflowSelect:focus,
+.workflowSelect:focus-visible,
+.settingsFooter button:focus-visible,
+.photoActions button:focus-visible,
+.drawerHeroActions button:focus-visible,
+.attachmentComposer > button:focus-visible,
+.settingsHeader .iconButton:focus-visible,
+.drawerTopbarButton:focus-visible,
+.drawerTopbarDanger:focus-visible,
+.iconButton:focus-visible,
+.primaryAction:focus-visible,
+.operationTab:focus,
+.operationTab:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.page :is(input, textarea, select):focus,
+.page :is(input, textarea, select):focus-visible,
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+.dateField > button:focus,
+.dateField > button:focus-visible,
+.workflowDate > button:focus,
+.workflowDate > button:focus-visible,
+.formSelect:focus,
+.formSelect:focus-visible,
+.workflowSelect:focus,
+.workflowSelect:focus-visible {
+  border-color: var(--edf-border-strong) !important;
+  background: var(--edf-surface-1) !important;
+}
+
+.settingsFooter button:focus-visible,
+.photoActions button:focus-visible,
+.drawerHeroActions button:focus-visible,
+.attachmentComposer > button:focus-visible,
+.settingsHeader .iconButton:focus-visible,
+.drawerTopbarButton:focus-visible,
+.drawerTopbarDanger:focus-visible,
+.iconButton:focus-visible,
+.primaryAction:focus-visible {
+  border-color: var(--edf-border-strong) !important;
+}
