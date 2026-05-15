@@ -7786,3 +7786,109 @@
     border-top-color: rgba(255, 255, 255, 0.050) !important;
   }
 }
+
+/* v125 — refinamento final dos cards do Perfil
+   Escopo: somente superfícies dos cards, aba ativa e respiro do estado vazio. */
+.hero,
+.operationBoard {
+  background: #09090b !important;
+  border-color: rgba(255, 255, 255, 0.072) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.024),
+    0 1px 0 rgba(255, 255, 255, 0.018) !important;
+}
+
+.hero::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.010), rgba(255, 255, 255, 0) 36%) !important;
+}
+
+.heroTop {
+  background: #09090b !important;
+}
+
+.profileStatRail {
+  background: #08080a !important;
+  border-top-color: rgba(255, 255, 255, 0.058) !important;
+}
+
+.profileStat {
+  border-right-color: rgba(255, 255, 255, 0.044) !important;
+}
+
+.operationHeader {
+  background: #09090b !important;
+  border-bottom-color: rgba(255, 255, 255, 0.058) !important;
+}
+
+.operationBody {
+  padding: 20px 14px 16px !important;
+  background: #09090b !important;
+}
+
+.operationList {
+  background: #08080a !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.operationListHeader {
+  background: #08080a !important;
+  border-bottom-color: rgba(255, 255, 255, 0.050) !important;
+}
+
+.operationRow {
+  background: #08080a !important;
+  border-bottom-color: rgba(255, 255, 255, 0.042) !important;
+}
+
+.operationRow:hover,
+.operationRow:focus-within {
+  background: #0b0b0d !important;
+}
+
+.emptyOperation {
+  min-height: 132px !important;
+  margin: 0 !important;
+  padding: 28px 28px !important;
+  border-radius: 12px !important;
+  background: #08080a !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.operationTabActive {
+  background: rgba(227, 184, 40, 0.105) !important;
+  border-color: rgba(227, 184, 40, 0.58) !important;
+  color: #ffd429 !important;
+}
+
+.operationTabActive .operationTabLabel {
+  color: #ffd429 !important;
+}
+
+.operationTabActive .operationTabCount {
+  background: rgba(227, 184, 40, 0.13) !important;
+  border-color: rgba(227, 184, 40, 0.20) !important;
+  color: #ffd429 !important;
+}
+
+.operationHeaderTop .primaryAction {
+  background: #12100a !important;
+  border-color: rgba(227, 184, 40, 0.32) !important;
+  color: var(--edf-text-primary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.028) !important;
+}
+
+@media (max-width: 720px) {
+  .operationBody {
+    padding: 14px 10px 12px !important;
+  }
+
+  .emptyOperation {
+    min-height: 116px !important;
+    padding: 22px !important;
+  }
+}
