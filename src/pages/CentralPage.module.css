@@ -207,8 +207,8 @@
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.68fr) minmax(360px, 0.88fr);
-  gap: 12px;
+  grid-template-columns: minmax(0, 1.65fr) minmax(340px, 0.9fr);
+  gap: 10px;
   align-items: stretch;
   overflow: hidden;
 }
@@ -216,26 +216,13 @@
 .boardSection,
 .detailsPanel,
 .activityPanel {
-  position: relative;
   min-width: 0;
   min-height: 0;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  background: #09090a;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: none;
   overflow: hidden;
-}
-
-.boardSection::before,
-.detailsPanel::before,
-.activityPanel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0) 24%);
-  opacity: 0.8;
 }
 
 .boardSection,
@@ -250,20 +237,17 @@
 }
 
 .columnsPanel {
-  position: relative;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .columnsPanelHeader,
 .compareHeader,
 .activityHeader {
-  position: relative;
-  z-index: 1;
   min-height: 26px;
   display: flex;
   align-items: baseline;
@@ -283,36 +267,20 @@
 }
 
 .columnsCanvas {
-  position: relative;
   flex: 1 1 auto;
-  min-height: 264px;
+  min-height: 220px;
   width: 100%;
-  padding: 16px 14px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.014);
   display: block;
-  overflow: hidden;
-}
-
-.columnsCanvas::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0) 26%);
 }
 
 .columnsSvg {
-  position: relative;
-  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
 }
 
 .columnsAxisText {
-  fill: rgba(247, 248, 248, 0.38);
+  fill: var(--text-quaternary);
   font-size: 10px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -321,7 +289,7 @@
 .columnsValue {
   fill: var(--text-secondary);
   font-size: 12px;
-  font-weight: 620;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.012em;
 }
@@ -334,7 +302,7 @@
 .columnsMonth {
   fill: var(--text-secondary);
   font-size: 10px;
-  font-weight: 620;
+  font-weight: 600;
   letter-spacing: 0.06em;
 }
 
@@ -348,11 +316,11 @@
 }
 
 .compareHeader {
-  padding: 18px 18px 0;
+  padding: 16px 16px 0;
 }
 
 .compareHeaderHint {
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1;
   font-weight: 500;
@@ -362,7 +330,7 @@
 .compareBody {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 14px 18px 18px;
+  padding: 12px 16px 16px;
   display: flex;
   flex-direction: column;
 }
@@ -380,12 +348,12 @@
 .compareItem {
   flex: 1 1 0;
   min-height: 0;
-  padding: 18px 0 17px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
 }
 
 .compareItem:last-child { border-bottom: 0; }
@@ -394,7 +362,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
 .compareLabel {
@@ -412,7 +380,7 @@
   color: var(--text-primary);
   font-size: 18px;
   line-height: 1;
-  font-weight: 640;
+  font-weight: 620;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -442,8 +410,8 @@
 
 .activityHeader {
   flex: 0 0 auto;
-  padding: 18px 18px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  padding: 14px 16px 13px;
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .activityHeaderMeta {
@@ -477,7 +445,7 @@
   min-height: 0;
   display: grid;
   align-content: start;
-  padding: 6px 18px 14px;
+  padding: 4px 16px 12px;
   overflow: auto;
   scrollbar-width: none;
 }
@@ -487,29 +455,29 @@
 
 .activityItem {
   width: 100%;
-  min-height: 68px;
-  padding: 14px 0;
+  min-height: 58px;
+  padding: 9px 0;
   border: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  border-bottom: 1px solid var(--line-subtle);
   background: transparent;
   color: var(--text-secondary);
   font: inherit;
   text-align: left;
   cursor: pointer;
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto auto auto;
-  gap: 14px;
+  grid-template-columns: 36px minmax(0, 1fr) auto auto auto;
+  gap: 12px;
   align-items: center;
 }
 
 .activityItem:last-child { border-bottom: 0; }
-.activityItem:hover { background: rgba(255, 255, 255, 0.014); }
+.activityItem:hover { background: rgba(255, 255, 255, 0.018); }
 
 .activityAvatar {
   position: relative;
-  width: 38px;
-  height: 38px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line-subtle);
   border-radius: 999px;
   background: #08090a;
   overflow: hidden;
@@ -613,7 +581,7 @@
 
 .emptyState,
 .stateBlock {
-  padding: 24px 18px;
+  padding: 22px 16px;
   color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 510;
@@ -673,8 +641,7 @@
 
   .metricsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboardPanels { grid-template-columns: 1fr; overflow: visible; }
-  .detailsPanel,
-  .activityPanel { min-height: 250px; }
+  .detailsPanel { min-height: 250px; }
   .toolbar { justify-content: flex-start; flex-wrap: wrap; }
 }
 
@@ -688,8 +655,8 @@
   }
 
   .activityItem {
-    grid-template-columns: 44px minmax(0, 1fr) auto;
-    row-gap: 8px;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    row-gap: 6px;
   }
 
   .activitySquad,
@@ -700,12 +667,251 @@
   .metricsGrid { grid-template-columns: 1fr; }
 
   .activityItem {
-    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-columns: 36px minmax(0, 1fr);
   }
 
   .activityDate,
   .activityStatusPill {
     grid-column: 2;
     justify-self: start;
+  }
+}
+
+/* v130 — Dashboard alinhado ao visual validado da tela de Perfil
+   Escopo: somente refinamento visual dos cards/painéis do Dashboard. */
+.dashboard {
+  padding: 14px 18px 18px !important;
+  gap: 12px !important;
+  background: transparent !important;
+}
+
+.metricsGrid {
+  gap: 12px !important;
+}
+
+.metricCard,
+.boardSection,
+.detailsPanel,
+.activityPanel,
+.skeletonBlock,
+.skeletonTall,
+.stateBlock {
+  background: #09090b !important;
+  border: 1px solid rgba(255, 255, 255, 0.072) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.020),
+    0 1px 0 rgba(255, 255, 255, 0.012) !important;
+}
+
+.metricCard {
+  min-height: 92px !important;
+  padding: 16px 18px 15px !important;
+  gap: 9px !important;
+  cursor: grab !important;
+}
+
+.metricCard:hover {
+  background: #0b0b0d !important;
+  border-color: rgba(255, 255, 255, 0.085) !important;
+}
+
+.metricCardDragging {
+  opacity: 0.62 !important;
+  background: #0b0b0d !important;
+}
+
+.metricCardTop {
+  min-height: 16px !important;
+}
+
+.metricLabel,
+.compareLabel {
+  color: var(--text-tertiary) !important;
+  font-size: 10.5px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.065em !important;
+}
+
+.metricIcon {
+  color: var(--text-quaternary) !important;
+  opacity: 0.78 !important;
+}
+
+.metricValue {
+  color: var(--text-primary) !important;
+  font-size: clamp(21px, 1.25vw, 25px) !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.metricFooter {
+  min-height: 15px !important;
+  color: var(--text-tertiary) !important;
+}
+
+.metricHelper {
+  color: var(--text-tertiary) !important;
+}
+
+.metricProgress {
+  height: 2px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.dashboardPanels {
+  gap: 12px !important;
+}
+
+.boardSection,
+.detailsPanel,
+.activityPanel {
+  overflow: hidden !important;
+}
+
+.columnsPanel {
+  padding: 18px !important;
+  gap: 14px !important;
+}
+
+.columnsPanelHeader,
+.compareHeader,
+.activityHeader {
+  min-height: 30px !important;
+}
+
+.columnsPanelTitle,
+.compareHeader h3,
+.activityHeader h3 {
+  color: var(--text-primary) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.03em !important;
+}
+
+.columnsCanvas {
+  min-height: 236px !important;
+}
+
+.compareHeader {
+  padding: 18px 18px 0 !important;
+}
+
+.compareHeaderHint,
+.activityHeaderMeta {
+  color: var(--text-tertiary) !important;
+}
+
+.compareBody {
+  padding: 12px 18px 18px !important;
+}
+
+.compareItem {
+  padding: 12px 0 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.052) !important;
+}
+
+.compareValue {
+  color: var(--text-primary) !important;
+  font-weight: 650 !important;
+}
+
+.activityHeader {
+  padding: 16px 18px 15px !important;
+  border-bottom-color: rgba(255, 255, 255, 0.058) !important;
+  background: #09090b !important;
+}
+
+.activityHeaderBadge {
+  background: rgba(255, 255, 255, 0.026) !important;
+  border-color: rgba(255, 255, 255, 0.074) !important;
+  color: var(--text-secondary) !important;
+}
+
+.activityList {
+  padding: 6px 18px 14px !important;
+  background: #09090b !important;
+}
+
+.activityItem {
+  min-height: 62px !important;
+  padding: 11px 0 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.048) !important;
+}
+
+.activityItem:hover {
+  background: rgba(255, 255, 255, 0.012) !important;
+}
+
+.activityAvatar {
+  background: #0b0b0d !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+}
+
+.activityCopy strong {
+  color: var(--text-primary) !important;
+  font-weight: 650 !important;
+}
+
+.activityStatusPill {
+  background: rgba(255, 255, 255, 0.020) !important;
+  border-color: rgba(255, 255, 255, 0.070) !important;
+}
+
+.activityStatusPill_active {
+  background: rgba(34, 197, 94, 0.075) !important;
+  border-color: rgba(34, 197, 94, 0.18) !important;
+  color: var(--success) !important;
+}
+
+.activityStatusPill_churn {
+  background: rgba(239, 68, 68, 0.075) !important;
+  border-color: rgba(239, 68, 68, 0.18) !important;
+  color: var(--danger) !important;
+}
+
+.emptyState,
+.stateBlock {
+  color: var(--text-tertiary) !important;
+}
+
+.retryButton {
+  background: rgba(255, 255, 255, 0.020) !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  color: var(--text-primary) !important;
+}
+
+.toolbar :global(select),
+.toolbar :global(button) {
+  background: #09090b !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.toolbar :global(select):focus,
+.toolbar :global(button):focus,
+.toolbar :global(select):focus-visible,
+.toolbar :global(button):focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+}
+
+@media (min-width: 1180px) and (max-height: 820px) {
+  .metricCard {
+    min-height: 86px !important;
+    padding-top: 14px !important;
+    padding-bottom: 13px !important;
+  }
+
+  .activityItem {
+    min-height: 58px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .dashboard {
+    padding: 14px !important;
   }
 }
