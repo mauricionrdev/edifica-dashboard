@@ -792,3 +792,34 @@
   border-color: var(--line);
   background: rgba(255,255,255,.04);
 }
+
+/* v137 — ações de anexo no topo e alinhamento interno */
+.attachmentsHeadActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.attachmentsHeadActions .attachButton {
+  margin: 0;
+}
+
+.attachmentActions {
+  justify-content: center;
+  padding: 10px 12px 12px;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-width: 82px;
+}
+
+.attachmentActions .attachmentRemove {
+  min-width: 30px;
+}
+
+.attachmentsArea > .attachButton {
+  display: none;
+}

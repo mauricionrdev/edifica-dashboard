@@ -419,7 +419,24 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               <div className={styles.attachmentsArea}>
                 <div className={styles.attachmentsHead}>
                   <span>Anexos</span>
-                  <strong>{(entry.attachments || []).length}</strong>
+                  <div className={styles.attachmentsHeadActions}>
+                    {canEdit ? (
+                      <label className={styles.attachButton}>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          multiple
+                          disabled={uploadingIds.has(entry.id)}
+                          onChange={(event) => {
+                            handleAttachmentFiles(entry.id, event.target.files);
+                            event.target.value = '';
+                          }}
+                        />
+                        {uploadingIds.has(entry.id) ? 'Anexando…' : 'Anexar imagem ou PDF'}
+                      </label>
+                    ) : null}
+                    <strong>{(entry.attachments || []).length}</strong>
+                  </div>
                 </div>
 
                 {(entry.attachments || []).length ? (
@@ -474,21 +491,6 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                   <div className={styles.attachmentsEmpty}>Nenhum anexo</div>
                 )}
 
-                {canEdit ? (
-                  <label className={styles.attachButton}>
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      multiple
-                      disabled={uploadingIds.has(entry.id)}
-                      onChange={(event) => {
-                        handleAttachmentFiles(entry.id, event.target.files);
-                        event.target.value = '';
-                      }}
-                    />
-                    {uploadingIds.has(entry.id) ? 'Anexando…' : 'Anexar imagem ou PDF'}
-                  </label>
-                ) : null}
               </div>
 
               {(isPending || isSaving) && (
