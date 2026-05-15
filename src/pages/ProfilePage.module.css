@@ -8937,3 +8937,352 @@ input[type="date"]:focus {
   color: var(--edf-text) !important;
   outline: none !important;
 }
+
+/* -------------------------------------------------------------------------
+   V114 — Reverter excesso visual de badges/tags mantendo somente cores
+   ------------------------------------------------------------------------- */
+.operationMeta,
+.workflowTimeline,
+.selectedCollaborators,
+.collaboratorChips {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.operationMeta {
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  overflow: hidden !important;
+}
+
+.operationMeta > span,
+.kindPill,
+.priorityPill,
+.statusPill,
+.relationPill,
+.selectedCollaborators > span,
+.collaboratorChips > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: 180px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 24px !important;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(146, 155, 176, .16) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.operationMeta > span::before,
+.operationMeta > span::after,
+.kindPill::before,
+.kindPill::after,
+.priorityPill::before,
+.priorityPill::after,
+.statusPill::before,
+.statusPill::after,
+.relationPill::before,
+.relationPill::after,
+.selectedCollaborators > span::before,
+.selectedCollaborators > span::after,
+.collaboratorChips > span::before,
+.collaboratorChips > span::after {
+  display: none !important;
+  content: none !important;
+}
+
+.operationMeta > span:hover,
+.kindPill:hover,
+.priorityPill:hover,
+.statusPill:hover,
+.relationPill:hover,
+.selectedCollaborators > span:hover,
+.collaboratorChips > span:hover {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+.kind_briefing,
+.operationMeta .kind_briefing,
+.operationMeta > span.kind_briefing,
+.kind_briefing:hover,
+.operationMeta .kind_briefing:hover,
+.operationMeta > span.kind_briefing:hover {
+  color: #d99a35 !important;
+  border-color: rgba(217, 154, 53, .34) !important;
+  background: transparent !important;
+}
+
+.kind_support,
+.operationMeta .kind_support,
+.operationMeta > span.kind_support,
+.kind_support:hover,
+.operationMeta .kind_support:hover,
+.operationMeta > span.kind_support:hover {
+  color: #56b6c2 !important;
+  border-color: rgba(86, 182, 194, .34) !important;
+  background: transparent !important;
+}
+
+.relation_watching,
+.operationMeta .relation_watching,
+.operationMeta > span.relation_watching,
+.relation_watching:hover,
+.operationMeta .relation_watching:hover,
+.operationMeta > span.relation_watching:hover {
+  color: #8ea7ff !important;
+  border-color: rgba(142, 167, 255, .34) !important;
+  background: transparent !important;
+}
+
+.status_todo,
+.status_open,
+.status_aberto,
+.status_in_progress,
+.status_active,
+.status_today,
+.status_activation_gdv,
+.status_access_delivery,
+.status_traffic_activation,
+.status_final_validation,
+.priority_high,
+.operationMeta .status_todo,
+.operationMeta .status_open,
+.operationMeta .status_aberto,
+.operationMeta .status_in_progress,
+.operationMeta .status_active,
+.operationMeta .status_today,
+.operationMeta .status_activation_gdv,
+.operationMeta .status_access_delivery,
+.operationMeta .status_traffic_activation,
+.operationMeta .status_final_validation,
+.operationMeta .priority_high,
+.status_todo:hover,
+.status_open:hover,
+.status_aberto:hover,
+.status_in_progress:hover,
+.status_active:hover,
+.status_today:hover,
+.status_activation_gdv:hover,
+.status_access_delivery:hover,
+.status_traffic_activation:hover,
+.status_final_validation:hover,
+.priority_high:hover {
+  color: #d8b84e !important;
+  border-color: rgba(216, 184, 78, .34) !important;
+  background: transparent !important;
+}
+
+.status_done,
+.status_concluida,
+.operationMeta .status_done,
+.operationMeta .status_concluida,
+.operationMeta > span.status_done,
+.operationMeta > span.status_concluida,
+.status_done:hover,
+.status_concluida:hover,
+.operationMeta .status_done:hover,
+.operationMeta .status_concluida:hover {
+  color: #3fb950 !important;
+  border-color: rgba(63, 185, 80, .34) !important;
+  background: transparent !important;
+}
+
+.priority_critical,
+.status_overdue,
+.status_canceled,
+.status_cancelled,
+.operationMeta .priority_critical,
+.operationMeta .status_overdue,
+.operationMeta .status_canceled,
+.operationMeta .status_cancelled,
+.priority_critical:hover,
+.status_overdue:hover,
+.status_canceled:hover,
+.status_cancelled:hover {
+  color: #ef6b73 !important;
+  border-color: rgba(239, 107, 115, .34) !important;
+  background: transparent !important;
+}
+
+.priority_normal,
+.priority_medium,
+.priority_low,
+.relation_responsible,
+.kind_demand,
+.kind_project,
+.kind_other,
+.kind_routine,
+.selectedCollaborators > span,
+.collaboratorChips > span,
+.operationMeta .priority_normal,
+.operationMeta .priority_medium,
+.operationMeta .priority_low,
+.operationMeta .relation_responsible,
+.operationMeta .kind_demand,
+.operationMeta .kind_project,
+.operationMeta .kind_other,
+.operationMeta .kind_routine,
+.priority_normal:hover,
+.priority_medium:hover,
+.priority_low:hover,
+.relation_responsible:hover,
+.kind_demand:hover,
+.kind_project:hover,
+.kind_other:hover,
+.kind_routine:hover,
+.selectedCollaborators > span:hover,
+.collaboratorChips > span:hover {
+  color: #a0a7b5 !important;
+  border-color: rgba(160, 167, 181, .26) !important;
+  background: transparent !important;
+}
+
+/* Abas: mantêm estrutura original, recebem apenas cor de estado */
+.operationTab,
+.operationTab:hover {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+  background: transparent !important;
+  color: #a0a7b5 !important;
+  border-color: rgba(160, 167, 181, .26) !important;
+}
+
+.operationTabActive,
+.operationTabActive:hover {
+  background: transparent !important;
+  color: #d8b84e !important;
+  border-color: rgba(216, 184, 78, .34) !important;
+}
+
+.operationTabCount {
+  background: rgba(255, 255, 255, .055) !important;
+  color: inherit !important;
+}
+
+/* Fluxo do drawer: mesmo formato, cores discretas e sem hover */
+.workflowStep,
+.workflowStep_current,
+.workflowStep_active,
+.workflowStep_done,
+.workflowStep_pending,
+.workflowStep_locked,
+.workflowStep:hover,
+.workflowStep_current:hover,
+.workflowStep_active:hover,
+.workflowStep_done:hover,
+.workflowStep_pending:hover,
+.workflowStep_locked:hover {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+  background: transparent !important;
+  color: #d8b84e !important;
+  border-color: rgba(216, 184, 78, .34) !important;
+}
+
+.workflowStep i,
+.workflowStep_current i,
+.workflowStep_active i,
+.workflowStep_done i,
+.workflowStep_pending i,
+.workflowStep_locked i {
+  background: rgba(216, 184, 78, .10) !important;
+  color: #d8b84e !important;
+}
+
+.workflowKey_done,
+.workflowStep_current.workflowKey_done,
+.workflowStep_active.workflowKey_done,
+.workflowStep_done.workflowKey_done,
+.workflowStep_pending.workflowKey_done,
+.workflowStep_locked.workflowKey_done,
+.workflowKey_done:hover,
+.workflowStep_current.workflowKey_done:hover,
+.workflowStep_active.workflowKey_done:hover,
+.workflowStep_done.workflowKey_done:hover,
+.workflowStep_pending.workflowKey_done:hover,
+.workflowStep_locked.workflowKey_done:hover {
+  color: #3fb950 !important;
+  border-color: rgba(63, 185, 80, .34) !important;
+  background: transparent !important;
+}
+
+.workflowKey_done i,
+.workflowStep_current.workflowKey_done i,
+.workflowStep_active.workflowKey_done i,
+.workflowStep_done.workflowKey_done i,
+.workflowStep_pending.workflowKey_done i,
+.workflowStep_locked.workflowKey_done i {
+  background: rgba(63, 185, 80, .10) !important;
+  color: #3fb950 !important;
+}
+
+/* Descrição: simples, espaçada e sem hover */
+.descriptionSection {
+  padding-top: 22px !important;
+  padding-bottom: 22px !important;
+}
+
+.descriptionSection .sectionTitleRow {
+  margin-bottom: 14px !important;
+}
+
+.descriptionBox,
+.descriptionBox:hover,
+.descriptionBox:focus,
+.descriptionBox:focus-visible {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  min-height: 132px !important;
+  padding: 20px 22px !important;
+  border: 1px solid rgba(255, 255, 255, .075) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, .014) !important;
+  color: rgba(203, 213, 225, .90) !important;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 520 !important;
+  line-height: 1.78 !important;
+  letter-spacing: -.004em !important;
+  white-space: pre-wrap !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: default !important;
+}
+
+.descriptionCard,
+.descriptionCardTopbar,
+.descriptionBody,
+.descriptionEditor,
+.descriptionEditState,
+.copyDescriptionButton,
+.descriptionFileMeta,
+.descriptionFileIcon {
+  display: none !important;
+}
