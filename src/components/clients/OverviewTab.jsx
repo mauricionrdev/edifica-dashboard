@@ -233,38 +233,37 @@ export default function OverviewTab({
             />
           </div>
 
-          <div className={`${drawerStyles.field} ${styles.fieldAvatar}`}>
-            <label className={drawerStyles.label}>Imagem</label>
-            <div className={styles.avatarBlock}>
-              <div className={styles.avatarPreview} aria-label={`Imagem de ${client.name}`}>
-                {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
-              </div>
-
-              <div className={styles.avatarInfo}>
-                <strong>{client.name}</strong>
-                <span>{avatarUrl ? 'Imagem configurada' : 'Sem imagem configurada'}</span>
-              </div>
-
-              {canManageAvatar ? (
-                <div className={styles.avatarActions}>
-                  <button type="button" onClick={onPickAvatar} disabled={deleting} title="Enviar imagem" aria-label="Enviar imagem">
-                    <CameraIcon size={14} />
-                  </button>
-                  {avatarUrl ? (
-                    <button
-                      type="button"
-                      className={styles.dangerButton}
-                      onClick={onRemoveAvatar}
-                      disabled={deleting}
-                      title="Remover imagem"
-                      aria-label="Remover imagem"
-                    >
-                      <TrashIcon size={14} />
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
+          <div className={styles.identityCard}>
+            <div className={styles.avatarPreview} aria-label={`Imagem de ${client.name}`}>
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
             </div>
+
+            <div className={styles.avatarInfo}>
+              <span>Imagem do cliente</span>
+              <strong>{client.name}</strong>
+              <small>{avatarUrl ? 'Imagem configurada' : 'Sem imagem configurada'}</small>
+            </div>
+
+            {canManageAvatar ? (
+              <div className={styles.avatarActions}>
+                <button type="button" onClick={onPickAvatar} disabled={deleting} title="Enviar imagem" aria-label="Enviar imagem">
+                  <CameraIcon size={14} />
+                  <span>{avatarUrl ? 'Trocar imagem' : 'Enviar imagem'}</span>
+                </button>
+                {avatarUrl ? (
+                  <button
+                    type="button"
+                    className={styles.dangerButton}
+                    onClick={onRemoveAvatar}
+                    disabled={deleting}
+                    title="Remover imagem"
+                    aria-label="Remover imagem"
+                  >
+                    <TrashIcon size={14} />
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

@@ -7,25 +7,24 @@
 }
 
 .identityCard {
-  grid-column: span 3;
+  grid-column: 1 / -1;
   min-width: 0;
-  min-height: 72px;
-  padding: 12px;
+  min-height: 74px;
+  padding: 14px 16px;
   border: 1px solid var(--line-subtle);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.012);
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-columns: 46px minmax(0, 1fr) max-content;
   align-items: center;
-  gap: 11px;
-  align-self: stretch;
+  gap: 13px;
 }
 
 .fieldName { grid-column: span 6; }
 .fieldStatus { grid-column: span 3; }
 .fieldSquad { grid-column: span 3; }
-.fieldGestor { grid-column: span 4; }
-.fieldGdv { grid-column: span 5; }
+.fieldGestor { grid-column: span 6; }
+.fieldGdv { grid-column: span 6; }
 .fieldHalf { grid-column: span 6; }
 .fieldQuarter { grid-column: span 3; }
 .fieldCompact { max-width: none; }
@@ -37,8 +36,8 @@
 }
 
 .avatarPreview {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
   background: #070708;
@@ -62,7 +61,7 @@
 .avatarInfo {
   min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 4px;
 }
 
 .avatarInfo span {
@@ -77,7 +76,7 @@
 
 .avatarInfo strong {
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.14;
   font-weight: 600;
   letter-spacing: -0.016em;
@@ -98,24 +97,31 @@
 
 .avatarActions {
   display: inline-flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 7px;
 }
 
 .avatarActions button {
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
-  padding: 0;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 11px;
   border: 1px solid var(--line-subtle);
-  border-radius: 9px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.016);
   color: var(--text-secondary);
   font: inherit;
+  font-size: 12px;
+  font-weight: 560;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   cursor: pointer;
+}
+
+.avatarActions button span {
+  white-space: nowrap;
 }
 
 .avatarActions button:hover:not(:disabled) {
@@ -130,6 +136,9 @@
 }
 
 .avatarActions .dangerButton {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
   border-color: rgba(255, 91, 115, 0.22);
   background: transparent;
   color: #ff9cad;
@@ -141,7 +150,7 @@
 }
 
 @media (max-width: 1120px) {
-  .identityCard,
+  .identityCard { grid-column: 1 / -1; }
   .fieldStatus,
   .fieldSquad { grid-column: span 4; }
   .fieldName { grid-column: span 8; }
@@ -162,6 +171,16 @@
 
 @media (max-width: 560px) {
   .identityCard {
-    grid-template-columns: 38px minmax(0, 1fr) auto;
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .avatarPreview {
+    width: 40px;
+    height: 40px;
+  }
+
+  .avatarActions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 }
