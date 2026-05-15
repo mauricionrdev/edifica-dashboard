@@ -7708,3 +7708,81 @@
     padding-right: 16px !important;
   }
 }
+
+/* v124 — ajuste de tons dos cards Perfil para preto neutro estilo Linear/Edifica
+   Escopo: somente superfícies dos cards principais. Sem alterar conteúdo, badges, drawer ou lógica. */
+.hero,
+.operationBoard {
+  background: #0d0d0f !important;
+  border-color: rgba(255, 255, 255, 0.085) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.028),
+    0 0 0 1px rgba(0, 0, 0, 0.36) !important;
+}
+
+.hero::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0) 38%) !important;
+  opacity: 1 !important;
+}
+
+.heroTop,
+.operationHeader,
+.operationBody,
+.operationList,
+.operationListHeader,
+.operationRow {
+  background-color: transparent !important;
+}
+
+.profileStatRail {
+  background: #0b0b0d !important;
+  border-top-color: rgba(255, 255, 255, 0.065) !important;
+}
+
+.profileStat {
+  background: transparent !important;
+  border-right-color: rgba(255, 255, 255, 0.050) !important;
+}
+
+.operationHeader {
+  border-bottom-color: rgba(255, 255, 255, 0.065) !important;
+}
+
+.operationListHeader {
+  border-bottom-color: rgba(255, 255, 255, 0.052) !important;
+}
+
+.operationRow {
+  border-bottom-color: rgba(255, 255, 255, 0.045) !important;
+}
+
+.operationRow:hover,
+.operationRow:focus-within {
+  background: rgba(255, 255, 255, 0.012) !important;
+}
+
+.heroTop .iconButton,
+.roleBadge,
+.operationTab,
+.operationTabCount {
+  background-color: rgba(255, 255, 255, 0.018) !important;
+  border-color: rgba(255, 255, 255, 0.080) !important;
+  box-shadow: none !important;
+}
+
+.operationTabActive {
+  background-color: rgba(255, 255, 255, 0.024) !important;
+  border-color: rgba(216, 180, 72, 0.34) !important;
+}
+
+@media (max-width: 1180px) {
+  .profileStat:nth-child(n + 4) {
+    border-top-color: rgba(255, 255, 255, 0.050) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .profileStat:nth-child(n + 2) {
+    border-top-color: rgba(255, 255, 255, 0.050) !important;
+  }
+}
