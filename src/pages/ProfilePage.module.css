@@ -8435,3 +8435,276 @@
 .primaryAction:focus-visible {
   border-color: var(--edf-border-strong) !important;
 }
+
+/* V129 — QA final visual: modais e drawer alinhados ao Perfil validado
+   Escopo: apenas acabamento visual de Modal Nova demanda, Configurações e Drawer. */
+.settingsOverlay,
+.drawerOverlay {
+  background: rgba(0, 0, 0, 0.68) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+}
+
+.settingsModal,
+.demandModal,
+.handoffModal,
+.confirmModal,
+.completionModal {
+  background: #090a0c !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  border-radius: 18px !important;
+  box-shadow: none !important;
+}
+
+.drawerPanel {
+  background: #08090a !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: none !important;
+}
+
+.settingsHeader,
+.drawerTopbar {
+  background: rgba(255, 255, 255, 0.006) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.065) !important;
+}
+
+.settingsHeader {
+  padding: 20px 24px 16px !important;
+}
+
+.drawerTopbar {
+  padding: 14px 22px !important;
+}
+
+.settingsContent,
+.demandModal .settingsContent {
+  background: transparent !important;
+  padding: 20px 24px !important;
+  gap: 16px !important;
+}
+
+.drawerScroll {
+  background: transparent !important;
+}
+
+.settingsFooter,
+.demandModal > .settingsFooter,
+.settingsModal > .settingsFooter {
+  background: rgba(255, 255, 255, 0.006) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.065) !important;
+  padding: 14px 24px !important;
+}
+
+.settingsTabs {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  padding: 0 24px !important;
+}
+
+.settingsTab {
+  color: #8A93A3 !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.settingsTab:hover:not(.settingsTabActive) {
+  color: #C4CAD5 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.settingsTabActive,
+.settingsTabActive:hover {
+  color: #F4F5F6 !important;
+  border-bottom-color: rgba(244, 245, 246, 0.78) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.drawerHero {
+  background: rgba(255, 255, 255, 0.004) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 20px 24px 18px !important;
+}
+
+.drawerSection {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055) !important;
+  padding: 19px 24px !important;
+  gap: 15px !important;
+}
+
+.drawerSection:last-child {
+  border-bottom: 0 !important;
+}
+
+.contextGrid {
+  border-top: 1px solid rgba(255, 255, 255, 0.055) !important;
+  gap: 13px 18px !important;
+  padding-top: 16px !important;
+}
+
+.workflowGrid,
+.demandFormGrid,
+.briefingGrid,
+.routineFormGrid,
+.structuredEditGrid,
+.routineDetailsGrid,
+.briefingDetailsGrid {
+  gap: 12px !important;
+}
+
+.page input,
+.page textarea,
+.formSelect,
+.workflowSelect,
+.profileSelectButton,
+.dateField > button,
+.workflowDate > button,
+.demandModal input,
+.demandModal textarea,
+.demandModal .profileSelectButton,
+.demandModal .dateField button,
+.demandModal .dateField input,
+.titleEditor {
+  background: rgba(255, 255, 255, 0.018) !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: none !important;
+}
+
+.page input:hover,
+.page textarea:hover,
+.formSelect:hover,
+.workflowSelect:hover,
+.profileSelectButton:hover,
+.dateField > button:hover,
+.workflowDate > button:hover,
+.demandModal input:hover,
+.demandModal textarea:hover,
+.demandModal .profileSelectButton:hover,
+.demandModal .dateField button:hover,
+.demandModal .dateField input:hover {
+  background: rgba(255, 255, 255, 0.026) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow: none !important;
+}
+
+.page input:focus,
+.page input:focus-visible,
+.page textarea:focus,
+.page textarea:focus-visible,
+.formSelect:focus,
+.formSelect:focus-visible,
+.workflowSelect:focus,
+.workflowSelect:focus-visible,
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+.dateField > button:focus,
+.dateField > button:focus-visible,
+.workflowDate > button:focus,
+.workflowDate > button:focus-visible,
+.titleEditor:focus,
+.titleEditor:focus-visible {
+  outline: none !important;
+  background: rgba(255, 255, 255, 0.026) !important;
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  box-shadow: none !important;
+}
+
+.profileSelectMenu,
+.page select option {
+  background: #0b0c0e !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: none !important;
+}
+
+.profileSelectOption {
+  color: #C6CCD6 !important;
+  background: transparent !important;
+}
+
+.profileSelectOption:hover,
+.profileSelectOptionActive {
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: #F4F5F6 !important;
+}
+
+.settingsFooter button,
+.drawerHeroActions button,
+.photoActions button,
+.attachmentComposer > button,
+.collaboratorComposer button,
+.inlineComposer button,
+.commentForm button,
+.drawerTopbarButton,
+.drawerTopbarPrimary {
+  background: rgba(255, 255, 255, 0.018) !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  color: #D0D6E0 !important;
+  box-shadow: none !important;
+}
+
+.settingsFooter button:hover:not(:disabled),
+.drawerHeroActions button:hover:not(:disabled),
+.photoActions button:hover:not(:disabled),
+.attachmentComposer > button:hover:not(:disabled),
+.collaboratorComposer button:hover:not(:disabled),
+.inlineComposer button:hover:not(:disabled),
+.commentForm button:hover:not(:disabled),
+.drawerTopbarButton:hover:not(:disabled),
+.drawerTopbarPrimary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.105) !important;
+  color: #F4F5F6 !important;
+  box-shadow: none !important;
+}
+
+.drawerTopbarDanger {
+  background: rgba(239, 68, 68, 0.055) !important;
+  border-color: rgba(239, 68, 68, 0.18) !important;
+  color: #FF8A8A !important;
+  box-shadow: none !important;
+}
+
+.drawerTopbarDanger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.09) !important;
+  border-color: rgba(239, 68, 68, 0.26) !important;
+  color: #FFA3A3 !important;
+}
+
+.descriptionBox {
+  background: rgba(255, 255, 255, 0.014) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  color: #C7CED8 !important;
+  line-height: 1.78 !important;
+  box-shadow: none !important;
+}
+
+.descriptionBox:hover,
+.descriptionBox:focus,
+.descriptionBox:focus-visible {
+  background: rgba(255, 255, 255, 0.014) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.attachmentCard,
+.attachmentViewer,
+.attachmentsEmpty,
+.subtaskItem,
+.commentItem,
+.briefingMissing,
+.photoRow {
+  background: rgba(255, 255, 255, 0.014) !important;
+  border-color: rgba(255, 255, 255, 0.065) !important;
+  box-shadow: none !important;
+}
+
+.attachmentViewerOverlay {
+  background: rgba(0, 0, 0, 0.72) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+}
