@@ -9286,3 +9286,364 @@ input[type="date"]:focus {
 .descriptionFileIcon {
   display: none !important;
 }
+
+/* -------------------------------------------------------------------------
+   V115 — Reversão real do formato de badges/tags + ajuste da descrição
+   Mantém somente as cores sem alterar tipografia, peso, hover ou estrutura.
+   ------------------------------------------------------------------------- */
+.operationMeta {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 6px !important;
+  flex-wrap: nowrap !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.operationMeta > span,
+.kindPill,
+.priorityPill,
+.statusPill,
+.relationPill,
+.selectedCollaborators > span,
+.collaboratorChips > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: 160px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 2px 8px !important;
+  border-radius: 999px !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+  font-size: 10.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.45 !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.operationMeta > span::before,
+.operationMeta > span::after,
+.kindPill::before,
+.kindPill::after,
+.priorityPill::before,
+.priorityPill::after,
+.statusPill::before,
+.statusPill::after,
+.relationPill::before,
+.relationPill::after,
+.selectedCollaborators > span::before,
+.selectedCollaborators > span::after,
+.collaboratorChips > span::before,
+.collaboratorChips > span::after {
+  display: none !important;
+  content: none !important;
+}
+
+.operationMeta > span:hover,
+.kindPill:hover,
+.priorityPill:hover,
+.statusPill:hover,
+.relationPill:hover,
+.selectedCollaborators > span:hover,
+.collaboratorChips > span:hover {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+.kind_briefing,
+.operationMeta .kind_briefing,
+.operationMeta > span.kind_briefing,
+.kind_briefing:hover,
+.operationMeta .kind_briefing:hover,
+.operationMeta > span.kind_briefing:hover {
+  color: #d99a35 !important;
+  border-color: rgba(217, 154, 53, 0.28) !important;
+  background: transparent !important;
+}
+
+.kind_support,
+.operationMeta .kind_support,
+.operationMeta > span.kind_support,
+.kind_support:hover,
+.operationMeta .kind_support:hover,
+.operationMeta > span.kind_support:hover {
+  color: #56b6c2 !important;
+  border-color: rgba(86, 182, 194, 0.30) !important;
+  background: transparent !important;
+}
+
+.relation_watching,
+.operationMeta .relation_watching,
+.operationMeta > span.relation_watching,
+.relation_watching:hover,
+.operationMeta .relation_watching:hover,
+.operationMeta > span.relation_watching:hover {
+  color: #8ea7ff !important;
+  border-color: rgba(142, 167, 255, 0.30) !important;
+  background: transparent !important;
+}
+
+.status_todo,
+.status_open,
+.status_aberto,
+.status_in_progress,
+.status_active,
+.status_today,
+.status_activation_gdv,
+.status_access_delivery,
+.status_traffic_activation,
+.status_final_validation,
+.priority_high,
+.operationMeta .status_todo,
+.operationMeta .status_open,
+.operationMeta .status_aberto,
+.operationMeta .status_in_progress,
+.operationMeta .status_active,
+.operationMeta .status_today,
+.operationMeta .status_activation_gdv,
+.operationMeta .status_access_delivery,
+.operationMeta .status_traffic_activation,
+.operationMeta .status_final_validation,
+.operationMeta .priority_high,
+.status_todo:hover,
+.status_open:hover,
+.status_aberto:hover,
+.status_in_progress:hover,
+.status_active:hover,
+.status_today:hover,
+.status_activation_gdv:hover,
+.status_access_delivery:hover,
+.status_traffic_activation:hover,
+.status_final_validation:hover,
+.priority_high:hover {
+  color: #d8b84e !important;
+  border-color: rgba(216, 184, 78, 0.30) !important;
+  background: transparent !important;
+}
+
+.status_done,
+.status_concluida,
+.operationMeta .status_done,
+.operationMeta .status_concluida,
+.operationMeta > span.status_done,
+.operationMeta > span.status_concluida,
+.status_done:hover,
+.status_concluida:hover,
+.operationMeta .status_done:hover,
+.operationMeta .status_concluida:hover {
+  color: #3fb950 !important;
+  border-color: rgba(63, 185, 80, 0.30) !important;
+  background: transparent !important;
+}
+
+.priority_critical,
+.status_overdue,
+.status_canceled,
+.status_cancelled,
+.operationMeta .priority_critical,
+.operationMeta .status_overdue,
+.operationMeta .status_canceled,
+.operationMeta .status_cancelled,
+.priority_critical:hover,
+.status_overdue:hover,
+.status_canceled:hover,
+.status_cancelled:hover {
+  color: #ef6b73 !important;
+  border-color: rgba(239, 107, 115, 0.32) !important;
+  background: transparent !important;
+}
+
+.priority_normal,
+.priority_medium,
+.priority_low,
+.relation_responsible,
+.kind_demand,
+.kind_project,
+.kind_other,
+.kind_routine,
+.selectedCollaborators > span,
+.collaboratorChips > span,
+.operationMeta .priority_normal,
+.operationMeta .priority_medium,
+.operationMeta .priority_low,
+.operationMeta .relation_responsible,
+.operationMeta .kind_demand,
+.operationMeta .kind_project,
+.operationMeta .kind_other,
+.operationMeta .kind_routine,
+.priority_normal:hover,
+.priority_medium:hover,
+.priority_low:hover,
+.relation_responsible:hover,
+.kind_demand:hover,
+.kind_project:hover,
+.kind_other:hover,
+.kind_routine:hover,
+.selectedCollaborators > span:hover,
+.collaboratorChips > span:hover {
+  color: var(--edf-text-secondary) !important;
+  border-color: var(--edf-border-strong) !important;
+  background: var(--edf-surface-2) !important;
+}
+
+.operationTab,
+.operationTab:hover {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+.operationTabActive,
+.operationTabActive:hover {
+  color: #d8b84e !important;
+  border-color: rgba(216, 184, 78, 0.34) !important;
+}
+
+.workflowTimeline {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.workflowStep,
+.workflowStep_current,
+.workflowStep_active,
+.workflowStep_done,
+.workflowStep_pending,
+.workflowStep_locked,
+.workflowStep:hover,
+.workflowStep_current:hover,
+.workflowStep_active:hover,
+.workflowStep_done:hover,
+.workflowStep_pending:hover,
+.workflowStep_locked:hover {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  height: auto !important;
+  min-height: 28px !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  color: #d8b84e !important;
+  border-color: rgba(216, 184, 78, 0.30) !important;
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+.workflowStep i,
+.workflowStep_current i,
+.workflowStep_active i,
+.workflowStep_done i,
+.workflowStep_pending i,
+.workflowStep_locked i {
+  width: 18px !important;
+  height: 18px !important;
+  background: rgba(216, 184, 78, 0.10) !important;
+  color: #d8b84e !important;
+}
+
+.workflowKey_done,
+.workflowStep_current.workflowKey_done,
+.workflowStep_active.workflowKey_done,
+.workflowStep_done.workflowKey_done,
+.workflowStep_pending.workflowKey_done,
+.workflowStep_locked.workflowKey_done,
+.workflowKey_done:hover,
+.workflowStep_current.workflowKey_done:hover,
+.workflowStep_active.workflowKey_done:hover,
+.workflowStep_done.workflowKey_done:hover,
+.workflowStep_pending.workflowKey_done:hover,
+.workflowStep_locked.workflowKey_done:hover {
+  color: #3fb950 !important;
+  border-color: rgba(63, 185, 80, 0.30) !important;
+  background: transparent !important;
+}
+
+.workflowKey_done i,
+.workflowStep_current.workflowKey_done i,
+.workflowStep_active.workflowKey_done i,
+.workflowStep_done.workflowKey_done i,
+.workflowStep_pending.workflowKey_done i,
+.workflowStep_locked.workflowKey_done i {
+  background: rgba(63, 185, 80, 0.10) !important;
+  color: #3fb950 !important;
+}
+
+.descriptionSection {
+  padding-top: 24px !important;
+  padding-bottom: 24px !important;
+}
+
+.descriptionSection .sectionTitleRow {
+  margin-bottom: 16px !important;
+}
+
+.descriptionBox,
+.descriptionBox:hover,
+.descriptionBox:focus,
+.descriptionBox:focus-visible {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  min-height: 118px !important;
+  padding: 18px 20px !important;
+  border: 1px solid var(--edf-border-strong) !important;
+  border-radius: 12px !important;
+  background: var(--edf-surface-1) !important;
+  color: var(--edf-text-secondary) !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.72 !important;
+  letter-spacing: 0 !important;
+  white-space: pre-wrap !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: default !important;
+}
+
+.descriptionCard,
+.descriptionCardTopbar,
+.descriptionBody,
+.descriptionEditor,
+.descriptionEditState,
+.copyDescriptionButton,
+.descriptionFileMeta,
+.descriptionFileIcon {
+  display: none !important;
+}
