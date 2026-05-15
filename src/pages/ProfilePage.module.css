@@ -7445,3 +7445,266 @@
     border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
   }
 }
+
+/* v123 — refinamento Linear/Edifica dos cards principais do Perfil */
+.hero {
+  margin: 0 4px 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  background: #0f1015 !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+}
+
+.hero::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0) 34%) !important;
+  opacity: 1 !important;
+}
+
+.heroTop {
+  position: relative !important;
+  z-index: 1 !important;
+  min-height: 116px !important;
+  padding: 24px 26px 22px !important;
+  background: transparent !important;
+}
+
+.identityRow {
+  gap: 15px !important;
+}
+
+.hero .avatar {
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.identityTitle h1 {
+  font-size: 20px !important;
+  line-height: 1.12 !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.035em !important;
+  color: var(--edf-text-primary) !important;
+}
+
+.roleBadge {
+  height: 22px !important;
+  padding: 2px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.028) !important;
+  border: 1px solid rgba(255, 255, 255, 0.082) !important;
+  color: var(--edf-text-muted) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.identityGreeting {
+  color: var(--edf-text-muted) !important;
+}
+
+.heroTop .iconButton {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.022) !important;
+  border-color: rgba(255, 255, 255, 0.082) !important;
+  color: var(--edf-text-muted) !important;
+}
+
+.profileStatRail {
+  position: relative !important;
+  z-index: 1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: rgba(255, 255, 255, 0.008) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.060) !important;
+}
+
+.profileStat {
+  min-height: 84px !important;
+  padding: 16px 22px 15px !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.046) !important;
+  background: transparent !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.profileStat:last-child {
+  border-right: 0 !important;
+}
+
+.profileStat span {
+  color: var(--edf-text-faint) !important;
+  font-size: 10.5px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.055em !important;
+  line-height: 1.2 !important;
+  text-transform: uppercase !important;
+}
+
+.profileStat strong {
+  margin-top: 2px !important;
+  font-size: 21px !important;
+  line-height: 1 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.035em !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.profileStat em,
+.profileStat svg {
+  display: none !important;
+}
+
+.operationBoard {
+  margin-top: 22px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  background: #0f1015 !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+.operationHeader {
+  padding: 20px 22px 18px !important;
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.060) !important;
+}
+
+.operationHeaderTop {
+  margin: 0 !important;
+  padding: 0 !important;
+  align-items: center !important;
+}
+
+.operationHeading {
+  color: var(--edf-text-primary) !important;
+}
+
+.operationControlPanel {
+  margin-top: 16px !important;
+}
+
+.operationTabs {
+  gap: 10px !important;
+}
+
+.operationTab {
+  height: 32px !important;
+  padding: 0 13px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.012) !important;
+  border: 1px solid rgba(255, 255, 255, 0.082) !important;
+  color: var(--edf-text-muted) !important;
+  box-shadow: none !important;
+}
+
+.operationTabActive {
+  background: rgba(255, 255, 255, 0.032) !important;
+  border-color: rgba(216, 180, 72, 0.36) !important;
+  color: var(--edf-text-primary) !important;
+}
+
+.operationTabCount {
+  background: rgba(255, 255, 255, 0.055) !important;
+  border: 1px solid rgba(255, 255, 255, 0.055) !important;
+  color: var(--edf-text-muted) !important;
+}
+
+.operationTabActive .operationTabCount {
+  background: rgba(216, 180, 72, 0.10) !important;
+  border-color: rgba(216, 180, 72, 0.14) !important;
+  color: var(--edf-warning-soft) !important;
+}
+
+.operationBody {
+  background: rgba(255, 255, 255, 0.004) !important;
+}
+
+.operationList {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.operationListHeader {
+  min-height: 46px !important;
+  padding: 0 24px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052) !important;
+  background: rgba(255, 255, 255, 0.004) !important;
+}
+
+.operationRow {
+  min-height: 82px !important;
+  padding: 0 24px !important;
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045) !important;
+}
+
+.operationRow:last-child {
+  border-bottom: 0 !important;
+}
+
+.operationRow:hover,
+.operationRow:focus-within {
+  background: rgba(255, 255, 255, 0.014) !important;
+}
+
+.operationMain strong {
+  color: var(--edf-text-primary) !important;
+}
+
+.operationMain span,
+.operationClientCell span {
+  color: var(--edf-text-muted) !important;
+}
+
+@media (max-width: 1180px) {
+  .profileStatRail {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .profileStat:nth-child(3n) {
+    border-right: 0 !important;
+  }
+
+  .profileStat:nth-child(n + 4) {
+    border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .heroTop,
+  .operationHeader {
+    padding: 18px 16px !important;
+  }
+
+  .profileStatRail {
+    grid-template-columns: 1fr !important;
+  }
+
+  .profileStat,
+  .profileStat:nth-child(3n),
+  .profileStat:nth-child(2n) {
+    border-right: 0 !important;
+  }
+
+  .profileStat:nth-child(n + 2) {
+    border-top: 1px solid rgba(255, 255, 255, 0.045) !important;
+  }
+
+  .operationListHeader,
+  .operationRow {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
