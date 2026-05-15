@@ -1407,6 +1407,7 @@ export default function ProfilePage() {
   const [taskAttachments, setTaskAttachments] = useState([]);
   const [taskAttachmentsLoading, setTaskAttachmentsLoading] = useState(false);
   const [taskAttachmentDeletingId, setTaskAttachmentDeletingId] = useState('');
+  const [taskAttachmentPreview, setTaskAttachmentPreview] = useState(null);
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
@@ -1457,6 +1458,7 @@ export default function ProfilePage() {
     setTaskEvents([]);
     setDrawerSubtasks([]);
     setTaskAttachments([]);
+    setTaskAttachmentPreview(null);
     setCollaborators([]);
     setCollaboratorUserId('');
     setCommentDeleteTarget(null);
@@ -1785,6 +1787,7 @@ export default function ProfilePage() {
           setTaskAttachments(Array.isArray(attachmentsRes.value?.attachments) ? attachmentsRes.value.attachments : []);
         } else {
           setTaskAttachments([]);
+    setTaskAttachmentPreview(null);
         }
       })
       .finally(() => {
@@ -3229,9 +3232,15 @@ export default function ProfilePage() {
                     <div className={styles.attachmentGrid}>
                       {taskAttachments.map((item) => (
                         <figure key={item.id} className={styles.attachmentCard}>
-                          <a href={item.dataUrl} target="_blank" rel="noreferrer" title={item.fileName || 'Abrir imagem'}>
+                          <button
+                            type="button"
+                            className={styles.attachmentPreviewButton}
+                            onClick={() => setTaskAttachmentPreview(item)}
+                            title={item.fileName || 'Visualizar imagem'}
+                            aria-label={`Visualizar ${item.fileName || 'imagem anexada'}`}
+                          >
                             <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" />
-                          </a>
+                          </button>
                           <figcaption>
                             <span>{item.fileName || 'Imagem'}</span>
                             {canEditActiveTask ? (
@@ -3402,6 +3411,27 @@ export default function ProfilePage() {
                 </div>
               </section>
             </div>
+            {taskAttachmentPreview ? (
+              <div
+                className={styles.attachmentViewerOverlay}
+                role="dialog"
+                aria-modal="true"
+                aria-label={taskAttachmentPreview.fileName || 'Imagem anexada'}
+                onClick={() => setTaskAttachmentPreview(null)}
+              >
+                <div className={styles.attachmentViewer} onClick={(event) => event.stopPropagation()}>
+                  <header>
+                    <strong>{taskAttachmentPreview.fileName || 'Imagem anexada'}</strong>
+                    <button type="button" onClick={() => setTaskAttachmentPreview(null)} aria-label="Fechar visualização">
+                      <CloseIcon size={16} />
+                    </button>
+                  </header>
+                  <div className={styles.attachmentViewerImage}>
+                    <img src={taskAttachmentPreview.dataUrl} alt={taskAttachmentPreview.fileName || 'Imagem anexada'} />
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </section>
         </aside>
       ) : null}
