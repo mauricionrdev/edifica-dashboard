@@ -2046,16 +2046,14 @@ export default function ProfilePage() {
       return;
     }
 
-    const description = buildContentDescription(activeTask, contentForm);
-
     try {
       setContentSaving(true);
-      const res = await updateProjectTask(activeTask.id, { title: nextTitle, description });
-      const nextTask = res?.task || { ...activeTask, title: nextTitle, description };
+      const res = await updateProjectTask(activeTask.id, { title: nextTitle });
+      const nextTask = res?.task || { ...activeTask, title: nextTitle };
       setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...nextTask } : item)));
       await refreshActiveTaskPanels(activeTask.id, { events: true });
       setContentEditing(false);
-      showToast('Conteúdo atualizado.', { variant: 'success' });
+      showToast('Título atualizado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao salvar conteúdo.', { variant: 'error' });
     } finally {
@@ -2770,8 +2768,8 @@ export default function ProfilePage() {
                 <div className={styles.operationListHeader} aria-hidden="true">
                   <span />
                   <span>Tarefa</span>
-                  <span>Cliente</span>
-                  <span>Propriedades</span>
+                  <span>Etapa</span>
+                  <span />
                   <span>Prazo</span>
                 </div>
                 {visibleTasks.map((task) => {
@@ -2806,11 +2804,11 @@ export default function ProfilePage() {
 
                       <div className={styles.operationMain}>
                         <strong>{displayTaskTitle(task)}</strong>
-                        <span>{relationLabel(task)}</span>
+                        <span>{task.clientName || task.projectName || 'Sem cliente'}</span>
                       </div>
 
                       <div className={styles.operationClientCell}>
-                        <span>{task.clientName || task.projectName || task.createdByName || '—'}</span>
+                        <span>{statusLabel(task)}</span>
                       </div>
 
                       <div className={styles.operationMeta}>
@@ -3026,7 +3024,7 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   ) : null}
-                  {contentEditing ? (
+                  {false ? (
                     <div className={styles.structuredEditGrid}>
                       {BRIEFING_FIELDS.map((field) => (
                         <label key={field.key} className={field.key === 'notes' ? styles.fieldFull : ''}>
@@ -3060,7 +3058,7 @@ export default function ProfilePage() {
                     <h4>Rotina</h4>
                     <span>{activeRoutine.values.recurrence || 'Recorrente'}</span>
                   </div>
-                  {contentEditing ? (
+                  {false ? (
                     <div className={styles.structuredEditGrid}>
                       <label>
                         <span>Recorrência</span>

@@ -7780,3 +7780,437 @@
     justify-content: flex-start !important;
   }
 }
+
+/* -------------------------------------------------------------------------
+   V111 — badges com cores próprias, tabs em pílula, selects premium e descrição simples
+   ------------------------------------------------------------------------- */
+.operationListHeader {
+  grid-template-columns: 20px minmax(260px, 1fr) minmax(150px, .28fr) minmax(430px, .78fr) minmax(78px, .12fr) !important;
+}
+
+.operationRow {
+  grid-template-columns: 20px minmax(260px, 1fr) minmax(150px, .28fr) minmax(430px, .78fr) minmax(78px, .12fr) !important;
+}
+
+.operationListHeader span:nth-child(4) {
+  color: transparent !important;
+}
+
+.operationMain span {
+  color: rgba(148, 163, 184, .92) !important;
+  font-size: 12px !important;
+  font-weight: 560 !important;
+}
+
+.operationClientCell span {
+  color: rgba(203, 213, 225, .88) !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+}
+
+.operationMeta {
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  overflow: visible !important;
+}
+
+.operationMeta > span,
+.kindPill,
+.priorityPill,
+.statusPill,
+.relationPill,
+.operationTab,
+.workflowStep,
+.selectedCollaborators > span,
+.collaboratorChips > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  height: 30px !important;
+  min-width: 0 !important;
+  max-width: 220px !important;
+  padding: 0 15px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(146, 155, 176, .16) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  font-size: 12px !important;
+  font-weight: 560 !important;
+  line-height: 1 !important;
+  letter-spacing: .005em !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  overflow: hidden !important;
+  transition: none !important;
+}
+
+.operationMeta > span:hover,
+.kindPill:hover,
+.priorityPill:hover,
+.statusPill:hover,
+.relationPill:hover,
+.workflowStep:hover,
+.selectedCollaborators > span:hover,
+.collaboratorChips > span:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.kind_briefing,
+.operationMeta .kind_briefing {
+  color: #F4C430 !important;
+  border-color: rgba(244, 196, 48, .24) !important;
+  background: transparent !important;
+}
+
+.kind_briefing:hover,
+.operationMeta .kind_briefing:hover {
+  color: #F4C430 !important;
+  border-color: rgba(244, 196, 48, .24) !important;
+  background: transparent !important;
+}
+
+.kind_support,
+.operationMeta .kind_support,
+.relation_watching,
+.operationMeta .relation_watching {
+  color: #6AAEFF !important;
+  border-color: rgba(106, 174, 255, .26) !important;
+  background: transparent !important;
+}
+
+.kind_support:hover,
+.operationMeta .kind_support:hover,
+.relation_watching:hover,
+.operationMeta .relation_watching:hover {
+  color: #6AAEFF !important;
+  border-color: rgba(106, 174, 255, .26) !important;
+  background: transparent !important;
+}
+
+.kind_routine,
+.operationMeta .kind_routine {
+  color: #C4B5FD !important;
+  border-color: rgba(196, 181, 253, .24) !important;
+  background: transparent !important;
+}
+
+.kind_routine:hover,
+.operationMeta .kind_routine:hover {
+  color: #C4B5FD !important;
+  border-color: rgba(196, 181, 253, .24) !important;
+  background: transparent !important;
+}
+
+.kind_demand,
+.kind_project,
+.kind_other,
+.priority_normal,
+.priority_medium,
+.priority_low,
+.relation_responsible,
+.selectedCollaborators > span,
+.collaboratorChips > span {
+  color: #9AA6BA !important;
+  border-color: rgba(146, 155, 176, .18) !important;
+  background: transparent !important;
+}
+
+.kind_demand:hover,
+.kind_project:hover,
+.kind_other:hover,
+.priority_normal:hover,
+.priority_medium:hover,
+.priority_low:hover,
+.relation_responsible:hover,
+.selectedCollaborators > span:hover,
+.collaboratorChips > span:hover {
+  color: #9AA6BA !important;
+  border-color: rgba(146, 155, 176, .18) !important;
+  background: transparent !important;
+}
+
+.priority_high,
+.status_todo,
+.status_open,
+.status_aberto,
+.status_in_progress,
+.status_active,
+.status_today,
+.status_activation_gdv,
+.status_access_delivery,
+.status_traffic_activation,
+.status_final_validation {
+  color: #E0BE62 !important;
+  border-color: rgba(224, 190, 98, .24) !important;
+  background: transparent !important;
+}
+
+.priority_high:hover,
+.status_todo:hover,
+.status_open:hover,
+.status_aberto:hover,
+.status_in_progress:hover,
+.status_active:hover,
+.status_today:hover,
+.status_activation_gdv:hover,
+.status_access_delivery:hover,
+.status_traffic_activation:hover,
+.status_final_validation:hover {
+  color: #E0BE62 !important;
+  border-color: rgba(224, 190, 98, .24) !important;
+  background: transparent !important;
+}
+
+.status_done,
+.status_concluida,
+.operationMeta .status_done,
+.operationMeta .status_concluida {
+  color: #4BD864 !important;
+  border-color: rgba(75, 216, 100, .24) !important;
+  background: transparent !important;
+}
+
+.status_done:hover,
+.status_concluida:hover,
+.operationMeta .status_done:hover,
+.operationMeta .status_concluida:hover {
+  color: #4BD864 !important;
+  border-color: rgba(75, 216, 100, .24) !important;
+  background: transparent !important;
+}
+
+.priority_critical,
+.status_overdue,
+.status_canceled,
+.status_cancelled {
+  color: #FF9B9B !important;
+  border-color: rgba(255, 155, 155, .26) !important;
+  background: transparent !important;
+}
+
+.priority_critical:hover,
+.status_overdue:hover,
+.status_canceled:hover,
+.status_cancelled:hover {
+  color: #FF9B9B !important;
+  border-color: rgba(255, 155, 155, .26) !important;
+  background: transparent !important;
+}
+
+.operationTabs {
+  gap: 10px !important;
+}
+
+.operationTab {
+  height: 32px !important;
+  padding: 0 13px !important;
+  color: #9AA6BA !important;
+  border-color: rgba(146, 155, 176, .16) !important;
+  background: transparent !important;
+}
+
+.operationTab:hover {
+  color: #9AA6BA !important;
+  border-color: rgba(146, 155, 176, .16) !important;
+  background: transparent !important;
+}
+
+.operationTabActive {
+  color: #F4C430 !important;
+  border-color: rgba(244, 196, 48, .24) !important;
+  background: transparent !important;
+}
+
+.operationTabActive:hover {
+  color: #F4C430 !important;
+  border-color: rgba(244, 196, 48, .24) !important;
+  background: transparent !important;
+}
+
+.operationTabCount {
+  margin-left: 8px !important;
+  color: inherit !important;
+  opacity: .82 !important;
+}
+
+.workflowTimeline {
+  gap: 10px !important;
+}
+
+.workflowStep,
+.workflowStep_current,
+.workflowStep_active,
+.workflowStep_done,
+.workflowStep_pending,
+.workflowStep_locked {
+  height: 32px !important;
+  color: #E0BE62 !important;
+  border-color: rgba(224, 190, 98, .24) !important;
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+.workflowStep:hover,
+.workflowStep_current:hover,
+.workflowStep_active:hover,
+.workflowStep_done:hover,
+.workflowStep_pending:hover,
+.workflowStep_locked:hover {
+  color: #E0BE62 !important;
+  border-color: rgba(224, 190, 98, .24) !important;
+  background: transparent !important;
+}
+
+.workflowStep i {
+  background: rgba(224, 190, 98, .10) !important;
+  color: #E0BE62 !important;
+}
+
+.workflowKey_done,
+.workflowStep_current.workflowKey_done,
+.workflowStep_active.workflowKey_done,
+.workflowStep_done.workflowKey_done,
+.workflowStep_pending.workflowKey_done,
+.workflowStep_locked.workflowKey_done {
+  color: #4BD864 !important;
+  border-color: rgba(75, 216, 100, .24) !important;
+  background: transparent !important;
+}
+
+.workflowKey_done:hover,
+.workflowStep_current.workflowKey_done:hover,
+.workflowStep_active.workflowKey_done:hover,
+.workflowStep_done.workflowKey_done:hover,
+.workflowStep_pending.workflowKey_done:hover,
+.workflowStep_locked.workflowKey_done:hover {
+  color: #4BD864 !important;
+  border-color: rgba(75, 216, 100, .24) !important;
+  background: transparent !important;
+}
+
+.workflowKey_done i,
+.workflowStep_current.workflowKey_done i,
+.workflowStep_active.workflowKey_done i,
+.workflowStep_done.workflowKey_done i,
+.workflowStep_pending.workflowKey_done i,
+.workflowStep_locked.workflowKey_done i {
+  background: rgba(75, 216, 100, .10) !important;
+  color: #4BD864 !important;
+}
+
+.descriptionSection {
+  background: transparent !important;
+}
+
+.descriptionBox {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 16px 18px !important;
+  border: 1px solid rgba(255, 255, 255, .07) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, .014) !important;
+  color: rgba(203, 213, 225, .90) !important;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 520 !important;
+  line-height: 1.62 !important;
+  letter-spacing: -.004em !important;
+  white-space: pre-wrap !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: default !important;
+}
+
+.descriptionBox:hover,
+.descriptionBox:focus,
+.descriptionBox:focus-visible {
+  border-color: rgba(255, 255, 255, .07) !important;
+  background: rgba(255, 255, 255, .014) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.descriptionEditor,
+.descriptionCard,
+.descriptionCardTopbar,
+.descriptionBody,
+.descriptionEditState,
+.copyDescriptionButton,
+.descriptionFileMeta,
+.descriptionFileIcon {
+  display: none !important;
+}
+
+.workflowSelect,
+.workflowDate,
+.formSelect,
+.demandSelect,
+.profileSelectButton,
+select[class*="Select"],
+input[type="date"] {
+  height: 42px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(146, 155, 176, .16) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .036), rgba(255, 255, 255, .018)) !important;
+  color: rgba(226, 232, 240, .92) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035), 0 10px 26px rgba(0, 0, 0, .12) !important;
+  transition: border-color .16s ease, background .16s ease, box-shadow .16s ease !important;
+}
+
+.workflowSelect:hover,
+.workflowDate:hover,
+.formSelect:hover,
+.demandSelect:hover,
+.profileSelectButton:hover,
+select[class*="Select"]:hover,
+input[type="date"]:hover {
+  border-color: rgba(146, 155, 176, .26) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .046), rgba(255, 255, 255, .022)) !important;
+}
+
+.workflowSelect:focus,
+.workflowDate:focus,
+.formSelect:focus,
+.demandSelect:focus,
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+select[class*="Select"]:focus,
+input[type="date"]:focus {
+  border-color: rgba(224, 190, 98, .34) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04), 0 0 0 3px rgba(224, 190, 98, .07), 0 14px 30px rgba(0, 0, 0, .18) !important;
+  outline: none !important;
+}
+
+.profileSelectMenu {
+  border-radius: 14px !important;
+  border: 1px solid rgba(146, 155, 176, .14) !important;
+  background: #101216 !important;
+  box-shadow: 0 18px 54px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .035) !important;
+  padding: 6px !important;
+}
+
+.profileSelectOption {
+  min-height: 38px !important;
+  border-radius: 10px !important;
+  color: rgba(203, 213, 225, .88) !important;
+  transition: background .14s ease, color .14s ease !important;
+}
+
+.profileSelectOption:hover,
+.profileSelectOptionActive {
+  background: rgba(224, 190, 98, .08) !important;
+  color: rgba(248, 250, 252, .96) !important;
+}
+
+@media (max-width: 1180px) {
+  .operationListHeader,
+  .operationRow {
+    grid-template-columns: 20px minmax(220px, 1fr) minmax(128px, .28fr) minmax(360px, .78fr) minmax(72px, .12fr) !important;
+  }
+}
