@@ -210,3 +210,70 @@
   --active-fill: rgba(255, 255, 255, 0.045);
   --active-line: rgba(255, 255, 255, 0.11);
 }
+
+/* v138 — Claude Dark visual test / Edifica typography preserved */
+:root {
+  --bg-app: #0b0a09;
+  --bg-canvas: #11100e;
+  --bg-elevated: #151412;
+  --bg-raised: #1a1815;
+  --bg-hover: #211f1c;
+  --bg-selected: #252320;
+  --bg-soft: #13120f;
+
+  --surface: #11100e;
+  --surface-subtle: #151412;
+  --surface-panel: rgba(250, 249, 245, 0.026);
+  --surface-raised: rgba(250, 249, 245, 0.042);
+  --surface-card: #151412;
+  --surface-card-soft: #11100e;
+  --surface-strong: #1f1e1b;
+
+  --text-primary: #faf9f5;
+  --text-secondary: #d8d3ca;
+  --text-tertiary: #a09d96;
+  --text-quaternary: #6f6b63;
+
+  --line-subtle: rgba(250, 249, 245, 0.045);
+  --line: rgba(250, 249, 245, 0.075);
+  --line-strong: rgba(250, 249, 245, 0.12);
+  --border-subtle: var(--line-subtle);
+  --border-default: var(--line);
+  --border-strong: var(--line-strong);
+
+  --field-bg: rgba(250, 249, 245, 0.028);
+  --field-bg-hover: rgba(250, 249, 245, 0.04);
+  --field-line: rgba(250, 249, 245, 0.08);
+
+  --chart-bar: rgba(250, 249, 245, 0.075);
+  --progress-track: rgba(250, 249, 245, 0.075);
+
+  --accent-amber: #e8a55a;
+  --accent-amber-strong: #f0b76d;
+  --accent-amber-soft: rgba(232, 165, 90, 0.09);
+  --accent-amber-line: rgba(232, 165, 90, 0.24);
+  --accent-amber-border: var(--accent-amber-line);
+
+  --accent-coral: #cc785c;
+  --accent-coral-soft: rgba(204, 120, 92, 0.11);
+  --accent-coral-line: rgba(204, 120, 92, 0.26);
+
+  --accent-cyan: #5db8a6;
+  --accent-cyan-soft: rgba(93, 184, 166, 0.09);
+  --info: #5db8a6;
+  --info-soft: rgba(93, 184, 166, 0.09);
+
+  --success: #5db872;
+  --success-soft: rgba(93, 184, 114, 0.1);
+  --warning: #e8a55a;
+  --warning-soft: rgba(232, 165, 90, 0.1);
+  --danger: #c64545;
+  --danger-soft: rgba(198, 69, 69, 0.1);
+
+  --app-shell-glow: #0b0a09;
+  --panel-gradient: none;
+  --panel-gradient-soft: none;
+  --shadow-soft: none;
+  --shadow-panel: none;
+  --focus-ring: none;
+}
