@@ -8020,7 +8020,7 @@
 .drawerTopbarButton:focus-visible,
 .drawerTopbarDanger:focus-visible {
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.34) !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18) !important;
 }
 
 .settingsTabs {
@@ -8137,9 +8137,9 @@
 .workflowDate > button:focus,
 .workflowDate > button:focus-visible {
   outline: none !important;
-  border-color: rgba(94, 106, 210, 0.46) !important;
+  border-color: rgba(212, 175, 55, 0.30) !important;
   background: #0d0d0f !important;
-  box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.18) !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.08) !important;
 }
 
 .profileSelectMenu,
@@ -8305,4 +8305,34 @@
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
+}
+
+
+/* V127 — campos sem foco azulado: amarelo discreto/neutral no padrão Edifica */
+.page :is(input, textarea, select, button, [role="button"]):focus,
+.page :is(input, textarea, select, button, [role="button"]):focus-visible {
+  outline: 0 !important;
+}
+
+.page :is(input, textarea, select):focus,
+.page :is(input, textarea, select):focus-visible,
+.profileSelectButton:focus,
+.profileSelectButton:focus-visible,
+.dateField > button:focus,
+.dateField > button:focus-visible,
+.workflowDate > button:focus,
+.workflowDate > button:focus-visible {
+  border-color: rgba(212, 175, 55, 0.26) !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.07) !important;
+}
+
+.settingsFooter button:focus-visible,
+.photoActions button:focus-visible,
+.drawerHeroActions button:focus-visible,
+.attachmentComposer > button:focus-visible,
+.settingsHeader .iconButton:focus-visible,
+.drawerTopbarButton:focus-visible,
+.drawerTopbarDanger:focus-visible {
+  border-color: rgba(212, 175, 55, 0.22) !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.07) !important;
 }
