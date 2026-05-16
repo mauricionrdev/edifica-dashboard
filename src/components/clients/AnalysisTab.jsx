@@ -22,7 +22,7 @@ const ANALYSIS_META = {
     loadingTitle: 'Carregando Análise ICP',
     loadingDescription: 'Buscando o histórico estratégico de aderência e perfil deste cliente.',
     emptyTitle: 'Nenhum registro de Análise ICP',
-    emptyDescription: '',
+    emptyDescription: 'Ainda não existe histórico desta etapa para este cliente.',
     placeholder: 'Registre aderência ao ICP, perfil, riscos, oportunidades e próximos ajustes…',
     deleteEyebrow: 'Remover registro',
     deleteTitle: 'Análise ICP',
@@ -35,7 +35,7 @@ const ANALYSIS_META = {
     loadingTitle: 'Carregando Análise GDV',
     loadingDescription: 'Buscando o histórico estratégico comercial deste cliente.',
     emptyTitle: 'Nenhum registro de Análise GDV',
-    emptyDescription: '',
+    emptyDescription: 'Ainda não existe histórico desta etapa para este cliente.',
     placeholder: 'Registre leitura comercial, momento do cliente, gargalos, tração e próximos movimentos…',
     deleteEyebrow: 'Remover registro',
     deleteTitle: 'Análise GDV',
@@ -48,7 +48,7 @@ const ANALYSIS_META = {
     loadingTitle: 'Carregando Resumo de Rotas',
     loadingDescription: 'Buscando o histórico consolidado de rotas e direcionamentos deste cliente.',
     emptyTitle: 'Nenhum registro de Resumo de Rotas',
-    emptyDescription: '',
+    emptyDescription: 'Ainda não existe histórico desta etapa para este cliente.',
     placeholder: 'Registre a síntese das rotas sugeridas, encaminhamentos, decisões e próximos passos…',
     deleteEyebrow: 'Remover registro',
     deleteTitle: 'Resumo de Rotas',
@@ -227,15 +227,15 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     }
   }
 
-  function requestRemoveAttachment(entryId, attachment) {
+  async function handleRemoveAttachment(entryId, attachment) {
     if (!entryId || !attachment?.id) return;
     setAttachmentDeleteTarget({ entryId, attachment });
   }
 
   async function confirmRemoveAttachment() {
     const target = attachmentDeleteTarget;
-    const entryId = target?.entryId;
     const attachment = target?.attachment;
+    const entryId = target?.entryId;
     if (!entryId || !attachment?.id) return;
 
     setAttachmentDeleteTarget(null);
@@ -244,7 +244,6 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       await deleteAnalysisAttachment(clientId, type, entryId, attachment.id);
       updateEntryAttachments(entryId, (current) => current.filter((item) => item.id !== attachment.id));
       if (previewAttachment?.id === attachment.id) setPreviewAttachment(null);
-      showToast('Anexo removido.', { variant: 'success' });
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Erro ao remover anexo.';
       showToast(message, { variant: 'error' });
@@ -358,50 +357,34 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           <span className={styles.eyebrow}>{meta.title}</span>
         </div>
 
-        <div className={styles.headerMeta}>
-          <div className={styles.heroMetric}>
-            <strong>{entries.length}</strong>
-            <span>registros</span>
-          </div>
-          <div className={styles.heroMetric}>
-            <strong>{formatDateBR(entries[0]?.date)}</strong>
-            <span>última data</span>
-          </div>
-          <div className={styles.heroMetric}>
-            <strong>{entries.filter((entry) => String(entry.text || '').trim()).length}</strong>
-            <span>preenchidos</span>
+        <div className={styles.headerSide}>
+          <button
+            type="button"
+            className={styles.addBtn}
+            onClick={handleCreate}
+            disabled={creating || !canEdit}
+          >
+            {creating ? 'Criando…' : meta.createLabel}
+          </button>
+
+          <div className={styles.headerMeta}>
+            <div className={styles.heroMetric}>
+              <strong>{entries.length}</strong>
+              <span>registros</span>
+            </div>
+            <div className={styles.heroMetric}>
+              <strong>{formatDateBR(entries[0]?.date)}</strong>
+              <span>última data</span>
+            </div>
+            <div className={styles.heroMetric}>
+              <strong>{entries.filter((entry) => String(entry.text || '').trim()).length}</strong>
+              <span>preenchidos</span>
+            </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          className={styles.addBtn}
-          onClick={handleCreate}
-          disabled={creating || !canEdit}
-        >
-          {creating ? 'Criando…' : meta.createLabel}
-        </button>
       </div>
 
-      {entries.length === 0 ? (
-        <div className={styles.emptyAnalysis}>
-          <span className={styles.emptySignal} aria-hidden="true" />
-          <div className={styles.emptyCopy}>
-            <strong>{meta.title}</strong>
-            <span>0 registros</span>
-          </div>
-          {canEdit ? (
-            <button
-              type="button"
-              className={styles.emptyAction}
-              onClick={handleCreate}
-              disabled={creating}
-            >
-              {creating ? 'Criando…' : meta.createLabel}
-            </button>
-          ) : null}
-        </div>
-      ) : (
+      {entries.length > 0 ? (
         entries.map((entry) => {
           const isPending = pendingIds.has(entry.id);
           const isSaving = savingIds.has(entry.id);
@@ -421,14 +404,32 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
 
                 <span className={styles.entryAuthor}>{analysisAuthor(entry)}</span>
 
-                <button
-                  type="button"
-                  className={styles.delBtn}
-                  onClick={() => setDeleteTarget(entry)}
-                  disabled={!canEdit}
-                >
-                  Remover
-                </button>
+                <div className={styles.entryActions}>
+                  {canEdit ? (
+                    <label className={styles.attachButton}>
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        multiple
+                        disabled={uploadingIds.has(entry.id)}
+                        onChange={(event) => {
+                          handleAttachmentFiles(entry.id, event.target.files);
+                          event.target.value = '';
+                        }}
+                      />
+                      {uploadingIds.has(entry.id) ? 'Anexando…' : 'Anexar imagem ou PDF'}
+                    </label>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    className={styles.delBtn}
+                    onClick={() => setDeleteTarget(entry)}
+                    disabled={!canEdit}
+                  >
+                    Remover
+                  </button>
+                </div>
               </div>
               <textarea
                 className={styles.textarea}
@@ -442,21 +443,6 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 <div className={styles.attachmentsHead}>
                   <span>Anexos</span>
                   <div className={styles.attachmentsHeadActions}>
-                    {canEdit ? (
-                      <label className={styles.attachButton}>
-                        <input
-                          type="file"
-                          accept="image/*,application/pdf"
-                          multiple
-                          disabled={uploadingIds.has(entry.id)}
-                          onChange={(event) => {
-                            handleAttachmentFiles(entry.id, event.target.files);
-                            event.target.value = '';
-                          }}
-                        />
-                        {uploadingIds.has(entry.id) ? 'Anexando…' : 'Anexar imagem ou PDF'}
-                      </label>
-                    ) : null}
                     <strong>{(entry.attachments || []).length}</strong>
                   </div>
                 </div>
@@ -496,7 +482,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                               <button
                                 type="button"
                                 className={styles.attachmentRemove}
-                                onClick={() => requestRemoveAttachment(entry.id, attachment)}
+                                onClick={() => handleRemoveAttachment(entry.id, attachment)}
                                 disabled={isDeleting}
                                 aria-label={isDeleting ? 'Removendo anexo' : 'Remover anexo'}
                                 title={isDeleting ? 'Removendo…' : 'Remover'}
@@ -523,7 +509,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
             </div>
           );
         })
-      )}
+      ) : null}
 
       {previewAttachment ? (
         <div className={styles.viewerOverlay} role="presentation" onClick={() => setPreviewAttachment(null)}>

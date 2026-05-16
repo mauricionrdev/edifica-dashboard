@@ -1,32 +1,32 @@
 .panel {
   display: grid;
-  gap: 20px;
-  padding: 18px 22px 24px;
-  background: #0f1011;
+  gap: 12px;
+  padding: 14px;
+  background: #08090a;
 }
 
 .summaryGrid {
   display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) repeat(3, minmax(120px, 0.7fr));
-  gap: 10px;
+  grid-template-columns: minmax(180px, 1.2fr) repeat(3, minmax(120px, 0.7fr));
+  gap: 8px;
 }
 
 .summaryCard {
   min-width: 0;
-  min-height: 74px;
-  padding: 13px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.012);
+  min-height: 64px;
+  padding: 11px 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
   display: grid;
-  gap: 6px;
+  gap: 4px;
   align-content: center;
 }
 
 .summaryLabel {
   color: var(--text-tertiary);
   font-size: 10px;
-  font-weight: 650;
+  font-weight: 590;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -38,10 +38,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-primary);
-  font-size: clamp(16px, 1.35vw, 21px);
-  font-weight: 680;
-  line-height: 1.1;
-  letter-spacing: -0.045em;
+  font-size: clamp(15px, 1.2vw, 18px);
+  font-weight: 620;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
 }
 
 .summarySub {
@@ -52,13 +52,11 @@
 }
 
 .sectionHead {
-  min-height: 46px;
+  min-height: 34px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
 }
 
 .sectionActions {
@@ -69,23 +67,20 @@
   flex-wrap: wrap;
 }
 
-.contractRule {
-  display: none;
-}
+.contractRule { display: none; }
 
 .rows {
   display: grid;
-  gap: 14px;
-  margin-top: 8px;
+  gap: 8px;
 }
 
 .rowCard {
   display: grid;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.012);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
 }
 
 .rowHeader {
@@ -98,16 +93,16 @@
 .rowHeader strong {
   color: var(--text-primary);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .removeBtn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   border: 1px solid rgba(255, 91, 115, 0.22);
-  border-radius: 10px;
+  border-radius: 8px;
   background: rgba(255, 91, 115, 0.05);
   color: #ff9cad;
   display: inline-flex;
@@ -116,22 +111,19 @@
   cursor: pointer;
 }
 
-.removeBtn:hover {
-  color: #ffd0d8;
-  background: rgba(255, 91, 115, 0.1);
-}
+.removeBtn:hover { color: #ffd0d8; background: rgba(255, 91, 115, 0.1); }
 
 .rowGrid {
   display: grid;
   grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .iconAction {
-  width: 34px;
-  min-width: 34px;
+  width: 32px;
+  min-width: 32px;
   padding: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -151,48 +143,42 @@
 }
 
 .actionButton {
-  min-height: 36px;
+  min-height: 34px;
   border-radius: 10px;
 }
 
 @media (max-width: 920px) {
-  .summaryGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .rowGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .summaryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rowGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 640px) {
   .summaryGrid,
-  .rowGrid {
-    grid-template-columns: 1fr;
-  }
-
+  .rowGrid { grid-template-columns: 1fr; }
   .sectionHead,
-  .footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .sectionActions {
-    justify-content: flex-start;
-  }
+  .footer { flex-direction: column; align-items: stretch; }
+  .sectionActions { justify-content: flex-start; }
 }
 
+/* v11 — respiro entre ações e card de mensalidades */
+.panel {
+  gap: 18px;
+}
 
 .sectionHead {
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  min-height: 42px;
+  padding-bottom: 14px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .rows {
-  gap: 14px;
-  margin-top: 8px;
+  gap: 12px;
 }
 
 .rowCard {
-  padding: 16px;
+  padding: 16px 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0.006)),
+    rgba(255, 255, 255, 0.01);
 }

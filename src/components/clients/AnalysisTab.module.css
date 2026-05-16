@@ -3,48 +3,42 @@
   --analysis-accent-soft: rgba(245, 184, 0, 0.08);
   --analysis-accent-line: rgba(245, 184, 0, 0.22);
   display: grid;
-  gap: 14px;
-  padding: 16px 18px 20px;
-  background: #0f1011;
+  gap: 12px;
+  padding: 14px;
+  background: #08090a;
 }
 
 .icp {
   --analysis-accent: #60a5fa;
   --analysis-accent-soft: rgba(96, 165, 250, 0.08);
-  --analysis-accent-line: rgba(96, 165, 250, 0.24);
+  --analysis-accent-line: rgba(96, 165, 250, 0.22);
 }
 
 .gdv {
   --analysis-accent: #2dd4bf;
   --analysis-accent-soft: rgba(45, 212, 191, 0.08);
-  --analysis-accent-line: rgba(45, 212, 191, 0.24);
+  --analysis-accent-line: rgba(45, 212, 191, 0.22);
 }
 
 .routes {
   --analysis-accent: #a78bfa;
   --analysis-accent-soft: rgba(167, 139, 250, 0.08);
-  --analysis-accent-line: rgba(167, 139, 250, 0.26);
+  --analysis-accent-line: rgba(167, 139, 250, 0.24);
 }
 
 .header {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
-  grid-template-areas:
-    "title action"
-    "meta meta";
+  grid-template-columns: minmax(220px, 1fr) auto max-content;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  border: 1px solid var(--analysis-accent-line);
-  border-radius: 14px;
-  background:
-    linear-gradient(180deg, var(--analysis-accent-soft), rgba(255, 255, 255, 0.012)),
-    rgba(255, 255, 255, 0.01);
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
 }
 
 .titleBlock {
-  grid-area: title;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -66,34 +60,32 @@
   text-transform: uppercase;
 }
 
+
 .headerMeta {
-  grid-area: meta;
   min-width: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, max-content));
+  grid-template-columns: repeat(3, max-content);
   align-items: center;
-  justify-content: start;
-  gap: 0;
+  justify-content: end;
 }
 
 .heroMetric {
   min-width: 0;
-  min-height: 36px;
-  padding: 0 14px;
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  min-height: 38px;
+  padding: 0 12px;
+  border-left: 1px solid var(--line-subtle);
   display: grid;
   align-content: center;
   gap: 4px;
 }
 
 .heroMetric:first-child {
-  padding-left: 0;
   border-left: 0;
 }
 
 .heroMetric strong {
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
   font-weight: 620;
   letter-spacing: -0.035em;
@@ -111,87 +103,28 @@
 }
 
 .addBtn {
-  grid-area: action;
   min-height: 32px;
   padding: 0 12px;
   border-radius: 10px;
-  border: 1px solid var(--analysis-accent-line);
-  background: var(--analysis-accent-soft);
-  color: var(--analysis-accent);
+  border: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: 12px;
-  font-weight: 620;
+  font-weight: 560;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .addBtn:hover:not(:disabled) {
-  border-color: var(--analysis-accent);
-  background: color-mix(in srgb, var(--analysis-accent) 12%, transparent);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.045);
   color: var(--text-primary);
 }
 
 .addBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.emptyAnalysis {
-  min-height: 118px;
-  padding: 22px;
-  border: 1px solid var(--analysis-accent-line);
-  border-radius: 14px;
-  background:
-    radial-gradient(circle at 0 0, var(--analysis-accent-soft), transparent 36%),
-    rgba(255, 255, 255, 0.012);
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) max-content;
-  align-items: center;
-  gap: 14px;
-}
-
-.emptySignal {
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--analysis-accent-line);
-  border-radius: 12px;
-  background: var(--analysis-accent-soft);
-  position: relative;
-}
-
-.emptySignal::after {
-  content: '';
-  position: absolute;
-  inset: 14px;
-  border-radius: 999px;
-  background: var(--analysis-accent);
-  box-shadow: 0 0 24px var(--analysis-accent);
-}
-
-.emptyAnalysis strong {
-  color: var(--text-primary);
-  font-size: 15px;
-  line-height: 1.25;
-  font-weight: 650;
-  letter-spacing: -0.025em;
-}
-
-.emptyAction {
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--analysis-accent-line);
-  border-radius: 10px;
-  background: var(--analysis-accent-soft);
-  color: var(--analysis-accent);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 620;
-  cursor: pointer;
-}
-
-.emptyAction:hover:not(:disabled) {
-  border-color: var(--analysis-accent);
-  color: var(--text-primary);
 }
 
 .entry {
@@ -509,15 +442,14 @@
 
 .attachmentsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(248px, 268px));
-  justify-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 10px;
 }
 
 .attachmentCard {
   min-width: 0;
   border: 1px solid var(--line-subtle);
-  border-radius: 13px;
+  border-radius: 12px;
   background: rgba(255,255,255,.014);
   overflow: hidden;
 }
@@ -584,17 +516,16 @@
 
 .attachmentActions {
   padding: 10px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 34px;
+  display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .attachmentActions button,
 .attachmentActions a,
 .attachButton {
-  min-width: 0;
-  min-height: 30px;
+  min-height: 28px;
   padding: 0 10px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
@@ -608,7 +539,6 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  white-space: nowrap;
 }
 
 .attachmentActions button:hover:not(:disabled),
@@ -620,18 +550,8 @@
 }
 
 .attachmentActions .attachmentRemove {
-  width: 34px;
-  min-width: 34px;
-  padding: 0;
   color: #ff9cad;
   border-color: rgba(255, 91, 115, 0.22);
-  background: rgba(255, 91, 115, 0.045);
-}
-
-.attachmentActions .attachmentRemove:hover:not(:disabled) {
-  color: #ffd0d8;
-  border-color: rgba(255, 91, 115, 0.36);
-  background: rgba(255, 91, 115, 0.09);
 }
 
 .attachButton {
@@ -904,210 +824,173 @@
   display: none;
 }
 
-
-/* v8 — refinamento do modal de cliente */
-.panel {
-  gap: 14px;
-  padding: 16px 22px 22px;
-  background: #0f1011;
-}
-
-.header,
-.entry,
-.attachmentCard {
-  border-color: rgba(255, 255, 255, 0.065);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.012);
-}
-
+/* v11 — análise em card único colorido, métricas à direita e anexo no header */
 .header {
-  padding: 13px;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  align-items: start;
+  gap: 18px;
+  padding: 16px 18px;
+  border-color: var(--analysis-accent-line);
+  background:
+    linear-gradient(180deg, var(--analysis-accent-soft), rgba(255, 255, 255, 0.01) 70%),
+    rgba(255, 255, 255, 0.012);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.026),
+    0 12px 34px rgba(0, 0, 0, 0.12);
+}
+
+.titleBlock {
+  align-items: flex-start;
+  padding-top: 2px;
 }
 
 .eyebrow {
-  min-height: 28px;
-  border-color: rgba(255, 255, 255, 0.075);
-  background: rgba(255, 255, 255, 0.014);
-  color: var(--text-secondary);
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: color-mix(in srgb, var(--analysis-accent) 9%, transparent);
+}
+
+.headerSide {
+  min-width: 360px;
+  display: grid;
+  justify-items: end;
+  gap: 13px;
+}
+
+.headerSide .addBtn {
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: color-mix(in srgb, var(--analysis-accent) 7%, transparent);
+}
+
+.headerSide .addBtn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--analysis-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--analysis-accent) 12%, transparent);
+  color: var(--text-primary);
+}
+
+.headerMeta {
+  width: max-content;
+  grid-template-columns: repeat(3, max-content);
+  justify-content: end;
+  gap: 0;
 }
 
 .heroMetric {
-  min-height: 40px;
-  border-left-color: rgba(255, 255, 255, 0.055);
+  min-height: 38px;
+  padding: 0 16px;
+  border-left: 1px solid color-mix(in srgb, var(--analysis-accent) 16%, transparent);
 }
 
-.addBtn,
-.attachButton,
-.attachmentActions button,
-.attachmentActions a {
-  min-height: 32px;
-  border-color: rgba(255, 255, 255, 0.075);
-  background: rgba(255, 255, 255, 0.018);
-  border-radius: 10px;
+.heroMetric:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.entryHdr {
+  grid-template-columns: max-content minmax(120px, 1fr) max-content;
+  min-height: 48px;
+  padding: 10px 12px;
+}
+
+.entryActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.entryActions .attachButton {
+  min-height: 28px;
+  padding: 0 11px;
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: color-mix(in srgb, var(--analysis-accent) 6%, transparent);
+}
+
+.entryActions .attachButton:hover {
+  border-color: color-mix(in srgb, var(--analysis-accent) 36%, transparent);
+  background: color-mix(in srgb, var(--analysis-accent) 10%, transparent);
+  color: var(--text-primary);
+}
+
+.attachmentsHeadActions .attachButton {
+  display: none;
+}
+
+.entry {
+  border-color: color-mix(in srgb, var(--analysis-accent) 12%, var(--line-subtle));
 }
 
 .attachmentsGrid {
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(214px, 1fr));
 }
 
-.attachmentPreview {
-  height: 128px;
-  border-bottom-color: rgba(255, 255, 255, 0.055);
-  background: #090a0b;
-}
-
-.attachmentInfo {
-  padding: 11px 12px 0;
+.attachmentCard {
+  border-radius: 11px;
 }
 
 .attachmentActions {
-  padding: 11px 12px 12px;
+  gap: 7px;
+  justify-content: space-between;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-width: 76px;
+  padding-inline: 10px;
 }
 
 .attachmentActions .attachmentRemove {
-  width: 32px;
-  min-width: 32px;
-  padding: 0;
-  border-radius: 999px;
-  justify-self: end;
-}
-
-.attachmentsEmpty {
-  min-height: 44px;
-  border-color: rgba(255, 255, 255, 0.065);
-  background: rgba(255, 255, 255, 0.012);
+  min-width: 30px;
+  width: 30px;
+  flex: 0 0 30px;
 }
 
 @media (max-width: 920px) {
-  .panel {
-    padding: 14px 16px 18px;
-  }
-}
-
-
-@media (max-width: 760px) {
   .header {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "title"
-      "meta"
-      "action";
   }
 
-  .headerMeta {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .heroMetric {
-    padding: 0;
-    border-left: 0;
-  }
-
-  .emptyAnalysis {
-    grid-template-columns: 1fr;
+  .headerSide {
+    min-width: 0;
+    width: 100%;
     justify-items: start;
   }
-}
-
-/* v10 refinamentos do modal de análises */
-.loadingShell {
-  min-height: 128px;
-  align-content: center;
-}
-
-.emptyAnalysis {
-  min-height: 104px;
-  padding: 16px;
-  grid-template-columns: 34px minmax(0, 1fr) max-content;
-  background:
-    radial-gradient(circle at 0 0, var(--analysis-accent-soft), transparent 42%),
-    rgba(255, 255, 255, 0.01);
-}
-
-.emptyCopy {
-  min-width: 0;
-  display: grid;
-  gap: 5px;
-}
-
-.emptyCopy strong {
-  color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-}
-
-.emptyCopy span {
-  width: max-content;
-  min-height: 22px;
-  padding: 0 8px;
-  border: 1px solid var(--analysis-accent-line);
-  border-radius: 999px;
-  color: var(--analysis-accent);
-  background: var(--analysis-accent-soft);
-  display: inline-flex;
-  align-items: center;
-  font-size: 11px;
-  line-height: 1;
-  font-weight: 620;
-}
-
-.attachmentsGrid {
-  grid-template-columns: repeat(auto-fill, minmax(222px, 246px));
-  gap: 9px;
-}
-
-.attachmentPreview {
-  height: 96px;
-}
-
-.attachmentActions {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 30px;
-  gap: 7px;
-  padding: 9px;
-}
-
-.attachmentActions button,
-.attachmentActions a,
-.attachButton {
-  min-height: 30px;
-  padding: 0 8px;
-  font-size: 11px;
-}
-
-.attachmentActions .attachmentRemove {
-  width: 30px;
-  min-width: 30px;
-}
-
-@media (max-width: 760px) {
-  .header {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "title"
-      "meta"
-      "action";
-  }
 
   .headerMeta {
-    grid-template-columns: 1fr;
-    gap: 8px;
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .heroMetric {
-    padding: 0;
+    padding-inline: 12px;
+  }
+
+  .entryHdr {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .entryActions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .headerMeta {
+    grid-template-columns: 1fr;
+  }
+
+  .heroMetric,
+  .heroMetric:first-child {
     border-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--analysis-accent) 16%, transparent);
+    padding: 10px 0 0;
   }
 
-  .emptyAnalysis {
-    grid-template-columns: 34px minmax(0, 1fr);
-  }
-
-  .emptyAction {
-    grid-column: 1 / -1;
-    justify-self: start;
+  .heroMetric:first-child {
+    border-top: 0;
   }
 }
