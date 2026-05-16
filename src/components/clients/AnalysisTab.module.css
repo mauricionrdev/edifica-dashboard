@@ -994,3 +994,65 @@
     border-top: 0;
   }
 }
+
+
+/* v12 — anexos compactos e menos espaçados */
+.attachmentsArea {
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+
+.attachmentsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 280px));
+  justify-content: start;
+  gap: 8px;
+}
+
+.attachmentCard {
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.012), rgba(255,255,255,.004)),
+    rgba(255,255,255,.008);
+}
+
+.attachmentPreview {
+  height: 88px;
+}
+
+.attachmentInfo {
+  padding: 9px 10px 0;
+}
+
+.attachmentActions {
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 9px 10px 10px;
+  flex-wrap: nowrap;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-width: 68px;
+  min-height: 28px;
+  padding-inline: 10px;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  margin-left: 0;
+}
+
+.loadingShell {
+  min-height: 260px;
+  border-color: var(--analysis-accent-line);
+  background:
+    linear-gradient(180deg, var(--analysis-accent-soft), rgba(255,255,255,.006) 68%),
+    rgba(255,255,255,.01);
+}
+
+.analysisLoading {
+  min-height: 168px;
+}

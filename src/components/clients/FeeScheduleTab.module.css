@@ -182,3 +182,14 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0.006)),
     rgba(255, 255, 255, 0.01);
 }
+
+
+/* v12 — seção de mensalidades com respiro mais consistente */
+.sectionHead {
+  padding: 0 0 16px;
+  margin: 2px 0 12px;
+}
+
+.rowCard {
+  margin-top: 0;
+}

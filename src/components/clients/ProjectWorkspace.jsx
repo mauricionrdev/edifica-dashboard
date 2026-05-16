@@ -879,7 +879,23 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
   if (loading) {
     return (
       <div className={styles.wrap}>
-        <StateBlock variant="loading" compact title="Carregando projeto" />
+        <section className={styles.projectLoadingCard} role="status" aria-live="polite">
+          <div className={styles.projectLoadingHead}>
+            <span />
+            <strong />
+          </div>
+          <div className={styles.projectLoadingStats}>
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className={styles.projectLoadingRows}>
+            <span />
+            <span />
+            <span />
+          </div>
+        </section>
       </div>
     );
   }

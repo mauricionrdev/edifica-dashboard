@@ -1792,3 +1792,92 @@ textarea:disabled {
     text-align: left;
   }
 }
+
+/* v12 — projeto com loading e superfícies menos genéricas */
+.projectLoadingCard {
+  min-height: 260px;
+  padding: 16px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.016), rgba(255,255,255,.004)),
+    rgba(255,255,255,.01);
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.projectLoadingHead {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.34fr) 104px;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.projectLoadingStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(76px, 1fr));
+  gap: 8px;
+}
+
+.projectLoadingRows {
+  display: grid;
+  gap: 8px;
+}
+
+.projectLoadingHead span,
+.projectLoadingHead strong,
+.projectLoadingStats span,
+.projectLoadingRows span {
+  border-radius: 999px;
+  background: rgba(255,255,255,.036);
+  overflow: hidden;
+  position: relative;
+}
+
+.projectLoadingHead span {
+  height: 16px;
+}
+
+.projectLoadingHead strong {
+  height: 30px;
+}
+
+.projectLoadingStats span {
+  height: 56px;
+  border-radius: 12px;
+}
+
+.projectLoadingRows span {
+  height: 42px;
+  border-radius: 12px;
+}
+
+.projectLoadingRows span:nth-child(2) {
+  width: 92%;
+}
+
+.projectLoadingRows span:nth-child(3) {
+  width: 78%;
+}
+
+.projectHeader,
+.emptyCard,
+.projectTools,
+.sectionCard,
+.taskPanel,
+.activityPanel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.014), rgba(255,255,255,.004)),
+    rgba(255,255,255,.01);
+}
+
+.projectHeader {
+  min-height: 72px;
+  border-radius: 16px;
+}
+
+.emptyCard {
+  min-height: 220px;
+  align-content: start;
+}
