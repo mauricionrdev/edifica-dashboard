@@ -1,103 +1,52 @@
 :root {
   color-scheme: dark;
 
-  --bg-app: #08090a;
-  --bg-canvas: #0f1011;
-  --bg-elevated: #111214;
-  --bg-raised: #141516;
-  --bg-hover: #1a1b1d;
-  --bg-selected: #202124;
-  --bg-soft: #121315;
+  --bg-app: #010102;
+  --bg-canvas: #050506;
+  --bg-elevated: #0b0c0d;
+  --bg-raised: #101113;
+  --bg-hover: #15161a;
+  --bg-selected: #18191d;
+  --bg-soft: #090a0b;
 
-  --surface: #0f1011;
-  --surface-subtle: #111214;
+  --surface: #070708;
+  --surface-subtle: #0a0b0c;
   --surface-panel: rgba(255, 255, 255, 0.024);
   --surface-raised: rgba(255, 255, 255, 0.038);
-  --surface-card: #111214;
-  --surface-card-soft: #0f1011;
-  --surface-strong: #151617;
+  --surface-card: #0b0c0e;
+  --surface-card-soft: #070708;
+  --surface-strong: #121317;
 
   --text-primary: #f7f8f8;
   --text-secondary: #d0d6e0;
   --text-tertiary: #8a8f98;
   --text-quaternary: #62666d;
 
-  --line-subtle: rgba(255, 255, 255, 0.042);
-  --line: rgba(255, 255, 255, 0.066);
-  --line-strong: rgba(255, 255, 255, 0.092);
+  --line-subtle: rgba(255, 255, 255, 0.052);
+  --line: rgba(255, 255, 255, 0.078);
+  --line-strong: rgba(255, 255, 255, 0.11);
   --border-subtle: var(--line-subtle);
   --border-default: var(--line);
   --border-strong: var(--line-strong);
 
-  --field-bg: rgba(255, 255, 255, 0.025);
-  --field-bg-hover: rgba(255, 255, 255, 0.04);
-  --field-line: rgba(255, 255, 255, 0.07);
+  --field-bg: rgba(255, 255, 255, 0.022);
+  --field-bg-hover: rgba(255, 255, 255, 0.034);
+  --field-line: rgba(255, 255, 255, 0.078);
 
   --chart-bar: rgba(255, 255, 255, 0.055);
   --progress-track: rgba(255, 255, 255, 0.07);
 
   --accent-amber-border: var(--accent-amber-line);
-  --shadow-soft: none;
-  --shadow-panel: none;
+  --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.18);
+  --shadow-panel: 0 24px 80px rgba(0, 0, 0, 0.24);
+  /* Linear/Edifica card system */
+  --card-surface: #090a0b;
+  --card-surface-raised: #0d0e10;
+  --card-surface-soft: #070708;
+  --card-inner: rgba(255, 255, 255, 0.018);
+  --card-border: rgba(255, 255, 255, 0.068);
+  --card-border-strong: rgba(255, 255, 255, 0.105);
+  --card-highlight: rgba(255, 255, 255, 0.032);
+
 }
 
-
-/* v139 — Linear dark visual test / Edifica typography and amber accent preserved */
-:root {
-  --bg-app: #010102;
-  --bg-canvas: #050506;
-  --bg-elevated: #0a0b0c;
-  --bg-raised: #0f1011;
-  --bg-hover: #151619;
-  --bg-selected: #1b1d21;
-  --bg-soft: #08090a;
-
-  --surface: #08090a;
-  --surface-subtle: #0c0d0f;
-  --surface-panel: rgba(247, 248, 248, 0.018);
-  --surface-raised: rgba(247, 248, 248, 0.03);
-  --surface-card: #0a0b0d;
-  --surface-card-soft: #070809;
-  --surface-strong: #111215;
-
-  --text-primary: #f7f8f8;
-  --text-secondary: #d0d6e0;
-  --text-tertiary: #8a8f98;
-  --text-quaternary: #62666d;
-
-  --line-subtle: rgba(247, 248, 248, 0.042);
-  --line: rgba(247, 248, 248, 0.066);
-  --line-strong: rgba(247, 248, 248, 0.095);
-  --border-subtle: var(--line-subtle);
-  --border-default: var(--line);
-  --border-strong: var(--line-strong);
-
-  --field-bg: rgba(247, 248, 248, 0.022);
-  --field-bg-hover: rgba(247, 248, 248, 0.034);
-  --field-line: rgba(247, 248, 248, 0.068);
-
-  --chart-bar: rgba(247, 248, 248, 0.058);
-  --progress-track: rgba(247, 248, 248, 0.065);
-
-  --accent-amber: #f5b800;
-  --accent-amber-strong: #ffc400;
-  --accent-amber-soft: rgba(245, 184, 0, 0.08);
-  --accent-amber-line: rgba(245, 184, 0, 0.24);
-  --accent-amber-border: var(--accent-amber-line);
-
-  --accent-cyan: #55edf6;
-  --accent-cyan-soft: rgba(85, 237, 246, 0.08);
-  --info: #55edf6;
-  --info-soft: rgba(85, 237, 246, 0.08);
-
-  --success: #27a644;
-  --success-soft: rgba(39, 166, 68, 0.1);
-  --warning: #f5b800;
-  --warning-soft: rgba(245, 184, 0, 0.1);
-  --danger: #ef4444;
-  --danger-soft: rgba(239, 68, 68, 0.1);
-
-  --shadow-soft: none;
-  --shadow-panel: none;
-  --focus-ring: none;
-}
