@@ -348,3 +348,176 @@
 .dangerSection > :first-child {
   align-self: center;
 }
+
+
+/* v16 — visão geral reorganizada em composição estável */
+.mainSection {
+  padding: 18px 20px 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0) 46%),
+    #090a0b;
+}
+
+.profileGrid {
+  width: 100%;
+  max-width: 930px;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  column-gap: 24px;
+  align-items: start;
+}
+
+.avatarRail {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.avatarPrimary {
+  width: 76px;
+  height: 76px;
+  border: 1px solid rgba(255, 255, 255, 0.074);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.065), transparent 56%),
+    #0d0e10;
+  color: #f1f3f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 18px 36px rgba(0, 0, 0, 0.18);
+}
+
+.avatarControls {
+  width: 92px;
+  display: grid;
+  gap: 7px;
+}
+
+.avatarControls button {
+  width: 100%;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.016);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.profileFields {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: 16px;
+  row-gap: 14px;
+  align-items: end;
+}
+
+.profileFieldName {
+  grid-column: 1 / -1;
+}
+
+.profileFields > :nth-child(2),
+.profileFields > :nth-child(3),
+.profileFields > :nth-child(4),
+.profileFields > :nth-child(5) {
+  grid-column: span 3;
+}
+
+.formGrid {
+  --overview-gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--overview-gap);
+  align-items: end;
+}
+
+.fieldQuarter {
+  grid-column: auto;
+}
+
+.dangerSection {
+  min-height: 70px;
+  padding: 16px 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.008), rgba(255, 255, 255, 0.002)),
+    #08090a;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.deleteClientButton {
+  justify-self: end;
+}
+
+@media (max-width: 900px) {
+  .profileGrid {
+    max-width: none;
+    grid-template-columns: 90px minmax(0, 1fr);
+    column-gap: 18px;
+  }
+
+  .avatarPrimary {
+    width: 66px;
+    height: 66px;
+  }
+
+  .profileFields,
+  .formGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profileFieldName {
+    grid-column: 1 / -1;
+  }
+
+  .profileFields > :nth-child(2),
+  .profileFields > :nth-child(3),
+  .profileFields > :nth-child(4),
+  .profileFields > :nth-child(5),
+  .fieldQuarter {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .profileGrid,
+  .profileFields,
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarRail {
+    justify-items: start;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .avatarControls {
+    width: 96px;
+  }
+
+  .profileFields > :nth-child(2),
+  .profileFields > :nth-child(3),
+  .profileFields > :nth-child(4),
+  .profileFields > :nth-child(5),
+  .fieldQuarter,
+  .profileFieldName {
+    grid-column: 1;
+  }
+}

@@ -502,3 +502,63 @@
 .section:first-child {
   border-top: 0;
 }
+
+
+/* v16 — altura padrão consistente entre abas */
+.modalCard {
+  width: min(1040px, calc(100vw - 48px));
+  height: min(760px, calc(100dvh - 64px));
+  max-height: min(760px, calc(100dvh - 64px));
+  min-height: min(680px, calc(100dvh - 64px));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.004) 42%),
+    #0b0c0e;
+  transition: none;
+}
+
+.modalBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section {
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.label {
+  color: #b8c0cc;
+  font-size: 12px;
+  line-height: 1.1;
+  font-weight: 610;
+  letter-spacing: -0.01em;
+}
+
+.input,
+.selectControl :global(button),
+.selectControl :global(input),
+.selectControl :global(select) {
+  min-height: 38px;
+  border-color: rgba(255, 255, 255, 0.072);
+  background: rgba(255, 255, 255, 0.018);
+  font-size: 13px;
+  font-weight: 520;
+}
+
+@media (max-width: 900px) {
+  .modalCard {
+    width: calc(100vw - 24px);
+    height: min(760px, calc(100dvh - 24px));
+    max-height: calc(100dvh - 24px);
+    min-height: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .modalCard {
+    width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+}
