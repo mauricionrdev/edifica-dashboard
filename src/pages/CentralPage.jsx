@@ -62,12 +62,6 @@ function fmtInt(value) {
   return Number.isFinite(Number(value)) ? Math.round(Number(value)) : 0;
 }
 
-function fmtDecimal(value) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return '0,0';
-  return numeric.toFixed(1).replace('.', ',');
-}
-
 const CHURN_PROGRESS_REFERENCE = 8;
 
 function toneFromChurn(pct) {
@@ -201,10 +195,7 @@ function EntryColumnsChart({ rows = [] }) {
     return (
       <div className={styles.columnsPanel}>
         <div className={styles.columnsPanelHeader}>
-          <div>
-            <h3 className={styles.columnsPanelTitle}>Entradas</h3>
-            <p className={styles.panelSubtle}>Últimos 6 meses</p>
-          </div>
+          <h3 className={styles.columnsPanelTitle}>Entradas</h3>
         </div>
         <p className={styles.emptyState}>Sem entradas no período recente.</p>
       </div>
@@ -218,37 +209,18 @@ function EntryColumnsChart({ rows = [] }) {
   for (let value = 0; value <= scaleMax; value += tickStep) ticks.push(value);
   if (ticks[ticks.length - 1] !== scaleMax) ticks.push(scaleMax);
 
-  const peak = maxClients;
-  const average = rows.length > 0
-    ? rows.reduce((sum, row) => sum + (Number(row.cnt) || 0), 0) / rows.length
-    : 0;
-
   const VB_W = 760;
   const VB_H = 320;
-  const padding = { top: 34, right: 26, bottom: 64, left: 48 };
+  const padding = { top: 30, right: 24, bottom: 54, left: 44 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
   const slotW = plotW / rows.length;
-  const trackY = padding.top + plotH;
+  const barW = Math.min(48, slotW * 0.42);
 
   return (
     <div className={styles.columnsPanel}>
       <div className={styles.columnsPanelHeader}>
-        <div>
-          <h3 className={styles.columnsPanelTitle}>Entradas</h3>
-          <p className={styles.panelSubtle}>Últimos 6 meses</p>
-        </div>
-
-        <div className={styles.columnsStats}>
-          <div className={styles.columnsStat}>
-            <span>Pico</span>
-            <strong>{fmtInt(peak)}</strong>
-          </div>
-          <div className={styles.columnsStat}>
-            <span>Média</span>
-            <strong>{fmtDecimal(average)}</strong>
-          </div>
-        </div>
+        <h3 className={styles.columnsPanelTitle}>Entradas</h3>
       </div>
 
       <div className={styles.columnsCanvas}>
@@ -267,12 +239,12 @@ function EntryColumnsChart({ rows = [] }) {
                   x2={VB_W - padding.right}
                   y1={y}
                   y2={y}
-                  stroke="rgba(255,255,255,0.048)"
+                  stroke="rgba(255,255,255,0.045)"
                   strokeWidth="1"
                   vectorEffect="non-scaling-stroke"
                 />
                 <text
-                  x={padding.left - 12}
+                  x={padding.left - 10}
                   y={y + 4}
                   textAnchor="end"
                   className={styles.columnsAxisText}
@@ -283,77 +255,39 @@ function EntryColumnsChart({ rows = [] }) {
             );
           })}
 
-          <line
-            x1={padding.left}
-            x2={VB_W - padding.right}
-            y1={trackY}
-            y2={trackY}
-            stroke="rgba(255,255,255,0.072)"
-            strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-          />
-
           {rows.map((row, index) => {
             const cx = padding.left + slotW * index + slotW / 2;
-            const ratio = scaleMax > 0 ? row.cnt / scaleMax : 0;
-            const y = padding.top + plotH - ratio * plotH;
+            const barH = scaleMax > 0 ? (row.cnt / scaleMax) * plotH : 0;
+            const x = cx - barW / 2;
+            const y = padding.top + plotH - barH;
             const isCurrent = Boolean(row.isNow);
-            const spotlightX = cx - slotW * 0.34;
-            const spotlightY = padding.top - 8;
-            const spotlightW = slotW * 0.68;
-            const spotlightH = plotH + 30;
-            const badgeWidth = String(fmtInt(row.cnt)).length > 1 ? 30 : 24;
-            const badgeHeight = 20;
-            const badgeX = cx - badgeWidth / 2;
-            const badgeY = y - 30;
-            const stemTopY = Math.min(y + 8, trackY - 4);
 
             return (
               <g key={`${row.y}-${row.m}`}>
                 {isCurrent ? (
                   <rect
-                    x={spotlightX}
-                    y={spotlightY}
-                    width={spotlightW}
-                    height={spotlightH}
-                    rx="16"
-                    fill="rgba(245,184,0,0.065)"
+                    x={cx - slotW * 0.36}
+                    y={padding.top - 8}
+                    width={slotW * 0.72}
+                    height={plotH + 22}
+                    rx="18"
+                    fill="rgba(245,184,0,0.06)"
                   />
                 ) : null}
 
-                <line
-                  x1={cx}
-                  x2={cx}
-                  y1={trackY - 6}
-                  y2={stemTopY}
-                  stroke={isCurrent ? 'rgba(245,184,0,0.9)' : 'rgba(255,255,255,0.24)'}
-                  strokeWidth={isCurrent ? '4' : '3'}
-                  strokeLinecap="round"
-                />
-
                 <rect
-                  x={cx - 14}
-                  y={y - 2}
-                  width="28"
-                  height="14"
-                  rx="7"
-                  fill={isCurrent ? 'rgba(245,184,0,0.95)' : 'rgba(255,255,255,0.14)'}
-                />
-
-                <rect
-                  x={badgeX}
-                  y={badgeY}
-                  width={badgeWidth}
-                  height={badgeHeight}
+                  x={x}
+                  y={y}
+                  width={barW}
+                  height={Math.max(barH, 2)}
                   rx="10"
-                  fill={isCurrent ? 'rgba(245,184,0,0.16)' : 'rgba(255,255,255,0.06)'}
-                  stroke={isCurrent ? 'rgba(245,184,0,0.28)' : 'rgba(255,255,255,0.07)'}
-                  strokeWidth="1"
+                  ry="10"
+                  fill={isCurrent ? 'rgba(245,184,0,0.92)' : 'rgba(255,255,255,0.12)'}
                 />
 
                 <text
                   x={cx}
-                  y={badgeY + 13}
+                  y={y - 10}
                   textAnchor="middle"
                   className={`${styles.columnsValue} ${isCurrent ? styles.columnsValueCurrent : ''}`}
                 >
@@ -362,16 +296,15 @@ function EntryColumnsChart({ rows = [] }) {
 
                 <text
                   x={cx}
-                  y={VB_H - 28}
+                  y={VB_H - 26}
                   textAnchor="middle"
                   className={`${styles.columnsMonth} ${isCurrent ? styles.columnsMonthCurrent : ''}`}
                 >
                   {MONTHS_FULL[row.m].slice(0, 3).toUpperCase()}
                 </text>
-
                 <text
                   x={cx}
-                  y={VB_H - 12}
+                  y={VB_H - 10}
                   textAnchor="middle"
                   className={styles.columnsYear}
                 >
@@ -386,7 +319,7 @@ function EntryColumnsChart({ rows = [] }) {
   );
 }
 
-function ComparisonPanel({ current, previous, currentLabel, previousLabel }) {
+function ComparisonPanel({ current, previous, currentLabel }) {
   const buildRow = (label, currentVal, previousVal, formatter, options = {}) => {
     const cur = Number(currentVal) || 0;
     const prev = Number(previousVal) || 0;
@@ -420,30 +353,24 @@ function ComparisonPanel({ current, previous, currentLabel, previousLabel }) {
   return (
     <section className={styles.detailsPanel}>
       <div className={styles.compareHeader}>
-        <div>
-          <h3>Comparativo</h3>
-          <p className={styles.panelSubtle}>vs {previousLabel}</p>
-        </div>
-        <span className={styles.comparePeriodPill}>{currentLabel}</span>
+        <h3>Comparativo</h3>
+        <span className={styles.compareHeaderHint}>{currentLabel}</span>
       </div>
 
       <div className={styles.compareBody}>
-        <div className={styles.compareGrid}>
+        <dl className={styles.compareGrid}>
           {rows.map((row) => (
-            <article key={row.label} className={styles.compareStat}>
-              <div className={styles.compareStatCopy}>
-                <div className={styles.compareStatTopline}>
-                  <span className={styles.compareLabel}>{row.label}</span>
-                  <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>
-                    {row.delta}
-                  </span>
-                </div>
-                <span className={styles.compareMeta}>variação mensal</span>
+            <div key={row.label} className={styles.compareItem}>
+              <div className={styles.compareLeft}>
+                <dt className={styles.compareLabel}>{row.label}</dt>
+                <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>
+                  {row.delta}
+                </span>
               </div>
-              <strong className={styles.compareValue}>{row.value}</strong>
-            </article>
+              <dd className={styles.compareValue}>{row.value}</dd>
+            </div>
           ))}
-        </div>
+        </dl>
       </div>
     </section>
   );
@@ -459,23 +386,13 @@ function clientInitials(name) {
   return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
-function daysUntilText(diffDays) {
-  if (!Number.isFinite(diffDays)) return '';
-  if (diffDays <= 0) return 'vence hoje';
-  if (diffDays === 1) return 'vence em 1 dia';
-  return `vence em ${diffDays} dias`;
-}
-
 function ActivityPanel({ activities = [], onOpenClient }) {
   const rows = Array.isArray(activities) ? activities.slice(0, 5) : [];
 
   return (
     <section className={styles.activityPanel}>
       <div className={styles.activityHeader}>
-        <div>
-          <h3>Contratos vencendo</h3>
-          <p className={styles.panelSubtle}>Próximos 30 dias</p>
-        </div>
+        <h3>Contratos vencendo</h3>
         <span className={styles.activityHeaderBadge}>{rows.length}</span>
       </div>
 
@@ -503,11 +420,7 @@ function ActivityPanel({ activities = [], onOpenClient }) {
                   )}
                 </span>
 
-                <span className={styles.activityIdentity}>
-                  <strong>{client.name || 'Cliente'}</strong>
-                  <span className={styles.activityDue}>{daysUntilText(activity.diffDays)}</span>
-                </span>
-
+                <span className={styles.activityName}>{client.name || 'Cliente'}</span>
                 <span className={styles.activityDate}>{formatShortDate(activity.date)}</span>
                 <span className={styles.activitySquad}>{squad}</span>
                 <span className={styles.activityFee}>{fee || 'Sem mensalidade'}</span>
@@ -536,7 +449,7 @@ function buildClientActivities(clients = []) {
     if (!endDate || isChurn || !isActiveClientStatus(client?.status)) return;
 
     const diffDays = Math.ceil((endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-    if (diffDays < 0 || diffDays > 30) return;
+    if (diffDays < 0) return;
 
     events.push({
       key: `${client.id}-expiring`,
@@ -666,7 +579,6 @@ export default function CentralPage() {
   const churnRate = executiveMetrics.churnRate ?? 0;
   const churnedPeriod = executiveMetrics.churnedPeriodCnt ?? 0;
   const periodLabel = `${MONTHS_FULL[period.m]} ${period.y}`;
-  const previousLabel = `${MONTHS_FULL[prevPeriod.m]} ${prevPeriod.y}`;
 
   const metricDefinitions = useMemo(
     () => {
@@ -919,7 +831,6 @@ export default function CentralPage() {
               current={executiveMetrics}
               previous={previousMetrics}
               currentLabel={periodLabel}
-              previousLabel={previousLabel}
             />
           </div>
 
