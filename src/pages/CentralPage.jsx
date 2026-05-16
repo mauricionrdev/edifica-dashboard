@@ -62,10 +62,10 @@ function fmtInt(value) {
   return Number.isFinite(Number(value)) ? Math.round(Number(value)) : 0;
 }
 
-function fmtDelta(value, formatter = fmtInt) {
-  const numeric = Number(value) || 0;
-  if (numeric === 0) return '0';
-  return `${numeric > 0 ? '+' : '-'}${formatter(Math.abs(numeric))}`;
+function fmtDecimal(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return '0,0';
+  return numeric.toFixed(1).replace('.', ',');
 }
 
 const CHURN_PROGRESS_REFERENCE = 8;
@@ -105,7 +105,6 @@ function buildKpiDelta(currentValue, previousValue, formatter, options = {}) {
   if (Math.abs(diff) < 0.0001) {
     return { delta: '0', deltaTone: 'flat' };
   }
-  // Para churn, "subir é ruim". options.invert = true.
   const isUp = options.invert ? diff < 0 : diff > 0;
   const deltaTone = isUp ? 'up' : 'down';
   const formatted = formatter ? formatter(Math.abs(diff)) : fmtInt(Math.abs(diff));
@@ -138,7 +137,6 @@ function MetricCard({
   progress,
   progressTone,
   tone = 'neutral',
-  detail,
   draggable = false,
   dragging = false,
   onDragStart,
@@ -189,36 +187,68 @@ function MetricCard({
   );
 }
 
+function getChartTickStep(scaleMax) {
+  if (scaleMax <= 8) return 2;
+  if (scaleMax <= 20) return 5;
+  if (scaleMax <= 50) return 10;
+  return 20;
+}
+
 function EntryColumnsChart({ rows = [] }) {
   const hasData = rows.some((row) => row.cnt > 0);
-  const maxClients = Math.max(...rows.map((row) => row.cnt || 0), 0);
 
   if (!hasData) {
-    return <p className={styles.emptyState}>Sem entradas no período recente.</p>;
+    return (
+      <div className={styles.columnsPanel}>
+        <div className={styles.columnsPanelHeader}>
+          <div>
+            <h3 className={styles.columnsPanelTitle}>Entradas</h3>
+            <p className={styles.panelSubtle}>Últimos 6 meses</p>
+          </div>
+        </div>
+        <p className={styles.emptyState}>Sem entradas no período recente.</p>
+      </div>
+    );
   }
 
-  // Escala em incrementos de 5, sempre arredondando pra cima.
-  const scaleMax = Math.max(5, Math.ceil(maxClients / 5) * 5);
+  const maxClients = Math.max(...rows.map((row) => row.cnt || 0), 0);
+  const scaleMax = Math.max(6, Math.ceil(maxClients / 3) * 3);
+  const tickStep = getChartTickStep(scaleMax);
   const ticks = [];
-  for (let v = 0; v <= scaleMax; v += 5) ticks.push(v);
+  for (let value = 0; value <= scaleMax; value += tickStep) ticks.push(value);
+  if (ticks[ticks.length - 1] !== scaleMax) ticks.push(scaleMax);
 
-  // Grid SVG: viewBox fluido. As coordenadas internas em "user units"
-  // permitem que tudo escale junto (texto, barras, gap) com o tamanho do card.
-  const VB_W = 700;
-  const VB_H = 280;
-  const padding = { top: 26, right: 16, bottom: 36, left: 36 };
+  const peak = maxClients;
+  const average = rows.length > 0
+    ? rows.reduce((sum, row) => sum + (Number(row.cnt) || 0), 0) / rows.length
+    : 0;
+
+  const VB_W = 760;
+  const VB_H = 320;
+  const padding = { top: 34, right: 26, bottom: 64, left: 48 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
-
-  const cols = rows.length;
-  const slotW = plotW / cols;
-  // Barra premium: largura fixa proporcional ao slot, deixando ar dos lados.
-  const barW = Math.min(56, slotW * 0.5);
+  const slotW = plotW / rows.length;
+  const trackY = padding.top + plotH;
 
   return (
     <div className={styles.columnsPanel}>
       <div className={styles.columnsPanelHeader}>
-        <h3 className={styles.columnsPanelTitle}>Entradas</h3>
+        <div>
+          <h3 className={styles.columnsPanelTitle}>Entradas</h3>
+          <p className={styles.panelSubtle}>Últimos 6 meses</p>
+        </div>
+
+        <div className={styles.columnsStats}>
+          <div className={styles.columnsStat}>
+            <span>Pico</span>
+            <strong>{fmtInt(peak)}</strong>
+          </div>
+          <div className={styles.columnsStat}>
+            <span>Média</span>
+            <strong>{fmtDecimal(average)}</strong>
+          </div>
+        </div>
       </div>
 
       <div className={styles.columnsCanvas}>
@@ -228,82 +258,120 @@ function EntryColumnsChart({ rows = [] }) {
           preserveAspectRatio="none"
           aria-label="Entradas por mês"
         >
-          {/* Linhas de grade horizontais */}
           {ticks.map((tick) => {
             const y = padding.top + plotH - (tick / scaleMax) * plotH;
             return (
-              <line
-                key={`grid-${tick}`}
-                x1={padding.left}
-                x2={VB_W - padding.right}
-                y1={y}
-                y2={y}
-                stroke="rgba(255,255,255,0.038)"
-                strokeWidth="1"
-                vectorEffect="non-scaling-stroke"
-              />
+              <g key={`grid-${tick}`}>
+                <line
+                  x1={padding.left}
+                  x2={VB_W - padding.right}
+                  y1={y}
+                  y2={y}
+                  stroke="rgba(255,255,255,0.048)"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <text
+                  x={padding.left - 12}
+                  y={y + 4}
+                  textAnchor="end"
+                  className={styles.columnsAxisText}
+                >
+                  {tick}
+                </text>
+              </g>
             );
           })}
 
-          {/* Labels da escala vertical */}
-          {ticks.map((tick) => {
-            const y = padding.top + plotH - (tick / scaleMax) * plotH;
-            return (
-              <text
-                key={`tick-${tick}`}
-                x={padding.left - 10}
-                y={y + 4}
-                textAnchor="end"
-                className={styles.columnsAxisText}
-              >
-                {tick}
-              </text>
-            );
-          })}
+          <line
+            x1={padding.left}
+            x2={VB_W - padding.right}
+            y1={trackY}
+            y2={trackY}
+            stroke="rgba(255,255,255,0.072)"
+            strokeWidth="1"
+            vectorEffect="non-scaling-stroke"
+          />
 
-          {/* Barras */}
-          {rows.map((row, i) => {
-            const cx = padding.left + slotW * i + slotW / 2;
-            const barH = scaleMax > 0 ? (row.cnt / scaleMax) * plotH : 0;
-            const x = cx - barW / 2;
-            const y = padding.top + plotH - barH;
-            const fill = row.isNow ? 'rgba(245, 184, 0, 0.92)' : 'rgba(247, 248, 248, 0.105)';
-            const labelColor = row.isNow ? 'var(--accent-amber)' : 'var(--text-tertiary)';
+          {rows.map((row, index) => {
+            const cx = padding.left + slotW * index + slotW / 2;
+            const ratio = scaleMax > 0 ? row.cnt / scaleMax : 0;
+            const y = padding.top + plotH - ratio * plotH;
+            const isCurrent = Boolean(row.isNow);
+            const spotlightX = cx - slotW * 0.34;
+            const spotlightY = padding.top - 8;
+            const spotlightW = slotW * 0.68;
+            const spotlightH = plotH + 30;
+            const badgeWidth = String(fmtInt(row.cnt)).length > 1 ? 30 : 24;
+            const badgeHeight = 20;
+            const badgeX = cx - badgeWidth / 2;
+            const badgeY = y - 30;
+            const stemTopY = Math.min(y + 8, trackY - 4);
 
             return (
-              <g key={`bar-${row.y}-${row.m}`}>
-                {/* Valor em cima da barra */}
+              <g key={`${row.y}-${row.m}`}>
+                {isCurrent ? (
+                  <rect
+                    x={spotlightX}
+                    y={spotlightY}
+                    width={spotlightW}
+                    height={spotlightH}
+                    rx="16"
+                    fill="rgba(245,184,0,0.065)"
+                  />
+                ) : null}
+
+                <line
+                  x1={cx}
+                  x2={cx}
+                  y1={trackY - 6}
+                  y2={stemTopY}
+                  stroke={isCurrent ? 'rgba(245,184,0,0.9)' : 'rgba(255,255,255,0.24)'}
+                  strokeWidth={isCurrent ? '4' : '3'}
+                  strokeLinecap="round"
+                />
+
+                <rect
+                  x={cx - 14}
+                  y={y - 2}
+                  width="28"
+                  height="14"
+                  rx="7"
+                  fill={isCurrent ? 'rgba(245,184,0,0.95)' : 'rgba(255,255,255,0.14)'}
+                />
+
+                <rect
+                  x={badgeX}
+                  y={badgeY}
+                  width={badgeWidth}
+                  height={badgeHeight}
+                  rx="10"
+                  fill={isCurrent ? 'rgba(245,184,0,0.16)' : 'rgba(255,255,255,0.06)'}
+                  stroke={isCurrent ? 'rgba(245,184,0,0.28)' : 'rgba(255,255,255,0.07)'}
+                  strokeWidth="1"
+                />
+
                 <text
                   x={cx}
-                  y={y - 8}
+                  y={badgeY + 13}
                   textAnchor="middle"
-                  className={`${styles.columnsValue} ${row.isNow ? styles.columnsValueCurrent : ''}`}
-                  fill={labelColor}
+                  className={`${styles.columnsValue} ${isCurrent ? styles.columnsValueCurrent : ''}`}
                 >
                   {fmtInt(row.cnt)}
                 </text>
-                {/* Barra */}
-                <rect
-                  x={x}
-                  y={y}
-                  width={barW}
-                  height={Math.max(barH, 2)}
-                  rx="5"
-                  ry="5"
-                  fill={fill}
-                />
-                {/* Mês embaixo */}
+
                 <text
                   x={cx}
-                  y={VB_H - padding.bottom + 18}
+                  y={VB_H - 28}
                   textAnchor="middle"
-                  className={`${styles.columnsMonth} ${row.isNow ? styles.columnsMonthCurrent : ''}`}
+                  className={`${styles.columnsMonth} ${isCurrent ? styles.columnsMonthCurrent : ''}`}
                 >
                   {MONTHS_FULL[row.m].slice(0, 3).toUpperCase()}
                 </text>
+
                 <text
                   x={cx}
-                  y={VB_H - padding.bottom + 30}
+                  y={VB_H - 12}
                   textAnchor="middle"
                   className={styles.columnsYear}
                 >
@@ -318,7 +386,7 @@ function EntryColumnsChart({ rows = [] }) {
   );
 }
 
-function ComparisonPanel({ current, previous, previousLabel }) {
+function ComparisonPanel({ current, previous, currentLabel, previousLabel }) {
   const buildRow = (label, currentVal, previousVal, formatter, options = {}) => {
     const cur = Number(currentVal) || 0;
     const prev = Number(previousVal) || 0;
@@ -336,7 +404,7 @@ function ComparisonPanel({ current, previous, previousLabel }) {
     const formatted = formatter ? formatter(Math.abs(diff)) : fmtInt(Math.abs(diff));
     return {
       label,
-      value: formatter ? formatter(prev) : fmtInt(prev),
+      value: formatter ? formatter(cur) : fmtInt(cur),
       delta: isFlat ? '0' : `${sign}${formatted}`,
       tone,
     };
@@ -352,25 +420,30 @@ function ComparisonPanel({ current, previous, previousLabel }) {
   return (
     <section className={styles.detailsPanel}>
       <div className={styles.compareHeader}>
-        <h3>Comparativo</h3>
-        <span className={styles.compareHeaderHint}>{previousLabel}</span>
+        <div>
+          <h3>Comparativo</h3>
+          <p className={styles.panelSubtle}>vs {previousLabel}</p>
+        </div>
+        <span className={styles.comparePeriodPill}>{currentLabel}</span>
       </div>
 
       <div className={styles.compareBody}>
-
-        <dl className={styles.compareGrid}>
+        <div className={styles.compareGrid}>
           {rows.map((row) => (
-            <div key={row.label} className={styles.compareItem}>
-              <div className={styles.compareLeft}>
-                <dt className={styles.compareLabel}>{row.label}</dt>
-                <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>
-                  {row.delta}
-                </span>
+            <article key={row.label} className={styles.compareStat}>
+              <div className={styles.compareStatCopy}>
+                <div className={styles.compareStatTopline}>
+                  <span className={styles.compareLabel}>{row.label}</span>
+                  <span className={`${styles.compareDelta} ${styles[`compareDelta_${row.tone}`]}`}>
+                    {row.delta}
+                  </span>
+                </div>
+                <span className={styles.compareMeta}>variação mensal</span>
               </div>
-              <dd className={styles.compareValue}>{row.value}</dd>
-            </div>
+              <strong className={styles.compareValue}>{row.value}</strong>
+            </article>
           ))}
-        </dl>
+        </div>
       </div>
     </section>
   );
@@ -386,21 +459,23 @@ function clientInitials(name) {
   return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
-function clientMeta(client) {
-  const pieces = [];
-  if (client?.squadName || client?.squad) pieces.push(client.squadName || client.squad);
-  if (client?.status) pieces.push(client.status);
-  if (Number(client?.fee) > 0) pieces.push(fmtMoney(client.fee));
-  return pieces.join(' · ');
+function daysUntilText(diffDays) {
+  if (!Number.isFinite(diffDays)) return '';
+  if (diffDays <= 0) return 'vence hoje';
+  if (diffDays === 1) return 'vence em 1 dia';
+  return `vence em ${diffDays} dias`;
 }
 
 function ActivityPanel({ activities = [], onOpenClient }) {
-  const rows = Array.isArray(activities) ? activities.slice(0, 8) : [];
+  const rows = Array.isArray(activities) ? activities.slice(0, 5) : [];
 
   return (
     <section className={styles.activityPanel}>
       <div className={styles.activityHeader}>
-        <h3>Contratos vencendo</h3>
+        <div>
+          <h3>Contratos vencendo</h3>
+          <p className={styles.panelSubtle}>Próximos 30 dias</p>
+        </div>
         <span className={styles.activityHeaderBadge}>{rows.length}</span>
       </div>
 
@@ -411,7 +486,7 @@ function ActivityPanel({ activities = [], onOpenClient }) {
             const initials = clientInitials(client.name);
             const avatarUrl = client.avatarUrl || '';
             const fee = Number(client.fee) > 0 ? fmtMoney(client.fee) : '';
-            const squad = client.squadName || client.squad || '';
+            const squad = client.squadName || client.squad || 'Sem squad';
 
             return (
               <button
@@ -428,15 +503,14 @@ function ActivityPanel({ activities = [], onOpenClient }) {
                   )}
                 </span>
 
-                <span className={styles.activityCopy}>
+                <span className={styles.activityIdentity}>
                   <strong>{client.name || 'Cliente'}</strong>
+                  <span className={styles.activityDue}>{daysUntilText(activity.diffDays)}</span>
                 </span>
 
                 <span className={styles.activityDate}>{formatShortDate(activity.date)}</span>
-
-                {squad ? <span className={styles.activitySquad}>{squad}</span> : <span className={styles.activityMuted}>Sem squad</span>}
-
-                {fee ? <span className={styles.activityFee}>{fee}</span> : <span className={styles.activityMuted}>Sem mensalidade</span>}
+                <span className={styles.activitySquad}>{squad}</span>
+                <span className={styles.activityFee}>{fee || 'Sem mensalidade'}</span>
               </button>
             );
           })}
@@ -447,7 +521,6 @@ function ActivityPanel({ activities = [], onOpenClient }) {
     </section>
   );
 }
-
 
 function buildClientActivities(clients = []) {
   const now = new Date();
@@ -477,7 +550,7 @@ function buildClientActivities(clients = []) {
 
   return events
     .sort((a, b) => a.date.getTime() - b.date.getTime())
-    .slice(0, 12);
+    .slice(0, 5);
 }
 
 function DashboardSkeleton() {
@@ -592,7 +665,6 @@ export default function CentralPage() {
   const revenueLost = executiveMetrics.revLost ?? 0;
   const churnRate = executiveMetrics.churnRate ?? 0;
   const churnedPeriod = executiveMetrics.churnedPeriodCnt ?? 0;
-  const newClients = executiveMetrics.newCnt ?? 0;
   const periodLabel = `${MONTHS_FULL[period.m]} ${period.y}`;
   const previousLabel = `${MONTHS_FULL[prevPeriod.m]} ${prevPeriod.y}`;
 
@@ -711,8 +783,6 @@ export default function CentralPage() {
       churnedPeriod,
       currentMonthNewClients,
       mrr,
-      newClients,
-      now,
       period,
       previousMetrics,
       revenueLost,
@@ -848,6 +918,7 @@ export default function CentralPage() {
             <ComparisonPanel
               current={executiveMetrics}
               previous={previousMetrics}
+              currentLabel={periodLabel}
               previousLabel={previousLabel}
             />
           </div>
