@@ -323,7 +323,7 @@ export default function OverviewTab({
       </div>
 
       {canDelete && canEdit ? (
-        <div className={`${drawerStyles.section} ${drawerStyles.dangerSection}`}>
+        <div className={`${drawerStyles.section} ${styles.dangerSection}`}>
           <div className={drawerStyles.sectionTitle}>Zona perigosa</div>
           {confirmingDelete ? (
             <div className={drawerStyles.confirmBar}>
@@ -352,7 +352,7 @@ export default function OverviewTab({
           ) : (
             <button
               type="button"
-              className={`${drawerStyles.btn} ${drawerStyles.btnDangerGhost} ${drawerStyles.deleteClientButton}`}
+              className={`${drawerStyles.btn} ${drawerStyles.btnDanger} ${styles.deleteClientButton}`}
               onClick={() => setConfirmingDelete(true)}
             >
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>

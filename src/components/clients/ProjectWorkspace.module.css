@@ -1881,3 +1881,166 @@ textarea:disabled {
   min-height: 220px;
   align-content: start;
 }
+
+
+/* v13 — refinamento do cabeçalho de projeto e controles */
+.memberPanel {
+  min-width: 0;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: auto minmax(220px, 0.72fr) minmax(320px, 1fr);
+  align-items: center;
+  gap: 12px 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0) 46%),
+    rgba(255, 255, 255, 0.01);
+}
+
+.memberPanelHead {
+  align-self: center;
+}
+
+.memberPanelHead > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.memberList {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+.memberRow {
+  min-height: 42px;
+  padding: 6px 8px;
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.memberForm {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 190px) 34px;
+  align-items: center;
+  gap: 8px;
+}
+
+.projectInlineSelect :global(button),
+.projectInlineSelect :global(input),
+.projectInlineSelect :global(select),
+.projectToolSelect :global(button),
+.projectToolSelect :global(input),
+.projectToolSelect :global(select) {
+  min-height: 36px;
+  border-radius: var(--radius-1, 10px);
+}
+
+.memberForm .inlineAddButton {
+  width: 34px;
+  min-width: 34px;
+  height: 36px;
+  min-height: 36px;
+  border: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, 0.016);
+}
+
+.projectTopTools {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(420px, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 8px;
+}
+
+.projectTopTools .sectionForm {
+  width: 100%;
+  max-width: none;
+  min-height: 46px;
+  padding: 6px;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  border-radius: var(--radius-2, 12px);
+}
+
+.projectTopTools .sectionForm input {
+  min-height: 34px;
+}
+
+.projectTopTools .sectionForm .inlineAddButton {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+}
+
+.projectTopTools .projectTools {
+  min-width: 0;
+  width: 100%;
+  min-height: 46px;
+  justify-self: stretch;
+  justify-content: space-between;
+  padding: 6px;
+  border-radius: var(--radius-2, 12px);
+}
+
+.projectTopTools .projectToolGroup {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: minmax(140px, 190px) minmax(140px, 190px);
+  gap: 8px;
+}
+
+.projectTopTools .projectToolSelect {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.projectTopTools .projectTools > span {
+  flex: 0 0 auto;
+  margin-left: 10px;
+  min-width: 118px;
+  text-align: right;
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 1180px) {
+  .memberPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .memberForm {
+    grid-template-columns: minmax(0, 1fr) minmax(130px, 180px) 34px;
+  }
+
+  .projectTopTools {
+    grid-template-columns: 1fr;
+  }
+
+  .projectTopTools .projectTools {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 760px) {
+  .memberForm,
+  .projectTopTools .projectToolGroup {
+    grid-template-columns: 1fr;
+  }
+
+  .projectTopTools .projectTools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .projectTopTools .projectTools > span {
+    margin-left: 0;
+    min-width: 0;
+    text-align: left;
+  }
+}
