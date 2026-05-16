@@ -228,17 +228,6 @@ function EntryColumnsChart({ rows = [] }) {
           preserveAspectRatio="none"
           aria-label="Entradas por mês"
         >
-          <defs>
-            <linearGradient id="entries-bar-muted" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.16)" />
-              <stop offset="100%" stopColor="rgba(255,255,255,0.055)" />
-            </linearGradient>
-            <linearGradient id="entries-bar-current" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="var(--accent-amber-strong)" />
-              <stop offset="100%" stopColor="var(--accent-amber)" />
-            </linearGradient>
-          </defs>
-
           {/* Linhas de grade horizontais */}
           {ticks.map((tick) => {
             const y = padding.top + plotH - (tick / scaleMax) * plotH;
@@ -249,7 +238,7 @@ function EntryColumnsChart({ rows = [] }) {
                 x2={VB_W - padding.right}
                 y1={y}
                 y2={y}
-                stroke="rgba(255,255,255,0.045)"
+                stroke="rgba(255,255,255,0.038)"
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
               />
@@ -278,8 +267,8 @@ function EntryColumnsChart({ rows = [] }) {
             const barH = scaleMax > 0 ? (row.cnt / scaleMax) * plotH : 0;
             const x = cx - barW / 2;
             const y = padding.top + plotH - barH;
-            const fill = row.isNow ? 'url(#entries-bar-current)' : 'url(#entries-bar-muted)';
-            const labelColor = row.isNow ? 'var(--accent-amber-strong)' : 'var(--text-tertiary)';
+            const fill = row.isNow ? 'rgba(245, 184, 0, 0.92)' : 'rgba(247, 248, 248, 0.105)';
+            const labelColor = row.isNow ? 'var(--accent-amber)' : 'var(--text-tertiary)';
 
             return (
               <g key={`bar-${row.y}-${row.m}`}>
@@ -299,8 +288,8 @@ function EntryColumnsChart({ rows = [] }) {
                   y={y}
                   width={barW}
                   height={Math.max(barH, 2)}
-                  rx="4"
-                  ry="4"
+                  rx="5"
+                  ry="5"
                   fill={fill}
                 />
                 {/* Mês embaixo */}
