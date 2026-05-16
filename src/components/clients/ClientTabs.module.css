@@ -1,14 +1,14 @@
 .tabsBar {
   min-width: 0;
-  min-height: 56px;
-  padding: 10px 14px;
+  min-height: 48px;
+  padding: 8px 10px;
   border-right: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.065);
-  background: #101112;
+  border-bottom: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, 0.012);
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -20,97 +20,139 @@
 }
 
 .tab {
-  --tab-accent: var(--accent-amber, #f5b800);
-  --tab-accent-soft: rgba(245, 184, 0, 0.06);
-  --tab-accent-line: rgba(245, 184, 0, 0.34);
   position: relative;
   width: auto;
   min-width: max-content;
-  min-height: 34px;
-  padding: 0 13px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.006);
-  color: var(--text-secondary);
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-1, 10px);
+  background: transparent;
+  color: var(--text-tertiary);
   font: inherit;
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 560;
   text-align: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition:
-    color 140ms ease,
-    border-color 140ms ease,
-    background-color 140ms ease;
 }
 
-.tab_icp {
-  --tab-accent: #60a5fa;
-  --tab-accent-soft: rgba(96, 165, 250, 0.075);
-  --tab-accent-line: rgba(96, 165, 250, 0.30);
-}
-
-.tab_gdv {
-  --tab-accent: #2dd4bf;
-  --tab-accent-soft: rgba(45, 212, 191, 0.075);
-  --tab-accent-line: rgba(45, 212, 191, 0.30);
-}
-
-.tab_routes {
-  --tab-accent: #a78bfa;
-  --tab-accent-soft: rgba(167, 139, 250, 0.075);
-  --tab-accent-line: rgba(167, 139, 250, 0.32);
-}
-
-.tab::before,
-.tabActive::after,
-.saveStatus,
-.tabCount,
-.saveDot {
+.tab::before {
   display: none;
 }
 
 .tab:hover {
-  border-color: rgba(255, 255, 255, 0.095);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.04);
 }
 
-.tabActive,
-.tabActive:hover {
-  border-color: var(--tab-accent-line);
-  background: var(--tab-accent-soft);
-  color: var(--tab-accent);
+.tabActive {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.055);
+  border-color: var(--line-subtle);
+}
+
+.tabActive::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -9px;
+  height: 1px;
+  border-radius: 999px;
+  background: var(--text-secondary);
 }
 
 .tabBody {
   min-width: 0;
   min-height: 0;
-  height: auto;
-  max-height: inherit;
+  max-height: calc(min(720px, 100dvh - 64px) - 116px);
   overflow-y: auto;
-  background: #0f1011;
+  background: transparent;
   scrollbar-width: none;
 }
 
 .emptyState,
 .loadingState {
-  margin: 16px;
+  margin: 14px;
   padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.014);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 16px);
+  background: rgba(255, 255, 255, 0.018);
   color: var(--text-tertiary);
   font-size: 13px;
   line-height: 1.6;
   text-align: center;
 }
 
+.saveStatus,
+.tabCount,
+.saveDot {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .tabsBar {
-    min-height: 54px;
+    min-height: 50px;
   }
+}
+
+/* v131 — Abas internas do drawer no padrão do Perfil */
+.tabsBar {
+  min-height: 54px;
+  padding: 10px 12px;
+  border-bottom-color: rgba(255, 255, 255, 0.055);
+  background: #080809;
+  gap: 8px;
+}
+
+.tab {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.006);
+  color: var(--text-secondary);
+}
+
+.tab:hover {
+  border-color: rgba(255, 255, 255, 0.085);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+}
+
+.tabActive {
+  border-color: rgba(245, 184, 0, 0.36);
+  background: rgba(245, 184, 0, 0.055);
+  color: var(--accent-amber-strong, #f5b800);
+}
+
+.tabActive:hover {
+  border-color: rgba(245, 184, 0, 0.42);
+  background: rgba(245, 184, 0, 0.075);
+  color: var(--accent-amber-strong, #f5b800);
+}
+
+.tabActive::after {
+  display: none;
+}
+
+.emptyState,
+.loadingState {
+  border-color: rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+
+/* v14 — evita sobra visual quando a aba tem pouco conteúdo */
+.tabBody {
+  flex: 0 1 auto;
+  min-height: 0;
+  height: auto;
+  max-height: calc(min(720px, 100dvh - 64px) - 116px);
+  overflow-y: auto;
+  background: #08090a;
 }

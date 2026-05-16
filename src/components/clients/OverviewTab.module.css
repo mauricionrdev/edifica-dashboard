@@ -205,3 +205,25 @@
     justify-self: start;
   }
 }
+
+
+/* v14 — visão geral compacta sem sobra inferior */
+.formGrid {
+  align-items: end;
+}
+
+.identityCard {
+  margin-top: 2px;
+}
+
+.dangerSection {
+  min-height: 58px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.dangerSection :global(.sectionTitle),
+.dangerSection > :first-child {
+  align-self: center;
+}
