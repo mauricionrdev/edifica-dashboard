@@ -211,7 +211,7 @@ function EntryColumnsChart({ rows = [] }) {
 
   const VB_W = 760;
   const VB_H = 320;
-  const padding = { top: 26, right: 24, bottom: 56, left: 68 };
+  const padding = { top: 26, right: 24, bottom: 56, left: 104 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
   const stepX = rows.length > 1 ? plotW / (rows.length - 1) : plotW;
@@ -243,12 +243,12 @@ function EntryColumnsChart({ rows = [] }) {
         >
           <defs>
             <linearGradient id="entriesAreaFade" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.08)" />
+              <stop offset="0%" stopColor="rgba(255,255,255,0.055)" />
               <stop offset="100%" stopColor="rgba(255,255,255,0)" />
             </linearGradient>
             <linearGradient id="entriesLineFade" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.26)" />
-              <stop offset="78%" stopColor="rgba(255,255,255,0.34)" />
+              <stop offset="0%" stopColor="rgba(255,255,255,0.22)" />
+              <stop offset="78%" stopColor="rgba(255,255,255,0.30)" />
               <stop offset="100%" stopColor="rgba(245,184,0,0.95)" />
             </linearGradient>
           </defs>
@@ -262,12 +262,12 @@ function EntryColumnsChart({ rows = [] }) {
                   x2={VB_W - padding.right}
                   y1={y}
                   y2={y}
-                  stroke="rgba(255,255,255,0.038)"
+                  stroke="rgba(255,255,255,0.032)"
                   strokeWidth="1"
                   vectorEffect="non-scaling-stroke"
                 />
                 <text
-                  x={padding.left - 12}
+                  x={padding.left - 46}
                   y={y + 4}
                   textAnchor="end"
                   className={styles.columnsAxisText}
@@ -306,13 +306,13 @@ function EntryColumnsChart({ rows = [] }) {
                   cx={point.px}
                   cy={point.py}
                   r={isCurrent ? '12' : '8'}
-                  fill={isCurrent ? 'rgba(245,184,0,0.10)' : 'rgba(255,255,255,0.05)'}
+                  fill={isCurrent ? 'rgba(245,184,0,0.08)' : 'rgba(255,255,255,0.035)'}
                 />
                 <circle
                   cx={point.px}
                   cy={point.py}
                   r={isCurrent ? '6' : '4'}
-                  fill={isCurrent ? 'rgba(245,184,0,0.96)' : 'rgba(255,255,255,0.88)'}
+                  fill={isCurrent ? 'rgba(245,184,0,0.92)' : 'rgba(232,234,238,0.82)'}
                 />
                 <text
                   x={point.px}
