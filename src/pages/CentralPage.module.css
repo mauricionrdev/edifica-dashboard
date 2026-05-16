@@ -21,14 +21,27 @@
 }
 
 .dashboard {
+  --dash-canvas: #050607;
+  --dash-panel: #090a0b;
+  --dash-panel-soft: #070809;
+  --dash-panel-raised: #0d0e10;
+  --dash-line-soft: rgba(255, 255, 255, 0.046);
+  --dash-line: rgba(255, 255, 255, 0.068);
+  --dash-line-strong: rgba(255, 255, 255, 0.092);
+  --dash-hover: rgba(255, 255, 255, 0.022);
+  --dash-active: rgba(255, 255, 255, 0.038);
+  --dash-ink: var(--text-primary);
+  --dash-muted: var(--text-tertiary);
+  --dash-faint: var(--text-quaternary);
+
   height: 100%;
   min-height: 0;
-  padding: 12px 16px 16px;
+  padding: 14px 16px 16px;
   background: transparent;
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   overflow: hidden;
 }
 
@@ -45,40 +58,55 @@
 .toolbar :global(select),
 .toolbar :global(button) {
   min-height: 34px;
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-2, 8px);
 }
 
 .metricsGrid {
   flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 0;
+  border: 1px solid var(--dash-line);
+  border-radius: 16px;
+  background: var(--dash-panel);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  overflow: hidden;
 }
 
 .metricCard {
   position: relative;
   min-width: 0;
-  min-height: 82px;
-  padding: 12px 14px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 13px;
-  background: linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,.01)), #0b0c0d;
+  min-height: 88px;
+  padding: 14px 16px 13px;
+  border: 0;
+  border-right: 1px solid var(--dash-line-soft);
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 7px;
+  gap: 8px;
   overflow: hidden;
   cursor: grab;
 }
 
-.metricCard:hover {
-  border-color: rgba(255, 255, 255, 0.085);
-  background: linear-gradient(180deg, rgba(255,255,255,.036), rgba(255,255,255,.014)), #0b0c0d;
+.metricCard:last-child { border-right: 0; }
+
+.metricCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--dash-hover);
+  transition: opacity 140ms ease;
 }
 
+.metricCard:hover::before { opacity: 1; }
+
 .metricCardDragging {
-  opacity: 0.62;
+  opacity: 0.58;
   cursor: grabbing;
 }
 
@@ -90,12 +118,14 @@
 }
 
 .metricCard_good { --metric-accent: var(--success); }
-.metricCard_warning { --metric-accent: var(--accent); }
+.metricCard_warning { --metric-accent: var(--accent-amber); }
 .metricCard_risk { --metric-accent: var(--danger); }
 
 .metricCardTop {
+  position: relative;
+  z-index: 1;
   min-width: 0;
-  min-height: 15px;
+  min-height: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -105,7 +135,7 @@
 .metricLabel {
   min-width: 0;
   overflow: hidden;
-  color: var(--text-tertiary);
+  color: var(--dash-muted);
   font-size: 10px;
   line-height: 1.2;
   font-weight: 620;
@@ -119,10 +149,10 @@
   width: 15px;
   height: 15px;
   flex: 0 0 auto;
-  color: var(--text-tertiary);
+  color: var(--dash-faint);
   display: inline-grid;
   place-items: center;
-  opacity: 0.86;
+  opacity: 0.8;
 }
 
 .metricIcon svg {
@@ -131,6 +161,8 @@
 }
 
 .metricBody {
+  position: relative;
+  z-index: 1;
   min-width: 0;
   display: flex;
   align-items: flex-end;
@@ -139,19 +171,21 @@
 .metricValue {
   max-width: 100%;
   overflow: hidden;
-  color: var(--text-primary);
-  font-size: clamp(20px, 1.25vw, 24px);
+  color: var(--dash-ink);
+  font-size: clamp(21px, 1.3vw, 25px);
   line-height: 1;
   font-weight: 620;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .metricFooter {
+  position: relative;
+  z-index: 1;
   min-width: 0;
-  min-height: 14px;
+  min-height: 15px;
   margin: 0;
   color: var(--text-secondary);
   display: inline-flex;
@@ -172,22 +206,24 @@
 .metricDelta_up { color: var(--success); }
 .metricDelta_down { color: var(--danger); }
 .metricDelta_flat,
-.metricDelta_neutral { color: var(--text-tertiary); }
+.metricDelta_neutral { color: var(--dash-faint); }
 
 .metricHelper {
   min-width: 0;
   overflow: hidden;
-  color: var(--text-tertiary);
+  color: var(--dash-muted);
   font-weight: 500;
   text-overflow: ellipsis;
 }
 
 .metricProgress {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 2px;
   margin-top: 2px;
   border-radius: 999px;
-  background: var(--progress-track);
+  background: rgba(255, 255, 255, 0.065);
   overflow: hidden;
 }
 
@@ -195,20 +231,20 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--text-quaternary);
+  background: var(--dash-faint);
 }
 
 .metricProgressBar_good { background: var(--success); }
-.metricProgressBar_warning { background: var(--accent); }
+.metricProgressBar_warning { background: var(--accent-amber); }
 .metricProgressBar_risk { background: var(--danger); }
-.metricProgressBar_neutral { background: var(--text-quaternary); }
+.metricProgressBar_neutral { background: var(--dash-faint); }
 
 .dashboardPanels {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(340px, 0.9fr);
-  gap: 10px;
+  grid-template-columns: minmax(0, 1.66fr) minmax(340px, 0.9fr);
+  gap: 12px;
   align-items: stretch;
   overflow: hidden;
 }
@@ -218,39 +254,42 @@
 .activityPanel {
   min-width: 0;
   min-height: 0;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.012);
-  box-shadow: none;
+  border: 1px solid var(--dash-line);
+  border-radius: 16px;
+  background: var(--dash-panel);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
   overflow: hidden;
 }
 
 .boardSection,
-.detailsPanel {
+.detailsPanel,
+.activityPanel {
   display: flex;
   flex-direction: column;
 }
 
 .boardSection > *,
-.detailsPanel > * {
+.detailsPanel > *,
+.activityPanel > * {
   min-height: 0;
 }
 
 .columnsPanel {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
 .columnsPanelHeader,
 .compareHeader,
 .activityHeader {
-  min-height: 26px;
+  flex: 0 0 auto;
+  min-height: 54px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--dash-line-soft);
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
@@ -259,7 +298,7 @@
 .compareHeader h3,
 .activityHeader h3 {
   margin: 0;
-  color: var(--text-primary);
+  color: var(--dash-ink);
   font-size: 15px;
   line-height: 1.1;
   font-weight: 620;
@@ -268,8 +307,9 @@
 
 .columnsCanvas {
   flex: 1 1 auto;
-  min-height: 220px;
+  min-height: 246px;
   width: 100%;
+  padding: 14px 16px 12px;
   display: block;
 }
 
@@ -280,7 +320,7 @@
 }
 
 .columnsAxisText {
-  fill: var(--text-quaternary);
+  fill: rgba(138, 143, 152, 0.78);
   font-size: 10px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -289,7 +329,7 @@
 .columnsValue {
   fill: var(--text-secondary);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 610;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.012em;
 }
@@ -302,25 +342,21 @@
 .columnsMonth {
   fill: var(--text-secondary);
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 610;
   letter-spacing: 0.06em;
 }
 
 .columnsMonthCurrent { fill: var(--text-primary); }
 
 .columnsYear {
-  fill: var(--text-quaternary);
+  fill: rgba(138, 143, 152, 0.7);
   font-size: 9px;
   font-weight: 400;
   letter-spacing: 0.04em;
 }
 
-.compareHeader {
-  padding: 16px 16px 0;
-}
-
 .compareHeaderHint {
-  color: var(--text-tertiary);
+  color: var(--dash-muted);
   font-size: 12px;
   line-height: 1;
   font-weight: 500;
@@ -330,7 +366,6 @@
 .compareBody {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 12px 16px 16px;
   display: flex;
   flex-direction: column;
 }
@@ -348,12 +383,12 @@
 .compareItem {
   flex: 1 1 0;
   min-height: 0;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line-subtle);
+  padding: 0 18px;
+  border-bottom: 1px solid var(--dash-line-soft);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
 }
 
 .compareItem:last-child { border-bottom: 0; }
@@ -362,12 +397,12 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 7px;
 }
 
 .compareLabel {
   margin: 0;
-  color: var(--text-tertiary);
+  color: var(--dash-muted);
   font-size: 10px;
   line-height: 1;
   font-weight: 620;
@@ -377,11 +412,11 @@
 
 .compareValue {
   margin: 0;
-  color: var(--text-primary);
-  font-size: 18px;
+  color: var(--dash-ink);
+  font-size: 19px;
   line-height: 1;
   font-weight: 620;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -390,33 +425,32 @@
   display: inline-block;
   font-size: 12px;
   line-height: 1;
-  font-weight: 520;
+  font-weight: 560;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .compareDelta_good { color: var(--success); }
 .compareDelta_risk { color: var(--danger); }
-.compareDelta_flat { color: var(--text-tertiary); }
+.compareDelta_flat { color: var(--dash-faint); }
 
 .dashboardLastCard,
-.activityPanel { display: block; }
+.activityPanel { display: flex; }
 
-.activityPanel {
+.dashboardLastCard {
+  flex: 0 0 auto;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-.activityHeader {
-  flex: 0 0 auto;
-  padding: 14px 16px 13px;
-  border-bottom: 1px solid var(--line-subtle);
+.activityPanel {
+  width: 100%;
+  min-height: 0;
+  flex-direction: column;
 }
 
 .activityHeaderMeta {
   flex: 1;
-  color: var(--text-tertiary);
+  color: var(--dash-muted);
   font-size: 12px;
   line-height: 1;
   font-weight: 500;
@@ -427,7 +461,7 @@
   min-width: 23px;
   height: 23px;
   padding: 0 8px;
-  border: 1px solid var(--line-subtle);
+  border: 1px solid var(--dash-line-soft);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
@@ -445,7 +479,7 @@
   min-height: 0;
   display: grid;
   align-content: start;
-  padding: 4px 16px 12px;
+  padding: 0 18px;
   overflow: auto;
   scrollbar-width: none;
 }
@@ -455,29 +489,29 @@
 
 .activityItem {
   width: 100%;
-  min-height: 58px;
-  padding: 9px 0;
+  min-height: 66px;
+  padding: 13px 0;
   border: 0;
-  border-bottom: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--dash-line-soft);
   background: transparent;
   color: var(--text-secondary);
   font: inherit;
   text-align: left;
   cursor: pointer;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto auto auto;
-  gap: 12px;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto auto;
+  gap: 14px;
   align-items: center;
 }
 
 .activityItem:last-child { border-bottom: 0; }
-.activityItem:hover { background: rgba(255, 255, 255, 0.018); }
+.activityItem:hover { background: var(--dash-hover); }
 
 .activityAvatar {
   position: relative;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--line-subtle);
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--dash-line-soft);
   border-radius: 999px;
   background: #08090a;
   overflow: hidden;
@@ -515,7 +549,7 @@
 .activityCopy strong {
   min-width: 0;
   overflow: hidden;
-  color: var(--text-primary);
+  color: var(--dash-ink);
   font-size: 13px;
   line-height: 1.2;
   font-weight: 620;
@@ -540,7 +574,7 @@
 .activitySquad,
 .activityFee,
 .activityMuted {
-  color: var(--text-tertiary);
+  color: var(--dash-muted);
   font-size: 12px;
   line-height: 1;
   font-weight: 500;
@@ -550,7 +584,7 @@
 
 .activitySquad,
 .activityFee { color: var(--text-secondary); }
-.activityMuted { color: var(--text-quaternary); }
+.activityMuted { color: var(--dash-faint); }
 .activityFee { font-weight: 620; letter-spacing: -0.012em; }
 
 .activityStatusPill {
@@ -581,8 +615,8 @@
 
 .emptyState,
 .stateBlock {
-  padding: 22px 16px;
-  color: var(--text-tertiary);
+  padding: 24px 18px;
+  color: var(--dash-muted);
   font-size: 12px;
   font-weight: 510;
 }
@@ -595,7 +629,7 @@
 }
 
 .stateBlock strong {
-  color: var(--text-primary);
+  color: var(--dash-ink);
   font-size: 16px;
   font-weight: 590;
 }
@@ -604,10 +638,10 @@
   width: max-content;
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.024);
-  color: var(--text-primary);
+  border: 1px solid var(--dash-line);
+  border-radius: var(--radius-2, 8px);
+  background: var(--dash-panel-raised);
+  color: var(--dash-ink);
   font-size: 12px;
   font-weight: 590;
   cursor: pointer;
@@ -615,9 +649,9 @@
 
 .skeletonBlock,
 .skeletonTall {
-  background: rgba(255, 255, 255, 0.024);
-  border: 1px solid var(--line);
-  border-radius: 13px;
+  background: var(--dash-panel);
+  border: 1px solid var(--dash-line);
+  border-radius: 16px;
 }
 
 .skeletonTall { min-height: 260px; }
@@ -630,6 +664,7 @@
 
   .metricCard { min-height: 78px; }
   .activityItem { min-height: 54px; }
+  .columnsCanvas { min-height: 220px; }
 }
 
 @media (max-width: 1180px) {
@@ -640,6 +675,8 @@
   }
 
   .metricsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metricCard:nth-child(2n) { border-right: 0; }
+  .metricCard:nth-child(n + 3) { border-top: 1px solid var(--dash-line-soft); }
   .dashboardPanels { grid-template-columns: 1fr; overflow: visible; }
   .detailsPanel { min-height: 250px; }
   .toolbar { justify-content: flex-start; flex-wrap: wrap; }
@@ -655,7 +692,7 @@
   }
 
   .activityItem {
-    grid-template-columns: 36px minmax(0, 1fr) auto;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
     row-gap: 6px;
   }
 
@@ -665,284 +702,17 @@
 
 @media (max-width: 640px) {
   .metricsGrid { grid-template-columns: 1fr; }
+  .metricCard,
+  .metricCard:nth-child(2n) { border-right: 0; }
+  .metricCard:nth-child(n + 2) { border-top: 1px solid var(--dash-line-soft); }
 
   .activityItem {
-    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr);
   }
 
   .activityDate,
   .activityStatusPill {
     grid-column: 2;
     justify-self: start;
-  }
-}
-
-
-/* v142 — Dashboard: separação Linear sem cards genéricos aninhados */
-.dashboard {
-  padding: 14px 18px 18px;
-  gap: 12px;
-  background: transparent;
-}
-
-.metricsGrid,
-.dashboardPanels {
-  gap: 12px;
-}
-
-.metricCard {
-  min-height: 90px;
-  padding: 15px 17px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.068);
-  border-radius: 16px;
-  background: #080809;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
-}
-
-.metricCard:hover {
-  background: #09090a;
-  border-color: rgba(255, 255, 255, 0.082);
-}
-
-.metricCardDragging {
-  opacity: 0.62;
-  background: #09090a;
-}
-
-.metricLabel,
-.compareLabel {
-  color: var(--text-tertiary);
-  font-size: 10.5px;
-  font-weight: 650;
-  letter-spacing: 0.065em;
-}
-
-.metricIcon {
-  color: var(--text-quaternary);
-  opacity: 0.76;
-}
-
-.metricValue {
-  color: var(--text-primary);
-  font-size: clamp(21px, 1.25vw, 25px);
-  font-weight: 680;
-  letter-spacing: -0.04em;
-}
-
-.metricFooter,
-.metricHelper {
-  color: var(--text-tertiary);
-}
-
-.metricProgress {
-  height: 2px;
-  background: rgba(255, 255, 255, 0.045);
-}
-
-.dashboardPanels {
-  grid-template-columns: minmax(0, 1.66fr) minmax(340px, 0.9fr);
-}
-
-.boardSection,
-.detailsPanel,
-.activityPanel {
-  border: 1px solid rgba(255, 255, 255, 0.068);
-  border-radius: 18px;
-  background: #080809;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
-}
-
-.columnsPanel {
-  padding: 0;
-  gap: 0;
-}
-
-.columnsPanelHeader,
-.compareHeader,
-.activityHeader {
-  min-height: 58px;
-  padding: 0 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
-  align-items: center;
-}
-
-.columnsPanelTitle,
-.compareHeader h3,
-.activityHeader h3 {
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 650;
-  letter-spacing: -0.03em;
-}
-
-.columnsCanvas {
-  min-height: 286px;
-  padding: 22px 20px 20px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.columnsSvg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.columnsAxisText {
-  fill: rgba(247, 248, 248, 0.34);
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.columnsValue {
-  fill: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 620;
-}
-
-.columnsValueCurrent {
-  fill: var(--text-primary);
-  font-size: 13px;
-}
-
-.columnsMonth {
-  fill: var(--text-secondary);
-  font-size: 10px;
-  font-weight: 620;
-  letter-spacing: 0.06em;
-}
-
-.columnsYear {
-  fill: var(--text-quaternary);
-}
-
-.compareHeader {
-  padding-top: 0;
-}
-
-.compareHeaderHint {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.compareBody {
-  padding: 0 18px;
-}
-
-.compareItem {
-  padding: 18px 0 17px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
-  gap: 20px;
-}
-
-.compareLeft {
-  gap: 8px;
-}
-
-.compareValue {
-  color: var(--text-primary);
-  font-weight: 650;
-}
-
-.activityHeader {
-  background: transparent;
-}
-
-.activityList {
-  padding: 0 18px 8px;
-  background: transparent;
-}
-
-.activityItem {
-  min-height: 68px;
-  padding: 14px 0;
-  grid-template-columns: 44px minmax(0, 1fr) auto auto auto;
-  gap: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
-}
-
-.activityItem:hover {
-  background: rgba(255, 255, 255, 0.012);
-}
-
-.activityAvatar {
-  width: 38px;
-  height: 38px;
-  border-color: rgba(255, 255, 255, 0.072);
-  background: #070708;
-}
-
-.activityCopy strong {
-  color: var(--text-primary);
-  font-weight: 650;
-}
-
-.emptyState,
-.stateBlock {
-  padding: 24px 18px;
-  color: var(--text-tertiary);
-}
-
-.toolbar :global(select),
-.toolbar :global(button) {
-  background: #080809;
-  border-color: rgba(255, 255, 255, 0.074);
-  color: var(--text-secondary);
-  box-shadow: none;
-}
-
-.toolbar :global(select):focus,
-.toolbar :global(button):focus,
-.toolbar :global(select):focus-visible,
-.toolbar :global(button):focus-visible {
-  outline: none;
-  box-shadow: none;
-  border-color: rgba(255, 255, 255, 0.11);
-}
-
-@media (min-width: 1180px) and (max-height: 820px) {
-  .metricCard {
-    min-height: 86px;
-    padding-top: 14px;
-    padding-bottom: 13px;
-  }
-
-  .columnsCanvas {
-    min-height: 250px;
-  }
-
-  .activityItem {
-    min-height: 58px;
-  }
-}
-
-@media (max-width: 1180px) {
-  .dashboard {
-    padding: 14px;
-  }
-
-  .dashboardPanels {
-    grid-template-columns: 1fr;
-    overflow: visible;
-  }
-
-  .detailsPanel,
-  .activityPanel {
-    min-height: 250px;
-  }
-}
-
-@media (max-width: 900px) {
-  .activityItem {
-    grid-template-columns: 44px minmax(0, 1fr) auto;
-    row-gap: 8px;
-  }
-}
-
-@media (max-width: 640px) {
-  .activityItem {
-    grid-template-columns: 44px minmax(0, 1fr);
   }
 }
