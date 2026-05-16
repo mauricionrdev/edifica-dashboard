@@ -562,3 +562,34 @@
     max-height: calc(100dvh - 16px);
   }
 }
+
+/* v18 — altura estável do modal entre abas */
+.modalCard {
+  width: min(1040px, calc(100vw - 48px));
+  height: min(760px, calc(100dvh - 64px));
+  max-height: min(760px, calc(100dvh - 64px));
+  min-height: min(680px, calc(100dvh - 64px));
+}
+
+.modalBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .modalCard {
+    width: calc(100vw - 24px);
+    height: min(760px, calc(100dvh - 24px));
+    max-height: calc(100dvh - 24px);
+    min-height: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .modalCard {
+    width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+}
