@@ -238,7 +238,7 @@ function EntryColumnsChart({ rows = [] }) {
                 x2={VB_W - padding.right}
                 y1={y}
                 y2={y}
-                stroke="rgba(255,255,255,0.038)"
+                stroke="rgba(255,255,255,0.045)"
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
               />
@@ -267,7 +267,7 @@ function EntryColumnsChart({ rows = [] }) {
             const barH = scaleMax > 0 ? (row.cnt / scaleMax) * plotH : 0;
             const x = cx - barW / 2;
             const y = padding.top + plotH - barH;
-            const fill = row.isNow ? 'rgba(245, 184, 0, 0.92)' : 'rgba(247, 248, 248, 0.105)';
+            const fill = row.isNow ? 'var(--accent-amber)' : 'rgba(255,255,255,0.075)';
             const labelColor = row.isNow ? 'var(--accent-amber)' : 'var(--text-tertiary)';
 
             return (
@@ -288,8 +288,8 @@ function EntryColumnsChart({ rows = [] }) {
                   y={y}
                   width={barW}
                   height={Math.max(barH, 2)}
-                  rx="5"
-                  ry="5"
+                  rx="3"
+                  ry="3"
                   fill={fill}
                 />
                 {/* Mês embaixo */}
@@ -818,41 +818,57 @@ export default function CentralPage() {
     <div className="content">
       <>
         <div className={styles.dashboard}>
-          <section className={styles.metricsGrid}>
-            {orderedMetrics.map((metric) => (
-              <MetricCard
-                key={metric.id}
-                {...metric}
-                draggable
-                dragging={draggingMetric === metric.id}
-                onDragStart={() => setDraggingMetric(metric.id)}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                }}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  setMetricOrder((current) => moveItem(current, draggingMetric, metric.id));
-                  setDraggingMetric('');
-                }}
-                onDragEnd={() => setDraggingMetric('')}
+          <section className={styles.dashboardFrame}>
+            <header className={styles.dashboardHero}>
+              <div className={styles.dashboardHeroText}>
+                <span className={styles.dashboardEyebrow}>Operação comercial</span>
+                <h2>Visão executiva</h2>
+                <p>{periodLabel}</p>
+              </div>
+              <div className={styles.dashboardHeroMeta}>
+                <span>{fmtInt(activeClients)} ativos</span>
+                <span>{fmtMoney(mrr)} MRR</span>
+              </div>
+            </header>
+
+            <div className={styles.dashboardPanels}>
+              <section className={styles.metricsGrid} aria-label="Indicadores do dashboard">
+                {orderedMetrics.map((metric) => (
+                  <MetricCard
+                    key={metric.id}
+                    {...metric}
+                    draggable
+                    dragging={draggingMetric === metric.id}
+                    onDragStart={() => setDraggingMetric(metric.id)}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      setMetricOrder((current) => moveItem(current, draggingMetric, metric.id));
+                      setDraggingMetric('');
+                    }}
+                    onDragEnd={() => setDraggingMetric('')}
+                  />
+                ))}
+              </section>
+
+              <main className={styles.dashboardMain}>
+                <section className={styles.boardSection}>
+                  <EntryColumnsChart rows={entryColumns} />
+                </section>
+
+                <section className={styles.dashboardLastCard}>
+                  <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
+                </section>
+              </main>
+
+              <ComparisonPanel
+                current={executiveMetrics}
+                previous={previousMetrics}
+                previousLabel={previousLabel}
               />
-            ))}
-          </section>
-
-          <div className={styles.dashboardPanels}>
-            <section className={styles.boardSection}>
-              <EntryColumnsChart rows={entryColumns} />
-            </section>
-
-            <ComparisonPanel
-              current={executiveMetrics}
-              previous={previousMetrics}
-              previousLabel={previousLabel}
-            />
-          </div>
-
-          <section className={styles.dashboardLastCard}>
-            <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
+            </div>
           </section>
         </div>
 
