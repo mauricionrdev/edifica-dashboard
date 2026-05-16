@@ -1,9 +1,9 @@
 .headerTitleMain {
   color: var(--text-primary);
-  font-size: 16px;
-  line-height: 1;
+  font-size: 18px;
+  line-height: 1.08;
   font-weight: 620;
-  letter-spacing: -0.032em;
+  letter-spacing: -0.035em;
 }
 
 .headerTitleSep {
@@ -13,53 +13,23 @@
 }
 
 .headerTitlePeriod {
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font-size: 12px;
   line-height: 1;
-  font-weight: 520;
-  letter-spacing: -0.012em;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .dashboard {
-  --central-bg: #090a0b;
-  --central-surface: #0c0d0f;
-  --central-surface-soft: #101113;
-  --central-surface-strong: #141518;
-  --central-line: rgba(255, 255, 255, 0.064);
-  --central-line-soft: rgba(255, 255, 255, 0.046);
-  --central-line-strong: rgba(255, 255, 255, 0.096);
-  --central-text: #e6e8ec;
-  --central-muted: #9aa1ad;
-  --central-faint: #626a76;
-
-  position: relative;
   height: 100%;
   min-height: 0;
-  padding: 14px 18px 18px;
+  padding: 12px 16px 16px;
+  background: transparent;
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   overflow: hidden;
-  isolation: isolate;
-  background:
-    radial-gradient(circle at 74% -18%, rgba(255, 255, 255, 0.035), transparent 34%),
-    radial-gradient(circle at 4% 86%, rgba(245, 184, 0, 0.038), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0) 34%);
-}
-
-.dashboard::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.014) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 78%, transparent);
-  opacity: 0.22;
 }
 
 .toolbar {
@@ -74,102 +44,42 @@
 
 .toolbar :global(select),
 .toolbar :global(button) {
-  min-height: 32px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.018);
-  border: 1px solid rgba(255, 255, 255, 0.064);
-  color: var(--text-secondary);
-  box-shadow: none;
-}
-
-.toolbar :global(select):hover,
-.toolbar :global(button):hover {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.092);
-}
-
-.toolbar :global(select):focus,
-.toolbar :global(button):focus,
-.toolbar :global(select):focus-visible,
-.toolbar :global(button):focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.055);
-  border-color: rgba(255, 255, 255, 0.12);
+  min-height: 34px;
+  border-radius: var(--radius-1, 10px);
 }
 
 .metricsGrid {
   flex: 0 0 auto;
-  position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  border: 1px solid var(--central-line);
-  border-radius: 15px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.006) 56%),
-    #0a0b0c;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.026),
-    0 22px 58px rgba(0, 0, 0, 0.22);
-  overflow: hidden;
+  gap: 10px;
 }
 
 .metricCard {
   position: relative;
   min-width: 0;
-  min-height: 104px;
-  padding: 16px 17px 14px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  min-height: 82px;
+  padding: 12px 14px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  background: linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,.01)), #0b0c0d;
   box-shadow: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 7px;
   overflow: hidden;
   cursor: grab;
-  transition: background 150ms ease, opacity 150ms ease;
-}
-
-.metricCard:not(:nth-child(4n))::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--central-line-soft);
-}
-
-.metricCard:nth-child(n + 5) {
-  border-top: 1px solid var(--central-line-soft);
-}
-
-.metricCard::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0) 34%),
-    radial-gradient(circle at 88% 20%, color-mix(in srgb, var(--metric-accent) 14%, transparent), transparent 34%);
-  opacity: 0;
-  transition: opacity 160ms ease;
 }
 
 .metricCard:hover {
-  background: rgba(255, 255, 255, 0.016);
-}
-
-.metricCard:hover::before {
-  opacity: 1;
+  border-color: rgba(255, 255, 255, 0.085);
+  background: linear-gradient(180deg, rgba(255,255,255,.036), rgba(255,255,255,.014)), #0b0c0d;
 }
 
 .metricCardDragging {
-  opacity: 0.54;
+  opacity: 0.62;
   cursor: grabbing;
-  background: rgba(255, 255, 255, 0.024);
 }
 
 .metricCard_neutral,
@@ -180,18 +90,16 @@
 }
 
 .metricCard_good { --metric-accent: var(--success); }
-.metricCard_warning { --metric-accent: var(--accent-amber); }
+.metricCard_warning { --metric-accent: var(--accent); }
 .metricCard_risk { --metric-accent: var(--danger); }
 
 .metricCardTop {
-  position: relative;
-  z-index: 1;
   min-width: 0;
-  min-height: 17px;
+  min-height: 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
 }
 
 .metricLabel {
@@ -200,32 +108,29 @@
   color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1.2;
-  font-weight: 660;
-  letter-spacing: 0.072em;
+  font-weight: 620;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .metricIcon {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   flex: 0 0 auto;
-  color: var(--text-quaternary);
+  color: var(--text-tertiary);
   display: inline-grid;
   place-items: center;
-  opacity: 0.72;
+  opacity: 0.86;
 }
 
 .metricIcon svg {
   width: 15px;
   height: 15px;
-  stroke-width: 1.75;
 }
 
 .metricBody {
-  position: relative;
-  z-index: 1;
   min-width: 0;
   display: flex;
   align-items: flex-end;
@@ -234,36 +139,34 @@
 .metricValue {
   max-width: 100%;
   overflow: hidden;
-  color: var(--central-text);
-  font-size: clamp(21px, 1.55vw, 27px);
+  color: var(--text-primary);
+  font-size: clamp(20px, 1.25vw, 24px);
   line-height: 1;
-  font-weight: 680;
-  letter-spacing: -0.052em;
+  font-weight: 620;
+  letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .metricFooter {
-  position: relative;
-  z-index: 1;
   min-width: 0;
   min-height: 14px;
   margin: 0;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   display: inline-flex;
   align-items: baseline;
-  gap: 7px;
+  gap: 6px;
   font-size: 11px;
   line-height: 1.25;
-  font-weight: 510;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .metricDelta {
   color: var(--metric-accent);
-  font-weight: 650;
+  font-weight: 620;
 }
 
 .metricDelta_up { color: var(--success); }
@@ -275,18 +178,16 @@
   min-width: 0;
   overflow: hidden;
   color: var(--text-tertiary);
-  font-weight: 510;
+  font-weight: 500;
   text-overflow: ellipsis;
 }
 
 .metricProgress {
-  position: relative;
-  z-index: 1;
   width: 100%;
   height: 2px;
-  margin-top: 1px;
+  margin-top: 2px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--progress-track);
   overflow: hidden;
 }
 
@@ -298,7 +199,7 @@
 }
 
 .metricProgressBar_good { background: var(--success); }
-.metricProgressBar_warning { background: var(--accent-amber); }
+.metricProgressBar_warning { background: var(--accent); }
 .metricProgressBar_risk { background: var(--danger); }
 .metricProgressBar_neutral { background: var(--text-quaternary); }
 
@@ -306,8 +207,8 @@
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.66fr) minmax(330px, 0.84fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.65fr) minmax(340px, 0.9fr);
+  gap: 10px;
   align-items: stretch;
   overflow: hidden;
 }
@@ -317,14 +218,10 @@
 .activityPanel {
   min-width: 0;
   min-height: 0;
-  border: 1px solid var(--central-line);
-  border-radius: 15px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.024), rgba(255, 255, 255, 0.006) 46%),
-    #0a0b0c;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.024),
-    0 18px 46px rgba(0, 0, 0, 0.17);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: none;
   overflow: hidden;
 }
 
@@ -342,50 +239,38 @@
 .columnsPanel {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 0;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 0;
-}
-
-.columnsPanelHeader,
-.compareHeader,
-.activityHeader {
-  min-height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 12px;
 }
 
 .columnsPanelHeader,
 .compareHeader,
 .activityHeader {
-  padding: 0 18px;
-  border-bottom: 1px solid var(--central-line-soft);
-  background: rgba(255, 255, 255, 0.008);
+  min-height: 26px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .columnsPanelTitle,
 .compareHeader h3,
 .activityHeader h3 {
   margin: 0;
-  color: var(--central-text);
+  color: var(--text-primary);
   font-size: 15px;
   line-height: 1.1;
-  font-weight: 650;
-  letter-spacing: -0.032em;
+  font-weight: 620;
+  letter-spacing: -0.025em;
 }
 
 .columnsCanvas {
   flex: 1 1 auto;
-  min-height: 250px;
+  min-height: 220px;
   width: 100%;
   display: block;
-  padding: 16px 18px 12px;
-  background:
-    radial-gradient(circle at 82% 16%, rgba(255, 255, 255, 0.018), transparent 36%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0) 34%);
 }
 
 .columnsSvg {
@@ -395,55 +280,57 @@
 }
 
 .columnsAxisText {
-  fill: rgba(139, 146, 158, 0.72);
+  fill: var(--text-quaternary);
   font-size: 10px;
-  font-weight: 510;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .columnsValue {
-  fill: var(--text-tertiary);
+  fill: var(--text-secondary);
   font-size: 12px;
-  font-weight: 640;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.012em;
 }
 
 .columnsValueCurrent {
-  fill: var(--central-text);
+  fill: var(--text-primary);
   font-size: 13px;
 }
 
 .columnsMonth {
   fill: var(--text-secondary);
   font-size: 10px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: 0.06em;
 }
 
-.columnsMonthCurrent {
-  fill: var(--central-text);
-}
+.columnsMonthCurrent { fill: var(--text-primary); }
 
 .columnsYear {
   fill: var(--text-quaternary);
   font-size: 9px;
-  font-weight: 450;
+  font-weight: 400;
   letter-spacing: 0.04em;
+}
+
+.compareHeader {
+  padding: 16px 16px 0;
 }
 
 .compareHeaderHint {
   color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1;
-  font-weight: 520;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .compareBody {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 0 18px 8px;
+  padding: 12px 16px 16px;
   display: flex;
   flex-direction: column;
 }
@@ -460,24 +347,22 @@
 
 .compareItem {
   flex: 1 1 0;
-  min-height: 62px;
-  padding: 15px 0;
-  border-bottom: 1px solid var(--central-line-soft);
+  min-height: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
 }
 
-.compareItem:last-child {
-  border-bottom: 0;
-}
+.compareItem:last-child { border-bottom: 0; }
 
 .compareLeft {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
 }
 
 .compareLabel {
@@ -485,18 +370,18 @@
   color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1;
-  font-weight: 660;
-  letter-spacing: 0.072em;
+  font-weight: 620;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .compareValue {
   margin: 0;
-  color: var(--central-text);
+  color: var(--text-primary);
   font-size: 18px;
   line-height: 1;
-  font-weight: 650;
-  letter-spacing: -0.035em;
+  font-weight: 620;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -505,7 +390,7 @@
   display: inline-block;
   font-size: 12px;
   line-height: 1;
-  font-weight: 570;
+  font-weight: 520;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -514,17 +399,8 @@
 .compareDelta_risk { color: var(--danger); }
 .compareDelta_flat { color: var(--text-tertiary); }
 
-.dashboardLastCard {
-  flex: 0 0 min(226px, 32vh);
-  min-height: 190px;
-  display: block;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.dashboardLastCard .activityPanel {
-  height: 100%;
-}
+.dashboardLastCard,
+.activityPanel { display: block; }
 
 .activityPanel {
   min-height: 0;
@@ -534,6 +410,8 @@
 
 .activityHeader {
   flex: 0 0 auto;
+  padding: 14px 16px 13px;
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .activityHeaderMeta {
@@ -541,23 +419,23 @@
   color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1;
-  font-weight: 520;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .activityHeaderBadge {
-  min-width: 24px;
-  height: 24px;
+  min-width: 23px;
+  height: 23px;
   padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.064);
+  border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.022);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  font-weight: 610;
+  font-weight: 590;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -567,65 +445,41 @@
   min-height: 0;
   display: grid;
   align-content: start;
-  padding: 4px 18px 10px;
+  padding: 4px 16px 12px;
   overflow: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  scrollbar-width: none;
 }
 
-.activityList::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.activityList::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.activityList::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.13);
-  background-clip: padding-box;
-}
-
+.activityList::-webkit-scrollbar,
 .toolbar::-webkit-scrollbar { display: none; }
 
 .activityItem {
   width: 100%;
   min-height: 58px;
-  padding: 10px 0;
+  padding: 9px 0;
   border: 0;
-  border-bottom: 1px solid var(--central-line-soft);
+  border-bottom: 1px solid var(--line-subtle);
   background: transparent;
   color: var(--text-secondary);
   font: inherit;
   text-align: left;
   cursor: pointer;
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto auto auto;
-  gap: 14px;
+  grid-template-columns: 36px minmax(0, 1fr) auto auto auto;
+  gap: 12px;
   align-items: center;
-  transition: background 150ms ease;
 }
 
-.activityItem:last-child {
-  border-bottom: 0;
-}
-
-.activityItem:hover {
-  background: rgba(255, 255, 255, 0.014);
-}
+.activityItem:last-child { border-bottom: 0; }
+.activityItem:hover { background: rgba(255, 255, 255, 0.018); }
 
 .activityAvatar {
   position: relative;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background:
-    radial-gradient(circle at 42% 36%, rgba(255, 255, 255, 0.1), transparent 30%),
-    #090a0b;
+  background: #08090a;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
@@ -639,13 +493,12 @@
   display: block;
   object-fit: cover;
   object-position: center;
-  border-radius: inherit;
 }
 
 .activityAvatarInitials {
   color: var(--text-secondary);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 620;
   letter-spacing: -0.02em;
   line-height: 1;
 }
@@ -662,10 +515,10 @@
 .activityCopy strong {
   min-width: 0;
   overflow: hidden;
-  color: var(--central-text);
+  color: var(--text-primary);
   font-size: 13px;
   line-height: 1.2;
-  font-weight: 650;
+  font-weight: 620;
   letter-spacing: -0.018em;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -690,25 +543,15 @@
   color: var(--text-tertiary);
   font-size: 12px;
   line-height: 1;
-  font-weight: 520;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .activitySquad,
-.activityFee {
-  color: var(--text-secondary);
-}
-
-.activityMuted {
-  color: var(--text-quaternary);
-}
-
-.activityFee {
-  color: var(--central-text);
-  font-weight: 640;
-  letter-spacing: -0.012em;
-}
+.activityFee { color: var(--text-secondary); }
+.activityMuted { color: var(--text-quaternary); }
+.activityFee { font-weight: 620; letter-spacing: -0.012em; }
 
 .activityStatusPill {
   display: inline-flex;
@@ -725,23 +568,23 @@
 }
 
 .activityStatusPill_active {
-  background: rgba(39, 166, 68, 0.075);
-  border-color: rgba(39, 166, 68, 0.18);
+  background: rgba(39, 166, 68, 0.085);
+  border-color: rgba(39, 166, 68, 0.22);
   color: var(--success);
 }
 
 .activityStatusPill_churn {
-  background: rgba(239, 68, 68, 0.075);
-  border-color: rgba(239, 68, 68, 0.18);
+  background: rgba(239, 68, 68, 0.085);
+  border-color: rgba(239, 68, 68, 0.22);
   color: var(--danger);
 }
 
 .emptyState,
 .stateBlock {
-  padding: 24px 18px;
+  padding: 22px 16px;
   color: var(--text-tertiary);
   font-size: 12px;
-  font-weight: 520;
+  font-weight: 510;
 }
 
 .stateBlock {
@@ -749,137 +592,61 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border: 1px solid var(--central-line);
-  border-radius: 15px;
-  background: #0a0b0c;
 }
 
 .stateBlock strong {
-  color: var(--central-text);
+  color: var(--text-primary);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 590;
 }
 
 .retryButton {
   width: max-content;
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.072);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.022);
-  color: var(--central-text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1, 10px);
+  background: rgba(255, 255, 255, 0.024);
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 590;
   cursor: pointer;
 }
 
-.retryButton:hover {
-  background: rgba(255, 255, 255, 0.034);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
 .skeletonBlock,
 .skeletonTall {
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.018)),
-    #0a0b0c;
-  background-size: 260% 100%;
-  border: 1px solid var(--central-line);
-  border-radius: 15px;
-  animation: dashboardSkeleton 1.5s ease-in-out infinite;
+  background: rgba(255, 255, 255, 0.024);
+  border: 1px solid var(--line);
+  border-radius: 13px;
 }
 
-.skeletonTall {
-  min-height: 260px;
-}
-
-@keyframes dashboardSkeleton {
-  0% { background-position: 100% 0; }
-  100% { background-position: 0 0; }
-}
+.skeletonTall { min-height: 260px; }
 
 @media (min-width: 1180px) and (max-height: 820px) {
   .dashboard {
     padding-top: 12px;
-    gap: 12px;
+    gap: 10px;
   }
 
-  .metricCard {
-    min-height: 94px;
-    padding-top: 14px;
-    padding-bottom: 12px;
-  }
-
-  .columnsCanvas {
-    min-height: 218px;
-  }
-
-  .activityItem {
-    min-height: 54px;
-    padding-top: 9px;
-    padding-bottom: 9px;
-  }
-
-  .dashboardLastCard {
-    flex-basis: min(198px, 30vh);
-  }
+  .metricCard { min-height: 78px; }
+  .activityItem { min-height: 54px; }
 }
 
 @media (max-width: 1180px) {
   .dashboard {
     min-height: 100%;
     height: auto;
-    padding: 14px;
     overflow: auto;
   }
 
-  .metricsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .metricCard:not(:nth-child(4n))::after {
-    display: none;
-  }
-
-  .metricCard:not(:nth-child(2n))::after {
-    display: block;
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--central-line-soft);
-  }
-
-  .metricCard:nth-child(n + 3) {
-    border-top: 1px solid var(--central-line-soft);
-  }
-
-  .dashboardPanels {
-    grid-template-columns: 1fr;
-    overflow: visible;
-  }
-
-  .detailsPanel {
-    min-height: 250px;
-  }
-
-  .dashboardLastCard {
-    flex-basis: auto;
-    min-height: 250px;
-  }
-
-  .toolbar {
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
+  .metricsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboardPanels { grid-template-columns: 1fr; overflow: visible; }
+  .detailsPanel { min-height: 250px; }
+  .toolbar { justify-content: flex-start; flex-wrap: wrap; }
 }
 
 @media (max-width: 900px) {
-  .dashboard {
-    padding: 12px;
-  }
+  .dashboard { padding: 12px; }
 
   .toolbar {
     width: 100%;
@@ -888,31 +655,19 @@
   }
 
   .activityItem {
-    grid-template-columns: 38px minmax(0, 1fr) auto;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
     row-gap: 6px;
   }
 
   .activitySquad,
-  .activityFee {
-    display: none;
-  }
+  .activityFee { display: none; }
 }
 
 @media (max-width: 640px) {
-  .metricsGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .metricCard::after {
-    display: none !important;
-  }
-
-  .metricCard + .metricCard {
-    border-top: 1px solid var(--central-line-soft);
-  }
+  .metricsGrid { grid-template-columns: 1fr; }
 
   .activityItem {
-    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-columns: 36px minmax(0, 1fr);
   }
 
   .activityDate,
@@ -920,4 +675,303 @@
     grid-column: 2;
     justify-self: start;
   }
+}
+
+/* v130 — Dashboard alinhado ao visual validado da tela de Perfil
+   Escopo: somente refinamento visual dos cards/painéis do Dashboard. */
+.dashboard {
+  padding: 14px 18px 18px !important;
+  gap: 12px !important;
+  background: transparent !important;
+}
+
+.metricsGrid {
+  gap: 12px !important;
+}
+
+.metricCard,
+.boardSection,
+.detailsPanel,
+.activityPanel,
+.skeletonBlock,
+.skeletonTall,
+.stateBlock {
+  background: #09090b !important;
+  border: 1px solid rgba(255, 255, 255, 0.072) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.020),
+    0 1px 0 rgba(255, 255, 255, 0.012) !important;
+}
+
+.metricCard {
+  min-height: 92px !important;
+  padding: 16px 18px 15px !important;
+  gap: 9px !important;
+  cursor: grab !important;
+}
+
+.metricCard:hover {
+  background: #0b0b0d !important;
+  border-color: rgba(255, 255, 255, 0.085) !important;
+}
+
+.metricCardDragging {
+  opacity: 0.62 !important;
+  background: #0b0b0d !important;
+}
+
+.metricCardTop {
+  min-height: 16px !important;
+}
+
+.metricLabel,
+.compareLabel {
+  color: var(--text-tertiary) !important;
+  font-size: 10.5px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.065em !important;
+}
+
+.metricIcon {
+  color: var(--text-quaternary) !important;
+  opacity: 0.78 !important;
+}
+
+.metricValue {
+  color: var(--text-primary) !important;
+  font-size: clamp(21px, 1.25vw, 25px) !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.metricFooter {
+  min-height: 15px !important;
+  color: var(--text-tertiary) !important;
+}
+
+.metricHelper {
+  color: var(--text-tertiary) !important;
+}
+
+.metricProgress {
+  height: 2px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.dashboardPanels {
+  gap: 12px !important;
+}
+
+.boardSection,
+.detailsPanel,
+.activityPanel {
+  overflow: hidden !important;
+}
+
+.columnsPanel {
+  padding: 18px !important;
+  gap: 14px !important;
+}
+
+.columnsPanelHeader,
+.compareHeader,
+.activityHeader {
+  min-height: 30px !important;
+}
+
+.columnsPanelTitle,
+.compareHeader h3,
+.activityHeader h3 {
+  color: var(--text-primary) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.03em !important;
+}
+
+.columnsCanvas {
+  min-height: 236px !important;
+}
+
+.compareHeader {
+  padding: 18px 18px 0 !important;
+}
+
+.compareHeaderHint,
+.activityHeaderMeta {
+  color: var(--text-tertiary) !important;
+}
+
+.compareBody {
+  padding: 12px 18px 18px !important;
+}
+
+.compareItem {
+  padding: 12px 0 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.052) !important;
+}
+
+.compareValue {
+  color: var(--text-primary) !important;
+  font-weight: 650 !important;
+}
+
+.activityHeader {
+  padding: 16px 18px 15px !important;
+  border-bottom-color: rgba(255, 255, 255, 0.058) !important;
+  background: #09090b !important;
+}
+
+.activityHeaderBadge {
+  background: rgba(255, 255, 255, 0.026) !important;
+  border-color: rgba(255, 255, 255, 0.074) !important;
+  color: var(--text-secondary) !important;
+}
+
+.activityList {
+  padding: 6px 18px 14px !important;
+  background: #09090b !important;
+}
+
+.activityItem {
+  min-height: 62px !important;
+  padding: 11px 0 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.048) !important;
+}
+
+.activityItem:hover {
+  background: rgba(255, 255, 255, 0.012) !important;
+}
+
+.activityAvatar {
+  background: #0b0b0d !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+}
+
+.activityCopy strong {
+  color: var(--text-primary) !important;
+  font-weight: 650 !important;
+}
+
+.activityStatusPill {
+  background: rgba(255, 255, 255, 0.020) !important;
+  border-color: rgba(255, 255, 255, 0.070) !important;
+}
+
+.activityStatusPill_active {
+  background: rgba(34, 197, 94, 0.075) !important;
+  border-color: rgba(34, 197, 94, 0.18) !important;
+  color: var(--success) !important;
+}
+
+.activityStatusPill_churn {
+  background: rgba(239, 68, 68, 0.075) !important;
+  border-color: rgba(239, 68, 68, 0.18) !important;
+  color: var(--danger) !important;
+}
+
+.emptyState,
+.stateBlock {
+  color: var(--text-tertiary) !important;
+}
+
+.retryButton {
+  background: rgba(255, 255, 255, 0.020) !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  color: var(--text-primary) !important;
+}
+
+.toolbar :global(select),
+.toolbar :global(button) {
+  background: #09090b !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.toolbar :global(select):focus,
+.toolbar :global(button):focus,
+.toolbar :global(select):focus-visible,
+.toolbar :global(button):focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+}
+
+@media (min-width: 1180px) and (max-height: 820px) {
+  .metricCard {
+    min-height: 86px !important;
+    padding-top: 14px !important;
+    padding-bottom: 13px !important;
+  }
+
+  .activityItem {
+    min-height: 58px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .dashboard {
+    padding: 14px !important;
+  }
+}
+
+
+/* v140 — card system upgrade: Linear/Edifica depth sem alterar conteúdo */
+.metricCard,
+.boardSection,
+.detailsPanel,
+.activityPanel {
+  border-color: var(--card-border);
+  background:
+    linear-gradient(180deg, var(--card-highlight), rgba(255, 255, 255, 0) 34%),
+    var(--card-surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.024), 0 20px 56px rgba(0, 0, 0, 0.16);
+}
+
+.metricCard {
+  border-radius: 16px;
+}
+
+.metricCard:hover {
+  border-color: var(--card-border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 36%),
+    var(--card-surface-raised);
+}
+
+.boardSection,
+.detailsPanel,
+.activityPanel {
+  border-radius: 18px;
+}
+
+.columnsPanel {
+  padding: 18px;
+}
+
+.columnsCanvas {
+  min-height: 270px;
+  padding: 16px 14px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.044);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0) 30%),
+    rgba(255, 255, 255, 0.012);
+}
+
+.compareItem,
+.activityHeader,
+.activityItem {
+  border-color: rgba(255, 255, 255, 0.046);
+}
+
+.activityItem {
+  min-height: 66px;
+  padding: 13px 0;
+}
+
+.activityAvatar {
+  border-color: rgba(255, 255, 255, 0.07);
+  background: #070708;
 }
