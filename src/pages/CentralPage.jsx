@@ -183,8 +183,8 @@ function MetricCard({
 
 function getChartTickStep(scaleMax) {
   if (scaleMax <= 8) return 2;
-  if (scaleMax <= 20) return 5;
-  if (scaleMax <= 50) return 10;
+  if (scaleMax <= 25) return 5;
+  if (scaleMax <= 60) return 10;
   return 20;
 }
 
@@ -203,15 +203,15 @@ function EntryColumnsChart({ rows = [] }) {
   }
 
   const maxClients = Math.max(...rows.map((row) => row.cnt || 0), 0);
-  const scaleMax = Math.max(6, Math.ceil(maxClients / 3) * 3);
-  const tickStep = getChartTickStep(scaleMax);
+  const tickStep = getChartTickStep(maxClients);
+  const scaleMax = Math.max(6, Math.ceil(maxClients / tickStep) * tickStep);
   const ticks = [];
   for (let value = 0; value <= scaleMax; value += tickStep) ticks.push(value);
   if (ticks[ticks.length - 1] !== scaleMax) ticks.push(scaleMax);
 
   const VB_W = 760;
   const VB_H = 320;
-  const padding = { top: 26, right: 24, bottom: 56, left: 48 };
+  const padding = { top: 26, right: 24, bottom: 56, left: 68 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
   const stepX = rows.length > 1 ? plotW / (rows.length - 1) : plotW;
@@ -243,12 +243,12 @@ function EntryColumnsChart({ rows = [] }) {
         >
           <defs>
             <linearGradient id="entriesAreaFade" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.13)" />
+              <stop offset="0%" stopColor="rgba(255,255,255,0.08)" />
               <stop offset="100%" stopColor="rgba(255,255,255,0)" />
             </linearGradient>
             <linearGradient id="entriesLineFade" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.38)" />
-              <stop offset="78%" stopColor="rgba(255,255,255,0.48)" />
+              <stop offset="0%" stopColor="rgba(255,255,255,0.26)" />
+              <stop offset="78%" stopColor="rgba(255,255,255,0.34)" />
               <stop offset="100%" stopColor="rgba(245,184,0,0.95)" />
             </linearGradient>
           </defs>
@@ -262,7 +262,7 @@ function EntryColumnsChart({ rows = [] }) {
                   x2={VB_W - padding.right}
                   y1={y}
                   y2={y}
-                  stroke="rgba(255,255,255,0.045)"
+                  stroke="rgba(255,255,255,0.038)"
                   strokeWidth="1"
                   vectorEffect="non-scaling-stroke"
                 />
@@ -293,7 +293,7 @@ function EntryColumnsChart({ rows = [] }) {
             x2={currentPoint.px}
             y1={padding.top}
             y2={padding.top + plotH}
-            stroke="rgba(245,184,0,0.16)"
+            stroke="rgba(245,184,0,0.12)"
             strokeWidth="1"
             vectorEffect="non-scaling-stroke"
           />
