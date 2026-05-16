@@ -128,6 +128,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const [deletingAttachmentIds, setDeletingAttachmentIds] = useState(new Set());
   const [previewAttachment, setPreviewAttachment] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [attachmentDeleteTarget, setAttachmentDeleteTarget] = useState(null);
 
   const timersRef = useRef(new Map());
   const fetchIdRef = useRef(0);
@@ -385,7 +386,10 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       {entries.length === 0 ? (
         <div className={styles.emptyAnalysis}>
           <span className={styles.emptySignal} aria-hidden="true" />
-          <strong>{meta.emptyTitle}</strong>
+          <div className={styles.emptyCopy}>
+            <strong>{meta.title}</strong>
+            <span>0 registros</span>
+          </div>
           {canEdit ? (
             <button
               type="button"

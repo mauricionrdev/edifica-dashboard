@@ -89,7 +89,7 @@
 .tabBody {
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   max-height: inherit;
   overflow-y: auto;
   background: #0f1011;

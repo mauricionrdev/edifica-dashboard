@@ -1,7 +1,7 @@
 .formGrid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 13px 14px;
+  gap: 12px;
   align-items: start;
 }
 
@@ -42,20 +42,20 @@
 .identityCard {
   grid-column: 1 / -1;
   min-width: 0;
-  min-height: 74px;
-  padding: 14px;
+  min-height: 64px;
+  padding: 12px 13px;
   border: 1px solid rgba(255, 255, 255, 0.065);
-  border-radius: 13px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.012);
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .avatarPreview {
-  width: 52px;
-  height: 52px;
+  width: 46px;
+  height: 46px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 999px;
   background: #08090a;
@@ -64,7 +64,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: -0.04em;
 }
@@ -78,20 +78,14 @@
 .avatarInfo {
   min-width: 0;
   display: grid;
-  gap: 4px;
-}
-
-.avatarInfo span {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 560;
+  gap: 3px;
 }
 
 .avatarInfo strong {
   min-width: 0;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 650;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -99,7 +93,7 @@
 }
 
 .avatarInfo small {
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-size: 11.5px;
   line-height: 1.2;
 }
@@ -112,8 +106,8 @@
 }
 
 .avatarActions button {
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 32px;
+  padding: 0 11px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.018);
@@ -134,8 +128,8 @@
 }
 
 .avatarActions .dangerButton {
-  width: 34px;
-  min-width: 34px;
+  width: 32px;
+  min-width: 32px;
   padding: 0;
   justify-content: center;
   color: #ff9cad;
@@ -162,7 +156,7 @@
   }
 
   .identityCard {
-    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-columns: 46px minmax(0, 1fr);
   }
 
   .avatarActions {

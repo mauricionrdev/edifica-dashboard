@@ -34,8 +34,8 @@
     "title action"
     "meta meta";
   align-items: center;
-  gap: 14px 16px;
-  padding: 14px;
+  gap: 16px;
+  padding: 16px;
   border: 1px solid var(--analysis-accent-line);
   border-radius: 14px;
   background:
@@ -137,7 +137,7 @@
 }
 
 .emptyAnalysis {
-  min-height: 160px;
+  min-height: 118px;
   padding: 22px;
   border: 1px solid var(--analysis-accent-line);
   border-radius: 14px;
@@ -1008,5 +1008,106 @@
   .emptyAnalysis {
     grid-template-columns: 1fr;
     justify-items: start;
+  }
+}
+
+/* v10 refinamentos do modal de análises */
+.loadingShell {
+  min-height: 128px;
+  align-content: center;
+}
+
+.emptyAnalysis {
+  min-height: 104px;
+  padding: 16px;
+  grid-template-columns: 34px minmax(0, 1fr) max-content;
+  background:
+    radial-gradient(circle at 0 0, var(--analysis-accent-soft), transparent 42%),
+    rgba(255, 255, 255, 0.01);
+}
+
+.emptyCopy {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.emptyCopy strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.emptyCopy span {
+  width: max-content;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 999px;
+  color: var(--analysis-accent);
+  background: var(--analysis-accent-soft);
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 620;
+}
+
+.attachmentsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(222px, 246px));
+  gap: 9px;
+}
+
+.attachmentPreview {
+  height: 96px;
+}
+
+.attachmentActions {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 30px;
+  gap: 7px;
+  padding: 9px;
+}
+
+.attachmentActions button,
+.attachmentActions a,
+.attachButton {
+  min-height: 30px;
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 30px;
+  min-width: 30px;
+}
+
+@media (max-width: 760px) {
+  .header {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "meta"
+      "action";
+  }
+
+  .headerMeta {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .heroMetric {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .emptyAnalysis {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .emptyAction {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 }

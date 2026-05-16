@@ -239,7 +239,6 @@ export default function OverviewTab({
             </div>
 
             <div className={styles.avatarInfo}>
-              <span>Imagem do cliente</span>
               <strong>{client.name}</strong>
               <small>{avatarUrl ? 'Imagem configurada' : 'Sem imagem configurada'}</small>
             </div>

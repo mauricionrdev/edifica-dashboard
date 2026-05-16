@@ -12,41 +12,41 @@
 
 .modalCard {
   position: relative;
-  width: min(980px, calc(100vw - 48px));
-  height: min(820px, calc(100vh - 48px));
+  width: min(920px, calc(100vw - 56px));
+  max-height: min(760px, calc(100vh - 56px));
   min-width: 0;
   color: var(--text-primary);
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 18px;
   background: #0f1011;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   box-shadow:
     0 26px 92px rgba(0, 0, 0, 0.54),
     inset 0 1px 0 rgba(255, 255, 255, 0.035);
   transition:
     width 220ms ease,
-    height 220ms ease,
+    max-height 220ms ease,
     transform 220ms ease;
 }
 
 .modalCard[data-active-tab='overview'] {
-  width: min(960px, calc(100vw - 48px));
+  width: min(900px, calc(100vw - 56px));
 }
 
 .modalCard[data-active-tab='fees'] {
-  width: min(1060px, calc(100vw - 48px));
+  width: min(1040px, calc(100vw - 56px));
 }
 
 .modalCard[data-active-tab='project'] {
-  width: min(1080px, calc(100vw - 48px));
+  width: min(1040px, calc(100vw - 56px));
 }
 
 .modalCard[data-active-tab='icp'],
 .modalCard[data-active-tab='gdv'],
 .modalCard[data-active-tab='routes'] {
-  width: min(980px, calc(100vw - 48px));
+  width: min(940px, calc(100vw - 56px));
 }
 
 .modalHead {
@@ -63,7 +63,7 @@
 .modalBody {
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  flex: 1 1 auto;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   background: #0c0d0e;
@@ -241,7 +241,7 @@
 }
 
 .section {
-  padding: 18px 22px;
+  padding: 16px 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.055);
   background: #0f1011;
 }
@@ -281,7 +281,7 @@
 .selectControl :global(input),
 .selectControl :global(select) {
   width: 100%;
-  min-height: 38px;
+  min-height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.018);
@@ -494,14 +494,29 @@
 
 .dangerSection {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  gap: 14px;
   background: #0d0e0f;
 }
 
 .dangerSection .sectionTitle {
-  margin-bottom: 12px;
+  margin: 0;
 }
 
 .deleteClientButton {
   justify-self: end;
+  color: #ff9cad;
+  border-color: rgba(255, 91, 115, 0.32);
+  background: rgba(255, 91, 115, 0.07);
+}
+
+.deleteClientButton:hover:not(:disabled) {
+  color: #ffd0d8;
+  border-color: rgba(255, 91, 115, 0.44);
+  background: rgba(255, 91, 115, 0.12);
+}
+
+.dangerSection .confirmBar {
+  grid-column: 1 / -1;
 }
