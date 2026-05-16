@@ -167,3 +167,9 @@
   overflow-y: auto;
   background: #08090a;
 }
+
+/* v17 — mantém área interna estável para footer da visão geral */
+.tabBody {
+  display: flex;
+  flex-direction: column;
+}

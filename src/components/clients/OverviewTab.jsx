@@ -157,11 +157,11 @@ export default function OverviewTab({
   const gdvRows = gdvOptions(users, form.gdvName);
 
   return (
-    <>
+    <div className={styles.overviewShell}>
       <div className={`${drawerStyles.section} ${styles.mainSection}`}>
         <div className={drawerStyles.sectionTitle}>Dados principais</div>
         <div className={styles.profileGrid}>
-          <aside className={styles.avatarRail}>
+          <aside className={styles.avatarCard}>
             <div className={styles.avatarPrimary} aria-label={`Imagem de ${client.name}`}>
               {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
             </div>
@@ -265,7 +265,7 @@ export default function OverviewTab({
 
       <div className={drawerStyles.section}>
         <div className={drawerStyles.sectionTitle}>Contrato</div>
-        <div className={styles.formGrid}>
+        <div className={`${styles.formGrid} ${styles.contractGrid}`}>
           <div className={`${drawerStyles.field} ${styles.fieldQuarter}`}>
             <label className={drawerStyles.label} htmlFor="cd-start">Início</label>
             <DateField
@@ -319,7 +319,7 @@ export default function OverviewTab({
       </div>
 
       {canDelete && canEdit ? (
-        <div className={`${drawerStyles.section} ${styles.dangerSection}`}>
+        <div className={`${drawerStyles.section} ${styles.dangerSection} ${styles.dangerFooter}`}>
           <div className={drawerStyles.sectionTitle}>Zona perigosa</div>
           {confirmingDelete ? (
             <div className={drawerStyles.confirmBar}>
@@ -359,6 +359,6 @@ export default function OverviewTab({
           )}
         </div>
       ) : null}
-    </>
+    </div>
   );
 }

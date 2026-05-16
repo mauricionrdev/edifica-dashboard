@@ -521,3 +521,195 @@
     grid-column: 1;
   }
 }
+
+/* v17 — Dados principais com card de avatar dedicado e footer fixo visual */
+.overviewShell {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #08090a;
+}
+
+.mainSection {
+  padding: 18px 20px 20px;
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: 156px minmax(0, 1fr);
+  column-gap: 22px;
+  align-items: stretch;
+}
+
+.avatarCard {
+  min-width: 0;
+  min-height: 192px;
+  padding: 18px 14px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.072);
+  border-radius: 16px;
+  background: #0f1011;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+.avatarPrimary {
+  width: 86px;
+  height: 86px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  background: #08090a;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  box-shadow: none;
+}
+
+.avatarPrimary img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.avatarControls {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+}
+
+.avatarControls button {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.076);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 570;
+  cursor: pointer;
+}
+
+.avatarControls button:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.034);
+}
+
+.avatarControls .avatarRemoveButton {
+  color: #ff9cad;
+  border-color: rgba(255, 91, 115, 0.2);
+  background: rgba(255, 91, 115, 0.038);
+}
+
+.profileFields {
+  min-width: 0;
+  max-width: 760px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(180px, 0.7fr) minmax(180px, 0.7fr);
+  column-gap: 18px;
+  row-gap: 16px;
+  align-content: start;
+}
+
+.profileFieldName {
+  grid-column: 1 / -1;
+}
+
+.profileFields :global(input),
+.profileFields :global(button),
+.profileFields :global(select) {
+  min-height: 40px;
+}
+
+.contractGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dangerFooter {
+  margin-top: auto;
+}
+
+.dangerSection {
+  min-height: 74px;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 16px;
+  background: #090a0b;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.dangerSection > :first-child {
+  margin-bottom: 0;
+}
+
+.deleteClientButton {
+  justify-self: end;
+}
+
+@media (max-width: 980px) {
+  .profileGrid {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  .avatarCard {
+    min-height: auto;
+    grid-template-columns: 74px minmax(0, 1fr);
+    justify-items: start;
+    align-content: center;
+  }
+
+  .avatarPrimary {
+    width: 74px;
+    height: 74px;
+  }
+
+  .avatarControls {
+    max-width: 180px;
+  }
+
+  .profileFields {
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profileFieldName {
+    grid-column: 1 / -1;
+  }
+
+  .contractGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .profileFields,
+  .contractGrid,
+  .dangerSection {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarCard {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .deleteClientButton {
+    justify-self: start;
+  }
+}
