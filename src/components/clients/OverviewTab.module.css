@@ -1,32 +1,32 @@
 .formGrid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 15px 16px;
+  gap: 13px 14px;
   align-items: start;
 }
 
 .fieldName {
-  grid-column: span 7;
+  grid-column: span 6;
 }
 
 .fieldSquad {
-  grid-column: span 5;
+  grid-column: span 3;
 }
 
 .fieldStatus {
-  grid-column: span 4;
+  grid-column: span 3;
 }
 
 .fieldGestor {
-  grid-column: span 8;
+  grid-column: span 6;
 }
 
 .fieldGdv {
-  grid-column: 1 / -1;
+  grid-column: span 6;
 }
 
 .fieldQuarter {
-  grid-column: span 6;
+  grid-column: span 3;
 }
 
 .fieldCompact {
@@ -39,18 +39,18 @@
   line-height: 1.5;
 }
 
-.identityCard,
-.avatarBlock {
+.identityCard {
   grid-column: 1 / -1;
-  min-height: 76px;
-  padding: 13px;
+  min-width: 0;
+  min-height: 74px;
+  padding: 14px;
   border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.012);
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
 }
 
 .avatarPreview {
@@ -60,11 +60,11 @@
   border-radius: 999px;
   background: #08090a;
   color: var(--text-primary);
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 650;
   letter-spacing: -0.04em;
 }
@@ -72,7 +72,6 @@
 .avatarPreview img {
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
 }
 
@@ -82,40 +81,40 @@
   gap: 4px;
 }
 
-.avatarInfo strong {
-  color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.2;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .avatarInfo span {
   color: var(--text-tertiary);
   font-size: 11px;
-  line-height: 1.35;
+  font-weight: 560;
+}
+
+.avatarInfo strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .avatarInfo small {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11.5px;
   line-height: 1.2;
 }
 
 .avatarActions {
   display: inline-flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .avatarActions button {
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.018);
   color: var(--text-secondary);
@@ -129,46 +128,41 @@
 }
 
 .avatarActions button:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.032);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.035);
-}
-
-.avatarActions button:disabled {
-  opacity: 0.52;
-  cursor: not-allowed;
 }
 
 .avatarActions .dangerButton {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  justify-content: center;
+  color: #ff9cad;
   border-color: rgba(255, 91, 115, 0.22);
   background: rgba(255, 91, 115, 0.045);
-  color: #ff9cad;
 }
 
-.avatarActions .dangerButton:hover:not(:disabled) {
+.dangerButton:hover:not(:disabled) {
   color: #ffd0d8;
   background: rgba(255, 91, 115, 0.09);
 }
 
-@media (max-width: 840px) {
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
-
+@media (max-width: 920px) {
   .fieldName,
-  .fieldSquad,
-  .fieldStatus,
   .fieldGestor,
   .fieldGdv,
-  .fieldQuarter,
-  .identityCard,
-  .avatarBlock {
-    grid-column: 1;
+  .fieldQuarter {
+    grid-column: span 6;
   }
 
-  .identityCard,
-  .avatarBlock {
-    grid-template-columns: 52px minmax(0, 1fr);
+  .fieldSquad,
+  .fieldStatus {
+    grid-column: span 6;
+  }
+
+  .identityCard {
+    grid-template-columns: 48px minmax(0, 1fr);
   }
 
   .avatarActions {
@@ -177,10 +171,13 @@
   }
 }
 
-@media (max-width: 520px) {
-  .identityCard,
-  .avatarBlock {
-    grid-template-columns: 1fr;
-    justify-items: start;
+@media (max-width: 640px) {
+  .fieldName,
+  .fieldSquad,
+  .fieldStatus,
+  .fieldGestor,
+  .fieldGdv,
+  .fieldQuarter {
+    grid-column: 1 / -1;
   }
 }

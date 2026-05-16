@@ -11,7 +11,6 @@ import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import DateField from '../ui/DateField.jsx';
 import { TrashIcon } from '../ui/Icons.jsx';
-import StateBlock from '../ui/StateBlock.jsx';
 import styles from './AnalysisTab.module.css';
 
 const DEBOUNCE_MS = 500;
@@ -227,13 +226,24 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     }
   }
 
-  async function handleRemoveAttachment(entryId, attachment) {
+  function requestRemoveAttachment(entryId, attachment) {
     if (!entryId || !attachment?.id) return;
+    setAttachmentDeleteTarget({ entryId, attachment });
+  }
+
+  async function confirmRemoveAttachment() {
+    const target = attachmentDeleteTarget;
+    const entryId = target?.entryId;
+    const attachment = target?.attachment;
+    if (!entryId || !attachment?.id) return;
+
+    setAttachmentDeleteTarget(null);
     markDeletingAttachment(attachment.id, true);
     try {
       await deleteAnalysisAttachment(clientId, type, entryId, attachment.id);
       updateEntryAttachments(entryId, (current) => current.filter((item) => item.id !== attachment.id));
       if (previewAttachment?.id === attachment.id) setPreviewAttachment(null);
+      showToast('Anexo removido.', { variant: 'success' });
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Erro ao remover anexo.';
       showToast(message, { variant: 'error' });
@@ -373,12 +383,20 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       </div>
 
       {entries.length === 0 ? (
-        <StateBlock
-          variant="empty"
-          compact
-          title={meta.emptyTitle}
-          description={meta.emptyDescription}
-        />
+        <div className={styles.emptyAnalysis}>
+          <span className={styles.emptySignal} aria-hidden="true" />
+          <strong>{meta.emptyTitle}</strong>
+          {canEdit ? (
+            <button
+              type="button"
+              className={styles.emptyAction}
+              onClick={handleCreate}
+              disabled={creating}
+            >
+              {creating ? 'Criando…' : meta.createLabel}
+            </button>
+          ) : null}
+        </div>
       ) : (
         entries.map((entry) => {
           const isPending = pendingIds.has(entry.id);
@@ -474,7 +492,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                               <button
                                 type="button"
                                 className={styles.attachmentRemove}
-                                onClick={() => handleRemoveAttachment(entry.id, attachment)}
+                                onClick={() => requestRemoveAttachment(entry.id, attachment)}
                                 disabled={isDeleting}
                                 aria-label={isDeleting ? 'Removendo anexo' : 'Remover anexo'}
                                 title={isDeleting ? 'Removendo…' : 'Remover'}
@@ -530,6 +548,32 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               ) : (
                 <img src={previewAttachment.dataUrl} alt="" />
               )}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {attachmentDeleteTarget ? (
+        <div className={styles.confirmOverlay} role="presentation" onClick={() => setAttachmentDeleteTarget(null)}>
+          <section
+            className={styles.confirmModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Remover anexo"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.confirmHead}>
+              <span>Remover anexo</span>
+              <strong>{attachmentDeleteTarget.attachment?.fileName || 'Anexo'}</strong>
+            </div>
+            <p>Este arquivo será removido deste registro.</p>
+            <div className={styles.confirmActions}>
+              <button type="button" className={styles.cancelBtn} onClick={() => setAttachmentDeleteTarget(null)}>
+                Cancelar
+              </button>
+              <button type="button" className={styles.confirmDeleteBtn} onClick={confirmRemoveAttachment}>
+                Remover
+              </button>
             </div>
           </section>
         </div>

@@ -3,42 +3,48 @@
   --analysis-accent-soft: rgba(245, 184, 0, 0.08);
   --analysis-accent-line: rgba(245, 184, 0, 0.22);
   display: grid;
-  gap: 12px;
-  padding: 14px;
-  background: #08090a;
+  gap: 14px;
+  padding: 16px 18px 20px;
+  background: #0f1011;
 }
 
 .icp {
   --analysis-accent: #60a5fa;
   --analysis-accent-soft: rgba(96, 165, 250, 0.08);
-  --analysis-accent-line: rgba(96, 165, 250, 0.22);
+  --analysis-accent-line: rgba(96, 165, 250, 0.24);
 }
 
 .gdv {
   --analysis-accent: #2dd4bf;
   --analysis-accent-soft: rgba(45, 212, 191, 0.08);
-  --analysis-accent-line: rgba(45, 212, 191, 0.22);
+  --analysis-accent-line: rgba(45, 212, 191, 0.24);
 }
 
 .routes {
   --analysis-accent: #a78bfa;
   --analysis-accent-soft: rgba(167, 139, 250, 0.08);
-  --analysis-accent-line: rgba(167, 139, 250, 0.24);
+  --analysis-accent-line: rgba(167, 139, 250, 0.26);
 }
 
 .header {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto max-content;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-areas:
+    "title action"
+    "meta meta";
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.016);
+  gap: 14px 16px;
+  padding: 14px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, var(--analysis-accent-soft), rgba(255, 255, 255, 0.012)),
+    rgba(255, 255, 255, 0.01);
 }
 
 .titleBlock {
+  grid-area: title;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -60,32 +66,34 @@
   text-transform: uppercase;
 }
 
-
 .headerMeta {
+  grid-area: meta;
   min-width: 0;
   display: grid;
-  grid-template-columns: repeat(3, max-content);
+  grid-template-columns: repeat(3, minmax(0, max-content));
   align-items: center;
-  justify-content: end;
+  justify-content: start;
+  gap: 0;
 }
 
 .heroMetric {
   min-width: 0;
-  min-height: 38px;
-  padding: 0 12px;
-  border-left: 1px solid var(--line-subtle);
+  min-height: 36px;
+  padding: 0 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
   display: grid;
   align-content: center;
   gap: 4px;
 }
 
 .heroMetric:first-child {
+  padding-left: 0;
   border-left: 0;
 }
 
 .heroMetric strong {
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1;
   font-weight: 620;
   letter-spacing: -0.035em;
@@ -103,28 +111,87 @@
 }
 
 .addBtn {
+  grid-area: action;
   min-height: 32px;
   padding: 0 12px;
   border-radius: 10px;
-  border: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-secondary);
+  border: 1px solid var(--analysis-accent-line);
+  background: var(--analysis-accent-soft);
+  color: var(--analysis-accent);
   font-family: inherit;
   font-size: 12px;
-  font-weight: 560;
+  font-weight: 620;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .addBtn:hover:not(:disabled) {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--analysis-accent);
+  background: color-mix(in srgb, var(--analysis-accent) 12%, transparent);
   color: var(--text-primary);
 }
 
 .addBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.emptyAnalysis {
+  min-height: 160px;
+  padding: 22px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 0 0, var(--analysis-accent-soft), transparent 36%),
+    rgba(255, 255, 255, 0.012);
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 14px;
+}
+
+.emptySignal {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 12px;
+  background: var(--analysis-accent-soft);
+  position: relative;
+}
+
+.emptySignal::after {
+  content: '';
+  position: absolute;
+  inset: 14px;
+  border-radius: 999px;
+  background: var(--analysis-accent);
+  box-shadow: 0 0 24px var(--analysis-accent);
+}
+
+.emptyAnalysis strong {
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.emptyAction {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 10px;
+  background: var(--analysis-accent-soft);
+  color: var(--analysis-accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 620;
+  cursor: pointer;
+}
+
+.emptyAction:hover:not(:disabled) {
+  border-color: var(--analysis-accent);
+  color: var(--text-primary);
 }
 
 .entry {
@@ -442,14 +509,15 @@
 
 .attachmentsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(248px, 268px));
+  justify-content: start;
   gap: 10px;
 }
 
 .attachmentCard {
   min-width: 0;
   border: 1px solid var(--line-subtle);
-  border-radius: 12px;
+  border-radius: 13px;
   background: rgba(255,255,255,.014);
   overflow: hidden;
 }
@@ -516,16 +584,17 @@
 
 .attachmentActions {
   padding: 10px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 34px;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .attachmentActions button,
 .attachmentActions a,
 .attachButton {
-  min-height: 28px;
+  min-width: 0;
+  min-height: 30px;
   padding: 0 10px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
@@ -539,6 +608,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .attachmentActions button:hover:not(:disabled),
@@ -550,8 +620,18 @@
 }
 
 .attachmentActions .attachmentRemove {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
   color: #ff9cad;
   border-color: rgba(255, 91, 115, 0.22);
+  background: rgba(255, 91, 115, 0.045);
+}
+
+.attachmentActions .attachmentRemove:hover:not(:disabled) {
+  color: #ffd0d8;
+  border-color: rgba(255, 91, 115, 0.36);
+  background: rgba(255, 91, 115, 0.09);
 }
 
 .attachButton {
@@ -902,5 +982,31 @@
 @media (max-width: 920px) {
   .panel {
     padding: 14px 16px 18px;
+  }
+}
+
+
+@media (max-width: 760px) {
+  .header {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "meta"
+      "action";
+  }
+
+  .headerMeta {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .heroMetric {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .emptyAnalysis {
+    grid-template-columns: 1fr;
+    justify-items: start;
   }
 }

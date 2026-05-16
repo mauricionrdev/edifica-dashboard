@@ -1,7 +1,7 @@
 .panel {
   display: grid;
-  gap: 14px;
-  padding: 16px 22px 22px;
+  gap: 18px;
+  padding: 18px 22px 24px;
   background: #0f1011;
 }
 
@@ -52,11 +52,13 @@
 }
 
 .sectionHead {
-  min-height: 38px;
+  min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
 }
 
 .sectionActions {
@@ -73,13 +75,14 @@
 
 .rows {
   display: grid;
-  gap: 10px;
+  gap: 14px;
+  margin-top: 2px;
 }
 
 .rowCard {
   display: grid;
   gap: 12px;
-  padding: 14px;
+  padding: 16px;
   border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.012);
@@ -177,4 +180,19 @@
   .sectionActions {
     justify-content: flex-start;
   }
+}
+
+
+.sectionHead {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.rows {
+  gap: 14px;
+  margin-top: 2px;
+}
+
+.rowCard {
+  padding: 16px;
 }

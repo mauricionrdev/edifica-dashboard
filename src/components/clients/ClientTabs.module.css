@@ -1,7 +1,7 @@
 .tabsBar {
   min-width: 0;
-  min-height: 58px;
-  padding: 11px 14px;
+  min-height: 56px;
+  padding: 10px 14px;
   border-right: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.065);
   background: #101112;
@@ -20,6 +20,9 @@
 }
 
 .tab {
+  --tab-accent: var(--accent-amber, #f5b800);
+  --tab-accent-soft: rgba(245, 184, 0, 0.06);
+  --tab-accent-line: rgba(245, 184, 0, 0.34);
   position: relative;
   width: auto;
   min-width: max-content;
@@ -38,6 +41,28 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.tab_icp {
+  --tab-accent: #60a5fa;
+  --tab-accent-soft: rgba(96, 165, 250, 0.075);
+  --tab-accent-line: rgba(96, 165, 250, 0.30);
+}
+
+.tab_gdv {
+  --tab-accent: #2dd4bf;
+  --tab-accent-soft: rgba(45, 212, 191, 0.075);
+  --tab-accent-line: rgba(45, 212, 191, 0.30);
+}
+
+.tab_routes {
+  --tab-accent: #a78bfa;
+  --tab-accent-soft: rgba(167, 139, 250, 0.075);
+  --tab-accent-line: rgba(167, 139, 250, 0.32);
 }
 
 .tab::before,
@@ -56,9 +81,9 @@
 
 .tabActive,
 .tabActive:hover {
-  border-color: rgba(245, 184, 0, 0.36);
-  background: rgba(245, 184, 0, 0.06);
-  color: var(--accent-amber-strong, #f5b800);
+  border-color: var(--tab-accent-line);
+  background: var(--tab-accent-soft);
+  color: var(--tab-accent);
 }
 
 .tabBody {

@@ -178,6 +178,7 @@ export default function ClientDetailDrawer({
     <div className={drawerStyles.overlay} role="presentation" onClick={onClose}>
       <section
         className={drawerStyles.modalCard}
+        data-active-tab={activeTab}
         role="dialog"
         aria-modal="true"
         aria-labelledby="client-drawer-name"
@@ -194,7 +195,6 @@ export default function ClientDetailDrawer({
             </div>
 
             <div className={drawerStyles.identityText}>
-              <span className={drawerStyles.modalEyebrow}>Cliente</span>
               <div className={drawerStyles.nameRow}>
                 <h2 id="client-drawer-name" className={drawerStyles.name}>
                   {client.name}
@@ -241,7 +241,7 @@ export default function ClientDetailDrawer({
                 type="button"
                 role="tab"
                 aria-selected={activeTab === tab.key}
-                className={`${tabStyles.tab} ${
+                className={`${tabStyles.tab} ${tabStyles[`tab_${tab.key}`] || ''} ${
                   activeTab === tab.key ? tabStyles.tabActive : ''
                 }`.trim()}
                 onClick={() => setActiveTab(tab.key)}
