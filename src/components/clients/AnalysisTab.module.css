@@ -823,3 +823,84 @@
 .attachmentsArea > .attachButton {
   display: none;
 }
+
+
+/* v8 — refinamento do modal de cliente */
+.panel {
+  gap: 14px;
+  padding: 16px 22px 22px;
+  background: #0f1011;
+}
+
+.header,
+.entry,
+.attachmentCard {
+  border-color: rgba(255, 255, 255, 0.065);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.header {
+  padding: 13px;
+}
+
+.eyebrow {
+  min-height: 28px;
+  border-color: rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.014);
+  color: var(--text-secondary);
+}
+
+.heroMetric {
+  min-height: 40px;
+  border-left-color: rgba(255, 255, 255, 0.055);
+}
+
+.addBtn,
+.attachButton,
+.attachmentActions button,
+.attachmentActions a {
+  min-height: 32px;
+  border-color: rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.018);
+  border-radius: 10px;
+}
+
+.attachmentsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.attachmentPreview {
+  height: 128px;
+  border-bottom-color: rgba(255, 255, 255, 0.055);
+  background: #090a0b;
+}
+
+.attachmentInfo {
+  padding: 11px 12px 0;
+}
+
+.attachmentActions {
+  padding: 11px 12px 12px;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+  border-radius: 999px;
+  justify-self: end;
+}
+
+.attachmentsEmpty {
+  min-height: 44px;
+  border-color: rgba(255, 255, 255, 0.065);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+@media (max-width: 920px) {
+  .panel {
+    padding: 14px 16px 18px;
+  }
+}
