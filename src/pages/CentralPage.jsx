@@ -211,11 +211,22 @@ function EntryColumnsChart({ rows = [] }) {
 
   const VB_W = 760;
   const VB_H = 320;
-  const padding = { top: 30, right: 24, bottom: 54, left: 44 };
+  const padding = { top: 26, right: 24, bottom: 56, left: 48 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
-  const slotW = plotW / rows.length;
-  const barW = Math.min(48, slotW * 0.42);
+  const stepX = rows.length > 1 ? plotW / (rows.length - 1) : plotW;
+
+  const points = rows.map((row, index) => {
+    const px = padding.left + stepX * index;
+    const py = padding.top + plotH - ((row.cnt || 0) / scaleMax) * plotH;
+    return { ...row, px, py };
+  });
+
+  const linePath = points
+    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.px} ${point.py}`)
+    .join(' ');
+  const areaPath = `${linePath} L ${points[points.length - 1].px} ${padding.top + plotH} L ${points[0].px} ${padding.top + plotH} Z`;
+  const currentPoint = points.find((point) => point.isNow) || points[points.length - 1];
 
   return (
     <div className={styles.columnsPanel}>
@@ -230,6 +241,18 @@ function EntryColumnsChart({ rows = [] }) {
           preserveAspectRatio="none"
           aria-label="Entradas por mês"
         >
+          <defs>
+            <linearGradient id="entriesAreaFade" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.13)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+            </linearGradient>
+            <linearGradient id="entriesLineFade" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.38)" />
+              <stop offset="78%" stopColor="rgba(255,255,255,0.48)" />
+              <stop offset="100%" stopColor="rgba(245,184,0,0.95)" />
+            </linearGradient>
+          </defs>
+
           {ticks.map((tick) => {
             const y = padding.top + plotH - (tick / scaleMax) * plotH;
             return (
@@ -244,7 +267,7 @@ function EntryColumnsChart({ rows = [] }) {
                   vectorEffect="non-scaling-stroke"
                 />
                 <text
-                  x={padding.left - 10}
+                  x={padding.left - 12}
                   y={y + 4}
                   textAnchor="end"
                   className={styles.columnsAxisText}
@@ -255,60 +278,65 @@ function EntryColumnsChart({ rows = [] }) {
             );
           })}
 
-          {rows.map((row, index) => {
-            const cx = padding.left + slotW * index + slotW / 2;
-            const barH = scaleMax > 0 ? (row.cnt / scaleMax) * plotH : 0;
-            const x = cx - barW / 2;
-            const y = padding.top + plotH - barH;
-            const isCurrent = Boolean(row.isNow);
+          <path d={areaPath} fill="url(#entriesAreaFade)" />
+          <path
+            d={linePath}
+            fill="none"
+            stroke="url(#entriesLineFade)"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
 
+          <line
+            x1={currentPoint.px}
+            x2={currentPoint.px}
+            y1={padding.top}
+            y2={padding.top + plotH}
+            stroke="rgba(245,184,0,0.16)"
+            strokeWidth="1"
+            vectorEffect="non-scaling-stroke"
+          />
+
+          {points.map((point) => {
+            const isCurrent = Boolean(point.isNow);
             return (
-              <g key={`${row.y}-${row.m}`}>
-                {isCurrent ? (
-                  <rect
-                    x={cx - slotW * 0.36}
-                    y={padding.top - 8}
-                    width={slotW * 0.72}
-                    height={plotH + 22}
-                    rx="18"
-                    fill="rgba(245,184,0,0.06)"
-                  />
-                ) : null}
-
-                <rect
-                  x={x}
-                  y={y}
-                  width={barW}
-                  height={Math.max(barH, 2)}
-                  rx="10"
-                  ry="10"
-                  fill={isCurrent ? 'rgba(245,184,0,0.92)' : 'rgba(255,255,255,0.12)'}
+              <g key={`${point.y}-${point.m}`}>
+                <circle
+                  cx={point.px}
+                  cy={point.py}
+                  r={isCurrent ? '12' : '8'}
+                  fill={isCurrent ? 'rgba(245,184,0,0.10)' : 'rgba(255,255,255,0.05)'}
                 />
-
+                <circle
+                  cx={point.px}
+                  cy={point.py}
+                  r={isCurrent ? '6' : '4'}
+                  fill={isCurrent ? 'rgba(245,184,0,0.96)' : 'rgba(255,255,255,0.88)'}
+                />
                 <text
-                  x={cx}
-                  y={y - 10}
+                  x={point.px}
+                  y={point.py - 16}
                   textAnchor="middle"
                   className={`${styles.columnsValue} ${isCurrent ? styles.columnsValueCurrent : ''}`}
                 >
-                  {fmtInt(row.cnt)}
+                  {fmtInt(point.cnt)}
                 </text>
-
                 <text
-                  x={cx}
-                  y={VB_H - 26}
+                  x={point.px}
+                  y={VB_H - 28}
                   textAnchor="middle"
                   className={`${styles.columnsMonth} ${isCurrent ? styles.columnsMonthCurrent : ''}`}
                 >
-                  {MONTHS_FULL[row.m].slice(0, 3).toUpperCase()}
+                  {MONTHS_FULL[point.m].slice(0, 3).toUpperCase()}
                 </text>
                 <text
-                  x={cx}
-                  y={VB_H - 10}
+                  x={point.px}
+                  y={VB_H - 12}
                   textAnchor="middle"
                   className={styles.columnsYear}
                 >
-                  {String(row.y)}
+                  {String(point.y)}
                 </text>
               </g>
             );
