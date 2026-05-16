@@ -158,111 +158,107 @@ export default function OverviewTab({
 
   return (
     <>
-      <div className={drawerStyles.section}>
+      <div className={`${drawerStyles.section} ${styles.mainSection}`}>
         <div className={drawerStyles.sectionTitle}>Dados principais</div>
-        <div className={styles.formGrid}>
-          <div className={`${drawerStyles.field} ${styles.fieldName}`}>
-            <label className={drawerStyles.label} htmlFor="cd-name">Nome</label>
-            <input
-              id="cd-name"
-              className={drawerStyles.input}
-              type="text"
-              value={form.name}
-              onChange={(event) => onTextChange('name', 'name', event.target.value)}
-              disabled={deleting || !canEdit}
-            />
-          </div>
-
-          <div className={`${drawerStyles.field} ${styles.fieldSquad}`}>
-            <label className={drawerStyles.label} htmlFor="cd-squad">Squad</label>
-            <Select
-              className={drawerStyles.selectControl}
-              value={form.squadId}
-              onChange={(event) => onSelectChange('squadId', 'squadId', event.target.value)}
-              disabled={deleting || !canEdit}
-              placeholder="Selecionar squad"
-              aria-label="Squad do cliente"
-            >
-              <option value="">Sem squad</option>
-              {squads.map((squad) => (
-                <option key={squad.id} value={squad.id}>{squad.name}</option>
-              ))}
-            </Select>
-          </div>
-
-          <div className={`${drawerStyles.field} ${styles.fieldStatus}`}>
-            <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
-            <Select
-              className={drawerStyles.selectControl}
-              value={form.status}
-              onChange={(event) => onSelectChange('status', 'status', event.target.value)}
-              disabled={deleting || !canEdit}
-              aria-label="Status do cliente"
-            >
-              {CLIENT_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </Select>
-          </div>
-
-          <div className={`${drawerStyles.field} ${styles.fieldGestor}`}>
-            <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor</label>
-            <UserPicker
-              className={drawerStyles.selectControl}
-              users={gestorRows}
-              value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
-              onChange={(userId) => onSelectChange('gestor', 'gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
-              disabled={deleting || !canEdit}
-              placeholder="Sem gestor"
-              disableHover
-              portal
-            />
-          </div>
-
-          <div className={`${drawerStyles.field} ${styles.fieldGdv}`}>
-            <label className={drawerStyles.label} htmlFor="cd-gdv">GDV</label>
-            <UserPicker
-              className={drawerStyles.selectControl}
-              users={gdvRows}
-              value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
-              onChange={(userId) => onSelectChange('gdvName', 'gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
-              disabled={deleting || !canEdit}
-              placeholder="Sem GDV"
-              disableHover
-              portal
-            />
-          </div>
-
-          <div className={styles.identityCard}>
-            <div className={styles.avatarPreview} aria-label={`Imagem de ${client.name}`}>
+        <div className={styles.profileGrid}>
+          <aside className={styles.avatarRail}>
+            <div className={styles.avatarPrimary} aria-label={`Imagem de ${client.name}`}>
               {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
             </div>
 
-            <div className={styles.avatarInfo}>
-              <strong>{client.name}</strong>
-              <small>{avatarUrl ? 'Imagem configurada' : 'Sem imagem configurada'}</small>
-            </div>
-
             {canManageAvatar ? (
-              <div className={styles.avatarActions}>
-                <button type="button" onClick={onPickAvatar} disabled={deleting} title="Enviar imagem" aria-label="Enviar imagem">
-                  <CameraIcon size={14} />
-                  <span>{avatarUrl ? 'Trocar imagem' : 'Enviar imagem'}</span>
+              <div className={styles.avatarControls}>
+                <button type="button" onClick={onPickAvatar} disabled={deleting} title="Alterar imagem" aria-label="Alterar imagem">
+                  {avatarUrl ? 'Trocar' : 'Alterar'}
                 </button>
                 {avatarUrl ? (
                   <button
                     type="button"
-                    className={styles.dangerButton}
+                    className={styles.avatarRemoveButton}
                     onClick={onRemoveAvatar}
                     disabled={deleting}
                     title="Remover imagem"
                     aria-label="Remover imagem"
                   >
-                    <TrashIcon size={14} />
+                    Remover
                   </button>
                 ) : null}
               </div>
             ) : null}
+          </aside>
+
+          <div className={styles.profileFields}>
+            <div className={`${drawerStyles.field} ${styles.profileFieldName}`}>
+              <label className={drawerStyles.label} htmlFor="cd-name">Nome da Empresa / Cliente</label>
+              <input
+                id="cd-name"
+                className={drawerStyles.input}
+                type="text"
+                value={form.name}
+                onChange={(event) => onTextChange('name', 'name', event.target.value)}
+                disabled={deleting || !canEdit}
+              />
+            </div>
+
+            <div className={drawerStyles.field}>
+              <label className={drawerStyles.label} htmlFor="cd-squad">Squad Responsável</label>
+              <Select
+                className={drawerStyles.selectControl}
+                value={form.squadId}
+                onChange={(event) => onSelectChange('squadId', 'squadId', event.target.value)}
+                disabled={deleting || !canEdit}
+                placeholder="Selecionar squad"
+                aria-label="Squad do cliente"
+              >
+                <option value="">Sem squad</option>
+                {squads.map((squad) => (
+                  <option key={squad.id} value={squad.id}>{squad.name}</option>
+                ))}
+              </Select>
+            </div>
+
+            <div className={drawerStyles.field}>
+              <label className={drawerStyles.label} htmlFor="cd-status">Status do Registro</label>
+              <Select
+                className={drawerStyles.selectControl}
+                value={form.status}
+                onChange={(event) => onSelectChange('status', 'status', event.target.value)}
+                disabled={deleting || !canEdit}
+                aria-label="Status do cliente"
+              >
+                {CLIENT_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </Select>
+            </div>
+
+            <div className={drawerStyles.field}>
+              <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor da Conta</label>
+              <UserPicker
+                className={drawerStyles.selectControl}
+                users={gestorRows}
+                value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+                onChange={(userId) => onSelectChange('gestor', 'gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
+                disabled={deleting || !canEdit}
+                placeholder="Sem gestor"
+                disableHover
+                portal
+              />
+            </div>
+
+            <div className={drawerStyles.field}>
+              <label className={drawerStyles.label} htmlFor="cd-gdv">Gerente de Vendas (GDV)</label>
+              <UserPicker
+                className={drawerStyles.selectControl}
+                users={gdvRows}
+                value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+                onChange={(userId) => onSelectChange('gdvName', 'gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
+                disabled={deleting || !canEdit}
+                placeholder="Sem GDV"
+                disableHover
+                portal
+              />
+            </div>
           </div>
         </div>
       </div>

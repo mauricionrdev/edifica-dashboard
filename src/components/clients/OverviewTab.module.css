@@ -1,3 +1,101 @@
+.mainSection {
+  padding: 18px 20px 20px;
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  column-gap: 22px;
+  align-items: start;
+}
+
+.avatarRail {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding-top: 2px;
+}
+
+.avatarPrimary {
+  width: 74px;
+  height: 74px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.075), transparent 58%),
+    #111216;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 14px 34px rgba(0, 0, 0, 0.18);
+}
+
+.avatarPrimary img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.avatarControls {
+  width: 100%;
+  display: grid;
+  gap: 7px;
+}
+
+.avatarControls button {
+  width: 100%;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.avatarControls button:hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.038);
+}
+
+.avatarControls button:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.avatarControls .avatarRemoveButton {
+  color: #ff9cad;
+  border-color: rgba(255, 91, 115, 0.18);
+  background: rgba(255, 91, 115, 0.035);
+}
+
+.profileFields {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 22px;
+  row-gap: 18px;
+  align-items: start;
+}
+
+.profileFieldName {
+  grid-column: 1 / -1;
+}
+
 .formGrid {
   --overview-gap: 12px;
   display: grid;
@@ -158,6 +256,16 @@
 }
 
 @media (max-width: 980px) {
+  .profileGrid {
+    grid-template-columns: 86px minmax(0, 1fr);
+    column-gap: 18px;
+  }
+
+  .avatarPrimary {
+    width: 66px;
+    height: 66px;
+  }
+
   .fieldName,
   .fieldGestor,
   .fieldGdv {
@@ -172,10 +280,24 @@
 }
 
 @media (max-width: 720px) {
+  .profileGrid,
+  .profileFields,
   .formGrid {
     grid-template-columns: 1fr;
   }
 
+  .avatarRail {
+    justify-items: start;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .avatarControls {
+    width: auto;
+    min-width: 96px;
+  }
+
+  .profileFieldName,
   .fieldName,
   .fieldSquad,
   .fieldStatus,
@@ -205,7 +327,6 @@
     justify-self: start;
   }
 }
-
 
 /* v14 — visão geral compacta sem sobra inferior */
 .formGrid {
