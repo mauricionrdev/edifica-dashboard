@@ -211,7 +211,7 @@ function EntryColumnsChart({ rows = [] }) {
 
   const VB_W = 760;
   const VB_H = 320;
-  const padding = { top: 26, right: 24, bottom: 56, left: 104 };
+  const padding = { top: 26, right: 88, bottom: 56, left: 96 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
   const stepX = rows.length > 1 ? plotW / (rows.length - 1) : plotW;
@@ -267,7 +267,7 @@ function EntryColumnsChart({ rows = [] }) {
                   vectorEffect="non-scaling-stroke"
                 />
                 <text
-                  x={padding.left - 46}
+                  x={padding.left - 40}
                   y={y + 4}
                   textAnchor="end"
                   className={styles.columnsAxisText}
