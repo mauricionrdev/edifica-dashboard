@@ -2783,6 +2783,8 @@ export default function ProfilePage() {
   const activeBriefingAction = activeTask ? briefingStageAction(activeTask, activeBriefing) : null;
   const displayProfileName = profileForm.name || user?.name || 'Perfil';
   const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
+  const displayRoleLabel = roleLabel(user?.role);
+  const hasAnimatedRoleBadge = displayRoleLabel === 'Suporte de tecnologia (TI)';
   const todaySummary = operationCounts.today === 1
     ? 'Você possui 1 demanda agendada para hoje.'
     : operationCounts.today > 1
@@ -2801,7 +2803,7 @@ export default function ProfilePage() {
             <div className={styles.identityCopy}>
               <div className={styles.identityTitle}>
                 <h1>{displayProfileName}</h1>
-                <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
+                <span className={`${styles.roleBadge} ${hasAnimatedRoleBadge ? styles.roleBadgeAnimated : ''}`.trim()}>{displayRoleLabel}</span>
               </div>
               <span className={styles.identityGreeting}>{todaySummary}</span>
               {user?.email ? (
