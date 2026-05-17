@@ -9932,3 +9932,95 @@
   border-color: rgba(23, 162, 184, 0.34) !important;
   background: rgba(23, 162, 184, 0.085) !important;
 }
+
+
+/* v39 — correções finas de etapa, cargo animado e colab */
+.operationListHeader,
+.operationListHeader span,
+.operationListHeader span:nth-child(4),
+.operationListHeader span:last-child {
+  color: #878c95 !important;
+}
+
+.operationListHeader span:nth-child(4) {
+  text-align: center !important;
+}
+
+.operationListHeader span:last-child {
+  text-align: right !important;
+}
+
+.roleBadge {
+  animation: none !important;
+}
+
+.roleBadge::before,
+.roleBadge::after {
+  display: none !important;
+}
+
+.roleBadgeBlackHole {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background:
+    radial-gradient(circle at 52% 50%, rgba(1, 1, 2, 0.92) 0 27%, transparent 28%),
+    conic-gradient(from 0deg, rgba(245, 184, 0, 0.00), rgba(245, 184, 0, 0.18), rgba(104, 125, 255, 0.10), rgba(245, 184, 0, 0.00)),
+    #010102 !important;
+  background-size: 100% 100%, 180% 180%, 100% 100% !important;
+  background-position: center, 0% 50%, center !important;
+  border-color: rgba(245, 184, 0, 0.18) !important;
+  animation:
+    roleBlackHolePulse 3.8s ease-in-out infinite,
+    roleBlackHoleFlow 6.8s linear infinite !important;
+}
+
+.roleBadgeBlackHole::before {
+  display: block !important;
+  content: '' !important;
+  position: absolute !important;
+  inset: -1px !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 37%, rgba(245, 184, 0, 0.11) 38% 43%, transparent 44% 100%) !important;
+  opacity: 0.75 !important;
+  transform-origin: center !important;
+  animation: roleBlackHoleSpin 5.2s linear infinite !important;
+}
+
+.roleBadgeBlackHole::after {
+  display: block !important;
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.024) !important;
+}
+
+@keyframes roleBlackHoleFlow {
+  0% {
+    background-position: center, 0% 50%, center;
+  }
+
+  100% {
+    background-position: center, 180% 50%, center;
+  }
+}
+
+.taskAvatar,
+.taskAvatarResponsible,
+.taskAvatar:first-child {
+  border-color: #050506 !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.055),
+    0 6px 14px rgba(0, 0, 0, 0.18) !important;
+}
+
+.taskAvatarResponsible {
+  width: 22px !important;
+  height: 22px !important;
+}
