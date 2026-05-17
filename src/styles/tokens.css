@@ -54,21 +54,21 @@
   /* ============================================================
      SUPERFÍCIES — luminance stacking
      ============================================================ */
-  --bg-app: #08090a;
-  --bg-canvas: #08090a;
-  --bg-elevated: #0f1011;
-  --bg-raised: #111214;
+  --bg-app: #010102;
+  --bg-canvas: #050506;
+  --bg-elevated: #0b0c0d;
+  --bg-raised: #101113;
   --bg-hover: #15161a;
   --bg-selected: #18191d;
   --bg-soft: #090a0b;
 
-  --surface: #0f1011;
-  --surface-subtle: #0d0e10;
+  --surface: #070708;
+  --surface-subtle: #0a0b0c;
   --surface-panel: rgba(255, 255, 255, 0.024);
   --surface-raised: rgba(255, 255, 255, 0.038);
-  --surface-card: #0f1011;
-  --surface-card-soft: #0d0e10;
-  --surface-strong: #151617;
+  --surface-card: #0b0c0e;
+  --surface-card-soft: #070708;
+  --surface-strong: #121317;
 
   /* ============================================================
      TEXTO
@@ -164,11 +164,11 @@
   --control-height: 34px;
   --control-radius: 8px;
   /* Linear/Edifica card system */
-  --card-surface: #0f1011;
-  --card-surface-raised: #111214;
-  --card-surface-soft: #0d0e10;
+  --card-surface: #090a0b;
+  --card-surface-raised: #0d0e10;
+  --card-surface-soft: #070708;
   --card-inner: rgba(255, 255, 255, 0.018);
-  --card-border: rgba(255, 255, 255, 0.075);
+  --card-border: rgba(255, 255, 255, 0.068);
   --card-border-strong: rgba(255, 255, 255, 0.105);
   --card-highlight: rgba(255, 255, 255, 0.032);
 
@@ -176,15 +176,15 @@
 
 /* v9 — Design system Linear adaptado à paleta Edifica */
 :root {
-  --bg-app: #08090a;
-  --bg-canvas: #08090a;
-  --bg-elevated: #0f1011;
-  --bg-raised: #111214;
-  --surface: #0f1011;
-  --surface-subtle: #0d0e10;
+  --bg-app: #010102;
+  --bg-canvas: #0b0c0d;
+  --bg-elevated: #0b0c0d;
+  --bg-raised: #151617;
+  --surface: #070708;
+  --surface-subtle: #0a0b0c;
   --surface-panel: rgba(255, 255, 255, 0.026);
   --surface-raised: rgba(255, 255, 255, 0.04);
-  --surface-strong: #151617;
+  --surface-strong: #171819;
   --app-shell-glow:
     radial-gradient(circle at 18% 90%, rgba(245, 184, 0, 0.09), transparent 30%),
     radial-gradient(circle at 88% 18%, rgba(245, 184, 0, 0.055), transparent 26%),
@@ -218,4 +218,22 @@
   --focus-ring: 0 0 0 3px rgba(245, 184, 0, 0.08);
   --active-fill: rgba(255, 255, 255, 0.045);
   --active-line: rgba(255, 255, 255, 0.11);
+}
+
+/* v23 — workspace card palette standard */
+:root {
+  --workspace-bg: #08090a;
+  --workspace-card: #0f1011;
+  --workspace-card-hover: #111214;
+  --workspace-inner: #0d0e10;
+  --workspace-border: rgba(255, 255, 255, 0.075);
+  --workspace-border-strong: rgba(255, 255, 255, 0.105);
+  --card-surface: #0f1011;
+  --card-surface-raised: #111214;
+  --card-surface-soft: #0d0e10;
+  --card-inner: rgba(255, 255, 255, 0.018);
+  --card-border: rgba(255, 255, 255, 0.075);
+  --card-border-strong: rgba(255, 255, 255, 0.105);
+  --field-bg: #0d0e10;
+  --field-bg-hover: #111214;
 }
