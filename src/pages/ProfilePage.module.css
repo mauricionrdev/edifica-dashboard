@@ -10048,3 +10048,103 @@
 .taskAvatar + .taskAvatar {
   margin-left: -6px !important;
 }
+
+
+/* v41 — estabilidade visual e performance do drawer */
+.drawerOverlay {
+  contain: layout paint !important;
+  will-change: opacity !important;
+  backface-visibility: hidden !important;
+}
+
+.drawerPanel {
+  contain: layout paint !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  will-change: transform !important;
+}
+
+.drawerScroll {
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable !important;
+  contain: layout paint !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+}
+
+.drawerHero,
+.drawerSection,
+.descriptionSection,
+.attachmentsSection,
+.collaboratorChips,
+.subtaskList,
+.commentList,
+.activityList,
+.attachmentGrid {
+  contain: layout paint style !important;
+}
+
+.drawerSection,
+.descriptionSection,
+.attachmentsSection {
+  content-visibility: auto !important;
+  contain-intrinsic-size: 1px 220px !important;
+}
+
+.activityList,
+.commentList,
+.subtaskList,
+.attachmentGrid {
+  content-visibility: auto !important;
+  contain-intrinsic-size: 1px 180px !important;
+}
+
+.activityItem,
+.activityItemQuiet,
+.commentItem,
+.subtaskItem,
+.attachmentCard,
+.workflowStep {
+  contain: layout paint !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+}
+
+.attachmentCard img,
+.attachmentViewerImage img {
+  display: block !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  image-rendering: auto !important;
+}
+
+.drawerOverlay,
+.drawerPanel,
+.drawerScroll,
+.drawerHero,
+.drawerSection,
+.activityList,
+.commentList,
+.attachmentGrid {
+  -webkit-font-smoothing: antialiased;
+}
+
+@supports not (content-visibility: auto) {
+  .drawerSection,
+  .descriptionSection,
+  .attachmentsSection,
+  .activityList,
+  .commentList,
+  .subtaskList,
+  .attachmentGrid {
+    contain: layout paint !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawerOverlay,
+  .drawerPanel {
+    animation: none !important;
+    transition: none !important;
+  }
+}

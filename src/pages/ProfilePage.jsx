@@ -3380,7 +3380,7 @@ export default function ProfilePage() {
                             title={item.fileName || 'Visualizar imagem'}
                             aria-label={`Visualizar ${item.fileName || 'imagem anexada'}`}
                           >
-                            <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" />
+                            <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
                           </button>
                           <figcaption>
                             <span>{item.fileName || 'Imagem'}</span>
@@ -3568,7 +3568,7 @@ export default function ProfilePage() {
                     </button>
                   </header>
                   <div className={styles.attachmentViewerImage}>
-                    <img src={taskAttachmentPreview.dataUrl} alt={taskAttachmentPreview.fileName || 'Imagem anexada'} />
+                    <img src={taskAttachmentPreview.dataUrl} alt={taskAttachmentPreview.fileName || 'Imagem anexada'} decoding="async" />
                   </div>
                 </div>
               </div>
@@ -3747,7 +3747,7 @@ export default function ProfilePage() {
                   <div className={styles.attachmentPreviewGrid}>
                     {(demandForm.attachments || []).map((item) => (
                       <figure key={item.id} className={styles.attachmentPreviewItem}>
-                        <img src={item.dataUrl} alt={item.fileName || 'Anexo'} />
+                        <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
                         <figcaption>{item.fileName || 'Imagem'}</figcaption>
                         <button type="button" onClick={() => handleRemoveDemandAttachment(item.id)} aria-label={`Remover ${item.fileName || 'anexo'}`}>×</button>
                       </figure>
