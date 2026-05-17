@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import {
   getOpenAIProjects,
+  getOpenAIUsageDebug,
   getOpenAIUsageReport,
   syncOpenAIProjects,
 } from '../services/openaiUsageService.js';
@@ -21,6 +22,20 @@ router.get('/report', async (req, res, next) => {
     });
 
     res.json({ report });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+router.get('/debug', async (req, res, next) => {
+  try {
+    const debug = await getOpenAIUsageDebug({
+      start: req.query.start,
+      end: req.query.end,
+    });
+
+    res.json({ debug });
   } catch (err) {
     next(err);
   }

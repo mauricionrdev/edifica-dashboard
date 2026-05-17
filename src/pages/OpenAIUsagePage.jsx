@@ -125,13 +125,13 @@ function buildPdfHtml(reportInput) {
   ${report.legacyProject ? `<div class="legacy"><span>Projeto legado</span><strong>${report.legacyProject.name || report.legacyProject.projectName} — separado dos projetos atuais</strong><p><b>${currencyUsd(report.legacyProject.spend)}</b> · ${percent(report.legacyProject.percentOfTotal)} do total</p></div>` : ''}
 
   <h2>Gasto por API Key — visualização</h2>
-  <p class="hint">Projetos OpenAI ordenados por gasto no período. Os três maiores aparecem destacados. Não exibido: ${report.zeroSpendCount || report.zeroSpendProjects?.length || 0} projetos sem gasto.</p>
+  <p class="hint">API Keys ordenadas por gasto no período. Os três maiores aparecem destacados. Não exibido: ${report.zeroSpendCount || report.zeroSpendProjects?.length || 0} projetos sem gasto.</p>
   <div class="bars">${chartRows}</div>
 
-  <h2>Detalhamento por API Key — projetos com uso</h2>
-  <p class="hint">Tabela com todos os projetos OpenAI que tiveram consumo no período, ordenados do maior para o menor gasto.</p>
+  <h2>Detalhamento por API Key</h2>
+  <p class="hint">Tabela com as chaves/projetos com consumo no período, ordenadas do maior para o menor gasto.</p>
   <table>
-    <thead><tr><th>#</th><th>Projeto / API Key</th><th>Gasto</th><th>% s/ projetos</th><th>Tokens</th><th>Requisições</th></tr></thead>
+    <thead><tr><th>#</th><th>API Key</th><th>Gasto</th><th>% s/ projetos</th><th>Tokens</th><th>Requisições</th></tr></thead>
     <tbody>${rowsHtml}<tr class="zero"><td>—</td><td>+ ${report.zeroSpendCount || 0} projetos sem gasto no período</td><td>$0.00</td><td>—</td><td>—</td><td>—</td></tr><tr class="total"><td></td><td>Total projetos atuais</td><td>${currencyUsd(report.activeProjectSpend || report.activeClientSpend)}</td><td>100,0%</td><td>${number(report.totalTokens)}</td><td>${number(report.totalRequests)}</td></tr></tbody>
   </table>
 
@@ -241,6 +241,13 @@ export default function OpenAIUsagePage() {
 
         {error ? <div className={styles.alert}>{error}</div> : null}
         {report.cached ? <div className={styles.cacheInfo}>Última atualização: {report.lastUpdatedAt ? new Date(report.lastUpdatedAt).toLocaleString('pt-BR') : 'cache recente'}</div> : null}
+        {report.reconciliation ? (
+          <div className={styles.reconciliationInfo}>
+            <span>Total OpenAI: <strong>{currencyUsd(report.reconciliation.costsTotalFromOpenAI)}</strong></span>
+            <span>Agrupado por projeto: <strong>{currencyUsd(report.reconciliation.costsGroupedByProject)}</strong></span>
+            {Number(report.reconciliation.difference || 0) > 0 ? <span>Não classificado: <strong>{currencyUsd(report.reconciliation.difference)}</strong></span> : null}
+          </div>
+        ) : null}
 
         <section className={styles.section}>
           <h2>Resumo geral</h2>
@@ -280,7 +287,7 @@ export default function OpenAIUsagePage() {
 
         <section className={styles.section}>
           <h2>Gasto por API Key — visualização</h2>
-          <p className={styles.hint}>Projetos OpenAI ordenados por gasto no período. Os três maiores aparecem destacados. Não exibido: {report.zeroSpendCount || report.zeroSpendProjects?.length || 0} projetos sem gasto.</p>
+          <p className={styles.hint}>API Keys ordenadas por gasto no período. Os três maiores aparecem destacados. Não exibido: {report.zeroSpendCount || report.zeroSpendProjects?.length || 0} projetos sem gasto.</p>
 
           <div className={styles.chart}>
             {rows.map((row, index) => (
@@ -296,15 +303,15 @@ export default function OpenAIUsagePage() {
         </section>
 
         <section className={styles.section}>
-          <h2>Detalhamento por API Key — projetos com uso</h2>
-          <p className={styles.hint}>Tabela com todos os projetos OpenAI que tiveram consumo no período, ordenados do maior para o menor gasto.</p>
+          <h2>Detalhamento por API Key</h2>
+          <p className={styles.hint}>Tabela com as chaves/projetos com consumo no período, ordenadas do maior para o menor gasto.</p>
 
           <div className={styles.tableWrap}>
             <table>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Projeto / API Key</th>
+                  <th>API Key</th>
                   <th>Gasto</th>
                   <th>% s/ projetos</th>
                   <th>Tokens</th>
@@ -315,10 +322,7 @@ export default function OpenAIUsagePage() {
                 {rows.map((row, index) => (
                   <tr key={row.projectId || row.name || row.client}>
                     <td>{index + 1}</td>
-                    <td>
-                      <strong>{row.name || row.client || row.projectName || row.projectId}</strong>
-                      <small>{row.projectName || row.projectId}</small>
-                    </td>
+                    <td><strong>{row.name || row.client || row.projectName || row.projectId}</strong></td>
                     <td>{currencyUsd(row.spend)}</td>
                     <td>{percent(row.shareOfActive)}</td>
                     <td>{row.totalTokens ? number(row.totalTokens) : '—'}</td>

@@ -40,6 +40,23 @@ function toPercent(value) {
   return Number.isFinite(number) ? Number(number.toFixed(1)) : 0;
 }
 
+
+function readAmount(result = {}) {
+  const value = result.amount?.value ?? result.amount ?? result.value ?? result.cost ?? 0;
+  const number = Number(value || 0);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function sumCostsFromBuckets(buckets = []) {
+  let total = 0;
+  for (const bucket of buckets) {
+    for (const result of bucket.results || []) {
+      total += readAmount(result);
+    }
+  }
+  return toMoney(total);
+}
+
 function safeName(name = '') {
   return String(name || '').replace(/^Projeto\s*-\s*/i, '').trim() || String(name || '').trim();
 }
@@ -225,12 +242,26 @@ async function upsertProjectAliases(projects = []) {
   }
 }
 
+async function fetchCostsTotal(start, end) {
+  const buckets = await fetchAllPages('/organization/costs', {
+    start_time: toUnix(start),
+    end_time: toUnix(end),
+    bucket_width: '1d',
+    limit: 180,
+  });
+
+  return {
+    total: sumCostsFromBuckets(buckets),
+    bucketCount: buckets.length,
+  };
+}
+
 async function fetchCostsByProject(start, end) {
   const buckets = await fetchAllPages('/organization/costs', {
     start_time: toUnix(start),
     end_time: toUnix(end),
     bucket_width: '1d',
-    group_by: 'project_id',
+    group_by: ['project_id'],
     limit: 180,
   });
 
@@ -239,14 +270,53 @@ async function fetchCostsByProject(start, end) {
   for (const bucket of buckets) {
     for (const result of bucket.results || []) {
       const projectId = result.project_id || 'unknown';
-      const amount = result.amount?.value ?? result.amount ?? result.value ?? 0;
-      const value = Number(amount || 0);
+      const value = readAmount(result);
       if (!Number.isFinite(value)) continue;
       byProject.set(projectId, toMoney((byProject.get(projectId)?.spend || 0) + value));
     }
   }
 
-  return byProject;
+  return {
+    byProject,
+    groupedTotal: toMoney(Array.from(byProject.values()).reduce((sum, value) => sum + Number(value || 0), 0)),
+    bucketCount: buckets.length,
+  };
+}
+
+async function fetchCostsByProjectLineItem(start, end) {
+  const buckets = await fetchAllPages('/organization/costs', {
+    start_time: toUnix(start),
+    end_time: toUnix(end),
+    bucket_width: '1d',
+    group_by: ['project_id', 'line_item'],
+    limit: 180,
+  });
+
+  const byProject = new Map();
+  const lineItems = [];
+
+  for (const bucket of buckets) {
+    for (const result of bucket.results || []) {
+      const projectId = result.project_id || 'unknown';
+      const lineItem = result.line_item || 'unclassified';
+      const value = readAmount(result);
+      if (!Number.isFinite(value)) continue;
+
+      byProject.set(projectId, toMoney((byProject.get(projectId)?.spend || 0) + value));
+      lineItems.push({
+        projectId,
+        lineItem,
+        spend: toMoney(value),
+      });
+    }
+  }
+
+  return {
+    byProject,
+    lineItems,
+    groupedTotal: toMoney(Array.from(byProject.values()).reduce((sum, value) => sum + Number(value || 0), 0)),
+    bucketCount: buckets.length,
+  };
 }
 
 async function fetchUsageByProject(start, end) {
@@ -254,7 +324,7 @@ async function fetchUsageByProject(start, end) {
     start_time: toUnix(start),
     end_time: toUnix(end),
     bucket_width: '1d',
-    group_by: 'project_id',
+    group_by: ['project_id'],
     limit: 31,
   });
 
@@ -337,7 +407,7 @@ async function saveSnapshot({ cacheKey, start, end, payload, forced = false, use
   );
 }
 
-function buildReport({ start, end, projects, aliases, costsByProject, usageByProject }) {
+function buildReport({ start, end, projects, aliases, costsByProject, usageByProject, costSummary = {}, lineItemSummary = {} }) {
   const aliasByProject = new Map(aliases.map((item) => [item.projectId, item]));
   const projectById = new Map(projects.map((project) => [project.id, project]));
   const allProjectIds = new Set([
@@ -384,8 +454,10 @@ function buildReport({ start, end, projects, aliases, costsByProject, usageByPro
     .filter((entry) => entry.spend <= 0)
     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
-  const totalSpend = toMoney(entries.reduce((sum, item) => sum + item.spend, 0));
+  const groupedProjectSpend = toMoney(entries.reduce((sum, item) => sum + item.spend, 0));
+  const totalSpend = costSummary.total != null ? toMoney(costSummary.total) : groupedProjectSpend;
   const activeProjectSpend = toMoney(rows.reduce((sum, item) => sum + item.spend, 0));
+  const unclassifiedSpend = toMoney(Math.max(0, totalSpend - groupedProjectSpend));
   const totalTokens = rows.reduce((sum, item) => sum + item.totalTokens, 0);
   const totalRequests = rows.reduce((sum, item) => sum + item.requests, 0);
 
@@ -409,6 +481,8 @@ function buildReport({ start, end, projects, aliases, costsByProject, usageByPro
     totalSpend,
     activeProjectSpend,
     activeClientSpend: activeProjectSpend,
+    groupedProjectSpend,
+    unclassifiedSpend,
     totalTokens,
     totalRequests,
     totalProjects: projectEntries.length,
@@ -431,6 +505,15 @@ function buildReport({ start, end, projects, aliases, costsByProject, usageByPro
       bottomProject: ranked[ranked.length - 1] || null,
       topThreeSpend,
       topThreeShare: activeProjectSpend ? toPercent((topThreeSpend / activeProjectSpend) * 100) : 0,
+    },
+    reconciliation: {
+      costsTotalFromOpenAI: totalSpend,
+      costsGroupedByProject: costSummary.groupedTotal ?? groupedProjectSpend,
+      costsGroupedByProjectLineItem: lineItemSummary.groupedTotal ?? null,
+      difference: toMoney(totalSpend - (costSummary.groupedTotal ?? groupedProjectSpend)),
+      unclassifiedSpend,
+      projectCostBucketCount: costSummary.bucketCount ?? null,
+      lineItemBucketCount: lineItemSummary.bucketCount ?? null,
     },
     lastUpdatedAt: new Date().toISOString(),
     cached: false,
@@ -468,10 +551,14 @@ export async function getOpenAIUsageReport({ start: startValue, end: endValue, f
   await upsertProjectAliases(projects);
   const aliases = await listAliases();
 
-  const [costsByProject, usageByProject] = await Promise.all([
+  const [totalCostSummary, projectCostSummary, lineItemSummary, usageByProject] = await Promise.all([
+    fetchCostsTotal(start, end),
     fetchCostsByProject(start, end),
+    fetchCostsByProjectLineItem(start, end).catch(() => ({ byProject: new Map(), lineItems: [], groupedTotal: null, bucketCount: null })),
     fetchUsageByProject(start, end).catch(() => new Map()),
   ]);
+
+  const costsByProject = projectCostSummary.byProject;
 
   const report = buildReport({
     start,
@@ -480,9 +567,62 @@ export async function getOpenAIUsageReport({ start: startValue, end: endValue, f
     aliases,
     costsByProject,
     usageByProject,
+    costSummary: { ...totalCostSummary, groupedTotal: projectCostSummary.groupedTotal, bucketCount: projectCostSummary.bucketCount },
+    lineItemSummary,
   });
 
   await saveSnapshot({ cacheKey, start, end, payload: report, forced: force, userId });
 
   return report;
+}
+
+export async function getOpenAIUsageDebug({ start: startValue, end: endValue } = {}) {
+  const defaultStart = startOfCurrentMonth();
+  const start = parseDate(startValue, defaultStart);
+  const end = parseDate(endValue, addMonths(start, 1));
+
+  if (end <= start) {
+    throw badRequest('Período inválido para diagnóstico OpenAI.');
+  }
+
+  const projects = await listOpenAIProjects();
+  await upsertProjectAliases(projects);
+
+  const [totalCostSummary, projectCostSummary, lineItemSummary] = await Promise.all([
+    fetchCostsTotal(start, end),
+    fetchCostsByProject(start, end),
+    fetchCostsByProjectLineItem(start, end),
+  ]);
+
+  const byProjectRows = Array.from(projectCostSummary.byProject.entries())
+    .map(([projectId, spend]) => {
+      const project = projects.find((item) => item.id === projectId);
+      return {
+        projectId,
+        projectName: project?.name || projectId,
+        name: safeName(project?.name || projectId),
+        spend,
+      };
+    })
+    .sort((a, b) => Number(b.spend || 0) - Number(a.spend || 0));
+
+  return {
+    period: {
+      start: toDateOnly(start),
+      end: toDateOnly(end),
+    },
+    projectsCount: projects.length,
+    costsTotalFromOpenAI: totalCostSummary.total,
+    costsGroupedByProject: projectCostSummary.groupedTotal,
+    costsGroupedByProjectLineItem: lineItemSummary.groupedTotal,
+    differenceTotalVsProject: toMoney(totalCostSummary.total - projectCostSummary.groupedTotal),
+    differenceProjectVsLineItem: lineItemSummary.groupedTotal == null ? null : toMoney(projectCostSummary.groupedTotal - lineItemSummary.groupedTotal),
+    byProjectRows,
+    lineItems: lineItemSummary.lineItems,
+    bucketCounts: {
+      total: totalCostSummary.bucketCount,
+      project: projectCostSummary.bucketCount,
+      projectLineItem: lineItemSummary.bucketCount,
+    },
+  };
 }
