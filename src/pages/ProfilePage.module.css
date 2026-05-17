@@ -8800,6 +8800,7 @@
 }
 
 @keyframes profileBadgeBreath {
+
   0%,
   100% {
     border-color: rgba(255, 255, 255, 0.070);
@@ -8811,6 +8812,7 @@
 }
 
 @keyframes profileBadgeSweep {
+
   0%,
   62% {
     transform: translateX(-120%);
@@ -9018,16 +9020,14 @@
   z-index: -1 !important;
   inset: -42% !important;
   background:
-    conic-gradient(
-      from 0deg,
+    conic-gradient(from 0deg,
       transparent 0deg,
       rgba(245, 184, 0, 0.16) 54deg,
       transparent 116deg,
       rgba(104, 125, 255, 0.10) 176deg,
       transparent 246deg,
       rgba(245, 184, 0, 0.10) 304deg,
-      transparent 360deg
-    ) !important;
+      transparent 360deg) !important;
   opacity: 0.62 !important;
   animation: roleBlackHoleSpin 7s linear infinite;
 }
@@ -9049,6 +9049,7 @@
 }
 
 @keyframes roleBlackHolePulse {
+
   0%,
   100% {
     border-color: rgba(255, 255, 255, 0.080);
@@ -9192,16 +9193,14 @@
   z-index: -1 !important;
   inset: -42% !important;
   background:
-    conic-gradient(
-      from 0deg,
+    conic-gradient(from 0deg,
       transparent 0deg,
       rgba(245, 184, 0, 0.16) 54deg,
       transparent 116deg,
       rgba(104, 125, 255, 0.10) 176deg,
       transparent 246deg,
       rgba(245, 184, 0, 0.10) 304deg,
-      transparent 360deg
-    ) !important;
+      transparent 360deg) !important;
   opacity: 0.62 !important;
   animation: roleBlackHoleSpin 7s linear infinite !important;
 }
@@ -9276,7 +9275,7 @@
 
 .operationListHeader,
 .operationRow {
-  background: #080809 !important;
+  background: #050506 !important;
 }
 
 .operationRow:hover,
@@ -9403,7 +9402,7 @@
   margin-top: 1px;
 }
 
-.operationSubline > span:first-child {
+.operationSubline>span:first-child {
   min-width: 0;
   overflow: hidden;
   color: var(--edf-text-faint);
@@ -9478,12 +9477,7 @@
 /* v36 — ordem da lista de tarefas e coluna de colaboradores */
 .operationListHeader {
   grid-template-columns:
-    18px
-    minmax(250px, 1fr)
-    minmax(92px, 0.16fr)
-    minmax(126px, 0.22fr)
-    minmax(260px, 0.48fr)
-    minmax(82px, 0.14fr) !important;
+    18px minmax(250px, 1fr) minmax(92px, 0.16fr) minmax(126px, 0.22fr) minmax(260px, 0.48fr) minmax(82px, 0.14fr) !important;
   gap: 14px !important;
 }
 
@@ -9493,12 +9487,7 @@
 
 .operationRow {
   grid-template-columns:
-    18px
-    minmax(250px, 1fr)
-    minmax(92px, 0.16fr)
-    minmax(126px, 0.22fr)
-    minmax(260px, 0.48fr)
-    minmax(82px, 0.14fr) !important;
+    18px minmax(250px, 1fr) minmax(92px, 0.16fr) minmax(126px, 0.22fr) minmax(260px, 0.48fr) minmax(82px, 0.14fr) !important;
   gap: 14px !important;
 }
 
@@ -9516,7 +9505,7 @@
   overflow: hidden;
 }
 
-.operationMeta > span {
+.operationMeta>span {
   flex: 0 0 auto;
 }
 
@@ -9602,12 +9591,7 @@
 /* v37 — lista de tarefas em ordem refinada */
 .operationListHeader {
   grid-template-columns:
-    18px
-    minmax(360px, 1.32fr)
-    minmax(124px, 0.22fr)
-    minmax(150px, 0.30fr)
-    minmax(82px, 0.16fr)
-    minmax(94px, 0.16fr) !important;
+    18px minmax(360px, 1.32fr) minmax(124px, 0.22fr) minmax(150px, 0.30fr) minmax(82px, 0.16fr) minmax(94px, 0.16fr) !important;
   gap: 18px !important;
   padding: 0 24px !important;
 }
@@ -9622,12 +9606,7 @@
 
 .operationRow {
   grid-template-columns:
-    18px
-    minmax(360px, 1.32fr)
-    minmax(124px, 0.22fr)
-    minmax(150px, 0.30fr)
-    minmax(82px, 0.16fr)
-    minmax(94px, 0.16fr) !important;
+    18px minmax(360px, 1.32fr) minmax(124px, 0.22fr) minmax(150px, 0.30fr) minmax(82px, 0.16fr) minmax(94px, 0.16fr) !important;
   gap: 18px !important;
   padding: 16px 24px !important;
   min-height: 76px !important;
@@ -9657,7 +9636,7 @@
   overflow: visible !important;
 }
 
-.operationMeta > span {
+.operationMeta>span {
   height: 32px !important;
   padding: 0 14px !important;
   border-radius: 999px !important;
@@ -10045,7 +10024,7 @@
   position: relative !important;
 }
 
-.taskAvatar + .taskAvatar {
+.taskAvatar+.taskAvatar {
   margin-left: -6px !important;
 }
 
@@ -10130,6 +10109,7 @@
 }
 
 @supports not (content-visibility: auto) {
+
   .drawerSection,
   .descriptionSection,
   .attachmentsSection,
@@ -10142,6 +10122,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .drawerOverlay,
   .drawerPanel {
     animation: none !important;
