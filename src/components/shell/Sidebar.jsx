@@ -21,6 +21,7 @@ import {
   BriefcaseIcon,
   ChartColumnIcon,
   CalendarIcon,
+  CoinsIcon,
   ChevronLeftIcon,
   CloseIcon,
   HomeIcon,
@@ -178,8 +179,15 @@ export default function Sidebar({
         icon: <UsersIcon size={16} />,
         label: 'Equipe',
       },
+      hasPermission(user, 'audit.view')
+        ? {
+            to: '/uso-openai',
+            icon: <CoinsIcon size={16} />,
+            label: 'Uso OpenAI',
+          }
+        : null,
     ].filter(Boolean),
-    []
+    [user]
   );
 
   const filteredPrimary = primaryItems.filter((item) => matchesSearch(item.label, normalizedQuery));
