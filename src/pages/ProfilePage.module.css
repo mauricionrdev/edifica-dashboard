@@ -8800,7 +8800,6 @@
 }
 
 @keyframes profileBadgeBreath {
-
   0%,
   100% {
     border-color: rgba(255, 255, 255, 0.070);
@@ -8812,7 +8811,6 @@
 }
 
 @keyframes profileBadgeSweep {
-
   0%,
   62% {
     transform: translateX(-120%);
@@ -9020,14 +9018,16 @@
   z-index: -1 !important;
   inset: -42% !important;
   background:
-    conic-gradient(from 0deg,
+    conic-gradient(
+      from 0deg,
       transparent 0deg,
       rgba(245, 184, 0, 0.16) 54deg,
       transparent 116deg,
       rgba(104, 125, 255, 0.10) 176deg,
       transparent 246deg,
       rgba(245, 184, 0, 0.10) 304deg,
-      transparent 360deg) !important;
+      transparent 360deg
+    ) !important;
   opacity: 0.62 !important;
   animation: roleBlackHoleSpin 7s linear infinite;
 }
@@ -9049,7 +9049,6 @@
 }
 
 @keyframes roleBlackHolePulse {
-
   0%,
   100% {
     border-color: rgba(255, 255, 255, 0.080);
@@ -9193,14 +9192,16 @@
   z-index: -1 !important;
   inset: -42% !important;
   background:
-    conic-gradient(from 0deg,
+    conic-gradient(
+      from 0deg,
       transparent 0deg,
       rgba(245, 184, 0, 0.16) 54deg,
       transparent 116deg,
       rgba(104, 125, 255, 0.10) 176deg,
       transparent 246deg,
       rgba(245, 184, 0, 0.10) 304deg,
-      transparent 360deg) !important;
+      transparent 360deg
+    ) !important;
   opacity: 0.62 !important;
   animation: roleBlackHoleSpin 7s linear infinite !important;
 }
@@ -9275,7 +9276,7 @@
 
 .operationListHeader,
 .operationRow {
-  background: #050506 !important;
+  background: #080809 !important;
 }
 
 .operationRow:hover,
@@ -9402,7 +9403,7 @@
   margin-top: 1px;
 }
 
-.operationSubline>span:first-child {
+.operationSubline > span:first-child {
   min-width: 0;
   overflow: hidden;
   color: var(--edf-text-faint);
@@ -9477,7 +9478,12 @@
 /* v36 — ordem da lista de tarefas e coluna de colaboradores */
 .operationListHeader {
   grid-template-columns:
-    18px minmax(250px, 1fr) minmax(92px, 0.16fr) minmax(126px, 0.22fr) minmax(260px, 0.48fr) minmax(82px, 0.14fr) !important;
+    18px
+    minmax(250px, 1fr)
+    minmax(92px, 0.16fr)
+    minmax(126px, 0.22fr)
+    minmax(260px, 0.48fr)
+    minmax(82px, 0.14fr) !important;
   gap: 14px !important;
 }
 
@@ -9487,7 +9493,12 @@
 
 .operationRow {
   grid-template-columns:
-    18px minmax(250px, 1fr) minmax(92px, 0.16fr) minmax(126px, 0.22fr) minmax(260px, 0.48fr) minmax(82px, 0.14fr) !important;
+    18px
+    minmax(250px, 1fr)
+    minmax(92px, 0.16fr)
+    minmax(126px, 0.22fr)
+    minmax(260px, 0.48fr)
+    minmax(82px, 0.14fr) !important;
   gap: 14px !important;
 }
 
@@ -9505,7 +9516,7 @@
   overflow: hidden;
 }
 
-.operationMeta>span {
+.operationMeta > span {
   flex: 0 0 auto;
 }
 
@@ -9591,7 +9602,12 @@
 /* v37 — lista de tarefas em ordem refinada */
 .operationListHeader {
   grid-template-columns:
-    18px minmax(360px, 1.32fr) minmax(124px, 0.22fr) minmax(150px, 0.30fr) minmax(82px, 0.16fr) minmax(94px, 0.16fr) !important;
+    18px
+    minmax(360px, 1.32fr)
+    minmax(124px, 0.22fr)
+    minmax(150px, 0.30fr)
+    minmax(82px, 0.16fr)
+    minmax(94px, 0.16fr) !important;
   gap: 18px !important;
   padding: 0 24px !important;
 }
@@ -9606,7 +9622,12 @@
 
 .operationRow {
   grid-template-columns:
-    18px minmax(360px, 1.32fr) minmax(124px, 0.22fr) minmax(150px, 0.30fr) minmax(82px, 0.16fr) minmax(94px, 0.16fr) !important;
+    18px
+    minmax(360px, 1.32fr)
+    minmax(124px, 0.22fr)
+    minmax(150px, 0.30fr)
+    minmax(82px, 0.16fr)
+    minmax(94px, 0.16fr) !important;
   gap: 18px !important;
   padding: 16px 24px !important;
   min-height: 76px !important;
@@ -9636,7 +9657,7 @@
   overflow: visible !important;
 }
 
-.operationMeta>span {
+.operationMeta > span {
   height: 32px !important;
   padding: 0 14px !important;
   border-radius: 999px !important;
@@ -10024,7 +10045,7 @@
   position: relative !important;
 }
 
-.taskAvatar+.taskAvatar {
+.taskAvatar + .taskAvatar {
   margin-left: -6px !important;
 }
 
@@ -10109,7 +10130,6 @@
 }
 
 @supports not (content-visibility: auto) {
-
   .drawerSection,
   .descriptionSection,
   .attachmentsSection,
@@ -10122,10 +10142,277 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   .drawerOverlay,
   .drawerPanel {
     animation: none !important;
     transition: none !important;
   }
+}
+
+
+/* v42 — loading states refinados do perfil */
+.operationLoading {
+  margin: 20px 14px 16px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 12px;
+  background: #050506;
+}
+
+.operationLoadingRow {
+  min-height: 68px;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.042);
+  display: grid;
+  grid-template-columns: 18px minmax(360px, 1.32fr) minmax(124px, 0.22fr) minmax(150px, 0.30fr) minmax(94px, 0.16fr);
+  align-items: center;
+  gap: 18px;
+}
+
+.operationLoadingRow:last-child {
+  border-bottom: 0;
+}
+
+.operationLoadingRow span,
+.operationLoadingRow i,
+.operationLoadingRow b,
+.operationLoadingRow em,
+.operationLoadingRow strong,
+.attachmentLoadingGrid span,
+.compactLoadingState span {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.operationLoadingRow span::after,
+.operationLoadingRow i::after,
+.operationLoadingRow b::after,
+.operationLoadingRow em::after,
+.operationLoadingRow strong::after,
+.attachmentLoadingGrid span::after,
+.compactLoadingState span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  animation: profileSkeletonSweep 1.45s ease-in-out infinite;
+}
+
+.operationLoadingRow > span {
+  width: 18px;
+  height: 18px;
+}
+
+.operationLoadingRow > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.operationLoadingRow i {
+  width: min(320px, 72%);
+  height: 13px;
+}
+
+.operationLoadingRow b {
+  width: min(210px, 48%);
+  height: 9px;
+  opacity: 0.75;
+}
+
+.operationLoadingRow em {
+  width: 88px;
+  height: 28px;
+}
+
+.operationLoadingRow strong {
+  width: 74px;
+  height: 22px;
+}
+
+.attachmentLoadingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.attachmentLoadingGrid span {
+  height: 92px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.028);
+  border: 1px solid rgba(255, 255, 255, 0.052);
+}
+
+.compactLoadingState {
+  min-height: 58px;
+  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compactLoadingState span {
+  height: 22px;
+  background: rgba(255, 255, 255, 0.036);
+}
+
+.compactLoadingState span:nth-child(1) {
+  width: 22px;
+}
+
+.compactLoadingState span:nth-child(2) {
+  width: 112px;
+}
+
+.compactLoadingState span:nth-child(3) {
+  width: 68px;
+  opacity: 0.72;
+}
+
+@keyframes profileSkeletonSweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (max-width: 1180px) {
+  .operationLoadingRow {
+    grid-template-columns: 18px minmax(0, 1fr);
+  }
+
+  .operationLoadingRow em,
+  .operationLoadingRow strong {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .operationLoading {
+    margin: 16px;
+  }
+
+  .attachmentLoadingGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* v43 — attachments, preview portal and progress value */
+.stageProgressPill {
+  justify-content: space-between !important;
+  padding: 0 10px !important;
+  gap: 8px !important;
+}
+
+.stageProgressLabel,
+.stageProgressValue {
+  position: relative;
+  z-index: 1;
+}
+
+.stageProgressValue {
+  color: color-mix(in srgb, var(--stage-color) 78%, #ffffff);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.92;
+}
+
+.attachmentViewerOverlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000 !important;
+}
+
+.attachmentViewer {
+  width: min(980px, calc(100vw - 48px)) !important;
+  max-height: calc(100vh - 48px) !important;
+}
+
+.attachmentViewer header > div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attachmentViewer header a {
+  color: var(--edf-text-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.attachmentViewerImage iframe {
+  width: min(900px, calc(100vw - 96px));
+  height: min(72vh, 760px);
+  border: 0;
+  border-radius: 12px;
+  background: #050506;
+}
+
+.attachmentPdfPreview {
+  width: 100%;
+  min-height: 74px;
+  border-radius: 10px;
+  background: rgba(220, 53, 69, 0.10);
+  color: #ff8a92;
+  border: 1px solid rgba(220, 53, 69, 0.22);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+}
+
+.commentAttachmentDrafts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -6px;
+}
+
+.commentAttachmentDrafts span {
+  min-width: 0;
+  max-width: 220px;
+  height: 30px;
+  padding: 0 8px 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.018);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.commentAttachmentDrafts strong {
+  color: #9fb0c6;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.commentAttachmentDrafts em {
+  min-width: 0;
+  color: var(--edf-text-muted);
+  font-style: normal;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commentAttachmentDrafts button {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--edf-text-muted);
+  cursor: pointer;
 }

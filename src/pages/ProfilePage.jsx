@@ -133,7 +133,19 @@ function emptyDemandForm(userId = '') {
   };
 }
 
-const TASK_ATTACHMENT_MAX_BYTES = 6 * 1024 * 1024;
+const TASK_ATTACHMENT_MAX_BYTES = 8 * 1024 * 1024;
+
+function isSupportedTaskAttachment(file) {
+  const mime = String(file?.type || '');
+  return mime.startsWith('image/') || mime === 'application/pdf';
+}
+
+function taskAttachmentKind(item) {
+  const mime = String(item?.mimeType || '');
+  if (mime === 'application/pdf') return 'PDF';
+  if (mime.startsWith('image/')) return 'Imagem';
+  return 'Arquivo';
+}
 
 function readTaskAttachmentFile(file) {
   return new Promise((resolve, reject) => {
@@ -141,26 +153,34 @@ function readTaskAttachmentFile(file) {
       reject(new Error('Arquivo inválido.'));
       return;
     }
-    if (!String(file.type || '').startsWith('image/')) {
-      reject(new Error('Envie apenas imagens.'));
+    if (!isSupportedTaskAttachment(file)) {
+      reject(new Error('Envie apenas imagens ou PDF.'));
       return;
     }
     if (file.size > TASK_ATTACHMENT_MAX_BYTES) {
-      reject(new Error('Imagem maior que 6 MB.'));
+      reject(new Error('Arquivo maior que 8 MB.'));
       return;
     }
 
     const reader = new FileReader();
     reader.onload = () => resolve({
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      fileName: file.name || 'imagem.png',
-      mimeType: file.type || 'image/png',
+      fileName: file.name || (String(file.type || '').startsWith('image/') ? 'imagem.png' : 'arquivo.pdf'),
+      mimeType: file.type || 'application/octet-stream',
       sizeBytes: file.size || 0,
       dataUrl: String(reader.result || ''),
     });
-    reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+    reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
     reader.readAsDataURL(file);
   });
+}
+
+function filesFromClipboard(event) {
+  const items = Array.from(event?.clipboardData?.items || []);
+  return items
+    .filter((item) => item.kind === 'file')
+    .map((item) => item.getAsFile())
+    .filter(Boolean);
 }
 
 function emptyHandoffForm(userId = '', status = 'in_progress') {
@@ -1463,6 +1483,7 @@ export default function ProfilePage() {
   const [taskEvents, setTaskEvents] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentDraft, setCommentDraft] = useState('');
+  const [commentAttachments, setCommentAttachments] = useState([]);
   const [commentSaving, setCommentSaving] = useState(false);
   const [commentDeleteTarget, setCommentDeleteTarget] = useState(null);
   const [commentDeleting, setCommentDeleting] = useState(false);
@@ -2423,15 +2444,31 @@ export default function ProfilePage() {
       return;
     }
     const body = commentDraft.trim();
-    if (!body) return;
+    const pendingAttachments = Array.isArray(commentAttachments) ? commentAttachments : [];
+    if (!body && !pendingAttachments.length) return;
 
     try {
       setCommentSaving(true);
-      const res = await createTaskComment(activeTask.id, { body });
+      const res = body ? await createTaskComment(activeTask.id, { body }) : null;
       if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
-      await refreshActiveTaskPanels(activeTask.id, { events: true });
+
+      if (pendingAttachments.length) {
+        const uploaded = await Promise.allSettled(pendingAttachments.map((item) => createTaskAttachment(activeTask.id, {
+          fileName: item.fileName,
+          mimeType: item.mimeType,
+          sizeBytes: item.sizeBytes,
+          dataUrl: item.dataUrl,
+        })));
+        const savedAttachments = uploaded
+          .filter((result) => result.status === 'fulfilled' && result.value?.attachment)
+          .map((result) => result.value.attachment);
+        if (savedAttachments.length) setTaskAttachments((prev) => [...savedAttachments, ...prev]);
+      }
+
+      await refreshActiveTaskPanels(activeTask.id, { events: true, attachments: pendingAttachments.length > 0 });
       setCommentDraft('');
-      showToast('Comentário adicionado.', { variant: 'success' });
+      setCommentAttachments([]);
+      showToast(pendingAttachments.length ? 'Comentário e anexos adicionados.' : 'Comentário adicionado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao comentar.', { variant: 'error' });
     } finally {
@@ -2709,17 +2746,53 @@ export default function ProfilePage() {
     const files = Array.from(event.target.files || []);
     if (!files.length) return;
 
+    await addDemandAttachments(files);
+    if (event.target) event.target.value = '';
+  }
+
+  async function addDemandAttachments(files) {
+    const selected = Array.from(files || []).filter(Boolean);
+    if (!selected.length) return;
+
     try {
-      const parsed = await Promise.all(files.map(readTaskAttachmentFile));
+      const parsed = await Promise.all(selected.map(readTaskAttachmentFile));
       setDemandForm((prev) => ({
         ...prev,
         attachments: [...(prev.attachments || []), ...parsed].slice(0, 8),
       }));
     } catch (err) {
-      showToast(err?.message || 'Não foi possível anexar a imagem.', { variant: 'error' });
-    } finally {
-      if (event.target) event.target.value = '';
+      showToast(err?.message || 'Não foi possível anexar o arquivo.', { variant: 'error' });
     }
+  }
+
+  function handleDemandPaste(event) {
+    const files = filesFromClipboard(event);
+    if (!files.length) return;
+    event.preventDefault();
+    addDemandAttachments(files);
+  }
+
+  async function addCommentAttachments(files) {
+    const selected = Array.from(files || []).filter(Boolean);
+    if (!selected.length) return;
+
+    try {
+      const parsed = await Promise.all(selected.map(readTaskAttachmentFile));
+      setCommentAttachments((prev) => [...prev, ...parsed].slice(0, 6));
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível anexar o arquivo.', { variant: 'error' });
+    }
+  }
+
+  function handleCommentPaste(event) {
+    const files = filesFromClipboard(event);
+    if (!files.length) return;
+    event.preventDefault();
+    addCommentAttachments(files);
+  }
+
+  function handleRemoveCommentAttachment(attachmentId) {
+    setCommentAttachments((prev) => prev.filter((item) => item.id !== attachmentId));
   }
 
   function handleRemoveDemandAttachment(attachmentId) {
@@ -2982,7 +3055,20 @@ export default function ProfilePage() {
 
         <div className={styles.operationBody}>
           {tasksLoading ? (
-            <StateBlock variant="loading" compact title="Carregando" />
+            <div className={styles.operationLoading} aria-label="Carregando tarefas">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className={styles.operationLoadingRow}>
+                  <span />
+                  <div>
+                    <i />
+                    <b />
+                  </div>
+                  <em />
+                  <em />
+                  <strong />
+                </div>
+              ))}
+            </div>
           ) : tasksError ? (
             <StateBlock variant="error" compact title="Erro" />
           ) : visibleTasks.length === 0 ? (
@@ -3057,6 +3143,7 @@ export default function ProfilePage() {
                         >
                           <span className={styles.stageProgressTrack} aria-hidden="true" />
                           <span className={styles.stageProgressLabel}>{stageProgress.label}</span>
+                          <span className={styles.stageProgressValue}>{stageProgress.progress}%</span>
                         </span>
                       </div>
 
@@ -3368,7 +3455,11 @@ export default function ProfilePage() {
                     <span>{taskAttachments.length}</span>
                   </div>
                   {taskAttachmentsLoading ? (
-                    <div className={styles.attachmentsEmpty}>Carregando anexos</div>
+                    <div className={styles.attachmentLoadingGrid} aria-label="Carregando anexos">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <span key={index} />
+                      ))}
+                    </div>
                   ) : (
                     <div className={styles.attachmentGrid}>
                       {taskAttachments.map((item) => (
@@ -3423,7 +3514,11 @@ export default function ProfilePage() {
                   <button type="submit" disabled={collaboratorSaving || !collaboratorUserId || !canManageActiveCollaborators}>+</button>
                 </form>
                 {collaboratorsLoading ? (
-                  <div className={styles.commentState}>Carregando</div>
+                  <div className={styles.compactLoadingState} aria-label="Carregando">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 ) : collaborators.length ? (
                   <div className={styles.collaboratorChips}>
                     {collaborators.map((collaborator) => {
@@ -3457,7 +3552,11 @@ export default function ProfilePage() {
                   <button type="submit" disabled={subtaskSaving || !subtaskDraft.trim() || !canCreateActiveSubtask}>+</button>
                 </form>
                 {subtasksLoading ? (
-                  <div className={styles.commentState}>Carregando</div>
+                  <div className={styles.compactLoadingState} aria-label="Carregando">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 ) : activeSubtasks.length ? (
                   <div className={styles.subtaskList}>
                     {activeSubtasks.map((subtask) => (
@@ -3494,11 +3593,26 @@ export default function ProfilePage() {
                   <span>{visibleTaskComments.length}</span>
                 </div>
                 <form className={styles.commentForm} onSubmit={handleCreateComment}>
-                  <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder="Comentário" disabled={!canCommentActiveTask} />
-                  <button type="submit" disabled={commentSaving || !commentDraft.trim() || !canCommentActiveTask}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
+                  <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} onPaste={handleCommentPaste} placeholder="Comentário" disabled={!canCommentActiveTask} />
+                  <button type="submit" disabled={commentSaving || (!commentDraft.trim() && !commentAttachments.length) || !canCommentActiveTask}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
                 </form>
+                {commentAttachments.length ? (
+                  <div className={styles.commentAttachmentDrafts}>
+                    {commentAttachments.map((item) => (
+                      <span key={item.id}>
+                        <strong>{taskAttachmentKind(item)}</strong>
+                        <em>{item.fileName}</em>
+                        <button type="button" onClick={() => handleRemoveCommentAttachment(item.id)} aria-label={`Remover ${item.fileName}`}>×</button>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
                 {commentsLoading ? (
-                  <div className={styles.commentState}>Carregando</div>
+                  <div className={styles.compactLoadingState} aria-label="Carregando">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 ) : visibleTaskComments.length ? (
                   <div className={styles.commentList}>
                     {visibleTaskComments.map((comment) => {
@@ -3552,26 +3666,34 @@ export default function ProfilePage() {
                 </div>
               </section>
             </div>
-            {taskAttachmentPreview ? (
+            {taskAttachmentPreview ? createPortal(
               <div
                 className={styles.attachmentViewerOverlay}
                 role="dialog"
                 aria-modal="true"
-                aria-label={taskAttachmentPreview.fileName || 'Imagem anexada'}
+                aria-label={taskAttachmentPreview.fileName || 'Anexo'}
                 onClick={() => setTaskAttachmentPreview(null)}
               >
                 <div className={styles.attachmentViewer} onClick={(event) => event.stopPropagation()}>
                   <header>
-                    <strong>{taskAttachmentPreview.fileName || 'Imagem anexada'}</strong>
-                    <button type="button" onClick={() => setTaskAttachmentPreview(null)} aria-label="Fechar visualização">
-                      <CloseIcon size={16} />
-                    </button>
+                    <strong>{taskAttachmentPreview.fileName || 'Anexo'}</strong>
+                    <div>
+                      <a href={taskAttachmentPreview.dataUrl} download={taskAttachmentPreview.fileName || 'anexo'}>Baixar</a>
+                      <button type="button" onClick={() => setTaskAttachmentPreview(null)} aria-label="Fechar visualização">
+                        <CloseIcon size={16} />
+                      </button>
+                    </div>
                   </header>
                   <div className={styles.attachmentViewerImage}>
-                    <img src={taskAttachmentPreview.dataUrl} alt={taskAttachmentPreview.fileName || 'Imagem anexada'} decoding="async" />
+                    {taskAttachmentPreview.mimeType === 'application/pdf' ? (
+                      <iframe title={taskAttachmentPreview.fileName || 'PDF'} src={taskAttachmentPreview.dataUrl} />
+                    ) : (
+                      <img src={taskAttachmentPreview.dataUrl} alt={taskAttachmentPreview.fileName || 'Imagem anexada'} decoding="async" />
+                    )}
                   </div>
                 </div>
-              </div>
+              </div>,
+              document.body
             ) : null}
           </section>
         </aside>
@@ -3737,18 +3859,22 @@ export default function ProfilePage() {
                 <input
                   ref={demandAttachmentInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,application/pdf"
                   multiple
                   onChange={handleDemandAttachmentFiles}
                   hidden
                 />
-                <button type="button" onClick={() => demandAttachmentInputRef.current?.click()}>Anexar imagem</button>
+                <button type="button" onClick={() => demandAttachmentInputRef.current?.click()}>Anexar imagem ou PDF</button>
                 {(demandForm.attachments || []).length ? (
                   <div className={styles.attachmentPreviewGrid}>
                     {(demandForm.attachments || []).map((item) => (
                       <figure key={item.id} className={styles.attachmentPreviewItem}>
-                        <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
-                        <figcaption>{item.fileName || 'Imagem'}</figcaption>
+                        {item.mimeType === 'application/pdf' ? (
+                          <span className={styles.attachmentPdfPreview}>PDF</span>
+                        ) : (
+                          <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
+                        )}
+                        <figcaption>{item.fileName || taskAttachmentKind(item)}</figcaption>
                         <button type="button" onClick={() => handleRemoveDemandAttachment(item.id)} aria-label={`Remover ${item.fileName || 'anexo'}`}>×</button>
                       </figure>
                     ))}

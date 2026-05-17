@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   createAnalysis,
   createAnalysisAttachment,
@@ -106,7 +107,7 @@ function readAttachmentFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve({
-      fileName: file.name,
+      fileName: file.name || (String(file.type || '').startsWith('image/') ? 'imagem.png' : 'arquivo.pdf'),
       mimeType: file.type || 'application/octet-stream',
       sizeBytes: file.size || 0,
       dataUrl: String(reader.result || ''),
@@ -114,6 +115,14 @@ function readAttachmentFile(file) {
     reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
     reader.readAsDataURL(file);
   });
+}
+
+function filesFromClipboard(event) {
+  const items = Array.from(event?.clipboardData?.items || []);
+  return items
+    .filter((item) => item.kind === 'file')
+    .map((item) => item.getAsFile())
+    .filter(Boolean);
 }
 
 export default function AnalysisTab({ clientId, type, canEdit = false }) {
@@ -225,6 +234,14 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     } finally {
       markUploading(entryId, false);
     }
+  }
+
+  function handleEntryPaste(entryId, event) {
+    if (!canEdit) return;
+    const files = filesFromClipboard(event);
+    if (!files.length) return;
+    event.preventDefault();
+    handleAttachmentFiles(entryId, files);
   }
 
   async function handleRemoveAttachment(entryId, attachment) {
@@ -436,6 +453,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 value={entry.text || ''}
                 disabled={!canEdit}
                 placeholder={meta.placeholder}
+                onPaste={(event) => handleEntryPaste(entry.id, event)}
                 onChange={(event) => onTextChange(entry.id, event.target.value)}
               />
 
@@ -511,7 +529,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         })
       ) : null}
 
-      {previewAttachment ? (
+      {previewAttachment ? createPortal(
         <div className={styles.viewerOverlay} role="presentation" onClick={() => setPreviewAttachment(null)}>
           <section
             className={styles.viewer}
@@ -540,7 +558,8 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               )}
             </div>
           </section>
-        </div>
+        </div>,
+        document.body
       ) : null}
 
       {attachmentDeleteTarget ? (
