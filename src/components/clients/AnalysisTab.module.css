@@ -1057,19 +1057,19 @@
   min-height: 168px;
 }
 
-/* v43 — paste attachments */
-.viewerOverlay {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 10000 !important;
+/* v45 — viewer zoom and delete */
+.viewerBody {
+  overscroll-behavior: contain;
 }
 
-.viewer {
-  width: min(980px, calc(100vw - 48px)) !important;
-  max-height: calc(100vh - 48px) !important;
+.viewerBody img {
+  transform-origin: center center;
+  transition: transform 120ms ease;
+  will-change: transform;
 }
 
-.viewerBody iframe {
-  width: min(900px, calc(100vw - 96px));
-  height: min(72vh, 760px);
+.viewer header button[title='Excluir anexo'] {
+  color: #ff8a92;
+  border-color: rgba(255, 107, 107, 0.24);
+  background: rgba(255, 107, 107, 0.065);
 }

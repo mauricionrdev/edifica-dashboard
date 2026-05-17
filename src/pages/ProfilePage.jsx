@@ -183,6 +183,26 @@ function filesFromClipboard(event) {
     .filter(Boolean);
 }
 
+const COMMENT_ATTACHMENT_MARKER = '[[task-attachments:';
+
+function commentAttachmentIds(comment) {
+  const body = String(comment?.body || comment?.content || '');
+  const match = body.match(/\[\[task-attachments:([^\]]+)\]\]/);
+  if (!match) return [];
+  return match[1].split(',').map((id) => id.trim()).filter(Boolean);
+}
+
+function commentDisplayBody(comment) {
+  return String(comment?.body || comment?.content || '').replace(/\n?\[\[task-attachments:[^\]]+\]\]/g, '').trim();
+}
+
+function commentAttachmentItems(comment, attachments = []) {
+  const ids = new Set(commentAttachmentIds(comment));
+  if (!ids.size) return [];
+  return attachments.filter((item) => ids.has(String(item.id)));
+}
+
+
 function emptyHandoffForm(userId = '', status = 'in_progress') {
   return {
     assigneeUserId: userId,
@@ -1518,6 +1538,7 @@ export default function ProfilePage() {
   const [taskAttachmentsLoading, setTaskAttachmentsLoading] = useState(false);
   const [taskAttachmentDeletingId, setTaskAttachmentDeletingId] = useState('');
   const [taskAttachmentPreview, setTaskAttachmentPreview] = useState(null);
+  const [taskAttachmentZoom, setTaskAttachmentZoom] = useState(1);
   const [taskAttachmentsAlbumOpen, setTaskAttachmentsAlbumOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
@@ -1543,6 +1564,10 @@ export default function ProfilePage() {
   useEffect(() => {
     setPanelHeader({ title: 'Perfil', description: null, actions: null });
   }, [setPanelHeader]);
+
+  useEffect(() => {
+    setTaskAttachmentZoom(1);
+  }, [taskAttachmentPreview?.id]);
 
   useEffect(() => {
     setProfileForm({
@@ -2458,16 +2483,10 @@ export default function ProfilePage() {
     const pendingAttachments = Array.isArray(commentAttachments) ? commentAttachments : [];
     if (!body && !pendingAttachments.length) return;
 
-    const attachmentLines = pendingAttachments.length
-      ? pendingAttachments.map((item) => `Anexo: ${item.fileName || taskAttachmentKind(item)}`)
-      : [];
-    const commentBody = [body, ...attachmentLines].filter(Boolean).join('\n');
-
     try {
       setCommentSaving(true);
-      const res = await createTaskComment(activeTask.id, { body: commentBody });
-      if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
 
+      let savedAttachments = [];
       if (pendingAttachments.length) {
         const uploaded = await Promise.allSettled(pendingAttachments.map((item) => createTaskAttachment(activeTask.id, {
           fileName: item.fileName,
@@ -2475,16 +2494,27 @@ export default function ProfilePage() {
           sizeBytes: item.sizeBytes,
           dataUrl: item.dataUrl,
         })));
-        const savedAttachments = uploaded
+        savedAttachments = uploaded
           .filter((result) => result.status === 'fulfilled' && result.value?.attachment)
           .map((result) => result.value.attachment);
         if (savedAttachments.length) setTaskAttachments((prev) => [...savedAttachments, ...prev]);
       }
 
-      await refreshActiveTaskPanels(activeTask.id, { events: true, attachments: pendingAttachments.length > 0 });
+      const attachmentSummary = savedAttachments.length
+        ? savedAttachments.map((item) => `Anexo: ${item.fileName || taskAttachmentKind(item)}`).join('\n')
+        : '';
+      const attachmentMarker = savedAttachments.length
+        ? `${COMMENT_ATTACHMENT_MARKER}${savedAttachments.map((item) => item.id).join(',')}]]`
+        : '';
+      const commentBody = [body, attachmentSummary, attachmentMarker].filter(Boolean).join('\n');
+
+      const res = await createTaskComment(activeTask.id, { body: commentBody });
+      if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
+
+      await refreshActiveTaskPanels(activeTask.id, { events: true, attachments: savedAttachments.length > 0 });
       setCommentDraft('');
       setCommentAttachments([]);
-      showToast(pendingAttachments.length ? 'Comentário e anexos adicionados.' : 'Comentário adicionado.', { variant: 'success' });
+      showToast(savedAttachments.length ? 'Comentário e anexos adicionados.' : 'Comentário adicionado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao comentar.', { variant: 'error' });
     } finally {
@@ -2618,9 +2648,14 @@ export default function ProfilePage() {
 
     try {
       setCommentDeleting(true);
+      const attachmentIds = commentAttachmentIds(commentDeleteTarget);
+      if (attachmentIds.length) {
+        await Promise.allSettled(attachmentIds.map((attachmentId) => deleteTaskAttachment(activeTask.id, attachmentId)));
+        setTaskAttachments((prev) => prev.filter((item) => !attachmentIds.includes(String(item.id))));
+      }
       await deleteTaskComment(activeTask.id, commentDeleteTarget.id);
       setTaskComments((prev) => prev.filter((comment) => comment.id !== commentDeleteTarget.id));
-      await refreshActiveTaskPanels(activeTask.id, { events: true });
+      await refreshActiveTaskPanels(activeTask.id, { events: true, attachments: attachmentIds.length > 0 });
       setCommentDeleteTarget(null);
       setSubtaskDeleteTarget(null);
       showToast('Comentário excluído.', { variant: 'success' });
@@ -2787,6 +2822,20 @@ export default function ProfilePage() {
     event.preventDefault();
     addDemandAttachments(files);
   }
+
+  useEffect(() => {
+    if (!demandModalOpen) return undefined;
+
+    function handleDemandGlobalPaste(event) {
+      const files = filesFromClipboard(event);
+      if (!files.length) return;
+      event.preventDefault();
+      addDemandAttachments(files);
+    }
+
+    document.addEventListener('paste', handleDemandGlobalPaste);
+    return () => document.removeEventListener('paste', handleDemandGlobalPaste);
+  }, [demandModalOpen]);
 
   async function addCommentAttachments(files) {
     const selected = Array.from(files || []).filter(Boolean);
@@ -3721,7 +3770,27 @@ export default function ProfilePage() {
                                 <TrashIcon size={13} />
                               </button>
                             </header>
-                            <p>{comment.body || comment.content || ''}</p>
+                            {commentDisplayBody(comment) ? <p>{commentDisplayBody(comment)}</p> : null}
+                            {commentAttachmentItems(comment, taskAttachments).length ? (
+                              <div className={styles.commentAttachmentList}>
+                                {commentAttachmentItems(comment, taskAttachments).map((item) => (
+                                  <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => setTaskAttachmentPreview(item)}
+                                    className={styles.commentAttachmentItem}
+                                    title={item.fileName || 'Anexo'}
+                                  >
+                                    {item.mimeType === 'application/pdf' ? (
+                                      <span>PDF</span>
+                                    ) : (
+                                      <img src={item.dataUrl} alt="" loading="lazy" decoding="async" />
+                                    )}
+                                    <em>{item.fileName || taskAttachmentKind(item)}</em>
+                                  </button>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
                         </article>
                       );
@@ -3786,6 +3855,16 @@ export default function ProfilePage() {
                         </button>
                         <figcaption>
                           <span>{item.fileName || taskAttachmentKind(item)}</span>
+                          {canEditActiveTask ? (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTaskAttachment(item)}
+                              disabled={taskAttachmentDeletingId === item.id}
+                              aria-label={`Remover ${item.fileName || 'anexo'}`}
+                            >
+                              ×
+                            </button>
+                          ) : null}
                         </figcaption>
                       </figure>
                     ))}
@@ -3808,16 +3887,42 @@ export default function ProfilePage() {
                     <strong>{taskAttachmentPreview.fileName || 'Anexo'}</strong>
                     <div>
                       <a href={taskAttachmentPreview.dataUrl} download={taskAttachmentPreview.fileName || 'anexo'}>Baixar</a>
+                      {canEditActiveTask ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleDeleteTaskAttachment(taskAttachmentPreview);
+                            setTaskAttachmentPreview(null);
+                          }}
+                          aria-label="Excluir anexo"
+                          title="Excluir anexo"
+                        >
+                          <TrashIcon size={15} />
+                        </button>
+                      ) : null}
                       <button type="button" onClick={() => setTaskAttachmentPreview(null)} aria-label="Fechar visualização">
                         <CloseIcon size={16} />
                       </button>
                     </div>
                   </header>
-                  <div className={styles.attachmentViewerImage}>
+                  <div
+                    className={styles.attachmentViewerImage}
+                    onWheel={(event) => {
+                      if (taskAttachmentPreview.mimeType === 'application/pdf') return;
+                      event.preventDefault();
+                      const direction = event.deltaY > 0 ? -0.12 : 0.12;
+                      setTaskAttachmentZoom((value) => Math.min(3, Math.max(0.5, Number((value + direction).toFixed(2)))));
+                    }}
+                  >
                     {taskAttachmentPreview.mimeType === 'application/pdf' ? (
                       <iframe title={taskAttachmentPreview.fileName || 'PDF'} src={taskAttachmentPreview.dataUrl} />
                     ) : (
-                      <img src={taskAttachmentPreview.dataUrl} alt={taskAttachmentPreview.fileName || 'Imagem anexada'} decoding="async" />
+                      <img
+                        src={taskAttachmentPreview.dataUrl}
+                        alt={taskAttachmentPreview.fileName || 'Imagem anexada'}
+                        decoding="async"
+                        style={{ transform: `scale(${taskAttachmentZoom})` }}
+                      />
                     )}
                   </div>
                 </div>
@@ -3834,7 +3939,7 @@ export default function ProfilePage() {
           className={styles.settingsOverlay}
           onClick={(event) => event.stopPropagation()}
         >
-          <form className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()} onSubmit={handleCreateDemand} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
+          <form className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()} onSubmit={handleCreateDemand} onPaste={handleDemandPaste} onPasteCapture={handleDemandPaste} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Nova demanda</h2>
@@ -3978,7 +4083,7 @@ export default function ProfilePage() {
                 </div>
               ) : null}
 
-              <textarea value={demandForm.description} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
+              <textarea value={demandForm.description} onPaste={handleDemandPaste} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
 
               <div className={styles.attachmentComposer}>
                 <div>

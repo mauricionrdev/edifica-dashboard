@@ -10505,3 +10505,74 @@
   background: #94A3B8 !important;
   color: #071018 !important;
 }
+
+/* v45 — comment attachment binding and preview controls */
+.commentAttachmentList {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.commentAttachmentItem {
+  max-width: 210px;
+  min-height: 38px;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 10px;
+  background: #050506;
+  color: var(--edf-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.commentAttachmentItem:hover {
+  border-color: rgba(255, 255, 255, 0.105);
+  background: #080809;
+}
+
+.commentAttachmentItem img,
+.commentAttachmentItem span {
+  width: 32px;
+  height: 28px;
+  border-radius: 7px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.commentAttachmentItem span {
+  color: #ff8a92;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 760;
+}
+
+.commentAttachmentItem em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-style: normal;
+  font-size: 11px;
+}
+
+.attachmentViewerImage {
+  overscroll-behavior: contain;
+}
+
+.attachmentViewerImage img {
+  transform-origin: center center;
+  transition: transform 120ms ease;
+  max-width: 100%;
+  will-change: transform;
+}
+
+.attachmentViewer header button[title='Excluir anexo'] {
+  color: #ff8a92;
+  border-color: rgba(255, 107, 107, 0.24);
+  background: rgba(255, 107, 107, 0.065);
+}

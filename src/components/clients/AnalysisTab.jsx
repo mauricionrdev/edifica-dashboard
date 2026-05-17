@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import {
   createAnalysis,
   createAnalysisAttachment,
@@ -107,7 +106,7 @@ function readAttachmentFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve({
-      fileName: file.name || (String(file.type || '').startsWith('image/') ? 'imagem.png' : 'arquivo.pdf'),
+      fileName: file.name,
       mimeType: file.type || 'application/octet-stream',
       sizeBytes: file.size || 0,
       dataUrl: String(reader.result || ''),
@@ -115,14 +114,6 @@ function readAttachmentFile(file) {
     reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
     reader.readAsDataURL(file);
   });
-}
-
-function filesFromClipboard(event) {
-  const items = Array.from(event?.clipboardData?.items || []);
-  return items
-    .filter((item) => item.kind === 'file')
-    .map((item) => item.getAsFile())
-    .filter(Boolean);
 }
 
 export default function AnalysisTab({ clientId, type, canEdit = false }) {
@@ -136,6 +127,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const [uploadingIds, setUploadingIds] = useState(new Set());
   const [deletingAttachmentIds, setDeletingAttachmentIds] = useState(new Set());
   const [previewAttachment, setPreviewAttachment] = useState(null);
+  const [previewZoom, setPreviewZoom] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [attachmentDeleteTarget, setAttachmentDeleteTarget] = useState(null);
 
@@ -143,6 +135,10 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const fetchIdRef = useRef(0);
 
   const meta = ANALYSIS_META[type] || ANALYSIS_META.icp;
+
+  useEffect(() => {
+    setPreviewZoom(1);
+  }, [previewAttachment?.id]);
 
   useEffect(() => {
     if (!clientId) return undefined;
@@ -234,14 +230,6 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     } finally {
       markUploading(entryId, false);
     }
-  }
-
-  function handleEntryPaste(entryId, event) {
-    if (!canEdit) return;
-    const files = filesFromClipboard(event);
-    if (!files.length) return;
-    event.preventDefault();
-    handleAttachmentFiles(entryId, files);
   }
 
   async function handleRemoveAttachment(entryId, attachment) {
@@ -453,7 +441,6 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 value={entry.text || ''}
                 disabled={!canEdit}
                 placeholder={meta.placeholder}
-                onPaste={(event) => handleEntryPaste(entry.id, event)}
                 onChange={(event) => onTextChange(entry.id, event.target.value)}
               />
 
@@ -475,7 +462,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                           <button
                             type="button"
                             className={styles.attachmentPreview}
-                            onClick={() => isPreviewableAttachment(attachment) && setPreviewAttachment(attachment)}
+                            onClick={() => isPreviewableAttachment(attachment) && setPreviewAttachment({ ...attachment, entryId: entry.id })}
                             disabled={!isPreviewableAttachment(attachment)}
                             aria-label={`Visualizar ${attachment.fileName}`}
                           >
@@ -490,7 +477,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                             <span>{attachmentKind(attachment)} · {formatBytes(attachment.sizeBytes)}</span>
                           </div>
                           <div className={styles.attachmentActions}>
-                            <button type="button" onClick={() => setPreviewAttachment(attachment)}>
+                            <button type="button" onClick={() => setPreviewAttachment({ ...attachment, entryId: entry.id })}>
                               Visualizar
                             </button>
                             <a href={attachment.dataUrl} download={attachment.fileName || 'anexo'}>
@@ -529,7 +516,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         })
       ) : null}
 
-      {previewAttachment ? createPortal(
+      {previewAttachment ? (
         <div className={styles.viewerOverlay} role="presentation" onClick={() => setPreviewAttachment(null)}>
           <section
             className={styles.viewer}
@@ -547,19 +534,35 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 <a href={previewAttachment.dataUrl} download={previewAttachment.fileName || 'anexo'}>
                   Baixar
                 </a>
+                {canEdit ? (
+                  <button
+                    type="button"
+                    onClick={() => setAttachmentDeleteTarget({ entryId: previewAttachment.entryId, attachment: previewAttachment })}
+                    title="Excluir anexo"
+                  >
+                    <TrashIcon size={14} />
+                  </button>
+                ) : null}
                 <button type="button" onClick={() => setPreviewAttachment(null)}>Fechar</button>
               </div>
             </header>
-            <div className={styles.viewerBody}>
+            <div
+              className={styles.viewerBody}
+              onWheel={(event) => {
+                if (previewAttachment.mimeType === 'application/pdf') return;
+                event.preventDefault();
+                const direction = event.deltaY > 0 ? -0.12 : 0.12;
+                setPreviewZoom((value) => Math.min(3, Math.max(0.5, Number((value + direction).toFixed(2)))));
+              }}
+            >
               {previewAttachment.mimeType === 'application/pdf' ? (
                 <iframe title={previewAttachment.fileName} src={previewAttachment.dataUrl} />
               ) : (
-                <img src={previewAttachment.dataUrl} alt="" />
+                <img src={previewAttachment.dataUrl} alt="" style={{ transform: `scale(${previewZoom})` }} />
               )}
             </div>
           </section>
-        </div>,
-        document.body
+        </div>
       ) : null}
 
       {attachmentDeleteTarget ? (
