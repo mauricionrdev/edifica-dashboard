@@ -20,6 +20,7 @@ import accessRequestsRoutes from './src/routes/accessRequests.js';
 import auditLogsRoutes from './src/routes/auditLogs.js';
 import notificationsRoutes from './src/routes/notifications.js';
 import projectsRoutes from './src/routes/projects.js';
+import openAIUsageRoutes from './src/routes/openaiUsage.js';
 
 const app = express();
 
@@ -101,6 +102,7 @@ app.use('/api/access-requests', accessRequestsRoutes);
 app.use('/api/audit-logs', auditLogsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/projects', projectsRoutes);
+app.use('/api/openai-usage', openAIUsageRoutes);
 
 // --------------------------------------------------------------
 //  404 + error handler

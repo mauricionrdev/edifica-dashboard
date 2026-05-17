@@ -1,48 +1,79 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { getOpenAIUsageReport, refreshOpenAIUsageReport } from '../api/openaiUsage.js';
 import { OPENAI_USAGE_REPORT, currencyUsd, percent } from '../data/openaiUsageReport.js';
 import styles from './OpenAIUsagePage.module.css';
 
-const REPORT = OPENAI_USAGE_REPORT;
+const FALLBACK_REPORT = OPENAI_USAGE_REPORT;
 
-function buildPdfHtml() {
-  const rows = REPORT.rows.map((row, index) => `
+function number(value = 0) {
+  return Number(value || 0).toLocaleString('pt-BR');
+}
+
+function monthRange() {
+  const now = new Date();
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+  return {
+    start: start.toISOString().slice(0, 10),
+    end: end.toISOString().slice(0, 10),
+  };
+}
+
+function normalizeReport(raw) {
+  const report = raw || FALLBACK_REPORT;
+  const rows = Array.isArray(report.rows) ? report.rows : [];
+  const zeroDetails = Array.isArray(report.zeroSpendProjectDetails)
+    ? report.zeroSpendProjectDetails
+    : (Array.isArray(report.zeroSpendProjects) ? report.zeroSpendProjects.map((name) => ({ name, client: name })) : []);
+
+  return {
+    ...report,
+    organization: report.organization || 'Edifica',
+    source: report.source || 'OpenAI Admin API',
+    rows,
+    zeroSpendProjectDetails: zeroDetails,
+    zeroSpendProjects: zeroDetails.map((item) => item.name || item.client || item.projectName).filter(Boolean),
+  };
+}
+
+function buildPdfHtml(reportInput) {
+  const report = normalizeReport(reportInput);
+  const rows = [...report.rows].sort((a, b) => Number(b.spend || 0) - Number(a.spend || 0));
+  const maxSpend = Math.max(...rows.map((row) => Number(row.spend || 0)), 1);
+  const topThreeSpend = rows.slice(0, 3).reduce((sum, row) => sum + Number(row.spend || 0), 0);
+  const smallestWithUsage = rows[rows.length - 1];
+  const periodLabel = report.period?.label || report.period || 'Período atual';
+
+  const rowsHtml = rows.map((row, index) => `
     <tr>
       <td>${index + 1}</td>
-      <td>${row.client}</td>
+      <td>${row.name || row.client || row.projectName || row.projectId}</td>
       <td>${currencyUsd(row.spend)}</td>
       <td>${percent(row.shareOfActive)}</td>
+      <td>${row.totalTokens ? number(row.totalTokens) : '—'}</td>
+      <td>${row.requests ? number(row.requests) : '—'}</td>
     </tr>
   `).join('');
 
-  const maxSpend = Math.max(...REPORT.rows.map((row) => row.spend), 1);
-  const chartRows = REPORT.rows.map((row, index) => `
+  const chartRows = rows.map((row, index) => `
     <div class="bar-row">
-      <div class="bar-label">${row.client}</div>
+      <div class="bar-label">${row.name || row.client || row.projectName || row.projectId}</div>
       <div class="bar-track">
-        <span class="${index < 3 ? 'featured' : ''}" style="width:${Math.max(2, (row.spend / maxSpend) * 100)}%"></span>
+        <span class="${index < 3 ? 'featured' : ''}" style="width:${Math.max(2, (Number(row.spend || 0) / maxSpend) * 100)}%"></span>
       </div>
       <strong>${currencyUsd(row.spend)}</strong>
     </div>
   `).join('');
 
-  const topThreeSpend = REPORT.rows.slice(0, 3).reduce((sum, row) => sum + row.spend, 0);
-  const smallestWithUsage = REPORT.rows[REPORT.rows.length - 1];
-
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<title>${REPORT.title}</title>
+<title>${report.title || 'Relatório de Uso por API Key'}</title>
 <style>
   @page { size: A4; margin: 15mm 17mm; }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    color: #0f172a;
-    background: #fff;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 11.5px;
-  }
+  body { margin: 0; color: #0f172a; background: #fff; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 11.5px; }
   h1 { margin: 0; font-size: 28px; line-height: 1.05; letter-spacing: -0.045em; }
   h2 { margin: 28px 0 12px; font-size: 16px; letter-spacing: -0.02em; }
   .meta { margin-top: 6px; color: #64748b; font-size: 12.5px; line-height: 1.35; }
@@ -68,10 +99,9 @@ function buildPdfHtml() {
   th { padding: 7px 8px; border-bottom: 1px solid #0f172a; background: #f1f5f9; text-align: left; font-size: 10.5px; }
   td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
   tbody tr:nth-child(even) td { background: #f8fafc; }
-  td:nth-child(1), td:nth-child(3), td:nth-child(4),
-  th:nth-child(1), th:nth-child(3), th:nth-child(4) { text-align: right; }
-  tbody tr:nth-child(-n+3) td:nth-child(2),
-  tbody tr:nth-child(-n+3) td:nth-child(3) { color: #7c3aed; font-weight: 800; }
+  td:nth-child(1), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6),
+  th:nth-child(1), th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6) { text-align: right; }
+  tbody tr:nth-child(-n+3) td:nth-child(2), tbody tr:nth-child(-n+3) td:nth-child(3) { color: #7c3aed; font-weight: 800; }
   .zero { color: #94a3b8; font-style: italic; }
   .total td { border-top: 1px solid #0f172a; border-bottom: 0; background: #f1f5f9 !important; font-weight: 800; }
   ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 7px; }
@@ -80,48 +110,44 @@ function buildPdfHtml() {
 </style>
 </head>
 <body>
-  <h1>${REPORT.title}</h1>
-  <div class="meta">Organização: <strong>${REPORT.organization}</strong> · Período: <strong>maio de 2026</strong> (gasto mensal acumulado) · Fonte: ${REPORT.source}</div>
+  <h1>${report.title || 'Relatório de Uso por API Key'}</h1>
+  <div class="meta">Organização: <strong>${report.organization}</strong> · Período: <strong>${periodLabel}</strong> · Fonte: ${report.source}</div>
   <div class="rule"></div>
 
   <h2>Resumo geral</h2>
   <div class="cards">
-    <div class="card"><span>Gasto total (mês)</span><strong>${currencyUsd(REPORT.totalSpend)}</strong><em>Inclui projeto legado</em></div>
-    <div class="card"><span>Gasto clientes ativos</span><strong>${currencyUsd(REPORT.activeClientSpend)}</strong><em>${REPORT.activeClientsWithSpend} clientes com uso</em></div>
-    <div class="card"><span>Projetos ativos</span><strong>${REPORT.activeProjects}</strong><em>${REPORT.zeroSpendProjects.length} sem gasto no mês</em></div>
-    <div class="card"><span>Maior gasto individual</span><strong>${currencyUsd(REPORT.rows[0].spend)}</strong><em>${REPORT.rows[0].client}</em></div>
+    <div class="card"><span>Gasto total</span><strong>${currencyUsd(report.totalSpend)}</strong><em>Inclui projeto legado, quando existir</em></div>
+    <div class="card"><span>Gasto projetos atuais</span><strong>${currencyUsd(report.activeProjectSpend || report.activeClientSpend)}</strong><em>${report.projectsWithSpend || report.activeClientsWithSpend || 0} projetos com uso</em></div>
+    <div class="card"><span>Projetos OpenAI</span><strong>${report.totalProjects || report.activeProjects || 0}</strong><em>${report.zeroSpendCount || report.zeroSpendProjects?.length || 0} sem gasto</em></div>
+    <div class="card"><span>Maior gasto</span><strong>${currencyUsd(rows[0]?.spend || 0)}</strong><em>${rows[0]?.name || rows[0]?.client || '—'}</em></div>
   </div>
 
-  <div class="legacy">
-    <span>Projeto legado</span>
-    <strong>${REPORT.legacyProject.name} — chaves antigas desativadas, substituídas pelos projetos atuais</strong>
-    <p><b>${currencyUsd(REPORT.legacyProject.spend)}</b> · ${percent(REPORT.legacyProject.percentOfTotal)} do total do mês</p>
-  </div>
+  ${report.legacyProject ? `<div class="legacy"><span>Projeto legado</span><strong>${report.legacyProject.name || report.legacyProject.projectName} — separado dos projetos atuais</strong><p><b>${currencyUsd(report.legacyProject.spend)}</b> · ${percent(report.legacyProject.percentOfTotal)} do total</p></div>` : ''}
 
   <h2>Gasto por API Key — visualização</h2>
-  <p class="hint">Clientes ativos ordenados por gasto no mês. Os três maiores aparecem destacados. Não exibido: ${REPORT.zeroSpendProjects.length} projetos sem gasto no período.</p>
+  <p class="hint">Projetos OpenAI ordenados por gasto no período. Os três maiores aparecem destacados. Não exibido: ${report.zeroSpendCount || report.zeroSpendProjects?.length || 0} projetos sem gasto.</p>
   <div class="bars">${chartRows}</div>
 
-  <h2>Detalhamento por API Key — clientes ativos</h2>
-  <p class="hint">Tabela com todos os projetos atuais que tiveram consumo no mês, ordenados do maior para o menor gasto. Projetos provisionados sem consumo estão agrupados na última linha.</p>
+  <h2>Detalhamento por API Key — projetos com uso</h2>
+  <p class="hint">Tabela com todos os projetos OpenAI que tiveram consumo no período, ordenados do maior para o menor gasto.</p>
   <table>
-    <thead><tr><th>#</th><th>API Key / Cliente</th><th>Gasto mensal (USD)</th><th>% s/ ativos</th></tr></thead>
-    <tbody>${rows}<tr class="zero"><td>—</td><td>+ ${REPORT.zeroSpendProjects.length} projetos sem gasto no mês: ${REPORT.zeroSpendProjects.join(', ')}</td><td>$0,00</td><td>—</td></tr><tr class="total"><td></td><td>Total clientes ativos</td><td>${currencyUsd(REPORT.activeClientSpend)}</td><td>100,0%</td></tr></tbody>
+    <thead><tr><th>#</th><th>Projeto / API Key</th><th>Gasto</th><th>% s/ projetos</th><th>Tokens</th><th>Requisições</th></tr></thead>
+    <tbody>${rowsHtml}<tr class="zero"><td>—</td><td>+ ${report.zeroSpendCount || 0} projetos sem gasto no período</td><td>$0.00</td><td>—</td><td>—</td><td>—</td></tr><tr class="total"><td></td><td>Total projetos atuais</td><td>${currencyUsd(report.activeProjectSpend || report.activeClientSpend)}</td><td>100,0%</td><td>${number(report.totalTokens)}</td><td>${number(report.totalRequests)}</td></tr></tbody>
   </table>
 
   <h2>Principais observações</h2>
   <ul>
-    <li><strong>Maior gasto:</strong> ${REPORT.rows[0].client} — ${currencyUsd(REPORT.rows[0].spend)} (${percent(REPORT.rows[0].shareOfActive)} dos clientes ativos).</li>
-    <li><strong>Concentração:</strong> os 3 maiores clientes (${REPORT.rows.slice(0, 3).map((row) => row.client).join(', ')}) somam ${currencyUsd(topThreeSpend)} — ${percent(35.3)} do gasto entre clientes ativos.</li>
-    <li><strong>Menor gasto com uso:</strong> ${smallestWithUsage.client} — ${currencyUsd(smallestWithUsage.spend)}. Há ${REPORT.zeroSpendProjects.length} projetos sem gasto no mês.</li>
-    <li><strong>Legado:</strong> o ${REPORT.legacyProject.name} responde por ${currencyUsd(REPORT.legacyProject.spend)} (${percent(REPORT.legacyProject.percentOfTotal)} do total) e refere-se a chaves antigas já desativadas.</li>
+    <li><strong>Maior gasto:</strong> ${rows[0]?.name || rows[0]?.client || '—'} — ${currencyUsd(rows[0]?.spend || 0)}.</li>
+    <li><strong>Concentração:</strong> os 3 maiores projetos somam ${currencyUsd(topThreeSpend)}.</li>
+    <li><strong>Menor gasto com uso:</strong> ${smallestWithUsage?.name || smallestWithUsage?.client || '—'} — ${currencyUsd(smallestWithUsage?.spend || 0)}.</li>
+    ${report.legacyProject ? `<li><strong>Legado:</strong> ${report.legacyProject.name || report.legacyProject.projectName} responde por ${currencyUsd(report.legacyProject.spend)}.</li>` : ''}
   </ul>
 </body>
 </html>`;
 }
 
-function downloadHtmlAsPdf() {
-  const html = buildPdfHtml();
+function downloadHtmlAsPdf(report) {
+  const html = buildPdfHtml(report);
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const frame = document.createElement('iframe');
@@ -144,66 +170,124 @@ function downloadHtmlAsPdf() {
 }
 
 export default function OpenAIUsagePage() {
-  const rows = useMemo(() => [...REPORT.rows].sort((a, b) => b.spend - a.spend), []);
-  const maxSpend = Math.max(...rows.map((row) => row.spend), 1);
-  const topThreeSpend = rows.slice(0, 3).reduce((sum, row) => sum + row.spend, 0);
+  const defaultRange = useMemo(() => monthRange(), []);
+  const [range, setRange] = useState(defaultRange);
+  const [report, setReport] = useState(() => normalizeReport(FALLBACK_REPORT));
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState('');
+
+  const rows = useMemo(
+    () => [...(report.rows || [])].sort((a, b) => Number(b.spend || 0) - Number(a.spend || 0)),
+    [report.rows]
+  );
+
+  const maxSpend = Math.max(...rows.map((row) => Number(row.spend || 0)), 1);
+  const topThreeSpend = rows.slice(0, 3).reduce((sum, row) => sum + Number(row.spend || 0), 0);
   const smallestWithUsage = rows[rows.length - 1];
+  const periodLabel = report.period?.label || `${range.start} até ${range.end}`;
+
+  async function loadReport({ force = false, silent = false } = {}) {
+    if (!silent) setLoading(true);
+    setError('');
+
+    try {
+      const response = force
+        ? await refreshOpenAIUsageReport(range)
+        : await getOpenAIUsageReport({ ...range, force });
+      setReport(normalizeReport(response.report));
+    } catch (err) {
+      setError(err?.message || 'Não foi possível carregar dados OpenAI.');
+      if (!report?.rows?.length) setReport(normalizeReport(FALLBACK_REPORT));
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
+    loadReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range.start, range.end]);
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await loadReport({ force: true, silent: true });
+  }
 
   return (
     <main className={styles.page}>
       <section className={styles.report}>
         <header className={styles.header}>
           <div>
-            <h1>{REPORT.title}</h1>
-            <p>Organização: <strong>{REPORT.organization}</strong> · Período: <strong>maio de 2026</strong> (gasto mensal acumulado) · Fonte: {REPORT.source}</p>
+            <h1>{report.title || 'Relatório de Uso por API Key'}</h1>
+            <p>Organização: <strong>{report.organization}</strong> · Período: <strong>{periodLabel}</strong> · Fonte: {report.source}</p>
           </div>
-          <button type="button" onClick={downloadHtmlAsPdf}>Baixar PDF</button>
+          <div className={styles.actions}>
+            <label>
+              <span>Início</span>
+              <input type="date" value={range.start} onChange={(event) => setRange((prev) => ({ ...prev, start: event.target.value }))} />
+            </label>
+            <label>
+              <span>Fim</span>
+              <input type="date" value={range.end} onChange={(event) => setRange((prev) => ({ ...prev, end: event.target.value }))} />
+            </label>
+            <button type="button" onClick={handleRefresh} disabled={refreshing || loading}>
+              {refreshing ? 'Atualizando' : 'Atualizar agora'}
+            </button>
+            <button type="button" onClick={() => downloadHtmlAsPdf(report)}>Baixar PDF</button>
+          </div>
         </header>
+
+        {error ? <div className={styles.alert}>{error}</div> : null}
+        {report.cached ? <div className={styles.cacheInfo}>Última atualização: {report.lastUpdatedAt ? new Date(report.lastUpdatedAt).toLocaleString('pt-BR') : 'cache recente'}</div> : null}
 
         <section className={styles.section}>
           <h2>Resumo geral</h2>
-          <div className={styles.summaryGrid}>
+          <div className={`${styles.summaryGrid} ${loading ? styles.loading : ''}`.trim()}>
             <article>
-              <span>Gasto total (mês)</span>
-              <strong>{currencyUsd(REPORT.totalSpend)}</strong>
-              <em>Inclui projeto legado</em>
+              <span>Gasto total</span>
+              <strong>{currencyUsd(report.totalSpend)}</strong>
+              <em>Inclui projeto legado, quando existir</em>
             </article>
             <article>
-              <span>Gasto clientes ativos</span>
-              <strong>{currencyUsd(REPORT.activeClientSpend)}</strong>
-              <em>{REPORT.activeClientsWithSpend} clientes com uso</em>
+              <span>Gasto projetos atuais</span>
+              <strong>{currencyUsd(report.activeProjectSpend || report.activeClientSpend)}</strong>
+              <em>{report.projectsWithSpend || report.activeClientsWithSpend || 0} projetos com uso</em>
             </article>
             <article>
-              <span>Projetos ativos</span>
-              <strong>{REPORT.activeProjects}</strong>
-              <em>{REPORT.zeroSpendProjects.length} sem gasto no mês</em>
+              <span>Projetos OpenAI</span>
+              <strong>{report.totalProjects || report.activeProjects || 0}</strong>
+              <em>{report.zeroSpendCount || report.zeroSpendProjects?.length || 0} sem gasto</em>
             </article>
             <article>
-              <span>Maior gasto individual</span>
-              <strong>{currencyUsd(rows[0].spend)}</strong>
-              <em>{rows[0].client}</em>
+              <span>Maior gasto</span>
+              <strong>{currencyUsd(rows[0]?.spend || 0)}</strong>
+              <em>{rows[0]?.name || rows[0]?.client || '—'}</em>
             </article>
           </div>
 
-          <aside className={styles.legacy}>
-            <div>
-              <span>Projeto legado</span>
-              <strong>{REPORT.legacyProject.name} — chaves antigas desativadas, substituídas pelos projetos atuais</strong>
-              <p>{currencyUsd(REPORT.legacyProject.spend)} · {percent(REPORT.legacyProject.percentOfTotal)} do total do mês</p>
-            </div>
-          </aside>
+          {report.legacyProject ? (
+            <aside className={styles.legacy}>
+              <div>
+                <span>Projeto legado</span>
+                <strong>{report.legacyProject.name || report.legacyProject.projectName} — separado dos projetos atuais</strong>
+                <p>{currencyUsd(report.legacyProject.spend)} · {percent(report.legacyProject.percentOfTotal)} do total</p>
+              </div>
+            </aside>
+          ) : null}
         </section>
 
         <section className={styles.section}>
           <h2>Gasto por API Key — visualização</h2>
-          <p className={styles.hint}>Clientes ativos ordenados por gasto no mês. Os três maiores aparecem destacados. Não exibido: {REPORT.zeroSpendProjects.length} projetos sem gasto no período.</p>
+          <p className={styles.hint}>Projetos OpenAI ordenados por gasto no período. Os três maiores aparecem destacados. Não exibido: {report.zeroSpendCount || report.zeroSpendProjects?.length || 0} projetos sem gasto.</p>
 
           <div className={styles.chart}>
             {rows.map((row, index) => (
-              <div key={row.client} className={styles.chartRow}>
-                <strong>{row.client}</strong>
+              <div key={row.projectId || row.name || row.client} className={styles.chartRow}>
+                <strong>{row.name || row.client || row.projectName || row.projectId}</strong>
                 <div className={styles.track}>
-                  <span className={index < 3 ? styles.featuredBar : ''} style={{ width: `${Math.max(2, (row.spend / maxSpend) * 100)}%` }} />
+                  <span className={index < 3 ? styles.featuredBar : ''} style={{ width: `${Math.max(2, (Number(row.spend || 0) / maxSpend) * 100)}%` }} />
                 </div>
                 <em>{currencyUsd(row.spend)}</em>
               </div>
@@ -212,52 +296,72 @@ export default function OpenAIUsagePage() {
         </section>
 
         <section className={styles.section}>
-          <h2>Detalhamento por API Key — clientes ativos</h2>
-          <p className={styles.hint}>Tabela com todos os projetos atuais que tiveram consumo no mês, ordenados do maior para o menor gasto. Projetos provisionados sem consumo estão agrupados na última linha.</p>
+          <h2>Detalhamento por API Key — projetos com uso</h2>
+          <p className={styles.hint}>Tabela com todos os projetos OpenAI que tiveram consumo no período, ordenados do maior para o menor gasto.</p>
 
           <div className={styles.tableWrap}>
             <table>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>API Key / Cliente</th>
-                  <th>Gasto mensal (USD)</th>
-                  <th>% s/ ativos</th>
+                  <th>Projeto / API Key</th>
+                  <th>Gasto</th>
+                  <th>% s/ projetos</th>
+                  <th>Tokens</th>
+                  <th>Requisições</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row, index) => (
-                  <tr key={row.client}>
+                  <tr key={row.projectId || row.name || row.client}>
                     <td>{index + 1}</td>
-                    <td><strong>{row.client}</strong></td>
+                    <td>
+                      <strong>{row.name || row.client || row.projectName || row.projectId}</strong>
+                      <small>{row.projectName || row.projectId}</small>
+                    </td>
                     <td>{currencyUsd(row.spend)}</td>
                     <td>{percent(row.shareOfActive)}</td>
+                    <td>{row.totalTokens ? number(row.totalTokens) : '—'}</td>
+                    <td>{row.requests ? number(row.requests) : '—'}</td>
                   </tr>
                 ))}
                 <tr className={styles.zeroRow}>
                   <td>—</td>
-                  <td>+ {REPORT.zeroSpendProjects.length} projetos sem gasto no mês: {REPORT.zeroSpendProjects.join(', ')}</td>
-                  <td>$0,00</td>
+                  <td>+ {report.zeroSpendCount || 0} projetos sem gasto no período</td>
+                  <td>$0.00</td>
+                  <td>—</td>
+                  <td>—</td>
                   <td>—</td>
                 </tr>
                 <tr className={styles.totalRow}>
                   <td />
-                  <td>Total clientes ativos</td>
-                  <td>{currencyUsd(REPORT.activeClientSpend)}</td>
+                  <td>Total projetos atuais</td>
+                  <td>{currencyUsd(report.activeProjectSpend || report.activeClientSpend)}</td>
                   <td>100,0%</td>
+                  <td>{report.totalTokens ? number(report.totalTokens) : '—'}</td>
+                  <td>{report.totalRequests ? number(report.totalRequests) : '—'}</td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          {Array.isArray(report.zeroSpendProjectDetails) && report.zeroSpendProjectDetails.length ? (
+            <div className={styles.zeroProjects}>
+              <strong>Sem gasto no período</strong>
+              <span>{report.zeroSpendProjectDetails.map((item) => item.name || item.client || item.projectName).filter(Boolean).join(', ')}</span>
+            </div>
+          ) : null}
         </section>
 
         <section className={styles.section}>
           <h2>Principais observações</h2>
           <ul className={styles.observations}>
-            <li><strong>Maior gasto:</strong> {rows[0].client} — {currencyUsd(rows[0].spend)} ({percent(rows[0].shareOfActive)} dos clientes ativos).</li>
-            <li><strong>Concentração:</strong> os 3 maiores clientes ({rows.slice(0, 3).map((row) => row.client).join(', ')}) somam {currencyUsd(topThreeSpend)} — {percent(35.3)} do gasto entre clientes ativos.</li>
-            <li><strong>Menor gasto com uso:</strong> {smallestWithUsage.client} — {currencyUsd(smallestWithUsage.spend)}. Há {REPORT.zeroSpendProjects.length} projetos sem gasto no mês.</li>
-            <li><strong>Legado:</strong> o {REPORT.legacyProject.name} responde por {currencyUsd(REPORT.legacyProject.spend)} ({percent(REPORT.legacyProject.percentOfTotal)} do total) e refere-se a chaves antigas já desativadas.</li>
+            <li><strong>Maior gasto:</strong> {rows[0]?.name || rows[0]?.client || '—'} — {currencyUsd(rows[0]?.spend || 0)}.</li>
+            <li><strong>Concentração:</strong> os 3 maiores projetos somam {currencyUsd(topThreeSpend)}.</li>
+            <li><strong>Menor gasto com uso:</strong> {smallestWithUsage?.name || smallestWithUsage?.client || '—'} — {currencyUsd(smallestWithUsage?.spend || 0)}.</li>
+            {report.legacyProject ? (
+              <li><strong>Legado:</strong> {report.legacyProject.name || report.legacyProject.projectName} responde por {currencyUsd(report.legacyProject.spend)}.</li>
+            ) : null}
           </ul>
         </section>
       </section>
