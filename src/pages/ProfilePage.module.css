@@ -10712,3 +10712,12 @@
   opacity: 0.58;
   cursor: wait;
 }
+
+/* v51 — zoom out retorna ao estado natural */
+.attachmentViewerImage img {
+  min-width: 0 !important;
+}
+
+.attachmentViewerImage img[style*="scale(1)"] {
+  transform-origin: 50% 50% !important;
+}

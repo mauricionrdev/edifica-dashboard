@@ -3969,7 +3969,13 @@ export default function ProfilePage() {
                       const originY = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
                       setTaskAttachmentZoomOrigin(`${originX.toFixed(2)}% ${originY.toFixed(2)}%`);
                       const direction = event.deltaY > 0 ? -0.16 : 0.16;
-                      setTaskAttachmentZoom((value) => Math.min(4, Math.max(0.5, Number((value + direction).toFixed(2)))));
+                      setTaskAttachmentZoom((value) => {
+                        const nextZoom = Math.min(4, Math.max(1, Number((value + direction).toFixed(2))));
+                        if (nextZoom <= 1) {
+                          setTaskAttachmentZoomOrigin('50% 50%');
+                        }
+                        return nextZoom;
+                      });
                     }}
                   >
                     {taskAttachmentPreview.mimeType === 'application/pdf' ? (
