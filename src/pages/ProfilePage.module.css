@@ -10587,15 +10587,29 @@
   will-change: transform;
 }
 
-/* v48 — zoom focal e confirmação de exclusão no drawer */
-.attachmentViewerImage img {
-  transform: none !important;
-  transform-origin: center center !important;
-  max-width: 100%;
-  transition: width 120ms ease;
+/* v49 — correção segura do drawer sem alterar zoom de clientes */
+.attachmentViewerImage {
+  overflow: auto !important;
+  display: block !important;
+  text-align: center !important;
+  cursor: zoom-in;
+  scroll-behavior: auto !important;
+  overscroll-behavior: contain;
 }
 
-.attachmentViewerImage {
-  cursor: zoom-in;
-  scroll-behavior: auto;
+.attachmentViewerImage img {
+  display: block !important;
+  margin: 0 auto !important;
+  height: auto !important;
+  transform: none !important;
+  transform-origin: center center !important;
+  transition: width 120ms ease !important;
+}
+
+.confirmOverlay {
+  z-index: 10020 !important;
+}
+
+.attachmentViewerOverlay {
+  z-index: 10000 !important;
 }

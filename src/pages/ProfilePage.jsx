@@ -3956,16 +3956,19 @@ export default function ProfilePage() {
                       event.preventDefault();
                       const container = event.currentTarget;
                       const rect = container.getBoundingClientRect();
-                      const pointerX = event.clientX - rect.left + container.scrollLeft;
-                      const pointerY = event.clientY - rect.top + container.scrollTop;
+                      const localX = event.clientX - rect.left;
+                      const localY = event.clientY - rect.top;
+                      const contentX = container.scrollLeft + localX;
+                      const contentY = container.scrollTop + localY;
                       const previousZoom = taskAttachmentZoom;
-                      const direction = event.deltaY > 0 ? -0.18 : 0.18;
-                      const nextZoom = Math.min(4, Math.max(0.35, Number((previousZoom + direction).toFixed(2))));
+                      const direction = event.deltaY > 0 ? -0.16 : 0.16;
+                      const nextZoom = Math.min(4, Math.max(0.5, Number((previousZoom + direction).toFixed(2))));
                       const ratio = nextZoom / previousZoom;
+
                       setTaskAttachmentZoom(nextZoom);
                       requestAnimationFrame(() => {
-                        container.scrollLeft = pointerX * ratio - (event.clientX - rect.left);
-                        container.scrollTop = pointerY * ratio - (event.clientY - rect.top);
+                        container.scrollLeft = (contentX * ratio) - localX;
+                        container.scrollTop = (contentY * ratio) - localY;
                       });
                     }}
                   >

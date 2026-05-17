@@ -1122,25 +1122,13 @@
   will-change: transform;
 }
 
-/* v48 — correção de confirmação e zoom focal nos anexos de cliente */
-.confirmOverlay {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 10020 !important;
-}
-
+/* v49 — confirmação de exclusão acima do preview */
 .viewerOverlay {
   z-index: 10000 !important;
 }
 
-.viewerBody img {
-  transform: none !important;
-  transform-origin: center center !important;
-  max-width: 100%;
-  transition: width 120ms ease;
-}
-
-.viewerBody {
-  cursor: zoom-in;
-  scroll-behavior: auto;
+.confirmOverlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10020 !important;
 }
