@@ -9349,3 +9349,29 @@
 .profileStat span {
   color: #878c95 !important;
 }
+
+
+/* v33 — ajuste fino tons perfil */
+.operationBoard {
+  background: #080809 !important;
+}
+
+.operationHeader,
+.operationBody {
+  background: transparent !important;
+}
+
+.operationTab {
+  background: #090a0b !important;
+}
+
+.operationTab:hover:not(.operationTabActive) {
+  background: #0b0c0d !important;
+}
+
+.operationTabActive,
+.operationTabActive:hover {
+  background:
+    linear-gradient(180deg, rgba(245, 184, 0, 0.065), rgba(245, 184, 0, 0.045)),
+    #090a0b !important;
+}
