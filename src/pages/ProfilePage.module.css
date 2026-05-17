@@ -192,7 +192,7 @@
   letter-spacing: 0.06em;
   color: var(--edf-text-muted);
   background: var(--edf-surface-2);
-  /* border: 1px solid var(--edf-border-strong); */
+  border: 1px solid var(--edf-border-strong);
   padding: 3px 9px;
   border-radius: 999px;
   text-transform: uppercase;
@@ -4222,7 +4222,7 @@
   letter-spacing: 0.035em !important;
   color: var(--edf-text-muted) !important;
   background: rgba(255, 255, 255, 0.018) !important;
-  /* border: 1px solid rgba(255, 255, 255, 0.060) !important; */
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
 }
 
 .identityMeta {
@@ -4686,12 +4686,11 @@
 }
 
 .roleBadge {
-  height: 27px !important;
-  line-height: 2.0;
+  height: 22px !important;
   padding: 0 8px !important;
   border-radius: 999px !important;
   background: rgba(255, 255, 255, 0.018) !important;
-  /* border: 1px solid rgba(255, 255, 255, 0.060) !important; */
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
   color: var(--edf-text-muted) !important;
   font-size: 10.5px !important;
   font-weight: 560 !important;
@@ -5462,7 +5461,7 @@
   padding: 2px 10px !important;
   border-radius: 999px !important;
   background: rgba(255, 255, 255, 0.012) !important;
-  /* border-color: rgba(255, 255, 255, 0.065) !important; */
+  border-color: rgba(255, 255, 255, 0.065) !important;
   color: var(--edf-text-muted) !important;
   font-size: 11px !important;
   font-weight: 560 !important;
@@ -7229,7 +7228,7 @@
   padding: 2px 10px !important;
   border-radius: 999px !important;
   background: rgba(255, 255, 255, 0.018) !important;
-  /* border: 1px solid rgba(255, 255, 255, 0.075) !important; */
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
   color: var(--edf-text-muted) !important;
   font-size: 11px !important;
   font-weight: 560 !important;
@@ -7770,8 +7769,8 @@
 .roleBadge,
 .operationTab,
 .operationTabCount {
-  background-color: #08090a !important;
-  /* border-color: rgba(255, 255, 255, 0.080) !important; */
+  background-color: rgba(255, 255, 255, 0.018) !important;
+  border-color: rgba(255, 255, 255, 0.080) !important;
   box-shadow: none !important;
 }
 
@@ -8347,13 +8346,13 @@
    Escopo: somente CSS visual da tela de Perfil. */
 .operationTab {
   background: transparent !important;
-  border-color: #08090a !important;
+  border-color: rgba(146, 155, 176, 0.16) !important;
   color: #9AA6BA !important;
   box-shadow: none !important;
 }
 
 .operationTab:hover:not(.operationTabActive) {
-  background: #08090a !important;
+  background: rgba(244, 196, 48, 0.10) !important;
   border-color: rgba(244, 196, 48, 0.34) !important;
   color: #F4C430 !important;
   box-shadow: none !important;
