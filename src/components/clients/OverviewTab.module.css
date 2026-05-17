@@ -247,7 +247,7 @@
   column-gap: 16px;
 }
 
-.dangerSection > :first-child {
+.dangerSection> :first-child {
   margin-bottom: 0;
 }
 
@@ -280,6 +280,7 @@
 }
 
 @media (max-width: 720px) {
+
   .profileGrid,
   .profileFields,
   .formGrid {
@@ -345,7 +346,7 @@
 }
 
 .dangerSection :global(.sectionTitle),
-.dangerSection > :first-child {
+.dangerSection> :first-child {
   align-self: center;
 }
 
@@ -431,10 +432,10 @@
   grid-column: 1 / -1;
 }
 
-.profileFields > :nth-child(2),
-.profileFields > :nth-child(3),
-.profileFields > :nth-child(4),
-.profileFields > :nth-child(5) {
+.profileFields> :nth-child(2),
+.profileFields> :nth-child(3),
+.profileFields> :nth-child(4),
+.profileFields> :nth-child(5) {
   grid-column: span 3;
 }
 
@@ -486,16 +487,17 @@
     grid-column: 1 / -1;
   }
 
-  .profileFields > :nth-child(2),
-  .profileFields > :nth-child(3),
-  .profileFields > :nth-child(4),
-  .profileFields > :nth-child(5),
+  .profileFields> :nth-child(2),
+  .profileFields> :nth-child(3),
+  .profileFields> :nth-child(4),
+  .profileFields> :nth-child(5),
   .fieldQuarter {
     grid-column: auto;
   }
 }
 
 @media (max-width: 720px) {
+
   .profileGrid,
   .profileFields,
   .formGrid {
@@ -512,10 +514,10 @@
     width: 96px;
   }
 
-  .profileFields > :nth-child(2),
-  .profileFields > :nth-child(3),
-  .profileFields > :nth-child(4),
-  .profileFields > :nth-child(5),
+  .profileFields> :nth-child(2),
+  .profileFields> :nth-child(3),
+  .profileFields> :nth-child(4),
+  .profileFields> :nth-child(5),
   .fieldQuarter,
   .profileFieldName {
     grid-column: 1;
@@ -653,7 +655,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.055);
 }
 
-.dangerSection > :first-child {
+.dangerSection> :first-child {
   margin-bottom: 0;
 }
 
@@ -698,6 +700,7 @@
 }
 
 @media (max-width: 640px) {
+
   .profileFields,
   .contractGrid,
   .dangerSection {
@@ -731,12 +734,13 @@
 
 .profileGrid {
   width: 100%;
-  max-width: 930px;
+  max-width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 480px) 292px;
+  grid-template-columns: 1fr 1fr;
   column-gap: 76px;
-  align-items: start;
-  justify-content: start;
+  align-items: stretch;
+  justify-content: center;
+  justify-items: center;
 }
 
 .profileFields {
@@ -755,7 +759,7 @@
   grid-column: 1 / -1;
 }
 
-.profileFields > :not(.profileFieldName) {
+.profileFields> :not(.profileFieldName) {
   grid-column: auto;
 }
 
@@ -860,7 +864,7 @@
   column-gap: 16px;
 }
 
-.dangerSection > :first-child {
+.dangerSection> :first-child {
   margin-bottom: 0;
 }
 
@@ -898,6 +902,7 @@
 }
 
 @media (max-width: 640px) {
+
   .profileFields,
   .contractGrid,
   .dangerSection {
@@ -905,7 +910,7 @@
   }
 
   .profileFieldName,
-  .profileFields > :not(.profileFieldName) {
+  .profileFields> :not(.profileFieldName) {
     grid-column: 1;
   }
 
