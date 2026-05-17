@@ -116,8 +116,8 @@ function buildPdfHtml(reportInput) {
 
   <h2>Resumo geral</h2>
   <div class="cards">
-    <div class="card"><span>Gasto total</span><strong>${currencyUsd(report.totalSpend)}</strong><em>Inclui projeto legado, quando existir</em></div>
-    <div class="card"><span>Gasto projetos atuais</span><strong>${currencyUsd(report.activeProjectSpend || report.activeClientSpend)}</strong><em>${report.projectsWithSpend || report.activeClientsWithSpend || 0} projetos com uso</em></div>
+    <div class="card"><span>Gasto total</span><strong>${currencyUsd(report.totalSpend)}</strong><em>Total OpenAI do período</em></div>
+    <div class="card"><span>Projetos com gasto</span><strong>${currencyUsd(report.activeProjectSpend || report.activeClientSpend)}</strong><em>${report.projectsWithSpend || report.activeClientsWithSpend || 0} projetos com uso</em></div>
     <div class="card"><span>Projetos OpenAI</span><strong>${report.totalProjects || report.activeProjects || 0}</strong><em>${report.zeroSpendCount || report.zeroSpendProjects?.length || 0} sem gasto</em></div>
     <div class="card"><span>Maior gasto</span><strong>${currencyUsd(rows[0]?.spend || 0)}</strong><em>${rows[0]?.name || rows[0]?.client || '—'}</em></div>
   </div>
@@ -226,11 +226,11 @@ export default function OpenAIUsagePage() {
           <div className={styles.actions}>
             <label>
               <span>Início</span>
-              <input type="date" value={range.start} onChange={(event) => setRange((prev) => ({ ...prev, start: event.target.value }))} />
+              <input type="date" value={range.start} max={defaultRange.end} onChange={(event) => setRange((prev) => ({ ...prev, start: event.target.value }))} />
             </label>
             <label>
               <span>Fim</span>
-              <input type="date" value={range.end} onChange={(event) => setRange((prev) => ({ ...prev, end: event.target.value }))} />
+              <input type="date" value={range.end} max={defaultRange.end} onChange={(event) => setRange((prev) => ({ ...prev, end: event.target.value }))} />
             </label>
             <button type="button" onClick={handleRefresh} disabled={refreshing || loading}>
               {refreshing ? 'Atualizando' : 'Atualizar agora'}
@@ -243,9 +243,11 @@ export default function OpenAIUsagePage() {
         {report.cached ? <div className={styles.cacheInfo}>Última atualização: {report.lastUpdatedAt ? new Date(report.lastUpdatedAt).toLocaleString('pt-BR') : 'cache recente'}</div> : null}
         {report.reconciliation ? (
           <div className={styles.reconciliationInfo}>
-            <span>Total OpenAI: <strong>{currencyUsd(report.reconciliation.costsTotalFromOpenAI)}</strong></span>
-            <span>Agrupado por projeto: <strong>{currencyUsd(report.reconciliation.costsGroupedByProject)}</strong></span>
-            {Number(report.reconciliation.difference || 0) > 0 ? <span>Não classificado: <strong>{currencyUsd(report.reconciliation.difference)}</strong></span> : null}
+            <span>Fonte de gasto: <strong>{report.spendSource === 'projects_monthly_spend' ? 'Projects monthly spend' : 'Costs API'}</strong></span>
+            <span>Total exibido: <strong>{currencyUsd(report.totalSpend)}</strong></span>
+            {report.spendSource !== 'projects_monthly_spend' && Number(report.reconciliation.difference || 0) > 0 ? (
+              <span>Não classificado: <strong>{currencyUsd(report.reconciliation.difference)}</strong></span>
+            ) : null}
           </div>
         ) : null}
 
@@ -255,12 +257,12 @@ export default function OpenAIUsagePage() {
             <article>
               <span>Gasto total</span>
               <strong>{currencyUsd(report.totalSpend)}</strong>
-              <em>Inclui projeto legado, quando existir</em>
+              <em>Total OpenAI do período</em>
             </article>
             <article>
-              <span>Gasto projetos atuais</span>
+              <span>Projetos com gasto</span>
               <strong>{currencyUsd(report.activeProjectSpend || report.activeClientSpend)}</strong>
-              <em>{report.projectsWithSpend || report.activeClientsWithSpend || 0} projetos com uso</em>
+              <em>{report.projectsWithSpend || report.activeClientsWithSpend || 0} projetos</em>
             </article>
             <article>
               <span>Projetos OpenAI</span>
