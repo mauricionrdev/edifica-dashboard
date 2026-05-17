@@ -3654,7 +3654,10 @@ export default function ProfilePage() {
                               {canEditActiveTask ? (
                                 <button
                                   type="button"
-                                  onClick={() => setTaskAttachmentDeleteTarget(item)}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    setTaskAttachmentDeleteTarget(item);
+                                  }}
                                   disabled={taskAttachmentDeletingId === item.id}
                                   aria-label={`Remover ${item.fileName || 'anexo'}`}
                                 >
@@ -3905,7 +3908,10 @@ export default function ProfilePage() {
                           {canEditActiveTask ? (
                             <button
                               type="button"
-                              onClick={() => setTaskAttachmentDeleteTarget(item)}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setTaskAttachmentDeleteTarget(item);
+                              }}
                               disabled={taskAttachmentDeletingId === item.id}
                               aria-label={`Remover ${item.fileName || 'anexo'}`}
                             >
@@ -3937,7 +3943,10 @@ export default function ProfilePage() {
                       {canEditActiveTask ? (
                         <button
                           type="button"
-                          onClick={() => setTaskAttachmentDeleteTarget(taskAttachmentPreview)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setTaskAttachmentDeleteTarget(taskAttachmentPreview);
+                          }}
                           aria-label="Excluir anexo"
                           title="Excluir anexo"
                         >
@@ -3951,25 +3960,16 @@ export default function ProfilePage() {
                   </header>
                   <div
                     className={styles.attachmentViewerImage}
-                    onWheelCapture={(event) => {
+                    onWheel={(event) => {
                       if (taskAttachmentPreview.mimeType === 'application/pdf') return;
                       event.preventDefault();
-                      const container = event.currentTarget;
-                      const rect = container.getBoundingClientRect();
-                      const localX = event.clientX - rect.left;
-                      const localY = event.clientY - rect.top;
-                      const contentX = container.scrollLeft + localX;
-                      const contentY = container.scrollTop + localY;
-                      const previousZoom = taskAttachmentZoom;
+                      event.stopPropagation();
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      const originX = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+                      const originY = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+                      setTaskAttachmentZoomOrigin(`${originX.toFixed(2)}% ${originY.toFixed(2)}%`);
                       const direction = event.deltaY > 0 ? -0.16 : 0.16;
-                      const nextZoom = Math.min(4, Math.max(0.5, Number((previousZoom + direction).toFixed(2))));
-                      const ratio = nextZoom / previousZoom;
-
-                      setTaskAttachmentZoom(nextZoom);
-                      requestAnimationFrame(() => {
-                        container.scrollLeft = (contentX * ratio) - localX;
-                        container.scrollTop = (contentY * ratio) - localY;
-                      });
+                      setTaskAttachmentZoom((value) => Math.min(4, Math.max(0.5, Number((value + direction).toFixed(2)))));
                     }}
                   >
                     {taskAttachmentPreview.mimeType === 'application/pdf' ? (
@@ -3979,7 +3979,10 @@ export default function ProfilePage() {
                         src={taskAttachmentPreview.dataUrl}
                         alt={taskAttachmentPreview.fileName || 'Imagem anexada'}
                         decoding="async"
-                        style={{ width: `${taskAttachmentZoom * 100}%`, maxWidth: taskAttachmentZoom > 1 ? 'none' : '100%' }}
+                        style={{
+                          '--attachment-zoom-transform': `scale(${taskAttachmentZoom})`,
+                          '--attachment-zoom-origin': taskAttachmentZoomOrigin,
+                        }}
                       />
                     )}
                   </div>
@@ -3993,24 +3996,24 @@ export default function ProfilePage() {
 
 
       {taskAttachmentDeleteTarget ? createPortal(
-        <div className={styles.confirmOverlay} role="presentation" onClick={() => setTaskAttachmentDeleteTarget(null)}>
+        <div className={styles.taskAttachmentConfirmOverlay} role="presentation" onClick={() => setTaskAttachmentDeleteTarget(null)}>
           <section
-            className={styles.confirmModal}
+            className={styles.taskAttachmentConfirmModal}
             role="dialog"
             aria-modal="true"
             aria-label="Remover anexo"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className={styles.confirmHead}>
+            <div className={styles.taskAttachmentConfirmHead}>
               <span>Remover anexo</span>
               <strong>{taskAttachmentDeleteTarget.fileName || 'Anexo'}</strong>
             </div>
             <p>Este arquivo será removido da demanda.</p>
-            <div className={styles.confirmActions}>
+            <div className={styles.taskAttachmentConfirmActions}>
               <button type="button" onClick={() => setTaskAttachmentDeleteTarget(null)}>Cancelar</button>
               <button
                 type="button"
-                className={styles.confirmDanger}
+                className={styles.taskAttachmentConfirmDanger}
                 disabled={taskAttachmentDeletingId === taskAttachmentDeleteTarget.id}
                 onClick={async () => {
                   await handleDeleteTaskAttachment(taskAttachmentDeleteTarget);

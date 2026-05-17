@@ -10613,3 +10613,102 @@
 .attachmentViewerOverlay {
   z-index: 10000 !important;
 }
+
+/* v50 — correção isolada do drawer de anexos */
+.attachmentViewerImage {
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  cursor: zoom-in;
+  overscroll-behavior: contain;
+}
+
+.attachmentViewerImage img {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  flex: 0 0 auto !important;
+  transform: var(--attachment-zoom-transform, scale(1)) !important;
+  transform-origin: var(--attachment-zoom-origin, 50% 50%) !important;
+  transition: transform 120ms ease, transform-origin 120ms ease !important;
+  will-change: transform !important;
+}
+
+.taskAttachmentConfirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(10px);
+}
+
+.taskAttachmentConfirmModal {
+  width: min(420px, calc(100vw - 40px));
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 14px;
+  background: #0b0c0d;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.62);
+  padding: 18px;
+}
+
+.taskAttachmentConfirmHead {
+  display: grid;
+  gap: 5px;
+}
+
+.taskAttachmentConfirmHead span {
+  color: #ff8a92;
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.taskAttachmentConfirmHead strong {
+  min-width: 0;
+  color: var(--edf-text);
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taskAttachmentConfirmModal p {
+  margin: 12px 0 18px;
+  color: var(--edf-text-muted);
+  font-size: 13px;
+}
+
+.taskAttachmentConfirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.taskAttachmentConfirmActions button {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: #050506;
+  color: var(--edf-text-secondary);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.taskAttachmentConfirmDanger {
+  color: #ff8a92 !important;
+  border-color: rgba(255, 107, 107, 0.26) !important;
+  background: rgba(255, 107, 107, 0.075) !important;
+}
+
+.taskAttachmentConfirmDanger:disabled {
+  opacity: 0.58;
+  cursor: wait;
+}
