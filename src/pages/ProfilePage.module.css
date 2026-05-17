@@ -10024,3 +10024,27 @@
   width: 22px !important;
   height: 22px !important;
 }
+
+
+/* v40 — correção de sobreposição do stack de colaboradores */
+.taskAvatarStack {
+  isolation: isolate !important;
+}
+
+.taskAvatar,
+.taskAvatar:first-child,
+.taskAvatar:nth-child(2),
+.taskAvatar:nth-child(3),
+.taskAvatar:nth-child(4),
+.taskAvatarMore,
+.taskAvatarResponsible {
+  z-index: auto !important;
+}
+
+.taskAvatar {
+  position: relative !important;
+}
+
+.taskAvatar + .taskAvatar {
+  margin-left: -6px !important;
+}
