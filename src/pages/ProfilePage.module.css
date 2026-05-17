@@ -10576,3 +10576,14 @@
   border-color: rgba(255, 107, 107, 0.24);
   background: rgba(255, 107, 107, 0.065);
 }
+
+/* v46 — paste dedupe and wheel zoom stability */
+.attachmentViewerImage {
+  cursor: zoom-in;
+}
+
+.attachmentViewerImage img {
+  transform: none !important;
+  margin-left: auto;
+  margin-right: auto;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   createAnalysis,
   createAnalysisAttachment,
@@ -116,6 +117,36 @@ function readAttachmentFile(file) {
   });
 }
 
+function attachmentSignature(item) {
+  return [
+    item?.fileName || item?.name || '',
+    item?.mimeType || item?.type || '',
+    item?.sizeBytes || item?.size || 0,
+  ].join('::');
+}
+
+function uniqueFiles(files) {
+  const seen = new Set();
+  return Array.from(files || []).filter((file) => {
+    const key = attachmentSignature(file);
+    if (!file || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function filesFromClipboard(event) {
+  const clipboard = event?.clipboardData;
+  const directFiles = Array.from(clipboard?.files || []);
+  const itemFiles = Array.from(clipboard?.items || [])
+    .filter((item) => item.kind === 'file')
+    .map((item) => item.getAsFile())
+    .filter(Boolean);
+
+  return uniqueFiles([...directFiles, ...itemFiles]);
+}
+
+
 export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const { showToast } = useToast();
 
@@ -206,7 +237,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   }
 
   async function handleAttachmentFiles(entryId, files) {
-    const selected = Array.from(files || []).filter(Boolean);
+    const selected = uniqueFiles(files).filter(Boolean);
     if (!entryId || selected.length === 0) return;
 
     const validFiles = selected.filter((file) => file.type.startsWith('image/') || file.type === 'application/pdf');
@@ -394,7 +425,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           const isPending = pendingIds.has(entry.id);
           const isSaving = savingIds.has(entry.id);
           return (
-            <div key={entry.id} className={styles.entry}>
+            <div key={entry.id} className={styles.entry} onPasteCapture={(event) => handleEntryPaste(entry.id, event)}>
               <div className={styles.entryHdr}>
                 <label className={styles.dateControl}>
                   <span>Data</span>
@@ -441,6 +472,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 value={entry.text || ''}
                 disabled={!canEdit}
                 placeholder={meta.placeholder}
+                onPaste={(event) => handleEntryPaste(entry.id, event)}
                 onChange={(event) => onTextChange(entry.id, event.target.value)}
               />
 
@@ -543,12 +575,21 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                     <TrashIcon size={14} />
                   </button>
                 ) : null}
+                {canEdit ? (
+                  <button
+                    type="button"
+                    onClick={() => setAttachmentDeleteTarget({ entryId: previewAttachment.entryId, attachment: previewAttachment })}
+                    title="Excluir anexo"
+                  >
+                    <TrashIcon size={14} />
+                  </button>
+                ) : null}
                 <button type="button" onClick={() => setPreviewAttachment(null)}>Fechar</button>
               </div>
             </header>
             <div
               className={styles.viewerBody}
-              onWheel={(event) => {
+              onWheelCapture={(event) => {
                 if (previewAttachment.mimeType === 'application/pdf') return;
                 event.preventDefault();
                 const direction = event.deltaY > 0 ? -0.12 : 0.12;
@@ -558,7 +599,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               {previewAttachment.mimeType === 'application/pdf' ? (
                 <iframe title={previewAttachment.fileName} src={previewAttachment.dataUrl} />
               ) : (
-                <img src={previewAttachment.dataUrl} alt="" style={{ transform: `scale(${previewZoom})` }} />
+                <img src={previewAttachment.dataUrl} alt="" style={{ width: `${previewZoom * 100}%`, maxWidth: previewZoom > 1 ? 'none' : '100%' }} />
               )}
             </div>
           </section>

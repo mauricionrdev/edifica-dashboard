@@ -175,12 +175,33 @@ function readTaskAttachmentFile(file) {
   });
 }
 
+function attachmentSignature(item) {
+  return [
+    item?.fileName || item?.name || '',
+    item?.mimeType || item?.type || '',
+    item?.sizeBytes || item?.size || 0,
+  ].join('::');
+}
+
+function uniqueFiles(files) {
+  const seen = new Set();
+  return Array.from(files || []).filter((file) => {
+    const key = attachmentSignature(file);
+    if (!file || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function filesFromClipboard(event) {
-  const items = Array.from(event?.clipboardData?.items || []);
-  return items
+  const clipboard = event?.clipboardData;
+  const directFiles = Array.from(clipboard?.files || []);
+  const itemFiles = Array.from(clipboard?.items || [])
     .filter((item) => item.kind === 'file')
     .map((item) => item.getAsFile())
     .filter(Boolean);
+
+  return uniqueFiles([...directFiles, ...itemFiles]);
 }
 
 const COMMENT_ATTACHMENT_MARKER = '[[task-attachments:';
@@ -2802,24 +2823,37 @@ export default function ProfilePage() {
   }
 
   async function addDemandAttachments(files) {
-    const selected = Array.from(files || []).filter(Boolean);
+    const selected = uniqueFiles(files).filter(Boolean);
     if (!selected.length) return;
 
     try {
       const parsed = await Promise.all(selected.map(readTaskAttachmentFile));
-      setDemandForm((prev) => ({
-        ...prev,
-        attachments: [...(prev.attachments || []), ...parsed].slice(0, 8),
-      }));
+      setDemandForm((prev) => {
+        const current = Array.isArray(prev.attachments) ? prev.attachments : [];
+        const seen = new Set(current.map(attachmentSignature));
+        const next = parsed.filter((item) => {
+          const key = attachmentSignature(item);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        return {
+          ...prev,
+          attachments: [...current, ...next].slice(0, 8),
+        };
+      });
     } catch (err) {
       showToast(err?.message || 'Não foi possível anexar o arquivo.', { variant: 'error' });
     }
   }
 
   function handleDemandPaste(event) {
+    if (event?.nativeEvent?.__edificaAttachmentPasteHandled) return;
     const files = filesFromClipboard(event);
     if (!files.length) return;
+    event.nativeEvent.__edificaAttachmentPasteHandled = true;
     event.preventDefault();
+    event.stopPropagation();
     addDemandAttachments(files);
   }
 
@@ -2838,21 +2872,33 @@ export default function ProfilePage() {
   }, [demandModalOpen]);
 
   async function addCommentAttachments(files) {
-    const selected = Array.from(files || []).filter(Boolean);
+    const selected = uniqueFiles(files).filter(Boolean);
     if (!selected.length) return;
 
     try {
       const parsed = await Promise.all(selected.map(readTaskAttachmentFile));
-      setCommentAttachments((prev) => [...prev, ...parsed].slice(0, 6));
+      setCommentAttachments((prev) => {
+        const seen = new Set(prev.map(attachmentSignature));
+        const next = parsed.filter((item) => {
+          const key = attachmentSignature(item);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        return [...prev, ...next].slice(0, 6);
+      });
     } catch (err) {
       showToast(err?.message || 'Não foi possível anexar o arquivo.', { variant: 'error' });
     }
   }
 
   function handleCommentPaste(event) {
+    if (event?.nativeEvent?.__edificaAttachmentPasteHandled) return;
     const files = filesFromClipboard(event);
     if (!files.length) return;
+    event.nativeEvent.__edificaAttachmentPasteHandled = true;
     event.preventDefault();
+    event.stopPropagation();
     addCommentAttachments(files);
   }
 
@@ -3907,7 +3953,7 @@ export default function ProfilePage() {
                   </header>
                   <div
                     className={styles.attachmentViewerImage}
-                    onWheel={(event) => {
+                    onWheelCapture={(event) => {
                       if (taskAttachmentPreview.mimeType === 'application/pdf') return;
                       event.preventDefault();
                       const direction = event.deltaY > 0 ? -0.12 : 0.12;
@@ -3921,7 +3967,7 @@ export default function ProfilePage() {
                         src={taskAttachmentPreview.dataUrl}
                         alt={taskAttachmentPreview.fileName || 'Imagem anexada'}
                         decoding="async"
-                        style={{ transform: `scale(${taskAttachmentZoom})` }}
+                        style={{ width: `${taskAttachmentZoom * 100}%`, maxWidth: taskAttachmentZoom > 1 ? 'none' : '100%' }}
                       />
                     )}
                   </div>
@@ -3939,7 +3985,7 @@ export default function ProfilePage() {
           className={styles.settingsOverlay}
           onClick={(event) => event.stopPropagation()}
         >
-          <form className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()} onSubmit={handleCreateDemand} onPaste={handleDemandPaste} onPasteCapture={handleDemandPaste} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
+          <form className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()} onSubmit={handleCreateDemand} onPaste={handleDemandPaste} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
             <header className={styles.settingsHeader}>
               <div>
                 <h2>Nova demanda</h2>

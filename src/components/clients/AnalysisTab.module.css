@@ -1073,3 +1073,39 @@
   border-color: rgba(255, 107, 107, 0.24);
   background: rgba(255, 107, 107, 0.065);
 }
+
+/* v46 — paste capture and wheel zoom stability */
+.viewerBody {
+  cursor: zoom-in;
+}
+
+.viewerBody img {
+  transform: none !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* v46 — client paste capture and wheel zoom stability */
+.viewerOverlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000 !important;
+}
+
+.viewerBody {
+  overscroll-behavior: contain;
+  cursor: zoom-in;
+}
+
+.viewerBody img {
+  transform: none !important;
+  margin-left: auto;
+  margin-right: auto;
+  transition: width 120ms ease;
+}
+
+.viewer header button[title='Excluir anexo'] {
+  color: #ff8a92;
+  border-color: rgba(255, 107, 107, 0.24);
+  background: rgba(255, 107, 107, 0.065);
+}
