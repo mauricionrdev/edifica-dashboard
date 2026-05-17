@@ -189,7 +189,7 @@ export default function OverviewTab({
 
           <div className={styles.profileFields}>
             <div className={`${drawerStyles.field} ${styles.profileFieldName}`}>
-              <label className={drawerStyles.label} htmlFor="cd-name">Nome da Empresa / Cliente</label>
+              <label className={drawerStyles.label} htmlFor="cd-name">Nome do cliente / Escritório</label>
               <input
                 id="cd-name"
                 className={drawerStyles.input}
@@ -218,7 +218,7 @@ export default function OverviewTab({
             </div>
 
             <div className={drawerStyles.field}>
-              <label className={drawerStyles.label} htmlFor="cd-status">Status do Registro</label>
+              <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
               <Select
                 className={drawerStyles.selectControl}
                 value={form.status}
@@ -247,7 +247,7 @@ export default function OverviewTab({
             </div>
 
             <div className={drawerStyles.field}>
-              <label className={drawerStyles.label} htmlFor="cd-gdv">Gerente de Vendas (GDV)</label>
+              <label className={drawerStyles.label} htmlFor="cd-gdv">Gerente de Vendas</label>
               <UserPicker
                 className={drawerStyles.selectControl}
                 users={gdvRows}
