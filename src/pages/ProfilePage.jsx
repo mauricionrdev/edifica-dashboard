@@ -442,11 +442,11 @@ function clientSearchText(client) {
 
 
 const OPERATION_TABS = [
+  { value: 'all', label: 'Todas' },
   { value: 'today', label: 'Hoje' },
   { value: 'overdue', label: 'Atrasadas' },
   { value: 'critical', label: 'Críticas' },
   { value: 'done', label: 'Concluídas' },
-  { value: 'all', label: 'Todas' },
 ];
 
 const OPERATION_PAGE_SIZE = 8;
@@ -1513,7 +1513,7 @@ export default function ProfilePage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('profile');
-  const [operationTab, setOperationTab] = useState('today');
+  const [operationTab, setOperationTab] = useState('all');
   const [operationPage, setOperationPage] = useState(1);
   const [tasks, setTasks] = useState([]);
   const [taskPeopleMap, setTaskPeopleMap] = useState({});
@@ -1560,6 +1560,7 @@ export default function ProfilePage() {
   const [taskAttachmentDeletingId, setTaskAttachmentDeletingId] = useState('');
   const [taskAttachmentPreview, setTaskAttachmentPreview] = useState(null);
   const [taskAttachmentZoom, setTaskAttachmentZoom] = useState(1);
+  const [taskAttachmentZoomOrigin, setTaskAttachmentZoomOrigin] = useState('50% 50%');
   const [taskAttachmentsAlbumOpen, setTaskAttachmentsAlbumOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
@@ -1588,6 +1589,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setTaskAttachmentZoom(1);
+    setTaskAttachmentZoomOrigin('50% 50%');
   }, [taskAttachmentPreview?.id]);
 
   useEffect(() => {
@@ -3956,6 +3958,10 @@ export default function ProfilePage() {
                     onWheelCapture={(event) => {
                       if (taskAttachmentPreview.mimeType === 'application/pdf') return;
                       event.preventDefault();
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      const originX = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+                      const originY = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+                      setTaskAttachmentZoomOrigin(`${originX.toFixed(2)}% ${originY.toFixed(2)}%`);
                       const direction = event.deltaY > 0 ? -0.12 : 0.12;
                       setTaskAttachmentZoom((value) => Math.min(3, Math.max(0.5, Number((value + direction).toFixed(2)))));
                     }}
@@ -3967,7 +3973,7 @@ export default function ProfilePage() {
                         src={taskAttachmentPreview.dataUrl}
                         alt={taskAttachmentPreview.fileName || 'Imagem anexada'}
                         decoding="async"
-                        style={{ width: `${taskAttachmentZoom * 100}%`, maxWidth: taskAttachmentZoom > 1 ? 'none' : '100%' }}
+                        style={{ transform: `scale(${taskAttachmentZoom})`, transformOrigin: taskAttachmentZoomOrigin }}
                       />
                     )}
                   </div>

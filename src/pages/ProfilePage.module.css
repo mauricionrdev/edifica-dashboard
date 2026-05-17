@@ -2631,7 +2631,6 @@
 
 .settingsModal {
   z-index: 1;
-  transform: none !important;
   backface-visibility: hidden;
   background-clip: padding-box;
 }
@@ -2645,7 +2644,6 @@
   box-shadow: none !important;
   background-clip: padding-box;
   contain: paint;
-  transform: none !important;
   will-change: auto;
 }
 
@@ -2664,7 +2662,6 @@
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
-  transform: none !important;
   backface-visibility: hidden;
 }
 
@@ -3581,7 +3578,6 @@
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: none !important;
   transition: opacity 90ms ease;
   contain: layout paint;
 }
@@ -3631,13 +3627,11 @@
 }
 
 .photoAvatar {
-  transform: none !important;
   will-change: auto !important;
   background-clip: padding-box;
 }
 
 .photoAvatar img {
-  transform: none !important;
   will-change: auto !important;
   background-color: transparent !important;
 }
@@ -3646,7 +3640,6 @@
 .settingsTab,
 .settingsPaneStack,
 .settingsFooter {
-  transform: none !important;
   backface-visibility: hidden;
 }
 
@@ -6446,7 +6439,6 @@
   border: 1px solid rgba(146, 155, 176, .16) !important;
   background: transparent !important;
   box-shadow: none !important;
-  transform: none !important;
   animation: none !important;
   font-size: 12px !important;
   font-weight: 560 !important;
@@ -6467,7 +6459,6 @@
 .workflowStep:hover,
 .selectedCollaborators>span:hover,
 .collaboratorChips>span:hover {
-  transform: none !important;
   box-shadow: none !important;
 }
 
@@ -6890,7 +6881,6 @@
   background: transparent !important;
   color: #9AA6BA !important;
   box-shadow: none !important;
-  transform: none !important;
   animation: none !important;
   font-size: 12px !important;
   font-weight: 560 !important;
@@ -6909,7 +6899,6 @@
   background: transparent !important;
   color: #9AA6BA !important;
   box-shadow: none !important;
-  transform: none !important;
 }
 
 .collaboratorChips>span>button,
@@ -6928,7 +6917,6 @@
   background: rgba(255, 255, 255, 0.07) !important;
   color: rgba(203, 213, 225, 0.82) !important;
   box-shadow: none !important;
-  transform: none !important;
   font-size: 13px !important;
   font-weight: 650 !important;
   line-height: 1 !important;
@@ -6944,7 +6932,6 @@
   color: rgba(203, 213, 225, 0.82) !important;
   outline: none !important;
   box-shadow: none !important;
-  transform: none !important;
 }
 
 .collaboratorChips>span>button:disabled,
@@ -8884,7 +8871,6 @@
   background: #010102 !important;
   border-color: rgba(227, 184, 40, 0.44) !important;
   color: #ffd429 !important;
-  transform: none !important;
 }
 
 .operationTabLabel {
@@ -10583,7 +10569,20 @@
 }
 
 .attachmentViewerImage img {
-  transform: none !important;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* v47 — tabs default and focal image zoom */
+.attachmentViewerImage {
+  cursor: zoom-in;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.attachmentViewerImage img {
+  flex: 0 0 auto;
+  transition: transform 120ms ease, transform-origin 120ms ease;
+  will-change: transform;
 }

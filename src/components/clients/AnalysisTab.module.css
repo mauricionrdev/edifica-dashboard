@@ -1080,7 +1080,6 @@
 }
 
 .viewerBody img {
-  transform: none !important;
   margin-left: auto;
   margin-right: auto;
 }
@@ -1098,7 +1097,6 @@
 }
 
 .viewerBody img {
-  transform: none !important;
   margin-left: auto;
   margin-right: auto;
   transition: width 120ms ease;
@@ -1108,4 +1106,18 @@
   color: #ff8a92;
   border-color: rgba(255, 107, 107, 0.24);
   background: rgba(255, 107, 107, 0.065);
+}
+
+/* v47 — focal image zoom */
+.viewerBody {
+  cursor: zoom-in;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.viewerBody img {
+  flex: 0 0 auto;
+  transition: transform 120ms ease, transform-origin 120ms ease;
+  will-change: transform;
 }

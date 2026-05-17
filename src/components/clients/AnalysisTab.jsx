@@ -159,6 +159,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const [deletingAttachmentIds, setDeletingAttachmentIds] = useState(new Set());
   const [previewAttachment, setPreviewAttachment] = useState(null);
   const [previewZoom, setPreviewZoom] = useState(1);
+  const [previewZoomOrigin, setPreviewZoomOrigin] = useState('50% 50%');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [attachmentDeleteTarget, setAttachmentDeleteTarget] = useState(null);
 
@@ -169,6 +170,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
 
   useEffect(() => {
     setPreviewZoom(1);
+    setPreviewZoomOrigin('50% 50%');
   }, [previewAttachment?.id]);
 
   useEffect(() => {
@@ -592,6 +594,10 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               onWheelCapture={(event) => {
                 if (previewAttachment.mimeType === 'application/pdf') return;
                 event.preventDefault();
+                const rect = event.currentTarget.getBoundingClientRect();
+                const originX = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+                const originY = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+                setPreviewZoomOrigin(`${originX.toFixed(2)}% ${originY.toFixed(2)}%`);
                 const direction = event.deltaY > 0 ? -0.12 : 0.12;
                 setPreviewZoom((value) => Math.min(3, Math.max(0.5, Number((value + direction).toFixed(2)))));
               }}
@@ -599,7 +605,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               {previewAttachment.mimeType === 'application/pdf' ? (
                 <iframe title={previewAttachment.fileName} src={previewAttachment.dataUrl} />
               ) : (
-                <img src={previewAttachment.dataUrl} alt="" style={{ width: `${previewZoom * 100}%`, maxWidth: previewZoom > 1 ? 'none' : '100%' }} />
+                <img src={previewAttachment.dataUrl} alt="" style={{ transform: `scale(${previewZoom})`, transformOrigin: previewZoomOrigin }} />
               )}
             </div>
           </section>
