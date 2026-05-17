@@ -100,3 +100,45 @@ textarea::placeholder {
 svg {
   flex: 0 0 auto;
 }
+
+/* v20 — comportamento tipográfico global */
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-sans);
+  font-kerning: normal;
+  font-variant-ligatures: contextual common-ligatures;
+  font-feature-settings: "cv01", "cv05", "cv08", "ss03", "tnum" 0;
+}
+
+body {
+  font-size: var(--fs-body);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-normal);
+  letter-spacing: var(--tracking-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin-block-start: 0;
+}
+
+h1,
+h2,
+h3,
+strong {
+  text-wrap: balance;
+}
+
+button,
+input,
+select,
+textarea {
+  letter-spacing: var(--tracking-caption);
+}
