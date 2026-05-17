@@ -8733,3 +8733,447 @@
 .emptyPanel {
   background: var(--card-surface-soft, #070708);
 }
+
+
+/* ==========================================================================
+   v26 — Perfil refinado no padrão visual do workspace
+   ========================================================================== */
+.page {
+  --edf-bg: #08090a;
+  --edf-surface-1: #0f1011;
+  --edf-surface-2: #111214;
+  --edf-surface-3: #141517;
+  --edf-surface-solid: #0f1011;
+  --edf-surface-solid-2: #111214;
+  --edf-border: rgba(255, 255, 255, 0.075);
+  --edf-border-strong: rgba(255, 255, 255, 0.105);
+  --edf-border-soft: rgba(255, 255, 255, 0.052);
+  --edf-text: #f3f4f6;
+  --edf-text-secondary: #c5cbd5;
+  --edf-text-muted: #8f98a7;
+  --edf-text-faint: #677080;
+  --profile-radius-card: 10px;
+
+  padding: 14px 18px 18px;
+  background: var(--edf-bg);
+  gap: 14px;
+  font-size: 13px;
+  letter-spacing: -0.012em;
+}
+
+.hero,
+.operationBoard,
+.settingsModal,
+.demandModal,
+.handoffModal,
+.completionModal,
+.confirmModal {
+  border-radius: var(--profile-radius-card) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.004) 54%),
+    var(--edf-surface-solid) !important;
+  border: 1px solid var(--edf-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014) !important;
+}
+
+.hero {
+  padding: 16px 18px 0 !important;
+  overflow: hidden;
+}
+
+.heroTop {
+  min-height: 52px;
+  padding: 0 0 14px !important;
+  align-items: center !important;
+}
+
+.identityRow {
+  grid-template-columns: auto minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.avatar {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 999px !important;
+  background: #0b0c0e !important;
+  color: var(--edf-text) !important;
+  border: 1px solid var(--edf-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018) !important;
+  font-size: 13px !important;
+  font-weight: 660 !important;
+}
+
+.avatar_amber,
+.avatar_blue,
+.avatar_violet,
+.avatar_emerald,
+.avatar_rose,
+.avatar_slate {
+  background: #0b0c0e !important;
+  color: var(--edf-text) !important;
+}
+
+.identityTitle h1 {
+  font-size: 20px !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.identityGreeting,
+.identityMeta span {
+  color: var(--edf-text-faint) !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.roleBadge,
+.statusBadge,
+.operationTabCount {
+  min-height: 20px;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.024) !important;
+  border: 1px solid rgba(255, 255, 255, 0.065) !important;
+  color: var(--edf-text-muted) !important;
+  font-size: 10.5px !important;
+  font-weight: 620 !important;
+  letter-spacing: 0.055em !important;
+}
+
+.iconButton,
+.primaryAction,
+.heroActionPrimary,
+.drawerTopbarButton,
+.drawerTopbarPrimary,
+.drawerTopbarDanger,
+.settingsFooter button,
+.operationPagination button,
+.profileSelectButton,
+.page input[type='text'],
+.page input[type='email'],
+.page input[type='password'],
+.page input[type='tel'],
+.page input[type='date'],
+.page select,
+.page textarea {
+  border-radius: 10px !important;
+}
+
+.iconButton,
+.primaryAction,
+.heroActionPrimary,
+.profileSelectButton,
+.settingsFooter button {
+  min-height: 36px !important;
+  height: 36px;
+  background: #0f1011 !important;
+  border: 1px solid var(--edf-border) !important;
+  color: var(--edf-text-secondary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014) !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.primaryAction,
+.heroActionPrimary,
+.drawerTopbarPrimary {
+  border-color: rgba(245, 184, 0, 0.18) !important;
+  background: rgba(245, 184, 0, 0.075) !important;
+  color: var(--edf-text) !important;
+}
+
+.iconButton:hover,
+.primaryAction:hover,
+.heroActionPrimary:hover,
+.profileSelectButton:hover,
+.settingsFooter button:hover {
+  background: #111214 !important;
+  border-color: var(--edf-border-strong) !important;
+  color: var(--edf-text) !important;
+}
+
+.profileStatRail {
+  margin: 0 -18px;
+  padding: 0;
+  border-top: 1px solid var(--edf-border-soft);
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.profileStat {
+  min-height: 82px;
+  padding: 16px 18px !important;
+  border-right: 1px solid var(--edf-border-soft);
+  background: transparent !important;
+}
+
+.profileStat span,
+.operationListHeader,
+.sectionTitleRow,
+.settingsTab,
+.page label {
+  color: var(--edf-text-muted) !important;
+  font-size: 10.5px !important;
+  font-weight: 660 !important;
+  letter-spacing: 0.085em !important;
+  text-transform: uppercase !important;
+}
+
+.profileStat strong {
+  color: var(--edf-text) !important;
+  font-size: 23px !important;
+  font-weight: 690 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.profileStat em {
+  color: var(--edf-text-faint) !important;
+  font-size: 12px !important;
+}
+
+.operationBoard {
+  overflow: hidden;
+}
+
+.operationHeader {
+  padding: 16px 18px 0 !important;
+  border-bottom: 1px solid var(--edf-border-soft);
+}
+
+.operationHeaderTop {
+  min-height: 38px;
+  margin-bottom: 12px !important;
+}
+
+.operationHeading,
+.operationTitleBlock h2,
+.operationHeaderTop h2 {
+  color: var(--edf-text) !important;
+  font-size: 16px !important;
+  font-weight: 660 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.operationTabs {
+  gap: 6px !important;
+  border-bottom: 0 !important;
+  overflow: auto !important;
+  scrollbar-width: none !important;
+  padding-bottom: 12px;
+}
+
+.operationTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.operationTab {
+  height: 34px;
+  padding: 0 12px !important;
+  border: 1px solid var(--edf-border) !important;
+  border-radius: 10px !important;
+  background: #0d0e10 !important;
+  color: var(--edf-text-muted) !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.operationTab:hover {
+  color: var(--edf-text-secondary) !important;
+  border-color: var(--edf-border-strong) !important;
+  background: #111214 !important;
+}
+
+.operationTabActive {
+  color: var(--edf-text) !important;
+  border-color: rgba(245, 184, 0, 0.22) !important;
+  background: rgba(245, 184, 0, 0.075) !important;
+}
+
+.operationBody {
+  background: transparent !important;
+}
+
+.operationListHeader {
+  min-height: 38px !important;
+  padding: 0 18px !important;
+  border-bottom: 1px solid var(--edf-border-soft) !important;
+}
+
+.operationRow {
+  min-height: 62px;
+  padding: 0 18px !important;
+  border-bottom: 1px solid var(--edf-border-soft) !important;
+  background: transparent !important;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.operationRow:hover {
+  background: rgba(255, 255, 255, 0.018) !important;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.045), inset -1px 0 0 rgba(255, 255, 255, 0.025);
+}
+
+.operationMain strong,
+.activityContent strong,
+.commentHeader strong {
+  color: var(--edf-text) !important;
+  font-weight: 640 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.operationMeta,
+.operationDueCell,
+.activityContent span,
+.commentBody,
+.descriptionBox {
+  color: var(--edf-text-muted) !important;
+}
+
+.operationPagination {
+  min-height: 58px;
+  padding: 10px 18px !important;
+  border-top: 1px solid var(--edf-border-soft) !important;
+  background: #0f1011 !important;
+}
+
+.operationPagination button {
+  min-width: 40px !important;
+  height: 40px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  background: #0f1011 !important;
+  border: 1px solid var(--edf-border) !important;
+  color: var(--edf-text-secondary) !important;
+}
+
+.operationPagination button:hover:not(:disabled) {
+  background: #111214 !important;
+  border-color: var(--edf-border-strong) !important;
+  color: var(--edf-text) !important;
+}
+
+.page input[type='text'],
+.page input[type='email'],
+.page input[type='password'],
+.page input[type='tel'],
+.page input[type='date'],
+.page select,
+.page textarea,
+.profileSelectButton {
+  background: #0d0e10 !important;
+  border: 1px solid var(--edf-border) !important;
+  color: var(--edf-text) !important;
+  min-height: 38px !important;
+}
+
+.page input:hover,
+.page select:hover,
+.page textarea:hover,
+.profileSelectButton:hover {
+  border-color: var(--edf-border-strong) !important;
+  background: #111214 !important;
+}
+
+.page input:focus,
+.page select:focus,
+.page textarea:focus {
+  outline: none !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.018) !important;
+}
+
+.settingsOverlay,
+.drawerOverlay {
+  background: rgba(0, 0, 0, 0.74) !important;
+  backdrop-filter: blur(14px);
+}
+
+.settingsHeader,
+.settingsTabs,
+.settingsFooter,
+.drawerTopbar,
+.drawerHero,
+.drawerSection {
+  border-color: var(--edf-border-soft) !important;
+}
+
+.settingsModal {
+  max-width: 600px !important;
+}
+
+.settingsTab {
+  height: 34px;
+  padding: 0 12px !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+}
+
+.settingsTab:hover {
+  border-color: var(--edf-border) !important;
+  background: rgba(255, 255, 255, 0.018) !important;
+}
+
+.settingsTabActive {
+  color: var(--edf-text) !important;
+  border-color: rgba(245, 184, 0, 0.22) !important;
+  background: rgba(245, 184, 0, 0.075) !important;
+}
+
+.drawerPanel {
+  background: #0f1011 !important;
+  border-left: 1px solid var(--edf-border) !important;
+}
+
+.drawerSection,
+.descriptionSection,
+.attachmentsSection,
+.contextItem,
+.workflowStep,
+.commentItem,
+.subtaskItem,
+.attachmentCard,
+.activityItem {
+  border-radius: 10px !important;
+  border-color: var(--edf-border-soft) !important;
+  background: #0d0e10 !important;
+}
+
+.drawerSection {
+  padding: 16px 18px !important;
+}
+
+.demandModal {
+  max-width: 760px !important;
+}
+
+.demandModal_briefing {
+  max-width: 880px !important;
+}
+
+.emptyOperation {
+  color: var(--edf-text-muted) !important;
+  background: transparent !important;
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 12px;
+  }
+
+  .profileStatRail {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .operationHeaderTop {
+    align-items: stretch !important;
+    flex-direction: column;
+  }
+
+  .primaryAction {
+    width: 100%;
+    justify-content: center;
+  }
+}

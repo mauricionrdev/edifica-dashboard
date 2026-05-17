@@ -662,3 +662,147 @@
     padding: 12px;
   }
 }
+
+/* ==========================================================================
+   v26 — Perfil público alinhado ao workspace
+   ========================================================================== */
+.page {
+  padding: 14px 18px 18px;
+  background: #08090a !important;
+  gap: 14px;
+  letter-spacing: -0.012em;
+}
+
+.profileHero,
+.workPanel,
+.taskModal {
+  border-radius: 10px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.004) 54%),
+    #0f1011 !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
+  overflow: hidden;
+}
+
+.heroIdentity {
+  min-height: 74px;
+  padding: 16px 18px !important;
+}
+
+.avatar {
+  width: 42px !important;
+  height: 42px !important;
+  background: #0b0c0e !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  font-size: 13px !important;
+  font-weight: 660 !important;
+}
+
+.nameRow h1 {
+  font-size: 20px !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.profileHero > .primaryButton,
+.primaryButton,
+.inlineLink,
+.iconButton,
+.modalFooter button {
+  height: 36px !important;
+  min-height: 36px !important;
+  border-radius: 10px !important;
+  background: #0f1011 !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
+}
+
+.primaryButton:hover,
+.inlineLink:hover,
+.iconButton:hover,
+.modalFooter button:hover {
+  background: #111214 !important;
+  border-color: rgba(255, 255, 255, 0.105) !important;
+  color: var(--text-primary) !important;
+}
+
+.statRail {
+  border-top-color: rgba(255, 255, 255, 0.052) !important;
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.statItem {
+  min-height: 82px;
+  padding: 16px 18px !important;
+  border-right-color: rgba(255, 255, 255, 0.052) !important;
+}
+
+.statItem span,
+.issueHead,
+.sectionHeader p {
+  color: var(--text-tertiary) !important;
+  font-size: 10.5px !important;
+  font-weight: 660 !important;
+  letter-spacing: 0.085em !important;
+  text-transform: uppercase !important;
+}
+
+.statItem strong {
+  color: var(--text-primary) !important;
+  font-size: 23px !important;
+  font-weight: 690 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.sectionHeader {
+  min-height: 58px !important;
+  padding: 14px 18px !important;
+  border-bottom-color: rgba(255, 255, 255, 0.052) !important;
+}
+
+.sectionHeader h2 {
+  font-size: 16px !important;
+  font-weight: 660 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.issueHead,
+.issueRow,
+.projectRow {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  border-bottom-color: rgba(255, 255, 255, 0.052) !important;
+}
+
+.issueRow,
+.projectRow {
+  min-height: 62px !important;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.issueRow:hover,
+.projectRow:hover {
+  background: rgba(255, 255, 255, 0.018) !important;
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.045), inset -1px 0 0 rgba(255, 255, 255, 0.025);
+}
+
+.tag,
+.roleBadge {
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.024) !important;
+  border-color: rgba(255, 255, 255, 0.065) !important;
+  color: var(--text-tertiary) !important;
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 12px;
+  }
+
+  .statRail {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
