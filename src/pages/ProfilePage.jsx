@@ -604,6 +604,56 @@ function visibleOperationTags(task) {
   return tags.filter((tag, index, list) => list.findIndex((item) => item.label === tag.label) === index).slice(0, 4);
 }
 
+function userFromDirectory(userId, users = []) {
+  const id = String(userId || '').trim();
+  if (!id) return null;
+  return users.find((item) => String(item?.id || '') === id) || null;
+}
+
+function buildTaskPeople(task, users = []) {
+  const people = [];
+  const seen = new Set();
+
+  function addPerson(person = {}) {
+    const userId = String(person.userId || person.user_id || person.id || '').trim();
+    const directoryUser = userFromDirectory(userId, users);
+    const name = person.userName || person.user_name || person.name || directoryUser?.name || '';
+    const email = person.userEmail || person.user_email || person.email || directoryUser?.email || '';
+    const avatarUrl = person.avatarUrl || directoryUser?.avatarUrl || '';
+    const key = userId || `${name}-${email}`;
+
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    people.push({
+      userId,
+      userName: name || 'Usuário',
+      userEmail: email,
+      avatarUrl,
+    });
+  }
+
+  if (Array.isArray(task?.collaborators)) task.collaborators.forEach(addPerson);
+  if (Array.isArray(task?.people)) task.people.forEach(addPerson);
+
+  addPerson({
+    userId: task?.createdByUserId || task?.created_by_user_id,
+    userName: task?.createdByName || task?.created_by_name,
+  });
+  addPerson({
+    userId: task?.assigneeUserId || task?.assignee_user_id,
+    userName: task?.assigneeName || task?.assignee_name,
+  });
+
+  return people.filter((person) => person.userName || person.userId).slice(0, 8);
+}
+
+function taskPeopleLabel(people = []) {
+  if (!people.length) return 'Sem colaboradores';
+  const names = people.map((person) => person.userName || 'Usuário');
+  if (names.length <= 3) return names.join(', ');
+  return `${names.slice(0, 3).join(', ')} e mais ${names.length - 3}`;
+}
+
 
 function briefingStageAction(task, briefing) {
   if (!task || getTaskKind(task) !== 'briefing' || task.status === 'canceled') return null;
@@ -1365,6 +1415,7 @@ export default function ProfilePage() {
   const [operationTab, setOperationTab] = useState('today');
   const [operationPage, setOperationPage] = useState(1);
   const [tasks, setTasks] = useState([]);
+  const [taskPeopleMap, setTaskPeopleMap] = useState({});
   const [taskUpdatingId, setTaskUpdatingId] = useState('');
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState('');
@@ -1818,6 +1869,34 @@ export default function ProfilePage() {
   const operationRangeStart = tabTasks.length ? ((safeOperationPage - 1) * OPERATION_PAGE_SIZE) + 1 : 0;
   const operationRangeEnd = tabTasks.length ? Math.min(tabTasks.length, safeOperationPage * OPERATION_PAGE_SIZE) : 0;
   const activeTask = useMemo(() => tasks.find((task) => task.id === activeTaskId) || null, [activeTaskId, tasks]);
+
+  useEffect(() => {
+    const pendingTasks = visibleTasks.filter((task) => task?.id && !Object.prototype.hasOwnProperty.call(taskPeopleMap, task.id));
+    if (!pendingTasks.length) return undefined;
+
+    let cancelled = false;
+
+    Promise.allSettled(
+      pendingTasks.map((task) => listTaskCollaborators(task.id))
+    ).then((results) => {
+      if (cancelled) return;
+      setTaskPeopleMap((prev) => {
+        const next = { ...prev };
+        results.forEach((result, index) => {
+          const task = pendingTasks[index];
+          const collaborators = result.status === 'fulfilled' && Array.isArray(result.value?.collaborators)
+            ? result.value.collaborators
+            : buildTaskPeople(task, demandUsers);
+          next[task.id] = collaborators;
+        });
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [demandUsers, taskPeopleMap, visibleTasks]);
 
   useEffect(() => {
     setOperationPage(1);
@@ -2783,8 +2862,6 @@ export default function ProfilePage() {
   const activeBriefingAction = activeTask ? briefingStageAction(activeTask, activeBriefing) : null;
   const displayProfileName = profileForm.name || user?.name || 'Perfil';
   const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
-  const displayRoleLabel = roleLabel(user?.role);
-  const hasAnimatedRoleBadge = displayRoleLabel === 'Suporte de tecnologia (TI)';
   const todaySummary = operationCounts.today === 1
     ? 'Você possui 1 demanda agendada para hoje.'
     : operationCounts.today > 1
@@ -2803,7 +2880,7 @@ export default function ProfilePage() {
             <div className={styles.identityCopy}>
               <div className={styles.identityTitle}>
                 <h1>{displayProfileName}</h1>
-                <span className={`${styles.roleBadge} ${hasAnimatedRoleBadge ? styles.roleBadgeAnimated : ''}`.trim()}>{displayRoleLabel}</span>
+                <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
               </div>
               <span className={styles.identityGreeting}>{todaySummary}</span>
               {user?.email ? (
@@ -2891,6 +2968,10 @@ export default function ProfilePage() {
                 {visibleTasks.map((task) => {
                   const itemKind = getTaskKind(task);
                   const itemStatus = statusKey(task);
+                  const taskPeople = buildTaskPeople(
+                    { ...task, collaborators: taskPeopleMap[task.id] || task.collaborators || task.people || [] },
+                    demandUsers
+                  );
                   return (
                     <article
                       key={task.id}
@@ -2920,7 +3001,22 @@ export default function ProfilePage() {
 
                       <div className={styles.operationMain}>
                         <strong>{displayTaskTitle(task)}</strong>
-                        <span>{task.clientName || task.projectName || 'Sem cliente'}</span>
+                        <div className={styles.operationSubline}>
+                          <span>{task.clientName || task.projectName || 'Sem cliente'}</span>
+                          {taskPeople.length ? (
+                            <span className={styles.taskAvatarStack} aria-label={`Colaboradores: ${taskPeopleLabel(taskPeople)}`} title={taskPeopleLabel(taskPeople)}>
+                              {taskPeople.slice(0, 4).map((person) => {
+                                const avatar = getUserAvatar(person);
+                                return (
+                                  <span key={person.userId || person.userName} className={styles.taskAvatar}>
+                                    {avatar ? <img src={avatar} alt="" /> : initials(person.userName)}
+                                  </span>
+                                );
+                              })}
+                              {taskPeople.length > 4 ? <span className={`${styles.taskAvatar} ${styles.taskAvatarMore}`}>+{taskPeople.length - 4}</span> : null}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
 
                       <div className={styles.operationClientCell}>
