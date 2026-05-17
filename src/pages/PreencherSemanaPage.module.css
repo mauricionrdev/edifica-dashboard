@@ -24,16 +24,17 @@
 .headerStat,
 .select > button,
 .weekTabs {
-  min-height: 34px;
+  height: 36px;
+  min-height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.024);
+  background: #0f1011;
   color: var(--text-secondary);
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014);
 }
 
 .headerStat {
-  padding: 0 11px;
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -267,7 +268,7 @@
   border-color: rgba(255, 255, 255, 0.105);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006) 56%),
-    #111214;
+    #101112;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
 }
 
@@ -403,41 +404,59 @@
 }
 
 .segmentHeader {
-  min-height: 24px;
+  height: 30px;
   margin-bottom: 10px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.segmentBadge {
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--text-tertiary);
+.segmentIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.026);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 620;
+  flex: 0 0 auto;
 }
 
-.segmentBlock:first-child .segmentBadge {
+.segmentIcon span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: block;
+  background: var(--text-tertiary);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.035);
+}
+
+.segmentBlock:first-child .segmentIcon {
   background: rgba(245, 184, 0, 0.075);
-  color: rgba(245, 184, 0, 0.9);
+  border-color: rgba(245, 184, 0, 0.16);
 }
 
-.segmentBlock:last-child .segmentBadge {
+.segmentBlock:first-child .segmentIcon span {
+  background: rgba(245, 184, 0, 0.92);
+  box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.09);
+}
+
+.segmentBlock:last-child .segmentIcon {
   background: rgba(39, 166, 68, 0.075);
-  color: rgba(73, 190, 104, 0.9);
+  border-color: rgba(39, 166, 68, 0.16);
+}
+
+.segmentBlock:last-child .segmentIcon span {
+  background: rgba(73, 190, 104, 0.92);
+  box-shadow: 0 0 0 3px rgba(39, 166, 68, 0.10);
 }
 
 .segmentHeader strong {
   color: var(--text-secondary);
   font-size: 11px;
-  font-weight: 620;
-  letter-spacing: 0.11em;
+  font-weight: 650;
+  letter-spacing: 0.105em;
   text-transform: uppercase;
 }
 
@@ -449,10 +468,10 @@
 
 .fieldCard {
   min-width: 0;
-  padding: 9px;
+  padding: 10px;
   border: 1px solid rgba(255, 255, 255, 0.068);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.018);
+  background: #0d0e10;
   transition:
     border-color 140ms ease,
     background 140ms ease,
@@ -461,45 +480,46 @@
 
 .fieldCard:hover {
   border-color: rgba(255, 255, 255, 0.105);
-  background: rgba(255, 255, 255, 0.026);
+  background: #101112;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.016);
 }
 
 .fieldCard_weekly {
-  border-color: rgba(245, 184, 0, 0.13);
+  border-color: rgba(245, 184, 0, 0.16);
   background:
-    linear-gradient(180deg, rgba(245, 184, 0, 0.038), rgba(255, 255, 255, 0.018) 74%),
-    #0f1011;
+    linear-gradient(180deg, rgba(245, 184, 0, 0.045), rgba(255, 255, 255, 0.006) 72%),
+    #0d0e10;
 }
 
 .fieldCard_weekly:hover {
-  border-color: rgba(245, 184, 0, 0.2);
+  border-color: rgba(245, 184, 0, 0.24);
   background:
-    linear-gradient(180deg, rgba(245, 184, 0, 0.05), rgba(255, 255, 255, 0.022) 74%),
-    #111214;
+    linear-gradient(180deg, rgba(245, 184, 0, 0.058), rgba(255, 255, 255, 0.008) 72%),
+    #101112;
 }
 
 .fieldCard_once {
   border-color: rgba(255, 255, 255, 0.068);
-  background: rgba(255, 255, 255, 0.018);
+  background: #0d0e10;
 }
 
 .fieldCard_auto {
-  border-color: rgba(39, 166, 68, 0.13);
+  border-color: rgba(39, 166, 68, 0.16);
   background:
-    linear-gradient(180deg, rgba(39, 166, 68, 0.036), rgba(255, 255, 255, 0.018) 74%),
-    #0f1011;
+    linear-gradient(180deg, rgba(39, 166, 68, 0.045), rgba(255, 255, 255, 0.006) 72%),
+    #0d0e10;
 }
 
 .fieldCard_auto:hover {
-  border-color: rgba(39, 166, 68, 0.2);
+  border-color: rgba(39, 166, 68, 0.24);
   background:
-    linear-gradient(180deg, rgba(39, 166, 68, 0.048), rgba(255, 255, 255, 0.022) 74%),
-    #111214;
+    linear-gradient(180deg, rgba(39, 166, 68, 0.058), rgba(255, 255, 255, 0.008) 72%),
+    #101112;
 }
 
 .fieldHeader {
-  min-height: 26px;
-  margin-bottom: 7px;
+  min-height: 28px;
+  margin-bottom: 8px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -546,8 +566,9 @@
 .fieldInput,
 .fieldValue {
   width: 100%;
-  min-height: 32px;
-  padding: 0 9px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 10px;
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 10px;
   background: #0d0e10;
@@ -567,7 +588,7 @@
 
 .fieldInput:hover {
   border-color: rgba(255, 255, 255, 0.105);
-  background: #111214;
+  background: #101112;
 }
 
 .fieldInput:focus {
@@ -648,8 +669,8 @@
 }
 
 .pageButton {
-  min-width: 30px;
-  height: 30px;
+  min-width: 32px;
+  height: 32px;
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.024);
@@ -744,5 +765,37 @@
   .pagination {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+
+/* v24 — reforço final de consistência visual */
+.headerStat:hover,
+.select > button:hover,
+.weekTabs:hover,
+.pageButton:hover {
+  border-color: rgba(255, 255, 255, 0.105);
+  background: #111214;
+  color: var(--text-primary);
+}
+
+.select > button,
+.weekTabs,
+.headerStat,
+.pageButton {
+  height: 36px;
+}
+
+.segmentBadge {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .headerStat,
+  .select > button,
+  .weekTabs,
+  .pageButton {
+    min-height: 36px;
+    height: 36px;
   }
 }
