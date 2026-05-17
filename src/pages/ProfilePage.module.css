@@ -8800,7 +8800,6 @@
 }
 
 @keyframes profileBadgeBreath {
-
   0%,
   100% {
     border-color: rgba(255, 255, 255, 0.070);
@@ -8812,7 +8811,6 @@
 }
 
 @keyframes profileBadgeSweep {
-
   0%,
   62% {
     transform: translateX(-120%);
@@ -9020,14 +9018,16 @@
   z-index: -1 !important;
   inset: -42% !important;
   background:
-    conic-gradient(from 0deg,
+    conic-gradient(
+      from 0deg,
       transparent 0deg,
       rgba(245, 184, 0, 0.16) 54deg,
       transparent 116deg,
       rgba(104, 125, 255, 0.10) 176deg,
       transparent 246deg,
       rgba(245, 184, 0, 0.10) 304deg,
-      transparent 360deg) !important;
+      transparent 360deg
+    ) !important;
   opacity: 0.62 !important;
   animation: roleBlackHoleSpin 7s linear infinite;
 }
@@ -9049,7 +9049,6 @@
 }
 
 @keyframes roleBlackHolePulse {
-
   0%,
   100% {
     border-color: rgba(255, 255, 255, 0.080);
@@ -9193,14 +9192,16 @@
   z-index: -1 !important;
   inset: -42% !important;
   background:
-    conic-gradient(from 0deg,
+    conic-gradient(
+      from 0deg,
       transparent 0deg,
       rgba(245, 184, 0, 0.16) 54deg,
       transparent 116deg,
       rgba(104, 125, 255, 0.10) 176deg,
       transparent 246deg,
       rgba(245, 184, 0, 0.10) 304deg,
-      transparent 360deg) !important;
+      transparent 360deg
+    ) !important;
   opacity: 0.62 !important;
   animation: roleBlackHoleSpin 7s linear infinite !important;
 }
@@ -9262,7 +9263,7 @@
 }
 
 .operationList {
-  background: #0b0c0d !important;
+  background: #080809 !important;
   border-color: rgba(255, 255, 255, 0.055) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.010) !important;
 }
@@ -9373,4 +9374,21 @@
   background:
     linear-gradient(180deg, rgba(245, 184, 0, 0.065), rgba(245, 184, 0, 0.045)),
     #090a0b !important;
+}
+
+
+/* v34 — tons pontuais estado vazio e config */
+.emptyOperation,
+.operationList {
+  background: #050506 !important;
+}
+
+.iconButton,
+.heroTop .iconButton {
+  background: #050506 !important;
+}
+
+.iconButton:hover,
+.heroTop .iconButton:hover {
+  background: #080809 !important;
 }
