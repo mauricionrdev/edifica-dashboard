@@ -10416,3 +10416,92 @@
   color: var(--edf-text-muted);
   cursor: pointer;
 }
+
+/* v44 — drawer attachments and avatar fallbacks */
+.sectionTitleActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attachIconButton {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: #050506;
+  color: var(--edf-text-secondary);
+  display: inline-grid;
+  place-items: center;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.attachIconButton:hover {
+  background: #080809;
+  border-color: rgba(255, 255, 255, 0.105);
+  color: var(--edf-text);
+}
+
+.attachmentsMoreButton {
+  width: 100%;
+  height: 34px;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  background: #050506;
+  color: #9fb0c6;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.attachmentsMoreButton:hover {
+  background: #080809;
+  color: var(--edf-text);
+}
+
+.attachmentAlbumViewer {
+  width: min(1040px, calc(100vw - 48px)) !important;
+}
+
+.attachmentAlbumGrid {
+  width: 100%;
+  max-height: min(72vh, 720px);
+  overflow: auto;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(164px, 1fr));
+  gap: 12px;
+}
+
+.taskAvatar_amber {
+  background: #D4AF37 !important;
+  color: #1a1300 !important;
+}
+
+.taskAvatar_blue {
+  background: #5AA9FF !important;
+  color: #001426 !important;
+}
+
+.taskAvatar_violet {
+  background: #B784F0 !important;
+  color: #160921 !important;
+}
+
+.taskAvatar_emerald {
+  background: #34D399 !important;
+  color: #031b10 !important;
+}
+
+.taskAvatar_rose {
+  background: #FB7185 !important;
+  color: #23040a !important;
+}
+
+.taskAvatar_slate {
+  background: #94A3B8 !important;
+  color: #071018 !important;
+}

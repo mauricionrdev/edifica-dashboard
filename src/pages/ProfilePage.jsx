@@ -670,6 +670,7 @@ function buildTaskPeople(task, users = []) {
     const name = person.userName || person.user_name || person.name || directoryUser?.name || '';
     const email = person.userEmail || person.user_email || person.email || directoryUser?.email || '';
     const avatarUrl = person.avatarUrl || directoryUser?.avatarUrl || '';
+    const avatarColor = person.avatarColor || person.avatar_color || directoryUser?.avatarColor || directoryUser?.avatar_color || 'amber';
     const key = userId || `${name}-${email}`;
 
     if (!key || seen.has(key)) return;
@@ -679,6 +680,7 @@ function buildTaskPeople(task, users = []) {
       userName: name || 'Usuário',
       userEmail: email,
       avatarUrl,
+      avatarColor,
     });
   }
 
@@ -704,6 +706,13 @@ function taskPeopleLabel(people = []) {
   return `${names.slice(0, 3).join(', ')} e mais ${names.length - 3}`;
 }
 
+
+
+function avatarColorClassName(color) {
+  const value = String(color || 'amber').toLowerCase();
+  const allowed = ['amber', 'blue', 'violet', 'emerald', 'rose', 'slate'];
+  return allowed.includes(value) ? value : 'amber';
+}
 
 function briefingStageAction(task, briefing) {
   if (!task || getTaskKind(task) !== 'briefing' || task.status === 'canceled') return null;
@@ -1447,6 +1456,7 @@ export default function ProfilePage() {
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
   const demandAttachmentInputRef = useRef(null);
+  const taskAttachmentInputRef = useRef(null);
   const clientSearchRef = useRef(null);
   const clientSearchPanelRef = useRef(null);
   const taskDeepLinkHandledRef = useRef('');
@@ -1508,6 +1518,7 @@ export default function ProfilePage() {
   const [taskAttachmentsLoading, setTaskAttachmentsLoading] = useState(false);
   const [taskAttachmentDeletingId, setTaskAttachmentDeletingId] = useState('');
   const [taskAttachmentPreview, setTaskAttachmentPreview] = useState(null);
+  const [taskAttachmentsAlbumOpen, setTaskAttachmentsAlbumOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
@@ -2447,9 +2458,14 @@ export default function ProfilePage() {
     const pendingAttachments = Array.isArray(commentAttachments) ? commentAttachments : [];
     if (!body && !pendingAttachments.length) return;
 
+    const attachmentLines = pendingAttachments.length
+      ? pendingAttachments.map((item) => `Anexo: ${item.fileName || taskAttachmentKind(item)}`)
+      : [];
+    const commentBody = [body, ...attachmentLines].filter(Boolean).join('\n');
+
     try {
       setCommentSaving(true);
-      const res = body ? await createTaskComment(activeTask.id, { body }) : null;
+      const res = await createTaskComment(activeTask.id, { body: commentBody });
       if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
 
       if (pendingAttachments.length) {
@@ -2821,6 +2837,39 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleTaskAttachmentFiles(event) {
+    const files = Array.from(event.target.files || []);
+    if (!files.length || !activeTask?.id) return;
+
+    if (!canEditActiveTask) {
+      showToast('Sem permissão para anexar arquivo.', { variant: 'error' });
+      if (event.target) event.target.value = '';
+      return;
+    }
+
+    try {
+      const parsed = await Promise.all(files.map(readTaskAttachmentFile));
+      const uploaded = await Promise.allSettled(parsed.map((item) => createTaskAttachment(activeTask.id, {
+        fileName: item.fileName,
+        mimeType: item.mimeType,
+        sizeBytes: item.sizeBytes,
+        dataUrl: item.dataUrl,
+      })));
+      const savedAttachments = uploaded
+        .filter((result) => result.status === 'fulfilled' && result.value?.attachment)
+        .map((result) => result.value.attachment);
+      if (savedAttachments.length) {
+        setTaskAttachments((prev) => [...savedAttachments, ...prev]);
+        setTaskAttachmentsAlbumOpen(true);
+      }
+      showToast('Anexo adicionado.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao anexar arquivo.', { variant: 'error' });
+    } finally {
+      if (event.target) event.target.value = '';
+    }
+  }
+
   async function handleCreateDemand(event) {
     event.preventDefault();
     if (!canCreateDemand) {
@@ -3153,7 +3202,10 @@ export default function ProfilePage() {
                             {taskPeople.slice(0, 4).map((person) => {
                               const avatar = getUserAvatar(person);
                               return (
-                                <span key={person.userId || person.userName} className={styles.taskAvatar}>
+                                <span
+                                  key={person.userId || person.userName}
+                                  className={`${styles.taskAvatar} ${styles[`taskAvatar_${avatarColorClassName(person.avatarColor)}`] || ''}`.trim()}
+                                >
                                   {avatar ? <img src={avatar} alt="" /> : initials(person.userName)}
                                 </span>
                               );
@@ -3452,7 +3504,30 @@ export default function ProfilePage() {
                 <section className={`${styles.drawerSection} ${styles.attachmentsSection}`.trim()}>
                   <div className={styles.sectionTitleRow}>
                     <h4>Anexos</h4>
-                    <span>{taskAttachments.length}</span>
+                    <div className={styles.sectionTitleActions}>
+                      <span>{taskAttachments.length}</span>
+                      {canEditActiveTask ? (
+                        <>
+                          <input
+                            ref={taskAttachmentInputRef}
+                            type="file"
+                            accept="image/*,application/pdf"
+                            multiple
+                            onChange={handleTaskAttachmentFiles}
+                            hidden
+                          />
+                          <button
+                            type="button"
+                            className={styles.attachIconButton}
+                            onClick={() => taskAttachmentInputRef.current?.click()}
+                            aria-label="Adicionar anexo"
+                            title="Adicionar anexo"
+                          >
+                            +
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
                   </div>
                   {taskAttachmentsLoading ? (
                     <div className={styles.attachmentLoadingGrid} aria-label="Carregando anexos">
@@ -3461,34 +3536,45 @@ export default function ProfilePage() {
                       ))}
                     </div>
                   ) : (
-                    <div className={styles.attachmentGrid}>
-                      {taskAttachments.map((item) => (
-                        <figure key={item.id} className={styles.attachmentCard}>
-                          <button
-                            type="button"
-                            className={styles.attachmentPreviewButton}
-                            onClick={() => setTaskAttachmentPreview(item)}
-                            title={item.fileName || 'Visualizar imagem'}
-                            aria-label={`Visualizar ${item.fileName || 'imagem anexada'}`}
-                          >
-                            <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
-                          </button>
-                          <figcaption>
-                            <span>{item.fileName || 'Imagem'}</span>
-                            {canEditActiveTask ? (
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteTaskAttachment(item)}
-                                disabled={taskAttachmentDeletingId === item.id}
-                                aria-label={`Remover ${item.fileName || 'anexo'}`}
-                              >
-                                ×
-                              </button>
-                            ) : null}
-                          </figcaption>
-                        </figure>
-                      ))}
-                    </div>
+                    <>
+                      <div className={styles.attachmentGrid}>
+                        {taskAttachments.slice(0, 4).map((item) => (
+                          <figure key={item.id} className={styles.attachmentCard}>
+                            <button
+                              type="button"
+                              className={styles.attachmentPreviewButton}
+                              onClick={() => setTaskAttachmentPreview(item)}
+                              title={item.fileName || 'Visualizar anexo'}
+                              aria-label={`Visualizar ${item.fileName || 'anexo'}`}
+                            >
+                              {item.mimeType === 'application/pdf' ? (
+                                <span className={styles.attachmentPdfPreview}>PDF</span>
+                              ) : (
+                                <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
+                              )}
+                            </button>
+                            <figcaption>
+                              <span>{item.fileName || taskAttachmentKind(item)}</span>
+                              {canEditActiveTask ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTaskAttachment(item)}
+                                  disabled={taskAttachmentDeletingId === item.id}
+                                  aria-label={`Remover ${item.fileName || 'anexo'}`}
+                                >
+                                  ×
+                                </button>
+                              ) : null}
+                            </figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                      {taskAttachments.length > 4 ? (
+                        <button type="button" className={styles.attachmentsMoreButton} onClick={() => setTaskAttachmentsAlbumOpen(true)}>
+                          Ver mais
+                        </button>
+                      ) : null}
+                    </>
                   )}
                 </section>
               ) : null}
@@ -3666,6 +3752,49 @@ export default function ProfilePage() {
                 </div>
               </section>
             </div>
+            {taskAttachmentsAlbumOpen ? createPortal(
+              <div
+                className={styles.attachmentViewerOverlay}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Todos os anexos"
+                onClick={() => setTaskAttachmentsAlbumOpen(false)}
+              >
+                <div className={`${styles.attachmentViewer} ${styles.attachmentAlbumViewer}`} onClick={(event) => event.stopPropagation()}>
+                  <header>
+                    <strong>Anexos</strong>
+                    <div>
+                      <button type="button" onClick={() => setTaskAttachmentsAlbumOpen(false)} aria-label="Fechar anexos">
+                        <CloseIcon size={16} />
+                      </button>
+                    </div>
+                  </header>
+                  <div className={styles.attachmentAlbumGrid}>
+                    {taskAttachments.map((item) => (
+                      <figure key={item.id} className={styles.attachmentCard}>
+                        <button
+                          type="button"
+                          className={styles.attachmentPreviewButton}
+                          onClick={() => setTaskAttachmentPreview(item)}
+                          title={item.fileName || 'Visualizar anexo'}
+                        >
+                          {item.mimeType === 'application/pdf' ? (
+                            <span className={styles.attachmentPdfPreview}>PDF</span>
+                          ) : (
+                            <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
+                          )}
+                        </button>
+                        <figcaption>
+                          <span>{item.fileName || taskAttachmentKind(item)}</span>
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              </div>,
+              document.body
+            ) : null}
+
             {taskAttachmentPreview ? createPortal(
               <div
                 className={styles.attachmentViewerOverlay}
