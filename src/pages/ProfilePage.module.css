@@ -8735,88 +8735,228 @@
 }
 
 
-/* v28 — correção fiel ao perfil validado */
+/* v29 — perfil conforme referencia manual escura */
 .page {
-  background: #08090a !important;
+  --profile-workspace-deep: #010102;
+  --profile-card-main: #0b0c0d;
+  --profile-card-line: rgba(255, 255, 255, 0.075);
+  --profile-card-line-soft: rgba(255, 255, 255, 0.052);
+  background: var(--profile-workspace-deep) !important;
 }
 
 .hero,
 .operationBoard {
+  background: var(--profile-card-main) !important;
+  border: 1px solid var(--profile-card-line) !important;
   border-radius: 18px !important;
-  border-color: rgba(255, 255, 255, 0.072) !important;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0.002) 42%),
-    #0d0d0f !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.020),
-    0 1px 0 rgba(255, 255, 255, 0.010) !important;
+  box-shadow: none !important;
 }
 
-.hero::before {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.010), rgba(255, 255, 255, 0) 36%) !important;
-  opacity: 1 !important;
+.hero::before,
+.operationBoard::before {
+  display: none !important;
 }
 
 .heroTop {
-  background: transparent !important;
+  background: var(--profile-card-main) !important;
+  border-bottom-color: var(--profile-card-line-soft) !important;
 }
 
 .profileStatRail {
-  background: #08080a !important;
-  border-top-color: rgba(255, 255, 255, 0.058) !important;
+  background: var(--profile-workspace-deep) !important;
+  border-top: 1px solid var(--profile-card-line-soft) !important;
 }
 
 .profileStat {
   background: transparent !important;
-  border-right-color: rgba(255, 255, 255, 0.044) !important;
-  box-shadow: none !important;
+  border-right-color: rgba(255, 255, 255, 0.040) !important;
 }
 
 .profileStat:last-child {
   border-right: 0 !important;
 }
 
+.roleBadge {
+  position: relative !important;
+  overflow: hidden !important;
+  background: #010102 !important;
+  border-color: rgba(255, 255, 255, 0.075) !important;
+  color: #dbe7ff !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.018),
+    0 0 0 1px rgba(0, 0, 0, 0.18) !important;
+  animation: profileBadgeBreath 3.8s ease-in-out infinite;
+}
+
+.roleBadge::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: -1px !important;
+  border-radius: inherit !important;
+  pointer-events: none !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent) !important;
+  transform: translateX(-120%) !important;
+  animation: profileBadgeSweep 4.8s ease-in-out infinite;
+}
+
+@keyframes profileBadgeBreath {
+  0%,
+  100% {
+    border-color: rgba(255, 255, 255, 0.070);
+  }
+
+  50% {
+    border-color: rgba(255, 255, 255, 0.115);
+  }
+}
+
+@keyframes profileBadgeSweep {
+  0%,
+  62% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  72% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+.heroTop .iconButton,
+.iconButton {
+  background: #010102 !important;
+  border-color: rgba(255, 255, 255, 0.070) !important;
+  box-shadow: none !important;
+}
+
+.heroTop .iconButton:hover,
+.iconButton:hover {
+  background: #070809 !important;
+  border-color: rgba(255, 255, 255, 0.105) !important;
+}
+
 .operationHeader {
+  background: var(--profile-card-main) !important;
+  border-bottom: 1px solid var(--profile-card-line-soft) !important;
+}
+
+.operationHeaderTop {
   background: transparent !important;
-  border-bottom-color: rgba(255, 255, 255, 0.058) !important;
+}
+
+.operationControlPanel {
+  background: transparent !important;
+}
+
+.operationTabs {
+  gap: 12px !important;
+}
+
+.operationTab {
+  min-height: 42px !important;
+  padding: 0 16px !important;
+  border-radius: 999px !important;
+  background: #010102 !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
+  color: #9fb0c6 !important;
+  box-shadow: none !important;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease !important;
+}
+
+.operationTab:hover:not(.operationTabActive) {
+  color: #c2d2e9 !important;
+  background: #050607 !important;
+  border-color: rgba(255, 255, 255, 0.095) !important;
+  transform: translateY(-1px);
+}
+
+.operationTabActive,
+.operationTabActive:hover {
+  background: #010102 !important;
+  border-color: rgba(227, 184, 40, 0.44) !important;
+  color: #ffd429 !important;
+  transform: none !important;
+}
+
+.operationTabLabel {
+  color: inherit !important;
+}
+
+.operationTabCount {
+  min-width: 24px !important;
+  height: 24px !important;
+  padding: 0 7px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.040) !important;
+  border: 1px solid rgba(255, 255, 255, 0.050) !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+
+.operationTabActive .operationTabCount,
+.operationTabActive:hover .operationTabCount {
+  background: rgba(227, 184, 40, 0.12) !important;
+  border-color: rgba(227, 184, 40, 0.18) !important;
+  color: #ffd429 !important;
+}
+
+.primaryAction {
+  background: #010102 !important;
+  border-color: rgba(227, 184, 40, 0.44) !important;
+  color: #f4f7fb !important;
+  box-shadow: none !important;
+}
+
+.primaryAction:hover:not(:disabled) {
+  background: rgba(227, 184, 40, 0.085) !important;
+  border-color: rgba(227, 184, 40, 0.58) !important;
 }
 
 .operationBody {
-  padding: 20px 14px 16px !important;
   background: transparent !important;
+  padding: 28px 18px 18px !important;
 }
 
 .operationList {
-  background: #08080a !important;
-  border: 1px solid rgba(255, 255, 255, 0.060) !important;
+  background: #010102 !important;
+  border: 1px solid rgba(255, 255, 255, 0.052) !important;
   border-radius: 12px !important;
   overflow: hidden !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012) !important;
+  box-shadow: none !important;
 }
 
 .operationListHeader {
-  background: #08080a !important;
-  border-bottom-color: rgba(255, 255, 255, 0.050) !important;
+  background: #010102 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.045) !important;
 }
 
 .operationRow {
-  background: #08080a !important;
-  border-bottom-color: rgba(255, 255, 255, 0.042) !important;
+  background: #010102 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.040) !important;
 }
 
 .operationRow:hover,
 .operationRow:focus-within {
-  background: #0b0b0d !important;
+  background: #050607 !important;
 }
 
 .emptyOperation {
-  min-height: 132px !important;
+  min-height: 162px !important;
   margin: 0 !important;
-  padding: 28px 28px !important;
+  padding: 32px 34px !important;
   border-radius: 12px !important;
-  background: #070708 !important;
-  border: 1px solid rgba(255, 255, 255, 0.052) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012) !important;
+  background: #010102 !important;
+  border: 1px solid rgba(255, 255, 255, 0.045) !important;
+  box-shadow: none !important;
   display: flex !important;
   align-items: center !important;
 }
@@ -8825,22 +8965,6 @@
   color: #9fb0c6 !important;
 }
 
-.iconButton {
-  background: #050506 !important;
-  border-color: rgba(255, 255, 255, 0.055) !important;
-  box-shadow: none !important;
-}
-
-.iconButton:hover {
-  background: #090a0b !important;
-  border-color: rgba(255, 255, 255, 0.085) !important;
-}
-
-.operationTab {
-  box-shadow: none !important;
-}
-
-.operationTabActive,
-.operationTabActive:hover {
-  box-shadow: none !important;
+.emptyOperation span::before {
+  display: none !important;
 }
