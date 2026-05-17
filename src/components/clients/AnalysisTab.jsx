@@ -585,12 +585,22 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               onWheelCapture={(event) => {
                 if (previewAttachment.mimeType === 'application/pdf') return;
                 event.preventDefault();
+                event.stopPropagation();
+
+                const direction = event.deltaY > 0 ? -0.12 : 0.12;
+                const nextZoom = Math.min(3, Math.max(1, Number((previewZoom + direction).toFixed(2))));
+
+                if (nextZoom <= 1) {
+                  setPreviewZoom(1);
+                  setPreviewZoomOrigin('50% 50%');
+                  return;
+                }
+
                 const rect = event.currentTarget.getBoundingClientRect();
                 const originX = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
                 const originY = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
                 setPreviewZoomOrigin(`${originX.toFixed(2)}% ${originY.toFixed(2)}%`);
-                const direction = event.deltaY > 0 ? -0.12 : 0.12;
-                setPreviewZoom((value) => Math.min(3, Math.max(0.5, Number((value + direction).toFixed(2)))));
+                setPreviewZoom(nextZoom);
               }}
             >
               {previewAttachment.mimeType === 'application/pdf' ? (
