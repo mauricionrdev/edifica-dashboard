@@ -506,9 +506,12 @@ function getTaskKind(task) {
 
   if (/briefing|implementacao|implementado|implementar|setup|onboarding/.test(haystack)) return 'briefing';
   if (/pente fino|diario|diaria|rotina|recorrente|auditoria/.test(haystack)) return 'routine';
-  if (/suporte|bug|erro|acesso|permissao|conexao|desconectado|ajuste|corrigir|problema/.test(haystack)) return 'support';
+  if (/bug|erro|falha|quebrado|crash|travou/.test(haystack)) return 'bug';
+  if (/ajuste|corrigir|alteracao|melhoria|refinar|mudanca/.test(haystack)) return 'adjustment';
+  if (/acesso|permissao|login|senha|conexao|desconectado|qr code|qrcode/.test(haystack)) return 'access';
+  if (/suporte|problema|solicitacao|chamado|duvida/.test(haystack)) return 'support';
   if (task?.projectId || task?.projectName) return 'project';
-  return 'demand';
+  return 'other';
 }
 
 function kindLabel(kind) {
@@ -516,10 +519,14 @@ function kindLabel(kind) {
     briefing: 'Briefing',
     routine: 'Rotina',
     support: 'Suporte',
+    bug: 'Bug',
+    adjustment: 'Ajuste',
+    access: 'Acesso',
+    other: 'Outro',
     project: 'Projeto',
-    demand: 'Demanda',
+    demand: 'Outro',
   };
-  return labels[kind] || 'Demanda';
+  return labels[kind] || 'Outro';
 }
 
 function statusOptionsForKind(kind) {
@@ -2903,7 +2910,11 @@ export default function ProfilePage() {
             <div className={styles.identityCopy}>
               <div className={styles.identityTitle}>
                 <h1>{displayProfileName}</h1>
-                <span className={styles.roleBadge}>{roleLabel(user?.role)}</span>
+                <span
+                  className={`${styles.roleBadge} ${roleLabel(user?.role) === 'Suporte de tecnologia (TI)' ? styles.roleBadgeBlackHole : ''}`.trim()}
+                >
+                  {roleLabel(user?.role)}
+                </span>
               </div>
               <span className={styles.identityGreeting}>{todaySummary}</span>
               {user?.email ? (

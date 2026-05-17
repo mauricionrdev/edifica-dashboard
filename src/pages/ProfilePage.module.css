@@ -9802,3 +9802,133 @@
     text-align: left !important;
   }
 }
+
+
+/* v38 — ajustes de header, tipos, etapa e badge animado */
+.identityTitle .roleBadge {
+  height: 27px !important;
+  min-height: 27px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  background: #010102 !important;
+}
+
+.roleBadge {
+  animation: none !important;
+}
+
+.roleBadge::before,
+.roleBadge::after {
+  content: none !important;
+}
+
+.roleBadgeBlackHole {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.80) 0 21%, rgba(245, 184, 0, 0.055) 22% 38%, transparent 39% 100%),
+    #010102 !important;
+  animation: roleBlackHolePulse 3.8s ease-in-out infinite !important;
+}
+
+.roleBadgeBlackHole::before {
+  content: '' !important;
+  position: absolute !important;
+  z-index: -1 !important;
+  inset: -42% !important;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(245, 184, 0, 0.16) 54deg, transparent 116deg, rgba(104, 125, 255, 0.10) 176deg, transparent 246deg, rgba(245, 184, 0, 0.10) 304deg, transparent 360deg) !important;
+  opacity: 0.62 !important;
+  animation: roleBlackHoleSpin 7s linear infinite !important;
+}
+
+.roleBadgeBlackHole::after {
+  content: '' !important;
+  position: absolute !important;
+  z-index: -1 !important;
+  inset: 3px !important;
+  border-radius: inherit !important;
+  background: radial-gradient(circle at 50% 50%, rgba(1, 1, 2, 0.96) 0 34%, rgba(1, 1, 2, 0.38) 35% 57%, transparent 58%) !important;
+  opacity: 0.9 !important;
+}
+
+.operationListHeader {
+  grid-template-columns: 18px minmax(360px, 1.32fr) minmax(124px, 0.22fr) minmax(150px, 0.30fr) minmax(82px, 0.16fr) minmax(94px, 0.16fr) !important;
+}
+
+.operationListHeader span {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #5f7fa9 !important;
+}
+
+.operationListHeader span:nth-child(4) {
+  text-align: center !important;
+}
+
+.operationListHeader span:last-child {
+  text-align: right !important;
+}
+
+.operationStageCell {
+  justify-content: center !important;
+}
+
+.stageProgressPill {
+  width: 132px !important;
+  height: 32px !important;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--stage-color) 17%, transparent), rgba(255, 255, 255, 0.012)), rgba(255, 255, 255, 0.014) !important;
+  border-color: color-mix(in srgb, var(--stage-color) 30%, transparent) !important;
+}
+
+.stageProgressTrack {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--stage-color) 24%, transparent), color-mix(in srgb, var(--stage-color) 12%, transparent)) !important;
+  opacity: 0.72 !important;
+}
+
+.kind_support {
+  color: #007BFF !important;
+  border-color: rgba(0, 123, 255, 0.28) !important;
+  background: rgba(0, 123, 255, 0.075) !important;
+}
+
+.kind_briefing {
+  color: #6F42C1 !important;
+  border-color: rgba(111, 66, 193, 0.34) !important;
+  background: rgba(111, 66, 193, 0.085) !important;
+}
+
+.kind_routine {
+  color: #6C757D !important;
+  border-color: rgba(108, 117, 125, 0.32) !important;
+  background: rgba(108, 117, 125, 0.090) !important;
+}
+
+.kind_bug {
+  color: #DC3545 !important;
+  border-color: rgba(220, 53, 69, 0.34) !important;
+  background: rgba(220, 53, 69, 0.085) !important;
+}
+
+.kind_adjustment {
+  color: #FD7E14 !important;
+  border-color: rgba(253, 126, 20, 0.34) !important;
+  background: rgba(253, 126, 20, 0.085) !important;
+}
+
+.kind_access {
+  color: #28A745 !important;
+  border-color: rgba(40, 167, 69, 0.34) !important;
+  background: rgba(40, 167, 69, 0.085) !important;
+}
+
+.kind_other,
+.kind_project,
+.kind_demand {
+  color: #17A2B8 !important;
+  border-color: rgba(23, 162, 184, 0.34) !important;
+  background: rgba(23, 162, 184, 0.085) !important;
+}
