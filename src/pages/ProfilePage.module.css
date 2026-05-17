@@ -8735,96 +8735,112 @@
 }
 
 
-/* v27 — profundidade mínima em cards validados */
+/* v28 — correção fiel ao perfil validado */
 .page {
-  --profile-workspace-bg: #08090a;
-  --profile-card-surface: #0f1011;
-  --profile-card-surface-soft: #0b0c0d;
-  --profile-card-border: rgba(255, 255, 255, 0.072);
-  --profile-card-border-hover: rgba(255, 255, 255, 0.092);
-  --profile-card-highlight: rgba(255, 255, 255, 0.018);
-  background: var(--profile-workspace-bg) !important;
+  background: #08090a !important;
 }
 
 .hero,
 .operationBoard {
-  border-color: var(--profile-card-border) !important;
+  border-radius: 18px !important;
+  border-color: rgba(255, 255, 255, 0.072) !important;
   background:
-    linear-gradient(180deg, var(--profile-card-highlight), rgba(255, 255, 255, 0.004) 48%),
-    var(--profile-card-surface) !important;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0.002) 42%),
+    #0d0d0f !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.016),
-    0 18px 54px rgba(0, 0, 0, 0.12) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.020),
+    0 1px 0 rgba(255, 255, 255, 0.010) !important;
 }
 
-.hero:hover,
-.operationBoard:hover {
-  border-color: var(--profile-card-border-hover) !important;
+.hero::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.010), rgba(255, 255, 255, 0) 36%) !important;
+  opacity: 1 !important;
+}
+
+.heroTop {
+  background: transparent !important;
 }
 
 .profileStatRail {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.006), rgba(255, 255, 255, 0.002)),
-    rgba(0, 0, 0, 0.08) !important;
-  border-top-color: rgba(255, 255, 255, 0.055) !important;
+  background: #08080a !important;
+  border-top-color: rgba(255, 255, 255, 0.058) !important;
 }
 
 .profileStat {
   background: transparent !important;
-  border-right-color: rgba(255, 255, 255, 0.052) !important;
+  border-right-color: rgba(255, 255, 255, 0.044) !important;
+  box-shadow: none !important;
+}
+
+.profileStat:last-child {
+  border-right: 0 !important;
 }
 
 .operationHeader {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.006), rgba(255, 255, 255, 0)) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.055) !important;
+  background: transparent !important;
+  border-bottom-color: rgba(255, 255, 255, 0.058) !important;
 }
 
 .operationBody {
+  padding: 20px 14px 16px !important;
   background: transparent !important;
 }
 
 .operationList {
-  background: var(--profile-card-surface-soft) !important;
-}
-
-.emptyOperation {
-  margin: 16px 18px 20px !important;
-  min-height: 132px !important;
-  border: 1px solid rgba(255, 255, 255, 0.045) !important;
-  border-radius: 10px !important;
-  background: #070809 !important;
-  color: var(--profile-muted) !important;
-}
-
-.operationRow {
-  background: transparent !important;
-}
-
-.operationRow:hover {
-  background: rgba(255, 255, 255, 0.016) !important;
-}
-
-.iconButton {
-  background: #08090a !important;
-  border-color: rgba(255, 255, 255, 0.062) !important;
+  background: #08080a !important;
+  border: 1px solid rgba(255, 255, 255, 0.060) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012) !important;
 }
 
-.iconButton:hover {
-  background: #101113 !important;
-  border-color: rgba(255, 255, 255, 0.09) !important;
+.operationListHeader {
+  background: #08080a !important;
+  border-bottom-color: rgba(255, 255, 255, 0.050) !important;
 }
 
-.primaryAction {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.014) !important;
+.operationRow {
+  background: #08080a !important;
+  border-bottom-color: rgba(255, 255, 255, 0.042) !important;
+}
+
+.operationRow:hover,
+.operationRow:focus-within {
+  background: #0b0b0d !important;
+}
+
+.emptyOperation {
+  min-height: 132px !important;
+  margin: 0 !important;
+  padding: 28px 28px !important;
+  border-radius: 12px !important;
+  background: #070708 !important;
+  border: 1px solid rgba(255, 255, 255, 0.052) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.emptyOperation span {
+  color: #9fb0c6 !important;
+}
+
+.iconButton {
+  background: #050506 !important;
+  border-color: rgba(255, 255, 255, 0.055) !important;
+  box-shadow: none !important;
+}
+
+.iconButton:hover {
+  background: #090a0b !important;
+  border-color: rgba(255, 255, 255, 0.085) !important;
 }
 
 .operationTab {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.01) !important;
+  box-shadow: none !important;
 }
 
 .operationTabActive,
 .operationTabActive:hover {
-  box-shadow: inset 0 1px 0 rgba(245, 184, 0, 0.045) !important;
+  box-shadow: none !important;
 }
