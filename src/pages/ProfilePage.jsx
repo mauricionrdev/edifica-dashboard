@@ -604,6 +604,29 @@ function visibleOperationTags(task) {
   return tags.filter((tag, index, list) => list.findIndex((item) => item.label === tag.label) === index).slice(0, 4);
 }
 
+
+function taskStageProgress(task) {
+  const kind = getTaskKind(task);
+  const status = task?.status || (isDone(task) ? 'done' : 'todo');
+
+  if (task?.status === 'canceled') {
+    return { label: 'Cancelada', progress: 100, tone: 'red' };
+  }
+
+  if (kind === 'briefing') {
+    const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
+    const currentIndex = Math.max(0, order.indexOf(isDone(task) ? 'done' : status));
+    const progress = Math.round(((currentIndex + 1) / order.length) * 100);
+    return { label: statusLabel(task), progress, tone: isDone(task) ? 'green' : currentIndex >= 4 ? 'teal' : currentIndex >= 2 ? 'amber' : 'yellow' };
+  }
+
+  if (isDone(task)) return { label: statusLabel(task), progress: 100, tone: 'green' };
+  if (status === 'in_progress') return { label: statusLabel(task), progress: 62, tone: 'amber' };
+  if (isOverdue(task)) return { label: statusLabel(task), progress: 42, tone: 'red' };
+  if (isToday(task)) return { label: statusLabel(task), progress: 48, tone: 'yellow' };
+  return { label: statusLabel(task), progress: 28, tone: 'yellow' };
+}
+
 function userFromDirectory(userId, users = []) {
   const id = String(userId || '').trim();
   if (!id) return null;
@@ -614,7 +637,7 @@ function buildTaskPeople(task, users = []) {
   const people = [];
   const seen = new Set();
 
-  function addPerson(person = {}, role = 'collaborator') {
+  function addPerson(person = {}) {
     const userId = String(person.userId || person.user_id || person.id || '').trim();
     const directoryUser = userFromDirectory(userId, users);
     const name = person.userName || person.user_name || person.name || directoryUser?.name || '';
@@ -629,22 +652,20 @@ function buildTaskPeople(task, users = []) {
       userName: name || 'Usuário',
       userEmail: email,
       avatarUrl,
-      role,
     });
   }
 
-  addPerson({
-    userId: task?.assigneeUserId || task?.assignee_user_id,
-    userName: task?.assigneeName || task?.assignee_name,
-  }, 'responsible');
-
-  if (Array.isArray(task?.collaborators)) task.collaborators.forEach((person) => addPerson(person, 'collaborator'));
-  if (Array.isArray(task?.people)) task.people.forEach((person) => addPerson(person, 'collaborator'));
+  if (Array.isArray(task?.collaborators)) task.collaborators.forEach(addPerson);
+  if (Array.isArray(task?.people)) task.people.forEach(addPerson);
 
   addPerson({
     userId: task?.createdByUserId || task?.created_by_user_id,
     userName: task?.createdByName || task?.created_by_name,
-  }, 'creator');
+  });
+  addPerson({
+    userId: task?.assigneeUserId || task?.assignee_user_id,
+    userName: task?.assigneeName || task?.assignee_name,
+  });
 
   return people.filter((person) => person.userName || person.userId).slice(0, 8);
 }
@@ -2963,14 +2984,15 @@ export default function ProfilePage() {
                 <div className={styles.operationListHeader} aria-hidden="true">
                   <span />
                   <span>Tarefa</span>
-                  <span>Prazo</span>
-                  <span>Etapa</span>
                   <span>Propriedades</span>
+                  <span>Etapa</span>
                   <span>Colab.</span>
+                  <span>Prazo</span>
                 </div>
                 {visibleTasks.map((task) => {
                   const itemKind = getTaskKind(task);
                   const itemStatus = statusKey(task);
+                  const stageProgress = taskStageProgress(task);
                   const taskPeople = buildTaskPeople(
                     { ...task, collaborators: taskPeopleMap[task.id] || task.collaborators || task.people || [] },
                     demandUsers
@@ -3004,21 +3026,10 @@ export default function ProfilePage() {
 
                       <div className={styles.operationMain}>
                         <strong>{displayTaskTitle(task)}</strong>
-                        <div className={styles.operationSubline}>
-                          <span>{task.clientName || task.projectName || 'Sem cliente'}</span>
-                        </div>
-                      </div>
-
-                      <div className={styles.operationDueCell}>
-                        <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
-                      </div>
-
-                      <div className={styles.operationClientCell}>
-                        <span>{statusLabel(task)}</span>
                       </div>
 
                       <div className={styles.operationMeta}>
-                        {visibleOperationTags(task).map((tag) => (
+                        {visibleOperationTags(task).slice(0, 1).map((tag) => (
                           <span
                             key={tag.key}
                             className={`${styles[tag.className] || ''} ${styles[tag.tone] || ''}`.trim()}
@@ -3028,16 +3039,23 @@ export default function ProfilePage() {
                         ))}
                       </div>
 
+                      <div className={styles.operationStageCell}>
+                        <span
+                          className={`${styles.stageProgressPill} ${styles[`stage_${stageProgress.tone}`] || ''}`.trim()}
+                          style={{ '--stage-progress': `${stageProgress.progress}%` }}
+                        >
+                          <span className={styles.stageProgressTrack} aria-hidden="true" />
+                          <span className={styles.stageProgressLabel}>{stageProgress.label}</span>
+                        </span>
+                      </div>
+
                       <div className={styles.operationPeopleCell}>
                         {taskPeople.length ? (
                           <span className={styles.taskAvatarStack} aria-label={`Colaboradores: ${taskPeopleLabel(taskPeople)}`} title={taskPeopleLabel(taskPeople)}>
-                            {taskPeople.slice(0, 4).map((person, personIndex) => {
+                            {taskPeople.slice(0, 4).map((person) => {
                               const avatar = getUserAvatar(person);
                               return (
-                                <span
-                                  key={person.userId || person.userName}
-                                  className={`${styles.taskAvatar} ${personIndex === 0 ? styles.taskAvatarResponsible : ''}`.trim()}
-                                >
+                                <span key={person.userId || person.userName} className={styles.taskAvatar}>
                                   {avatar ? <img src={avatar} alt="" /> : initials(person.userName)}
                                 </span>
                               );
@@ -3047,6 +3065,10 @@ export default function ProfilePage() {
                         ) : (
                           <span className={styles.taskAvatarEmpty}>—</span>
                         )}
+                      </div>
+
+                      <div className={styles.operationDueCell}>
+                        <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
                       </div>
                     </article>
                   );
