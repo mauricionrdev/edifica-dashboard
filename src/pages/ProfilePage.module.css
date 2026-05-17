@@ -9473,3 +9473,127 @@
     gap: 7px;
   }
 }
+
+
+/* v36 — ordem da lista de tarefas e coluna de colaboradores */
+.operationListHeader {
+  grid-template-columns:
+    18px
+    minmax(250px, 1fr)
+    minmax(92px, 0.16fr)
+    minmax(126px, 0.22fr)
+    minmax(260px, 0.48fr)
+    minmax(82px, 0.14fr) !important;
+  gap: 14px !important;
+}
+
+.operationListHeader span:last-child {
+  text-align: left !important;
+}
+
+.operationRow {
+  grid-template-columns:
+    18px
+    minmax(250px, 1fr)
+    minmax(92px, 0.16fr)
+    minmax(126px, 0.22fr)
+    minmax(260px, 0.48fr)
+    minmax(82px, 0.14fr) !important;
+  gap: 14px !important;
+}
+
+.operationDueCell {
+  justify-content: flex-start !important;
+}
+
+.dueLabel {
+  text-align: left !important;
+  white-space: nowrap;
+}
+
+.operationMeta {
+  justify-content: flex-start !important;
+  overflow: hidden;
+}
+
+.operationMeta > span {
+  flex: 0 0 auto;
+}
+
+.operationPeopleCell {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.taskAvatarStack {
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  padding-left: 0 !important;
+}
+
+.taskAvatar {
+  position: relative;
+  width: 23px !important;
+  height: 23px !important;
+  margin-left: -7px !important;
+  border: 1px solid #050506 !important;
+  border-radius: 999px;
+  background: #0f1011;
+  color: #d7dce5;
+}
+
+.taskAvatar:first-child {
+  margin-left: 0 !important;
+}
+
+.taskAvatarResponsible {
+  z-index: 9 !important;
+  width: 25px !important;
+  height: 25px !important;
+  border-color: rgba(245, 184, 0, 0.46) !important;
+  box-shadow:
+    0 0 0 1px rgba(245, 184, 0, 0.16),
+    0 7px 16px rgba(0, 0, 0, 0.28) !important;
+}
+
+.taskAvatar:nth-child(2) {
+  z-index: 4;
+}
+
+.taskAvatar:nth-child(3) {
+  z-index: 3;
+}
+
+.taskAvatar:nth-child(4) {
+  z-index: 2;
+}
+
+.taskAvatarMore {
+  z-index: 1;
+}
+
+.taskAvatarEmpty {
+  color: var(--edf-text-faint);
+  font-size: 12px;
+  line-height: 1;
+}
+
+@media (max-width: 1180px) {
+  .operationRow {
+    grid-template-columns: 18px minmax(0, 1fr) !important;
+  }
+
+  .operationDueCell,
+  .operationClientCell,
+  .operationMeta,
+  .operationPeopleCell {
+    grid-column: 2 / -1;
+  }
+
+  .operationPeopleCell {
+    padding-top: 2px;
+  }
+}

@@ -614,7 +614,7 @@ function buildTaskPeople(task, users = []) {
   const people = [];
   const seen = new Set();
 
-  function addPerson(person = {}) {
+  function addPerson(person = {}, role = 'collaborator') {
     const userId = String(person.userId || person.user_id || person.id || '').trim();
     const directoryUser = userFromDirectory(userId, users);
     const name = person.userName || person.user_name || person.name || directoryUser?.name || '';
@@ -629,20 +629,22 @@ function buildTaskPeople(task, users = []) {
       userName: name || 'Usuário',
       userEmail: email,
       avatarUrl,
+      role,
     });
   }
 
-  if (Array.isArray(task?.collaborators)) task.collaborators.forEach(addPerson);
-  if (Array.isArray(task?.people)) task.people.forEach(addPerson);
+  addPerson({
+    userId: task?.assigneeUserId || task?.assignee_user_id,
+    userName: task?.assigneeName || task?.assignee_name,
+  }, 'responsible');
+
+  if (Array.isArray(task?.collaborators)) task.collaborators.forEach((person) => addPerson(person, 'collaborator'));
+  if (Array.isArray(task?.people)) task.people.forEach((person) => addPerson(person, 'collaborator'));
 
   addPerson({
     userId: task?.createdByUserId || task?.created_by_user_id,
     userName: task?.createdByName || task?.created_by_name,
-  });
-  addPerson({
-    userId: task?.assigneeUserId || task?.assignee_user_id,
-    userName: task?.assigneeName || task?.assignee_name,
-  });
+  }, 'creator');
 
   return people.filter((person) => person.userName || person.userId).slice(0, 8);
 }
@@ -2961,9 +2963,10 @@ export default function ProfilePage() {
                 <div className={styles.operationListHeader} aria-hidden="true">
                   <span />
                   <span>Tarefa</span>
-                  <span>Etapa</span>
-                  <span />
                   <span>Prazo</span>
+                  <span>Etapa</span>
+                  <span>Propriedades</span>
+                  <span>Colab.</span>
                 </div>
                 {visibleTasks.map((task) => {
                   const itemKind = getTaskKind(task);
@@ -3003,20 +3006,11 @@ export default function ProfilePage() {
                         <strong>{displayTaskTitle(task)}</strong>
                         <div className={styles.operationSubline}>
                           <span>{task.clientName || task.projectName || 'Sem cliente'}</span>
-                          {taskPeople.length ? (
-                            <span className={styles.taskAvatarStack} aria-label={`Colaboradores: ${taskPeopleLabel(taskPeople)}`} title={taskPeopleLabel(taskPeople)}>
-                              {taskPeople.slice(0, 4).map((person) => {
-                                const avatar = getUserAvatar(person);
-                                return (
-                                  <span key={person.userId || person.userName} className={styles.taskAvatar}>
-                                    {avatar ? <img src={avatar} alt="" /> : initials(person.userName)}
-                                  </span>
-                                );
-                              })}
-                              {taskPeople.length > 4 ? <span className={`${styles.taskAvatar} ${styles.taskAvatarMore}`}>+{taskPeople.length - 4}</span> : null}
-                            </span>
-                          ) : null}
                         </div>
+                      </div>
+
+                      <div className={styles.operationDueCell}>
+                        <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
                       </div>
 
                       <div className={styles.operationClientCell}>
@@ -3034,8 +3028,25 @@ export default function ProfilePage() {
                         ))}
                       </div>
 
-                      <div className={styles.operationDueCell}>
-                        <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
+                      <div className={styles.operationPeopleCell}>
+                        {taskPeople.length ? (
+                          <span className={styles.taskAvatarStack} aria-label={`Colaboradores: ${taskPeopleLabel(taskPeople)}`} title={taskPeopleLabel(taskPeople)}>
+                            {taskPeople.slice(0, 4).map((person, personIndex) => {
+                              const avatar = getUserAvatar(person);
+                              return (
+                                <span
+                                  key={person.userId || person.userName}
+                                  className={`${styles.taskAvatar} ${personIndex === 0 ? styles.taskAvatarResponsible : ''}`.trim()}
+                                >
+                                  {avatar ? <img src={avatar} alt="" /> : initials(person.userName)}
+                                </span>
+                              );
+                            })}
+                            {taskPeople.length > 4 ? <span className={`${styles.taskAvatar} ${styles.taskAvatarMore}`}>+{taskPeople.length - 4}</span> : null}
+                          </span>
+                        ) : (
+                          <span className={styles.taskAvatarEmpty}>—</span>
+                        )}
                       </div>
                     </article>
                   );
