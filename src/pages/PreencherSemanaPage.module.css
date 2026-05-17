@@ -1068,3 +1068,122 @@
     border-top: 1px solid var(--line-subtle);
   }
 }
+
+
+/* v21 — consistência visual: raio 10px, controles nivelados e fundo padrão */
+.page,
+.workspace {
+  background: #08090a;
+}
+
+.workspace {
+  min-height: 100%;
+}
+
+.headerControls {
+  align-items: center;
+  gap: 8px;
+}
+
+.headerStat,
+.select > button,
+.weekTabs,
+.searchField,
+.resultCount,
+.pageSizeSelect > button,
+.pageButton {
+  height: var(--control-height);
+  min-height: var(--control-height);
+  border-radius: var(--control-radius);
+}
+
+.headerStat,
+.select > button,
+.searchField,
+.resultCount,
+.pageSizeSelect > button {
+  display: inline-flex;
+  align-items: center;
+}
+
+.weekTabs {
+  padding: 3px;
+}
+
+.weekTab {
+  height: calc(var(--control-height) - 8px);
+  min-height: calc(var(--control-height) - 8px);
+  border-radius: calc(var(--control-radius) - 2px);
+}
+
+.pageButton {
+  width: var(--control-height);
+  min-width: var(--control-height);
+  padding: 0;
+}
+
+.cardsPanel,
+.clientCard,
+.fieldCard,
+.skeletonCard {
+  border-radius: 10px;
+}
+
+.cardsPanel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.005)),
+    #0f1011;
+}
+
+.clientCard {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0.004)),
+    #0f1011;
+}
+
+.clientCard:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006)),
+    #111214;
+}
+
+.fieldCard {
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.fieldCard_weekly {
+  background:
+    linear-gradient(180deg, rgba(245, 184, 0, 0.034), rgba(255, 255, 255, 0.012) 78%);
+}
+
+.fieldCard_auto {
+  background:
+    linear-gradient(180deg, rgba(39, 166, 68, 0.032), rgba(255, 255, 255, 0.012) 78%);
+}
+
+.commandBar {
+  min-height: 58px;
+}
+
+.commandActions {
+  align-items: center;
+}
+
+.select,
+.pageSizeSelect {
+  height: var(--control-height);
+}
+
+@media (max-width: 720px) {
+  .headerControls,
+  .select,
+  .select > button,
+  .weekTabs,
+  .searchField,
+  .resultCount,
+  .pageSizeSelect,
+  .pageSizeSelect > button {
+    height: var(--control-height);
+    min-height: var(--control-height);
+  }
+}

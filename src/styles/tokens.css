@@ -54,8 +54,8 @@
   /* ============================================================
      SUPERFÍCIES — luminance stacking
      ============================================================ */
-  --bg-app: #010102;
-  --bg-canvas: #050506;
+  --bg-app: #08090a;
+  --bg-canvas: #0b0c0d;
   --bg-elevated: #0b0c0d;
   --bg-raised: #101113;
   --bg-hover: #15161a;
@@ -135,7 +135,7 @@
   --radius-1: 6px;
   --radius-2: 8px;
   --radius-3: 10px;
-  --radius-4: 12px;
+  --radius-4: 10px;
   --radius-5: 14px;
   --radius-6: 18px;
 
@@ -176,7 +176,7 @@
 
 /* v9 — Design system Linear adaptado à paleta Edifica */
 :root {
-  --bg-app: #010102;
+  --bg-app: #08090a;
   --bg-canvas: #0b0c0d;
   --bg-elevated: #0b0c0d;
   --bg-raised: #151617;
