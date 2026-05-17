@@ -201,7 +201,21 @@ export default function OverviewTab({
             </div>
 
             <div className={drawerStyles.field}>
-              <label className={drawerStyles.label} htmlFor="cd-squad">Squad Responsável</label>
+              <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor da Conta</label>
+              <UserPicker
+                className={drawerStyles.selectControl}
+                users={gestorRows}
+                value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+                onChange={(userId) => onSelectChange('gestor', 'gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
+                disabled={deleting || !canEdit}
+                placeholder="Sem gestor"
+                disableHover
+                portal
+              />
+            </div>
+
+            <div className={drawerStyles.field}>
+              <label className={drawerStyles.label} htmlFor="cd-squad">Squad</label>
               <Select
                 className={drawerStyles.selectControl}
                 value={form.squadId}
@@ -218,6 +232,20 @@ export default function OverviewTab({
             </div>
 
             <div className={drawerStyles.field}>
+              <label className={drawerStyles.label} htmlFor="cd-gdv">Gestor de Vendas</label>
+              <UserPicker
+                className={drawerStyles.selectControl}
+                users={gdvRows}
+                value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+                onChange={(userId) => onSelectChange('gdvName', 'gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
+                disabled={deleting || !canEdit}
+                placeholder="Sem GDV"
+                disableHover
+                portal
+              />
+            </div>
+
+            <div className={drawerStyles.field}>
               <label className={drawerStyles.label} htmlFor="cd-status">Status</label>
               <Select
                 className={drawerStyles.selectControl}
@@ -230,34 +258,6 @@ export default function OverviewTab({
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </Select>
-            </div>
-
-            <div className={drawerStyles.field}>
-              <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor da Conta</label>
-              <UserPicker
-                className={drawerStyles.selectControl}
-                users={gestorRows}
-                value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
-                onChange={(userId) => onSelectChange('gestor', 'gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
-                disabled={deleting || !canEdit}
-                placeholder="Sem gestor"
-                disableHover
-                portal
-              />
-            </div>
-
-            <div className={drawerStyles.field}>
-              <label className={drawerStyles.label} htmlFor="cd-gdv">Gerente de Vendas</label>
-              <UserPicker
-                className={drawerStyles.selectControl}
-                users={gdvRows}
-                value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
-                onChange={(userId) => onSelectChange('gdvName', 'gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
-                disabled={deleting || !canEdit}
-                placeholder="Sem GDV"
-                disableHover
-                portal
-              />
             </div>
           </div>
         </div>
