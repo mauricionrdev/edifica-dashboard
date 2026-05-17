@@ -323,7 +323,7 @@ function MetricField({
 
 function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canEdit, setField, startPresence, handleBlur, presenceByField }) {
   return (
-    <section className={styles.segmentBlock}>
+    <section className={`${styles.segmentBlock} ${shortLabel === 'T' ? styles.segmentBlockTraffic : styles.segmentBlockCommercial}`.trim()}>
       <header className={styles.segmentHeader}>
         <span className={styles.segmentBadge}>{shortLabel}</span>
         <strong>{title}</strong>
