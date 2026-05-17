@@ -1558,6 +1558,7 @@ export default function ProfilePage() {
   const [taskAttachments, setTaskAttachments] = useState([]);
   const [taskAttachmentsLoading, setTaskAttachmentsLoading] = useState(false);
   const [taskAttachmentDeletingId, setTaskAttachmentDeletingId] = useState('');
+  const [taskAttachmentDeleteTarget, setTaskAttachmentDeleteTarget] = useState(null);
   const [taskAttachmentPreview, setTaskAttachmentPreview] = useState(null);
   const [taskAttachmentZoom, setTaskAttachmentZoom] = useState(1);
   const [taskAttachmentZoomOrigin, setTaskAttachmentZoomOrigin] = useState('50% 50%');
@@ -2523,13 +2524,11 @@ export default function ProfilePage() {
         if (savedAttachments.length) setTaskAttachments((prev) => [...savedAttachments, ...prev]);
       }
 
-      const attachmentSummary = savedAttachments.length
-        ? savedAttachments.map((item) => `Anexo: ${item.fileName || taskAttachmentKind(item)}`).join('\n')
-        : '';
       const attachmentMarker = savedAttachments.length
         ? `${COMMENT_ATTACHMENT_MARKER}${savedAttachments.map((item) => item.id).join(',')}]]`
         : '';
-      const commentBody = [body, attachmentSummary, attachmentMarker].filter(Boolean).join('\n');
+      const fallbackBody = savedAttachments.length ? 'Anexo enviado' : '';
+      const commentBody = [body || fallbackBody, attachmentMarker].filter(Boolean).join('\n');
 
       const res = await createTaskComment(activeTask.id, { body: commentBody });
       if (res?.comment) setTaskComments((prev) => [...prev, res.comment]);
@@ -3655,7 +3654,7 @@ export default function ProfilePage() {
                               {canEditActiveTask ? (
                                 <button
                                   type="button"
-                                  onClick={() => handleDeleteTaskAttachment(item)}
+                                  onClick={() => setTaskAttachmentDeleteTarget(item)}
                                   disabled={taskAttachmentDeletingId === item.id}
                                   aria-label={`Remover ${item.fileName || 'anexo'}`}
                                 >
@@ -3906,7 +3905,7 @@ export default function ProfilePage() {
                           {canEditActiveTask ? (
                             <button
                               type="button"
-                              onClick={() => handleDeleteTaskAttachment(item)}
+                              onClick={() => setTaskAttachmentDeleteTarget(item)}
                               disabled={taskAttachmentDeletingId === item.id}
                               aria-label={`Remover ${item.fileName || 'anexo'}`}
                             >
@@ -3938,10 +3937,7 @@ export default function ProfilePage() {
                       {canEditActiveTask ? (
                         <button
                           type="button"
-                          onClick={() => {
-                            handleDeleteTaskAttachment(taskAttachmentPreview);
-                            setTaskAttachmentPreview(null);
-                          }}
+                          onClick={() => setTaskAttachmentDeleteTarget(taskAttachmentPreview)}
                           aria-label="Excluir anexo"
                           title="Excluir anexo"
                         >
@@ -3958,12 +3954,19 @@ export default function ProfilePage() {
                     onWheelCapture={(event) => {
                       if (taskAttachmentPreview.mimeType === 'application/pdf') return;
                       event.preventDefault();
-                      const rect = event.currentTarget.getBoundingClientRect();
-                      const originX = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
-                      const originY = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
-                      setTaskAttachmentZoomOrigin(`${originX.toFixed(2)}% ${originY.toFixed(2)}%`);
-                      const direction = event.deltaY > 0 ? -0.12 : 0.12;
-                      setTaskAttachmentZoom((value) => Math.min(3, Math.max(0.5, Number((value + direction).toFixed(2)))));
+                      const container = event.currentTarget;
+                      const rect = container.getBoundingClientRect();
+                      const pointerX = event.clientX - rect.left + container.scrollLeft;
+                      const pointerY = event.clientY - rect.top + container.scrollTop;
+                      const previousZoom = taskAttachmentZoom;
+                      const direction = event.deltaY > 0 ? -0.18 : 0.18;
+                      const nextZoom = Math.min(4, Math.max(0.35, Number((previousZoom + direction).toFixed(2))));
+                      const ratio = nextZoom / previousZoom;
+                      setTaskAttachmentZoom(nextZoom);
+                      requestAnimationFrame(() => {
+                        container.scrollLeft = pointerX * ratio - (event.clientX - rect.left);
+                        container.scrollTop = pointerY * ratio - (event.clientY - rect.top);
+                      });
                     }}
                   >
                     {taskAttachmentPreview.mimeType === 'application/pdf' ? (
@@ -3973,7 +3976,7 @@ export default function ProfilePage() {
                         src={taskAttachmentPreview.dataUrl}
                         alt={taskAttachmentPreview.fileName || 'Imagem anexada'}
                         decoding="async"
-                        style={{ transform: `scale(${taskAttachmentZoom})`, transformOrigin: taskAttachmentZoomOrigin }}
+                        style={{ width: `${taskAttachmentZoom * 100}%`, maxWidth: taskAttachmentZoom > 1 ? 'none' : '100%' }}
                       />
                     )}
                   </div>
@@ -3983,6 +3986,41 @@ export default function ProfilePage() {
             ) : null}
           </section>
         </aside>
+      ) : null}
+
+
+      {taskAttachmentDeleteTarget ? createPortal(
+        <div className={styles.confirmOverlay} role="presentation" onClick={() => setTaskAttachmentDeleteTarget(null)}>
+          <section
+            className={styles.confirmModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Remover anexo"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.confirmHead}>
+              <span>Remover anexo</span>
+              <strong>{taskAttachmentDeleteTarget.fileName || 'Anexo'}</strong>
+            </div>
+            <p>Este arquivo será removido da demanda.</p>
+            <div className={styles.confirmActions}>
+              <button type="button" onClick={() => setTaskAttachmentDeleteTarget(null)}>Cancelar</button>
+              <button
+                type="button"
+                className={styles.confirmDanger}
+                disabled={taskAttachmentDeletingId === taskAttachmentDeleteTarget.id}
+                onClick={async () => {
+                  await handleDeleteTaskAttachment(taskAttachmentDeleteTarget);
+                  setTaskAttachmentDeleteTarget(null);
+                  if (taskAttachmentPreview?.id === taskAttachmentDeleteTarget.id) setTaskAttachmentPreview(null);
+                }}
+              >
+                {taskAttachmentDeletingId === taskAttachmentDeleteTarget.id ? 'Removendo' : 'Remover'}
+              </button>
+            </div>
+          </section>
+        </div>,
+        document.body
       ) : null}
 
 

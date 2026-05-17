@@ -10586,3 +10586,16 @@
   transition: transform 120ms ease, transform-origin 120ms ease;
   will-change: transform;
 }
+
+/* v48 — zoom focal e confirmação de exclusão no drawer */
+.attachmentViewerImage img {
+  transform: none !important;
+  transform-origin: center center !important;
+  max-width: 100%;
+  transition: width 120ms ease;
+}
+
+.attachmentViewerImage {
+  cursor: zoom-in;
+  scroll-behavior: auto;
+}

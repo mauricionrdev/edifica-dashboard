@@ -577,15 +577,6 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                     <TrashIcon size={14} />
                   </button>
                 ) : null}
-                {canEdit ? (
-                  <button
-                    type="button"
-                    onClick={() => setAttachmentDeleteTarget({ entryId: previewAttachment.entryId, attachment: previewAttachment })}
-                    title="Excluir anexo"
-                  >
-                    <TrashIcon size={14} />
-                  </button>
-                ) : null}
                 <button type="button" onClick={() => setPreviewAttachment(null)}>Fechar</button>
               </div>
             </header>
@@ -594,25 +585,32 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               onWheelCapture={(event) => {
                 if (previewAttachment.mimeType === 'application/pdf') return;
                 event.preventDefault();
-                const rect = event.currentTarget.getBoundingClientRect();
-                const originX = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
-                const originY = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
-                setPreviewZoomOrigin(`${originX.toFixed(2)}% ${originY.toFixed(2)}%`);
-                const direction = event.deltaY > 0 ? -0.12 : 0.12;
-                setPreviewZoom((value) => Math.min(3, Math.max(0.5, Number((value + direction).toFixed(2)))));
+                const container = event.currentTarget;
+                const rect = container.getBoundingClientRect();
+                const pointerX = event.clientX - rect.left + container.scrollLeft;
+                const pointerY = event.clientY - rect.top + container.scrollTop;
+                const previousZoom = previewZoom;
+                const direction = event.deltaY > 0 ? -0.18 : 0.18;
+                const nextZoom = Math.min(4, Math.max(0.35, Number((previousZoom + direction).toFixed(2))));
+                const ratio = nextZoom / previousZoom;
+                setPreviewZoom(nextZoom);
+                requestAnimationFrame(() => {
+                  container.scrollLeft = pointerX * ratio - (event.clientX - rect.left);
+                  container.scrollTop = pointerY * ratio - (event.clientY - rect.top);
+                });
               }}
             >
               {previewAttachment.mimeType === 'application/pdf' ? (
                 <iframe title={previewAttachment.fileName} src={previewAttachment.dataUrl} />
               ) : (
-                <img src={previewAttachment.dataUrl} alt="" style={{ transform: `scale(${previewZoom})`, transformOrigin: previewZoomOrigin }} />
+                <img src={previewAttachment.dataUrl} alt="" style={{ width: `${previewZoom * 100}%`, maxWidth: previewZoom > 1 ? 'none' : '100%' }} />
               )}
             </div>
           </section>
         </div>
       ) : null}
 
-      {attachmentDeleteTarget ? (
+      {attachmentDeleteTarget ? createPortal(
         <div className={styles.confirmOverlay} role="presentation" onClick={() => setAttachmentDeleteTarget(null)}>
           <section
             className={styles.confirmModal}
@@ -635,7 +633,8 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               </button>
             </div>
           </section>
-        </div>
+        </div>,
+        document.body
       ) : null}
 
       {deleteTarget ? (
