@@ -55,20 +55,20 @@
      SUPERFÍCIES — luminance stacking
      ============================================================ */
   --bg-app: #08090a;
-  --bg-canvas: #0b0c0d;
-  --bg-elevated: #0b0c0d;
-  --bg-raised: #101113;
+  --bg-canvas: #08090a;
+  --bg-elevated: #0f1011;
+  --bg-raised: #111214;
   --bg-hover: #15161a;
   --bg-selected: #18191d;
   --bg-soft: #090a0b;
 
-  --surface: #070708;
-  --surface-subtle: #0a0b0c;
+  --surface: #0f1011;
+  --surface-subtle: #0d0e10;
   --surface-panel: rgba(255, 255, 255, 0.024);
   --surface-raised: rgba(255, 255, 255, 0.038);
-  --surface-card: #0b0c0e;
-  --surface-card-soft: #070708;
-  --surface-strong: #121317;
+  --surface-card: #0f1011;
+  --surface-card-soft: #0d0e10;
+  --surface-strong: #151617;
 
   /* ============================================================
      TEXTO
@@ -135,7 +135,7 @@
   --radius-1: 6px;
   --radius-2: 8px;
   --radius-3: 10px;
-  --radius-4: 10px;
+  --radius-4: 12px;
   --radius-5: 14px;
   --radius-6: 18px;
 
@@ -164,11 +164,11 @@
   --control-height: 34px;
   --control-radius: 8px;
   /* Linear/Edifica card system */
-  --card-surface: #090a0b;
-  --card-surface-raised: #0d0e10;
-  --card-surface-soft: #070708;
+  --card-surface: #0f1011;
+  --card-surface-raised: #111214;
+  --card-surface-soft: #0d0e10;
   --card-inner: rgba(255, 255, 255, 0.018);
-  --card-border: rgba(255, 255, 255, 0.068);
+  --card-border: rgba(255, 255, 255, 0.075);
   --card-border-strong: rgba(255, 255, 255, 0.105);
   --card-highlight: rgba(255, 255, 255, 0.032);
 
@@ -177,14 +177,14 @@
 /* v9 — Design system Linear adaptado à paleta Edifica */
 :root {
   --bg-app: #08090a;
-  --bg-canvas: #0b0c0d;
-  --bg-elevated: #0b0c0d;
-  --bg-raised: #151617;
-  --surface: #070708;
-  --surface-subtle: #0a0b0c;
+  --bg-canvas: #08090a;
+  --bg-elevated: #0f1011;
+  --bg-raised: #111214;
+  --surface: #0f1011;
+  --surface-subtle: #0d0e10;
   --surface-panel: rgba(255, 255, 255, 0.026);
   --surface-raised: rgba(255, 255, 255, 0.04);
-  --surface-strong: #171819;
+  --surface-strong: #151617;
   --app-shell-glow:
     radial-gradient(circle at 18% 90%, rgba(245, 184, 0, 0.09), transparent 30%),
     radial-gradient(circle at 88% 18%, rgba(245, 184, 0, 0.055), transparent 26%),
@@ -218,47 +218,4 @@
   --focus-ring: 0 0 0 3px rgba(245, 184, 0, 0.08);
   --active-fill: rgba(255, 255, 255, 0.045);
   --active-line: rgba(255, 255, 255, 0.11);
-}
-
-/* v20 — tipografia global inspirada no ritmo visual do Linear */
-:root {
-  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --weight-regular: 400;
-  --weight-medium: 510;
-  --weight-semibold: 590;
-  --weight-strong: 650;
-
-  --fs-h1: 1.5rem;
-  --fs-h2: 1.25rem;
-  --fs-h3: 1rem;
-  --fs-body-lg: 0.9375rem;
-  --fs-body: 0.875rem;
-  --fs-small: 0.8125rem;
-  --fs-caption-lg: 0.8125rem;
-  --fs-caption: 0.75rem;
-  --fs-label: 0.6875rem;
-  --fs-micro: 0.625rem;
-
-  --tracking-h1: -0.56px;
-  --tracking-h2: -0.36px;
-  --tracking-h3: -0.22px;
-  --tracking-body: -0.13px;
-  --tracking-caption: -0.12px;
-  --tracking-label: 0.075em;
-
-  --lh-tight: 1.08;
-  --lh-snug: 1.34;
-  --lh-normal: 1.48;
-  --lh-relaxed: 1.62;
-
-  --ui-title-size: 15px;
-  --ui-title-weight: 650;
-  --ui-title-tracking: -0.03em;
-  --ui-label-size: 10.5px;
-  --ui-label-weight: 650;
-  --ui-label-tracking: 0.08em;
-  --ui-body-size: 13px;
-  --ui-body-weight: 510;
-  --ui-value-size: 14px;
-  --ui-value-weight: 620;
 }

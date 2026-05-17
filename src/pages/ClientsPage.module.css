@@ -55,7 +55,7 @@
   min-width: 0;
   min-height: 0;
   border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 18px;
+  border-radius: 10px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.004) 44%),
     #0f1011;

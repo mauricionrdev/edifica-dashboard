@@ -637,7 +637,7 @@
   flex-direction: column;
   gap: 8px;
   border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 16px;
+  border-radius: 10px;
   background: #08090a;
 }
 
@@ -672,7 +672,7 @@
     #08090a;
   background-size: 260% 100%;
   border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 16px;
+  border-radius: 10px;
   animation: dashboardSkeleton 1.5s ease-in-out infinite;
 }
 
