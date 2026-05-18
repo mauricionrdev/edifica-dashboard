@@ -11033,3 +11033,174 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ==========================================================================
+   v68.1 · correção da lista de tarefas
+   Restaura a grade correta: status, tarefa, propriedades, etapa, colab., prazo.
+   ========================================================================== */
+.operationListHeader {
+  display: grid;
+  grid-template-columns:
+    28px
+    minmax(320px, 1.62fr)
+    minmax(128px, 0.48fr)
+    minmax(170px, 0.62fr)
+    minmax(92px, 0.34fr)
+    minmax(104px, 0.38fr);
+  column-gap: 18px;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 22px;
+}
+
+.operationListHeader span {
+  min-width: 0;
+  text-align: left;
+}
+
+.operationListHeader span:first-child {
+  width: 28px;
+}
+
+.operationListHeader span:last-child {
+  text-align: right;
+}
+
+.operationRow {
+  display: grid;
+  grid-template-columns:
+    28px
+    minmax(320px, 1.62fr)
+    minmax(128px, 0.48fr)
+    minmax(170px, 0.62fr)
+    minmax(92px, 0.34fr)
+    minmax(104px, 0.38fr);
+  column-gap: 18px;
+  align-items: center;
+  min-height: 56px;
+  padding: 10px 22px;
+}
+
+.statusCheck {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.operationMain {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.operationMain strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 660;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operationMeta {
+  grid-column: 3;
+  min-width: 0;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.operationStageCell {
+  grid-column: 4;
+  min-width: 0;
+  justify-self: start;
+}
+
+.stageProgressPill {
+  width: min(164px, 100%);
+  min-width: 138px;
+}
+
+.operationPeopleCell {
+  grid-column: 5;
+  min-width: 0;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+}
+
+.taskAvatarStack {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.taskAvatar {
+  flex: 0 0 auto;
+}
+
+.operationDueCell {
+  grid-column: 6;
+  min-width: 0;
+  justify-content: flex-end;
+  justify-self: end;
+}
+
+.dueLabel {
+  display: inline-flex;
+  max-width: 100%;
+  justify-content: flex-end;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+  .operationListHeader {
+    display: none;
+  }
+
+  .operationRow {
+    grid-template-columns: 22px minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    column-gap: 12px;
+    row-gap: 8px;
+  }
+
+  .statusCheck {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .operationMain {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .operationMeta,
+  .operationStageCell,
+  .operationPeopleCell,
+  .operationDueCell {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .operationMeta {
+    grid-row: 2;
+  }
+
+  .operationStageCell {
+    grid-row: 3;
+  }
+
+  .operationPeopleCell,
+  .operationDueCell {
+    grid-row: 4;
+  }
+
+  .operationDueCell {
+    justify-self: end;
+  }
+}
