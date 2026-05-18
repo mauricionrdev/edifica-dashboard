@@ -1,143 +1,233 @@
+/* ==========================================================================
+ * Edifica · Design Tokens
+ * ==========================================================================
+ *
+ * FONTE ÚNICA DA VERDADE. Toda cor, tamanho de fonte, peso, radius,
+ * espaçamento, sombra e medida de layout vem daqui via var(--*).
+ *
+ * Regras:
+ *   1. Não crie tokens locais em arquivos *.module.css. Use estes.
+ *   2. Se faltar um token, adicione AQUI e use globalmente. Nunca declare
+ *      cor/tamanho cru em CSS Module.
+ *   3. Mudou um token? Verifique se mudou o sentido da paleta inteira.
+ *
+ * Convenção de nomes:
+ *   --bg-*           superfícies de fundo (camadas)
+ *   --text-*         hierarquia de texto
+ *   --line-*         bordas e divisores
+ *   --accent-*       cor de marca (amarelo Edifica)
+ *   --success/warning/danger/info  status semânticos
+ *   --fs-*           font-size
+ *   --weight-*       font-weight
+ *   --tracking-*     letter-spacing
+ *   --lh-*           line-height
+ *   --radius-*       border-radius
+ *   --space-*        gaps e paddings (escala de 4px)
+ *   --shadow-*       box-shadow
+ *
+ * Versão: consolidada após v9/v23/v41 — bloco único canônico.
+ * ========================================================================== */
+
 :root {
   color-scheme: dark;
 
-  /* ============================================================
-     TIPOGRAFIA — escala Linear adaptada ao Edifica
-     Inter Variable (eixo wght) é a fonte base. cv01 e ss03 são
-     habilitados em base.css. Os pesos canônicos são 400 / 510 / 590.
-     ============================================================ */
-  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "Berkeley Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* ────────────────────────────────────────────────────────────────────
+   * TIPOGRAFIA
+   *
+   * Inter estática carregada em index.html (pesos 400/500/600).
+   * Não usamos 700/900 — design system Linear-style se sustenta em
+   * três pesos: regular (corpo), medium (UI), semibold (títulos).
+   *
+   * Tamanhos em px (não rem) — operacional, denso, valores literais
+   * pra evitar acidentes de escalonamento herdado. Acessibilidade via
+   * zoom do navegador segue funcionando.
+   * ──────────────────────────────────────────────────────────────────── */
 
-  /* Pesos clássicos (Inter estática, sem eixo variable) */
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Pesos disponíveis (apenas estes três são carregados). */
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
 
-  /* Tamanhos (rem para acessibilidade) */
-  --fs-display-xl: 4.5rem;   /* 72px - hero */
-  --fs-display-lg: 4rem;     /* 64px */
-  --fs-display:    3rem;     /* 48px */
-  --fs-h1: 2rem;             /* 32px */
-  --fs-h2: 1.5rem;           /* 24px */
-  --fs-h3: 1.25rem;          /* 20px */
-  --fs-body-lg: 1.125rem;    /* 18px */
-  --fs-body: 1rem;           /* 16px */
-  --fs-small: 0.9375rem;     /* 15px */
-  --fs-caption-lg: 0.875rem; /* 14px */
-  --fs-caption: 0.8125rem;   /* 13px */
-  --fs-label: 0.75rem;       /* 12px */
-  --fs-micro: 0.6875rem;     /* 11px */
-  --fs-tiny: 0.625rem;       /* 10px */
+  /* Escala tipográfica — denso, operacional.
+   *
+   *   tiny  10px  labels uppercase de tabela
+   *   micro 11px  badges, chips, atalhos de teclado
+   *   label 12px  labels secundários, breadcrumb, meta
+   *   body  13px  CORPO PADRÃO DA APLICAÇÃO
+   *   md    14px  títulos de seção, botões
+   *   lg    16px  título de painel destacado, nome de usuário
+   *   xl    20px  título de página (h1)
+   *   2xl   24px  título de página enfatizado
+   *   kpi   22px  valores numéricos grandes (KPIs)
+   *   kpi-lg 28px valores numéricos extra-grandes (raros)
+   *
+   * Removidos: --fs-display, --fs-display-lg, --fs-display-xl, --fs-h1,
+   * --fs-body-lg, --fs-small. Aplicação operacional não precisa de 32px+.
+   */
+  --fs-tiny:   10px;
+  --fs-micro:  11px;
+  --fs-label:  12px;
+  --fs-body:   13px;
+  --fs-md:     14px;
+  --fs-lg:     16px;
+  --fs-xl:     20px;
+  --fs-2xl:    24px;
+  --fs-kpi:    22px;
+  --fs-kpi-lg: 28px;
 
-  /* Tracking — Linear é agressivamente negativo em display sizes */
-  --tracking-display-xl: -1.584px;  /* @72px */
-  --tracking-display-lg: -1.408px;  /* @64px */
-  --tracking-display:    -1.056px;  /* @48px */
-  --tracking-h1:         -0.704px;  /* @32px */
-  --tracking-h2:         -0.288px;  /* @24px */
-  --tracking-h3:         -0.24px;   /* @20px */
-  --tracking-body-lg:    -0.165px;  /* @18px */
-  --tracking-small:      -0.165px;  /* @15px */
-  --tracking-caption-lg: -0.182px;  /* @14px */
-  --tracking-caption:    -0.13px;   /* @13px */
-  --tracking-tiny:       -0.15px;   /* @10px */
+  /* Tracking (letter-spacing) — Linear usa tracking negativo agressivo
+   * em sizes maiores e neutro/positivo em texto pequeno.
+   *
+   *   uppercase  +0.06em  labels TIPO ESTE (10–12px)
+   *   normal     0        corpo padrão
+   *   tight      -0.005em texto médio (13–14px)
+   *   snug       -0.01em  títulos (16–20px)
+   *   crunch     -0.02em  números grandes, KPI values
+   */
+  --tracking-uppercase: 0.06em;
+  --tracking-normal: 0;
+  --tracking-tight: -0.005em;
+  --tracking-snug: -0.01em;
+  --tracking-crunch: -0.02em;
 
-  /* Line-heights canônicos */
-  --lh-tight: 1;
-  --lh-h1: 1.13;
-  --lh-h2: 1.33;
-  --lh-snug: 1.4;
-  --lh-normal: 1.5;
-  --lh-relaxed: 1.6;
+  /* Line-height — UI compacta usa valores baixos. */
+  --lh-flat: 1;        /* números grandes que não quebram linha */
+  --lh-tight: 1.2;     /* títulos, labels */
+  --lh-snug: 1.35;     /* botões, badges */
+  --lh-normal: 1.5;    /* parágrafos raros */
 
-  /* ============================================================
-     SUPERFÍCIES — luminance stacking
-     ============================================================ */
-  --bg-app: #010102;
-  --bg-canvas: #050506;
-  --bg-elevated: #0b0c0d;
-  --bg-raised: #101113;
-  --bg-hover: #15161a;
-  --bg-selected: #18191d;
-  --bg-soft: #090a0b;
+  /* Features OpenType do Inter:
+   *   cv01  alternative ones (1 com serifa, evita ambiguidade)
+   *   cv05  alternative l (sem ambiguidade com I)
+   *   ss03  stylistic set 3 (a/g de duas-andares — visual Linear)
+   *   tnum  tabular numbers (DESLIGADO globalmente — habilita por componente)
+   *
+   * Disponível como string pra aplicar em html/body em base.css.
+   */
+  --font-features-base: "cv01", "cv05", "ss03";
+  --font-features-tabular: "cv01", "cv05", "ss03", "tnum";
 
-  --surface: #070708;
-  --surface-subtle: #0a0b0c;
-  --surface-panel: rgba(255, 255, 255, 0.024);
-  --surface-raised: rgba(255, 255, 255, 0.038);
-  --surface-card: #0b0c0e;
-  --surface-card-soft: #070708;
-  --surface-strong: #121317;
 
-  /* ============================================================
-     TEXTO
-     ============================================================ */
-  --text-primary: #f7f8f8;
-  --text-secondary: #d0d6e0;
-  --text-tertiary: #8a8f98;
-  --text-quaternary: #62666d;
+  /* ────────────────────────────────────────────────────────────────────
+   * SUPERFÍCIES (CAMADAS DE PROFUNDIDADE)
+   *
+   * Profundidade por opacidade, não por sombra. Cada camada é ~1–2%
+   * mais clara que a anterior. Nunca usar #000 absoluto.
+   *
+   *   app      viewport (canvas global)
+   *   canvas   sidebar, topbar
+   *   elevated containers, painéis
+   *   raised   inputs preenchidos, hover de superfícies
+   *   hover    estado hover de itens de lista/nav
+   *   selected estado ativo/selecionado
+   * ──────────────────────────────────────────────────────────────────── */
 
-  /* ============================================================
-     BORDAS — sempre semi-transparentes em fundos escuros
-     ============================================================ */
+  --bg-app:      #08090A;
+  --bg-canvas:   #0B0C0D;
+  --bg-elevated: #0E0F11;
+  --bg-raised:   #121315;
+  --bg-hover:    rgba(255, 255, 255, 0.035);
+  --bg-selected: rgba(255, 255, 255, 0.055);
+
+
+  /* ────────────────────────────────────────────────────────────────────
+   * TEXTO
+   *
+   * Hierarquia em frios neutros, nunca #FFFFFF puro. 4 níveis cobrem
+   * 100% dos casos: título → corpo → meta → muted/placeholder.
+   * ──────────────────────────────────────────────────────────────────── */
+
+  --text-primary:    #F7F8F8;
+  --text-secondary:  #D0D6E0;
+  --text-tertiary:   #8A8F98;
+  --text-quaternary: #62666D;
+
+
+  /* ────────────────────────────────────────────────────────────────────
+   * BORDAS
+   *
+   * Sempre semi-transparentes brancas sobre fundos escuros. Manter ≤0.12
+   * de opacidade — bordas mais claras = look "infantil".
+   * ──────────────────────────────────────────────────────────────────── */
+
   --line-subtle: rgba(255, 255, 255, 0.052);
-  --line: rgba(255, 255, 255, 0.078);
+  --line:        rgba(255, 255, 255, 0.078);
   --line-strong: rgba(255, 255, 255, 0.11);
-  --border-subtle: var(--line-subtle);
-  --border-default: var(--line);
-  --border-strong: var(--line-strong);
 
-  /* ============================================================
-     CAMPOS / FORMULÁRIO
-     ============================================================ */
-  --field-bg: rgba(255, 255, 255, 0.022);
-  --field-bg-hover: rgba(255, 255, 255, 0.034);
-  --field-line: rgba(255, 255, 255, 0.078);
 
-  --chart-bar: rgba(255, 255, 255, 0.055);
-  --progress-track: rgba(255, 255, 255, 0.07);
+  /* ────────────────────────────────────────────────────────────────────
+   * MARCA — Amarelo Edifica
+   *
+   * Uso ESTRITAMENTE comedido. Por tela:
+   *   - 1 botão primário com fundo amarelo sólido
+   *   - logo na sidebar
+   *   - acentos pontuais em badges brand (cargo do usuário)
+   * Nunca em múltiplos elementos competindo.
+   * ──────────────────────────────────────────────────────────────────── */
 
-  /* ============================================================
-     ACENTO — amarelo Edifica (substitui o indigo Linear)
-     Cor de marca, CTA primário, estado ativo discreto.
-     ============================================================ */
-  --accent-amber: #f5b800;
-  --accent-amber-strong: #ffc400;
-  --accent-amber-soft: rgba(245, 184, 0, 0.08);
-  --accent-amber-line: rgba(245, 184, 0, 0.24);
-  --accent-amber-border: var(--accent-amber-line);
+  --accent:        #F5B800;
+  --accent-strong: #FFC400;
+  --accent-soft:   rgba(245, 184, 0, 0.08);
+  --accent-line:   rgba(245, 184, 0, 0.24);
+  --accent-text:   #1A1500;  /* texto sobre accent sólido */
 
-  /* mantidos por compatibilidade — não usar em UI nova */
-  --accent-cyan: #55edf6;
-  --accent-cyan-soft: rgba(85, 237, 246, 0.08);
-  --vivid-pink: #ef7aae;
-  --vivid-blue: #5aa9ff;
-  --vivid-purple: #c77dff;
-  --vivid-orange: #f5b800;
 
-  /* ============================================================
-     STATUS — apenas para sinalização operacional
-     (Ativo, Crítico, Vencendo, Churn). Não usar em chrome de UI.
-     ============================================================ */
-  --success: #27a644;
-  --success-soft: rgba(39, 166, 68, 0.1);
-  --warning: #f5b800;
-  --warning-soft: rgba(245, 184, 0, 0.1);
-  --danger: #ef4444;
-  --danger-soft: rgba(239, 68, 68, 0.1);
-  --info: #55edf6;
-  --info-soft: rgba(85, 237, 246, 0.08);
+  /* ────────────────────────────────────────────────────────────────────
+   * STATUS SEMÂNTICOS
+   *
+   * Apenas em sinalização (badges, dots, deltas). Nunca em chrome de UI.
+   * Cores dessaturadas — nada neon.
+   * ──────────────────────────────────────────────────────────────────── */
 
-  /* ============================================================
-     RAIO / ESPAÇO / SOMBRA
-     ============================================================ */
-  --radius-1: 6px;
-  --radius-2: 8px;
-  --radius-3: 10px;
-  --radius-4: 12px;
-  --radius-5: 14px;
-  --radius-6: 18px;
+  --success:      #27A644;
+  --success-soft: rgba(39, 166, 68, 0.10);
+  --success-line: rgba(39, 166, 68, 0.22);
+  --success-text: #5EE282;   /* texto/dot em badges de sucesso */
+
+  --warning:      #F5B800;
+  --warning-soft: rgba(245, 184, 0, 0.10);
+  --warning-line: rgba(245, 184, 0, 0.24);
+  --warning-text: #FCD34D;
+
+  --danger:       #EF4444;
+  --danger-soft:  rgba(239, 68, 68, 0.10);
+  --danger-line:  rgba(239, 68, 68, 0.22);
+  --danger-text:  #FCA5A5;
+
+  --info:         #55EDF6;
+  --info-soft:    rgba(85, 237, 246, 0.08);
+  --info-line:    rgba(85, 237, 246, 0.22);
+  --info-text:    #BAE6FD;
+
+
+  /* ────────────────────────────────────────────────────────────────────
+   * CAMPOS / FORMULÁRIO
+   * ──────────────────────────────────────────────────────────────────── */
+
+  --field-bg:       rgba(255, 255, 255, 0.022);
+  --field-bg-hover: rgba(255, 255, 255, 0.038);
+  --field-line:     var(--line);
+
+
+  /* ────────────────────────────────────────────────────────────────────
+   * GEOMETRIA — Radius
+   *
+   * Teto absoluto da UI: 10px (--radius-3). Acima disso = "infantil".
+   * Badges usam 4px literal (não tokenizado, é detalhe).
+   * Avatares circulares usam 50% literal.
+   * ──────────────────────────────────────────────────────────────────── */
+
+  --radius-1: 6px;   /* inputs, botões, nav items, painéis pequenos */
+  --radius-2: 8px;   /* painéis e containers grandes */
+  --radius-3: 10px;  /* modais, drawers, dropdowns */
+
+
+  /* ────────────────────────────────────────────────────────────────────
+   * ESPAÇAMENTO — Escala de 4px
+   * ──────────────────────────────────────────────────────────────────── */
 
   --space-1: 4px;
   --space-2: 8px;
@@ -148,92 +238,47 @@
   --space-7: 32px;
   --space-8: 40px;
   --space-9: 48px;
-
-  --shadow-1: none;
-  --shadow-2: none;
-  --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.18);
-  --shadow-panel: 0 24px 80px rgba(0, 0, 0, 0.24);
-
-  /* ============================================================
-     LAYOUT
-     ============================================================ */
-  --sidebar-width: 260px;
-  --topbar-height: 49px;
-  --page-max-width: none;
-  --page-padding-x: 15px;
-  --control-height: 34px;
-  --control-radius: 8px;
-  /* Linear/Edifica card system */
-  --card-surface: #090a0b;
-  --card-surface-raised: #0d0e10;
-  --card-surface-soft: #070708;
-  --card-inner: rgba(255, 255, 255, 0.018);
-  --card-border: rgba(255, 255, 255, 0.068);
-  --card-border-strong: rgba(255, 255, 255, 0.105);
-  --card-highlight: rgba(255, 255, 255, 0.032);
-
-}
-
-/* v9 — Design system Linear adaptado à paleta Edifica */
-:root {
-  --bg-app: #010102;
-  --bg-canvas: #0b0c0d;
-  --bg-elevated: #0b0c0d;
-  --bg-raised: #151617;
-  --surface: #070708;
-  --surface-subtle: #0a0b0c;
-  --surface-panel: rgba(255, 255, 255, 0.026);
-  --surface-raised: rgba(255, 255, 255, 0.04);
-  --surface-strong: #171819;
-  --app-shell-glow:
-    radial-gradient(circle at 18% 90%, rgba(245, 184, 0, 0.09), transparent 30%),
-    radial-gradient(circle at 88% 18%, rgba(245, 184, 0, 0.055), transparent 26%),
-    radial-gradient(circle at 50% 105%, rgba(255, 255, 255, 0.09), transparent 36%),
-    #08090a;
-  --panel-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012));
-  --panel-gradient-soft: linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.008));
-  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.018) inset;
-  --shadow-2: 0 1px 0 rgba(255, 255, 255, 0.024) inset, 0 16px 48px rgba(0, 0, 0, 0.28);
-  --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.34);
-  --shadow-panel: 0 24px 90px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.036);
-  --shadow-dialog: 0 28px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --app-frame-radius: 15px;
-  --app-frame-padding: 8px;
-}
+  --space-10: 64px;
 
 
-/* v41 — Ajustes finais globais */
-:root {
-  --avatar-fallback-bg: #08090a;
-  --icon-stroke: 1.75;
-  --control-height: 34px;
-  --control-radius: 8px;
-  --app-frame-padding: 7px;
-  --app-frame-radius: 14px;
-  --shadow-1: none;
-  --shadow-2: none;
-  --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.18);
-  --shadow-panel: 0 24px 80px rgba(0, 0, 0, 0.24);
-  --shadow-dialog: 0 20px 60px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --focus-ring: 0 0 0 3px rgba(245, 184, 0, 0.08);
-  --active-fill: rgba(255, 255, 255, 0.045);
-  --active-line: rgba(255, 255, 255, 0.11);
-}
+  /* ────────────────────────────────────────────────────────────────────
+   * SOMBRAS
+   *
+   * Sutis. Profundidade real vem de bg-elevated/raised, não de shadow.
+   * Sombras ativas só em modal/drawer/dropdown (overlays).
+   * ──────────────────────────────────────────────────────────────────── */
 
-/* v23 — workspace card palette standard */
-:root {
-  --workspace-bg: #08090a;
-  --workspace-card: #0f1011;
-  --workspace-card-hover: #111214;
-  --workspace-inner: #0d0e10;
-  --workspace-border: rgba(255, 255, 255, 0.075);
-  --workspace-border-strong: rgba(255, 255, 255, 0.105);
-  --card-surface: #0f1011;
-  --card-surface-raised: #111214;
-  --card-surface-soft: #0d0e10;
-  --card-inner: rgba(255, 255, 255, 0.018);
-  --card-border: rgba(255, 255, 255, 0.075);
-  --card-border-strong: rgba(255, 255, 255, 0.105);
-  --field-bg: #0d0e10;
-  --field-bg-hover: #111214;
+  --shadow-soft:   0 8px 24px rgba(0, 0, 0, 0.18);
+  --shadow-panel:  0 16px 48px rgba(0, 0, 0, 0.24);
+  --shadow-dialog: 0 24px 64px rgba(0, 0, 0, 0.40),
+                   0 0 0 1px rgba(255, 255, 255, 0.04);
+
+  /* Anel de foco — acessibilidade. Usar via box-shadow nos primitivos. */
+  --focus-ring: 0 0 0 3px rgba(245, 184, 0, 0.18);
+
+
+  /* ────────────────────────────────────────────────────────────────────
+   * LAYOUT
+   *
+   * Densidade Linear: sidebar mais estreita, topbar mais baixa, controls
+   * compactos. Não negociar — qualquer ajuste recalibra a aplicação toda.
+   * ──────────────────────────────────────────────────────────────────── */
+
+  --sidebar-width: 232px;
+  --sidebar-width-collapsed: 56px;
+  --topbar-height: 44px;
+  --control-height: 32px;
+  --page-padding-x: 20px;
+  --page-padding-y: 20px;
+
+
+  /* ────────────────────────────────────────────────────────────────────
+   * TRANSIÇÕES
+   *
+   * Usar tokens evita o vício de animação inconsistente.
+   * ──────────────────────────────────────────────────────────────────── */
+
+  --transition-fast: 100ms ease;
+  --transition-base: 160ms ease;
+  --transition-slow: 240ms ease;
 }
