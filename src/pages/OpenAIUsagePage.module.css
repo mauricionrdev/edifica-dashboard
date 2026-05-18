@@ -769,7 +769,7 @@
   width: 34px;
   min-width: 34px;
   padding: 0;
-  display: inline-grid;
+  /* display: inline-grid; */
   place-items: center;
 }
 
