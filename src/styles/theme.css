@@ -5,8 +5,8 @@
   --bg-canvas: #050506;
   --bg-elevated: #0b0c0d;
   --bg-raised: #101113;
-  --bg-hover: #15161a;
-  --bg-selected: #18191d;
+  --bg-hover: #111214;
+  --bg-selected: #141519;
   --bg-soft: #090a0b;
 
   --surface: #070708;
@@ -38,7 +38,7 @@
   --radius-4: var(--radius-3);
 
   --field-bg: rgba(255, 255, 255, 0.022);
-  --field-bg-hover: rgba(255, 255, 255, 0.034);
+  --field-bg-hover: rgba(255, 255, 255, 0.026);
   --field-line: rgba(255, 255, 255, 0.078);
 
   --chart-bar: rgba(255, 255, 255, 0.055);

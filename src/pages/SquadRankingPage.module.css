@@ -798,7 +798,6 @@
 }
 
 .surface,
-.podiumCard,
 .rankingPanel,
 .tableShell,
 .card,
@@ -852,10 +851,44 @@
   outline: none;
 }
 
-.podiumCard:hover,
 .rankingRow:hover {
   border-color: var(--workspace-panel-border);
   background: var(--bg-hover);
+}
+
+.podiumCard {
+  border-radius: var(--workspace-card-radius);
+  box-shadow: none;
+}
+
+.podiumCard:not(.podiumCard_champion) {
+  border-color: var(--workspace-panel-border-soft);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.012)),
+    var(--workspace-panel-bg);
+}
+
+.podiumCard:not(.podiumCard_champion):hover {
+  border-color: var(--workspace-panel-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.016)),
+    var(--workspace-panel-bg);
+}
+
+.podiumCard_champion {
+  border-color: rgba(245, 184, 0, 0.24);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(245, 184, 0, 0.16), transparent 40%),
+    linear-gradient(180deg, rgba(245, 184, 0, 0.08), rgba(245, 184, 0, 0.02) 44%, rgba(255, 255, 255, 0.012) 100%),
+    var(--workspace-panel-bg);
+}
+
+.podiumCard_champion:hover {
+  border-color: rgba(245, 184, 0, 0.34);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(245, 184, 0, 0.2), transparent 44%),
+    linear-gradient(180deg, rgba(245, 184, 0, 0.1), rgba(245, 184, 0, 0.026) 48%, rgba(255, 255, 255, 0.014) 100%),
+    var(--workspace-panel-bg);
 }
 
 .heroCopy p,
