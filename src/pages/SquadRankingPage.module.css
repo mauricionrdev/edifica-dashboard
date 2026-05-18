@@ -959,3 +959,21 @@
 .podiumCard_champion .podiumBadge {
   color: var(--accent);
 }
+
+/* ==========================================================================
+   v95 · Backdrop blur restaurado
+   Todo modal/drawer deve desfocar o fundo da plataforma.
+   ========================================================================== */
+.overlay,
+.modalOverlay,
+.campaignModalOverlay,
+.drawerOverlay,
+.attachmentViewerOverlay,
+.viewerOverlay,
+.confirmOverlay,
+.deleteOverlay,
+.taskModalOverlay {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}

@@ -630,3 +630,17 @@
     z-index: var(--chassis-z-sidebar);
   }
 }
+
+/* ==========================================================================
+   v95 · Sidebar abaixo de modais
+   A sidebar não pode ficar acima de overlays/modais globais.
+   ========================================================================== */
+.sidebar {
+  z-index: 0;
+}
+
+@media (max-width: 1100px) {
+  .sidebar {
+    z-index: var(--chassis-z-sidebar);
+  }
+}

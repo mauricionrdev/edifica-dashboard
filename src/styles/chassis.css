@@ -35,6 +35,8 @@
   --chassis-z-drawer: 5000;
   --chassis-z-dialog: 6000;
   --chassis-z-toast: 7000;
+  --chassis-modal-backdrop: var(--overlay-bg, rgba(8, 9, 10, 0.72));
+  --chassis-modal-blur: blur(12px);
 }
 
 [data-chassis-panel],
@@ -126,4 +128,15 @@
   padding-inline: 16px;
   border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-panel-bg);
+}
+
+
+/* ==========================================================================
+   v95 · Modal backdrop global
+   Padrão único para overlays: fundo desfocado e foco no modal.
+   ========================================================================== */
+.ed-modal-backdrop {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
 }
