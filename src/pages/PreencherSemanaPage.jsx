@@ -693,6 +693,7 @@ export default function PreencherSemanaPage() {
   const [campaignModalClient, setCampaignModalClient] = useState(null);
   const [campaignListClient, setCampaignListClient] = useState(null);
   const [campaignDraft, setCampaignDraft] = useState('');
+  const [pendingDeleteCampaign, setPendingDeleteCampaign] = useState(null);
   const presenceSnapshotRef = useRef('[]');
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
@@ -751,8 +752,23 @@ export default function PreencherSemanaPage() {
     }
   }, [campaignDraft, campaignListClient?.id, campaignModalClient, campaignsByClient, handleCloseCampaignModal, periodKey, showToast]);
 
-  const handleDeleteCampaign = useCallback(async (clientId, campaignId) => {
-    if (!clientId || !campaignId) return;
+  const handleRequestDeleteCampaign = useCallback((clientId, campaign) => {
+    if (!clientId || !campaign?.id) return;
+    setPendingDeleteCampaign({
+      clientId,
+      campaignId: campaign.id,
+      name: campaign.name || 'campanha',
+    });
+  }, []);
+
+  const handleCancelDeleteCampaign = useCallback(() => {
+    setPendingDeleteCampaign(null);
+  }, []);
+
+  const handleConfirmDeleteCampaign = useCallback(async () => {
+    if (!pendingDeleteCampaign?.clientId || !pendingDeleteCampaign?.campaignId) return;
+    const { clientId, campaignId } = pendingDeleteCampaign;
+
     try {
       await deleteMetricCampaign(campaignId);
       setCampaignsByClient((current) => {
@@ -769,10 +785,11 @@ export default function PreencherSemanaPage() {
         }
         return nextStore;
       });
+      setPendingDeleteCampaign(null);
     } catch {
       showToast('Erro ao excluir campanha', 'error');
     }
-  }, [campaignListClient?.id, showToast]);
+  }, [campaignListClient?.id, pendingDeleteCampaign, showToast]);
 
   const activeClients = useMemo(
     () => (Array.isArray(clients) ? clients.filter((client) => client && isActiveClientStatus(client.status)) : []),
@@ -1189,7 +1206,7 @@ export default function PreencherSemanaPage() {
                           <button
                             type="button"
                             className={styles.deleteCampaignButton}
-                            onClick={() => handleDeleteCampaign(campaignListClient.id, campaign.id)}
+                            onClick={() => handleRequestDeleteCampaign(campaignListClient.id, campaign)}
                             aria-label={`Excluir ${campaign.name}`}
                             title="Excluir campanha"
                           >
@@ -1211,6 +1228,28 @@ export default function PreencherSemanaPage() {
                   ))
                 )}
               </div>
+            </section>
+          </div>
+        ), document.body) : null}
+
+        {pendingDeleteCampaign ? createPortal((
+          <div className={styles.campaignModalOverlay} role="presentation" onClick={handleCancelDeleteCampaign}>
+            <section className={styles.campaignConfirmModal} onClick={(event) => event.stopPropagation()}>
+              <header className={styles.campaignConfirmHeader}>
+                <h2>Excluir campanha</h2>
+                <p>Esta ação remove os campos e dados desta campanha.</p>
+              </header>
+              <div className={styles.campaignConfirmBody}>
+                <strong>{pendingDeleteCampaign.name}</strong>
+              </div>
+              <footer className={styles.campaignConfirmFooter}>
+                <button type="button" className={styles.campaignCancelButton} onClick={handleCancelDeleteCampaign}>
+                  Cancelar
+                </button>
+                <button type="button" className={styles.campaignDeleteConfirmButton} onClick={handleConfirmDeleteCampaign}>
+                  Excluir
+                </button>
+              </footer>
             </section>
           </div>
         ), document.body) : null}

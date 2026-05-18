@@ -1946,3 +1946,98 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ==========================================================================
+   v91 · Modal de campanhas mais largo + confirmação de exclusão
+   ========================================================================== */
+.campaignListModal {
+  width: min(1380px, calc(100vw - 40px));
+  height: min(780px, calc(100dvh - 40px));
+}
+
+.campaignListBody {
+  padding: 14px;
+  gap: 14px;
+}
+
+.campaignCardShell .clientSegments {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+}
+
+.campaignCardShell .segmentGrid {
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.campaignCardShell .fieldCard {
+  min-height: 88px;
+}
+
+.campaignCardShell .fieldInput {
+  min-height: 34px;
+}
+
+.campaignConfirmModal {
+  width: min(420px, calc(100vw - 40px));
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-dialog);
+  overflow: hidden;
+}
+
+.campaignConfirmHeader,
+.campaignConfirmFooter {
+  padding: 14px 16px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.campaignConfirmHeader {
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+}
+
+.campaignConfirmHeader h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.campaignConfirmHeader p {
+  margin: 6px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.campaignConfirmBody {
+  padding: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.campaignConfirmFooter {
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.campaignDeleteConfirmButton {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.campaignDeleteConfirmButton:hover {
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+}
