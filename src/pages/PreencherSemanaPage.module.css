@@ -134,11 +134,11 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.004) 44%),
+    linear-gradient(180deg, var(--surface-panel), transparent 44%),
     var(--field-bg);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.018),
-    0 18px 54px rgba(0, 0, 0, 0.12);
+    inset 0 1px 0 var(--surface-raised),
+    0 18px 54px var(--shadow-soft);
 }
 
 .commandBar {
@@ -167,7 +167,7 @@
 
 .searchField:hover,
 .searchField:focus-within {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--line-strong);
   background: var(--bg-hover);
   color: var(--text-secondary);
 }
@@ -268,7 +268,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   background:
-    linear-gradient(180deg, var(--surface-panel), rgba(255, 255, 255, 0.004) 56%),
+    linear-gradient(180deg, var(--surface-panel), transparent 56%),
     var(--field-bg);
   box-shadow: inset 0 1px 0 var(--surface-panel);
   transition:
@@ -280,9 +280,9 @@
 .clientCard:hover {
   border-color: var(--line-strong);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006) 56%),
-    #101112;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+    linear-gradient(180deg, var(--surface-raised), transparent 56%),
+    var(--bg-hover);
+  box-shadow: inset 0 1px 0 var(--surface-raised);
 }
 
 .clientTopbar {
@@ -383,23 +383,23 @@
 }
 
 .progressPill_warning {
-  color: rgba(245, 184, 0, 0.88);
-  background: rgba(245, 184, 0, 0.06);
-  border-color: rgba(245, 184, 0, 0.17);
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
 }
 
 .progressPill_good,
 .statusSaved {
-  color: #45b866;
-  background: rgba(39, 166, 68, 0.075);
-  border-color: rgba(39, 166, 68, 0.17);
+  color: var(--success);
+  background: var(--success-soft);
+  border-color: var(--success-line);
 }
 
 .progressPill_risk,
 .statusError {
-  color: #ff9b9b;
-  background: rgba(239, 68, 68, 0.075);
-  border-color: rgba(239, 68, 68, 0.17);
+  color: var(--danger-text);
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
 }
 
 .clientSegments {
@@ -428,7 +428,7 @@
   width: 22px;
   height: 22px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.026);
+  background: var(--surface-raised);
   border: 1px solid var(--line);
   display: inline-flex;
   align-items: center;
@@ -446,23 +446,23 @@
 }
 
 .segmentBlock:first-child .segmentIcon {
-  background: rgba(245, 184, 0, 0.075);
-  border-color: rgba(245, 184, 0, 0.16);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
 }
 
 .segmentBlock:first-child .segmentIcon span {
-  background: rgba(245, 184, 0, 0.92);
-  box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.09);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .segmentBlock:last-child .segmentIcon {
-  background: rgba(39, 166, 68, 0.075);
-  border-color: rgba(39, 166, 68, 0.16);
+  background: var(--success-soft);
+  border-color: var(--success-line);
 }
 
 .segmentBlock:last-child .segmentIcon span {
-  background: rgba(73, 190, 104, 0.92);
-  box-shadow: 0 0 0 3px rgba(39, 166, 68, 0.10);
+  background: var(--success);
+  box-shadow: 0 0 0 3px var(--success-soft);
 }
 
 .segmentHeader strong {
@@ -482,9 +482,9 @@
 .fieldCard {
   min-width: 0;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.068);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: #0d0e10;
+  background: var(--field-bg);
   transition:
     border-color 140ms ease,
     background 140ms ease,
@@ -493,41 +493,41 @@
 
 .fieldCard:hover {
   border-color: var(--line-strong);
-  background: #101112;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.016);
+  background: var(--bg-hover);
+  box-shadow: inset 0 1px 0 var(--surface-panel);
 }
 
 .fieldCard_weekly {
-  border-color: rgba(245, 184, 0, 0.16);
+  border-color: var(--accent-line);
   background:
-    linear-gradient(180deg, rgba(245, 184, 0, 0.045), rgba(255, 255, 255, 0.006) 72%),
-    #0d0e10;
+    linear-gradient(180deg, var(--accent-soft), transparent 72%),
+    var(--field-bg);
 }
 
 .fieldCard_weekly:hover {
-  border-color: rgba(245, 184, 0, 0.24);
+  border-color: var(--accent-line);
   background:
-    linear-gradient(180deg, rgba(245, 184, 0, 0.058), rgba(255, 255, 255, 0.008) 72%),
-    #101112;
+    linear-gradient(180deg, var(--accent-soft), var(--surface-panel) 72%),
+    var(--bg-hover);
 }
 
 .fieldCard_once {
-  border-color: rgba(255, 255, 255, 0.068);
-  background: #0d0e10;
+  border-color: var(--line);
+  background: var(--field-bg);
 }
 
 .fieldCard_auto {
-  border-color: rgba(39, 166, 68, 0.16);
+  border-color: var(--success-line);
   background:
-    linear-gradient(180deg, rgba(39, 166, 68, 0.045), rgba(255, 255, 255, 0.006) 72%),
-    #0d0e10;
+    linear-gradient(180deg, var(--success-soft), transparent 72%),
+    var(--field-bg);
 }
 
 .fieldCard_auto:hover {
-  border-color: rgba(39, 166, 68, 0.24);
+  border-color: var(--success-line);
   background:
-    linear-gradient(180deg, rgba(39, 166, 68, 0.058), rgba(255, 255, 255, 0.008) 72%),
-    #101112;
+    linear-gradient(180deg, var(--success-soft), var(--surface-panel) 72%),
+    var(--bg-hover);
 }
 
 .fieldHeader {
@@ -549,7 +549,7 @@
 }
 
 .fieldCard_weekly .fieldHeader span {
-  color: rgba(245, 184, 0, 0.78);
+  color: var(--accent);
 }
 
 .fieldCard_once .fieldHeader span {
@@ -557,7 +557,7 @@
 }
 
 .fieldCard_auto .fieldHeader span {
-  color: rgba(73, 190, 104, 0.78);
+  color: var(--success);
 }
 
 .presenceHint {
@@ -565,7 +565,7 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
   background: var(--bg-hover);
   color: var(--text-secondary);
   display: inline-flex;
@@ -584,7 +584,7 @@
   padding: 0 10px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #0d0e10;
+  background: var(--field-bg);
   display: inline-flex;
   align-items: center;
   color: var(--text-primary);
@@ -601,23 +601,23 @@
 
 .fieldInput:hover {
   border-color: var(--line-strong);
-  background: #101112;
+  background: var(--bg-hover);
 }
 
 .fieldInput:focus {
-  border-color: rgba(255, 255, 255, 0.135);
-  background: #121315;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.018);
+  border-color: var(--line-strong);
+  background: var(--bg-selected);
+  box-shadow: 0 0 0 3px var(--surface-raised);
 }
 
 .fieldCard_weekly .fieldInput:focus {
-  border-color: rgba(245, 184, 0, 0.24);
-  background: rgba(245, 184, 0, 0.032);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
 }
 
 .fieldCard_once .fieldInput:focus {
-  border-color: rgba(255, 255, 255, 0.135);
-  background: #121315;
+  border-color: var(--line-strong);
+  background: var(--bg-selected);
 }
 
 .fieldInput::placeholder {
@@ -626,12 +626,12 @@
 
 .fieldValue_readonly {
   color: var(--text-secondary);
-  background: #0d0e10;
+  background: var(--field-bg);
 }
 
 .fieldCard_auto .fieldValue_readonly {
   color: var(--text-secondary);
-  background: rgba(39, 166, 68, 0.024);
+  background: var(--success-soft);
 }
 
 .emptyTableState,
@@ -709,8 +709,8 @@
 
 .pageButtonActive {
   color: var(--text-primary);
-  background: #17181a;
-  border-color: rgba(255, 255, 255, 0.13);
+  background: var(--bg-raised);
+  border-color: var(--line-strong);
 }
 
 .skeletonCard {
@@ -940,7 +940,7 @@
 .modalOverlay,
 .drawerOverlay {
   z-index: var(--chassis-z-dialog);
-  background: rgba(8, 9, 10, 0.72);
+  background: var(--overlay-bg, rgba(8, 9, 10, 0.72));
   backdrop-filter: none;
 }
 
@@ -966,7 +966,7 @@
 .tableHeader,
 .emptyState,
 .muted {
-  color: #878c95;
+  color: var(--text-tertiary);
 }
 
 /* ==========================================================================
@@ -979,14 +979,14 @@
 .searchField:hover,
 .searchField:focus-within {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
   color: var(--text-primary);
 }
 
 .weekTabActive,
 .weekTabActive:hover {
-  border-color: rgba(245, 184, 0, 0.28);
-  background: rgba(245, 184, 0, 0.10);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
   color: var(--accent);
 }
 
@@ -995,7 +995,7 @@
 .metricCard:hover {
   border-color: var(--line);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.010), rgba(255, 255, 255, 0.004) 56%),
+    linear-gradient(180deg, var(--surface-panel), transparent 56%),
     var(--workspace-panel-bg);
   box-shadow: none;
 }
@@ -1457,4 +1457,226 @@
   .clientSegments {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================================================
+   v84 · Campanhas no modal + refinamento real de Preencher Semana
+   Mantém a tela principal limpa: campanhas extras ficam em modal.
+   ========================================================================== */
+.clientCard:focus-within {
+  border-color: var(--workspace-panel-border-soft);
+  animation: none;
+}
+
+.fieldCard:focus-within {
+  animation: weekFieldSelectedPulse 1500ms ease-in-out infinite;
+}
+
+@keyframes weekFieldSelectedPulse {
+  0%,
+  100% {
+    border-color: var(--accent-line);
+    box-shadow: inset 0 1px 0 rgba(245, 184, 0, 0.030);
+  }
+
+  50% {
+    border-color: var(--accent-line);
+    box-shadow: inset 0 1px 0 var(--accent-soft), 0 0 0 1px var(--accent-soft);
+  }
+}
+
+.clientCard:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent 56%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.fieldCard {
+  background: var(--field-bg);
+}
+
+.fieldCard:hover {
+  border-color: var(--line-strong);
+  background: var(--bg-hover);
+  box-shadow: inset 0 1px 0 var(--surface-panel);
+}
+
+.fieldCard_weekly {
+  border-color: var(--accent-line);
+  background:
+    linear-gradient(180deg, var(--accent-soft), transparent 72%),
+    var(--field-bg);
+}
+
+.fieldCard_weekly:hover {
+  border-color: var(--accent-line);
+  background:
+    linear-gradient(180deg, var(--accent-soft), var(--surface-panel) 72%),
+    var(--bg-hover);
+}
+
+.fieldCard_auto {
+  border-color: var(--success-line);
+  background:
+    linear-gradient(180deg, var(--success-soft), transparent 72%),
+    var(--field-bg);
+}
+
+.fieldCard_auto:hover {
+  border-color: var(--success-line);
+  background:
+    linear-gradient(180deg, var(--success-soft), var(--surface-panel) 72%),
+    var(--bg-hover);
+}
+
+.segmentIcon {
+  color: var(--text-primary);
+}
+
+.segmentBlock:first-child .segmentIcon {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+.segmentBlock:last-child .segmentIcon {
+  background: var(--success-soft);
+  border-color: var(--success-line);
+  color: var(--success);
+}
+
+.segmentIcon span {
+  display: none;
+}
+
+.campaignsButton {
+  height: 28px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 680;
+  cursor: pointer;
+}
+
+.campaignsButton span {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.campaignsButton:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.campaignListModal {
+  width: min(1180px, calc(100vw - 48px));
+  max-height: min(820px, calc(100dvh - 48px));
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-dialog);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.campaignModalActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.campaignListBody {
+  min-height: 0;
+  padding: 12px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--workspace-bg);
+}
+
+.campaignEmptyState {
+  min-height: 120px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.campaignCardShell {
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  overflow: hidden;
+}
+
+.campaignCardTopbar {
+  min-height: 42px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.campaignCardTopbar strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.deleteCampaignButton {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.deleteCampaignButton:hover {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+.campaignCardShell .clientCard {
+  border: 0;
+  border-radius: 0;
+}
+
+.campaignCardShell .clientCard:hover {
+  border: 0;
 }

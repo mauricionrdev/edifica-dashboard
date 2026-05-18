@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { clearMetricPresence, getMetric, listMetricPresence, touchMetricPresence, upsertMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
-import { PlusIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
+import { ChartColumnIcon, PlusIcon, SearchIcon, Select, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/index.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -359,11 +359,13 @@ function MetricField({
 }
 
 function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canEdit, setField, startPresence, handleBlur, presenceByField }) {
+  const SegmentIcon = title === 'Tráfego' ? ChartColumnIcon : TargetIcon;
+
   return (
     <section className={styles.segmentBlock}>
       <header className={styles.segmentHeader}>
         <span className={styles.segmentIcon} aria-hidden="true">
-          <span />
+          <SegmentIcon size={14} strokeWidth={2.2} />
         </span>
         <strong>{title}</strong>
       </header>
@@ -387,7 +389,7 @@ function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canE
   );
 }
 
-function WeekCardBase({ client, periodKey, week, campaignLabel = '', canEdit, onSaved, onRequestCampaign, presenceByField }) {
+function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCount = 0, canEdit, onSaved, onRequestCampaign, onRequestCampaigns, presenceByField }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(EMPTY_DATA);
   const [loaded, setLoaded] = useState(false);
@@ -607,9 +609,21 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', canEdit, on
 
         <div className={styles.clientTopbarRight}>
           {campaignLabel ? <span className={styles.campaignBadge}>{campaignLabel}</span> : null}
+          {!campaignLabel && campaignCount > 0 ? (
+            <button
+              type="button"
+              className={styles.campaignsButton}
+              onClick={() => onRequestCampaigns?.(client)}
+              aria-label={`Ver outras campanhas de ${client.name}`}
+              title="Outras campanhas"
+            >
+              Outras campanhas
+              <span>{campaignCount}</span>
+            </button>
+          ) : null}
           <span className={`${styles.progressPill} ${styles[`progressPill_${summary.tone}`]}`}>{summary.label}</span>
           <StatusChip status={status} />
-          {canEdit ? (
+          {canEdit && !campaignLabel ? (
             <button
               type="button"
               className={styles.addCampaignButton}
@@ -662,9 +676,11 @@ const WeekCard = memo(WeekCardBase, (prevProps, nextProps) => {
     prevProps.periodKey === nextProps.periodKey &&
     prevProps.week === nextProps.week &&
     prevProps.campaignLabel === nextProps.campaignLabel &&
+    prevProps.campaignCount === nextProps.campaignCount &&
     prevProps.canEdit === nextProps.canEdit &&
     prevProps.onSaved === nextProps.onSaved &&
     prevProps.onRequestCampaign === nextProps.onRequestCampaign &&
+    prevProps.onRequestCampaigns === nextProps.onRequestCampaigns &&
     arePresenceMapsEqual(prevProps.presenceByField, nextProps.presenceByField)
   );
 });
@@ -686,6 +702,7 @@ export default function PreencherSemanaPage() {
   const [presenceRows, setPresenceRows] = useState([]);
   const [campaignsByClient, setCampaignsByClient] = useState(() => readCampaignStore());
   const [campaignModalClient, setCampaignModalClient] = useState(null);
+  const [campaignListClient, setCampaignListClient] = useState(null);
   const [campaignDraft, setCampaignDraft] = useState('');
   const presenceSnapshotRef = useRef('[]');
 
@@ -694,6 +711,14 @@ export default function PreencherSemanaPage() {
     const existing = normalizeCampaigns(campaignsByClient?.[client?.id]);
     setCampaignDraft(`Campanha ${existing.length + 2}`);
   }, [campaignsByClient]);
+
+  const handleOpenCampaignsModal = useCallback((client) => {
+    setCampaignListClient(client || null);
+  }, []);
+
+  const handleCloseCampaignsModal = useCallback(() => {
+    setCampaignListClient(null);
+  }, []);
 
   const handleCloseCampaignModal = useCallback(() => {
     setCampaignModalClient(null);
@@ -715,8 +740,28 @@ export default function PreencherSemanaPage() {
     };
     setCampaignsByClient(nextStore);
     writeCampaignStore(nextStore);
+    if (campaignListClient?.id === campaignModalClient.id) {
+      setCampaignListClient(campaignModalClient);
+    }
     handleCloseCampaignModal();
-  }, [campaignDraft, campaignModalClient, campaignsByClient, handleCloseCampaignModal]);
+  }, [campaignDraft, campaignListClient?.id, campaignModalClient, campaignsByClient, handleCloseCampaignModal]);
+
+  const handleDeleteCampaign = useCallback((clientId, campaignId) => {
+    if (!clientId || !campaignId) return;
+    const existing = normalizeCampaigns(campaignsByClient?.[clientId]);
+    const nextCampaigns = existing.filter((campaign) => campaign.id !== campaignId);
+    const nextStore = { ...campaignsByClient };
+    if (nextCampaigns.length > 0) {
+      nextStore[clientId] = nextCampaigns;
+    } else {
+      delete nextStore[clientId];
+      if (campaignListClient?.id === clientId) {
+        setCampaignListClient(null);
+      }
+    }
+    setCampaignsByClient(nextStore);
+    writeCampaignStore(nextStore);
+  }, [campaignListClient?.id, campaignsByClient]);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
   const activeClients = useMemo(
@@ -1023,25 +1068,21 @@ export default function PreencherSemanaPage() {
                   <div className={styles.cardsStack}>
                     {group.clients.map((client) => {
                       const clientCampaigns = normalizeCampaigns(campaignsByClient?.[client.id]);
-                      const cards = [{ id: 'base', name: '', periodKey }, ...clientCampaigns.map((campaign) => ({
-                        id: campaign.id,
-                        name: campaign.name,
-                        periodKey: campaignMetricPeriodKey(periodKey, campaign.id),
-                      }))];
 
-                      return cards.map((card) => (
+                      return (
                         <WeekCard
-                          key={`${client.id}-${card.periodKey}`}
+                          key={`${client.id}-${periodKey}`}
                           client={client}
-                          periodKey={card.periodKey}
+                          periodKey={periodKey}
                           week={week}
-                          campaignLabel={card.name}
+                          campaignCount={clientCampaigns.length}
                           canEdit={canEditMetrics}
                           onSaved={() => {}}
                           onRequestCampaign={handleOpenCampaignModal}
-                          presenceByField={card.id === 'base' ? (presenceByClientField[client.id] || {}) : {}}
+                          onRequestCampaigns={handleOpenCampaignsModal}
+                          presenceByField={presenceByClientField[client.id] || {}}
                         />
-                      ));
+                      );
                     })}
                   </div>
                 </section>
@@ -1070,6 +1111,68 @@ export default function PreencherSemanaPage() {
             </div>
           ) : null}
         </section>
+
+        {campaignListClient ? (
+          <div className={styles.campaignModalOverlay} role="presentation" onClick={handleCloseCampaignsModal}>
+            <section className={styles.campaignListModal} onClick={(event) => event.stopPropagation()}>
+              <header className={styles.campaignModalHeader}>
+                <div>
+                  <h2>Outras campanhas</h2>
+                  <p>{campaignListClient.name}</p>
+                </div>
+                <div className={styles.campaignModalActions}>
+                  {canEditMetrics ? (
+                    <button
+                      type="button"
+                      className={styles.campaignCreateButton}
+                      onClick={() => handleOpenCampaignModal(campaignListClient)}
+                    >
+                      Nova campanha
+                    </button>
+                  ) : null}
+                  <button type="button" className={styles.campaignModalClose} onClick={handleCloseCampaignsModal} aria-label="Fechar">
+                    ×
+                  </button>
+                </div>
+              </header>
+
+              <div className={styles.campaignListBody}>
+                {normalizeCampaigns(campaignsByClient?.[campaignListClient.id]).length === 0 ? (
+                  <div className={styles.campaignEmptyState}>Nenhuma campanha adicional criada.</div>
+                ) : (
+                  normalizeCampaigns(campaignsByClient?.[campaignListClient.id]).map((campaign) => (
+                    <section key={campaign.id} className={styles.campaignCardShell}>
+                      <div className={styles.campaignCardTopbar}>
+                        <strong>{campaign.name}</strong>
+                        {canEditMetrics ? (
+                          <button
+                            type="button"
+                            className={styles.deleteCampaignButton}
+                            onClick={() => handleDeleteCampaign(campaignListClient.id, campaign.id)}
+                            aria-label={`Excluir ${campaign.name}`}
+                            title="Excluir campanha"
+                          >
+                            <TrashIcon size={14} aria-hidden="true" />
+                          </button>
+                        ) : null}
+                      </div>
+                      <WeekCard
+                        client={campaignListClient}
+                        periodKey={campaignMetricPeriodKey(periodKey, campaign.id)}
+                        week={week}
+                        campaignLabel={campaign.name}
+                        canEdit={canEditMetrics}
+                        onSaved={() => {}}
+                        onRequestCampaign={handleOpenCampaignModal}
+                        presenceByField={{}}
+                      />
+                    </section>
+                  ))
+                )}
+              </div>
+            </section>
+          </div>
+        ) : null}
 
         {campaignModalClient ? (
           <div className={styles.campaignModalOverlay} role="presentation" onClick={handleCloseCampaignModal}>
