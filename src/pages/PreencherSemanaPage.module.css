@@ -1680,3 +1680,43 @@
 .campaignCardShell .clientCard:hover {
   border: 0;
 }
+
+/* ==========================================================================
+   v85 · Correção modal de campanhas e hover dos campos
+   Portal no body + z-index real acima da sidebar + sem hover nos cards pequenos.
+   ========================================================================== */
+.campaignModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 25000;
+  background: rgba(8, 9, 10, 0.82);
+  backdrop-filter: none;
+}
+
+.campaignListModal,
+.campaignModal {
+  position: relative;
+  z-index: 25001;
+}
+
+.fieldCard:hover,
+.fieldCard_weekly:hover,
+.fieldCard_auto:hover,
+.inputCard:hover,
+.fieldCard:hover,
+.kpiCard:hover {
+  border-color: inherit;
+  background: inherit;
+  box-shadow: none;
+  transform: none;
+}
+
+.fieldCard:focus-within {
+  animation: weekFieldSelectedPulse 1500ms ease-in-out infinite;
+}
+
+.campaignCardShell .clientCard {
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent 56%),
+    var(--workspace-panel-bg);
+}

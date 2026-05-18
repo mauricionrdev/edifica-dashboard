@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
 import { clearMetricPresence, getMetric, listMetricPresence, touchMetricPresence, upsertMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
@@ -31,6 +32,71 @@ const EMPTY_DATA = {
 const FIXED_MONTH_FIELDS = ['investimento', 'metaCpl', 'metaVolume', 'metaEmpate', 'metaSemanal'];
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 const CAMPAIGN_STORAGE_KEY = 'edifica:preencher-semana:campaigns:v1';
+const CAMPAIGN_METRICS_STORAGE_KEY = 'edifica:preencher-semana:campaign-metrics:v1';
+
+function isCampaignPeriodKey(periodKey) {
+  return String(periodKey || '').includes('__campaign:');
+}
+
+function campaignMetricStoreKey(clientId, periodKey) {
+  return `${String(clientId || '')}::${String(periodKey || '')}`;
+}
+
+function readCampaignMetricStore() {
+  if (typeof window === 'undefined') return {};
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(CAMPAIGN_METRICS_STORAGE_KEY) || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCampaignMetricStore(store) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(CAMPAIGN_METRICS_STORAGE_KEY, JSON.stringify(store || {}));
+}
+
+function getCampaignMetric(clientId, periodKey) {
+  const store = readCampaignMetricStore();
+  const metric = store[campaignMetricStoreKey(clientId, periodKey)];
+  return Promise.resolve({ metric: metric || { clientId, periodKey, data: {}, computed: {} } });
+}
+
+function upsertCampaignMetric(clientId, periodKey, data) {
+  const store = readCampaignMetricStore();
+  const metric = {
+    clientId,
+    periodKey,
+    data: { ...(data || {}) },
+    computed: calcWeek({ data: data || {}, computed: {} }),
+    updatedAt: new Date().toISOString(),
+  };
+  store[campaignMetricStoreKey(clientId, periodKey)] = metric;
+  writeCampaignMetricStore(store);
+  return Promise.resolve({ metric });
+}
+
+function removeCampaignMetricsFor(clientId, campaignId) {
+  if (typeof window === 'undefined') return;
+  const marker = `__campaign:${String(campaignId || '')}`;
+  const store = readCampaignMetricStore();
+  Object.keys(store).forEach((key) => {
+    if (key.startsWith(`${String(clientId || '')}::`) && key.includes(marker)) {
+      delete store[key];
+    }
+  });
+  writeCampaignMetricStore(store);
+}
+
+function readMetric(clientId, periodKey) {
+  return isCampaignPeriodKey(periodKey) ? getCampaignMetric(clientId, periodKey) : getMetric(clientId, periodKey);
+}
+
+function saveMetric(clientId, periodKey, data) {
+  return isCampaignPeriodKey(periodKey) ? upsertCampaignMetric(clientId, periodKey, data) : upsertMetric(clientId, periodKey, data);
+}
+
 
 function readCampaignStore() {
   if (typeof window === 'undefined') return {};
@@ -179,7 +245,7 @@ async function resolveFixedMonthFields(clientId, periodKey, currentWeek, current
 
   for (const targetWeek of weekOrder) {
     try {
-      const res = await getMetric(clientId, sameMonthPeriodKey(periodKey, targetWeek));
+      const res = await readMetric(clientId, sameMonthPeriodKey(periodKey, targetWeek));
       const candidate = dataFromMetric(res?.metric);
       if (hasAnyField(candidate, FIXED_MONTH_FIELDS)) {
         const merged = mergeMissingFixedFields(currentForm, candidate);
@@ -193,7 +259,7 @@ async function resolveFixedMonthFields(clientId, periodKey, currentWeek, current
   const previousMonthWeek4 = previousMonthWeek4PeriodKey(periodKey);
   if (previousMonthWeek4) {
     try {
-      const res = await getMetric(clientId, previousMonthWeek4);
+      const res = await readMetric(clientId, previousMonthWeek4);
       const candidate = dataFromMetric(res?.metric);
       if (hasAnyField(candidate, FIXED_MONTH_FIELDS)) {
         const merged = mergeMissingFixedFields(currentForm, candidate);
@@ -419,12 +485,12 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
 
       if (mountedRef.current) setStatus('saving');
       try {
-        const res = await upsertMetric(client.id, periodKey, payload);
+        const res = await saveMetric(client.id, periodKey, payload);
 
         if (fixedFieldsChanged.length > 0) {
           const targetWeeks = [1, 2, 3, 4].filter((targetWeek) => targetWeek >= week && targetWeek !== week);
           await Promise.all(
-            targetWeeks.map((targetWeek) => upsertMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), fixedPayload))
+            targetWeeks.map((targetWeek) => saveMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), fixedPayload))
           );
         }
 
@@ -464,6 +530,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
     const activeField = String(fieldKey || '').trim();
     activeFieldRef.current = '';
     if (!activeField) return;
+    if (isCampaignPeriodKey(periodKey)) return;
     try {
       await clearMetricPresence(client.id, periodKey, activeField);
     } catch {
@@ -478,6 +545,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
       await stopPresence(activeFieldRef.current);
     }
     activeFieldRef.current = nextField;
+    if (isCampaignPeriodKey(periodKey)) return;
     try {
       await touchMetricPresence(client.id, periodKey, nextField);
     } catch {
@@ -499,7 +567,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
     const token = ++loadGenRef.current;
     setLoaded(false);
 
-    getMetric(client.id, periodKey)
+    readMetric(client.id, periodKey)
       .then(async (res) => {
         if (loadGenRef.current !== token) return;
         const currentForm = dataFromMetric(res?.metric);
@@ -511,7 +579,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
         if (resolvedFixedFields.source === 'previous-month-week-4' && Object.keys(inheritedPayload).length > 0) {
           const targetWeeks = [1, 2, 3, 4].filter((targetWeek) => targetWeek >= week);
           await Promise.all(
-            targetWeeks.map((targetWeek) => upsertMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), inheritedPayload))
+            targetWeeks.map((targetWeek) => saveMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), inheritedPayload))
           );
           if (loadGenRef.current !== token) return;
         }
@@ -749,6 +817,7 @@ export default function PreencherSemanaPage() {
   const handleDeleteCampaign = useCallback((clientId, campaignId) => {
     if (!clientId || !campaignId) return;
     const existing = normalizeCampaigns(campaignsByClient?.[clientId]);
+    removeCampaignMetricsFor(clientId, campaignId);
     const nextCampaigns = existing.filter((campaign) => campaign.id !== campaignId);
     const nextStore = { ...campaignsByClient };
     if (nextCampaigns.length > 0) {
@@ -1112,7 +1181,7 @@ export default function PreencherSemanaPage() {
           ) : null}
         </section>
 
-        {campaignListClient ? (
+        {campaignListClient ? createPortal((
           <div className={styles.campaignModalOverlay} role="presentation" onClick={handleCloseCampaignsModal}>
             <section className={styles.campaignListModal} onClick={(event) => event.stopPropagation()}>
               <header className={styles.campaignModalHeader}>
@@ -1172,9 +1241,9 @@ export default function PreencherSemanaPage() {
               </div>
             </section>
           </div>
-        ) : null}
+        ), document.body) : null}
 
-        {campaignModalClient ? (
+        {campaignModalClient ? createPortal((
           <div className={styles.campaignModalOverlay} role="presentation" onClick={handleCloseCampaignModal}>
             <form className={styles.campaignModal} onSubmit={handleCreateCampaign} onClick={(event) => event.stopPropagation()}>
               <header className={styles.campaignModalHeader}>
@@ -1210,7 +1279,7 @@ export default function PreencherSemanaPage() {
               </footer>
             </form>
           </div>
-        ) : null}
+        ), document.body) : null}
       </div>
     </div>
   );
