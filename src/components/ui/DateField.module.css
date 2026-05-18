@@ -10,7 +10,7 @@
   padding: 0 11px;
   border: 1px solid var(--field-line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.022);
+  background: var(--surface-raised);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 12.5px;
@@ -25,7 +25,7 @@
 .trigger:hover:not(:disabled),
 .trigger[aria-expanded='true'] {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.034);
+  background: var(--bg-hover);
 }
 
 .trigger:disabled {
@@ -63,9 +63,9 @@
   width: 252px;
   padding: 10px;
   border: 1px solid var(--line-strong);
-  border-radius: 12px;
-  background: #111214;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+  border-radius: var(--workspace-card-radius);
+  background: var(--bg-hover);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
 }
 
 .popoverHeader {
@@ -149,7 +149,7 @@
 }
 
 .day:hover {
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
   color: var(--text-primary);
 }
 
@@ -210,11 +210,11 @@
 .popover {
   z-index: 12050;
   border-color: rgba(255, 255, 255, 0.11);
-  border-radius: 14px;
+  border-radius: var(--workspace-card-radius);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 58px),
+    linear-gradient(180deg, var(--bg-hover), transparent 58px),
     #101114;
-  box-shadow: 0 26px 78px rgba(0, 0, 0, 0.68), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  box-shadow: 0 26px 78px rgba(0, 0, 0, 0.68), inset 0 1px 0 var(--surface-raised);
 }
 
 .trigger:focus-visible {
@@ -233,16 +233,56 @@
 /* V52 — evita piscada no canto da tela e remove foco visual agressivo */
 .trigger:focus,
 .trigger:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
-  border-color: var(--line-strong) !important;
+  outline: none;
+  box-shadow: none;
+  border-color: var(--line-strong);
 }
 
 .popover {
-  z-index: 22020 !important;
+  z-index: 22020;
   scrollbar-width: none;
 }
 
 .popover::-webkit-scrollbar {
   display: none;
+}
+
+
+/* ==========================================================================
+   v77 · DateField residue cleanup
+   Alinha date picker ao workspace.
+   ========================================================================== */
+.trigger {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.trigger:hover:not(:disabled),
+.trigger[aria-expanded='true'],
+.trigger:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--bg-hover);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.popover {
+  z-index: var(--chassis-z-dialog);
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--chassis-panel-bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+
+.day,
+.monthActions button {
+  border-radius: 8px;
+}
+
+.day:hover,
+.monthActions button:hover {
+  background: var(--bg-hover);
 }

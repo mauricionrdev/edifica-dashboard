@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(8, 9, 10, 0.72);
   backdrop-filter: blur(12px);
 }
 
@@ -19,18 +19,18 @@
   color: var(--text-primary);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4, 18px);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-raised);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012);
+  box-shadow: inset 0 1px 0 var(--surface-panel);
 }
 
 .modalHead {
   min-height: 60px;
   padding: 9px 14px 9px 16px;
   border-bottom: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -71,7 +71,7 @@
 .btnDanger {
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-raised);
   color: var(--text-secondary);
 }
 
@@ -106,7 +106,7 @@
 .btn:hover:not(:disabled),
 .btnGhost:hover:not(:disabled) {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
   color: var(--text-primary);
 }
 
@@ -144,7 +144,7 @@
   height: 42px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   overflow: hidden;
   display: inline-flex;
@@ -257,7 +257,7 @@
   min-height: 36px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-raised);
   color: var(--text-primary);
   font: inherit;
   font-size: 13px;
@@ -278,7 +278,7 @@
 .selectControl :global(input:focus),
 .selectControl :global(select:focus) {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--bg-hover);
   box-shadow: none;
 }
 
@@ -287,7 +287,7 @@
 .selectControl :global(input:disabled),
 .selectControl :global(select:disabled) {
   color: var(--text-tertiary);
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
   cursor: not-allowed;
   opacity: 0.72;
 }
@@ -329,7 +329,7 @@
   width: min(480px, calc(100% - 40px));
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4, 18px);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-raised);
   overflow: hidden;
   box-shadow: none;
 }
@@ -338,7 +338,7 @@
   min-height: 54px;
   padding: 0 14px 0 16px;
   border-bottom: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -371,7 +371,7 @@
   padding: 0 14px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2, 12px);
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-primary);
   text-align: left;
   display: flex;
@@ -465,7 +465,7 @@
   background:
     linear-gradient(180deg, var(--card-highlight, rgba(255, 255, 255, 0.032)), rgba(255, 255, 255, 0) 34%),
     var(--card-surface, #090a0b);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.022);
+  box-shadow: inset 0 1px 0 var(--surface-raised);
 }
 
 
@@ -511,7 +511,7 @@
   max-height: min(760px, calc(100dvh - 64px));
   min-height: min(680px, calc(100dvh - 64px));
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.004) 42%),
+    linear-gradient(180deg, var(--surface-panel), rgba(255, 255, 255, 0.004) 42%),
     #0b0c0e;
   transition: none;
 }
@@ -541,7 +541,7 @@
 .selectControl :global(select) {
   min-height: 38px;
   border-color: rgba(255, 255, 255, 0.072);
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   font-size: 13px;
   font-weight: 520;
 }
@@ -617,4 +617,72 @@
 
 .modalBody {
   background: var(--workspace-bg);
+}
+
+
+/* ==========================================================================
+   v77 · ClientDetailDrawer residue cleanup
+   Consolida modal principal de cliente no workspace.
+   ========================================================================== */
+.overlay {
+  z-index: var(--chassis-z-dialog);
+  background: rgba(8, 9, 10, 0.72);
+  backdrop-filter: none;
+}
+
+.modalCard {
+  max-height: min(720px, calc(100dvh - 64px));
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.modalHead,
+.modalFoot {
+  min-height: 54px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.modalBody {
+  background: var(--workspace-bg);
+}
+
+.projectBtn,
+.iconBtn,
+.btn,
+.btnGhost,
+.btnDanger,
+.projectChoiceCard {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.projectBtn:hover,
+.iconBtn:hover,
+.btn:hover,
+.btnGhost:hover,
+.projectChoiceCard:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+}
+
+.projectBtn:focus-visible,
+.iconBtn:focus-visible,
+.btn:focus-visible,
+.btnGhost:focus-visible,
+.btnDanger:focus-visible,
+.projectChoiceCard:focus-visible {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.btnDanger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
 }

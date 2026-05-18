@@ -13,8 +13,8 @@
 .workPanel,
 .taskModal {
   border: 1px solid var(--line-subtle);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.012);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
 }
 
 .profileHero {
@@ -51,7 +51,7 @@
   place-items: center;
   flex-shrink: 0;
   background: var(--accent-amber, #f5b800);
-  color: #08090a;
+  color: var(--workspace-bg);
   font-size: 14px;
   font-weight: 650;
 }
@@ -102,8 +102,8 @@
   min-height: 20px;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid var(--line);
+  background: var(--surface-panel);
   color: var(--text-tertiary);
   font-size: 10.5px;
   font-weight: 620;
@@ -171,7 +171,7 @@
   width: 36px;
   padding: 0;
   justify-content: center;
-  border-color: rgba(255, 255, 255, 0.06);
+  border-color: var(--line);
   background: rgba(255, 255, 255, 0.016);
   color: var(--text-tertiary);
 }
@@ -219,7 +219,7 @@
 }
 
 .critical {
-  color: var(--danger, #ff6262) !important;
+  color: var(--danger, var(--danger-text));
 }
 
 .profileGrid {
@@ -307,7 +307,7 @@
 
 .issueRow:hover,
 .projectRow:hover {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
 }
 
 .checkCircle {
@@ -317,7 +317,7 @@
   border: 1px solid rgba(255, 255, 255, 0.09);
   display: grid;
   place-items: center;
-  color: #08090a;
+  color: var(--workspace-bg);
   font-size: 10px;
   line-height: 1;
 }
@@ -373,7 +373,7 @@
 }
 
 .tag_overdue {
-  color: var(--danger, #ff6262);
+  color: var(--danger, var(--danger-text));
   border-color: rgba(255, 98, 98, 0.22);
   background: rgba(255, 98, 98, 0.065);
 }
@@ -397,7 +397,7 @@
 }
 
 .issueDueLate {
-  color: var(--danger, #ff6262);
+  color: var(--danger, var(--danger-text));
 }
 
 .emptyState,
@@ -661,4 +661,91 @@
   .modalOverlay {
     padding: 12px;
   }
+}
+
+/* ==========================================================================
+   v77 · UserProfilePage residue cleanup
+   Consolida perfil de usuário secundário ao workspace.
+   ========================================================================== */
+.page {
+  min-height: 100%;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+.profileHero,
+.workPanel,
+.taskModal,
+.card,
+.panel,
+.emptyState,
+.loadingState,
+.errorState {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.avatar {
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg-app);
+}
+
+.primaryButton,
+.inlineLink,
+.iconButton,
+.taskAction,
+.modalAction,
+.input,
+.select,
+.textarea {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.primaryButton:hover,
+.inlineLink:hover,
+.iconButton:hover,
+.taskAction:hover,
+.modalAction:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.primaryButton:focus-visible,
+.inlineLink:focus-visible,
+.iconButton:focus-visible,
+.taskAction:focus-visible,
+.modalAction:focus-visible,
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.taskModalOverlay,
+.modalOverlay {
+  z-index: var(--chassis-z-dialog);
+  background: rgba(8, 9, 10, 0.72);
+  backdrop-filter: none;
+}
+
+.taskModal {
+  border-color: var(--workspace-panel-border);
+  box-shadow: var(--shadow-dialog);
+}
+
+.roleBadge,
+.tag {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--surface-panel);
 }
