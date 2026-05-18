@@ -1,8 +1,8 @@
 .page {
   min-height: 100%;
   padding: 24px;
-  background: #050506;
-  color: #eef2f6;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
   overflow: auto;
 }
 
@@ -10,14 +10,14 @@
   max-width: 1180px;
   margin: 0 auto;
   padding: 26px 28px 34px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: #080809;
+  background: var(--workspace-panel-bg);
 }
 
 .header {
   padding-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 1px solid var(--line-strong);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -26,7 +26,7 @@
 
 .header h1 {
   margin: 0;
-  color: #f4f7fb;
+  color: var(--text-primary);
   font-size: clamp(31px, 3.2vw, 45px);
   font-weight: 760;
   line-height: 1.02;
@@ -36,31 +36,31 @@
 .header p {
   max-width: 920px;
   margin: 8px 0 0;
-  color: #8e99ab;
+  color: #878c95;
   font-size: 15px;
   line-height: 1.4;
 }
 
 .header p strong {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-weight: 760;
 }
 
 .header button {
   height: 36px;
   padding: 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.095);
+  border: 1px solid var(--line-strong);
   border-radius: 9px;
-  background: #0d0e0f;
-  color: #e7edf5;
+  background: var(--field-bg);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 720;
   cursor: pointer;
 }
 
 .header button:hover {
-  background: #111214;
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--bg-hover);
+  border-color: var(--line-strong);
 }
 
 .section {
@@ -69,7 +69,7 @@
 
 .section h2 {
   margin: 0 0 16px;
-  color: #f3f6fa;
+  color: var(--text-primary);
   font-size: 21px;
   font-weight: 750;
   letter-spacing: -0.035em;
@@ -78,7 +78,7 @@
 .hint {
   max-width: 900px;
   margin: -5px 0 18px;
-  color: #8d98aa;
+  color: #878c95;
   font-size: 13px;
   font-style: italic;
   line-height: 1.45;
@@ -93,14 +93,14 @@
 .summaryGrid article {
   min-height: 118px;
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.078);
-  background: #0d0e0f;
+  border: 1px solid var(--line);
+  background: var(--field-bg);
   display: grid;
   align-content: space-between;
 }
 
 .summaryGrid span {
-  color: #8e99ab;
+  color: #878c95;
   font-size: 12px;
   font-weight: 720;
   letter-spacing: 0.055em;
@@ -108,7 +108,7 @@
 }
 
 .summaryGrid strong {
-  color: #f3f6fa;
+  color: var(--text-primary);
   font-size: 30px;
   font-weight: 790;
   line-height: 1;
@@ -120,7 +120,7 @@
 }
 
 .summaryGrid em {
-  color: #697586;
+  color: var(--text-tertiary);
   font-size: 12px;
   font-style: normal;
 }
@@ -128,12 +128,12 @@
 .legacy {
   margin-top: 18px;
   padding: 17px 20px;
-  border-left: 5px solid #f59e0b;
-  background: rgba(245, 158, 11, 0.12);
+  border-left: 5px solid var(--warning);
+  background: var(--warning-soft);
 }
 
 .legacy span {
-  color: #fbbf24;
+  color: var(--warning-text);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.075em;
@@ -143,7 +143,7 @@
 .legacy strong {
   display: block;
   margin-top: 8px;
-  color: #f3f6fa;
+  color: var(--text-primary);
   font-size: 19px;
   font-weight: 780;
   letter-spacing: -0.035em;
@@ -151,7 +151,7 @@
 
 .legacy p {
   margin: 10px 0 0;
-  color: #fbbf24;
+  color: var(--warning-text);
   font-size: 24px;
   font-weight: 790;
   letter-spacing: -0.045em;
@@ -200,7 +200,7 @@
 }
 
 .chartRow em {
-  color: #f3f6fa;
+  color: var(--text-primary);
   font-size: 12px;
   font-style: normal;
   font-weight: 780;
@@ -208,21 +208,21 @@
 
 .tableWrap {
   overflow: auto;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
 }
 
 .tableWrap table {
   width: 100%;
   min-width: 760px;
   border-collapse: collapse;
-  background: #0d0e0f;
+  background: var(--field-bg);
 }
 
 .tableWrap th {
   height: 42px;
   padding: 0 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.34);
-  background: #111316;
+  background: var(--bg-raised);
   color: #c8d2df;
   font-size: 11px;
   font-weight: 800;
@@ -232,7 +232,7 @@
 .tableWrap td {
   height: 34px;
   padding: 0 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
+  border-bottom: 1px solid var(--line-subtle);
   color: #d9e2ec;
   font-size: 12px;
 }
@@ -262,7 +262,7 @@
 }
 
 .zeroRow td {
-  color: #8e99ab;
+  color: #878c95;
   font-style: italic;
 }
 
@@ -270,8 +270,8 @@
   height: 42px;
   border-top: 1px solid rgba(255, 255, 255, 0.34);
   border-bottom: 0;
-  background: #111316 !important;
-  color: #f3f6fa;
+  background: var(--bg-raised);
+  color: var(--text-primary);
   font-weight: 800;
 }
 
@@ -303,7 +303,7 @@
 }
 
 .observations strong {
-  color: #f3f6fa;
+  color: var(--text-primary);
 }
 
 @media (max-width: 1180px) {
@@ -371,10 +371,10 @@
   height: 36px;
   min-width: 132px;
   padding: 0 10px;
-  border: 1px solid rgba(255, 255, 255, 0.095);
+  border: 1px solid var(--line-strong);
   border-radius: 9px;
-  background: #0d0e0f;
-  color: #e7edf5;
+  background: var(--field-bg);
+  color: var(--text-secondary);
   color-scheme: dark;
   font: inherit;
   font-size: 12px;
@@ -384,18 +384,18 @@
 .actions button {
   height: 36px;
   padding: 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.095);
+  border: 1px solid var(--line-strong);
   border-radius: 9px;
-  background: #0d0e0f;
-  color: #e7edf5;
+  background: var(--field-bg);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 720;
   cursor: pointer;
 }
 
 .actions button:hover:not(:disabled) {
-  background: #111214;
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--bg-hover);
+  border-color: var(--line-strong);
 }
 
 .actions button:disabled {
@@ -418,8 +418,8 @@
 }
 
 .cacheInfo {
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  background: #0d0e0f;
+  border: 1px solid var(--line);
+  background: var(--field-bg);
   color: #878c95;
 }
 
@@ -439,29 +439,29 @@
 .tableWrap td small {
   display: block;
   margin-top: 3px;
-  color: #697586;
+  color: var(--text-tertiary);
   font-size: 10.5px;
   font-weight: 600;
 }
 
 .zeroProjects {
   padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.052);
+  border: 1px solid var(--line-subtle);
   border-top: 0;
-  background: #0d0e0f;
+  background: var(--field-bg);
   display: grid;
   grid-template-columns: 150px 1fr;
   gap: 14px;
 }
 
 .zeroProjects strong {
-  color: #8e99ab;
+  color: #878c95;
   font-size: 12px;
   font-weight: 780;
 }
 
 .zeroProjects span {
-  color: #8e99ab;
+  color: #878c95;
   font-size: 12px;
   line-height: 1.45;
 }
@@ -486,9 +486,9 @@
 .reconciliationInfo {
   margin-top: 10px;
   padding: 9px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: #0d0e0f;
+  background: var(--field-bg);
   color: #878c95;
   display: flex;
   align-items: center;
@@ -498,7 +498,7 @@
 }
 
 .reconciliationInfo strong {
-  color: #e7edf5;
+  color: var(--text-secondary);
   font-weight: 760;
 }
 
@@ -553,11 +553,11 @@
 }
 
 .iconButton {
-  width: 34px !important;
-  min-width: 34px !important;
-  padding: 0 !important;
-  display: inline-grid !important;
-  place-items: center !important;
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
 }
 
 .spin {
@@ -711,7 +711,7 @@
 /* v61 — Uso OpenAI polish */
 .page,
 .page * {
-  text-shadow: none !important;
+  text-shadow: none;
 }
 
 .report {
@@ -766,11 +766,11 @@
 }
 
 .iconButton {
-  width: 34px !important;
-  min-width: 34px !important;
-  padding: 0 !important;
-  display: inline-grid !important;
-  place-items: center !important;
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
 }
 
 .spin {
@@ -949,4 +949,115 @@
 .legacy,
 .zeroProjects {
   border-radius: var(--workspace-card-radius);
+}
+
+
+/* ==========================================================================
+   v72 · OpenAIUsagePage cleanup real
+   Mantém o relatório executivo no padrão do workspace.
+   ========================================================================== */
+.page {
+  min-height: 100%;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+.report {
+  max-width: 1180px;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.header {
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.header h1 {
+  color: var(--text-primary);
+  font-size: clamp(28px, 2.6vw, 38px);
+  text-shadow: none;
+}
+
+.header p,
+.hint,
+.cacheInfo,
+.reconciliationInfo span {
+  color: #878c95;
+}
+
+.actions input,
+.actions button,
+.header button,
+.iconButton {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.actions button:hover:not(:disabled),
+.header button:hover,
+.iconButton:hover:not(:disabled) {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+}
+
+.actions input:focus,
+.actions button:focus-visible,
+.header button:focus-visible,
+.iconButton:focus-visible {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.summaryGrid article,
+.tableWrap,
+.zeroProjects,
+.legacy,
+.alert,
+.cacheInfo,
+.reconciliationInfo {
+  border-radius: var(--workspace-card-radius);
+}
+
+.summaryGrid article {
+  min-height: 96px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.summaryGrid span {
+  color: #878c95;
+}
+
+.summaryGrid strong {
+  font-size: 25px;
+  color: var(--text-primary);
+  text-shadow: none;
+}
+
+.legacy {
+  border-left-color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.chart {
+  max-width: 980px;
+}
+
+.chartRow > strong,
+.chartRow em,
+.tableWrap td,
+.tableWrap th {
+  text-shadow: none;
+}
+
+.tableWrap {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
 }
