@@ -91,10 +91,13 @@ function sanitizeForSave(form) {
   const payload = {};
   Object.entries(form).forEach(([key, raw]) => {
     if (key === 'observacoes') {
-      if (String(raw || '').trim()) payload.observacoes = String(raw).trim();
+      payload.observacoes = String(raw || '').trim();
       return;
     }
-    if (raw === '' || raw == null) return;
+    if (raw === '' || raw == null) {
+      if (Object.prototype.hasOwnProperty.call(EMPTY_DATA, key)) payload[key] = null;
+      return;
+    }
     const numeric = parseLocaleNumber(raw);
     if (!Number.isNaN(numeric) && numeric >= 0) payload[key] = numeric;
   });

@@ -153,7 +153,11 @@ function sanitizeMetricData(incoming) {
       if (s.length > 2000) throw badRequest('observacoes muito longas (max 2000)');
       clean[key] = s;
     } else {
-      if (v === '' || v === null || v === undefined) continue;
+      if (v === null) {
+        clean[key] = null;
+        continue;
+      }
+      if (v === '' || v === undefined) continue;
       const n = parseLocaleNumber(v);
       if (Number.isNaN(n)) continue;
       if (n < 0) throw badRequest(`${key} não pode ser negativo`);
@@ -1299,6 +1303,10 @@ router.put('/:clientId/:periodKey', requirePermission('metrics.fill_week'), asyn
 
       const prev = existing.length > 0 ? parseJson(existing[0].data, {}) : {};
       const merged = { ...prev, ...incomingData };
+
+      for (const [key, value] of Object.entries(incomingData)) {
+        if (value === null) delete merged[key];
+      }
 
       if (merged.weekStatus === undefined || merged.weekStatus === null) {
         merged.weekStatus = deriveWeekStatus(merged, clientMetaLucro);
