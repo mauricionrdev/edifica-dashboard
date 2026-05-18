@@ -4,7 +4,7 @@
 .page {
   min-height: 100%;
   color: var(--text-primary);
-  background: #08090a;
+  background: var(--workspace-bg);
 }
 
 .grid {
@@ -22,7 +22,7 @@
 }
 
 .sidebarPanel {
-  background: #0b0c0d;
+  background: var(--workspace-panel-bg);
   border-right: 1px solid var(--line);
   overflow: hidden;
 }
@@ -30,7 +30,7 @@
 .mainPanel {
   min-width: 0;
   min-height: 0;
-  background: #08090a;
+  background: var(--workspace-bg);
   overflow: auto;
   scrollbar-width: none;
 }
@@ -59,7 +59,7 @@
   min-height: 66px;
   padding: 12px 12px 12px 14px;
   border: 1px solid transparent;
-  border-radius: 11px;
+  border-radius: var(--workspace-card-radius);
   background: transparent;
   color: var(--text-primary);
   font-family: inherit;
@@ -81,12 +81,12 @@
 }
 
 .projectButton:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--bg-hover);
 }
 
 .projectButtonActive {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
 }
 
 .projectButtonActive::before {
@@ -145,7 +145,7 @@
 .detailHero {
   padding: 18px 28px 16px;
   border-bottom: 1px solid var(--line);
-  background: #0b0c0d;
+  background: var(--workspace-panel-bg);
   display: grid;
   gap: 16px;
 }
@@ -171,7 +171,7 @@
   min-width: 32px;
   border-radius: 9px;
   background: var(--accent-amber);
-  color: #111214;
+  color: var(--bg-raised);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -247,9 +247,9 @@
 .memberAvatar {
   width: 28px;
   height: 28px;
-  border: 2px solid #0b0c0d;
+  border: 2px solid var(--workspace-panel-bg);
   border-radius: 50%;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   font-size: 10px;
   font-weight: 780;
@@ -303,7 +303,7 @@
   height: 34px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 12px;
@@ -333,7 +333,7 @@
 .headerActionCompact:hover,
 .iconActionButton:hover {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-hover);
 }
 
 .iconDangerButton {
@@ -409,14 +409,14 @@
   min-height: 44px;
   padding: 7px 10px;
   border: 1px solid var(--line);
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.018);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
   display: grid;
   gap: 4px;
 }
 
 .summaryPillAccent {
-  border-color: rgba(245, 184, 0, 0.24);
+  border-color: var(--accent-line);
   background: rgba(245, 184, 0, 0.06);
 }
 
@@ -439,7 +439,7 @@
 /* Workspace */
 .workspace {
   min-width: 0;
-  background: #08090a;
+  background: var(--workspace-bg);
 }
 
 .createTask {
@@ -469,7 +469,7 @@
   min-height: 36px;
   border: 1px solid var(--line);
   border-radius: 9px;
-  background: #111214;
+  background: var(--bg-raised);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 12.5px;
@@ -510,7 +510,7 @@
 .createTask button:hover,
 .sectionCreateForm button:hover {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
 }
 
 .createTask button:disabled,
@@ -522,7 +522,7 @@
 /* Toolbar */
 .sections {
   min-width: 0;
-  background: #08090a;
+  background: var(--workspace-bg);
 }
 
 .taskToolbar {
@@ -643,7 +643,7 @@
 }
 
 .sectionCollapse:hover {
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
   color: var(--text-primary);
 }
 
@@ -660,7 +660,7 @@
   height: 20px;
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font-size: 9.5px;
   font-weight: 780;
@@ -701,7 +701,7 @@
   padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font-size: 11px;
   display: inline-flex;
@@ -736,7 +736,7 @@
 
 .sectionAction:hover {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -751,7 +751,7 @@
 .task {
   min-height: 48px;
   padding: 0 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  border-bottom: 1px solid var(--line-subtle);
   background: transparent;
   display: grid;
   grid-template-columns: 28px minmax(420px, 1fr) minmax(210px, 260px) minmax(110px, 138px) 74px;
@@ -790,7 +790,7 @@
 
 .taskDragging {
   opacity: 0.58;
-  background: rgba(245, 184, 0, 0.08);
+  background: var(--accent-soft);
   outline: 1px solid rgba(245, 184, 0, 0.28);
 }
 
@@ -818,7 +818,7 @@
 
 .check:hover:not(:disabled) {
   border-color: var(--accent-amber);
-  background: rgba(245, 184, 0, 0.08);
+  background: var(--accent-soft);
   transform: scale(1.04);
 }
 
@@ -861,7 +861,7 @@
 .taskTitleInput:focus {
   padding: 0 8px;
   border-color: var(--line-strong);
-  background: #111214;
+  background: var(--bg-raised);
 }
 
 .done .taskTitleInput {
@@ -895,7 +895,7 @@
 
 .task:hover .taskAssignee,
 .task:hover .taskAssigneeEmpty {
-  background: rgba(255, 255, 255, 0.026);
+  background: var(--surface-raised);
 }
 
 .taskAssigneeAvatar {
@@ -904,7 +904,7 @@
   min-width: 22px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   font-size: 8.5px;
   font-weight: 780;
@@ -951,7 +951,7 @@
 .inlineDate:hover,
 .taskDueActive .inlineDate {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.026);
+  background: var(--surface-raised);
   color: var(--text-primary);
 }
 
@@ -979,7 +979,7 @@
 }
 
 .noteButton:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--bg-hover);
 }
 
 .noteButtonActive {
@@ -998,7 +998,7 @@
   width: 272px;
   padding: 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 12px;
+  border-radius: var(--workspace-card-radius);
   background: #151617;
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.48);
 }
@@ -1057,7 +1057,7 @@
 }
 
 .duePickerDay:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--line);
 }
 
 .duePickerDayMuted {
@@ -1102,7 +1102,7 @@
   max-height: 100dvh;
   min-height: 0;
   border-left: 1px solid var(--line);
-  background: #111214;
+  background: var(--bg-raised);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
@@ -1112,7 +1112,7 @@
   min-height: auto;
   padding: 16px 22px 14px;
   border-bottom: 1px solid var(--line);
-  background: #111214;
+  background: var(--bg-raised);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
@@ -1201,7 +1201,7 @@
 .taskCompleteButton:hover,
 .taskCloseButton:hover {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
 }
 
 .taskHeaderDeleteButton:hover {
@@ -1230,7 +1230,7 @@
 .taskAside {
   min-height: 0;
   padding: 18px 20px 34px;
-  background: #111214;
+  background: var(--bg-raised);
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -1342,7 +1342,7 @@
 .priorityPill {
   min-height: 28px;
   padding: 0 10px;
-  border: 1px solid rgba(245, 184, 0, 0.24);
+  border: 1px solid var(--accent-line);
   border-radius: 999px;
   background: rgba(245, 184, 0, 0.07);
   color: var(--accent-amber);
@@ -1505,7 +1505,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   font-size: 11px;
   font-weight: 760;
@@ -1571,8 +1571,8 @@
 .confirmModal {
   width: min(460px, calc(100vw - 32px));
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #111214;
+  border-radius: var(--workspace-card-radius);
+  background: var(--bg-raised);
   box-shadow: 0 22px 70px rgba(0, 0, 0, 0.45);
   overflow: hidden;
 }
@@ -1647,7 +1647,7 @@
 
 .emptyInline {
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--workspace-card-radius);
   background: rgba(255,255,255,0.018);
 }
 
@@ -1840,7 +1840,7 @@ textarea:focus-visible {
   height: 36px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #111214;
+  background: var(--bg-raised);
   color: var(--text-primary);
   box-shadow: none;
 }
@@ -1885,7 +1885,7 @@ textarea:focus-visible {
   min-width: 32px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--workspace-bg);
   overflow: hidden;
 }
 
@@ -1905,7 +1905,7 @@ textarea:focus-visible {
 }
 
 .collaboratorItem .inlineAction:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-hover);
 }
 
 .collaboratorForm {
@@ -1981,7 +1981,7 @@ textarea:focus-visible {
 
 .collaboratorForm [data-variant='drawer'] .option:hover,
 .collaboratorForm [data-variant='drawer'] .optionActive {
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
 }
 
 .collaboratorForm [data-variant='drawer'] .option + .option {
@@ -2059,7 +2059,7 @@ textarea:focus-visible {
   max-width: 240px;
   padding: 0 10px;
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font-size: 11.5px;
   font-weight: 650;
@@ -2198,7 +2198,7 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   font-size: 11px;
   font-weight: 700;
   display: inline-flex;
@@ -2215,14 +2215,14 @@ textarea:focus-visible {
 .subtaskForm input {
   height: 42px;
   padding: 0 14px;
-  border-radius: 11px;
+  border-radius: var(--workspace-card-radius);
   background: #0d0e0f;
   font-size: 13.5px;
 }
 
 .subtaskForm button {
   height: 42px;
-  border-radius: 11px;
+  border-radius: var(--workspace-card-radius);
 }
 
 /* Comentários */
@@ -2287,7 +2287,7 @@ textarea:focus-visible {
 .commentForm textarea {
   min-height: 78px;
   padding: 12px 14px;
-  border-radius: 11px;
+  border-radius: var(--workspace-card-radius);
   background: #0d0e0f;
   font-size: 13.5px;
   line-height: 1.45;
@@ -2296,7 +2296,7 @@ textarea:focus-visible {
 .commentForm button {
   height: 42px;
   align-self: end;
-  border-radius: 11px;
+  border-radius: var(--workspace-card-radius);
 }
 
 /* Aside do drawer */
@@ -2312,7 +2312,7 @@ textarea:focus-visible {
 .taskField input,
 .taskField select {
   height: 40px;
-  border-radius: 11px;
+  border-radius: var(--workspace-card-radius);
 }
 
 .priorityField {
@@ -2383,11 +2383,11 @@ textarea:focus-visible {
   width: 28px;
   height: 28px;
   min-width: 28px;
-  border-radius: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: var(--accent-amber) !important;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent-amber);
 }
 
 .projectIcon svg {
@@ -2403,10 +2403,10 @@ textarea:focus-visible {
 .taskField [data-variant='default'] .option,
 .userPickerDrawer [data-variant='drawer'] .option,
 .collaboratorForm [data-variant='drawer'] .option {
-  border: 0 !important;
-  border-radius: 7px !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .userPickerInline [data-variant='default'] .option:hover,
@@ -2421,7 +2421,7 @@ textarea:focus-visible {
 .userPickerDrawer [data-variant='drawer'] .optionActive,
 .collaboratorForm [data-variant='drawer'] .option:hover,
 .collaboratorForm [data-variant='drawer'] .optionActive {
-  background: rgba(255, 255, 255, 0.045) !important;
+  background: var(--bg-selected);
 }
 
 .userPickerInline [data-variant='default'] .list,
@@ -2430,7 +2430,7 @@ textarea:focus-visible {
 .taskField [data-variant='default'] .list,
 .userPickerDrawer [data-variant='drawer'] .list,
 .collaboratorForm [data-variant='drawer'] .list {
-  gap: 1px !important;
+  gap: 1px;
 }
 
 
@@ -2672,7 +2672,7 @@ textarea:focus-visible {
 
 .sectionVirtual .sectionIndex {
   color: var(--accent-amber);
-  border-color: rgba(245, 184, 0, 0.24);
+  border-color: var(--accent-line);
   background: rgba(245, 184, 0, 0.055);
 }
 
@@ -2761,9 +2761,9 @@ textarea:focus-visible {
 input:focus,
 select:focus,
 textarea:focus {
-  outline: none !important;
-  box-shadow: none !important;
-  border-color: var(--line-strong) !important;
+  outline: none;
+  box-shadow: none;
+  border-color: var(--line-strong);
 }
 
 /* Remove qualquer outline amarelo herdado por focus-visible no módulo */
@@ -2782,8 +2782,8 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
+  outline: none;
+  box-shadow: none;
 }
 
 /* Ordenar funcional preservado, mas sem decisão visual invasiva */
@@ -2792,7 +2792,7 @@ textarea:focus-visible {
   padding: 0 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font-size: 10.5px;
   font-weight: 700;
@@ -2828,67 +2828,67 @@ textarea:focus-visible {
 
 /* Header: métricas como linha compacta, não cards */
 .summaryInline {
-  margin-top: 8px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  flex-wrap: wrap !important;
-  gap: 0 !important;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0;
 }
 
 .summaryPill,
 .summaryPillAccent {
-  min-width: 0 !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  display: inline-flex !important;
-  align-items: baseline !important;
-  gap: 5px !important;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
 }
 
 .summaryPill + .summaryPill::before,
 .summaryPill + .summaryPillAccent::before,
 .summaryPillAccent + .summaryPill::before {
-  content: "•" !important;
-  margin: 0 10px !important;
-  color: var(--text-tertiary) !important;
-  font-size: 12px !important;
+  content: "•";
+  margin: 0 10px;
+  color: var(--text-tertiary);
+  font-size: 12px;
 }
 
 .summaryLabel {
-  color: var(--text-secondary) !important;
-  font-size: 11.5px !important;
-  font-weight: 620 !important;
-  letter-spacing: 0 !important;
-  line-height: 1 !important;
-  text-transform: lowercase !important;
-  order: 2 !important;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 620;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: lowercase;
+  order: 2;
 }
 
 .summaryValue {
-  color: var(--accent-amber) !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  order: 1 !important;
+  color: var(--accent-amber);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  order: 1;
 }
 
 .summaryPillAccent .summaryLabel,
 .summaryPillAccent .summaryValue {
-  color: var(--accent-amber) !important;
+  color: var(--accent-amber);
 }
 
 /* Header mais contido sem recriar layout inteiro */
 .detailHero {
-  padding-top: 13px !important;
-  padding-bottom: 12px !important;
+  padding-top: 13px;
+  padding-bottom: 12px;
 }
 
 .projectHeading h1 {
-  font-size: clamp(22px, 1.34vw, 26px) !important;
+  font-size: clamp(22px, 1.34vw, 26px);
 }
 
 /* UserPicker em áreas de tabela/toolbar: lista plana e densa */
@@ -2897,8 +2897,8 @@ textarea:focus-visible {
 .taskMeta .popover,
 .taskField .popover,
 .collaboratorForm .popover {
-  border-radius: 10px !important;
-  padding: 0 !important;
+  border-radius: 10px;
+  padding: 0;
 }
 
 .createTask .option,
@@ -2906,12 +2906,12 @@ textarea:focus-visible {
 .taskMeta .option,
 .taskField .option,
 .collaboratorForm .option {
-  min-height: 34px !important;
-  padding: 4px 8px !important;
-  border: 0 !important;
-  border-radius: 6px !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  min-height: 34px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .createTask .option:hover,
@@ -2924,7 +2924,7 @@ textarea:focus-visible {
 .taskField .optionActive,
 .collaboratorForm .option:hover,
 .collaboratorForm .optionActive {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: var(--bg-hover);
 }
 
 .createTask .list,
@@ -2932,8 +2932,8 @@ textarea:focus-visible {
 .taskMeta .list,
 .taskField .list,
 .collaboratorForm .list {
-  gap: 0 !important;
-  padding: 4px !important;
+  gap: 0;
+  padding: 4px;
 }
 
 .createTask .optionMain strong,
@@ -2941,8 +2941,8 @@ textarea:focus-visible {
 .taskMeta .optionMain strong,
 .taskField .optionMain strong,
 .collaboratorForm .optionMain strong {
-  font-size: 12.5px !important;
-  line-height: 1.15 !important;
+  font-size: 12.5px;
+  line-height: 1.15;
 }
 
 .createTask .optionMain small,
@@ -2950,8 +2950,8 @@ textarea:focus-visible {
 .taskMeta .optionMain small,
 .taskField .optionMain small,
 .collaboratorForm .optionMain small {
-  font-size: 10.5px !important;
-  line-height: 1.15 !important;
+  font-size: 10.5px;
+  line-height: 1.15;
 }
 
 
@@ -2959,132 +2959,132 @@ textarea:focus-visible {
 
 /* Header compacto: sem ícone de projeto */
 .detailHero {
-  padding: 12px 24px 10px !important;
-  gap: 8px !important;
-  border-bottom: 1px solid var(--line) !important;
+  padding: 12px 24px 10px;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
 }
 
 .projectIcon {
-  display: none !important;
+  display: none;
 }
 
 .projectTitleRow {
-  display: block !important;
-  min-width: 0 !important;
+  display: block;
+  min-width: 0;
 }
 
 .projectHeading {
-  gap: 4px !important;
+  gap: 4px;
 }
 
 .projectHeading h1 {
-  max-width: 720px !important;
-  font-size: clamp(22px, 1.32vw, 26px) !important;
-  line-height: 1.02 !important;
+  max-width: 720px;
+  font-size: clamp(22px, 1.32vw, 26px);
+  line-height: 1.02;
 }
 
 .heroMeta {
-  margin-left: 0 !important;
-  margin-top: 2px !important;
-  font-size: 12px !important;
+  margin-left: 0;
+  margin-top: 2px;
+  font-size: 12px;
 }
 
 .summaryInline {
-  margin-top: 7px !important;
+  margin-top: 7px;
 }
 
 .projectHeaderActions {
-  align-self: start !important;
+  align-self: start;
 }
 
 /* Criação + filtros visualmente como uma única toolbar */
 .createTask {
-  min-height: 44px !important;
-  padding: 8px 24px 6px !important;
-  border-bottom: 0 !important;
-  background: #0a0b0c !important;
-  grid-template-columns: minmax(360px, 1fr) minmax(190px, 230px) minmax(210px, 260px) 126px 64px !important;
-  gap: 8px !important;
+  min-height: 44px;
+  padding: 8px 24px 6px;
+  border-bottom: 0;
+  background: #0a0b0c;
+  grid-template-columns: minmax(360px, 1fr) minmax(190px, 230px) minmax(210px, 260px) 126px 64px;
+  gap: 8px;
 }
 
 .createTaskTitleWrap input,
 .createTask > input,
 .createSelect,
 .createTask button {
-  height: 34px !important;
-  min-height: 34px !important;
-  border-radius: 9px !important;
+  height: 34px;
+  min-height: 34px;
+  border-radius: 9px;
 }
 
 .taskToolbar {
-  min-height: 44px !important;
-  padding: 4px 24px 8px !important;
-  border-top: 0 !important;
-  border-bottom: 1px solid var(--line) !important;
-  background: #0a0b0c !important;
-  display: grid !important;
-  grid-template-columns: minmax(0, auto) minmax(300px, auto) !important;
-  align-items: end !important;
-  justify-content: space-between !important;
-  gap: 14px !important;
+  min-height: 44px;
+  padding: 4px 24px 8px;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  background: #0a0b0c;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(300px, auto);
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
 }
 
 .taskToolbarGroup {
-  display: flex !important;
-  align-items: end !important;
-  gap: 8px !important;
+  display: flex;
+  align-items: end;
+  gap: 8px;
 }
 
 .toolbarField {
-  min-width: 132px !important;
-  gap: 5px !important;
+  min-width: 132px;
+  gap: 5px;
 }
 
 .toolbarField > span {
-  font-size: 8.8px !important;
-  letter-spacing: 0.12em !important;
+  font-size: 8.8px;
+  letter-spacing: 0.12em;
 }
 
 .toolbarSelect,
 .taskToolbar .toolbarField button,
 .taskToolbar .toolbarField [role="combobox"],
 .taskToolbar .toolbarField select {
-  min-width: 132px !important;
-  height: 34px !important;
-  min-height: 34px !important;
-  border-radius: 9px !important;
+  min-width: 132px;
+  height: 34px;
+  min-height: 34px;
+  border-radius: 9px;
 }
 
 .sectionCreateForm {
-  justify-self: end !important;
-  display: flex !important;
-  align-items: end !important;
-  gap: 8px !important;
+  justify-self: end;
+  display: flex;
+  align-items: end;
+  gap: 8px;
 }
 
 .sectionCreateForm input {
-  width: 230px !important;
-  height: 34px !important;
-  min-height: 34px !important;
+  width: 230px;
+  height: 34px;
+  min-height: 34px;
 }
 
 .sectionCreateForm button {
-  height: 34px !important;
-  min-height: 34px !important;
-  white-space: nowrap !important;
+  height: 34px;
+  min-height: 34px;
+  white-space: nowrap;
 }
 
 /* Tabela sobe e ganha protagonismo */
 .taskTableHeader {
-  min-height: 34px !important;
+  min-height: 34px;
 }
 
 .sectionToggle {
-  min-height: 40px !important;
+  min-height: 40px;
 }
 
 .task {
-  min-height: 46px !important;
+  min-height: 46px;
 }
 
 /* Nenhum focus amarelo no módulo */
@@ -3104,8 +3104,8 @@ textarea:focus-visible {
 .page select:focus-visible,
 .page textarea:focus-visible,
 .page button:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
+  outline: none;
+  box-shadow: none;
 }
 
 /* Notebook */
@@ -3113,109 +3113,109 @@ textarea:focus-visible {
   .detailHero,
   .createTask,
   .taskToolbar {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .projectHeading h1 {
-    max-width: 620px !important;
-    font-size: clamp(21px, 1.26vw, 24px) !important;
+    max-width: 620px;
+    font-size: clamp(21px, 1.26vw, 24px);
   }
 
   .createTask {
-    grid-template-columns: minmax(300px, 1fr) minmax(170px, 210px) minmax(190px, 230px) 112px 60px !important;
+    grid-template-columns: minmax(300px, 1fr) minmax(170px, 210px) minmax(190px, 230px) 112px 60px;
   }
 
   .sectionCreateForm input {
-    width: 210px !important;
+    width: 210px;
   }
 }
 
 @media (max-width: 1280px) {
   .createTask {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: 1fr 1fr;
   }
 
   .taskToolbar {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .sectionCreateForm {
-    justify-self: start !important;
+    justify-self: start;
   }
 }
 
 
 /* PATCH v43 — command bar sênior: criação, filtro, ordenar e seção em uma área única */
 .commandBar {
-  padding: 10px 24px 10px !important;
-  border-bottom: 1px solid var(--line) !important;
-  background: #0a0b0c !important;
-  display: grid !important;
-  gap: 8px !important;
+  padding: 10px 24px 10px;
+  border-bottom: 1px solid var(--line);
+  background: #0a0b0c;
+  display: grid;
+  gap: 8px;
 }
 
 .commandPrimary,
 .commandSecondary {
-  min-width: 0 !important;
+  min-width: 0;
 }
 
 .commandPrimary {
-  display: block !important;
+  display: block;
 }
 
 .commandSecondary {
-  display: grid !important;
-  grid-template-columns: minmax(0, auto) minmax(260px, auto) !important;
-  align-items: end !important;
-  justify-content: space-between !important;
-  gap: 14px !important;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(260px, auto);
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
 }
 
 .createTask {
-  min-height: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  display: grid !important;
-  grid-template-columns: minmax(340px, 1fr) minmax(190px, 230px) minmax(210px, 260px) 126px 64px !important;
-  gap: 8px !important;
-  align-items: center !important;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) minmax(190px, 230px) minmax(210px, 260px) 126px 64px;
+  gap: 8px;
+  align-items: center;
 }
 
 .taskToolbar {
-  display: contents !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
+  display: contents;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .taskToolbarGroup {
-  display: flex !important;
-  align-items: end !important;
-  gap: 8px !important;
+  display: flex;
+  align-items: end;
+  gap: 8px;
 }
 
 .toolbarField {
-  min-width: 132px !important;
-  gap: 4px !important;
+  min-width: 132px;
+  gap: 4px;
 }
 
 .toolbarField > span {
-  font-size: 8.8px !important;
-  line-height: 1 !important;
-  letter-spacing: 0.12em !important;
+  font-size: 8.8px;
+  line-height: 1;
+  letter-spacing: 0.12em;
 }
 
 .toolbarSelect,
 .taskToolbar .toolbarField button,
 .taskToolbar .toolbarField [role="combobox"],
 .taskToolbar .toolbarField select {
-  height: 32px !important;
-  min-height: 32px !important;
-  min-width: 132px !important;
-  border-radius: 8px !important;
+  height: 32px;
+  min-height: 32px;
+  min-width: 132px;
+  border-radius: 8px;
 }
 
 .createTaskTitleWrap input,
@@ -3224,60 +3224,60 @@ textarea:focus-visible {
 .createTask button,
 .sectionCreateForm input,
 .sectionCreateForm button {
-  height: 34px !important;
-  min-height: 34px !important;
-  border-radius: 9px !important;
+  height: 34px;
+  min-height: 34px;
+  border-radius: 9px;
 }
 
 .sectionCreateForm {
-  justify-self: end !important;
-  display: flex !important;
-  align-items: end !important;
-  gap: 8px !important;
+  justify-self: end;
+  display: flex;
+  align-items: end;
+  gap: 8px;
 }
 
 .sectionCreateForm input {
-  width: 250px !important;
+  width: 250px;
 }
 
 .sectionCreateForm button {
-  white-space: nowrap !important;
+  white-space: nowrap;
 }
 
 .sections {
-  background: #08090a !important;
+  background: var(--workspace-bg);
 }
 
 .taskTableHeader {
-  top: 0 !important;
+  top: 0;
 }
 
 @media (max-width: 1440px) {
   .commandBar {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .createTask {
-    grid-template-columns: minmax(300px, 1fr) minmax(170px, 210px) minmax(190px, 230px) 112px 60px !important;
+    grid-template-columns: minmax(300px, 1fr) minmax(170px, 210px) minmax(190px, 230px) 112px 60px;
   }
 
   .sectionCreateForm input {
-    width: 220px !important;
+    width: 220px;
   }
 }
 
 @media (max-width: 1280px) {
   .createTask {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: 1fr 1fr;
   }
 
   .commandSecondary {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .sectionCreateForm {
-    justify-self: start !important;
+    justify-self: start;
   }
 }
 
@@ -3293,160 +3293,160 @@ textarea:focus-visible {
 */
 
 .commandBar {
-  padding: 8px 24px !important;
-  border-top: 1px solid var(--line) !important;
-  border-bottom: 1px solid var(--line) !important;
-  background: #0a0b0c !important;
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  grid-template-areas: "primary secondary" !important;
-  align-items: center !important;
-  gap: 14px !important;
+  padding: 8px 24px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: #0a0b0c;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "primary secondary";
+  align-items: center;
+  gap: 14px;
 }
 
 .commandPrimary {
-  grid-area: primary !important;
-  min-width: 0 !important;
+  grid-area: primary;
+  min-width: 0;
 }
 
 .commandSecondary {
-  grid-area: secondary !important;
-  min-width: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 8px !important;
+  grid-area: secondary;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 /* A criação fica em uma linha horizontal simples */
 .createTask {
-  width: 100% !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  display: grid !important;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: grid;
   grid-template-columns:
     minmax(260px, 1fr)
     minmax(150px, 190px)
     minmax(170px, 220px)
     108px
-    58px !important;
-  gap: 8px !important;
-  align-items: center !important;
+    58px;
+  gap: 8px;
+  align-items: center;
 }
 
 .createTaskTitleWrap input,
 .createTask > input,
 .createSelect,
 .createTask button {
-  height: 34px !important;
-  min-height: 34px !important;
-  border-radius: 9px !important;
-  font-size: 12.5px !important;
+  height: 34px;
+  min-height: 34px;
+  border-radius: 9px;
+  font-size: 12.5px;
 }
 
 /* Remove visual de segunda barra */
 .taskToolbar {
-  display: contents !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
+  display: contents;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 /* Filtro/ordem viram controles inline compactos, sem label vertical */
 .taskToolbarGroup {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .toolbarField {
-  min-width: 0 !important;
-  height: 34px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0 !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 999px !important;
-  background: #101112 !important;
-  overflow: hidden !important;
+  min-width: 0;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #101112;
+  overflow: hidden;
 }
 
 .toolbarField > span {
-  height: 100% !important;
-  padding: 0 8px 0 10px !important;
-  border-right: 1px solid var(--line) !important;
-  color: var(--text-tertiary) !important;
-  font-size: 9px !important;
-  font-weight: 780 !important;
-  letter-spacing: 0.09em !important;
-  text-transform: uppercase !important;
-  display: inline-flex !important;
-  align-items: center !important;
+  height: 100%;
+  padding: 0 8px 0 10px;
+  border-right: 1px solid var(--line);
+  color: var(--text-tertiary);
+  font-size: 9px;
+  font-weight: 780;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
 }
 
 .toolbarSelect,
 .taskToolbar .toolbarField button,
 .taskToolbar .toolbarField [role="combobox"],
 .taskToolbar .toolbarField select {
-  min-width: 92px !important;
-  width: auto !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  padding: 0 28px 0 10px !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  color: var(--text-primary) !important;
-  font-size: 12px !important;
-  font-weight: 720 !important;
-  box-shadow: none !important;
+  min-width: 92px;
+  width: auto;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 28px 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 720;
+  box-shadow: none;
 }
 
 .toolbarField:hover {
-  border-color: var(--line-strong) !important;
-  background: #121314 !important;
+  border-color: var(--line-strong);
+  background: #121314;
 }
 
 .toolbarField:focus-within {
-  border-color: var(--line-strong) !important;
+  border-color: var(--line-strong);
 }
 
 /* Criação de seção como ação secundária compacta */
 .sectionCreateForm {
-  min-width: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .sectionCreateForm input {
-  width: 168px !important;
-  height: 34px !important;
-  min-height: 34px !important;
-  border-radius: 9px !important;
-  font-size: 12.5px !important;
+  width: 168px;
+  height: 34px;
+  min-height: 34px;
+  border-radius: 9px;
+  font-size: 12.5px;
 }
 
 .sectionCreateForm button {
-  height: 34px !important;
-  min-height: 34px !important;
-  padding: 0 11px !important;
-  border-radius: 9px !important;
-  font-size: 12px !important;
-  white-space: nowrap !important;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 /* Tabela encosta na command bar sem parecer bloco separado */
 .sections {
-  border-top: 0 !important;
+  border-top: 0;
 }
 
 .taskTableHeader {
-  top: 0 !important;
-  border-top: 0 !important;
+  top: 0;
+  border-top: 0;
 }
 
 /* Sem focus amarelo em qualquer controle dessa barra */
@@ -3458,16 +3458,16 @@ textarea:focus-visible {
 .commandBar select:focus-visible,
 .commandBar textarea:focus-visible,
 .commandBar button:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
+  outline: none;
+  box-shadow: none;
 }
 
 /* Notebook */
 @media (max-width: 1440px) {
   .commandBar {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    gap: 10px !important;
+    padding-left: 20px;
+    padding-right: 20px;
+    gap: 10px;
   }
 
   .createTask {
@@ -3476,41 +3476,41 @@ textarea:focus-visible {
       minmax(138px, 172px)
       minmax(150px, 200px)
       100px
-      56px !important;
+      56px;
   }
 
   .toolbarField > span {
-    padding-left: 8px !important;
-    padding-right: 7px !important;
+    padding-left: 8px;
+    padding-right: 7px;
   }
 
   .toolbarSelect,
   .taskToolbar .toolbarField button,
   .taskToolbar .toolbarField [role="combobox"],
   .taskToolbar .toolbarField select {
-    min-width: 84px !important;
+    min-width: 84px;
   }
 
   .sectionCreateForm input {
-    width: 150px !important;
+    width: 150px;
   }
 }
 
 @media (max-width: 1280px) {
   .commandBar {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
     grid-template-areas:
       "primary"
-      "secondary" !important;
-    align-items: stretch !important;
+      "secondary";
+    align-items: stretch;
   }
 
   .commandSecondary {
-    justify-content: space-between !important;
+    justify-content: space-between;
   }
 
   .createTask {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -3519,29 +3519,29 @@ textarea:focus-visible {
    Inspirado nas referências: ação primária em cima, utilidades compactas abaixo.
 */
 .commandBar {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  gap: 10px !important;
-  padding: 10px 24px 12px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px 24px 12px;
 }
 
 .commandPrimary,
 .commandSecondary {
-  width: 100% !important;
-  min-width: 0 !important;
+  width: 100%;
+  min-width: 0;
 }
 
 .commandSecondary {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .createTask {
-  grid-template-columns: minmax(0, 1fr) 220px 240px 120px 76px !important;
-  gap: 10px !important;
+  grid-template-columns: minmax(0, 1fr) 220px 240px 120px 76px;
+  gap: 10px;
 }
 
 .createTaskTitleWrap input,
@@ -3553,166 +3553,166 @@ textarea:focus-visible {
 .toolbarField,
 .toolbarSelect,
 .taskToolbarGroup :is(button, [role='combobox'], select) {
-  height: 38px !important;
-  min-height: 38px !important;
+  height: 38px;
+  min-height: 38px;
 }
 
 .taskToolbarGroup {
-  display: flex !important;
-  align-items: center !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
-  min-width: 0 !important;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
 }
 
 .toolbarField {
-  padding: 0 10px 0 12px !important;
-  border-radius: 999px !important;
-  gap: 8px !important;
-  overflow: visible !important;
-  flex: 0 0 auto !important;
+  padding: 0 10px 0 12px;
+  border-radius: 999px;
+  gap: 8px;
+  overflow: visible;
+  flex: 0 0 auto;
 }
 
 .toolbarField > span {
-  padding: 0 !important;
-  border-right: 0 !important;
-  color: var(--text-secondary) !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.01em !important;
-  text-transform: none !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
+  padding: 0;
+  border-right: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .toolbarSelect,
 .taskToolbarGroup :is(button, [role='combobox'], select) {
-  min-width: 88px !important;
-  width: auto !important;
-  padding: 0 26px 0 0 !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
+  min-width: 88px;
+  width: auto;
+  padding: 0 26px 0 0;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .sectionCreateForm {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 8px !important;
-  flex: 0 0 auto !important;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
 }
 
 .sectionCreateForm input {
-  width: 260px !important;
+  width: 260px;
 }
 
 .sectionCreateForm button {
-  padding: 0 14px !important;
+  padding: 0 14px;
 }
 
 @media (max-width: 1440px) {
   .commandBar {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .createTask {
-    grid-template-columns: minmax(0, 1fr) 190px 210px 108px 72px !important;
+    grid-template-columns: minmax(0, 1fr) 190px 210px 108px 72px;
   }
 
   .sectionCreateForm input {
-    width: 232px !important;
+    width: 232px;
   }
 }
 
 @media (max-width: 1280px) {
   .commandBar {
-    gap: 12px !important;
+    gap: 12px;
   }
 
   .createTask {
-    grid-template-columns: minmax(0, 1fr) 180px 190px 100px 70px !important;
+    grid-template-columns: minmax(0, 1fr) 180px 190px 100px 70px;
   }
 
   .commandSecondary {
-    gap: 10px !important;
+    gap: 10px;
   }
 
   .sectionCreateForm input {
-    width: 200px !important;
+    width: 200px;
   }
 }
 
 
 /* PATCH v46 — Filtro/Ordem sem pill dupla */
 .taskToolbarGroup {
-  gap: 14px !important;
+  gap: 14px;
 }
 
 .toolbarField {
-  height: 36px !important;
-  min-height: 36px !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  overflow: visible !important;
-  gap: 8px !important;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  gap: 8px;
 }
 
 .toolbarField:hover,
 .toolbarField:focus-within {
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .toolbarField > span {
-  height: 36px !important;
-  padding: 0 !important;
-  border: 0 !important;
-  color: var(--text-secondary) !important;
-  font-size: 12px !important;
-  font-weight: 720 !important;
-  letter-spacing: 0 !important;
-  text-transform: none !important;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .toolbarField .toolbarSelect {
-  min-width: 112px !important;
+  min-width: 112px;
 }
 
 .toolbarField .toolbarSelect,
 .taskToolbarGroup .toolbarField .toolbarSelect,
 .taskToolbarGroup .toolbarField [class*="wrap"] {
-  height: 36px !important;
-  min-height: 36px !important;
-  border: 0 !important;
-  background: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  height: 36px;
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .toolbarField .toolbarSelect button,
 .taskToolbarGroup .toolbarField button,
 .taskToolbarGroup .toolbarField [role="combobox"] {
-  height: 36px !important;
-  min-height: 36px !important;
-  min-width: 112px !important;
-  padding: 0 12px !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 10px !important;
-  background: #111214 !important;
-  color: var(--text-primary) !important;
-  box-shadow: none !important;
+  height: 36px;
+  min-height: 36px;
+  min-width: 112px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  box-shadow: none;
 }
 
 .toolbarField .toolbarSelect button:hover,
 .taskToolbarGroup .toolbarField button:hover,
 .taskToolbarGroup .toolbarField [role="combobox"]:hover {
-  border-color: var(--line-strong) !important;
-  background: #121314 !important;
+  border-color: var(--line-strong);
+  background: #121314;
 }
 
 .toolbarField .toolbarSelect button:focus,
@@ -3721,17 +3721,17 @@ textarea:focus-visible {
 .taskToolbarGroup .toolbarField button:focus-visible,
 .taskToolbarGroup .toolbarField [role="combobox"]:focus,
 .taskToolbarGroup .toolbarField [role="combobox"]:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
-  border-color: var(--line-strong) !important;
+  outline: none;
+  box-shadow: none;
+  border-color: var(--line-strong);
 }
 
 /* Evita que o Select interno herde borda/pill antiga do container */
 .toolbarField > div {
-  border: 0 !important;
-  background: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Fase 67 — workspace foundation */
@@ -3764,4 +3764,174 @@ textarea:focus-visible {
 .projectButtonActive {
   border-color: var(--workspace-panel-border);
   background: var(--bg-selected);
+}
+
+
+/* ==========================================================================
+   v69 · ProjectsPage cleanup real
+   Consolida o workspace de projetos sem alterar lógica ou JSX.
+   ========================================================================== */
+.page,
+.mainPanel {
+  background: var(--workspace-bg);
+  color: var(--text-primary);
+}
+
+.grid {
+  height: calc(100dvh - var(--chassis-header-height) - var(--chassis-page-header-height) - (var(--app-frame-padding) * 2));
+  border-top-color: var(--workspace-panel-border-soft);
+}
+
+.sidebarPanel,
+.detailHero,
+.taskModalCard {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.projectButton,
+.projectHeaderAction,
+.projectStat,
+.viewTab,
+.viewFilter,
+.sectionCard,
+.taskPanel,
+.activityPanel,
+.emptyCard,
+.projectHeader,
+.projectTools,
+.sectionForm,
+.taskModalCard,
+.taskAside,
+.taskModalMain,
+.taskInput,
+.taskSelect,
+.taskTextarea,
+.activityItem,
+.noteCard {
+  border-radius: var(--workspace-card-radius);
+  box-shadow: none;
+}
+
+.projectButton {
+  border-color: transparent;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.projectButton:hover {
+  background: var(--bg-hover);
+}
+
+.projectButtonActive {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-selected);
+}
+
+.projectButtonActive::before {
+  background: var(--accent);
+}
+
+.detailHero,
+.projectStats,
+.sections,
+.taskModalMain,
+.taskAside {
+  background: var(--workspace-bg);
+}
+
+.projectIcon {
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--bg-app);
+}
+
+.projectHeaderAction,
+.viewTab,
+.viewFilter,
+.taskInput,
+.taskSelect,
+.taskTextarea,
+.addButton,
+.headerButton,
+.noteButton,
+.removeTask,
+.removeSection,
+.addTaskRow button {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+}
+
+.projectHeaderAction:hover,
+.viewTab:hover,
+.viewFilter:hover,
+.addButton:hover:not(:disabled),
+.headerButton:hover:not(:disabled),
+.noteButton:hover:not(:disabled),
+.removeTask:hover:not(:disabled),
+.removeSection:hover,
+.addTaskRow button:hover:not(:disabled) {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+}
+
+.viewTabActive,
+.viewFilterActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.sectionCard,
+.taskPanel,
+.activityPanel,
+.emptyCard,
+.projectHeader,
+.projectTools,
+.sectionForm {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.taskModalOverlay {
+  z-index: var(--chassis-z-dialog);
+  background: rgba(8, 9, 10, 0.72);
+  backdrop-filter: none;
+}
+
+.taskModalCard {
+  max-height: min(780px, calc(100dvh - 48px));
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.taskModalHeader,
+.taskModalFooter {
+  min-height: 54px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.taskModalBody {
+  background: var(--workspace-bg);
+}
+
+@media (max-width: 960px) {
+  .grid {
+    height: auto;
+    min-height: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebarPanel {
+    display: none;
+  }
+
+  .mainPanel {
+    min-height: 100%;
+  }
 }
