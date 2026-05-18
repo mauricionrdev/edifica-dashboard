@@ -299,6 +299,54 @@ async function fetchCostsTotal(start, end) {
   };
 }
 
+async function runLimited(items, limit, mapper) {
+  const results = new Array(items.length);
+  let index = 0;
+
+  async function worker() {
+    while (index < items.length) {
+      const currentIndex = index;
+      index += 1;
+      results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
+async function fetchCostsByProjectFilter(start, end, projects = []) {
+  const byProject = new Map();
+  const details = [];
+
+  const activeProjects = projects.filter((project) => project.id);
+  await runLimited(activeProjects, 5, async (project) => {
+    const buckets = await fetchAllPages('/organization/costs', {
+      start_time: toUnix(start),
+      end_time: toUnix(end),
+      bucket_width: '1d',
+      project_ids: [project.id],
+      limit: 180,
+    });
+
+    const spend = sumCostsFromBuckets(buckets);
+    byProject.set(project.id, spend);
+    details.push({
+      projectId: project.id,
+      projectName: project.name,
+      spend,
+      bucketCount: buckets.length,
+    });
+  });
+
+  return {
+    byProject,
+    details: details.sort((a, b) => Number(b.spend || 0) - Number(a.spend || 0)),
+    groupedTotal: toMoney(Array.from(byProject.values()).reduce((sum, value) => sum + Number(value || 0), 0)),
+    bucketCount: details.reduce((sum, item) => sum + Number(item.bucketCount || 0), 0),
+  };
+}
+
 async function fetchCostsByProject(start, end) {
   const buckets = await fetchAllPages('/organization/costs', {
     start_time: toUnix(start),
@@ -450,7 +498,7 @@ async function saveSnapshot({ cacheKey, start, end, payload, forced = false, use
   );
 }
 
-function buildReport({ start, end, projects, aliases, costsByProject, usageByProject, costSummary = {}, lineItemSummary = {}, preferProjectMonthlySpend = false }) {
+function buildReport({ start, end, projects, aliases, costsByProject, usageByProject, costSummary = {}, lineItemSummary = {}, spendSource = 'costs_api_project_filter' }) {
   const aliasByProject = new Map(aliases.map((item) => [item.projectId, item]));
   const projectById = new Map(projects.map((project) => [project.id, project]));
   const allProjectIds = new Set([
@@ -469,7 +517,7 @@ function buildReport({ start, end, projects, aliases, costsByProject, usageByPro
       const displayName = alias.displayName || safeName(projectName) || projectId;
       const apiCostSpend = toMoney(costsByProject.get(projectId) || 0);
       const monthlySpend = project.monthlySpend;
-      const spend = preferProjectMonthlySpend && monthlySpend != null ? toMoney(monthlySpend) : apiCostSpend;
+      const spend = apiCostSpend;
       const usage = usageByProject.get(projectId) || {};
       const isLegacy = alias.projectType === 'legacy' || String(projectName).toLowerCase() === 'default project';
 
@@ -484,7 +532,7 @@ function buildReport({ start, end, projects, aliases, costsByProject, usageByPro
         spend,
         apiCostSpend,
         monthlySpend,
-        costSource: preferProjectMonthlySpend && monthlySpend != null ? 'projects_monthly_spend' : 'costs_api',
+        costSource: spendSource,
         inputTokens: Number(usage.inputTokens || 0),
         outputTokens: Number(usage.outputTokens || 0),
         totalTokens: Number(usage.totalTokens || 0),
@@ -505,8 +553,8 @@ function buildReport({ start, end, projects, aliases, costsByProject, usageByPro
   const groupedProjectSpend = toMoney(entries.reduce((sum, item) => sum + item.spend, 0));
   const activeProjectSpend = toMoney(rows.reduce((sum, item) => sum + item.spend, 0));
   const apiTotalSpend = costSummary.total != null ? toMoney(costSummary.total) : null;
-  const totalSpend = preferProjectMonthlySpend ? groupedProjectSpend : (apiTotalSpend ?? groupedProjectSpend);
-  const unclassifiedSpend = !preferProjectMonthlySpend && apiTotalSpend != null
+  const totalSpend = groupedProjectSpend;
+  const unclassifiedSpend = apiTotalSpend != null
     ? toMoney(Math.max(0, apiTotalSpend - groupedProjectSpend))
     : 0;
   const totalTokens = rows.reduce((sum, item) => sum + item.totalTokens, 0);
@@ -530,7 +578,7 @@ function buildReport({ start, end, projects, aliases, costsByProject, usageByPro
       label: `${toDateOnly(start)} até ${toDateOnly(end)}`,
     },
     totalSpend,
-    spendSource: preferProjectMonthlySpend ? 'projects_monthly_spend' : 'costs_api',
+    spendSource,
     activeProjectSpend,
     activeClientSpend: activeProjectSpend,
     groupedProjectSpend,
@@ -561,7 +609,7 @@ function buildReport({ start, end, projects, aliases, costsByProject, usageByPro
     reconciliation: {
       costsTotalFromOpenAI: apiTotalSpend ?? totalSpend,
       costsGroupedByProject: costSummary.groupedTotal ?? groupedProjectSpend,
-      projectsMonthlySpend: groupedProjectSpend,
+      projectsFilteredSpend: groupedProjectSpend,
       costsGroupedByProjectLineItem: lineItemSummary.groupedTotal ?? null,
       difference: apiTotalSpend != null ? toMoney(apiTotalSpend - (costSummary.groupedTotal ?? groupedProjectSpend)) : 0,
       unclassifiedSpend,
@@ -604,14 +652,15 @@ export async function getOpenAIUsageReport({ start: startValue, end: endValue, f
   await upsertProjectAliases(projects);
   const aliases = await listAliases();
 
-  const [totalCostSummary, projectCostSummary, lineItemSummary, usageByProject] = await Promise.all([
+  const [totalCostSummary, filteredProjectCostSummary, groupedProjectCostSummary, lineItemSummary, usageByProject] = await Promise.all([
     fetchCostsTotal(start, end),
-    fetchCostsByProject(start, end),
+    fetchCostsByProjectFilter(start, end, projects),
+    fetchCostsByProject(start, end).catch(() => ({ byProject: new Map(), groupedTotal: null, bucketCount: null })),
     fetchCostsByProjectLineItem(start, end).catch(() => ({ byProject: new Map(), lineItems: [], groupedTotal: null, bucketCount: null })),
     fetchUsageByProject(start, end).catch(() => new Map()),
   ]);
 
-  const costsByProject = projectCostSummary.byProject;
+  const costsByProject = filteredProjectCostSummary.byProject;
 
   const report = buildReport({
     start,
@@ -620,9 +669,15 @@ export async function getOpenAIUsageReport({ start: startValue, end: endValue, f
     aliases,
     costsByProject,
     usageByProject,
-    costSummary: { ...totalCostSummary, groupedTotal: projectCostSummary.groupedTotal, bucketCount: projectCostSummary.bucketCount },
+    costSummary: {
+      ...totalCostSummary,
+      groupedTotal: filteredProjectCostSummary.groupedTotal,
+      groupedByProjectTotal: groupedProjectCostSummary.groupedTotal,
+      bucketCount: filteredProjectCostSummary.bucketCount,
+      filteredProjectDetails: filteredProjectCostSummary.details,
+    },
     lineItemSummary,
-    preferProjectMonthlySpend: isCurrentMonthRange(start, end),
+    spendSource: 'costs_api_project_filter',
   });
 
   await saveSnapshot({ cacheKey, start, end, payload: report, forced: force, userId });
@@ -642,13 +697,14 @@ export async function getOpenAIUsageDebug({ start: startValue, end: endValue } =
   const projects = await listOpenAIProjects();
   await upsertProjectAliases(projects);
 
-  const [totalCostSummary, projectCostSummary, lineItemSummary] = await Promise.all([
+  const [totalCostSummary, filteredProjectCostSummary, projectCostSummary, lineItemSummary] = await Promise.all([
     fetchCostsTotal(start, end),
+    fetchCostsByProjectFilter(start, end, projects),
     fetchCostsByProject(start, end),
     fetchCostsByProjectLineItem(start, end),
   ]);
 
-  const byProjectRows = Array.from(projectCostSummary.byProject.entries())
+  const byProjectRows = Array.from(filteredProjectCostSummary.byProject.entries())
     .map(([projectId, spend]) => {
       const project = projects.find((item) => item.id === projectId);
       return {
@@ -656,10 +712,11 @@ export async function getOpenAIUsageDebug({ start: startValue, end: endValue } =
         projectName: project?.name || projectId,
         name: safeName(project?.name || projectId),
         spend,
+        groupedSpend: projectCostSummary.byProject.get(projectId) ?? null,
         monthlySpend: project?.monthlySpend ?? null,
       };
     })
-    .sort((a, b) => Number((b.monthlySpend ?? b.spend) || 0) - Number((a.monthlySpend ?? a.spend) || 0));
+    .sort((a, b) => Number(b.spend || 0) - Number(a.spend || 0));
 
   return {
     period: {
@@ -668,15 +725,17 @@ export async function getOpenAIUsageDebug({ start: startValue, end: endValue } =
     },
     projectsCount: projects.length,
     costsTotalFromOpenAI: totalCostSummary.total,
+    costsFilteredByProject: filteredProjectCostSummary.groupedTotal,
     costsGroupedByProject: projectCostSummary.groupedTotal,
     costsGroupedByProjectLineItem: lineItemSummary.groupedTotal,
-    projectsMonthlySpend: toMoney(projects.reduce((sum, project) => sum + Number(project.monthlySpend || 0), 0)),
+    differenceTotalVsFilteredProject: toMoney(totalCostSummary.total - filteredProjectCostSummary.groupedTotal),
     differenceTotalVsProject: toMoney(totalCostSummary.total - projectCostSummary.groupedTotal),
     differenceProjectVsLineItem: lineItemSummary.groupedTotal == null ? null : toMoney(projectCostSummary.groupedTotal - lineItemSummary.groupedTotal),
     byProjectRows,
     lineItems: lineItemSummary.lineItems,
     bucketCounts: {
       total: totalCostSummary.bucketCount,
+      filteredProject: filteredProjectCostSummary.bucketCount,
       project: projectCostSummary.bucketCount,
       projectLineItem: lineItemSummary.bucketCount,
     },

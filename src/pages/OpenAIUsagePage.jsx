@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { getOpenAIUsageReport, refreshOpenAIUsageReport } from '../api/openaiUsage.js';
 import { OPENAI_USAGE_REPORT, currencyUsd, percent } from '../data/openaiUsageReport.js';
 import styles from './OpenAIUsagePage.module.css';
@@ -12,10 +13,9 @@ function number(value = 0) {
 function monthRange() {
   const now = new Date();
   const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
   return {
     start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
+    end: now.toISOString().slice(0, 10),
   };
 }
 
@@ -55,15 +55,22 @@ function buildPdfHtml(reportInput) {
     </tr>
   `).join('');
 
-  const chartRows = rows.map((row, index) => `
-    <div class="bar-row">
-      <div class="bar-label">${row.name || row.client || row.projectName || row.projectId}</div>
-      <div class="bar-track">
-        <span class="${index < 3 ? 'featured' : ''}" style="width:${Math.max(2, (Number(row.spend || 0) / maxSpend) * 100)}%"></span>
-      </div>
-      <strong>${currencyUsd(row.spend)}</strong>
-    </div>
-  `).join('');
+  const chartHeight = Math.max(24, rows.length * 18);
+  const chartRows = rows.map((row, index) => {
+    const label = row.name || row.client || row.projectName || row.projectId;
+    const y = index * 18 + 12;
+    const width = Math.max(3, (Number(row.spend || 0) / maxSpend) * 420);
+    const fill = index < 3 ? '#5b21b6' : '#7c3aed';
+
+    return `
+      <text x="172" y="${y}" text-anchor="end" font-size="9.5" font-weight="700" fill="#0f172a">${label}</text>
+      <rect x="180" y="${y - 9}" width="420" height="11" fill="#ede9fe"></rect>
+      <rect x="180" y="${y - 9}" width="${width}" height="11" fill="${fill}"></rect>
+      <text x="608" y="${y}" font-size="9.5" font-weight="800" fill="#0f172a">${currencyUsd(row.spend)}</text>
+    `;
+  }).join('');
+
+  const chartSvg = `<svg class="bars" viewBox="0 0 680 ${chartHeight}" xmlns="http://www.w3.org/2000/svg" role="img">${chartRows}</svg>`;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -72,7 +79,7 @@ function buildPdfHtml(reportInput) {
 <title>${report.title || 'Relatório de Uso por API Key'}</title>
 <style>
   @page { size: A4; margin: 15mm 17mm; }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { margin: 0; color: #0f172a; background: #fff; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 11.5px; }
   h1 { margin: 0; font-size: 28px; line-height: 1.05; letter-spacing: -0.045em; }
   h2 { margin: 28px 0 12px; font-size: 16px; letter-spacing: -0.02em; }
@@ -88,13 +95,7 @@ function buildPdfHtml(reportInput) {
   .legacy strong { display: block; margin-top: 8px; font-size: 15px; }
   .legacy b { color: #9a3412; font-size: 20px; }
   .hint { margin: -4px 0 16px; color: #94a3b8; font-style: italic; line-height: 1.4; }
-  .bars { max-width: 760px; margin: 0 auto; }
-  .bar-row { display: grid; grid-template-columns: 190px 1fr 52px; gap: 7px; align-items: center; min-height: 18px; }
-  .bar-label { text-align: right; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bar-track { height: 11px; background: #ede9fe; overflow: hidden; }
-  .bar-track span { display: block; height: 100%; background: #7c3aed; }
-  .bar-track span.featured { background: #5b21b6; }
-  .bar-row strong { font-size: 10.5px; }
+  .bars { display: block; width: 100%; max-width: 760px; margin: 0 auto; }
   table { width: 100%; border-collapse: collapse; margin-top: 12px; }
   th { padding: 7px 8px; border-bottom: 1px solid #0f172a; background: #f1f5f9; text-align: left; font-size: 10.5px; }
   td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
@@ -126,7 +127,7 @@ function buildPdfHtml(reportInput) {
 
   <h2>Gasto por API Key — visualização</h2>
   <p class="hint">API Keys ordenadas por gasto no período. Os três maiores aparecem destacados. Não exibido: ${report.zeroSpendCount || report.zeroSpendProjects?.length || 0} projetos sem gasto.</p>
-  <div class="bars">${chartRows}</div>
+  ${chartSvg}
 
   <h2>Detalhamento por API Key</h2>
   <p class="hint">Tabela com as chaves/projetos com consumo no período, ordenadas do maior para o menor gasto.</p>
@@ -232,8 +233,8 @@ export default function OpenAIUsagePage() {
               <span>Fim</span>
               <input type="date" value={range.end} max={defaultRange.end} onChange={(event) => setRange((prev) => ({ ...prev, end: event.target.value }))} />
             </label>
-            <button type="button" onClick={handleRefresh} disabled={refreshing || loading}>
-              {refreshing ? 'Atualizando' : 'Atualizar agora'}
+            <button type="button" className={styles.iconButton} onClick={handleRefresh} disabled={refreshing || loading} aria-label="Atualizar agora" title="Atualizar agora">
+              <RefreshCw size={15} className={refreshing ? styles.spin : ''} />
             </button>
             <button type="button" onClick={() => downloadHtmlAsPdf(report)}>Baixar PDF</button>
           </div>
@@ -243,9 +244,9 @@ export default function OpenAIUsagePage() {
         {report.cached ? <div className={styles.cacheInfo}>Última atualização: {report.lastUpdatedAt ? new Date(report.lastUpdatedAt).toLocaleString('pt-BR') : 'cache recente'}</div> : null}
         {report.reconciliation ? (
           <div className={styles.reconciliationInfo}>
-            <span>Fonte de gasto: <strong>{report.spendSource === 'projects_monthly_spend' ? 'Projects monthly spend' : 'Costs API'}</strong></span>
+            <span>Fonte de gasto: <strong>{report.spendSource === 'costs_api_project_filter' ? 'Costs API por projeto' : (report.spendSource === 'projects_monthly_spend' ? 'Projects monthly spend' : 'Costs API')}</strong></span>
             <span>Total exibido: <strong>{currencyUsd(report.totalSpend)}</strong></span>
-            {report.spendSource !== 'projects_monthly_spend' && Number(report.reconciliation.difference || 0) > 0 ? (
+            {false ? (
               <span>Não classificado: <strong>{currencyUsd(report.reconciliation.difference)}</strong></span>
             ) : null}
           </div>
