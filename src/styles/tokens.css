@@ -264,7 +264,7 @@
                    0 0 0 1px rgba(255, 255, 255, 0.04);
 
   /* Anel de foco — acessibilidade. Usar via box-shadow nos primitivos. */
-  --focus-ring: 0 0 0 3px rgba(245, 184, 0, 0.18);
+  --focus-ring: none;
 
 
   /* ────────────────────────────────────────────────────────────────────

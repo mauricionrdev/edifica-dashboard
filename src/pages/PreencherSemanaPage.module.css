@@ -1802,3 +1802,77 @@
   background: var(--field-bg);
   box-shadow: none;
 }
+
+/* ==========================================================================
+   v88 · Sem focus amarelo e sem hover nos cards pequenos
+   ========================================================================== */
+.campaignField input:focus,
+.campaignField input:focus-visible,
+.fieldInput:focus,
+.fieldInput:focus-visible,
+.select > button:focus,
+.select > button:focus-visible,
+.weekTab:focus,
+.weekTab:focus-visible,
+.pageButton:focus,
+.pageButton:focus-visible,
+.addCampaignButton:focus,
+.addCampaignButton:focus-visible,
+.campaignsButton:focus,
+.campaignsButton:focus-visible,
+.campaignCreateButton:focus,
+.campaignCreateButton:focus-visible,
+.campaignCancelButton:focus,
+.campaignCancelButton:focus-visible,
+.campaignModalClose:focus,
+.campaignModalClose:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.campaignField input:focus,
+.campaignField input:focus-visible {
+  border-color: var(--line);
+  background: var(--field-bg);
+}
+
+.fieldCard:hover,
+.fieldCard_weekly:hover,
+.fieldCard_once:hover,
+.fieldCard_auto:hover,
+.inputCard:hover,
+.kpiCard:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.fieldCard:hover {
+  border-color: var(--line);
+  background: var(--field-bg);
+}
+
+.fieldCard_weekly:hover {
+  border-color: var(--accent-line);
+  background:
+    linear-gradient(180deg, var(--accent-soft), transparent 72%),
+    var(--field-bg);
+}
+
+.fieldCard_auto:hover {
+  border-color: var(--success-line);
+  background:
+    linear-gradient(180deg, var(--success-soft), transparent 72%),
+    var(--field-bg);
+}
+
+.fieldInput:hover,
+.fieldInput:focus,
+.fieldInput:focus-visible {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.fieldCard:focus-within {
+  animation: none;
+}

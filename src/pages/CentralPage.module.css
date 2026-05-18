@@ -958,3 +958,19 @@
 .tableHeader {
   color: var(--text-tertiary);
 }
+
+/* ==========================================================================
+   v88 · Remove focus visual amarelo no header/dashboard
+   ========================================================================== */
+.toolbar :global(select):focus,
+.toolbar :global(button):focus,
+.toolbar :global(select):focus-visible,
+.toolbar :global(button):focus-visible,
+.filterButton:focus,
+.filterButton:focus-visible,
+.actionButton:focus,
+.actionButton:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--line);
+}

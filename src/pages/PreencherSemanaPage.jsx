@@ -742,8 +742,12 @@ export default function PreencherSemanaPage() {
         setCampaignListClient(campaignModalClient);
       }
       handleCloseCampaignModal();
-    } catch {
-      showToast('Erro ao criar campanha', 'error');
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 404 || err.status === 405)) {
+        showToast('Backend de campanhas ainda não publicado', 'error');
+      } else {
+        showToast('Erro ao criar campanha', 'error');
+      }
     }
   }, [campaignDraft, campaignListClient?.id, campaignModalClient, campaignsByClient, handleCloseCampaignModal, periodKey, showToast]);
 
