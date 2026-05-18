@@ -11297,3 +11297,52 @@
   background: rgba(245, 184, 0, 0.12);
   color: var(--edf-amber-strong);
 }
+
+/* ==========================================================================
+   v79.1 · Profile tabs crop/hover fix
+   Evita corte visual das pills e remove sensação de movimento no hover.
+   ========================================================================== */
+.operationControlPanel {
+  overflow: visible;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.operationTabs {
+  min-height: 40px;
+  padding: 2px 0;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.operationTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  transform: none;
+  transition: none;
+}
+
+.operationTab:hover,
+.operationTabActive,
+.operationTabActive:hover {
+  transform: none;
+}
+
+.operationTab:hover {
+  border-color: var(--edf-border);
+  background: #090a0b;
+  color: var(--edf-text-secondary);
+}
+
+.operationTabActive:hover {
+  border-color: rgba(245, 184, 0, 0.34);
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--edf-amber-strong);
+}
+
+.operationTabCount {
+  transform: none;
+  transition: none;
+}
