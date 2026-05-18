@@ -189,3 +189,33 @@
   background: var(--bg-selected);
   border-color: var(--workspace-panel-border);
 }
+
+/* ==========================================================================
+   v81 · QA tabs Cliente
+   Tabs compactas e sem hover claro.
+   ========================================================================== */
+.tabsBar {
+  min-height: 46px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.tab {
+  min-height: 32px;
+  border-radius: var(--workspace-control-radius);
+  transition: none;
+}
+
+.tab:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  transform: none;
+}
+
+.tabActive,
+.tabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}

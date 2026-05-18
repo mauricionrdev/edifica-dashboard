@@ -624,3 +624,68 @@
   border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
 }
+
+/* ==========================================================================
+   v81 · QA visual Clientes
+   Reduz hover claro e estabiliza workbench/lista.
+   ========================================================================== */
+.page {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+}
+
+.workbench {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.headerActionButton,
+.searchBox,
+.toolbar :global(button),
+.toolbar :global(input),
+.toolbar :global(select),
+.filterButton,
+.viewButton,
+.rowAction {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.headerActionButton:hover,
+.toolbar :global(button):hover,
+.filterButton:hover,
+.viewButton:hover,
+.rowAction:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.searchBox:hover,
+.searchBox:focus-within {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.clientRow:hover,
+.row:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.tableHeader,
+.listHeader,
+.clientMeta,
+.cardLabel,
+.muted {
+  color: var(--text-tertiary);
+}

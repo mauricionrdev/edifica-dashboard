@@ -376,3 +376,62 @@
 .body {
   background: var(--workspace-bg);
 }
+
+/* ==========================================================================
+   v81 · QA modal Form Cliente
+   Aproxima modal de cadastro ao padrão Nova demanda.
+   ========================================================================== */
+.overlay {
+  z-index: var(--chassis-z-dialog);
+  backdrop-filter: none;
+}
+
+.card {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.header,
+.footer {
+  min-height: 54px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.body {
+  background: var(--workspace-bg);
+}
+
+.input,
+.select,
+.textarea,
+.btnPrimary,
+.btnSecondary,
+.btnDanger,
+.close,
+.avatarUploadButton {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.input:hover:not(:disabled),
+.select:hover:not(:disabled),
+.textarea:hover:not(:disabled),
+.btnSecondary:hover:not(:disabled),
+.close:hover,
+.avatarUploadButton:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+}
+
+.btnDanger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}

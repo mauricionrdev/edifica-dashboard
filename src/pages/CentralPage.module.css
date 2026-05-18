@@ -889,3 +889,72 @@
 .tableHeader {
   color: #878c95;
 }
+
+/* ==========================================================================
+   v81 · QA visual Dashboard
+   Ajuste fino de hover, painéis e controles no workspace.
+   ========================================================================== */
+.dashboard {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+}
+
+.metricCard,
+.panel,
+.card,
+.chartCard,
+.rankingCard,
+.insightCard,
+.tableShell {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.metricCard:hover,
+.panel:hover,
+.card:hover,
+.chartCard:hover,
+.rankingCard:hover,
+.insightCard:hover {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.toolbar :global(select),
+.toolbar :global(button),
+.filterButton,
+.actionButton,
+.retryButton {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.toolbar :global(select):hover,
+.toolbar :global(button):hover,
+.filterButton:hover,
+.actionButton:hover,
+.retryButton:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.activityItem:hover {
+  background: var(--bg-hover);
+}
+
+.metricLabel,
+.cardLabel,
+.muted,
+.helperText,
+.tableHeader {
+  color: var(--text-tertiary);
+}

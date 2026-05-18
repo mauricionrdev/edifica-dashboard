@@ -1023,3 +1023,45 @@
 .dangerZone {
   margin-top: auto;
 }
+
+/* ==========================================================================
+   v81 · QA Overview Cliente
+   Mantém layout aprovado com hover discreto.
+   ========================================================================== */
+.mainSection {
+  background: var(--workspace-bg);
+}
+
+.identityCard,
+.avatarBlock,
+.dangerZone,
+.fieldShell,
+.formCard,
+.infoCard,
+.summaryCard {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.identityCard:hover,
+.infoCard:hover,
+.summaryCard:hover,
+.fieldShell:hover {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.avatarControls button:hover:not(:disabled),
+.actionButton:hover:not(:disabled),
+.dangerButton:hover:not(:disabled),
+.fieldControl:hover,
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+}

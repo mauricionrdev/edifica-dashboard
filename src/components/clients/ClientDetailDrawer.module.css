@@ -686,3 +686,60 @@
   background: var(--danger-soft);
   color: var(--danger-text);
 }
+
+/* ==========================================================================
+   v81 · QA modal Cliente
+   Alinha modal principal ao visual de Nova demanda.
+   ========================================================================== */
+.overlay {
+  z-index: var(--chassis-z-dialog);
+  backdrop-filter: none;
+}
+
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.modalHead,
+.modalFoot {
+  min-height: 54px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.modalBody {
+  background: var(--workspace-bg);
+}
+
+.projectBtn,
+.iconBtn,
+.btn,
+.btnGhost,
+.btnDanger,
+.projectChoiceCard {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.projectBtn:hover,
+.iconBtn:hover,
+.btn:hover,
+.btnGhost:hover,
+.projectChoiceCard:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.btnDanger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
