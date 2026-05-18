@@ -968,3 +968,45 @@
 .muted {
   color: #878c95;
 }
+
+/* ==========================================================================
+   v79 · hover dark-mode correction
+   Remove hovers claros da tela de Preencher Semana.
+   ========================================================================== */
+.select > button:hover,
+.headerStat:hover,
+.weekTab:hover,
+.searchField:hover,
+.searchField:focus-within {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.012);
+  color: var(--text-primary);
+}
+
+.weekTabActive,
+.weekTabActive:hover {
+  border-color: rgba(245, 184, 0, 0.28);
+  background: rgba(245, 184, 0, 0.10);
+  color: var(--accent);
+}
+
+.clientCard:hover,
+.dayCard:hover,
+.metricCard:hover {
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.010), rgba(255, 255, 255, 0.004) 56%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.clientCard:hover .clientTopbar {
+  background: transparent;
+}
+
+.inputCard:hover,
+.fieldCard:hover,
+.kpiCard:hover,
+.cardsPanel:hover {
+  background-color: var(--workspace-panel-bg);
+}

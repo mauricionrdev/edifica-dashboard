@@ -11204,3 +11204,96 @@
     justify-self: end;
   }
 }
+
+/* ==========================================================================
+   v79 · Profile visual regression fix
+   Restaura strip superior e tabs validadas.
+   ========================================================================== */
+.profileStatRail {
+  gap: 0;
+  padding-top: 0;
+  margin-top: 0;
+  border-top: 1px solid var(--edf-border);
+}
+
+.profileStat {
+  min-height: 74px;
+  padding: 15px 18px;
+  border-radius: 0;
+  background: transparent;
+  border-right: 1px solid var(--edf-border);
+}
+
+.profileStat:last-child {
+  border-right: 0;
+}
+
+.profileStat:hover {
+  background: transparent;
+}
+
+.operationControlPanel {
+  padding: 0;
+}
+
+.operationTabs {
+  width: 100%;
+  gap: 10px;
+  overflow-x: auto;
+  border-bottom: 0;
+  scrollbar-width: none;
+}
+
+.operationTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.operationTab {
+  min-height: 34px;
+  padding: 0 14px;
+  margin-bottom: 0;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: #090a0b;
+  color: var(--edf-text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.operationTab:hover {
+  border-color: var(--edf-border-strong);
+  background: #0b0c0d;
+  color: var(--edf-text-secondary);
+}
+
+.operationTabActive,
+.operationTabActive:hover {
+  border-color: rgba(245, 184, 0, 0.34);
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--edf-amber-strong);
+  font-weight: 700;
+}
+
+.operationTabCount {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: #111216;
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.operationTabActive .operationTabCount {
+  border-color: rgba(245, 184, 0, 0.26);
+  background: rgba(245, 184, 0, 0.12);
+  color: var(--edf-amber-strong);
+}
