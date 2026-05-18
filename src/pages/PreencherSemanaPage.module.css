@@ -1876,3 +1876,73 @@
 .fieldCard:focus-within {
   animation: none;
 }
+
+/* ==========================================================================
+   v90 · Modal de campanhas com rolagem e exibição compacta
+   ========================================================================== */
+.campaignListModal {
+  width: min(1180px, calc(100vw - 48px));
+  height: min(760px, calc(100dvh - 48px));
+  max-height: calc(100dvh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.campaignListBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  scrollbar-width: thin;
+}
+
+.campaignCardShell {
+  flex: 0 0 auto;
+}
+
+.campaignCardShell .clientCard {
+  border: 0;
+  border-radius: 0;
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.campaignCardShell .clientTopbar {
+  display: none;
+}
+
+.campaignCardShell .clientSegments {
+  min-height: auto;
+  padding: 12px;
+}
+
+.campaignCardShell .segmentBlock {
+  padding: 0;
+}
+
+.campaignCardShell .segmentGrid {
+  gap: 8px;
+}
+
+.campaignCardShell .fieldCard {
+  min-height: 86px;
+}
+
+.campaignCardTopbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--workspace-panel-bg);
+}
+
+.campaignModalHeader {
+  flex: 0 0 auto;
+}
+
+.campaignModalOverlay {
+  align-items: center;
+  justify-content: center;
+}
