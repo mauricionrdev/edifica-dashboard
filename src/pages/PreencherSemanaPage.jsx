@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
-import { clearMetricPresence, createMetricCampaign, deleteMetricCampaign, getMetric, listMetricCampaigns, listMetricPresence, touchMetricPresence, upsertMetric } from '../api/metrics.js';
+import { createMetricCampaign, deleteMetricCampaign, getMetric, listMetricCampaigns, upsertMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
 import { ChartColumnIcon, PlusIcon, SearchIcon, Select, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/index.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
@@ -217,43 +217,6 @@ function StatusChip({ status }) {
   return null;
 }
 
-function normalizePresenceRows(rows) {
-  return (Array.isArray(rows) ? rows : [])
-    .map((entry) => ({
-      clientId: entry?.clientId || '',
-      fieldKey: entry?.fieldKey || '',
-      userId: entry?.userId || '',
-      userName: entry?.userName || '',
-    }))
-    .sort((a, b) =>
-      `${a.clientId}:${a.fieldKey}:${a.userId}:${a.userName}`.localeCompare(
-        `${b.clientId}:${b.fieldKey}:${b.userId}:${b.userName}`,
-        'pt-BR'
-      )
-    );
-}
-
-function arePresenceMapsEqual(a = {}, b = {}) {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
-  if (aKeys.length !== bKeys.length) return false;
-
-  for (const key of aKeys) {
-    const aItems = Array.isArray(a[key]) ? a[key] : [];
-    const bItems = Array.isArray(b[key]) ? b[key] : [];
-    if (aItems.length !== bItems.length) return false;
-    for (let index = 0; index < aItems.length; index += 1) {
-      if (
-        aItems[index]?.userId !== bItems[index]?.userId ||
-        aItems[index]?.userName !== bItems[index]?.userName
-      ) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
 
 function fieldValue(form, localCalc, key) {
   if (key === 'leadsPrevistos') return localCalc.lp > 0 ? fmtInt(Math.round(localCalc.lp)) : '—';
@@ -301,11 +264,8 @@ function MetricField({
   value,
   canEdit,
   onChange,
-  onFocus,
   onBlur,
-  presenceEntries,
 }) {
-  const presenceNames = Array.isArray(presenceEntries) ? presenceEntries.map((entry) => entry.userName).filter(Boolean) : [];
   const isComputed = field.computed;
   const rootClass = [styles.fieldCard, styles[`fieldCard_${field.kind}`]].join(' ');
 
@@ -313,15 +273,6 @@ function MetricField({
     <div className={rootClass}>
       <div className={styles.fieldHeader}>
         <span>{field.label}</span>
-        {presenceNames.length > 0 ? (
-          <span
-            className={styles.presenceHint}
-            title={`${presenceNames.join(', ')} editando`}
-            aria-label={`${presenceNames.join(', ')} editando`}
-          >
-            {presenceNames.length}
-          </span>
-        ) : null}
       </div>
 
       {isComputed ? (
@@ -332,10 +283,7 @@ function MetricField({
           inputMode="decimal"
           value={value}
           onChange={(event) => onChange(field.key, event.target.value)}
-          onFocus={() => {
-            if (canEdit) onFocus(field.key);
-          }}
-          onBlur={() => onBlur(field.key)}
+          onBlur={() => onBlur()}
           className={styles.fieldInput}
           placeholder={field.placeholder}
           disabled={!canEdit}
@@ -346,7 +294,7 @@ function MetricField({
   );
 }
 
-function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canEdit, setField, startPresence, handleBlur, presenceByField }) {
+function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canEdit, setField, handleBlur }) {
   const SegmentIcon = title === 'Tráfego' ? ChartColumnIcon : TargetIcon;
 
   return (
@@ -367,9 +315,7 @@ function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canE
             value={fieldValue(form, localCalc, field.key)}
             canEdit={canEdit && !field.computed}
             onChange={setField}
-            onFocus={startPresence}
             onBlur={handleBlur}
-            presenceEntries={presenceByField?.[field.key] || []}
           />
         ))}
       </div>
@@ -377,7 +323,7 @@ function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canE
   );
 }
 
-function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCount = 0, canEdit, onSaved, onRequestCampaign, onRequestCampaigns, presenceByField }) {
+function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCount = 0, canEdit, onSaved, onRequestCampaign, onRequestCampaigns }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(EMPTY_DATA);
   const [loaded, setLoaded] = useState(false);
@@ -389,8 +335,6 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
   const mountedRef = useRef(true);
   const latestFormRef = useRef(EMPTY_DATA);
   const lastSavedRef = useRef('{}');
-  const activeFieldRef = useRef('');
-  const presenceTimerRef = useRef(null);
 
   const runSave = useCallback(
     async (nextForm, immediate = false) => {
@@ -444,38 +388,6 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
     return runSave(latestFormRef.current, true);
   }, [runSave]);
 
-  const stopPresence = useCallback(async (fieldKey = activeFieldRef.current) => {
-    if (presenceTimerRef.current) {
-      clearInterval(presenceTimerRef.current);
-      presenceTimerRef.current = null;
-    }
-    const activeField = String(fieldKey || '').trim();
-    activeFieldRef.current = '';
-    if (!activeField) return;
-    try {
-      await clearMetricPresence(client.id, periodKey, activeField);
-    } catch {
-      // presença é apenas visual; falha silenciosa
-    }
-  }, [client.id, periodKey]);
-
-  const startPresence = useCallback(async (fieldKey) => {
-    const nextField = String(fieldKey || '').trim();
-    if (!nextField) return;
-    if (activeFieldRef.current && activeFieldRef.current !== nextField) {
-      await stopPresence(activeFieldRef.current);
-    }
-    activeFieldRef.current = nextField;
-    try {
-      await touchMetricPresence(client.id, periodKey, nextField);
-    } catch {
-      // presença é apenas visual; falha silenciosa
-    }
-    if (presenceTimerRef.current) clearInterval(presenceTimerRef.current);
-    presenceTimerRef.current = setInterval(() => {
-      void touchMetricPresence(client.id, periodKey, nextField).catch(() => {});
-    }, 7000);
-  }, [client.id, periodKey, stopPresence]);
 
   useEffect(() => {
     const unsubscribe = subscribeAvatarChange(() => setAvatarVersion((value) => value + 1));
@@ -523,14 +435,6 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
 
     return () => {
       mountedRef.current = false;
-      if (presenceTimerRef.current) {
-        clearInterval(presenceTimerRef.current);
-        presenceTimerRef.current = null;
-      }
-      if (activeFieldRef.current) {
-        void clearMetricPresence(client.id, periodKey, activeFieldRef.current).catch(() => {});
-        activeFieldRef.current = '';
-      }
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current);
         saveTimerRef.current = null;
@@ -570,13 +474,9 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
   const avatarUrl = getClientAvatar(client);
   const ownerLabel = [client.squadName, client.gdvName || client.gestor].filter(Boolean).join(' · ');
 
-  const handleBlur = useCallback(
-    (fieldKey) => {
-      void flushPendingSave();
-      void stopPresence(fieldKey);
-    },
-    [flushPendingSave, stopPresence]
-  );
+  const handleBlur = useCallback(() => {
+    void flushPendingSave();
+  }, [flushPendingSave]);
 
   return (
     <article className={styles.clientCard}>
@@ -635,9 +535,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
           localCalc={localCalc}
           canEdit={canEdit}
           setField={setField}
-          startPresence={startPresence}
           handleBlur={handleBlur}
-          presenceByField={presenceByField}
         />
 
         <SegmentBlock
@@ -649,9 +547,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
           localCalc={localCalc}
           canEdit={canEdit}
           setField={setField}
-          startPresence={startPresence}
           handleBlur={handleBlur}
-          presenceByField={presenceByField}
         />
       </div>
     </article>
@@ -668,8 +564,7 @@ const WeekCard = memo(WeekCardBase, (prevProps, nextProps) => {
     prevProps.canEdit === nextProps.canEdit &&
     prevProps.onSaved === nextProps.onSaved &&
     prevProps.onRequestCampaign === nextProps.onRequestCampaign &&
-    prevProps.onRequestCampaigns === nextProps.onRequestCampaigns &&
-    arePresenceMapsEqual(prevProps.presenceByField, nextProps.presenceByField)
+    prevProps.onRequestCampaigns === nextProps.onRequestCampaigns
   );
 });
 
@@ -688,13 +583,11 @@ export default function PreencherSemanaPage() {
   const [query, setQuery] = useState('');
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
-  const [presenceRows, setPresenceRows] = useState([]);
   const [campaignsByClient, setCampaignsByClient] = useState({});
   const [campaignModalClient, setCampaignModalClient] = useState(null);
   const [campaignListClient, setCampaignListClient] = useState(null);
   const [campaignDraft, setCampaignDraft] = useState('');
   const [pendingDeleteCampaign, setPendingDeleteCampaign] = useState(null);
-  const presenceSnapshotRef = useRef('[]');
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
 
@@ -886,54 +779,6 @@ export default function PreencherSemanaPage() {
     };
   }, [periodKey, visibleClients]);
 
-  useEffect(() => {
-    if (!visibleClients.length) {
-      presenceSnapshotRef.current = '[]';
-      setPresenceRows([]);
-      return undefined;
-    }
-
-    let cancelled = false;
-    const clientIds = visibleClients.map((client) => client.id);
-
-    async function loadPresence() {
-      try {
-        const res = await listMetricPresence({ clientIds, periodKey });
-        if (cancelled) return;
-        const normalized = normalizePresenceRows(res?.presence);
-        const snapshot = JSON.stringify(normalized);
-        if (snapshot === presenceSnapshotRef.current) return;
-        presenceSnapshotRef.current = snapshot;
-        setPresenceRows(normalized);
-      } catch {
-        if (cancelled) return;
-        if (presenceSnapshotRef.current === '[]') return;
-        presenceSnapshotRef.current = '[]';
-        setPresenceRows([]);
-      }
-    }
-
-    void loadPresence();
-    const timer = setInterval(() => {
-      void loadPresence();
-    }, 5000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, [periodKey, visibleClients]);
-
-  const presenceByClientField = useMemo(() => {
-    const map = {};
-    presenceRows.forEach((entry) => {
-      if (!entry?.clientId || !entry?.fieldKey || entry.userId === user?.id) return;
-      if (!map[entry.clientId]) map[entry.clientId] = {};
-      if (!map[entry.clientId][entry.fieldKey]) map[entry.clientId][entry.fieldKey] = [];
-      map[entry.clientId][entry.fieldKey].push(entry);
-    });
-    return map;
-  }, [presenceRows, user?.id]);
 
   useEffect(() => {
     setPage(1);
@@ -1138,7 +983,6 @@ export default function PreencherSemanaPage() {
                           onSaved={() => {}}
                           onRequestCampaign={handleOpenCampaignModal}
                           onRequestCampaigns={handleOpenCampaignsModal}
-                          presenceByField={presenceByClientField[client.id] || {}}
                         />
                       );
                     })}
@@ -1222,7 +1066,6 @@ export default function PreencherSemanaPage() {
                         canEdit={canEditMetrics}
                         onSaved={() => {}}
                         onRequestCampaign={handleOpenCampaignModal}
-                        presenceByField={{}}
                       />
                     </section>
                   ))

@@ -2041,3 +2041,21 @@
   background: var(--danger-soft);
   border-color: var(--danger-line);
 }
+
+/* ==========================================================================
+   v92 · Scrollbar oculta e presença removida da tela
+   ========================================================================== */
+.campaignListBody {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.campaignListBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.presenceHint {
+  display: none;
+}
