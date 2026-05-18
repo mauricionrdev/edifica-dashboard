@@ -11,8 +11,8 @@
   padding: 18px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4);
-  background: linear-gradient(180deg, #0b0c0d, #ffffff03), var(--surface);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.026);
+  background: linear-gradient(180deg, var(--workspace-panel-bg), transparent), var(--surface);
+  box-shadow: inset 0 1px 0 var(--surface-raised);
 }
 
 .headerActions {
@@ -48,7 +48,7 @@
 
 .headerAction:hover,
 .inlineButton:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -102,10 +102,10 @@
   position: relative;
   min-height: 360px;
   padding: 22px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.064);
+  border: 1px solid var(--line);
   border-radius: var(--radius-3);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    linear-gradient(180deg, var(--surface-raised), var(--surface-panel)),
     var(--bg-canvas);
   color: inherit;
   font: inherit;
@@ -120,7 +120,7 @@
 .podiumCard:hover {
   border-color: rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.038), rgba(255, 255, 255, 0.018)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.038), var(--surface-panel)),
     var(--bg-canvas);
   transform: translateY(-2px);
 }
@@ -138,7 +138,7 @@
   border-color: rgba(255, 215, 0, 0.36);
   background:
     radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.16), transparent 42%),
-    linear-gradient(180deg, rgba(255, 215, 0, 0.06), rgba(255, 255, 255, 0.018)),
+    linear-gradient(180deg, rgba(255, 215, 0, 0.06), var(--surface-panel)),
     var(--bg-canvas);
 }
 
@@ -181,7 +181,7 @@
   position: absolute;
   top: 10px;
   right: 14px;
-  color: rgba(255, 255, 255, 0.055);
+  color: var(--line-subtle);
   font-size: clamp(98px, 9vw, 152px);
   font-weight: 640;
   line-height: 1;
@@ -207,7 +207,7 @@
   display: grid;
   place-items: center;
   border: 1px solid var(--line-subtle);
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   font-size: 20px;
   font-weight: 620;
@@ -317,9 +317,9 @@
   margin-top: 14px;
   height: 4px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.075);
+  background: var(--line);
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.018);
+  box-shadow: inset 0 0 0 1px var(--surface-panel);
 }
 
 .podiumBar span {
@@ -332,7 +332,7 @@
 
 .listSection {
   margin-top: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line-subtle);
   border-radius: var(--radius-3);
   background: var(--bg-canvas);
   overflow: hidden;
@@ -382,7 +382,7 @@
 }
 
 .rankRow:hover {
-  background: rgba(255, 255, 255, 0.024);
+  background: var(--surface-raised);
 }
 
 .rankNumber {
@@ -415,7 +415,7 @@
   display: grid;
   place-items: center;
   border: 1px solid var(--line-subtle);
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   font-size: 12px;
   font-weight: 620;
@@ -515,10 +515,10 @@
 
 .settingsModal {
   width: min(680px, 100%);
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: var(--radius-3);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.012)),
+    linear-gradient(180deg, var(--surface-raised), var(--surface-panel)),
     var(--bg-canvas);
   box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
   overflow: hidden;
@@ -579,13 +579,13 @@
 .settingsRow {
   min-width: 0;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
   border-radius: var(--radius-2);
   display: grid;
   grid-template-columns: minmax(150px, 1fr) repeat(2, minmax(120px, 0.7fr));
   align-items: end;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
 }
 
 .settingsRow>strong {
@@ -617,10 +617,10 @@
   width: 100%;
   height: 38px;
   padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
+  border: 1px solid var(--line);
   border-radius: var(--radius-1);
   outline: none;
-  background: rgba(255, 255, 255, 0.024);
+  background: var(--surface-raised);
   color: var(--text-primary);
   font: inherit;
   font-size: 14px;
@@ -653,9 +653,9 @@
   min-width: 86px;
   height: 36px;
   padding: 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.065);
+  border: 1px solid var(--line);
   border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.024);
+  background: var(--surface-raised);
   color: var(--text-secondary);
   font: inherit;
   font-size: 13px;
@@ -665,12 +665,12 @@
 
 .settingsFooter button[type="submit"] {
   border-color: rgba(245, 184, 0, 0.24);
-  background: rgba(245, 184, 0, 0.12);
+  background: var(--accent-soft);
   color: var(--text-primary);
 }
 
 .settingsFooter button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
 }
 
 .settingsFooter button[type="submit"]:hover:not(:disabled) {
@@ -783,4 +783,86 @@
   border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
   box-shadow: none;
+}
+
+
+/* ==========================================================================
+   v76 · SquadRankingPage cleanup real
+   Consolida ranking no workspace sem alterar lógica ou JSX.
+   ========================================================================== */
+.page {
+  min-height: 100%;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+.surface,
+.podiumCard,
+.rankingPanel,
+.tableShell,
+.card,
+.emptyState,
+.loadingState,
+.errorState {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.surface {
+  width: min(1240px, 100%);
+  border-color: var(--workspace-panel-border);
+}
+
+.headerAction,
+.inlineButton,
+.filterButton,
+.actionButton,
+.primaryButton,
+.secondaryButton,
+.ghostButton {
+  min-height: var(--workspace-control-height);
+  border-radius: var(--workspace-control-radius);
+  box-shadow: none;
+}
+
+.headerAction:hover,
+.inlineButton:hover,
+.filterButton:hover,
+.actionButton:hover,
+.primaryButton:hover,
+.secondaryButton:hover,
+.ghostButton:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.headerAction:focus-visible,
+.inlineButton:focus-visible,
+.filterButton:focus-visible,
+.actionButton:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.ghostButton:focus-visible {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.podiumCard:hover,
+.rankingRow:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+}
+
+.heroCopy p,
+.muted,
+.helperText,
+.cardLabel,
+.rankingMeta,
+.tableHeader {
+  color: #878c95;
 }

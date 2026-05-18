@@ -24,7 +24,7 @@
   height: 100%;
   min-height: 0;
   padding: 14px 18px 18px;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-secondary);
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   display: flex;
@@ -58,16 +58,16 @@
 .toolbar :global(button) {
   min-height: 32px;
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.018);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-panel);
+  border: 1px solid var(--line);
   color: var(--text-secondary);
   box-shadow: none;
 }
 
 .toolbar :global(select):hover,
 .toolbar :global(button):hover {
-  background: rgba(255, 255, 255, 0.024);
-  border-color: rgba(255, 255, 255, 0.082);
+  background: var(--surface-raised);
+  border-color: var(--line-strong);
 }
 
 .toolbar :global(select):focus,
@@ -76,7 +76,7 @@
 .toolbar :global(button):focus-visible {
   outline: none;
   box-shadow: none;
-  border-color: rgba(255, 255, 255, 0.105);
+  border-color: var(--line-strong);
 }
 
 .metricsGrid {
@@ -97,13 +97,13 @@
   min-width: 0;
   min-height: 96px;
   padding: 15px 16px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 10px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.004) 58%),
-    #0f1011;
+    linear-gradient(180deg, var(--surface-panel), transparent 58%),
+    var(--workspace-panel-bg);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.018),
+    inset 0 1px 0 var(--surface-panel),
     0 16px 44px rgba(0, 0, 0, 0.10);
   display: flex;
   flex-direction: column;
@@ -122,11 +122,11 @@
 }
 
 .metricCard:nth-child(-n + 4) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+  border-bottom: 1px solid var(--line);
 }
 
 .metricCard:hover {
-  border-color: rgba(255, 255, 255, 0.105);
+  border-color: var(--line-strong);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.006) 58%),
     #111214;
@@ -135,7 +135,7 @@
 .metricCardDragging {
   opacity: 0.56;
   cursor: grabbing;
-  background: rgba(255, 255, 255, 0.024);
+  background: var(--surface-raised);
 }
 
 .metricCard_neutral,
@@ -259,7 +259,7 @@
   height: 2px;
   margin-top: 1px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.055);
+  background: var(--line-subtle);
   overflow: hidden;
 }
 
@@ -302,14 +302,14 @@
 .dashboardLastCard {
   min-width: 0;
   min-height: 0;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 10px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.016), rgba(255, 255, 255, 0.004) 44%),
-    #0f1011;
+    linear-gradient(180deg, var(--surface-panel), transparent 44%),
+    var(--workspace-panel-bg);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.018),
-    0 18px 54px rgba(0, 0, 0, 0.12);
+    inset 0 1px 0 var(--surface-panel),
+    0 18px 54px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
 
@@ -336,7 +336,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 0 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .columnsPanelTitle,
@@ -357,8 +357,8 @@
   display: block;
   padding: 12px 18px 14px;
   background:
-    radial-gradient(circle at 62% 14%, rgba(255, 255, 255, 0.012), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.004), rgba(255, 255, 255, 0) 34%);
+    radial-gradient(circle at 62% 14%, var(--surface-panel), transparent 34%),
+    linear-gradient(180deg, transparent, rgba(255, 255, 255, 0) 34%);
 }
 
 .columnsSvg {
@@ -497,9 +497,9 @@
   min-width: 24px;
   height: 24px;
   padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.026);
+  background: var(--surface-raised);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -544,9 +544,9 @@
 }
 
 .activityItem:hover {
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   box-shadow:
-    inset 1px 0 0 rgba(255, 255, 255, 0.055),
+    inset 1px 0 0 var(--line-subtle),
     inset -1px 0 0 rgba(255, 255, 255, 0.03);
 }
 
@@ -562,7 +562,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 var(--bg-hover);
 }
 
 .activityAvatar img {
@@ -636,9 +636,9 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: #08090a;
+  background: var(--workspace-bg);
 }
 
 .stateBlock strong {
@@ -653,7 +653,7 @@
   padding: 0 12px;
   border: 1px solid rgba(255, 255, 255, 0.072);
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.024);
+  background: var(--surface-raised);
   color: var(--text-primary);
   font-size: 12px;
   font-weight: 590;
@@ -662,16 +662,16 @@
 
 .retryButton:hover {
   background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.095);
+  border-color: var(--line-strong);
 }
 
 .skeletonBlock,
 .skeletonTall {
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.038), rgba(255, 255, 255, 0.018)),
-    #08090a;
+    linear-gradient(90deg, var(--surface-panel), rgba(255, 255, 255, 0.038), var(--surface-panel)),
+    var(--workspace-bg);
   background-size: 260% 100%;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 10px;
   animation: dashboardSkeleton 1.5s ease-in-out infinite;
 }
@@ -755,7 +755,7 @@
 
   .metricCard:nth-child(-n + 4),
   .metricCard:nth-child(n + 3) {
-    border: 1px solid rgba(255, 255, 255, 0.075);
+    border: 1px solid var(--line);
   }
 
   .activityItem {
@@ -780,7 +780,7 @@
   }
 
   .metricCard+.metricCard {
-    border-top: 1px solid rgba(255, 255, 255, 0.075);
+    border-top: 1px solid var(--line);
   }
 
   .activityItem {
@@ -813,4 +813,79 @@
 
 :where(.summaryCard, .chartCard, .panel, .card, .metricCard, .rankingCard, .insightCard) {
   border-radius: var(--workspace-card-radius);
+}
+
+
+/* ==========================================================================
+   v76 · CentralPage cleanup real
+   Consolida dashboard no workspace.
+   ========================================================================== */
+.dashboard {
+  height: 100%;
+  min-height: 0;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+  gap: var(--workspace-gap);
+}
+
+.toolbar :global(select),
+.toolbar :global(button),
+.filterButton,
+.actionButton {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.toolbar :global(select):hover,
+.toolbar :global(button):hover,
+.filterButton:hover,
+.actionButton:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.toolbar :global(select):focus,
+.toolbar :global(button):focus,
+.toolbar :global(select):focus-visible,
+.toolbar :global(button):focus-visible,
+.filterButton:focus-visible,
+.actionButton:focus-visible {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.metricCard,
+.panel,
+.card,
+.chartCard,
+.rankingCard,
+.insightCard,
+.tableShell,
+.emptyState,
+.loadingState,
+.errorState {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.metricCard:hover,
+.panel:hover,
+.card:hover {
+  border-color: var(--workspace-panel-border);
+}
+
+.metricLabel,
+.cardLabel,
+.muted,
+.helperText,
+.tableHeader {
+  color: #878c95;
 }
