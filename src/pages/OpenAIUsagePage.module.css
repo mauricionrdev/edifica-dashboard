@@ -172,7 +172,7 @@
   gap: 8px;
 }
 
-.chartRow > strong {
+.chartRow>strong {
   min-width: 0;
   color: #dbe3ed;
   font-size: 12px;
@@ -339,7 +339,7 @@
     gap: 6px;
   }
 
-  .chartRow > strong {
+  .chartRow>strong {
     text-align: left;
   }
 }
@@ -556,7 +556,7 @@
   width: 34px;
   min-width: 34px;
   padding: 0;
-  display: inline-grid;
+  /* display: inline-grid; */
   place-items: center;
 }
 
@@ -654,7 +654,7 @@
   grid-template-columns: 220px minmax(220px, 1fr) 58px;
 }
 
-.chartRow > strong {
+.chartRow>strong {
   color: #d8e1ec;
   font-size: 11.5px;
 }
@@ -867,7 +867,7 @@
   grid-template-columns: 220px minmax(220px, 1fr) 58px;
 }
 
-.chartRow > strong {
+.chartRow>strong {
   color: #d8e1ec;
   font-size: 11.5px;
 }
@@ -1050,7 +1050,7 @@
   max-width: 980px;
 }
 
-.chartRow > strong,
+.chartRow>strong,
 .chartRow em,
 .tableWrap td,
 .tableWrap th {
