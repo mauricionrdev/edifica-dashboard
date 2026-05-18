@@ -440,3 +440,38 @@
 .compactOptionActive {
   background: var(--bg-selected);
 }
+
+/* ==========================================================================
+   v93 · QA visual UserPicker
+   Popover estável, sem hover claro e sem focus visual.
+   ========================================================================== */
+.trigger,
+.option,
+.compactOption {
+  transform: none;
+}
+
+.trigger:hover,
+.trigger:focus,
+.trigger:focus-visible {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  outline: none;
+  transform: none;
+}
+
+.option:hover,
+.compactOption:hover,
+.optionActive,
+.compactOptionActive {
+  background: var(--bg-hover);
+  transform: none;
+}
+
+.popover {
+  z-index: 25000;
+  border-color: var(--workspace-panel-border);
+  background: var(--chassis-panel-bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}

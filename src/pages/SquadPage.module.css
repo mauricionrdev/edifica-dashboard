@@ -1582,3 +1582,74 @@
 .squadMeta {
   color: #878c95;
 }
+
+/* ==========================================================================
+   v93 · QA visual Squads
+   Hovers escuros, sem movimento e modais acima da sidebar.
+   ========================================================================== */
+.page {
+  background: var(--workspace-bg);
+}
+
+.headerButton,
+.actionButton,
+.primaryButton,
+.secondaryButton,
+.ghostButton,
+.dangerButton,
+.inlineButton,
+.modalClose,
+.modalAction,
+.squadCard,
+.clientCard,
+.infoCard,
+.listCard,
+.panel,
+.card {
+  transform: none;
+}
+
+.headerButton:hover:not(:disabled),
+.actionButton:hover:not(:disabled),
+.primaryButton:hover:not(:disabled),
+.secondaryButton:hover:not(:disabled),
+.ghostButton:hover:not(:disabled),
+.inlineButton:hover:not(:disabled),
+.modalClose:hover:not(:disabled),
+.modalAction:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.squadCard:hover,
+.clientCard:hover,
+.infoCard:hover,
+.listCard:hover,
+.panel:hover,
+.card:hover {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.primaryButton,
+.primaryButton:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.modalOverlay {
+  z-index: 25000;
+  background: var(--overlay-bg, rgba(8, 9, 10, 0.82));
+  backdrop-filter: none;
+}
+
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}

@@ -899,3 +899,63 @@
 .tableHeader {
   color: #878c95;
 }
+
+/* ==========================================================================
+   v93 · QA visual Ranking
+   Mantém destaque dourado e remove hovers claros/movimento.
+   ========================================================================== */
+.surface {
+  background: var(--workspace-panel-bg);
+}
+
+.headerAction,
+.inlineButton,
+.podiumCard,
+.rankingRow,
+.rankingPanel,
+.tableShell,
+.card {
+  transform: none;
+}
+
+.headerAction:hover,
+.inlineButton:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.rankingRow:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.podiumCard:not(.podiumCard_champion):hover {
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent 56%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.podiumCard_champion,
+.podiumCard_champion:hover {
+  border-color: var(--accent-line);
+  background:
+    radial-gradient(circle at 50% 0%, var(--accent-soft), transparent 44%),
+    linear-gradient(180deg, var(--accent-soft), transparent 52%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.podiumCard_champion .podiumScore,
+.podiumCard_champion .rankNumber,
+.podiumCard_champion .podiumBadge {
+  color: var(--accent);
+}

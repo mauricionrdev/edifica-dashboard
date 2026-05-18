@@ -2334,3 +2334,81 @@ button:disabled,
   border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-panel-bg);
 }
+
+/* ==========================================================================
+   v93 · QA visual Equipe
+   Refinamento final: hovers escuros, modais acima da sidebar e sem movimento.
+   ========================================================================== */
+.page {
+  background: var(--workspace-bg);
+}
+
+.tabButton,
+.headerBtn,
+.primaryButton,
+.ghostButton,
+.dangerButton,
+.inlineRetry,
+.dashboardLink,
+.modalClose,
+.rowAction,
+.roleAction,
+.squadAction,
+.userCard,
+.roleCard,
+.squadCard,
+.metricCard,
+.gdvAdminMetricCard {
+  transform: none;
+}
+
+.tabButton:hover,
+.headerBtn:hover,
+.primaryButton:hover,
+.ghostButton:hover,
+.inlineRetry:hover,
+.dashboardLink:hover,
+.modalClose:hover,
+.rowAction:hover,
+.roleAction:hover,
+.squadAction:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.userCard:hover,
+.roleCard:hover,
+.squadCard:hover,
+.metricCard:hover,
+.gdvAdminMetricCard:hover {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.tabButtonActive,
+.tabButtonActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.modalOverlay {
+  z-index: 25000;
+  background: var(--overlay-bg, rgba(8, 9, 10, 0.82));
+  backdrop-filter: none;
+}
+
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.modalHeader,
+.modalFooter {
+  border-color: var(--workspace-panel-border-soft);
+}
