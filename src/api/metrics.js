@@ -95,3 +95,19 @@ export function clearMetricPresence(clientId, periodKey, fieldKey) {
     body: { clientId, periodKey, fieldKey },
   });
 }
+
+export function listMetricCampaigns({ clientIds = [], periodKey } = {}) {
+  const params = new URLSearchParams();
+  if (periodKey) params.set('periodKey', periodKey);
+  if (Array.isArray(clientIds) && clientIds.length) params.set('clientIds', clientIds.join(','));
+  const qs = params.toString();
+  return api.get(`/metrics/campaigns${qs ? `?${qs}` : ''}`);
+}
+
+export function createMetricCampaign({ clientId, periodKey, name } = {}) {
+  return api.post('/metrics/campaigns', { clientId, periodKey, name });
+}
+
+export function deleteMetricCampaign(campaignId) {
+  return api.del(`/metrics/campaigns/${encodeURIComponent(campaignId)}`);
+}

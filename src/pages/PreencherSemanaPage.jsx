@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
-import { clearMetricPresence, getMetric, listMetricPresence, touchMetricPresence, upsertMetric } from '../api/metrics.js';
+import { clearMetricPresence, createMetricCampaign, deleteMetricCampaign, getMetric, listMetricCampaigns, listMetricPresence, touchMetricPresence, upsertMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
 import { ChartColumnIcon, PlusIcon, SearchIcon, Select, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/index.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
@@ -31,88 +31,6 @@ const EMPTY_DATA = {
 
 const FIXED_MONTH_FIELDS = ['investimento', 'metaCpl', 'metaVolume', 'metaEmpate', 'metaSemanal'];
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
-const CAMPAIGN_STORAGE_KEY = 'edifica:preencher-semana:campaigns:v1';
-const CAMPAIGN_METRICS_STORAGE_KEY = 'edifica:preencher-semana:campaign-metrics:v1';
-
-function isCampaignPeriodKey(periodKey) {
-  return String(periodKey || '').includes('__campaign:');
-}
-
-function campaignMetricStoreKey(clientId, periodKey) {
-  return `${String(clientId || '')}::${String(periodKey || '')}`;
-}
-
-function readCampaignMetricStore() {
-  if (typeof window === 'undefined') return {};
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(CAMPAIGN_METRICS_STORAGE_KEY) || '{}');
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeCampaignMetricStore(store) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(CAMPAIGN_METRICS_STORAGE_KEY, JSON.stringify(store || {}));
-}
-
-function getCampaignMetric(clientId, periodKey) {
-  const store = readCampaignMetricStore();
-  const metric = store[campaignMetricStoreKey(clientId, periodKey)];
-  return Promise.resolve({ metric: metric || { clientId, periodKey, data: {}, computed: {} } });
-}
-
-function upsertCampaignMetric(clientId, periodKey, data) {
-  const store = readCampaignMetricStore();
-  const metric = {
-    clientId,
-    periodKey,
-    data: { ...(data || {}) },
-    computed: calcWeek({ data: data || {}, computed: {} }),
-    updatedAt: new Date().toISOString(),
-  };
-  store[campaignMetricStoreKey(clientId, periodKey)] = metric;
-  writeCampaignMetricStore(store);
-  return Promise.resolve({ metric });
-}
-
-function removeCampaignMetricsFor(clientId, campaignId) {
-  if (typeof window === 'undefined') return;
-  const marker = `__campaign:${String(campaignId || '')}`;
-  const store = readCampaignMetricStore();
-  Object.keys(store).forEach((key) => {
-    if (key.startsWith(`${String(clientId || '')}::`) && key.includes(marker)) {
-      delete store[key];
-    }
-  });
-  writeCampaignMetricStore(store);
-}
-
-function readMetric(clientId, periodKey) {
-  return isCampaignPeriodKey(periodKey) ? getCampaignMetric(clientId, periodKey) : getMetric(clientId, periodKey);
-}
-
-function saveMetric(clientId, periodKey, data) {
-  return isCampaignPeriodKey(periodKey) ? upsertCampaignMetric(clientId, periodKey, data) : upsertMetric(clientId, periodKey, data);
-}
-
-
-function readCampaignStore() {
-  if (typeof window === 'undefined') return {};
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(CAMPAIGN_STORAGE_KEY) || '{}');
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeCampaignStore(store) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(store || {}));
-}
-
 function normalizeCampaigns(campaigns) {
   return (Array.isArray(campaigns) ? campaigns : [])
     .filter((campaign) => campaign && campaign.id)
@@ -120,11 +38,15 @@ function normalizeCampaigns(campaigns) {
       id: String(campaign.id),
       name: String(campaign.name || `Campanha ${index + 2}`).trim() || `Campanha ${index + 2}`,
       createdAt: campaign.createdAt || new Date().toISOString(),
+      metricPeriodKey: campaign.metricPeriodKey || campaign.periodKey || '',
     }));
 }
 
-function campaignMetricPeriodKey(periodKey, campaignId) {
-  const id = String(campaignId || '').trim();
+function campaignMetricPeriodKey(periodKey, campaign) {
+  if (campaign && typeof campaign === 'object') {
+    return campaign.metricPeriodKey || campaign.periodKey || `${periodKey}__campaign:${campaign.id}`;
+  }
+  const id = String(campaign || '').trim();
   return id ? `${periodKey}__campaign:${id}` : periodKey;
 }
 
@@ -245,7 +167,7 @@ async function resolveFixedMonthFields(clientId, periodKey, currentWeek, current
 
   for (const targetWeek of weekOrder) {
     try {
-      const res = await readMetric(clientId, sameMonthPeriodKey(periodKey, targetWeek));
+      const res = await getMetric(clientId, sameMonthPeriodKey(periodKey, targetWeek));
       const candidate = dataFromMetric(res?.metric);
       if (hasAnyField(candidate, FIXED_MONTH_FIELDS)) {
         const merged = mergeMissingFixedFields(currentForm, candidate);
@@ -259,7 +181,7 @@ async function resolveFixedMonthFields(clientId, periodKey, currentWeek, current
   const previousMonthWeek4 = previousMonthWeek4PeriodKey(periodKey);
   if (previousMonthWeek4) {
     try {
-      const res = await readMetric(clientId, previousMonthWeek4);
+      const res = await getMetric(clientId, previousMonthWeek4);
       const candidate = dataFromMetric(res?.metric);
       if (hasAnyField(candidate, FIXED_MONTH_FIELDS)) {
         const merged = mergeMissingFixedFields(currentForm, candidate);
@@ -485,12 +407,12 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
 
       if (mountedRef.current) setStatus('saving');
       try {
-        const res = await saveMetric(client.id, periodKey, payload);
+        const res = await upsertMetric(client.id, periodKey, payload);
 
         if (fixedFieldsChanged.length > 0) {
           const targetWeeks = [1, 2, 3, 4].filter((targetWeek) => targetWeek >= week && targetWeek !== week);
           await Promise.all(
-            targetWeeks.map((targetWeek) => saveMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), fixedPayload))
+            targetWeeks.map((targetWeek) => upsertMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), fixedPayload))
           );
         }
 
@@ -530,7 +452,6 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
     const activeField = String(fieldKey || '').trim();
     activeFieldRef.current = '';
     if (!activeField) return;
-    if (isCampaignPeriodKey(periodKey)) return;
     try {
       await clearMetricPresence(client.id, periodKey, activeField);
     } catch {
@@ -545,7 +466,6 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
       await stopPresence(activeFieldRef.current);
     }
     activeFieldRef.current = nextField;
-    if (isCampaignPeriodKey(periodKey)) return;
     try {
       await touchMetricPresence(client.id, periodKey, nextField);
     } catch {
@@ -567,7 +487,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
     const token = ++loadGenRef.current;
     setLoaded(false);
 
-    readMetric(client.id, periodKey)
+    getMetric(client.id, periodKey)
       .then(async (res) => {
         if (loadGenRef.current !== token) return;
         const currentForm = dataFromMetric(res?.metric);
@@ -579,7 +499,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
         if (resolvedFixedFields.source === 'previous-month-week-4' && Object.keys(inheritedPayload).length > 0) {
           const targetWeeks = [1, 2, 3, 4].filter((targetWeek) => targetWeek >= week);
           await Promise.all(
-            targetWeeks.map((targetWeek) => saveMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), inheritedPayload))
+            targetWeeks.map((targetWeek) => upsertMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), inheritedPayload))
           );
           if (loadGenRef.current !== token) return;
         }
@@ -756,6 +676,7 @@ const WeekCard = memo(WeekCardBase, (prevProps, nextProps) => {
 export default function PreencherSemanaPage() {
   const { clients, squads, loading: shellLoading, setPanelHeader } = useOutletContext();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const canEditMetrics = canFillMetrics(user);
 
   const now = useMemo(() => new Date(), []);
@@ -768,7 +689,7 @@ export default function PreencherSemanaPage() {
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [presenceRows, setPresenceRows] = useState([]);
-  const [campaignsByClient, setCampaignsByClient] = useState(() => readCampaignStore());
+  const [campaignsByClient, setCampaignsByClient] = useState({});
   const [campaignModalClient, setCampaignModalClient] = useState(null);
   const [campaignListClient, setCampaignListClient] = useState(null);
   const [campaignDraft, setCampaignDraft] = useState('');
@@ -793,44 +714,59 @@ export default function PreencherSemanaPage() {
     setCampaignDraft('');
   }, []);
 
-  const handleCreateCampaign = useCallback((event) => {
+  const handleCreateCampaign = useCallback(async (event) => {
     event?.preventDefault?.();
     if (!campaignModalClient?.id) return;
     const existing = normalizeCampaigns(campaignsByClient?.[campaignModalClient.id]);
-    const nextCampaign = {
-      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
-      name: campaignDraft.trim() || `Campanha ${existing.length + 2}`,
-      createdAt: new Date().toISOString(),
-    };
-    const nextStore = {
-      ...campaignsByClient,
-      [campaignModalClient.id]: [...existing, nextCampaign],
-    };
-    setCampaignsByClient(nextStore);
-    writeCampaignStore(nextStore);
-    if (campaignListClient?.id === campaignModalClient.id) {
-      setCampaignListClient(campaignModalClient);
-    }
-    handleCloseCampaignModal();
-  }, [campaignDraft, campaignListClient?.id, campaignModalClient, campaignsByClient, handleCloseCampaignModal]);
+    const requestedName = campaignDraft.trim() || `Campanha ${existing.length + 2}`;
 
-  const handleDeleteCampaign = useCallback((clientId, campaignId) => {
-    if (!clientId || !campaignId) return;
-    const existing = normalizeCampaigns(campaignsByClient?.[clientId]);
-    removeCampaignMetricsFor(clientId, campaignId);
-    const nextCampaigns = existing.filter((campaign) => campaign.id !== campaignId);
-    const nextStore = { ...campaignsByClient };
-    if (nextCampaigns.length > 0) {
-      nextStore[clientId] = nextCampaigns;
-    } else {
-      delete nextStore[clientId];
-      if (campaignListClient?.id === clientId) {
-        setCampaignListClient(null);
+    try {
+      const res = await createMetricCampaign({
+        clientId: campaignModalClient.id,
+        periodKey,
+        name: requestedName,
+      });
+      const created = normalizeCampaigns([res?.campaign || res?.metricCampaign || res])?.[0];
+      if (!created?.id) throw new Error('Campanha inválida');
+
+      setCampaignsByClient((current) => {
+        const currentList = normalizeCampaigns(current?.[campaignModalClient.id]);
+        return {
+          ...current,
+          [campaignModalClient.id]: [...currentList.filter((campaign) => campaign.id !== created.id), created],
+        };
+      });
+      if (campaignListClient?.id === campaignModalClient.id) {
+        setCampaignListClient(campaignModalClient);
       }
+      handleCloseCampaignModal();
+    } catch {
+      showToast('Erro ao criar campanha', 'error');
     }
-    setCampaignsByClient(nextStore);
-    writeCampaignStore(nextStore);
-  }, [campaignListClient?.id, campaignsByClient]);
+  }, [campaignDraft, campaignListClient?.id, campaignModalClient, campaignsByClient, handleCloseCampaignModal, periodKey, showToast]);
+
+  const handleDeleteCampaign = useCallback(async (clientId, campaignId) => {
+    if (!clientId || !campaignId) return;
+    try {
+      await deleteMetricCampaign(campaignId);
+      setCampaignsByClient((current) => {
+        const existing = normalizeCampaigns(current?.[clientId]);
+        const nextCampaigns = existing.filter((campaign) => campaign.id !== campaignId);
+        const nextStore = { ...current };
+        if (nextCampaigns.length > 0) {
+          nextStore[clientId] = nextCampaigns;
+        } else {
+          delete nextStore[clientId];
+          if (campaignListClient?.id === clientId) {
+            setCampaignListClient(null);
+          }
+        }
+        return nextStore;
+      });
+    } catch {
+      showToast('Erro ao excluir campanha', 'error');
+    }
+  }, [campaignListClient?.id, showToast]);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
   const activeClients = useMemo(
@@ -896,6 +832,37 @@ export default function PreencherSemanaPage() {
     });
     return Array.from(map.values());
   }, [visibleClients]);
+
+  useEffect(() => {
+    if (!visibleClients.length) {
+      setCampaignsByClient({});
+      return undefined;
+    }
+
+    let cancelled = false;
+    const clientIds = visibleClients.map((client) => client.id);
+
+    async function loadCampaigns() {
+      try {
+        const res = await listMetricCampaigns({ clientIds, periodKey });
+        if (cancelled) return;
+        const source = res?.campaignsByClient || res?.byClient || {};
+        const next = {};
+        clientIds.forEach((clientId) => {
+          next[clientId] = normalizeCampaigns(source?.[clientId]);
+        });
+        setCampaignsByClient(next);
+      } catch {
+        if (!cancelled) setCampaignsByClient({});
+      }
+    }
+
+    void loadCampaigns();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [periodKey, visibleClients]);
 
   useEffect(() => {
     if (!visibleClients.length) {
@@ -1227,7 +1194,7 @@ export default function PreencherSemanaPage() {
                       </div>
                       <WeekCard
                         client={campaignListClient}
-                        periodKey={campaignMetricPeriodKey(periodKey, campaign.id)}
+                        periodKey={campaignMetricPeriodKey(periodKey, campaign)}
                         week={week}
                         campaignLabel={campaign.name}
                         canEdit={canEditMetrics}

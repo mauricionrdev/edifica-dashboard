@@ -1682,14 +1682,13 @@
 }
 
 /* ==========================================================================
-   v85 · Correção modal de campanhas e hover dos campos
-   Portal no body + z-index real acima da sidebar + sem hover nos cards pequenos.
+   v86 · Produção: campanhas via API + sem hover nos cards pequenos
    ========================================================================== */
 .campaignModalOverlay {
   position: fixed;
   inset: 0;
   z-index: 25000;
-  background: rgba(8, 9, 10, 0.82);
+  background: var(--overlay-bg, rgba(8, 9, 10, 0.82));
   backdrop-filter: none;
 }
 
@@ -1699,24 +1698,59 @@
   z-index: 25001;
 }
 
+.fieldCard,
+.fieldCard_weekly,
+.fieldCard_once,
+.fieldCard_auto {
+  transition: none;
+}
+
 .fieldCard:hover,
 .fieldCard_weekly:hover,
+.fieldCard_once:hover,
 .fieldCard_auto:hover,
 .inputCard:hover,
-.fieldCard:hover,
 .kpiCard:hover {
-  border-color: inherit;
-  background: inherit;
+  border-color: var(--line);
+  background: var(--field-bg);
   box-shadow: none;
   transform: none;
 }
 
-.fieldCard:focus-within {
-  animation: weekFieldSelectedPulse 1500ms ease-in-out infinite;
+.fieldCard_weekly:hover {
+  border-color: var(--accent-line);
+  background:
+    linear-gradient(180deg, var(--accent-soft), transparent 72%),
+    var(--field-bg);
+}
+
+.fieldCard_auto:hover {
+  border-color: var(--success-line);
+  background:
+    linear-gradient(180deg, var(--success-soft), transparent 72%),
+    var(--field-bg);
+}
+
+.fieldInput:hover {
+  border-color: var(--line);
+  background: var(--field-bg);
+}
+
+.fieldInput:focus {
+  border-color: var(--line-strong);
+  background: var(--bg-selected);
+  box-shadow: 0 0 0 3px var(--surface-raised);
+}
+
+.fieldCard_weekly:focus-within {
+  border-color: var(--accent-line);
+}
+
+.fieldCard_auto:focus-within {
+  border-color: var(--success-line);
 }
 
 .campaignCardShell .clientCard {
-  background:
-    linear-gradient(180deg, var(--surface-panel), transparent 56%),
-    var(--workspace-panel-bg);
+  border: 0;
+  border-radius: 0;
 }
