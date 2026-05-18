@@ -1010,3 +1010,104 @@
 .cardsPanel:hover {
   background-color: var(--workspace-panel-bg);
 }
+
+/* ==========================================================================
+   v82 · QA visual Preencher Semana
+   Corrige hovers claros e remove sensação de movimento.
+   ========================================================================== */
+.workspace,
+.cardsPanel,
+.clientCard,
+.dayCard,
+.metricCard,
+.tableShell,
+.modalCard,
+.drawerPanel {
+  background-color: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.select > button,
+.headerStat,
+.weekTab,
+.searchField,
+.clientCard,
+.dayCard,
+.metricCard,
+.inputCard,
+.fieldCard,
+.kpiCard,
+.actionButton,
+.primaryButton,
+.secondaryButton,
+.modalAction,
+.drawerAction {
+  transform: none;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.select > button:hover,
+.headerStat:hover,
+.weekTab:hover,
+.searchField:hover,
+.searchField:focus-within,
+.actionButton:hover:not(:disabled),
+.primaryButton:hover:not(:disabled),
+.secondaryButton:hover:not(:disabled),
+.modalAction:hover:not(:disabled),
+.drawerAction:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.weekTabActive,
+.weekTabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.clientCard:hover,
+.dayCard:hover,
+.metricCard:hover,
+.inputCard:hover,
+.fieldCard:hover,
+.kpiCard:hover {
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.clientCard:hover .clientTopbar {
+  background: transparent;
+}
+
+.cardsPanel:hover {
+  background-color: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.modalOverlay,
+.drawerOverlay {
+  backdrop-filter: none;
+}
+
+.modalCard,
+.drawerPanel {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}

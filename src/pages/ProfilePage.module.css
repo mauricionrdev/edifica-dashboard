@@ -11346,3 +11346,135 @@
   transform: none;
   transition: none;
 }
+
+/* ==========================================================================
+   v82 · QA visual Perfil
+   Estabiliza hover, tabs, strip superior e modais sem movimento.
+   ========================================================================== */
+.hero,
+.operationBoard,
+.operationList,
+.emptyOperation,
+.settingsModal,
+.drawerPanel,
+.attachmentViewerPanel,
+.taskAttachmentConfirmModal {
+  background: var(--workspace-panel-bg);
+  border-color: var(--workspace-panel-border);
+  box-shadow: none;
+  transform: none;
+}
+
+.hero:hover,
+.operationBoard:hover,
+.operationList:hover,
+.emptyOperation:hover {
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.profileStatRail {
+  gap: 0;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 1px solid var(--edf-border);
+}
+
+.profileStat {
+  min-height: 74px;
+  padding: 15px 18px;
+  border-right: 1px solid var(--edf-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  transition: none;
+}
+
+.profileStat:last-child {
+  border-right: 0;
+}
+
+.profileStat:hover {
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.operationControlPanel {
+  overflow: visible;
+  padding-block: 2px;
+}
+
+.operationTabs {
+  min-height: 40px;
+  padding-block: 2px;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-bottom: 0;
+  scrollbar-width: none;
+}
+
+.operationTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.operationTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-canvas);
+  color: var(--edf-text-muted);
+  transform: none;
+  transition: none;
+}
+
+.operationTab:hover {
+  border-color: var(--edf-border);
+  background: var(--bg-canvas);
+  color: var(--edf-text-secondary);
+  transform: none;
+}
+
+.operationTabActive,
+.operationTabActive:hover {
+  border-color: var(--edf-amber-border-strong);
+  background: var(--edf-amber-bg);
+  color: var(--edf-amber-strong);
+  transform: none;
+}
+
+.operationTabCount {
+  transform: none;
+  transition: none;
+}
+
+.operationRow,
+.operationRow:hover,
+.primaryAction,
+.primaryAction:hover,
+.iconButton,
+.iconButton:hover,
+.drawerTopbarButton,
+.drawerTopbarButton:hover,
+.settingsFooter button,
+.settingsFooter button:hover {
+  transform: none;
+}
+
+.operationRow:hover {
+  background: var(--bg-hover);
+  box-shadow: none;
+}
+
+.primaryAction:hover,
+.iconButton:hover,
+.drawerTopbarButton:hover,
+.settingsFooter button:hover {
+  box-shadow: none;
+}
