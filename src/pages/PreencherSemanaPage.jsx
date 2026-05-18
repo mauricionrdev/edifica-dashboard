@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { clearMetricPresence, getMetric, listMetricPresence, touchMetricPresence, upsertMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
-import { SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
+import { PlusIcon, SearchIcon, Select, UsersIcon } from '../components/ui/index.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -30,7 +30,42 @@ const EMPTY_DATA = {
 
 const FIXED_MONTH_FIELDS = ['investimento', 'metaCpl', 'metaVolume', 'metaEmpate', 'metaSemanal'];
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
+const CAMPAIGN_STORAGE_KEY = 'edifica:preencher-semana:campaigns:v1';
 
+function readCampaignStore() {
+  if (typeof window === 'undefined') return {};
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(CAMPAIGN_STORAGE_KEY) || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCampaignStore(store) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(store || {}));
+}
+
+function normalizeCampaigns(campaigns) {
+  return (Array.isArray(campaigns) ? campaigns : [])
+    .filter((campaign) => campaign && campaign.id)
+    .map((campaign, index) => ({
+      id: String(campaign.id),
+      name: String(campaign.name || `Campanha ${index + 2}`).trim() || `Campanha ${index + 2}`,
+      createdAt: campaign.createdAt || new Date().toISOString(),
+    }));
+}
+
+function campaignMetricPeriodKey(periodKey, campaignId) {
+  const id = String(campaignId || '').trim();
+  return id ? `${periodKey}__campaign:${id}` : periodKey;
+}
+
+function splitCampaignPeriodKey(periodKey) {
+  const [base, campaignSuffix = ''] = String(periodKey || '').split('__campaign:');
+  return { base, campaignSuffix: campaignSuffix ? `__campaign:${campaignSuffix}` : '' };
+}
 
 const TRAFFIC_FIELDS = [
   { key: 'cpl', label: 'CPL atual (R$)', kind: 'weekly', placeholder: '0,00' },
@@ -97,12 +132,14 @@ function changedFields(next = {}, previous = {}, keys = []) {
 }
 
 function sameMonthPeriodKey(periodKey, targetWeek) {
-  const prefix = String(periodKey || '').replace(/-S[1-4]$/, '');
-  return `${prefix}-S${targetWeek}`;
+  const { base, campaignSuffix } = splitCampaignPeriodKey(periodKey);
+  const prefix = String(base || '').replace(/-S[1-4]$/, '');
+  return `${prefix}-S${targetWeek}${campaignSuffix}`;
 }
 
 function previousMonthWeek4PeriodKey(periodKey) {
-  const match = /^(\d{4})-(\d{2})-S[1-4]$/.exec(String(periodKey || ''));
+  const { base, campaignSuffix } = splitCampaignPeriodKey(periodKey);
+  const match = /^(\d{4})-(\d{2})-S[1-4]$/.exec(String(base || ''));
   if (!match) return '';
 
   let year = Number(match[1]);
@@ -113,7 +150,7 @@ function previousMonthWeek4PeriodKey(periodKey) {
     year -= 1;
   }
 
-  return `${year}-${String(month).padStart(2, '0')}-S4`;
+  return `${year}-${String(month).padStart(2, '0')}-S4${campaignSuffix}`;
 }
 
 function mergeMissingFixedFields(currentForm = {}, candidate = {}) {
@@ -350,7 +387,7 @@ function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canE
   );
 }
 
-function WeekCardBase({ client, periodKey, week, canEdit, onSaved, presenceByField }) {
+function WeekCardBase({ client, periodKey, week, campaignLabel = '', canEdit, onSaved, onRequestCampaign, presenceByField }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(EMPTY_DATA);
   const [loaded, setLoaded] = useState(false);
@@ -569,8 +606,20 @@ function WeekCardBase({ client, periodKey, week, canEdit, onSaved, presenceByFie
         </div>
 
         <div className={styles.clientTopbarRight}>
+          {campaignLabel ? <span className={styles.campaignBadge}>{campaignLabel}</span> : null}
           <span className={`${styles.progressPill} ${styles[`progressPill_${summary.tone}`]}`}>{summary.label}</span>
           <StatusChip status={status} />
+          {canEdit ? (
+            <button
+              type="button"
+              className={styles.addCampaignButton}
+              onClick={() => onRequestCampaign?.(client)}
+              aria-label={`Adicionar campanha para ${client.name}`}
+              title="Adicionar campanha"
+            >
+              <PlusIcon size={14} aria-hidden="true" />
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -612,8 +661,10 @@ const WeekCard = memo(WeekCardBase, (prevProps, nextProps) => {
     prevProps.client === nextProps.client &&
     prevProps.periodKey === nextProps.periodKey &&
     prevProps.week === nextProps.week &&
+    prevProps.campaignLabel === nextProps.campaignLabel &&
     prevProps.canEdit === nextProps.canEdit &&
     prevProps.onSaved === nextProps.onSaved &&
+    prevProps.onRequestCampaign === nextProps.onRequestCampaign &&
     arePresenceMapsEqual(prevProps.presenceByField, nextProps.presenceByField)
   );
 });
@@ -630,10 +681,42 @@ export default function PreencherSemanaPage() {
   const [squadFilter, setSquadFilter] = useState('');
   const [clientFilter, setClientFilter] = useState('');
   const [query, setQuery] = useState('');
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [presenceRows, setPresenceRows] = useState([]);
+  const [campaignsByClient, setCampaignsByClient] = useState(() => readCampaignStore());
+  const [campaignModalClient, setCampaignModalClient] = useState(null);
+  const [campaignDraft, setCampaignDraft] = useState('');
   const presenceSnapshotRef = useRef('[]');
+
+  const handleOpenCampaignModal = useCallback((client) => {
+    setCampaignModalClient(client || null);
+    const existing = normalizeCampaigns(campaignsByClient?.[client?.id]);
+    setCampaignDraft(`Campanha ${existing.length + 2}`);
+  }, [campaignsByClient]);
+
+  const handleCloseCampaignModal = useCallback(() => {
+    setCampaignModalClient(null);
+    setCampaignDraft('');
+  }, []);
+
+  const handleCreateCampaign = useCallback((event) => {
+    event?.preventDefault?.();
+    if (!campaignModalClient?.id) return;
+    const existing = normalizeCampaigns(campaignsByClient?.[campaignModalClient.id]);
+    const nextCampaign = {
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+      name: campaignDraft.trim() || `Campanha ${existing.length + 2}`,
+      createdAt: new Date().toISOString(),
+    };
+    const nextStore = {
+      ...campaignsByClient,
+      [campaignModalClient.id]: [...existing, nextCampaign],
+    };
+    setCampaignsByClient(nextStore);
+    writeCampaignStore(nextStore);
+    handleCloseCampaignModal();
+  }, [campaignDraft, campaignModalClient, campaignsByClient, handleCloseCampaignModal]);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
   const activeClients = useMemo(
@@ -911,7 +994,7 @@ export default function PreencherSemanaPage() {
               <Select
                 className={styles.pageSizeSelect}
                 value={String(pageSize)}
-                onChange={(event) => setPageSize(Number(event.target.value) || 20)}
+                onChange={(event) => setPageSize(Number(event.target.value) || 10)}
                 aria-label="Quantidade de clientes por página"
               >
                 {PAGE_SIZE_OPTIONS.map((option) => (
@@ -938,17 +1021,28 @@ export default function PreencherSemanaPage() {
                   </header>
 
                   <div className={styles.cardsStack}>
-                    {group.clients.map((client) => (
-                      <WeekCard
-                        key={`${client.id}-${periodKey}`}
-                        client={client}
-                        periodKey={periodKey}
-                        week={week}
-                        canEdit={canEditMetrics}
-                        onSaved={() => {}}
-                        presenceByField={presenceByClientField[client.id] || {}}
-                      />
-                    ))}
+                    {group.clients.map((client) => {
+                      const clientCampaigns = normalizeCampaigns(campaignsByClient?.[client.id]);
+                      const cards = [{ id: 'base', name: '', periodKey }, ...clientCampaigns.map((campaign) => ({
+                        id: campaign.id,
+                        name: campaign.name,
+                        periodKey: campaignMetricPeriodKey(periodKey, campaign.id),
+                      }))];
+
+                      return cards.map((card) => (
+                        <WeekCard
+                          key={`${client.id}-${card.periodKey}`}
+                          client={client}
+                          periodKey={card.periodKey}
+                          week={week}
+                          campaignLabel={card.name}
+                          canEdit={canEditMetrics}
+                          onSaved={() => {}}
+                          onRequestCampaign={handleOpenCampaignModal}
+                          presenceByField={card.id === 'base' ? (presenceByClientField[client.id] || {}) : {}}
+                        />
+                      ));
+                    })}
                   </div>
                 </section>
               ))}
@@ -976,6 +1070,44 @@ export default function PreencherSemanaPage() {
             </div>
           ) : null}
         </section>
+
+        {campaignModalClient ? (
+          <div className={styles.campaignModalOverlay} role="presentation" onClick={handleCloseCampaignModal}>
+            <form className={styles.campaignModal} onSubmit={handleCreateCampaign} onClick={(event) => event.stopPropagation()}>
+              <header className={styles.campaignModalHeader}>
+                <div>
+                  <h2>Nova campanha</h2>
+                  <p>{campaignModalClient.name}</p>
+                </div>
+                <button type="button" className={styles.campaignModalClose} onClick={handleCloseCampaignModal} aria-label="Fechar">
+                  ×
+                </button>
+              </header>
+
+              <div className={styles.campaignModalBody}>
+                <label className={styles.campaignField}>
+                  <span>Nome da campanha</span>
+                  <input
+                    type="text"
+                    value={campaignDraft}
+                    onChange={(event) => setCampaignDraft(event.target.value)}
+                    autoFocus
+                    placeholder="Campanha 2"
+                  />
+                </label>
+              </div>
+
+              <footer className={styles.campaignModalFooter}>
+                <button type="button" className={styles.campaignCancelButton} onClick={handleCloseCampaignModal}>
+                  Cancelar
+                </button>
+                <button type="submit" className={styles.campaignCreateButton}>
+                  Criar campos
+                </button>
+              </footer>
+            </form>
+          </div>
+        ) : null}
       </div>
     </div>
   );

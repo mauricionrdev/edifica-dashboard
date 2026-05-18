@@ -1111,3 +1111,350 @@
   background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
 }
+
+/* ==========================================================================
+   v83 · Preencher Semana refinement + multiple campaigns
+   Refino visual dedicado, paginação inicial de 10 clientes e criação de
+   campanhas adicionais por cliente.
+   ========================================================================== */
+.workspace {
+  padding: 12px 14px 18px;
+  background: var(--workspace-bg);
+}
+
+.cardsPanel {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.commandBar {
+  min-height: 54px;
+  padding: 10px 14px;
+  background: var(--workspace-panel-bg);
+}
+
+.searchField,
+.pageSizeSelect > button,
+.select > button,
+.headerStat,
+.weekTabs {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.searchField:hover,
+.searchField:focus-within,
+.pageSizeSelect > button:hover,
+.select > button:hover,
+.headerStat:hover,
+.weekTab:hover {
+  border-color: var(--line);
+  background: var(--field-bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.weekTabActive,
+.weekTabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.squadGroupHeader {
+  padding: 18px 0 10px;
+}
+
+.cardsStack {
+  gap: 10px;
+}
+
+.clientCard {
+  border-color: var(--workspace-panel-border-soft);
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.clientCard:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.clientCard:focus-within {
+  border-color: var(--accent-line);
+  animation: weekCardSelectedPulse 1500ms ease-in-out infinite;
+}
+
+.clientTopbar {
+  min-height: 50px;
+  background: transparent;
+}
+
+.clientTopbarRight {
+  gap: 7px;
+}
+
+.campaignBadge,
+.progressPill,
+.statusChip {
+  height: 26px;
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.campaignBadge {
+  padding: 0 10px;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.addCampaignButton {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 9px;
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  transform: none;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.addCampaignButton:hover,
+.addCampaignButton:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: var(--focus-ring);
+  outline: none;
+  transform: none;
+}
+
+.clientSegments {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: transparent;
+}
+
+.segmentBlock {
+  padding: 14px 14px 16px;
+  background: transparent;
+}
+
+.segmentGrid {
+  gap: 8px;
+}
+
+.fieldCard {
+  min-height: 86px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+  transform: none;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.fieldCard:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.fieldCard:focus-within {
+  border-color: var(--accent-line);
+  background: var(--field-bg);
+  animation: weekCardSelectedPulse 1500ms ease-in-out infinite;
+}
+
+.fieldInput,
+.fieldValue {
+  min-height: 38px;
+  background: var(--bg-canvas);
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.fieldInput:focus {
+  border-color: var(--accent-line);
+  box-shadow: none;
+  outline: none;
+}
+
+.campaignModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--chassis-z-dialog);
+  padding: 20px;
+  background: color-mix(in srgb, var(--bg-app) 78%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.campaignModal {
+  width: min(520px, calc(100vw - 40px));
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-dialog);
+  overflow: hidden;
+}
+
+.campaignModalHeader,
+.campaignModalFooter {
+  min-height: 58px;
+  padding: 0 16px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.campaignModalHeader {
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+}
+
+.campaignModalHeader h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.1;
+  font-weight: 680;
+  letter-spacing: -0.035em;
+}
+
+.campaignModalHeader p {
+  margin: 4px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.campaignModalClose {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.campaignModalBody {
+  padding: 16px;
+  background: var(--workspace-bg);
+}
+
+.campaignField {
+  display: grid;
+  gap: 8px;
+}
+
+.campaignField span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 680;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.campaignField input {
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.campaignField input:focus {
+  border-color: var(--accent-line);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.campaignModalFooter {
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  justify-content: flex-end;
+}
+
+.campaignCancelButton,
+.campaignCreateButton {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 620;
+  cursor: pointer;
+}
+
+.campaignCreateButton {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.campaignCancelButton:hover,
+.campaignModalClose:hover {
+  border-color: var(--line);
+  background: var(--field-bg-hover);
+  color: var(--text-primary);
+}
+
+.campaignCreateButton:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@keyframes weekCardSelectedPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--accent-soft);
+  }
+
+  50% {
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+}
+
+@media (max-width: 1120px) {
+  .clientSegments {
+    grid-template-columns: 1fr;
+  }
+}
