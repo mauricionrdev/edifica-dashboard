@@ -445,3 +445,37 @@
 .notificationItemUnread:hover {
   background: var(--bg-hover);
 }
+
+/* ==========================================================================
+   v98 · QA final Topbar
+   Popover de notificações acima da sidebar e sem hover claro.
+   ========================================================================== */
+.rail,
+.actions,
+.notificationsWrap {
+  z-index: auto;
+}
+
+.notificationsPanel {
+  z-index: 26000;
+  border-color: var(--workspace-panel-border);
+  background: var(--chassis-panel-bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+
+.notificationItem:hover,
+.notificationItemUnread:hover {
+  background: var(--bg-hover);
+}
+
+.menuButton:focus,
+.menuButton:focus-visible,
+.collapseButton:focus,
+.collapseButton:focus-visible,
+.notificationButton:focus,
+.notificationButton:focus-visible,
+.notificationsActionIcon:focus,
+.notificationsActionIcon:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

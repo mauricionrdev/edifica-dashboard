@@ -1061,3 +1061,58 @@
   border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-panel-bg);
 }
+
+/* ==========================================================================
+   v98 · QA final OpenAI Usage
+   Mantém relatório executivo sem hover claro/focus visual.
+   ========================================================================== */
+.header button,
+.downloadButton,
+.refreshButton,
+.dateInput,
+.filterButton {
+  transform: none;
+  box-shadow: none;
+}
+
+.header button:hover,
+.downloadButton:hover,
+.refreshButton:hover,
+.filterButton:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.header button:focus,
+.header button:focus-visible,
+.downloadButton:focus,
+.downloadButton:focus-visible,
+.refreshButton:focus,
+.refreshButton:focus-visible,
+.dateInput:focus,
+.dateInput:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--line);
+}
+
+.summaryGrid article,
+.chartCard,
+.tableWrap,
+.observations {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.summaryGrid article:hover,
+.chartCard:hover,
+.tableWrap:hover,
+.observations:hover {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}

@@ -117,3 +117,22 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* ==========================================================================
+   v98 · QA final UserHoverCard
+   Remove movimento e hover claro.
+   ========================================================================== */
+.card {
+  z-index: 26000;
+  border-color: var(--workspace-panel-border);
+  background: var(--chassis-panel-bg-elevated);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
+  animation: none;
+}
+
+.action:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+}

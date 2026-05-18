@@ -286,3 +286,36 @@
 .monthActions button:hover {
   background: var(--bg-hover);
 }
+
+/* ==========================================================================
+   v98 · QA final DateField
+   Popover acima da UI, sem focus visual e sem scrollbar aparente.
+   ========================================================================== */
+.trigger:hover:not(:disabled),
+.trigger[aria-expanded='true'],
+.trigger:focus,
+.trigger:focus-visible {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  outline: none;
+}
+
+.popover {
+  z-index: 26000;
+  border-color: var(--workspace-panel-border);
+  background: var(--chassis-panel-bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+
+.daysGrid,
+.monthGrid {
+  scrollbar-width: none;
+}
+
+.daysGrid::-webkit-scrollbar,
+.monthGrid::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}

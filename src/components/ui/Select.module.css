@@ -134,3 +134,32 @@
 .optionActive {
   outline: 1px solid var(--line-subtle);
 }
+
+/* ==========================================================================
+   v98 · QA final Select
+   Sem focus visual e menu acima da sidebar.
+   ========================================================================== */
+.select:focus,
+.select:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--line);
+}
+
+.select:hover:not(:disabled),
+.selectOpen {
+  background: var(--bg-hover);
+  border-color: var(--line);
+}
+
+.menu {
+  z-index: 26000;
+  border-color: var(--workspace-panel-border);
+  background: var(--chassis-panel-bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+
+.option:hover,
+.optionActive {
+  background: var(--bg-hover);
+}
