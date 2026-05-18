@@ -11,45 +11,45 @@
    1. Tokens globais
    ------------------------------------------------------------------------- */
 .page {
-  /* --edf-bg: #0B0D0F; */
-  --edf-surface-1: rgba(255, 255, 255, 0.018);
-  --edf-surface-2: rgba(255, 255, 255, 0.025);
-  --edf-surface-3: rgba(255, 255, 255, 0.035);
-  --edf-surface-solid: #101113;
-  --edf-surface-solid-2: #141517;
+  --edf-bg: var(--chassis-page-bg);
+  --edf-surface-1: var(--surface-panel);
+  --edf-surface-2: var(--surface-raised);
+  --edf-surface-3: var(--bg-hover);
+  --edf-surface-solid: var(--chassis-panel-bg);
+  --edf-surface-solid-2: var(--chassis-panel-bg-elevated);
 
-  --edf-border: rgba(255, 255, 255, 0.06);
-  --edf-border-strong: rgba(255, 255, 255, 0.08);
-  --edf-border-soft: rgba(255, 255, 255, 0.04);
+  --edf-border: var(--chassis-border);
+  --edf-border-strong: var(--chassis-border-strong);
+  --edf-border-soft: var(--chassis-border-subtle);
 
-  --edf-text: #F8FAFC;
-  --edf-text-secondary: #CBD5E1;
-  --edf-text-muted: #94A3B8;
-  --edf-text-faint: #64748B;
-  --edf-placeholder: rgba(148, 163, 184, 0.65);
+  --edf-text: var(--text-primary);
+  --edf-text-secondary: var(--text-secondary);
+  --edf-text-muted: var(--text-tertiary);
+  --edf-text-faint: var(--text-quaternary);
+  --edf-placeholder: var(--text-quaternary);
 
-  --edf-amber: #D4AF37;
-  --edf-amber-strong: #F5B800;
-  --edf-amber-bg: rgba(212, 175, 55, 0.10);
-  --edf-amber-bg-hover: rgba(212, 175, 55, 0.16);
-  --edf-amber-border: rgba(212, 175, 55, 0.24);
-  --edf-amber-border-strong: rgba(212, 175, 55, 0.35);
-  --edf-amber-focus: rgba(212, 175, 55, 0.06);
+  --edf-amber: var(--accent);
+  --edf-amber-strong: var(--accent-strong);
+  --edf-amber-bg: var(--accent-soft);
+  --edf-amber-bg-hover: rgba(245, 184, 0, 0.14);
+  --edf-amber-border: var(--accent-line);
+  --edf-amber-border-strong: rgba(245, 184, 0, 0.34);
+  --edf-amber-focus: var(--accent-soft);
 
-  --edf-success: #22C55E;
-  --edf-success-soft: #4ADE80;
-  --edf-success-bg: rgba(34, 197, 94, 0.10);
-  --edf-success-border: rgba(34, 197, 94, 0.20);
+  --edf-success: var(--success);
+  --edf-success-soft: var(--success-text);
+  --edf-success-bg: var(--success-soft);
+  --edf-success-border: var(--success-line);
 
-  --edf-danger: #EF4444;
-  --edf-danger-soft: #FF6B6B;
-  --edf-danger-bg: rgba(239, 68, 68, 0.08);
-  --edf-danger-border: rgba(239, 68, 68, 0.18);
+  --edf-danger: var(--danger);
+  --edf-danger-soft: var(--danger-text);
+  --edf-danger-bg: var(--danger-soft);
+  --edf-danger-border: var(--danger-line);
 
-  --edf-info: #5AA9FF;
-  --edf-info-soft: #7FB8FF;
-  --edf-info-bg: rgba(90, 169, 255, 0.08);
-  --edf-info-border: rgba(90, 169, 255, 0.18);
+  --edf-info: var(--info);
+  --edf-info-soft: var(--info-text);
+  --edf-info-bg: var(--info-soft);
+  --edf-info-border: var(--info-line);
 
   --profile-bg: var(--edf-bg);
   --profile-panel: var(--edf-surface-solid);
@@ -113,7 +113,7 @@
   font-weight: 700;
   font-size: 17px;
   letter-spacing: -0.02em;
-  color: #1a1300;
+  color: var(--accent-text);
   text-transform: uppercase;
   flex-shrink: 0;
   overflow: hidden;
@@ -128,13 +128,13 @@
 }
 
 .avatar_amber {
-  background: #D4AF37;
-  color: #1a1300;
+  background: var(--accent);
+  color: var(--accent-text);
 }
 
 .avatar_blue {
-  background: #5AA9FF;
-  color: #001426;
+  background: var(--info);
+  color: var(--bg-app);
 }
 
 .avatar_violet {
@@ -143,8 +143,8 @@
 }
 
 .avatar_emerald {
-  background: #6FCF8B;
-  color: #002912;
+  background: var(--success-text);
+  color: var(--bg-app);
 }
 
 .avatar_rose {
@@ -153,8 +153,8 @@
 }
 
 .avatar_slate {
-  background: #8A8F98;
-  color: #0d0f12;
+  background: var(--text-tertiary);
+  color: var(--bg-app);
 }
 
 .identityCopy {
@@ -1082,8 +1082,8 @@
   font-weight: 700;
   font-size: 17px;
   letter-spacing: -0.02em;
-  color: #1a1300;
-  background: #D4AF37;
+  color: var(--accent-text);
+  background: var(--accent);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -1706,7 +1706,7 @@
 .workflowStep_current i,
 .workflowStep_active i {
   background: var(--edf-amber);
-  color: #1a1300;
+  color: var(--accent-text);
 }
 
 .workflowStep_done {
@@ -2299,7 +2299,7 @@
 }
 
 .clientSearchResults {
-  background: #101113 !important;
+  background: var(--chassis-panel-bg-elevated) !important;
   border: 1px solid var(--edf-border-strong) !important;
   box-shadow: 0 22px 72px rgba(0, 0, 0, 0.66) !important;
   z-index: 13050 !important;
@@ -2308,7 +2308,7 @@
 }
 
 .clientSearchResults button {
-  background: #101113 !important;
+  background: var(--chassis-panel-bg-elevated) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.045);
   border-radius: 0 !important;
 }
@@ -2404,7 +2404,7 @@
   padding: 4px;
   border: 1px solid var(--edf-border-strong);
   border-radius: 12px;
-  background: #101113;
+  background: var(--chassis-panel-bg-elevated);
   box-shadow: 0 22px 72px rgba(0, 0, 0, 0.68);
 }
 
@@ -2680,7 +2680,7 @@
 }
 
 .profileSelectMenu {
-  background: #101113 !important;
+  background: var(--chassis-panel-bg-elevated) !important;
   border-color: var(--edf-border-strong) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -2987,7 +2987,7 @@
 .drawerPanel {
   width: min(760px, 100vw);
   max-width: min(760px, 100vw);
-  background: #101113;
+  background: var(--chassis-panel-bg-elevated);
   border-left: 1px solid rgba(255, 255, 255, 0.075);
   box-shadow: -28px 0 80px rgba(0, 0, 0, 0.32);
 }
@@ -3519,7 +3519,7 @@
 
 .clientSearchFloating {
   z-index: 13060 !important;
-  background: #101113 !important;
+  background: var(--chassis-panel-bg-elevated) !important;
   border-color: var(--edf-border-strong) !important;
   box-shadow: 0 22px 72px rgba(0, 0, 0, 0.68) !important;
   backdrop-filter: none !important;
@@ -3925,7 +3925,7 @@
 .clientSearchFloating,
 .clientSearchResults {
   z-index: 32000;
-  background: #101113;
+  background: var(--chassis-panel-bg-elevated);
   border-color: rgba(255, 255, 255, 0.10);
   box-shadow: 0 24px 72px rgba(0, 0, 0, 0.58);
 }
@@ -6829,7 +6829,7 @@
 .profileSelectMenu {
   border: 1px solid rgba(146, 155, 176, 0.14) !important;
   border-radius: 12px !important;
-  background: #101113 !important;
+  background: var(--chassis-panel-bg-elevated) !important;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42) !important;
   padding: 4px !important;
 }
@@ -10733,4 +10733,119 @@
   width: auto !important;
   height: auto !important;
   object-fit: contain !important;
+}
+
+
+/* ==========================================================================
+   Fase D · ProfilePage chassis pass
+   Consolida a página validada sobre tokens globais sem alterar a lógica.
+   ========================================================================== */
+.page {
+  min-height: 100%;
+  background: var(--chassis-page-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-feature-settings: var(--font-features-base);
+  text-shadow: none;
+}
+
+.hero,
+.operationBoard {
+  border-color: var(--chassis-border);
+  background: var(--chassis-panel-bg);
+  box-shadow: none;
+}
+
+.hero {
+  overflow: hidden;
+}
+
+.operationHeader,
+.operationBody,
+.settingsHeader,
+.settingsFooter,
+.drawerTopbar {
+  border-color: var(--chassis-border-subtle);
+}
+
+.iconButton,
+.primaryAction,
+.operationTab,
+.settingsFooter button,
+.drawerTopbarButton,
+.drawerTopbarDanger {
+  min-height: var(--chassis-control-height);
+}
+
+.operationTab,
+.profileStat,
+.primaryAction,
+.iconButton {
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.operationTab:focus-visible,
+.primaryAction:focus-visible,
+.iconButton:focus-visible,
+.drawerTopbarButton:focus-visible,
+.settingsFooter button:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.profileStat span,
+.operationListHeader,
+.operationMeta,
+.operationTabCount,
+.identityGreeting,
+.identityMeta span {
+  color: #878c95;
+}
+
+.operationList,
+.emptyOperation,
+.settingsModal,
+.drawerPanel {
+  border-color: var(--chassis-border);
+  background: var(--chassis-panel-bg);
+}
+
+.drawerOverlay,
+.settingsOverlay {
+  z-index: var(--chassis-z-dialog);
+}
+
+.drawerPanel,
+.settingsModal {
+  box-shadow: var(--shadow-dialog);
+}
+
+.emptyOperation {
+  min-height: 136px;
+}
+
+.roleBadge {
+  min-height: 27px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.operationListHeader,
+.operationRow {
+  grid-template-columns:
+    minmax(280px, 1.6fr)
+    minmax(112px, 0.52fr)
+    minmax(150px, 0.62fr)
+    minmax(92px, 0.38fr)
+    minmax(92px, 0.42fr);
+}
+
+@media (max-width: 980px) {
+  .operationListHeader,
+  .operationRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
