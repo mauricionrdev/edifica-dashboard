@@ -2177,3 +2177,66 @@ textarea:disabled {
 .attachmentMeta {
   color: #878c95;
 }
+
+/* ==========================================================================
+   v94 · QA visual final ProjectWorkspace
+   ========================================================================== */
+.projectHeader,
+.emptyCard,
+.sectionForm,
+.projectTools,
+.sectionCard,
+.taskPanel,
+.activityPanel,
+.comment,
+.taskDetailCard {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.projectHeader:hover,
+.emptyCard:hover,
+.sectionCard:hover,
+.taskPanel:hover,
+.activityPanel:hover,
+.comment:hover,
+.taskDetailCard:hover {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.createGrid button:hover:not(:disabled),
+.sectionForm button:hover:not(:disabled),
+.taskForm button:hover:not(:disabled),
+.subtaskForm button:hover:not(:disabled),
+.collabForm button:hover:not(:disabled),
+.commentForm button:hover:not(:disabled),
+.confirmActions button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.projectTools select:focus,
+.taskForm select:focus,
+.sectionForm input:focus,
+.taskForm input:focus,
+.subtaskForm input:focus,
+.collabForm select:focus,
+.commentForm textarea:focus,
+.projectTools select:focus-visible,
+.taskForm select:focus-visible,
+.sectionForm input:focus-visible,
+.taskForm input:focus-visible,
+.subtaskForm input:focus-visible,
+.collabForm select:focus-visible,
+.commentForm textarea:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

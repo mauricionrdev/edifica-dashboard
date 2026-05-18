@@ -743,3 +743,49 @@
   background: var(--danger-soft);
   color: var(--danger-text);
 }
+
+/* ==========================================================================
+   v94 · QA visual final modal Cliente/anexos
+   ========================================================================== */
+.overlay,
+.attachmentViewerOverlay,
+.confirmOverlay {
+  z-index: 25000;
+  background: var(--overlay-bg);
+  backdrop-filter: none;
+}
+
+.modalCard,
+.attachmentViewerPanel,
+.confirmModal {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
+}
+
+.modalBody,
+.attachmentList,
+.clientAttachmentList {
+  scrollbar-width: none;
+}
+
+.modalBody::-webkit-scrollbar,
+.attachmentList::-webkit-scrollbar,
+.clientAttachmentList::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.projectBtn:hover,
+.iconBtn:hover,
+.btn:hover,
+.btnGhost:hover,
+.projectChoiceCard:hover,
+.attachmentAction:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}

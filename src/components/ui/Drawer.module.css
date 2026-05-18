@@ -47,3 +47,28 @@
   border-bottom: 0;
   justify-content: flex-end;
 }
+
+/* ==========================================================================
+   v94 · QA visual final Drawer base
+   ========================================================================== */
+.overlay {
+  z-index: 25000;
+  background: var(--overlay-bg);
+  backdrop-filter: none;
+}
+
+.drawer {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.body {
+  scrollbar-width: none;
+}
+
+.body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}

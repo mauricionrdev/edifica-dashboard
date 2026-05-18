@@ -3935,3 +3935,107 @@ textarea:focus-visible {
     min-height: 100%;
   }
 }
+
+/* ==========================================================================
+   v94 · QA visual final de task drawer, comentários e anexos
+   ========================================================================== */
+.taskModalOverlay,
+.attachmentViewerOverlay,
+.confirmOverlay,
+.modalOverlay,
+.drawerOverlay {
+  z-index: 25000;
+  background: var(--overlay-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.taskModal,
+.attachmentViewerPanel,
+.confirmModal,
+.drawerPanel,
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
+}
+
+.taskModalMain,
+.taskAside,
+.drawerScroll,
+.comments,
+.commentList,
+.attachmentList,
+.taskAttachmentList {
+  scrollbar-width: none;
+}
+
+.taskModalMain::-webkit-scrollbar,
+.taskAside::-webkit-scrollbar,
+.drawerScroll::-webkit-scrollbar,
+.comments::-webkit-scrollbar,
+.commentList::-webkit-scrollbar,
+.attachmentList::-webkit-scrollbar,
+.taskAttachmentList::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.task,
+.comment,
+.commentItem,
+.attachmentTile,
+.attachmentCard,
+.taskSummaryCard,
+.taskSection,
+.taskAsideCard,
+.subtaskItem {
+  box-shadow: none;
+  transform: none;
+}
+
+.task:hover,
+.comment:hover,
+.commentItem:hover,
+.attachmentTile:hover,
+.attachmentCard:hover,
+.subtaskItem:hover {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.taskCompleteButton:hover,
+.taskCloseButton:hover,
+.taskHeaderDeleteButton:hover,
+.commentForm button:hover:not(:disabled),
+.commentDeleteButton:hover,
+.attachmentAction:hover,
+.taskAttachmentAction:hover,
+.confirmActions button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.taskField input:focus,
+.taskField select:focus,
+.taskField textarea:focus,
+.commentForm textarea:focus,
+.subtaskForm input:focus,
+.taskField input:focus-visible,
+.taskField select:focus-visible,
+.taskField textarea:focus-visible,
+.commentForm textarea:focus-visible,
+.subtaskForm input:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
