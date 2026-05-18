@@ -29,6 +29,14 @@
   --border-default: var(--line);
   --border-strong: var(--line-strong);
 
+  --accent-amber: var(--accent);
+  --accent-amber-strong: var(--accent-strong);
+  --accent-amber-soft: var(--accent-soft);
+  --accent-amber-line: var(--accent-line);
+  --accent-amber-text: var(--accent-text);
+  --control-radius: var(--radius-1);
+  --radius-4: var(--radius-3);
+
   --field-bg: rgba(255, 255, 255, 0.022);
   --field-bg-hover: rgba(255, 255, 255, 0.034);
   --field-line: rgba(255, 255, 255, 0.078);

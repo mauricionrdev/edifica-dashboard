@@ -6,12 +6,14 @@ export default function Button({
   size = 'md',
   className = '',
   type = 'button',
+  iconOnly = false,
   ...props
 }) {
   const classes = [
     styles.button,
-    styles[`variant_${variant}`],
-    styles[`size_${size}`],
+    styles[`variant_${variant}`] || styles.variant_secondary,
+    styles[`size_${size}`] || styles.size_md,
+    iconOnly ? styles.iconOnly : '',
     className,
   ]
     .filter(Boolean)

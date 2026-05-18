@@ -1,0 +1,45 @@
+.strip {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  background: var(--card-surface, var(--bg-canvas));
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.item {
+  min-height: 82px;
+  padding: var(--space-4);
+  border-right: 1px solid var(--line-subtle);
+  display: grid;
+  align-content: center;
+  gap: var(--space-2);
+}
+
+.item:last-child {
+  border-right: 0;
+}
+
+.item span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.item strong {
+  color: var(--text-primary);
+  font-size: var(--fs-kpi);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-flat);
+  letter-spacing: var(--tracking-crunch);
+  font-variant-numeric: tabular-nums;
+}
+
+.item em {
+  color: var(--text-quaternary);
+  font-size: var(--fs-label);
+  font-style: normal;
+  line-height: var(--lh-snug);
+}

@@ -1,102 +1,93 @@
 .block {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 16px;
-  border-radius: var(--radius-4);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-3);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
-}
-
-.compact {
-  padding: 14px 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  background: var(--card-surface-soft, var(--bg-canvas));
   box-shadow: none;
 }
 
+.compact {
+  padding: var(--space-3) 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 .badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-2);
   display: grid;
   place-items: center;
-  flex: 0 0 34px;
-  font-size: 13px;
-  font-weight: 590;
-  line-height: 1;
+  flex: 0 0 32px;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-flat);
   border: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--field-bg);
   color: var(--text-secondary);
 }
 
 .body {
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 0;
 }
 
 .compact .badge {
-  width: 30px;
-  height: 30px;
-  flex-basis: 30px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+  border-radius: var(--radius-2);
+  background: var(--field-bg);
 }
 
 .title {
   color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 590;
-  letter-spacing: -0.01em;
-}
-
-.compact .title {
-  font-size: 13px;
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-snug);
 }
 
 .description {
   color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.compact .description {
-  font-size: 12px;
+  font-size: var(--fs-label);
+  line-height: var(--lh-snug);
 }
 
 .actions {
-  padding-top: 6px;
+  padding-top: var(--space-2);
 }
 
 .loading {
-  border-color: rgba(255, 255, 255, 0.06);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.016));
+  border-color: var(--line-subtle);
+  background: var(--card-surface-soft, var(--bg-canvas));
 }
 
 .loading .badge {
-  color: var(--accent-amber);
-  background: rgba(245, 184, 0, 0.055);
-  border-color: rgba(245, 184, 0, 0.16);
-  box-shadow: inset 0 1px 0 rgba(245, 184, 0, 0.04);
+  color: var(--accent-amber-strong);
+  background: var(--accent-amber-soft);
+  border-color: var(--accent-amber-line);
 }
 
 .error {
-  border-color: rgba(239, 68, 68, 0.14);
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.04), rgba(255, 255, 255, 0.015));
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
 }
 
 .error .badge,
 .warning .badge {
-  color: #ffb1b1;
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.18);
+  color: var(--danger-text);
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
 }
 
 .empty .badge {
   color: var(--text-tertiary);
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--field-bg);
   border-color: var(--line-subtle);
 }
