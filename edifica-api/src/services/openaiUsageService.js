@@ -32,6 +32,11 @@ function parseDate(value, fallback, options = {}) {
 
   const parsed = new Date(`${raw}T00:00:00.000Z`);
   if (Number.isNaN(parsed.getTime())) return fallback;
+
+  if (options.end) {
+    parsed.setUTCDate(parsed.getUTCDate() + 1);
+  }
+
   return parsed;
 }
 
@@ -315,35 +320,53 @@ async function runLimited(items, limit, mapper) {
   return results;
 }
 
+function chunkProjects(projects = [], size = 20) {
+  const chunks = [];
+  for (let index = 0; index < projects.length; index += size) {
+    chunks.push(projects.slice(index, index + size));
+  }
+  return chunks;
+}
+
 async function fetchCostsByProjectFilter(start, end, projects = []) {
   const byProject = new Map();
-  const details = [];
-
+  const bucketDetails = [];
   const activeProjects = projects.filter((project) => project.id);
-  await runLimited(activeProjects, 5, async (project) => {
+
+  for (const chunk of chunkProjects(activeProjects, 20)) {
     const buckets = await fetchAllPages('/organization/costs', {
       start_time: toUnix(start),
       end_time: toUnix(end),
       bucket_width: '1d',
-      project_ids: [project.id],
+      project_ids: chunk.map((project) => project.id),
+      group_by: ['project_id'],
       limit: 180,
     });
 
-    const spend = sumCostsFromBuckets(buckets);
-    byProject.set(project.id, spend);
-    details.push({
-      projectId: project.id,
-      projectName: project.name,
-      spend,
-      bucketCount: buckets.length,
-    });
-  });
+    bucketDetails.push({ projectCount: chunk.length, bucketCount: buckets.length });
+
+    for (const bucket of buckets) {
+      for (const result of bucket.results || []) {
+        const projectId = result.project_id || 'unknown';
+        const value = readAmount(result);
+        if (!Number.isFinite(value)) continue;
+        byProject.set(projectId, toMoney(Number(byProject.get(projectId) || 0) + value));
+      }
+    }
+  }
+
+  const details = activeProjects.map((project) => ({
+    projectId: project.id,
+    projectName: project.name,
+    spend: toMoney(byProject.get(project.id) || 0),
+  }));
 
   return {
     byProject,
     details: details.sort((a, b) => Number(b.spend || 0) - Number(a.spend || 0)),
     groupedTotal: toMoney(Array.from(byProject.values()).reduce((sum, value) => sum + Number(value || 0), 0)),
-    bucketCount: details.reduce((sum, item) => sum + Number(item.bucketCount || 0), 0),
+    bucketCount: bucketDetails.reduce((sum, item) => sum + Number(item.bucketCount || 0), 0),
+    requestCount: bucketDetails.length,
   };
 }
 

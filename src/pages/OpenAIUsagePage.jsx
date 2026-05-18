@@ -1,10 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { getOpenAIUsageReport, refreshOpenAIUsageReport } from '../api/openaiUsage.js';
-import { OPENAI_USAGE_REPORT, currencyUsd, percent } from '../data/openaiUsageReport.js';
+import { currencyUsd, percent } from '../data/openaiUsageReport.js';
 import styles from './OpenAIUsagePage.module.css';
 
-const FALLBACK_REPORT = OPENAI_USAGE_REPORT;
+const EMPTY_REPORT = {
+  title: 'Relatório de Uso por API Key',
+  organization: 'Edifica',
+  source: 'OpenAI Admin API',
+  rows: [],
+  zeroSpendProjects: [],
+  zeroSpendProjectDetails: [],
+  totalSpend: 0,
+  activeProjectSpend: 0,
+  activeClientSpend: 0,
+  totalProjects: 0,
+  activeProjects: 0,
+  projectsWithSpend: 0,
+  activeClientsWithSpend: 0,
+  zeroSpendCount: 0,
+  totalTokens: 0,
+  totalRequests: 0,
+  legacyProject: null,
+};
 
 function number(value = 0) {
   return Number(value || 0).toLocaleString('pt-BR');
@@ -20,7 +38,7 @@ function monthRange() {
 }
 
 function normalizeReport(raw) {
-  const report = raw || FALLBACK_REPORT;
+  const report = raw || EMPTY_REPORT;
   const rows = Array.isArray(report.rows) ? report.rows : [];
   const zeroDetails = Array.isArray(report.zeroSpendProjectDetails)
     ? report.zeroSpendProjectDetails
@@ -173,7 +191,7 @@ function downloadHtmlAsPdf(report) {
 export default function OpenAIUsagePage() {
   const defaultRange = useMemo(() => monthRange(), []);
   const [range, setRange] = useState(defaultRange);
-  const [report, setReport] = useState(() => normalizeReport(FALLBACK_REPORT));
+  const [report, setReport] = useState(() => normalizeReport(null));
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -199,7 +217,7 @@ export default function OpenAIUsagePage() {
       setReport(normalizeReport(response.report));
     } catch (err) {
       setError(err?.message || 'Não foi possível carregar dados OpenAI.');
-      if (!report?.rows?.length) setReport(normalizeReport(FALLBACK_REPORT));
+      setReport(normalizeReport(null));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -249,6 +267,11 @@ export default function OpenAIUsagePage() {
             {false ? (
               <span>Não classificado: <strong>{currencyUsd(report.reconciliation.difference)}</strong></span>
             ) : null}
+          </div>
+        ) : null}
+        {!loading && error && !rows.length ? (
+          <div className={styles.emptyRealData}>
+            Não há dados reais carregados para este período. Corrija o erro acima e clique em atualizar novamente.
           </div>
         ) : null}
 
