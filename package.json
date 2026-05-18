@@ -10,7 +10,9 @@
     "audit:css": "node scripts/audit-css.mjs",
     "audit:css:strict": "node scripts/audit-css.mjs --strict",
     "hooks:install": "git config core.hooksPath .githooks",
-    "precommit:check": "npm run audit:css:strict && npm run build"
+    "precommit:check": "npm run audit:css:strict && npm run build",
+    "verify:prod": "node scripts/verify-production.mjs",
+    "release:check": "npm run audit:css:strict && npm run verify:prod && npm run build"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.2",
