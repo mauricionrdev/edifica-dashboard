@@ -129,7 +129,7 @@
 }
 
 .saveStatus_saved > span {
-  background: #68d391;
+  background: var(--success-text);
 }
 
 .saveStatus_saving > span,
@@ -138,7 +138,7 @@
 }
 
 .saveStatus_error > span {
-  background: #ef8f8f;
+  background: var(--danger-text);
 }
 
 .tableHeader {
@@ -440,8 +440,8 @@
 .confirmModal {
   width: min(520px, calc(100vw - 48px));
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #111214;
+  border-radius: var(--workspace-card-radius);
+  background: var(--bg-raised);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.52);
   overflow: hidden;
 }
@@ -617,7 +617,7 @@
 }
 
 .sectionRow:hover {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
 }
 
 .sectionTitle {
@@ -633,7 +633,7 @@
 .sectionTitle:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
   padding-inline: 8px;
 }
 
@@ -659,7 +659,7 @@
 }
 
 .taskRow:hover {
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
 }
 
 .taskCheck {
@@ -687,7 +687,7 @@
 .taskName:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
   padding-inline: 8px;
 }
 
@@ -744,14 +744,14 @@
 .addTaskRow input:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
   padding-inline: 8px;
 }
 
 .noteArea {
   margin-top: 8px;
   border-radius: 10px;
-  background: #111214;
+  background: var(--bg-raised);
 }
 
 .confirmOverlay {
@@ -826,11 +826,11 @@
 
 /* Modelo Oficial — prazo relativo do template */
 .tableHeader {
-  grid-template-columns: minmax(340px, 1fr) minmax(180px, 240px) 132px 120px 44px !important;
+  grid-template-columns: minmax(340px, 1fr) minmax(180px, 240px) 132px 120px 44px;
 }
 
 .taskRow {
-  grid-template-columns: 32px minmax(320px, 1fr) minmax(180px, 240px) 132px 120px 44px !important;
+  grid-template-columns: 32px minmax(320px, 1fr) minmax(180px, 240px) 132px 120px 44px;
 }
 
 .dueOffsetCell {
@@ -860,7 +860,7 @@
   height: 30px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 12px;
@@ -870,8 +870,8 @@
 }
 
 .dueOffsetInput:focus {
-  border-color: rgba(245, 184, 0, 0.36);
-  background: rgba(245, 184, 0, 0.055);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
 }
 
 .dueOffsetInput::placeholder {
@@ -881,7 +881,7 @@
 @media (max-width: 980px) {
   .tableHeader,
   .taskRow {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .dueOffsetCell {
@@ -898,28 +898,28 @@
 
 /* HOTFIX v14 — prazo relativo simples */
 .dueOffsetCell {
-  min-width: 0 !important;
-  display: flex !important;
-  align-items: center !important;
+  min-width: 0;
+  display: flex;
+  align-items: center;
 }
 
 .dueOffsetBadge {
-  display: none !important;
+  display: none;
 }
 
 .dueOffsetInput {
-  width: 96px !important;
-  height: 30px !important;
-  padding: 0 10px !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 8px !important;
-  background: rgba(255, 255, 255, 0.025) !important;
-  color: var(--text-primary) !important;
-  font-family: inherit !important;
-  font-size: 12px !important;
-  font-weight: 680 !important;
-  text-align: left !important;
-  outline: none !important;
+  width: 96px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 680;
+  text-align: left;
+  outline: none;
 }
 
 .dueOffsetInput:not(:placeholder-shown)::before {
@@ -927,84 +927,84 @@
 }
 
 .dueOffsetInput:focus {
-  border-color: rgba(245, 184, 0, 0.36) !important;
-  background: rgba(245, 184, 0, 0.055) !important;
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
 }
 
 .dueOffsetInput::placeholder {
-  color: var(--text-tertiary) !important;
+  color: var(--text-tertiary);
 }
 
 
 /* HOTFIX v15 — remover prazo do modelo e avatar duplicado */
 .tableHeader {
-  grid-template-columns: minmax(340px, 1fr) minmax(210px, 280px) 120px 44px !important;
+  grid-template-columns: minmax(340px, 1fr) minmax(210px, 280px) 120px 44px;
 }
 
 .taskRow {
-  grid-template-columns: 32px minmax(320px, 1fr) minmax(210px, 280px) 120px 44px !important;
+  grid-template-columns: 32px minmax(320px, 1fr) minmax(210px, 280px) 120px 44px;
 }
 
 .dueOffsetCell,
 .dueOffsetBadge,
 .dueOffsetInput {
-  display: none !important;
+  display: none;
 }
 
 .assigneeCell {
-  min-width: 0 !important;
-  display: block !important;
+  min-width: 0;
+  display: block;
 }
 
 .assigneeSelect {
-  width: 100% !important;
+  width: 100%;
 }
 
 @media (max-width: 980px) {
   .tableHeader,
   .taskRow {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
 
 
 /* PATCH v17 — Modelo Oficial final */
 .tableHeader {
-  grid-template-columns: minmax(340px, 1fr) minmax(220px, 300px) 120px 44px !important;
+  grid-template-columns: minmax(340px, 1fr) minmax(220px, 300px) 120px 44px;
 }
 
 .taskRow {
-  grid-template-columns: 32px minmax(320px, 1fr) minmax(220px, 300px) 120px 44px !important;
+  grid-template-columns: 32px minmax(320px, 1fr) minmax(220px, 300px) 120px 44px;
 }
 
 .dueOffsetCell,
 .dueOffsetBadge,
 .dueOffsetInput {
-  display: none !important;
+  display: none;
 }
 
 .assigneeCell {
-  min-width: 0 !important;
-  display: block !important;
+  min-width: 0;
+  display: block;
 }
 
 .assigneeSelect {
-  width: 100% !important;
+  width: 100%;
 }
 
 .taskName:focus,
 .sectionTitle:focus,
 .noteArea:focus,
 .sectionInput:focus {
-  border-color: var(--line-strong) !important;
-  box-shadow: none !important;
-  outline: none !important;
+  border-color: var(--line-strong);
+  box-shadow: none;
+  outline: none;
 }
 
 @media (max-width: 980px) {
   .tableHeader,
   .taskRow {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1029,4 +1029,167 @@
 .sectionInput {
   min-height: var(--workspace-control-height);
   border-radius: var(--workspace-control-radius);
+}
+
+
+/* ==========================================================================
+   v70 · ModeloOficialPage cleanup real
+   Consolida a página no workspace sem alterar lógica ou JSX.
+   ========================================================================== */
+.page {
+  min-height: 100%;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+.board {
+  min-height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.boardHeader {
+  min-height: 58px;
+  padding: 12px 16px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.boardHeader h1 {
+  font-size: 16px;
+  letter-spacing: -0.035em;
+}
+
+.boardHeader p {
+  color: var(--text-tertiary);
+}
+
+.boardActions {
+  gap: 8px;
+}
+
+.sectionInput,
+.addButton,
+.headerButton,
+.noteButton,
+.removeTask,
+.removeSection,
+.addTaskRow button,
+.assigneeButton,
+.taskKindButton,
+.taskStageButton,
+.priorityButton {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.sectionInput:focus,
+.noteArea:focus,
+.taskName:focus,
+.assigneeButton:focus-visible,
+.taskKindButton:focus-visible,
+.taskStageButton:focus-visible,
+.priorityButton:focus-visible,
+.addButton:focus-visible,
+.headerButton:focus-visible,
+.noteButton:focus-visible {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.addButton:hover:not(:disabled),
+.headerButton:hover:not(:disabled),
+.noteButton:hover:not(:disabled),
+.removeTask:hover:not(:disabled),
+.removeSection:hover,
+.addTaskRow button:hover:not(:disabled),
+.assigneeButton:hover,
+.taskKindButton:hover,
+.taskStageButton:hover,
+.priorityButton:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+}
+
+.tableHeader,
+.sectionRow,
+.taskRow {
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.tableHeader {
+  background: var(--workspace-panel-bg);
+  color: #878c95;
+}
+
+.section {
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.sectionRow {
+  min-height: 46px;
+}
+
+.sectionRow:hover,
+.taskRow:hover {
+  background: var(--bg-hover);
+}
+
+.sectionIndex,
+.saveStatus {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+}
+
+.taskRow {
+  min-height: 44px;
+}
+
+.taskCheck {
+  border-color: var(--line-strong);
+}
+
+.assigneeAvatar,
+.assigneeAvatarEmpty {
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.notePanel,
+.addTaskRow {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.noteArea {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--field-bg);
+}
+
+@media (max-width: 920px) {
+  .page {
+    padding: 12px;
+  }
+
+  .boardHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .boardActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .sectionInput {
+    width: 100%;
+  }
 }
