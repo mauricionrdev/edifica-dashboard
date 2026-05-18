@@ -30,7 +30,7 @@
 .trigger:hover,
 .trigger:focus-visible {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--bg-hover);
   outline: none;
   box-shadow: none;
 }
@@ -54,7 +54,7 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -90,8 +90,8 @@
   max-height: 300px;
   border: 1px solid var(--line-strong);
   border-radius: 10px;
-  background: #151617;
-  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.46);
+  background: var(--chassis-panel-bg-elevated);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.34);
   overflow: hidden;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -100,7 +100,7 @@
 .searchWrap {
   padding: 8px;
   border-bottom: 1px solid var(--line);
-  background: #151617;
+  background: var(--chassis-panel-bg-elevated);
 }
 
 .searchWrap input {
@@ -108,7 +108,7 @@
   height: 32px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #101112;
+  background: var(--field-bg);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 12.5px;
@@ -118,7 +118,7 @@
 
 .searchWrap input:focus {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-raised);
   box-shadow: none;
 }
 
@@ -200,7 +200,7 @@
   padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-primary);
   grid-template-columns: auto;
 }
@@ -273,7 +273,7 @@
 
 .root[data-variant='drawer'] .option:hover,
 .root[data-variant='drawer'] .optionActive {
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--bg-selected);
 }
 
 .root[data-variant='drawer'] .list {
@@ -283,57 +283,57 @@
 
 /* PATCH v36 — picker plano, sem cards individuais */
 .option {
-  border: 0 !important;
-  border-radius: 7px !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .option:hover,
 .optionActive {
-  background: rgba(255, 255, 255, 0.045) !important;
+  background: var(--bg-selected);
 }
 
 .list {
-  gap: 1px !important;
+  gap: 1px;
 }
 
 
 /* PATCH v41 — UserPicker plano e denso */
 .option {
-  min-height: 34px !important;
-  padding: 4px 8px !important;
-  border: 0 !important;
-  border-radius: 6px !important;
-  background: transparent !important;
-  box-shadow: none !important;
+  min-height: 34px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .option:hover,
 .optionActive {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: var(--bg-hover);
 }
 
 .list {
-  gap: 0 !important;
-  padding: 4px !important;
+  gap: 0;
+  padding: 4px;
 }
 
 .optionMain strong {
-  font-size: 12.5px !important;
-  line-height: 1.15 !important;
+  font-size: 12.5px;
+  line-height: 1.15;
 }
 
 .optionMain small {
-  font-size: 10.5px !important;
-  line-height: 1.15 !important;
+  font-size: 10.5px;
+  line-height: 1.15;
 }
 
 
 /* Patch 59 — popover portal para evitar clipping em cards, tabelas e modais */
 .popoverPortal {
-  position: fixed !important;
-  z-index: 10050 !important;
+  position: fixed;
+  z-index: 10050;
   max-height: 312px;
 }
 
@@ -374,4 +374,69 @@
 .root[data-variant='flatAction'] .popover {
   left: auto;
   right: 0;
+}
+
+
+/* ==========================================================================
+   v74 · UserPicker cleanup real
+   Consolida seletor de usuários nos tokens do workspace.
+   ========================================================================== */
+.trigger {
+  min-height: var(--workspace-control-height);
+  border-color: transparent;
+  border-radius: var(--workspace-control-radius);
+  background: transparent;
+  box-shadow: none;
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--bg-hover);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.avatar {
+  background: var(--workspace-bg);
+}
+
+.popover {
+  z-index: var(--chassis-z-dialog);
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--chassis-panel-bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+
+.searchWrap {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--chassis-panel-bg-elevated);
+}
+
+.searchWrap input {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+}
+
+.searchWrap input:focus {
+  border-color: var(--line-strong);
+  background: var(--surface-raised);
+  box-shadow: var(--focus-ring);
+}
+
+.option,
+.compactOption {
+  border-radius: 8px;
+}
+
+.option:hover,
+.compactOption:hover {
+  background: var(--bg-hover);
+}
+
+.optionActive,
+.compactOptionActive {
+  background: var(--bg-selected);
 }

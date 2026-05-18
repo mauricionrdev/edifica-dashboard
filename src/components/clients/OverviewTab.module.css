@@ -20,11 +20,9 @@
 .avatarPrimary {
   width: 74px;
   height: 74px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.075), transparent 58%),
-    #111216;
+  background: var(--bg-raised);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -34,8 +32,8 @@
   font-weight: 650;
   letter-spacing: -0.045em;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 14px 34px rgba(0, 0, 0, 0.18);
+    inset 0 1px 0 var(--line-subtle),
+    0 14px 34px rgba(0, 0, 0, 0.12);
 }
 
 .avatarPrimary img {
@@ -56,9 +54,9 @@
   width: 100%;
   min-height: 28px;
   padding: 0 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line-strong);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font: inherit;
   font-size: 11px;
@@ -68,8 +66,8 @@
 
 .avatarControls button:hover:not(:disabled) {
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.13);
-  background: rgba(255, 255, 255, 0.038);
+  border-color: var(--line-strong);
+  background: var(--bg-hover);
 }
 
 .avatarControls button:disabled {
@@ -78,9 +76,9 @@
 }
 
 .avatarControls .avatarRemoveButton {
-  color: #ff9cad;
-  border-color: rgba(255, 91, 115, 0.18);
-  background: rgba(255, 91, 115, 0.035);
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
 }
 
 .profileFields {
@@ -153,7 +151,7 @@
   height: 46px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -207,7 +205,7 @@
   padding: 0 11px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font: inherit;
   font-size: 12px;
@@ -221,7 +219,7 @@
 .avatarActions button:hover:not(:disabled) {
   color: var(--text-primary);
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--line-subtle);
 }
 
 .avatarActions button:disabled {
@@ -232,7 +230,7 @@
 .avatarActions .dangerButton {
   border-color: rgba(255, 91, 115, 0.22);
   background: rgba(255, 91, 115, 0.045);
-  color: #ff9cad;
+  color: var(--danger-text);
 }
 
 .avatarActions .dangerButton:hover:not(:disabled) {
@@ -342,7 +340,7 @@
   min-height: 58px;
   padding-top: 14px;
   padding-bottom: 14px;
-  background: rgba(255, 255, 255, 0.004);
+  background: transparent;
 }
 
 .dangerSection :global(.sectionTitle),
@@ -394,8 +392,8 @@
   font-weight: 680;
   letter-spacing: -0.045em;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.035),
-    0 18px 36px rgba(0, 0, 0, 0.18);
+    inset 0 1px 0 var(--bg-hover),
+    0 18px 36px rgba(0, 0, 0, 0.12);
 }
 
 .avatarControls {
@@ -408,9 +406,9 @@
   width: 100%;
   min-height: 28px;
   padding: 0 10px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.016);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font: inherit;
   font-size: 11px;
@@ -456,7 +454,7 @@
   padding: 16px 20px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.008), rgba(255, 255, 255, 0.002)),
-    #08090a;
+    var(--workspace-bg);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -529,7 +527,7 @@
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  background: #08090a;
+  background: var(--workspace-bg);
 }
 
 .mainSection {
@@ -548,21 +546,21 @@
   min-height: 192px;
   padding: 18px 14px 14px;
   border: 1px solid rgba(255, 255, 255, 0.072);
-  border-radius: 16px;
-  background: #0f1011;
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
   display: grid;
   justify-items: center;
   align-content: center;
   gap: 14px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+  box-shadow: inset 0 1px 0 var(--surface-panel);
 }
 
 .avatarPrimary {
   width: 86px;
   height: 86px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -594,7 +592,7 @@
   padding: 0 10px;
   border: 1px solid rgba(255, 255, 255, 0.076);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font: inherit;
   font-size: 11.5px;
@@ -604,12 +602,12 @@
 
 .avatarControls button:hover:not(:disabled) {
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.13);
+  border-color: var(--line-strong);
   background: rgba(255, 255, 255, 0.034);
 }
 
 .avatarControls .avatarRemoveButton {
-  color: #ff9cad;
+  color: var(--danger-text);
   border-color: rgba(255, 91, 115, 0.2);
   background: rgba(255, 91, 115, 0.038);
 }
@@ -652,7 +650,7 @@
   align-items: center;
   column-gap: 16px;
   background: #090a0b;
-  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  border-top: 1px solid var(--line-subtle);
 }
 
 .dangerSection> :first-child {
@@ -722,14 +720,14 @@
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  background: #08090a;
+  background: var(--workspace-bg);
 }
 
 .mainSection {
   padding: 18px 22px 20px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0) 48%),
-    #08090a;
+    var(--workspace-bg);
 }
 
 .profileGrid {
@@ -780,13 +778,13 @@
   min-height: 172px;
   padding: 22px 22px 18px;
   border: 1px solid rgba(255, 255, 255, 0.074);
-  border-radius: 16px;
-  background: #0f1011;
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
   display: grid;
   justify-items: center;
   align-content: center;
   gap: 16px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+  box-shadow: inset 0 1px 0 var(--surface-panel);
 }
 
 .avatarPrimary {
@@ -794,7 +792,7 @@
   height: 88px;
   border: 1px solid rgba(255, 255, 255, 0.074);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -826,7 +824,7 @@
   padding: 0 10px;
   border: 1px solid rgba(255, 255, 255, 0.076);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.016);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font: inherit;
   font-size: 11.5px;
@@ -836,12 +834,12 @@
 
 .avatarControls button:hover:not(:disabled) {
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.13);
+  border-color: var(--line-strong);
   background: rgba(255, 255, 255, 0.034);
 }
 
 .avatarControls .avatarRemoveButton {
-  color: #ff9cad;
+  color: var(--danger-text);
   border-color: rgba(255, 91, 115, 0.2);
   background: rgba(255, 91, 115, 0.038);
 }
@@ -859,8 +857,8 @@
 .dangerSection {
   min-height: 76px;
   padding: 16px 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.055);
-  background: #08090a;
+  border-top: 1px solid var(--line-subtle);
+  background: var(--workspace-bg);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -941,4 +939,87 @@
   border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
   box-shadow: none;
+}
+
+
+/* ==========================================================================
+   v73 · OverviewTab cleanup real
+   Mantém o layout aprovado do card de avatar + dados principais.
+   ========================================================================== */
+.mainSection {
+  background: var(--workspace-bg);
+}
+
+.identityCard,
+.avatarBlock,
+.avatarPrimary,
+.dangerZone,
+.fieldShell,
+.formCard,
+.infoCard,
+.summaryCard {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.avatarPrimary {
+  border-radius: 999px;
+  background: var(--bg-raised);
+}
+
+.avatarControls button,
+.input,
+.select,
+.textarea,
+.fieldControl,
+.actionButton,
+.dangerButton {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.avatarControls button:hover:not(:disabled),
+.actionButton:hover:not(:disabled),
+.dangerButton:hover:not(:disabled),
+.fieldControl:hover,
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+}
+
+.avatarControls button:focus-visible,
+.actionButton:focus-visible,
+.dangerButton:focus-visible,
+.input:focus,
+.select:focus,
+.textarea:focus,
+.fieldControl:focus-within {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.avatarControls .avatarRemoveButton,
+.dangerButton {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+.fieldHint,
+.helperText,
+.muted,
+.cardLabel {
+  color: #878c95;
+}
+
+.dangerZone {
+  margin-top: auto;
 }
