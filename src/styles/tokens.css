@@ -280,6 +280,8 @@
   --control-height: 32px;
   --page-padding-x: 20px;
   --page-padding-y: 20px;
+  --app-frame-padding: 8px;
+  --app-frame-radius: 10px;
 
 
   /* ────────────────────────────────────────────────────────────────────

@@ -13,3 +13,5 @@ export { default as Table } from './Table.jsx';
 export { default as KpiStrip } from './KpiStrip.jsx';
 export { default as Dialog } from './Dialog.jsx';
 export { default as Drawer } from './Drawer.jsx';
+
+export * from './Chassis.jsx';

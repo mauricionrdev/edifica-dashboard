@@ -1,12 +1,12 @@
 .topbar {
   position: relative;
-  z-index: 1010;
-  flex: 0 0 49px;
-  height: 49px;
-  min-height: 49px;
-  background: rgba(15, 16, 17, 0.92);
-  border-bottom: 1px solid var(--line-subtle);
-  backdrop-filter: blur(14px);
+  z-index: var(--chassis-z-topbar);
+  flex: 0 0 var(--chassis-header-height);
+  height: var(--chassis-header-height);
+  min-height: var(--chassis-header-height);
+  background: var(--chassis-panel-bg);
+  border-bottom: 1px solid var(--chassis-border-subtle);
+  backdrop-filter: none;
 }
 
 .rail {
@@ -418,4 +418,30 @@
 
 .notificationsPanel {
   box-shadow: var(--shadow-dialog);
+}
+
+/* Fase C — chassis da topbar */
+.topbar {
+  overflow: visible;
+}
+
+.rail {
+  height: var(--chassis-header-height);
+  padding-inline: 14px 16px;
+}
+
+.notificationsPanel {
+  border-radius: var(--chassis-radius-card);
+  background: var(--chassis-panel-bg-elevated);
+  border-color: var(--chassis-border);
+}
+
+.notificationsHead,
+.notificationsList {
+  background: var(--chassis-panel-bg-elevated);
+}
+
+.notificationItem:hover,
+.notificationItemUnread:hover {
+  background: var(--bg-hover);
 }

@@ -1,0 +1,69 @@
+/* ==========================================================================
+ * chassis.css · Fase C
+ * Estrutura visual compartilhada da aplicação: shell, page rail, painéis,
+ * divisores, headers fixos, modais e drawers.
+ *
+ * Este arquivo NÃO estiliza páginas específicas. Ele consolida o "esqueleto"
+ * da interface para reduzir regressão visual entre Dashboard, Clientes,
+ * Perfil, Preencher Semana e Uso OpenAI.
+ * ========================================================================== */
+
+:root {
+  --chassis-app-bg: var(--bg-app);
+  --chassis-canvas-bg: var(--bg-canvas);
+  --chassis-panel-bg: var(--bg-canvas);
+  --chassis-panel-bg-elevated: var(--bg-elevated);
+  --chassis-page-bg: var(--bg-app);
+
+  --chassis-border: var(--line);
+  --chassis-border-subtle: var(--line-subtle);
+  --chassis-border-strong: var(--line-strong);
+
+  --chassis-radius-frame: var(--app-frame-radius, 10px);
+  --chassis-radius-card: var(--ed-radius-card, 10px);
+  --chassis-radius-control: var(--ed-radius-control, 10px);
+
+  --chassis-header-height: 49px;
+  --chassis-page-header-height: 58px;
+  --chassis-control-height: 32px;
+
+  --chassis-z-shell: 1;
+  --chassis-z-sidebar: 40;
+  --chassis-z-topbar: 50;
+  --chassis-z-page-header: 45;
+  --chassis-z-overlay: 90;
+  --chassis-z-drawer: 5000;
+  --chassis-z-dialog: 6000;
+  --chassis-z-toast: 7000;
+}
+
+[data-chassis-panel],
+.ed-chassis-panel {
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--chassis-radius-card);
+  background: var(--chassis-panel-bg);
+}
+
+[data-chassis-section],
+.ed-chassis-section {
+  border-top: 1px solid var(--chassis-border-subtle);
+}
+
+[data-chassis-scroll],
+.ed-chassis-scroll {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+[data-chassis-header],
+.ed-chassis-header {
+  border-bottom: 1px solid var(--chassis-border-subtle);
+  background: var(--chassis-panel-bg);
+}
+
+[data-chassis-divider],
+.ed-chassis-divider {
+  height: 1px;
+  background: var(--chassis-border-subtle);
+}

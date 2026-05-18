@@ -1,0 +1,42 @@
+.pageShell {
+  min-width: 0;
+  min-height: 100%;
+  padding: var(--page-padding-y) var(--page-padding-x);
+  background: var(--chassis-page-bg);
+  color: var(--text-secondary);
+}
+
+.pageHeader {
+  min-height: var(--chassis-page-header-height);
+  padding: 0 0 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4, 16px);
+}
+
+.panel {
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--chassis-radius-card);
+  background: var(--chassis-panel-bg);
+  overflow: hidden;
+}
+
+.panelHeader {
+  min-height: 48px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--chassis-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelBody {
+  padding: 14px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--chassis-border-subtle);
+}

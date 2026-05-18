@@ -1,15 +1,21 @@
+/* ==========================================================================
+ * AppShell · Fase C / Chassis
+ * Estrutura principal da aplicação. Mantém sidebar + topbar + page rail
+ * com uma única lógica de camadas, bordas e scroll.
+ * ========================================================================== */
+
 .shell {
   height: 100vh;
   height: 100dvh;
   padding: var(--app-frame-padding);
   display: flex;
   overflow: hidden;
-  background: var(--app-shell-glow);
+  background: var(--chassis-app-bg);
 }
 
 .main {
   position: relative;
-  z-index: 1;
+  z-index: var(--chassis-z-shell);
   flex: 1;
   min-width: 0;
   height: calc(100vh - (var(--app-frame-padding) * 2));
@@ -18,39 +24,39 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--chassis-panel-bg);
+  border: 1px solid var(--chassis-border);
   border-left: 0;
-  border-radius: 0 var(--app-frame-radius) var(--app-frame-radius) 0;
-  box-shadow: var(--shadow-panel);
+  border-radius: 0 var(--chassis-radius-frame) var(--chassis-radius-frame) 0;
+  box-shadow: none;
 }
 
 .pageRail {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: var(--bg-app, #08090a);
-  border-left: 1px solid var(--line);
+  background: var(--chassis-page-bg);
+  border-left: 1px solid var(--chassis-border);
 }
 
 .pageHeader {
   position: relative;
-  z-index: 1000;
-  flex: 0 0 66px;
-  min-height: 66px;
-  padding: 0 22px;
+  z-index: var(--chassis-z-page-header);
+  flex: 0 0 var(--chassis-page-header-height);
+  min-height: var(--chassis-page-header-height);
+  padding: 0 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
   overflow: visible;
-  background: rgba(15, 16, 17, 0.92);
-  border-bottom: 1px solid var(--line-subtle);
-  backdrop-filter: blur(14px);
+  background: var(--chassis-panel-bg);
+  border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
 .pageTitleBlock {
@@ -69,21 +75,21 @@
   flex-wrap: wrap;
   color: var(--text-primary);
   font-size: 15px;
-  font-weight: 590;
-  line-height: 1;
-  letter-spacing: -0.032em;
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-flat);
+  letter-spacing: var(--tracking-snug);
 }
 
 .pageTitleRow strong {
   color: var(--text-primary);
   font-size: 15px;
-  font-weight: 590;
+  font-weight: var(--weight-semibold);
 }
 
 .pageTitleRow span {
   color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 510;
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-medium);
 }
 
 .pageDescription {
@@ -91,23 +97,24 @@
 }
 
 .pageActions {
+  position: relative;
+  z-index: calc(var(--chassis-z-page-header) + 1);
   flex: 0 0 auto;
   min-width: max-content;
   max-width: none;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 7px;
+  gap: 8px;
   flex-wrap: nowrap;
   overflow: visible;
-  position: relative;
-  z-index: 1001;
 }
 
 .pageContent {
   position: relative;
   z-index: auto;
   flex: 1;
+  min-width: 0;
   min-height: 0;
   overflow: visible;
 }
@@ -115,11 +122,11 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: var(--chassis-z-overlay);
   background: rgba(8, 9, 10, 0.72);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.18s ease;
+  transition: opacity var(--transition-base);
 }
 
 .overlayVisible {
@@ -128,19 +135,9 @@
 }
 
 @media (max-height: 820px) and (min-width: 1024px) {
-  .shell {
-    padding: var(--app-frame-padding);
-  }
-
-  .main {
-    height: calc(100vh - (var(--app-frame-padding) * 2));
-    height: calc(100dvh - (var(--app-frame-padding) * 2));
-    border-radius: 0 var(--app-frame-radius) var(--app-frame-radius) 0;
-  }
-
   .pageHeader {
-    flex-basis: 64px;
-    min-height: 64px;
+    flex-basis: 56px;
+    min-height: 56px;
   }
 }
 
@@ -152,7 +149,7 @@
   .main {
     height: 100vh;
     height: 100dvh;
-    border-left: 1px solid var(--line);
+    border-left: 1px solid var(--chassis-border);
     border-radius: 0;
   }
 
@@ -180,57 +177,5 @@
 @media (min-width: 1101px) {
   .overlay {
     display: none;
-  }
-}
-
-
-/* v41 — shell final */
-.shell {
-  padding: var(--app-frame-padding);
-}
-
-.main {
-  height: calc(100vh - (var(--app-frame-padding) * 2));
-  height: calc(100dvh - (var(--app-frame-padding) * 2));
-  border-radius: 0 var(--app-frame-radius) var(--app-frame-radius) 0;
-  box-shadow: none;
-}
-
-.pageHeader {
-  flex-basis: 58px;
-  min-height: 58px;
-  padding: 0 18px;
-  background: rgba(15, 16, 17, 0.94);
-}
-
-.pageTitleRow,
-.pageTitleRow strong {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-}
-
-.pageTitleRow span {
-  font-size: 11px;
-}
-
-.pageActions {
-  gap: 8px;
-}
-
-.pageContent {
-  min-width: 0;
-}
-
-@media (max-height: 820px) and (min-width: 1024px) {
-  .pageHeader {
-    flex-basis: 56px;
-    min-height: 56px;
-  }
-}
-
-@media (max-width: 1100px) {
-  .pageHeader {
-    padding: 12px 14px;
   }
 }

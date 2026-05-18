@@ -2,6 +2,7 @@
 @import "./theme.css";
 @import "./reset.css";
 @import "./compat.css";
+@import "./chassis.css";
 
 /*
   Nota: a Inter Variable é carregada via <link> no index.html.
