@@ -593,3 +593,28 @@
     max-height: calc(100dvh - 16px);
   }
 }
+
+/* Fase 67 — modal foundation */
+.overlay {
+  z-index: var(--chassis-z-dialog);
+  background: rgba(8, 9, 10, 0.72);
+  backdrop-filter: none;
+}
+
+.modalCard {
+  max-height: min(720px, calc(100dvh - 64px));
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.modalHead,
+.modalFoot {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.modalBody {
+  background: var(--workspace-bg);
+}

@@ -67,3 +67,63 @@
   height: 1px;
   background: var(--chassis-border-subtle);
 }
+
+
+/* Fase 67 — workspace foundation real */
+:root {
+  --workspace-bg: var(--chassis-page-bg);
+  --workspace-padding-x: 18px;
+  --workspace-padding-y: 14px;
+  --workspace-gap: 12px;
+  --workspace-panel-bg: var(--chassis-panel-bg);
+  --workspace-panel-bg-soft: var(--chassis-panel-bg-elevated);
+  --workspace-panel-border: var(--chassis-border);
+  --workspace-panel-border-soft: var(--chassis-border-subtle);
+  --workspace-card-radius: 10px;
+  --workspace-control-radius: 10px;
+  --workspace-control-height: 34px;
+  --workspace-list-row-height: 36px;
+}
+
+[data-workspace],
+.ed-workspace {
+  min-width: 0;
+  min-height: 100%;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+[data-workspace-panel],
+.ed-workspace-panel {
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+[data-workspace-control],
+.ed-workspace-control {
+  min-height: var(--workspace-control-height);
+  border-radius: var(--workspace-control-radius);
+  border: 1px solid var(--workspace-panel-border);
+  background: var(--field-bg);
+}
+
+[data-workspace-modal],
+.ed-workspace-modal {
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+[data-workspace-modal-header],
+[data-workspace-modal-footer],
+.ed-workspace-modal-header,
+.ed-workspace-modal-footer {
+  min-height: 54px;
+  padding-inline: 16px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}

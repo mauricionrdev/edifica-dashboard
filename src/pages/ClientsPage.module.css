@@ -505,3 +505,29 @@
     flex-direction: column;
   }
 }
+
+/* Fase 67 — workspace foundation */
+.page {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+  gap: var(--workspace-gap);
+}
+
+.workbench {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.headerActionButton,
+.toolbar :global(button),
+.toolbar :global(input),
+.toolbar :global(select) {
+  min-height: var(--workspace-control-height) !important;
+  border-radius: var(--workspace-control-radius) !important;
+  border-color: var(--workspace-panel-border-soft) !important;
+  background: var(--field-bg) !important;
+  box-shadow: none !important;
+}

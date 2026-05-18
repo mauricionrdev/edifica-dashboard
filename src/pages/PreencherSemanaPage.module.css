@@ -816,3 +816,30 @@
     height: 36px;
   }
 }
+
+/* Fase 67 — workspace foundation */
+.workspace {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+.select > button,
+.weekTabs,
+.headerStat,
+.boardCard,
+.summaryCard,
+.tableShell,
+.dayCard,
+.clientCard {
+  border-radius: var(--workspace-card-radius);
+  border-color: var(--workspace-panel-border-soft);
+  background-color: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.select > button,
+.weekTabs,
+.headerStat {
+  min-height: var(--workspace-control-height);
+}

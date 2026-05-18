@@ -173,3 +173,19 @@
   display: flex;
   flex-direction: column;
 }
+
+/* Fase 67 — tab chassis */
+.tabsBar {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.tab {
+  min-height: 32px;
+  border-radius: var(--workspace-control-radius);
+}
+
+.tabActive {
+  background: var(--bg-selected);
+  border-color: var(--workspace-panel-border);
+}

@@ -3733,3 +3733,35 @@ textarea:focus-visible {
   border-radius: 0 !important;
   box-shadow: none !important;
 }
+
+/* Fase 67 — workspace foundation */
+.page,
+.mainPanel {
+  background: var(--workspace-bg);
+}
+
+.grid {
+  border-top-color: var(--workspace-panel-border-soft);
+}
+
+.sidebarPanel {
+  background: var(--workspace-panel-bg);
+  border-right-color: var(--workspace-panel-border-soft);
+}
+
+.projectButton,
+.sectionCard,
+.taskPanel,
+.activityPanel,
+.taskModalCard,
+.emptyCard,
+.projectHeader,
+.projectTools,
+.sectionForm {
+  border-radius: var(--workspace-card-radius);
+}
+
+.projectButtonActive {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-selected);
+}

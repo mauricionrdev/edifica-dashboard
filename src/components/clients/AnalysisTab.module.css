@@ -1154,3 +1154,18 @@
   height: auto !important;
   object-fit: contain !important;
 }
+
+/* Fase 67 — workspace foundation */
+.panel {
+  background: var(--workspace-bg);
+}
+
+.header,
+.emptyState,
+.recordCard,
+.attachmentCard,
+.formCard {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+}

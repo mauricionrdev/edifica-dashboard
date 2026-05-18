@@ -10849,3 +10849,32 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Fase 67 — workspace foundation */
+.page {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  gap: var(--workspace-gap);
+}
+
+.hero,
+.operationBoard,
+.settingsModal,
+.drawerPanel {
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+}
+
+.settingsModal {
+  max-height: min(760px, calc(100dvh - 42px));
+}
+
+.settingsHeader,
+.settingsFooter {
+  min-height: 54px;
+  background: var(--workspace-panel-bg);
+}
+
+.demandModal .settingsContent {
+  background: var(--workspace-bg);
+}

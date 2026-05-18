@@ -2044,3 +2044,21 @@ textarea:disabled {
     text-align: left;
   }
 }
+
+/* Fase 67 — workspace foundation */
+.wrap {
+  padding: var(--workspace-padding-y);
+  background: var(--workspace-bg);
+}
+
+.projectHeader,
+.emptyCard,
+.sectionForm,
+.projectTools,
+.sectionCard,
+.taskPanel,
+.activityPanel {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+}

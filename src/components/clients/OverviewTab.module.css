@@ -926,3 +926,19 @@
     justify-self: start;
   }
 }
+
+/* Fase 67 — workspace foundation */
+.mainSection {
+  background: var(--workspace-bg);
+}
+
+.avatarPrimary,
+.infoCard,
+.fieldCard,
+.dangerZone,
+.summaryCard {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}

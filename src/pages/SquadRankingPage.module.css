@@ -767,3 +767,20 @@
     font-size: 14px;
   }
 }
+
+/* Fase 67 — workspace foundation */
+.page {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+}
+
+.surface,
+.panel,
+.card,
+.tableShell,
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}

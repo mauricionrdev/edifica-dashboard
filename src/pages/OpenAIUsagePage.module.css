@@ -929,3 +929,24 @@
   color: #9aa4b2;
   font-size: 12px;
 }
+
+/* Fase 67 — workspace foundation */
+.page {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+.report {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.summaryGrid article,
+.tableWrap,
+.legacy,
+.zeroProjects {
+  border-radius: var(--workspace-card-radius);
+}

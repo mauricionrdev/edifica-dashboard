@@ -1007,3 +1007,26 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Fase 67 — workspace foundation */
+.page,
+.board {
+  min-height: 100%;
+  background: var(--workspace-bg);
+}
+
+.boardHeader,
+.sectionCard,
+.taskCard,
+.noteCard {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.addButton,
+.headerButton,
+.noteButton,
+.sectionInput {
+  min-height: var(--workspace-control-height);
+  border-radius: var(--workspace-control-radius);
+}
