@@ -1,6 +1,6 @@
 .page {
   --gdv-accent: var(--accent);
-  --gdv-accent-line: rgba(245, 184, 0, 0.24);
+  --gdv-accent-line: var(--accent-line);
   height: 100%;
   min-height: 0;
   padding: 12px 16px 16px;
@@ -31,7 +31,7 @@
   padding: 0;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   display: grid;
   place-items: center;
@@ -62,7 +62,7 @@
 .headerLogo em {
   position: absolute;
   inset: 0;
-  background: rgba(8, 9, 10, 0.78);
+  background: rgba(8, 9, 10, 0.72);
   color: var(--text-primary);
   display: grid;
   place-items: center;
@@ -219,7 +219,7 @@
 .complementaryButton:hover,
 .modalClose:hover,
 .modalGhostBtn:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-raised);
   color: var(--text-primary);
 }
 
@@ -290,9 +290,9 @@
   min-width: 0;
   min-height: 82px;
   padding: 12px 14px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 13px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .028), rgba(255, 255, 255, .01)), #0b0c0d;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .028), rgba(255, 255, 255, .01)), var(--workspace-panel-bg);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -441,7 +441,7 @@
   flex: 1 1 auto;
   min-height: 0;
   border: 1px solid rgba(255, 255, 255, .055);
-  border-radius: 13px;
+  border-radius: var(--workspace-card-radius);
   background: rgba(255, 255, 255, .012);
   overflow: hidden;
   display: flex;
@@ -535,7 +535,7 @@
   flex: 0 0 auto;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -699,8 +699,8 @@
   max-height: min(740px, calc(100vh - 40px));
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-4, 18px);
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.012) !important;
+  background: var(--surface-raised);
+  box-shadow: inset 0 1px 0 var(--surface-panel);
   overflow: hidden;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
@@ -714,7 +714,7 @@
   min-height: 54px;
   padding: 0 14px 0 16px;
   border-bottom: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -752,7 +752,7 @@
   padding: 0;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-raised);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -761,7 +761,7 @@
 
 .modalClose:hover {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -790,7 +790,7 @@
   padding: 12px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-3, 16px);
-  background: rgba(255, 255, 255, 0.014);
+  background: var(--surface-panel);
 }
 
 .gdvAvatarEditor {
@@ -801,7 +801,7 @@
   padding: 0;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--workspace-bg);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -857,7 +857,7 @@
   min-height: 40px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 13px;
@@ -872,7 +872,7 @@
 .modalField input:focus,
 .slugField:focus-within {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-raised);
 }
 
 .slugField {
@@ -912,7 +912,7 @@
   min-height: 56px;
   padding: 11px 16px;
   border-top: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -925,7 +925,7 @@
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1, 10px);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-raised);
   color: var(--text-secondary);
   font-family: inherit;
   font-size: 12px;
@@ -942,7 +942,7 @@
 .modalGhostBtn:hover:not(:disabled),
 .modalPrimaryBtn:hover:not(:disabled) {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -967,7 +967,7 @@
   padding: 14px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-3, 16px);
-  background: rgba(255, 255, 255, 0.014);
+  background: var(--surface-panel);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1099,4 +1099,135 @@
 
 .headerLogo {
   background: var(--workspace-panel-bg);
+}
+
+
+/* ==========================================================================
+   v75 · GdvPage cleanup real
+   Consolida GDVs no workspace.
+   ========================================================================== */
+.page {
+  height: 100%;
+  min-height: 0;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+  gap: var(--workspace-gap);
+}
+
+.headerLogo,
+.board,
+.panel,
+.clientList,
+.detailsPanel,
+.card,
+.modalCard,
+.emptyState,
+.loadingState,
+.errorState,
+.gdvCard,
+.clientCard,
+.infoCard,
+.listCard {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.headerLogo,
+.clientAvatarSmall,
+.clientAvatarMini,
+.gdvAvatarEditor {
+  border-radius: 999px;
+  background: var(--workspace-bg);
+}
+
+.headerButton,
+.actionButton,
+.primaryButton,
+.secondaryButton,
+.ghostButton,
+.dangerButton,
+.inlineButton,
+.modalClose,
+.modalAction,
+.input,
+.select,
+.textarea {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.headerButton:hover:not(:disabled),
+.actionButton:hover:not(:disabled),
+.primaryButton:hover:not(:disabled),
+.secondaryButton:hover:not(:disabled),
+.ghostButton:hover:not(:disabled),
+.inlineButton:hover:not(:disabled),
+.modalClose:hover:not(:disabled),
+.modalAction:hover:not(:disabled) {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.headerButton:focus-visible,
+.actionButton:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.ghostButton:focus-visible,
+.inlineButton:focus-visible,
+.modalClose:focus-visible,
+.modalAction:focus-visible,
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.primaryButton {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.dangerButton {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.modalOverlay {
+  z-index: var(--chassis-z-dialog);
+  background: rgba(8, 9, 10, 0.72);
+  backdrop-filter: none;
+}
+
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.modalHeader,
+.modalFooter {
+  min-height: 54px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.headerTitleText small,
+.muted,
+.helperText,
+.cardLabel,
+.tableHeader,
+.clientMeta,
+.gdvMeta {
+  color: #878c95;
 }
