@@ -1,0 +1,7 @@
+{
+  "rawColors": 1376,
+  "important": 5,
+  "localTokens": 62,
+  "radiusAbove10": 8,
+  "notes": "Baseline gerado após o ciclo visual v64-v79.1. O modo strict falha apenas quando houver regressão acima destes números."
+}
