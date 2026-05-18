@@ -695,6 +695,8 @@ export default function PreencherSemanaPage() {
   const [campaignDraft, setCampaignDraft] = useState('');
   const presenceSnapshotRef = useRef('[]');
 
+  const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
+
   const handleOpenCampaignModal = useCallback((client) => {
     setCampaignModalClient(client || null);
     const existing = normalizeCampaigns(campaignsByClient?.[client?.id]);
@@ -768,7 +770,6 @@ export default function PreencherSemanaPage() {
     }
   }, [campaignListClient?.id, showToast]);
 
-  const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
   const activeClients = useMemo(
     () => (Array.isArray(clients) ? clients.filter((client) => client && isActiveClientStatus(client.status)) : []),
     [clients]

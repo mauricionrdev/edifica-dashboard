@@ -1754,3 +1754,51 @@
   border: 0;
   border-radius: 0;
 }
+
+/* ==========================================================================
+   v87 · Correção TDZ + remoção definitiva de hover nos cards pequenos
+   ========================================================================== */
+.fieldCard,
+.fieldCard_weekly,
+.fieldCard_once,
+.fieldCard_auto,
+.fieldCard:hover,
+.fieldCard_weekly:hover,
+.fieldCard_once:hover,
+.fieldCard_auto:hover,
+.inputCard:hover,
+.kpiCard:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.fieldCard:hover {
+  border-color: var(--line);
+  background: var(--field-bg);
+}
+
+.fieldCard_weekly:hover {
+  border-color: var(--accent-line);
+  background:
+    linear-gradient(180deg, var(--accent-soft), transparent 72%),
+    var(--field-bg);
+}
+
+.fieldCard_auto:hover {
+  border-color: var(--success-line);
+  background:
+    linear-gradient(180deg, var(--success-soft), transparent 72%),
+    var(--field-bg);
+}
+
+.fieldInput:hover {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.fieldInput:focus {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+}
