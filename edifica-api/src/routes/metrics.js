@@ -35,6 +35,9 @@ const router = Router();
 router.use(requireAuth);
 let metricPresenceInitPromise = null;
 const PRESENCE_TTL_SECONDS = 18;
+const METRIC_PERIOD_KEY_RE = /^\d{4}-(0[1-9]|1[0-2])-S[1-4](?:__campaign:[A-Za-z0-9_-]{8,80})?$/;
+const METRIC_CAMPAIGN_NAME_MAX_LENGTH = 80;
+let metricCampaignsInitPromise = null;
 
 // Campos aceitos no payload `data` do PUT. Qualquer outra chave é
 // silenciosamente ignorada (defesa contra injeção no JSON).
@@ -72,6 +75,63 @@ async function ensureMetricPresenceSchema() {
     });
   }
   return metricPresenceInitPromise;
+}
+
+async function ensureMetricCampaignsSchema() {
+  if (!metricCampaignsInitPromise) {
+    metricCampaignsInitPromise = (async () => {
+      await query('ALTER TABLE weekly_metrics MODIFY COLUMN period_key VARCHAR(96) NOT NULL');
+      await query(`
+        CREATE TABLE IF NOT EXISTS metric_campaigns (
+          id CHAR(36) NOT NULL,
+          client_id CHAR(36) NOT NULL,
+          base_period_key VARCHAR(16) NOT NULL,
+          metric_period_key VARCHAR(96) NOT NULL,
+          name VARCHAR(120) NOT NULL,
+          created_by CHAR(36) NULL,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (id),
+          UNIQUE KEY uk_metric_campaign_metric_period (client_id, metric_period_key),
+          KEY idx_metric_campaign_client_period (client_id, base_period_key),
+          KEY idx_metric_campaign_created_by (created_by),
+          CONSTRAINT fk_metric_campaign_client FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
+          CONSTRAINT fk_metric_campaign_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+    })().catch((err) => {
+      metricCampaignsInitPromise = null;
+      throw err;
+    });
+  }
+  return metricCampaignsInitPromise;
+}
+
+function isMetricPeriodKey(value) {
+  return METRIC_PERIOD_KEY_RE.test(String(value || ''));
+}
+
+function isCampaignMetricPeriodKey(value) {
+  return String(value || '').includes('__campaign:');
+}
+
+function normalizeCampaignName(value, fallback = 'Campanha') {
+  const clean = String(value || '').trim().replace(/\s+/g, ' ');
+  const name = clean || fallback;
+  return name.slice(0, METRIC_CAMPAIGN_NAME_MAX_LENGTH);
+}
+
+function serializeCampaign(row = {}) {
+  return {
+    id: row.id,
+    clientId: row.client_id,
+    periodKey: row.base_period_key,
+    metricPeriodKey: row.metric_period_key,
+    name: row.name || 'Campanha',
+    createdBy: row.created_by || null,
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
+  };
 }
 
 function sanitizeMetricData(incoming) {
@@ -1046,6 +1106,135 @@ router.get('/summary/history', requirePermission('metrics.view'), async (req, re
   } catch (err) { next(err); }
 });
 
+
+router.get('/campaigns', requirePermission('metrics.view'), async (req, res, next) => {
+  try {
+    await ensureMetricCampaignsSchema();
+    const periodKey = String(req.query?.periodKey || '').trim();
+    const clientIds = String(req.query?.clientIds || '')
+      .split(',')
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+      .slice(0, 200);
+
+    if (!PERIOD_KEY_RE.test(periodKey)) throw badRequest('periodKey inválido. Esperado YYYY-MM-Sw');
+    if (clientIds.length === 0) return res.json({ campaignsByClient: {}, campaigns: [] });
+
+    for (const clientId of clientIds) {
+      await assertClientExists(clientId, req.user, 'metrics.view.all');
+    }
+
+    const placeholders = clientIds.map(() => '?').join(',');
+    const rows = await query(
+      `SELECT id, client_id, base_period_key, metric_period_key, name, created_by, created_at, updated_at
+         FROM metric_campaigns
+        WHERE base_period_key = ?
+          AND client_id IN (${placeholders})
+        ORDER BY created_at ASC, name ASC`,
+      [periodKey, ...clientIds]
+    );
+
+    const campaigns = rows.map(serializeCampaign);
+    const campaignsByClient = {};
+    for (const clientId of clientIds) campaignsByClient[clientId] = [];
+    for (const campaign of campaigns) {
+      if (!campaignsByClient[campaign.clientId]) campaignsByClient[campaign.clientId] = [];
+      campaignsByClient[campaign.clientId].push(campaign);
+    }
+
+    res.json({ campaignsByClient, campaigns });
+  } catch (err) { next(err); }
+});
+
+router.post('/campaigns', requirePermission('metrics.fill_week'), async (req, res, next) => {
+  try {
+    await ensureMetricCampaignsSchema();
+    const clientId = String(req.body?.clientId || '').trim();
+    const periodKey = String(req.body?.periodKey || '').trim();
+    if (!clientId) throw badRequest('clientId obrigatório');
+    if (!PERIOD_KEY_RE.test(periodKey)) throw badRequest('periodKey inválido. Esperado YYYY-MM-Sw');
+
+    const { clientMetaLucro } = await assertClientExists(clientId, req.user, 'metrics.fill_week.all');
+
+    const existing = await query(
+      `SELECT COUNT(*) AS total
+         FROM metric_campaigns
+        WHERE client_id = ? AND base_period_key = ?`,
+      [clientId, periodKey]
+    );
+    const fallbackName = `Campanha ${(Number(existing?.[0]?.total) || 0) + 2}`;
+    const name = normalizeCampaignName(req.body?.name, fallbackName);
+
+    const result = await withTransaction(async (conn) => {
+      const campaignId = uuid();
+      const metricId = uuid();
+      const metricPeriodKey = `${periodKey}__campaign:${campaignId}`;
+
+      await conn.query(
+        `INSERT INTO weekly_metrics (id, client_id, period_key, data)
+         VALUES (?, ?, ?, ?)`,
+        [metricId, clientId, metricPeriodKey, JSON.stringify({})]
+      );
+
+      await conn.query(
+        `INSERT INTO metric_campaigns (id, client_id, base_period_key, metric_period_key, name, created_by)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [campaignId, clientId, periodKey, metricPeriodKey, name, req.user.id]
+      );
+
+      const [rows] = await conn.query(
+        `SELECT id, client_id, base_period_key, metric_period_key, name, created_by, created_at, updated_at
+           FROM metric_campaigns
+          WHERE id = ? LIMIT 1`,
+        [campaignId]
+      );
+
+      return {
+        campaign: serializeCampaign(rows[0]),
+        metric: {
+          id: metricId,
+          clientId,
+          periodKey: metricPeriodKey,
+          data: {},
+          computed: computeWeeklyMetrics({}, { clientMetaLucro }),
+          createdAt: null,
+          updatedAt: null,
+        },
+      };
+    });
+
+    res.status(201).json(result);
+  } catch (err) { next(err); }
+});
+
+router.delete('/campaigns/:campaignId', requirePermission('metrics.fill_week'), async (req, res, next) => {
+  try {
+    await ensureMetricCampaignsSchema();
+    const campaignId = String(req.params?.campaignId || '').trim();
+    if (!campaignId) throw badRequest('campaignId obrigatório');
+
+    const rows = await query(
+      `SELECT id, client_id, metric_period_key
+         FROM metric_campaigns
+        WHERE id = ? LIMIT 1`,
+      [campaignId]
+    );
+    if (rows.length === 0) throw notFound('Campanha não encontrada');
+
+    await assertClientExists(rows[0].client_id, req.user, 'metrics.fill_week.all');
+
+    await withTransaction(async (conn) => {
+      await conn.query('DELETE FROM metric_campaigns WHERE id = ?', [campaignId]);
+      await conn.query(
+        'DELETE FROM weekly_metrics WHERE client_id = ? AND period_key = ?',
+        [rows[0].client_id, rows[0].metric_period_key]
+      );
+    });
+
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 router.get('/:clientId', requirePermission('metrics.view'), async (req, res, next) => {
   try {
     const { clientId } = req.params;
@@ -1065,7 +1254,7 @@ router.get('/:clientId', requirePermission('metrics.view'), async (req, res, nex
 router.get('/:clientId/:periodKey', requirePermission('metrics.view'), async (req, res, next) => {
   try {
     const { clientId, periodKey } = req.params;
-    if (!PERIOD_KEY_RE.test(periodKey)) {
+    if (!isMetricPeriodKey(periodKey)) {
       throw badRequest('periodKey inválido. Esperado YYYY-MM-Sw');
     }
     const { clientMetaLucro } = await assertClientExists(clientId, req.user, 'metrics.view.all');
@@ -1094,7 +1283,7 @@ router.get('/:clientId/:periodKey', requirePermission('metrics.view'), async (re
 router.put('/:clientId/:periodKey', requirePermission('metrics.fill_week'), async (req, res, next) => {
   try {
     const { clientId, periodKey } = req.params;
-    if (!PERIOD_KEY_RE.test(periodKey)) {
+    if (!isMetricPeriodKey(periodKey)) {
       throw badRequest('periodKey inválido. Esperado YYYY-MM-Sw');
     }
     const { clientMetaLucro } = await assertClientExists(clientId, req.user, 'metrics.fill_week.all');
@@ -1128,7 +1317,7 @@ router.put('/:clientId/:periodKey', requirePermission('metrics.fill_week'), asyn
         );
       }
 
-      const goalStatus = await recalcGoalStatus(conn, clientId, periodKey);
+      const goalStatus = isCampaignMetricPeriodKey(periodKey) ? null : await recalcGoalStatus(conn, clientId, periodKey);
 
       const [fresh] = await conn.query(
         `SELECT id, client_id, period_key, data, created_at, updated_at
