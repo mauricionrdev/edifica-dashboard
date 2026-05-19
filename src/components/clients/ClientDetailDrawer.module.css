@@ -872,88 +872,96 @@
 }
 
 /* ==========================================================================
-   v105 · Detalhe do cliente com estética do modal Nova demanda
-   Modal mais contido, superfície limpa e seções compactas.
+   v106 · Detalhe do cliente estável no padrão Nova demanda
+   Corrige altura variável entre abas e deixa o modal mais contido.
    ========================================================================== */
 .overlay {
-  padding: 24px;
+  padding: 28px;
   background: var(--chassis-modal-backdrop);
   backdrop-filter: var(--chassis-modal-blur);
   -webkit-backdrop-filter: var(--chassis-modal-blur);
 }
 
 .modalCard {
-  width: min(960px, calc(100vw - 48px));
-  height: auto;
-  max-height: min(780px, calc(100dvh - 48px));
-  min-height: 0;
+  width: min(980px, calc(100vw - 72px));
+  height: min(760px, calc(100dvh - 72px));
+  min-height: min(760px, calc(100dvh - 72px));
+  max-height: min(760px, calc(100dvh - 72px));
   border: 1px solid var(--workspace-panel-border);
   border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
+  transform: none;
+}
+
+.modalCard:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
 }
 
 .modalHead {
-  min-height: 58px;
-  padding: 0 16px 0 18px;
+  flex: 0 0 60px;
+  min-height: 60px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--workspace-panel-border-soft);
   background: var(--workspace-panel-bg);
 }
 
+.modalBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--workspace-bg);
+  overflow: hidden;
+}
+
 .identity {
-  grid-template-columns: 34px minmax(0, 1fr);
   gap: 12px;
 }
 
 .avatar {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-color: var(--workspace-panel-border-soft);
   background: var(--field-bg);
   box-shadow: none;
-  font-size: 12px;
 }
 
 .name {
   font-size: 18px;
+  line-height: 1.15;
   font-weight: 720;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
 }
 
 .status {
-  height: 20px;
-  padding: 0 8px;
-  font-size: 9.5px;
+  height: 22px;
+  padding: 0 9px;
+  font-size: 10px;
   font-weight: 720;
-  letter-spacing: 0.075em;
+  letter-spacing: 0.08em;
 }
 
 .iconBtn {
   border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
+  box-shadow: none;
 }
 
 .iconBtn:hover:not(:disabled) {
   border-color: var(--line);
   background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.modalBody {
-  background: var(--workspace-bg);
+  box-shadow: none;
+  transform: none;
 }
 
 .section {
-  padding: 14px 18px 16px;
-  border: 0;
-  border-bottom: 1px solid var(--workspace-panel-border-soft);
-  border-radius: 0;
+  border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-bg);
   box-shadow: none;
-}
-
-.section:last-child {
-  border-bottom: 0;
+  transform: none;
 }
 
 .section:hover {
@@ -964,29 +972,17 @@
 }
 
 .sectionTitle {
-  margin-bottom: 12px;
   color: var(--text-tertiary);
   font-size: 10px;
   font-weight: 720;
-  letter-spacing: 0.105em;
-}
-
-.field {
-  gap: 7px;
-}
-
-.label {
-  color: var(--text-secondary);
-  font-size: 11.5px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.095em;
 }
 
 .input,
 .selectControl :global(button),
 .selectControl :global(input),
 .selectControl :global(select) {
-  min-height: 38px;
+  min-height: 40px;
   border-color: var(--workspace-panel-border-soft);
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
@@ -994,31 +990,32 @@
 }
 
 .input:hover,
-.selectControl:hover :global(button),
 .input:focus,
-.input:focus-visible {
+.input:focus-visible,
+.selectControl :global(button:hover),
+.selectControl :global(button:focus),
+.selectControl :global(button:focus-visible) {
   border-color: var(--line);
   background: var(--field-bg);
   box-shadow: none;
   outline: none;
 }
 
-.btn,
-.btnGhost,
-.btnDanger {
-  min-height: 34px;
-  border-radius: var(--workspace-control-radius);
-  box-shadow: none;
-  transform: none;
+@media (max-width: 1100px) {
+  .modalCard {
+    width: min(960px, calc(100vw - 40px));
+  }
 }
 
-@media (max-width: 980px) {
+@media (max-width: 760px) {
   .overlay {
-    padding: 14px;
+    padding: 12px;
   }
 
   .modalCard {
-    width: calc(100vw - 28px);
-    max-height: calc(100dvh - 28px);
+    width: calc(100vw - 24px);
+    height: calc(100dvh - 24px);
+    min-height: 0;
+    max-height: calc(100dvh - 24px);
   }
 }

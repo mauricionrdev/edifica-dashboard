@@ -221,34 +221,47 @@
 }
 
 /* ==========================================================================
-   v105 · Tabs do detalhe no padrão Nova demanda
-   Pills compactas, sem decoração excessiva.
+   v106 · Tabs detalhe cliente compactas
+   Mantém altura fixa do modal e visual próximo do modal Nova demanda.
    ========================================================================== */
 .tabsBar {
-  min-height: 52px;
+  flex: 0 0 50px;
+  min-height: 50px;
   padding: 8px 14px;
-  border-bottom-color: var(--workspace-panel-border-soft);
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
   background: var(--workspace-panel-bg);
   gap: 7px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.tabsBar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .tab {
+  height: 32px;
   min-height: 32px;
   padding: 0 12px;
-  border-color: var(--workspace-panel-border-soft);
+  border: 1px solid var(--workspace-panel-border-soft);
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
   color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 650;
-  transition: none;
+  white-space: nowrap;
   transform: none;
+  transition: none;
 }
 
 .tab:hover {
   border-color: var(--line);
   background: var(--bg-hover);
   color: var(--text-secondary);
+  box-shadow: none;
   transform: none;
 }
 
@@ -257,13 +270,22 @@
   border-color: var(--accent-line);
   background: var(--accent-soft);
   color: var(--accent);
+  box-shadow: none;
   transform: none;
 }
 
-.tabActive::after {
-  display: none;
+.tabBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  overflow-y: auto;
+  background: var(--workspace-bg);
+  scrollbar-width: none;
 }
 
-.tabBody {
-  background: var(--workspace-bg);
+.tabBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
