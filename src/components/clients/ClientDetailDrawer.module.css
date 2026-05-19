@@ -1220,3 +1220,26 @@
   background: var(--workspace-bg);
   overflow: hidden;
 }
+
+/* ==========================================================================
+   v111 · Modal cliente sem hover em seções grandes
+   Footer/ações mantêm cor principal sem mudança visual no hover.
+   ========================================================================== */
+.section:hover,
+.modalFooter:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.modalFooter .btn,
+.modalFooter .btn:hover,
+.modalFooter .btn:focus,
+.modalFooter .btn:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}

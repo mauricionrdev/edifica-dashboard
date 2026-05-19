@@ -3,6 +3,7 @@ import { updateClientFeeSteps } from '../../api/clients.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { PlusIcon, SaveIcon, TrashIcon } from '../ui/Icons.jsx';
+import Select from '../ui/Select.jsx';
 import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate, sortFeeSteps, summarizeFeeSchedule } from '../../utils/feeSchedule.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
@@ -27,6 +28,31 @@ function monthLabel(value) {
     month: 'long',
     year: 'numeric',
   }).format(date);
+}
+
+function buildMonthOptions(client, currentMonth) {
+  const startRaw = String(client?.startDate || '').slice(0, 7);
+  const endRaw = String(client?.endDate || '').slice(0, 7);
+  const start = /^\d{4}-\d{2}$/.test(startRaw) ? startRaw : currentMonth;
+  const end = /^\d{4}-\d{2}$/.test(endRaw) ? endRaw : '';
+
+  const [startYear, startMonth] = start.split('-').map(Number);
+  const startDate = new Date(startYear, startMonth - 1, 1);
+  const options = [];
+  const max = 48;
+
+  for (let index = 0; index < max; index += 1) {
+    const date = new Date(startDate.getFullYear(), startDate.getMonth() + index, 1);
+    const key = monthKeyFromDate(date);
+    options.push({ value: key, label: monthLabel(key) });
+    if (end && key >= end) break;
+  }
+
+  if (!options.some((option) => option.value === currentMonth)) {
+    options.push({ value: currentMonth, label: monthLabel(currentMonth) });
+  }
+
+  return options.sort((a, b) => a.value.localeCompare(b.value));
 }
 
 function fmtDateLabel(value) {
@@ -89,6 +115,7 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
   const [rows, setRows] = useState(() => buildRows(client));
   const [saving, setSaving] = useState(false);
   const currentMonth = useMemo(() => monthKeyFromDate(new Date()), []);
+  const monthOptions = useMemo(() => buildMonthOptions(client, currentMonth), [client?.startDate, client?.endDate, currentMonth]);
   const baseFee = useMemo(() => parseLocaleNumber(client?.fee, null), [client?.fee]);
 
   useEffect(() => {
@@ -238,14 +265,22 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
               <div className={styles.rowGrid}>
                 <div className={drawerStyles.field}>
                   <label className={drawerStyles.label} htmlFor={`fee-month-${row.id}`}>Mês referência</label>
-                  <input
+                  <Select
                     id={`fee-month-${row.id}`}
-                    className={drawerStyles.input}
-                    type="month"
+                    className={styles.monthSelect}
                     value={row.month}
                     onChange={(event) => handleFieldChange(row.id, 'month', event.target.value)}
                     disabled={!canEdit || saving}
-                  />
+                    placeholder="Selecionar mês"
+                    aria-label="Mês referência"
+                    menuMinWidth={220}
+                  >
+                    {monthOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Select>
                 </div>
 
                 <div className={drawerStyles.field}>

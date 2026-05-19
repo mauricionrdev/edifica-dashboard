@@ -227,3 +227,93 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   v111 · Mensalidades visual refinado
+   Sem hover em cards/seções. Campo de mês usa Select do design system.
+   ========================================================================== */
+.panel {
+  background: var(--workspace-bg);
+}
+
+.summaryCard,
+.rowCard,
+.emptyState {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.summaryCard:hover,
+.rowCard:hover,
+.emptyState:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.sectionHead {
+  border-bottom-color: var(--workspace-panel-border-soft);
+}
+
+.rowGrid {
+  grid-template-columns: minmax(200px, 260px) minmax(200px, 260px);
+  gap: 12px;
+}
+
+.monthSelect {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.monthSelect :global(button) {
+  width: 100%;
+  min-height: 40px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.monthSelect :global(button:hover),
+.monthSelect :global(button:focus),
+.monthSelect :global(button:focus-visible),
+.monthSelect :global(button[aria-expanded='true']) {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+  outline: none;
+}
+
+.actionButton,
+.actionButton:hover,
+.actionButton:focus,
+.actionButton:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.removeBtn,
+.removeBtn:hover,
+.removeBtn:focus,
+.removeBtn:focus-visible {
+  color: var(--danger-text);
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  box-shadow: none;
+  transform: none;
+  outline: none;
+}
+
+@media (max-width: 720px) {
+  .rowGrid {
+    grid-template-columns: 1fr;
+  }
+}
