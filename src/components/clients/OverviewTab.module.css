@@ -1624,3 +1624,212 @@
     justify-self: start;
   }
 }
+
+/* ==========================================================================
+   v108 · Dados principais com distribuição horizontal correta
+   Usa o espaço útil do modal: avatar lateral compacto + formulário em 2 colunas.
+   ========================================================================== */
+.mainSection {
+  padding: 16px 20px 20px;
+  background: var(--workspace-bg);
+}
+
+.profileGrid {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  column-gap: 20px;
+  align-items: start;
+  justify-content: stretch;
+  justify-items: stretch;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.avatarCard {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-height: 178px;
+  padding: 18px 16px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 14px;
+  box-shadow: none;
+  transform: none;
+}
+
+.avatarCard:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.avatarPrimary {
+  width: 82px;
+  height: 82px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.avatarControls {
+  width: min(100%, 148px);
+  display: grid;
+  gap: 8px;
+}
+
+.avatarControls button {
+  min-height: 32px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+.avatarControls button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.profileFields {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.58fr);
+  column-gap: 14px;
+  row-gap: 13px;
+  align-content: start;
+  justify-self: stretch;
+}
+
+.profileFieldName {
+  grid-column: 1 / -1;
+}
+
+.profileFields > :not(.profileFieldName) {
+  grid-column: auto;
+}
+
+.profileFields :global(input),
+.profileFields :global(button),
+.profileFields :global(select) {
+  width: 100%;
+  min-height: 40px;
+}
+
+.profileFields :global(label) {
+  margin-bottom: 7px;
+}
+
+.contractSection {
+  padding: 16px 20px;
+}
+
+.contractGrid {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dangerSection {
+  min-height: 76px;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.dangerSection > :first-child {
+  margin-bottom: 0;
+}
+
+.deleteClientButton {
+  justify-self: end;
+}
+
+.identityCard:hover,
+.infoCard:hover,
+.summaryCard:hover,
+.fieldShell:hover,
+.dangerZone:hover,
+.dangerSection:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 860px) {
+  .profileGrid {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  .avatarCard,
+  .profileFields {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .avatarCard {
+    min-height: 112px;
+    grid-template-columns: 82px minmax(0, 1fr);
+    justify-items: start;
+    align-items: center;
+  }
+
+  .profileFields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contractGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .profileFields,
+  .contractGrid,
+  .dangerSection {
+    grid-template-columns: 1fr;
+  }
+
+  .profileFieldName,
+  .profileFields > :not(.profileFieldName) {
+    grid-column: 1;
+  }
+
+  .avatarCard {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .deleteClientButton {
+    justify-self: start;
+  }
+}

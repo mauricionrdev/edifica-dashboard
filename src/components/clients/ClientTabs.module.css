@@ -359,3 +359,23 @@
   height: 0;
   display: none;
 }
+
+/* ==========================================================================
+   v108 · Corpo das abas estável
+   Evita que a aba altere a altura do modal e preserva o padrão de formulário.
+   ========================================================================== */
+.tabBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  overflow-y: auto;
+  background: var(--workspace-bg);
+  scrollbar-width: none;
+}
+
+.tabBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
