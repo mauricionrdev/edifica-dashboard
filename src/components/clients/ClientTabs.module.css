@@ -379,22 +379,3 @@
   height: 0;
   display: none;
 }
-
-/* ==========================================================================
-   v109 · Corpo das abas preservando altura fixa
-   ========================================================================== */
-.tabBody {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: auto;
-  max-height: none;
-  overflow-y: auto;
-  background: var(--workspace-bg);
-  scrollbar-width: none;
-}
-
-.tabBody::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-}
