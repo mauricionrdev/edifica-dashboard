@@ -1220,3 +1220,41 @@
   background: var(--workspace-bg);
   overflow: hidden;
 }
+
+/* ==========================================================================
+   v109 · Modal cliente com largura próxima ao Nova demanda
+   Evita campos gigantes e mantém altura fixa entre abas.
+   ========================================================================== */
+.modalCard {
+  width: min(900px, calc(100vw - 72px));
+  height: min(760px, calc(100dvh - 72px));
+  min-height: min(760px, calc(100dvh - 72px));
+  max-height: min(760px, calc(100dvh - 72px));
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
+}
+
+.modalCard:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
+}
+
+.modalHead {
+  flex: 0 0 58px;
+  min-height: 58px;
+  padding: 0 16px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.modalBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--workspace-bg);
+  overflow: hidden;
+}
