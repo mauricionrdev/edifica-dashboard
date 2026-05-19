@@ -11627,3 +11627,294 @@ button:focus-visible {
 .settingsOverlay .demandModal {
   transform: none;
 }
+
+/* ==========================================================================
+   v101 · Perfil polish premium
+   Refinamento leve dos dois cards principais sem alterar lógica/estrutura.
+   ========================================================================== */
+.hero,
+.operationBoard {
+  border-color: var(--workspace-panel-border);
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent 58%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.hero {
+  padding: 18px 20px 0;
+  overflow: hidden;
+}
+
+.identityRow {
+  min-height: 72px;
+  padding-bottom: 16px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border: 1px solid var(--workspace-panel-border);
+  box-shadow: inset 0 1px 0 var(--surface-raised);
+}
+
+.identityGreeting {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 620;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.identityTitle {
+  gap: 9px;
+}
+
+.identityTitle h1 {
+  color: var(--text-primary);
+  font-size: 23px;
+  font-weight: 740;
+  letter-spacing: -0.04em;
+}
+
+.identityMeta span {
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.roleBadge {
+  height: 24px;
+  padding: 0 10px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 680;
+  letter-spacing: 0.075em;
+}
+
+.profileStatRail {
+  margin: 0 -20px;
+  padding: 0;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 0;
+  background: var(--workspace-panel-bg);
+}
+
+.profileStat {
+  min-height: 74px;
+  padding: 14px 16px;
+  border-right: 1px solid var(--workspace-panel-border-soft);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.profileStat:last-child {
+  border-right: 0;
+}
+
+.profileStat:hover {
+  background: transparent;
+}
+
+.profileStat > span:first-child {
+  color: var(--text-tertiary);
+  font-size: 10.8px;
+  font-weight: 650;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.profileStat strong {
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 760;
+  letter-spacing: -0.035em;
+}
+
+.profileStat em {
+  color: var(--text-quaternary);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.25;
+}
+
+.operationBoard {
+  border-color: var(--workspace-panel-border);
+}
+
+.operationHeader {
+  padding: 17px 20px 0;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+}
+
+.operationHeaderTop {
+  margin-bottom: 13px;
+}
+
+.operationHeading,
+.operationTitleBlock h2,
+.operationHeaderTop h2 {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 720;
+  letter-spacing: -0.035em;
+}
+
+.operationHeading svg {
+  color: var(--text-tertiary);
+}
+
+.primaryAction {
+  height: 34px;
+  padding: 0 13px;
+  border-color: var(--accent-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.primaryAction:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.operationControlPanel {
+  padding-bottom: 10px;
+}
+
+.operationTabs {
+  min-height: 36px;
+  gap: 8px;
+  padding: 0;
+  border-bottom: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.operationTabs::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.operationTab {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  margin: 0;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 650;
+  transition: none;
+  transform: none;
+}
+
+.operationTab:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  transform: none;
+}
+
+.operationTabActive,
+.operationTabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  transform: none;
+}
+
+.operationTabCount {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--workspace-panel-bg);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 720;
+}
+
+.operationTabActive .operationTabCount {
+  border-color: var(--accent-line);
+  background: var(--workspace-panel-bg);
+  color: var(--accent);
+}
+
+.operationBody {
+  padding-top: 0;
+}
+
+.operationList {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.operationListHeader {
+  min-height: 38px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  color: var(--text-quaternary);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.07em;
+}
+
+.operationRow {
+  min-height: 58px;
+  padding: 10px 20px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: transparent;
+  transition: none;
+  transform: none;
+}
+
+.operationRow:hover,
+.operationRow:focus-within {
+  background: var(--surface-panel);
+  transform: none;
+}
+
+.operationMain strong {
+  color: var(--text-secondary);
+  font-size: 13.2px;
+  font-weight: 660;
+}
+
+.operationMain span,
+.operationClientCell span {
+  color: var(--text-quaternary);
+  font-size: 11.2px;
+}
+
+.iconButton,
+.iconButton:hover,
+.iconButton:focus,
+.iconButton:focus-visible,
+.primaryAction:focus,
+.primaryAction:focus-visible,
+.operationTab:focus,
+.operationTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
