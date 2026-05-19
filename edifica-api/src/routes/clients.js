@@ -42,6 +42,13 @@ function canEditFeeSchedule(user) {
   return hasPermission(user, 'clients.fee_schedule.edit') || hasPermission(user, 'clients.edit');
 }
 
+function normalizeMonthKey(value) {
+  const raw = String(value || '').trim();
+  if (/^\d{4}-(0[1-9]|1[0-2])$/.test(raw)) return raw;
+  if (/^\d{4}-(0[1-9]|1[0-2])-\d{2}/.test(raw)) return raw.slice(0, 7);
+  return '';
+}
+
 function normalizeFeeSteps(value) {
   if (value == null || value === '') return [];
   let parsed = value;
@@ -53,18 +60,51 @@ function normalizeFeeSteps(value) {
     }
   }
   if (!Array.isArray(parsed)) return [];
-  return parsed
-    .map((step) => ({
-      id: String(step?.id || '').trim(),
-      label: String(step?.label || '').trim(),
-      amount: Number(step?.amount) || 0,
-      startsAt: String(step?.startsAt || step?.startDate || '').trim(),
-      endsAt: String(step?.endsAt || step?.endDate || '').trim(),
-      note: String(step?.note || '').trim(),
-    }))
-    .filter((step) => step.label || step.amount || step.startsAt || step.endsAt || step.note)
-    .slice(0, 60);
+
+  const byMonth = new Map();
+
+  parsed.forEach((step) => {
+    const month = normalizeMonthKey(
+      step?.month || step?.referenceMonth || step?.competence || step?.startDate
+    );
+    if (!month) return;
+
+    const fee = parseLocaleNumber(step?.fee ?? step?.amount, Number.NaN);
+    if (!Number.isFinite(fee) || fee < 0) return;
+
+    byMonth.set(month, {
+      id: String(step?.id || `fee-${month}`).trim(),
+      month,
+      fee,
+    });
+  });
+
+  return [...byMonth.values()]
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .slice(0, 120);
 }
+
+function resolveMonthlyFeeForDate(client, referenceDate = new Date()) {
+  const date = referenceDate instanceof Date
+    ? referenceDate
+    : new Date(`${String(referenceDate || '').slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return Number(client?.fee) || 0;
+
+  const referenceMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  const steps = normalizeFeeSteps(client?.fee_steps_json || client?.feeSteps || []);
+
+  const exact = steps.find((step) => step.month === referenceMonth);
+  if (exact) return Number(exact.fee) || 0;
+
+  let latest = null;
+  for (const step of steps) {
+    if (step.month <= referenceMonth) latest = step;
+    if (step.month > referenceMonth) break;
+  }
+
+  return latest ? Number(latest.fee) || 0 : Number(client?.fee) || 0;
+}
+
 
 async function ensureClientFeeStepsSchema() {
   try {
@@ -119,7 +159,9 @@ function serializeClient(row) {
     gestor: row.gestor || '',
     status: row.status,
     goalStatus: row.goal_status || '',
-    fee: Number(row.fee) || 0,
+    fee: resolveMonthlyFeeForDate(row),
+    baseFee: Number(row.fee) || 0,
+    feeSteps: normalizeFeeSteps(row.fee_steps_json),
     metaLucro: Number(row.meta_lucro) || 0,
     startDate: toDateString(row.start_date),
     endDate: toDateString(row.end_date),
@@ -241,6 +283,7 @@ async function assertUniqueClientName(name, excludeId = null) {
 router.get('/', requirePermission('clients.view'), async (req, res, next) => {
   try {
     await ensureResponsibleSchema();
+    await ensureClientFeeStepsSchema();
     const rows = await query(
       `SELECT c.*, s.name AS squad_name
          FROM clients c
@@ -260,6 +303,7 @@ router.get('/', requirePermission('clients.view'), async (req, res, next) => {
 router.get('/:id', requirePermission('clients.view'), async (req, res, next) => {
   try {
     await ensureResponsibleSchema();
+    await ensureClientFeeStepsSchema();
     const rows = await query(
       `SELECT c.*, s.name AS squad_name
          FROM clients c
@@ -287,6 +331,7 @@ router.get('/:id', requirePermission('clients.view'), async (req, res, next) => 
 router.post('/', requirePermission('clients.create'), async (req, res, next) => {
   try {
     await ensureResponsibleSchema();
+    await ensureClientFeeStepsSchema();
     const fields = await normalizeResponsibleFields(pickUpdatableFields(req.body || {}));
     const name = String(fields.name || '').trim();
     if (!name) throw badRequest('Informe o nome do cliente');
@@ -354,8 +399,20 @@ router.put('/:id/fee-steps', requirePermission('clients.fee_schedule.edit'), asy
     await ensureClientFeeStepsSchema();
     await getAccessibleClientRow(req.params.id, req.user, 'id, squad_id', 'clients.fee_schedule.edit.all');
     const feeSteps = normalizeFeeSteps(req.body?.feeSteps);
-    await query('UPDATE clients SET fee_steps_json = ? WHERE id = ?', [JSON.stringify(feeSteps), req.params.id]);
-    res.json({ feeSteps });
+    const payload = JSON.stringify(feeSteps);
+    await query('UPDATE clients SET fee_steps_json = ? WHERE id = ?', [payload, req.params.id]);
+
+    const rows = await query(
+      `SELECT c.*, s.name AS squad_name
+         FROM clients c
+         LEFT JOIN squads s ON s.id = c.squad_id
+        WHERE c.id = ? LIMIT 1`,
+      [req.params.id]
+    );
+    const client = serializeClient(rows[0]);
+    await query('UPDATE clients SET fee = ? WHERE id = ?', [client.fee, req.params.id]);
+    client.baseFee = client.fee;
+    res.json({ feeSteps, client });
   } catch (err) {
     next(err);
   }
@@ -367,6 +424,7 @@ router.put('/:id/fee-steps', requirePermission('clients.fee_schedule.edit'), asy
 router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => {
   try {
     await ensureResponsibleSchema();
+    await ensureClientFeeStepsSchema();
     const { id } = req.params;
     const current = await getAccessibleClientRow(id, req.user, '*', 'clients.edit.all');
 

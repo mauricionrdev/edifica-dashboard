@@ -193,3 +193,37 @@
 .rowCard {
   margin-top: 0;
 }
+
+/* ==========================================================================
+   v110 · Mensalidades simples por competência
+   Remove a lógica visual de fases e deixa mês + valor como únicos campos.
+   ========================================================================== */
+.rowGrid {
+  grid-template-columns: minmax(180px, 220px) minmax(180px, 240px);
+  justify-content: start;
+}
+
+.rowCard:hover,
+.summaryCard:hover {
+  border-color: var(--line-subtle);
+  background: rgba(255, 255, 255, 0.016);
+  box-shadow: none;
+  transform: none;
+}
+
+.emptyState {
+  min-height: 72px;
+  padding: 18px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.016);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .rowGrid {
+    grid-template-columns: 1fr;
+  }
+}

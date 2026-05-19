@@ -1,9 +1,18 @@
 import { parseLocaleNumber } from './number.js';
 
-function parseDate(value) {
-  if (!value) return null;
-  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? null : date;
+function monthKeyFromDate(value) {
+  if (!value) return '';
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  }
+  const raw = String(value || '').trim();
+  if (/^\d{4}-\d{2}$/.test(raw)) return raw;
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 7);
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return '';
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
 function normalizedSteps(client) {
@@ -13,13 +22,16 @@ function normalizedSteps(client) {
 
 export function sortFeeSteps(steps = []) {
   return [...(Array.isArray(steps) ? steps : [])]
-    .filter((step) => step?.startDate)
-    .sort((a, b) => {
-      const aStart = String(a.startDate || '');
-      const bStart = String(b.startDate || '');
-      if (aStart !== bStart) return aStart.localeCompare(bStart);
-      return String(a.endDate || '9999-12-31').localeCompare(String(b.endDate || '9999-12-31'));
-    });
+    .map((step) => {
+      const month = monthKeyFromDate(step?.month || step?.referenceMonth || step?.competence || step?.startDate);
+      return {
+        ...step,
+        month,
+        fee: step?.fee ?? step?.amount ?? 0,
+      };
+    })
+    .filter((step) => step.month)
+    .sort((a, b) => String(a.month || '').localeCompare(String(b.month || '')));
 }
 
 export function clientHasFeeSchedule(client) {
@@ -27,19 +39,20 @@ export function clientHasFeeSchedule(client) {
 }
 
 export function resolveClientFeeStepAtDate(client, referenceDate = new Date()) {
-  const date = referenceDate instanceof Date ? referenceDate : parseDate(referenceDate);
-  if (!date) return null;
+  const referenceMonth = monthKeyFromDate(referenceDate);
+  if (!referenceMonth) return null;
 
-  for (const step of normalizedSteps(client)) {
-    const start = parseDate(step.startDate);
-    const end = parseDate(step.endDate);
-    if (!start) continue;
-    if (date < start) continue;
-    if (end && date > end) continue;
-    return step;
+  const steps = normalizedSteps(client);
+  const exact = steps.find((step) => step.month === referenceMonth);
+  if (exact) return exact;
+
+  let latest = null;
+  for (const step of steps) {
+    if (step.month <= referenceMonth) latest = step;
+    if (step.month > referenceMonth) break;
   }
 
-  return null;
+  return latest;
 }
 
 export function resolveClientFeeAtDate(client, referenceDate = new Date()) {
@@ -55,8 +68,8 @@ export function resolveClientFeeAtMonthEnd(client, year, month0) {
 export function summarizeFeeSchedule(client, referenceDate = new Date()) {
   const steps = normalizedSteps(client);
   const current = resolveClientFeeStepAtDate(client, referenceDate);
-  const currentIndex = current ? steps.findIndex((step) => step === current) : -1;
-  const next = currentIndex >= 0 ? steps[currentIndex + 1] || null : steps[0] || null;
+  const referenceMonth = monthKeyFromDate(referenceDate);
+  const next = steps.find((step) => step.month > referenceMonth) || null;
 
   return {
     hasSchedule: steps.length > 0,
