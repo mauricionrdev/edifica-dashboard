@@ -264,7 +264,7 @@ export default function ClientsPage() {
                 type="search"
                 value={query}
                 onChange={(e) => handleQueryChange(e.target.value)}
-                placeholder="Buscar cliente, squad ou gestor..."
+                placeholder="Buscar cliente..."
                 aria-label="Buscar"
               />
             </label>

@@ -871,3 +871,140 @@
   outline: none;
   box-shadow: none;
 }
+
+/* ==========================================================================
+   v104 · Clientes notebook header compacto
+   Filtros menores, com rolagem horizontal funcional dentro do limite.
+   ========================================================================== */
+.workbench {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.workbench:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.toolbar {
+  min-height: 52px;
+  padding: 9px 12px;
+  grid-template-columns: minmax(220px, 330px) minmax(0, 1fr) minmax(132px, auto);
+  gap: 8px;
+  overflow: hidden;
+  border-bottom-color: var(--workspace-panel-border-soft);
+}
+
+.searchBox {
+  height: 34px;
+  min-width: 0;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+}
+
+.searchBox:hover,
+.searchBox:focus-within {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.scopeTabs {
+  min-width: 0;
+  max-width: 100%;
+  height: 34px;
+  padding: 0;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 20px), transparent 100%);
+}
+
+.scopeTabs::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.scopeTab {
+  height: 30px;
+  min-width: max-content;
+  padding: 0 10px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: 650;
+  scroll-snap-align: start;
+  transform: none;
+  transition: none;
+}
+
+.scopeTab:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  transform: none;
+}
+
+.scopeTabActive,
+.scopeTabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.scopeCount {
+  min-width: 19px;
+  height: 19px;
+  padding: 0 6px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--workspace-panel-bg);
+  color: inherit;
+  font-size: 10px;
+  font-weight: 720;
+}
+
+.paginationControl {
+  min-width: 132px;
+  justify-self: end;
+}
+
+.pageSizeSelect {
+  min-width: 132px;
+}
+
+.clientRow {
+  transition: none;
+}
+
+.clientRow:hover,
+.clientRow:focus-within {
+  background: var(--surface-panel);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 1280px) {
+  .toolbar {
+    grid-template-columns: minmax(190px, 280px) minmax(0, 1fr) minmax(126px, auto);
+  }
+
+  .scopeTab {
+    padding: 0 9px;
+    font-size: 11px;
+  }
+
+  .pageSizeSelect {
+    min-width: 126px;
+  }
+}
