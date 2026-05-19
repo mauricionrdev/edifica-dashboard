@@ -219,3 +219,51 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+
+/* ==========================================================================
+   v105 · Tabs do detalhe no padrão Nova demanda
+   Pills compactas, sem decoração excessiva.
+   ========================================================================== */
+.tabsBar {
+  min-height: 52px;
+  padding: 8px 14px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  gap: 7px;
+}
+
+.tab {
+  min-height: 32px;
+  padding: 0 12px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 650;
+  transition: none;
+  transform: none;
+}
+
+.tab:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  transform: none;
+}
+
+.tabActive,
+.tabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  transform: none;
+}
+
+.tabActive::after {
+  display: none;
+}
+
+.tabBody {
+  background: var(--workspace-bg);
+}

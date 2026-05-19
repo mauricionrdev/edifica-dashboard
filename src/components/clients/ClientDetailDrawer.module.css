@@ -870,3 +870,155 @@
   outline: none;
   box-shadow: none;
 }
+
+/* ==========================================================================
+   v105 · Detalhe do cliente com estética do modal Nova demanda
+   Modal mais contido, superfície limpa e seções compactas.
+   ========================================================================== */
+.overlay {
+  padding: 24px;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.modalCard {
+  width: min(960px, calc(100vw - 48px));
+  height: auto;
+  max-height: min(780px, calc(100dvh - 48px));
+  min-height: 0;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.modalHead {
+  min-height: 58px;
+  padding: 0 16px 0 18px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.identity {
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+  font-size: 12px;
+}
+
+.name {
+  font-size: 18px;
+  font-weight: 720;
+  letter-spacing: -0.035em;
+}
+
+.status {
+  height: 20px;
+  padding: 0 8px;
+  font-size: 9.5px;
+  font-weight: 720;
+  letter-spacing: 0.075em;
+}
+
+.iconBtn {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+}
+
+.iconBtn:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.modalBody {
+  background: var(--workspace-bg);
+}
+
+.section {
+  padding: 14px 18px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 0;
+  background: var(--workspace-bg);
+  box-shadow: none;
+}
+
+.section:last-child {
+  border-bottom: 0;
+}
+
+.section:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.sectionTitle {
+  margin-bottom: 12px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.105em;
+}
+
+.field {
+  gap: 7px;
+}
+
+.label {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.input,
+.selectControl :global(button),
+.selectControl :global(input),
+.selectControl :global(select) {
+  min-height: 38px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.input:hover,
+.selectControl:hover :global(button),
+.input:focus,
+.input:focus-visible {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+  outline: none;
+}
+
+.btn,
+.btnGhost,
+.btnDanger {
+  min-height: 34px;
+  border-radius: var(--workspace-control-radius);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 980px) {
+  .overlay {
+    padding: 14px;
+  }
+
+  .modalCard {
+    width: calc(100vw - 28px);
+    max-height: calc(100dvh - 28px);
+  }
+}
