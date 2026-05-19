@@ -289,3 +289,73 @@
   height: 0;
   display: none;
 }
+
+/* ==========================================================================
+   v107 · Tabs cliente no padrão do modal Nova demanda
+   Linha compacta e sem impacto na altura estável do modal.
+   ========================================================================== */
+.tabsBar {
+  flex: 0 0 48px;
+  min-height: 48px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  gap: 7px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.tabsBar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.tab {
+  height: 31px;
+  min-height: 31px;
+  padding: 0 12px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  font-size: 11.8px;
+  font-weight: 650;
+  white-space: nowrap;
+  transform: none;
+  transition: none;
+}
+
+.tab:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+.tabActive,
+.tabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.tabBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  overflow-y: auto;
+  background: var(--workspace-bg);
+  scrollbar-width: none;
+}
+
+.tabBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}

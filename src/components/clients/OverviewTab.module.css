@@ -1413,3 +1413,214 @@
     justify-items: center;
   }
 }
+
+/* ==========================================================================
+   v107 · Visão geral cliente equilibrada
+   Avatar como rail compacto e formulário centralizado como no modal Nova demanda.
+   ========================================================================== */
+.overviewShell {
+  min-height: 100%;
+  background: var(--workspace-bg);
+}
+
+.mainSection {
+  padding: 16px 18px 18px;
+  background: var(--workspace-bg);
+}
+
+.profileGrid {
+  width: min(100%, 780px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 176px minmax(0, 1fr);
+  column-gap: 24px;
+  align-items: start;
+  justify-content: center;
+  justify-items: stretch;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.avatarCard {
+  grid-column: 1;
+  grid-row: 1;
+  width: 176px;
+  min-height: 172px;
+  padding: 14px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 14px;
+  box-shadow: none;
+  transform: none;
+}
+
+.avatarCard:hover {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.avatarPrimary {
+  width: 84px;
+  height: 84px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.avatarControls {
+  width: 142px;
+  display: grid;
+  gap: 8px;
+}
+
+.avatarControls button {
+  min-height: 32px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+.avatarControls button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.profileFields {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  max-width: 580px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.72fr);
+  column-gap: 14px;
+  row-gap: 13px;
+  align-content: start;
+}
+
+.profileFieldName {
+  grid-column: 1 / -1;
+}
+
+.profileFields > :not(.profileFieldName) {
+  grid-column: auto;
+}
+
+.profileFields :global(input),
+.profileFields :global(button),
+.profileFields :global(select) {
+  width: 100%;
+  min-height: 40px;
+}
+
+.contractSection {
+  padding: 16px 18px;
+}
+
+.contractGrid {
+  width: min(100%, 780px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dangerSection {
+  min-height: 76px;
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.dangerSection > :first-child {
+  margin-bottom: 0;
+}
+
+.deleteClientButton {
+  justify-self: end;
+}
+
+.identityCard:hover,
+.infoCard:hover,
+.summaryCard:hover,
+.fieldShell:hover,
+.dangerZone:hover,
+.dangerSection:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 860px) {
+  .profileGrid {
+    width: 100%;
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  .avatarCard,
+  .profileFields {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .avatarCard {
+    width: 100%;
+    min-height: 112px;
+    grid-template-columns: 84px minmax(0, 1fr);
+    justify-items: start;
+    align-items: center;
+    padding-top: 0;
+  }
+
+  .profileFields {
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contractGrid {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .profileFields,
+  .contractGrid,
+  .dangerSection {
+    grid-template-columns: 1fr;
+  }
+
+  .profileFieldName,
+  .profileFields > :not(.profileFieldName) {
+    grid-column: 1;
+  }
+
+  .avatarCard {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .deleteClientButton {
+    justify-self: start;
+  }
+}
