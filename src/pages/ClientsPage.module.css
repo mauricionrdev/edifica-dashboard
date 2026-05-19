@@ -689,3 +689,185 @@
 .muted {
   color: var(--text-tertiary);
 }
+
+/* ==========================================================================
+   v103 · Clientes minimalista alinhado ao design system
+   Regra: workbench e painéis grandes não recebem hover visual.
+   ========================================================================== */
+.page {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+}
+
+.workbench {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.workbench:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.toolbar {
+  min-height: 56px;
+  padding: 10px 12px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.headerActionButton,
+.searchBox,
+.pageSizeSelect,
+.pageButton {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.headerActionButton:hover,
+.pageButton:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.searchBox:hover,
+.searchBox:focus-within {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.scopeTabs {
+  padding: 0;
+  gap: 7px;
+}
+
+.scopeTab {
+  height: 31px;
+  padding: 0 11px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  font-weight: 640;
+  transform: none;
+  transition: none;
+}
+
+.scopeTab:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  transform: none;
+}
+
+.scopeTabActive,
+.scopeTabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.scopeCount {
+  min-width: 20px;
+  height: 20px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--workspace-panel-bg);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+.clientTable {
+  background: var(--workspace-panel-bg);
+}
+
+.clientHeader {
+  min-height: 38px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  color: var(--text-quaternary);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.07em;
+}
+
+.clientRow {
+  min-height: 58px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  transition: none;
+}
+
+.clientRow:hover,
+.clientRow:focus-within {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--surface-panel);
+  box-shadow: none;
+  transform: none;
+}
+
+.avatar {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.cellName {
+  color: var(--text-secondary);
+  font-weight: 650;
+}
+
+.cellMuted,
+.cellDate {
+  color: var(--text-tertiary);
+}
+
+.cellFee {
+  color: var(--text-primary);
+  font-weight: 650;
+}
+
+.pagination {
+  border-top-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.pageButtonActive,
+.pageButtonActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.headerActionButton:focus,
+.headerActionButton:focus-visible,
+.searchBox input:focus,
+.searchBox input:focus-visible,
+.scopeTab:focus,
+.scopeTab:focus-visible,
+.clientRow:focus,
+.clientRow:focus-visible,
+.pageButton:focus,
+.pageButton:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

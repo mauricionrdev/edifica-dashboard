@@ -453,3 +453,154 @@
   backdrop-filter: var(--chassis-modal-blur);
   -webkit-backdrop-filter: var(--chassis-modal-blur);
 }
+
+/* ==========================================================================
+   v103 · Modal Criar Cliente minimalista
+   Alinha criação de cliente ao padrão validado de modais do workspace.
+   ========================================================================== */
+.overlay {
+  z-index: 26000;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.card {
+  width: min(720px, calc(100vw - 40px));
+  max-height: min(760px, calc(100dvh - 40px));
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
+}
+
+.card:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
+}
+
+.header,
+.footer {
+  min-height: 56px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.title {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 720;
+  letter-spacing: -0.035em;
+}
+
+.body {
+  padding: 14px 16px 16px;
+  background: var(--workspace-bg);
+}
+
+.section {
+  padding: 14px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.section:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.sectionTitle {
+  color: var(--text-quaternary);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.075em;
+}
+
+.input,
+.select,
+.textarea {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover,
+.input:focus,
+.input:focus-visible,
+.select:focus,
+.select:focus-visible,
+.textarea:focus,
+.textarea:focus-visible {
+  border-color: var(--line);
+  background: var(--field-bg);
+  outline: none;
+  box-shadow: none;
+}
+
+.close,
+.avatarUploadButton,
+.btnPrimary,
+.btnSecondary,
+.btnDanger {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.close:hover,
+.avatarUploadButton:hover,
+.btnSecondary:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.btnPrimary,
+.btnPrimary:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.btnDanger,
+.btnDanger:hover:not(:disabled) {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: none;
+  transform: none;
+}
+
+.close:focus,
+.close:focus-visible,
+.avatarUploadButton:focus,
+.avatarUploadButton:focus-visible,
+.btnPrimary:focus,
+.btnPrimary:focus-visible,
+.btnSecondary:focus,
+.btnSecondary:focus-visible,
+.btnDanger:focus,
+.btnDanger:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
