@@ -974,3 +974,165 @@
   box-shadow: none;
   border-color: var(--line);
 }
+
+/* ==========================================================================
+   v102 · Dashboard minimalista alinhado ao design system
+   Regra: cards grandes/painéis não recebem hover visual.
+   ========================================================================== */
+.dashboardPanels {
+  gap: 12px;
+  overflow: visible;
+}
+
+.boardSection,
+.detailsPanel,
+.dashboardLastCard {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.boardSection:hover,
+.detailsPanel:hover,
+.dashboardLastCard:hover,
+.activityPanel:hover,
+.metricCard:hover,
+.panel:hover,
+.card:hover,
+.chartCard:hover,
+.rankingCard:hover,
+.insightCard:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.metricCard {
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.metricCard:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.columnsPanelHeader,
+.compareHeader,
+.activityHeader {
+  min-height: 52px;
+  padding: 0 16px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.columnsPanelTitle,
+.compareHeader h3,
+.activityHeader h3 {
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-weight: 680;
+  letter-spacing: -0.025em;
+}
+
+.compareHeaderHint {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: 560;
+}
+
+.columnsCanvas {
+  min-height: 292px;
+  padding: 10px 16px 12px;
+  background: var(--workspace-panel-bg);
+}
+
+.compareBody {
+  padding: 0 16px 6px;
+}
+
+.compareItem {
+  min-height: 62px;
+  padding: 13px 0;
+  border-bottom-color: var(--workspace-panel-border-soft);
+}
+
+.compareLabel {
+  color: var(--text-quaternary);
+  font-size: 9.8px;
+  font-weight: 720;
+  letter-spacing: 0.075em;
+}
+
+.compareValue {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+}
+
+.compareDelta {
+  font-size: 11.5px;
+  font-weight: 620;
+}
+
+.activityHeaderBadge {
+  min-width: 22px;
+  height: 22px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+}
+
+.activityPanel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.activityList {
+  background: transparent;
+}
+
+.activityItem {
+  min-height: 64px;
+  padding: 0 16px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  transition: none;
+}
+
+.activityItem:hover {
+  background: var(--surface-panel);
+  box-shadow: none;
+}
+
+.activityAvatar {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.activityName {
+  font-size: 13px;
+  font-weight: 640;
+}
+
+.activityDate,
+.activitySquad,
+.activityFee {
+  font-size: 12px;
+}
+
+.activityDate {
+  color: var(--text-tertiary);
+}
+
+.emptyState {
+  background: transparent;
+}
