@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BellIcon, ChecklistIcon, MenuIcon, PanelLeftIcon, RotateCcwIcon } from '../ui/Icons.jsx';
+import { BellIcon, ChecklistIcon, MenuIcon, PanelLeftIcon, RotateCcwIcon, ShieldIcon } from '../ui/Icons.jsx';
 import Button from '../ui/Button.jsx';
 import LoadingIcon from '../ui/LoadingIcon.jsx';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
@@ -36,6 +36,9 @@ export default function Topbar({
   onRefreshNotifications,
   onMarkNotificationRead,
   onMarkAllNotificationsRead,
+  pendingAccessCount = 0,
+  latestAccessRequest = null,
+  showAccessAttention = false,
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -140,6 +143,20 @@ export default function Topbar({
                 );
               })}
             </div>
+          ) : null}
+
+          {showAccessAttention && pendingAccessCount > 0 ? (
+            <button
+              type="button"
+              className={styles.accessAttentionButton}
+              onClick={() => navigate('/equipe?tab=requests')}
+              title={latestAccessRequest?.requesterName || latestAccessRequest?.requesterEmail || 'Solicitações de acesso'}
+              aria-label={`${pendingAccessCount} solicitações de acesso pendentes`}
+            >
+              <ShieldIcon size={14} />
+              <span>Acessos</span>
+              <strong>{pendingAccessCount > 99 ? '99+' : pendingAccessCount}</strong>
+            </button>
           ) : null}
 
           <div className={styles.notificationsWrap} ref={panelRef}>

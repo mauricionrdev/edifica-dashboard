@@ -3925,9 +3925,16 @@ export default function ProfilePage() {
                   <div className={styles.commentList}>
                     {visibleTaskComments.map((comment) => {
                       const commentAuthor = comment.authorName || comment.userName || 'Usuário';
+                      const avatarUrl = commentAvatarUrl(comment, userDirectory, user);
+                      const avatarColor = commentAvatarColor(comment, userDirectory, user);
                       return (
                         <article key={comment.id} className={styles.commentItem}>
-                          <span className={styles.commentAvatar}>{initials(commentAuthor)}</span>
+                          <span
+                            className={`${styles.commentAvatar} ${styles[`avatar_${avatarColor}`] || styles.avatar_amber} ${avatarUrl ? styles.commentAvatarPhoto : ''}`.trim()}
+                            aria-hidden="true"
+                          >
+                            {avatarUrl ? <img src={avatarUrl} alt="" loading="lazy" decoding="async" /> : initials(commentAuthor)}
+                          </span>
                           <div className={styles.commentBody}>
                             <header className={styles.commentHeader}>
                               <strong>{commentAuthor}</strong>

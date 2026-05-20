@@ -1818,8 +1818,6 @@ router.post('/tasks/:id/comments', requirePermission('tasks.comment'), async (re
         taskId: rows[0].task_id,
         userId: rows[0].user_id,
         userName: rows[0].user_name,
-        avatarColor: rows[0].user_avatar_color || 'amber',
-        avatarUrl: rows[0].user_avatar_url || '',
         body: rows[0].body,
         createdAt: rows[0].created_at,
       },

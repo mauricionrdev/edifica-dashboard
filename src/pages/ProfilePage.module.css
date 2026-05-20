@@ -12360,3 +12360,56 @@ button:focus-visible {
   border-radius: inherit;
   background: transparent;
 }
+
+/* ==========================================================================
+   v126 · Avatar real nos comentários do drawer
+   A foto ocupa o avatar inteiro; quando há foto, fundo amarelo não aparece.
+   ========================================================================== */
+.commentAvatar,
+.avatar,
+.settingsPreviewAvatar,
+.settingsColorAvatar,
+.collaboratorAvatar,
+.userAvatar,
+.personAvatar {
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.commentAvatar {
+  position: relative;
+  background-clip: padding-box;
+}
+
+.commentAvatarPhoto {
+  background: var(--bg-app);
+  color: transparent;
+}
+
+.commentAvatar img,
+.avatar img,
+.settingsPreviewAvatar img,
+.settingsColorAvatar img,
+.collaboratorAvatar img,
+.userAvatar img,
+.personAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.avatar_amber { background: var(--accent); color: var(--accent-text); }
+.avatar_blue { background: var(--info); color: var(--bg-app); }
+.avatar_violet { background: #B784F0; color: #1a0d2c; }
+.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
+.avatar_rose { background: #EF7AAE; color: #2c0820; }
+.avatar_slate,
+.avatar_grafite { background: var(--field-bg); color: var(--text-secondary); }
