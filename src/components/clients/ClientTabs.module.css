@@ -379,3 +379,13 @@
   height: 0;
   display: none;
 }
+
+/* ==========================================================================
+   v112 · Corpo do modal estático
+   ========================================================================== */
+.tabBody,
+.tabBody:hover {
+  background: var(--workspace-bg);
+  box-shadow: none;
+  transform: none;
+}

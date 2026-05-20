@@ -114,12 +114,14 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
   const { showToast } = useToast();
   const [rows, setRows] = useState(() => buildRows(client));
   const [saving, setSaving] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState('');
   const currentMonth = useMemo(() => monthKeyFromDate(new Date()), []);
   const monthOptions = useMemo(() => buildMonthOptions(client, currentMonth), [client?.startDate, client?.endDate, currentMonth]);
   const baseFee = useMemo(() => parseLocaleNumber(client?.fee, null), [client?.fee]);
 
   useEffect(() => {
     setRows(buildRows(client));
+    setDeleteTargetId('');
   }, [client?.id, client?.feeSteps]);
 
   const schedule = useMemo(() => summarizeFeeSchedule(client), [client]);
@@ -132,10 +134,10 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
 
   const summaryItems = useMemo(
     () => [
-      { label: 'Contrato', value: contractRangeLabel, sub: 'datas gerais' },
-      { label: 'Mês atual', value: monthLabel(currentMonth), sub: '' },
-      { label: 'MRR atual', value: fmtMoney(currentFee), sub: schedule.current ? monthLabel(schedule.current.month) : 'valor base' },
-      { label: 'Registros', value: String(schedule.totalSteps || 0), sub: 'mensalidades' },
+      { label: 'Contrato', value: contractRangeLabel },
+      { label: 'Mês atual', value: monthLabel(currentMonth) },
+      { label: 'MRR atual', value: fmtMoney(currentFee) },
+      { label: 'Registros', value: String(schedule.totalSteps || 0) },
     ],
     [contractRangeLabel, currentFee, currentMonth, schedule]
   );
@@ -177,8 +179,17 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
     });
   };
 
-  const handleRemove = (rowId) => {
-    setRows((current) => current.filter((row) => row.id !== rowId));
+  const requestRemove = (rowId) => {
+    setDeleteTargetId(rowId);
+  };
+
+  const cancelRemove = () => {
+    setDeleteTargetId('');
+  };
+
+  const confirmRemove = () => {
+    setRows((current) => current.filter((row) => row.id !== deleteTargetId));
+    setDeleteTargetId('');
   };
 
   const handleSave = async () => {
@@ -213,7 +224,7 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
           <div key={item.label} className={styles.summaryCard}>
             <span className={styles.summaryLabel}>{item.label}</span>
             <strong className={styles.summaryValue}>{item.value}</strong>
-            {item.sub ? <span className={styles.summarySub}>{item.sub}</span> : null}
+
           </div>
         ))}
       </div>
@@ -253,14 +264,25 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
                   <button
                     type="button"
                     className={styles.removeBtn}
-                    onClick={() => handleRemove(row.id)}
+                    onClick={() => requestRemove(row.id)}
                     aria-label="Remover mensalidade"
                     title="Remover mensalidade"
+                    disabled={saving}
                   >
                     <TrashIcon size={14} />
                   </button>
                 ) : null}
               </div>
+
+              {deleteTargetId === row.id ? (
+                <div className={styles.deleteConfirm}>
+                  <strong>Excluir mensalidade?</strong>
+                  <div className={styles.deleteConfirmActions}>
+                    <button type="button" onClick={cancelRemove}>Cancelar</button>
+                    <button type="button" className={styles.deleteConfirmDanger} onClick={confirmRemove}>Excluir</button>
+                  </div>
+                </div>
+              ) : null}
 
               <div className={styles.rowGrid}>
                 <div className={drawerStyles.field}>
@@ -302,7 +324,7 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
 
           {rows.length === 0 ? (
             <div className={styles.emptyState}>
-              Nenhuma mensalidade mensal cadastrada.
+              Sem registros.
             </div>
           ) : null}
         </div>

@@ -317,3 +317,176 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   v112 · Modal cliente / mensalidades visual limpo
+   Sem hover em cards, seções, campos e textarea. Confirmação de exclusão.
+   ========================================================================== */
+.panel {
+  gap: 14px;
+  padding: 14px;
+  background: var(--workspace-bg);
+}
+
+.summaryGrid {
+  gap: 8px;
+}
+
+.summaryCard {
+  min-height: 58px;
+  padding: 10px 12px;
+}
+
+.summarySub {
+  display: none;
+}
+
+.summaryCard,
+.rowCard,
+.emptyState {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.summaryCard:hover,
+.rowCard:hover,
+.emptyState:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.sectionHead {
+  min-height: 38px;
+  padding: 0 0 12px;
+  margin: 0 0 10px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+}
+
+.rowCard {
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.rowGrid {
+  grid-template-columns: minmax(200px, 260px) minmax(200px, 260px);
+  gap: 12px;
+}
+
+.monthSelect :global(button),
+.monthSelect :global(button:hover),
+.monthSelect :global(button:focus),
+.monthSelect :global(button:focus-visible),
+.monthSelect :global(button[aria-expanded='true']) {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+  outline: none;
+}
+
+.monthSelect :global(button[aria-expanded='true']) {
+  border-color: var(--line);
+}
+
+.actionButton,
+.actionButton:hover,
+.actionButton:focus,
+.actionButton:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.removeBtn,
+.removeBtn:hover,
+.removeBtn:focus,
+.removeBtn:focus-visible {
+  color: var(--danger-text);
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  box-shadow: none;
+  transform: none;
+  outline: none;
+}
+
+.deleteConfirm {
+  min-height: 46px;
+  padding: 8px 10px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--danger-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.deleteConfirm strong {
+  color: var(--danger-text);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.deleteConfirmActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.deleteConfirmActions button {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 640;
+  box-shadow: none;
+}
+
+.deleteConfirmActions button:hover,
+.deleteConfirmActions button:focus,
+.deleteConfirmActions button:focus-visible {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  outline: none;
+}
+
+.deleteConfirmDanger,
+.deleteConfirmDanger:hover,
+.deleteConfirmDanger:focus,
+.deleteConfirmDanger:focus-visible {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.emptyState {
+  min-height: 54px;
+  padding: 14px 16px;
+}
+
+@media (max-width: 720px) {
+  .rowGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .deleteConfirm {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .deleteConfirmActions {
+    justify-content: flex-start;
+  }
+}

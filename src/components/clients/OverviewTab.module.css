@@ -1833,3 +1833,33 @@
     justify-self: start;
   }
 }
+
+/* ==========================================================================
+   v112 · Visão geral estática
+   Campos, textareas e painéis não mudam no hover.
+   ========================================================================== */
+.avatarCard:hover,
+.profileGrid:hover,
+.contractSection:hover,
+.dangerSection:hover,
+.fieldShell:hover,
+.identityCard:hover,
+.infoCard:hover,
+.summaryCard:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.input:hover,
+.input:focus,
+.input:focus-visible,
+.textarea:hover,
+.textarea:focus,
+.textarea:focus-visible {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+  outline: none;
+}

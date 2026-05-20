@@ -1243,3 +1243,90 @@
   box-shadow: none;
   transform: none;
 }
+
+/* ==========================================================================
+   v112 · Detalhe do cliente sem hover em superfícies não acionáveis
+   Seções, campos e textareas permanecem estáticos; ações primárias fixas.
+   ========================================================================== */
+.section,
+.section:hover,
+.card,
+.card:hover,
+.contentCard,
+.contentCard:hover,
+.tabPanel,
+.tabPanel:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.input:hover,
+.input:focus,
+.input:focus-visible,
+textarea:hover,
+textarea:focus,
+textarea:focus-visible,
+.selectControl :global(button:hover),
+.selectControl :global(button:focus),
+.selectControl :global(button:focus-visible),
+.selectControl :global(input:hover),
+.selectControl :global(input:focus),
+.selectControl :global(input:focus-visible),
+.selectControl :global(select:hover),
+.selectControl :global(select:focus),
+.selectControl :global(select:focus-visible) {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+  outline: none;
+}
+
+.iconBtn:hover:not(:disabled),
+.btn:hover:not(:disabled),
+.btnGhost:hover:not(:disabled),
+.projectBtn:hover:not(:disabled) {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+.btnDanger,
+.btnDanger:hover:not(:disabled),
+.btnDanger:focus,
+.btnDanger:focus-visible {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: none;
+  transform: none;
+  outline: none;
+}
+
+.modalFooter,
+.modalFooter:hover,
+.confirmActions,
+.confirmActions:hover {
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.modalFooter .btn,
+.modalFooter .btn:hover,
+.modalFooter .btn:focus,
+.modalFooter .btn:focus-visible,
+.confirmActions .btn,
+.confirmActions .btn:hover,
+.confirmActions .btn:focus,
+.confirmActions .btn:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+  outline: none;
+}
