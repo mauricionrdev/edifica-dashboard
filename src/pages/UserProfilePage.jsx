@@ -121,6 +121,7 @@ export default function UserProfilePage() {
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignSaving, setAssignSaving] = useState(false);
+  const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
   const [newTask, setNewTask] = useState({ title: '', description: '', dueDate: '' });
 
   useEffect(() => {
@@ -298,9 +299,15 @@ export default function UserProfilePage() {
     <div className={styles.page}>
       <section className={styles.profileHero}>
         <div className={styles.heroIdentity}>
-          <span className={styles.avatar}>
+          <button
+            type="button"
+            className={styles.avatar}
+            onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
+            disabled={!avatarUrl}
+            aria-label={avatarUrl ? 'Visualizar foto' : undefined}
+          >
             {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileUser.name)}
-          </span>
+          </button>
 
           <div className={styles.heroCopy}>
             <div className={styles.nameRow}>
@@ -429,7 +436,18 @@ export default function UserProfilePage() {
         </main>
       </div>
 
-      {assignOpen ? (
+            {avatarPreviewOpen && avatarUrl ? (
+        <div className={styles.avatarPreviewOverlay} role="presentation" onClick={() => setAvatarPreviewOpen(false)}>
+          <section className={styles.avatarPreviewModal} role="dialog" aria-modal="true" aria-label="Foto do perfil" onClick={(event) => event.stopPropagation()}>
+            <button type="button" className={styles.avatarPreviewClose} onClick={() => setAvatarPreviewOpen(false)} aria-label="Fechar">
+              <CloseIcon size={16} />
+            </button>
+            <img src={avatarUrl} alt="" />
+          </section>
+        </div>
+      ) : null}
+
+{assignOpen ? (
         <div className={styles.modalOverlay} onClick={() => setAssignOpen(false)}>
           <form className={styles.taskModal} onSubmit={handleAssignTask} onClick={(event) => event.stopPropagation()}>
             <header className={styles.modalHeader}>

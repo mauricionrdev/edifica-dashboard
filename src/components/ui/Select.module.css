@@ -195,3 +195,36 @@
 .option {
   flex: 0 0 auto;
 }
+
+/* ==========================================================================
+   v130 · Select seguro para drawer
+   Fecha em scroll externo, mantém scroll interno e evita menu destacado.
+   ========================================================================== */
+.menu {
+  position: fixed;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+  will-change: top, left, max-height;
+  touch-action: pan-y;
+}
+
+.menu::-webkit-scrollbar {
+  width: 7px;
+  display: block;
+}
+
+.menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.option {
+  flex: 0 0 auto;
+}

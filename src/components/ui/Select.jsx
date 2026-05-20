@@ -55,18 +55,15 @@ export default function Select({
       const viewportHeight = window.innerHeight;
       const margin = 8;
       const gap = 6;
-      const rowHeight = 33;
-      const preferredHeight = Math.min(Math.max(options.length, 1) * rowHeight + 12, 320);
+      const rowHeight = 34;
+      const preferredHeight = Math.min(Math.max(options.length, 1) * rowHeight + 12, 340);
       const spaceBelow = Math.max(0, viewportHeight - rect.bottom - margin - gap);
       const spaceAbove = Math.max(0, rect.top - margin - gap);
       const openUp = spaceBelow < Math.min(preferredHeight, 180) && spaceAbove > spaceBelow;
-      const availableHeight = Math.max(96, Math.min(preferredHeight, openUp ? spaceAbove : spaceBelow));
+      const availableHeight = Math.max(108, Math.min(preferredHeight, openUp ? spaceAbove : spaceBelow));
       const minWidth = Number(menuMinWidth) || 0;
       const menuWidth = Math.max(Math.round(rect.width), minWidth);
-      const left = Math.min(
-        Math.max(margin, Math.round(rect.left)),
-        Math.max(margin, viewportWidth - menuWidth - margin)
-      );
+      const left = Math.min(Math.max(margin, Math.round(rect.left)), Math.max(margin, viewportWidth - menuWidth - margin));
 
       if (rect.bottom < 0 || rect.top > viewportHeight || rect.right < 0 || rect.left > viewportWidth) {
         setOpen(false);
@@ -86,13 +83,20 @@ export default function Select({
       frame = window.requestAnimationFrame(updatePosition);
     };
 
+    const handleExternalScroll = (event) => {
+      const target = event.target;
+      if (menuRef.current?.contains(target)) return;
+      if (rootRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+
     updatePosition();
     window.addEventListener('resize', requestPosition);
-    window.addEventListener('scroll', requestPosition, true);
+    window.addEventListener('scroll', handleExternalScroll, true);
     return () => {
       window.cancelAnimationFrame(frame);
       window.removeEventListener('resize', requestPosition);
-      window.removeEventListener('scroll', requestPosition, true);
+      window.removeEventListener('scroll', handleExternalScroll, true);
     };
   }, [open, options.length, menuMinWidth]);
 

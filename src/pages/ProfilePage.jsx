@@ -644,6 +644,23 @@ function displayTaskTitle(task) {
     .trim() || 'Sem título';
 }
 
+function extractTaskClientName(task = {}) {
+  const direct = task.clientName || task.client_name || task.metadata?.clientName || task.metadata?.client_name || task.handoff?.clientName;
+  if (direct) return String(direct).trim();
+
+  const match = String(task.description || '').match(/^Cliente:\s*(.+)$/im);
+  return match?.[1]?.trim() || '';
+}
+
+function isProjectOriginTask(task = {}) {
+  const origin = String(task.source || task.origin || task.metadata?.origin || '').toLowerCase();
+  return Boolean(task.projectId || task.project_id || task.projectName || task.project_name || origin.includes('project') || origin.includes('projeto'));
+}
+
+function taskProjectName(task = {}) {
+  return String(task.projectName || task.project_name || task.metadata?.projectName || '').trim();
+}
+
 function nextActionLabel(task) {
   if (!task) return '';
   if (task.status === 'canceled') return 'Encerrada';
@@ -1541,6 +1558,7 @@ export default function ProfilePage() {
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
+  const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
   const [activeTaskId, setActiveTaskId] = useState('');
   const [demandModalOpen, setDemandModalOpen] = useState(false);
   const [demandForm, setDemandForm] = useState(() => emptyDemandForm(user?.id || ''));
@@ -3349,6 +3367,9 @@ export default function ProfilePage() {
                     { ...task, collaborators: taskPeopleMap[task.id] || task.collaborators || task.people || [] },
                     demandUsers
                   );
+                  const clientName = extractTaskClientName(task);
+                  const projectOrigin = isProjectOriginTask(task);
+                  const projectName = taskProjectName(task);
                   return (
                     <article
                       key={task.id}
@@ -3378,6 +3399,12 @@ export default function ProfilePage() {
 
                       <div className={styles.operationMain}>
                         <strong>{displayTaskTitle(task)}</strong>
+                        {(clientName || projectOrigin) ? (
+                          <span className={styles.operationSubline}>
+                            {clientName ? <em>{clientName}</em> : null}
+                            {projectOrigin ? <i>{projectName ? `Projeto · ${projectName}` : 'Direto do projeto'}</i> : null}
+                          </span>
+                        ) : null}
                       </div>
 
                       <div className={styles.operationMeta}>
@@ -3492,7 +3519,15 @@ export default function ProfilePage() {
                     aria-label="Título"
                   />
                 ) : (
-                  <h3>{activeTask.title}</h3>
+                  <>
+                    <h3>{activeTask.title}</h3>
+                    {(extractTaskClientName(activeTask) || isProjectOriginTask(activeTask)) ? (
+                      <div className={styles.drawerHeroMeta}>
+                        {extractTaskClientName(activeTask) ? <span>{extractTaskClientName(activeTask)}</span> : null}
+                        {isProjectOriginTask(activeTask) ? <em>{taskProjectName(activeTask) ? `Projeto · ${taskProjectName(activeTask)}` : 'Direto do projeto'}</em> : null}
+                      </div>
+                    ) : null}
+                  </>
                 )}
                 <div className={styles.drawerHeroActions}>
                   <div className={styles.drawerHeroActionGroup}>
@@ -4618,6 +4653,17 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
+      {avatarPreviewOpen && avatarUrl ? (
+        <div className={styles.avatarPreviewOverlay} role="presentation" onClick={() => setAvatarPreviewOpen(false)}>
+          <section className={styles.avatarPreviewModal} role="dialog" aria-modal="true" aria-label="Foto do perfil" onClick={(event) => event.stopPropagation()}>
+            <button type="button" className={styles.avatarPreviewClose} onClick={() => setAvatarPreviewOpen(false)} aria-label="Fechar">
+              <CloseIcon size={16} />
+            </button>
+            <img src={avatarUrl} alt="" />
+          </section>
+        </div>
+      ) : null}
+
       {settingsOpen ? (
         <div className={styles.settingsOverlay} onClick={closeSettingsModal}>
           <section className={styles.settingsModal} role="dialog" aria-modal="true" aria-label="Configurações" onClick={(event) => event.stopPropagation()}>
@@ -4650,9 +4696,16 @@ export default function ProfilePage() {
                 aria-hidden={settingsTab !== 'profile'}
               >
                 <div className={styles.photoRow}>
-                  <span className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
+                  <button
+                    type="button"
+                    className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}
+                    onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
+                    disabled={!avatarUrl}
+                    aria-label={avatarUrl ? 'Visualizar foto' : undefined}
+                    tabIndex={settingsTab === 'profile' ? 0 : -1}
+                  >
                     {avatarUrl ? <img src={avatarUrl} alt="" decoding="async" draggable="false" /> : initials(profileForm.name || user?.name)}
-                  </span>
+                  </button>
                   <div className={styles.photoActions}>
                     <button type="button" onClick={() => avatarInputRef.current?.click()} tabIndex={settingsTab === 'profile' ? 0 : -1}>Alterar foto</button>
                     {avatarUrl ? <button type="button" onClick={handleRemoveAvatar} tabIndex={settingsTab === 'profile' ? 0 : -1}>Remover</button> : null}
