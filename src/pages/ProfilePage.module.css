@@ -8139,7 +8139,6 @@
   border: 1px solid rgba(255, 255, 255, 0.086);
   border-radius: var(--workspace-card-radius);
   box-shadow: 0 22px 70px rgba(0, 0, 0, 0.58);
-  overflow: hidden;
 }
 
 .profileSelectOption,
@@ -8787,6 +8786,7 @@
 }
 
 @keyframes profileBadgeBreath {
+
   0%,
   100% {
     border-color: rgba(255, 255, 255, 0.070);
@@ -8798,6 +8798,7 @@
 }
 
 @keyframes profileBadgeSweep {
+
   0%,
   62% {
     transform: translateX(-120%);
@@ -9004,16 +9005,14 @@
   z-index: -1;
   inset: -42%;
   background:
-    conic-gradient(
-      from 0deg,
+    conic-gradient(from 0deg,
       transparent 0deg,
       rgba(245, 184, 0, 0.16) 54deg,
       transparent 116deg,
       rgba(104, 125, 255, 0.10) 176deg,
       transparent 246deg,
       var(--accent-soft) 304deg,
-      transparent 360deg
-    );
+      transparent 360deg);
   opacity: 0.62;
   animation: roleBlackHoleSpin 7s linear infinite;
 }
@@ -9035,6 +9034,7 @@
 }
 
 @keyframes roleBlackHolePulse {
+
   0%,
   100% {
     border-color: rgba(255, 255, 255, 0.080);
@@ -9178,16 +9178,14 @@
   z-index: -1;
   inset: -42%;
   background:
-    conic-gradient(
-      from 0deg,
+    conic-gradient(from 0deg,
       transparent 0deg,
       rgba(245, 184, 0, 0.16) 54deg,
       transparent 116deg,
       rgba(104, 125, 255, 0.10) 176deg,
       transparent 246deg,
       var(--accent-soft) 304deg,
-      transparent 360deg
-    );
+      transparent 360deg);
   opacity: 0.62;
   animation: roleBlackHoleSpin 7s linear infinite;
 }
@@ -9389,7 +9387,7 @@
   margin-top: 1px;
 }
 
-.operationSubline > span:first-child {
+.operationSubline>span:first-child {
   min-width: 0;
   overflow: hidden;
   color: var(--edf-text-faint);
@@ -9464,12 +9462,7 @@
 /* v36 — ordem da lista de tarefas e coluna de colaboradores */
 .operationListHeader {
   grid-template-columns:
-    18px
-    minmax(250px, 1fr)
-    minmax(92px, 0.16fr)
-    minmax(126px, 0.22fr)
-    minmax(260px, 0.48fr)
-    minmax(82px, 0.14fr);
+    18px minmax(250px, 1fr) minmax(92px, 0.16fr) minmax(126px, 0.22fr) minmax(260px, 0.48fr) minmax(82px, 0.14fr);
   gap: 14px;
 }
 
@@ -9479,12 +9472,7 @@
 
 .operationRow {
   grid-template-columns:
-    18px
-    minmax(250px, 1fr)
-    minmax(92px, 0.16fr)
-    minmax(126px, 0.22fr)
-    minmax(260px, 0.48fr)
-    minmax(82px, 0.14fr);
+    18px minmax(250px, 1fr) minmax(92px, 0.16fr) minmax(126px, 0.22fr) minmax(260px, 0.48fr) minmax(82px, 0.14fr);
   gap: 14px;
 }
 
@@ -9502,7 +9490,7 @@
   overflow: hidden;
 }
 
-.operationMeta > span {
+.operationMeta>span {
   flex: 0 0 auto;
 }
 
@@ -9588,12 +9576,7 @@
 /* v37 — lista de tarefas em ordem refinada */
 .operationListHeader {
   grid-template-columns:
-    18px
-    minmax(360px, 1.32fr)
-    minmax(124px, 0.22fr)
-    minmax(150px, 0.30fr)
-    minmax(82px, 0.16fr)
-    minmax(94px, 0.16fr);
+    18px minmax(360px, 1.32fr) minmax(124px, 0.22fr) minmax(150px, 0.30fr) minmax(82px, 0.16fr) minmax(94px, 0.16fr);
   gap: 18px;
   padding: 0 24px;
 }
@@ -9608,12 +9591,7 @@
 
 .operationRow {
   grid-template-columns:
-    18px
-    minmax(360px, 1.32fr)
-    minmax(124px, 0.22fr)
-    minmax(150px, 0.30fr)
-    minmax(82px, 0.16fr)
-    minmax(94px, 0.16fr);
+    18px minmax(360px, 1.32fr) minmax(124px, 0.22fr) minmax(150px, 0.30fr) minmax(82px, 0.16fr) minmax(94px, 0.16fr);
   gap: 18px;
   padding: 16px 24px;
   min-height: 76px;
@@ -9643,7 +9621,7 @@
   overflow: visible;
 }
 
-.operationMeta > span {
+.operationMeta>span {
   height: 32px;
   padding: 0 14px;
   border-radius: 999px;
@@ -10031,7 +10009,7 @@
   position: relative;
 }
 
-.taskAvatar + .taskAvatar {
+.taskAvatar+.taskAvatar {
   margin-left: -6px;
 }
 
@@ -10116,6 +10094,7 @@
 }
 
 @supports not (content-visibility: auto) {
+
   .drawerSection,
   .descriptionSection,
   .attachmentsSection,
@@ -10128,6 +10107,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .drawerOverlay,
   .drawerPanel {
     animation: none;
@@ -10188,12 +10168,12 @@
   animation: profileSkeletonSweep 1.45s ease-in-out infinite;
 }
 
-.operationLoadingRow > span {
+.operationLoadingRow>span {
   width: 18px;
   height: 18px;
 }
 
-.operationLoadingRow > div {
+.operationLoadingRow>div {
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -10319,7 +10299,7 @@
   max-height: calc(100vh - 48px);
 }
 
-.attachmentViewer header > div {
+.attachmentViewer header>div {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -10836,14 +10816,11 @@
 .operationListHeader,
 .operationRow {
   grid-template-columns:
-    minmax(280px, 1.6fr)
-    minmax(112px, 0.52fr)
-    minmax(150px, 0.62fr)
-    minmax(92px, 0.38fr)
-    minmax(92px, 0.42fr);
+    minmax(280px, 1.6fr) minmax(112px, 0.52fr) minmax(150px, 0.62fr) minmax(92px, 0.38fr) minmax(92px, 0.42fr);
 }
 
 @media (max-width: 980px) {
+
   .operationListHeader,
   .operationRow {
     grid-template-columns: minmax(0, 1fr);
@@ -10981,11 +10958,7 @@
 .operationListHeader,
 .operationRow {
   grid-template-columns:
-    minmax(280px, 1.6fr)
-    minmax(112px, 0.52fr)
-    minmax(150px, 0.62fr)
-    minmax(92px, 0.38fr)
-    minmax(92px, 0.42fr);
+    minmax(280px, 1.6fr) minmax(112px, 0.52fr) minmax(150px, 0.62fr) minmax(92px, 0.38fr) minmax(92px, 0.42fr);
 }
 
 .operationRow:hover {
@@ -11028,6 +11001,7 @@
 }
 
 @media (max-width: 980px) {
+
   .operationListHeader,
   .operationRow {
     grid-template-columns: minmax(0, 1fr);
@@ -11041,12 +11015,7 @@
 .operationListHeader {
   display: grid;
   grid-template-columns:
-    28px
-    minmax(320px, 1.62fr)
-    minmax(128px, 0.48fr)
-    minmax(170px, 0.62fr)
-    minmax(92px, 0.34fr)
-    minmax(104px, 0.38fr);
+    28px minmax(320px, 1.62fr) minmax(128px, 0.48fr) minmax(170px, 0.62fr) minmax(92px, 0.34fr) minmax(104px, 0.38fr);
   column-gap: 18px;
   align-items: center;
   min-height: 40px;
@@ -11069,12 +11038,7 @@
 .operationRow {
   display: grid;
   grid-template-columns:
-    28px
-    minmax(320px, 1.62fr)
-    minmax(128px, 0.48fr)
-    minmax(170px, 0.62fr)
-    minmax(92px, 0.34fr)
-    minmax(104px, 0.38fr);
+    28px minmax(320px, 1.62fr) minmax(128px, 0.48fr) minmax(170px, 0.62fr) minmax(92px, 0.34fr) minmax(104px, 0.38fr);
   column-gap: 18px;
   align-items: center;
   min-height: 56px;
@@ -11787,7 +11751,7 @@ button:focus-visible {
   padding-top: 11px;
 }
 
-.commentBody > p {
+.commentBody>p {
   cursor: text;
 }
 
@@ -11835,7 +11799,9 @@ button:focus-visible {
 }
 
 @keyframes workflowPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     border-color: var(--edf-amber-border);
     box-shadow: 0 0 0 0 rgba(245, 184, 0, 0.0);
   }
@@ -12086,7 +12052,7 @@ button:focus-visible {
   color: var(--accent-text);
 }
 
-.commentBody > p {
+.commentBody>p {
   cursor: text;
 }
 
@@ -12119,7 +12085,9 @@ button:focus-visible {
 }
 
 @keyframes workflowPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(245, 184, 0, 0);
   }
 
@@ -12406,13 +12374,36 @@ button:focus-visible {
   background: transparent;
 }
 
-.avatar_amber { background: var(--accent); color: var(--accent-text); }
-.avatar_blue { background: var(--info); color: var(--bg-app); }
-.avatar_violet { background: #B784F0; color: #1a0d2c; }
-.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
-.avatar_rose { background: #EF7AAE; color: #2c0820; }
+.avatar_amber {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.avatar_blue {
+  background: var(--info);
+  color: var(--bg-app);
+}
+
+.avatar_violet {
+  background: #B784F0;
+  color: #1a0d2c;
+}
+
+.avatar_emerald {
+  background: var(--success-text);
+  color: var(--bg-app);
+}
+
+.avatar_rose {
+  background: #EF7AAE;
+  color: #2c0820;
+}
+
 .avatar_slate,
-.avatar_grafite { background: var(--field-bg); color: var(--text-secondary); }
+.avatar_grafite {
+  background: var(--field-bg);
+  color: var(--text-secondary);
+}
 
 /* ==========================================================================
    v127 · Hotfix avatar perfil/comentários
@@ -12474,13 +12465,36 @@ button:focus-visible {
   background: transparent;
 }
 
-.avatar_amber { background: var(--accent); color: var(--accent-text); }
-.avatar_blue { background: var(--info); color: var(--bg-app); }
-.avatar_violet { background: #B784F0; color: #1a0d2c; }
-.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
-.avatar_rose { background: #EF7AAE; color: #2c0820; }
+.avatar_amber {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.avatar_blue {
+  background: var(--info);
+  color: var(--bg-app);
+}
+
+.avatar_violet {
+  background: #B784F0;
+  color: #1a0d2c;
+}
+
+.avatar_emerald {
+  background: var(--success-text);
+  color: var(--bg-app);
+}
+
+.avatar_rose {
+  background: #EF7AAE;
+  color: #2c0820;
+}
+
 .avatar_slate,
-.avatar_grafite { background: var(--field-bg); color: var(--text-secondary); }
+.avatar_grafite {
+  background: var(--field-bg);
+  color: var(--text-secondary);
+}
 
 /* ==========================================================================
    v128 · Reparo perfil/configurações e comentários
@@ -12667,13 +12681,36 @@ button:focus-visible {
   background: transparent;
 }
 
-.avatar_amber { background: var(--accent); color: var(--accent-text); }
-.avatar_blue { background: var(--info); color: var(--bg-app); }
-.avatar_violet { background: #B784F0; color: #1a0d2c; }
-.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
-.avatar_rose { background: #EF7AAE; color: #2c0820; }
+.avatar_amber {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.avatar_blue {
+  background: var(--info);
+  color: var(--bg-app);
+}
+
+.avatar_violet {
+  background: #B784F0;
+  color: #1a0d2c;
+}
+
+.avatar_emerald {
+  background: var(--success-text);
+  color: var(--bg-app);
+}
+
+.avatar_rose {
+  background: #EF7AAE;
+  color: #2c0820;
+}
+
 .avatar_slate,
-.avatar_grafite { background: var(--field-bg); color: var(--text-secondary); }
+.avatar_grafite {
+  background: var(--field-bg);
+  color: var(--text-secondary);
+}
 
 @media (max-width: 720px) {
   .settingsModal:not(.demandModal) {
