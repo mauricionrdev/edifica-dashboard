@@ -6,13 +6,14 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
 import { listClients } from '../../api/clients.js';
 import { listGdvs } from '../../api/gdvs.js';
 import { listSquads } from '../../api/squads.js';
 import { listUserDirectory } from '../../api/users.js';
+import { listAccessRequests } from '../../api/accessRequests.js';
 import {
   createNotificationsStream,
   listNotifications,
@@ -27,6 +28,7 @@ import {
   hasPermission,
 } from '../../utils/permissions.js';
 import { getRoutePanelHeader } from '../../utils/routeMeta.js';
+import { ShieldIcon } from '../ui/Icons.jsx';
 import styles from './AppShell.module.css';
 
 export default function AppShell() {
@@ -47,6 +49,8 @@ export default function AppShell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [panelHeader, setPanelHeader] = useState(routePanelHeader);
+  const [accessRequests, setAccessRequests] = useState([]);
+  const [accessRequestsLoading, setAccessRequestsLoading] = useState(false);
 
   const mountedRef = useRef(true);
 
@@ -112,6 +116,7 @@ export default function AppShell() {
       setUnreadCount(0);
       setNotificationsOpen(false);
       setSidebarOpen(false);
+      setAccessRequests([]);
     }
 
     setLoading(status === 'authed');
@@ -198,6 +203,30 @@ export default function AppShell() {
     }
   }, []);
 
+  const refreshAccessRequests = useCallback(async () => {
+    const currentUser = userRef.current;
+    if (status !== 'authed' || !hasPermission(currentUser, 'team.manage')) {
+      if (mountedRef.current) setAccessRequests([]);
+      return;
+    }
+
+    setAccessRequestsLoading(true);
+    try {
+      const data = await listAccessRequests('pending');
+      if (mountedRef.current) {
+        setAccessRequests(Array.isArray(data?.requests) ? data.requests : []);
+      }
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        if (mountedRef.current) setAccessRequests([]);
+        return;
+      }
+      throw err;
+    } finally {
+      if (mountedRef.current) setAccessRequestsLoading(false);
+    }
+  }, [status, user?.id]);
+
   const refreshNotifications = useCallback(async () => {
     if (status !== 'authed') {
       if (mountedRef.current) {
@@ -230,7 +259,7 @@ export default function AppShell() {
       setLoading(true);
       setError(null);
       try {
-        await Promise.all([refreshClients(), refreshSquads(), refreshGdvs(), refreshUserDirectory()]);
+        await Promise.all([refreshClients(), refreshSquads(), refreshGdvs(), refreshUserDirectory(), refreshAccessRequests()]);
         await refreshNotifications();
       } catch (err) {
         if (!cancelled) {
@@ -246,7 +275,7 @@ export default function AppShell() {
     return () => {
       cancelled = true;
     };
-  }, [refreshClients, refreshGdvs, refreshNotifications, refreshSquads, refreshUserDirectory, status]);
+  }, [refreshAccessRequests, refreshClients, refreshGdvs, refreshNotifications, refreshSquads, refreshUserDirectory, status]);
 
   useEffect(() => {
     if (status !== 'authed') return undefined;
@@ -270,6 +299,7 @@ export default function AppShell() {
 
       stream.addEventListener('connected', () => {
         refreshNotifications().catch(() => {});
+        refreshAccessRequests().catch(() => {});
       });
       stream.addEventListener('notifications.changed', (event) => {
         try {
@@ -360,6 +390,14 @@ export default function AppShell() {
     });
   }, [routePanelHeader]);
 
+  const pendingAccessRequests = useMemo(
+    () => (Array.isArray(accessRequests) ? accessRequests : []).filter((entry) => entry.status === 'pending'),
+    [accessRequests]
+  );
+  const pendingAccessCount = pendingAccessRequests.length;
+  const latestAccessRequest = pendingAccessRequests[0] || null;
+  const showAccessAttention = pendingAccessCount > 0 && hasPermission(user, 'team.manage') && !location.pathname.startsWith('/equipe');
+
   const outletContext = useMemo(
     () => ({
       clients,
@@ -372,6 +410,7 @@ export default function AppShell() {
       refreshSquads,
       refreshGdvs,
       refreshUserDirectory,
+      refreshAccessRequests,
       setPanelHeader: setPanelHeaderStable,
     }),
     [
@@ -385,6 +424,7 @@ export default function AppShell() {
       refreshSquads,
       refreshGdvs,
       refreshUserDirectory,
+      refreshAccessRequests,
       setPanelHeaderStable,
     ]
   );
@@ -441,6 +481,21 @@ export default function AppShell() {
             </div>
             {panelHeader.actions ? <div className={styles.pageActions}>{panelHeader.actions}</div> : null}
           </header>
+
+          {showAccessAttention ? (
+            <section className={styles.accessAttention} aria-live="polite">
+              <div className={styles.accessAttentionIcon} aria-hidden="true">
+                <ShieldIcon size={15} />
+              </div>
+              <div className={styles.accessAttentionCopy}>
+                <strong>{pendingAccessCount} solicitação{pendingAccessCount > 1 ? 'ões' : ''} de acesso pendente{pendingAccessCount > 1 ? 's' : ''}</strong>
+                <span>{latestAccessRequest?.requesterName || latestAccessRequest?.requesterEmail || 'Aguardando triagem'}</span>
+              </div>
+              <Link className={styles.accessAttentionLink} to="/equipe?tab=requests">
+                Revisar
+              </Link>
+            </section>
+          ) : null}
 
           <main className={styles.pageContent}>
             <Outlet context={outletContext} />

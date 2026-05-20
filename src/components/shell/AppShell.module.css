@@ -189,3 +189,86 @@
   backdrop-filter: var(--chassis-modal-blur);
   -webkit-backdrop-filter: var(--chassis-modal-blur);
 }
+
+/* ==========================================================================
+   v125 · Alerta global de solicitações de acesso
+   Visível logo após login, antes do conteúdo da página.
+   ========================================================================== */
+.accessAttention {
+  flex: 0 0 auto;
+  min-height: 54px;
+  margin: 12px 18px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--workspace-card-radius);
+  background:
+    linear-gradient(180deg, var(--accent-soft), transparent 82%),
+    var(--workspace-panel-bg);
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  box-shadow: none;
+}
+
+.accessAttentionIcon {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.accessAttentionCopy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.accessAttentionCopy strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+}
+
+.accessAttentionCopy span {
+  min-width: 0;
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: 560;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accessAttentionLink {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 720;
+}
+
+@media (max-width: 720px) {
+  .accessAttention {
+    margin: 10px 12px 0;
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .accessAttentionLink {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
