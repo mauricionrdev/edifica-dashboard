@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
 import { listClients } from '../../api/clients.js';
@@ -28,6 +28,7 @@ import {
   hasPermission,
 } from '../../utils/permissions.js';
 import { getRoutePanelHeader } from '../../utils/routeMeta.js';
+import { ShieldIcon } from '../ui/Icons.jsx';
 import styles from './AppShell.module.css';
 
 export default function AppShell() {
@@ -468,9 +469,6 @@ export default function AppShell() {
           onRefreshNotifications={handleRefreshNotifications}
           onMarkNotificationRead={handleMarkNotificationRead}
           onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
-          pendingAccessCount={pendingAccessCount}
-          latestAccessRequest={latestAccessRequest}
-          showAccessAttention={showAccessAttention}
         />
 
         <div className={styles.pageRail}>
@@ -483,6 +481,21 @@ export default function AppShell() {
             </div>
             {panelHeader.actions ? <div className={styles.pageActions}>{panelHeader.actions}</div> : null}
           </header>
+
+          {showAccessAttention ? (
+            <section className={styles.accessAttention} aria-live="polite">
+              <div className={styles.accessAttentionIcon} aria-hidden="true">
+                <ShieldIcon size={15} />
+              </div>
+              <div className={styles.accessAttentionCopy}>
+                <strong>{pendingAccessCount} solicitação{pendingAccessCount > 1 ? 'ões' : ''} de acesso pendente{pendingAccessCount > 1 ? 's' : ''}</strong>
+                <span>{latestAccessRequest?.requesterName || latestAccessRequest?.requesterEmail || 'Aguardando triagem'}</span>
+              </div>
+              <Link className={styles.accessAttentionLink} to="/equipe?tab=requests">
+                Revisar
+              </Link>
+            </section>
+          ) : null}
 
           <main className={styles.pageContent}>
             <Outlet context={outletContext} />
