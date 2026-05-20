@@ -3925,9 +3925,13 @@ export default function ProfilePage() {
                   <div className={styles.commentList}>
                     {visibleTaskComments.map((comment) => {
                       const commentAuthor = comment.authorName || comment.userName || 'Usuário';
+                      const commentAvatarUrl = comment.avatarUrl || comment.userAvatarUrl || comment.avatarDataUrl || '';
+                      const commentAvatarColor = avatarColorClassName(comment.avatarColor || comment.userAvatarColor || 'amber');
                       return (
                         <article key={comment.id} className={styles.commentItem}>
-                          <span className={styles.commentAvatar}>{initials(commentAuthor)}</span>
+                          <span className={`${styles.commentAvatar} ${styles[`avatar_${commentAvatarColor}`] || ''}`.trim()}>
+                            {commentAvatarUrl ? <img src={commentAvatarUrl} alt="" decoding="async" draggable="false" /> : initials(commentAuthor)}
+                          </span>
                           <div className={styles.commentBody}>
                             <header className={styles.commentHeader}>
                               <strong>{commentAuthor}</strong>
@@ -4634,19 +4638,32 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                <div className={styles.avatarColorGrid} aria-label="Cor do avatar">
+                  {AVATAR_OPTIONS.map((option) => {
+                    const active = profileForm.avatarColor === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`${styles.avatarColorCard} ${styles[`avatarColorCard_${option.value}`] || ''} ${active ? styles.avatarColorCardActive : ''}`.trim()}
+                        onClick={() => setProfileForm((prev) => ({ ...prev, avatarColor: option.value }))}
+                        tabIndex={settingsTab === 'profile' ? 0 : -1}
+                        aria-pressed={active}
+                      >
+                        <span className={`${styles.avatarColorPreview} ${styles[`avatar_${option.value}`]}`}>{initials(profileForm.name || user?.name)}</span>
+                        <strong>{option.label}</strong>
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <div className={styles.formGrid}>
                   <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
                   <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <Select
-                    value={profileForm.avatarColor}
-                    onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
-                    aria-label="Cor"
-                    className={styles.formSelect}
-                    disabled={settingsTab !== 'profile'}
-                  >
-                    {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
+                  <label className={styles.slugField}>
+                    <span>/perfil/</span>
+                    <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="link-personalizado" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                  </label>
                 </div>
               </div>
 

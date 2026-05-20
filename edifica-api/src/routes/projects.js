@@ -1616,7 +1616,7 @@ router.get('/tasks/:id/comments', requirePermission('tasks.view'), async (req, r
   try {
     await assertTaskAccess(req.params.id, req.user, 'tasks.view');
     const rows = await query(
-      `SELECT tc.*, u.name AS user_name
+      `SELECT tc.*, u.name AS user_name, u.avatar_color AS user_avatar_color, u.avatar_data_url AS user_avatar_url
          FROM task_comments tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.task_id = ?
@@ -1629,6 +1629,8 @@ router.get('/tasks/:id/comments', requirePermission('tasks.view'), async (req, r
         taskId: row.task_id,
         userId: row.user_id,
         userName: row.user_name,
+        avatarColor: row.user_avatar_color || 'amber',
+        avatarUrl: row.user_avatar_url || '',
         body: row.body,
         createdAt: row.created_at,
       })),
@@ -1803,7 +1805,7 @@ router.post('/tasks/:id/comments', requirePermission('tasks.comment'), async (re
     }
 
     const rows = await query(
-      `SELECT tc.*, u.name AS user_name
+      `SELECT tc.*, u.name AS user_name, u.avatar_color AS user_avatar_color, u.avatar_data_url AS user_avatar_url
          FROM task_comments tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.id = ?
@@ -1816,6 +1818,8 @@ router.post('/tasks/:id/comments', requirePermission('tasks.comment'), async (re
         taskId: rows[0].task_id,
         userId: rows[0].user_id,
         userName: rows[0].user_name,
+        avatarColor: rows[0].user_avatar_color || 'amber',
+        avatarUrl: rows[0].user_avatar_url || '',
         body: rows[0].body,
         createdAt: rows[0].created_at,
       },
@@ -1868,7 +1872,7 @@ router.patch('/tasks/:id/comments/:commentId', requirePermission('tasks.comment'
     });
 
     const updated = await query(
-      `SELECT tc.*, u.name AS user_name
+      `SELECT tc.*, u.name AS user_name, u.avatar_color AS user_avatar_color, u.avatar_data_url AS user_avatar_url
          FROM task_comments tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.id = ?
@@ -1882,6 +1886,8 @@ router.patch('/tasks/:id/comments/:commentId', requirePermission('tasks.comment'
         taskId: updated[0].task_id,
         userId: updated[0].user_id,
         userName: updated[0].user_name,
+        avatarColor: updated[0].user_avatar_color || 'amber',
+        avatarUrl: updated[0].user_avatar_url || '',
         body: updated[0].body,
         createdAt: updated[0].created_at,
         updatedAt: updated[0].updated_at,

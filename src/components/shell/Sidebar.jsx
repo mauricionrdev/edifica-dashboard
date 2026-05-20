@@ -91,6 +91,7 @@ export default function Sidebar({
   const location = useLocation();
   const [query, setQuery] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(() => getUserAvatar(user));
+  const sidebarAvatarColor = String(user?.avatarColor || user?.avatar_color || 'amber').toLowerCase();
   const [editingSquadId, setEditingSquadId] = useState(null);
   const [editingSquadName, setEditingSquadName] = useState('');
   const [renamingSquadId, setRenamingSquadId] = useState(null);
@@ -531,7 +532,9 @@ export default function Sidebar({
 
       <div className={styles.footer}>
         <Link to="/perfil" className={styles.profileCard} onClick={handleNavigate} title={collapsed ? user?.name || 'Usuário' : undefined}>
-          <span className={styles.avatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
+          <span className={`${styles.avatar} ${styles[`avatar_${sidebarAvatarColor}`] || styles.avatar_amber}`.trim()}>
+            {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}
+          </span>
           {!collapsed ? (
             <span className={styles.profileText}>
               <strong>{user?.name || 'Usuário'}</strong>

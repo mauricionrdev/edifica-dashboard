@@ -11889,3 +11889,280 @@ button:focus-visible {
     flex-direction: column;
   }
 }
+
+/* ==========================================================================
+   v122 · Restauração perfil, avatar global e drawer operacional
+   ========================================================================== */
+.avatar,
+.photoAvatar,
+.avatarColorPreview,
+.commentAvatar,
+.collaboratorAvatar,
+.userAvatar,
+.personAvatar {
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.avatar img,
+.photoAvatar img,
+.avatarColorPreview img,
+.commentAvatar img,
+.collaboratorAvatar img,
+.userAvatar img,
+.personAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.settingsModal {
+  width: min(720px, calc(100vw - 48px));
+  max-width: 720px;
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.settingsHeader,
+.settingsFooter {
+  background: var(--workspace-panel-bg);
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.settingsPaneStack {
+  background: var(--workspace-bg);
+}
+
+.settingsPane {
+  background: var(--workspace-panel-bg);
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.photoRow {
+  padding: 18px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-bg);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.photoAvatar {
+  width: 76px;
+  height: 76px;
+  flex: 0 0 76px;
+}
+
+.photoActions button,
+.settingsFooter button,
+.activityPagination button,
+.sectionTinyButton {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+.photoActions button:nth-child(2) {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.avatarColorGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 14px;
+}
+
+.avatarColorCard {
+  min-height: 82px;
+  padding: 10px 8px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 8px;
+  box-shadow: none;
+  transform: none;
+}
+
+.avatarColorCardActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.avatarColorPreview {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 720;
+}
+
+.avatarColorCard strong {
+  font-size: 11.5px;
+  font-weight: 680;
+}
+
+.slugField {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: stretch;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  overflow: hidden;
+}
+
+.slugField span {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-right: 1px solid var(--workspace-panel-border-soft);
+  color: var(--text-tertiary);
+  font-weight: 650;
+}
+
+.slugField input {
+  border: 0;
+  background: transparent;
+}
+
+.descriptionBoxCollapsed {
+  max-height: 132px;
+  overflow: auto;
+}
+
+.descriptionBoxExpanded {
+  max-height: min(58vh, 520px);
+  overflow: auto;
+}
+
+.descriptionEditBox,
+.commentEditTextarea {
+  width: 100%;
+  min-height: 112px;
+  resize: vertical;
+  font: inherit;
+  color: var(--edf-text-secondary);
+  background: var(--edf-surface-1);
+  border: 1px solid var(--edf-border);
+  border-radius: var(--workspace-card-radius);
+  padding: 12px 14px;
+  line-height: 1.6;
+  outline: none;
+}
+
+.commentForm textarea,
+.commentDraftTextarea {
+  min-height: 48px;
+  height: 76px;
+  resize: vertical;
+  max-height: 240px;
+  padding-top: 11px;
+}
+
+.commentAvatar {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.commentBody > p {
+  cursor: text;
+}
+
+.workflowTimeline {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.workflowStep {
+  position: relative;
+  min-height: 42px;
+  padding: 8px 12px;
+  isolation: isolate;
+}
+
+.workflowStep_current {
+  animation: workflowPulse 1.8s ease-in-out infinite;
+}
+
+.workflowStep_current em {
+  margin-left: 2px;
+  padding-left: 8px;
+  border-left: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 720;
+}
+
+@keyframes workflowPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 184, 0, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 0 1px rgba(245, 184, 0, 0.12);
+  }
+}
+
+.activityPagination {
+  min-height: 34px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.activityPagination span {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.activityPagination button {
+  min-height: 30px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.activityPagination button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .avatarColorGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .photoRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
