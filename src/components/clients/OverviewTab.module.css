@@ -1334,7 +1334,7 @@
 .avatarCard {
   grid-column: 1;
   grid-row: 1;
-  width: 176px;
+  width: 100%;
   min-height: 172px;
   padding: 14px 0 0;
   border: 0;
