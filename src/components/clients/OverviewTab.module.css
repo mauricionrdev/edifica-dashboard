@@ -1815,7 +1815,7 @@
 }
 
 .avatarCard {
-  min-height: 176px;
+  min-height: 100%;
   border: 1px solid var(--workspace-panel-border-soft);
   border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
