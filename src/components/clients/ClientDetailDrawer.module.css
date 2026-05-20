@@ -1443,3 +1443,19 @@
     justify-content: flex-start;
   }
 }
+
+/* ==========================================================================
+   v118 · Superfícies de footer no padrão do modal Nova demanda
+   ========================================================================== */
+.modalFooter,
+.confirmBar {
+  border-top-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.confirmActions .btnDanger,
+.btnDanger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}

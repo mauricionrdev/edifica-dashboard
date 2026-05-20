@@ -1878,3 +1878,37 @@
     justify-items: start;
   }
 }
+
+/* ==========================================================================
+   v118 · Footer do modal cliente alinhado à referência
+   Mantém Dados principais em 1fr 1fr e corrige a superfície do rodapé.
+   ========================================================================== */
+.profileGrid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.dangerSection,
+.dangerFooter {
+  min-height: 76px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.dangerFooter .deleteClientButton,
+.deleteClientButton {
+  min-height: 38px;
+  padding: 0 15px;
+  border-color: var(--danger-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 860px) {
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+}
