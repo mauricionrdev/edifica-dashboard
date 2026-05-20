@@ -232,3 +232,61 @@
   min-height: 34px;
   flex: 0 0 auto;
 }
+
+/* ==========================================================================
+   v134 · Select visual padrão sem scrollbar aparente
+   Mantém scroll funcional e remove aparência de lista/cartões grandes.
+   ========================================================================== */
+.menu {
+  padding: 6px;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  gap: 1px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.menu::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.option {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--workspace-control-radius);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  justify-content: flex-start;
+}
+
+.option span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.optionActive {
+  background: var(--field-bg);
+  color: var(--text-primary);
+}
+
+.select {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.selectOpen {
+  border-color: var(--workspace-panel-border);
+  background: var(--field-bg);
+  box-shadow: none;
+}
