@@ -12327,3 +12327,36 @@ button:focus-visible {
     flex-direction: column;
   }
 }
+
+/* ==========================================================================
+   v124 · Avatar escuro / fallback
+   Grafite passa a usar a cor real do fallback escuro.
+   ========================================================================== */
+.avatar_slate,
+.settingsPreviewAvatar.avatar_slate,
+.settingsColorAvatar.avatar_slate,
+.settingsColorOption .avatar_slate {
+  background: var(--field-bg);
+  color: var(--text-secondary);
+}
+
+.settingsColorAvatar,
+.settingsPreviewAvatar,
+.avatar {
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+.settingsColorAvatar img,
+.settingsPreviewAvatar img,
+.avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}

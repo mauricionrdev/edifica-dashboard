@@ -80,6 +80,16 @@ export const ROLE_PERMISSIONS = {
     'tasks.view.all','tasks.create','tasks.edit.all','tasks.comment.all','tasks.complete.own','tasks.complete.any',
     'profile.view','profile.edit','squads.view.all',
   ],
+  sdr: [
+    'central.view','clients.view.own','clients.fee_schedule.view.own','gdv.view.own','squads.view.own',
+    'metrics.view.own','ranking.view.own','profile.view','profile.edit',
+    'projects.view.own','tasks.view.own','tasks.create','tasks.comment.own','tasks.complete.own',
+  ],
+  closer: [
+    'central.view','clients.view.own','clients.fee_schedule.view.own','gdv.view.own','squads.view.own',
+    'metrics.view.own','ranking.view.own','profile.view','profile.edit',
+    'projects.view.own','tasks.view.own','tasks.create','tasks.comment.own','tasks.complete.own',
+  ],
   cap: [
     'central.view','clients.view.own','clients.fee_schedule.view.own','metrics.view.own','metrics.fill_week.own','ranking.view.own',
     'projects.view.own','tasks.view.own','tasks.create','tasks.comment.own','tasks.complete.own','squads.view.own',

@@ -40,7 +40,7 @@ async function ensureUserProfileColumns() {
       if (!indexNames.has('uk_users_custom_slug')) {
         await query('ALTER TABLE users ADD UNIQUE KEY uk_users_custom_slug (custom_slug)');
       }
-      await query("ALTER TABLE users MODIFY COLUMN role ENUM('ceo','suporte_tecnologia','admin','cap','gestor','gdv') NOT NULL DEFAULT 'gestor'");
+      await query("ALTER TABLE users MODIFY COLUMN role ENUM('ceo','suporte_tecnologia','admin','cap','gestor','gdv','sdr','closer') NOT NULL DEFAULT 'gestor'");
     })().catch((err) => {
       profileInitPromise = null;
       throw err;

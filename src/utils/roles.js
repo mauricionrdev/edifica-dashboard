@@ -11,6 +11,8 @@ export const ROLES = {
   cap:                { label: 'CAP',                   access: 'squad' },
   gestor:             { label: 'Gestor de Tráfego',     access: 'squad' },
   gdv:                { label: 'GDV',                   access: 'squad' },
+  sdr:                { label: 'SDR',                   access: 'squad' },
+  closer:             { label: 'Closer',                access: 'squad' },
 };
 
 export function roleLabel(role) {
