@@ -2060,9 +2060,6 @@ export default function ProfilePage() {
     if (operationPage > operationTotalPages) setOperationPage(operationTotalPages);
   }, [operationPage, operationTotalPages]);
 
-  useEffect(() => {
-    setActivityPage(1);
-  }, [activeTaskId, activeActivityEvents.length]);
 
   const activeSubtasks = useMemo(() => {
     if (!activeTask) return [];
@@ -2091,6 +2088,10 @@ export default function ProfilePage() {
   const activityTotalPages = Math.max(1, Math.ceil(activeActivityEvents.length / ACTIVITY_PAGE_SIZE));
   const safeActivityPage = Math.min(activityPage, activityTotalPages);
   const visibleActivityEvents = activeActivityEvents.slice((safeActivityPage - 1) * ACTIVITY_PAGE_SIZE, safeActivityPage * ACTIVITY_PAGE_SIZE);
+
+  useEffect(() => {
+    setActivityPage(1);
+  }, [activeTaskId, activeActivityEvents.length]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
   const profileDate = useMemo(() => new Date(), []);
   const profileStats = useMemo(() => ([
