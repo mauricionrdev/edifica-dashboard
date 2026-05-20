@@ -12817,3 +12817,36 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
 }
+
+/* ==========================================================================
+   v131 · Fluxo compacto no drawer
+   Evita corte visual quando a etapa atual exibe o responsável.
+   ========================================================================== */
+.workflowTimeline {
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.workflowStep {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.workflowStep span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workflowStep_current em {
+  max-width: 104px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.workflowKey_in_progress.workflowStep_current,
+.workflowKey_implementation.workflowStep_current {
+  box-shadow: inset 0 0 0 1px var(--edf-amber-border);
+}

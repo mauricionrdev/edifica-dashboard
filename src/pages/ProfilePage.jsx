@@ -2356,7 +2356,7 @@ export default function ProfilePage() {
 
     try {
       setContentSaving(true);
-      const nextDescription = buildTaskDescriptionFromContentForm(activeTask, contentForm);
+      const nextDescription = buildContentDescription(activeTask, contentForm);
       const res = await updateProjectTask(activeTask.id, { title: nextTitle, description: nextDescription });
       const nextTask = res?.task || { ...activeTask, title: nextTitle, description: nextDescription };
       setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...nextTask } : item)));
@@ -2387,7 +2387,7 @@ export default function ProfilePage() {
 
     try {
       setContentSaving(true);
-      const nextDescription = buildTaskDescriptionFromContentForm(activeTask, { ...contentForm, description: next });
+      const nextDescription = buildContentDescription(activeTask, { ...contentForm, description: next });
       const res = await updateProjectTask(activeTask.id, { description: nextDescription });
       const nextTask = res?.task || { ...activeTask, description: nextDescription };
       setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...nextTask } : item)));

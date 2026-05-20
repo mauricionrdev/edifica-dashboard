@@ -86,7 +86,6 @@ export default function Select({
     const handleExternalScroll = (event) => {
       const target = event.target;
       if (menuRef.current?.contains(target)) return;
-      if (rootRef.current?.contains(target)) return;
       setOpen(false);
     };
 
@@ -168,7 +167,12 @@ export default function Select({
               id={listboxId}
               aria-labelledby={buttonId}
               onPointerDown={(event) => event.stopPropagation()}
-              onWheel={(event) => event.stopPropagation()}
+              onWheel={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                const menu = menuRef.current;
+                if (menu) menu.scrollTop += event.deltaY;
+              }}
             >
               {options.map((option) => {
                 const active = option.value === String(value ?? '');

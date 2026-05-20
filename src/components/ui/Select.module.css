@@ -228,3 +228,37 @@
 .option {
   flex: 0 0 auto;
 }
+
+/* ==========================================================================
+   v131 · Select global travado no scroll correto
+   Scroll do menu é interno e o drawer não captura a roda do mouse.
+   ========================================================================== */
+.menu {
+  position: fixed;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+  touch-action: pan-y;
+  pointer-events: auto;
+}
+
+.menu::-webkit-scrollbar {
+  width: 8px;
+  display: block;
+}
+
+.menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.option {
+  flex: 0 0 auto;
+  width: 100%;
+}
