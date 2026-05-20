@@ -374,7 +374,10 @@ export default function Sidebar({
                   `${styles.item} ${styles.personItem} ${isActive ? styles.itemActive : ''}`.trim()
                 }
               >
-                <span className={styles.personAvatar} aria-hidden="true">
+                <span
+                  className={`${styles.personAvatar} ${styles[`avatar_${String(entry?.avatarColor || entry?.avatar_color || 'amber').toLowerCase()}`] || styles.avatar_amber}`.trim()}
+                  aria-hidden="true"
+                >
                   {getUserAvatar(entry) ? <img src={getUserAvatar(entry)} alt="" /> : initials(entry.name)}
                 </span>
                 <span className={styles.itemLabel} title={entry.name}>{entry.name}</span>

@@ -12166,3 +12166,164 @@ button:focus-visible {
     flex-direction: column;
   }
 }
+
+/* ==========================================================================
+   v123 · Configurações de perfil compactas e avatares sem borda
+   ========================================================================== */
+.settingsModal:not(.demandModal) {
+  width: min(620px, calc(100vw - 48px));
+  max-width: 620px;
+  max-height: min(720px, calc(100dvh - 48px));
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.settingsModal:not(.demandModal) .settingsHeader {
+  min-height: 72px;
+  padding: 18px 22px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.settingsModal:not(.demandModal) .settingsTabs {
+  min-height: 46px;
+  padding: 0 22px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.settingsModal:not(.demandModal) .settingsContent {
+  padding: 18px 22px;
+  gap: 14px;
+  background: var(--workspace-bg);
+}
+
+.settingsModal:not(.demandModal) .settingsFooter {
+  min-height: 64px;
+  padding: 12px 22px;
+  border-top-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.settingsModal:not(.demandModal) .settingsCard {
+  padding: 18px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.settingsModal:not(.demandModal) .settingsAvatarBlock {
+  min-height: 118px;
+  padding: 18px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-bg);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.settingsModal:not(.demandModal) .settingsPreviewAvatar,
+.settingsModal:not(.demandModal) .settingsColorAvatar,
+.settingsPreviewAvatar,
+.settingsColorAvatar,
+.avatar,
+.commentAvatar,
+.collaboratorAvatar,
+.userAvatar,
+.personAvatar {
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.settingsModal:not(.demandModal) .settingsPreviewAvatar {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+}
+
+.settingsModal:not(.demandModal) .settingsPreviewAvatar img,
+.settingsModal:not(.demandModal) .settingsColorAvatar img,
+.settingsPreviewAvatar img,
+.settingsColorAvatar img,
+.avatar img,
+.commentAvatar img,
+.collaboratorAvatar img,
+.userAvatar img,
+.personAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.settingsModal:not(.demandModal) .settingsColorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.settingsModal:not(.demandModal) .settingsColorOption {
+  min-height: 68px;
+  padding: 10px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.settingsModal:not(.demandModal) .settingsColorOptionActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.settingsModal:not(.demandModal) .settingsProfileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+
+.settingsModal:not(.demandModal) .settingsInputGroup,
+.settingsModal:not(.demandModal) .slugInputGroup {
+  min-height: 42px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.settingsModal:not(.demandModal) .settingsSaveButton {
+  min-height: 38px;
+  padding: 0 16px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 720px) {
+  .settingsModal:not(.demandModal) {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .settingsModal:not(.demandModal) .settingsProfileGrid,
+  .settingsModal:not(.demandModal) .settingsColorGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .settingsModal:not(.demandModal) .settingsAvatarBlock {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

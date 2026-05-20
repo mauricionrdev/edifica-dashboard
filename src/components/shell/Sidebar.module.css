@@ -705,3 +705,65 @@
 .avatar_emerald { background: var(--success-text); color: var(--bg-app); }
 .avatar_rose { background: #EF7AAE; color: #2c0820; }
 .avatar_slate { background: var(--text-tertiary); color: var(--bg-app); }
+
+/* ==========================================================================
+   v123 · Sidebar busca com avatar real sem borda
+   ========================================================================== */
+.personAvatar,
+.avatar,
+.footerAvatar,
+.squadAvatar,
+.gdvAvatar,
+.squadLogo {
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+.personAvatar {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sidebar-bg);
+  line-height: 1;
+}
+
+.avatar {
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  background: transparent;
+}
+
+.personAvatar img,
+.avatar img,
+.footerAvatar img,
+.squadAvatar img,
+.gdvAvatar img,
+.squadLogo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.personAvatar img + *,
+.avatar img + * {
+  display: none;
+}
+
+.avatar_amber { background: var(--accent); color: var(--accent-text); }
+.avatar_blue { background: var(--info); color: var(--bg-app); }
+.avatar_violet { background: #B784F0; color: #1a0d2c; }
+.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
+.avatar_rose { background: #EF7AAE; color: #2c0820; }
+.avatar_slate,
+.avatar_grafite { background: var(--text-tertiary); color: var(--bg-app); }
