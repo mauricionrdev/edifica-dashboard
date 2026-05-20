@@ -1843,3 +1843,38 @@
 .dangerSection {
   padding: 18px 24px;
 }
+
+/* ==========================================================================
+   v117 · Zona perigosa compacta
+   ========================================================================== */
+.dangerSection,
+.dangerFooter {
+  min-height: 76px;
+  padding: 16px 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-bg);
+}
+
+.dangerFooter .deleteClientButton,
+.deleteClientButton {
+  min-height: 38px;
+  padding: 0 15px;
+  border-color: var(--danger-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (max-width: 720px) {
+  .dangerSection,
+  .dangerFooter {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}

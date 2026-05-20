@@ -2148,3 +2148,91 @@ button:focus-visible {
   box-shadow: none;
   transform: none;
 }
+
+/* ==========================================================================
+   v117 · Projeto vazio refinado
+   ========================================================================== */
+.wrap {
+  padding: 16px 18px 18px;
+  background: var(--workspace-bg);
+}
+
+.emptyCard {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.emptyHead {
+  min-height: 54px;
+  padding: 0 0 14px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  display: grid;
+  gap: 6px;
+  align-content: end;
+}
+
+.emptyHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.105em;
+  text-transform: uppercase;
+}
+
+.emptyHead strong {
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.15;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+}
+
+.createGrid {
+  width: min(100%, 520px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.createGrid button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  text-align: left;
+  box-shadow: none;
+  transform: none;
+}
+
+.createGrid button strong {
+  font-size: 13px;
+  font-weight: 680;
+  letter-spacing: -0.015em;
+}
+
+.projectHeader {
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+}
+
+.deleteProjectButton {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+@media (max-width: 720px) {
+  .createGrid {
+    grid-template-columns: 1fr;
+  }
+}

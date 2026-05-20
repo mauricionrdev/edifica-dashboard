@@ -1373,3 +1373,73 @@
   background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
 }
+
+/* ==========================================================================
+   v117 · Ajustes finais referência Nova demanda
+   Seções finais, confirmação danger e ações no mesmo padrão do modal referência.
+   ========================================================================== */
+.confirmBar {
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-control-radius);
+  background: var(--workspace-panel-bg);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  box-shadow: none;
+}
+
+.confirmText {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.confirmText strong {
+  color: var(--text-primary);
+  font-weight: 650;
+}
+
+.confirmActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirmActions .btn,
+.confirmActions .btnGhost,
+.confirmActions .btnDanger {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: var(--workspace-control-radius);
+  box-shadow: none;
+  transform: none;
+}
+
+.confirmActions .btnDanger,
+.btnDanger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.btnGhost {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 720px) {
+  .confirmBar {
+    grid-template-columns: 1fr;
+  }
+
+  .confirmActions {
+    justify-content: flex-start;
+  }
+}

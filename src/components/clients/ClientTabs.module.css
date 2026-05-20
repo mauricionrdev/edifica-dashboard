@@ -428,3 +428,33 @@
   background: var(--workspace-bg);
   scrollbar-width: none;
 }
+
+/* ==========================================================================
+   v117 · Tabs compactas finais
+   ========================================================================== */
+.tabsBar {
+  flex: 0 0 54px;
+  min-height: 54px;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  gap: 8px;
+}
+
+.tab {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  box-shadow: none;
+  transform: none;
+}
+
+.tabActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
