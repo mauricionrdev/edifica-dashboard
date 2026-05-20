@@ -163,3 +163,35 @@
 .optionActive {
   background: var(--bg-hover);
 }
+
+/* ==========================================================================
+   v129 · Select ancorado em drawers
+   Menu com altura real disponível, scroll interno e sem se soltar do campo.
+   ========================================================================== */
+.menu {
+  position: fixed;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+  will-change: top, left, max-height;
+}
+
+.menu::-webkit-scrollbar {
+  width: 7px;
+  display: block;
+}
+
+.menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.option {
+  flex: 0 0 auto;
+}

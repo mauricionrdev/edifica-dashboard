@@ -44,33 +44,55 @@ export default function Select({
   useLayoutEffect(() => {
     if (!open || !buttonRef.current) return undefined;
 
+    let frame = 0;
+
     const updatePosition = () => {
-      const rect = buttonRef.current?.getBoundingClientRect();
-      if (!rect) return;
+      const button = buttonRef.current;
+      if (!button) return;
 
+      const rect = button.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const estimatedHeight = Math.min(Math.max(options.length, 1) * 39 + 12, 280);
-      const spaceBelow = viewportHeight - rect.bottom - 12;
-      const openUp = spaceBelow < estimatedHeight && rect.top > estimatedHeight;
-
+      const margin = 8;
+      const gap = 6;
+      const rowHeight = 33;
+      const preferredHeight = Math.min(Math.max(options.length, 1) * rowHeight + 12, 320);
+      const spaceBelow = Math.max(0, viewportHeight - rect.bottom - margin - gap);
+      const spaceAbove = Math.max(0, rect.top - margin - gap);
+      const openUp = spaceBelow < Math.min(preferredHeight, 180) && spaceAbove > spaceBelow;
+      const availableHeight = Math.max(96, Math.min(preferredHeight, openUp ? spaceAbove : spaceBelow));
       const minWidth = Number(menuMinWidth) || 0;
       const menuWidth = Math.max(Math.round(rect.width), minWidth);
+      const left = Math.min(
+        Math.max(margin, Math.round(rect.left)),
+        Math.max(margin, viewportWidth - menuWidth - margin)
+      );
+
+      if (rect.bottom < 0 || rect.top > viewportHeight || rect.right < 0 || rect.left > viewportWidth) {
+        setOpen(false);
+        return;
+      }
 
       setMenuStyle({
-        left: Math.round(rect.left),
+        left,
         width: menuWidth,
-        top: openUp ? 'auto' : Math.round(rect.bottom + 6),
-        bottom: openUp ? Math.max(8, Math.round(viewportHeight - rect.top + 6)) : 'auto',
-        maxHeight: Math.min(estimatedHeight, viewportHeight - 16),
+        top: openUp ? Math.max(margin, Math.round(rect.top - availableHeight - gap)) : Math.round(rect.bottom + gap),
+        maxHeight: availableHeight,
       });
     };
 
+    const requestPosition = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(updatePosition);
+    };
+
     updatePosition();
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', requestPosition);
+    window.addEventListener('scroll', requestPosition, true);
     return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, true);
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', requestPosition);
+      window.removeEventListener('scroll', requestPosition, true);
     };
   }, [open, options.length, menuMinWidth]);
 
@@ -141,6 +163,8 @@ export default function Select({
               role="listbox"
               id={listboxId}
               aria-labelledby={buttonId}
+              onPointerDown={(event) => event.stopPropagation()}
+              onWheel={(event) => event.stopPropagation()}
             >
               {options.map((option) => {
                 const active = option.value === String(value ?? '');
