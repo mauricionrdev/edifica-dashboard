@@ -1216,3 +1216,160 @@
   box-shadow: none;
   transform: none;
 }
+
+/* ==========================================================================
+   v116 · Cliente modal polimento referência Nova demanda
+   Superfície compacta, escura e estável. Sem hover.
+   ========================================================================== */
+.overlay {
+  z-index: 26000;
+  padding: 24px;
+  align-items: center;
+  justify-content: center;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.modalCard {
+  width: min(940px, calc(100vw - 48px));
+  height: min(760px, calc(100dvh - 48px));
+  min-height: min(760px, calc(100dvh - 48px));
+  max-height: min(760px, calc(100dvh - 48px));
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  overflow: hidden;
+}
+
+.modalHead {
+  flex: 0 0 72px;
+  min-height: 72px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.modalBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--workspace-bg);
+  overflow: hidden;
+}
+
+.identity {
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.identityText {
+  gap: 4px;
+}
+
+.name {
+  max-width: min(560px, 100%);
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+}
+
+.status {
+  height: 22px;
+  min-height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+}
+
+.iconBtn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+.section {
+  padding: 18px 24px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-bg);
+}
+
+.modalEyebrow,
+.sectionTitle {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 720;
+  letter-spacing: 0.105em;
+  text-transform: uppercase;
+}
+
+.label {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: 690;
+  letter-spacing: 0.045em;
+}
+
+.input,
+.textarea,
+.selectControl :global(button),
+.selectControl :global(input),
+.selectControl :global(select) {
+  min-height: 42px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+  outline: none;
+  transform: none;
+}
+
+.textarea {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.projectBtn,
+.btn,
+.btnGhost,
+.btnDanger,
+.attachmentAction {
+  min-height: 38px;
+  border-radius: var(--workspace-control-radius);
+  box-shadow: none;
+  transform: none;
+}
+
+.btnDanger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.confirmBar,
+.confirmModal {
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}

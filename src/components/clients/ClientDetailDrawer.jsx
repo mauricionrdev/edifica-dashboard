@@ -28,10 +28,10 @@ import tabStyles from './ClientTabs.module.css';
 const TABS = [
   { key: 'overview', label: 'Visão geral' },
   { key: 'fees', label: 'Mensalidades' },
+  { key: 'project', label: 'Projeto' },
   { key: 'icp', label: 'Análise ICP' },
   { key: 'gdv', label: 'Análise GDV' },
   { key: 'routes', label: 'Resumo de Rotas' },
-  { key: 'project', label: 'Projeto' },
 ];
 
 export default function ClientDetailDrawer({

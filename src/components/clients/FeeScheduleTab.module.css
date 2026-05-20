@@ -541,3 +541,86 @@
   background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
 }
+
+/* ==========================================================================
+   v116 · Mensalidades confirmação danger e polimento
+   ========================================================================== */
+.panel {
+  padding: 16px 18px 18px;
+  background: var(--workspace-bg);
+}
+
+.summaryGrid {
+  gap: 10px;
+}
+
+.summaryCard,
+.rowCard,
+.emptyState {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.sectionHead {
+  min-height: 46px;
+  padding: 0 0 14px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+}
+
+.rowCard {
+  padding: 16px 18px;
+}
+
+.monthField :global(button),
+.monthField :global(button[aria-expanded='true']),
+.monthField :global(button:focus),
+.monthField :global(button:focus-visible) {
+  min-height: 42px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+  outline: none;
+  transform: none;
+}
+
+.actionButton {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.removeBtn {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.confirmBackdrop {
+  z-index: 28000;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.confirmModal {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.confirmActions .confirmDanger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.confirmActions button {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+}

@@ -369,3 +369,62 @@
   background: var(--workspace-bg);
   scrollbar-width: none;
 }
+
+/* ==========================================================================
+   v116 · Tabs cliente ordem e polimento
+   Projeto fica logo após Mensalidades. Sem hover.
+   ========================================================================== */
+.tabsBar {
+  flex: 0 0 54px;
+  min-height: 54px;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.tabsBar::-webkit-scrollbar,
+.tabBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.tab {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 660;
+  white-space: nowrap;
+  box-shadow: none;
+  transform: none;
+  transition: none;
+}
+
+.tabActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tabActive::after {
+  display: none;
+}
+
+.tabBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  background: var(--workspace-bg);
+  scrollbar-width: none;
+}

@@ -1228,3 +1228,61 @@
   background: var(--danger-soft);
   color: var(--danger-text);
 }
+
+/* ==========================================================================
+   v116 · Análises cores restauradas no topo
+   Cards superiores das abas ICP/GDV/Rotas retomam identidade cromática.
+   ========================================================================== */
+.header {
+  border-color: var(--analysis-accent-line);
+  background:
+    linear-gradient(180deg, var(--analysis-accent-soft), transparent 72%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.icp .header {
+  border-color: rgba(96, 165, 250, 0.24);
+  background:
+    linear-gradient(180deg, rgba(96, 165, 250, 0.075), transparent 74%),
+    var(--workspace-panel-bg);
+}
+
+.gdv .header {
+  border-color: rgba(45, 212, 191, 0.24);
+  background:
+    linear-gradient(180deg, rgba(45, 212, 191, 0.075), transparent 74%),
+    var(--workspace-panel-bg);
+}
+
+.routes .header {
+  border-color: rgba(167, 139, 250, 0.26);
+  background:
+    linear-gradient(180deg, rgba(167, 139, 250, 0.08), transparent 74%),
+    var(--workspace-panel-bg);
+}
+
+.eyebrow {
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: var(--analysis-accent-soft);
+}
+
+.heroMetric {
+  border-left-color: var(--analysis-accent-line);
+}
+
+.addBtn,
+.delBtn,
+.dateControl,
+.entry {
+  box-shadow: none;
+  transform: none;
+}
+
+.delBtn {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}

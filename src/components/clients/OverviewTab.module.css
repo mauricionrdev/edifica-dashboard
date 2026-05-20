@@ -1796,3 +1796,50 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   v116 · Overview polimento sem hover
+   ========================================================================== */
+.mainSection {
+  padding: 18px 24px 20px;
+  background: var(--workspace-bg);
+}
+
+.profileGrid {
+  grid-template-columns: 232px minmax(0, 1fr);
+  column-gap: 20px;
+}
+
+.avatarCard {
+  min-height: 176px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.avatarPrimary {
+  width: 80px;
+  height: 80px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.profileFields {
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.62fr);
+  column-gap: 14px;
+  row-gap: 14px;
+}
+
+.contractSection {
+  padding: 18px 24px;
+}
+
+.contractGrid {
+  gap: 14px;
+}
+
+.dangerSection {
+  padding: 18px 24px;
+}

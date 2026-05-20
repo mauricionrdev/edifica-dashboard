@@ -2126,3 +2126,25 @@ button:focus-visible {
   box-shadow: none;
   transform: none;
 }
+
+/* ==========================================================================
+   v116 · Projeto cliente polimento sem hover
+   ========================================================================== */
+.wrap {
+  background: var(--workspace-bg);
+}
+
+.projectHeader,
+.emptyCard,
+.sectionForm,
+.projectTools,
+.sectionCard,
+.taskPanel,
+.activityPanel,
+.taskDetailCard,
+.projectChoiceCard {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
