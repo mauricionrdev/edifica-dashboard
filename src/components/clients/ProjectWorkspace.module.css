@@ -140,18 +140,6 @@
   font-weight: 590;
 }
 
-.createGrid button:hover:not(:disabled),
-.sectionForm button:hover:not(:disabled),
-.taskForm button:hover:not(:disabled),
-.subtaskForm button:hover:not(:disabled),
-.collabForm button:hover:not(:disabled),
-.commentForm button:hover:not(:disabled),
-.confirmActions button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-selected);
-  color: var(--text-primary);
-}
-
 button:disabled,
 select:disabled,
 input:disabled,
@@ -357,17 +345,6 @@ textarea:disabled {
   opacity: 0;
 }
 
-.sectionCard:hover .moveBtn,
-.taskRow:hover .moveBtn,
-.taskSelected .moveBtn {
-  opacity: 1;
-}
-
-.moveBtn:hover:not(:disabled) {
-  border-color: var(--line-subtle);
-  background: var(--bg-hover);
-  color: var(--text-secondary);
-}
 
 .actionIcon {
   width: 28px;
@@ -384,19 +361,6 @@ textarea:disabled {
   opacity: 0;
 }
 
-.sectionCard:hover .actionIcon,
-.taskRow:hover .actionIcon,
-.taskSelected .actionIcon,
-.subtaskRow:hover .actionIcon,
-.collabRow:hover .actionIcon {
-  opacity: 1;
-}
-
-.actionIcon:hover:not(:disabled) {
-  border-color: rgba(255, 91, 115, 0.22);
-  background: rgba(255, 91, 115, 0.055);
-  color: var(--danger-text);
-}
 
 .taskForm {
   border-bottom: 1px solid var(--line-subtle);
@@ -430,11 +394,6 @@ textarea:disabled {
 
 .taskRow:first-child {
   border-top: 0;
-}
-
-.taskRow:hover,
-.taskSelected {
-  background: var(--surface-raised);
 }
 
 .taskSelected {
@@ -567,13 +526,6 @@ textarea:disabled {
   font-weight: 620;
   letter-spacing: -0.035em;
   outline: 0;
-}
-
-.taskDetailHead input:hover,
-.taskDetailHead input:focus {
-  padding: 0 9px;
-  border-color: var(--line-subtle);
-  background: var(--surface-raised);
 }
 
 .taskDetailHead button {
@@ -739,13 +691,6 @@ textarea:disabled {
   display: inline-grid;
   place-items: center;
   cursor: pointer;
-}
-
-.subtaskRow>button:last-child:hover:not(:disabled),
-.collabRow>button:hover:not(:disabled) {
-  border-color: rgba(255, 91, 115, 0.22);
-  background: rgba(255, 91, 115, 0.055);
-  color: var(--danger-text);
 }
 
 .subtaskRow span,
@@ -1086,12 +1031,6 @@ textarea:disabled {
   cursor: pointer;
 }
 
-.deleteProjectButton:hover:not(:disabled) {
-  border-color: rgba(255, 91, 115, 0.22);
-  background: rgba(255, 91, 115, 0.045);
-  color: #ffb0bd;
-}
-
 .memberPanel {
   min-width: 0;
   padding: 10px;
@@ -1186,10 +1125,6 @@ textarea:disabled {
   text-overflow: ellipsis;
 }
 
-.memberRow:hover .actionIcon {
-  opacity: 1;
-}
-
 .memberForm {
   padding: 8px;
   border: 1px solid var(--line-subtle);
@@ -1213,11 +1148,6 @@ textarea:disabled {
   cursor: pointer;
 }
 
-.memberForm button:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
 .commentDelete {
   width: 26px;
   height: 26px;
@@ -1235,12 +1165,6 @@ textarea:disabled {
 
 .commentDelete svg {
   display: block;
-}
-
-.commentDelete:hover:not(:disabled) {
-  border-color: rgba(255, 91, 115, 0.22);
-  background: rgba(255, 91, 115, 0.055);
-  color: var(--danger-text);
 }
 
 .commentDelete:disabled {
@@ -1298,11 +1222,6 @@ textarea:disabled {
   display: inline-grid;
   place-items: center;
   cursor: pointer;
-}
-
-.deleteProjectButton:hover:not(:disabled) {
-  background: rgba(255, 91, 115, 0.045);
-  color: var(--danger-text);
 }
 
 .memberPanel {
@@ -1465,16 +1384,6 @@ textarea:disabled {
   line-height: 1;
   font-weight: 420;
   cursor: pointer;
-}
-
-.inlineAddButton:hover:not(:disabled),
-.memberForm .inlineAddButton:hover:not(:disabled),
-.sectionForm .inlineAddButton:hover:not(:disabled),
-.taskForm .inlineAddButton:hover:not(:disabled),
-.subtaskForm .inlineAddButton:hover:not(:disabled),
-.collabForm .inlineAddButton:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--text-primary);
 }
 
 .taskForm {
@@ -1644,12 +1553,6 @@ textarea:disabled {
   opacity: 0.78;
 }
 
-.deleteProjectButton:hover:not(:disabled) {
-  background: transparent;
-  color: var(--danger-text);
-  opacity: 1;
-}
-
 .memberPanel {
   min-height: 62px;
   padding: 10px 16px;
@@ -1720,16 +1623,6 @@ textarea:disabled {
   color: var(--text-tertiary);
   font-size: 18px;
   font-weight: 420;
-}
-
-.inlineAddButton:hover:not(:disabled),
-.memberForm .inlineAddButton:hover:not(:disabled),
-.sectionForm .inlineAddButton:hover:not(:disabled),
-.taskForm .inlineAddButton:hover:not(:disabled),
-.subtaskForm .inlineAddButton:hover:not(:disabled),
-.collabForm .inlineAddButton:hover:not(:disabled) {
-  background: transparent;
-  color: var(--text-primary);
 }
 
 @media (max-width: 1180px) {
@@ -2118,22 +2011,6 @@ textarea:disabled {
   box-shadow: none;
 }
 
-.createGrid button:hover:not(:disabled),
-.sectionForm button:hover:not(:disabled),
-.taskForm button:hover:not(:disabled),
-.subtaskForm button:hover:not(:disabled),
-.collabForm button:hover:not(:disabled),
-.commentForm button:hover:not(:disabled),
-.confirmActions button:hover:not(:disabled),
-.taskButton:hover:not(:disabled),
-.sectionAction:hover:not(:disabled),
-.projectAction:hover:not(:disabled),
-.attachmentAction:hover,
-.viewerAction:hover {
-  border-color: var(--workspace-panel-border);
-  background: var(--bg-hover);
-}
-
 .createGrid button:focus-visible,
 .sectionForm button:focus-visible,
 .taskForm button:focus-visible,
@@ -2196,31 +2073,6 @@ textarea:disabled {
   transform: none;
 }
 
-.projectHeader:hover,
-.emptyCard:hover,
-.sectionCard:hover,
-.taskPanel:hover,
-.activityPanel:hover,
-.comment:hover,
-.taskDetailCard:hover {
-  border-color: var(--line);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.createGrid button:hover:not(:disabled),
-.sectionForm button:hover:not(:disabled),
-.taskForm button:hover:not(:disabled),
-.subtaskForm button:hover:not(:disabled),
-.collabForm button:hover:not(:disabled),
-.commentForm button:hover:not(:disabled),
-.confirmActions button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  box-shadow: none;
-  transform: none;
-}
 
 .projectTools select:focus,
 .taskForm select:focus,
@@ -2260,18 +2112,17 @@ button:focus-visible {
 }
 
 /* ==========================================================================
-   v114 · Projeto do cliente sem hover visual em painéis grandes
+   v115 · Projeto cliente sem hover em painéis
    ========================================================================== */
-.projectHeader:hover,
-.emptyCard:hover,
-.sectionCard:hover,
-.taskPanel:hover,
-.activityPanel:hover,
-.comment:hover,
-.taskDetailCard:hover,
-.projectChoiceCard:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
+.projectHeader,
+.emptyCard,
+.sectionForm,
+.projectTools,
+.sectionCard,
+.taskPanel,
+.activityPanel,
+.taskDetailCard,
+.projectChoiceCard {
   box-shadow: none;
   transform: none;
 }

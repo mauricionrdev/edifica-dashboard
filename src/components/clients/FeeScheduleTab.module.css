@@ -111,8 +111,6 @@
   cursor: pointer;
 }
 
-.removeBtn:hover { color: #ffd0d8; background: rgba(255, 91, 115, 0.1); }
-
 .rowGrid {
   display: grid;
   grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
@@ -203,14 +201,6 @@
   justify-content: start;
 }
 
-.rowCard:hover,
-.summaryCard:hover {
-  border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.016);
-  box-shadow: none;
-  transform: none;
-}
-
 .emptyState {
   min-height: 72px;
   padding: 18px;
@@ -245,15 +235,6 @@
   transform: none;
 }
 
-.summaryCard:hover,
-.rowCard:hover,
-.emptyState:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
 .sectionHead {
   border-bottom-color: var(--workspace-panel-border-soft);
 }
@@ -279,38 +260,7 @@
   box-shadow: none;
 }
 
-.monthSelect :global(button:hover),
-.monthSelect :global(button:focus),
-.monthSelect :global(button:focus-visible),
-.monthSelect :global(button[aria-expanded='true']) {
-  border-color: var(--line);
-  background: var(--field-bg);
-  box-shadow: none;
-  outline: none;
-}
 
-.actionButton,
-.actionButton:hover,
-.actionButton:focus,
-.actionButton:focus-visible {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--accent);
-  box-shadow: none;
-  transform: none;
-}
-
-.removeBtn,
-.removeBtn:hover,
-.removeBtn:focus,
-.removeBtn:focus-visible {
-  color: var(--danger-text);
-  background: var(--danger-soft);
-  border-color: var(--danger-line);
-  box-shadow: none;
-  transform: none;
-  outline: none;
-}
 
 @media (max-width: 720px) {
   .rowGrid {
@@ -350,15 +300,6 @@
   transform: none;
 }
 
-.summaryCard:hover,
-.rowCard:hover,
-.emptyState:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
 .sectionHead {
   min-height: 38px;
   padding: 0 0 12px;
@@ -376,43 +317,10 @@
   gap: 12px;
 }
 
-.monthSelect :global(button),
-.monthSelect :global(button:hover),
-.monthSelect :global(button:focus),
-.monthSelect :global(button:focus-visible),
-.monthSelect :global(button[aria-expanded='true']) {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--field-bg);
-  box-shadow: none;
-  outline: none;
-}
-
 .monthSelect :global(button[aria-expanded='true']) {
   border-color: var(--line);
 }
 
-.actionButton,
-.actionButton:hover,
-.actionButton:focus,
-.actionButton:focus-visible {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--accent);
-  box-shadow: none;
-  transform: none;
-}
-
-.removeBtn,
-.removeBtn:hover,
-.removeBtn:focus,
-.removeBtn:focus-visible {
-  color: var(--danger-text);
-  background: var(--danger-soft);
-  border-color: var(--danger-line);
-  box-shadow: none;
-  transform: none;
-  outline: none;
-}
 
 .deleteConfirm {
   min-height: 46px;
@@ -452,24 +360,6 @@
   box-shadow: none;
 }
 
-.deleteConfirmActions button:hover,
-.deleteConfirmActions button:focus,
-.deleteConfirmActions button:focus-visible {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--field-bg);
-  color: var(--text-secondary);
-  box-shadow: none;
-  outline: none;
-}
-
-.deleteConfirmDanger,
-.deleteConfirmDanger:hover,
-.deleteConfirmDanger:focus,
-.deleteConfirmDanger:focus-visible {
-  border-color: var(--danger-line);
-  background: var(--danger-soft);
-  color: var(--danger-text);
-}
 
 .emptyState {
   min-height: 54px;
@@ -507,18 +397,6 @@
   transform: none;
 }
 
-.panel:hover,
-.summaryCard:hover,
-.rowCard:hover,
-.emptyState:hover,
-.sectionHead:hover,
-.rows:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
 .monthSelect,
 .deleteConfirm,
 .deleteConfirmActions,
@@ -532,42 +410,7 @@
   max-width: none;
 }
 
-.monthField :global(button),
-.monthField :global(button:hover),
-.monthField :global(button:focus),
-.monthField :global(button:focus-visible),
-.monthField :global(button[aria-expanded='true']) {
-  width: 100%;
-  min-height: 40px;
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--field-bg);
-  box-shadow: none;
-  outline: none;
-  transform: none;
-}
 
-.actionButton,
-.actionButton:hover,
-.actionButton:focus,
-.actionButton:focus-visible {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--accent);
-  box-shadow: none;
-  transform: none;
-}
-
-.removeBtn,
-.removeBtn:hover,
-.removeBtn:focus,
-.removeBtn:focus-visible {
-  color: var(--danger-text);
-  background: var(--danger-soft);
-  border-color: var(--danger-line);
-  box-shadow: none;
-  transform: none;
-  outline: none;
-}
 
 .confirmBackdrop {
   position: fixed;
@@ -588,13 +431,6 @@
   background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
   overflow: hidden;
-}
-
-.confirmModal:hover {
-  border-color: var(--workspace-panel-border);
-  background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
-  transform: none;
 }
 
 .confirmHead {
@@ -626,32 +462,82 @@
   padding: 14px 18px 16px;
 }
 
-.confirmActions button,
-.confirmActions button:hover,
-.confirmActions button:focus,
-.confirmActions button:focus-visible {
-  min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid var(--workspace-panel-border-soft);
-  border-radius: var(--workspace-control-radius);
-  background: var(--field-bg);
-  color: var(--text-secondary);
-  box-shadow: none;
-  outline: none;
-  transform: none;
-}
-
-.confirmDanger,
-.confirmDanger:hover,
-.confirmDanger:focus,
-.confirmDanger:focus-visible {
-  border-color: var(--danger-line);
-  background: var(--danger-soft);
-  color: var(--danger-text);
-}
 
 @media (max-width: 720px) {
   .rowGrid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================================================
+   v115 · Mensalidades sem hover e padrão de modal
+   ========================================================================== */
+.panel {
+  padding: 14px;
+  gap: 12px;
+  background: var(--workspace-bg);
+}
+
+.summaryCard,
+.rowCard,
+.emptyState {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.sectionHead {
+  min-height: 42px;
+  padding: 0 0 14px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+}
+
+.rowGrid {
+  grid-template-columns: minmax(200px, 260px) minmax(200px, 260px);
+  gap: 12px;
+}
+
+.monthField :global(button),
+.monthField :global(button[aria-expanded='true']),
+.monthField :global(button:focus),
+.monthField :global(button:focus-visible) {
+  width: 100%;
+  min-height: 40px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+  outline: none;
+  transform: none;
+}
+
+.actionButton {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.removeBtn,
+.confirmDanger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: none;
+  transform: none;
+}
+
+.confirmBackdrop {
+  z-index: 28000;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.confirmModal {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
 }

@@ -64,12 +64,6 @@
   cursor: pointer;
 }
 
-.avatarControls button:hover:not(:disabled) {
-  color: var(--text-primary);
-  border-color: var(--line-strong);
-  background: var(--bg-hover);
-}
-
 .avatarControls button:disabled {
   opacity: 0.52;
   cursor: not-allowed;
@@ -216,12 +210,6 @@
   cursor: pointer;
 }
 
-.avatarActions button:hover:not(:disabled) {
-  color: var(--text-primary);
-  border-color: var(--line);
-  background: var(--line-subtle);
-}
-
 .avatarActions button:disabled {
   opacity: 0.52;
   cursor: not-allowed;
@@ -231,11 +219,6 @@
   border-color: rgba(255, 91, 115, 0.22);
   background: rgba(255, 91, 115, 0.045);
   color: var(--danger-text);
-}
-
-.avatarActions .dangerButton:hover:not(:disabled) {
-  color: #ffd0d8;
-  background: rgba(255, 91, 115, 0.09);
 }
 
 .dangerSection {
@@ -600,12 +583,6 @@
   cursor: pointer;
 }
 
-.avatarControls button:hover:not(:disabled) {
-  color: var(--text-primary);
-  border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.034);
-}
-
 .avatarControls .avatarRemoveButton {
   color: var(--danger-text);
   border-color: rgba(255, 91, 115, 0.2);
@@ -832,12 +809,6 @@
   cursor: pointer;
 }
 
-.avatarControls button:hover:not(:disabled) {
-  color: var(--text-primary);
-  border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.034);
-}
-
 .avatarControls .avatarRemoveButton {
   color: var(--danger-text);
   border-color: rgba(255, 91, 115, 0.2);
@@ -983,17 +954,6 @@
   box-shadow: none;
 }
 
-.avatarControls button:hover:not(:disabled),
-.actionButton:hover:not(:disabled),
-.dangerButton:hover:not(:disabled),
-.fieldControl:hover,
-.input:hover,
-.select:hover,
-.textarea:hover {
-  border-color: var(--workspace-panel-border);
-  background: var(--bg-hover);
-}
-
 .avatarControls button:focus-visible,
 .actionButton:focus-visible,
 .dangerButton:focus-visible,
@@ -1044,27 +1004,6 @@
   box-shadow: none;
 }
 
-.identityCard:hover,
-.infoCard:hover,
-.summaryCard:hover,
-.fieldShell:hover {
-  border-color: var(--line);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.avatarControls button:hover:not(:disabled),
-.actionButton:hover:not(:disabled),
-.dangerButton:hover:not(:disabled),
-.fieldControl:hover,
-.input:hover,
-.select:hover,
-.textarea:hover {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  box-shadow: none;
-}
 
 /* ==========================================================================
    v104 · Detalhe do cliente / Dados principais
@@ -1105,13 +1044,6 @@
   box-shadow: none;
 }
 
-.avatarCard:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
 .avatarPrimary {
   width: 96px;
   height: 96px;
@@ -1132,14 +1064,6 @@
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
   color: var(--text-secondary);
-  box-shadow: none;
-  transform: none;
-}
-
-.avatarControls button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
   box-shadow: none;
   transform: none;
 }
@@ -1169,16 +1093,6 @@
 .profileFields :global(button),
 .profileFields :global(select) {
   min-height: 40px;
-}
-
-.identityCard:hover,
-.infoCard:hover,
-.summaryCard:hover,
-.fieldShell:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
 }
 
 @media (max-width: 980px) {
@@ -1266,13 +1180,6 @@
   transform: none;
 }
 
-.avatarCard:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
 .avatarPrimary {
   width: 82px;
   height: 82px;
@@ -1297,14 +1204,6 @@
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
   color: var(--text-secondary);
-  box-shadow: none;
-  transform: none;
-}
-
-.avatarControls button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
   box-shadow: none;
   transform: none;
 }
@@ -1353,18 +1252,6 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-}
-
-.identityCard:hover,
-.infoCard:hover,
-.summaryCard:hover,
-.fieldShell:hover,
-.dangerZone:hover,
-.dangerSection:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
 }
 
 @media (max-width: 980px) {
@@ -1460,13 +1347,6 @@
   transform: none;
 }
 
-.avatarCard:hover {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  transform: none;
-}
-
 .avatarPrimary {
   width: 84px;
   height: 84px;
@@ -1491,14 +1371,6 @@
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
   color: var(--text-secondary);
-  box-shadow: none;
-  transform: none;
-}
-
-.avatarControls button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
   box-shadow: none;
   transform: none;
 }
@@ -1556,18 +1428,6 @@
 
 .deleteClientButton {
   justify-self: end;
-}
-
-.identityCard:hover,
-.infoCard:hover,
-.summaryCard:hover,
-.fieldShell:hover,
-.dangerZone:hover,
-.dangerSection:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
 }
 
 @media (max-width: 860px) {
@@ -1667,13 +1527,6 @@
   transform: none;
 }
 
-.avatarCard:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
 .avatarPrimary {
   width: 82px;
   height: 82px;
@@ -1698,14 +1551,6 @@
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
   color: var(--text-secondary);
-  box-shadow: none;
-  transform: none;
-}
-
-.avatarControls button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
   box-shadow: none;
   transform: none;
 }
@@ -1772,18 +1617,6 @@
   justify-self: end;
 }
 
-.identityCard:hover,
-.infoCard:hover,
-.summaryCard:hover,
-.fieldShell:hover,
-.dangerZone:hover,
-.dangerSection:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
 @media (max-width: 860px) {
   .profileGrid {
     grid-template-columns: 1fr;
@@ -1835,73 +1668,131 @@
 }
 
 /* ==========================================================================
-   v112 · Visão geral estática
-   Campos, textareas e painéis não mudam no hover.
+   v115 · Visão geral sem hover e composição estável
    ========================================================================== */
-.avatarCard:hover,
-.profileGrid:hover,
-.contractSection:hover,
-.dangerSection:hover,
-.fieldShell:hover,
-.identityCard:hover,
-.infoCard:hover,
-.summaryCard:hover {
-  border-color: var(--workspace-panel-border-soft);
+.overviewShell {
+  min-height: 100%;
+  background: var(--workspace-bg);
+}
+
+.mainSection {
+  padding: 16px 20px 20px;
+  background: var(--workspace-bg);
+}
+
+.profileGrid {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  column-gap: 20px;
+  align-items: start;
+  justify-content: stretch;
+  justify-items: stretch;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.avatarCard {
+  width: 100%;
+  min-height: 178px;
+  padding: 18px 16px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 14px;
   box-shadow: none;
   transform: none;
 }
 
-.input:hover,
-.input:focus,
-.input:focus-visible,
-.textarea:hover,
-.textarea:focus,
-.textarea:focus-visible {
-  border-color: var(--workspace-panel-border-soft);
+.avatarPrimary {
+  width: 82px;
+  height: 82px;
+  border: 1px solid var(--workspace-panel-border-soft);
   background: var(--field-bg);
   box-shadow: none;
-  outline: none;
 }
 
-/* ==========================================================================
-   v114 · Visão geral do cliente sem hover visual
-   ========================================================================== */
-.mainSection:hover,
-.profileGrid:hover,
-.avatarCard:hover,
-.avatarRail:hover,
-.avatarPrimary:hover,
-.avatarControls:hover,
-.contractSection:hover,
-.contractGrid:hover,
-.dangerSection:hover,
-.identityCard:hover,
-.infoCard:hover,
-.summaryCard:hover,
-.fieldShell:hover,
-.dangerZone:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: transparent;
-  box-shadow: none;
-  transform: none;
+.profileFields {
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.58fr);
+  column-gap: 14px;
+  row-gap: 13px;
+  align-content: start;
 }
 
-.avatarCard:hover,
-.identityCard:hover,
-.infoCard:hover,
-.summaryCard:hover,
-.fieldShell:hover,
-.dangerZone:hover {
-  background: var(--workspace-panel-bg);
+.profileFieldName {
+  grid-column: 1 / -1;
 }
 
-.avatarControls button:hover:not(:disabled),
-.avatarActions button:hover:not(:disabled),
-.deleteClientButton:hover {
+.contractSection {
+  padding: 16px 20px;
+}
+
+.contractGrid {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dangerSection {
+  min-height: 76px;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.avatarControls button,
+.avatarActions button,
+.deleteClientButton {
   border-color: var(--workspace-panel-border-soft);
   background: var(--field-bg);
   color: var(--text-secondary);
   box-shadow: none;
   transform: none;
+}
+
+.avatarControls .avatarRemoveButton,
+.avatarActions .dangerButton,
+.deleteClientButton {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+@media (max-width: 860px) {
+  .profileGrid {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  .avatarCard,
+  .profileFields {
+    grid-column: 1;
+  }
+
+  .contractGrid,
+  .profileFields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .profileFields,
+  .contractGrid,
+  .dangerSection {
+    grid-template-columns: 1fr;
+  }
 }

@@ -101,25 +101,10 @@
   cursor: pointer;
 }
 
-.projectBtn:hover:not(:disabled),
-.iconBtn:hover:not(:disabled),
-.btn:hover:not(:disabled),
-.btnGhost:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-selected);
-  color: var(--text-primary);
-}
-
 .btnDanger {
   color: #ff9cad;
   border-color: rgba(255, 91, 115, 0.24);
   background: rgba(255, 91, 115, 0.055);
-}
-
-.btnDanger:hover:not(:disabled) {
-  color: #ffd0d8;
-  border-color: rgba(255, 91, 115, 0.38);
-  background: rgba(255, 91, 115, 0.1);
 }
 
 .projectBtn:disabled,
@@ -266,13 +251,6 @@
   outline: 0;
 }
 
-.input:hover,
-.selectControl :global(button:hover),
-.selectControl :global(input:hover),
-.selectControl :global(select:hover) {
-  border-color: var(--line);
-}
-
 .input:focus,
 .selectControl :global(button:focus-visible),
 .selectControl :global(input:focus),
@@ -377,11 +355,6 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-}
-
-.projectChoiceCard:hover:not(:disabled) {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.04);
 }
 
 .projectChoiceCard strong {
@@ -661,15 +634,6 @@
   box-shadow: none;
 }
 
-.projectBtn:hover,
-.iconBtn:hover,
-.btn:hover,
-.btnGhost:hover,
-.projectChoiceCard:hover {
-  border-color: var(--workspace-panel-border);
-  background: var(--bg-hover);
-}
-
 .projectBtn:focus-visible,
 .iconBtn:focus-visible,
 .btn:focus-visible,
@@ -727,17 +691,6 @@
   box-shadow: none;
 }
 
-.projectBtn:hover,
-.iconBtn:hover,
-.btn:hover,
-.btnGhost:hover,
-.projectChoiceCard:hover {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  box-shadow: none;
-  transform: none;
-}
-
 .btnDanger {
   border-color: var(--danger-line);
   background: var(--danger-soft);
@@ -778,18 +731,6 @@
   display: none;
 }
 
-.projectBtn:hover,
-.iconBtn:hover,
-.btn:hover,
-.btnGhost:hover,
-.projectChoiceCard:hover,
-.attachmentAction:hover {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  box-shadow: none;
-  transform: none;
-}
-
 /* ==========================================================================
    v95 · Backdrop blur restaurado
    Todo modal/drawer deve desfocar o fundo da plataforma.
@@ -822,13 +763,6 @@
   box-shadow: var(--shadow-dialog);
 }
 
-.modalCard:hover {
-  border-color: var(--workspace-panel-border);
-  background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
-  transform: none;
-}
-
 .modalHead {
   min-height: 58px;
   border-bottom-color: var(--workspace-panel-border-soft);
@@ -843,13 +777,6 @@
   border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-bg);
   box-shadow: none;
-}
-
-.section:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-bg);
-  box-shadow: none;
-  transform: none;
 }
 
 .sectionTitle {
@@ -889,13 +816,6 @@
   max-height: min(760px, calc(100dvh - 72px));
   border: 1px solid var(--workspace-panel-border);
   border-radius: var(--workspace-card-radius);
-  background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
-  transform: none;
-}
-
-.modalCard:hover {
-  border-color: var(--workspace-panel-border);
   background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
   transform: none;
@@ -950,21 +870,7 @@
   box-shadow: none;
 }
 
-.iconBtn:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  box-shadow: none;
-  transform: none;
-}
-
 .section {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.section:hover {
   border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-bg);
   box-shadow: none;
@@ -987,18 +893,6 @@
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
   box-shadow: none;
-}
-
-.input:hover,
-.input:focus,
-.input:focus-visible,
-.selectControl :global(button:hover),
-.selectControl :global(button:focus),
-.selectControl :global(button:focus-visible) {
-  border-color: var(--line);
-  background: var(--field-bg);
-  box-shadow: none;
-  outline: none;
 }
 
 @media (max-width: 1100px) {
@@ -1040,13 +934,6 @@
   border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
   color: var(--text-primary);
-  box-shadow: var(--shadow-dialog);
-  transform: none;
-}
-
-.modalCard:hover {
-  border-color: var(--workspace-panel-border);
-  background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
   transform: none;
 }
@@ -1104,24 +991,7 @@
   transform: none;
 }
 
-.iconBtn:hover:not(:disabled),
-.btn:hover:not(:disabled),
-.btnGhost:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  box-shadow: none;
-  transform: none;
-}
-
 .section {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.section:hover {
   border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-bg);
   box-shadow: none;
@@ -1150,18 +1020,6 @@
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
   box-shadow: none;
-}
-
-.input:hover,
-.input:focus,
-.input:focus-visible,
-.selectControl :global(button:hover),
-.selectControl :global(button:focus),
-.selectControl :global(button:focus-visible) {
-  border-color: var(--line);
-  background: var(--field-bg);
-  box-shadow: none;
-  outline: none;
 }
 
 @media (max-width: 980px) {
@@ -1199,13 +1057,6 @@
   transform: none;
 }
 
-.modalCard:hover {
-  border-color: var(--workspace-panel-border);
-  background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
-  transform: none;
-}
-
 .modalHead {
   flex: 0 0 58px;
   min-height: 58px;
@@ -1222,176 +1073,146 @@
 }
 
 /* ==========================================================================
-   v111 · Modal cliente sem hover em seções grandes
-   Footer/ações mantêm cor principal sem mudança visual no hover.
+   v115 · Modal cliente refinamento final sem hover
+   Referência visual: modal Nova demanda — superfície escura, borda fina,
+   header/footer estáveis e nenhuma reação visual em hover.
    ========================================================================== */
-.section:hover,
-.modalFooter:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-bg);
-  box-shadow: none;
-  transform: none;
+.overlay {
+  z-index: 26000;
+  padding: 28px;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
 }
 
-.modalFooter .btn,
-.modalFooter .btn:hover,
-.modalFooter .btn:focus,
-.modalFooter .btn:focus-visible {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--accent);
-  box-shadow: none;
-  transform: none;
-}
-
-/* ==========================================================================
-   v112 · Detalhe do cliente sem hover em superfícies não acionáveis
-   Seções, campos e textareas permanecem estáticos; ações primárias fixas.
-   ========================================================================== */
-.section,
-.section:hover,
-.card,
-.card:hover,
-.contentCard,
-.contentCard:hover,
-.tabPanel,
-.tabPanel:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.input:hover,
-.input:focus,
-.input:focus-visible,
-textarea:hover,
-textarea:focus,
-textarea:focus-visible,
-.selectControl :global(button:hover),
-.selectControl :global(button:focus),
-.selectControl :global(button:focus-visible),
-.selectControl :global(input:hover),
-.selectControl :global(input:focus),
-.selectControl :global(input:focus-visible),
-.selectControl :global(select:hover),
-.selectControl :global(select:focus),
-.selectControl :global(select:focus-visible) {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--field-bg);
-  box-shadow: none;
-  outline: none;
-}
-
-.iconBtn:hover:not(:disabled),
-.btn:hover:not(:disabled),
-.btnGhost:hover:not(:disabled),
-.projectBtn:hover:not(:disabled) {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--field-bg);
-  color: var(--text-secondary);
-  box-shadow: none;
-  transform: none;
-}
-
-.btnDanger,
-.btnDanger:hover:not(:disabled),
-.btnDanger:focus,
-.btnDanger:focus-visible {
-  border-color: var(--danger-line);
-  background: var(--danger-soft);
-  color: var(--danger-text);
-  box-shadow: none;
-  transform: none;
-  outline: none;
-}
-
-.modalFooter,
-.modalFooter:hover,
-.confirmActions,
-.confirmActions:hover {
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.modalFooter .btn,
-.modalFooter .btn:hover,
-.modalFooter .btn:focus,
-.modalFooter .btn:focus-visible,
-.confirmActions .btn,
-.confirmActions .btn:hover,
-.confirmActions .btn:focus,
-.confirmActions .btn:focus-visible {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--accent);
-  box-shadow: none;
-  transform: none;
-  outline: none;
-}
-
-/* ==========================================================================
-   v114 · Modal detalhe cliente sem hover visual
-   ========================================================================== */
-.modalCard:hover {
-  border-color: var(--workspace-panel-border);
+.modalCard {
+  width: min(980px, calc(100vw - 72px));
+  height: min(760px, calc(100dvh - 72px));
+  min-height: min(760px, calc(100dvh - 72px));
+  max-height: min(760px, calc(100dvh - 72px));
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
   transform: none;
 }
 
-.modalHead:hover,
-.modalBody:hover {
+.modalHead {
+  flex: 0 0 58px;
+  min-height: 58px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
   background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
 }
 
-.section:hover,
-.field:hover,
-.confirmBar:hover,
-.confirmModal:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: transparent;
-  box-shadow: none;
-  transform: none;
+.modalBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--workspace-bg);
+  overflow: hidden;
 }
 
-.projectBtn:hover:not(:disabled),
-.iconBtn:hover:not(:disabled),
-.btn:hover:not(:disabled),
-.btnGhost:hover:not(:disabled),
-.btnDanger:hover:not(:disabled),
-.attachmentAction:hover,
-.projectChoiceCard:hover {
-  box-shadow: none;
-  transform: none;
+.identity {
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
 }
 
-.projectBtn:hover:not(:disabled),
-.iconBtn:hover:not(:disabled),
-.btn:hover:not(:disabled),
-.btnGhost:hover:not(:disabled) {
+.avatar {
+  width: 36px;
+  height: 36px;
   border-color: var(--workspace-panel-border-soft);
   background: var(--field-bg);
-  color: var(--text-secondary);
+  box-shadow: none;
 }
 
-.btnDanger:hover:not(:disabled) {
+.name {
+  max-width: min(560px, 100%);
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.12;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+}
+
+.status {
+  height: 22px;
+  min-height: 22px;
+  padding: 0 9px;
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+}
+
+.modalEyebrow,
+.sectionTitle {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.095em;
+}
+
+.section {
+  padding: 16px 18px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  background: var(--workspace-bg);
+}
+
+.input,
+.textarea,
+.selectControl :global(button),
+.selectControl :global(input),
+.selectControl :global(select) {
+  min-height: 40px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+  outline: none;
+  transform: none;
+}
+
+.projectBtn,
+.iconBtn,
+.btn,
+.btnGhost,
+.btnDanger,
+.attachmentAction {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+.btnDanger {
   border-color: var(--danger-line);
   background: var(--danger-soft);
   color: var(--danger-text);
 }
 
-.input:hover,
-.textarea:hover,
-.selectControl:hover,
+.confirmBar,
+.confirmModal {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.projectBtn:focus,
+.projectBtn:focus-visible,
+.iconBtn:focus,
+.iconBtn:focus-visible,
+.btn:focus,
+.btn:focus-visible,
+.btnGhost:focus,
+.btnGhost:focus-visible,
+.btnDanger:focus,
+.btnDanger:focus-visible,
 .input:focus,
-.textarea:focus {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--field-bg);
-  box-shadow: none;
+.input:focus-visible,
+.textarea:focus,
+.textarea:focus-visible {
   outline: none;
+  box-shadow: none;
   transform: none;
 }

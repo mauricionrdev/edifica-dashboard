@@ -116,12 +116,6 @@
   flex-shrink: 0;
 }
 
-.addBtn:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-selected);
-  color: var(--text-primary);
-}
-
 .addBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -157,12 +151,6 @@
   gap: 9px;
 }
 
-.dateControl:hover,
-.dateControl:focus-within {
-  border-color: var(--line);
-  background: var(--bg-hover);
-}
-
 .dateControl span {
   color: var(--text-tertiary);
   font-size: 10px;
@@ -179,12 +167,6 @@
   height: 30px;
   padding: 0;
   border: 0;
-  background: transparent;
-}
-
-.dateField button:hover,
-.dateField button[aria-expanded='true'] {
-  border-color: transparent;
   background: transparent;
 }
 
@@ -217,11 +199,6 @@
   cursor: pointer;
 }
 
-.delBtn:hover:not(:disabled) {
-  color: #ffd0d8;
-  background: rgba(255, 91, 115, 0.12);
-}
-
 .delBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -239,11 +216,6 @@
   line-height: 1.55;
   outline: none;
   resize: vertical;
-}
-
-.textarea:hover,
-.textarea:focus {
-  background: var(--surface-raised);
 }
 
 .textarea::placeholder {
@@ -337,20 +309,10 @@
   color: var(--text-secondary);
 }
 
-.cancelBtn:hover {
-  border-color: var(--line);
-  color: var(--text-primary);
-}
-
 .confirmDeleteBtn {
   border: 1px solid rgba(255, 91, 115, 0.24);
   background: rgba(255, 91, 115, 0.07);
   color: var(--danger-text);
-}
-
-.confirmDeleteBtn:hover {
-  color: #ffd0d8;
-  background: rgba(255, 91, 115, 0.12);
 }
 
 @media (max-width: 920px) {
@@ -539,14 +501,6 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-}
-
-.attachmentActions button:hover:not(:disabled),
-.attachmentActions a:hover,
-.attachButton:hover {
-  color: var(--text-primary);
-  border-color: var(--line);
-  background: rgba(255,255,255,.035);
 }
 
 .attachmentActions .attachmentRemove {
@@ -751,12 +705,6 @@
   background: transparent;
 }
 
-.attachmentActions .attachmentRemove:hover:not(:disabled) {
-  color: #ffd0d8;
-  border-color: rgba(255, 91, 115, 0.34);
-  background: rgba(255, 91, 115, 0.045);
-}
-
 .attachmentActions .attachmentRemove svg {
   width: 13px;
   height: 13px;
@@ -784,13 +732,6 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-}
-
-.viewer header a:hover,
-.viewer header button:hover {
-  color: var(--text-primary);
-  border-color: var(--line);
-  background: rgba(255,255,255,.04);
 }
 
 /* v137 — ações de anexo no topo e alinhamento interno */
@@ -863,12 +804,6 @@
   background: color-mix(in srgb, var(--analysis-accent) 7%, transparent);
 }
 
-.headerSide .addBtn:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--analysis-accent) 42%, transparent);
-  background: color-mix(in srgb, var(--analysis-accent) 12%, transparent);
-  color: var(--text-primary);
-}
-
 .headerMeta {
   width: max-content;
   grid-template-columns: repeat(3, max-content);
@@ -907,12 +842,6 @@
   border-color: var(--analysis-accent-line);
   color: var(--analysis-accent);
   background: color-mix(in srgb, var(--analysis-accent) 6%, transparent);
-}
-
-.entryActions .attachButton:hover {
-  border-color: color-mix(in srgb, var(--analysis-accent) 36%, transparent);
-  background: color-mix(in srgb, var(--analysis-accent) 10%, transparent);
-  color: var(--text-primary);
 }
 
 .attachmentsHeadActions .attachButton {
@@ -1220,15 +1149,6 @@
   box-shadow: none;
 }
 
-.addBtn:hover:not(:disabled),
-.formActions button:hover:not(:disabled),
-.attachmentAction:hover,
-.viewerAction:hover,
-.fileButton:hover:not(:disabled) {
-  border-color: var(--workspace-panel-border);
-  background: var(--bg-hover);
-}
-
 .addBtn:focus-visible,
 .formActions button:focus-visible,
 .attachmentAction:focus-visible,
@@ -1286,16 +1206,25 @@
 }
 
 /* ==========================================================================
-   v114 · Análises do cliente sem hover visual em containers
+   v115 · Análises sem hover em containers
    ========================================================================== */
-.card:hover,
-.panel:hover,
-.section:hover,
-.item:hover,
-.textarea:hover,
-.textarea:focus {
-  border-color: var(--workspace-panel-border-soft);
-  background: transparent;
+.header,
+.entry,
+.textarea,
+.addBtn,
+.delBtn,
+.dateControl {
   box-shadow: none;
   transform: none;
+}
+
+.addBtn,
+.delBtn {
+  background: var(--field-bg);
+}
+
+.delBtn {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
 }
