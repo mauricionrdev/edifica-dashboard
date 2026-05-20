@@ -492,16 +492,10 @@
 }
 
 /* ==========================================================================
-   v113 · Mensalidades: padrões corretos e zero hover
-   DateField do design system e confirmação em modal. Nenhuma seção/card muda no hover.
+   v114 · Mensalidades: DateField + confirmação padrão + sem hover
    ========================================================================== */
-.panel,
-.summaryCard,
-.rowCard,
-.emptyState {
+.panel {
   background: var(--workspace-bg);
-  box-shadow: none;
-  transform: none;
 }
 
 .summaryCard,
@@ -509,29 +503,46 @@
 .emptyState {
   border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
 }
 
+.panel:hover,
 .summaryCard:hover,
 .rowCard:hover,
 .emptyState:hover,
 .sectionHead:hover,
-.panel:hover {
+.rows:hover {
   border-color: var(--workspace-panel-border-soft);
   background: var(--workspace-panel-bg);
   box-shadow: none;
   transform: none;
 }
 
-.rowGrid {
-  grid-template-columns: minmax(200px, 260px) minmax(200px, 260px);
-  gap: 12px;
+.monthSelect,
+.deleteConfirm,
+.deleteConfirmActions,
+.deleteConfirmDanger {
+  display: none;
 }
 
-.monthSelect,
-.monthSelect:hover,
-.monthSelect :global(*),
-.monthSelect:hover :global(*) {
+.monthField {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.monthField :global(button),
+.monthField :global(button:hover),
+.monthField :global(button:focus),
+.monthField :global(button:focus-visible),
+.monthField :global(button[aria-expanded='true']) {
+  width: 100%;
+  min-height: 40px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
   box-shadow: none;
+  outline: none;
   transform: none;
 }
 
@@ -577,6 +588,13 @@
   background: var(--workspace-panel-bg);
   box-shadow: var(--shadow-dialog);
   overflow: hidden;
+}
+
+.confirmModal:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  transform: none;
 }
 
 .confirmHead {
@@ -632,6 +650,8 @@
   color: var(--danger-text);
 }
 
-.deleteConfirm {
-  display: none;
+@media (max-width: 720px) {
+  .rowGrid {
+    grid-template-columns: 1fr;
+  }
 }

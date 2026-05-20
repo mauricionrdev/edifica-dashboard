@@ -1865,11 +1865,14 @@
 }
 
 /* ==========================================================================
-   v113 · Visão geral sem hover em seções/cards
+   v114 · Visão geral do cliente sem hover visual
    ========================================================================== */
 .mainSection:hover,
 .profileGrid:hover,
 .avatarCard:hover,
+.avatarRail:hover,
+.avatarPrimary:hover,
+.avatarControls:hover,
 .contractSection:hover,
 .contractGrid:hover,
 .dangerSection:hover,
@@ -1877,22 +1880,28 @@
 .infoCard:hover,
 .summaryCard:hover,
 .fieldShell:hover,
-.dangerZone:hover,
-.avatarControls button:hover,
-.deleteClientButton:hover {
+.dangerZone:hover {
   border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
+  background: transparent;
   box-shadow: none;
   transform: none;
 }
 
-.mainSection:hover,
-.profileGrid:hover,
-.contractGrid:hover {
-  background: transparent;
+.avatarCard:hover,
+.identityCard:hover,
+.infoCard:hover,
+.summaryCard:hover,
+.fieldShell:hover,
+.dangerZone:hover {
+  background: var(--workspace-panel-bg);
 }
 
-.avatarControls button:hover,
+.avatarControls button:hover:not(:disabled),
+.avatarActions button:hover:not(:disabled),
 .deleteClientButton:hover {
-  color: inherit;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+  transform: none;
 }

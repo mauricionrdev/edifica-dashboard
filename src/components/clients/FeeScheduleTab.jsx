@@ -38,31 +38,6 @@ function dateValueToMonth(value) {
   return /^\d{4}-\d{2}-\d{2}/.test(String(value || '')) ? String(value).slice(0, 7) : '';
 }
 
-function buildMonthOptions(client, currentMonth) {
-  const startRaw = String(client?.startDate || '').slice(0, 7);
-  const endRaw = String(client?.endDate || '').slice(0, 7);
-  const start = /^\d{4}-\d{2}$/.test(startRaw) ? startRaw : currentMonth;
-  const end = /^\d{4}-\d{2}$/.test(endRaw) ? endRaw : '';
-
-  const [startYear, startMonth] = start.split('-').map(Number);
-  const startDate = new Date(startYear, startMonth - 1, 1);
-  const options = [];
-  const max = 48;
-
-  for (let index = 0; index < max; index += 1) {
-    const date = new Date(startDate.getFullYear(), startDate.getMonth() + index, 1);
-    const key = monthKeyFromDate(date);
-    options.push({ value: key, label: monthLabel(key) });
-    if (end && key >= end) break;
-  }
-
-  if (!options.some((option) => option.value === currentMonth)) {
-    options.push({ value: currentMonth, label: monthLabel(currentMonth) });
-  }
-
-  return options.sort((a, b) => a.value.localeCompare(b.value));
-}
-
 function fmtDateLabel(value) {
   if (!value) return 'Sem data';
   const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
@@ -286,9 +261,11 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
                   <label className={drawerStyles.label} htmlFor={`fee-month-${row.id}`}>Mês referência</label>
                   <DateField
                     id={`fee-month-${row.id}`}
+                    className={styles.monthField}
                     value={monthToDateValue(row.month)}
                     onChange={(value) => handleFieldChange(row.id, 'month', dateValueToMonth(value))}
                     disabled={!canEdit || saving}
+                    placeholder="mm/aaaa"
                     ariaLabel="Mês referência"
                   />
                 </div>

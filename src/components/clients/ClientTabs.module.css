@@ -391,7 +391,7 @@
 }
 
 /* ==========================================================================
-   v113 · Tabs sem hover visual forte
+   v114 · Tabs do cliente sem hover visual
    ========================================================================== */
 .tab:hover {
   border-color: var(--workspace-panel-border-soft);
@@ -406,4 +406,6 @@
   border-color: var(--accent-line);
   background: var(--accent-soft);
   color: var(--accent);
+  box-shadow: none;
+  transform: none;
 }
