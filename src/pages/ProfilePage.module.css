@@ -12481,3 +12481,208 @@ button:focus-visible {
 .avatar_rose { background: #EF7AAE; color: #2c0820; }
 .avatar_slate,
 .avatar_grafite { background: var(--field-bg); color: var(--text-secondary); }
+
+/* ==========================================================================
+   v128 · Reparo perfil/configurações e comentários
+   Restaura seletor visual de cores, prefixo /perfil/ e evita tela preta.
+   ========================================================================== */
+.settingsModal:not(.demandModal) {
+  width: min(620px, calc(100vw - 48px));
+  max-width: 620px;
+  max-height: min(720px, calc(100dvh - 48px));
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.settingsModal:not(.demandModal) .settingsHeader {
+  min-height: 72px;
+  padding: 18px 22px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.settingsModal:not(.demandModal) .settingsTabs {
+  min-height: 46px;
+  padding: 0 22px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.settingsModal:not(.demandModal) .settingsPaneStack,
+.settingsModal:not(.demandModal) .settingsContent {
+  padding: 18px 22px;
+  background: var(--workspace-bg);
+}
+
+.settingsModal:not(.demandModal) .settingsFooter {
+  min-height: 64px;
+  padding: 12px 22px;
+  border-top-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.settingsModal:not(.demandModal) .photoRow {
+  min-height: 118px;
+  padding: 18px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-bg);
+}
+
+.settingsColorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.settingsColorOption {
+  min-height: 68px;
+  padding: 10px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  box-shadow: none;
+  transform: none;
+}
+
+.settingsColorOptionActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.settingsColorAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.settingsProfileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-top: 14px;
+}
+
+.settingsProfileGrid input,
+.slugInputGroup {
+  min-height: 42px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.slugInputGroup {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.slugInputGroup span {
+  padding: 0 14px;
+  border-right: 1px solid var(--workspace-panel-border-soft);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  font-weight: 650;
+}
+
+.slugInputGroup input {
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  padding: 0 14px;
+}
+
+.avatar,
+.photoAvatar,
+.settingsPreviewAvatar,
+.settingsColorAvatar,
+.collaboratorAvatar,
+.userAvatar,
+.personAvatar {
+  position: relative;
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.avatar img,
+.photoAvatar img,
+.settingsPreviewAvatar img,
+.settingsColorAvatar img,
+.collaboratorAvatar img,
+.userAvatar img,
+.personAvatar img {
+  position: static;
+  inset: auto;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.commentAvatar {
+  position: relative;
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+.commentAvatarPhoto {
+  background: var(--bg-app);
+  color: transparent;
+}
+
+.commentAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.avatar_amber { background: var(--accent); color: var(--accent-text); }
+.avatar_blue { background: var(--info); color: var(--bg-app); }
+.avatar_violet { background: #B784F0; color: #1a0d2c; }
+.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
+.avatar_rose { background: #EF7AAE; color: #2c0820; }
+.avatar_slate,
+.avatar_grafite { background: var(--field-bg); color: var(--text-secondary); }
+
+@media (max-width: 720px) {
+  .settingsModal:not(.demandModal) {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .settingsProfileGrid,
+  .settingsColorGrid {
+    grid-template-columns: 1fr;
+  }
+}

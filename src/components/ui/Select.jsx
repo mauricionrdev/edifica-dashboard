@@ -117,7 +117,9 @@ export default function Select({
         ref={buttonRef}
         type="button"
         className={`${styles.select} ${open ? styles.selectOpen : ''}`.trim()}
-        onClick={() => {
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
           if (!disabled) setOpen((current) => !current);
         }}
         disabled={disabled}

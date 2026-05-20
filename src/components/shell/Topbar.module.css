@@ -610,3 +610,39 @@
     display: none;
   }
 }
+
+/* ==========================================================================
+   v128 · Acessos único na topbar
+   ========================================================================== */
+.accessAttentionButton {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 720;
+  letter-spacing: -0.01em;
+  box-shadow: none;
+  transform: none;
+}
+
+.accessAttentionButton strong {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 820;
+}

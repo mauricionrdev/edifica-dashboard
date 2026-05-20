@@ -3944,8 +3944,8 @@ export default function ProfilePage() {
                   <div className={styles.commentList}>
                     {visibleTaskComments.map((comment) => {
                       const commentAuthor = comment.authorName || comment.userName || 'Usuário';
-                      const avatarUrl = commentAvatarUrl(comment, userDirectory, user);
-                      const avatarColor = commentAvatarColor(comment, userDirectory, user);
+                      const avatarUrl = commentAvatarUrl(comment, demandUsers, user);
+                      const avatarColor = commentAvatarColor(comment, demandUsers, user);
                       return (
                         <article key={comment.id} className={styles.commentItem}>
                           <span
@@ -4660,19 +4660,30 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className={styles.formGrid}>
+                <div className={styles.settingsColorGrid}>
+                  {AVATAR_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`${styles.settingsColorOption} ${profileForm.avatarColor === option.value ? styles.settingsColorOptionActive : ''}`.trim()}
+                      onClick={() => setProfileForm((prev) => ({ ...prev, avatarColor: option.value }))}
+                      tabIndex={settingsTab === 'profile' ? 0 : -1}
+                    >
+                      <span className={`${styles.settingsColorAvatar} ${styles[`avatar_${option.value}`] || styles.avatar_amber}`}>
+                        {initials(profileForm.name || user?.name)}
+                      </span>
+                      <strong>{option.label}</strong>
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.settingsProfileGrid}>
                   <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
                   <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <Select
-                    value={profileForm.avatarColor}
-                    onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
-                    aria-label="Cor"
-                    className={styles.formSelect}
-                    disabled={settingsTab !== 'profile'}
-                  >
-                    {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
+                  <label className={styles.slugInputGroup}>
+                    <span>/perfil/</span>
+                    <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="link-personalizado" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                  </label>
                 </div>
               </div>
 
