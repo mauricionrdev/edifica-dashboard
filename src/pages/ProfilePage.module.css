@@ -12413,3 +12413,71 @@ button:focus-visible {
 .avatar_rose { background: #EF7AAE; color: #2c0820; }
 .avatar_slate,
 .avatar_grafite { background: var(--field-bg); color: var(--text-secondary); }
+
+/* ==========================================================================
+   v127 · Hotfix avatar perfil/comentários
+   Remove oval do avatar principal e mantém foto cobrindo comentários.
+   ========================================================================== */
+.avatar,
+.settingsPreviewAvatar,
+.settingsColorAvatar,
+.collaboratorAvatar,
+.userAvatar,
+.personAvatar {
+  position: relative;
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.avatar img,
+.settingsPreviewAvatar img,
+.settingsColorAvatar img,
+.collaboratorAvatar img,
+.userAvatar img,
+.personAvatar img {
+  position: static;
+  inset: auto;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.commentAvatar {
+  position: relative;
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+.commentAvatarPhoto {
+  background: var(--bg-app);
+  color: transparent;
+}
+
+.commentAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.avatar_amber { background: var(--accent); color: var(--accent-text); }
+.avatar_blue { background: var(--info); color: var(--bg-app); }
+.avatar_violet { background: #B784F0; color: #1a0d2c; }
+.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
+.avatar_rose { background: #EF7AAE; color: #2c0820; }
+.avatar_slate,
+.avatar_grafite { background: var(--field-bg); color: var(--text-secondary); }

@@ -554,6 +554,8 @@ function UserFormModal({
                   {mode === 'edit' && form.role === 'admin' ? <option value="admin">Administrador legado</option> : null}
                   <option value="gdv">GDV</option>
                   <option value="gestor">Gestor de Tráfego</option>
+                  <option value="sdr">SDR</option>
+                  <option value="closer">Closer</option>
                   <option value="cap">CAP</option>
                 </Select>
               </label>
@@ -782,6 +784,8 @@ function RequestReviewModal({ request, squads = [], busy = false, onClose, onSub
 
                     <option value="gdv">GDV</option>
                     <option value="gestor">Gestor de Tráfego</option>
+                    <option value="sdr">SDR</option>
+                    <option value="closer">Closer</option>
                     <option value="cap">CAP</option>
                   </Select>
                 </label>
@@ -1685,6 +1689,8 @@ export default function TeamAccessPage() {
                     <option value="admin">Administrador legado</option>
                     <option value="gdv">GDV</option>
                     <option value="gestor">Gestor de Tráfego</option>
+                    <option value="sdr">SDR</option>
+                    <option value="closer">Closer</option>
                     <option value="cap">CAP</option>
                   </Select>
                 </label>

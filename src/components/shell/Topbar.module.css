@@ -544,3 +544,69 @@
     display: none;
   }
 }
+
+/* ==========================================================================
+   v127 · Acessos na topbar e avatar sem fresta
+   ========================================================================== */
+.accessAttentionButton {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 720;
+  letter-spacing: -0.01em;
+  box-shadow: none;
+  transform: none;
+}
+
+.accessAttentionButton strong {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 820;
+}
+
+.userAvatar {
+  position: relative;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.userAvatar:has(img) {
+  background: var(--bg-app);
+}
+
+.userAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+@media (max-width: 720px) {
+  .accessAttentionButton span {
+    display: none;
+  }
+}

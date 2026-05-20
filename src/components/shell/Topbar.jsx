@@ -159,6 +159,20 @@ export default function Topbar({
             </button>
           ) : null}
 
+          {showAccessAttention && pendingAccessCount > 0 ? (
+            <button
+              type="button"
+              className={styles.accessAttentionButton}
+              onClick={() => navigate('/equipe?tab=requests')}
+              title={latestAccessRequest?.requesterName || latestAccessRequest?.requesterEmail || 'Solicitações de acesso'}
+              aria-label={`${pendingAccessCount} solicitações de acesso pendentes`}
+            >
+              <ShieldIcon size={14} />
+              <span>Acessos</span>
+              <strong>{pendingAccessCount > 99 ? '99+' : pendingAccessCount}</strong>
+            </button>
+          ) : null}
+
           <div className={styles.notificationsWrap} ref={panelRef}>
             <button
               type="button"

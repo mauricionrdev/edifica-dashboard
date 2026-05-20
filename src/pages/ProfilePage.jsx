@@ -506,6 +506,25 @@ function initials(name) {
     .join('') || '?';
 }
 
+
+function avatarColorKey(value) {
+  return String(value || 'amber').toLowerCase();
+}
+
+function commentAvatarUrl(comment, directory = [], currentUser = null) {
+  if (comment?.avatarUrl) return comment.avatarUrl;
+  if (comment?.userId && currentUser?.id === comment.userId) return getUserAvatar(currentUser);
+  const entry = (Array.isArray(directory) ? directory : []).find((item) => item?.id === comment?.userId);
+  return getUserAvatar(entry);
+}
+
+function commentAvatarColor(comment, directory = [], currentUser = null) {
+  if (comment?.avatarColor) return avatarColorKey(comment.avatarColor);
+  if (comment?.userId && currentUser?.id === comment.userId) return avatarColorKey(currentUser?.avatarColor);
+  const entry = (Array.isArray(directory) ? directory : []).find((item) => item?.id === comment?.userId);
+  return avatarColorKey(entry?.avatarColor);
+}
+
 function dateKey(value) {
   if (!value) return null;
   const date = new Date(`${value}T00:00:00`);
