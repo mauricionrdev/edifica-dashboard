@@ -1330,3 +1330,65 @@ textarea:focus-visible,
   transform: none;
   outline: none;
 }
+
+/* ==========================================================================
+   v113 · Sem hover no modal de detalhes do cliente
+   Nenhum card, seção, footer, campo ou container grande muda visualmente no hover.
+   ========================================================================== */
+.modalCard:hover,
+.modalHead:hover,
+.modalBody:hover,
+.section:hover,
+.modalFooter:hover,
+.field:hover,
+.projectChoiceCard:hover,
+.projectBtn:hover,
+.btn:hover,
+.btnGhost:hover,
+.iconBtn:hover,
+.attachmentAction:hover,
+.confirmModal:hover,
+.input:hover,
+.textarea:hover,
+.selectControl:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: inherit;
+  box-shadow: none;
+  transform: none;
+}
+
+.modalCard:hover,
+.modalHead:hover,
+.modalBody:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+}
+
+.section:hover {
+  background: var(--workspace-bg);
+}
+
+.btn,
+.btn:hover,
+.btn:focus,
+.btn:focus-visible,
+.btnGhost,
+.btnGhost:hover,
+.btnGhost:focus,
+.btnGhost:focus-visible {
+  box-shadow: none;
+  transform: none;
+  outline: none;
+}
+
+.btnDanger,
+.btnDanger:hover,
+.btnDanger:focus,
+.btnDanger:focus-visible {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: none;
+  transform: none;
+  outline: none;
+}

@@ -1863,3 +1863,36 @@
   box-shadow: none;
   outline: none;
 }
+
+/* ==========================================================================
+   v113 · Visão geral sem hover em seções/cards
+   ========================================================================== */
+.mainSection:hover,
+.profileGrid:hover,
+.avatarCard:hover,
+.contractSection:hover,
+.contractGrid:hover,
+.dangerSection:hover,
+.identityCard:hover,
+.infoCard:hover,
+.summaryCard:hover,
+.fieldShell:hover,
+.dangerZone:hover,
+.avatarControls button:hover,
+.deleteClientButton:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.mainSection:hover,
+.profileGrid:hover,
+.contractGrid:hover {
+  background: transparent;
+}
+
+.avatarControls button:hover,
+.deleteClientButton:hover {
+  color: inherit;
+}

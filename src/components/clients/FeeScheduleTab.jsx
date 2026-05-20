@@ -3,7 +3,7 @@ import { updateClientFeeSteps } from '../../api/clients.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { PlusIcon, SaveIcon, TrashIcon } from '../ui/Icons.jsx';
-import Select from '../ui/Select.jsx';
+import DateField from '../ui/DateField.jsx';
 import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate, sortFeeSteps, summarizeFeeSchedule } from '../../utils/feeSchedule.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
@@ -28,6 +28,14 @@ function monthLabel(value) {
     month: 'long',
     year: 'numeric',
   }).format(date);
+}
+
+function monthToDateValue(month) {
+  return /^\d{4}-\d{2}$/.test(String(month || '')) ? `${month}-01` : '';
+}
+
+function dateValueToMonth(value) {
+  return /^\d{4}-\d{2}-\d{2}/.test(String(value || '')) ? String(value).slice(0, 7) : '';
 }
 
 function buildMonthOptions(client, currentMonth) {
@@ -116,7 +124,6 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
   const [saving, setSaving] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState('');
   const currentMonth = useMemo(() => monthKeyFromDate(new Date()), []);
-  const monthOptions = useMemo(() => buildMonthOptions(client, currentMonth), [client?.startDate, client?.endDate, currentMonth]);
   const baseFee = useMemo(() => parseLocaleNumber(client?.fee, null), [client?.fee]);
 
   useEffect(() => {
@@ -274,35 +281,16 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
                 ) : null}
               </div>
 
-              {deleteTargetId === row.id ? (
-                <div className={styles.deleteConfirm}>
-                  <strong>Excluir mensalidade?</strong>
-                  <div className={styles.deleteConfirmActions}>
-                    <button type="button" onClick={cancelRemove}>Cancelar</button>
-                    <button type="button" className={styles.deleteConfirmDanger} onClick={confirmRemove}>Excluir</button>
-                  </div>
-                </div>
-              ) : null}
-
               <div className={styles.rowGrid}>
                 <div className={drawerStyles.field}>
                   <label className={drawerStyles.label} htmlFor={`fee-month-${row.id}`}>Mês referência</label>
-                  <Select
+                  <DateField
                     id={`fee-month-${row.id}`}
-                    className={styles.monthSelect}
-                    value={row.month}
-                    onChange={(event) => handleFieldChange(row.id, 'month', event.target.value)}
+                    value={monthToDateValue(row.month)}
+                    onChange={(value) => handleFieldChange(row.id, 'month', dateValueToMonth(value))}
                     disabled={!canEdit || saving}
-                    placeholder="Selecionar mês"
-                    aria-label="Mês referência"
-                    menuMinWidth={220}
-                  >
-                    {monthOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
+                    ariaLabel="Mês referência"
+                  />
                 </div>
 
                 <div className={drawerStyles.field}>
@@ -329,6 +317,29 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
           ) : null}
         </div>
       </div>
+
+      {deleteTargetId ? (
+        <div className={styles.confirmBackdrop} role="presentation" onClick={cancelRemove}>
+          <section
+            className={styles.confirmModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Excluir mensalidade"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.confirmHead}>
+              <span>Excluir mensalidade</span>
+              <strong>{monthLabel(rows.find((row) => row.id === deleteTargetId)?.month)}</strong>
+            </div>
+            <div className={styles.confirmActions}>
+              <button type="button" onClick={cancelRemove} disabled={saving}>Cancelar</button>
+              <button type="button" className={styles.confirmDanger} onClick={confirmRemove} disabled={saving}>
+                Excluir
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

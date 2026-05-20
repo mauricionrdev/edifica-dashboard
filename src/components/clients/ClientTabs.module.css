@@ -389,3 +389,21 @@
   box-shadow: none;
   transform: none;
 }
+
+/* ==========================================================================
+   v113 · Tabs sem hover visual forte
+   ========================================================================== */
+.tab:hover {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  box-shadow: none;
+  transform: none;
+}
+
+.tabActive,
+.tabActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
