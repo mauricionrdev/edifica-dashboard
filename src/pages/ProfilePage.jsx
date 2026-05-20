@@ -755,6 +755,21 @@ function avatarColorClassName(color) {
   return allowed.includes(value) ? value : 'amber';
 }
 
+function userAvatarColor(userLike) {
+  return avatarColorClassName(userLike?.avatarColor || userLike?.avatar_color || 'amber');
+}
+
+function mergeDirectoryUser(userLike, users = []) {
+  const userId = String(userLike?.userId || userLike?.user_id || userLike?.id || '').trim();
+  const found = userId ? users.find((entry) => String(entry?.id || '') === userId) : null;
+  return {
+    ...found,
+    ...userLike,
+    avatarUrl: userLike?.avatarUrl || userLike?.avatar_url || found?.avatarUrl || found?.avatar_url || '',
+    avatarColor: userLike?.avatarColor || userLike?.avatar_color || found?.avatarColor || found?.avatar_color || 'amber',
+  };
+}
+
 function briefingStageAction(task, briefing) {
   if (!task || getTaskKind(task) !== 'briefing' || task.status === 'canceled') return null;
   const status = task.status || 'todo';
@@ -1603,6 +1618,14 @@ export default function ProfilePage() {
   }, [user?.name, user?.phone, user?.avatarColor, user?.customSlug]);
 
   useEffect(() => {
+    if (!user?.id) return;
+    setDemandUsers((current) => {
+      if (!Array.isArray(current) || !current.length) return current;
+      return current.map((entry) => (entry?.id === user.id ? { ...entry, ...user } : entry));
+    });
+  }, [user]);
+
+  useEffect(() => {
     setDemandForm((prev) => ({ ...prev, assigneeUserId: prev.assigneeUserId || user?.id || '' }));
   }, [user?.id]);
 
@@ -2137,7 +2160,9 @@ export default function ProfilePage() {
     try {
       setSavingProfile(true);
       await updateProfile(profileForm);
-      await reloadUser();
+      const freshUser = await reloadUser();
+      setAvatarUrl(getUserAvatar(freshUser));
+      setDemandUsers((current) => (Array.isArray(current) ? current.map((entry) => (entry?.id === freshUser?.id ? { ...entry, ...freshUser } : entry)) : current));
       showToast('Perfil atualizado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao salvar.', { variant: 'error' });
@@ -2167,8 +2192,9 @@ export default function ProfilePage() {
     try {
       const dataUrl = await readAvatarFile(file);
       await updateProfile({ avatarUrl: dataUrl });
-      await reloadUser();
-      const saved = saveUserAvatar(user, dataUrl) || true;
+      const freshUser = await reloadUser();
+      setDemandUsers((current) => (Array.isArray(current) ? current.map((entry) => (entry?.id === freshUser?.id ? { ...entry, ...freshUser } : entry)) : current));
+      const saved = saveUserAvatar(freshUser || user, dataUrl) || true;
       if (!saved) throw new Error('Erro');
       setAvatarUrl(dataUrl);
       showToast('Foto atualizada.', { variant: 'success' });
@@ -2180,8 +2206,9 @@ export default function ProfilePage() {
   async function handleRemoveAvatar() {
     try {
       await updateProfile({ avatarUrl: '' });
-      await reloadUser();
-      removeUserAvatar(user);
+      const freshUser = await reloadUser();
+      setDemandUsers((current) => (Array.isArray(current) ? current.map((entry) => (entry?.id === freshUser?.id ? { ...entry, ...freshUser } : entry)) : current));
+      removeUserAvatar(freshUser || user);
       setAvatarUrl('');
       showToast('Foto removida.', { variant: 'success' });
     } catch (err) {
@@ -3802,9 +3829,14 @@ export default function ProfilePage() {
                   <div className={styles.commentList}>
                     {visibleTaskComments.map((comment) => {
                       const commentAuthor = comment.authorName || comment.userName || 'Usuário';
+                      const commentPerson = mergeDirectoryUser(comment, demandUsers);
+                      const commentAvatar = getUserAvatar(commentPerson);
+                      const commentTone = userAvatarColor(commentPerson);
                       return (
                         <article key={comment.id} className={styles.commentItem}>
-                          <span className={styles.commentAvatar}>{initials(commentAuthor)}</span>
+                          <span className={`${styles.commentAvatar} ${styles[`taskAvatar_${commentTone}`] || ''}`.trim()}>
+                            {commentAvatar ? <img src={commentAvatar} alt="" /> : initials(commentAuthor)}
+                          </span>
                           <div className={styles.commentBody}>
                             <header className={styles.commentHeader}>
                               <strong>{commentAuthor}</strong>
@@ -4493,19 +4525,30 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                <div className={styles.colorPicker} role="radiogroup" aria-label="Cor do avatar">
+                  {AVATAR_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`${styles.colorSwatch} ${styles[`avatar_${option.value}`] || ''} ${profileForm.avatarColor === option.value ? styles.colorSwatchActive : ''}`.trim()}
+                      onClick={() => setProfileForm((prev) => ({ ...prev, avatarColor: option.value }))}
+                      aria-checked={profileForm.avatarColor === option.value}
+                      role="radio"
+                      tabIndex={settingsTab === 'profile' ? 0 : -1}
+                    >
+                      <span>{initials(profileForm.name || user?.name)}</span>
+                      <em>{option.label}</em>
+                    </button>
+                  ))}
+                </div>
+
                 <div className={styles.formGrid}>
                   <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
                   <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <Select
-                    value={profileForm.avatarColor}
-                    onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
-                    aria-label="Cor"
-                    className={styles.formSelect}
-                    disabled={settingsTab !== 'profile'}
-                  >
-                    {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
+                  <label className={styles.slugField}>
+                    <span>/perfil/</span>
+                    <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="link-personalizado" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                  </label>
                 </div>
               </div>
 

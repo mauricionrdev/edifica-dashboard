@@ -41,6 +41,12 @@ function initials(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
+function avatarColorClassName(color) {
+  const value = String(color || 'amber').toLowerCase();
+  const allowed = ['amber', 'blue', 'violet', 'emerald', 'rose', 'slate'];
+  return allowed.includes(value) ? value : 'amber';
+}
+
 function getSquadLogo(squad) {
   return (
     squad?.logoUrl
@@ -373,7 +379,7 @@ export default function Sidebar({
                   `${styles.item} ${styles.personItem} ${isActive ? styles.itemActive : ''}`.trim()
                 }
               >
-                <span className={styles.personAvatar} aria-hidden="true">
+                <span className={`${styles.personAvatar} ${styles[`avatar_${avatarColorClassName(entry.avatarColor || entry.avatar_color)}`] || ''}`.trim()} aria-hidden="true">
                   {getUserAvatar(entry) ? <img src={getUserAvatar(entry)} alt="" /> : initials(entry.name)}
                 </span>
                 <span className={styles.itemLabel} title={entry.name}>{entry.name}</span>
@@ -531,7 +537,7 @@ export default function Sidebar({
 
       <div className={styles.footer}>
         <Link to="/perfil" className={styles.profileCard} onClick={handleNavigate} title={collapsed ? user?.name || 'Usuário' : undefined}>
-          <span className={styles.avatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
+          <span className={`${styles.avatar} ${styles[`avatar_${avatarColorClassName(user?.avatarColor || user?.avatar_color)}`] || ''}`.trim()}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
           {!collapsed ? (
             <span className={styles.profileText}>
               <strong>{user?.name || 'Usuário'}</strong>

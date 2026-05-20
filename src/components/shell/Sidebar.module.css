@@ -644,3 +644,24 @@
     z-index: var(--chassis-z-sidebar);
   }
 }
+
+/* ==========================================================================
+   v119 · Avatar do usuário sincronizado
+   ========================================================================== */
+.avatar,
+.personAvatar {
+  border: 1px solid var(--sidebar-line);
+  box-shadow: none;
+}
+
+.avatar_amber { background: var(--accent); color: var(--accent-text); }
+.avatar_blue { background: var(--info); color: var(--bg-app); }
+.avatar_violet { background: #B784F0; color: #1a0d2c; }
+.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
+.avatar_rose { background: #EF7AAE; color: #2c0820; }
+.avatar_slate { background: var(--text-tertiary); color: var(--bg-app); }
+
+.avatar img,
+.personAvatar img {
+  background: transparent;
+}
