@@ -1,6 +1,6 @@
 const SUPER_ROLES = new Set(['admin', 'ceo', 'suporte_tecnologia']);
-const GESTOR_ROLES = new Set(['gestor', ...SUPER_ROLES]);
-const GDV_ROLES = new Set(['gdv', ...SUPER_ROLES]);
+const GESTOR_ROLES = new Set(['cap', 'gestor', ...SUPER_ROLES]);
+const GDV_ROLES = new Set(['gdv', 'closer', ...SUPER_ROLES]);
 const ROLE_LABELS = {
   ceo: 'CEO',
   suporte_tecnologia: 'Suporte de Tecnologia',
@@ -8,6 +8,8 @@ const ROLE_LABELS = {
   cap: 'CAP',
   gestor: 'Gestor de Tráfego',
   gdv: 'GDV',
+  sdr: 'SDR',
+  closer: 'Closer',
 };
 
 function isActiveUser(user) {

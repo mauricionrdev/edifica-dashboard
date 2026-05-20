@@ -9,11 +9,26 @@ import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/client
 import { CameraIcon, LogOutIcon, TrashIcon } from '../ui/Icons.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
-import UserPicker from '../users/UserPicker.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import styles from './OverviewTab.module.css';
 
 const DEBOUNCE_MS = 400;
+
+function withCurrentResponsible(options, selectedName) {
+  const currentName = String(selectedName || '').trim();
+  const rows = Array.isArray(options) ? [...options] : [];
+  if (currentName && !rows.some((entry) => String(entry?.name || '').trim() === currentName)) {
+    rows.unshift({
+      id: `current-${currentName}`,
+      name: currentName,
+      email: '',
+      username: '',
+      role: '',
+      active: true,
+    });
+  }
+  return rows;
+}
 
 function buildForm(client) {
   if (!client) {
@@ -153,8 +168,8 @@ export default function OverviewTab({
 
   if (!client) return null;
 
-  const gestorRows = gestorOptions(users, form.gestor);
-  const gdvRows = gdvOptions(users, form.gdvName);
+  const gestorRows = withCurrentResponsible(gestorOptions(users, form.gestor), form.gestor);
+  const gdvRows = withCurrentResponsible(gdvOptions(users, form.gdvName), form.gdvName);
 
   return (
     <div className={styles.overviewShell}>
@@ -202,16 +217,20 @@ export default function OverviewTab({
 
             <div className={drawerStyles.field}>
               <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor da Conta</label>
-              <UserPicker
+              <Select
                 className={drawerStyles.selectControl}
-                users={gestorRows}
-                value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
-                onChange={(userId) => onSelectChange('gestor', 'gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
+                value={form.gestor}
+                onChange={(event) => onSelectChange('gestor', 'gestor', event.target.value)}
                 disabled={deleting || !canEdit}
                 placeholder="Sem gestor"
-                disableHover
-                portal
-              />
+                aria-label="Gestor da Conta"
+                menuMinWidth={260}
+              >
+                <option value="">Sem gestor</option>
+                {gestorRows.map((entry) => (
+                  <option key={entry.id || entry.name} value={entry.name}>{entry.name}</option>
+                ))}
+              </Select>
             </div>
 
             <div className={drawerStyles.field}>
@@ -233,16 +252,20 @@ export default function OverviewTab({
 
             <div className={drawerStyles.field}>
               <label className={drawerStyles.label} htmlFor="cd-gdv">Gestor de Vendas</label>
-              <UserPicker
+              <Select
                 className={drawerStyles.selectControl}
-                users={gdvRows}
-                value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
-                onChange={(userId) => onSelectChange('gdvName', 'gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
+                value={form.gdvName}
+                onChange={(event) => onSelectChange('gdvName', 'gdvName', event.target.value)}
                 disabled={deleting || !canEdit}
                 placeholder="Sem GDV"
-                disableHover
-                portal
-              />
+                aria-label="Gestor de Vendas"
+                menuMinWidth={260}
+              >
+                <option value="">Sem GDV</option>
+                {gdvRows.map((entry) => (
+                  <option key={entry.id || entry.name} value={entry.name}>{entry.name}</option>
+                ))}
+              </Select>
             </div>
 
             <div className={drawerStyles.field}>
