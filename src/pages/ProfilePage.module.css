@@ -11629,143 +11629,263 @@ button:focus-visible {
 }
 
 /* ==========================================================================
-   v119 · Perfil: avatar com prévia, cores manuais e link personalizado
+   v120 · Perfil / Drawer operacional
+   Avatar sem borda global, modal de configurações refinado e drawer editável.
    ========================================================================== */
-.photoRow {
-  min-height: 108px;
-  padding: 18px;
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
-  align-items: center;
-  gap: 16px;
-}
-
-.photoAvatar {
-  width: 70px;
-  height: 70px;
-  border: 1px solid var(--workspace-panel-border-soft);
-  box-shadow: none;
-}
-
-.photoActions {
-  align-content: center;
-}
-
-.colorPicker {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.colorSwatch {
-  min-width: 0;
-  min-height: 62px;
-  padding: 8px 6px;
-  border: 1px solid var(--workspace-panel-border-soft);
-  border-radius: var(--workspace-control-radius);
-  background: var(--field-bg);
-  color: var(--text-secondary);
-  display: grid;
-  justify-items: center;
-  align-content: center;
-  gap: 6px;
-  font-family: inherit;
-  cursor: pointer;
-  box-shadow: none;
-}
-
-.colorSwatch span {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: -0.04em;
-}
-
-.colorSwatch em {
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 10.5px;
-  font-style: normal;
-  font-weight: 650;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.colorSwatchActive {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-}
-
-.colorSwatchActive em {
-  color: var(--accent);
-}
-
-.colorSwatch.avatar_amber span { background: var(--accent); color: var(--accent-text); }
-.colorSwatch.avatar_blue span { background: var(--info); color: var(--bg-app); }
-.colorSwatch.avatar_violet span { background: #B784F0; color: #1a0d2c; }
-.colorSwatch.avatar_emerald span { background: var(--success-text); color: var(--bg-app); }
-.colorSwatch.avatar_rose span { background: #EF7AAE; color: #2c0820; }
-.colorSwatch.avatar_slate span { background: var(--text-tertiary); color: var(--bg-app); }
-
-.slugField {
-  min-width: 0;
-  min-height: var(--workspace-control-height);
-  border: 1px solid var(--workspace-panel-border-soft);
-  border-radius: var(--workspace-control-radius);
-  background: var(--field-bg);
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  overflow: hidden;
-}
-
-.slugField span {
-  align-self: stretch;
-  padding: 0 12px;
-  border-right: 1px solid var(--workspace-panel-border-soft);
-  background: var(--surface-panel);
-  color: var(--text-tertiary);
-  display: inline-flex;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 620;
-}
-
-.slugField input {
-  min-height: calc(var(--workspace-control-height) - 2px);
+.avatar,
+.settingsPreviewAvatar,
+.settingsColorAvatar,
+.commentAvatar,
+.collaboratorAvatar,
+.userAvatar,
+.personAvatar {
   border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.commentAvatar {
-  overflow: hidden;
-  border: 1px solid var(--workspace-panel-border-soft);
   box-shadow: none;
+  overflow: hidden;
 }
 
-.commentAvatar img {
+.avatar img,
+.settingsPreviewAvatar img,
+.commentAvatar img,
+.collaboratorAvatar img,
+.userAvatar img,
+.personAvatar img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
+  border: 0;
   border-radius: inherit;
+  background: transparent;
 }
 
-@media (max-width: 760px) {
-  .colorPicker {
+.settingsModal {
+  width: min(720px, calc(100vw - 48px));
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.settingsHeader,
+.settingsFooter {
+  background: var(--workspace-panel-bg);
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.settingsContent {
+  background: var(--workspace-bg);
+}
+
+.settingsCard,
+.settingsAvatarBlock {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.settingsAvatarBlock {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.settingsPreviewAvatar {
+  width: 74px;
+  height: 74px;
+  flex: 0 0 74px;
+}
+
+.settingsColorGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.settingsColorOption {
+  min-height: 78px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.settingsColorOptionActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.settingsInputGroup,
+.slugInputGroup {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.settingsSaveButton {
+  min-height: 38px;
+  border-color: var(--accent-line);
+  border-radius: var(--workspace-control-radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.descriptionSection .sectionTitleRow {
+  align-items: center;
+}
+
+.sectionTinyButton {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.descriptionBox {
+  max-height: none;
+  overflow: auto;
+}
+
+.descriptionBoxCollapsed {
+  max-height: 132px;
+}
+
+.descriptionBoxExpanded {
+  max-height: min(58vh, 520px);
+}
+
+.descriptionEditBox,
+.commentEditTextarea {
+  width: 100%;
+  min-height: 112px;
+  resize: vertical;
+  font: inherit;
+  color: var(--edf-text-secondary);
+  background: var(--edf-surface-1);
+  border: 1px solid var(--edf-border);
+  border-radius: var(--workspace-card-radius);
+  padding: 12px 14px;
+  line-height: 1.6;
+  outline: none;
+}
+
+.commentForm textarea,
+.commentDraftTextarea {
+  min-height: 48px;
+  height: 76px;
+  resize: vertical;
+  max-height: 240px;
+  padding-top: 11px;
+}
+
+.commentBody > p {
+  cursor: text;
+}
+
+.workflowTimeline {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.workflowStep {
+  position: relative;
+  min-height: 42px;
+  padding: 8px 12px;
+  isolation: isolate;
+}
+
+.workflowStep::after {
+  content: "";
+  position: absolute;
+  left: calc(100% + 1px);
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background: var(--edf-border);
+  transform: translateY(-50%);
+}
+
+.workflowStep:last-child::after {
+  display: none;
+}
+
+.workflowStep_current {
+  animation: workflowPulse 1.8s ease-in-out infinite;
+}
+
+.workflowStep_current em {
+  margin-left: 2px;
+  padding-left: 8px;
+  border-left: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 720;
+}
+
+@keyframes workflowPulse {
+  0%, 100% {
+    border-color: var(--edf-amber-border);
+    box-shadow: 0 0 0 0 rgba(245, 184, 0, 0.0);
+  }
+
+  50% {
+    border-color: var(--edf-amber-border-strong);
+    box-shadow: 0 0 0 1px rgba(245, 184, 0, 0.12);
+  }
+}
+
+.activityPagination {
+  min-height: 34px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.activityPagination span {
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.activityPagination button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.activityPagination button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .settingsColorGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .photoRow {
-    grid-template-columns: 1fr;
-    justify-items: start;
+  .settingsAvatarBlock {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

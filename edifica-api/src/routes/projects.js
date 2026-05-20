@@ -1616,7 +1616,7 @@ router.get('/tasks/:id/comments', requirePermission('tasks.view'), async (req, r
   try {
     await assertTaskAccess(req.params.id, req.user, 'tasks.view');
     const rows = await query(
-      `SELECT tc.*, u.name AS user_name, u.avatar_color AS user_avatar_color, u.avatar_data_url AS user_avatar_url
+      `SELECT tc.*, u.name AS user_name
          FROM task_comments tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.task_id = ?
@@ -1629,8 +1629,6 @@ router.get('/tasks/:id/comments', requirePermission('tasks.view'), async (req, r
         taskId: row.task_id,
         userId: row.user_id,
         userName: row.user_name,
-        avatarColor: row.user_avatar_color || 'amber',
-        avatarUrl: row.user_avatar_url || '',
         body: row.body,
         createdAt: row.created_at,
       })),
@@ -1644,8 +1642,7 @@ router.get('/tasks/:id/collaborators', requirePermission('tasks.view'), async (r
   try {
     const task = await assertTaskAccess(req.params.id, req.user, 'tasks.view');
     const rows = await query(
-      `SELECT tc.task_id, tc.user_id, tc.role, tc.created_at, u.name AS user_name, u.email AS user_email,
-              u.avatar_color AS user_avatar_color, u.avatar_data_url AS user_avatar_url
+      `SELECT tc.task_id, tc.user_id, tc.role, tc.created_at, u.name AS user_name, u.email AS user_email
          FROM task_collaborators tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.task_id = ?
@@ -1665,8 +1662,6 @@ router.get('/tasks/:id/collaborators', requirePermission('tasks.view'), async (r
         role: row.role,
         userName: row.user_name,
         userEmail: row.user_email,
-        avatarColor: row.user_avatar_color || 'amber',
-        avatarUrl: row.user_avatar_url || '',
         createdAt: row.created_at,
       })),
     });
@@ -1808,7 +1803,7 @@ router.post('/tasks/:id/comments', requirePermission('tasks.comment'), async (re
     }
 
     const rows = await query(
-      `SELECT tc.*, u.name AS user_name, u.avatar_color AS user_avatar_color, u.avatar_data_url AS user_avatar_url
+      `SELECT tc.*, u.name AS user_name
          FROM task_comments tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.id = ?
@@ -1821,10 +1816,75 @@ router.post('/tasks/:id/comments', requirePermission('tasks.comment'), async (re
         taskId: rows[0].task_id,
         userId: rows[0].user_id,
         userName: rows[0].user_name,
-        avatarColor: rows[0].user_avatar_color || 'amber',
-        avatarUrl: rows[0].user_avatar_url || '',
         body: rows[0].body,
         createdAt: rows[0].created_at,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+router.patch('/tasks/:id/comments/:commentId', requirePermission('tasks.comment'), async (req, res, next) => {
+  try {
+    const task = await assertTaskAccess(req.params.id, req.user, 'tasks.comment');
+    const commentId = clean(req.params.commentId);
+    const body = clean(req.body?.body);
+    if (!commentId) throw badRequest('Comentário inválido');
+    if (!body) throw badRequest('Comentário não pode ser vazio');
+
+    const rows = await query(
+      `SELECT id, task_id, user_id, body
+         FROM task_comments
+        WHERE id = ? AND task_id = ?
+        LIMIT 1`,
+      [commentId, req.params.id]
+    );
+    const comment = rows[0];
+    if (!comment) throw badRequest('Comentário não encontrado');
+
+    const canEdit =
+      isAdminUser(req.user) ||
+      hasPermission(req.user, 'tasks.comment.all') ||
+      hasPermission(req.user, 'tasks.edit.all') ||
+      comment.user_id === req.user?.id;
+
+    if (!canEdit) throw forbidden('Sem permissão para editar este comentário');
+
+    await withTransaction(async (conn) => {
+      await conn.query(
+        'UPDATE task_comments SET body = ?, updated_at = NOW() WHERE id = ? AND task_id = ?',
+        [body, commentId, req.params.id]
+      );
+      await logTaskEvent({
+        taskId: req.params.id,
+        projectId: task.project_id,
+        actorUserId: req.user.id,
+        eventType: 'task.comment_updated',
+        summary: 'Comentário atualizado',
+        metadata: { comentario: compactText(body, 140) },
+      }, conn);
+    });
+
+    const updated = await query(
+      `SELECT tc.*, u.name AS user_name
+         FROM task_comments tc
+         JOIN users u ON u.id = tc.user_id
+        WHERE tc.id = ?
+        LIMIT 1`,
+      [commentId]
+    );
+
+    res.json({
+      comment: {
+        id: updated[0].id,
+        taskId: updated[0].task_id,
+        userId: updated[0].user_id,
+        userName: updated[0].user_name,
+        body: updated[0].body,
+        createdAt: updated[0].created_at,
+        updatedAt: updated[0].updated_at,
       },
     });
   } catch (err) {

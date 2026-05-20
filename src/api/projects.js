@@ -93,6 +93,10 @@ export function createTaskComment(id, body) {
   return api.post(`/projects/tasks/${encodeURIComponent(id)}/comments`, body);
 }
 
+export function updateTaskComment(taskId, commentId, body) {
+  return api.patch(`/projects/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(commentId)}`, body);
+}
+
 export function deleteTaskComment(taskId, commentId) {
   return api.del(`/projects/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(commentId)}`);
 }

@@ -646,22 +646,28 @@
 }
 
 /* ==========================================================================
-   v119 · Avatar do usuário sincronizado
+   v120 · Avatares reais na sidebar
    ========================================================================== */
 .avatar,
-.personAvatar {
-  border: 1px solid var(--sidebar-line);
+.personAvatar,
+.footerAvatar,
+.squadAvatar,
+.gdvAvatar {
+  border: 0;
   box-shadow: none;
+  overflow: hidden;
 }
 
-.avatar_amber { background: var(--accent); color: var(--accent-text); }
-.avatar_blue { background: var(--info); color: var(--bg-app); }
-.avatar_violet { background: #B784F0; color: #1a0d2c; }
-.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
-.avatar_rose { background: #EF7AAE; color: #2c0820; }
-.avatar_slate { background: var(--text-tertiary); color: var(--bg-app); }
-
 .avatar img,
-.personAvatar img {
+.personAvatar img,
+.footerAvatar img,
+.squadAvatar img,
+.gdvAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
   background: transparent;
 }

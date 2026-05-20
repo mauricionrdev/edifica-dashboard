@@ -6,6 +6,7 @@ import {
   createTask,
   createTaskAttachment,
   createTaskComment,
+  updateTaskComment,
   deleteTask,
   deleteTaskAttachment,
   deleteTaskComment,
@@ -753,21 +754,6 @@ function avatarColorClassName(color) {
   const value = String(color || 'amber').toLowerCase();
   const allowed = ['amber', 'blue', 'violet', 'emerald', 'rose', 'slate'];
   return allowed.includes(value) ? value : 'amber';
-}
-
-function userAvatarColor(userLike) {
-  return avatarColorClassName(userLike?.avatarColor || userLike?.avatar_color || 'amber');
-}
-
-function mergeDirectoryUser(userLike, users = []) {
-  const userId = String(userLike?.userId || userLike?.user_id || userLike?.id || '').trim();
-  const found = userId ? users.find((entry) => String(entry?.id || '') === userId) : null;
-  return {
-    ...found,
-    ...userLike,
-    avatarUrl: userLike?.avatarUrl || userLike?.avatar_url || found?.avatarUrl || found?.avatar_url || '',
-    avatarColor: userLike?.avatarColor || userLike?.avatar_color || found?.avatarColor || found?.avatar_color || 'amber',
-  };
 }
 
 function briefingStageAction(task, briefing) {
@@ -1569,6 +1555,13 @@ export default function ProfilePage() {
   const [completionSaving, setCompletionSaving] = useState(false);
   const [contentEditing, setContentEditing] = useState(false);
   const [contentSaving, setContentSaving] = useState(false);
+  const [descriptionEditing, setDescriptionEditing] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState('');
+  const [editingCommentDraft, setEditingCommentDraft] = useState('');
+  const [commentEditSavingId, setCommentEditSavingId] = useState('');
+  const [activityPage, setActivityPage] = useState(1);
   const [descriptionCopied, setDescriptionCopied] = useState(false);
   const [taskAttachments, setTaskAttachments] = useState([]);
   const [taskAttachmentsLoading, setTaskAttachmentsLoading] = useState(false);
@@ -1618,14 +1611,6 @@ export default function ProfilePage() {
   }, [user?.name, user?.phone, user?.avatarColor, user?.customSlug]);
 
   useEffect(() => {
-    if (!user?.id) return;
-    setDemandUsers((current) => {
-      if (!Array.isArray(current) || !current.length) return current;
-      return current.map((entry) => (entry?.id === user.id ? { ...entry, ...user } : entry));
-    });
-  }, [user]);
-
-  useEffect(() => {
     setDemandForm((prev) => ({ ...prev, assigneeUserId: prev.assigneeUserId || user?.id || '' }));
   }, [user?.id]);
 
@@ -1648,6 +1633,12 @@ export default function ProfilePage() {
     setSubtaskDeleteTarget(null);
     setTaskDeleteTarget(null);
     setCompletionTarget(null);
+    setDescriptionEditing(false);
+    setDescriptionExpanded(false);
+    setDescriptionDraft('');
+    setEditingCommentId('');
+    setEditingCommentDraft('');
+    setActivityPage(1);
     setCompletionForm({ result: '', pending: '', nextAction: '', notes: '' });
     setHandoffOpen(false);
     setHandoffForm(emptyHandoffForm(user?.id || ''));
@@ -2068,6 +2059,11 @@ export default function ProfilePage() {
   useEffect(() => {
     if (operationPage > operationTotalPages) setOperationPage(operationTotalPages);
   }, [operationPage, operationTotalPages]);
+
+  useEffect(() => {
+    setActivityPage(1);
+  }, [activeTaskId, activeActivityEvents.length]);
+
   const activeSubtasks = useMemo(() => {
     if (!activeTask) return [];
     const merged = new Map();
@@ -2091,6 +2087,10 @@ export default function ProfilePage() {
   }, [activeTask, collaborators, demandUsers]);
   const visibleTaskComments = useMemo(() => taskComments.filter((comment) => !isSystemActivityComment(comment)), [taskComments]);
   const activeActivityEvents = useMemo(() => buildActivityEvents(activeTask, taskComments, taskEvents), [activeTask, taskComments, taskEvents]);
+  const ACTIVITY_PAGE_SIZE = 5;
+  const activityTotalPages = Math.max(1, Math.ceil(activeActivityEvents.length / ACTIVITY_PAGE_SIZE));
+  const safeActivityPage = Math.min(activityPage, activityTotalPages);
+  const visibleActivityEvents = activeActivityEvents.slice((safeActivityPage - 1) * ACTIVITY_PAGE_SIZE, safeActivityPage * ACTIVITY_PAGE_SIZE);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
   const profileDate = useMemo(() => new Date(), []);
   const profileStats = useMemo(() => ([
@@ -2160,9 +2160,7 @@ export default function ProfilePage() {
     try {
       setSavingProfile(true);
       await updateProfile(profileForm);
-      const freshUser = await reloadUser();
-      setAvatarUrl(getUserAvatar(freshUser));
-      setDemandUsers((current) => (Array.isArray(current) ? current.map((entry) => (entry?.id === freshUser?.id ? { ...entry, ...freshUser } : entry)) : current));
+      await reloadUser();
       showToast('Perfil atualizado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao salvar.', { variant: 'error' });
@@ -2192,9 +2190,8 @@ export default function ProfilePage() {
     try {
       const dataUrl = await readAvatarFile(file);
       await updateProfile({ avatarUrl: dataUrl });
-      const freshUser = await reloadUser();
-      setDemandUsers((current) => (Array.isArray(current) ? current.map((entry) => (entry?.id === freshUser?.id ? { ...entry, ...freshUser } : entry)) : current));
-      const saved = saveUserAvatar(freshUser || user, dataUrl) || true;
+      await reloadUser();
+      const saved = saveUserAvatar(user, dataUrl) || true;
       if (!saved) throw new Error('Erro');
       setAvatarUrl(dataUrl);
       showToast('Foto atualizada.', { variant: 'success' });
@@ -2206,9 +2203,8 @@ export default function ProfilePage() {
   async function handleRemoveAvatar() {
     try {
       await updateProfile({ avatarUrl: '' });
-      const freshUser = await reloadUser();
-      setDemandUsers((current) => (Array.isArray(current) ? current.map((entry) => (entry?.id === freshUser?.id ? { ...entry, ...freshUser } : entry)) : current));
-      removeUserAvatar(freshUser || user);
+      await reloadUser();
+      removeUserAvatar(user);
       setAvatarUrl('');
       showToast('Foto removida.', { variant: 'success' });
     } catch (err) {
@@ -2322,16 +2318,83 @@ export default function ProfilePage() {
 
     try {
       setContentSaving(true);
-      const res = await updateProjectTask(activeTask.id, { title: nextTitle });
-      const nextTask = res?.task || { ...activeTask, title: nextTitle };
+      const nextDescription = buildTaskDescriptionFromContentForm(activeTask, contentForm);
+      const res = await updateProjectTask(activeTask.id, { title: nextTitle, description: nextDescription });
+      const nextTask = res?.task || { ...activeTask, title: nextTitle, description: nextDescription };
       setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...nextTask } : item)));
       await refreshActiveTaskPanels(activeTask.id, { events: true });
       setContentEditing(false);
-      showToast('Título atualizado.', { variant: 'success' });
+      showToast('Demanda atualizada.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao salvar conteúdo.', { variant: 'error' });
     } finally {
       setContentSaving(false);
+    }
+  }
+
+  function openDescriptionEditor() {
+    if (!activeTask || !canEditActiveTask) return;
+    setDescriptionDraft(String(activeDescription || ''));
+    setDescriptionEditing(true);
+  }
+
+  async function saveDescriptionDraft() {
+    if (!activeTask?.id || !descriptionEditing || contentSaving) return;
+    const current = String(activeDescription || '').trim();
+    const next = String(descriptionDraft || '').trim();
+    if (next === current) {
+      setDescriptionEditing(false);
+      return;
+    }
+
+    try {
+      setContentSaving(true);
+      const nextDescription = buildTaskDescriptionFromContentForm(activeTask, { ...contentForm, description: next });
+      const res = await updateProjectTask(activeTask.id, { description: nextDescription });
+      const nextTask = res?.task || { ...activeTask, description: nextDescription };
+      setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...nextTask } : item)));
+      await refreshActiveTaskPanels(activeTask.id, { events: true });
+      setDescriptionEditing(false);
+    } catch (err) {
+      showToast(err?.message || 'Erro ao salvar descrição.', { variant: 'error' });
+    } finally {
+      setContentSaving(false);
+    }
+  }
+
+  function openCommentEditor(comment) {
+    if (!activeTask || !comment?.id || !canDeleteProfileComment(user, comment)) return;
+    setEditingCommentId(comment.id);
+    setEditingCommentDraft(commentDisplayBody(comment));
+  }
+
+  async function saveCommentEditor(comment) {
+    if (!activeTask?.id || !comment?.id || commentEditSavingId) return;
+    const nextBody = String(editingCommentDraft || '').trim();
+    const currentBody = commentDisplayBody(comment).trim();
+    if (!nextBody || nextBody === currentBody) {
+      setEditingCommentId('');
+      setEditingCommentDraft('');
+      return;
+    }
+
+    try {
+      setCommentEditSavingId(comment.id);
+      const attachmentMarker = commentAttachmentIds(comment).length
+        ? `${COMMENT_ATTACHMENT_MARKER}${commentAttachmentIds(comment).join(',')}]]`
+        : '';
+      const res = await updateTaskComment(activeTask.id, comment.id, {
+        body: [nextBody, attachmentMarker].filter(Boolean).join('\n'),
+      });
+      const updated = res?.comment || { ...comment, body: [nextBody, attachmentMarker].filter(Boolean).join('\n') };
+      setTaskComments((prev) => prev.map((item) => (item.id === comment.id ? { ...item, ...updated } : item)));
+      await refreshActiveTaskPanels(activeTask.id, { events: true });
+      setEditingCommentId('');
+      setEditingCommentDraft('');
+    } catch (err) {
+      showToast(err?.message || 'Erro ao salvar comentário.', { variant: 'error' });
+    } finally {
+      setCommentEditSavingId('');
     }
   }
 
@@ -3514,6 +3577,7 @@ export default function ProfilePage() {
                       <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''} ${styles[`workflowKey_${step.key}`] || ''}`.trim()}>
                         <i>{index + 1}</i>
                         <span>{step.label}</span>
+                        {step.state === 'current' ? <em>{activeAssignee || 'Responsável'}</em> : null}
                       </div>
                     ))}
                   </div>
@@ -3614,12 +3678,36 @@ export default function ProfilePage() {
                 </section>
               ) : null}
 
-              {activeDescription ? (
+              {(activeDescription || canEditActiveTask) ? (
                 <section className={`${styles.drawerSection} ${styles.descriptionSection}`.trim()}>
                   <div className={styles.sectionTitleRow}>
                     <h4>Descrição</h4>
+                    {activeDescription ? (
+                      <button
+                        type="button"
+                        className={styles.sectionTinyButton}
+                        onClick={() => setDescriptionExpanded((value) => !value)}
+                      >
+                        {descriptionExpanded ? 'Minimizar' : 'Maximizar'}
+                      </button>
+                    ) : null}
                   </div>
-                  <pre className={styles.descriptionBox}>{activeDescription}</pre>
+                  {descriptionEditing ? (
+                    <textarea
+                      className={`${styles.descriptionBox} ${styles.descriptionEditBox}`.trim()}
+                      value={descriptionDraft}
+                      onChange={(event) => setDescriptionDraft(event.target.value)}
+                      onBlur={saveDescriptionDraft}
+                      autoFocus
+                    />
+                  ) : (
+                    <pre
+                      className={`${styles.descriptionBox} ${descriptionExpanded ? styles.descriptionBoxExpanded : styles.descriptionBoxCollapsed}`.trim()}
+                      onDoubleClick={openDescriptionEditor}
+                    >
+                      {activeDescription || ''}
+                    </pre>
+                  )}
                 </section>
               ) : null}
 
@@ -3805,7 +3893,14 @@ export default function ProfilePage() {
                   <span>{visibleTaskComments.length}</span>
                 </div>
                 <form className={styles.commentForm} onSubmit={handleCreateComment}>
-                  <textarea value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} onPaste={handleCommentPaste} placeholder="Comentário" disabled={!canCommentActiveTask} />
+                  <textarea
+                    value={commentDraft}
+                    onChange={(event) => setCommentDraft(event.target.value)}
+                    onPaste={handleCommentPaste}
+                    placeholder="Comentário"
+                    disabled={!canCommentActiveTask}
+                    className={styles.commentDraftTextarea}
+                  />
                   <button type="submit" disabled={commentSaving || (!commentDraft.trim() && !commentAttachments.length) || !canCommentActiveTask}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
                 </form>
                 {commentAttachments.length ? (
@@ -3829,14 +3924,9 @@ export default function ProfilePage() {
                   <div className={styles.commentList}>
                     {visibleTaskComments.map((comment) => {
                       const commentAuthor = comment.authorName || comment.userName || 'Usuário';
-                      const commentPerson = mergeDirectoryUser(comment, demandUsers);
-                      const commentAvatar = getUserAvatar(commentPerson);
-                      const commentTone = userAvatarColor(commentPerson);
                       return (
                         <article key={comment.id} className={styles.commentItem}>
-                          <span className={`${styles.commentAvatar} ${styles[`taskAvatar_${commentTone}`] || ''}`.trim()}>
-                            {commentAvatar ? <img src={commentAvatar} alt="" /> : initials(commentAuthor)}
-                          </span>
+                          <span className={styles.commentAvatar}>{initials(commentAuthor)}</span>
                           <div className={styles.commentBody}>
                             <header className={styles.commentHeader}>
                               <strong>{commentAuthor}</strong>
@@ -3852,7 +3942,18 @@ export default function ProfilePage() {
                                 <TrashIcon size={13} />
                               </button>
                             </header>
-                            {commentDisplayBody(comment) ? <p>{commentDisplayBody(comment)}</p> : null}
+                            {editingCommentId === comment.id ? (
+                              <textarea
+                                className={styles.commentEditTextarea}
+                                value={editingCommentDraft}
+                                onChange={(event) => setEditingCommentDraft(event.target.value)}
+                                onBlur={() => saveCommentEditor(comment)}
+                                disabled={commentEditSavingId === comment.id}
+                                autoFocus
+                              />
+                            ) : commentDisplayBody(comment) ? (
+                              <p onDoubleClick={() => openCommentEditor(comment)}>{commentDisplayBody(comment)}</p>
+                            ) : null}
                             {commentAttachmentItems(comment, taskAttachments).length ? (
                               <div className={styles.commentAttachmentList}>
                                 {commentAttachmentItems(comment, taskAttachments).map((item) => (
@@ -3887,7 +3988,7 @@ export default function ProfilePage() {
                   <span>{activeActivityEvents.length}</span>
                 </div>
                 <div className={styles.activityList}>
-                  {activeActivityEvents.map((event) => (
+                  {visibleActivityEvents.map((event) => (
                     <div key={event.id} className={`${styles.activityItem} ${event.quiet ? styles.activityItemQuiet : ''}`.trim()}>
                       <span className={`${styles.activityMark} ${styles[`activityMark_${event.type}`] || ''}`.trim()} aria-hidden="true" />
                       <div className={styles.activityContent}>
@@ -3901,6 +4002,13 @@ export default function ProfilePage() {
                     </div>
                   ))}
                 </div>
+                {activeActivityEvents.length > ACTIVITY_PAGE_SIZE ? (
+                  <div className={styles.activityPagination}>
+                    <span>{safeActivityPage} / {activityTotalPages}</span>
+                    <button type="button" onClick={() => setActivityPage((page) => Math.max(1, page - 1))} disabled={safeActivityPage <= 1}>Anterior</button>
+                    <button type="button" onClick={() => setActivityPage((page) => Math.min(activityTotalPages, page + 1))} disabled={safeActivityPage >= activityTotalPages}>Próxima</button>
+                  </div>
+                ) : null}
               </section>
             </div>
             {taskAttachmentsAlbumOpen ? createPortal(
@@ -4525,30 +4633,19 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className={styles.colorPicker} role="radiogroup" aria-label="Cor do avatar">
-                  {AVATAR_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={`${styles.colorSwatch} ${styles[`avatar_${option.value}`] || ''} ${profileForm.avatarColor === option.value ? styles.colorSwatchActive : ''}`.trim()}
-                      onClick={() => setProfileForm((prev) => ({ ...prev, avatarColor: option.value }))}
-                      aria-checked={profileForm.avatarColor === option.value}
-                      role="radio"
-                      tabIndex={settingsTab === 'profile' ? 0 : -1}
-                    >
-                      <span>{initials(profileForm.name || user?.name)}</span>
-                      <em>{option.label}</em>
-                    </button>
-                  ))}
-                </div>
-
                 <div className={styles.formGrid}>
                   <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
                   <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <label className={styles.slugField}>
-                    <span>/perfil/</span>
-                    <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="link-personalizado" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  </label>
+                  <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="Slug" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                  <Select
+                    value={profileForm.avatarColor}
+                    onChange={(event) => setProfileForm((prev) => ({ ...prev, avatarColor: event.target.value }))}
+                    aria-label="Cor"
+                    className={styles.formSelect}
+                    disabled={settingsTab !== 'profile'}
+                  >
+                    {AVATAR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </Select>
                 </div>
               </div>
 

@@ -1,6 +1,7 @@
 export {
   ArrowUpRight as ArrowUpRightIcon,
   Bell as BellIcon,
+  Bot as BotIcon,
   BookOpenText as BookTemplateIcon,
   Briefcase as BriefcaseIcon,
   Building2 as BuildingIcon,
