@@ -235,7 +235,7 @@
 }
 
 .input,
-.selectControl :global(button),
+.selectControl :global(button):not([role="option"]),
 .selectControl :global(input),
 .selectControl :global(select) {
   width: 100%;
@@ -252,7 +252,7 @@
 }
 
 .input:focus,
-.selectControl :global(button:focus-visible),
+.selectControl :global(button:not([role="option"]):focus-visible),
 .selectControl :global(input:focus),
 .selectControl :global(select:focus) {
   border-color: var(--line);
@@ -261,7 +261,7 @@
 }
 
 .input:disabled,
-.selectControl :global(button:disabled),
+.selectControl :global(button:not([role="option"]):disabled),
 .selectControl :global(input:disabled),
 .selectControl :global(select:disabled) {
   color: var(--text-tertiary);
@@ -509,7 +509,7 @@
 }
 
 .input,
-.selectControl :global(button),
+.selectControl :global(button):not([role="option"]),
 .selectControl :global(input),
 .selectControl :global(select) {
   min-height: 38px;
@@ -885,7 +885,7 @@
 }
 
 .input,
-.selectControl :global(button),
+.selectControl :global(button):not([role="option"]),
 .selectControl :global(input),
 .selectControl :global(select) {
   min-height: 40px;
@@ -1012,7 +1012,7 @@
 }
 
 .input,
-.selectControl :global(button),
+.selectControl :global(button):not([role="option"]),
 .selectControl :global(input),
 .selectControl :global(select) {
   min-height: 40px;
@@ -1159,7 +1159,7 @@
 
 .input,
 .textarea,
-.selectControl :global(button),
+.selectControl :global(button):not([role="option"]),
 .selectControl :global(input),
 .selectControl :global(select) {
   min-height: 40px;
@@ -1331,7 +1331,7 @@
 
 .input,
 .textarea,
-.selectControl :global(button),
+.selectControl :global(button):not([role="option"]),
 .selectControl :global(input),
 .selectControl :global(select) {
   min-height: 42px;

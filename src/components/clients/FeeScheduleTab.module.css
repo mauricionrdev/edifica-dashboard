@@ -250,7 +250,7 @@
   max-width: none;
 }
 
-.monthSelect :global(button) {
+.monthSelect :global(button):not([role="option"]) {
   width: 100%;
   min-height: 40px;
   border-color: var(--workspace-panel-border-soft);
@@ -499,10 +499,10 @@
   gap: 12px;
 }
 
-.monthField :global(button),
+.monthField :global(button):not([role="option"]),
 .monthField :global(button[aria-expanded='true']),
-.monthField :global(button:focus),
-.monthField :global(button:focus-visible) {
+.monthField :global(button:not([role="option"]):focus),
+.monthField :global(button:not([role="option"]):focus-visible) {
   width: 100%;
   min-height: 40px;
   border-color: var(--workspace-panel-border-soft);
@@ -575,10 +575,10 @@
   padding: 16px 18px;
 }
 
-.monthField :global(button),
+.monthField :global(button):not([role="option"]),
 .monthField :global(button[aria-expanded='true']),
-.monthField :global(button:focus),
-.monthField :global(button:focus-visible) {
+.monthField :global(button:not([role="option"]):focus),
+.monthField :global(button:not([role="option"]):focus-visible) {
   min-height: 42px;
   border-color: var(--workspace-panel-border-soft);
   background: var(--field-bg);

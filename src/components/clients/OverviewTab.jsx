@@ -4,6 +4,7 @@ import { clientInitials } from '../../utils/clientHelpers.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
+import { getUserAvatar } from '../../utils/avatarStorage.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { CameraIcon, LogOutIcon, TrashIcon } from '../ui/Icons.jsx';
@@ -218,6 +219,7 @@ export default function OverviewTab({
             <div className={drawerStyles.field}>
               <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor da Conta</label>
               <Select
+                type="user"
                 className={drawerStyles.selectControl}
                 value={form.gestor}
                 onChange={(event) => onSelectChange('gestor', 'gestor', event.target.value)}
@@ -228,7 +230,7 @@ export default function OverviewTab({
               >
                 <option value="">Sem gestor</option>
                 {gestorRows.map((entry) => (
-                  <option key={entry.id || entry.name} value={entry.name}>{entry.name}</option>
+                  <option key={entry.id || entry.name} value={entry.name} data-avatar={getUserAvatar(entry) || entry.avatarUrl || ''} data-name={entry.name}>{entry.name}</option>
                 ))}
               </Select>
             </div>
@@ -253,6 +255,7 @@ export default function OverviewTab({
             <div className={drawerStyles.field}>
               <label className={drawerStyles.label} htmlFor="cd-gdv">Gestor de Vendas</label>
               <Select
+                type="user"
                 className={drawerStyles.selectControl}
                 value={form.gdvName}
                 onChange={(event) => onSelectChange('gdvName', 'gdvName', event.target.value)}
@@ -263,7 +266,7 @@ export default function OverviewTab({
               >
                 <option value="">Sem GDV</option>
                 {gdvRows.map((entry) => (
-                  <option key={entry.id || entry.name} value={entry.name}>{entry.name}</option>
+                  <option key={entry.id || entry.name} value={entry.name} data-avatar={getUserAvatar(entry) || entry.avatarUrl || ''} data-name={entry.name}>{entry.name}</option>
                 ))}
               </Select>
             </div>
