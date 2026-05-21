@@ -123,14 +123,24 @@
    *   raised   inputs preenchidos, hover de superfícies
    *   hover    estado hover de itens de lista/nav
    *   selected estado ativo/selecionado
+   *
+   * NOTA (consolidação P0): estes são os valores REAIS em produção, antes
+   * mantidos em theme.css e que sobrescreviam silenciosamente este arquivo.
+   * theme.css deixou de redefini-los — esta é agora a fonte única.
+   *
+   * --bg-hover / --bg-selected são cores sólidas (não translúcidas). A
+   * filosofia original previa branco translúcido sutil; manter sólido aqui
+   * preserva o visual atual. Trocar para translúcido é decisão de design
+   * separada (alteraria o hover em toda a aplicação).
    * ──────────────────────────────────────────────────────────────────── */
 
-  --bg-app:      #08090A;
-  --bg-canvas:   #0B0C0D;
-  --bg-elevated: #0E0F11;
-  --bg-raised:   #121315;
-  --bg-hover:    rgba(255, 255, 255, 0.016);
-  --bg-selected: rgba(255, 255, 255, 0.032);
+  --bg-app:      #010102;
+  --bg-canvas:   #050506;
+  --bg-elevated: #0b0c0d;
+  --bg-raised:   #101113;
+  --bg-hover:    #0f1011;
+  --bg-selected: #111216;
+  --bg-soft:     #090a0b;
 
 
   /* ────────────────────────────────────────────────────────────────────
@@ -258,8 +268,8 @@
    * Sombras ativas só em modal/drawer/dropdown (overlays).
    * ──────────────────────────────────────────────────────────────────── */
 
-  --shadow-soft:   0 8px 24px rgba(0, 0, 0, 0.18);
-  --shadow-panel:  0 16px 48px rgba(0, 0, 0, 0.24);
+  --shadow-soft:   0 18px 48px rgba(0, 0, 0, 0.18);
+  --shadow-panel:  0 24px 80px rgba(0, 0, 0, 0.24);
   --shadow-dialog: 0 24px 64px rgba(0, 0, 0, 0.40),
                    0 0 0 1px rgba(255, 255, 255, 0.04);
 

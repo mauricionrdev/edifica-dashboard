@@ -1,60 +1,50 @@
+/* ==========================================================================
+ * theme.css · Camada de compatibilidade (aliases legados)
+ * ==========================================================================
+ *
+ * A FONTE ÚNICA da paleta, tipografia, radius, espaçamento e sombras é
+ * tokens.css. Este arquivo NÃO redefine nenhum token canônico — fazê-lo
+ * sobrescrevia silenciosamente o tokens.css (corrigido na consolidação P0).
+ *
+ * Aqui vivem APENAS:
+ *   - aliases de nomes legados que ainda são usados por módulos antigos
+ *     (--surface*, --border-*, --card-*), apontando para tokens canônicos
+ *     sempre que possível;
+ *   - alguns primitivos de superfície/legado ainda sem token equivalente.
+ *
+ * Regra: ao tokenizar um módulo (Fase D), troque o alias legado pelo token
+ * canônico de tokens.css e remova o alias correspondente daqui quando o uso
+ * chegar a zero.
+ * ========================================================================== */
+
 :root {
-  color-scheme: dark;
-
-  --bg-app: #010102;
-  --bg-canvas: #050506;
-  --bg-elevated: #0b0c0d;
-  --bg-raised: #101113;
-  --bg-hover: #0f1011;
-  --bg-selected: #111216;
-  --bg-soft: #090a0b;
-
-  --surface: #070708;
-  --surface-subtle: #0a0b0c;
-  --surface-panel: rgba(255, 255, 255, 0.024);
-  --surface-raised: rgba(255, 255, 255, 0.038);
-  --surface-card: #0b0c0e;
+  /* Superfícies legadas (sem equivalente direto em tokens.css ainda). */
+  --surface:           #070708;
+  --surface-subtle:    #0a0b0c;
+  --surface-panel:     rgba(255, 255, 255, 0.024);
+  --surface-raised:    rgba(255, 255, 255, 0.038);
+  --surface-card:      #0b0c0e;
   --surface-card-soft: #070708;
-  --surface-strong: #121317;
+  --surface-strong:    #121317;
 
-  --text-primary: #f7f8f8;
-  --text-secondary: #d0d6e0;
-  --text-tertiary: #8a8f98;
-  --text-quaternary: #62666d;
-
-  --line-subtle: rgba(255, 255, 255, 0.052);
-  --line: rgba(255, 255, 255, 0.078);
-  --line-strong: rgba(255, 255, 255, 0.11);
+  /* Bordas — aliases para os tokens canônicos --line-*. */
   --border-subtle: var(--line-subtle);
   --border-default: var(--line);
   --border-strong: var(--line-strong);
 
-  --accent-amber: var(--accent);
-  --accent-amber-strong: var(--accent-strong);
-  --accent-amber-soft: var(--accent-soft);
-  --accent-amber-line: var(--accent-line);
-  --accent-amber-text: var(--accent-text);
-  --control-radius: var(--radius-1);
-  --radius-4: var(--radius-3);
+  /* Acento — alias adicional para a borda de marca. */
+  --accent-amber-border: var(--accent-amber-line);
 
-  --field-bg: rgba(255, 255, 255, 0.022);
-  --field-bg-hover: rgba(255, 255, 255, 0.022);
-  --field-line: rgba(255, 255, 255, 0.078);
-
+  /* Auxiliares de gráfico/progresso. */
   --chart-bar: rgba(255, 255, 255, 0.055);
   --progress-track: rgba(255, 255, 255, 0.07);
 
-  --accent-amber-border: var(--accent-amber-line);
-  --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.18);
-  --shadow-panel: 0 24px 80px rgba(0, 0, 0, 0.24);
-  /* Linear/Edifica card system */
-  --card-surface: #090a0b;
+  /* Card system legado (Linear/Edifica). */
+  --card-surface:        #090a0b;
   --card-surface-raised: #0d0e10;
-  --card-surface-soft: #070708;
-  --card-inner: rgba(255, 255, 255, 0.018);
-  --card-border: rgba(255, 255, 255, 0.068);
-  --card-border-strong: rgba(255, 255, 255, 0.105);
-  --card-highlight: rgba(255, 255, 255, 0.032);
-
+  --card-surface-soft:   #070708;
+  --card-inner:          rgba(255, 255, 255, 0.018);
+  --card-border:         rgba(255, 255, 255, 0.068);
+  --card-border-strong:  rgba(255, 255, 255, 0.105);
+  --card-highlight:      rgba(255, 255, 255, 0.032);
 }
-
