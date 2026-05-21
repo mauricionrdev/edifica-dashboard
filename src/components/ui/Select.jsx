@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ChevronDownIcon } from './Icons.jsx';
+import Avatar from './Avatar.jsx';
 import styles from './Select.module.css';
 
 function normalizeOptions(children) {
@@ -14,6 +15,10 @@ function normalizeOptions(children) {
       value: String(child.props.value ?? ''),
       label: child.props.children,
       disabled: Boolean(child.props.disabled),
+      avatar: child.props['data-avatar'] ?? null,
+      avatarName:
+        child.props['data-name'] ??
+        (typeof child.props.children === 'string' ? child.props.children : ''),
     }));
 }
 
@@ -26,6 +31,7 @@ export default function Select({
   disabled = false,
   placeholder = 'Selecionar',
   menuMinWidth = 0,
+  type = 'default',
   'aria-label': ariaLabel,
   ...props
 }) {
@@ -102,8 +108,15 @@ export default function Select({
     minWidth: menuMinWidth ? Number(menuMinWidth) : undefined,
   };
 
+  const isUser = type === 'user';
+
   return (
-    <div ref={rootRef} className={`${styles.wrap} ${className} ${open ? styles.wrapOpen : ''}`.trim()} {...props}>
+    <div
+      ref={rootRef}
+      className={`${styles.wrap} ${className} ${open ? styles.wrapOpen : ''}`.trim()}
+      data-type={type}
+      {...props}
+    >
       {label ? <span className={styles.label}>{label}</span> : null}
 
       <button
@@ -122,6 +135,14 @@ export default function Select({
         aria-expanded={open}
         aria-controls={open ? listboxId : undefined}
       >
+        {isUser && selected ? (
+          <Avatar
+            src={selected.avatar || undefined}
+            name={selected.avatarName}
+            size="xs"
+            className={styles.optionAvatar}
+          />
+        ) : null}
         <span className={styles.value}>{selected?.label || placeholder}</span>
         <ChevronDownIcon size={15} className={styles.chevron} />
       </button>
@@ -150,6 +171,14 @@ export default function Select({
                 onClick={() => emitChange(option.value)}
                 title={typeof option.label === 'string' ? option.label : undefined}
               >
+                {isUser ? (
+                  <Avatar
+                    src={option.avatar || undefined}
+                    name={option.avatarName}
+                    size="xs"
+                    className={styles.optionAvatar}
+                  />
+                ) : null}
                 <span>{option.label}</span>
               </button>
             );

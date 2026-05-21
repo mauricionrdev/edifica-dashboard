@@ -783,6 +783,7 @@ export default function CentralPage() {
         </Select>
 
         <Select
+          type="client"
           value={clientFilter}
           onChange={(event) => setClientFilter(event.target.value)}
           aria-label="Filtrar por cliente"

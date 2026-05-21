@@ -1607,6 +1607,7 @@ export default function ProfilePage() {
   const [taskAttachmentPreview, setTaskAttachmentPreview] = useState(null);
   const [taskAttachmentZoom, setTaskAttachmentZoom] = useState(1);
   const [taskAttachmentZoomOrigin, setTaskAttachmentZoomOrigin] = useState('50% 50%');
+  const [taskPdfBlobUrl, setTaskPdfBlobUrl] = useState('');
   const [taskAttachmentsAlbumOpen, setTaskAttachmentsAlbumOpen] = useState(false);
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
@@ -1637,6 +1638,32 @@ export default function ProfilePage() {
     setTaskAttachmentZoom(1);
     setTaskAttachmentZoomOrigin('50% 50%');
   }, [taskAttachmentPreview?.id]);
+
+  // PDFs com imagens/scans geram data: URLs grandes que estouram o limite de
+  // URL do navegador e renderizam em branco no iframe. Convertemos para Blob URL.
+  useEffect(() => {
+    if (taskAttachmentPreview?.mimeType !== 'application/pdf' || !taskAttachmentPreview?.dataUrl) {
+      setTaskPdfBlobUrl('');
+      return undefined;
+    }
+
+    let url = '';
+    try {
+      const [meta, base64 = ''] = String(taskAttachmentPreview.dataUrl).split(',');
+      const isBase64 = /;base64/i.test(meta);
+      const binary = isBase64 ? atob(base64) : decodeURIComponent(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      setTaskPdfBlobUrl(url);
+    } catch {
+      setTaskPdfBlobUrl('');
+    }
+
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [taskAttachmentPreview?.id, taskAttachmentPreview?.mimeType, taskAttachmentPreview?.dataUrl]);
 
   useEffect(() => {
     setProfileForm({
@@ -4184,7 +4211,7 @@ export default function ProfilePage() {
                     }}
                   >
                     {taskAttachmentPreview.mimeType === 'application/pdf' ? (
-                      <iframe title={taskAttachmentPreview.fileName || 'PDF'} src={taskAttachmentPreview.dataUrl} />
+                      <iframe title={taskAttachmentPreview.fileName || 'PDF'} src={taskPdfBlobUrl || taskAttachmentPreview.dataUrl} />
                     ) : (
                       <img
                         src={taskAttachmentPreview.dataUrl}

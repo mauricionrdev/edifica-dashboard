@@ -829,6 +829,7 @@ export default function PreencherSemanaPage() {
         ) : null}
 
         <Select
+          type="client"
           className={styles.select}
           value={clientFilter}
           onChange={(event) => setClientFilter(event.target.value)}

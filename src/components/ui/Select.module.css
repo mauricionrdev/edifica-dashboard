@@ -1,3 +1,19 @@
+/* ==========================================================================
+ * Select · componente global minimalista
+ * --------------------------------------------------------------------------
+ * Reescrito (v141) para consolidar camadas v129–v134 que haviam empilhado
+ * 6 definições de .menu e 5 de .option. Agora: uma definição de cada classe,
+ * tokenizada, sem aparência de "cartões" nas opções.
+ *
+ * Posicionamento: menu inline (position: absolute) ancorado ao .wrap
+ * (position: relative). NÃO usar position: fixed nem createPortal.
+ *
+ * Props de tipo (data-type no .wrap):
+ *   default — texto simples
+ *   user    — Avatar à esquerda do nome (.optionAvatar)
+ *   client  — estritamente texto, sem qualquer adorno
+ * ========================================================================== */
+
 .wrap {
   position: relative;
   width: auto;
@@ -11,6 +27,10 @@
   isolation: isolate;
 }
 
+.wrapOpen {
+  z-index: 27000;
+}
+
 .label {
   color: var(--text-tertiary);
   font-size: var(--fs-tiny);
@@ -20,19 +40,20 @@
   text-transform: uppercase;
 }
 
+/* ── Campo (botão) ──────────────────────────────────────────────────────── */
 .select {
   width: 100%;
   min-width: 0;
   height: var(--control-height);
   min-height: var(--control-height);
   padding: 0 10px 0 12px;
-  border: 1px solid var(--field-line);
+  border: 1px solid var(--workspace-panel-border-soft);
   border-radius: var(--control-radius);
   background: var(--field-bg);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-2);
   font-family: var(--font-sans);
   font-size: var(--fs-label);
@@ -41,6 +62,7 @@
   letter-spacing: var(--tracking-tight);
   text-align: left;
   box-shadow: none;
+  cursor: pointer;
   transition:
     background-color var(--transition-fast),
     border-color var(--transition-fast),
@@ -50,7 +72,7 @@
 .select:hover:not(:disabled),
 .selectOpen {
   background: var(--field-bg-hover);
-  border-color: var(--line-strong);
+  border-color: var(--workspace-panel-border);
 }
 
 .select:focus-visible {
@@ -64,6 +86,7 @@
 }
 
 .value {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -71,9 +94,9 @@
 }
 
 .chevron {
+  flex: 0 0 auto;
   width: 14px;
   height: 14px;
-  flex: 0 0 auto;
   color: var(--text-tertiary);
 }
 
@@ -82,98 +105,7 @@
   height: 14px;
 }
 
-.menu {
-  position: absolute;
-  z-index: 22020;
-  padding: 6px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-3);
-  background: var(--bg-raised);
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  overflow-y: auto;
-  box-shadow: var(--shadow-dialog);
-  scrollbar-width: none;
-}
-
-.menu::-webkit-scrollbar {
-  display: none;
-}
-
-.option {
-  min-height: 30px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--radius-1);
-  background: transparent;
-  color: var(--text-secondary);
-  display: inline-flex;
-  align-items: center;
-  text-align: left;
-  font-family: var(--font-sans);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-medium);
-  line-height: var(--lh-flat);
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.option span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.option:hover,
-.optionActive {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.optionActive {
-  outline: 1px solid var(--line-subtle);
-}
-
-/* ==========================================================================
-   v98 · QA final Select
-   Sem focus visual e menu acima da sidebar.
-   ========================================================================== */
-.select:focus,
-.select:focus-visible {
-  outline: none;
-  box-shadow: none;
-  border-color: var(--line);
-}
-
-.select:hover:not(:disabled),
-.selectOpen {
-  background: var(--bg-hover);
-  border-color: var(--line);
-}
-
-.menu {
-  z-index: 26000;
-  border-color: var(--workspace-panel-border);
-  background: var(--chassis-panel-bg-elevated);
-  box-shadow: var(--shadow-dialog);
-}
-
-.option:hover,
-.optionActive {
-  background: var(--bg-hover);
-}
-
-/* ==========================================================================
-   v132 · Select inline global
-   Remove portal/fixed positioning. O menu fica preso ao campo e rola internamente.
-   ========================================================================== */
-.wrapOpen {
-  z-index: 27000;
-}
-
+/* ── Menu (dropdown) ────────────────────────────────────────────────────── */
 .menu {
   position: absolute;
   left: 0;
@@ -187,16 +119,20 @@
   background: var(--chassis-panel-bg-elevated);
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px;
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
   box-shadow: var(--shadow-dialog);
   touch-action: pan-y;
-  pointer-events: auto;
-  will-change: scroll-position;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.menu::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .menuDown {
@@ -209,80 +145,55 @@
   bottom: calc(100% + 6px);
 }
 
-.menu::-webkit-scrollbar {
-  width: 8px;
-  display: block;
-}
-
-.menu::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.menu::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: var(--line-strong);
-}
-
+/* ── Opções ─────────────────────────────────────────────────────────────── */
 .option {
   width: 100%;
   min-height: 34px;
   flex: 0 0 auto;
-}
-
-/* ==========================================================================
-   v134 · Select visual padrão sem scrollbar aparente
-   Mantém scroll funcional e remove aparência de lista/cartões grandes.
-   ========================================================================== */
-.menu {
-  padding: 6px;
-  border: 1px solid var(--workspace-panel-border);
-  border-radius: var(--workspace-card-radius);
-  background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
-  gap: 1px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.menu::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-.option {
-  min-height: 34px;
   padding: 0 10px;
   border: 0;
   border-radius: var(--workspace-control-radius);
   background: transparent;
   color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 650;
+  line-height: var(--lh-flat);
   letter-spacing: -0.01em;
-  justify-content: flex-start;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .option span {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.option:hover:not(:disabled),
 .optionActive {
   background: var(--field-bg);
   color: var(--text-primary);
 }
 
-.select {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--field-bg);
-  color: var(--text-primary);
-  box-shadow: none;
+.option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.selectOpen {
-  border-color: var(--workspace-panel-border);
-  background: var(--field-bg);
-  box-shadow: none;
+/* Avatar (apenas type="user") */
+.optionAvatar {
+  flex: 0 0 auto;
+}
+
+/* type="client": estritamente texto, sem qualquer adorno */
+.wrap[data-type='client'] .option {
+  font-weight: 600;
 }

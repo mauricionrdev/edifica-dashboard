@@ -160,6 +160,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const [previewAttachment, setPreviewAttachment] = useState(null);
   const [previewZoom, setPreviewZoom] = useState(1);
   const [previewZoomOrigin, setPreviewZoomOrigin] = useState('50% 50%');
+  const [pdfBlobUrl, setPdfBlobUrl] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [attachmentDeleteTarget, setAttachmentDeleteTarget] = useState(null);
 
@@ -172,6 +173,34 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     setPreviewZoom(1);
     setPreviewZoomOrigin('50% 50%');
   }, [previewAttachment?.id]);
+
+  // PDFs são exibidos via iframe. data: URLs grandes (PDFs com imagens/scans)
+  // estouram o limite de tamanho de URL do navegador e renderizam em branco.
+  // Convertemos para Blob URL, que não tem esse limite, e revogamos depois.
+  useEffect(() => {
+    if (previewAttachment?.mimeType !== 'application/pdf' || !previewAttachment?.dataUrl) {
+      setPdfBlobUrl('');
+      return undefined;
+    }
+
+    let url = '';
+    try {
+      const [meta, base64 = ''] = String(previewAttachment.dataUrl).split(',');
+      const isBase64 = /;base64/i.test(meta);
+      const binary = isBase64 ? atob(base64) : decodeURIComponent(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      setPdfBlobUrl(url);
+    } catch {
+      // Em caso de falha na decodificação, cai de volta para o dataUrl original.
+      setPdfBlobUrl('');
+    }
+
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [previewAttachment?.id, previewAttachment?.mimeType, previewAttachment?.dataUrl]);
 
   useEffect(() => {
     if (!clientId) return undefined;
@@ -612,7 +641,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               }}
             >
               {previewAttachment.mimeType === 'application/pdf' ? (
-                <iframe title={previewAttachment.fileName} src={previewAttachment.dataUrl} />
+                <iframe title={previewAttachment.fileName} src={pdfBlobUrl || previewAttachment.dataUrl} />
               ) : (
                 <img src={previewAttachment.dataUrl} alt="" style={{ transform: `scale(${previewZoom})`, transformOrigin: previewZoomOrigin }} />
               )}
