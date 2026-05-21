@@ -3599,6 +3599,7 @@ export default function ProfilePage() {
                   <div className={styles.workflowField}>
                     <span>Responsável</span>
                     <Select
+                      type="user"
                       value={activeTask.assigneeUserId || ''}
                       onChange={(event) => handleUpdateTaskFields(activeTask, { assigneeUserId: event.target.value }, 'Responsável atualizado.')}
                       aria-label="Responsável"
@@ -3606,7 +3607,7 @@ export default function ProfilePage() {
                       disabled={!canEditActiveTask}
                     >
                       <option value="">Sem responsável</option>
-                      {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                      {assigneeOptions.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                     </Select>
                   </div>
 
@@ -4305,6 +4306,7 @@ export default function ProfilePage() {
                 <label className={styles.labeledField}>
                   <span>Responsável</span>
                   <Select
+                    type="user"
                     value={demandForm.assigneeUserId}
                     onChange={(event) => setDemandForm((prev) => ({
                       ...prev,
@@ -4314,7 +4316,7 @@ export default function ProfilePage() {
                     aria-label="Responsável"
                     className={styles.formSelect}
                   >
-                    {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                    {(demandUsers.length ? demandUsers : [user]).filter(Boolean).map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                   </Select>
                 </label>
                 <label className={styles.labeledField}>
@@ -4633,12 +4635,13 @@ export default function ProfilePage() {
                 <label className={styles.labeledField}>
                   <span>Quem assume agora</span>
                   <Select
+                    type="user"
                     value={handoffForm.assigneeUserId}
                     onChange={(event) => setHandoffForm((prev) => ({ ...prev, assigneeUserId: event.target.value }))}
                     aria-label="Quem assume agora"
                     className={styles.formSelect}
                   >
-                    {assigneeOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                    {assigneeOptions.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                   </Select>
                 </label>
                 <label className={styles.labeledField}>

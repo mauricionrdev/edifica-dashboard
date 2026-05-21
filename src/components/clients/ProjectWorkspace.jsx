@@ -25,6 +25,7 @@ import { ApiError } from '../../api/client.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { hasPermission } from '../../utils/permissions.js';
+import { getUserAvatar } from '../../utils/avatarStorage.js';
 import StateBlock from '../ui/StateBlock.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
@@ -1007,6 +1008,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         {canEditProject ? (
           <form className={styles.memberForm} onSubmit={handleAddProjectMember}>
             <Select
+              type="user"
               className={styles.projectInlineSelect}
               value={memberUserId}
               onChange={(event) => setMemberUserId(event.target.value)}
@@ -1017,7 +1019,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
               {(Array.isArray(users) ? users : [])
                 .filter((entry) => !members.some((member) => sameId(member.userId || member.id, entry.id)))
                 .map((entry) => (
-                  <option key={entry.id} value={entry.id}>{entry.name || entry.email}</option>
+                  <option key={entry.id} value={entry.id} data-avatar={getUserAvatar(entry) || entry.avatarUrl || ''} data-name={entry.name || entry.email}>{entry.name || entry.email}</option>
                 ))}
             </Select>
             <Select
@@ -1383,6 +1385,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                 <label>
                   <span>Responsável</span>
                   <Select
+                    type="user"
                     className={styles.projectInlineSelect}
                     value={selectedTask.assigneeUserId || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { assigneeUserId: event.target.value })}
@@ -1391,7 +1394,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                   >
                     <option value="">Sem responsável</option>
                     {(Array.isArray(users) ? users : []).map((entry) => (
-                      <option key={entry.id} value={entry.id}>
+                      <option key={entry.id} value={entry.id} data-avatar={getUserAvatar(entry) || entry.avatarUrl || ''} data-name={entry.name || entry.email}>
                         {entry.name || entry.email}
                       </option>
                     ))}
@@ -1460,6 +1463,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
                 <form className={styles.collabForm} onSubmit={handleAddCollaborator}>
                   <Select
+                    type="user"
                     className={styles.projectInlineSelect}
                     value={collaboratorUserId}
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
@@ -1470,7 +1474,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                     {(Array.isArray(users) ? users : [])
                       .filter((entry) => !taskCollaborators.some((collab) => collab.userId === entry.id))
                       .map((entry) => (
-                        <option key={entry.id} value={entry.id}>
+                        <option key={entry.id} value={entry.id} data-avatar={getUserAvatar(entry) || entry.avatarUrl || ''} data-name={entry.name || entry.email}>
                           {entry.name || entry.email}
                         </option>
                       ))}
