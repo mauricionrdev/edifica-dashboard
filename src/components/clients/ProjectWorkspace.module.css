@@ -1823,10 +1823,10 @@ textarea:disabled {
   gap: 8px;
 }
 
-.projectInlineSelect :global(button):not([role="option"]),
+.projectInlineSelect :global(button),
 .projectInlineSelect :global(input),
 .projectInlineSelect :global(select),
-.projectToolSelect :global(button):not([role="option"]),
+.projectToolSelect :global(button),
 .projectToolSelect :global(input),
 .projectToolSelect :global(select) {
   min-height: 36px;

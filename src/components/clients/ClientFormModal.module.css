@@ -243,7 +243,7 @@
   overflow: visible;
 }
 
-.selectControl :global(button):not([role="option"]) {
+.selectControl :global(button) {
   min-height: 36px;
   border-radius: var(--radius-1, 6px);
 }
