@@ -1002,16 +1002,22 @@ export default function ProjectsPage() {
     }
   }
 
-  async function handleRemoveProjectMember(member) {
+  function handleRemoveProjectMember(member) {
     if (!selectedId || !member?.userId) return;
-    if (!window.confirm(`Remover ${member.userName} deste projeto?`)) return;
+    setMemberRemoveTarget({ userId: member.userId, userName: member.userName });
+  }
+
+  async function confirmRemoveMember() {
+    const target = memberRemoveTarget;
+    if (!selectedId || !target?.userId) return;
 
     try {
-      setMemberRemovingId(member.userId);
-      const res = await removeProjectMember(selectedId, member.userId);
+      setMemberRemovingId(target.userId);
+      const res = await removeProjectMember(selectedId, target.userId);
       setDetail((prev) =>
         prev ? { ...prev, members: Array.isArray(res?.members) ? res.members : prev.members } : prev
       );
+      setMemberRemoveTarget(null);
       showToast('Membro removido do projeto.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Não foi possível remover o membro.', { variant: 'error' });

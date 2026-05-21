@@ -81,8 +81,6 @@ export default function ClientDetailDrawer({
     };
   }, []);
 
-  if (!client) return null;
-
   const sc = statusClass(client);
   const sl = statusLabel(client);
   const statusTone =
@@ -173,6 +171,8 @@ export default function ClientDetailDrawer({
       setActiveTab('overview');
     }
   }, [activeTab, canViewFeeSchedule, canViewProject]);
+
+  if (!client) return null;
 
   const node = (
     <div className={drawerStyles.overlay} role="presentation" onClick={onClose}>

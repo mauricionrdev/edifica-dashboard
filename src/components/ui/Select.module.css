@@ -7,6 +7,8 @@
   flex: 0 0 auto;
   flex-direction: column;
   gap: var(--space-2);
+  overflow: visible;
+  isolation: isolate;
 }
 
 .label {
@@ -81,7 +83,7 @@
 }
 
 .menu {
-  position: fixed;
+  position: absolute;
   z-index: 22020;
   padding: 6px;
   border: 1px solid var(--line-strong);
@@ -168,12 +170,6 @@
    v132 · Select inline global
    Remove portal/fixed positioning. O menu fica preso ao campo e rola internamente.
    ========================================================================== */
-.wrap {
-  position: relative;
-  overflow: visible;
-  isolation: isolate;
-}
-
 .wrapOpen {
   z-index: 27000;
 }

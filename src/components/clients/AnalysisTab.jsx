@@ -265,6 +265,14 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     }
   }
 
+  function handleEntryPaste(entryId, event) {
+    if (!canEdit || !entryId) return;
+    const files = filesFromClipboard(event);
+    if (files.length === 0) return;
+    event.preventDefault();
+    handleAttachmentFiles(entryId, files);
+  }
+
   async function handleRemoveAttachment(entryId, attachment) {
     if (!entryId || !attachment?.id) return;
     setAttachmentDeleteTarget({ entryId, attachment });
