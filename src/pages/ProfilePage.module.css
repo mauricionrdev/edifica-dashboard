@@ -7740,7 +7740,7 @@
 }
 
 .operationListHeader {
-  border-bottom-color: rgba(255, 255, 255, 0.052);
+  border-bottom-color: var(--line-subtle);
 }
 
 .operationRow {
@@ -8604,7 +8604,7 @@
 
 .profileSelectMenu,
 .page select option {
-  background: #0b0c0e;
+  background: var(--surface-card);
   border: 1px solid var(--line);
   box-shadow: none;
 }
@@ -8631,7 +8631,7 @@
 .drawerTopbarPrimary {
   background: var(--surface-panel);
   border-color: var(--line);
-  color: #D0D6E0;
+  color: var(--text-secondary);
   box-shadow: none;
 }
 
@@ -8723,10 +8723,10 @@
 
 /* v29 — perfil conforme referencia manual escura */
 .page {
-  --profile-workspace-deep: #010102;
+  --profile-workspace-deep: var(--bg-app);
   --profile-card-main: var(--workspace-panel-bg);
   --profile-card-line: var(--line);
-  --profile-card-line-soft: rgba(255, 255, 255, 0.052);
+  --profile-card-line-soft: var(--line-subtle);
   background: var(--profile-workspace-deep);
 }
 
@@ -8765,7 +8765,7 @@
 .roleBadge {
   position: relative;
   overflow: hidden;
-  background: #010102;
+  background: var(--bg-app);
   border-color: var(--line);
   color: #dbe7ff;
   box-shadow:
@@ -8817,7 +8817,7 @@
 
 .heroTop .iconButton,
 .iconButton {
-  background: #010102;
+  background: var(--bg-app);
   border-color: rgba(255, 255, 255, 0.070);
   box-shadow: none;
 }
@@ -8849,7 +8849,7 @@
   min-height: 42px;
   padding: 0 16px;
   border-radius: 999px;
-  background: #010102;
+  background: var(--bg-app);
   border: 1px solid rgba(255, 255, 255, 0.060);
   color: #9fb0c6;
   box-shadow: none;
@@ -8869,7 +8869,7 @@
 
 .operationTabActive,
 .operationTabActive:hover {
-  background: #010102;
+  background: var(--bg-app);
   border-color: rgba(227, 184, 40, 0.44);
   color: #ffd429;
 }
@@ -8897,7 +8897,7 @@
 }
 
 .primaryAction {
-  background: #010102;
+  background: var(--bg-app);
   border-color: rgba(227, 184, 40, 0.44);
   color: #f4f7fb;
   box-shadow: none;
@@ -8914,7 +8914,7 @@
 }
 
 .operationList {
-  background: #010102;
+  background: var(--bg-app);
   border: 1px solid rgba(255, 255, 255, 0.052);
   border-radius: var(--workspace-card-radius);
   overflow: hidden;
@@ -8922,12 +8922,12 @@
 }
 
 .operationListHeader {
-  background: #010102;
+  background: var(--bg-app);
   border-bottom-color: var(--bg-hover);
 }
 
 .operationRow {
-  background: #010102;
+  background: var(--bg-app);
   border-bottom-color: rgba(255, 255, 255, 0.040);
 }
 
@@ -8941,7 +8941,7 @@
   margin: 0;
   padding: 32px 34px;
   border-radius: var(--workspace-card-radius);
-  background: #010102;
+  background: var(--bg-app);
   border: 1px solid var(--bg-hover);
   box-shadow: none;
   display: flex;
@@ -9065,7 +9065,7 @@
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.010), rgba(255, 255, 255, 0.003) 42%),
     #0d0f0f;
-  border-color: rgba(255, 255, 255, 0.078);
+  border-color: var(--line);
 }
 
 .profileStatRail {
@@ -9209,7 +9209,7 @@
 
 /* v32 — tons finais perfil conforme referência */
 .page {
-  background: #010102;
+  background: var(--bg-app);
 }
 
 .hero,
@@ -9288,7 +9288,7 @@
 }
 
 .operationTab:hover:not(.operationTabActive) {
-  background: #070708;
+  background: var(--surface);
   border-color: rgba(255, 255, 255, 0.082);
 }
 
@@ -9320,12 +9320,12 @@
 }
 
 .iconButton {
-  background: #010102;
+  background: var(--bg-app);
   border-color: rgba(255, 255, 255, 0.056);
 }
 
 .iconButton:hover {
-  background: #070708;
+  background: var(--surface);
   border-color: var(--line-strong);
 }
 
@@ -9346,7 +9346,7 @@
 }
 
 .operationTab {
-  background: #090a0b;
+  background: var(--bg-soft);
 }
 
 .operationTab:hover:not(.operationTabActive) {
@@ -9411,7 +9411,7 @@
   margin-left: -7px;
   border: 1px solid var(--bg-canvas);
   border-radius: 999px;
-  background: #0f1011;
+  background: var(--bg-hover);
   color: #d7dce5;
   box-shadow:
     0 0 0 1px var(--bg-selected),
@@ -9439,7 +9439,7 @@
 }
 
 .taskAvatarMore {
-  background: #090a0b;
+  background: var(--bg-soft);
   color: #9fb0c6;
   font-size: 9px;
   font-weight: 700;
@@ -9515,7 +9515,7 @@
   margin-left: -7px;
   border: 1px solid var(--bg-canvas);
   border-radius: 999px;
-  background: #0f1011;
+  background: var(--bg-hover);
   color: #d7dce5;
 }
 
@@ -9776,7 +9776,7 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  background: #010102;
+  background: var(--bg-app);
 }
 
 .roleBadge {
@@ -11218,7 +11218,7 @@
   margin-bottom: 0;
   border: 1px solid var(--edf-border);
   border-radius: 999px;
-  background: #090a0b;
+  background: var(--bg-soft);
   color: var(--edf-text-muted);
   font-size: 12.5px;
   font-weight: 600;
@@ -11230,7 +11230,7 @@
 
 .operationTab:hover {
   border-color: var(--edf-border-strong);
-  background: #0b0c0d;
+  background: var(--bg-elevated);
   color: var(--edf-text-secondary);
 }
 
@@ -11248,7 +11248,7 @@
   padding: 0 7px;
   border: 1px solid var(--edf-border);
   border-radius: 999px;
-  background: #111216;
+  background: var(--bg-selected);
   color: var(--edf-text-muted);
   display: inline-flex;
   align-items: center;
@@ -11296,7 +11296,7 @@
 
 .operationTab:hover {
   border-color: var(--edf-border);
-  background: #090a0b;
+  background: var(--bg-soft);
   color: var(--edf-text-secondary);
 }
 
