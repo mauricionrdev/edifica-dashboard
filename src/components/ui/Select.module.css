@@ -145,8 +145,13 @@
   bottom: calc(100% + 6px);
 }
 
-/* ── Opções ─────────────────────────────────────────────────────────────── */
-.option {
+/* ── Opções ─────────────────────────────────────────────────────────────────
+   Ancoradas a `.menu button.option` (especificidade 0,2,1) para vencer overrides
+   de página do tipo `.algumWrapper :global(button)` (0,2,0) por especificidade,
+   sem recorrer a override forçado. Isso blinda o Select globalmente: nenhuma
+   tela precisa ajustar seu CSS.
+   ──────────────────────────────────────────────────────────────────────────── */
+.menu button.option {
   width: 100%;
   min-height: 34px;
   flex: 0 0 auto;
@@ -157,6 +162,7 @@
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
   text-align: left;
   font-family: var(--font-sans);
@@ -164,26 +170,27 @@
   font-weight: 650;
   line-height: var(--lh-flat);
   letter-spacing: -0.01em;
+  box-shadow: none;
   cursor: pointer;
   transition:
     background-color var(--transition-fast),
     color var(--transition-fast);
 }
 
-.option span {
+.menu button.option span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.option:hover:not(:disabled),
-.optionActive {
+.menu button.option:hover:not(:disabled),
+.menu button.optionActive {
   background: var(--field-bg);
   color: var(--text-primary);
 }
 
-.option:disabled {
+.menu button.option:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -194,6 +201,6 @@
 }
 
 /* type="client": estritamente texto, sem qualquer adorno */
-.wrap[data-type='client'] .option {
+.wrap[data-type='client'] .menu button.option {
   font-weight: 600;
 }
