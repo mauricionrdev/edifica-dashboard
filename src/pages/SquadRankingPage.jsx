@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { getRankingSettings, getSquadRanking, updateRankingSettings } from '../api/metrics.js';
-import { CalculatorIcon, CloseIcon, RotateCcwIcon, StateBlock } from '../components/ui/index.js';
+import { Button, CalculatorIcon, CloseIcon, RotateCcwIcon, StateBlock } from '../components/ui/index.js';
 import { MONTHS_FULL, fmtMoney, fmtPct } from '../utils/format.js';
 import { getSquadAvatar, getUserAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import { resolveSquadOwner } from '../utils/ownershipStorage.js';
@@ -167,18 +167,20 @@ export default function SquadRankingPage() {
       description: null,
       actions: (
         <div className={styles.headerActions}>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
+            iconOnly
             className={styles.headerAction}
             onClick={() => setSettingsOpen(true)}
             aria-label="Cálculo de meta"
             title="Cálculo de meta"
           >
             <CalculatorIcon size={14} aria-hidden="true" />
-          </button>
-          <button type="button" className={styles.headerAction} onClick={fetchRanking} aria-label="Atualizar ranking" title="Atualizar ranking">
+          </Button>
+          <Button variant="ghost" size="sm" iconOnly className={styles.headerAction} onClick={fetchRanking} aria-label="Atualizar ranking" title="Atualizar ranking">
             <RotateCcwIcon size={14} aria-hidden="true" />
-          </button>
+          </Button>
         </div>
       ),
     });
@@ -310,9 +312,9 @@ export default function SquadRankingPage() {
           variant="error"
           title="Erro ao montar o ranking"
           action={
-            <button type="button" className={styles.inlineButton} onClick={fetchRanking}>
+            <Button variant="secondary" size="sm" className={styles.inlineButton} onClick={fetchRanking}>
               Tentar novamente
-            </button>
+            </Button>
           }
         />
       </div>
@@ -412,9 +414,9 @@ export default function SquadRankingPage() {
                 <h2>Cálculo de meta</h2>
                 <span>{MONTHS_FULL[period.m]} {period.y}</span>
               </div>
-              <button type="button" className={styles.settingsClose} onClick={() => setSettingsOpen(false)} aria-label="Fechar">
+              <Button variant="ghost" size="sm" iconOnly className={styles.settingsClose} onClick={() => setSettingsOpen(false)} aria-label="Fechar">
                 <CloseIcon size={16} aria-hidden="true" />
-              </button>
+              </Button>
             </header>
 
             <div className={styles.settingsGrid}>
@@ -459,8 +461,8 @@ export default function SquadRankingPage() {
             {settingsError ? <p className={styles.settingsError}>{settingsError.message}</p> : null}
 
             <footer className={styles.settingsFooter}>
-              <button type="button" onClick={() => setSettingsOpen(false)} disabled={settingsSaving}>Cancelar</button>
-              <button type="submit" disabled={settingsSaving}>{settingsSaving ? 'Salvando' : 'Salvar'}</button>
+              <Button variant="secondary" onClick={() => setSettingsOpen(false)} disabled={settingsSaving}>Cancelar</Button>
+              <Button type="submit" variant="secondary" className={styles.settingsSubmit} disabled={settingsSaving}>{settingsSaving ? 'Salvando' : 'Salvar'}</Button>
             </footer>
           </form>
         </div>

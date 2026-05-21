@@ -649,37 +649,23 @@
   gap: 8px;
 }
 
-.settingsFooter button {
+/* Layout local: largura mínima dos botões do footer. Variantes, borda,
+   hover e disabled vêm do primitivo Button. */
+.settingsFooter > * {
   min-width: 86px;
-  height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-1);
-  background: var(--surface-raised);
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 620;
-  cursor: pointer;
 }
 
-.settingsFooter button[type="submit"] {
-  border-color: rgba(245, 184, 0, 0.24);
+/* Botão Salvar: tom âmbar-suave por cima do variant="secondary" do Button.
+   Mantém o visual atual (não é o primário sólido do DS). */
+.settingsSubmit {
+  border-color: var(--accent-line);
   background: var(--accent-soft);
   color: var(--text-primary);
 }
 
-.settingsFooter button:hover:not(:disabled) {
-  background: var(--bg-selected);
-}
-
-.settingsFooter button[type="submit"]:hover:not(:disabled) {
+.settingsSubmit:hover:not(:disabled) {
   background: rgba(245, 184, 0, 0.18);
-}
-
-.settingsFooter button:disabled {
-  opacity: 0.58;
-  cursor: not-allowed;
+  border-color: var(--accent-line);
 }
 
 @media (max-width: 1120px) {
