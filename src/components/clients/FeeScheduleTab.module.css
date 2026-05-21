@@ -16,7 +16,7 @@
   min-height: 64px;
   padding: 11px 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: 12px;
+  border-radius: var(--workspace-card-radius);
   background: rgba(255, 255, 255, 0.016);
   display: grid;
   gap: 4px;
@@ -79,7 +79,7 @@
   gap: 10px;
   padding: 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: 12px;
+  border-radius: var(--workspace-card-radius);
   background: rgba(255, 255, 255, 0.016);
 }
 
@@ -205,7 +205,7 @@
   min-height: 72px;
   padding: 18px;
   border: 1px solid var(--line-subtle);
-  border-radius: 12px;
+  border-radius: var(--workspace-card-radius);
   background: rgba(255, 255, 255, 0.016);
   color: var(--text-tertiary);
   display: flex;

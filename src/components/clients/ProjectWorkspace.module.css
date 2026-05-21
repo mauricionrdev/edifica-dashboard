@@ -16,7 +16,7 @@
 .taskPanel,
 .activityPanel {
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3, 16px);
+  border-radius: var(--radius-3, 10px);
   background: var(--surface-panel);
 }
 
@@ -120,7 +120,7 @@
   min-height: 34px;
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-raised);
   color: var(--text-secondary);
   font: inherit;
@@ -172,7 +172,7 @@ textarea:disabled {
   min-height: 34px;
   padding: 0 10px;
   border: 1px solid transparent;
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   color: var(--text-secondary);
   font: inherit;
@@ -223,7 +223,7 @@ textarea:disabled {
   min-width: 0;
   min-height: 34px;
   border: 1px solid transparent;
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   color: var(--text-primary);
   font: inherit;
@@ -562,7 +562,7 @@ textarea:disabled {
   min-height: 74px;
   padding: 10px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   color: var(--text-secondary);
   font: inherit;
@@ -656,7 +656,7 @@ textarea:disabled {
   min-height: 38px;
   padding: 6px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: rgba(255, 255, 255, 0.014);
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) 28px;
@@ -727,7 +727,7 @@ textarea:disabled {
   min-height: 84px;
   padding: 10px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   color: var(--text-primary);
   font: inherit;
@@ -745,7 +745,7 @@ textarea:disabled {
 .commentCard {
   padding: 10px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: rgba(255, 255, 255, 0.014);
   display: grid;
   gap: 8px;
@@ -903,7 +903,7 @@ textarea:disabled {
 .confirmModal {
   width: min(430px, calc(100vw - 40px));
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-4, 18px);
+  border-radius: var(--radius-4, 10px);
   background: var(--bg-raised);
   overflow: hidden;
 }
@@ -1025,7 +1025,7 @@ textarea:disabled {
   min-height: 30px;
   padding: 0 10px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   color: var(--text-tertiary);
   cursor: pointer;
@@ -1035,7 +1035,7 @@ textarea:disabled {
   min-width: 0;
   padding: 10px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3, 16px);
+  border-radius: var(--radius-3, 10px);
   background: var(--surface-panel);
   display: grid;
   gap: 10px;
@@ -1078,7 +1078,7 @@ textarea:disabled {
   min-height: 40px;
   padding: 6px 8px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr) auto;
@@ -1128,7 +1128,7 @@ textarea:disabled {
 .memberForm {
   padding: 8px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: rgba(255, 255, 255, 0.01);
   display: grid;
   grid-template-columns: minmax(160px, 1fr) minmax(124px, 150px) auto;
@@ -1140,7 +1140,7 @@ textarea:disabled {
   min-height: 34px;
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   color: var(--text-secondary);
   font-size: 12px;
@@ -1228,7 +1228,7 @@ textarea:disabled {
   min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3, 16px);
+  border-radius: var(--radius-3, 10px);
   background: rgba(255, 255, 255, 0.014);
   display: grid;
   grid-template-columns: max-content minmax(190px, max-content) minmax(320px, 540px);
@@ -1282,7 +1282,7 @@ textarea:disabled {
   min-height: 38px;
   padding: 5px 7px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr) 24px;
@@ -1830,7 +1830,7 @@ textarea:disabled {
 .projectToolSelect :global(input),
 .projectToolSelect :global(select) {
   min-height: 36px;
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
 }
 
 .memberForm .inlineAddButton {
@@ -1857,7 +1857,7 @@ textarea:disabled {
   min-height: 46px;
   padding: 6px;
   grid-template-columns: minmax(0, 1fr) 34px;
-  border-radius: var(--radius-2, 12px);
+  border-radius: var(--radius-2, 8px);
 }
 
 .projectTopTools .sectionForm input {
@@ -1878,7 +1878,7 @@ textarea:disabled {
   justify-self: stretch;
   justify-content: space-between;
   padding: 6px;
-  border-radius: var(--radius-2, 12px);
+  border-radius: var(--radius-2, 8px);
 }
 
 .projectTopTools .projectToolGroup {

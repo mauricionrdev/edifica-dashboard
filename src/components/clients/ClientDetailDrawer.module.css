@@ -18,7 +18,7 @@
   min-width: 0;
   color: var(--text-primary);
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-4, 18px);
+  border-radius: var(--radius-4, 10px);
   background: var(--surface-raised);
   display: flex;
   flex-direction: column;
@@ -70,7 +70,7 @@
 .btnGhost,
 .btnDanger {
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-raised);
   color: var(--text-secondary);
 }
@@ -241,7 +241,7 @@
   width: 100%;
   min-height: 36px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-raised);
   color: var(--text-primary);
   font: inherit;
@@ -277,7 +277,7 @@
   align-items: center;
   padding: 12px;
   border: 1px solid rgba(255, 91, 115, 0.18);
-  border-radius: var(--radius-2, 12px);
+  border-radius: var(--radius-2, 8px);
   background: rgba(255, 91, 115, 0.045);
 }
 
@@ -306,7 +306,7 @@
 .projectChoiceModal {
   width: min(480px, calc(100% - 40px));
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-4, 18px);
+  border-radius: var(--radius-4, 10px);
   background: var(--surface-raised);
   overflow: hidden;
   box-shadow: none;
@@ -348,7 +348,7 @@
   min-height: 50px;
   padding: 0 14px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2, 12px);
+  border-radius: var(--radius-2, 8px);
   background: var(--surface-panel);
   color: var(--text-primary);
   text-align: left;

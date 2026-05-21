@@ -14,7 +14,7 @@
   width: min(680px, calc(100vw - 40px));
   max-height: min(720px, calc(100vh - 40px));
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-4, 18px);
+  border-radius: var(--radius-4, 10px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
   display: grid;
@@ -65,7 +65,7 @@
   height: 34px;
   padding: 0;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-tertiary);
   display: inline-flex;
@@ -98,7 +98,7 @@
   min-width: 0;
   padding: 13px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3, 16px);
+  border-radius: var(--radius-3, 10px);
   background: rgba(255, 255, 255, 0.012);
   display: grid;
   gap: 12px;
@@ -201,7 +201,7 @@
   height: 36px;
   padding: 0 11px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-primary);
   font: inherit;
@@ -245,7 +245,7 @@
 
 .selectControl :global(button) {
   min-height: 36px;
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
 }
 
 .errorLine {
@@ -253,7 +253,7 @@
   min-height: 32px;
   padding: 8px 10px;
   border: 1px solid rgba(239, 68, 68, 0.22);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: rgba(239, 68, 68, 0.08);
   color: var(--danger);
   display: flex;
@@ -268,7 +268,7 @@
   min-height: 34px;
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: rgba(255, 255, 255, 0.02);
   color: var(--text-secondary);
   font-family: var(--font-sans);
@@ -314,7 +314,7 @@
   .card {
     width: 100%;
     max-height: calc(100dvh - 24px);
-    border-radius: 16px;
+    border-radius: var(--radius-3);
   }
 
   .grid {

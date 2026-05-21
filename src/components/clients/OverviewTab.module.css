@@ -130,7 +130,7 @@
   min-height: 74px;
   padding: 11px 12px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2, 12px);
+  border-radius: var(--radius-2, 8px);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0) 46%),
     rgba(255, 255, 255, 0.01);
@@ -198,7 +198,7 @@
   min-height: 32px;
   padding: 0 11px;
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1, 10px);
+  border-radius: var(--radius-1, 6px);
   background: var(--surface-panel);
   color: var(--text-secondary);
   font: inherit;
