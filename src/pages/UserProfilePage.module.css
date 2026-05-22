@@ -1,56 +1,68 @@
+/* ==========================================================================
+   UserProfilePage · espelho visual do Perfil interno
+   ========================================================================== */
+
 .page {
-  min-height: 100vh;
-  padding: 24px;
-  color: var(--text-primary);
-  background: var(--bg-app);
+  min-height: 100%;
+  padding: 16px 18px 24px;
+  background: var(--chassis-page-bg);
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.page * {
-  box-sizing: border-box;
-}
+.page * { box-sizing: border-box; }
 
 .profileHero,
 .workPanel {
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg-canvas);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
 }
 
-.profileHero {
-  margin-bottom: 28px;
-}
+.profileHero { flex: 0 0 auto; }
 
 .heroIdentity {
-  min-height: 142px;
-  display: flex;
+  min-height: 128px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 16px;
-  padding: 30px 32px;
+  gap: 14px;
+  padding: 24px 30px;
 }
 
-.avatar {
-  width: 64px;
-  height: 64px;
-  flex: 0 0 auto;
-  display: grid;
+.avatar,
+.taskAvatar,
+.drawerPersonAvatar,
+.commentAvatar {
+  display: inline-grid;
   place-items: center;
   overflow: hidden;
   border: 0;
-  border-radius: 50%;
-  background: var(--bg-canvas);
-  color: var(--accent-strong);
-  padding: 0;
-  font-size: var(--fs-lg);
-  font-weight: var(--weight-semibold);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--text-secondary);
   line-height: var(--lh-flat);
+  font-weight: var(--weight-semibold);
+  box-shadow: none;
+  outline: 0;
+}
+
+.avatar {
+  width: 62px;
+  height: 62px;
+  font-size: var(--fs-lg);
   cursor: pointer;
 }
 
-.avatar:disabled {
-  cursor: default;
-}
+.avatar:disabled { cursor: default; }
 
 .avatar img,
 .taskAvatar img,
@@ -71,7 +83,7 @@
 .heroCopy {
   min-width: 0;
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 
 .nameRow {
@@ -82,6 +94,7 @@
 }
 
 .nameRow h1 {
+  min-width: 0;
   margin: 0;
   overflow: hidden;
   color: var(--text-primary);
@@ -94,14 +107,15 @@
 }
 
 .roleBadge {
+  flex: 0 0 auto;
   min-height: 26px;
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--chassis-border);
   border-radius: 999px;
-  background: var(--bg-raised);
+  background: var(--surface-raised);
   color: var(--text-secondary);
-  padding: 0 12px;
+  padding: 0 11px;
   font-size: var(--fs-label);
   font-weight: var(--weight-semibold);
   line-height: var(--lh-flat);
@@ -110,32 +124,39 @@
 
 .roleBadgeBlackHole {
   border-color: var(--accent-line);
-  background: linear-gradient(90deg, var(--bg-raised), var(--bg-canvas));
+  background: linear-gradient(90deg, var(--surface-raised), var(--surface-panel));
   color: var(--text-primary);
   box-shadow: inset 0 0 0 1px rgba(245, 184, 0, 0.05);
 }
 
 .profileMeta {
+  min-width: 0;
   color: var(--text-tertiary);
   font-size: var(--fs-md);
   line-height: var(--lh-tight);
 }
 
+.profileMeta span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .statRail {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--chassis-border-subtle);
+  background: rgba(255, 255, 255, 0.006);
 }
 
 .statItem {
   min-width: 0;
-  padding: 20px 24px;
-  border-right: 1px solid var(--line);
+  padding: 18px 22px;
+  border-right: 1px solid var(--chassis-border-subtle);
 }
 
-.statItem:last-child {
-  border-right: 0;
-}
+.statItem:last-child { border-right: 0; }
 
 .statItem span {
   display: block;
@@ -161,13 +182,9 @@
 .positive { color: var(--success-text); }
 
 .profileGrid,
-.mainColumn {
-  min-width: 0;
-}
+.mainColumn { min-width: 0; }
 
-.workPanel {
-  min-height: 280px;
-}
+.workPanel { min-height: 280px; }
 
 .sectionHeader {
   display: flex;
@@ -186,11 +203,10 @@
   font-size: var(--fs-xl);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
+  line-height: var(--lh-tight);
 }
 
-.sectionTitleBlock svg {
-  color: var(--text-tertiary);
-}
+.sectionTitleBlock svg { color: var(--text-tertiary); }
 
 .primaryButton,
 .modalFooter button:last-child {
@@ -200,7 +216,7 @@
   justify-content: center;
   gap: 8px;
   border: 1px solid var(--accent-line);
-  border-radius: var(--radius-md);
+  border-radius: var(--workspace-control-radius);
   background: var(--accent-soft);
   color: var(--text-primary);
   padding: 0 18px;
@@ -214,7 +230,7 @@
   flex-wrap: wrap;
   gap: 10px;
   padding: 0 28px 24px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
 .taskTab {
@@ -222,7 +238,7 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--chassis-border);
   border-radius: 999px;
   background: transparent;
   color: var(--text-tertiary);
@@ -237,9 +253,9 @@
   height: 24px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--chassis-border);
   border-radius: 999px;
-  background: var(--bg-raised);
+  background: var(--surface-raised);
   color: var(--text-secondary);
   font-size: var(--fs-label);
   font-weight: var(--weight-semibold);
@@ -260,15 +276,15 @@
 .issueTable {
   margin: 26px 24px 22px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.006);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--chassis-panel-bg);
 }
 
 .issueHead,
 .issueRow {
   display: grid;
-  grid-template-columns: 48px minmax(260px, 1.5fr) minmax(150px, 0.5fr) minmax(230px, 0.75fr) minmax(130px, 0.42fr) minmax(110px, 0.35fr);
+  grid-template-columns: 48px minmax(280px, 1.55fr) minmax(150px, 0.48fr) minmax(230px, 0.72fr) minmax(120px, 0.38fr) minmax(110px, 0.34fr);
   align-items: center;
   column-gap: 18px;
 }
@@ -276,7 +292,7 @@
 .issueHead {
   min-height: 52px;
   padding: 0 24px;
-  border-bottom: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--chassis-border-subtle);
   color: var(--text-tertiary);
   font-size: var(--fs-tiny);
   font-weight: var(--weight-semibold);
@@ -289,7 +305,7 @@
 .issueRow {
   min-height: 70px;
   padding: 0 24px;
-  border-bottom: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--chassis-border-subtle);
   color: var(--text-secondary);
   cursor: pointer;
 }
@@ -302,7 +318,7 @@
   height: 22px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--chassis-border);
   border-radius: 999px;
   background: transparent;
   color: var(--text-primary);
@@ -365,9 +381,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--line);
+  border: 1px solid var(--chassis-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   padding: 0 12px;
   font-size: var(--fs-label);
@@ -376,23 +392,17 @@
   white-space: nowrap;
 }
 
-.tagKind,
-.kind_other,
-.kind_adjustment,
-.kind_project {
-  border-color: var(--info-line);
-  background: var(--info-soft);
-  color: var(--info);
-}
-
 .kind_briefing,
 .kind_access {
-  border-color: var(--warning-line);
-  background: var(--warning-soft);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
   color: var(--warning-text);
 }
 
-.kind_support {
+.kind_support,
+.kind_other,
+.kind_adjustment,
+.kind_project {
   border-color: var(--info-line);
   background: var(--info-soft);
   color: var(--info);
@@ -421,9 +431,9 @@
 .issueStageCell { min-width: 0; }
 
 .stagePill {
-  --public-stage-fill: var(--warning-soft);
+  --public-stage-fill: var(--accent-soft);
   --public-stage-color: var(--warning-text);
-  --public-stage-border: var(--warning-line);
+  --public-stage-border: var(--accent-line);
   position: relative;
   min-width: 170px;
   height: 34px;
@@ -433,7 +443,7 @@
   overflow: hidden;
   border: 1px solid var(--public-stage-border);
   border-radius: 999px;
-  background: var(--bg-canvas);
+  background: var(--chassis-panel-bg);
   color: var(--public-stage-color);
   padding: 0 14px;
   font-size: var(--fs-label);
@@ -466,7 +476,7 @@
 .stage_teal {
   --public-stage-fill: rgba(245, 184, 0, 0.14);
   --public-stage-color: var(--warning-text);
-  --public-stage-border: var(--warning-line);
+  --public-stage-border: var(--accent-line);
 }
 
 .stage_green {
@@ -490,17 +500,8 @@
 .taskAvatar {
   width: 24px;
   height: 24px;
-  display: inline-grid;
-  place-items: center;
-  overflow: hidden;
-  border: 0;
-  border-radius: 999px;
-  background: var(--bg-raised);
-  color: var(--text-secondary);
   margin-left: -7px;
   font-size: var(--fs-tiny);
-  font-weight: var(--weight-semibold);
-  line-height: var(--lh-flat);
 }
 
 .taskAvatar:first-child { margin-left: 0; }
@@ -529,33 +530,33 @@
   z-index: 120;
   display: flex;
   justify-content: flex-end;
-  background: rgba(0, 0, 0, 0.48);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .taskDrawerPanel {
-  width: min(920px, calc(100vw - 36px));
+  width: min(760px, calc(100vw - 28px));
   height: calc(100vh - 16px);
   margin: 8px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg-canvas);
-  box-shadow: var(--shadow-modal);
+  border: 1px solid var(--chassis-border-strong);
+  border-radius: var(--workspace-card-radius);
+  background: var(--chassis-panel-bg);
+  box-shadow: var(--shadow-dialog);
 }
 
 .taskDrawerTopbar {
-  min-height: 72px;
+  min-height: 66px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg-canvas);
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--chassis-border-subtle);
+  background: var(--chassis-panel-bg);
 }
 
 .drawerStatusGroup,
@@ -575,13 +576,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--bg-raised);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--workspace-control-radius);
+  background: var(--surface-raised);
   color: var(--text-secondary);
   padding: 0 14px;
   font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
+  font-family: inherit;
   cursor: pointer;
 }
 
@@ -609,14 +611,14 @@
 .demandFormContent::-webkit-scrollbar { display: none; }
 
 .taskDrawerHero {
-  padding: 30px 30px 26px;
-  border-bottom: 1px solid var(--line);
+  padding: 26px 28px 24px;
+  border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
 .taskDrawerHero h3 {
   margin: 0 0 8px;
   color: var(--text-primary);
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-xl);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
   line-height: var(--lh-tight);
@@ -634,9 +636,9 @@
 .routineFormGrid textarea {
   width: 100%;
   min-width: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--bg-soft);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
   color: var(--text-primary);
   font: inherit;
   outline: 0;
@@ -650,11 +652,11 @@
 }
 
 .taskDrawerSection {
-  margin: 24px 30px;
+  margin: 22px 28px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
 }
 
 .sectionTitleRow {
@@ -664,7 +666,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 0 18px;
-  border-bottom: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
 .sectionTitleRow h4 {
@@ -692,7 +694,7 @@
   display: grid;
   gap: 10px;
   padding: 16px 18px 18px;
-  border-right: 1px solid var(--line-subtle);
+  border-right: 1px solid var(--chassis-border-subtle);
 }
 
 .workflowField:last-child { border-right: 0; }
@@ -725,16 +727,14 @@
   min-width: 0;
   height: 48px;
   min-height: 48px;
-  border-color: var(--line);
-  border-radius: var(--radius-md);
-  background: var(--bg-soft);
+  border-color: var(--chassis-border);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
   font-size: var(--fs-md);
 }
 
 .workflowSelect > div,
-.formSelect > div {
-  min-width: 100%;
-}
+.formSelect > div { min-width: 100%; }
 
 .drawerPeopleList {
   display: flex;
@@ -749,9 +749,9 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--chassis-border);
   border-radius: 999px;
-  background: var(--bg-soft);
+  background: var(--surface-raised);
   color: var(--text-primary);
   padding: 4px 12px 4px 4px;
   font-size: var(--fs-body);
@@ -761,15 +761,7 @@
 .drawerPersonAvatar {
   width: 28px;
   height: 28px;
-  display: inline-grid;
-  place-items: center;
-  overflow: hidden;
-  border: 0;
-  border-radius: 999px;
-  background: var(--bg-raised);
-  color: var(--text-secondary);
   font-size: var(--fs-tiny);
-  font-weight: var(--weight-semibold);
 }
 
 .workflowTimeline {
@@ -784,7 +776,7 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--chassis-border);
   border-radius: 999px;
   background: transparent;
   color: var(--text-tertiary);
@@ -799,7 +791,7 @@
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
-  background: var(--bg-raised);
+  background: var(--surface-raised);
   color: var(--text-tertiary);
   font-size: var(--fs-micro);
   font-style: normal;
@@ -852,7 +844,7 @@
   grid-template-columns: 36px minmax(0, 1fr);
   gap: 14px;
   padding: 18px;
-  border-bottom: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
 .commentItem:last-child { border-bottom: 0; }
@@ -860,15 +852,7 @@
 .commentAvatar {
   width: 32px;
   height: 32px;
-  display: inline-grid;
-  place-items: center;
-  overflow: hidden;
-  border: 0;
-  border-radius: 999px;
-  background: var(--bg-raised);
-  color: var(--text-secondary);
   font-size: var(--fs-tiny);
-  font-weight: var(--weight-semibold);
 }
 
 .commentContent {
@@ -907,7 +891,7 @@
   display: grid;
   gap: 12px;
   padding: 18px;
-  border-top: 1px solid var(--line-subtle);
+  border-top: 1px solid var(--chassis-border-subtle);
 }
 
 .commentForm textarea,
@@ -927,26 +911,24 @@
   display: grid;
   place-items: center;
   padding: 22px;
-  background: rgba(0, 0, 0, 0.58);
+  background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
 
 .taskModal {
-  width: min(940px, calc(100vw - 48px));
+  width: min(900px, calc(100vw - 48px));
   max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg-canvas);
-  box-shadow: var(--shadow-modal);
+  border: 1px solid var(--chassis-border-strong);
+  border-radius: var(--workspace-card-radius);
+  background: var(--chassis-panel-bg);
+  box-shadow: var(--shadow-dialog);
 }
 
-.demandModal_briefing {
-  width: min(1080px, calc(100vw - 48px));
-}
+.demandModal_briefing { width: min(980px, calc(100vw - 48px)); }
 
 .modalHeader {
   min-height: 88px;
@@ -955,8 +937,8 @@
   justify-content: space-between;
   gap: 16px;
   padding: 22px 30px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--chassis-border-subtle);
+  background: var(--chassis-panel-bg);
 }
 
 .modalHeader h2 {
@@ -965,6 +947,7 @@
   font-size: var(--fs-xl);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
+  line-height: var(--lh-tight);
 }
 
 .modalHeader span {
@@ -982,8 +965,8 @@
 
 .demandFormGrid {
   display: grid;
-  grid-template-columns: minmax(120px, 0.42fr) minmax(130px, 0.45fr) minmax(250px, 1fr) minmax(260px, 0.9fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 128px) minmax(0, 134px) minmax(220px, 1fr) minmax(240px, 0.85fr);
+  gap: 14px;
   align-items: end;
 }
 
@@ -1000,6 +983,9 @@
   font-size: var(--fs-md);
   font-weight: var(--weight-medium);
 }
+
+.fieldCompact .formSelect { min-width: 0; }
+.fieldTitle { min-width: 0; }
 
 .taskModal textarea {
   min-height: 150px;
@@ -1059,9 +1045,9 @@
 .attachmentComposer {
   margin-top: 20px;
   padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
 }
 
 .attachmentComposer > div:first-child {
@@ -1087,9 +1073,9 @@
   position: relative;
   margin: 0;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--bg-soft);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--workspace-control-radius);
+  background: var(--surface-raised);
 }
 
 .attachmentPreviewItem img,
@@ -1131,12 +1117,12 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 16px 30px;
-  border-top: 1px solid var(--line);
-  background: var(--bg-canvas);
+  border-top: 1px solid var(--chassis-border-subtle);
+  background: var(--chassis-panel-bg);
 }
 
 .modalFooter button:first-child {
-  background: var(--bg-raised);
+  background: var(--surface-raised);
   color: var(--text-secondary);
 }
 
@@ -1146,18 +1132,16 @@
 }
 
 .dateField input,
-.workflowDate input {
-  color: var(--text-primary);
-}
+.workflowDate input { color: var(--text-primary); }
 
 .avatarPreviewModal {
   position: relative;
   max-width: min(520px, calc(100vw - 40px));
   max-height: calc(100vh - 40px);
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg-canvas);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--chassis-panel-bg);
 }
 
 .avatarPreviewModal img {
@@ -1183,14 +1167,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .demandFormGrid > :nth-child(n) {
-    grid-column: auto;
-  }
-
+  .demandFormGrid > :nth-child(n) { grid-column: auto; }
   .fieldTitle,
-  .fieldWide {
-    grid-column: 1 / -1;
-  }
+  .fieldWide { grid-column: 1 / -1; }
 }
 
 @media (max-width: 900px) {
@@ -1202,9 +1181,7 @@
   }
 
   .statItem:nth-child(2n),
-  .workflowField:nth-child(2n) {
-    border-right: 0;
-  }
+  .workflowField:nth-child(2n) { border-right: 0; }
 }
 
 @media (max-width: 760px) {
@@ -1219,13 +1196,8 @@
     padding-right: 18px;
   }
 
-  .heroIdentity {
-    align-items: flex-start;
-  }
-
-  .nameRow {
-    flex-wrap: wrap;
-  }
+  .heroIdentity { align-items: flex-start; }
+  .nameRow { flex-wrap: wrap; }
 
   .statRail,
   .workflowGrid,
@@ -1252,9 +1224,7 @@
   }
 
   .taskDrawerPanel,
-  .taskModal {
-    width: calc(100vw - 16px);
-  }
+  .taskModal { width: calc(100vw - 16px); }
 
   .taskDrawerSection,
   .taskDrawerHero {
