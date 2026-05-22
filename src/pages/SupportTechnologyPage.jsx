@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
 import Avatar from '../components/ui/Avatar.jsx';
 import DemandModal from '../components/tasks/DemandModal.jsx';
-import { BotIcon, CalendarIcon, CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../components/ui/Icons.jsx';
+import { BotIcon, CalendarIcon, CloseIcon, PlusIcon, SaveIcon } from '../components/ui/Icons.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { createTaskAttachment } from '../api/projects.js';
@@ -37,8 +37,43 @@ const FALLBACK_DAILY_COLUMNS = [
   { key: 'notes', label: 'Observações', width: 280, system: true },
 ];
 
-const SHEET_TEXT_COLORS = ['#f8fafc', '#22c55e', '#facc15', '#60a5fa', '#c084fc', '#fb7185', '#f97316', '#94a3b8'];
-const SHEET_FILL_COLORS = ['transparent', '#0f172a', '#11261a', '#2a2106', '#111f35', '#251634', '#34191d', '#1f2937'];
+const SHEET_TEXT_COLORS = [
+  { value: '#f8fafc', label: 'Branco' },
+  { value: '#cbd5e1', label: 'Cinza claro' },
+  { value: '#94a3b8', label: 'Cinza' },
+  { value: '#64748b', label: 'Cinza escuro' },
+  { value: '#22c55e', label: 'Verde' },
+  { value: '#84cc16', label: 'Lima' },
+  { value: '#facc15', label: 'Amarelo' },
+  { value: '#fb923c', label: 'Laranja' },
+  { value: '#ef4444', label: 'Vermelho' },
+  { value: '#fb7185', label: 'Rosa' },
+  { value: '#c084fc', label: 'Roxo' },
+  { value: '#818cf8', label: 'Índigo' },
+  { value: '#60a5fa', label: 'Azul' },
+  { value: '#22d3ee', label: 'Ciano' },
+  { value: '#2dd4bf', label: 'Turquesa' },
+  { value: '#e2e8f0', label: 'Neutro' },
+];
+
+const SHEET_FILL_COLORS = [
+  { value: 'transparent', label: 'Sem fundo' },
+  { value: '#0f172a', label: 'Slate' },
+  { value: '#111827', label: 'Grafite' },
+  { value: '#1f2937', label: 'Cinza' },
+  { value: '#11261a', label: 'Verde escuro' },
+  { value: '#1f2a10', label: 'Lima escuro' },
+  { value: '#2a2106', label: 'Amarelo escuro' },
+  { value: '#2b1709', label: 'Laranja escuro' },
+  { value: '#34191d', label: 'Vermelho escuro' },
+  { value: '#321827', label: 'Rosa escuro' },
+  { value: '#251634', label: 'Roxo escuro' },
+  { value: '#1b1d38', label: 'Índigo escuro' },
+  { value: '#111f35', label: 'Azul escuro' },
+  { value: '#0d2a33', label: 'Ciano escuro' },
+  { value: '#0d2b27', label: 'Turquesa escuro' },
+  { value: '#020617', label: 'Preto' },
+];
 
 const MASTER_SUPPORT_EMAIL = 'mauricionredifica@gmail.com';
 const MASTER_SUPPORT_NAME = 'mauricio nunes';
@@ -89,6 +124,21 @@ function cellStyle(row, key) {
   return row?.__styles?.[key] || {};
 }
 
+function preserveSelectionRange() {
+  const selection = window.getSelection?.();
+  if (!selection || selection.rangeCount === 0) return null;
+  return selection.getRangeAt(0).cloneRange();
+}
+
+function restoreSelectionRange(range) {
+  if (!range) return false;
+  const selection = window.getSelection?.();
+  if (!selection) return false;
+  selection.removeAllRanges();
+  selection.addRange(range);
+  return true;
+}
+
 function normalizeStyle(style = {}) {
   const next = { ...style };
   Object.keys(next).forEach((key) => {
@@ -97,7 +147,7 @@ function normalizeStyle(style = {}) {
   return next;
 }
 
-function SheetCell({ row, column, editable, saving, selected, onSelect, onChange, onCommit }) {
+function SheetCell({ row, column, editable, saving, selected, onSelect, onChange, onCommit, onContextMenu }) {
   const ref = useRef(null);
   const value = cellHtml(row[column.key] || '');
   const style = cellStyle(row, column.key);
@@ -115,6 +165,7 @@ function SheetCell({ row, column, editable, saving, selected, onSelect, onChange
         data-tone={statusTone(value)}
         style={style}
         title={plainValue}
+        onContextMenu={(event) => onContextMenu?.(event, row.id, column.key)}
         dangerouslySetInnerHTML={{ __html: value || '—' }}
       />
     );
@@ -132,10 +183,11 @@ function SheetCell({ row, column, editable, saving, selected, onSelect, onChange
       spellCheck={false}
       style={style}
       tabIndex={0}
-      onFocus={() => onSelect(row.id, column.key, ref.current)}
-      onMouseDown={() => onSelect(row.id, column.key, ref.current)}
-      onMouseUp={() => onSelect(row.id, column.key, ref.current)}
-      onKeyUp={() => onSelect(row.id, column.key, ref.current)}
+      onFocus={() => onSelect(row.id, column.key, ref.current, preserveSelectionRange())}
+      onMouseDown={() => onSelect(row.id, column.key, ref.current, preserveSelectionRange())}
+      onMouseUp={() => onSelect(row.id, column.key, ref.current, preserveSelectionRange())}
+      onKeyUp={() => onSelect(row.id, column.key, ref.current, preserveSelectionRange())}
+      onContextMenu={(event) => onContextMenu?.(event, row.id, column.key)}
       onInput={(event) => onChange(row.id, column.key, event.currentTarget.innerHTML)}
       onBlur={() => onCommit(row.id, column.key)}
       onKeyDown={(event) => {
@@ -149,9 +201,9 @@ function SheetCell({ row, column, editable, saving, selected, onSelect, onChange
   );
 }
 
-function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeStart, onDelete }) {
+function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeStart, onContextMenu }) {
   return (
-    <div className={styles.headerCellInner}>
+    <div className={styles.headerCellInner} onContextMenu={(event) => onContextMenu?.(event, column.key)}>
       {editable ? (
         <input
           value={column.label}
@@ -167,20 +219,6 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
         <span>{column.label}</span>
       )}
       {editable ? (
-        <button
-          type="button"
-          className={styles.softDeleteButton}
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete(column.key);
-          }}
-          aria-label={`Remover coluna ${column.label}`}
-          title="Remover coluna"
-        >
-          <CloseIcon size={11} />
-        </button>
-      ) : null}
-      {editable ? (
         <span
           className={styles.resizeHandle}
           role="separator"
@@ -192,7 +230,7 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
   );
 }
 
-function ColorPopover({ label, disabled, colors, onSelect }) {
+function ColorPopover({ label, disabled, colors, onSelect, title }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -219,30 +257,135 @@ function ColorPopover({ label, disabled, colors, onSelect }) {
         type="button"
         disabled={disabled}
         className={styles.colorTrigger}
-        aria-label={label}
+        aria-label={title || label}
         aria-expanded={open}
+        title={title || label}
+        onMouseDown={(event) => event.preventDefault()}
         onClick={() => setOpen((current) => !current)}
       >
         {label}
       </button>
       {open ? (
-        <div className={styles.colorMenu}>
-          {colors.map((color) => (
-            <button
-              key={color}
-              type="button"
-              className={styles.colorSwatch}
-              style={color === 'transparent' ? undefined : { '--swatch-color': color }}
-              data-empty={color === 'transparent' || undefined}
-              aria-label={`${label} ${color}`}
-              onClick={() => {
-                onSelect(color);
-                setOpen(false);
-              }}
-            />
-          ))}
+        <div className={styles.colorMenu} role="menu" aria-label={title || label}>
+          <div className={styles.colorMenuHeader}>{title || label}</div>
+          <div className={styles.colorGrid}>
+            {colors.map((color) => (
+              <button
+                key={color.value}
+                type="button"
+                className={styles.colorSwatch}
+                style={color.value === 'transparent' ? undefined : { '--swatch-color': color.value }}
+                data-empty={color.value === 'transparent' || undefined}
+                aria-label={color.label}
+                title={color.label}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  onSelect(color.value);
+                  setOpen(false);
+                }}
+              />
+            ))}
+          </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function MoreFormatMenu({ disabled, onCommand }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const handlePointerDown = (event) => {
+      if (ref.current?.contains(event.target)) return;
+      setOpen(false);
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('pointerdown', handlePointerDown, true);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown, true);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  const run = (command, value = null) => {
+    onCommand(command, value);
+    setOpen(false);
+  };
+
+  return (
+    <div className={styles.moreFormat} ref={ref}>
+      <button
+        type="button"
+        disabled={disabled}
+        className={styles.moreFormatTrigger}
+        aria-label="Todas as opções de formatação"
+        aria-expanded={open}
+        title="Todas as opções"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => setOpen((current) => !current)}
+      >
+        Todos
+      </button>
+      {open ? (
+        <div className={styles.moreFormatMenu} role="menu" aria-label="Todas as opções de formatação">
+          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => run('insertUnorderedList')}>Lista com marcadores</button>
+          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => run('insertOrderedList')}>Lista numerada</button>
+          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => run('outdent')}>Diminuir recuo</button>
+          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => run('indent')}>Aumentar recuo</button>
+          <span className={styles.moreFormatDivider} />
+          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => run('undo')}>Desfazer edição</button>
+          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => run('redo')}>Refazer edição</button>
+          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => run('removeFormat')}>Limpar formatação</button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SheetContextMenu({ menu, canEdit, onClose, onDeleteRow, onDeleteColumn }) {
+  useEffect(() => {
+    if (!menu) return undefined;
+    const close = () => onClose();
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('pointerdown', close);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      window.removeEventListener('pointerdown', close);
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [menu, onClose]);
+
+  if (!menu || !canEdit) return null;
+
+  return (
+    <div
+      className={styles.contextMenu}
+      style={{ left: menu.x, top: menu.y }}
+      role="menu"
+      aria-label="Ações da planilha"
+      onPointerDown={(event) => event.stopPropagation()}
+    >
+      {menu.columnKey ? (
+        <button type="button" className={styles.contextDanger} onClick={() => onDeleteColumn(menu.columnKey)}>
+          Excluir coluna
+        </button>
+      ) : null}
+      {menu.rowId ? (
+        <button type="button" className={styles.contextDanger} onClick={() => onDeleteRow(menu.rowId)}>
+          Excluir linha
+        </button>
+      ) : null}
+      {!menu.rowId && !menu.columnKey ? <span>Sem ações disponíveis</span> : null}
     </div>
   );
 }
@@ -252,18 +395,19 @@ function SheetToolbar({ disabled, onCommand }) {
 
   return (
     <div className={styles.sheetToolbar} aria-label="Formatação" onMouseDown={preventBlur}>
-      <button type="button" disabled={disabled} title="Negrito" aria-label="Negrito" onClick={() => onCommand('bold')}>B</button>
-      <button type="button" disabled={disabled} title="Itálico" aria-label="Itálico" onClick={() => onCommand('italic')}>I</button>
-      <button type="button" disabled={disabled} title="Sublinhado" aria-label="Sublinhado" onClick={() => onCommand('underline')}>U</button>
-      <button type="button" disabled={disabled} title="Riscado" aria-label="Riscado" onClick={() => onCommand('strikeThrough')}>S</button>
+      <button type="button" disabled={disabled} title="Negrito" aria-label="Negrito" onClick={() => onCommand('bold')}><strong>B</strong></button>
+      <button type="button" disabled={disabled} title="Itálico" aria-label="Itálico" onClick={() => onCommand('italic')}><em>I</em></button>
+      <button type="button" disabled={disabled} title="Sublinhado" aria-label="Sublinhado" onClick={() => onCommand('underline')}><span className={styles.underlineIcon}>U</span></button>
+      <button type="button" disabled={disabled} title="Riscado" aria-label="Riscado" onClick={() => onCommand('strikeThrough')}><span className={styles.strikeIcon}>S</span></button>
       <span className={styles.toolbarDivider} />
       <button type="button" disabled={disabled} title="Alinhar à esquerda" aria-label="Alinhar à esquerda" onClick={() => onCommand('justifyLeft')}>Esq</button>
       <button type="button" disabled={disabled} title="Centralizar" aria-label="Centralizar" onClick={() => onCommand('justifyCenter')}>Centro</button>
       <button type="button" disabled={disabled} title="Alinhar à direita" aria-label="Alinhar à direita" onClick={() => onCommand('justifyRight')}>Dir</button>
       <span className={styles.toolbarDivider} />
-      <ColorPopover label="A" disabled={disabled} colors={SHEET_TEXT_COLORS} onSelect={(color) => onCommand('foreColor', color)} />
-      <ColorPopover label="▣" disabled={disabled} colors={SHEET_FILL_COLORS} onSelect={(color) => onCommand('hiliteColor', color)} />
-      <button type="button" disabled={disabled} onClick={() => onCommand('removeFormat')}>Limpar</button>
+      <ColorPopover label="Texto" title="Cor do texto" disabled={disabled} colors={SHEET_TEXT_COLORS} onSelect={(color) => onCommand('foreColor', color)} />
+      <ColorPopover label="Fundo" title="Cor de fundo" disabled={disabled} colors={SHEET_FILL_COLORS} onSelect={(color) => onCommand('hiliteColor', color)} />
+      <span className={styles.toolbarDivider} />
+      <MoreFormatMenu disabled={disabled} onCommand={onCommand} />
     </div>
   );
 }
@@ -285,6 +429,8 @@ export default function SupportTechnologyPage() {
   const [creatingTask, setCreatingTask] = useState(false);
   const [demandModalOpen, setDemandModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null);
+  const selectionRangeRef = useRef(null);
   const resizeRef = useRef(null);
   const sheetScrollerRef = useRef(null);
 
@@ -309,8 +455,8 @@ export default function SupportTechnologyPage() {
 
   const sheetMinWidth = useMemo(() => {
     const dataColumnsWidth = columns.reduce((total, column) => total + Math.max(5, Number(column.width || 5)), 0);
-    return dataColumnsWidth + 46 + (canEditBoard ? 58 : 0);
-  }, [canEditBoard, columns]);
+    return dataColumnsWidth + 46;
+  }, [columns]);
 
   const handleSheetWheel = useCallback((event) => {
     const scroller = sheetScrollerRef.current;
@@ -328,6 +474,21 @@ export default function SupportTechnologyPage() {
       window.scrollBy({ top: event.deltaY, left: 0, behavior: 'auto' });
     }
   }, []);
+
+  const handleSelectCell = useCallback((rowId, key, element, range = null) => {
+    if (range) selectionRangeRef.current = range;
+    else if (element?.contains(document.activeElement)) selectionRangeRef.current = preserveSelectionRange();
+    setSelectedCell({ rowId, key, element });
+  }, []);
+
+  const handleOpenContextMenu = useCallback((event, rowId = null, columnKey = null) => {
+    if (!canEditBoard) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setContextMenu({ rowId, columnKey, x: event.clientX, y: event.clientY });
+  }, [canEditBoard]);
+
+  const handleCloseContextMenu = useCallback(() => setContextMenu(null), []);
 
 
   useEffect(() => {
@@ -435,6 +596,7 @@ export default function SupportTechnologyPage() {
 
   const handleDeleteRow = async (id) => {
     if (!id) return;
+    handleCloseContextMenu();
     try {
       await deleteSupportDailyRow(id);
       setRows((current) => current.filter((row) => row.id !== id));
@@ -468,8 +630,18 @@ export default function SupportTechnologyPage() {
     const { rowId, key, element } = selectedCell;
     const target = element || document.querySelector(`[data-sheet-cell="${rowId}:${key}"]`);
     if (!target) return;
-    target.focus();
-    document.execCommand(command, false, value);
+
+    target.focus({ preventScroll: true });
+    restoreSelectionRange(selectionRangeRef.current);
+
+    let commandValue = value;
+    if (command === 'hiliteColor' && value === 'transparent') commandValue = null;
+
+    const didRun = document.execCommand(command, false, commandValue);
+    if (command === 'hiliteColor' && !didRun) document.execCommand('backColor', false, commandValue);
+    if (command === 'removeFormat') target.querySelectorAll('span,font,b,strong,i,em,u,s,strike').forEach((node) => node.removeAttribute('style'));
+
+    selectionRangeRef.current = preserveSelectionRange();
     const nextHtml = target.innerHTML;
     setRows((current) => current.map((entry) => (entry.id === rowId ? { ...entry, [key]: nextHtml } : entry)));
     setSavingCell(`${rowId}:${key}`);
@@ -518,6 +690,7 @@ export default function SupportTechnologyPage() {
 
   const handleDeleteColumn = async (key) => {
     if (!key) return;
+    handleCloseContextMenu();
     try {
       await deleteSupportDailyColumn(key);
       setColumns((current) => current.filter((entry) => entry.key !== key));
@@ -642,25 +815,23 @@ export default function SupportTechnologyPage() {
             <colgroup>
               <col style={{ width: 46 }} />
               {columns.map((column) => <col key={column.key} style={{ width: column.width }} />)}
-              {canEditBoard ? <col style={{ width: 58 }} /> : null}
-            </colgroup>
+                          </colgroup>
             <thead>
               <tr>
                 <th>#</th>
                 {columns.map((column) => (
                   <th key={column.key} data-saving={savingColumn === column.key || undefined}>
-                    <HeaderCell column={column} editable={canEditBoard} onLabelChange={handleColumnLabelChange} onLabelCommit={handleColumnLabelCommit} onResizeStart={handleResizeStart} onDelete={handleDeleteColumn} />
+                    <HeaderCell column={column} editable={canEditBoard} onLabelChange={handleColumnLabelChange} onLabelCommit={handleColumnLabelCommit} onResizeStart={handleResizeStart} onContextMenu={handleOpenContextMenu} />
                   </th>
                 ))}
-                {canEditBoard ? <th /> : null}
               </tr>
             </thead>
             <tbody>
-              {rowsLoading ? <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={styles.sheetEmpty}>Carregando</td></tr> : null}
-              {!rowsLoading && rows.length === 0 ? <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={styles.sheetEmpty}>Sem registros.</td></tr> : null}
+              {rowsLoading ? <tr><td colSpan={columns.length + 1} className={styles.sheetEmpty}>Carregando</td></tr> : null}
+              {!rowsLoading && rows.length === 0 ? <tr><td colSpan={columns.length + 1} className={styles.sheetEmpty}>Sem registros.</td></tr> : null}
               {rows.map((row, index) => (
                 <tr key={row.id}>
-                  <td className={styles.rowIndex}>{index + 1}</td>
+                  <td className={styles.rowIndex} onContextMenu={(event) => handleOpenContextMenu(event, row.id, null)}>{index + 1}</td>
                   {columns.map((column) => (
                     <td key={column.key} data-column={column.key}>
                       <SheetCell
@@ -669,18 +840,26 @@ export default function SupportTechnologyPage() {
                         editable={canEditBoard}
                         saving={savingCell === `${row.id}:${column.key}`}
                         selected={selectedCell?.rowId === row.id && selectedCell?.key === column.key}
-                        onSelect={(rowId, key, element) => setSelectedCell({ rowId, key, element })}
+                        onSelect={handleSelectCell}
                         onChange={handleCellChange}
                         onCommit={handleCellCommit}
+                        onContextMenu={handleOpenContextMenu}
                       />
                     </td>
                   ))}
-                  {canEditBoard ? <td className={styles.actionCell}><button type="button" className={styles.softDeleteButton} onClick={() => handleDeleteRow(row.id)} aria-label={`Remover linha ${index + 1}`} title="Remover linha"><TrashIcon size={13} /></button></td> : null}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        <SheetContextMenu
+          menu={contextMenu}
+          canEdit={canEditBoard}
+          onClose={handleCloseContextMenu}
+          onDeleteRow={handleDeleteRow}
+          onDeleteColumn={handleDeleteColumn}
+        />
 
         <footer className={styles.sheetFooter}>
           <span>{rows.length} registros</span>
