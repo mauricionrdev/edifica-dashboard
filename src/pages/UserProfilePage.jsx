@@ -27,10 +27,8 @@ import styles from './UserProfilePage.module.css';
 
 const STATUS_OPTIONS = [
   { value: 'todo', label: 'Aberta' },
-  { value: 'in_progress', label: 'Em execução' },
-  { value: 'activation_gdv', label: 'Ativação GDV' },
-  { value: 'access_delivery', label: 'Acessos' },
-  { value: 'traffic_activation', label: 'Tráfego' },
+  { value: 'in_progress', label: 'Implementação' },
+  { value: 'activation_gdv', label: 'Ativação/Acessos GDV' },
   { value: 'final_validation', label: 'Validação' },
   { value: 'done', label: 'Concluída' },
   { value: 'canceled', label: 'Cancelada' },
@@ -110,20 +108,20 @@ function statusLabel(task) {
   if (getTaskStatus(task) === 'done') return publicTaskKind(task) === 'support' || publicTaskKind(task) === 'bug' ? 'Resolvido' : 'Concluída';
   const kind = publicTaskKind(task);
   const briefingLabels = {
-    todo: 'Briefing',
+    todo: 'Implementação',
     in_progress: 'Implementação',
-    activation_gdv: 'Ativação GDV',
-    access_delivery: 'Acessos',
-    traffic_activation: 'Tráfego',
+    activation_gdv: 'Ativação/Acessos GDV',
+    access_delivery: 'Ativação/Acessos GDV',
+    traffic_activation: 'Ativação/Acessos GDV',
     final_validation: 'Validação',
     done: 'Concluída',
   };
   const genericLabels = {
     todo: 'Aberta',
     in_progress: 'Em execução',
-    activation_gdv: 'Ativação GDV',
-    access_delivery: 'Acessos',
-    traffic_activation: 'Tráfego',
+    activation_gdv: 'Ativação/Acessos GDV',
+    access_delivery: 'Ativação/Acessos GDV',
+    traffic_activation: 'Ativação/Acessos GDV',
     final_validation: 'Validação',
   };
   return (kind === 'briefing' ? briefingLabels : genericLabels)[task?.status || 'todo'] || 'Aberta';
@@ -179,8 +177,9 @@ function taskStageInfo(task) {
   if (task?.status === 'canceled') return { label: 'Cancelada', progress: 100, tone: 'red' };
 
   if (kind === 'briefing') {
-    const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
-    const currentIndex = Math.max(0, order.indexOf(getTaskStatus(task) === 'done' ? 'done' : status));
+    const normalizedStatus = status === 'todo' ? 'in_progress' : ['access_delivery', 'traffic_activation'].includes(status) ? 'activation_gdv' : status;
+    const order = ['in_progress', 'activation_gdv', 'final_validation', 'done'];
+    const currentIndex = Math.max(0, order.indexOf(getTaskStatus(task) === 'done' ? 'done' : normalizedStatus));
     const progress = Math.round(((currentIndex + 1) / order.length) * 100);
     return {
       label: statusLabel(task),
@@ -202,17 +201,15 @@ function workflowStepsForTask(task) {
   const done = getTaskStatus(task) === 'done';
 
   if (kind === 'briefing') {
-    const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
+    const normalizedStatus = status === 'todo' ? 'in_progress' : ['access_delivery', 'traffic_activation'].includes(status) ? 'activation_gdv' : status;
+    const order = ['in_progress', 'activation_gdv', 'final_validation', 'done'];
     const labels = {
-      todo: 'Briefing',
       in_progress: 'Implementação',
-      activation_gdv: 'Ativação GDV',
-      access_delivery: 'Acessos',
-      traffic_activation: 'Tráfego',
+      activation_gdv: 'Ativação/Acessos GDV',
       final_validation: 'Validação',
       done: 'Concluída',
     };
-    const currentIndex = Math.max(0, order.indexOf(done ? 'done' : status));
+    const currentIndex = Math.max(0, order.indexOf(done ? 'done' : normalizedStatus));
     return order.map((key, index) => ({
       key,
       label: labels[key],
@@ -891,7 +888,7 @@ export default function UserProfilePage() {
         clientId: newTask.clientId || undefined,
         dueDate: newTask.dueDate || undefined,
         priority: newTask.priority,
-        status: 'todo',
+        status: newTask.type === 'briefing' ? 'in_progress' : 'todo',
         source: 'profile',
       });
       const createdTask = res?.task;
@@ -1420,7 +1417,7 @@ export default function UserProfilePage() {
                   />
                 </label>
                 <div className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
-                  <span>Responsável</span>
+                  <span>Para quem é esta tarefa?</span>
                   <Select
                     type="user"
                     value={newTask.assigneeUserId}
@@ -1458,7 +1455,7 @@ export default function UserProfilePage() {
                   <DateField value={newTask.dueDate} onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
                 </label>
                 <div className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
-                  <span>Colaboradores</span>
+                  <span>Colaboradores adicionais</span>
                   <Select
                     type="user"
                     value=""

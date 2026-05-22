@@ -124,3 +124,15 @@ export function listUserProjectTasks(userId) {
 export function listUserProjects(userId) {
   return api.get(`/projects/users/${encodeURIComponent(userId)}/projects`);
 }
+
+export function listClientProjectTasks(clientId) {
+  return api.get(`/projects/clients/${encodeURIComponent(clientId)}/tasks`);
+}
+
+export function listClientBookEntries(clientId) {
+  return api.get(`/projects/clients/${encodeURIComponent(clientId)}/book`);
+}
+
+export function confirmClientBookAccess(clientId, taskId) {
+  return api.post(`/projects/clients/${encodeURIComponent(clientId)}/book/${encodeURIComponent(taskId)}/confirm-access`, {});
+}

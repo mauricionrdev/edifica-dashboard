@@ -82,11 +82,8 @@ const BASE_STATUS_OPTIONS = [
 
 const STATUS_OPTIONS_BY_KIND = {
   briefing: [
-    { value: 'todo', label: 'Briefing' },
     { value: 'in_progress', label: 'Implementação' },
-    { value: 'activation_gdv', label: 'Ativação GDV' },
-    { value: 'access_delivery', label: 'Acessos' },
-    { value: 'traffic_activation', label: 'Tráfego' },
+    { value: 'activation_gdv', label: 'Ativação/Acessos GDV' },
     { value: 'final_validation', label: 'Validação' },
     { value: 'done', label: 'Concluída' },
     { value: 'canceled', label: 'Cancelado' },
@@ -622,6 +619,7 @@ function statusLabel(task) {
   const value = task?.status || (isDone(task) ? 'done' : 'todo');
   const label = statusOptionsForKind(kind).find((option) => option.value === value)?.label;
   if (label) return label;
+  if (kind === 'briefing' && ['access_delivery', 'traffic_activation'].includes(value)) return 'Ativação/Acessos GDV';
   if (isToday(task)) return 'Hoje';
   return 'Aguardando';
 }
@@ -670,13 +668,11 @@ function nextActionLabel(task) {
   if (kind === 'briefing') {
     const stage = task.status || 'todo';
     if (stage === 'done') return 'Operação concluída';
-    if (stage === 'activation_gdv') return 'GDV ativa WhatsApp na DKW';
-    if (stage === 'access_delivery') return 'Enviar login e senha ao cliente';
-    if (stage === 'traffic_activation') return 'CAP ativa tráfego pago';
+    if (['activation_gdv', 'access_delivery', 'traffic_activation'].includes(stage)) return 'GDV confirma ativação e acessos no Book do cliente';
     if (stage === 'final_validation') return 'Validar operação e encerrar';
     if (isDone(task)) return 'Operação concluída';
     if (isOverdue(task)) return 'Regularizar prazo';
-    return stage === 'in_progress' ? 'Implementar cliente na DKW' : 'Validar briefing';
+    return 'Implementar solicitação';
   }
   if (kind === 'support' && isDone(task)) return 'Resolvido';
   if (kind === 'routine' && isDone(task)) return 'Rotina feita';
@@ -721,10 +717,11 @@ function taskStageProgress(task) {
   }
 
   if (kind === 'briefing') {
-    const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
-    const currentIndex = Math.max(0, order.indexOf(isDone(task) ? 'done' : status));
+    const normalizedStatus = status === 'todo' ? 'in_progress' : ['access_delivery', 'traffic_activation'].includes(status) ? 'activation_gdv' : status;
+    const order = ['in_progress', 'activation_gdv', 'final_validation', 'done'];
+    const currentIndex = Math.max(0, order.indexOf(isDone(task) ? 'done' : normalizedStatus));
     const progress = Math.round(((currentIndex + 1) / order.length) * 100);
-    return { label: statusLabel(task), progress, tone: isDone(task) ? 'green' : currentIndex >= 4 ? 'teal' : currentIndex >= 2 ? 'amber' : 'yellow' };
+    return { label: statusLabel(task), progress, tone: isDone(task) ? 'green' : currentIndex >= 2 ? 'teal' : currentIndex >= 1 ? 'amber' : 'yellow' };
   }
 
   if (isDone(task)) return { label: statusLabel(task), progress: 100, tone: 'green' };
@@ -803,11 +800,11 @@ function briefingStageAction(task, briefing) {
   if (status === 'final_validation') return { type: 'complete', label: 'Concluir tarefa' };
 
   const nextByStatus = {
-    todo: { status: 'in_progress', label: 'Iniciar implementação', nextAction: 'Implementar cliente na DKW' },
-    in_progress: { status: 'activation_gdv', label: 'Enviar para ativação', nextAction: 'GDV faz reunião de ativação e conecta QR Code na DKW' },
-    activation_gdv: { status: 'access_delivery', label: 'Enviar acessos', nextAction: 'Suporte envia login e senha da DKW ao cliente' },
-    access_delivery: { status: 'traffic_activation', label: 'Enviar para tráfego', nextAction: 'CAP ativa tráfego pago para iniciar recebimento de leads' },
-    traffic_activation: { status: 'final_validation', label: 'Validar operação', nextAction: 'Suporte valida operação completa antes de concluir' },
+    todo: { status: 'in_progress', label: 'Enviar para implementação', nextAction: 'Colaborador solicitado assume a implementação' },
+    in_progress: { status: 'activation_gdv', label: 'Enviar para GDV', nextAction: 'GDV confirma ativação/reunião e envio dos acessos no Book do cliente' },
+    activation_gdv: { status: 'final_validation', label: 'Validar operação', nextAction: 'Suporte valida a operação final após confirmação do GDV' },
+    access_delivery: { status: 'final_validation', label: 'Validar operação', nextAction: 'Suporte valida a operação final após confirmação do GDV' },
+    traffic_activation: { status: 'final_validation', label: 'Validar operação', nextAction: 'Suporte valida a operação final após confirmação do GDV' },
   };
 
   return { type: 'handoff', ...(nextByStatus[status] || nextByStatus.in_progress) };
@@ -826,14 +823,12 @@ function workflowStepsForTask(task) {
   const done = isDone(task);
 
   if (kind === 'briefing') {
-    const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
-    const currentIndex = Math.max(0, order.indexOf(status));
+    const order = ['in_progress', 'activation_gdv', 'final_validation', 'done'];
+    const normalizedStatus = status === 'todo' ? 'in_progress' : ['access_delivery', 'traffic_activation'].includes(status) ? 'activation_gdv' : status;
+    const currentIndex = Math.max(0, order.indexOf(normalizedStatus));
     const labels = {
-      todo: 'Briefing',
       in_progress: 'Implementação',
-      activation_gdv: 'Ativação GDV',
-      access_delivery: 'Acessos',
-      traffic_activation: 'Tráfego',
+      activation_gdv: 'Ativação/Acessos GDV',
       final_validation: 'Validação',
       done: 'Concluída',
     };
@@ -3164,6 +3159,7 @@ export default function ProfilePage() {
       const res = await createTask({
         title,
         description,
+        status: demandForm.type === 'briefing' ? 'in_progress' : undefined,
         assigneeUserId: demandForm.assigneeUserId,
         clientId: demandForm.clientId || undefined,
         dueDate: demandForm.dueDate || undefined,
@@ -4327,7 +4323,7 @@ export default function ProfilePage() {
                   <input value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
                 </label>
                 <label className={styles.labeledField}>
-                  <span>Responsável</span>
+                  <span>Para quem é esta tarefa?</span>
                   <Select
                     type="user"
                     value={demandForm.assigneeUserId}
@@ -4398,7 +4394,7 @@ export default function ProfilePage() {
                   <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
                 </label>
                 <label className={`${styles.labeledField} ${styles.fieldWide}`}>
-                  <span>Colaboradores</span>
+                  <span>Colaboradores adicionais</span>
                   <Select
                     type="user"
                     value=""

@@ -734,6 +734,164 @@ router.get('/client/:clientId', requirePermission('projects.view'), async (req, 
   }
 });
 
+
+router.get('/clients/:clientId/tasks', requirePermission('tasks.view'), async (req, res, next) => {
+  try {
+    const clientId = clean(req.params.clientId);
+    if (!clientId) throw badRequest('Cliente inválido');
+    await getAccessibleClientRow(clientId, req.user);
+
+    const rows = await query(
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+              au.name AS assignee_name, cu.name AS created_by_name,
+              CASE
+                WHEN t.assignee_user_id = ? THEN 'responsible'
+                WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator'
+                ELSE ''
+              END AS profile_relation
+         FROM tasks t
+         LEFT JOIN projects p ON p.id = t.project_id
+         LEFT JOIN project_sections ps ON ps.id = t.section_id
+         LEFT JOIN clients c ON c.id = t.client_id
+         LEFT JOIN users au ON au.id = t.assignee_user_id
+         LEFT JOIN users cu ON cu.id = t.created_by_user_id
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+        WHERE t.client_id = ?
+        ORDER BY t.status = 'done', COALESCE(t.due_date, '9999-12-31') ASC, t.created_at DESC
+        LIMIT 200`,
+      [req.user.id, req.user.id, clientId]
+    );
+
+    const tasks = rows.map(serializeTask);
+    if (!tasks.length) return res.json({ tasks: [], collaboratorsByTask: {} });
+
+    const taskIds = tasks.map((task) => task.id).filter(Boolean);
+    const placeholders = taskIds.map(() => '?').join(', ');
+    const collaborators = await query(
+      `SELECT tc.task_id, u.id, u.name, u.avatar_color, u.avatar_data_url
+         FROM task_collaborators tc
+         JOIN users u ON u.id = tc.user_id
+        WHERE tc.task_id IN (${placeholders})
+        ORDER BY u.name ASC`,
+      taskIds
+    );
+
+    const collaboratorsByTask = collaborators.reduce((acc, row) => {
+      const taskId = row.task_id;
+      if (!acc[taskId]) acc[taskId] = [];
+      acc[taskId].push({
+        id: row.id,
+        name: row.name,
+        avatarColor: row.avatar_color || 'amber',
+        avatarUrl: row.avatar_data_url || '',
+      });
+      return acc;
+    }, {});
+
+    res.json({ tasks, collaboratorsByTask });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/clients/:clientId/book', requirePermission('tasks.view'), async (req, res, next) => {
+  try {
+    const clientId = clean(req.params.clientId);
+    if (!clientId) throw badRequest('Cliente inválido');
+    await getAccessibleClientRow(clientId, req.user);
+
+    const rows = await query(
+      `SELECT tc.id, tc.task_id, tc.user_id, tc.body, tc.created_at,
+              t.title AS task_title, t.status AS task_status, t.priority AS task_priority, t.due_date AS task_due_date,
+              u.name AS user_name, u.avatar_color AS user_avatar_color, u.avatar_data_url AS user_avatar_url
+         FROM task_comments tc
+         JOIN tasks t ON t.id = tc.task_id
+         JOIN users u ON u.id = tc.user_id
+        WHERE t.client_id = ?
+        ORDER BY tc.created_at DESC
+        LIMIT 80`,
+      [clientId]
+    );
+
+    res.json({
+      entries: rows.map((row) => ({
+        id: row.id,
+        taskId: row.task_id,
+        taskTitle: row.task_title || 'Tarefa',
+        taskStatus: row.task_status || 'todo',
+        taskPriority: row.task_priority || 'medium',
+        taskDueDate: row.task_due_date ? (row.task_due_date instanceof Date ? row.task_due_date.toISOString().slice(0, 10) : String(row.task_due_date).slice(0, 10)) : '',
+        userId: row.user_id,
+        userName: row.user_name || 'Usuário',
+        avatarColor: row.user_avatar_color || 'amber',
+        avatarUrl: row.user_avatar_url || '',
+        body: row.body || '',
+        createdAt: row.created_at,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/clients/:clientId/book/:taskId/confirm-access', requireAnyPermission(['tasks.edit', 'tasks.complete.own', 'tasks.complete.any', 'tasks.comment']), async (req, res, next) => {
+  try {
+    const clientId = clean(req.params.clientId);
+    const taskId = clean(req.params.taskId);
+    if (!clientId || !taskId) throw badRequest('Confirmação inválida');
+    await getAccessibleClientRow(clientId, req.user);
+    const task = await assertTaskAccess(taskId, req.user, 'tasks.view');
+    if (task.client_id !== clientId) throw badRequest('Tarefa não pertence ao cliente');
+
+    await withTransaction(async (conn) => {
+      await conn.query(
+        `UPDATE tasks
+            SET status = 'final_validation', completed_at = NULL, completed_by_user_id = NULL
+          WHERE id = ?`,
+        [taskId]
+      );
+      await conn.query(
+        `INSERT INTO task_comments (id, task_id, user_id, body)
+         VALUES (?, ?, ?, ?)`,
+        [uuid(), taskId, req.user.id, 'GDV confirmou ativação/reunião e envio dos acessos ao cliente.']
+      );
+      await addTaskCollaborators(taskId, [req.user.id], 'follower', conn);
+      await logTaskEvent({
+        taskId,
+        projectId: task.project_id,
+        actorUserId: req.user.id,
+        eventType: 'task.gdv_access_confirmed',
+        summary: 'GDV confirmou ativação e acessos',
+        metadata: { status: 'final_validation' },
+      }, conn);
+    });
+
+    const rows = await query(
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+              au.name AS assignee_name, cu.name AS created_by_name,
+              CASE
+                WHEN t.assignee_user_id = ? THEN 'responsible'
+                WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator'
+                ELSE ''
+              END AS profile_relation
+         FROM tasks t
+         LEFT JOIN projects p ON p.id = t.project_id
+         LEFT JOIN project_sections ps ON ps.id = t.section_id
+         LEFT JOIN clients c ON c.id = t.client_id
+         LEFT JOIN users au ON au.id = t.assignee_user_id
+         LEFT JOIN users cu ON cu.id = t.created_by_user_id
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+        WHERE t.id = ?
+        LIMIT 1`,
+      [req.user.id, req.user.id, taskId]
+    );
+
+    res.json({ task: serializeTask(rows[0]) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/tasks/my/list', requirePermission('tasks.view'), async (req, res, next) => {
   try {
     if (req.emptyWorkspaceView) return res.json({ tasks: [] });

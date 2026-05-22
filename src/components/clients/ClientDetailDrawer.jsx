@@ -22,6 +22,8 @@ import OverviewTab from './OverviewTab.jsx';
 import AnalysisTab from './AnalysisTab.jsx';
 import FeeScheduleTab from './FeeScheduleTab.jsx';
 import ClientProjectTab from './ClientProjectTab.jsx';
+import ClientBookTab from './ClientBookTab.jsx';
+import ClientTasksTab from './ClientTasksTab.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import tabStyles from './ClientTabs.module.css';
 
@@ -29,6 +31,8 @@ const TABS = [
   { key: 'overview', label: 'Visão geral' },
   { key: 'fees', label: 'Mensalidades' },
   { key: 'project', label: 'Projeto' },
+  { key: 'book', label: 'Book do cliente' },
+  { key: 'tasks', label: 'Tarefas' },
   { key: 'icp', label: 'Análise ICP' },
   { key: 'gdv', label: 'Análise GDV' },
   { key: 'routes', label: 'Resumo de Rotas' },
@@ -284,6 +288,14 @@ export default function ClientDetailDrawer({
                 onUpdated={onUpdated}
               />
             ) : null}
+
+            {activeTab === 'book' && (
+              <ClientBookTab client={client} />
+            )}
+
+            {activeTab === 'tasks' && (
+              <ClientTasksTab client={client} />
+            )}
 
             {activeTab === 'icp' && (
               <AnalysisTab clientId={client.id} type="icp" canEdit={canEditClient} />
