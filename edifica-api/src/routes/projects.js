@@ -160,8 +160,12 @@ function handoffText(value, max = 220) {
   return compactText(value, max);
 }
 
-function buildHandoffEventMetadata({ task, body, nextStatus, nextAssigneeName }) {
+function buildHandoffEventMetadata({ task, body, nextStatus, previousAssigneeName, nextAssigneeName }) {
   const handoff = body?.handoff && typeof body.handoff === 'object' ? body.handoff : {};
+  const previousAssigneeUserId = clean(task?.assignee_user_id);
+  const isBriefingToGdvActivation =
+    clean(task?.source) === 'standalone' &&
+    ['activation_gdv', 'access_delivery', 'traffic_activation'].includes(clean(nextStatus));
   const metadata = {
     destino: nextAssigneeName || handoff.assigneeName || 'Responsável',
     status: handoff.statusLabel || backendStatusLabel(nextStatus),
@@ -174,9 +178,62 @@ function buildHandoffEventMetadata({ task, body, nextStatus, nextAssigneeName })
     pendencias: handoffText(handoff.pending, 260),
     contexto: handoffText(handoff.note, 320),
     comentariosRecentes: handoffText(handoff.recentComments, 320),
+    previousAssigneeUserId,
+    previousAssigneeName: previousAssigneeName || '',
+    validationAssigneeUserId: isBriefingToGdvActivation ? previousAssigneeUserId : '',
+    validationAssigneeName: isBriefingToGdvActivation ? (previousAssigneeName || '') : '',
   };
 
   return Object.fromEntries(Object.entries(metadata).filter(([, value]) => clean(value)));
+}
+
+async function resolveValidationAssigneeAfterGdv(task, confirmingUserId) {
+  const taskId = clean(task?.id);
+  const actorId = clean(confirmingUserId);
+  if (!taskId) return '';
+
+  const taskMetadata = parseJson(task?.metadata_json, {}) || {};
+  const metadataAssigneeId = clean(taskMetadata.validationAssigneeUserId || taskMetadata.previousAssigneeUserId);
+  if (metadataAssigneeId && metadataAssigneeId !== actorId) return metadataAssigneeId;
+
+  const handoffEvents = await query(
+    `SELECT actor_user_id, metadata_json
+       FROM task_events
+      WHERE task_id = ?
+        AND event_type = 'task.handoff_registered'
+      ORDER BY created_at DESC
+      LIMIT 12`,
+    [taskId]
+  );
+
+  for (const event of handoffEvents) {
+    const metadata = parseJson(event.metadata_json, {}) || {};
+    const eventAssigneeId = clean(metadata.validationAssigneeUserId || metadata.previousAssigneeUserId);
+    if (eventAssigneeId && eventAssigneeId !== actorId) return eventAssigneeId;
+
+    const eventActorId = clean(event.actor_user_id);
+    const metadataText = JSON.stringify(metadata).toLowerCase();
+    if (eventActorId && eventActorId !== actorId && (metadataText.includes('ativ') || metadataText.includes('activation'))) {
+      return eventActorId;
+    }
+  }
+
+  const supportRows = await query(
+    `SELECT u.id
+       FROM task_collaborators tc
+       JOIN users u ON u.id = tc.user_id
+      WHERE tc.task_id = ?
+        AND tc.user_id <> ?
+        AND COALESCE(u.active, 1) = 1
+        AND u.role IN ('suporte_tecnologia', 'ceo', 'admin')
+      ORDER BY FIELD(u.role, 'suporte_tecnologia', 'ceo', 'admin'), u.name ASC
+      LIMIT 1`,
+    [taskId, actorId || '']
+  );
+  if (supportRows[0]?.id) return supportRows[0].id;
+
+  const currentAssigneeId = clean(task?.assignee_user_id);
+  return currentAssigneeId && currentAssigneeId !== actorId ? currentAssigneeId : '';
 }
 
 function buildTaskUpdateEventDescriptor({ task, body, nextStatus, previousAssigneeName, nextAssigneeName }) {
@@ -843,26 +900,31 @@ router.post('/clients/:clientId/book/:taskId/confirm-access', requireAnyPermissi
     const task = await assertTaskAccess(taskId, req.user, 'tasks.view');
     if (task.client_id !== clientId) throw badRequest('Tarefa não pertence ao cliente');
 
+    const validationAssigneeId = await resolveValidationAssigneeAfterGdv(task, req.user.id);
+
     await withTransaction(async (conn) => {
       await conn.query(
         `UPDATE tasks
-            SET status = 'final_validation', completed_at = NULL, completed_by_user_id = NULL
+            SET status = 'final_validation',
+                assignee_user_id = COALESCE(?, assignee_user_id),
+                completed_at = NULL,
+                completed_by_user_id = NULL
           WHERE id = ?`,
-        [taskId]
+        [validationAssigneeId || null, taskId]
       );
       await conn.query(
         `INSERT INTO task_comments (id, task_id, user_id, body)
          VALUES (?, ?, ?, ?)`,
         [uuid(), taskId, req.user.id, 'GDV confirmou ativação/reunião e envio dos acessos ao cliente.']
       );
-      await addTaskCollaborators(taskId, [req.user.id], 'follower', conn);
+      await addTaskCollaborators(taskId, [req.user.id, validationAssigneeId].filter(Boolean), 'follower', conn);
       await logTaskEvent({
         taskId,
         projectId: task.project_id,
         actorUserId: req.user.id,
         eventType: 'task.gdv_access_confirmed',
         summary: 'GDV confirmou ativação e acessos',
-        metadata: { status: 'final_validation' },
+        metadata: { status: 'final_validation', validationAssigneeUserId: validationAssigneeId || '' },
       }, conn);
     });
 
@@ -1570,6 +1632,7 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
             task,
             body: req.body || {},
             nextStatus,
+            previousAssigneeName,
             nextAssigneeName,
           }),
         }
