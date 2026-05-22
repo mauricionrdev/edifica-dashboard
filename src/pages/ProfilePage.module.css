@@ -11764,7 +11764,6 @@ button:focus-visible {
 
 .workflowStep {
   position: relative;
-  min-height: 42px;
   padding: 8px 12px;
   isolation: isolate;
 }
@@ -12065,7 +12064,6 @@ button:focus-visible {
 
 .workflowStep {
   position: relative;
-  min-height: 42px;
   padding: 8px 12px;
   isolation: isolate;
 }
