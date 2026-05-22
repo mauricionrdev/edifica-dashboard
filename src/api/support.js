@@ -1,7 +1,20 @@
 import { api } from './client.js';
 
-export function listSupportDailyRows() {
-  return api.get('/support/daily-program');
+export function listSupportDailyRows(sheetId) {
+  const suffix = sheetId ? `?sheetId=${encodeURIComponent(sheetId)}` : '';
+  return api.get(`/support/daily-program${suffix}`);
+}
+
+export function createSupportDailySheet(body = {}) {
+  return api.post('/support/daily-program/sheets', body);
+}
+
+export function updateSupportDailySheet(sheetId, patch = {}) {
+  return api.patch(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}`, patch);
+}
+
+export function deleteSupportDailySheet(sheetId) {
+  return api.del(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}`);
 }
 
 export function createSupportDailyColumn(body = {}) {

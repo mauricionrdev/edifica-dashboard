@@ -11,11 +11,11 @@
 }
 
 .modal {
-  width: min(744px, calc(100vw - 48px));
-  max-height: calc(100vh - 48px);
   display: flex;
-  flex-direction: column;
+  width: min(892px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
   overflow: hidden;
+  flex-direction: column;
   color: var(--text-primary);
   border: 1px solid var(--line);
   border-radius: var(--radius-3);
@@ -24,7 +24,7 @@
 }
 
 .modalBriefing {
-  width: min(904px, calc(100vw - 48px));
+  width: min(980px, calc(100vw - 48px));
 }
 
 .header {
@@ -32,9 +32,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 18px 22px;
+  padding: 20px 26px;
   border-bottom: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--bg-canvas);
 }
 
 .header h2 {
@@ -56,8 +56,8 @@
 
 .closeButton {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   place-items: center;
   flex: 0 0 auto;
   color: var(--text-tertiary);
@@ -75,11 +75,11 @@
 
 .content {
   display: flex;
-  flex: 1 1 auto;
   min-height: 0;
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: 12px;
-  padding: 20px 22px 22px;
+  gap: 14px;
+  padding: 22px 26px 24px;
   overflow: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -93,8 +93,8 @@
 .briefingGrid,
 .routineGrid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px 12px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px;
   align-items: start;
 }
 
@@ -102,15 +102,15 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  grid-column: span 2;
+  grid-column: span 4;
 }
 
 .fieldCompact {
-  grid-column: span 1;
+  grid-column: span 2;
 }
 
 .fieldWide {
-  grid-column: span 2;
+  grid-column: span 4;
 }
 
 .fieldFull,
@@ -120,7 +120,7 @@
 
 .label {
   display: block;
-  margin: 0 0 6px;
+  margin: 0 0 7px;
   color: var(--text-tertiary);
   font-size: 10.5px;
   font-weight: 700;
@@ -136,7 +136,7 @@
 .dateWrap input,
 .clientSearchField {
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   color: var(--text-primary);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
@@ -160,14 +160,10 @@
 }
 
 .textarea {
-  min-height: 122px;
+  min-height: 118px;
   padding-top: 14px;
   resize: vertical;
   line-height: 1.5;
-}
-
-.modalBriefing .textarea {
-  min-height: 92px;
 }
 
 .input:hover,
@@ -194,25 +190,26 @@
 }
 
 .selectButton {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  padding: 0 10px 0 12px;
+  padding: 0 12px;
   overflow: hidden;
   text-align: left;
   cursor: pointer;
 }
 
 .selectButton > span {
+  display: block;
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .selectButton svg {
@@ -229,10 +226,10 @@
   position: fixed;
   z-index: 13100;
   display: flex;
+  overflow: auto;
   flex-direction: column;
   gap: 1px;
   padding: 6px;
-  overflow: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-2);
   background: var(--bg-elevated);
@@ -248,59 +245,28 @@
 
 .selectOption,
 .clientOption {
-  display: inline-flex;
+  display: flex;
   width: 100%;
-  min-height: 34px;
+  min-height: 36px;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 0 10px;
+  gap: 9px;
+  padding: 0 9px;
   color: var(--text-secondary);
   border: 0;
   border-radius: var(--radius-1);
   background: transparent;
-  text-align: left;
-  cursor: pointer;
   font: inherit;
   font-size: 13px;
   font-weight: 650;
+  text-align: left;
+  cursor: pointer;
 }
 
 .selectOption:hover,
-.selectOptionActive,
-.clientOption:hover {
+.clientOption:hover,
+.selectOptionActive {
   color: var(--text-primary);
-  background: var(--field-bg);
-}
-
-.selectOption > span,
-.clientOptionText {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.clientOptionText {
-  display: grid;
-  gap: 3px;
-}
-
-.clientOptionText strong,
-.clientOptionText span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.clientOptionText strong {
-  color: inherit;
-  font-size: 13px;
-}
-
-.clientOptionText span {
-  color: var(--text-tertiary);
-  font-size: 11px;
+  background: var(--bg-soft);
 }
 
 .clientSearchField {
@@ -313,11 +279,9 @@
 .clientSearchField input {
   min-width: 0;
   flex: 1 1 auto;
-  height: 40px;
-  padding: 0;
   color: var(--text-primary);
   border: 0;
-  outline: none;
+  outline: 0;
   background: transparent;
   font: inherit;
   font-size: 13px;
@@ -329,62 +293,111 @@
   width: 24px;
   height: 24px;
   place-items: center;
+  flex: 0 0 auto;
   color: var(--text-tertiary);
   border: 0;
+  border-radius: var(--radius-1);
   background: transparent;
   cursor: pointer;
 }
 
+.clearClient:hover {
+  color: var(--text-primary);
+  background: var(--bg-soft);
+}
+
+.clientOptionText {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.clientOptionText strong,
+.clientOptionText span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clientOptionText strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.clientOptionText span,
 .clientEmpty {
-  padding: 9px 10px;
   color: var(--text-tertiary);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
+}
+
+.clientEmpty {
+  padding: 10px;
 }
 
 .selectedCollaborators {
   display: flex;
   grid-column: 1 / -1;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   margin-top: -2px;
 }
 
 .selectedCollaborators span {
   display: inline-flex;
-  height: 28px;
+  height: 30px;
   align-items: center;
   gap: 7px;
-  padding: 0 6px 0 10px;
-  color: var(--info-text);
-  border: 1px solid var(--info-line);
-  border-radius: 999px;
-  background: var(--info-soft);
-  font-size: 11.5px;
+  padding: 0 9px 0 11px;
+  color: var(--text-secondary);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--bg-elevated);
+  font-size: 12px;
   font-weight: 650;
 }
 
 .selectedCollaborators button {
+  display: grid;
   width: 18px;
   height: 18px;
-  padding: 0;
-  color: inherit;
+  place-items: center;
+  color: var(--text-tertiary);
   border: 0;
-  border-radius: 999px;
-  background: var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-soft);
   cursor: pointer;
+}
+
+.briefingGrid .input,
+.routineGrid .input {
+  grid-column: span 3;
+}
+
+.briefingGrid .textarea,
+.routineGrid .textarea {
+  grid-column: 1 / -1;
+}
+
+.routineGrid > .fieldCompact {
+  grid-column: span 3;
+}
+
+.routineGrid > .fieldWide {
+  grid-column: span 9;
 }
 
 .attachmentComposer {
   display: grid;
   gap: 10px;
-  padding-top: 2px;
 }
 
 .attachmentHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   color: var(--text-tertiary);
   font-size: 10.5px;
   font-weight: 700;
@@ -392,30 +405,42 @@
   text-transform: uppercase;
 }
 
+.attachmentHeader strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .attachmentButton {
-  width: max-content;
-  min-height: 38px;
+  width: fit-content;
+  min-height: 40px;
   padding: 0 14px;
   color: var(--text-primary);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
   background: var(--bg-elevated);
-  cursor: pointer;
+  font: inherit;
   font-size: 13px;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.attachmentButton:hover {
+  border-color: var(--line);
+  background: var(--bg-soft);
 }
 
 .attachmentGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
 }
 
 .attachmentItem {
   position: relative;
   min-width: 0;
   margin: 0;
-  padding: 8px;
+  overflow: hidden;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
   background: var(--bg-elevated);
@@ -425,73 +450,98 @@
 .pdfPreview {
   display: grid;
   width: 100%;
-  height: 76px;
+  height: 88px;
   place-items: center;
   object-fit: cover;
-  border-radius: var(--radius-1);
-  background: var(--bg-canvas);
   color: var(--text-secondary);
+  background: var(--bg-soft);
   font-size: 12px;
   font-weight: 800;
 }
 
 .attachmentItem figcaption {
-  margin-top: 6px;
   overflow: hidden;
-  color: var(--text-tertiary);
+  padding: 8px 10px;
+  color: var(--text-secondary);
   font-size: 11px;
+  font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .attachmentItem button {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 6px;
+  right: 6px;
+  display: grid;
   width: 22px;
   height: 22px;
+  place-items: center;
   color: var(--text-primary);
   border: 1px solid var(--line-subtle);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--bg-canvas);
   cursor: pointer;
 }
 
 .footer {
   display: flex;
-  flex: 0 0 auto;
-  align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  padding: 14px 22px;
+  padding: 16px 26px;
   border-top: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--bg-canvas);
 }
 
 .footer button {
-  min-height: 38px;
+  min-height: 40px;
   padding: 0 16px;
   color: var(--text-primary);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
   background: var(--bg-elevated);
-  cursor: pointer;
+  font: inherit;
   font-size: 13px;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .footer button[type='submit'] {
-  color: var(--accent-contrast);
   border-color: var(--accent-line);
   background: var(--accent-soft);
 }
 
 .footer button:disabled {
-  opacity: 0.48;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-@media (max-width: 820px) {
+@media (max-width: 860px) {
+  .grid,
+  .briefingGrid,
+  .routineGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .field,
+  .fieldCompact,
+  .fieldWide,
+  .briefingGrid .input,
+  .routineGrid .input,
+  .routineGrid > .fieldCompact,
+  .routineGrid > .fieldWide {
+    grid-column: span 1;
+  }
+
+  .fieldFull,
+  .textarea,
+  .briefingGrid .textarea,
+  .routineGrid .textarea {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 620px) {
   .overlay {
     padding: 12px;
   }
@@ -499,7 +549,6 @@
   .modal,
   .modalBriefing {
     width: calc(100vw - 24px);
-    max-height: calc(100vh - 24px);
   }
 
   .grid,
@@ -511,8 +560,10 @@
   .field,
   .fieldCompact,
   .fieldWide,
-  .fieldFull,
-  .textarea {
+  .briefingGrid .input,
+  .routineGrid .input,
+  .routineGrid > .fieldCompact,
+  .routineGrid > .fieldWide {
     grid-column: 1 / -1;
   }
 }

@@ -9,13 +9,16 @@ import { createTaskAttachment } from '../api/projects.js';
 import {
   createSupportDailyColumn,
   createSupportDailyRow,
+  createSupportDailySheet,
   createSupportTask,
   deleteSupportDailyColumn,
   deleteSupportDailyRow,
+  deleteSupportDailySheet,
   listSupportDailyRows,
   listSupportTasks,
   updateSupportDailyColumn,
   updateSupportDailyRow,
+  updateSupportDailySheet,
 } from '../api/support.js';
 import { hasPermission } from '../utils/permissions.js';
 import styles from './SupportTechnologyPage.module.css';
@@ -32,6 +35,8 @@ const FALLBACK_DAILY_COLUMNS = [
   { key: 'notes', label: 'Observações', width: 280, system: true },
 ];
 
+const MASTER_SUPPORT_EMAIL = 'mauricionredifica@gmail.com';
+const MASTER_SUPPORT_NAME = 'mauricio nunes';
 const SUPPORT_ROLES = new Set(['suporte_tecnologia']);
 const FALLBACK_SUPPORT_ROLES = new Set(['ceo', 'admin']);
 
@@ -52,7 +57,7 @@ function normalizeColumns(columns = []) {
   return source.map((column) => ({
     key: column.key,
     label: column.label || 'Coluna',
-    width: Math.max(90, Math.min(720, Number(column.width || 180))),
+    width: Math.max(72, Math.min(900, Number(column.width || 180))),
     system: column.system !== false,
   }));
 }
@@ -63,26 +68,56 @@ function normalizeRow(row = {}, columns = FALLBACK_DAILY_COLUMNS) {
     id: row?.id || '',
     position: Number(row?.position || 0),
     ...base,
+    __styles: row?.__styles && typeof row.__styles === 'object' ? row.__styles : {},
   };
 }
 
-function SupportCell({ row, column, editable, saving, onChange, onCommit }) {
+function cellStyle(row, key) {
+  return row?.__styles?.[key] || {};
+}
+
+function normalizeStyle(style = {}) {
+  const next = { ...style };
+  Object.keys(next).forEach((key) => {
+    if (next[key] === undefined || next[key] === null || next[key] === '') delete next[key];
+  });
+  return next;
+}
+
+function SheetCell({ row, column, editable, saving, selected, onSelect, onChange, onCommit }) {
+  const ref = useRef(null);
   const value = row[column.key] || '';
+  const style = cellStyle(row, column.key);
+
+  useEffect(() => {
+    if (document.activeElement === ref.current) return;
+    if (ref.current && ref.current.innerText !== value) ref.current.innerText = value;
+  }, [value]);
+
   if (!editable) {
-    return <span className={styles.readonlyCell} data-tone={statusTone(value)} title={value}>{value || '—'}</span>;
+    return <span className={styles.readonlyCell} data-tone={statusTone(value)} style={style} title={value}>{value || '—'}</span>;
   }
+
   return (
-    <input
-      className={styles.sheetInput}
+    <div
+      ref={ref}
+      className={`${styles.sheetInput} ${selected ? styles.sheetInputSelected : ''}`.trim()}
       data-tone={statusTone(value)}
-      type="text"
+      data-saving={saving || undefined}
+      contentEditable
+      suppressContentEditableWarning
       spellCheck={false}
-      disabled={saving}
-      value={value}
-      onChange={(event) => onChange(row.id, column.key, event.target.value)}
+      style={style}
+      tabIndex={0}
+      onFocus={() => onSelect(row.id, column.key)}
+      onMouseDown={() => onSelect(row.id, column.key)}
+      onInput={(event) => onChange(row.id, column.key, event.currentTarget.innerText)}
       onBlur={() => onCommit(row.id, column.key)}
       onKeyDown={(event) => {
-        if (event.key === 'Enter') event.currentTarget.blur();
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          event.currentTarget.blur();
+        }
         if (event.key === 'Escape') event.currentTarget.blur();
       }}
     />
@@ -106,7 +141,7 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
       ) : (
         <span>{column.label}</span>
       )}
-      {editable && !column.system ? (
+      {editable ? (
         <button type="button" onClick={() => onDelete(column.key)} aria-label={`Remover coluna ${column.label}`}>
           <CloseIcon size={11} />
         </button>
@@ -123,10 +158,42 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
   );
 }
 
+function SheetToolbar({ disabled, activeStyle, onApply }) {
+  const toggle = (key, value, offValue = '') => {
+    const current = activeStyle?.[key];
+    onApply({ [key]: current === value ? offValue : value });
+  };
+
+  return (
+    <div className={styles.sheetToolbar} aria-label="Formatação">
+      <button type="button" disabled={disabled} data-active={activeStyle?.fontWeight === '700' || undefined} onClick={() => toggle('fontWeight', '700')}>B</button>
+      <button type="button" disabled={disabled} data-active={activeStyle?.fontStyle === 'italic' || undefined} onClick={() => toggle('fontStyle', 'italic')}>I</button>
+      <button type="button" disabled={disabled} data-active={String(activeStyle?.textDecoration || '').includes('underline') || undefined} onClick={() => toggle('textDecoration', 'underline')}>U</button>
+      <button type="button" disabled={disabled} data-active={String(activeStyle?.textDecoration || '').includes('line-through') || undefined} onClick={() => toggle('textDecoration', 'line-through')}>S</button>
+      <span className={styles.toolbarDivider} />
+      <button type="button" disabled={disabled} data-active={activeStyle?.textAlign === 'left' || undefined} onClick={() => onApply({ textAlign: 'left' })}>←</button>
+      <button type="button" disabled={disabled} data-active={activeStyle?.textAlign === 'center' || undefined} onClick={() => onApply({ textAlign: 'center' })}>↔</button>
+      <button type="button" disabled={disabled} data-active={activeStyle?.textAlign === 'right' || undefined} onClick={() => onApply({ textAlign: 'right' })}>→</button>
+      <span className={styles.toolbarDivider} />
+      <label className={styles.colorTool} title="Cor do texto">
+        A
+        <input type="color" disabled={disabled} value={activeStyle?.color || '#ffffff'} onChange={(event) => onApply({ color: event.target.value })} />
+      </label>
+      <label className={styles.colorTool} title="Fundo da célula">
+        ▣
+        <input type="color" disabled={disabled} value={activeStyle?.backgroundColor || '#111111'} onChange={(event) => onApply({ backgroundColor: event.target.value })} />
+      </label>
+      <button type="button" disabled={disabled} onClick={() => onApply({ fontWeight: '', fontStyle: '', textDecoration: '', textAlign: '', color: '', backgroundColor: '' })}>Limpar</button>
+    </div>
+  );
+}
+
 export default function SupportTechnologyPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const { clients = [], userDirectory = [], setPanelHeader } = useOutletContext();
+  const [sheets, setSheets] = useState([]);
+  const [activeSheetId, setActiveSheetId] = useState('');
   const [columns, setColumns] = useState(FALLBACK_DAILY_COLUMNS);
   const [rows, setRows] = useState([]);
   const [rowsLoading, setRowsLoading] = useState(true);
@@ -135,44 +202,49 @@ export default function SupportTechnologyPage() {
   const [savingColumn, setSavingColumn] = useState('');
   const [creatingRow, setCreatingRow] = useState(false);
   const [creatingColumn, setCreatingColumn] = useState(false);
+  const [creatingSheet, setCreatingSheet] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
   const [demandModalOpen, setDemandModalOpen] = useState(false);
+  const [selectedCell, setSelectedCell] = useState(null);
   const resizeRef = useRef(null);
 
-  const activeUsers = useMemo(() => (
-    Array.isArray(userDirectory) ? userDirectory : []
-  ).filter((item) => item?.id && item?.active !== false), [userDirectory]);
+  const activeUsers = useMemo(() => (Array.isArray(userDirectory) ? userDirectory : []).filter((item) => item?.id && item?.active !== false), [userDirectory]);
+
+  const supportMaster = useMemo(() => activeUsers.find((item) => (
+    String(item.email || '').toLowerCase() === MASTER_SUPPORT_EMAIL
+    || String(item.name || '').trim().toLowerCase() === MASTER_SUPPORT_NAME
+  )) || null, [activeUsers]);
 
   const supportUsers = useMemo(() => {
+    if (supportMaster) return [supportMaster];
     const direct = activeUsers.filter((item) => SUPPORT_ROLES.has(item.role));
     if (direct.length) return direct;
     const fallback = activeUsers.filter((item) => FALLBACK_SUPPORT_ROLES.has(item.role));
     return fallback.length ? fallback : activeUsers;
-  }, [activeUsers]);
+  }, [activeUsers, supportMaster]);
 
-  const defaultAssigneeId = useMemo(() => {
-    const currentAsSupport = supportUsers.find((item) => item.id === user?.id);
-    return currentAsSupport?.id || supportUsers[0]?.id || user?.id || '';
-  }, [supportUsers, user?.id]);
-
+  const defaultAssigneeId = supportMaster?.id || supportUsers[0]?.id || user?.id || '';
   const canEditBoard = hasPermission(user, 'support.board.edit');
   const canCreateDemand = hasPermission(user, 'support.view');
+  const activeStyle = selectedCell ? cellStyle(rows.find((row) => row.id === selectedCell.rowId), selectedCell.key) : {};
 
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
 
-  const refreshRows = useCallback(async () => {
+  const refreshRows = useCallback(async (sheetId = activeSheetId) => {
     setRowsLoading(true);
     try {
-      const data = await listSupportDailyRows();
+      const data = await listSupportDailyRows(sheetId || undefined);
       const nextColumns = normalizeColumns(data?.columns);
+      setSheets(Array.isArray(data?.sheets) ? data.sheets : []);
+      setActiveSheetId(data?.activeSheetId || sheetId || data?.sheets?.[0]?.id || '');
       setColumns(nextColumns);
       setRows((Array.isArray(data?.rows) ? data.rows : []).map((row) => normalizeRow(row, nextColumns)));
     } finally {
       setRowsLoading(false);
     }
-  }, []);
+  }, [activeSheetId]);
 
   const refreshTasks = useCallback(async () => {
     const data = await listSupportTasks();
@@ -182,7 +254,7 @@ export default function SupportTechnologyPage() {
   useEffect(() => {
     refreshRows().catch(() => showToast('Não foi possível carregar a programação diária.', { variant: 'error' }));
     refreshTasks().catch(() => showToast('Não foi possível carregar as demandas de suporte.', { variant: 'error' }));
-  }, [refreshRows, refreshTasks, showToast]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const metrics = useMemo(() => {
     const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'canceled');
@@ -215,12 +287,7 @@ export default function SupportTechnologyPage() {
       });
       const taskId = data?.task?.id;
       if (taskId && form.attachments?.length) {
-        await Promise.allSettled(form.attachments.map((item) => createTaskAttachment(taskId, {
-          fileName: item.fileName,
-          mimeType: item.mimeType,
-          sizeBytes: item.sizeBytes,
-          dataUrl: item.dataUrl,
-        })));
+        await Promise.allSettled(form.attachments.map((item) => createTaskAttachment(taskId, { fileName: item.fileName, mimeType: item.mimeType, sizeBytes: item.sizeBytes, dataUrl: item.dataUrl })));
       }
       setDemandModalOpen(false);
       await refreshTasks();
@@ -232,10 +299,46 @@ export default function SupportTechnologyPage() {
     }
   };
 
+  const handleAddSheet = async () => {
+    setCreatingSheet(true);
+    try {
+      const data = await createSupportDailySheet({ name: `Planilha ${sheets.length + 1}` });
+      setSheets(Array.isArray(data?.sheets) ? data.sheets : []);
+      const nextId = data?.sheet?.id;
+      if (nextId) await refreshRows(nextId);
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível criar planilha.', { variant: 'error' });
+    } finally {
+      setCreatingSheet(false);
+    }
+  };
+
+  const handleSheetNameCommit = async (sheetId, name) => {
+    try {
+      const data = await updateSupportDailySheet(sheetId, { name: cleanText(name) || 'Planilha' });
+      if (Array.isArray(data?.sheets)) setSheets(data.sheets);
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível renomear a planilha.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
+    }
+  };
+
+  const handleDeleteSheet = async (sheetId) => {
+    if (!sheetId || sheets.length <= 1) return;
+    try {
+      const data = await deleteSupportDailySheet(sheetId);
+      const nextSheets = Array.isArray(data?.sheets) ? data.sheets : sheets.filter((sheet) => sheet.id !== sheetId);
+      setSheets(nextSheets);
+      await refreshRows(nextSheets[0]?.id || '');
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível excluir a planilha.', { variant: 'error' });
+    }
+  };
+
   const handleAddRow = async () => {
     setCreatingRow(true);
     try {
-      const data = await createSupportDailyRow({});
+      const data = await createSupportDailyRow({ sheetId: activeSheetId });
       setRows((current) => [...current, normalizeRow(data?.row, columns)]);
     } catch (err) {
       showToast(err?.message || 'Não foi possível adicionar linha.', { variant: 'error' });
@@ -265,12 +368,27 @@ export default function SupportTechnologyPage() {
     setSavingCell(savingKey);
     try {
       const data = await updateSupportDailyRow(id, { [key]: row[key] || '' });
-      if (data?.row) {
-        setRows((current) => current.map((entry) => (entry.id === id ? normalizeRow(data.row, columns) : entry)));
-      }
+      if (data?.row) setRows((current) => current.map((entry) => (entry.id === id ? normalizeRow(data.row, columns) : entry)));
     } catch (err) {
       showToast(err?.message || 'Não foi possível salvar a célula.', { variant: 'error' });
-      refreshRows().catch(() => {});
+      refreshRows(activeSheetId).catch(() => {});
+    } finally {
+      setSavingCell('');
+    }
+  };
+
+  const handleApplyStyle = async (patch) => {
+    if (!selectedCell || !canEditBoard) return;
+    const { rowId, key } = selectedCell;
+    const row = rows.find((entry) => entry.id === rowId);
+    const nextStyle = normalizeStyle({ ...cellStyle(row, key), ...patch });
+    setRows((current) => current.map((entry) => (entry.id === rowId ? { ...entry, __styles: { ...(entry.__styles || {}), [key]: nextStyle } } : entry)));
+    setSavingCell(`${rowId}:${key}`);
+    try {
+      await updateSupportDailyRow(rowId, { styles: { [key]: nextStyle } });
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível salvar a formatação.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
     } finally {
       setSavingCell('');
     }
@@ -279,11 +397,10 @@ export default function SupportTechnologyPage() {
   const handleAddColumn = async () => {
     setCreatingColumn(true);
     try {
-      const data = await createSupportDailyColumn({ label: 'Nova coluna', width: 180 });
-      if (data?.column) {
-        setColumns((current) => [...current, data.column]);
-        setRows((current) => current.map((row) => ({ ...row, [data.column.key]: '' })));
-      }
+      const data = await createSupportDailyColumn({ sheetId: activeSheetId, label: 'Nova coluna', width: 180 });
+      if (data?.columns) setColumns(normalizeColumns(data.columns));
+      else if (data?.column) setColumns((current) => [...current, data.column]);
+      if (data?.column) setRows((current) => current.map((row) => ({ ...row, [data.column.key]: '' })));
     } catch (err) {
       showToast(err?.message || 'Não foi possível adicionar coluna.', { variant: 'error' });
     } finally {
@@ -304,21 +421,21 @@ export default function SupportTechnologyPage() {
       if (data?.columns) setColumns(normalizeColumns(data.columns));
     } catch (err) {
       showToast(err?.message || 'Não foi possível salvar a coluna.', { variant: 'error' });
-      refreshRows().catch(() => {});
+      refreshRows(activeSheetId).catch(() => {});
     } finally {
       setSavingColumn('');
     }
   };
 
   const handleDeleteColumn = async (key) => {
-    const column = columns.find((entry) => entry.key === key);
-    if (!column || column.system) return;
+    if (!key) return;
     try {
       await deleteSupportDailyColumn(key);
       setColumns((current) => current.filter((entry) => entry.key !== key));
       setRows((current) => current.map((row) => {
-        const next = { ...row };
+        const next = { ...row, __styles: { ...(row.__styles || {}) } };
         delete next[key];
+        delete next.__styles[key];
         return next;
       }));
     } catch (err) {
@@ -338,7 +455,7 @@ export default function SupportTechnologyPage() {
     function handleMove(event) {
       const state = resizeRef.current;
       if (!state) return;
-      const width = Math.max(90, Math.min(720, state.startWidth + event.clientX - state.startX));
+      const width = Math.max(72, Math.min(900, state.startWidth + event.clientX - state.startX));
       setColumns((current) => current.map((column) => (column.key === state.key ? { ...column, width } : column)));
     }
     async function handleUp() {
@@ -351,7 +468,7 @@ export default function SupportTechnologyPage() {
       try {
         await updateSupportDailyColumn(column.key, { width: column.width });
       } catch {
-        refreshRows().catch(() => {});
+        refreshRows(activeSheetId).catch(() => {});
       }
     }
     window.addEventListener('mousemove', handleMove);
@@ -361,7 +478,7 @@ export default function SupportTechnologyPage() {
       window.removeEventListener('mouseup', handleUp);
       document.body.style.cursor = '';
     };
-  }, [columns, refreshRows]);
+  }, [activeSheetId, columns, refreshRows]);
 
   return (
     <div className={styles.page}>
@@ -392,15 +509,35 @@ export default function SupportTechnologyPage() {
           <h2><CalendarIcon size={15} /> Programação diária</h2>
           {canEditBoard ? (
             <div className={styles.sheetActions}>
-              <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn}>
-                <PlusIcon size={14} /> Nova coluna
-              </Button>
-              <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow}>
-                <PlusIcon size={14} /> Nova linha
-              </Button>
+              <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
+              <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn}><PlusIcon size={14} /> Nova coluna</Button>
+              <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow}><PlusIcon size={14} /> Nova linha</Button>
             </div>
           ) : null}
         </header>
+
+        <div className={styles.sheetTopbar}>
+          <div className={styles.sheetTabs}>
+            {sheets.map((sheet) => (
+              <div key={sheet.id} className={`${styles.sheetTab} ${sheet.id === activeSheetId ? styles.sheetTabActive : ''}`.trim()}>
+                <input
+                  value={sheet.name}
+                  disabled={!canEditBoard}
+                  onFocus={() => {
+                    if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
+                  }}
+                  onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
+                  onBlur={(event) => canEditBoard && handleSheetNameCommit(sheet.id, event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') event.currentTarget.blur();
+                  }}
+                />
+                {canEditBoard && sheets.length > 1 ? <button type="button" onClick={() => handleDeleteSheet(sheet.id)}><CloseIcon size={10} /></button> : null}
+              </div>
+            ))}
+          </div>
+          {canEditBoard ? <SheetToolbar disabled={!selectedCell} activeStyle={activeStyle} onApply={handleApplyStyle} /> : null}
+        </div>
 
         <div className={styles.sheetScroller}>
           <table className={styles.sheetTable}>
@@ -414,46 +551,33 @@ export default function SupportTechnologyPage() {
                 <th>#</th>
                 {columns.map((column) => (
                   <th key={column.key} data-saving={savingColumn === column.key || undefined}>
-                    <HeaderCell
-                      column={column}
-                      editable={canEditBoard}
-                      onLabelChange={handleColumnLabelChange}
-                      onLabelCommit={handleColumnLabelCommit}
-                      onResizeStart={handleResizeStart}
-                      onDelete={handleDeleteColumn}
-                    />
+                    <HeaderCell column={column} editable={canEditBoard} onLabelChange={handleColumnLabelChange} onLabelCommit={handleColumnLabelCommit} onResizeStart={handleResizeStart} onDelete={handleDeleteColumn} />
                   </th>
                 ))}
                 {canEditBoard ? <th /> : null}
               </tr>
             </thead>
             <tbody>
-              {rowsLoading ? (
-                <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={styles.sheetEmpty}>Carregando</td></tr>
-              ) : null}
-              {!rowsLoading && rows.length === 0 ? (
-                <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={styles.sheetEmpty}>Sem registros.</td></tr>
-              ) : null}
+              {rowsLoading ? <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={styles.sheetEmpty}>Carregando</td></tr> : null}
+              {!rowsLoading && rows.length === 0 ? <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={styles.sheetEmpty}>Sem registros.</td></tr> : null}
               {rows.map((row, index) => (
                 <tr key={row.id}>
                   <td className={styles.rowIndex}>{index + 1}</td>
                   {columns.map((column) => (
                     <td key={column.key} data-column={column.key}>
-                      <SupportCell
+                      <SheetCell
                         row={row}
                         column={column}
                         editable={canEditBoard}
                         saving={savingCell === `${row.id}:${column.key}`}
+                        selected={selectedCell?.rowId === row.id && selectedCell?.key === column.key}
+                        onSelect={(rowId, key) => setSelectedCell({ rowId, key })}
                         onChange={handleCellChange}
                         onCommit={handleCellCommit}
                       />
                     </td>
                   ))}
-                  {canEditBoard ? (
-                    <td className={styles.actionCell}>
-                      <button type="button" onClick={() => handleDeleteRow(row.id)} title="Remover linha"><TrashIcon size={13} /></button>
-                    </td>
-                  ) : null}
+                  {canEditBoard ? <td className={styles.actionCell}><button type="button" onClick={() => handleDeleteRow(row.id)} title="Remover linha"><TrashIcon size={13} /></button></td> : null}
                 </tr>
               ))}
             </tbody>

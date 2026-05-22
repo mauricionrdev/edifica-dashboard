@@ -10,24 +10,24 @@
 .kpis,
 .sheetPanel {
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
-  background: var(--bg-canvas);
+  border-radius: var(--radius-3);
+  background: var(--surface-panel);
   box-shadow: var(--shadow-panel);
 }
 
 .hero {
   display: flex;
+  min-height: 88px;
   align-items: center;
   justify-content: space-between;
-  min-height: 94px;
   gap: var(--space-5);
   padding: var(--space-5) var(--space-6);
 }
 
 .heroTitle {
   display: grid;
-  gap: var(--space-2);
   min-width: 0;
+  gap: var(--space-2);
 }
 
 .eyebrow,
@@ -64,13 +64,13 @@
 
 .heroIcon {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   flex: 0 0 auto;
   color: var(--accent-strong);
   border: 1px solid var(--accent-line);
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-2);
   background: var(--accent-soft);
 }
 
@@ -127,6 +127,135 @@
   gap: var(--space-2);
   font-size: var(--fs-lg);
   line-height: var(--lh-tight);
+}
+
+.sheetTopbar {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+}
+
+.sheetTabs {
+  display: inline-flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--space-2);
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.sheetTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.sheetTab {
+  display: inline-flex;
+  height: 32px;
+  min-width: 120px;
+  max-width: 220px;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.sheetTabActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.sheetTab input {
+  min-width: 0;
+  flex: 1 1 auto;
+  color: var(--text-primary);
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--weight-semibold);
+}
+
+.sheetTab button {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sheetToolbar {
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+  padding: 3px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.sheetToolbar button,
+.colorTool {
+  display: inline-grid;
+  min-width: 28px;
+  height: 26px;
+  place-items: center;
+  color: var(--text-secondary);
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  font-size: var(--fs-small);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sheetToolbar button:hover,
+.colorTool:hover,
+.sheetToolbar button[data-active='true'] {
+  color: var(--text-primary);
+  background: var(--bg-soft);
+}
+
+.sheetToolbar button:disabled,
+.colorTool:has(input:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toolbarDivider {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--line-subtle);
+}
+
+.colorTool {
+  position: relative;
+  overflow: hidden;
+}
+
+.colorTool input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .sheetScroller {
@@ -223,6 +352,12 @@
   cursor: pointer;
 }
 
+.headerCellInner button:hover {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
 .resizeHandle {
   position: absolute;
   top: 0;
@@ -256,10 +391,11 @@
 }
 
 .sheetInput {
-  display: block;
+  display: flex;
   width: 100%;
-  height: 37px;
+  min-height: 37px;
   min-width: 0;
+  align-items: center;
   padding: 0 var(--space-3);
   overflow: hidden;
   color: var(--text-primary);
@@ -274,7 +410,8 @@
   white-space: nowrap;
 }
 
-.sheetInput:focus {
+.sheetInput:focus,
+.sheetInputSelected {
   background: var(--bg-selected);
   box-shadow: inset 0 0 0 1px var(--accent-line);
 }
@@ -351,6 +488,15 @@
 @media (max-width: 1180px) {
   .kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sheetTopbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sheetToolbar {
+    width: max-content;
   }
 }
 

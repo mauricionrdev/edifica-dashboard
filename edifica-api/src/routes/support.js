@@ -8,6 +8,7 @@ import { addTaskCollaborators, createTaskRecord, serializeTask } from '../utils/
 const router = Router();
 router.use(requireAuth);
 
+const DEFAULT_SHEET_ID = 'programacao_diaria';
 const DEFAULT_DAILY_COLUMNS = [
   { key: 'clientName', label: 'Cliente / Escritório', width: 340, position: 1, system: true },
   { key: 'implementationStatus', label: 'Implementação', width: 230, position: 2, system: true },
@@ -22,10 +23,51 @@ const DEFAULT_DAILY_COLUMNS = [
 
 const SYSTEM_COLUMN_KEYS = new Set(DEFAULT_DAILY_COLUMNS.map((column) => column.key));
 
+function clean(value, max = 255) {
+  return String(value ?? '').trim().slice(0, max);
+}
+
+function safeJson(value, fallback = {}) {
+  if (!value) return fallback;
+  if (typeof value === 'object') return value;
+  try { return JSON.parse(value); } catch { return fallback; }
+}
+
+async function safeAlter(sql) {
+  try { await query(sql); } catch (err) {
+    const code = String(err?.code || '');
+    const message = String(err?.message || '').toLowerCase();
+    if (code === 'ER_DUP_FIELDNAME' || code === 'ER_DUP_KEYNAME' || message.includes('duplicate column') || message.includes('duplicate key')) return;
+    throw err;
+  }
+}
+
+function supportColumnKey(label = '') {
+  const base = String(label || 'Coluna')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 42) || 'coluna';
+  return `${base}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
 let supportSchemaPromise = null;
 async function ensureSupportSchema() {
   if (!supportSchemaPromise) {
     supportSchemaPromise = (async () => {
+      await query(`
+        CREATE TABLE IF NOT EXISTS support_daily_sheets (
+          id VARCHAR(36) PRIMARY KEY,
+          name VARCHAR(120) NOT NULL,
+          position INT NOT NULL DEFAULT 0,
+          created_by_user_id VARCHAR(36) NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_support_daily_sheets_position (position)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
       await query(`
         CREATE TABLE IF NOT EXISTS support_daily_rows (
           id VARCHAR(36) PRIMARY KEY,
@@ -46,6 +88,8 @@ async function ensureSupportSchema() {
           CONSTRAINT fk_support_daily_updated_by FOREIGN KEY (updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
+      await safeAlter('ALTER TABLE support_daily_rows ADD COLUMN sheet_id VARCHAR(36) NULL AFTER id');
+      await safeAlter('ALTER TABLE support_daily_rows ADD INDEX idx_support_daily_sheet_position (sheet_id, position)');
       await query(`
         CREATE TABLE IF NOT EXISTS support_daily_columns (
           id VARCHAR(36) PRIMARY KEY,
@@ -59,6 +103,8 @@ async function ensureSupportSchema() {
           INDEX idx_support_daily_columns_position (position)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
+      await safeAlter('ALTER TABLE support_daily_columns ADD COLUMN sheet_id VARCHAR(36) NULL AFTER id');
+      await safeAlter('ALTER TABLE support_daily_columns ADD INDEX idx_support_daily_columns_sheet_position (sheet_id, position)');
       await query(`
         CREATE TABLE IF NOT EXISTS support_daily_cell_values (
           row_id VARCHAR(36) NOT NULL,
@@ -69,12 +115,29 @@ async function ensureSupportSchema() {
           CONSTRAINT fk_support_daily_cell_row FOREIGN KEY (row_id) REFERENCES support_daily_rows(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
+      await query(`
+        CREATE TABLE IF NOT EXISTS support_daily_cell_styles (
+          row_id VARCHAR(36) NOT NULL,
+          column_key VARCHAR(80) NOT NULL,
+          style_json TEXT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (row_id, column_key),
+          CONSTRAINT fk_support_daily_style_row FOREIGN KEY (row_id) REFERENCES support_daily_rows(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      await query(
+        `INSERT IGNORE INTO support_daily_sheets (id, name, position)
+         VALUES (?, 'Programação diária', 1)`,
+        [DEFAULT_SHEET_ID]
+      );
+      await query('UPDATE support_daily_rows SET sheet_id = ? WHERE sheet_id IS NULL OR sheet_id = ""', [DEFAULT_SHEET_ID]);
+      await query('UPDATE support_daily_columns SET sheet_id = ? WHERE sheet_id IS NULL OR sheet_id = ""', [DEFAULT_SHEET_ID]);
       for (const column of DEFAULT_DAILY_COLUMNS) {
         await query(
-          `INSERT INTO support_daily_columns (id, column_key, label, width, position, is_system)
-           VALUES (?, ?, ?, ?, ?, 1)
-           ON DUPLICATE KEY UPDATE position = VALUES(position), is_system = 1`,
-          [uuid(), column.key, column.label, column.width, column.position]
+          `INSERT INTO support_daily_columns (id, sheet_id, column_key, label, width, position, is_system)
+           VALUES (?, ?, ?, ?, ?, ?, 1)
+           ON DUPLICATE KEY UPDATE sheet_id = COALESCE(sheet_id, VALUES(sheet_id)), position = VALUES(position), is_system = 1`,
+          [uuid(), DEFAULT_SHEET_ID, column.key, column.label, column.width, column.position]
         );
       }
     })().catch((err) => {
@@ -85,38 +148,38 @@ async function ensureSupportSchema() {
   return supportSchemaPromise;
 }
 
-async function listDailyColumns() {
+async function listSheets() {
+  await ensureSupportSchema();
+  const rows = await query('SELECT id, name, position FROM support_daily_sheets ORDER BY position ASC, created_at ASC');
+  return rows.map((row) => ({ id: row.id, name: row.name, position: Number(row.position || 0) }));
+}
+
+async function resolveSheetId(candidate) {
+  await ensureSupportSchema();
+  const id = clean(candidate, 36) || DEFAULT_SHEET_ID;
+  const rows = await query('SELECT id FROM support_daily_sheets WHERE id = ? LIMIT 1', [id]);
+  return rows[0]?.id || DEFAULT_SHEET_ID;
+}
+
+async function listDailyColumns(sheetId = DEFAULT_SHEET_ID) {
   await ensureSupportSchema();
   const rows = await query(
     `SELECT column_key, label, width, position, is_system
        FROM support_daily_columns
-      ORDER BY position ASC, created_at ASC`
+      WHERE sheet_id = ?
+      ORDER BY position ASC, created_at ASC`,
+    [sheetId]
   );
   return rows.map((row) => ({
     key: row.column_key,
     label: row.label,
-    width: Math.max(90, Math.min(640, Number(row.width || 180))),
+    width: Math.max(72, Math.min(900, Number(row.width || 180))),
     position: Number(row.position || 0),
     system: Boolean(row.is_system),
   }));
 }
 
-function supportColumnKey(label = '') {
-  const base = String(label || 'Coluna')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-    .slice(0, 42) || 'coluna';
-  return `${base}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function clean(value, max = 255) {
-  return String(value ?? '').trim().slice(0, max);
-}
-
-function serializeSupportRow(row = {}, customValues = {}) {
+function serializeSupportRow(row = {}, customValues = {}, styles = {}) {
   return {
     id: row.id,
     position: Number(row.position || 0),
@@ -130,6 +193,7 @@ function serializeSupportRow(row = {}, customValues = {}) {
     apiKey: row.api_key || '',
     notes: row.notes || '',
     ...customValues,
+    __styles: styles,
     updatedByName: row.updated_by_name || '',
     updatedAt: row.updated_at,
     createdAt: row.created_at,
@@ -161,12 +225,23 @@ async function getSerializedDailyRow(id) {
   );
   if (!rows[0]) return null;
   const values = await query('SELECT column_key, value FROM support_daily_cell_values WHERE row_id = ?', [id]);
+  const styles = await query('SELECT column_key, style_json FROM support_daily_cell_styles WHERE row_id = ?', [id]);
   const custom = {};
   values.forEach((row) => { custom[row.column_key] = row.value || ''; });
-  return serializeSupportRow(rows[0], custom);
+  const styleMap = {};
+  styles.forEach((row) => { styleMap[row.column_key] = safeJson(row.style_json, {}); });
+  return serializeSupportRow(rows[0], custom, styleMap);
 }
 
 async function resolveDefaultSupportAssignee() {
+  const masterRows = await query(
+    `SELECT id
+       FROM users
+      WHERE COALESCE(active, 1) = 1
+        AND (LOWER(email) = 'mauricionredifica@gmail.com' OR LOWER(name) = 'mauricio nunes')
+      LIMIT 1`
+  );
+  if (masterRows[0]?.id) return masterRows[0].id;
   const rows = await query(
     `SELECT id
        FROM users
@@ -180,32 +255,94 @@ async function resolveDefaultSupportAssignee() {
 
 router.get('/daily-program', requirePermission('support.view'), async (req, res, next) => {
   try {
-    await ensureSupportSchema();
-    const columns = await listDailyColumns();
+    const sheetId = await resolveSheetId(req.query?.sheetId);
+    const sheets = await listSheets();
+    const columns = await listDailyColumns(sheetId);
     const rows = await query(
       `SELECT sdr.*, u.name AS updated_by_name
          FROM support_daily_rows sdr
          LEFT JOIN users u ON u.id = sdr.updated_by_user_id
+        WHERE sdr.sheet_id = ?
         ORDER BY sdr.position ASC, sdr.created_at ASC
-        LIMIT 300`
+        LIMIT 500`,
+      [sheetId]
     );
     const rowIds = rows.map((row) => row.id).filter(Boolean);
     const valuesByRow = new Map();
+    const stylesByRow = new Map();
     if (rowIds.length) {
       const placeholders = rowIds.map(() => '?').join(', ');
-      const values = await query(
-        `SELECT row_id, column_key, value
-           FROM support_daily_cell_values
-          WHERE row_id IN (${placeholders})`,
-        rowIds
-      );
+      const values = await query(`SELECT row_id, column_key, value FROM support_daily_cell_values WHERE row_id IN (${placeholders})`, rowIds);
       values.forEach((valueRow) => {
         const current = valuesByRow.get(valueRow.row_id) || {};
         current[valueRow.column_key] = valueRow.value || '';
         valuesByRow.set(valueRow.row_id, current);
       });
+      const styles = await query(`SELECT row_id, column_key, style_json FROM support_daily_cell_styles WHERE row_id IN (${placeholders})`, rowIds);
+      styles.forEach((styleRow) => {
+        const current = stylesByRow.get(styleRow.row_id) || {};
+        current[styleRow.column_key] = safeJson(styleRow.style_json, {});
+        stylesByRow.set(styleRow.row_id, current);
+      });
     }
-    res.json({ columns, rows: rows.map((row) => serializeSupportRow(row, valuesByRow.get(row.id) || {})) });
+    res.json({
+      sheets,
+      activeSheetId: sheetId,
+      columns,
+      rows: rows.map((row) => serializeSupportRow(row, valuesByRow.get(row.id) || {}, stylesByRow.get(row.id) || {})),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/daily-program/sheets', requirePermission('support.board.edit'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const name = clean(req.body?.name || 'Nova planilha', 80) || 'Nova planilha';
+    const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_sheets');
+    const sheet = { id: uuid(), name, position: Number(positionRows[0]?.next_position || 1) };
+    await query('INSERT INTO support_daily_sheets (id, name, position, created_by_user_id) VALUES (?, ?, ?, ?)', [sheet.id, sheet.name, sheet.position, req.user.id]);
+    for (const column of DEFAULT_DAILY_COLUMNS) {
+      await query(
+        `INSERT INTO support_daily_columns (id, sheet_id, column_key, label, width, position, is_system)
+         VALUES (?, ?, ?, ?, ?, ?, 1)`,
+        [uuid(), sheet.id, supportColumnKey(column.label), column.label, column.width, column.position]
+      );
+    }
+    res.status(201).json({ sheet, sheets: await listSheets(), columns: await listDailyColumns(sheet.id), rows: [] });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/daily-program/sheets/:id', requirePermission('support.board.edit'), async (req, res, next) => {
+  try {
+    const id = clean(req.params.id, 36);
+    const name = clean(req.body?.name, 80);
+    if (!name) throw badRequest('Informe o nome da planilha.');
+    await query('UPDATE support_daily_sheets SET name = ? WHERE id = ?', [name, id]);
+    res.json({ sheets: await listSheets() });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/daily-program/sheets/:id', requirePermission('support.board.edit'), async (req, res, next) => {
+  try {
+    const id = clean(req.params.id, 36);
+    if (id === DEFAULT_SHEET_ID) throw badRequest('A planilha principal não pode ser removida.');
+    const rowIds = await query('SELECT id FROM support_daily_rows WHERE sheet_id = ?', [id]);
+    if (rowIds.length) {
+      const placeholders = rowIds.map(() => '?').join(', ');
+      const ids = rowIds.map((row) => row.id);
+      await query(`DELETE FROM support_daily_cell_styles WHERE row_id IN (${placeholders})`, ids);
+      await query(`DELETE FROM support_daily_cell_values WHERE row_id IN (${placeholders})`, ids);
+    }
+    await query('DELETE FROM support_daily_rows WHERE sheet_id = ?', [id]);
+    await query('DELETE FROM support_daily_columns WHERE sheet_id = ?', [id]);
+    await query('DELETE FROM support_daily_sheets WHERE id = ?', [id]);
+    res.json({ ok: true, sheets: await listSheets() });
   } catch (err) {
     next(err);
   }
@@ -213,23 +350,17 @@ router.get('/daily-program', requirePermission('support.view'), async (req, res,
 
 router.post('/daily-program/columns', requirePermission('support.board.edit'), async (req, res, next) => {
   try {
-    await ensureSupportSchema();
+    const sheetId = await resolveSheetId(req.body?.sheetId || req.query?.sheetId);
     const label = clean(req.body?.label || 'Nova coluna', 80) || 'Nova coluna';
-    const width = Math.max(90, Math.min(640, Number(req.body?.width || 180)));
-    const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_columns');
-    const column = {
-      key: supportColumnKey(label),
-      label,
-      width,
-      position: Number(positionRows[0]?.next_position || 1),
-      system: false,
-    };
+    const width = Math.max(72, Math.min(900, Number(req.body?.width || 180)));
+    const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_columns WHERE sheet_id = ?', [sheetId]);
+    const column = { key: supportColumnKey(label), label, width, position: Number(positionRows[0]?.next_position || 1), system: false };
     await query(
-      `INSERT INTO support_daily_columns (id, column_key, label, width, position, is_system)
-       VALUES (?, ?, ?, ?, ?, 0)`,
-      [uuid(), column.key, column.label, column.width, column.position]
+      `INSERT INTO support_daily_columns (id, sheet_id, column_key, label, width, position, is_system)
+       VALUES (?, ?, ?, ?, ?, ?, 0)`,
+      [uuid(), sheetId, column.key, column.label, column.width, column.position]
     );
-    res.status(201).json({ column });
+    res.status(201).json({ column, columns: await listDailyColumns(sheetId) });
   } catch (err) {
     next(err);
   }
@@ -237,27 +368,18 @@ router.post('/daily-program/columns', requirePermission('support.board.edit'), a
 
 router.patch('/daily-program/columns/:key', requirePermission('support.board.edit'), async (req, res, next) => {
   try {
-    await ensureSupportSchema();
     const key = clean(req.params.key, 80);
     const updates = [];
     const params = [];
-    if (req.body?.label !== undefined) {
-      updates.push('label = ?');
-      params.push(clean(req.body.label, 80) || 'Coluna');
-    }
-    if (req.body?.width !== undefined) {
-      updates.push('width = ?');
-      params.push(Math.max(90, Math.min(640, Number(req.body.width || 180))));
-    }
-    if (req.body?.position !== undefined) {
-      updates.push('position = ?');
-      params.push(Math.max(0, Number(req.body.position) || 0));
-    }
+    if (req.body?.label !== undefined) { updates.push('label = ?'); params.push(clean(req.body.label, 80) || 'Coluna'); }
+    if (req.body?.width !== undefined) { updates.push('width = ?'); params.push(Math.max(72, Math.min(900, Number(req.body.width || 180)))); }
+    if (req.body?.position !== undefined) { updates.push('position = ?'); params.push(Math.max(0, Number(req.body.position) || 0)); }
     if (!updates.length) throw badRequest('Nenhum campo para atualizar.');
     params.push(key);
     await query(`UPDATE support_daily_columns SET ${updates.join(', ')} WHERE column_key = ?`, params);
-    const columns = await listDailyColumns();
-    res.json({ column: columns.find((column) => column.key === key) || null, columns });
+    const rows = await query('SELECT sheet_id FROM support_daily_columns WHERE column_key = ? LIMIT 1', [key]);
+    const sheetId = rows[0]?.sheet_id || DEFAULT_SHEET_ID;
+    res.json({ column: (await listDailyColumns(sheetId)).find((column) => column.key === key) || null, columns: await listDailyColumns(sheetId) });
   } catch (err) {
     next(err);
   }
@@ -265,11 +387,10 @@ router.patch('/daily-program/columns/:key', requirePermission('support.board.edi
 
 router.delete('/daily-program/columns/:key', requirePermission('support.board.edit'), async (req, res, next) => {
   try {
-    await ensureSupportSchema();
     const key = clean(req.params.key, 80);
-    if (SYSTEM_COLUMN_KEYS.has(key)) throw badRequest('Coluna fixa não pode ser removida.');
     await query('DELETE FROM support_daily_cell_values WHERE column_key = ?', [key]);
-    await query('DELETE FROM support_daily_columns WHERE column_key = ? AND is_system = 0', [key]);
+    await query('DELETE FROM support_daily_cell_styles WHERE column_key = ?', [key]);
+    await query('DELETE FROM support_daily_columns WHERE column_key = ?', [key]);
     res.json({ ok: true });
   } catch (err) {
     next(err);
@@ -278,29 +399,16 @@ router.delete('/daily-program/columns/:key', requirePermission('support.board.ed
 
 router.post('/daily-program', requirePermission('support.board.edit'), async (req, res, next) => {
   try {
-    await ensureSupportSchema();
+    const sheetId = await resolveSheetId(req.body?.sheetId || req.query?.sheetId);
     const payload = normalizeSupportPayload(req.body);
-    const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_rows');
+    const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_rows WHERE sheet_id = ?', [sheetId]);
     const id = uuid();
     await query(
       `INSERT INTO support_daily_rows (
-        id, position, client_name, implementation_status, niche, prompt_status,
+        id, sheet_id, position, client_name, implementation_status, niche, prompt_status,
         connection_status, access_status, activity_status, api_key, notes, updated_by_user_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        Number(positionRows[0]?.next_position || 1),
-        payload.clientName,
-        payload.implementationStatus,
-        payload.niche,
-        payload.promptStatus,
-        payload.connectionStatus,
-        payload.accessStatus,
-        payload.activityStatus,
-        payload.apiKey,
-        payload.notes,
-        req.user.id,
-      ]
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, sheetId, Number(positionRows[0]?.next_position || 1), payload.clientName, payload.implementationStatus, payload.niche, payload.promptStatus, payload.connectionStatus, payload.accessStatus, payload.activityStatus, payload.apiKey, payload.notes, req.user.id]
     );
     res.status(201).json({ row: await getSerializedDailyRow(id) });
   } catch (err) {
@@ -310,41 +418,25 @@ router.post('/daily-program', requirePermission('support.board.edit'), async (re
 
 router.patch('/daily-program/:id', requirePermission('support.board.edit'), async (req, res, next) => {
   try {
-    await ensureSupportSchema();
     const id = clean(req.params.id, 36);
-    const columns = await listDailyColumns();
+    const rowRows = await query('SELECT sheet_id FROM support_daily_rows WHERE id = ? LIMIT 1', [id]);
+    const sheetId = rowRows[0]?.sheet_id || DEFAULT_SHEET_ID;
+    const columns = await listDailyColumns(sheetId);
     const columnKeys = new Set(columns.map((column) => column.key));
     const payload = normalizeSupportPayload(req.body);
-    const fields = {
-      client_name: payload.clientName,
-      implementation_status: payload.implementationStatus,
-      niche: payload.niche,
-      prompt_status: payload.promptStatus,
-      connection_status: payload.connectionStatus,
-      access_status: payload.accessStatus,
-      activity_status: payload.activityStatus,
-      api_key: payload.apiKey,
-      notes: payload.notes,
-    };
+    const fields = { client_name: payload.clientName, implementation_status: payload.implementationStatus, niche: payload.niche, prompt_status: payload.promptStatus, connection_status: payload.connectionStatus, access_status: payload.accessStatus, activity_status: payload.activityStatus, api_key: payload.apiKey, notes: payload.notes };
     const updates = [];
     const params = [];
     for (const [column, value] of Object.entries(fields)) {
       const camel = column.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      if (req.body?.[camel] !== undefined || req.body?.[column] !== undefined) {
-        updates.push(`${column} = ?`);
-        params.push(value);
-      }
+      if (req.body?.[camel] !== undefined || req.body?.[column] !== undefined) { updates.push(`${column} = ?`); params.push(value); }
     }
-    if (req.body?.position !== undefined) {
-      updates.push('position = ?');
-      params.push(Math.max(0, Number(req.body.position) || 0));
-    }
+    if (req.body?.position !== undefined) { updates.push('position = ?'); params.push(Math.max(0, Number(req.body.position) || 0)); }
     if (updates.length) {
       updates.push('updated_by_user_id = ?');
       params.push(req.user.id, id);
       await query(`UPDATE support_daily_rows SET ${updates.join(', ')} WHERE id = ?`, params);
     }
-
     const customUpdates = Object.entries(req.body || {}).filter(([key]) => columnKeys.has(key) && !SYSTEM_COLUMN_KEYS.has(key));
     for (const [key, value] of customUpdates) {
       await query(
@@ -354,7 +446,17 @@ router.patch('/daily-program/:id', requirePermission('support.board.edit'), asyn
         [id, key, clean(value, 4000)]
       );
     }
-    if (!updates.length && !customUpdates.length) throw badRequest('Nenhum campo para atualizar.');
+    const styleUpdates = req.body?.styles && typeof req.body.styles === 'object' ? Object.entries(req.body.styles) : [];
+    for (const [key, style] of styleUpdates) {
+      if (!columnKeys.has(key)) continue;
+      await query(
+        `INSERT INTO support_daily_cell_styles (row_id, column_key, style_json)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE style_json = VALUES(style_json)`,
+        [id, key, JSON.stringify(style || {})]
+      );
+    }
+    if (!updates.length && !customUpdates.length && !styleUpdates.length) throw badRequest('Nenhum campo para atualizar.');
     res.json({ row: await getSerializedDailyRow(id) });
   } catch (err) {
     next(err);
@@ -363,7 +465,6 @@ router.patch('/daily-program/:id', requirePermission('support.board.edit'), asyn
 
 router.delete('/daily-program/:id', requirePermission('support.board.edit'), async (req, res, next) => {
   try {
-    await ensureSupportSchema();
     await query('DELETE FROM support_daily_rows WHERE id = ?', [clean(req.params.id, 36)]);
     res.json({ ok: true });
   } catch (err) {
@@ -377,21 +478,13 @@ router.get('/tasks', requirePermission('support.view'), async (req, res, next) =
     const params = [req.user.id, req.user.id];
     let where = "t.source = 'support_request'";
     if (!canViewAll) {
-      where += ` AND (
-        t.created_by_user_id = ?
-        OR t.assignee_user_id = ?
-        OR EXISTS (SELECT 1 FROM task_collaborators tc WHERE tc.task_id = t.id AND tc.user_id = ?)
-      )`;
+      where += ` AND (t.created_by_user_id = ? OR t.assignee_user_id = ? OR EXISTS (SELECT 1 FROM task_collaborators tc WHERE tc.task_id = t.id AND tc.user_id = ?))`;
       params.push(req.user.id, req.user.id, req.user.id);
     }
     const rows = await query(
       `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
               au.name AS assignee_name, cu.name AS created_by_name,
-              CASE
-                WHEN t.assignee_user_id = ? THEN 'responsible'
-                WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator'
-                ELSE ''
-              END AS profile_relation
+              CASE WHEN t.assignee_user_id = ? THEN 'responsible' WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator' ELSE '' END AS profile_relation
          FROM tasks t
          LEFT JOIN projects p ON p.id = t.project_id
          LEFT JOIN project_sections ps ON ps.id = t.section_id
@@ -416,31 +509,15 @@ router.post('/tasks', requirePermission('support.view'), async (req, res, next) 
     if (!title) throw badRequest('Informe o título da demanda.');
     const assigneeUserId = clean(req.body?.assigneeUserId, 36) || await resolveDefaultSupportAssignee();
     const taskId = await createTaskRecord(
-      {
-        title,
-        description: req.body?.description,
-        status: 'todo',
-        priority: req.body?.priority,
-        clientId: req.body?.clientId,
-        assigneeUserId,
-        dueDate: req.body?.dueDate,
-        source: 'support_request',
-        metadata: { supportCategory: clean(req.body?.category, 80) || 'Suporte de tecnologia' },
-      },
+      { title, description: req.body?.description, status: 'todo', priority: req.body?.priority, clientId: req.body?.clientId, assigneeUserId, dueDate: req.body?.dueDate, source: 'support_request', metadata: { supportCategory: clean(req.body?.category, 80) || 'Suporte de tecnologia' } },
       req.user
     );
-    const collaboratorUserIds = Array.isArray(req.body?.collaboratorUserIds)
-      ? req.body.collaboratorUserIds.map((id) => clean(id, 36)).filter(Boolean)
-      : [];
+    const collaboratorUserIds = Array.isArray(req.body?.collaboratorUserIds) ? req.body.collaboratorUserIds.map((id) => clean(id, 36)).filter(Boolean) : [];
     await addTaskCollaborators(taskId, collaboratorUserIds, 'follower');
     const rows = await query(
       `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
               au.name AS assignee_name, cu.name AS created_by_name,
-              CASE
-                WHEN t.assignee_user_id = ? THEN 'responsible'
-                WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator'
-                ELSE ''
-              END AS profile_relation
+              CASE WHEN t.assignee_user_id = ? THEN 'responsible' WHEN tc_profile.user_id IS NOT NULL THEN 'collaborator' ELSE '' END AS profile_relation
          FROM tasks t
          LEFT JOIN projects p ON p.id = t.project_id
          LEFT JOIN project_sections ps ON ps.id = t.section_id
