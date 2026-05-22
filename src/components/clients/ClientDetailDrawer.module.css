@@ -1459,3 +1459,36 @@
   background: var(--danger-soft);
   color: var(--danger-text);
 }
+
+/* v161 — ações do header do detalhe do cliente */
+.headerAction {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 6px);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 620;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.headerActionActive {
+  color: var(--accent-amber-strong, #f5b800);
+  border-color: rgba(245, 184, 0, 0.28);
+  background: rgba(245, 184, 0, 0.055);
+}
+
+/* v161 — permite tags laterais sem cortar o conteúdo interno */
+.modalCard {
+  overflow: visible;
+}
+
+.modalBody {
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-4, 10px) var(--radius-4, 10px);
+}

@@ -36,6 +36,19 @@ export function updateClientFeeSteps(id, feeSteps) {
   return api.put(`/clients/${encodeURIComponent(id)}/fee-steps`, { feeSteps });
 }
 
+
+export function listClientFiles(id) {
+  return api.get(`/clients/${encodeURIComponent(id)}/files`);
+}
+
+export function uploadClientFile(id, body) {
+  return api.post(`/clients/${encodeURIComponent(id)}/files`, body);
+}
+
+export function deleteClientFile(id, fileId) {
+  return api.del(`/clients/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`);
+}
+
 export function deleteClient(id) {
   return api.del(`/clients/${encodeURIComponent(id)}`);
 }

@@ -1917,3 +1917,95 @@
     grid-template-columns: 1fr;
   }
 }
+/* v161 — avatar/contrato integrados */
+.avatarCard {
+  min-height: 190px;
+  padding: 18px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+}
+
+.avatarPrimary {
+  width: 96px;
+  height: 96px;
+  border-color: var(--line-subtle);
+  background: var(--workspace-bg);
+  padding: 0;
+  font: inherit;
+  cursor: default;
+}
+
+.avatarPrimary:has(img) {
+  background: transparent;
+}
+
+.avatarPrimaryAction {
+  cursor: pointer;
+}
+
+.avatarControls {
+  width: min(100%, 246px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.avatarControls button {
+  min-height: 34px;
+}
+
+.inlineFeeSchedule {
+  margin-top: 16px;
+  border-top: 1px solid var(--line-subtle);
+  padding-top: 14px;
+}
+
+.inlineFeeSchedule :global(.panel) {
+  padding: 0;
+  background: transparent;
+}
+
+.avatarPreviewOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 9, 10, 0.74);
+  backdrop-filter: blur(12px);
+}
+
+.avatarPreviewDialog {
+  position: relative;
+  width: min(420px, calc(100vw - 48px));
+  aspect-ratio: 1;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: var(--workspace-bg);
+  overflow: hidden;
+}
+
+.avatarPreviewDialog img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  background: var(--workspace-bg);
+}
+
+.avatarPreviewDialog button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 6px);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}

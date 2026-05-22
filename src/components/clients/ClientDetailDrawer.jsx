@@ -20,19 +20,21 @@ import {
 import { CloseIcon } from '../ui/Icons.jsx';
 import OverviewTab from './OverviewTab.jsx';
 import AnalysisTab from './AnalysisTab.jsx';
-import FeeScheduleTab from './FeeScheduleTab.jsx';
 import ClientProjectTab from './ClientProjectTab.jsx';
 import ClientBookTab from './ClientBookTab.jsx';
 import ClientTasksTab from './ClientTasksTab.jsx';
+import ClientFilesTab from './ClientFilesTab.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import tabStyles from './ClientTabs.module.css';
 
 const TABS = [
   { key: 'overview', label: 'Visão geral' },
-  { key: 'fees', label: 'Mensalidades' },
   { key: 'project', label: 'Projeto' },
-  { key: 'book', label: 'Book do cliente' },
-  { key: 'tasks', label: 'Tarefas' },
+  { key: 'tasks', label: 'Tasks' },
+  { key: 'files', label: 'Arquivos' },
+];
+
+const SIDE_TABS = [
   { key: 'icp', label: 'Análise ICP' },
   { key: 'gdv', label: 'Análise GDV' },
   { key: 'routes', label: 'Resumo de Rotas' },
@@ -158,7 +160,6 @@ export default function ClientDetailDrawer({
   const visibleTabs = useMemo(
     () =>
       TABS.filter((tab) => {
-        if (tab.key === 'fees') return canViewFeeSchedule;
         if (tab.key === 'project') return canViewProject;
         return true;
       }),
@@ -166,15 +167,10 @@ export default function ClientDetailDrawer({
   );
 
   useEffect(() => {
-    if (activeTab === 'fees' && !canViewFeeSchedule) {
-      setActiveTab('overview');
-      return;
-    }
-
     if (activeTab === 'project' && !canViewProject) {
       setActiveTab('overview');
     }
-  }, [activeTab, canViewFeeSchedule, canViewProject]);
+  }, [activeTab, canViewProject]);
 
   if (!client) return null;
 
@@ -218,6 +214,13 @@ export default function ClientDetailDrawer({
           </div>
 
           <div className={drawerStyles.modalHeadActions}>
+            <button
+              type="button"
+              className={`${drawerStyles.headerAction} ${activeTab === 'book' ? drawerStyles.headerActionActive : ''}`.trim()}
+              onClick={() => setActiveTab('book')}
+            >
+              Book do cliente
+            </button>
             <button
               type="button"
               className={drawerStyles.iconBtn}
@@ -267,6 +270,8 @@ export default function ClientDetailDrawer({
                 canManageAvatar={canManageAvatar}
                 onPickAvatar={() => avatarInputRef.current?.click()}
                 onRemoveAvatar={handleRemoveAvatar}
+                canViewFeeSchedule={canViewFeeSchedule}
+                canEditFeeSchedule={canEditFeeSchedule}
                 onUpdated={onUpdated}
                 onDeleted={onDeleted}
               />
@@ -280,21 +285,16 @@ export default function ClientDetailDrawer({
               />
             ) : null}
 
-
-            {activeTab === 'fees' && canViewFeeSchedule ? (
-              <FeeScheduleTab
-                client={client}
-                canEdit={canEditFeeSchedule}
-                onUpdated={onUpdated}
-              />
-            ) : null}
-
             {activeTab === 'book' && (
               <ClientBookTab client={client} />
             )}
 
             {activeTab === 'tasks' && (
               <ClientTasksTab client={client} />
+            )}
+
+            {activeTab === 'files' && (
+              <ClientFilesTab client={client} canEdit={canEditClient} />
             )}
 
             {activeTab === 'icp' && (
@@ -310,6 +310,21 @@ export default function ClientDetailDrawer({
             )}
           </main>
         </div>
+
+        <nav className={tabStyles.sideTabs} aria-label="Análises do cliente">
+          {SIDE_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`${tabStyles.sideTab} ${tabStyles[`sideTab_${tab.key}`] || ''} ${
+                activeTab === tab.key ? tabStyles.sideTabActive : ''
+              }`.trim()}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </section>
     </div>
   );

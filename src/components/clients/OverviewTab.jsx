@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { updateClient, deleteClient } from '../../api/clients.js';
 import { clientInitials } from '../../utils/clientHelpers.js';
 import { ApiError } from '../../api/client.js';
@@ -11,6 +12,7 @@ import { CameraIcon, LogOutIcon, TrashIcon } from '../ui/Icons.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
+import FeeScheduleTab from './FeeScheduleTab.jsx';
 import styles from './OverviewTab.module.css';
 
 const DEBOUNCE_MS = 400;
@@ -67,6 +69,8 @@ export default function OverviewTab({
   canDelete = false,
   avatarUrl = '',
   canManageAvatar = false,
+  canViewFeeSchedule = false,
+  canEditFeeSchedule = false,
   onPickAvatar,
   onRemoveAvatar,
   onUpdated,
@@ -77,6 +81,7 @@ export default function OverviewTab({
   const [saving, setSaving] = useState({});
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [previewingAvatar, setPreviewingAvatar] = useState(false);
   const timersRef = useRef(new Map());
 
   useEffect(() => {
@@ -178,9 +183,15 @@ export default function OverviewTab({
         <div className={drawerStyles.sectionTitle}>Dados principais</div>
         <div className={styles.profileGrid}>
           <aside className={styles.avatarCard}>
-            <div className={styles.avatarPrimary} aria-label={`Imagem de ${client.name}`}>
+            <button
+              type="button"
+              className={`${styles.avatarPrimary} ${avatarUrl ? styles.avatarPrimaryAction : ''}`.trim()}
+              aria-label={avatarUrl ? `Visualizar imagem de ${client.name}` : `Imagem de ${client.name}`}
+              onClick={() => avatarUrl && setPreviewingAvatar(true)}
+              disabled={!avatarUrl}
+            >
               {avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(client.name)}
-            </div>
+            </button>
 
             {canManageAvatar ? (
               <div className={styles.avatarControls}>
@@ -350,6 +361,12 @@ export default function OverviewTab({
             />
           </div>
         </div>
+
+        {canViewFeeSchedule ? (
+          <div className={styles.inlineFeeSchedule}>
+            <FeeScheduleTab client={client} canEdit={canEditFeeSchedule} onUpdated={onUpdated} />
+          </div>
+        ) : null}
       </div>
 
       {canDelete && canEdit ? (
@@ -393,6 +410,18 @@ export default function OverviewTab({
           )}
         </div>
       ) : null}
+
+      {previewingAvatar && avatarUrl && typeof document !== 'undefined'
+        ? createPortal(
+            <div className={styles.avatarPreviewOverlay} role="presentation" onClick={() => setPreviewingAvatar(false)}>
+              <div className={styles.avatarPreviewDialog} role="dialog" aria-modal="true" aria-label={`Imagem de ${client.name}`} onClick={(event) => event.stopPropagation()}>
+                <img src={avatarUrl} alt="" />
+                <button type="button" onClick={() => setPreviewingAvatar(false)} aria-label="Fechar imagem">×</button>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

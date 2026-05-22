@@ -458,3 +458,74 @@
   background: var(--accent-soft);
   color: var(--accent);
 }
+
+/* v161 — análises como tags laterais do modal */
+.sideTabs {
+  position: absolute;
+  top: 132px;
+  right: -42px;
+  z-index: 2;
+  display: grid;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.sideTab {
+  width: 42px;
+  min-height: 128px;
+  padding: 12px 0;
+  border: 1px solid var(--line-subtle);
+  border-left: 0;
+  border-radius: 0 var(--radius-2, 8px) var(--radius-2, 8px) 0;
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 680;
+  letter-spacing: 0.02em;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  cursor: pointer;
+}
+
+.sideTab_icp {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, 0.28);
+  background: rgba(90, 169, 255, 0.055);
+}
+
+.sideTab_gdv {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 24%, transparent);
+  background: var(--success-soft);
+}
+
+.sideTab_routes {
+  color: #c7a6ff;
+  border-color: rgba(165, 124, 255, 0.28);
+  background: rgba(165, 124, 255, 0.055);
+}
+
+.sideTabActive {
+  color: var(--text-primary);
+  box-shadow: inset 1px 0 0 currentColor;
+}
+
+@media (max-width: 1120px) {
+  .sideTabs {
+    position: static;
+    display: flex;
+    padding: 0 14px 10px;
+    background: var(--workspace-panel-bg);
+  }
+
+  .sideTab {
+    width: auto;
+    min-height: 30px;
+    padding: 0 10px;
+    border-left: 1px solid var(--line-subtle);
+    border-radius: var(--workspace-control-radius);
+    writing-mode: initial;
+    transform: none;
+  }
+}

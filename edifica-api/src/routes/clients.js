@@ -114,6 +114,56 @@ async function ensureClientFeeStepsSchema() {
   }
 }
 
+let clientFilesSchemaPromise = null;
+async function ensureClientFilesSchema() {
+  if (!clientFilesSchemaPromise) {
+    clientFilesSchemaPromise = query(`
+      CREATE TABLE IF NOT EXISTS client_files (
+        id VARCHAR(36) PRIMARY KEY,
+        client_id VARCHAR(36) NOT NULL,
+        file_name VARCHAR(255) NOT NULL,
+        mime_type VARCHAR(120) NULL,
+        size_bytes INT NULL,
+        data_url MEDIUMTEXT NOT NULL,
+        created_by_user_id VARCHAR(36) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_client_files_client (client_id),
+        CONSTRAINT fk_client_files_client FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
+        CONSTRAINT fk_client_files_user FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `).catch((err) => {
+      clientFilesSchemaPromise = null;
+      throw err;
+    });
+  }
+  return clientFilesSchemaPromise;
+}
+
+function normalizeClientFilePayload(body = {}) {
+  const fileName = String(body.fileName || body.name || 'arquivo').trim().slice(0, 180) || 'arquivo';
+  const mimeType = String(body.mimeType || 'application/octet-stream').trim().slice(0, 120);
+  const dataUrl = String(body.dataUrl || '').trim();
+  const sizeBytes = Math.max(0, Number(body.sizeBytes) || 0);
+
+  if (!dataUrl || !dataUrl.startsWith('data:')) throw badRequest('Arquivo inválido.');
+  if (sizeBytes > 10 * 1024 * 1024) throw badRequest('Arquivo acima do limite de 10 MB.');
+
+  return { fileName, mimeType, dataUrl, sizeBytes };
+}
+
+function serializeClientFile(row) {
+  return {
+    id: row.id,
+    clientId: row.client_id,
+    fileName: row.file_name,
+    mimeType: row.mime_type || '',
+    sizeBytes: Number(row.size_bytes) || 0,
+    dataUrl: row.data_url || '',
+    createdByName: row.created_by_name || '',
+    createdAt: row.created_at,
+  };
+}
+
 const RESPONSIBLE_ROLES = {
   gestor: new Set(['gestor', 'admin', 'ceo', 'suporte_tecnologia']),
   gdvName: new Set(['gdv', 'admin', 'ceo', 'suporte_tecnologia']),
@@ -282,7 +332,6 @@ async function assertUniqueClientName(name, excludeId = null) {
 // --------------------------------------------------------------
 router.get('/', requirePermission('clients.view'), async (req, res, next) => {
   try {
-    if (req.emptyWorkspaceView) return res.json({ clients: [] });
     await ensureResponsibleSchema();
     await ensureClientFeeStepsSchema();
     const rows = await query(
@@ -303,7 +352,6 @@ router.get('/', requirePermission('clients.view'), async (req, res, next) => {
 // --------------------------------------------------------------
 router.get('/:id', requirePermission('clients.view'), async (req, res, next) => {
   try {
-    if (req.emptyWorkspaceView) throw forbidden('Sem acesso a este cliente');
     await ensureResponsibleSchema();
     await ensureClientFeeStepsSchema();
     const rows = await query(
@@ -510,6 +558,66 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
       [id]
     );
     res.json({ client: serializeClient(rows[0]) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+// --------------------------------------------------------------
+//  Client files
+// --------------------------------------------------------------
+router.get('/:id/files', requirePermission('clients.view'), async (req, res, next) => {
+  try {
+    await ensureClientFilesSchema();
+    await getAccessibleClientRow(req.params.id, req.user, 'id, squad_id', 'clients.view.all');
+    const rows = await query(
+      `SELECT cf.*, u.name AS created_by_name
+         FROM client_files cf
+         LEFT JOIN users u ON u.id = cf.created_by_user_id
+        WHERE cf.client_id = ?
+        ORDER BY cf.created_at DESC`,
+      [req.params.id]
+    );
+    res.json({ files: rows.map(serializeClientFile) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/files', requirePermission('clients.edit'), async (req, res, next) => {
+  try {
+    await ensureClientFilesSchema();
+    await getAccessibleClientRow(req.params.id, req.user, 'id, squad_id', 'clients.edit.all');
+    const payload = normalizeClientFilePayload(req.body || {});
+    const id = uuid();
+    await query(
+      `INSERT INTO client_files (id, client_id, file_name, mime_type, size_bytes, data_url, created_by_user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, req.params.id, payload.fileName, payload.mimeType, payload.sizeBytes, payload.dataUrl, req.user?.id || null]
+    );
+    const rows = await query(
+      `SELECT cf.*, u.name AS created_by_name
+         FROM client_files cf
+         LEFT JOIN users u ON u.id = cf.created_by_user_id
+        WHERE cf.id = ?
+        LIMIT 1`,
+      [id]
+    );
+    res.status(201).json({ file: serializeClientFile(rows[0]) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:id/files/:fileId', requirePermission('clients.edit'), async (req, res, next) => {
+  try {
+    await ensureClientFilesSchema();
+    await getAccessibleClientRow(req.params.id, req.user, 'id, squad_id', 'clients.edit.all');
+    const rows = await query('SELECT id FROM client_files WHERE id = ? AND client_id = ? LIMIT 1', [req.params.fileId, req.params.id]);
+    if (rows.length === 0) throw notFound('Arquivo não encontrado.');
+    await query('DELETE FROM client_files WHERE id = ? AND client_id = ?', [req.params.fileId, req.params.id]);
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

@@ -244,3 +244,120 @@
     display: none;
   }
 }
+
+/* v161 — arquivos do cliente */
+.primaryAction {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(245, 184, 0, 0.28);
+  border-radius: var(--radius-2, 8px);
+  background: rgba(245, 184, 0, 0.055);
+  color: var(--accent-amber-strong, #f5b800);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 680;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.primaryAction:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dropZone {
+  min-height: 112px;
+  padding: 20px;
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: rgba(255, 255, 255, 0.012);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  text-align: center;
+  outline: 0;
+}
+
+.dropZone strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 680;
+}
+
+.dropZone span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.dropZoneActive {
+  border-color: rgba(245, 184, 0, 0.32);
+  background: rgba(245, 184, 0, 0.045);
+}
+
+.fileList {
+  display: grid;
+  gap: 8px;
+}
+
+.fileItem {
+  min-height: 58px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2, 8px);
+  background: rgba(255, 255, 255, 0.012);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.fileInfo {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.fileInfo strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 680;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileInfo span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.fileActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fileActions a,
+.fileActions button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 6px);
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.fileActions button {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
