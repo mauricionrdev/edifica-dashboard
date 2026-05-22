@@ -1133,7 +1133,7 @@ export default function UserProfilePage() {
                 ) : null}
               </div>
 
-              <section className={styles.taskDrawerSection}>
+              <section className={`${styles.taskDrawerSection} ${styles.taskDrawerSectionWorkflow}`}>
                 <div className={styles.workflowGrid}>
                   <div className={styles.workflowField}>
                     <span>Status</span>
