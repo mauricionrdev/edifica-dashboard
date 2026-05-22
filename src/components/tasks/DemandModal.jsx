@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import Avatar from '../ui/Avatar.jsx';
 import DateField from '../ui/DateField.jsx';
 import { ChevronDownIcon, CloseIcon } from '../ui/Icons.jsx';
 import { getClientAvatar, getUserAvatar } from '../../utils/avatarStorage.js';
@@ -29,6 +28,24 @@ const ROUTINE_RECURRENCES = [
   { value: 'monthly', label: 'Mensal' },
   { value: 'one_time', label: 'Pontual' },
 ];
+
+
+function initialsFrom(value = '') {
+  const clean = String(value || '').trim();
+  if (!clean) return '—';
+  const parts = clean.split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] || '';
+  const second = parts.length > 1 ? parts[parts.length - 1]?.[0] : parts[0]?.[1] || '';
+  return `${first}${second}`.toUpperCase();
+}
+
+function SelectAvatar({ src, name }) {
+  return (
+    <span className={styles.miniAvatar} aria-hidden="true">
+      {src ? <img src={src} alt="" /> : <span>{initialsFrom(name)}</span>}
+    </span>
+  );
+}
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -225,7 +242,7 @@ function FloatingSelect({ value, options, onChange, placeholder = 'Selecionar', 
           if (updatePosition()) setOpen(true);
         }}
       >
-        {selected?.avatar || selected?.avatarName ? <Avatar src={selected.avatar || undefined} name={selected.avatarName || selected.label} size="xs" className={styles.avatar} /> : null}
+        {selected?.avatar || selected?.avatarName ? <SelectAvatar src={selected.avatar || undefined} name={selected.avatarName || selected.label} /> : null}
         <span className={styles.selectLabel}>{selected?.label || placeholder}</span>
         <ChevronDownIcon size={15} />
       </button>
@@ -250,7 +267,7 @@ function FloatingSelect({ value, options, onChange, placeholder = 'Selecionar', 
                 role="option"
                 aria-selected={active}
               >
-                {option.avatar || option.avatarName ? <Avatar src={option.avatar || undefined} name={option.avatarName || option.label} size="xs" className={styles.avatar} /> : null}
+                {option.avatar || option.avatarName ? <SelectAvatar src={option.avatar || undefined} name={option.avatarName || option.label} /> : null}
                 <span className={styles.selectLabel}>{option.label}</span>
               </button>
             );
@@ -435,7 +452,7 @@ export default function DemandModal({
             </Field>
             <Field label="Cliente" className={styles.fieldWide}>
               <div className={styles.clientSearchField} ref={clientSearchRef}>
-                {selectedClient ? <Avatar src={getClientAvatar(selectedClient) || selectedClient.avatarUrl || undefined} name={selectedClient.name} size="xs" className={styles.avatar} /> : null}
+                {selectedClient ? <SelectAvatar src={getClientAvatar(selectedClient) || selectedClient.avatarUrl || undefined} name={selectedClient.name} /> : null}
                 <input
                   value={clientSearchOpen ? clientQuery : selectedClient?.name || clientQuery}
                   onFocus={() => {
@@ -556,7 +573,7 @@ export default function DemandModal({
               setClientSearchOpen(false);
               setClientSearchPosition(null);
             }}>
-              <Avatar src={getClientAvatar(client) || client.avatarUrl || undefined} name={client.name} size="xs" className={styles.avatar} />
+              <SelectAvatar src={getClientAvatar(client) || client.avatarUrl || undefined} name={client.name} />
               <div className={styles.clientOptionText}>
                 <strong>{client.name}</strong>
                 {client.squadName || client.managerName || client.gdvName ? <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span> : null}

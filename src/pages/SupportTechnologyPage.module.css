@@ -592,3 +592,152 @@
   }
 
 }
+
+/* v173 support spreadsheet refinements */
+.sheetPanel {
+  width: 100%;
+  max-width: 100%;
+}
+
+.sheetHeader {
+  align-items: center;
+}
+
+.sheetActions {
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+
+.sheetToolbar {
+  position: relative;
+  z-index: 5;
+  overflow: visible;
+}
+
+.sheetTopbar {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.sheetTopbar::before,
+.sheetTopbar::after {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  pointer-events: none;
+  content: '';
+}
+
+.sheetTopbar::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg-canvas), transparent);
+}
+
+.sheetTopbar::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg-canvas), transparent);
+}
+
+.sheetTabs {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  padding: 2px 16px;
+}
+
+.sheetTab {
+  flex: 0 0 auto;
+  min-width: 144px;
+  max-width: 216px;
+}
+
+.sheetScroller {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sheetTable {
+  max-width: none;
+}
+
+.headerCellInner button,
+.actionCell button,
+.sheetTab button {
+  color: var(--text-quaternary);
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.headerCellInner button,
+.actionCell button {
+  border-radius: var(--radius-pill);
+}
+
+.headerCellInner button:hover,
+.actionCell button:hover,
+.sheetTab button:hover {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+.colorTool {
+  display: none;
+}
+
+.colorPicker {
+  position: relative;
+  display: inline-grid;
+}
+
+.colorTrigger {
+  min-width: 28px;
+}
+
+.colorMenu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  width: 176px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+
+.colorSwatch {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--swatch-color, var(--bg-canvas));
+  cursor: pointer;
+}
+
+.colorSwatch[data-empty='true'] {
+  background:
+    linear-gradient(135deg, transparent 0 45%, var(--danger-text) 46% 54%, transparent 55% 100%),
+    var(--bg-canvas);
+}
+
+.colorSwatch:hover {
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 1px var(--accent-soft);
+}

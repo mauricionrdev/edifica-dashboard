@@ -217,23 +217,38 @@
   color: var(--text-tertiary);
 }
 
-.avatar {
+.miniAvatar {
   --avatar-size: 20px;
+  display: inline-grid;
   width: var(--avatar-size);
   height: var(--avatar-size);
   min-width: var(--avatar-size);
   max-width: var(--avatar-size);
+  aspect-ratio: 1 / 1;
+  place-items: center;
   flex: 0 0 var(--avatar-size);
-  border-radius: 999px;
   overflow: hidden;
+  color: var(--text-primary);
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg-app);
+  font-size: 9px;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
 }
 
-.avatar img {
+.miniAvatar img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
   object-position: center;
+}
+
+.miniAvatar > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .selectMenu,

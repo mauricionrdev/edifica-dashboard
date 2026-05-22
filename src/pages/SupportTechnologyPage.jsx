@@ -38,6 +38,9 @@ const FALLBACK_DAILY_COLUMNS = [
   { key: 'notes', label: 'Observações', width: 280, system: true },
 ];
 
+const SHEET_TEXT_COLORS = ['#f8fafc', '#22c55e', '#facc15', '#60a5fa', '#c084fc', '#fb7185', '#f97316', '#94a3b8'];
+const SHEET_FILL_COLORS = ['transparent', '#0f172a', '#11261a', '#2a2106', '#111f35', '#251634', '#34191d', '#1f2937'];
+
 const MASTER_SUPPORT_EMAIL = 'mauricionredifica@gmail.com';
 const MASTER_SUPPORT_NAME = 'mauricio nunes';
 const SUPPORT_ROLES = new Set(['suporte_tecnologia']);
@@ -181,6 +184,61 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
   );
 }
 
+function ColorPopover({ label, disabled, colors, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const handlePointerDown = (event) => {
+      if (ref.current?.contains(event.target)) return;
+      setOpen(false);
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('pointerdown', handlePointerDown, true);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown, true);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className={styles.colorPicker} ref={ref}>
+      <button
+        type="button"
+        disabled={disabled}
+        className={styles.colorTrigger}
+        aria-label={label}
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        {label}
+      </button>
+      {open ? (
+        <div className={styles.colorMenu}>
+          {colors.map((color) => (
+            <button
+              key={color}
+              type="button"
+              className={styles.colorSwatch}
+              style={color === 'transparent' ? undefined : { '--swatch-color': color }}
+              data-empty={color === 'transparent' || undefined}
+              aria-label={`${label} ${color}`}
+              onClick={() => {
+                onSelect(color);
+                setOpen(false);
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function SheetToolbar({ disabled, onCommand }) {
   const preventBlur = (event) => event.preventDefault();
 
@@ -195,14 +253,8 @@ function SheetToolbar({ disabled, onCommand }) {
       <button type="button" disabled={disabled} onClick={() => onCommand('justifyCenter')}>↔</button>
       <button type="button" disabled={disabled} onClick={() => onCommand('justifyRight')}>→</button>
       <span className={styles.toolbarDivider} />
-      <label className={styles.colorTool} title="Cor do texto">
-        A
-        <input type="color" disabled={disabled} defaultValue="#ffffff" onChange={(event) => onCommand('foreColor', event.target.value)} />
-      </label>
-      <label className={styles.colorTool} title="Fundo da seleção">
-        ▣
-        <input type="color" disabled={disabled} defaultValue="#111111" onChange={(event) => onCommand('hiliteColor', event.target.value)} />
-      </label>
+      <ColorPopover label="A" disabled={disabled} colors={SHEET_TEXT_COLORS} onSelect={(color) => onCommand('foreColor', color)} />
+      <ColorPopover label="▣" disabled={disabled} colors={SHEET_FILL_COLORS} onSelect={(color) => onCommand('hiliteColor', color)} />
       <button type="button" disabled={disabled} onClick={() => onCommand('removeFormat')}>Limpar</button>
     </div>
   );
