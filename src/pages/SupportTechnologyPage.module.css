@@ -1,8 +1,8 @@
 .page {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: var(--space-4);
-  min-width: 0;
   padding: var(--space-5);
 }
 
@@ -10,7 +10,7 @@
 .kpis,
 .sheetPanel {
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-2);
   background: var(--bg-canvas);
   box-shadow: var(--shadow-panel);
 }
@@ -19,8 +19,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  min-height: 94px;
+  gap: var(--space-5);
   padding: var(--space-5) var(--space-6);
+}
+
+.heroTitle {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.eyebrow,
+.kpis span,
+.sheetTable th,
+.sheetFooter {
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
 }
 
 .hero h1,
@@ -32,7 +51,6 @@
 }
 
 .hero h1 {
-  margin-top: var(--space-2);
   font-size: var(--fs-xl);
   line-height: var(--lh-tight);
 }
@@ -44,25 +62,15 @@
 }
 
 .heroIcon {
+  display: grid;
   width: 38px;
   height: 38px;
-  display: grid;
   place-items: center;
+  flex: 0 0 auto;
   color: var(--accent-strong);
   border: 1px solid var(--accent-line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-1);
   background: var(--accent-soft);
-}
-
-.eyebrow,
-.viewOnly,
-.sheetFooter,
-.sheetTable th {
-  color: var(--text-tertiary);
-  font-size: var(--fs-tiny);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-uppercase);
-  text-transform: uppercase;
 }
 
 .kpis {
@@ -81,26 +89,22 @@
   border-right: 0;
 }
 
-.kpis span {
-  display: block;
-  color: var(--text-tertiary);
-  font-size: var(--fs-tiny);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-uppercase);
-  text-transform: uppercase;
-}
-
 .kpis strong {
   display: block;
   margin-top: var(--space-2);
   color: var(--text-primary);
   font-size: var(--fs-kpi);
+  font-weight: var(--weight-semibold);
   line-height: var(--lh-flat);
   letter-spacing: var(--tracking-crunch);
+  font-variant-numeric: tabular-nums;
 }
 
 .sheetPanel {
+  display: flex;
+  min-height: 520px;
   overflow: hidden;
+  flex-direction: column;
 }
 
 .sheetHeader,
@@ -121,34 +125,30 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
 }
 
 .sheetScroller {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
-  max-height: calc(100vh - 360px);
-  min-height: 380px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .sheetScroller::-webkit-scrollbar {
+  display: none;
   width: 0;
   height: 0;
 }
 
 .sheetTable {
-  width: 100%;
-  min-width: 1540px;
+  width: max-content;
+  min-width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
   font-size: var(--fs-body);
-}
-
-.indexCol {
-  width: 46px;
-}
-
-.actionCol {
-  width: 58px;
 }
 
 .sheetTable th {
@@ -156,7 +156,7 @@
   top: 0;
   z-index: 2;
   height: 34px;
-  padding: 0 var(--space-2);
+  padding: 0 var(--space-3);
   border-right: 1px solid var(--line-subtle);
   border-bottom: 1px solid var(--line);
   background: var(--bg-elevated);
@@ -164,8 +164,13 @@
   white-space: nowrap;
 }
 
+.sheetTable th:last-child,
+.sheetTable td:last-child {
+  border-right: 0;
+}
+
 .sheetTable td {
-  height: 36px;
+  height: 38px;
   padding: 0;
   color: var(--text-secondary);
   border-right: 1px solid var(--line-subtle);
@@ -178,19 +183,22 @@
   background: var(--bg-soft);
 }
 
-.sheetTable td.rowIndex,
 .rowIndex {
   color: var(--text-secondary);
   font-weight: var(--weight-semibold);
   text-align: center;
   background: var(--bg-elevated);
+  font-variant-numeric: tabular-nums;
 }
 
 .sheetInput,
 .sheetSelect {
+  display: block;
   width: 100%;
-  height: 35px;
-  padding: 0 var(--space-2);
+  height: 37px;
+  min-width: 0;
+  padding: 0 var(--space-3);
+  overflow: hidden;
   color: var(--text-primary);
   border: 0;
   border-radius: 0;
@@ -198,6 +206,14 @@
   background: transparent;
   font: inherit;
   font-size: var(--fs-body);
+  font-weight: var(--weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheetSelect {
+  appearance: none;
+  cursor: pointer;
 }
 
 .sheetInput:focus,
@@ -206,35 +222,31 @@
   box-shadow: inset 0 0 0 1px var(--accent-line);
 }
 
-.sheetSelect {
-  appearance: none;
-  cursor: pointer;
+.sheetSelect[data-tone="success"],
+.readonlyCell[data-tone="success"] {
+  color: var(--success-text);
+}
+
+.sheetSelect[data-tone="danger"],
+.readonlyCell[data-tone="danger"] {
+  color: var(--danger-text);
+}
+
+.sheetSelect[data-tone="warning"],
+.readonlyCell[data-tone="warning"] {
+  color: var(--warning-text);
 }
 
 .readonlyCell {
   display: flex;
   align-items: center;
-  min-height: 35px;
-  padding: 0 var(--space-2);
-  color: var(--text-secondary);
+  min-height: 37px;
+  padding: 0 var(--space-3);
   overflow: hidden;
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.readonlyCell[data-tone="success"] {
-  color: var(--success);
-  font-weight: var(--weight-semibold);
-}
-
-.readonlyCell[data-tone="danger"] {
-  color: var(--danger);
-  font-weight: var(--weight-semibold);
-}
-
-.readonlyCell[data-tone="warning"] {
-  color: var(--warning);
-  font-weight: var(--weight-semibold);
 }
 
 .actionCell {
@@ -242,30 +254,34 @@
 }
 
 .actionCell button {
-  width: 28px;
-  height: 28px;
   display: inline-grid;
+  width: 26px;
+  height: 26px;
   place-items: center;
   color: var(--text-tertiary);
   border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-1);
   background: var(--bg-elevated);
   cursor: pointer;
 }
 
 .actionCell button:hover {
-  color: var(--danger);
+  color: var(--danger-text);
   border-color: var(--danger-line);
   background: var(--danger-soft);
 }
 
 .sheetEmpty {
-  padding: var(--space-5);
+  height: 56px;
+  padding: 0 var(--space-4);
   color: var(--text-tertiary);
   font-size: var(--fs-body);
+  font-weight: var(--weight-medium);
+  background: var(--bg-canvas);
 }
 
 .sheetFooter {
+  flex: 0 0 auto;
   border-top: 1px solid var(--line-subtle);
 }
 

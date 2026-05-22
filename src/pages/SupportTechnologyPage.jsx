@@ -3,10 +3,9 @@ import { useOutletContext } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
 import DateField from '../components/ui/DateField.jsx';
 import Select from '../components/ui/Select.jsx';
+import { BotIcon, CalendarIcon, CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../components/ui/Icons.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { hasPermission } from '../utils/permissions.js';
-import { getUserAvatar } from '../utils/avatarStorage.js';
 import { createTaskAttachment } from '../api/projects.js';
 import {
   createSupportDailyRow,
@@ -16,20 +15,21 @@ import {
   listSupportTasks,
   updateSupportDailyRow,
 } from '../api/support.js';
-import { BotIcon, CalendarIcon, CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../components/ui/Icons.jsx';
+import { getUserAvatar } from '../utils/avatarStorage.js';
+import { hasPermission } from '../utils/permissions.js';
 import pageStyles from './SupportTechnologyPage.module.css';
 import modalStyles from './ProfilePage.module.css';
 
 const DAILY_COLUMNS = [
-  { key: 'clientName', label: 'Cliente / Escritório', type: 'text', min: 260 },
-  { key: 'implementationStatus', label: 'Implementação', type: 'select', options: ['Implementado com sucesso.', 'Em implementação', 'Pendente', 'Ajustar'] },
-  { key: 'niche', label: 'Nicho / Campanha', type: 'text' },
-  { key: 'promptStatus', label: 'Prompt', type: 'select', options: ['Prompt OK', 'Sem/Prompt', 'Revisar', 'Pendente'] },
-  { key: 'connectionStatus', label: 'Conexão', type: 'select', options: ['Conectado', 'Desconectado', 'Desconectado (GDV)', 'Pendente'] },
-  { key: 'accessStatus', label: 'Acessos', type: 'select', options: ['Acesso OK', 'Acessos OK', 'Sem/Acesso', 'Pendente'] },
-  { key: 'activityStatus', label: 'Status', type: 'select', options: ['Ativo', 'INATIVO', 'Pausado'] },
-  { key: 'apiKey', label: 'API Key', type: 'text', min: 220 },
-  { key: 'notes', label: 'Observações', type: 'text', min: 220 },
+  { key: 'clientName', label: 'Cliente / Escritório', type: 'text', width: 340 },
+  { key: 'implementationStatus', label: 'Implementação', type: 'select', width: 230, options: ['Implementado com sucesso.', 'Em implementação', 'Pendente', 'Ajustar'] },
+  { key: 'niche', label: 'Nicho / Campanha', type: 'text', width: 210 },
+  { key: 'promptStatus', label: 'Prompt', type: 'select', width: 170, options: ['Prompt OK', 'Sem/Prompt', 'Revisar', 'Pendente'] },
+  { key: 'connectionStatus', label: 'Conexão', type: 'select', width: 190, options: ['Conectado', 'Desconectado', 'Desconectado (GDV)', 'Pendente'] },
+  { key: 'accessStatus', label: 'Acessos', type: 'select', width: 160, options: ['Acesso OK', 'Acessos OK', 'Sem/Acesso', 'Pendente'] },
+  { key: 'activityStatus', label: 'Status', type: 'select', width: 130, options: ['Ativo', 'INATIVO', 'Pausado'] },
+  { key: 'apiKey', label: 'API Key', type: 'text', width: 290 },
+  { key: 'notes', label: 'Observações', type: 'text', width: 280 },
 ];
 
 const PRIORITIES = [
@@ -39,10 +39,15 @@ const PRIORITIES = [
   { value: 'low', label: 'Baixa' },
 ];
 
-const SUPPORT_ROLES = new Set(['suporte_tecnologia', 'ceo', 'admin']);
+const SUPPORT_ROLES = new Set(['suporte_tecnologia']);
+const FALLBACK_SUPPORT_ROLES = new Set(['ceo', 'admin']);
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function cleanText(value) {
+  return String(value ?? '').trim();
 }
 
 function statusTone(value = '') {
@@ -53,11 +58,23 @@ function statusTone(value = '') {
   return 'neutral';
 }
 
-function normalizeRow(row) {
-  return DAILY_COLUMNS.reduce((acc, column) => ({ ...acc, [column.key]: row?.[column.key] || '' }), {
+function normalizeRow(row = {}) {
+  const base = DAILY_COLUMNS.reduce((acc, column) => ({ ...acc, [column.key]: row?.[column.key] || '' }), {});
+  return {
     id: row?.id || '',
     position: Number(row?.position || 0),
-  });
+    ...base,
+  };
+}
+
+function defaultRowPayload() {
+  return {
+    implementationStatus: 'Implementado com sucesso.',
+    promptStatus: 'Prompt OK',
+    connectionStatus: 'Conectado',
+    accessStatus: 'Acesso OK',
+    activityStatus: 'Ativo',
+  };
 }
 
 function emptyDemandDraft(assigneeUserId = '') {
@@ -79,6 +96,22 @@ function fileSignature(file) {
 
 function attachmentSignature(item) {
   return [item?.fileName || '', item?.sizeBytes || 0, item?.mimeType || ''].join(':');
+}
+
+function filesFromClipboard(event) {
+  return Array.from(event?.clipboardData?.items || [])
+    .map((item) => (item.kind === 'file' ? item.getAsFile() : null))
+    .filter(Boolean);
+}
+
+function uniqueFiles(files = []) {
+  const seen = new Set();
+  return Array.from(files).filter((file) => {
+    const key = fileSignature(file);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function readAttachmentFile(file) {
@@ -104,31 +137,28 @@ function readAttachmentFile(file) {
   });
 }
 
-function uniqueFiles(files = []) {
-  const seen = new Set();
-  return Array.from(files).filter((file) => {
-    const key = fileSignature(file);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function filesFromClipboard(event) {
-  const items = Array.from(event?.clipboardData?.items || []);
-  return items.map((item) => item.kind === 'file' ? item.getAsFile() : null).filter(Boolean);
-}
-
 function formatAttachmentKind(item) {
   if (item?.mimeType === 'application/pdf') return 'PDF';
   if (item?.mimeType?.startsWith('image/')) return 'Imagem';
   return 'Arquivo';
 }
 
+function userAvatarProps(user) {
+  return {
+    'data-avatar': getUserAvatar(user) || user?.avatarUrl || '',
+    'data-name': user?.name || '',
+  };
+}
+
 function SupportCell({ row, column, editable, saving, onChange, onCommit }) {
   const value = row[column.key] || '';
+
+  if (!editable) {
+    return <span className={pageStyles.readonlyCell} data-tone={statusTone(value)} title={value}>{value || '—'}</span>;
+  }
+
   const commonProps = {
-    disabled: !editable || saving,
+    disabled: saving,
     value,
     onChange: (event) => onChange(row.id, column.key, event.target.value),
     onBlur: () => onCommit(row.id, column.key),
@@ -138,20 +168,25 @@ function SupportCell({ row, column, editable, saving, onChange, onCommit }) {
     },
   };
 
-  if (!editable) {
-    return <span className={pageStyles.readonlyCell} data-tone={statusTone(value)}>{value || '—'}</span>;
-  }
-
   if (column.type === 'select') {
     return (
-      <select className={pageStyles.sheetSelect} {...commonProps}>
+      <select className={pageStyles.sheetSelect} data-tone={statusTone(value)} {...commonProps}>
         <option value="">—</option>
         {column.options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
     );
   }
 
-  return <input className={pageStyles.sheetInput} type="text" {...commonProps} />;
+  return <input className={pageStyles.sheetInput} type="text" spellCheck={false} {...commonProps} />;
+}
+
+function FormField({ label, className = '', children }) {
+  return (
+    <div className={`${modalStyles.labeledField} ${className}`.trim()}>
+      <span>{label}</span>
+      {children}
+    </div>
+  );
 }
 
 export default function SupportTechnologyPage() {
@@ -168,32 +203,43 @@ export default function SupportTechnologyPage() {
   const [draft, setDraft] = useState(() => emptyDemandDraft(''));
   const attachmentInputRef = useRef(null);
 
-  const canEditBoard = hasPermission(user, 'support.board.edit');
+  const activeUsers = useMemo(() => (
+    Array.isArray(userDirectory) ? userDirectory : []
+  ).filter((item) => item?.id && item?.active !== false), [userDirectory]);
+
   const supportUsers = useMemo(() => {
-    const activeUsers = (Array.isArray(userDirectory) ? userDirectory : []).filter((item) => item?.id && item?.active !== false);
-    const preferred = activeUsers.filter((item) => SUPPORT_ROLES.has(item.role));
-    return preferred.length ? preferred : activeUsers;
-  }, [userDirectory]);
+    const direct = activeUsers.filter((item) => SUPPORT_ROLES.has(item.role));
+    if (direct.length) return direct;
+    const fallback = activeUsers.filter((item) => FALLBACK_SUPPORT_ROLES.has(item.role));
+    return fallback.length ? fallback : activeUsers;
+  }, [activeUsers]);
+
+  const canEditBoard = hasPermission(user, 'support.board.edit');
+  const canCreateDemand = hasPermission(user, 'support.view');
 
   const selectedCollaborators = useMemo(() => {
     const ids = new Set(draft.collaboratorUserIds || []);
-    return (Array.isArray(userDirectory) ? userDirectory : []).filter((item) => ids.has(item.id));
-  }, [draft.collaboratorUserIds, userDirectory]);
+    return activeUsers.filter((item) => ids.has(item.id));
+  }, [activeUsers, draft.collaboratorUserIds]);
 
   const collaboratorOptions = useMemo(() => {
     const selected = new Set([draft.assigneeUserId, ...(draft.collaboratorUserIds || [])].filter(Boolean));
-    return (Array.isArray(userDirectory) ? userDirectory : [])
-      .filter((item) => item?.id && item?.active !== false && !selected.has(item.id));
-  }, [draft.assigneeUserId, draft.collaboratorUserIds, userDirectory]);
+    return activeUsers.filter((item) => !selected.has(item.id));
+  }, [activeUsers, draft.assigneeUserId, draft.collaboratorUserIds]);
 
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
 
+  const defaultAssigneeId = useMemo(() => {
+    const currentAsSupport = supportUsers.find((item) => item.id === user?.id);
+    return currentAsSupport?.id || supportUsers[0]?.id || user?.id || '';
+  }, [supportUsers, user?.id]);
+
   useEffect(() => {
-    if (!supportUsers.length) return;
-    setDraft((current) => current.assigneeUserId ? current : { ...current, assigneeUserId: supportUsers[0].id });
-  }, [supportUsers]);
+    if (!defaultAssigneeId) return;
+    setDraft((current) => current.assigneeUserId ? current : { ...current, assigneeUserId: defaultAssigneeId });
+  }, [defaultAssigneeId]);
 
   const refreshRows = useCallback(async () => {
     setRowsLoading(true);
@@ -211,21 +257,9 @@ export default function SupportTechnologyPage() {
   }, []);
 
   useEffect(() => {
-    refreshRows().catch(() => showToast?.({ type: 'error', message: 'Não foi possível carregar a programação diária.' }));
-    refreshTasks().catch(() => showToast?.({ type: 'error', message: 'Não foi possível carregar as demandas de suporte.' }));
+    refreshRows().catch(() => showToast('Não foi possível carregar a programação diária.', { variant: 'error' }));
+    refreshTasks().catch(() => showToast('Não foi possível carregar as demandas de suporte.', { variant: 'error' }));
   }, [refreshRows, refreshTasks, showToast]);
-
-  useEffect(() => {
-    if (!demandModalOpen) return undefined;
-    function handlePaste(event) {
-      const files = filesFromClipboard(event);
-      if (!files.length) return;
-      event.preventDefault();
-      addDemandAttachments(files);
-    }
-    document.addEventListener('paste', handlePaste);
-    return () => document.removeEventListener('paste', handlePaste);
-  }, [demandModalOpen]);
 
   const metrics = useMemo(() => {
     const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'canceled');
@@ -239,14 +273,12 @@ export default function SupportTechnologyPage() {
   }, [rows, tasks]);
 
   function openDemandModal() {
-    const assigneeUserId = supportUsers[0]?.id || user?.id || '';
-    setDraft(emptyDemandDraft(assigneeUserId));
+    setDraft(emptyDemandDraft(defaultAssigneeId));
     setDemandModalOpen(true);
   }
 
   function closeDemandModal() {
-    if (creatingTask) return;
-    setDemandModalOpen(false);
+    if (!creatingTask) setDemandModalOpen(false);
   }
 
   async function addDemandAttachments(files) {
@@ -266,7 +298,7 @@ export default function SupportTechnologyPage() {
         return { ...current, attachments: [...existing, ...next].slice(0, 8) };
       });
     } catch (err) {
-      showToast?.({ type: 'error', message: err?.message || 'Não foi possível anexar o arquivo.' });
+      showToast(err?.message || 'Não foi possível anexar o arquivo.', { variant: 'error' });
     }
   }
 
@@ -282,9 +314,9 @@ export default function SupportTechnologyPage() {
 
   const handleCreateTask = async (event) => {
     event.preventDefault();
-    const title = draft.title.trim();
+    const title = cleanText(draft.title);
     if (!title) {
-      showToast?.({ type: 'warning', message: 'Informe o título da demanda.' });
+      showToast('Informe o título da demanda.', { variant: 'warning' });
       return;
     }
     setCreatingTask(true);
@@ -293,7 +325,7 @@ export default function SupportTechnologyPage() {
         title,
         priority: draft.priority,
         clientId: draft.clientId,
-        assigneeUserId: draft.assigneeUserId,
+        assigneeUserId: draft.assigneeUserId || defaultAssigneeId,
         collaboratorUserIds: draft.collaboratorUserIds,
         dueDate: draft.dueDate,
         description: draft.description,
@@ -307,12 +339,12 @@ export default function SupportTechnologyPage() {
           dataUrl: item.dataUrl,
         })));
       }
-      setDraft(emptyDemandDraft(supportUsers[0]?.id || user?.id || ''));
+      setDraft(emptyDemandDraft(defaultAssigneeId));
       setDemandModalOpen(false);
       await refreshTasks();
-      showToast?.({ type: 'success', message: 'Demanda criada.' });
+      showToast('Demanda criada.');
     } catch (err) {
-      showToast?.({ type: 'error', message: err?.message || 'Não foi possível criar a demanda.' });
+      showToast(err?.message || 'Não foi possível criar a demanda.', { variant: 'error' });
     } finally {
       setCreatingTask(false);
     }
@@ -321,16 +353,10 @@ export default function SupportTechnologyPage() {
   const handleAddRow = async () => {
     setCreatingRow(true);
     try {
-      const data = await createSupportDailyRow({
-        implementationStatus: 'Implementado com sucesso.',
-        promptStatus: 'Prompt OK',
-        connectionStatus: 'Conectado',
-        accessStatus: 'Acesso OK',
-        activityStatus: 'Ativo',
-      });
+      const data = await createSupportDailyRow(defaultRowPayload());
       setRows((current) => [...current, normalizeRow(data?.row)]);
     } catch (err) {
-      showToast?.({ type: 'error', message: err?.message || 'Não foi possível adicionar linha.' });
+      showToast(err?.message || 'Não foi possível adicionar linha.', { variant: 'error' });
     } finally {
       setCreatingRow(false);
     }
@@ -338,8 +364,12 @@ export default function SupportTechnologyPage() {
 
   const handleDeleteRow = async (id) => {
     if (!id) return;
-    await deleteSupportDailyRow(id);
-    setRows((current) => current.filter((row) => row.id !== id));
+    try {
+      await deleteSupportDailyRow(id);
+      setRows((current) => current.filter((row) => row.id !== id));
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível remover a linha.', { variant: 'error' });
+    }
   };
 
   const handleCellChange = (id, key, value) => {
@@ -357,7 +387,7 @@ export default function SupportTechnologyPage() {
         setRows((current) => current.map((entry) => (entry.id === id ? normalizeRow(data.row) : entry)));
       }
     } catch (err) {
-      showToast?.({ type: 'error', message: err?.message || 'Não foi possível salvar a célula.' });
+      showToast(err?.message || 'Não foi possível salvar a célula.', { variant: 'error' });
       refreshRows().catch(() => {});
     } finally {
       setSavingCell('');
@@ -367,15 +397,17 @@ export default function SupportTechnologyPage() {
   return (
     <div className={pageStyles.page}>
       <section className={pageStyles.hero}>
-        <div>
+        <div className={pageStyles.heroTitle}>
           <span className={pageStyles.eyebrow}>Operação de suporte</span>
           <h1>Suporte de tecnologia</h1>
         </div>
         <div className={pageStyles.heroActions}>
-          <Button type="button" size="sm" onClick={openDemandModal}>
-            <PlusIcon size={14} /> Nova demanda
-          </Button>
-          <div className={pageStyles.heroIcon}><BotIcon size={20} /></div>
+          {canCreateDemand ? (
+            <Button type="button" size="sm" onClick={openDemandModal}>
+              <PlusIcon size={14} /> Nova demanda
+            </Button>
+          ) : null}
+          <span className={pageStyles.heroIcon} aria-hidden="true"><BotIcon size={18} /></span>
         </div>
       </section>
 
@@ -388,33 +420,34 @@ export default function SupportTechnologyPage() {
 
       <section className={pageStyles.sheetPanel}>
         <header className={pageStyles.sheetHeader}>
-          <h2><CalendarIcon size={16} /> Programação diária</h2>
+          <h2><CalendarIcon size={15} /> Programação diária</h2>
           {canEditBoard ? (
-            <Button size="sm" onClick={handleAddRow} disabled={creatingRow}><PlusIcon size={14} /> Nova linha</Button>
-          ) : (
-            <span className={pageStyles.viewOnly}>Somente visualização</span>
-          )}
+            <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow}>
+              <PlusIcon size={14} /> Nova linha
+            </Button>
+          ) : null}
         </header>
+
         <div className={pageStyles.sheetScroller}>
           <table className={pageStyles.sheetTable}>
             <colgroup>
-              <col className={pageStyles.indexCol} />
-              {DAILY_COLUMNS.map((column) => <col key={column.key} style={{ minWidth: column.min || 160 }} />)}
-              {canEditBoard ? <col className={pageStyles.actionCol} /> : null}
+              <col style={{ width: 46 }} />
+              {DAILY_COLUMNS.map((column) => <col key={column.key} style={{ width: column.width }} />)}
+              {canEditBoard ? <col style={{ width: 58 }} /> : null}
             </colgroup>
             <thead>
               <tr>
                 <th>#</th>
                 {DAILY_COLUMNS.map((column) => <th key={column.key}>{column.label}</th>)}
-                {canEditBoard ? <th>Ação</th> : null}
+                {canEditBoard ? <th /> : null}
               </tr>
             </thead>
             <tbody>
               {rowsLoading ? (
-                <tr><td colSpan={DAILY_COLUMNS.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Carregando programação...</td></tr>
+                <tr><td colSpan={DAILY_COLUMNS.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Carregando</td></tr>
               ) : null}
               {!rowsLoading && rows.length === 0 ? (
-                <tr><td colSpan={DAILY_COLUMNS.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Nenhum cliente na programação diária.</td></tr>
+                <tr><td colSpan={DAILY_COLUMNS.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Sem registros.</td></tr>
               ) : null}
               {rows.map((row, index) => (
                 <tr key={row.id}>
@@ -433,7 +466,7 @@ export default function SupportTechnologyPage() {
                   ))}
                   {canEditBoard ? (
                     <td className={pageStyles.actionCell}>
-                      <button type="button" onClick={() => handleDeleteRow(row.id)} title="Remover linha"><TrashIcon size={14} /></button>
+                      <button type="button" onClick={() => handleDeleteRow(row.id)} title="Remover linha"><TrashIcon size={13} /></button>
                     </td>
                   ) : null}
                 </tr>
@@ -441,14 +474,15 @@ export default function SupportTechnologyPage() {
             </tbody>
           </table>
         </div>
+
         <footer className={pageStyles.sheetFooter}>
           <span>{rows.length} registros</span>
-          {savingCell ? <span><SaveIcon size={14} /> Salvando</span> : null}
+          {savingCell ? <span><SaveIcon size={13} /> Salvando</span> : null}
         </footer>
       </section>
 
       {demandModalOpen ? (
-        <div className={modalStyles.settingsOverlay} onClick={(event) => event.stopPropagation()}>
+        <div className={modalStyles.settingsOverlay} onClick={closeDemandModal}>
           <form
             className={`${modalStyles.settingsModal} ${modalStyles.demandModal}`}
             onSubmit={handleCreateTask}
@@ -475,24 +509,27 @@ export default function SupportTechnologyPage() {
 
             <div className={modalStyles.settingsContent}>
               <div className={modalStyles.demandFormGrid}>
-                <label className={`${modalStyles.labeledField} ${modalStyles.fieldCompact}`}>
-                  <span>Tipo</span>
-                  <Select value="support" disabled aria-label="Tipo" className={modalStyles.formSelect}>
-                    <option value="support">Suporte</option>
-                  </Select>
-                </label>
-                <label className={`${modalStyles.labeledField} ${modalStyles.fieldCompact}`}>
-                  <span>Prioridade</span>
-                  <Select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value }))} aria-label="Prioridade" className={modalStyles.formSelect}>
+                <FormField label="Tipo" className={modalStyles.fieldThird}>
+                  <input value="Suporte" readOnly disabled />
+                </FormField>
+                <FormField label="Prioridade" className={modalStyles.fieldThird}>
+                  <Select
+                    value={draft.priority}
+                    onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value }))}
+                    aria-label="Prioridade"
+                    className={modalStyles.formSelect}
+                  >
                     {PRIORITIES.map((priority) => <option key={priority.value} value={priority.value}>{priority.label}</option>)}
                   </Select>
-                </label>
-                <label className={`${modalStyles.labeledField} ${modalStyles.fieldWide}`}>
-                  <span>Título</span>
-                  <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Título" />
-                </label>
-                <label className={modalStyles.labeledField}>
-                  <span>Para quem é esta tarefa?</span>
+                </FormField>
+                <FormField label="Título" className={modalStyles.fieldHalf}>
+                  <input
+                    value={draft.title}
+                    onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
+                    placeholder="Título"
+                  />
+                </FormField>
+                <FormField label="Para quem é esta tarefa?" className={modalStyles.fieldHalf}>
                   <Select
                     type="user"
                     value={draft.assigneeUserId}
@@ -500,22 +537,31 @@ export default function SupportTechnologyPage() {
                     aria-label="Responsável"
                     className={modalStyles.formSelect}
                   >
-                    {supportUsers.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
+                    {supportUsers.map((item) => <option key={item.id} value={item.id} {...userAvatarProps(item)}>{item.name}</option>)}
                   </Select>
-                </label>
-                <label className={modalStyles.labeledField}>
-                  <span>Cliente</span>
-                  <Select value={draft.clientId} onChange={(event) => setDraft((current) => ({ ...current, clientId: event.target.value }))} aria-label="Cliente" className={modalStyles.formSelect} type="client">
+                </FormField>
+                <FormField label="Cliente" className={modalStyles.fieldHalf}>
+                  <Select
+                    type="client"
+                    value={draft.clientId}
+                    onChange={(event) => setDraft((current) => ({ ...current, clientId: event.target.value }))}
+                    aria-label="Cliente"
+                    className={modalStyles.formSelect}
+                  >
                     <option value="">Sem cliente</option>
                     {clients.map((client) => <option key={client.id} value={client.id} data-avatar={client.avatarUrl || ''} data-name={client.name}>{client.name}</option>)}
                   </Select>
-                </label>
-                <label className={modalStyles.labeledField}>
-                  <span>Prazo</span>
-                  <DateField value={draft.dueDate} onChange={(value) => setDraft((current) => ({ ...current, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={modalStyles.dateField} />
-                </label>
-                <label className={`${modalStyles.labeledField} ${modalStyles.fieldWide}`}>
-                  <span>Colaboradores adicionais</span>
+                </FormField>
+                <FormField label="Prazo" className={modalStyles.fieldHalf}>
+                  <DateField
+                    value={draft.dueDate}
+                    onChange={(value) => setDraft((current) => ({ ...current, dueDate: value }))}
+                    placeholder="Prazo"
+                    ariaLabel="Prazo"
+                    className={modalStyles.dateField}
+                  />
+                </FormField>
+                <FormField label="Colaboradores adicionais" className={modalStyles.fieldWide}>
                   <Select
                     type="user"
                     value=""
@@ -528,9 +574,9 @@ export default function SupportTechnologyPage() {
                     className={modalStyles.formSelect}
                   >
                     <option value="">Adicionar colaborador</option>
-                    {collaboratorOptions.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
+                    {collaboratorOptions.map((item) => <option key={item.id} value={item.id} {...userAvatarProps(item)}>{item.name}</option>)}
                   </Select>
-                </label>
+                </FormField>
                 {selectedCollaborators.length ? (
                   <div className={`${modalStyles.selectedCollaborators} ${modalStyles.fieldWide}`}>
                     {selectedCollaborators.map((item) => (
@@ -549,7 +595,12 @@ export default function SupportTechnologyPage() {
                 ) : null}
               </div>
 
-              <textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Descrição" className={modalStyles.demandTextarea} />
+              <textarea
+                value={draft.description}
+                onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
+                placeholder="Descrição"
+                className={modalStyles.demandTextarea}
+              />
 
               <div className={modalStyles.attachmentComposer}>
                 <div>

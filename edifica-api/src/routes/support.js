@@ -162,9 +162,8 @@ router.patch('/daily-program/:id', requirePermission('support.board.edit'), asyn
     const updates = [];
     const params = [];
     for (const [column, value] of Object.entries(fields)) {
-      if (req.body?.[column] !== undefined) continue;
       const camel = column.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      if (req.body?.[camel] !== undefined) {
+      if (req.body?.[camel] !== undefined || req.body?.[column] !== undefined) {
         updates.push(`${column} = ?`);
         params.push(value);
       }
