@@ -7,11 +7,12 @@
 }
 
 .hero,
-.sheetPanel,
-.kpis {
-  border: 1px solid var(--line);
-  background: var(--bg-canvas);
+.kpis,
+.sheetPanel {
+  border: 1px solid var(--line-subtle);
   border-radius: var(--radius-lg);
+  background: var(--bg-canvas);
+  box-shadow: var(--shadow-panel);
 }
 
 .hero {
@@ -19,13 +20,38 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+}
+
+.hero h1,
+.sheetHeader h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-snug);
+}
+
+.hero h1 {
+  margin-top: var(--space-2);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
 }
 
 .heroActions {
   display: inline-flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.heroIcon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: var(--accent-strong);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
 }
 
 .eyebrow,
@@ -39,30 +65,6 @@
   text-transform: uppercase;
 }
 
-.hero h1,
-.sheetHeader h2 {
-  margin: 0;
-  color: var(--text-primary);
-  letter-spacing: var(--tracking-snug);
-}
-
-.hero h1 {
-  margin-top: var(--space-2);
-  font-size: var(--fs-xl);
-  font-weight: var(--weight-semibold);
-}
-
-.heroIcon {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-md);
-  color: var(--accent-strong);
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-line);
-}
-
 .kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -71,7 +73,7 @@
 
 .kpis > div {
   min-width: 0;
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-5);
   border-right: 1px solid var(--line-subtle);
 }
 
@@ -101,21 +103,24 @@
   overflow: hidden;
 }
 
-.sheetHeader {
+.sheetHeader,
+.sheetFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
+}
+
+.sheetHeader {
   border-bottom: 1px solid var(--line-subtle);
 }
 
 .sheetHeader h2 {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   font-size: var(--fs-lg);
-  font-weight: var(--weight-semibold);
 }
 
 .sheetScroller {
@@ -162,6 +167,7 @@
 .sheetTable td {
   height: 36px;
   padding: 0;
+  color: var(--text-secondary);
   border-right: 1px solid var(--line-subtle);
   border-bottom: 1px solid var(--line-subtle);
   background: var(--bg-canvas);
@@ -184,14 +190,14 @@
 .sheetSelect {
   width: 100%;
   height: 35px;
+  padding: 0 var(--space-2);
+  color: var(--text-primary);
   border: 0;
   border-radius: 0;
+  outline: none;
   background: transparent;
-  color: var(--text-primary);
   font: inherit;
   font-size: var(--fs-body);
-  padding: 0 var(--space-2);
-  outline: none;
 }
 
 .sheetInput:focus,
@@ -240,10 +246,10 @@
   height: 28px;
   display: inline-grid;
   place-items: center;
+  color: var(--text-tertiary);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-md);
   background: var(--bg-elevated);
-  color: var(--text-tertiary);
   cursor: pointer;
 }
 
@@ -260,11 +266,6 @@
 }
 
 .sheetFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-5);
   border-top: 1px solid var(--line-subtle);
 }
 
@@ -272,147 +273,6 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-}
-
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  display: grid;
-  place-items: center;
-  padding: var(--space-6);
-  background: color-mix(in srgb, var(--bg-app) 72%, transparent);
-  backdrop-filter: blur(18px);
-}
-
-.demandModal {
-  width: min(760px, 100%);
-  max-height: calc(100vh - 64px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg-canvas);
-  box-shadow: 0 24px 80px rgb(0 0 0 / 0.38);
-}
-
-.modalHeader,
-.modalFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  background: var(--bg-canvas);
-}
-
-.modalHeader {
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.modalHeader h2 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: var(--fs-xl);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-snug);
-}
-
-.modalHeader span {
-  display: block;
-  margin-top: var(--space-1);
-  color: var(--text-tertiary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
-}
-
-.closeButton {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
-  color: var(--text-tertiary);
-  cursor: pointer;
-}
-
-.closeButton:hover {
-  color: var(--text-primary);
-  border-color: var(--line);
-}
-
-.modalBody {
-  overflow: auto;
-  padding: var(--space-5);
-}
-
-.modalBody::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-.modalGrid {
-  display: grid;
-  grid-template-columns: minmax(160px, 0.75fr) minmax(0, 1.25fr);
-  gap: var(--space-3);
-}
-
-.modalField {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.modalField > span {
-  color: var(--text-tertiary);
-  font-size: var(--fs-tiny);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-uppercase);
-  text-transform: uppercase;
-}
-
-.modalFieldTitle,
-.modalFieldFull {
-  grid-column: span 1;
-}
-
-.modalFieldFull {
-  grid-column: 1 / -1;
-}
-
-.modalField input,
-.modalField textarea {
-  width: 100%;
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: var(--fs-body);
-  padding: 0 var(--space-3);
-  outline: none;
-}
-
-.modalField textarea {
-  height: 126px;
-  padding-top: var(--space-3);
-  resize: vertical;
-}
-
-.modalField input:focus,
-.modalField textarea:focus {
-  border-color: var(--line-strong);
-  background: var(--bg-raised);
-}
-
-.modalFooter {
-  justify-content: flex-end;
-  border-top: 1px solid var(--line-subtle);
 }
 
 @media (max-width: 1180px) {
@@ -436,8 +296,7 @@
     justify-content: space-between;
   }
 
-  .kpis,
-  .modalGrid {
+  .kpis {
     grid-template-columns: 1fr;
   }
 }

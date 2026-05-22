@@ -3,7 +3,7 @@ import { query } from '../db/pool.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { badRequest, uuid } from '../utils/helpers.js';
 import { hasPermission } from '../utils/permissions.js';
-import { createTaskRecord, serializeTask } from '../utils/projectTasks.js';
+import { addTaskCollaborators, createTaskRecord, serializeTask } from '../utils/projectTasks.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -259,6 +259,10 @@ router.post('/tasks', requirePermission('support.view'), async (req, res, next) 
       },
       req.user
     );
+    const collaboratorUserIds = Array.isArray(req.body?.collaboratorUserIds)
+      ? req.body.collaboratorUserIds.map((id) => clean(id, 36)).filter(Boolean)
+      : [];
+    await addTaskCollaborators(taskId, collaboratorUserIds, 'follower');
     const rows = await query(
       `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
               au.name AS assignee_name, cu.name AS created_by_name,
