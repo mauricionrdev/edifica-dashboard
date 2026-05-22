@@ -167,7 +167,16 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
         <span>{column.label}</span>
       )}
       {editable ? (
-        <button type="button" className={styles.softDeleteButton} onClick={() => onDelete(column.key)} aria-label={`Remover coluna ${column.label}`}>
+        <button
+          type="button"
+          className={styles.softDeleteButton}
+          onClick={(event) => {
+            event.stopPropagation();
+            onDelete(column.key);
+          }}
+          aria-label={`Remover coluna ${column.label}`}
+          title="Remover coluna"
+        >
           <CloseIcon size={11} />
         </button>
       ) : null}
@@ -243,14 +252,14 @@ function SheetToolbar({ disabled, onCommand }) {
 
   return (
     <div className={styles.sheetToolbar} aria-label="Formatação" onMouseDown={preventBlur}>
-      <button type="button" disabled={disabled} onClick={() => onCommand('bold')}>B</button>
-      <button type="button" disabled={disabled} onClick={() => onCommand('italic')}>I</button>
-      <button type="button" disabled={disabled} onClick={() => onCommand('underline')}>U</button>
-      <button type="button" disabled={disabled} onClick={() => onCommand('strikeThrough')}>S</button>
+      <button type="button" disabled={disabled} title="Negrito" aria-label="Negrito" onClick={() => onCommand('bold')}>B</button>
+      <button type="button" disabled={disabled} title="Itálico" aria-label="Itálico" onClick={() => onCommand('italic')}>I</button>
+      <button type="button" disabled={disabled} title="Sublinhado" aria-label="Sublinhado" onClick={() => onCommand('underline')}>U</button>
+      <button type="button" disabled={disabled} title="Riscado" aria-label="Riscado" onClick={() => onCommand('strikeThrough')}>S</button>
       <span className={styles.toolbarDivider} />
-      <button type="button" disabled={disabled} onClick={() => onCommand('justifyLeft')}>←</button>
-      <button type="button" disabled={disabled} onClick={() => onCommand('justifyCenter')}>↔</button>
-      <button type="button" disabled={disabled} onClick={() => onCommand('justifyRight')}>→</button>
+      <button type="button" disabled={disabled} title="Alinhar à esquerda" aria-label="Alinhar à esquerda" onClick={() => onCommand('justifyLeft')}>Esq</button>
+      <button type="button" disabled={disabled} title="Centralizar" aria-label="Centralizar" onClick={() => onCommand('justifyCenter')}>Centro</button>
+      <button type="button" disabled={disabled} title="Alinhar à direita" aria-label="Alinhar à direita" onClick={() => onCommand('justifyRight')}>Dir</button>
       <span className={styles.toolbarDivider} />
       <ColorPopover label="A" disabled={disabled} colors={SHEET_TEXT_COLORS} onSelect={(color) => onCommand('foreColor', color)} />
       <ColorPopover label="▣" disabled={disabled} colors={SHEET_FILL_COLORS} onSelect={(color) => onCommand('hiliteColor', color)} />
@@ -277,6 +286,7 @@ export default function SupportTechnologyPage() {
   const [demandModalOpen, setDemandModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
   const resizeRef = useRef(null);
+  const sheetScrollerRef = useRef(null);
 
   const activeUsers = useMemo(() => (Array.isArray(userDirectory) ? userDirectory : []).filter((item) => item?.id && item?.active !== false), [userDirectory]);
 
@@ -296,6 +306,29 @@ export default function SupportTechnologyPage() {
   const defaultAssigneeId = supportMaster?.id || supportUsers[0]?.id || user?.id || '';
   const canEditBoard = hasPermission(user, 'support.board.edit');
   const canCreateDemand = hasPermission(user, 'support.view');
+
+  const sheetMinWidth = useMemo(() => {
+    const dataColumnsWidth = columns.reduce((total, column) => total + Math.max(5, Number(column.width || 5)), 0);
+    return dataColumnsWidth + 46 + (canEditBoard ? 58 : 0);
+  }, [canEditBoard, columns]);
+
+  const handleSheetWheel = useCallback((event) => {
+    const scroller = sheetScrollerRef.current;
+    if (!scroller) return;
+
+    const verticalIntent = Math.abs(event.deltaY) > Math.abs(event.deltaX);
+    if (event.shiftKey && event.deltaY) {
+      event.preventDefault();
+      scroller.scrollLeft += event.deltaY;
+      return;
+    }
+
+    if (verticalIntent) {
+      event.preventDefault();
+      window.scrollBy({ top: event.deltaY, left: 0, behavior: 'auto' });
+    }
+  }, []);
+
 
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
@@ -343,7 +376,7 @@ export default function SupportTechnologyPage() {
         await Promise.allSettled(form.attachments.map((item) => createTaskAttachment(taskId, { fileName: item.fileName, mimeType: item.mimeType, sizeBytes: item.sizeBytes, dataUrl: item.dataUrl })));
       }
       setDemandModalOpen(false);
-      await refreshTasks();
+      await refreshRows(activeSheetId);
       showToast('Demanda criada.');
     } catch (err) {
       showToast(err?.message || 'Não foi possível criar a demanda.', { variant: 'error' });
@@ -590,7 +623,7 @@ export default function SupportTechnologyPage() {
                   }}
                 />
                 {canEditBoard && sheets.length > 1 ? (
-                  <button type="button" className={styles.softDeleteButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`}>
+                  <button type="button" className={styles.softDeleteButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
                     <CloseIcon size={10} />
                   </button>
                 ) : null}
@@ -599,7 +632,12 @@ export default function SupportTechnologyPage() {
           </div>
         </div>
 
-        <div className={styles.sheetScroller}>
+        <div
+          ref={sheetScrollerRef}
+          className={styles.sheetScroller}
+          style={{ '--sheet-min-width': `${sheetMinWidth}px` }}
+          onWheel={handleSheetWheel}
+        >
           <table className={styles.sheetTable}>
             <colgroup>
               <col style={{ width: 46 }} />
@@ -637,7 +675,7 @@ export default function SupportTechnologyPage() {
                       />
                     </td>
                   ))}
-                  {canEditBoard ? <td className={styles.actionCell}><button type="button" className={styles.softDeleteButton} onClick={() => handleDeleteRow(row.id)} title="Remover linha"><TrashIcon size={13} /></button></td> : null}
+                  {canEditBoard ? <td className={styles.actionCell}><button type="button" className={styles.softDeleteButton} onClick={() => handleDeleteRow(row.id)} aria-label={`Remover linha ${index + 1}`} title="Remover linha"><TrashIcon size={13} /></button></td> : null}
                 </tr>
               ))}
             </tbody>
