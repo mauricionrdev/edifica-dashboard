@@ -9,7 +9,7 @@
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   font-family: var(--font-sans);
   font-size: var(--fs-body);
   line-height: var(--lh-normal);
@@ -30,12 +30,12 @@
 .profileHero { flex: 0 0 auto; }
 
 .heroIdentity {
-  min-height: 128px;
+  min-height: 108px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
-  padding: 24px 30px;
+  gap: 12px;
+  padding: 18px 24px;
 }
 
 .avatar,
@@ -56,8 +56,8 @@
 }
 
 .avatar {
-  width: 62px;
-  height: 62px;
+  width: 54px;
+  height: 54px;
   font-size: var(--fs-lg);
   cursor: pointer;
 }
@@ -98,7 +98,7 @@
   margin: 0;
   overflow: hidden;
   color: var(--text-primary);
-  font-size: var(--fs-2xl);
+  font-size: 22px;
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
   line-height: var(--lh-tight);
@@ -108,14 +108,14 @@
 
 .roleBadge {
   flex: 0 0 auto;
-  min-height: 26px;
+  min-height: 24px;
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--chassis-border);
   border-radius: 999px;
   background: var(--surface-raised);
   color: var(--text-secondary);
-  padding: 0 11px;
+  padding: 0 10px;
   font-size: var(--fs-label);
   font-weight: var(--weight-semibold);
   line-height: var(--lh-flat);
@@ -123,16 +123,63 @@
 }
 
 .roleBadgeBlackHole {
-  border-color: var(--accent-line);
-  background: linear-gradient(90deg, var(--surface-raised), var(--surface-panel));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: rgba(245, 184, 0, 0.22);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.42) 0 21%, var(--accent-soft) 22% 38%, var(--surface-panel) 39% 100%),
+    var(--bg-canvas);
   color: var(--text-primary);
-  box-shadow: inset 0 0 0 1px rgba(245, 184, 0, 0.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.02),
+    0 0 0 1px rgba(0, 0, 0, 0.34);
+  animation: publicRoleBlackHolePulse 3.8s ease-in-out infinite;
+}
+
+.roleBadgeBlackHole::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -42%;
+  display: block;
+  background:
+    conic-gradient(from 0deg,
+      transparent 0deg,
+      rgba(245, 184, 0, 0.16) 54deg,
+      transparent 116deg,
+      rgba(104, 125, 255, 0.10) 176deg,
+      transparent 246deg,
+      var(--accent-soft) 304deg,
+      transparent 360deg);
+  opacity: 0.62;
+  animation: publicRoleBlackHoleSpin 7s linear infinite;
+}
+
+.roleBadgeBlackHole::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 3px;
+  display: block;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.88) 0 34%, rgba(0, 0, 0, 0.20) 35% 57%, transparent 58%);
+  opacity: 0.9;
+}
+
+@keyframes publicRoleBlackHoleSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes publicRoleBlackHolePulse {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.34); }
+  50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 0 18px rgba(245, 184, 0, 0.07); }
 }
 
 .profileMeta {
   min-width: 0;
   color: var(--text-tertiary);
-  font-size: var(--fs-md);
+  font-size: var(--fs-body);
   line-height: var(--lh-tight);
 }
 
@@ -152,7 +199,7 @@
 
 .statItem {
   min-width: 0;
-  padding: 18px 22px;
+  padding: 14px 20px;
   border-right: 1px solid var(--chassis-border-subtle);
 }
 
@@ -172,7 +219,7 @@
 .statItem strong {
   display: block;
   color: var(--text-primary);
-  font-size: var(--fs-kpi-lg);
+  font-size: 26px;
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-crunch);
   line-height: var(--lh-flat);
@@ -191,7 +238,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 24px 28px 18px;
+  padding: 20px 24px 16px;
 }
 
 .sectionTitleBlock h2 {
@@ -200,7 +247,7 @@
   gap: 10px;
   margin: 0;
   color: var(--text-primary);
-  font-size: var(--fs-xl);
+  font-size: 20px;
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
   line-height: var(--lh-tight);
@@ -210,7 +257,7 @@
 
 .primaryButton,
 .modalFooter button:last-child {
-  min-height: 38px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -219,8 +266,8 @@
   border-radius: var(--workspace-control-radius);
   background: var(--accent-soft);
   color: var(--text-primary);
-  padding: 0 18px;
-  font-size: var(--fs-md);
+  padding: 0 15px;
+  font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
   cursor: pointer;
 }
@@ -229,28 +276,28 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 0 28px 24px;
+  padding: 0 24px 20px;
   border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
 .taskTab {
-  min-height: 38px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   border: 1px solid var(--chassis-border);
   border-radius: 999px;
   background: transparent;
   color: var(--text-tertiary);
-  padding: 0 16px;
-  font-size: var(--fs-md);
+  padding: 0 12px;
+  font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
   cursor: pointer;
 }
 
 .taskTab strong {
-  min-width: 24px;
-  height: 24px;
+  min-width: 18px;
+  height: 18px;
   display: inline-grid;
   place-items: center;
   border: 1px solid var(--chassis-border);
@@ -274,7 +321,7 @@
 }
 
 .issueTable {
-  margin: 26px 24px 22px;
+  margin: 20px 22px 20px;
   overflow: hidden;
   border: 1px solid var(--chassis-border);
   border-radius: var(--workspace-card-radius);
@@ -286,12 +333,12 @@
   display: grid;
   grid-template-columns: 48px minmax(280px, 1.55fr) minmax(150px, 0.48fr) minmax(230px, 0.72fr) minmax(120px, 0.38fr) minmax(110px, 0.34fr);
   align-items: center;
-  column-gap: 18px;
+  column-gap: 14px;
 }
 
 .issueHead {
-  min-height: 52px;
-  padding: 0 24px;
+  min-height: 42px;
+  padding: 0 20px;
   border-bottom: 1px solid var(--chassis-border-subtle);
   color: var(--text-tertiary);
   font-size: var(--fs-tiny);
@@ -303,8 +350,8 @@
 .issueList { display: grid; }
 
 .issueRow {
-  min-height: 70px;
-  padding: 0 24px;
+  min-height: 60px;
+  padding: 0 20px;
   border-bottom: 1px solid var(--chassis-border-subtle);
   color: var(--text-secondary);
   cursor: pointer;
@@ -314,8 +361,8 @@
 
 .checkCircle,
 .statusCheck {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   display: inline-grid;
   place-items: center;
   border: 1px solid var(--chassis-border);
@@ -344,7 +391,7 @@
 .issueTitle strong {
   overflow: hidden;
   color: var(--text-primary);
-  font-size: var(--fs-md);
+  font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-tight);
   text-overflow: ellipsis;
@@ -377,7 +424,7 @@
 
 .tag,
 .statusBadge {
-  min-height: 28px;
+  min-height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -385,7 +432,7 @@
   border-radius: 999px;
   background: var(--surface-panel);
   color: var(--text-secondary);
-  padding: 0 12px;
+  padding: 0 10px;
   font-size: var(--fs-label);
   font-weight: var(--weight-semibold);
   line-height: var(--lh-flat);
@@ -435,8 +482,8 @@
   --public-stage-color: var(--warning-text);
   --public-stage-border: var(--accent-line);
   position: relative;
-  min-width: 170px;
-  height: 34px;
+  min-width: 150px;
+  height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -445,7 +492,7 @@
   border-radius: 999px;
   background: var(--chassis-panel-bg);
   color: var(--public-stage-color);
-  padding: 0 14px;
+  padding: 0 12px;
   font-size: var(--fs-label);
   font-weight: var(--weight-semibold);
   isolation: isolate;
@@ -498,8 +545,8 @@
 }
 
 .taskAvatar {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   margin-left: -7px;
   font-size: var(--fs-tiny);
 }
@@ -536,7 +583,7 @@
 }
 
 .taskDrawerPanel {
-  width: min(760px, calc(100vw - 28px));
+  width: min(700px, calc(100vw - 28px));
   height: calc(100vh - 16px);
   margin: 8px;
   display: flex;
@@ -549,12 +596,12 @@
 }
 
 .taskDrawerTopbar {
-  min-height: 66px;
+  min-height: 58px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 22px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--chassis-border-subtle);
   background: var(--chassis-panel-bg);
 }
@@ -572,7 +619,7 @@
 .attachmentComposer button,
 .commentForm button,
 .selectedCollaborators button {
-  min-height: 38px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -580,7 +627,7 @@
   border-radius: var(--workspace-control-radius);
   background: var(--surface-raised);
   color: var(--text-secondary);
-  padding: 0 14px;
+  padding: 0 12px;
   font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
   font-family: inherit;
@@ -595,7 +642,7 @@
 }
 
 .iconButton {
-  width: 42px;
+  width: 38px;
   padding: 0;
   color: var(--text-tertiary);
 }
@@ -611,14 +658,14 @@
 .demandFormContent::-webkit-scrollbar { display: none; }
 
 .taskDrawerHero {
-  padding: 26px 28px 24px;
+  padding: 22px 24px 20px;
   border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
 .taskDrawerHero h3 {
   margin: 0 0 8px;
   color: var(--text-primary);
-  font-size: var(--fs-xl);
+  font-size: 20px;
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
   line-height: var(--lh-tight);
@@ -646,13 +693,13 @@
 
 .taskTitleInput {
   min-height: 44px;
-  padding: 0 14px;
-  font-size: var(--fs-xl);
+  padding: 0 12px;
+  font-size: 20px;
   font-weight: var(--weight-semibold);
 }
 
 .taskDrawerSection {
-  margin: 22px 28px;
+  margin: 18px 24px;
   overflow: hidden;
   border: 1px solid var(--chassis-border);
   border-radius: var(--workspace-card-radius);
@@ -660,12 +707,12 @@
 }
 
 .sectionTitleRow {
-  min-height: 52px;
+  min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 18px;
+  padding: 0 15px;
   border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
@@ -693,7 +740,7 @@
   min-width: 0;
   display: grid;
   gap: 10px;
-  padding: 16px 18px 18px;
+  padding: 14px 16px 16px;
   border-right: 1px solid var(--chassis-border-subtle);
 }
 
@@ -725,12 +772,12 @@
 .workflowDate button {
   width: 100%;
   min-width: 0;
-  height: 48px;
-  min-height: 48px;
+  height: 42px;
+  min-height: 42px;
   border-color: var(--chassis-border);
   border-radius: var(--workspace-control-radius);
   background: var(--field-bg);
-  font-size: var(--fs-md);
+  font-size: var(--fs-body);
 }
 
 .workflowSelect > div,
@@ -740,12 +787,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 18px;
+  padding: 16px;
 }
 
 .drawerPersonChip,
 .selectedCollaborators > span {
-  min-height: 36px;
+  min-height: 32px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -759,8 +806,8 @@
 }
 
 .drawerPersonAvatar {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   font-size: var(--fs-tiny);
 }
 
@@ -768,26 +815,26 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 18px;
+  padding: 16px;
 }
 
 .workflowStep {
-  min-height: 34px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   border: 1px solid var(--chassis-border);
   border-radius: 999px;
   background: transparent;
   color: var(--text-tertiary);
-  padding: 0 13px;
+  padding: 0 11px;
   font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
 }
 
 .workflowStep i {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
@@ -820,17 +867,17 @@
 }
 
 .taskDescriptionBox {
-  min-height: 118px;
+  min-height: 104px;
   margin: 0;
-  padding: 22px 20px;
+  padding: 18px 18px;
   color: var(--text-secondary);
-  font-size: var(--fs-md);
+  font-size: var(--fs-body);
   line-height: var(--lh-normal);
   white-space: pre-wrap;
 }
 
 .taskDescriptionInput {
-  min-height: 150px;
+  min-height: 130px;
   margin: 18px;
   width: calc(100% - 36px);
   padding: 14px;
@@ -841,17 +888,17 @@
 
 .commentItem {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns: 32px minmax(0, 1fr);
   gap: 14px;
-  padding: 18px;
+  padding: 16px;
   border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
 .commentItem:last-child { border-bottom: 0; }
 
 .commentAvatar {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   font-size: var(--fs-tiny);
 }
 
@@ -890,13 +937,13 @@
 .commentForm {
   display: grid;
   gap: 12px;
-  padding: 18px;
+  padding: 16px;
   border-top: 1px solid var(--chassis-border-subtle);
 }
 
 .commentForm textarea,
 .commentEditInput {
-  min-height: 90px;
+  min-height: 66px;
   padding: 12px 14px;
   resize: vertical;
 }
@@ -910,14 +957,14 @@
   z-index: 140;
   display: grid;
   place-items: center;
-  padding: 22px;
+  padding: 18px;
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
 
 .taskModal {
-  width: min(900px, calc(100vw - 48px));
+  width: min(820px, calc(100vw - 48px));
   max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
@@ -928,15 +975,15 @@
   box-shadow: var(--shadow-dialog);
 }
 
-.demandModal_briefing { width: min(980px, calc(100vw - 48px)); }
+.demandModal_briefing { width: min(900px, calc(100vw - 48px)); }
 
 .modalHeader {
-  min-height: 88px;
+  min-height: 74px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 22px 30px;
+  padding: 18px 26px;
   border-bottom: 1px solid var(--chassis-border-subtle);
   background: var(--chassis-panel-bg);
 }
@@ -944,7 +991,7 @@
 .modalHeader h2 {
   margin: 0 0 6px;
   color: var(--text-primary);
-  font-size: var(--fs-xl);
+  font-size: 20px;
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
   line-height: var(--lh-tight);
@@ -952,7 +999,7 @@
 
 .modalHeader span {
   color: var(--text-tertiary);
-  font-size: var(--fs-md);
+  font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
 }
 
@@ -960,27 +1007,27 @@
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
-  padding: 24px 30px 26px;
+  padding: 20px 26px 22px;
 }
 
 .demandFormGrid {
   display: grid;
-  grid-template-columns: minmax(0, 128px) minmax(0, 134px) minmax(220px, 1fr) minmax(240px, 0.85fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 116px) minmax(0, 124px) minmax(210px, 1fr) minmax(220px, 0.82fr);
+  gap: 12px;
   align-items: end;
 }
 
 .labeledField {
   min-width: 0;
   display: grid;
-  gap: 9px;
+  gap: 8px;
 }
 
 .labeledField input,
 .taskModal textarea {
-  min-height: 48px;
-  padding: 0 14px;
-  font-size: var(--fs-md);
+  min-height: 42px;
+  padding: 0 12px;
+  font-size: var(--fs-body);
   font-weight: var(--weight-medium);
 }
 
@@ -988,9 +1035,9 @@
 .fieldTitle { min-width: 0; }
 
 .taskModal textarea {
-  min-height: 150px;
-  margin-top: 20px;
-  padding: 16px;
+  min-height: 130px;
+  margin-top: 16px;
+  padding: 14px;
   resize: vertical;
 }
 
@@ -1014,9 +1061,9 @@
 }
 
 .selectedCollaborators button {
-  width: 22px;
-  height: 22px;
-  min-height: 22px;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
   padding: 0;
   border-radius: 999px;
 }
@@ -1025,26 +1072,26 @@
 .routineFormGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .briefingGrid input,
 .routineFormGrid input {
-  min-height: 46px;
-  padding: 0 14px;
+  min-height: 42px;
+  padding: 0 12px;
 }
 
 .briefingGrid textarea,
 .routineFormGrid textarea {
-  min-height: 96px;
+  min-height: 84px;
   padding: 14px;
   resize: vertical;
 }
 
 .attachmentComposer {
-  margin-top: 20px;
-  padding: 16px;
+  margin-top: 16px;
+  padding: 14px;
   border: 1px solid var(--chassis-border);
   border-radius: var(--workspace-card-radius);
   background: var(--surface-panel);
@@ -1103,20 +1150,20 @@
   position: absolute;
   top: 6px;
   right: 6px;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   min-height: 24px;
   padding: 0;
   border-radius: 999px;
 }
 
 .modalFooter {
-  min-height: 78px;
+  min-height: 66px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  padding: 16px 30px;
+  padding: 14px 26px;
   border-top: 1px solid var(--chassis-border-subtle);
   background: var(--chassis-panel-bg);
 }
