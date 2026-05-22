@@ -35,5 +35,6 @@ export {
   TrendingUp as TrendingUpIcon,
   Trophy as TrophyIcon,
   Users as UsersIcon,
+  Wrench as WrenchIcon,
   X as CloseIcon,
 } from 'lucide-react';

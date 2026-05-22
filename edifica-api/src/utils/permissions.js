@@ -68,31 +68,37 @@ export const ROLE_PERMISSIONS = {
     'projects.view.all','projects.create','projects.edit.all','project_template.view','project_template.edit',
     'tasks.view.all','tasks.create','tasks.edit.all','tasks.comment.all','tasks.complete.own','tasks.complete.any',
     'profile.view','profile.edit',
+    'support.view','support.create','support.board.edit',
   ],
   gdv: [
     'central.view','clients.view.own','clients.fee_schedule.view.own','gdv.view.own','squads.view.own',
     'metrics.view.own','ranking.view.own','profile.view','profile.edit',
     'projects.view.own','tasks.view.own','tasks.create','tasks.comment.own','tasks.complete.own',
+    'support.view','support.create',
   ],
   gestor: [
     'central.view','clients.view.all','clients.fee_schedule.view.all','metrics.view.all','metrics.fill_week.all','ranking.view.all',
     'projects.view.all','projects.create','projects.edit.all',
     'tasks.view.all','tasks.create','tasks.edit.all','tasks.comment.all','tasks.complete.own','tasks.complete.any',
     'profile.view','profile.edit','squads.view.all',
+    'support.view','support.create',
   ],
   sdr: [
     'central.view','clients.view.own','clients.fee_schedule.view.own','gdv.view.own','squads.view.own',
     'metrics.view.own','ranking.view.own','profile.view','profile.edit',
     'projects.view.own','tasks.view.own','tasks.create','tasks.comment.own','tasks.complete.own',
+    'support.view','support.create',
   ],
   closer: [
     'central.view','clients.view.own','clients.fee_schedule.view.own','gdv.view.own','squads.view.own',
     'metrics.view.own','ranking.view.own','profile.view','profile.edit',
     'projects.view.own','tasks.view.own','tasks.create','tasks.comment.own','tasks.complete.own',
+    'support.view','support.create',
   ],
   cap: [
     'central.view','clients.view.own','clients.fee_schedule.view.own','metrics.view.own','metrics.fill_week.own','ranking.view.own',
     'projects.view.own','tasks.view.own','tasks.create','tasks.comment.own','tasks.complete.own','squads.view.own',
+    'support.view','support.create',
   ],
 };
 
@@ -105,6 +111,7 @@ export const PERMISSION_GROUPS = [
   { area: 'GDV', permissions: ['gdv.view.own','gdv.view.all','gdv.manage'] },
   { area: 'Projetos', permissions: ['projects.view.own','projects.view.all','projects.create','projects.edit.own','projects.edit.all','project_template.view','project_template.edit'] },
   { area: 'Tarefas', permissions: ['tasks.view.own','tasks.view.all','tasks.create','tasks.edit.own','tasks.edit.all','tasks.comment.own','tasks.comment.all','tasks.complete.own','tasks.complete.any'] },
+  { area: 'Suporte de tecnologia', permissions: ['support.view','support.create','support.board.edit'] },
   { area: 'Squads', permissions: ['squads.view.own','squads.view.all','squads.manage'] },
   { area: 'Onboarding', permissions: ['onboarding.view', 'onboarding.edit', 'onboarding.complete.own', 'onboarding.complete.any'] },
   { area: 'Equipe & Acessos', permissions: ['team.view','team.manage'] },

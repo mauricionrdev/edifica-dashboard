@@ -29,6 +29,7 @@ import {
   SearchIcon,
   TrophyIcon,
   UsersIcon,
+  WrenchIcon,
 } from '../ui/Icons.jsx';
 import { matchesSearch, normalizeSearch } from '../../utils/search.js';
 import styles from './Sidebar.module.css';
@@ -153,6 +154,13 @@ export default function Sidebar({
             icon: <HomeIcon size={16} />,
             label: 'Dashboard',
             meta: activeCount ? String(activeCount) : null,
+          }
+        : null,
+      hasPermission(user, 'support.view')
+        ? {
+            to: '/suporte-tecnologia',
+            icon: <WrenchIcon size={16} />,
+            label: 'Suporte TI',
           }
         : null,
       (canViewClients(user) || emptyWorkspaceView)

@@ -10,6 +10,11 @@ const ROUTE_META = [
     crumb: 'Clientes',
   },
   {
+    match: (pathname) => pathname.startsWith('/suporte-tecnologia'),
+    title: 'Suporte de tecnologia',
+    crumb: 'Suporte TI',
+  },
+  {
     match: (pathname) => pathname.startsWith('/preencher-semana'),
     title: 'Preencher Semana',
     crumb: 'Preencher Semana',

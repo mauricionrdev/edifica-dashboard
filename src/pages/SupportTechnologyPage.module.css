@@ -1,0 +1,459 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.hero,
+.panel,
+.sheetPanel,
+.kpis {
+  border: 1px solid var(--line);
+  background: var(--bg-canvas);
+  border-radius: var(--radius-lg);
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5);
+}
+
+.eyebrow,
+.panelHeader p,
+.sheetHeader p,
+.fieldWide span,
+.requestForm label > span,
+.formField > span,
+.viewOnly,
+.sheetFooter,
+.taskItem span,
+.taskMeta span {
+  color: var(--text-tertiary);
+}
+
+.eyebrow,
+.requestForm label > span,
+.sheetTable th,
+.sheetFooter,
+.viewOnly {
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.hero h1,
+.panelHeader h2,
+.sheetHeader h2 {
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: var(--tracking-snug);
+}
+
+.hero h1 {
+  margin-top: var(--space-2);
+  font-size: var(--fs-2xl);
+  font-weight: var(--weight-semibold);
+}
+
+.hero p,
+.panelHeader p,
+.sheetHeader p {
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-body);
+}
+
+.heroIcon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+.kpis > div {
+  min-width: 0;
+  padding: var(--space-4);
+  border-right: 1px solid var(--line-subtle);
+}
+
+.kpis > div:last-child {
+  border-right: 0;
+}
+
+.kpis span {
+  display: block;
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.kpis strong {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--text-primary);
+  font-size: var(--fs-kpi);
+  line-height: var(--lh-flat);
+  letter-spacing: var(--tracking-crunch);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(420px, 0.95fr) minmax(360px, 1.05fr);
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.panel {
+  min-width: 0;
+  overflow: visible;
+}
+
+.panelHeader,
+.sheetHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.panelHeader h2,
+.sheetHeader h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.requestForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(150px, 0.8fr) minmax(150px, 0.8fr);
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.requestForm label,
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.requestForm input,
+.requestForm textarea {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-body);
+  padding: 0 var(--space-3);
+  outline: none;
+}
+
+.requestForm textarea {
+  height: 92px;
+  padding-top: var(--space-3);
+  resize: vertical;
+}
+
+.requestForm input:focus,
+.requestForm textarea:focus {
+  border-color: var(--line-strong);
+  background: var(--bg-raised);
+}
+
+.formFooter {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+}
+
+.taskItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.taskItem:last-child {
+  border-bottom: 0;
+}
+
+.taskItem strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taskItem span {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-label);
+}
+
+.taskMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.taskMeta span {
+  margin: 0;
+  padding: 5px var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--bg-elevated);
+  line-height: var(--lh-flat);
+}
+
+.statusPill[data-status="done"] {
+  color: var(--success);
+  border-color: var(--success-line);
+  background: var(--success-soft);
+}
+
+.statusPill[data-status="canceled"] {
+  color: var(--danger);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+.empty,
+.sheetEmpty {
+  padding: var(--space-5);
+  color: var(--text-tertiary);
+  font-size: var(--fs-body);
+}
+
+.sheetPanel {
+  overflow: hidden;
+}
+
+.sheetHeader {
+  align-items: center;
+}
+
+.sheetScroller {
+  overflow: auto;
+  max-height: 560px;
+}
+
+.sheetScroller::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.sheetTable {
+  width: 100%;
+  min-width: 1540px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: var(--fs-body);
+}
+
+.indexCol {
+  width: 46px;
+}
+
+.actionCol {
+  width: 58px;
+}
+
+.sheetTable th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 34px;
+  padding: 0 var(--space-2);
+  border-right: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sheetTable td {
+  height: 36px;
+  padding: 0;
+  border-right: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+  vertical-align: middle;
+}
+
+.sheetTable tr:nth-child(even) td {
+  background: var(--bg-soft);
+}
+
+.rowIndex {
+  color: var(--text-secondary);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  background: var(--bg-elevated);
+}
+
+.sheetInput,
+.sheetSelect {
+  width: 100%;
+  height: 35px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-body);
+  padding: 0 var(--space-2);
+  outline: none;
+}
+
+.sheetInput:focus,
+.sheetSelect:focus {
+  background: var(--bg-selected);
+  box-shadow: inset 0 0 0 1px var(--accent-line);
+}
+
+.sheetSelect {
+  appearance: none;
+  cursor: pointer;
+}
+
+.readonlyCell {
+  display: flex;
+  align-items: center;
+  min-height: 35px;
+  padding: 0 var(--space-2);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.readonlyCell[data-tone="success"] {
+  color: var(--success);
+  font-weight: var(--weight-semibold);
+}
+
+.readonlyCell[data-tone="danger"] {
+  color: var(--danger);
+  font-weight: var(--weight-semibold);
+}
+
+.readonlyCell[data-tone="warning"] {
+  color: var(--warning);
+  font-weight: var(--weight-semibold);
+}
+
+.actionCell {
+  text-align: center;
+}
+
+.actionCell button {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.actionCell button:hover {
+  color: var(--danger);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+.sheetFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--line-subtle);
+}
+
+.sheetFooter span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (max-width: 1180px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .requestForm {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero,
+  .panelHeader,
+  .sheetHeader,
+  .formFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .kpis,
+  .requestForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sheetTable td.rowIndex {
+  background: var(--bg-elevated);
+}
