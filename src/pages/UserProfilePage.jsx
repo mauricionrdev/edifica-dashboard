@@ -1289,7 +1289,7 @@ export default function UserProfilePage() {
 
 {assignOpen ? (
         <div className={styles.modalOverlay} onClick={() => setAssignOpen(false)}>
-          <form className={`${styles.taskModal} ${styles.demandModal}`} onSubmit={handleAssignTask} onClick={(event) => event.stopPropagation()}>
+          <form className={`${styles.taskModal} ${styles.demandModal} ${styles[`demandModal_${newTask.type}`] || ''}`.trim()} onSubmit={handleAssignTask} onClick={(event) => event.stopPropagation()}>
             <header className={styles.modalHeader}>
               <div>
                 <h2>Nova demanda</h2>
@@ -1302,28 +1302,28 @@ export default function UserProfilePage() {
 
             <div className={styles.demandFormContent}>
               <div className={styles.demandFormGrid}>
-                <div className={styles.labeledField}>
+                <div className={`${styles.labeledField} ${styles.fieldCompact}`.trim()}>
                   <span>Tipo</span>
                   <Select value={newTask.type} onChange={(event) => setNewTask((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
                     {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
                 </div>
-                <div className={styles.labeledField}>
+                <div className={`${styles.labeledField} ${styles.fieldCompact}`.trim()}>
                   <span>Prioridade</span>
                   <Select value={newTask.priority} onChange={(event) => setNewTask((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
                     {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
                 </div>
-                <label className={`${styles.labeledField} ${styles.fieldWide}`}>
+                <label className={`${styles.labeledField} ${styles.fieldTitle}`.trim()}>
                   <span>Título</span>
                   <input
                     value={newTask.title}
                     onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
-                    placeholder="Título da demanda"
+                    placeholder="Título"
                     aria-label="Título"
                   />
                 </label>
-                <div className={styles.labeledField}>
+                <div className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
                   <span>Responsável</span>
                   <Select
                     type="user"
@@ -1339,7 +1339,7 @@ export default function UserProfilePage() {
                     {demandAssigneeOptions.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                   </Select>
                 </div>
-                <div className={styles.labeledField}>
+                <div className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
                   <span>Cliente</span>
                   <Select
                     type="client"
@@ -1357,11 +1357,11 @@ export default function UserProfilePage() {
                     {filteredClientOptions.map((client) => <option key={client.id} value={client.id} data-avatar={getClientAvatar(client) || client.avatarUrl || ''} data-name={client.name}>{client.name}</option>)}
                   </Select>
                 </div>
-                <label className={styles.labeledField}>
+                <label className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
                   <span>Prazo</span>
                   <DateField value={newTask.dueDate} onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
                 </label>
-                <div className={`${styles.labeledField} ${styles.fieldWide}`}>
+                <div className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
                   <span>Colaboradores</span>
                   <Select
                     type="user"

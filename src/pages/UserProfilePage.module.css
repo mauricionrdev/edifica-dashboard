@@ -2690,3 +2690,262 @@
     width: min(820px, calc(100vw - 18px));
   }
 }
+
+/* v151 · Perfil público alinhado ao modal Nova demanda do Perfil interno */
+.demandModal {
+  width: min(760px, calc(100vw - 40px));
+  max-width: 760px;
+  max-height: calc(100dvh - 40px);
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.54), inset 0 1px 0 rgba(255, 255, 255, 0.018);
+  overflow: visible;
+}
+
+.demandModal_briefing {
+  width: min(900px, calc(100vw - 40px));
+  max-width: 900px;
+}
+
+.demandModal .modalHeader {
+  min-height: 76px;
+  padding: 18px 26px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: #09090b;
+}
+
+.demandModal .modalHeader h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+}
+
+.demandModal .modalHeader span {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 560;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.demandModal .iconButton {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 10px;
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+}
+
+.demandFormContent {
+  padding: 18px 26px 20px;
+  gap: 14px;
+  background: #030304;
+  overflow: visible;
+}
+
+.demandFormGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+}
+
+.demandFormGrid > .labeledField {
+  grid-column: span 2;
+}
+
+.demandFormGrid > .fieldCompact {
+  grid-column: span 1;
+}
+
+.demandFormGrid > .fieldTitle {
+  grid-column: span 2;
+}
+
+.demandFormGrid > .fieldDouble {
+  grid-column: span 2;
+}
+
+.demandFormGrid > .fieldWide,
+.selectedCollaborators.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.labeledField {
+  min-width: 0;
+  gap: 7px;
+}
+
+.labeledField > span {
+  color: var(--text-quaternary);
+  font-size: 10px;
+  font-weight: 740;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demandFormContent input,
+.demandFormContent textarea,
+.formSelect,
+.dateField > button {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.078);
+  border-radius: var(--workspace-card-radius);
+  background: #0b0b0d;
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.demandFormContent input {
+  height: 40px;
+  padding: 0 14px;
+}
+
+.demandFormContent textarea {
+  min-height: 110px;
+  padding: 14px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.demandFormContent input::placeholder,
+.demandFormContent textarea::placeholder {
+  color: var(--text-quaternary);
+}
+
+.demandFormContent input:focus,
+.demandFormContent textarea:focus {
+  border-color: rgba(255, 255, 255, 0.105);
+  background: #0d0d10;
+  outline: none;
+  box-shadow: none;
+}
+
+.briefingGrid,
+.routineFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.briefingGrid .fieldWide,
+.routineFormGrid .fieldWide {
+  grid-column: 1 / -1;
+}
+
+.attachmentComposer {
+  padding: 12px 0 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.attachmentComposer > div:first-child {
+  min-height: 24px;
+}
+
+.attachmentComposer span {
+  color: var(--text-quaternary);
+  font-size: 10px;
+  font-weight: 740;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.attachmentComposer strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.attachmentComposer > button {
+  justify-self: start;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.078);
+  border-radius: var(--workspace-card-radius);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.demandModal .modalFooter {
+  min-height: 64px;
+  padding: 12px 26px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  background: #09090b;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.demandModal .modalFooter button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.078);
+  border-radius: var(--workspace-card-radius);
+  background: rgba(255, 255, 255, 0.022);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 680;
+  box-shadow: none;
+}
+
+.demandModal .modalFooter button[type='submit'] {
+  border-color: rgba(245, 184, 0, 0.24);
+  background: rgba(245, 184, 0, 0.10);
+  color: var(--text-primary);
+}
+
+.demandModal .modalFooter button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.selectedCollaborators {
+  grid-column: 1 / -1;
+  padding-top: 0;
+}
+
+.selectedCollaborators > span {
+  min-height: 30px;
+  border-color: rgba(255, 255, 255, 0.070);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.selectedCollaborators :global(.avatar),
+.selectedCollaborators img {
+  background: #08090a;
+}
+
+@media (max-width: 900px) {
+  .demandFormGrid,
+  .briefingGrid,
+  .routineFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .demandFormGrid > .labeledField,
+  .demandFormGrid > .fieldCompact,
+  .demandFormGrid > .fieldTitle,
+  .demandFormGrid > .fieldDouble,
+  .demandFormGrid > .fieldWide {
+    grid-column: 1 / -1;
+  }
+
+  .demandModal,
+  .demandModal_briefing {
+    width: min(760px, calc(100vw - 24px));
+  }
+}
