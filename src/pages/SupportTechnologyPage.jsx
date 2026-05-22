@@ -16,7 +16,6 @@ import {
   deleteSupportDailyRow,
   deleteSupportDailySheet,
   listSupportDailyRows,
-  listSupportTasks,
   updateSupportDailyColumn,
   updateSupportDailyRow,
   updateSupportDailySheet,
@@ -269,7 +268,6 @@ export default function SupportTechnologyPage() {
   const [columns, setColumns] = useState(FALLBACK_DAILY_COLUMNS);
   const [rows, setRows] = useState([]);
   const [rowsLoading, setRowsLoading] = useState(true);
-  const [tasks, setTasks] = useState([]);
   const [savingCell, setSavingCell] = useState('');
   const [savingColumn, setSavingColumn] = useState('');
   const [creatingRow, setCreatingRow] = useState(false);
@@ -317,16 +315,9 @@ export default function SupportTechnologyPage() {
     }
   }, [activeSheetId]);
 
-  const refreshTasks = useCallback(async () => {
-    const data = await listSupportTasks();
-    setTasks(Array.isArray(data?.tasks) ? data.tasks : []);
-  }, []);
-
   useEffect(() => {
     refreshRows().catch(() => showToast('Não foi possível carregar a programação diária.', { variant: 'error' }));
-    refreshTasks().catch(() => showToast('Não foi possível carregar as demandas de suporte.', { variant: 'error' }));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
 
 
   const handleCreateTask = async (form) => {
