@@ -555,6 +555,36 @@
 .taskAvatarMore { color: var(--text-secondary); }
 .taskAvatarEmpty { color: var(--text-quaternary); font-size: var(--fs-body); }
 
+.taskAvatar_amber {
+  background: var(--accent);
+  color: #1a1300;
+}
+
+.taskAvatar_blue {
+  background: var(--info);
+  color: #001426;
+}
+
+.taskAvatar_violet {
+  background: #B784F0;
+  color: #160921;
+}
+
+.taskAvatar_emerald {
+  background: #34D399;
+  color: #031b10;
+}
+
+.taskAvatar_rose {
+  background: #FB7185;
+  color: #23040a;
+}
+
+.taskAvatar_slate {
+  background: var(--text-tertiary);
+  color: #071018;
+}
+
 .issueDue {
   color: var(--success-text);
   font-size: var(--fs-body);
@@ -700,11 +730,12 @@
 }
 
 .taskDrawerSection {
-  margin: 18px 24px;
-  overflow: hidden;
-  border: 1px solid var(--chassis-border);
-  border-radius: var(--workspace-card-radius);
-  background: var(--surface-panel);
+  margin: 0 24px;
+  overflow: visible;
+  border: 0;
+  border-top: 1px solid var(--chassis-border-subtle);
+  border-radius: 0;
+  background: transparent;
 }
 
 .taskDrawerSectionWorkflow {
@@ -727,13 +758,13 @@
 }
 
 .sectionTitleRow {
-  min-height: 42px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 15px;
-  border-bottom: 1px solid var(--chassis-border-subtle);
+  padding: 14px 0 8px;
+  border-bottom: 0;
 }
 
 .sectionTitleRow h4 {
@@ -754,14 +785,16 @@
 .workflowGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 16px 0 18px;
 }
 
 .workflowField {
   min-width: 0;
   display: grid;
-  gap: 10px;
-  padding: 14px 16px 16px;
-  border-right: 1px solid var(--chassis-border-subtle);
+  gap: 8px;
+  padding: 0;
+  border-right: 0;
 }
 
 .workflowField:last-child { border-right: 0; }
@@ -806,8 +839,8 @@
 .drawerPeopleList {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  padding: 16px;
+  gap: 8px;
+  padding: 8px 0 18px;
 }
 
 .drawerPersonChip,
@@ -834,8 +867,8 @@
 .workflowTimeline {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  padding: 16px;
+  gap: 8px;
+  padding: 8px 0 18px;
 }
 
 .workflowStep {
@@ -887,9 +920,9 @@
 }
 
 .taskDescriptionBox {
-  min-height: 104px;
+  min-height: 88px;
   margin: 0;
-  padding: 18px 18px;
+  padding: 8px 0 18px;
   color: var(--text-secondary);
   font-size: var(--fs-body);
   line-height: var(--lh-normal);
@@ -898,9 +931,9 @@
 
 .taskDescriptionInput {
   min-height: 130px;
-  margin: 18px;
-  width: calc(100% - 36px);
-  padding: 14px;
+  margin: 8px 0 18px;
+  width: 100%;
+  padding: 12px;
   resize: vertical;
 }
 
@@ -909,8 +942,8 @@
 .commentItem {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
-  gap: 14px;
-  padding: 16px;
+  gap: 12px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--chassis-border-subtle);
 }
 
@@ -956,8 +989,8 @@
 
 .commentForm {
   display: grid;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 14px 0 0;
   border-top: 1px solid var(--chassis-border-subtle);
 }
 

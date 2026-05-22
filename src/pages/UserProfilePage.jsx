@@ -273,11 +273,26 @@ function buildPublicTaskPeople(task, profileUser, userDirectory) {
       userId: personId || directoryUser?.id || '',
       userName: personName || directoryUser?.name || 'Usuário',
       name: personName || directoryUser?.name || 'Usuário',
-      avatarUrl: person?.avatarUrl || person?.avatar_url || directoryUser?.avatarUrl || '',
-      avatarColor: person?.avatarColor || person?.avatar_color || directoryUser?.avatarColor || directoryUser?.avatar_color || 'slate',
+      userEmail: person?.userEmail || person?.user_email || person?.email || directoryUser?.email || '',
+      avatarUrl: directoryUser?.avatarUrl || person?.avatarUrl || person?.avatar_url || '',
+      avatarColor: directoryUser?.avatarColor || directoryUser?.avatar_color || person?.avatarColor || person?.avatar_color || 'amber',
     });
     return acc;
   }, []).slice(0, 8);
+}
+
+
+function taskPeopleLabel(people = []) {
+  if (!people.length) return 'Sem colaboradores';
+  const names = people.map((person) => person.userName || person.name || 'Usuário');
+  if (names.length <= 3) return names.join(', ');
+  return `${names.slice(0, 3).join(', ')} e mais ${names.length - 3}`;
+}
+
+function avatarColorClassName(color) {
+  const value = String(color || 'amber').toLowerCase();
+  const allowed = ['amber', 'blue', 'violet', 'emerald', 'rose', 'slate'];
+  return allowed.includes(value) ? value : 'amber';
 }
 
 const PUBLIC_TASK_TABS = [
@@ -482,6 +497,7 @@ export default function UserProfilePage() {
   } = useOutletContext();
 
   const [profileTasks, setProfileTasks] = useState([]);
+  const [taskPeopleMap, setTaskPeopleMap] = useState({});
   const [tasksLoading, setTasksLoading] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignSaving, setAssignSaving] = useState(false);
@@ -616,6 +632,7 @@ export default function UserProfilePage() {
     }
     const res = await listUserProjectTasks(user.id);
     setProfileTasks(Array.isArray(res?.tasks) ? res.tasks : []);
+    setTaskPeopleMap({});
   }
 
   useEffect(() => {
@@ -629,7 +646,10 @@ export default function UserProfilePage() {
 
     listUserProjectTasks(profileUser.id)
       .then((res) => {
-        if (!cancelled) setProfileTasks(Array.isArray(res?.tasks) ? res.tasks : []);
+        if (!cancelled) {
+          setProfileTasks(Array.isArray(res?.tasks) ? res.tasks : []);
+          setTaskPeopleMap({});
+        }
       })
       .catch(() => {
         if (!cancelled) setProfileTasks([]);
@@ -696,6 +716,31 @@ export default function UserProfilePage() {
     });
     return orderTasks(byTab).slice(0, 12);
   }, [profileTasks, taskTab]);
+  useEffect(() => {
+    const pendingTasks = filteredTasks.filter((task) => task?.id && !Object.prototype.hasOwnProperty.call(taskPeopleMap, task.id));
+    if (!pendingTasks.length) return undefined;
+
+    let cancelled = false;
+
+    Promise.allSettled(pendingTasks.map((task) => listTaskCollaborators(task.id))).then((results) => {
+      if (cancelled) return;
+      setTaskPeopleMap((prev) => {
+        const next = { ...prev };
+        results.forEach((result, index) => {
+          const task = pendingTasks[index];
+          next[task.id] = result.status === 'fulfilled' && Array.isArray(result.value?.collaborators)
+            ? result.value.collaborators
+            : buildPublicTaskPeople(task, profileUser, userDirectory);
+        });
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filteredTasks, profileUser, taskPeopleMap, userDirectory]);
+
   const completionRate = profileTasks.length ? Math.round((completedTasksCount / profileTasks.length) * 100) : 0;
   const todayTasksCount = useMemo(() => profileTasks.filter(isTodayTask).length, [profileTasks]);
   const portfolioCount = gdvClients.length + gestorClients.length;
@@ -986,7 +1031,11 @@ export default function UserProfilePage() {
                   filteredTasks.map((task) => {
                     const status = getTaskStatus(task);
                     const stage = taskStageInfo(task);
-                    const people = buildPublicTaskPeople(task, profileUser, userDirectory);
+                    const people = buildPublicTaskPeople(
+                      { ...task, collaborators: taskPeopleMap[task.id] || task.collaborators || task.people || [] },
+                      profileUser,
+                      userDirectory
+                    );
                     return (
                       <article
                         key={task.id}
@@ -1030,11 +1079,15 @@ export default function UserProfilePage() {
 
                         <div className={styles.issuePeopleCell}>
                           {people.length ? (
-                            <span className={styles.taskAvatarStack} aria-label="Colaboradores">
+                            <span className={styles.taskAvatarStack} aria-label={`Colaboradores: ${taskPeopleLabel(people)}`} title={taskPeopleLabel(people)}>
                               {people.slice(0, 4).map((person) => {
                                 const avatar = getUserAvatar(person);
                                 return (
-                                  <span key={person.userId || person.userName} className={`${styles.taskAvatar} ${avatar ? styles.avatarWithPhoto : ''}`.trim()} title={person.userName || person.name}>
+                                  <span
+                                    key={person.userId || person.userName}
+                                    className={`${styles.taskAvatar} ${avatar ? styles.avatarWithPhoto : styles[`taskAvatar_${avatarColorClassName(person.avatarColor)}`] || ''}`.trim()}
+                                    title={person.userName || person.name}
+                                  >
                                     {avatar ? <img src={avatar} alt="" /> : initials(person.userName || person.name)}
                                   </span>
                                 );
@@ -1200,7 +1253,7 @@ export default function UserProfilePage() {
                     const personAvatar = getUserAvatar(person) || person.avatarUrl || '';
                     return (
                       <span key={person.userId || person.userName} className={styles.drawerPersonChip}>
-                        <span className={`${styles.drawerPersonAvatar} ${personAvatar ? styles.avatarWithPhoto : ''}`.trim()}>
+                        <span className={`${styles.drawerPersonAvatar} ${personAvatar ? styles.avatarWithPhoto : styles[`taskAvatar_${avatarColorClassName(person.avatarColor)}`] || ''}`.trim()}>
                           {personAvatar ? <img src={personAvatar} alt="" /> : initials(person.userName || person.name)}
                         </span>
                         <span>{person.userName || person.name}</span>
