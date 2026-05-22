@@ -907,7 +907,7 @@ export default function UserProfilePage() {
             </div>
             {/* <p>{profileTasks.length ? `${profileUser.name.split(' ')[0]} possui ${openTasksCount} tarefas em aberto.` : `${profileUser.name.split(' ')[0]} não possui tarefas em aberto.`}</p> */}
             <div className={styles.profileMeta}>
-              {profileUser.email ? <span>{profileUser.email}</span> : null}
+              <span>{todayTasksCount === 1 ? `${profileUser.name.split(' ')[0]} possui 1 demanda agendada para hoje.` : todayTasksCount > 1 ? `${profileUser.name.split(' ')[0]} possui ${todayTasksCount} demandas agendadas para hoje.` : `${profileUser.name.split(' ')[0]} não possui demandas agendadas para hoje.`}</span>
             </div>
           </div>
         </div>
@@ -944,7 +944,7 @@ export default function UserProfilePage() {
               <div className={styles.sectionTitleBlock}>
                 <h2>
                   <ChecklistIcon size={16} strokeWidth={2} aria-hidden="true" />
-                  <span>Tarefas atribuídas</span>
+                  <span>Minhas tarefas</span>
                 </h2>
               </div>
               <button type="button" className={styles.primaryButton} onClick={openAssignModal}>
