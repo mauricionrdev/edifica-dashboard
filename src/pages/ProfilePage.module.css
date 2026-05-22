@@ -12962,3 +12962,73 @@ button:focus-visible {
 .workflowStep {
   min-height: unset;
 }
+
+/* ==========================================================================
+   v158 · Avatares sem vazamento de fallback no Perfil interno
+   ========================================================================== */
+.avatar,
+.photoAvatar,
+.taskAvatar,
+.taskAvatarResponsible,
+.commentAvatar,
+.commentAvatarPhoto,
+.collaboratorAvatar,
+.userAvatar,
+.personAvatar,
+.settingsPreviewAvatar,
+.settingsColorAvatar {
+  position: relative;
+  border: 0;
+  box-shadow: none;
+  overflow: hidden;
+  background-clip: border-box;
+}
+
+.avatar img,
+.photoAvatar img,
+.taskAvatar img,
+.taskAvatarResponsible img,
+.commentAvatar img,
+.commentAvatarPhoto img,
+.collaboratorAvatar img,
+.userAvatar img,
+.personAvatar img,
+.settingsPreviewAvatar img,
+.settingsColorAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.avatar:has(img),
+.photoAvatar:has(img),
+.taskAvatar:has(img),
+.taskAvatarResponsible:has(img),
+.commentAvatar:has(img),
+.commentAvatarPhoto:has(img),
+.collaboratorAvatar:has(img),
+.userAvatar:has(img),
+.personAvatar:has(img),
+.settingsPreviewAvatar:has(img),
+.settingsColorAvatar:has(img) {
+  background: transparent;
+  color: transparent;
+}
+
+.taskAvatar,
+.taskAvatarResponsible {
+  border: 0;
+  box-shadow: none;
+}
+
+.operationRow:hover .taskAvatar {
+  box-shadow: none;
+}
