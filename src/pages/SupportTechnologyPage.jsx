@@ -37,6 +37,11 @@ const FALLBACK_DAILY_COLUMNS = [
   { key: 'notes', label: 'Observações', width: 320, system: true },
 ];
 
+const BLANK_SHEET_COLUMN_WIDTH = 168;
+const BLANK_SHEET_ROW_HEIGHT = 44;
+const BLANK_SHEET_MIN_COLUMNS = 6;
+const BLANK_SHEET_MIN_ROWS = 14;
+
 const TEXT_COLORS = [
   '#ffffff', '#f8fafc', '#e5e7eb', '#cbd5e1', '#94a3b8', '#64748b',
   '#22c55e', '#86efac', '#84cc16', '#bef264', '#facc15', '#fde68a',
@@ -92,7 +97,7 @@ function stripHtml(value = '') {
 }
 
 function normalizeColumns(columns = []) {
-  const source = Array.isArray(columns) && columns.length ? columns : FALLBACK_DAILY_COLUMNS;
+  const source = Array.isArray(columns) ? columns : FALLBACK_DAILY_COLUMNS;
   return source.map((column) => ({
     key: column.key,
     label: column.label || 'Coluna',
@@ -465,13 +470,21 @@ export default function SupportTechnologyPage() {
     Array.isArray(userDirectory) ? userDirectory.filter((item) => item?.id && item?.active !== false) : []
   ), [userDirectory]);
 
-  const supportMaster = useMemo(() => activeUsers.find((item) => (
-    String(item.email || '').toLowerCase() === MASTER_SUPPORT_EMAIL
-    || String(item.name || '').trim().toLowerCase() === MASTER_SUPPORT_NAME
-  )) || null, [activeUsers]);
+  const supportMaster = useMemo(() => {
+    const directoryMatch = activeUsers.find((item) => (
+      String(item.email || '').toLowerCase() === MASTER_SUPPORT_EMAIL
+      || String(item.name || '').trim().toLowerCase() === MASTER_SUPPORT_NAME
+    ));
+    if (directoryMatch) return directoryMatch;
+    const currentUserIsMaster = (
+      String(user?.email || '').toLowerCase() === MASTER_SUPPORT_EMAIL
+      || String(user?.name || '').trim().toLowerCase() === MASTER_SUPPORT_NAME
+    );
+    return currentUserIsMaster ? user : null;
+  }, [activeUsers, user]);
 
   const supportUsers = useMemo(() => {
-    if (supportMaster) return [supportMaster];
+    if (supportMaster?.id) return [supportMaster];
     const direct = activeUsers.filter((item) => SUPPORT_ROLES.has(item.role));
     if (direct.length) return direct;
     const fallback = activeUsers.filter((item) => FALLBACK_SUPPORT_ROLES.has(item.role));
@@ -543,6 +556,14 @@ export default function SupportTechnologyPage() {
     }
   }, []);
 
+  const estimateBlankSheetSize = useCallback(() => {
+    const workspaceWidth = Math.max(900, scrollerRef.current?.clientWidth || window.innerWidth - 360 || 1100);
+    const workspaceHeight = Math.max(560, scrollerRef.current?.clientHeight || window.innerHeight - 360 || 620);
+    const columnCount = Math.max(BLANK_SHEET_MIN_COLUMNS, Math.ceil((workspaceWidth - 54) / BLANK_SHEET_COLUMN_WIDTH));
+    const rowCount = Math.max(BLANK_SHEET_MIN_ROWS, Math.ceil((workspaceHeight - 96) / BLANK_SHEET_ROW_HEIGHT));
+    return { columnCount, rowCount, columnWidth: BLANK_SHEET_COLUMN_WIDTH };
+  }, []);
+
   const handleCreateTask = async (form) => {
     const title = cleanText(form.title);
     if (!title) {
@@ -583,7 +604,7 @@ export default function SupportTechnologyPage() {
   const handleAddSheet = async () => {
     setCreatingSheet(true);
     try {
-      const data = await createSupportDailySheet({ name: `Planilha ${sheets.length + 1}` });
+      const data = await createSupportDailySheet({ name: `Planilha ${sheets.length + 1}`, ...estimateBlankSheetSize() });
       setSheets(Array.isArray(data?.sheets) ? data.sheets : []);
       if (data?.sheet?.id) await refreshRows(data.sheet.id);
     } catch (err) {
@@ -791,10 +812,11 @@ export default function SupportTechnologyPage() {
             fallbackColor={supportMaster?.avatarColor}
           />
           <div className={styles.heroCopy}>
-            <span className={styles.eyebrow}>Operação de suporte</span>
+            <span className={styles.eyebrow}>Tecnologia</span>
             <div className={styles.nameRow}>
               <h1>{supportMaster?.name || 'Mauricio Nunes'}</h1>
               <span className={styles.roleBadge}>{roleLabel(supportMaster?.role || 'suporte_tecnologia')}</span>
+              <span className={styles.ownerBadge}>Responsável da tela</span>
             </div>
           </div>
           <div className={styles.heroActions}>
@@ -804,6 +826,34 @@ export default function SupportTechnologyPage() {
               </Button>
             ) : null}
             <span className={styles.heroIcon} aria-hidden="true"><BotIcon size={18} /></span>
+          </div>
+        </div>
+
+        <div className={styles.heroTags} aria-label="Planilhas da tecnologia">
+          <span className={styles.tagLabel}>Planilhas</span>
+          <div className={styles.sheetTabs}>
+            {sheets.map((sheet) => (
+              <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined}>
+                <input
+                  value={sheet.name}
+                  disabled={!canEditBoard}
+                  aria-label={`Nome da planilha ${sheet.name}`}
+                  onFocus={() => {
+                    if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
+                  }}
+                  onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
+                  onBlur={(event) => canEditBoard && handleSheetNameCommit(sheet.id, event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
+                  }}
+                />
+                {canEditBoard && sheets.length > 1 ? (
+                  <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
+                    <CloseIcon size={11} />
+                  </button>
+                ) : null}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -832,31 +882,6 @@ export default function SupportTechnologyPage() {
             <span className={styles.editorHint}>Selecione uma célula para editar texto. Clique direito para excluir linha ou coluna.</span>
           </div>
         ) : null}
-
-        <div className={styles.sheetTabs}>
-          {sheets.map((sheet) => (
-            <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined}>
-              <input
-                value={sheet.name}
-                disabled={!canEditBoard}
-                aria-label={`Nome da planilha ${sheet.name}`}
-                onFocus={() => {
-                  if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
-                }}
-                onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
-                onBlur={(event) => canEditBoard && handleSheetNameCommit(sheet.id, event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
-                }}
-              />
-              {canEditBoard && sheets.length > 1 ? (
-                <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
-                  <CloseIcon size={11} />
-                </button>
-              ) : null}
-            </div>
-          ))}
-        </div>
 
         <div className={styles.sheetFrame}>
           <div
@@ -937,9 +962,10 @@ export default function SupportTechnologyPage() {
         <DemandModal
           open={demandModalOpen}
           clients={clients}
-          users={supportUsers}
-          defaultAssigneeId={defaultAssigneeId}
-          submitting={creatingTask}
+          users={activeUsers}
+          assigneeUsers={supportUsers}
+          defaultAssigneeUserId={defaultAssigneeId}
+          creating={creatingTask}
           onClose={() => setDemandModalOpen(false)}
           onSubmit={handleCreateTask}
         />

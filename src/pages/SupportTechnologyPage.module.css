@@ -29,7 +29,14 @@
   background: var(--surface-panel);
 }
 
-.profileHero { flex: 0 0 auto; }
+
+.profileHero {
+  flex: 0 0 auto;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(245, 184, 0, 0.055), transparent 38%),
+    var(--surface-panel);
+}
 
 .heroIdentity {
   min-height: 108px;
@@ -97,7 +104,8 @@
   white-space: nowrap;
 }
 
-.roleBadge {
+.roleBadge,
+.ownerBadge {
   flex: 0 0 auto;
   min-height: 24px;
   display: inline-flex;
@@ -111,6 +119,12 @@
   font-weight: var(--weight-semibold);
   line-height: var(--lh-flat);
   white-space: nowrap;
+}
+
+.ownerBadge {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .heroActions {
@@ -139,7 +153,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 620px;
+  min-height: 640px;
   overflow: hidden;
 }
 
@@ -368,6 +382,23 @@
   color: var(--danger-text);
 }
 
+.heroTags {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px 18px 92px;
+}
+
+.tagLabel {
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
 .sheetTabs {
   width: 100%;
   min-width: 0;
@@ -376,8 +407,8 @@
   gap: 8px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 12px 20px 10px;
-  border-bottom: 1px solid var(--chassis-border-subtle);
+  padding: 0 2px 2px;
+  border-bottom: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
 }
@@ -405,23 +436,24 @@
 }
 
 .sheetTab {
-  height: 34px;
-  min-width: 180px;
-  max-width: 280px;
+  height: 32px;
+  min-width: 128px;
+  max-width: 260px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   flex: 0 0 auto;
-  padding: 0 6px 0 12px;
-  border: 1px solid var(--chassis-border);
-  border-radius: 999px;
-  background: var(--surface-raised);
+  padding: 0 7px 0 13px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
   transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
 .sheetTab[data-active='true'] {
   border-color: var(--accent-line);
   background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .sheetTab:hover {
@@ -734,6 +766,11 @@
     justify-content: flex-start;
   }
 
+  .heroTags {
+    grid-template-columns: 1fr;
+    padding: 0 16px 16px;
+  }
+
   .nameRow {
     align-items: flex-start;
     flex-direction: column;
@@ -742,7 +779,6 @@
 
   .panelHeader,
   .editorBar,
-  .sheetTabs,
   .panelFooter {
     padding-right: 14px;
     padding-left: 14px;

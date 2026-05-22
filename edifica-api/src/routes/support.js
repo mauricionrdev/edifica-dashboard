@@ -42,6 +42,16 @@ async function safeAlter(sql) {
   }
 }
 
+function spreadsheetColumnLabel(index) {
+  let n = Number(index || 0);
+  let label = '';
+  do {
+    label = String.fromCharCode(65 + (n % 26)) + label;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return label;
+}
+
 function supportColumnKey(label = '') {
   const base = String(label || 'Coluna')
     .normalize('NFD')
@@ -173,7 +183,7 @@ async function listDailyColumns(sheetId = DEFAULT_SHEET_ID) {
   return rows.map((row) => ({
     key: row.column_key,
     label: row.label,
-    width: Math.max(72, Math.min(900, Number(row.width || 180))),
+    width: Math.max(5, Math.min(900, Number(row.width || 180))),
     position: Number(row.position || 0),
     system: Boolean(row.is_system),
   }));
@@ -300,17 +310,42 @@ router.post('/daily-program/sheets', requirePermission('support.board.edit'), as
   try {
     await ensureSupportSchema();
     const name = clean(req.body?.name || 'Nova planilha', 80) || 'Nova planilha';
+    const columnCount = Math.max(1, Math.min(60, Number(req.body?.columnCount || 8)));
+    const rowCount = Math.max(1, Math.min(200, Number(req.body?.rowCount || 18)));
+    const columnWidth = Math.max(5, Math.min(900, Number(req.body?.columnWidth || 168)));
     const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_sheets');
     const sheet = { id: uuid(), name, position: Number(positionRows[0]?.next_position || 1) };
     await query('INSERT INTO support_daily_sheets (id, name, position, created_by_user_id) VALUES (?, ?, ?, ?)', [sheet.id, sheet.name, sheet.position, req.user.id]);
-    for (const column of DEFAULT_DAILY_COLUMNS) {
+
+    for (let index = 0; index < columnCount; index += 1) {
+      const label = spreadsheetColumnLabel(index);
       await query(
         `INSERT INTO support_daily_columns (id, sheet_id, column_key, label, width, position, is_system)
-         VALUES (?, ?, ?, ?, ?, ?, 1)`,
-        [uuid(), sheet.id, supportColumnKey(column.label), column.label, column.width, column.position]
+         VALUES (?, ?, ?, ?, ?, ?, 0)`,
+        [uuid(), sheet.id, supportColumnKey(label), label, columnWidth, index + 1]
       );
     }
-    res.status(201).json({ sheet, sheets: await listSheets(), columns: await listDailyColumns(sheet.id), rows: [] });
+
+    for (let index = 0; index < rowCount; index += 1) {
+      await query(
+        `INSERT INTO support_daily_rows (
+          id, sheet_id, position, client_name, implementation_status, niche, prompt_status,
+          connection_status, access_status, activity_status, api_key, notes, updated_by_user_id
+        ) VALUES (?, ?, ?, '', '', '', '', '', '', '', '', '', ?)`,
+        [uuid(), sheet.id, index + 1, req.user.id]
+      );
+    }
+
+    const rows = await query(
+      `SELECT sdr.*, u.name AS updated_by_name
+         FROM support_daily_rows sdr
+         LEFT JOIN users u ON u.id = sdr.updated_by_user_id
+        WHERE sdr.sheet_id = ?
+        ORDER BY sdr.position ASC, sdr.created_at ASC
+        LIMIT 500`,
+      [sheet.id]
+    );
+    res.status(201).json({ sheet, sheets: await listSheets(), columns: await listDailyColumns(sheet.id), rows: rows.map((row) => serializeSupportRow(row, {}, {})) });
   } catch (err) {
     next(err);
   }
@@ -352,7 +387,7 @@ router.post('/daily-program/columns', requirePermission('support.board.edit'), a
   try {
     const sheetId = await resolveSheetId(req.body?.sheetId || req.query?.sheetId);
     const label = clean(req.body?.label || 'Nova coluna', 80) || 'Nova coluna';
-    const width = Math.max(72, Math.min(900, Number(req.body?.width || 180)));
+    const width = Math.max(5, Math.min(900, Number(req.body?.width || 180)));
     const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_columns WHERE sheet_id = ?', [sheetId]);
     const column = { key: supportColumnKey(label), label, width, position: Number(positionRows[0]?.next_position || 1), system: false };
     await query(
@@ -372,7 +407,7 @@ router.patch('/daily-program/columns/:key', requirePermission('support.board.edi
     const updates = [];
     const params = [];
     if (req.body?.label !== undefined) { updates.push('label = ?'); params.push(clean(req.body.label, 80) || 'Coluna'); }
-    if (req.body?.width !== undefined) { updates.push('width = ?'); params.push(Math.max(72, Math.min(900, Number(req.body.width || 180)))); }
+    if (req.body?.width !== undefined) { updates.push('width = ?'); params.push(Math.max(5, Math.min(900, Number(req.body.width || 180)))); }
     if (req.body?.position !== undefined) { updates.push('position = ?'); params.push(Math.max(0, Number(req.body.position) || 0)); }
     if (!updates.length) throw badRequest('Nenhum campo para atualizar.');
     params.push(key);
