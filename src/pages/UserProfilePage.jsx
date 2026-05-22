@@ -15,7 +15,7 @@ import { getUserAvatar } from '../utils/avatarStorage.js';
 import { roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import DateField from '../components/ui/DateField.jsx';
-import { CloseIcon, PlusIcon } from '../components/ui/Icons.jsx';
+import { ChecklistIcon, CloseIcon, PlusIcon } from '../components/ui/Icons.jsx';
 import { buildProfilePath, matchesEntityRouteSegment } from '../utils/entityPaths.js';
 import styles from './UserProfilePage.module.css';
 
@@ -112,6 +112,61 @@ function taskKindLabel(task) {
   return 'Tarefa';
 }
 
+function taskStageInfo(task) {
+  if (getTaskStatus(task) === 'done') return { label: 'Concluída', progress: 100, tone: 'done' };
+  if (getTaskStatus(task) === 'overdue') return { label: 'Atrasada', progress: 34, tone: 'overdue' };
+  const labels = {
+    todo: ['Aberta', 14, 'open'],
+    in_progress: ['Em execução', 42, 'active'],
+    activation_gdv: ['Ativação GDV', 58, 'active'],
+    access_delivery: ['Acessos', 70, 'active'],
+    traffic_activation: ['Tráfego', 82, 'active'],
+    final_validation: ['Validação', 92, 'active'],
+    canceled: ['Cancelada', 100, 'overdue'],
+  };
+  const [label, progress, tone] = labels[task?.status] || labels.todo;
+  return { label, progress, tone };
+}
+
+
+function findDirectoryUser(userDirectory, id, name) {
+  const users = Array.isArray(userDirectory) ? userDirectory : [];
+  return users.find((entry) => String(entry?.id || '') === String(id || ''))
+    || users.find((entry) => sameName(entry?.name, name))
+    || null;
+}
+
+function buildPublicTaskPeople(task, profileUser, userDirectory) {
+  const candidates = [
+    { userId: task?.assigneeUserId, userName: task?.assigneeName },
+    { userId: task?.createdByUserId, userName: task?.createdByName },
+    { userId: profileUser?.id, userName: profileUser?.name },
+  ];
+
+  const seen = new Set();
+  return candidates.reduce((acc, person) => {
+    const key = String(person.userId || person.userName || '').trim().toLowerCase();
+    if (!key || seen.has(key)) return acc;
+    seen.add(key);
+    const directoryUser = findDirectoryUser(userDirectory, person.userId, person.userName);
+    acc.push({
+      ...directoryUser,
+      userId: person.userId || directoryUser?.id || '',
+      userName: person.userName || directoryUser?.name || 'Usuário',
+      name: person.userName || directoryUser?.name || 'Usuário',
+    });
+    return acc;
+  }, []);
+}
+
+const PUBLIC_TASK_TABS = [
+  { value: 'all', label: 'Todas' },
+  { value: 'today', label: 'Hoje' },
+  { value: 'overdue', label: 'Atrasadas' },
+  { value: 'critical', label: 'Críticas' },
+  { value: 'done', label: 'Concluídas' },
+];
+
 function compactText(value, fallback = '—') {
   const text = String(value || '').trim();
   return text || fallback;
@@ -163,6 +218,7 @@ export default function UserProfilePage() {
   const [editingCommentId, setEditingCommentId] = useState('');
   const [commentDraft, setCommentDraft] = useState('');
   const [newTask, setNewTask] = useState({ title: '', description: '', dueDate: '' });
+  const [taskTab, setTaskTab] = useState('all');
 
   useEffect(() => {
     if (!Array.isArray(userDirectory) || userDirectory.length === 0) {
@@ -258,10 +314,26 @@ export default function UserProfilePage() {
     [profileUser?.name, relatedClients]
   );
 
-  const orderedTasks = useMemo(() => orderTasks(profileTasks).slice(0, 12), [profileTasks]);
   const openTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) !== 'done').length, [profileTasks]);
   const overdueTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) === 'overdue').length, [profileTasks]);
   const completedTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) === 'done').length, [profileTasks]);
+  const taskTabCounts = useMemo(() => ({
+    all: profileTasks.length,
+    today: profileTasks.filter(isTodayTask).length,
+    overdue: overdueTasksCount,
+    critical: profileTasks.filter((task) => task.priority === 'critical' || getTaskStatus(task) === 'overdue').length,
+    done: completedTasksCount,
+  }), [completedTasksCount, overdueTasksCount, profileTasks]);
+  const filteredTasks = useMemo(() => {
+    const byTab = profileTasks.filter((task) => {
+      if (taskTab === 'today') return isTodayTask(task);
+      if (taskTab === 'overdue') return getTaskStatus(task) === 'overdue';
+      if (taskTab === 'critical') return task.priority === 'critical' || getTaskStatus(task) === 'overdue';
+      if (taskTab === 'done') return getTaskStatus(task) === 'done';
+      return true;
+    });
+    return orderTasks(byTab).slice(0, 12);
+  }, [profileTasks, taskTab]);
   const completionRate = profileTasks.length ? Math.round((completedTasksCount / profileTasks.length) * 100) : 0;
   const todayTasksCount = useMemo(() => profileTasks.filter(isTodayTask).length, [profileTasks]);
   const portfolioCount = gdvClients.length + gestorClients.length;
@@ -451,9 +523,6 @@ export default function UserProfilePage() {
           </div>
         </div>
 
-        <button type="button" className={styles.primaryButton} onClick={() => setAssignOpen(true)}>
-          Nova demanda
-        </button>
 
         <div className={styles.statRail}>
           <div className={styles.statItem}>
@@ -483,33 +552,56 @@ export default function UserProfilePage() {
         <main className={styles.mainColumn}>
           <section className={styles.workPanel}>
             <header className={styles.sectionHeader}>
-              <div>
-                <h2>Tarefas atribuídas</h2>
-                {/* <p>{profileTasks.length ? `${profileTasks.length} registros vinculados ao perfil` : 'Nenhuma tarefa vinculada'}</p> */}
+              <div className={styles.sectionTitleBlock}>
+                <h2>
+                  <ChecklistIcon size={16} strokeWidth={2} aria-hidden="true" />
+                  <span>Tarefas atribuídas</span>
+                </h2>
               </div>
+              <button type="button" className={styles.primaryButton} onClick={() => setAssignOpen(true)}>
+                Nova demanda
+              </button>
             </header>
+
+            <div className={styles.taskTabs} aria-label="Filtros de tarefas">
+              {PUBLIC_TASK_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  className={`${styles.taskTab} ${taskTab === tab.value ? styles.taskTabActive : ''}`.trim()}
+                  onClick={() => setTaskTab(tab.value)}
+                  aria-current={taskTab === tab.value ? 'page' : undefined}
+                >
+                  <span>{tab.label}</span>
+                  <strong>{taskTabCounts[tab.value] || 0}</strong>
+                </button>
+              ))}
+            </div>
 
             <div className={styles.issueTable}>
               <div className={styles.issueHead} aria-hidden="true">
                 <span />
                 <span>Tarefa</span>
-                <span>Contexto</span>
                 <span>Propriedades</span>
+                <span>Etapa</span>
+                <span>Colab.</span>
                 <span>Prazo</span>
               </div>
 
               <div className={styles.issueList}>
                 {tasksLoading ? (
                   <StateBlock variant="loading" compact title="Carregando tarefas" />
-                ) : orderedTasks.length === 0 ? (
-                  <div className={styles.emptyState}>Sem tarefas vinculadas.</div>
+                ) : filteredTasks.length === 0 ? (
+                  <div className={styles.emptyState}>Sem tarefas neste filtro.</div>
                 ) : (
-                  orderedTasks.map((task) => {
+                  filteredTasks.map((task) => {
                     const status = getTaskStatus(task);
+                    const stage = taskStageInfo(task);
+                    const people = buildPublicTaskPeople(task, profileUser, userDirectory);
                     return (
                       <article
                         key={task.id}
-                        className={styles.issueRow}
+                        className={`${styles.issueRow} ${status === 'done' ? styles.issueRowDone : ''}`.trim()}
                         role="button"
                         tabIndex={0}
                         onClick={() => openTaskDetail(task)}
@@ -526,14 +618,43 @@ export default function UserProfilePage() {
 
                         <div className={styles.issueTitle}>
                           <strong>{compactText(task.title, 'Tarefa sem título')}</strong>
-                          {/* {task.description ? <span>{task.description}</span> : null} */}
+                          {(task.clientName || task.projectName) ? (
+                            <span>{task.clientName || task.projectName}</span>
+                          ) : null}
                         </div>
 
-                        <span className={styles.issueContext}>{task.clientName || task.projectName || '—'}</span>
-
                         <div className={styles.issueProperties}>
-                          <span className={`${styles.tag} ${styles[`tag_${status}`] || ''}`.trim()}>{getTaskStatusLabel(task)}</span>
                           <span className={`${styles.tag} ${styles.tagKind}`}>{taskKindLabel(task)}</span>
+                          {task.priority === 'critical' ? <span className={`${styles.tag} ${styles.tag_overdue}`}>Crítica</span> : null}
+                        </div>
+
+                        <div className={styles.issueStageCell}>
+                          <span
+                            className={`${styles.stagePill} ${styles[`stage_${stage.tone}`] || ''}`.trim()}
+                            style={{ '--public-stage-progress': `${stage.progress}%` }}
+                          >
+                            <span className={styles.stageTrack} aria-hidden="true" />
+                            <span className={styles.stageLabel}>{stage.label}</span>
+                            <span className={styles.stageValue}>{stage.progress}%</span>
+                          </span>
+                        </div>
+
+                        <div className={styles.issuePeopleCell}>
+                          {people.length ? (
+                            <span className={styles.taskAvatarStack} aria-label="Colaboradores">
+                              {people.slice(0, 4).map((person) => {
+                                const avatar = getUserAvatar(person);
+                                return (
+                                  <span key={person.userId || person.userName} className={styles.taskAvatar} title={person.userName || person.name}>
+                                    {avatar ? <img src={avatar} alt="" /> : initials(person.userName || person.name)}
+                                  </span>
+                                );
+                              })}
+                              {people.length > 4 ? <span className={`${styles.taskAvatar} ${styles.taskAvatarMore}`}>+{people.length - 4}</span> : null}
+                            </span>
+                          ) : (
+                            <span className={styles.taskAvatarEmpty}>—</span>
+                          )}
                         </div>
 
                         <span className={`${styles.issueDue} ${isOverdue(task) ? styles.issueDueLate : ''}`.trim()}>{formatDateLabel(task.dueDate)}</span>
