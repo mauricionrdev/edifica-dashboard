@@ -2287,3 +2287,406 @@
     padding-right: 18px;
   }
 }
+
+/* v149.1 — funções completas da Nova demanda pública */
+.briefingGrid,
+.routineFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.routineFormGrid {
+  grid-template-columns: minmax(160px, 0.42fr) minmax(0, 1fr);
+}
+
+.fieldThird {
+  min-width: 0;
+}
+
+.attachmentComposer {
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.attachmentComposer > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.attachmentComposer span {
+  color: var(--text-quaternary);
+  font-size: 10px;
+  font-weight: 740;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.attachmentComposer strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.attachmentComposer > button {
+  justify-self: start;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.attachmentComposer > button:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.attachmentPreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.attachmentPreviewItem {
+  position: relative;
+  min-width: 0;
+  min-height: 94px;
+  margin: 0;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  overflow: hidden;
+}
+
+.attachmentPreviewItem img,
+.attachmentPdfPreview {
+  width: 100%;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  object-fit: cover;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.attachmentPdfPreview {
+  background: var(--surface-panel);
+}
+
+.attachmentPreviewItem figcaption {
+  min-width: 0;
+  padding: 6px 8px;
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachmentPreviewItem button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--workspace-panel-bg);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .briefingGrid,
+  .routineFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .attachmentPreviewGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* v150 · Refinamento rigoroso do Perfil público */
+.avatarWithPhoto,
+.avatar.avatarWithPhoto,
+.taskAvatar.avatarWithPhoto,
+.commentAvatar:has(img),
+.drawerPersonAvatar.avatarWithPhoto {
+  background: #08090a;
+  color: var(--text-secondary);
+}
+
+.avatarWithPhoto img,
+.avatar.avatarWithPhoto img,
+.taskAvatar.avatarWithPhoto img,
+.drawerPersonAvatar.avatarWithPhoto img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.avatar,
+.taskAvatar,
+.commentAvatar,
+.drawerPersonAvatar {
+  border: 0;
+  box-shadow: none;
+}
+
+.roleBadgeBlackHole {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-color: rgba(245, 184, 0, 0.18);
+  background:
+    radial-gradient(circle at 52% 50%, rgba(1, 1, 2, 0.92) 0 27%, transparent 28%),
+    conic-gradient(from 0deg, rgba(245, 184, 0, 0.00), rgba(245, 184, 0, 0.18), rgba(104, 125, 255, 0.10), rgba(245, 184, 0, 0.00)),
+    #010102;
+  background-size: 100% 100%, 180% 180%, 100% 100%;
+  background-position: center, 0% 50%, center;
+  animation: roleBlackHolePulsePublic 3.8s ease-in-out infinite, roleBlackHoleFlowPublic 6.8s linear infinite;
+}
+
+.roleBadgeBlackHole::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 0 37%, rgba(245, 184, 0, 0.11) 38% 43%, transparent 44% 100%);
+  opacity: 0.75;
+  transform-origin: center;
+  animation: roleBlackHoleSpinPublic 5.2s linear infinite;
+}
+
+.roleBadgeBlackHole::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.58), inset 0 1px 0 var(--surface-panel);
+}
+
+@keyframes roleBlackHoleFlowPublic {
+  0% { background-position: center, 0% 50%, center; }
+  100% { background-position: center, 180% 50%, center; }
+}
+
+@keyframes roleBlackHoleSpinPublic {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes roleBlackHolePulsePublic {
+  0%, 100% { filter: saturate(1); }
+  50% { filter: saturate(1.16); }
+}
+
+.issueProperties .tag {
+  height: 30px;
+  min-height: 30px;
+  max-width: 180px;
+  padding: 0 15px;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 560;
+  letter-spacing: .005em;
+  text-transform: none;
+  line-height: 1;
+}
+
+.issueProperties .tagKind,
+.kind_other,
+.kind_project {
+  color: #9AA6BA;
+  border-color: rgba(146, 155, 176, .18);
+}
+
+.kind_briefing {
+  color: #F4C430;
+  border-color: rgba(244, 196, 48, .24);
+}
+
+.kind_support,
+.kind_access {
+  color: #6AAEFF;
+  border-color: rgba(106, 174, 255, .26);
+}
+
+.kind_routine {
+  color: #C4B5FD;
+  border-color: rgba(196, 181, 253, .24);
+}
+
+.kind_bug {
+  color: #FF6B8A;
+  border-color: rgba(255, 107, 138, .24);
+}
+
+.stagePill {
+  height: 30px;
+  min-height: 30px;
+  min-width: 150px;
+  padding: 0 13px;
+  background: transparent;
+}
+
+.stageTrack {
+  opacity: .82;
+}
+
+.drawerPeopleList {
+  min-width: 0;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.drawerPersonChip {
+  min-width: 0;
+  max-width: 230px;
+  height: 32px;
+  padding: 0 11px 0 4px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.drawerPersonChip > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawerPersonAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--avatar-fallback-bg, #08090a);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  font-size: 9.5px;
+  font-weight: 750;
+}
+
+.demandModal {
+  width: min(860px, calc(100vw - 44px));
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+}
+
+.demandModal .modalHeader {
+  min-height: 64px;
+  padding: 14px 22px;
+}
+
+.demandFormContent {
+  padding: 18px 22px;
+  background: var(--workspace-bg);
+}
+
+.demandFormGrid,
+.briefingGrid,
+.routineFormGrid {
+  gap: 10px;
+}
+
+.labeledField {
+  gap: 6px;
+}
+
+.labeledField > span {
+  padding-left: 1px;
+}
+
+.demandFormContent input,
+.demandFormContent textarea,
+.formSelect,
+.dateField > button {
+  min-height: 38px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  border-radius: var(--workspace-control-radius);
+}
+
+.demandFormContent input:focus,
+.demandFormContent textarea:focus {
+  border-color: var(--workspace-panel-border);
+  background: var(--field-bg-hover);
+  outline: none;
+  box-shadow: none;
+}
+
+.formSelect {
+  width: 100%;
+  max-width: none;
+}
+
+.attachmentComposer {
+  background: var(--workspace-panel-bg);
+}
+
+.attachmentComposer > button,
+.modalFooter button {
+  min-height: 34px;
+  border-radius: var(--workspace-control-radius);
+  box-shadow: none;
+}
+
+.modalFooter button[type='submit'] {
+  border-color: rgba(245, 184, 0, 0.24);
+  background: rgba(245, 184, 0, 0.11);
+  color: var(--text-primary);
+}
+
+.modalFooter button[type='submit']:hover:not(:disabled) {
+  border-color: rgba(245, 184, 0, 0.38);
+  background: rgba(245, 184, 0, 0.16);
+}
+
+.taskDrawerPanel {
+  width: min(940px, 54vw);
+}
+
+.workflowGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .taskDrawerPanel {
+    width: min(820px, calc(100vw - 18px));
+  }
+}

@@ -7,6 +7,7 @@ import {
   createTaskComment,
   getTask,
   listTaskComments,
+  listTaskCollaborators,
   listUserProjectTasks,
   updateTask as updateProjectTask,
   updateTaskComment,
@@ -90,17 +91,54 @@ function getTaskStatus(task) {
   return 'open';
 }
 
+function publicTaskKind(task) {
+  const direct = String(task?.kind || task?.type || task?.demandType || '').toLowerCase();
+  if (['briefing', 'routine', 'support', 'bug', 'adjustment', 'access', 'project', 'other'].includes(direct)) return direct;
+  const label = taskKindLabel(task).toLowerCase();
+  if (label.includes('briefing')) return 'briefing';
+  if (label.includes('rotina')) return 'routine';
+  if (label.includes('suporte')) return 'support';
+  if (label.includes('bug')) return 'bug';
+  if (label.includes('acesso')) return 'access';
+  if (label.includes('projeto')) return 'project';
+  return 'other';
+}
+
+function statusLabel(task) {
+  if (task?.status === 'canceled') return 'Cancelada';
+  if (getTaskStatus(task) === 'overdue') return 'Atrasada';
+  if (getTaskStatus(task) === 'done') return publicTaskKind(task) === 'support' || publicTaskKind(task) === 'bug' ? 'Resolvido' : 'Concluída';
+  const kind = publicTaskKind(task);
+  const briefingLabels = {
+    todo: 'Briefing',
+    in_progress: 'Implementação',
+    activation_gdv: 'Ativação GDV',
+    access_delivery: 'Acessos',
+    traffic_activation: 'Tráfego',
+    final_validation: 'Validação',
+    done: 'Concluída',
+  };
+  const genericLabels = {
+    todo: 'Aberta',
+    in_progress: 'Em execução',
+    activation_gdv: 'Ativação GDV',
+    access_delivery: 'Acessos',
+    traffic_activation: 'Tráfego',
+    final_validation: 'Validação',
+  };
+  return (kind === 'briefing' ? briefingLabels : genericLabels)[task?.status || 'todo'] || 'Aberta';
+}
+
 function getTaskStatusLabel(task) {
-  const status = getTaskStatus(task);
-  if (status === 'done') return 'Concluída';
-  if (status === 'overdue') return 'Atrasada';
-  return 'Aberta';
+  return statusLabel(task);
 }
 
 function canEditProfileTask(task, currentUser) {
   if (!task?.id || !currentUser?.id) return false;
-  if (task.assigneeUserId === currentUser.id) return true;
-  if (task.createdByUserId === currentUser.id) return true;
+  const currentId = String(currentUser.id);
+  if (String(task.assigneeUserId || task.assignee_user_id || '') === currentId) return true;
+  if (String(task.createdByUserId || task.created_by_user_id || '') === currentId) return true;
+  if (Array.isArray(task.collaborators) && task.collaborators.some((item) => String(item?.userId || item?.user_id || item?.id || '') === currentId)) return true;
   return ['responsible', 'collaborator'].includes(task.profileRelation);
 }
 
@@ -125,27 +163,37 @@ function isTodayTask(task) {
 }
 
 function taskKindLabel(task) {
-  const text = `${task?.title || ''} ${task?.description || ''}`.toLowerCase();
+  const text = `${task?.title || ''} ${task?.description || ''} ${task?.kind || ''} ${task?.type || ''}`.toLowerCase();
   if (text.includes('briefing')) return 'Briefing';
-  if (text.includes('rotina')) return 'Rotina';
-  if (text.includes('suporte')) return 'Suporte';
+  if (text.includes('rotina') || text.includes('routine')) return 'Rotina';
+  if (text.includes('suporte') || text.includes('support')) return 'Suporte';
+  if (text.includes('bug')) return 'Bug';
+  if (text.includes('acesso') || text.includes('access')) return 'Acesso';
   return 'Tarefa';
 }
 
 function taskStageInfo(task) {
-  if (getTaskStatus(task) === 'done') return { label: 'Concluída', progress: 100, tone: 'done' };
-  if (getTaskStatus(task) === 'overdue') return { label: 'Atrasada', progress: 34, tone: 'overdue' };
-  const labels = {
-    todo: ['Aberta', 14, 'open'],
-    in_progress: ['Em execução', 42, 'active'],
-    activation_gdv: ['Ativação GDV', 58, 'active'],
-    access_delivery: ['Acessos', 70, 'active'],
-    traffic_activation: ['Tráfego', 82, 'active'],
-    final_validation: ['Validação', 92, 'active'],
-    canceled: ['Cancelada', 100, 'overdue'],
-  };
-  const [label, progress, tone] = labels[task?.status] || labels.todo;
-  return { label, progress, tone };
+  const kind = publicTaskKind(task);
+  const status = task?.status || (getTaskStatus(task) === 'done' ? 'done' : 'todo');
+
+  if (task?.status === 'canceled') return { label: 'Cancelada', progress: 100, tone: 'overdue' };
+
+  if (kind === 'briefing') {
+    const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
+    const currentIndex = Math.max(0, order.indexOf(getTaskStatus(task) === 'done' ? 'done' : status));
+    const progress = Math.round(((currentIndex + 1) / order.length) * 100);
+    return {
+      label: statusLabel(task),
+      progress,
+      tone: getTaskStatus(task) === 'done' ? 'done' : getTaskStatus(task) === 'overdue' ? 'overdue' : currentIndex >= 4 ? 'active' : 'open',
+    };
+  }
+
+  if (getTaskStatus(task) === 'done') return { label: statusLabel(task), progress: 100, tone: 'done' };
+  if (status === 'in_progress') return { label: statusLabel(task), progress: 62, tone: 'active' };
+  if (getTaskStatus(task) === 'overdue') return { label: statusLabel(task), progress: 42, tone: 'overdue' };
+  if (isTodayTask(task)) return { label: statusLabel(task), progress: 48, tone: 'open' };
+  return { label: statusLabel(task), progress: 28, tone: 'open' };
 }
 
 
@@ -158,25 +206,31 @@ function findDirectoryUser(userDirectory, id, name) {
 
 function buildPublicTaskPeople(task, profileUser, userDirectory) {
   const candidates = [
-    { userId: task?.assigneeUserId, userName: task?.assigneeName },
-    { userId: task?.createdByUserId, userName: task?.createdByName },
+    ...(Array.isArray(task?.collaborators) ? task.collaborators : []),
+    ...(Array.isArray(task?.people) ? task.people : []),
+    { userId: task?.assigneeUserId || task?.assignee_user_id, userName: task?.assigneeName || task?.assignee_name },
+    { userId: task?.createdByUserId || task?.created_by_user_id, userName: task?.createdByName || task?.created_by_name },
     { userId: profileUser?.id, userName: profileUser?.name },
   ];
 
   const seen = new Set();
   return candidates.reduce((acc, person) => {
-    const key = String(person.userId || person.userName || '').trim().toLowerCase();
+    const personId = person?.userId || person?.user_id || person?.id;
+    const personName = person?.userName || person?.user_name || person?.name;
+    const key = String(personId || personName || '').trim().toLowerCase();
     if (!key || seen.has(key)) return acc;
     seen.add(key);
-    const directoryUser = findDirectoryUser(userDirectory, person.userId, person.userName);
+    const directoryUser = findDirectoryUser(userDirectory, personId, personName);
     acc.push({
       ...directoryUser,
-      userId: person.userId || directoryUser?.id || '',
-      userName: person.userName || directoryUser?.name || 'Usuário',
-      name: person.userName || directoryUser?.name || 'Usuário',
+      userId: personId || directoryUser?.id || '',
+      userName: personName || directoryUser?.name || 'Usuário',
+      name: personName || directoryUser?.name || 'Usuário',
+      avatarUrl: person?.avatarUrl || person?.avatar_url || directoryUser?.avatarUrl || '',
+      avatarColor: person?.avatarColor || person?.avatar_color || directoryUser?.avatarColor || directoryUser?.avatar_color || 'slate',
     });
     return acc;
-  }, []);
+  }, []).slice(0, 8);
 }
 
 const PUBLIC_TASK_TABS = [
@@ -611,11 +665,13 @@ export default function UserProfilePage() {
     setEditingCommentId('');
 
     try {
-      const [taskRes, commentsRes] = await Promise.all([
+      const [taskRes, commentsRes, collaboratorsRes] = await Promise.all([
         getTask(task.id),
         listTaskComments(task.id),
+        listTaskCollaborators(task.id).catch(() => ({ collaborators: [] })),
       ]);
-      const loadedTask = taskRes?.task || task;
+      const loadedCollaborators = Array.isArray(collaboratorsRes?.collaborators) ? collaboratorsRes.collaborators : [];
+      const loadedTask = { ...(taskRes?.task || task), collaborators: loadedCollaborators };
       setActiveTask(loadedTask);
       setTitleDraft(loadedTask.title || '');
       setDescriptionDraft(loadedTask.description || '');
@@ -788,7 +844,7 @@ export default function UserProfilePage() {
         <div className={styles.heroIdentity}>
           <button
             type="button"
-            className={styles.avatar}
+            className={`${styles.avatar} ${avatarUrl ? styles.avatarWithPhoto : ''}`.trim()}
             onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
             disabled={!avatarUrl}
             aria-label={avatarUrl ? 'Visualizar foto' : undefined}
@@ -799,7 +855,7 @@ export default function UserProfilePage() {
           <div className={styles.heroCopy}>
             <div className={styles.nameRow}>
               <h1>{profileUser.name}</h1>
-              <span className={styles.roleBadge}>{roleLabel(profileUser.role)}</span>
+              <span className={`${styles.roleBadge} ${roleLabel(profileUser.role) === 'Suporte de tecnologia (TI)' ? styles.roleBadgeBlackHole : ''}`.trim()}>{roleLabel(profileUser.role)}</span>
             </div>
             {/* <p>{profileTasks.length ? `${profileUser.name.split(' ')[0]} possui ${openTasksCount} tarefas em aberto.` : `${profileUser.name.split(' ')[0]} não possui tarefas em aberto.`}</p> */}
             <div className={styles.profileMeta}>
@@ -909,7 +965,7 @@ export default function UserProfilePage() {
                         </div>
 
                         <div className={styles.issueProperties}>
-                          <span className={`${styles.tag} ${styles.tagKind}`}>{taskKindLabel(task)}</span>
+                          <span className={`${styles.tag} ${styles.tagKind} ${styles[`kind_${publicTaskKind(task)}`] || ''}`.trim()}>{taskKindLabel(task)}</span>
                           {task.priority === 'critical' ? <span className={`${styles.tag} ${styles.tag_overdue}`}>Crítica</span> : null}
                         </div>
 
@@ -930,7 +986,7 @@ export default function UserProfilePage() {
                               {people.slice(0, 4).map((person) => {
                                 const avatar = getUserAvatar(person);
                                 return (
-                                  <span key={person.userId || person.userName} className={styles.taskAvatar} title={person.userName || person.name}>
+                                  <span key={person.userId || person.userName} className={`${styles.taskAvatar} ${avatar ? styles.avatarWithPhoto : ''}`.trim()} title={person.userName || person.name}>
                                     {avatar ? <img src={avatar} alt="" /> : initials(person.userName || person.name)}
                                   </span>
                                 );
@@ -954,7 +1010,9 @@ export default function UserProfilePage() {
         </main>
       </div>
 
-      {activeTaskOpen && activeTask ? (
+      {activeTaskOpen && activeTask ? (() => {
+        const drawerPeople = buildPublicTaskPeople(activeTask, profileUser, userDirectory);
+        return (
         <aside className={styles.taskDrawerOverlay} aria-label="Demanda" onClick={closeTaskDetail}>
           <section className={styles.taskDrawerPanel} onClick={(event) => event.stopPropagation()}>
             <header className={styles.taskDrawerTopbar}>
@@ -1086,6 +1144,26 @@ export default function UserProfilePage() {
 
               <section className={styles.taskDrawerSection}>
                 <div className={styles.sectionTitleRow}>
+                  <h4>Colaboradores</h4>
+                  <span>{drawerPeople.length}</span>
+                </div>
+                <div className={styles.drawerPeopleList}>
+                  {drawerPeople.length ? drawerPeople.map((person) => {
+                    const personAvatar = getUserAvatar(person) || person.avatarUrl || '';
+                    return (
+                      <span key={person.userId || person.userName} className={styles.drawerPersonChip}>
+                        <span className={`${styles.drawerPersonAvatar} ${personAvatar ? styles.avatarWithPhoto : ''}`.trim()}>
+                          {personAvatar ? <img src={personAvatar} alt="" /> : initials(person.userName || person.name)}
+                        </span>
+                        <span>{person.userName || person.name}</span>
+                      </span>
+                    );
+                  }) : <div className={styles.emptyText}>Sem colaboradores vinculados.</div>}
+                </div>
+              </section>
+
+              <section className={styles.taskDrawerSection}>
+                <div className={styles.sectionTitleRow}>
                   <h4>Fluxo</h4>
                   <span>{taskKindLabel(activeTask)}</span>
                 </div>
@@ -1195,7 +1273,8 @@ export default function UserProfilePage() {
             </div>
           </section>
         </aside>
-      ) : null}
+        );
+      })() : null}
 
       {avatarPreviewOpen && avatarUrl ? (
         <div className={styles.avatarPreviewOverlay} role="presentation" onClick={() => setAvatarPreviewOpen(false)}>
@@ -1223,18 +1302,18 @@ export default function UserProfilePage() {
 
             <div className={styles.demandFormContent}>
               <div className={styles.demandFormGrid}>
-                <label className={styles.labeledField}>
+                <div className={styles.labeledField}>
                   <span>Tipo</span>
                   <Select value={newTask.type} onChange={(event) => setNewTask((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
                     {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
-                </label>
-                <label className={styles.labeledField}>
+                </div>
+                <div className={styles.labeledField}>
                   <span>Prioridade</span>
                   <Select value={newTask.priority} onChange={(event) => setNewTask((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
                     {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
-                </label>
+                </div>
                 <label className={`${styles.labeledField} ${styles.fieldWide}`}>
                   <span>Título</span>
                   <input
@@ -1244,7 +1323,7 @@ export default function UserProfilePage() {
                     aria-label="Título"
                   />
                 </label>
-                <label className={styles.labeledField}>
+                <div className={styles.labeledField}>
                   <span>Responsável</span>
                   <Select
                     type="user"
@@ -1259,8 +1338,8 @@ export default function UserProfilePage() {
                   >
                     {demandAssigneeOptions.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                   </Select>
-                </label>
-                <label className={styles.labeledField}>
+                </div>
+                <div className={styles.labeledField}>
                   <span>Cliente</span>
                   <Select
                     type="client"
@@ -1277,12 +1356,12 @@ export default function UserProfilePage() {
                     <option value="">Sem cliente</option>
                     {filteredClientOptions.map((client) => <option key={client.id} value={client.id} data-avatar={getClientAvatar(client) || client.avatarUrl || ''} data-name={client.name}>{client.name}</option>)}
                   </Select>
-                </label>
+                </div>
                 <label className={styles.labeledField}>
                   <span>Prazo</span>
                   <DateField value={newTask.dueDate} onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
                 </label>
-                <label className={`${styles.labeledField} ${styles.fieldWide}`}>
+                <div className={`${styles.labeledField} ${styles.fieldWide}`}>
                   <span>Colaboradores</span>
                   <Select
                     type="user"
@@ -1301,7 +1380,7 @@ export default function UserProfilePage() {
                     <option value="">Adicionar colaborador</option>
                     {availableNewTaskCollaborators.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                   </Select>
-                </label>
+                </div>
                 {selectedNewTaskCollaborators.length ? (
                   <div className={`${styles.selectedCollaborators} ${styles.fieldWide}`}>
                     {selectedNewTaskCollaborators.map((item) => (
