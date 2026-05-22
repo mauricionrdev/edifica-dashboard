@@ -71,7 +71,7 @@ function normalizeColumns(columns = []) {
   return source.map((column) => ({
     key: column.key,
     label: column.label || 'Coluna',
-    width: Math.max(72, Math.min(900, Number(column.width || 180))),
+    width: Math.max(5, Number(column.width || 180)),
     system: column.system !== false,
   }));
 }
@@ -279,8 +279,6 @@ export default function SupportTechnologyPage() {
   const [demandModalOpen, setDemandModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
   const resizeRef = useRef(null);
-  const sheetTabsRef = useRef(null);
-  const sheetScrollerRef = useRef(null);
 
   const activeUsers = useMemo(() => (Array.isArray(userDirectory) ? userDirectory : []).filter((item) => item?.id && item?.active !== false), [userDirectory]);
 
@@ -522,7 +520,7 @@ export default function SupportTechnologyPage() {
     function handleMove(event) {
       const state = resizeRef.current;
       if (!state) return;
-      const width = Math.max(72, Math.min(900, state.startWidth + event.clientX - state.startX));
+      const width = Math.max(5, state.startWidth + event.clientX - state.startX);
       setColumns((current) => current.map((column) => (column.key === state.key ? { ...column, width } : column)));
     }
     async function handleUp() {
@@ -547,18 +545,6 @@ export default function SupportTechnologyPage() {
     };
   }, [activeSheetId, columns, refreshRows]);
 
-
-  const scrollSheets = (direction) => {
-    const node = sheetTabsRef.current;
-    if (!node) return;
-    node.scrollBy({ left: direction * Math.max(220, Math.floor(node.clientWidth * 0.72)), behavior: 'smooth' });
-  };
-
-  const scrollColumns = (direction) => {
-    const node = sheetScrollerRef.current;
-    if (!node) return;
-    node.scrollBy({ left: direction * Math.max(260, Math.floor(node.clientWidth * 0.72)), behavior: 'smooth' });
-  };
 
   return (
     <div className={styles.page}>
@@ -597,15 +583,7 @@ export default function SupportTechnologyPage() {
         </header>
 
         <div className={styles.sheetTopbar}>
-          <button type="button" className={styles.scrollButton} onClick={() => scrollSheets(-1)} aria-label="Rolar planilhas para a esquerda">←</button>
-          <div
-            className={styles.sheetTabs}
-            ref={sheetTabsRef}
-            onWheel={(event) => {
-              if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-              event.currentTarget.scrollLeft += event.deltaY;
-            }}
-          >
+          <div className={styles.sheetTabs}>
             {sheets.map((sheet) => (
               <div key={sheet.id} className={`${styles.sheetTab} ${sheet.id === activeSheetId ? styles.sheetTabActive : ''}`.trim()}>
                 <input
@@ -628,23 +606,9 @@ export default function SupportTechnologyPage() {
               </div>
             ))}
           </div>
-          <button type="button" className={styles.scrollButton} onClick={() => scrollSheets(1)} aria-label="Rolar planilhas para a direita">→</button>
         </div>
 
-        <div className={styles.columnScrollBar}>
-          <button type="button" onClick={() => scrollColumns(-1)} aria-label="Rolar colunas para a esquerda">←</button>
-          <span />
-          <button type="button" onClick={() => scrollColumns(1)} aria-label="Rolar colunas para a direita">→</button>
-        </div>
-
-        <div
-          className={styles.sheetScroller}
-          ref={sheetScrollerRef}
-          onWheel={(event) => {
-            if (!event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-            event.currentTarget.scrollLeft += event.deltaY;
-          }}
-        >
+        <div className={styles.sheetScroller}>
           <table className={styles.sheetTable}>
             <colgroup>
               <col style={{ width: 46 }} />

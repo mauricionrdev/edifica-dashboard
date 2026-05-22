@@ -1,5 +1,6 @@
 .page {
   display: flex;
+  width: 100%;
   min-width: 0;
   flex-direction: column;
   gap: var(--space-4);
@@ -23,12 +24,20 @@
   padding: var(--space-5) var(--space-6);
 }
 
-.heroIdentity {
+.heroIdentity,
+.heroNameRow,
+.heroActions,
+.sheetActions,
+.sheetHeader h2,
+.sheetFooter span {
   display: inline-flex;
   min-width: 0;
   align-items: center;
-  gap: var(--space-4);
 }
+
+.heroIdentity { gap: var(--space-4); }
+.heroNameRow { gap: var(--space-2); }
+.heroActions { gap: var(--space-3); }
 
 .supportAvatar {
   --avatar-size: 44px;
@@ -37,75 +46,18 @@
   min-width: var(--avatar-size);
   max-width: var(--avatar-size);
   flex: 0 0 var(--avatar-size);
+  overflow: hidden;
   border: 0;
+  border-radius: var(--radius-pill);
   background: var(--bg-app);
 }
 
 .supportAvatar img {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
   object-position: center;
-}
-
-.heroNameRow {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.roleBadgeBlackHole {
-  position: relative;
-  display: inline-flex;
-  height: 27px;
-  min-height: 27px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 var(--space-3);
-  overflow: hidden;
-  isolation: isolate;
-  color: var(--text-primary);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.80) 0 21%, rgba(245, 184, 0, 0.055) 22% 38%, transparent 39% 100%),
-    #010102;
-  font-size: var(--fs-tiny);
-  font-weight: var(--weight-semibold);
-  line-height: 1;
-  white-space: nowrap;
-  animation: roleBlackHolePulse 3.8s ease-in-out infinite;
-}
-
-.roleBadgeBlackHole::before {
-  position: absolute;
-  z-index: -1;
-  inset: -42%;
-  background: conic-gradient(from 0deg, transparent 0deg, rgba(245, 184, 0, 0.16) 54deg, transparent 116deg, rgba(104, 125, 255, 0.10) 176deg, transparent 246deg, var(--accent-soft) 304deg, transparent 360deg);
-  content: '';
-  opacity: 0.62;
-  animation: roleBlackHoleSpin 7s linear infinite;
-}
-
-.roleBadgeBlackHole::after {
-  position: absolute;
-  z-index: -1;
-  inset: 3px;
-  border-radius: inherit;
-  background: radial-gradient(circle at 50% 50%, rgba(1, 1, 2, 0.96) 0 34%, rgba(1, 1, 2, 0.38) 35% 57%, transparent 58%);
-  content: '';
-  opacity: 0.9;
-}
-
-@keyframes roleBlackHoleSpin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes roleBlackHolePulse {
-  0%, 100% { box-shadow: 0 0 0 rgba(245, 184, 0, 0); }
-  50% { box-shadow: 0 0 22px rgba(245, 184, 0, 0.10); }
 }
 
 .heroTitle {
@@ -134,22 +86,56 @@
 }
 
 .hero h1 {
+  overflow: hidden;
   font-size: var(--fs-xl);
   line-height: var(--lh-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.heroActions,
-.sheetActions {
+.roleBadgeBlackHole {
+  position: relative;
   display: inline-flex;
-  min-width: 0;
+  height: 27px;
+  min-height: 27px;
   align-items: center;
-  gap: var(--space-3);
+  justify-content: center;
+  padding: 0 var(--space-3);
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--text-primary);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--bg-app);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  animation: roleBlackHolePulse 3.8s ease-in-out infinite;
 }
 
-.sheetActions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
+.roleBadgeBlackHole::before {
+  position: absolute;
+  z-index: -1;
+  inset: -42%;
+  background: conic-gradient(from 0deg, transparent 0deg, var(--accent-soft) 54deg, transparent 116deg, var(--info-soft) 176deg, transparent 246deg, var(--accent-soft) 304deg, transparent 360deg);
+  content: '';
+  opacity: 0.68;
+  animation: roleBlackHoleSpin 7s linear infinite;
 }
+
+.roleBadgeBlackHole::after {
+  position: absolute;
+  z-index: -1;
+  inset: 3px;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 50%, var(--bg-app) 0 34%, transparent 58%);
+  content: '';
+  opacity: 0.95;
+}
+
+@keyframes roleBlackHoleSpin { to { transform: rotate(360deg); } }
+@keyframes roleBlackHolePulse { 50% { box-shadow: var(--shadow-glow); } }
 
 .heroIcon {
   display: grid;
@@ -165,8 +151,8 @@
 
 .sheetPanel {
   display: flex;
+  width: 100%;
   min-width: 0;
-  min-height: 560px;
   overflow: hidden;
   flex-direction: column;
 }
@@ -185,45 +171,164 @@
 }
 
 .sheetHeader h2 {
-  display: inline-flex;
-  align-items: center;
   gap: var(--space-2);
   font-size: var(--fs-lg);
   line-height: var(--lh-tight);
 }
 
-.sheetTopbar {
-  display: flex;
+.sheetActions {
   min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.sheetToolbar {
+  position: relative;
+  z-index: 5;
+  display: inline-flex;
+  height: 34px;
+  min-width: max-content;
   align-items: center;
-  padding: var(--space-2) var(--space-4);
+  gap: 2px;
+  flex: 0 0 auto;
+  padding: 3px;
+  overflow: visible;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.sheetToolbar button,
+.colorTrigger {
+  display: inline-grid;
+  min-width: 28px;
+  height: 26px;
+  place-items: center;
+  color: var(--text-secondary);
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sheetToolbar button:hover,
+.colorTrigger:hover,
+.colorTrigger[aria-expanded='true'] {
+  color: var(--text-primary);
+  background: var(--bg-soft);
+}
+
+.sheetToolbar button:disabled,
+.colorTrigger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toolbarDivider {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--line-subtle);
+}
+
+.colorPicker {
+  position: relative;
+  display: inline-grid;
+  overflow: visible;
+}
+
+.colorMenu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  width: 180px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+
+.colorSwatch {
+  display: grid;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--swatch-color, var(--bg-canvas));
+  cursor: pointer;
+}
+
+.colorSwatch[data-empty='true'] {
+  background: linear-gradient(135deg, transparent 0 44%, var(--danger-text) 45% 55%, transparent 56% 100%), var(--bg-canvas);
+}
+
+.colorSwatch:hover {
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 1px var(--accent-soft);
+}
+
+.sheetTopbar {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
+  padding: var(--space-3) var(--space-4) var(--space-2);
   border-bottom: 1px solid var(--line-subtle);
   background: var(--bg-canvas);
 }
 
 .sheetTabs {
-  display: inline-flex;
+  display: flex;
   width: 100%;
   min-width: 0;
-  flex: 1 1 auto;
   align-items: center;
   gap: var(--space-2);
-  overflow: auto;
-  scrollbar-width: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 0 var(--space-2);
+  scroll-behavior: smooth;
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
 }
 
 .sheetTabs::-webkit-scrollbar {
-  display: none;
+  height: 7px;
+}
+
+.sheetTabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sheetTabs::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-pill);
+  background: var(--line);
+}
+
+.sheetTabs::-webkit-scrollbar-thumb:hover {
+  background: var(--line-strong);
 }
 
 .sheetTab {
   display: inline-flex;
   height: 32px;
-  min-width: 136px;
-  max-width: 210px;
+  min-width: 148px;
+  max-width: 220px;
   align-items: center;
   gap: var(--space-1);
+  flex: 0 0 auto;
   padding: 0 var(--space-2);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
@@ -238,6 +343,7 @@
 .sheetTab input {
   min-width: 0;
   flex: 1 1 auto;
+  overflow: hidden;
   color: var(--text-primary);
   border: 0;
   outline: 0;
@@ -245,102 +351,41 @@
   font: inherit;
   font-size: var(--fs-small);
   font-weight: var(--weight-semibold);
-}
-
-.sheetTab button {
-  display: grid;
-  width: 18px;
-  height: 18px;
-  place-items: center;
-  flex: 0 0 auto;
-  color: var(--text-tertiary);
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.sheetToolbar {
-  display: inline-flex;
-  height: 34px;
-  min-width: max-content;
-  align-items: center;
-  gap: 2px;
-  flex: 0 0 auto;
-  padding: 3px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
-  background: var(--bg-elevated);
-}
-
-.sheetToolbar button,
-.colorTool {
-  display: inline-grid;
-  min-width: 28px;
-  height: 26px;
-  place-items: center;
-  color: var(--text-secondary);
-  border: 0;
-  border-radius: var(--radius-1);
-  background: transparent;
-  font-size: var(--fs-small);
-  font-weight: var(--weight-semibold);
-  line-height: 1;
-  cursor: pointer;
-}
-
-.sheetToolbar button:hover,
-.colorTool:hover,
-.sheetToolbar button[data-active='true'] {
-  color: var(--text-primary);
-  background: var(--bg-soft);
-}
-
-.sheetToolbar button:disabled,
-.colorTool:has(input:disabled) {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.toolbarDivider {
-  width: 1px;
-  height: 18px;
-  margin: 0 3px;
-  background: var(--line-subtle);
-}
-
-.colorTool {
-  position: relative;
-  overflow: hidden;
-}
-
-.colorTool input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sheetScroller {
   width: 100%;
   max-width: 100%;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
 }
 
 .sheetScroller::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+  height: 8px;
+}
+
+.sheetScroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sheetScroller::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-pill);
+  background: var(--line);
+}
+
+.sheetScroller::-webkit-scrollbar-thumb:hover {
+  background: var(--line-strong);
 }
 
 .sheetTable {
   width: max-content;
   min-width: 100%;
+  max-width: none;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
@@ -360,11 +405,6 @@
   white-space: nowrap;
 }
 
-.sheetTable th:last-child,
-.sheetTable td:last-child {
-  border-right: 0;
-}
-
 .sheetTable td {
   height: 38px;
   padding: 0;
@@ -373,6 +413,11 @@
   border-bottom: 1px solid var(--line-subtle);
   background: var(--bg-canvas);
   vertical-align: middle;
+}
+
+.sheetTable th:last-child,
+.sheetTable td:last-child {
+  border-right: 0;
 }
 
 .sheetTable tr:nth-child(even) td {
@@ -387,49 +432,30 @@
   align-items: center;
   gap: var(--space-1);
   padding: 0 var(--space-3);
-}
-
-.headerCellInner span:not(.resizeHandle) {
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.headerCellInner input {
+.headerCellInner input,
+.headerCellInner span:not(.resizeHandle) {
   min-width: 0;
   flex: 1 1 auto;
+  overflow: hidden;
   color: var(--text-tertiary);
   border: 0;
   outline: 0;
   background: transparent;
   font: inherit;
+  text-overflow: ellipsis;
   text-transform: uppercase;
-}
-
-.headerCellInner button {
-  display: inline-grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  flex: 0 0 auto;
-  color: var(--text-tertiary);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-canvas);
-  cursor: pointer;
-}
-
-.headerCellInner button:hover {
-  color: var(--danger-text);
-  border-color: var(--danger-line);
-  background: var(--danger-soft);
+  white-space: nowrap;
 }
 
 .resizeHandle {
   position: absolute;
   top: 0;
-  right: -3px;
+  right: 0;
   z-index: 3;
-  width: 6px;
+  width: 8px;
   height: 100%;
   cursor: col-resize;
 }
@@ -437,7 +463,7 @@
 .resizeHandle::after {
   position: absolute;
   top: 8px;
-  right: 2px;
+  right: 3px;
   bottom: 8px;
   width: 1px;
   background: transparent;
@@ -448,25 +474,18 @@
   background: var(--accent-line);
 }
 
-.rowIndex {
-  color: var(--text-secondary);
-  font-weight: var(--weight-semibold);
-  text-align: center;
-  background: var(--bg-elevated);
-  font-variant-numeric: tabular-nums;
-}
-
-.sheetInput {
+.sheetInput,
+.readonlyCell {
   display: block;
   width: 100%;
-  min-height: 37px;
   min-width: 0;
+  min-height: 37px;
   padding: 10px var(--space-3);
   overflow: hidden;
   color: var(--text-primary);
   border: 0;
   border-radius: 0;
-  outline: none;
+  outline: 0;
   background: transparent;
   font: inherit;
   font-size: var(--fs-body);
@@ -475,19 +494,8 @@
   white-space: nowrap;
 }
 
-
-.sheetInput b,
-.sheetInput strong,
-.readonlyCell b,
-.readonlyCell strong {
-  font-weight: 800;
-}
-
-.sheetInput i,
-.sheetInput em,
-.readonlyCell i,
-.readonlyCell em {
-  font-style: italic;
+.readonlyCell {
+  color: var(--text-secondary);
 }
 
 .sheetInput:focus,
@@ -496,52 +504,64 @@
   box-shadow: inset 0 0 0 1px var(--accent-line);
 }
 
+.sheetInput b,
+.sheetInput strong,
+.readonlyCell b,
+.readonlyCell strong { font-weight: 800; }
+.sheetInput i,
+.sheetInput em,
+.readonlyCell i,
+.readonlyCell em { font-style: italic; }
+
 .sheetInput[data-tone='success'],
-.readonlyCell[data-tone='success'] {
-  color: var(--success-text);
-}
-
+.readonlyCell[data-tone='success'] { color: var(--success-text); }
 .sheetInput[data-tone='danger'],
-.readonlyCell[data-tone='danger'] {
-  color: var(--danger-text);
-}
-
+.readonlyCell[data-tone='danger'] { color: var(--danger-text); }
 .sheetInput[data-tone='warning'],
-.readonlyCell[data-tone='warning'] {
-  color: var(--warning-text);
-}
+.readonlyCell[data-tone='warning'] { color: var(--warning-text); }
 
-.readonlyCell {
-  display: block;
-  min-height: 37px;
-  padding: 10px var(--space-3);
-  overflow: hidden;
+.rowIndex {
   color: var(--text-secondary);
-  font-weight: var(--weight-medium);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  background: var(--bg-elevated);
+  font-variant-numeric: tabular-nums;
 }
 
 .actionCell {
   text-align: center;
 }
 
-.actionCell button {
+.softDeleteButton,
+.headerCellInner button.softDeleteButton,
+.actionCell button.softDeleteButton,
+.sheetTab button.softDeleteButton {
   display: inline-grid;
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  opacity: 0.62;
   color: var(--text-tertiary);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-elevated);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
   cursor: pointer;
 }
 
-.actionCell button:hover {
+.softDeleteButton:hover,
+.headerCellInner button.softDeleteButton:hover,
+.actionCell button.softDeleteButton:hover,
+.sheetTab button.softDeleteButton:hover {
+  opacity: 1;
   color: var(--danger-text);
   border-color: var(--danger-line);
   background: var(--danger-soft);
+}
+
+.actionCell button.softDeleteButton {
+  margin: 0 auto;
 }
 
 .sheetEmpty {
@@ -558,417 +578,23 @@
   border-top: 1px solid var(--line-subtle);
 }
 
-.sheetFooter span {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
+.sheetFooter span { gap: var(--space-2); }
 
 @media (max-width: 1180px) {
-  .sheetTopbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .sheetToolbar {
-    width: max-content;
-  }
-}
-
-@media (max-width: 760px) {
-  .page {
-    padding: var(--space-4);
-  }
-
-  .hero,
   .sheetHeader {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .heroActions,
   .sheetActions {
-    justify-content: space-between;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
   }
-
 }
 
-/* v173 support spreadsheet refinements */
-.sheetPanel {
-  width: 100%;
-  max-width: 100%;
-}
-
-.sheetHeader {
-  align-items: center;
-}
-
-.sheetActions {
-  min-width: 0;
-  flex: 1 1 auto;
-  justify-content: flex-end;
-}
-
-.sheetToolbar {
-  position: relative;
-  z-index: 5;
-  overflow: visible;
-}
-
-.sheetTopbar {
-  position: relative;
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.sheetTopbar::before,
-.sheetTopbar::after {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  bottom: 0;
-  width: 28px;
-  pointer-events: none;
-  content: '';
-}
-
-.sheetTopbar::before {
-  left: 0;
-  background: linear-gradient(90deg, var(--bg-canvas), transparent);
-}
-
-.sheetTopbar::after {
-  right: 0;
-  background: linear-gradient(270deg, var(--bg-canvas), transparent);
-}
-
-.sheetTabs {
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scroll-behavior: smooth;
-  padding: 2px 16px;
-}
-
-.sheetTab {
-  flex: 0 0 auto;
-  min-width: 144px;
-  max-width: 216px;
-}
-
-.sheetScroller {
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-.sheetTable {
-  max-width: none;
-}
-
-.headerCellInner button,
-.actionCell button,
-.sheetTab button {
-  color: var(--text-quaternary);
-  border: 1px solid transparent;
-  background: transparent;
-}
-
-.headerCellInner button,
-.actionCell button {
-  border-radius: var(--radius-pill);
-}
-
-.headerCellInner button:hover,
-.actionCell button:hover,
-.sheetTab button:hover {
-  color: var(--danger-text);
-  border-color: var(--danger-line);
-  background: var(--danger-soft);
-}
-
-.colorTool {
-  display: none;
-}
-
-.colorPicker {
-  position: relative;
-  display: inline-grid;
-}
-
-.colorTrigger {
-  min-width: 28px;
-}
-
-.colorMenu {
-  position: absolute;
-  z-index: 30;
-  top: calc(100% + 8px);
-  right: 0;
-  display: grid;
-  width: 176px;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-2);
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow-dialog);
-}
-
-.colorSwatch {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--swatch-color, var(--bg-canvas));
-  cursor: pointer;
-}
-
-.colorSwatch[data-empty='true'] {
-  background:
-    linear-gradient(135deg, transparent 0 45%, var(--danger-text) 46% 54%, transparent 55% 100%),
-    var(--bg-canvas);
-}
-
-.colorSwatch:hover {
-  border-color: var(--accent-line);
-  box-shadow: 0 0 0 1px var(--accent-soft);
-}
-
-/* v174 suporte TI spreadsheet fixes */
-.sheetPanel {
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.sheetHeader {
-  flex-wrap: wrap;
-}
-
-.sheetActions {
-  min-width: 0;
-  max-width: 100%;
-}
-
-.sheetTopbar {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 28px;
-  gap: var(--space-2);
-  align-items: center;
-  min-width: 0;
-  max-width: 100%;
-  padding: var(--space-2) var(--space-3);
-  overflow: hidden;
-}
-
-.sheetTopbar::before,
-.sheetTopbar::after {
-  display: none;
-}
-
-.scrollButton,
-.columnScrollBar button {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  flex: 0 0 auto;
-  color: var(--text-tertiary);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-elevated);
-  font: inherit;
-  font-size: var(--fs-small);
-  font-weight: var(--weight-semibold);
-  line-height: 1;
-  cursor: pointer;
-}
-
-.scrollButton:hover,
-.columnScrollBar button:hover {
-  color: var(--text-primary);
-  border-color: var(--line);
-  background: var(--bg-soft);
-}
-
-.sheetTabs {
-  min-width: 0;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 2px 0;
-  scroll-behavior: smooth;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.sheetTabs::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.sheetTab {
-  flex: 0 0 188px;
-  width: 188px;
-  min-width: 188px;
-  max-width: 188px;
-  scroll-snap-align: start;
-}
-
-.sheetTab input {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.columnScrollBar {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 28px;
-  gap: var(--space-2);
-  align-items: center;
-  padding: 0 var(--space-3) var(--space-2);
-  border-bottom: 1px solid var(--line-subtle);
-  background: var(--bg-canvas);
-}
-
-.columnScrollBar span {
-  height: 1px;
-  min-width: 0;
-  background: linear-gradient(90deg, transparent, var(--line-subtle), transparent);
-}
-
-.sheetScroller {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  overflow-x: auto;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.sheetScroller::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.sheetTable {
-  width: max-content;
-  min-width: 100%;
-  max-width: none;
-}
-
-.headerCellInner button.softDeleteButton,
-.actionCell button.softDeleteButton,
-.sheetTab button.softDeleteButton {
-  display: inline-grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  flex: 0 0 auto;
-  opacity: 0.58;
-  color: var(--text-tertiary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  cursor: pointer;
-}
-
-.headerCellInner button.softDeleteButton:hover,
-.actionCell button.softDeleteButton:hover,
-.sheetTab button.softDeleteButton:hover {
-  opacity: 1;
-  color: var(--danger-text);
-  border-color: var(--danger-line);
-  background: var(--danger-soft);
-}
-
-.actionCell button.softDeleteButton {
-  margin: 0 auto;
-}
-
-.sheetToolbar {
-  overflow: visible;
-}
-
-.colorPicker {
-  position: relative;
-  display: inline-grid;
-  overflow: visible;
-}
-
-.colorPicker .colorTrigger {
-  display: inline-grid;
-  min-width: 28px;
-  height: 26px;
-  place-items: center;
-  color: var(--text-secondary);
-  border: 0;
-  border-radius: var(--radius-1);
-  background: transparent;
-  font: inherit;
-  font-size: var(--fs-small);
-  font-weight: var(--weight-semibold);
-  line-height: 1;
-  cursor: pointer;
-}
-
-.colorPicker .colorTrigger:hover,
-.colorPicker .colorTrigger[aria-expanded='true'] {
-  color: var(--text-primary);
-  background: var(--bg-soft);
-}
-
-.colorPicker .colorMenu {
-  position: absolute;
-  z-index: 50;
-  top: calc(100% + 8px);
-  right: 0;
-  display: grid;
-  width: 180px;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 7px;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-2);
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow-dialog);
-}
-
-.colorPicker .colorMenu button.colorSwatch {
-  display: grid;
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
-  min-height: 32px;
-  place-items: center;
-  padding: 0;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--swatch-color, var(--bg-canvas));
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.035);
-  cursor: pointer;
-}
-
-.colorPicker .colorMenu button.colorSwatch[data-empty='true'] {
-  background:
-    linear-gradient(135deg, transparent 0 44%, var(--danger-text) 45% 55%, transparent 56% 100%),
-    var(--bg-canvas);
-}
-
-.colorPicker .colorMenu button.colorSwatch:hover {
-  border-color: var(--accent-line);
-  background: var(--swatch-color, var(--bg-soft));
+@media (max-width: 760px) {
+  .page { padding: var(--space-4); }
+  .hero { align-items: stretch; flex-direction: column; }
+  .heroActions { justify-content: space-between; }
 }
