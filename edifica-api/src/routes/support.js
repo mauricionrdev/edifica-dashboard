@@ -73,7 +73,7 @@ async function ensureSupportSchema() {
         await query(
           `INSERT INTO support_daily_columns (id, column_key, label, width, position, is_system)
            VALUES (?, ?, ?, ?, ?, 1)
-           ON DUPLICATE KEY UPDATE label = VALUES(label), position = VALUES(position), is_system = 1`,
+           ON DUPLICATE KEY UPDATE position = VALUES(position), is_system = 1`,
           [uuid(), column.key, column.label, column.width, column.position]
         );
       }

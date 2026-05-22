@@ -1,10 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
-import DateField from '../components/ui/DateField.jsx';
-import Select from '../components/ui/Select.jsx';
-import Avatar from '../components/ui/Avatar.jsx';
+import DemandModal from '../components/tasks/DemandModal.jsx';
 import { BotIcon, CalendarIcon, CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../components/ui/Icons.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -20,10 +17,8 @@ import {
   updateSupportDailyColumn,
   updateSupportDailyRow,
 } from '../api/support.js';
-import { getClientAvatar, getUserAvatar } from '../utils/avatarStorage.js';
 import { hasPermission } from '../utils/permissions.js';
-import pageStyles from './SupportTechnologyPage.module.css';
-import styles from './ProfilePage.module.css';
+import styles from './SupportTechnologyPage.module.css';
 
 const FALLBACK_DAILY_COLUMNS = [
   { key: 'clientName', label: 'Cliente / Escritório', width: 340, system: true },
@@ -37,36 +32,8 @@ const FALLBACK_DAILY_COLUMNS = [
   { key: 'notes', label: 'Observações', width: 280, system: true },
 ];
 
-const DEMAND_TYPES = [
-  { value: 'support', label: 'Suporte' },
-  { value: 'briefing', label: 'Briefing' },
-  { value: 'routine', label: 'Rotina' },
-  { value: 'bug', label: 'Bug' },
-  { value: 'adjustment', label: 'Ajuste' },
-  { value: 'access', label: 'Acesso' },
-  { value: 'other', label: 'Outro' },
-];
-
-const DEMAND_PRIORITIES = [
-  { value: 'low', label: 'Baixa' },
-  { value: 'medium', label: 'Normal' },
-  { value: 'high', label: 'Alta' },
-  { value: 'critical', label: 'Crítica' },
-];
-
-const ROUTINE_RECURRENCES = [
-  { value: 'daily', label: 'Diária' },
-  { value: 'weekly', label: 'Semanal' },
-  { value: 'monthly', label: 'Mensal' },
-  { value: 'one_time', label: 'Pontual' },
-];
-
 const SUPPORT_ROLES = new Set(['suporte_tecnologia']);
 const FALLBACK_SUPPORT_ROLES = new Set(['ceo', 'admin']);
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function cleanText(value) {
   return String(value ?? '').trim();
@@ -85,7 +52,7 @@ function normalizeColumns(columns = []) {
   return source.map((column) => ({
     key: column.key,
     label: column.label || 'Coluna',
-    width: Math.max(90, Math.min(640, Number(column.width || 180))),
+    width: Math.max(90, Math.min(720, Number(column.width || 180))),
     system: column.system !== false,
   }));
 }
@@ -99,131 +66,14 @@ function normalizeRow(row = {}, columns = FALLBACK_DAILY_COLUMNS) {
   };
 }
 
-function emptyDemandForm(userId = '') {
-  return {
-    type: 'support',
-    title: '',
-    description: '',
-    assigneeUserId: userId,
-    clientId: '',
-    dueDate: todayIso(),
-    priority: 'medium',
-    officeName: '',
-    objective: '',
-    campaign: '',
-    channels: '',
-    attendants: '',
-    greeting: '',
-    location: '',
-    notes: '',
-    recurrence: 'daily',
-    routineScope: '',
-    routineChecklist: '',
-    collaboratorUserIds: [],
-    attachments: [],
-  };
-}
-
-function demandTypeLabel(type) {
-  return DEMAND_TYPES.find((item) => item.value === type)?.label || 'Demanda';
-}
-
-function recurrenceLabel(value) {
-  return ROUTINE_RECURRENCES.find((item) => item.value === value)?.label || value || '';
-}
-
-function buildDemandDescription(form, clientName = '') {
-  const lines = [`Tipo: ${demandTypeLabel(form.type)}`];
-  if (clientName) lines.push(`Cliente: ${clientName}`);
-
-  if (form.type === 'briefing') {
-    const briefing = [
-      ['Nome do escritório', form.officeName],
-      ['Objetivo', form.objective],
-      ['Nicho/campanha', form.campaign],
-      ['Canais', form.channels],
-      ['Atendentes', form.attendants],
-      ['Saudação', form.greeting],
-      ['Localização', form.location],
-      ['Observações', form.notes],
-    ].filter(([, value]) => cleanText(value)).map(([label, value]) => `${label}: ${cleanText(value)}`);
-    if (briefing.length) lines.push('', 'Briefing', ...briefing);
-  }
-
-  if (form.type === 'routine') {
-    const routine = [
-      ['Recorrência', recurrenceLabel(form.recurrence)],
-      ['Escopo', form.routineScope],
-      ['Checklist', form.routineChecklist],
-    ].filter(([, value]) => cleanText(value)).map(([label, value]) => `${label}: ${cleanText(value)}`);
-    if (routine.length) lines.push('', 'Rotina', ...routine);
-  }
-
-  if (cleanText(form.description)) lines.push('', cleanText(form.description));
-  return lines.join('\n');
-}
-
-function fileSignature(file) {
-  return [file?.name || '', file?.size || 0, file?.lastModified || 0].join(':');
-}
-
-function attachmentSignature(item) {
-  return [item?.fileName || '', item?.sizeBytes || 0, item?.mimeType || ''].join(':');
-}
-
-function filesFromClipboard(event) {
-  return Array.from(event?.clipboardData?.items || [])
-    .map((item) => (item.kind === 'file' ? item.getAsFile() : null))
-    .filter(Boolean);
-}
-
-function uniqueFiles(files = []) {
-  const seen = new Set();
-  return Array.from(files).filter((file) => {
-    const key = fileSignature(file);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function readAttachmentFile(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      reject(new Error('Arquivo inválido.'));
-      return;
-    }
-    if (!file.type?.startsWith('image/') && file.type !== 'application/pdf') {
-      reject(new Error('Envie imagem ou PDF.'));
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => resolve({
-      id: `${file.name}-${file.size}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
-      fileName: file.name,
-      mimeType: file.type || 'application/octet-stream',
-      sizeBytes: file.size || 0,
-      dataUrl: reader.result,
-    });
-    reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
-    reader.readAsDataURL(file);
-  });
-}
-
-function formatAttachmentKind(item) {
-  if (item?.mimeType === 'application/pdf') return 'PDF';
-  if (item?.mimeType?.startsWith('image/')) return 'Imagem';
-  return 'Arquivo';
-}
-
 function SupportCell({ row, column, editable, saving, onChange, onCommit }) {
   const value = row[column.key] || '';
   if (!editable) {
-    return <span className={pageStyles.readonlyCell} data-tone={statusTone(value)} title={value}>{value || '—'}</span>;
+    return <span className={styles.readonlyCell} data-tone={statusTone(value)} title={value}>{value || '—'}</span>;
   }
   return (
     <input
-      className={pageStyles.sheetInput}
+      className={styles.sheetInput}
       data-tone={statusTone(value)}
       type="text"
       spellCheck={false}
@@ -241,7 +91,7 @@ function SupportCell({ row, column, editable, saving, onChange, onCommit }) {
 
 function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeStart, onDelete }) {
   return (
-    <div className={pageStyles.headerCellInner}>
+    <div className={styles.headerCellInner}>
       {editable ? (
         <input
           value={column.label}
@@ -263,7 +113,7 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
       ) : null}
       {editable ? (
         <span
-          className={pageStyles.resizeHandle}
+          className={styles.resizeHandle}
           role="separator"
           aria-orientation="vertical"
           onMouseDown={(event) => onResizeStart(event, column.key)}
@@ -287,13 +137,6 @@ export default function SupportTechnologyPage() {
   const [creatingColumn, setCreatingColumn] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
   const [demandModalOpen, setDemandModalOpen] = useState(false);
-  const [demandForm, setDemandForm] = useState(() => emptyDemandForm(''));
-  const [clientQuery, setClientQuery] = useState('');
-  const [clientSearchOpen, setClientSearchOpen] = useState(false);
-  const [clientSearchPosition, setClientSearchPosition] = useState(null);
-  const attachmentInputRef = useRef(null);
-  const clientSearchRef = useRef(null);
-  const clientSearchPanelRef = useRef(null);
   const resizeRef = useRef(null);
 
   const activeUsers = useMemo(() => (
@@ -307,40 +150,17 @@ export default function SupportTechnologyPage() {
     return fallback.length ? fallback : activeUsers;
   }, [activeUsers]);
 
-  const canEditBoard = hasPermission(user, 'support.board.edit');
-  const canCreateDemand = hasPermission(user, 'support.view');
-
-  const selectedClient = useMemo(() => clients.find((client) => String(client.id) === String(demandForm.clientId)) || null, [clients, demandForm.clientId]);
-  const selectedCollaborators = useMemo(() => {
-    const ids = new Set(demandForm.collaboratorUserIds || []);
-    return activeUsers.filter((item) => ids.has(item.id));
-  }, [activeUsers, demandForm.collaboratorUserIds]);
-
-  const collaboratorOptions = useMemo(() => {
-    const selected = new Set([demandForm.assigneeUserId, ...(demandForm.collaboratorUserIds || [])].filter(Boolean));
-    return activeUsers.filter((item) => !selected.has(item.id));
-  }, [activeUsers, demandForm.assigneeUserId, demandForm.collaboratorUserIds]);
-
-  const filteredClients = useMemo(() => {
-    const term = cleanText(clientQuery).toLowerCase();
-    const source = Array.isArray(clients) ? clients : [];
-    if (!term) return source.slice(0, 12);
-    return source.filter((client) => String(client.name || '').toLowerCase().includes(term)).slice(0, 12);
-  }, [clients, clientQuery]);
-
   const defaultAssigneeId = useMemo(() => {
     const currentAsSupport = supportUsers.find((item) => item.id === user?.id);
     return currentAsSupport?.id || supportUsers[0]?.id || user?.id || '';
   }, [supportUsers, user?.id]);
 
+  const canEditBoard = hasPermission(user, 'support.board.edit');
+  const canCreateDemand = hasPermission(user, 'support.view');
+
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
-
-  useEffect(() => {
-    if (!defaultAssigneeId) return;
-    setDemandForm((current) => current.assigneeUserId ? current : { ...current, assigneeUserId: defaultAssigneeId });
-  }, [defaultAssigneeId]);
 
   const refreshRows = useCallback(async () => {
     setRowsLoading(true);
@@ -375,116 +195,33 @@ export default function SupportTechnologyPage() {
     };
   }, [columns, rows, tasks]);
 
-  function openDemandModal() {
-    setDemandForm(emptyDemandForm(defaultAssigneeId));
-    setClientQuery('');
-    setClientSearchOpen(false);
-    setDemandModalOpen(true);
-  }
-
-  function closeDemandModal() {
-    if (!creatingTask) {
-      setDemandModalOpen(false);
-      setClientSearchOpen(false);
-      setClientSearchPosition(null);
-    }
-  }
-
-  const openClientSearch = useCallback(() => {
-    const rect = clientSearchRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setClientSearchPosition({
-      top: rect.bottom + 6,
-      left: rect.left,
-      width: rect.width,
-      maxHeight: Math.min(320, window.innerHeight - rect.bottom - 16),
-    });
-    setClientSearchOpen(true);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!clientSearchOpen) return undefined;
-    const reposition = () => openClientSearch();
-    window.addEventListener('resize', reposition);
-    window.addEventListener('scroll', reposition, true);
-    return () => {
-      window.removeEventListener('resize', reposition);
-      window.removeEventListener('scroll', reposition, true);
-    };
-  }, [clientSearchOpen, openClientSearch]);
-
-  useEffect(() => {
-    if (!clientSearchOpen) return undefined;
-    function handlePointerDown(event) {
-      if (clientSearchRef.current?.contains(event.target) || clientSearchPanelRef.current?.contains(event.target)) return;
-      setClientSearchOpen(false);
-      setClientSearchPosition(null);
-    }
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
-  }, [clientSearchOpen]);
-
-  async function addDemandAttachments(files) {
-    const selected = uniqueFiles(files).filter(Boolean);
-    if (!selected.length) return;
-    try {
-      const parsed = await Promise.all(selected.map(readAttachmentFile));
-      setDemandForm((current) => {
-        const existing = Array.isArray(current.attachments) ? current.attachments : [];
-        const seen = new Set(existing.map(attachmentSignature));
-        const next = parsed.filter((item) => {
-          const key = attachmentSignature(item);
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-        return { ...current, attachments: [...existing, ...next].slice(0, 8) };
-      });
-    } catch (err) {
-      showToast(err?.message || 'Não foi possível anexar o arquivo.', { variant: 'error' });
-    }
-  }
-
-  function handleDemandAttachmentFiles(event) {
-    const files = Array.from(event.target.files || []);
-    if (files.length) addDemandAttachments(files);
-    if (event.target) event.target.value = '';
-  }
-
-  function handleRemoveAttachment(id) {
-    setDemandForm((current) => ({ ...current, attachments: (current.attachments || []).filter((item) => item.id !== id) }));
-  }
-
-  const handleCreateTask = async (event) => {
-    event.preventDefault();
-    const title = cleanText(demandForm.title);
+  const handleCreateTask = async (form) => {
+    const title = cleanText(form.title);
     if (!title) {
       showToast('Informe o título da demanda.', { variant: 'warning' });
       return;
     }
     setCreatingTask(true);
     try {
-      const description = buildDemandDescription(demandForm, selectedClient?.name || '');
       const data = await createSupportTask({
         title,
-        type: demandForm.type,
-        priority: demandForm.priority,
-        clientId: demandForm.clientId,
-        assigneeUserId: demandForm.assigneeUserId || defaultAssigneeId,
-        collaboratorUserIds: demandForm.collaboratorUserIds,
-        dueDate: demandForm.dueDate,
-        description,
+        type: form.type,
+        priority: form.priority,
+        clientId: form.clientId,
+        assigneeUserId: form.assigneeUserId || defaultAssigneeId,
+        collaboratorUserIds: form.collaboratorUserIds,
+        dueDate: form.dueDate,
+        description: form.description,
       });
       const taskId = data?.task?.id;
-      if (taskId && demandForm.attachments?.length) {
-        await Promise.allSettled(demandForm.attachments.map((item) => createTaskAttachment(taskId, {
+      if (taskId && form.attachments?.length) {
+        await Promise.allSettled(form.attachments.map((item) => createTaskAttachment(taskId, {
           fileName: item.fileName,
           mimeType: item.mimeType,
           sizeBytes: item.sizeBytes,
           dataUrl: item.dataUrl,
         })));
       }
-      setDemandForm(emptyDemandForm(defaultAssigneeId));
       setDemandModalOpen(false);
       await refreshTasks();
       showToast('Demanda criada.');
@@ -601,7 +338,7 @@ export default function SupportTechnologyPage() {
     function handleMove(event) {
       const state = resizeRef.current;
       if (!state) return;
-      const width = Math.max(90, Math.min(640, state.startWidth + event.clientX - state.startX));
+      const width = Math.max(90, Math.min(720, state.startWidth + event.clientX - state.startX));
       setColumns((current) => current.map((column) => (column.key === state.key ? { ...column, width } : column)));
     }
     async function handleUp() {
@@ -627,34 +364,34 @@ export default function SupportTechnologyPage() {
   }, [columns, refreshRows]);
 
   return (
-    <div className={pageStyles.page}>
-      <section className={pageStyles.hero}>
-        <div className={pageStyles.heroTitle}>
-          <span className={pageStyles.eyebrow}>Operação de suporte</span>
+    <div className={styles.page}>
+      <section className={styles.hero}>
+        <div className={styles.heroTitle}>
+          <span className={styles.eyebrow}>Operação de suporte</span>
           <h1>Suporte de tecnologia</h1>
         </div>
-        <div className={pageStyles.heroActions}>
+        <div className={styles.heroActions}>
           {canCreateDemand ? (
-            <Button type="button" size="sm" onClick={openDemandModal}>
+            <Button type="button" size="sm" onClick={() => setDemandModalOpen(true)}>
               <PlusIcon size={14} /> Nova demanda
             </Button>
           ) : null}
-          <span className={pageStyles.heroIcon} aria-hidden="true"><BotIcon size={18} /></span>
+          <span className={styles.heroIcon} aria-hidden="true"><BotIcon size={18} /></span>
         </div>
       </section>
 
-      <section className={pageStyles.kpis}>
+      <section className={styles.kpis}>
         <div><span>Clientes na programação</span><strong>{metrics.rows}</strong></div>
         <div><span>Demandas abertas</span><strong>{metrics.openTasks}</strong></div>
         <div><span>Pontos de atenção</span><strong>{metrics.risks}</strong></div>
         <div><span>Implementados</span><strong>{metrics.implemented}</strong></div>
       </section>
 
-      <section className={pageStyles.sheetPanel}>
-        <header className={pageStyles.sheetHeader}>
+      <section className={styles.sheetPanel}>
+        <header className={styles.sheetHeader}>
           <h2><CalendarIcon size={15} /> Programação diária</h2>
           {canEditBoard ? (
-            <div className={pageStyles.sheetActions}>
+            <div className={styles.sheetActions}>
               <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn}>
                 <PlusIcon size={14} /> Nova coluna
               </Button>
@@ -665,8 +402,8 @@ export default function SupportTechnologyPage() {
           ) : null}
         </header>
 
-        <div className={pageStyles.sheetScroller}>
-          <table className={pageStyles.sheetTable}>
+        <div className={styles.sheetScroller}>
+          <table className={styles.sheetTable}>
             <colgroup>
               <col style={{ width: 46 }} />
               {columns.map((column) => <col key={column.key} style={{ width: column.width }} />)}
@@ -692,14 +429,14 @@ export default function SupportTechnologyPage() {
             </thead>
             <tbody>
               {rowsLoading ? (
-                <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Carregando</td></tr>
+                <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={styles.sheetEmpty}>Carregando</td></tr>
               ) : null}
               {!rowsLoading && rows.length === 0 ? (
-                <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Sem registros.</td></tr>
+                <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={styles.sheetEmpty}>Sem registros.</td></tr>
               ) : null}
               {rows.map((row, index) => (
                 <tr key={row.id}>
-                  <td className={pageStyles.rowIndex}>{index + 1}</td>
+                  <td className={styles.rowIndex}>{index + 1}</td>
                   {columns.map((column) => (
                     <td key={column.key} data-column={column.key}>
                       <SupportCell
@@ -713,7 +450,7 @@ export default function SupportTechnologyPage() {
                     </td>
                   ))}
                   {canEditBoard ? (
-                    <td className={pageStyles.actionCell}>
+                    <td className={styles.actionCell}>
                       <button type="button" onClick={() => handleDeleteRow(row.id)} title="Remover linha"><TrashIcon size={13} /></button>
                     </td>
                   ) : null}
@@ -723,282 +460,25 @@ export default function SupportTechnologyPage() {
           </table>
         </div>
 
-        <footer className={pageStyles.sheetFooter}>
+        <footer className={styles.sheetFooter}>
           <span>{rows.length} registros</span>
           {savingCell || savingColumn ? <span><SaveIcon size={13} /> Salvando</span> : null}
         </footer>
       </section>
 
-      {demandModalOpen ? (
-        <div className={styles.settingsOverlay} onClick={(event) => event.stopPropagation()}>
-          <form
-            className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()}
-            onSubmit={handleCreateTask}
-            onPaste={(event) => {
-              const files = filesFromClipboard(event);
-              if (!files.length) return;
-              event.preventDefault();
-              addDemandAttachments(files);
-            }}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Nova demanda"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <header className={styles.settingsHeader}>
-              <div>
-                <h2>Nova demanda</h2>
-                <span>{demandTypeLabel(demandForm.type)}</span>
-              </div>
-              <button type="button" className={styles.iconButton} onClick={closeDemandModal} aria-label="Fechar">
-                <CloseIcon size={16} />
-              </button>
-            </header>
-
-            <div className={styles.settingsContent}>
-              <div className={styles.demandFormGrid}>
-                <label className={`${styles.labeledField} ${styles.fieldCompact}`}>
-                  <span>Tipo</span>
-                  <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
-                    {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
-                </label>
-                <label className={`${styles.labeledField} ${styles.fieldCompact}`}>
-                  <span>Prioridade</span>
-                  <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
-                    {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
-                </label>
-                <label className={`${styles.labeledField} ${styles.fieldWide}`}>
-                  <span>Título</span>
-                  <input value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
-                </label>
-                <label className={styles.labeledField}>
-                  <span>Para quem é esta tarefa?</span>
-                  <Select
-                    type="user"
-                    value={demandForm.assigneeUserId}
-                    onChange={(event) => setDemandForm((prev) => ({
-                      ...prev,
-                      assigneeUserId: event.target.value,
-                      collaboratorUserIds: (prev.collaboratorUserIds || []).filter((id) => id !== event.target.value),
-                    }))}
-                    aria-label="Responsável"
-                    className={styles.formSelect}
-                  >
-                    {(supportUsers.length ? supportUsers : activeUsers).map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
-                  </Select>
-                </label>
-                <label className={styles.labeledField}>
-                  <span>Cliente</span>
-                  <div
-                    className={styles.clientSearchField}
-                    data-has-avatar={selectedClient ? 'true' : undefined}
-                    ref={clientSearchRef}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onMouseDown={(event) => event.stopPropagation()}
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    {selectedClient ? (
-                      <Avatar
-                        src={getClientAvatar(selectedClient) || selectedClient.avatarUrl || undefined}
-                        name={selectedClient.name}
-                        size="xs"
-                        className={styles.clientSearchAvatar}
-                      />
-                    ) : null}
-                    <input
-                      value={clientSearchOpen ? clientQuery : selectedClient?.name || clientQuery}
-                      onFocus={() => {
-                        if (selectedClient) setClientQuery(selectedClient.name || '');
-                        openClientSearch();
-                      }}
-                      onMouseDown={() => {
-                        if (!clientSearchOpen) openClientSearch();
-                      }}
-                      onChange={(event) => {
-                        setClientQuery(event.target.value);
-                        if (demandForm.clientId) setDemandForm((prev) => ({ ...prev, clientId: '' }));
-                        openClientSearch();
-                      }}
-                      placeholder="Cliente"
-                      aria-label="Cliente"
-                    />
-                    {(selectedClient || clientQuery) ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setDemandForm((prev) => ({ ...prev, clientId: '' }));
-                          setClientQuery('');
-                          setClientSearchOpen(false);
-                          setClientSearchPosition(null);
-                        }}
-                        aria-label="Limpar cliente"
-                      >
-                        <CloseIcon size={13} />
-                      </button>
-                    ) : null}
-                  </div>
-                </label>
-                <label className={styles.labeledField}>
-                  <span>Prazo</span>
-                  <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
-                </label>
-                <label className={`${styles.labeledField} ${styles.fieldWide}`}>
-                  <span>Colaboradores adicionais</span>
-                  <Select
-                    type="user"
-                    value=""
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      if (!value) return;
-                      setDemandForm((prev) => ({
-                        ...prev,
-                        collaboratorUserIds: [...new Set([...(prev.collaboratorUserIds || []), value])],
-                      }));
-                    }}
-                    aria-label="Colaboradores"
-                    className={styles.formSelect}
-                  >
-                    <option value="">Adicionar colaborador</option>
-                    {collaboratorOptions.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
-                  </Select>
-                </label>
-                {selectedCollaborators.length ? (
-                  <div className={`${styles.selectedCollaborators} ${styles.fieldWide}`}>
-                    {selectedCollaborators.map((item) => (
-                      <span key={item.id}>
-                        {item.name}
-                        <button
-                          type="button"
-                          onClick={() => setDemandForm((prev) => ({ ...prev, collaboratorUserIds: (prev.collaboratorUserIds || []).filter((id) => id !== item.id) }))}
-                          aria-label={`Remover ${item.name}`}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
-              {demandForm.type === 'briefing' ? (
-                <div className={styles.briefingGrid}>
-                  <input value={demandForm.officeName} onChange={(event) => setDemandForm((prev) => ({ ...prev, officeName: event.target.value }))} placeholder="Escritório" />
-                  <input value={demandForm.objective} onChange={(event) => setDemandForm((prev) => ({ ...prev, objective: event.target.value }))} placeholder="Objetivo" />
-                  <input value={demandForm.campaign} onChange={(event) => setDemandForm((prev) => ({ ...prev, campaign: event.target.value }))} placeholder="Nicho/campanha" />
-                  <input value={demandForm.channels} onChange={(event) => setDemandForm((prev) => ({ ...prev, channels: event.target.value }))} placeholder="Canais" />
-                  <input value={demandForm.attendants} onChange={(event) => setDemandForm((prev) => ({ ...prev, attendants: event.target.value }))} placeholder="Atendentes" />
-                  <input value={demandForm.greeting} onChange={(event) => setDemandForm((prev) => ({ ...prev, greeting: event.target.value }))} placeholder="Saudação" />
-                  <input value={demandForm.location} onChange={(event) => setDemandForm((prev) => ({ ...prev, location: event.target.value }))} placeholder="Localização" />
-                  <textarea className={styles.fieldWide} value={demandForm.notes} onChange={(event) => setDemandForm((prev) => ({ ...prev, notes: event.target.value }))} placeholder="Observações" />
-                </div>
-              ) : null}
-
-              {demandForm.type === 'routine' ? (
-                <div className={styles.routineFormGrid}>
-                  <Select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={`${styles.formSelect} ${styles.fieldThird}`}>
-                    {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
-                  <input value={demandForm.routineScope} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineScope: event.target.value }))} placeholder="Escopo" />
-                  <textarea className={styles.fieldWide} value={demandForm.routineChecklist} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineChecklist: event.target.value }))} placeholder="Checklist" />
-                </div>
-              ) : null}
-
-              <textarea value={demandForm.description} onPaste={(event) => {
-                const files = filesFromClipboard(event);
-                if (!files.length) return;
-                event.preventDefault();
-                addDemandAttachments(files);
-              }} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
-
-              <div className={styles.attachmentComposer}>
-                <div>
-                  <span>Anexos</span>
-                  <strong>{(demandForm.attachments || []).length}</strong>
-                </div>
-                <input
-                  ref={attachmentInputRef}
-                  type="file"
-                  accept="image/*,application/pdf"
-                  multiple
-                  onChange={handleDemandAttachmentFiles}
-                  hidden
-                />
-                <button type="button" onClick={() => attachmentInputRef.current?.click()}>Anexar imagem ou PDF</button>
-                {(demandForm.attachments || []).length ? (
-                  <div className={styles.attachmentPreviewGrid}>
-                    {demandForm.attachments.map((item) => (
-                      <figure key={item.id} className={styles.attachmentPreviewItem}>
-                        {item.mimeType === 'application/pdf' ? (
-                          <span className={styles.attachmentPdfPreview}>PDF</span>
-                        ) : (
-                          <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
-                        )}
-                        <figcaption>{item.fileName || formatAttachmentKind(item)}</figcaption>
-                        <button type="button" onClick={() => handleRemoveAttachment(item.id)} aria-label={`Remover ${item.fileName || 'anexo'}`}>×</button>
-                      </figure>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <footer className={styles.settingsFooter}>
-              <button type="button" onClick={closeDemandModal}>Cancelar</button>
-              <button type="submit" disabled={creatingTask || !canCreateDemand}>{creatingTask ? 'Criando' : 'Criar demanda'}</button>
-            </footer>
-          </form>
-          {clientSearchOpen && clientSearchPosition ? createPortal(
-            <div
-              ref={clientSearchPanelRef}
-              className={`${styles.clientSearchResults} ${styles.clientSearchFloating}`}
-              style={{
-                top: clientSearchPosition.top,
-                left: clientSearchPosition.left,
-                width: clientSearchPosition.width,
-                maxHeight: clientSearchPosition.maxHeight,
-              }}
-              onPointerDown={(event) => event.stopPropagation()}
-              onMouseDown={(event) => event.stopPropagation()}
-              onClick={(event) => event.stopPropagation()}
-            >
-              {filteredClients.length ? filteredClients.map((client) => {
-                const clientAvatar = getClientAvatar(client) || client.avatarUrl || '';
-                return (
-                  <button
-                    key={client.id}
-                    type="button"
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => {
-                      setDemandForm((prev) => ({ ...prev, clientId: client.id }));
-                      setClientQuery(client.name || '');
-                      setClientSearchOpen(false);
-                      setClientSearchPosition(null);
-                    }}
-                  >
-                    <Avatar
-                      src={clientAvatar || undefined}
-                      name={client.name}
-                      size="xs"
-                      className={styles.clientSearchOptionAvatar}
-                    />
-                    <div className={styles.clientSearchOptionText}>
-                      <strong>{client.name}</strong>
-                      {client.squadName || client.managerName || client.gdvName ? (
-                        <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span>
-                      ) : null}
-                    </div>
-                  </button>
-                );
-              }) : (
-                <span className={styles.clientSearchEmpty}>Sem cliente</span>
-              )}
-            </div>,
-            document.body,
-          ) : null}
-        </div>
-      ) : null}
+      <DemandModal
+        open={demandModalOpen}
+        title="Nova demanda"
+        defaultType="support"
+        defaultAssigneeUserId={defaultAssigneeId}
+        assigneeUsers={supportUsers}
+        users={activeUsers}
+        clients={clients}
+        creating={creatingTask}
+        onClose={() => !creatingTask && setDemandModalOpen(false)}
+        onSubmit={handleCreateTask}
+        onError={(message) => showToast(message, { variant: 'warning' })}
+      />
     </div>
   );
 }
