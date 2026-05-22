@@ -82,13 +82,23 @@ export const ROLE_PERMISSION_MAP = {
     'tasks.view.all', 'tasks.create', 'tasks.edit.all', 'tasks.comment.all', 'tasks.complete.own', 'tasks.complete.any',
     'profile.view', 'profile.edit', 'squads.view.all',
   ],
+  sdr: [
+    'central.view', 'clients.view.own', 'clients.fee_schedule.view.own', 'gdv.view.own', 'squads.view.own',
+    'metrics.view.own', 'ranking.view.own', 'profile.view', 'profile.edit',
+    'projects.view.own', 'tasks.view.own', 'tasks.create', 'tasks.comment.own', 'tasks.complete.own',
+  ],
+  closer: [
+    'central.view', 'clients.view.own', 'clients.fee_schedule.view.own', 'gdv.view.own', 'squads.view.own',
+    'metrics.view.own', 'ranking.view.own', 'profile.view', 'profile.edit',
+    'projects.view.own', 'tasks.view.own', 'tasks.create', 'tasks.comment.own', 'tasks.complete.own',
+  ],
   cap: [
     'central.view', 'clients.view.own', 'clients.fee_schedule.view.own', 'metrics.view.own', 'metrics.fill_week.own', 'ranking.view.own',
     'projects.view.own', 'tasks.view.own', 'tasks.create', 'tasks.comment.own', 'tasks.complete.own', 'squads.view.own',
   ],
 };
 
-export const ROLE_ORDER = ['ceo', 'suporte_tecnologia', 'admin', 'gdv', 'gestor', 'cap'];
+export const ROLE_ORDER = ['ceo', 'suporte_tecnologia', 'admin', 'gdv', 'gestor', 'cap', 'sdr', 'closer'];
 
 export function getRoleBasePermissions(role) {
   return ROLE_PERMISSION_MAP[role] || [];
@@ -109,6 +119,7 @@ export function getRoleSummary(role) {
 
 export const PERMISSION_GROUPS = [
   { area: 'Central', permissions: ['central.view'] },
+  { area: 'Visualização zerada', permissions: ['workspace.view_empty'] },
   { area: 'Clientes', permissions: ['clients.view.own', 'clients.view.all', 'clients.create', 'clients.edit.own', 'clients.edit.all', 'clients.fee_schedule.view.own', 'clients.fee_schedule.view.all', 'clients.fee_schedule.edit.own', 'clients.fee_schedule.edit.all'] },
   { area: 'Métricas', permissions: ['metrics.view.own', 'metrics.view.all', 'metrics.fill_week.own', 'metrics.fill_week.all'] },
   { area: 'Ranking', permissions: ['ranking.view.own', 'ranking.view.all'] },
@@ -116,6 +127,7 @@ export const PERMISSION_GROUPS = [
   { area: 'Projetos', permissions: ['projects.view.own', 'projects.view.all', 'projects.create', 'projects.edit.own', 'projects.edit.all', 'project_template.view', 'project_template.edit'] },
   { area: 'Tarefas', permissions: ['tasks.view.own', 'tasks.view.all', 'tasks.create', 'tasks.edit.own', 'tasks.edit.all', 'tasks.comment.own', 'tasks.comment.all', 'tasks.complete.own', 'tasks.complete.any'] },
   { area: 'Squads', permissions: ['squads.view.own', 'squads.view.all', 'squads.manage'] },
+  { area: 'Onboarding', permissions: ['onboarding.view', 'onboarding.edit', 'onboarding.complete.own', 'onboarding.complete.any'] },
   { area: 'Equipe & Acessos', permissions: ['team.view', 'team.manage'] },
   { area: 'Auditoria', permissions: ['audit.view'] },
   { area: 'Perfil', permissions: ['profile.view', 'profile.edit'] },
@@ -123,6 +135,7 @@ export const PERMISSION_GROUPS = [
 
 export const PERMISSION_LABELS = {
   'central.view': 'Ver dashboard central',
+  'workspace.view_empty': 'Ver telas operacionais com dados zerados',
   'clients.view.own': 'Ver clientes do próprio escopo',
   'clients.view.all': 'Ver todos os clientes',
   'clients.create': 'Criar clientes',
@@ -160,6 +173,10 @@ export const PERMISSION_LABELS = {
   'squads.view.own': 'Ver squads vinculados',
   'squads.view.all': 'Ver todos os squads',
   'squads.manage': 'Gerenciar squads',
+  'onboarding.view': 'Ver onboarding',
+  'onboarding.edit': 'Editar onboarding',
+  'onboarding.complete.own': 'Concluir próprio onboarding',
+  'onboarding.complete.any': 'Concluir qualquer onboarding',
   'team.view': 'Ver equipe e acessos',
   'team.manage': 'Gerenciar equipe e acessos',
   'audit.view': 'Ver auditoria',
@@ -194,6 +211,29 @@ export function hasAnyPermission(user, permissions = []) {
   return permissions.some((permission) => hasPermission(user, permission));
 }
 
+
+const EMPTY_VIEW_ROUTE_PERMISSIONS = new Set([
+  'central.view',
+  'clients.view',
+  'metrics.view',
+  'ranking.view',
+  'gdv.view',
+  'squads.view',
+  'projects.view',
+]);
+
+export function hasEmptyWorkspaceView(user) {
+  return getUserPermissions(user).includes('workspace.view_empty');
+}
+
+export function canAccessEmptyViewRoute(user, permission) {
+  return Boolean(permission && EMPTY_VIEW_ROUTE_PERMISSIONS.has(permission) && hasEmptyWorkspaceView(user));
+}
+
+export function canViewRouteContent(user, permission) {
+  return hasPermission(user, permission) || canAccessEmptyViewRoute(user, permission);
+}
+
 export function canAccessAdmin(user) {
   return isAdminUser(user) || hasPermission(user, 'team.view');
 }
@@ -211,7 +251,7 @@ export function canManageTeamArea(user) {
 }
 
 export function canViewClients(user) {
-  return isAdminUser(user) || hasPermission(user, 'clients.view');
+  return isAdminUser(user) || hasPermission(user, 'clients.view') || hasEmptyWorkspaceView(user);
 }
 
 export function canCreateClients(user) {
@@ -257,7 +297,7 @@ export function canEditClientFeeScheduleRecord(user, client) {
 }
 
 export function canViewMetrics(user) {
-  return isAdminUser(user) || hasPermission(user, 'metrics.view');
+  return isAdminUser(user) || hasPermission(user, 'metrics.view') || hasEmptyWorkspaceView(user);
 }
 
 export function canFillMetrics(user) {
@@ -265,7 +305,7 @@ export function canFillMetrics(user) {
 }
 
 export function canViewGdv(user) {
-  return isAdminUser(user) || hasPermission(user, 'gdv.view');
+  return isAdminUser(user) || hasPermission(user, 'gdv.view') || hasEmptyWorkspaceView(user);
 }
 
 export function canManageGdvs(user) {
@@ -291,6 +331,7 @@ export function canEditProfile(user) {
 export function canAccessSquad(user, squadId) {
   if (!squadId) return false;
   if (isAdminUser(user) || hasPermission(user, 'squads.view.all')) return true;
+  if (hasEmptyWorkspaceView(user)) return false;
   return getUserSquadIds(user).includes(squadId);
 }
 
@@ -327,11 +368,11 @@ export function getRoutePermission(pathname = '/') {
 export function canAccessRoute(user, path) {
   const permission = getRoutePermission(path || '/');
   if (!permission) return true;
-  return hasPermission(user, permission);
+  return hasPermission(user, permission) || canAccessEmptyViewRoute(user, permission);
 }
 
 export function getDefaultRouteForUser(user) {
-  const firstAllowed = ROUTE_PERMISSION_MAP.find((route) => hasPermission(user, route.permission));
+  const firstAllowed = ROUTE_PERMISSION_MAP.find((route) => hasPermission(user, route.permission) || canAccessEmptyViewRoute(user, route.permission));
   return firstAllowed?.path || '/acesso-negado';
 }
 

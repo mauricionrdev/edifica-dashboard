@@ -675,6 +675,10 @@ router.put('/ranking/settings', requirePermission('ranking.view.all'), async (re
 // --------------------------------------------------------------
 router.get('/ranking', requirePermission('ranking.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) {
+      const ref = req.query?.date ? new Date(String(req.query.date) + 'T00:00:00Z') : new Date();
+      return res.json({ weekKey: currentPeriodKey(ref), monthPrefix: monthPrefixFromDate(ref), rows: [] });
+    }
     const { date: dateParam, squadId } = req.query;
     const globalRankingSettings = await getRankingSettings();
     const goalPercent = globalRankingSettings.goalPercent;
@@ -854,6 +858,12 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
 // --------------------------------------------------------------
 router.get('/summary', requirePermission('metrics.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) {
+      const ref = req.query?.date ? new Date(`${req.query.date}T00:00:00Z`) : new Date();
+      const weekKey = currentPeriodKey(ref);
+      const monthPrefix = monthPrefixFromDate(ref);
+      return res.json({ weekKey, prevWeekKey: previousPeriodKey(weekKey), monthPrefix, prevMonthPrefix: previousMonthPrefix(monthPrefix), clients: [], totals: aggregatePortfolioSummary([]) });
+    }
     const { date: dateParam, squadId, clientId: clientIdParam } = req.query;
 
     let ref;
@@ -1113,6 +1123,7 @@ router.get('/summary/history', requirePermission('metrics.view'), async (req, re
 
 router.get('/campaigns', requirePermission('metrics.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) return res.json({ campaignsByClient: {}, campaigns: [] });
     await ensureMetricCampaignsSchema();
     const periodKey = String(req.query?.periodKey || '').trim();
     const clientIds = String(req.query?.clientIds || '')
@@ -1241,6 +1252,7 @@ router.delete('/campaigns/:campaignId', requirePermission('metrics.fill_week'), 
 
 router.get('/:clientId', requirePermission('metrics.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) return res.json({ metrics: [] });
     const { clientId } = req.params;
     const { clientMetaLucro } = await assertClientExists(clientId, req.user, 'metrics.view.all');
 
@@ -1257,6 +1269,7 @@ router.get('/:clientId', requirePermission('metrics.view'), async (req, res, nex
 
 router.get('/:clientId/:periodKey', requirePermission('metrics.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) return res.json({ metric: null });
     const { clientId, periodKey } = req.params;
     if (!isMetricPeriodKey(periodKey)) {
       throw badRequest('periodKey inválido. Esperado YYYY-MM-Sw');

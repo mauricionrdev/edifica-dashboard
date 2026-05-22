@@ -282,6 +282,7 @@ async function assertUniqueClientName(name, excludeId = null) {
 // --------------------------------------------------------------
 router.get('/', requirePermission('clients.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) return res.json({ clients: [] });
     await ensureResponsibleSchema();
     await ensureClientFeeStepsSchema();
     const rows = await query(
@@ -302,6 +303,7 @@ router.get('/', requirePermission('clients.view'), async (req, res, next) => {
 // --------------------------------------------------------------
 router.get('/:id', requirePermission('clients.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) throw forbidden('Sem acesso a este cliente');
     await ensureResponsibleSchema();
     await ensureClientFeeStepsSchema();
     const rows = await query(

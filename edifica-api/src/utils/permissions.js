@@ -98,6 +98,7 @@ export const ROLE_PERMISSIONS = {
 
 export const PERMISSION_GROUPS = [
   { area: 'Central', permissions: ['central.view'] },
+  { area: 'Visualização zerada', permissions: ['workspace.view_empty'] },
   { area: 'Clientes', permissions: ['clients.view.own','clients.view.all','clients.create','clients.edit.own','clients.edit.all','clients.fee_schedule.view.own','clients.fee_schedule.view.all','clients.fee_schedule.edit.own','clients.fee_schedule.edit.all'] },
   { area: 'Métricas', permissions: ['metrics.view.own','metrics.view.all','metrics.fill_week.own','metrics.fill_week.all'] },
   { area: 'Ranking', permissions: ['ranking.view.own','ranking.view.all'] },
@@ -105,10 +106,34 @@ export const PERMISSION_GROUPS = [
   { area: 'Projetos', permissions: ['projects.view.own','projects.view.all','projects.create','projects.edit.own','projects.edit.all','project_template.view','project_template.edit'] },
   { area: 'Tarefas', permissions: ['tasks.view.own','tasks.view.all','tasks.create','tasks.edit.own','tasks.edit.all','tasks.comment.own','tasks.comment.all','tasks.complete.own','tasks.complete.any'] },
   { area: 'Squads', permissions: ['squads.view.own','squads.view.all','squads.manage'] },
+  { area: 'Onboarding', permissions: ['onboarding.view', 'onboarding.edit', 'onboarding.complete.own', 'onboarding.complete.any'] },
   { area: 'Equipe & Acessos', permissions: ['team.view','team.manage'] },
   { area: 'Auditoria', permissions: ['audit.view'] },
   { area: 'Perfil', permissions: ['profile.view','profile.edit'] },
 ];
+
+
+const EMPTY_VIEW_PERMISSIONS = new Set([
+  'central.view',
+  'clients.view',
+  'metrics.view',
+  'ranking.view',
+  'gdv.view',
+  'squads.view',
+  'projects.view',
+  'tasks.view',
+]);
+
+export function hasEmptyWorkspaceView(user) {
+  const permissions = Array.isArray(user?.permissions)
+    ? normalizePermissionList(user.permissions)
+    : normalizePermissionList(user?.permissionsOverride);
+  return permissions.includes('workspace.view_empty');
+}
+
+export function canUseEmptyWorkspaceView(permission = '') {
+  return EMPTY_VIEW_PERMISSIONS.has(basePermissionForScoped(permission));
+}
 
 export function resolvePermissions(role, override = []) {
   const base = ROLE_PERMISSIONS[role] || [];

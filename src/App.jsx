@@ -21,7 +21,6 @@ import TeamAccessPage from './pages/TeamAccessPage.jsx';
 import ForbiddenPage from './pages/ForbiddenPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
-import OpenAIUsagePage from './pages/OpenAIUsagePage.jsx';
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
 
 export default function App() {
@@ -63,7 +62,6 @@ export default function App() {
               <Route path="squads/:squadId" element={<RequirePermissionRoute permission="squads.view"><SquadPage /></RequirePermissionRoute>} />
               <Route path="ranking-squads" element={<RequirePermissionRoute permission="ranking.view"><SquadRankingPage /></RequirePermissionRoute>} />
               <Route path="equipe" element={<RequirePermissionRoute permission="team.view"><TeamAccessPage /></RequirePermissionRoute>} />
-              <Route path="uso-openai" element={<RequirePermissionRoute permission="audit.view"><OpenAIUsagePage /></RequirePermissionRoute>} />
               <Route path="acesso-negado" element={<ForbiddenPage />} />
               <Route
                 path="modelo-oficial"

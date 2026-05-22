@@ -12,6 +12,7 @@ import {
   canViewClients,
   canViewGdv,
   canViewMetrics,
+  hasEmptyWorkspaceView,
   hasPermission,
   canManageGdvs,
   canManageSquads,
@@ -21,7 +22,6 @@ import {
   BriefcaseIcon,
   ChartColumnIcon,
   CalendarIcon,
-  BotIcon,
   ChevronLeftIcon,
   CloseIcon,
   HomeIcon,
@@ -103,6 +103,7 @@ export default function Sidebar({
   const canManageSidebarSquads = canManageSquads(user);
   const canManageSidebarGdvs = canManageGdvs(user);
   const canViewTeam = canViewTeamArea(user);
+  const emptyWorkspaceView = hasEmptyWorkspaceView(user);
 
   const normalizedQuery = normalizeSearch(query);
   const activeGdvId = useMemo(() => {
@@ -146,7 +147,7 @@ export default function Sidebar({
 
   const primaryItems = useMemo(
     () => [
-      hasPermission(user, 'central.view')
+      (hasPermission(user, 'central.view') || emptyWorkspaceView)
         ? {
             to: '/',
             icon: <HomeIcon size={16} />,
@@ -154,7 +155,7 @@ export default function Sidebar({
             meta: activeCount ? String(activeCount) : null,
           }
         : null,
-      canViewClients(user)
+      (canViewClients(user) || emptyWorkspaceView)
         ? {
             to: '/clientes',
             icon: <BriefcaseIcon size={16} />,
@@ -162,7 +163,7 @@ export default function Sidebar({
             meta: totalCount ? String(totalCount) : null,
           }
         : null,
-      canViewMetrics(user)
+      (canViewMetrics(user) || emptyWorkspaceView)
         ? {
             to: '/preencher-semana',
             icon: <CalendarIcon size={16} />,
@@ -170,7 +171,7 @@ export default function Sidebar({
           }
         : null,
     ].filter(Boolean),
-    [activeCount, totalCount, user]
+    [activeCount, emptyWorkspaceView, totalCount, user]
   );
 
   const adminItems = useMemo(
@@ -180,13 +181,6 @@ export default function Sidebar({
         icon: <UsersIcon size={16} />,
         label: 'Equipe',
       },
-      hasPermission(user, 'audit.view')
-        ? {
-            to: '/uso-openai',
-            icon: <BotIcon size={16} />,
-            label: 'Uso OpenAI',
-          }
-        : null,
     ].filter(Boolean),
     [user]
   );
@@ -387,7 +381,7 @@ export default function Sidebar({
           </section>
         ) : null}
 
-        {canViewGdv(user) && filteredGdvs.length > 0 ? (
+        {(canViewGdv(user) || emptyWorkspaceView) && filteredGdvs.length > 0 ? (
           <section className={styles.group}>
             <div className={styles.groupLabel}>
               <span>GDVs</span>
@@ -444,7 +438,7 @@ export default function Sidebar({
           </section>
         ) : null}
 
-        {hasPermission(user, 'ranking.view') && matchesSearch('Ranking', normalizedQuery) ? (
+        {(hasPermission(user, 'ranking.view') || emptyWorkspaceView) && matchesSearch('Ranking', normalizedQuery) ? (
           <section className={styles.group}>
             <Item
               to="/ranking-squads"
@@ -456,7 +450,7 @@ export default function Sidebar({
           </section>
         ) : null}
 
-        {hasPermission(user, 'squads.view') ? (
+        {(hasPermission(user, 'squads.view') || emptyWorkspaceView) ? (
           <section className={styles.group}>
             <div className={styles.groupLabel}>
               <span>Squads</span>

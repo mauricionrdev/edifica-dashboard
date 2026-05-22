@@ -179,6 +179,7 @@ async function ensureUniqueCustomSlug(customSlug, excludeId = null) {
 
 router.get('/', requireAuth, requirePermission('gdv.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) return res.json({ gdvs: [] });
     const rows = await listRows();
     const visible = hasPermission(req.user, 'gdv.view.all') || hasPermission(req.user, 'gdv.manage')
       ? rows

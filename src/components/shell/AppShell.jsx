@@ -25,6 +25,7 @@ import { ApiError } from '../../api/client.js';
 import {
   canViewClients,
   canViewGdv,
+  hasEmptyWorkspaceView,
   hasPermission,
 } from '../../utils/permissions.js';
 import { getRoutePanelHeader } from '../../utils/routeMeta.js';
@@ -125,6 +126,10 @@ export default function AppShell() {
 
   const refreshClients = useCallback(async () => {
     const currentUser = userRef.current;
+    if (hasEmptyWorkspaceView(currentUser)) {
+      if (mountedRef.current) setClients([]);
+      return;
+    }
     if (!canViewClients(currentUser)) {
       if (mountedRef.current) setClients([]);
       return;
@@ -145,6 +150,10 @@ export default function AppShell() {
 
   const refreshSquads = useCallback(async () => {
     const currentUser = userRef.current;
+    if (hasEmptyWorkspaceView(currentUser)) {
+      if (mountedRef.current) setSquads([]);
+      return;
+    }
     if (!hasPermission(currentUser, 'squads.view')) {
       if (mountedRef.current) setSquads([]);
       return;
@@ -165,6 +174,10 @@ export default function AppShell() {
 
   const refreshGdvs = useCallback(async () => {
     const currentUser = userRef.current;
+    if (hasEmptyWorkspaceView(currentUser)) {
+      if (mountedRef.current) setGdvs([]);
+      return;
+    }
     if (!canViewGdv(currentUser)) {
       if (mountedRef.current) setGdvs([]);
       return;

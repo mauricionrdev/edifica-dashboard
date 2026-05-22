@@ -4,7 +4,7 @@
 import jwt from 'jsonwebtoken';
 import { query } from '../db/pool.js';
 import { parseJson, unauthorized, forbidden } from '../utils/helpers.js';
-import { hasPermission, hasAnyPermission, resolvePermissions } from '../utils/permissions.js';
+import { hasPermission, hasAnyPermission, resolvePermissions, hasEmptyWorkspaceView, canUseEmptyWorkspaceView } from '../utils/permissions.js';
 
 const SUPER_ADMIN_ROLES = new Set(['admin', 'ceo', 'suporte_tecnologia']);
 
@@ -113,6 +113,10 @@ export function requirePermission(permission) {
     if (!permission) return next();
     if (req.user.isMaster || SUPER_ADMIN_ROLES.has(req.user.role)) return next();
     if (hasPermission(req.user, permission)) return next();
+    if (hasEmptyWorkspaceView(req.user) && canUseEmptyWorkspaceView(permission)) {
+      req.emptyWorkspaceView = true;
+      return next();
+    }
     return next(forbidden('Você não tem permissão para esta ação'));
   };
 }

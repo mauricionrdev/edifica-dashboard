@@ -131,6 +131,7 @@ async function listRows() {
 
 router.get('/', requireAuth, requirePermission('squads.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) return res.json({ squads: [] });
     const rows = await listRows();
     const allowedSquads = Array.isArray(req.user?.squads) ? req.user.squads.filter(Boolean) : [];
     const visible = hasPermission(req.user, 'squads.view.all') || hasPermission(req.user, 'squads.manage')

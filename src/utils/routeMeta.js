@@ -45,11 +45,6 @@ const ROUTE_META = [
     crumb: 'Equipe',
   },
   {
-    match: (pathname) => pathname.startsWith('/uso-openai'),
-    title: 'Uso OpenAI',
-    crumb: 'Uso OpenAI',
-  },
-  {
     match: (pathname) => pathname.startsWith('/modelo-oficial'),
     title: 'Modelo Oficial',
     crumb: 'Modelo Oficial',

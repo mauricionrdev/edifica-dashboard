@@ -537,6 +537,7 @@ async function loadTaskEvents(taskId) {
 
 router.get('/', requirePermission('projects.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) return res.json({ projects: [] });
     const rows = await query(
       `SELECT p.*, COALESCE(p.squad_id, c.squad_id) AS squad_id,
               c.name AS client_name, s.name AS squad_name, u.name AS owner_name,
@@ -735,6 +736,7 @@ router.get('/client/:clientId', requirePermission('projects.view'), async (req, 
 
 router.get('/tasks/my/list', requirePermission('tasks.view'), async (req, res, next) => {
   try {
+    if (req.emptyWorkspaceView) return res.json({ tasks: [] });
     const rows = await query(
       `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
               au.name AS assignee_name, cu.name AS created_by_name,
