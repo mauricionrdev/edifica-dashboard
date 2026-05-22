@@ -690,3 +690,64 @@
   background: var(--danger-soft);
   color: var(--danger-text);
 }
+
+/* v162 — mensalidades integradas ao contrato, sem cards de resumo redundantes */
+.panel {
+  padding: 0;
+  gap: 0;
+  background: transparent;
+}
+
+.panel > :global(.section) {
+  padding: 0;
+  border-top: 0;
+  background: transparent;
+}
+
+.summaryGrid {
+  display: none;
+}
+
+.sectionHead {
+  min-height: 36px;
+  padding: 0;
+  margin: 18px 0 10px;
+  border-bottom: 0;
+}
+
+.sectionActions {
+  gap: 8px;
+}
+
+.actionButton {
+  min-height: 34px;
+  border-radius: var(--workspace-control-radius);
+}
+
+.rows {
+  gap: 8px;
+}
+
+.rowCard {
+  padding: 10px 12px;
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.rowHeader {
+  min-height: 28px;
+}
+
+.rowGrid {
+  grid-template-columns: minmax(180px, 220px) minmax(180px, 220px);
+  gap: 10px;
+}
+
+.emptyState {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: var(--workspace-control-radius);
+  background: transparent;
+  color: var(--text-tertiary);
+}

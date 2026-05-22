@@ -17,7 +17,7 @@ import {
   saveClientAvatar,
   subscribeAvatarChange,
 } from '../../utils/avatarStorage.js';
-import { CloseIcon } from '../ui/Icons.jsx';
+import { CloseIcon, PaperclipIcon, ProjectBoardIcon } from '../ui/Icons.jsx';
 import OverviewTab from './OverviewTab.jsx';
 import AnalysisTab from './AnalysisTab.jsx';
 import ClientProjectTab from './ClientProjectTab.jsx';
@@ -29,12 +29,11 @@ import tabStyles from './ClientTabs.module.css';
 
 const TABS = [
   { key: 'overview', label: 'Visão geral' },
-  { key: 'project', label: 'Projeto' },
-  { key: 'tasks', label: 'Tasks' },
-  { key: 'files', label: 'Arquivos' },
+  { key: 'book', label: 'Book do cliente' },
+  { key: 'files', label: 'Drive', icon: PaperclipIcon },
 ];
 
-const SIDE_TABS = [
+const ANALYSIS_TABS = [
   { key: 'icp', label: 'Análise ICP' },
   { key: 'gdv', label: 'Análise GDV' },
   { key: 'routes', label: 'Resumo de Rotas' },
@@ -157,14 +156,7 @@ export default function ClientDetailDrawer({
     }
   }, [client, onUpdated, showToast]);
 
-  const visibleTabs = useMemo(
-    () =>
-      TABS.filter((tab) => {
-        if (tab.key === 'project') return canViewProject;
-        return true;
-      }),
-    [canViewFeeSchedule, canViewProject]
-  );
+  const visibleTabs = useMemo(() => TABS, []);
 
   useEffect(() => {
     if (activeTab === 'project' && !canViewProject) {
@@ -216,11 +208,22 @@ export default function ClientDetailDrawer({
           <div className={drawerStyles.modalHeadActions}>
             <button
               type="button"
-              className={`${drawerStyles.headerAction} ${activeTab === 'book' ? drawerStyles.headerActionActive : ''}`.trim()}
-              onClick={() => setActiveTab('book')}
+              className={`${drawerStyles.headerIconAction} ${activeTab === 'tasks' ? drawerStyles.headerActionActive : ''}`.trim()}
+              onClick={() => setActiveTab('tasks')}
+              aria-label="Tasks do cliente"
+              title="Tasks"
             >
-              Book do cliente
+              <ProjectBoardIcon size={15} />
             </button>
+            {canViewProject ? (
+              <button
+                type="button"
+                className={`${drawerStyles.headerAction} ${activeTab === 'project' ? drawerStyles.headerActionActive : ''}`.trim()}
+                onClick={() => setActiveTab('project')}
+              >
+                Projeto
+              </button>
+            ) : null}
             <button
               type="button"
               className={drawerStyles.iconBtn}
@@ -242,20 +245,43 @@ export default function ClientDetailDrawer({
 
         <div className={drawerStyles.modalBody}>
           <aside className={tabStyles.tabsBar} role="tablist" aria-label="Detalhes do cliente">
-            {visibleTabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                role="tab"
-                aria-selected={activeTab === tab.key}
-                className={`${tabStyles.tab} ${tabStyles[`tab_${tab.key}`] || ''} ${
-                  activeTab === tab.key ? tabStyles.tabActive : ''
-                }`.trim()}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                <span>{tab.label}</span>
-              </button>
-            ))}
+            <div className={tabStyles.primaryTabs}>
+              {visibleTabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab.key}
+                    className={`${tabStyles.tab} ${tabStyles[`tab_${tab.key}`] || ''} ${
+                      activeTab === tab.key ? tabStyles.tabActive : ''
+                    }`.trim()}
+                    onClick={() => setActiveTab(tab.key)}
+                  >
+                    {Icon ? <Icon size={14} /> : null}
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className={tabStyles.analysisTabs}>
+              {ANALYSIS_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab.key}
+                  className={`${tabStyles.analysisTab} ${tabStyles[`analysisTab_${tab.key}`] || ''} ${
+                    activeTab === tab.key ? tabStyles.analysisTabActive : ''
+                  }`.trim()}
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </aside>
 
           <main className={tabStyles.tabBody}>
@@ -310,22 +336,7 @@ export default function ClientDetailDrawer({
             )}
           </main>
         </div>
-
-        <nav className={tabStyles.sideTabs} aria-label="Análises do cliente">
-          {SIDE_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`${tabStyles.sideTab} ${tabStyles[`sideTab_${tab.key}`] || ''} ${
-                activeTab === tab.key ? tabStyles.sideTabActive : ''
-              }`.trim()}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </section>
+</section>
     </div>
   );
 

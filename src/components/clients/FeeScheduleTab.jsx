@@ -201,16 +201,6 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
 
   return (
     <div className={styles.panel}>
-      <div className={styles.summaryGrid}>
-        {summaryItems.map((item) => (
-          <div key={item.label} className={styles.summaryCard}>
-            <span className={styles.summaryLabel}>{item.label}</span>
-            <strong className={styles.summaryValue}>{item.value}</strong>
-
-          </div>
-        ))}
-      </div>
-
       <div className={drawerStyles.section}>
         <div className={styles.sectionHead}>
           <div className={drawerStyles.sectionTitle}>Mensalidades por mês</div>

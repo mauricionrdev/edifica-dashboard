@@ -22,6 +22,7 @@ export {
   Mail as MailIcon,
   Menu as MenuIcon,
   PanelLeft as PanelLeftIcon,
+  Paperclip as PaperclipIcon,
   Plus as PlusIcon,
   RotateCcw as RotateCcwIcon,
   Save as SaveIcon,

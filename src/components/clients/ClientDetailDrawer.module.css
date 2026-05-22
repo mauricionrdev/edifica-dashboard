@@ -1492,3 +1492,38 @@
   overflow: hidden;
   border-radius: 0 0 var(--radius-4, 10px) var(--radius-4, 10px);
 }
+
+/* v162 — ações superiores compactas Projeto/Tasks */
+.headerIconAction {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 6px);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.headerAction,
+.headerIconAction,
+.iconBtn {
+  min-height: 34px;
+  background: var(--field-bg);
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.headerActionActive {
+  color: var(--accent);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.modalCard {
+  overflow: hidden;
+}

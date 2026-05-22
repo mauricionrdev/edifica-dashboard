@@ -529,3 +529,102 @@
     transform: none;
   }
 }
+
+/* v162 — navegação do cliente reorganizada no header interno */
+.tabsBar {
+  min-height: 54px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  overflow: visible;
+}
+
+.primaryTabs,
+.analysisTabs {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.primaryTabs {
+  flex: 1 1 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.primaryTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  gap: 7px;
+}
+
+.analysisTabs {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.analysisTab {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 620;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.analysisTab_icp {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, 0.24);
+  background: rgba(90, 169, 255, 0.055);
+}
+
+.analysisTab_gdv {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 24%, transparent);
+  background: var(--success-soft);
+}
+
+.analysisTab_routes {
+  color: #c7a6ff;
+  border-color: rgba(165, 124, 255, 0.24);
+  background: rgba(165, 124, 255, 0.055);
+}
+
+.analysisTabActive {
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 currentColor;
+}
+
+.sideTabs {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .tabsBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .analysisTabs {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .analysisTabs::-webkit-scrollbar {
+    display: none;
+  }
+}
