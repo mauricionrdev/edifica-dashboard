@@ -14,7 +14,7 @@ import { parseLocaleNumber } from '../utils/number.js';
 import { matchesAnySearch } from '../utils/search.js';
 import { isActiveClientStatus } from '../utils/clientStatus.js';
 import { clientInitials } from '../utils/clientHelpers.js';
-import { getClientAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
+import { getClientAvatar, getSquadAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import styles from './PreencherSemanaPage.module.css';
 
 const EMPTY_DATA = {
@@ -810,6 +810,7 @@ export default function PreencherSemanaPage() {
 
         {squadsAvailable.length > 0 ? (
           <Select
+            type="squad"
             className={styles.select}
             value={squadFilter}
             onChange={(event) => {
@@ -821,7 +822,12 @@ export default function PreencherSemanaPage() {
           >
             <option value="">Todos squads</option>
             {squadsAvailable.map((squad) => (
-              <option key={squad.id} value={squad.id}>
+              <option
+                key={squad.id}
+                value={squad.id}
+                data-avatar={getSquadAvatar(squad) || squad.avatarUrl || squad.logoUrl || ''}
+                data-name={squad.name}
+              >
                 {squad.name}
               </option>
             ))}
@@ -838,7 +844,12 @@ export default function PreencherSemanaPage() {
         >
           <option value="">Todos clientes</option>
           {filteredClientsForSelect(clients, squadFilter).map((client) => (
-            <option key={client.id} value={client.id}>
+            <option
+              key={client.id}
+              value={client.id}
+              data-avatar={getClientAvatar(client) || client.avatarUrl || ''}
+              data-name={client.name}
+            >
               {client.name}
             </option>
           ))}

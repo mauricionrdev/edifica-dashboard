@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { buildBarChartData, computeCentralMetrics } from '../utils/centralMetrics.js';
 import { fmtMoney, fmtPct, MONTHS_FULL } from '../utils/format.js';
 import { isActiveClientStatus } from '../utils/clientStatus.js';
+import { getClientAvatar, getSquadAvatar } from '../utils/avatarStorage.js';
 import {
   canEditClientFeeSchedule,
   canEditClients,
@@ -768,6 +769,7 @@ export default function CentralPage() {
     const actions = (
       <div className={styles.toolbar}>
         <Select
+          type="squad"
           value={squadFilter}
           onChange={(event) => setSquadFilter(event.target.value)}
           aria-label="Filtrar por squad"
@@ -776,7 +778,12 @@ export default function CentralPage() {
         >
           <option value="">Todos squads</option>
           {squadsList.map((squad) => (
-            <option key={squad.id} value={squad.id}>
+            <option
+              key={squad.id}
+              value={squad.id}
+              data-avatar={getSquadAvatar(squad) || squad.avatarUrl || squad.logoUrl || ''}
+              data-name={squad.name}
+            >
               {squad.name}
             </option>
           ))}
@@ -792,7 +799,12 @@ export default function CentralPage() {
         >
           <option value="">Todos clientes</option>
           {clientOptions.map((client) => (
-            <option key={client.id} value={client.id}>
+            <option
+              key={client.id}
+              value={client.id}
+              data-avatar={getClientAvatar(client) || client.avatarUrl || ''}
+              data-name={client.name}
+            >
               {client.name}
             </option>
           ))}

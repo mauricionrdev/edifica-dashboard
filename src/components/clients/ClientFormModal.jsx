@@ -8,6 +8,7 @@ import DateField from '../ui/DateField.jsx';
 import { clientInitials } from '../../utils/clientHelpers.js';
 import {
   getClientAvatar,
+  getSquadAvatar,
   readAvatarFile,
   saveClientAvatar,
 } from '../../utils/avatarStorage.js';
@@ -219,6 +220,7 @@ export default function ClientFormModal({
               <div className={styles.field}>
                 <span className={styles.label}>Squad</span>
                 <Select
+                  type="squad"
                   className={styles.selectControl}
                   value={form.squadId}
                   onChange={(event) => setField('squadId', event.target.value)}
@@ -228,7 +230,12 @@ export default function ClientFormModal({
                 >
                   <option value="">Sem squad</option>
                   {squads.map((squad) => (
-                    <option key={squad.id} value={squad.id}>
+                    <option
+                      key={squad.id}
+                      value={squad.id}
+                      data-avatar={getSquadAvatar(squad) || squad.avatarUrl || squad.logoUrl || ''}
+                      data-name={squad.name}
+                    >
                       {squad.name}
                     </option>
                   ))}

@@ -10,8 +10,7 @@
  *
  * Props de tipo (data-type no .wrap):
  *   default — texto simples
- *   user    — Avatar à esquerda do nome (.optionAvatar)
- *   client  — estritamente texto, sem qualquer adorno
+ *   user/gdv/squad/client — Avatar/identidade à esquerda do nome (.optionAvatar)
  * ========================================================================== */
 
 .wrap {
@@ -195,12 +194,13 @@
   cursor: not-allowed;
 }
 
-/* Avatar (apenas type="user") */
+/* Avatar/identidade (type="user", type="gdv", type="squad" e type="client") */
 .optionAvatar {
   flex: 0 0 auto;
 }
 
-/* type="client": estritamente texto, sem qualquer adorno */
-.wrap[data-type='client'] .menu button.option {
+.wrap[data-type='client'] .menu button.option,
+.wrap[data-type='squad'] .menu button.option,
+.wrap[data-type='gdv'] .menu button.option {
   font-weight: 600;
 }

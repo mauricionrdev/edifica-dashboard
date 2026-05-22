@@ -36,6 +36,7 @@ import {
   subscribeAvatarChange,
 } from '../utils/avatarStorage.js';
 import DateField from '../components/ui/DateField.jsx';
+import Avatar from '../components/ui/Avatar.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { BellIcon, BuildingIcon, CalendarIcon, ChecklistIcon, CloseIcon, SettingsIcon, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
@@ -1372,7 +1373,7 @@ function canDeleteProfileComment(user, comment) {
 }
 
 
-function Select({ value, onChange, children, className = '', disabled = false, placeholder = 'Selecionar', ...props }) {
+function Select({ value, onChange, children, className = '', disabled = false, placeholder = 'Selecionar', type = 'default', ...props }) {
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -1396,6 +1397,8 @@ function Select({ value, onChange, children, className = '', disabled = false, p
             value: String(node.props.value ?? ''),
             label,
             disabled: Boolean(node.props.disabled),
+            avatar: node.props['data-avatar'] || '',
+            avatarName: node.props['data-name'] || label,
           });
           return;
         }
@@ -1409,6 +1412,8 @@ function Select({ value, onChange, children, className = '', disabled = false, p
 
   const selected = options.find((option) => option.value === String(value ?? ''));
   const ariaLabel = props['aria-label'] || props.ariaLabel || placeholder;
+  const isIdentity = ['user', 'gdv', 'squad', 'client'].includes(type);
+  const shouldShowAvatar = (option) => isIdentity && option && (option.value !== '' || option.avatar);
 
   function computePosition() {
     const anchor = buttonRef.current;
@@ -1496,6 +1501,14 @@ function Select({ value, onChange, children, className = '', disabled = false, p
         aria-haspopup="listbox"
         aria-expanded={open}
       >
+        {shouldShowAvatar(selected) ? (
+          <Avatar
+            src={selected.avatar || undefined}
+            name={selected.avatarName}
+            size="xs"
+            className={styles.profileSelectAvatar}
+          />
+        ) : null}
         <span>{selected?.label || placeholder}</span>
       </button>
       {open && position ? createPortal(
@@ -1516,7 +1529,15 @@ function Select({ value, onChange, children, className = '', disabled = false, p
               role="option"
               aria-selected={String(value ?? '') === option.value}
             >
-              {option.label}
+              {shouldShowAvatar(option) ? (
+                <Avatar
+                  src={option.avatar || undefined}
+                  name={option.avatarName}
+                  size="xs"
+                  className={styles.profileSelectAvatar}
+                />
+              ) : null}
+              <span>{option.label}</span>
             </button>
           ))}
         </div>,
@@ -3883,6 +3904,7 @@ export default function ProfilePage() {
                 </div>
                 <form className={styles.collaboratorComposer} onSubmit={handleAddCollaborator}>
                   <Select
+                    type="user"
                     value={collaboratorUserId}
                     onChange={(event) => setCollaboratorUserId(event.target.value)}
                     aria-label="Colaborador"
@@ -3891,7 +3913,7 @@ export default function ProfilePage() {
                   >
                     <option value="">Adicionar colaborador</option>
                     {collaboratorOptions.map((option) => (
-                      <option key={option.id} value={option.id}>{option.name}</option>
+                      <option key={option.id} value={option.id} data-avatar={getUserAvatar(option) || option.avatarUrl || ''} data-name={option.name}>{option.name}</option>
                     ))}
                   </Select>
                   <button type="submit" disabled={collaboratorSaving || !collaboratorUserId || !canManageActiveCollaborators}>+</button>
@@ -4362,6 +4384,7 @@ export default function ProfilePage() {
                 <label className={`${styles.labeledField} ${styles.fieldWide}`}>
                   <span>Colaboradores</span>
                   <Select
+                    type="user"
                     value=""
                     onChange={(event) => {
                       const value = event.target.value;
@@ -4375,7 +4398,7 @@ export default function ProfilePage() {
                     className={styles.formSelect}
                   >
                     <option value="">Adicionar colaborador</option>
-                    {availableDemandCollaborators.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                    {availableDemandCollaborators.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                   </Select>
                 </label>
                 {selectedDemandCollaborators.length ? (

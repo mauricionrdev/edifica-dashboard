@@ -3,6 +3,13 @@ import { ChevronDownIcon } from './Icons.jsx';
 import Avatar from './Avatar.jsx';
 import styles from './Select.module.css';
 
+function optionText(value) {
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
+  if (Array.isArray(value)) return value.map(optionText).join('');
+  if (value?.props?.children) return optionText(value.props.children);
+  return '';
+}
+
 function normalizeOptions(children) {
   return (Array.isArray(children) ? children : [children])
     .flatMap((child) => {
@@ -16,9 +23,7 @@ function normalizeOptions(children) {
       label: child.props.children,
       disabled: Boolean(child.props.disabled),
       avatar: child.props['data-avatar'] ?? null,
-      avatarName:
-        child.props['data-name'] ??
-        (typeof child.props.children === 'string' ? child.props.children : ''),
+      avatarName: child.props['data-name'] ?? optionText(child.props.children),
     }));
 }
 
@@ -108,7 +113,8 @@ export default function Select({
     minWidth: menuMinWidth ? Number(menuMinWidth) : undefined,
   };
 
-  const isUser = type === 'user';
+  const isIdentity = ['user', 'gdv', 'squad', 'client'].includes(type);
+  const shouldShowAvatar = (option) => isIdentity && option && (option.value !== '' || option.avatar);
 
   return (
     <div
@@ -135,7 +141,7 @@ export default function Select({
         aria-expanded={open}
         aria-controls={open ? listboxId : undefined}
       >
-        {isUser && selected ? (
+        {shouldShowAvatar(selected) ? (
           <Avatar
             src={selected.avatar || undefined}
             name={selected.avatarName}
@@ -171,7 +177,7 @@ export default function Select({
                 onClick={() => emitChange(option.value)}
                 title={typeof option.label === 'string' ? option.label : undefined}
               >
-                {isUser ? (
+                {shouldShowAvatar(option) ? (
                   <Avatar
                     src={option.avatar || undefined}
                     name={option.avatarName}

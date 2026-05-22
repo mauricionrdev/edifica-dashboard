@@ -4,7 +4,7 @@ import { clientInitials } from '../../utils/clientHelpers.js';
 import { ApiError } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
-import { getUserAvatar } from '../../utils/avatarStorage.js';
+import { getSquadAvatar, getUserAvatar } from '../../utils/avatarStorage.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { CameraIcon, LogOutIcon, TrashIcon } from '../ui/Icons.jsx';
@@ -238,6 +238,7 @@ export default function OverviewTab({
             <div className={drawerStyles.field}>
               <label className={drawerStyles.label} htmlFor="cd-squad">Squad</label>
               <Select
+                type="squad"
                 className={drawerStyles.selectControl}
                 value={form.squadId}
                 onChange={(event) => onSelectChange('squadId', 'squadId', event.target.value)}
@@ -247,7 +248,14 @@ export default function OverviewTab({
               >
                 <option value="">Sem squad</option>
                 {squads.map((squad) => (
-                  <option key={squad.id} value={squad.id}>{squad.name}</option>
+                  <option
+                    key={squad.id}
+                    value={squad.id}
+                    data-avatar={getSquadAvatar(squad) || squad.avatarUrl || squad.logoUrl || ''}
+                    data-name={squad.name}
+                  >
+                    {squad.name}
+                  </option>
                 ))}
               </Select>
             </div>
@@ -255,7 +263,7 @@ export default function OverviewTab({
             <div className={drawerStyles.field}>
               <label className={drawerStyles.label} htmlFor="cd-gdv">Gestor de Vendas</label>
               <Select
-                type="user"
+                type="gdv"
                 className={drawerStyles.selectControl}
                 value={form.gdvName}
                 onChange={(event) => onSelectChange('gdvName', 'gdvName', event.target.value)}
