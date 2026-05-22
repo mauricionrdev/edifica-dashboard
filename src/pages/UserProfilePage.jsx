@@ -176,7 +176,7 @@ function taskStageInfo(task) {
   const kind = publicTaskKind(task);
   const status = task?.status || (getTaskStatus(task) === 'done' ? 'done' : 'todo');
 
-  if (task?.status === 'canceled') return { label: 'Cancelada', progress: 100, tone: 'overdue' };
+  if (task?.status === 'canceled') return { label: 'Cancelada', progress: 100, tone: 'red' };
 
   if (kind === 'briefing') {
     const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
@@ -185,15 +185,62 @@ function taskStageInfo(task) {
     return {
       label: statusLabel(task),
       progress,
-      tone: getTaskStatus(task) === 'done' ? 'done' : getTaskStatus(task) === 'overdue' ? 'overdue' : currentIndex >= 4 ? 'active' : 'open',
+      tone: getTaskStatus(task) === 'done' ? 'green' : getTaskStatus(task) === 'overdue' ? 'red' : currentIndex >= 4 ? 'teal' : currentIndex >= 2 ? 'amber' : 'yellow',
     };
   }
 
-  if (getTaskStatus(task) === 'done') return { label: statusLabel(task), progress: 100, tone: 'done' };
-  if (status === 'in_progress') return { label: statusLabel(task), progress: 62, tone: 'active' };
-  if (getTaskStatus(task) === 'overdue') return { label: statusLabel(task), progress: 42, tone: 'overdue' };
-  if (isTodayTask(task)) return { label: statusLabel(task), progress: 48, tone: 'open' };
-  return { label: statusLabel(task), progress: 28, tone: 'open' };
+  if (getTaskStatus(task) === 'done') return { label: statusLabel(task), progress: 100, tone: 'green' };
+  if (status === 'in_progress') return { label: statusLabel(task), progress: 62, tone: 'amber' };
+  if (getTaskStatus(task) === 'overdue') return { label: statusLabel(task), progress: 42, tone: 'red' };
+  if (isTodayTask(task)) return { label: statusLabel(task), progress: 48, tone: 'yellow' };
+  return { label: statusLabel(task), progress: 28, tone: 'yellow' };
+}
+
+function workflowStepsForTask(task) {
+  const kind = publicTaskKind(task);
+  const status = task?.status || (getTaskStatus(task) === 'done' ? 'done' : 'todo');
+  const done = getTaskStatus(task) === 'done';
+
+  if (kind === 'briefing') {
+    const order = ['todo', 'in_progress', 'activation_gdv', 'access_delivery', 'traffic_activation', 'final_validation', 'done'];
+    const labels = {
+      todo: 'Briefing',
+      in_progress: 'Implementação',
+      activation_gdv: 'Ativação GDV',
+      access_delivery: 'Acessos',
+      traffic_activation: 'Tráfego',
+      final_validation: 'Validação',
+      done: 'Concluída',
+    };
+    const currentIndex = Math.max(0, order.indexOf(done ? 'done' : status));
+    return order.map((key, index) => ({
+      key,
+      label: labels[key],
+      state: done && key === 'done' ? 'current' : index < currentIndex ? 'done' : index === currentIndex ? 'current' : 'pending',
+    }));
+  }
+
+  if (kind === 'routine') {
+    return [
+      { key: 'pending', label: 'Pendente', state: done || status !== 'todo' ? 'done' : 'current' },
+      { key: 'execution', label: 'Execução', state: done ? 'done' : status === 'in_progress' ? 'current' : 'pending' },
+      { key: 'done', label: 'Feita', state: done ? 'current' : 'pending' },
+    ];
+  }
+
+  if (kind === 'support' || kind === 'bug' || kind === 'access') {
+    return [
+      { key: 'open', label: kind === 'bug' ? 'Reportado' : 'Aberto', state: done || status !== 'todo' ? 'done' : 'current' },
+      { key: 'analysis', label: kind === 'access' ? 'Em separação' : 'Análise', state: done ? 'done' : status === 'in_progress' ? 'current' : 'pending' },
+      { key: 'resolved', label: kind === 'access' ? 'Entregue' : 'Resolvido', state: done ? 'current' : 'pending' },
+    ];
+  }
+
+  return [
+    { key: 'open', label: 'Aberta', state: done || status !== 'todo' ? 'done' : 'current' },
+    { key: 'execution', label: 'Em execução', state: done ? 'done' : status === 'in_progress' ? 'current' : 'pending' },
+    { key: 'done', label: 'Concluída', state: done ? 'current' : 'pending' },
+  ];
 }
 
 
@@ -631,6 +678,7 @@ export default function UserProfilePage() {
   const openTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) !== 'done').length, [profileTasks]);
   const overdueTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) === 'overdue').length, [profileTasks]);
   const completedTasksCount = useMemo(() => profileTasks.filter((task) => getTaskStatus(task) === 'done').length, [profileTasks]);
+  const watchingTasksCount = useMemo(() => profileTasks.filter((task) => task.profileRelation === 'collaborator').length, [profileTasks]);
   const taskTabCounts = useMemo(() => ({
     all: profileTasks.length,
     today: profileTasks.filter(isTodayTask).length,
@@ -867,24 +915,24 @@ export default function UserProfilePage() {
 
         <div className={styles.statRail}>
           <div className={styles.statItem}>
+            <span>Total de tarefas</span>
+            <strong>{profileTasks.length}</strong>
+          </div>
+          <div className={styles.statItem}>
+            <span>Acompanhando</span>
+            <strong>{watchingTasksCount}</strong>
+          </div>
+          <div className={styles.statItem}>
             <span>Em aberto</span>
             <strong>{openTasksCount}</strong>
-            {/* <em>{todayTasksCount} para hoje</em> */}
           </div>
           <div className={styles.statItem}>
-            <span>Risco</span>
+            <span>Risco operacional</span>
             <strong className={overdueTasksCount ? styles.critical : ''}>{overdueTasksCount}</strong>
-            {/* <em>{overdueTasksCount === 1 ? 'atrasada' : 'atrasadas'}</em> */}
           </div>
           <div className={styles.statItem}>
-            <span>Concluídas</span>
-            <strong>{completedTasksCount}</strong>
-            {/* <em>{completionRate}% de conclusão</em> */}
-          </div>
-          <div className={styles.statItem}>
-            <span>Carteira</span>
-            <strong>{portfolioCount}</strong>
-            {/* <em>{activeProjectsCount} projetos ativos</em> */}
+            <span>Taxa de conclusão</span>
+            <strong className={completionRate >= 50 ? styles.positive : ''}>{completionRate}%</strong>
           </div>
         </div>
       </section>
@@ -1168,18 +1216,13 @@ export default function UserProfilePage() {
                   <span>{taskKindLabel(activeTask)}</span>
                 </div>
                 <div className={styles.workflowTimeline}>
-                  {STATUS_OPTIONS.slice(0, 7).map((step, index) => {
-                    const current = activeTask.status || (getTaskStatus(activeTask) === 'done' ? 'done' : 'todo');
-                    const currentIndex = STATUS_OPTIONS.findIndex((item) => item.value === current);
-                    const state = step.value === current ? 'current' : index < currentIndex || current === 'done' ? 'done' : 'pending';
-                    return (
-                      <div key={step.value} className={`${styles.workflowStep} ${styles[`workflowStep_${state}`] || ''}`.trim()}>
-                        <i>{index + 1}</i>
-                        <span>{step.label}</span>
-                        {state === 'current' ? <em>{activeTask.assigneeName || 'Responsável'}</em> : null}
-                      </div>
-                    );
-                  })}
+                  {workflowStepsForTask(activeTask).map((step, index) => (
+                    <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''}`.trim()}>
+                      <i>{index + 1}</i>
+                      <span>{step.label}</span>
+                      {step.state === 'current' ? <em>{activeTask.assigneeName || 'Responsável'}</em> : null}
+                    </div>
+                  ))}
                 </div>
               </section>
 
