@@ -29,7 +29,7 @@ import {
   SearchIcon,
   TrophyIcon,
   UsersIcon,
-  WrenchIcon,
+  BotIcon,
 } from '../ui/Icons.jsx';
 import { matchesSearch, normalizeSearch } from '../../utils/search.js';
 import styles from './Sidebar.module.css';
@@ -159,7 +159,7 @@ export default function Sidebar({
       hasPermission(user, 'support.view')
         ? {
             to: '/suporte-tecnologia',
-            icon: <WrenchIcon size={16} />,
+            icon: <BotIcon size={16} />,
             label: 'Suporte TI',
           }
         : null,

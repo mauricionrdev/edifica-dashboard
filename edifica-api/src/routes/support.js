@@ -240,7 +240,7 @@ router.get('/tasks', requirePermission('support.view'), async (req, res, next) =
   }
 });
 
-router.post('/tasks', requirePermission('support.create'), async (req, res, next) => {
+router.post('/tasks', requirePermission('support.view'), async (req, res, next) => {
   try {
     const title = clean(req.body?.title, 180);
     if (!title) throw badRequest('Informe o título da demanda.');

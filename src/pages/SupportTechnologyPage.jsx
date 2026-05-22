@@ -13,7 +13,7 @@ import {
   listSupportTasks,
   updateSupportDailyRow,
 } from '../api/support.js';
-import { CalendarIcon, ChecklistIcon, PlusIcon, SaveIcon, TrashIcon, WrenchIcon } from '../components/ui/Icons.jsx';
+import { BotIcon, CalendarIcon, CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../components/ui/Icons.jsx';
 import styles from './SupportTechnologyPage.module.css';
 
 const DAILY_COLUMNS = [
@@ -37,45 +37,6 @@ const PRIORITIES = [
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
-}
-
-function statusLabel(status) {
-  const labels = {
-    todo: 'Aberta',
-    in_progress: 'Em execução',
-    activation_gdv: 'Ativação GDV',
-    access_delivery: 'Acessos',
-    traffic_activation: 'Tráfego',
-    final_validation: 'Validação',
-    done: 'Concluída',
-    canceled: 'Cancelada',
-  };
-  return labels[status] || 'Aberta';
-}
-
-function priorityLabel(priority) {
-  const labels = { low: 'Baixa', medium: 'Normal', high: 'Alta', critical: 'Crítica' };
-  return labels[priority] || 'Normal';
-}
-
-function taskProgress(status) {
-  if (status === 'done') return 100;
-  if (status === 'final_validation') return 78;
-  if (status === 'activation_gdv' || status === 'access_delivery') return 55;
-  if (status === 'in_progress') return 34;
-  return 12;
-}
-
-function relativeDate(value) {
-  if (!value) return 'Sem prazo';
-  const date = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return value;
-  const today = new Date(`${todayIso()}T00:00:00`);
-  const diff = Math.round((date - today) / 86400000);
-  if (diff === 0) return 'Hoje';
-  if (diff === 1) return 'Amanhã';
-  if (diff === -1) return 'Ontem';
-  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
 }
 
 function statusTone(value = '') {
@@ -125,14 +86,14 @@ function SupportCell({ row, column, editable, saving, onChange, onCommit }) {
 export default function SupportTechnologyPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { clients = [], userDirectory = [], setPanelHeader } = useOutletContext();
+  const { clients = [], setPanelHeader } = useOutletContext();
   const [rows, setRows] = useState([]);
   const [rowsLoading, setRowsLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
-  const [tasksLoading, setTasksLoading] = useState(true);
   const [savingCell, setSavingCell] = useState('');
   const [creatingRow, setCreatingRow] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
+  const [demandModalOpen, setDemandModalOpen] = useState(false);
   const [draft, setDraft] = useState({
     title: '',
     priority: 'medium',
@@ -142,13 +103,6 @@ export default function SupportTechnologyPage() {
   });
 
   const canEditBoard = hasPermission(user, 'support.board.edit');
-  const canCreateDemand = hasPermission(user, 'support.create');
-
-  const supportUsers = useMemo(
-    () => userDirectory.filter((entry) => ['suporte_tecnologia', 'ceo', 'admin'].includes(entry.role) && entry.active !== false),
-    [userDirectory]
-  );
-
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
@@ -164,13 +118,8 @@ export default function SupportTechnologyPage() {
   }, []);
 
   const refreshTasks = useCallback(async () => {
-    setTasksLoading(true);
-    try {
-      const data = await listSupportTasks();
-      setTasks(Array.isArray(data?.tasks) ? data.tasks : []);
-    } finally {
-      setTasksLoading(false);
-    }
+    const data = await listSupportTasks();
+    setTasks(Array.isArray(data?.tasks) ? data.tasks : []);
   }, []);
 
   useEffect(() => {
@@ -200,6 +149,7 @@ export default function SupportTechnologyPage() {
     try {
       await createSupportTask(draft);
       setDraft({ title: '', priority: 'medium', clientId: '', dueDate: todayIso(), description: '' });
+      setDemandModalOpen(false);
       await refreshTasks();
       showToast?.({ type: 'success', message: 'Demanda enviada para o suporte.' });
     } catch (err) {
@@ -260,10 +210,14 @@ export default function SupportTechnologyPage() {
       <section className={styles.hero}>
         <div>
           <span className={styles.eyebrow}>Operação de suporte</span>
-          <h1>Central de suporte de tecnologia</h1>
-          <p>Demandas para TI, status de execução e programação diária dos clientes da plataforma.</p>
+          <h1>Suporte de tecnologia</h1>
         </div>
-        <div className={styles.heroIcon}><WrenchIcon size={22} /></div>
+        <div className={styles.heroActions}>
+          <Button type="button" size="sm" onClick={() => setDemandModalOpen(true)}>
+            <PlusIcon size={14} /> Nova demanda
+          </Button>
+          <div className={styles.heroIcon}><BotIcon size={22} /></div>
+        </div>
       </section>
 
       <section className={styles.kpis}>
@@ -273,79 +227,57 @@ export default function SupportTechnologyPage() {
         <div><span>Implementados</span><strong>{metrics.implemented}</strong></div>
       </section>
 
-      <div className={styles.grid}>
-        <section className={styles.panel}>
-          <header className={styles.panelHeader}>
-            <div>
-              <h2>Criar demanda para suporte</h2>
-              <p>Solicitações rápidas para o suporte de tecnologia acompanhar e executar.</p>
+      {demandModalOpen ? (
+        <div className={styles.modalOverlay} role="presentation" onClick={() => setDemandModalOpen(false)}>
+          <form className={styles.demandModal} onSubmit={handleCreateTask} role="dialog" aria-modal="true" aria-label="Nova demanda" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.modalHeader}>
+              <div>
+                <h2>Nova demanda</h2>
+                <span>Suporte</span>
+              </div>
+              <button type="button" className={styles.closeButton} onClick={() => setDemandModalOpen(false)} aria-label="Fechar"><CloseIcon size={18} /></button>
+            </header>
+            <div className={styles.modalBody}>
+              <div className={styles.modalGrid}>
+                <div className={styles.modalField}>
+                  <span>Prioridade</span>
+                  <Select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value }))} disabled={creatingTask}>
+                    {PRIORITIES.map((priority) => <option key={priority.value} value={priority.value}>{priority.label}</option>)}
+                  </Select>
+                </div>
+                <label className={`${styles.modalField} ${styles.modalFieldTitle}`}>
+                  <span>Título</span>
+                  <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Título" disabled={creatingTask} />
+                </label>
+                <div className={styles.modalField}>
+                  <span>Cliente</span>
+                  <Select value={draft.clientId} onChange={(event) => setDraft((current) => ({ ...current, clientId: event.target.value }))} disabled={creatingTask} type="client" placeholder="Sem cliente">
+                    <option value="">Sem cliente</option>
+                    {clients.map((client) => <option key={client.id} value={client.id} data-avatar={client.avatarUrl || ''} data-name={client.name}>{client.name}</option>)}
+                  </Select>
+                </div>
+                <label className={styles.modalField}>
+                  <span>Prazo</span>
+                  <input type="date" value={draft.dueDate} onChange={(event) => setDraft((current) => ({ ...current, dueDate: event.target.value }))} disabled={creatingTask} />
+                </label>
+                <label className={`${styles.modalField} ${styles.modalFieldFull}`}>
+                  <span>Descrição</span>
+                  <textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Descrição" disabled={creatingTask} />
+                </label>
+              </div>
             </div>
-          </header>
-          <form className={styles.requestForm} onSubmit={handleCreateTask}>
-            <label className={styles.fieldWide}>
-              <span>Título</span>
-              <input value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Ex: Corrigir acesso do cliente" disabled={!canCreateDemand || creatingTask} />
-            </label>
-            <div className={styles.formField}>
-              <span>Prioridade</span>
-              <Select value={draft.priority} onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value }))} disabled={!canCreateDemand || creatingTask}>
-                {PRIORITIES.map((priority) => <option key={priority.value} value={priority.value}>{priority.label}</option>)}
-              </Select>
-            </div>
-            <div className={styles.formField}>
-              <span>Cliente</span>
-              <Select value={draft.clientId} onChange={(event) => setDraft((current) => ({ ...current, clientId: event.target.value }))} disabled={!canCreateDemand || creatingTask} type="client" placeholder="Sem cliente">
-                <option value="">Sem cliente</option>
-                {clients.map((client) => <option key={client.id} value={client.id} data-avatar={client.avatarUrl || ''} data-name={client.name}>{client.name}</option>)}
-              </Select>
-            </div>
-            <label>
-              <span>Prazo</span>
-              <input type="date" value={draft.dueDate} onChange={(event) => setDraft((current) => ({ ...current, dueDate: event.target.value }))} disabled={!canCreateDemand || creatingTask} />
-            </label>
-            <label className={styles.fieldWide}>
-              <span>Descrição</span>
-              <textarea value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="Contexto, link, acesso afetado ou evidência do problema." disabled={!canCreateDemand || creatingTask} />
-            </label>
-            <div className={styles.formFooter}>
-              <span>{supportUsers.length ? `Responsável padrão: ${supportUsers[0].name}` : 'O backend atribui ao suporte disponível.'}</span>
-              <Button type="submit" size="sm" disabled={!canCreateDemand || creatingTask}><PlusIcon size={14} /> Criar demanda</Button>
-            </div>
+            <footer className={styles.modalFooter}>
+              <Button type="button" variant="ghost" onClick={() => setDemandModalOpen(false)} disabled={creatingTask}>Cancelar</Button>
+              <Button type="submit" disabled={creatingTask || !draft.title.trim()}><PlusIcon size={14} /> Criar demanda</Button>
+            </footer>
           </form>
-        </section>
-
-        <section className={styles.panel}>
-          <header className={styles.panelHeader}>
-            <div>
-              <h2>Status de tarefas</h2>
-              <p>Demandas abertas pela equipe para o suporte.</p>
-            </div>
-          </header>
-          <div className={styles.taskList}>
-            {tasksLoading ? <div className={styles.empty}>Carregando tarefas...</div> : null}
-            {!tasksLoading && tasks.length === 0 ? <div className={styles.empty}>Nenhuma demanda de suporte.</div> : null}
-            {tasks.slice(0, 8).map((task) => (
-              <article key={task.id} className={styles.taskItem}>
-                <div>
-                  <strong>{task.title}</strong>
-                  <span>{task.clientName || task.createdByName || 'Sem cliente'}</span>
-                </div>
-                <div className={styles.taskMeta}>
-                  <span className={styles.statusPill} data-status={task.status}>{statusLabel(task.status)} · {taskProgress(task.status)}%</span>
-                  <span>{priorityLabel(task.priority)}</span>
-                  <span>{relativeDate(task.dueDate)}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      </div>
+        </div>
+      ) : null}
 
       <section className={styles.sheetPanel}>
         <header className={styles.sheetHeader}>
           <div>
             <h2><CalendarIcon size={16} /> Programação diária</h2>
-            <p>Grade operacional rápida para novos clientes, status de implementação, prompt, conexão, acessos e API.</p>
           </div>
           {canEditBoard ? (
             <Button size="sm" onClick={handleAddRow} disabled={creatingRow}><PlusIcon size={14} /> Nova linha</Button>
@@ -400,8 +332,8 @@ export default function SupportTechnologyPage() {
           </table>
         </div>
         <footer className={styles.sheetFooter}>
-          <span><ChecklistIcon size={14} /> Edição rápida liberada apenas para Suporte de tecnologia.</span>
-          {savingCell ? <span><SaveIcon size={14} /> Salvando célula...</span> : null}
+          <span>{rows.length} registros</span>
+          {savingCell ? <span><SaveIcon size={14} /> Salvando</span> : null}
         </footer>
       </section>
     </div>
