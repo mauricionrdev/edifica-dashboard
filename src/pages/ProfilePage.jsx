@@ -29,6 +29,7 @@ import { roleLabel } from '../utils/roles.js';
 import { normalizeSlug } from '../utils/slugs.js';
 import { hasPermission } from '../utils/permissions.js';
 import {
+  getClientAvatar,
   getUserAvatar,
   readAvatarFile,
   removeUserAvatar,
@@ -4343,7 +4344,22 @@ export default function ProfilePage() {
                 </label>
                 <label className={styles.labeledField}>
                   <span>Cliente</span>
-                  <div className={styles.clientSearchField} ref={clientSearchRef} onPointerDown={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()}>
+                  <div
+                    className={styles.clientSearchField}
+                    data-has-avatar={selectedDemandClient ? 'true' : undefined}
+                    ref={clientSearchRef}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    {selectedDemandClient ? (
+                      <Avatar
+                        src={getClientAvatar(selectedDemandClient) || selectedDemandClient.avatarUrl || undefined}
+                        name={selectedDemandClient.name}
+                        size="xs"
+                        className={styles.clientSearchAvatar}
+                      />
+                    ) : null}
                     <input
                       value={clientSearchOpen ? clientQuery : selectedDemandClient?.name || clientQuery}
                       onFocus={() => {
@@ -4495,24 +4511,35 @@ export default function ProfilePage() {
               onMouseDown={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}
             >
-              {filteredDemandClients.length ? filteredDemandClients.map((client) => (
-                <button
-                  key={client.id}
-                  type="button"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => {
-                    setDemandForm((prev) => ({ ...prev, clientId: client.id }));
-                    setClientQuery(client.name || '');
-                    setClientSearchOpen(false);
-                    setClientSearchPosition(null);
-                  }}
-                >
-                  <strong>{client.name}</strong>
-                  {client.squadName || client.managerName || client.gdvName ? (
-                    <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span>
-                  ) : null}
-                </button>
-              )) : (
+              {filteredDemandClients.length ? filteredDemandClients.map((client) => {
+                const clientAvatar = getClientAvatar(client) || client.avatarUrl || '';
+                return (
+                  <button
+                    key={client.id}
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setDemandForm((prev) => ({ ...prev, clientId: client.id }));
+                      setClientQuery(client.name || '');
+                      setClientSearchOpen(false);
+                      setClientSearchPosition(null);
+                    }}
+                  >
+                    <Avatar
+                      src={clientAvatar || undefined}
+                      name={client.name}
+                      size="xs"
+                      className={styles.clientSearchOptionAvatar}
+                    />
+                    <div className={styles.clientSearchOptionText}>
+                      <strong>{client.name}</strong>
+                      {client.squadName || client.managerName || client.gdvName ? (
+                        <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span>
+                      ) : null}
+                    </div>
+                  </button>
+                );
+              }) : (
                 <span className={styles.clientSearchEmpty}>Sem cliente</span>
               )}
             </div>,
