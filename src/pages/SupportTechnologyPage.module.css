@@ -741,3 +741,234 @@
   border-color: var(--accent-line);
   box-shadow: 0 0 0 1px var(--accent-soft);
 }
+
+/* v174 suporte TI spreadsheet fixes */
+.sheetPanel {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.sheetHeader {
+  flex-wrap: wrap;
+}
+
+.sheetActions {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sheetTopbar {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 28px;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: var(--space-2) var(--space-3);
+  overflow: hidden;
+}
+
+.sheetTopbar::before,
+.sheetTopbar::after {
+  display: none;
+}
+
+.scrollButton,
+.columnScrollBar button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-elevated);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.scrollButton:hover,
+.columnScrollBar button:hover {
+  color: var(--text-primary);
+  border-color: var(--line);
+  background: var(--bg-soft);
+}
+
+.sheetTabs {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sheetTabs::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.sheetTab {
+  flex: 0 0 188px;
+  width: 188px;
+  min-width: 188px;
+  max-width: 188px;
+  scroll-snap-align: start;
+}
+
+.sheetTab input {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.columnScrollBar {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 28px;
+  gap: var(--space-2);
+  align-items: center;
+  padding: 0 var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+}
+
+.columnScrollBar span {
+  height: 1px;
+  min-width: 0;
+  background: linear-gradient(90deg, transparent, var(--line-subtle), transparent);
+}
+
+.sheetScroller {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sheetScroller::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.sheetTable {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+}
+
+.headerCellInner button.softDeleteButton,
+.actionCell button.softDeleteButton,
+.sheetTab button.softDeleteButton {
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  flex: 0 0 auto;
+  opacity: 0.58;
+  color: var(--text-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  cursor: pointer;
+}
+
+.headerCellInner button.softDeleteButton:hover,
+.actionCell button.softDeleteButton:hover,
+.sheetTab button.softDeleteButton:hover {
+  opacity: 1;
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+.actionCell button.softDeleteButton {
+  margin: 0 auto;
+}
+
+.sheetToolbar {
+  overflow: visible;
+}
+
+.colorPicker {
+  position: relative;
+  display: inline-grid;
+  overflow: visible;
+}
+
+.colorPicker .colorTrigger {
+  display: inline-grid;
+  min-width: 28px;
+  height: 26px;
+  place-items: center;
+  color: var(--text-secondary);
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.colorPicker .colorTrigger:hover,
+.colorPicker .colorTrigger[aria-expanded='true'] {
+  color: var(--text-primary);
+  background: var(--bg-soft);
+}
+
+.colorPicker .colorMenu {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  width: 180px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-dialog);
+}
+
+.colorPicker .colorMenu button.colorSwatch {
+  display: grid;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--swatch-color, var(--bg-canvas));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.035);
+  cursor: pointer;
+}
+
+.colorPicker .colorMenu button.colorSwatch[data-empty='true'] {
+  background:
+    linear-gradient(135deg, transparent 0 44%, var(--danger-text) 45% 55%, transparent 56% 100%),
+    var(--bg-canvas);
+}
+
+.colorPicker .colorMenu button.colorSwatch:hover {
+  border-color: var(--accent-line);
+  background: var(--swatch-color, var(--bg-soft));
+}

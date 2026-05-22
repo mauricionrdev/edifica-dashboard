@@ -168,7 +168,7 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
         <span>{column.label}</span>
       )}
       {editable ? (
-        <button type="button" onClick={() => onDelete(column.key)} aria-label={`Remover coluna ${column.label}`}>
+        <button type="button" className={styles.softDeleteButton} onClick={() => onDelete(column.key)} aria-label={`Remover coluna ${column.label}`}>
           <CloseIcon size={11} />
         </button>
       ) : null}
@@ -279,6 +279,8 @@ export default function SupportTechnologyPage() {
   const [demandModalOpen, setDemandModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
   const resizeRef = useRef(null);
+  const sheetTabsRef = useRef(null);
+  const sheetScrollerRef = useRef(null);
 
   const activeUsers = useMemo(() => (Array.isArray(userDirectory) ? userDirectory : []).filter((item) => item?.id && item?.active !== false), [userDirectory]);
 
@@ -545,6 +547,19 @@ export default function SupportTechnologyPage() {
     };
   }, [activeSheetId, columns, refreshRows]);
 
+
+  const scrollSheets = (direction) => {
+    const node = sheetTabsRef.current;
+    if (!node) return;
+    node.scrollBy({ left: direction * Math.max(220, Math.floor(node.clientWidth * 0.72)), behavior: 'smooth' });
+  };
+
+  const scrollColumns = (direction) => {
+    const node = sheetScrollerRef.current;
+    if (!node) return;
+    node.scrollBy({ left: direction * Math.max(260, Math.floor(node.clientWidth * 0.72)), behavior: 'smooth' });
+  };
+
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -582,7 +597,15 @@ export default function SupportTechnologyPage() {
         </header>
 
         <div className={styles.sheetTopbar}>
-          <div className={styles.sheetTabs}>
+          <button type="button" className={styles.scrollButton} onClick={() => scrollSheets(-1)} aria-label="Rolar planilhas para a esquerda">←</button>
+          <div
+            className={styles.sheetTabs}
+            ref={sheetTabsRef}
+            onWheel={(event) => {
+              if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+              event.currentTarget.scrollLeft += event.deltaY;
+            }}
+          >
             {sheets.map((sheet) => (
               <div key={sheet.id} className={`${styles.sheetTab} ${sheet.id === activeSheetId ? styles.sheetTabActive : ''}`.trim()}>
                 <input
@@ -597,13 +620,31 @@ export default function SupportTechnologyPage() {
                     if (event.key === 'Enter') event.currentTarget.blur();
                   }}
                 />
-                {canEditBoard && sheets.length > 1 ? <button type="button" onClick={() => handleDeleteSheet(sheet.id)}><CloseIcon size={10} /></button> : null}
+                {canEditBoard && sheets.length > 1 ? (
+                  <button type="button" className={styles.softDeleteButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`}>
+                    <CloseIcon size={10} />
+                  </button>
+                ) : null}
               </div>
             ))}
           </div>
+          <button type="button" className={styles.scrollButton} onClick={() => scrollSheets(1)} aria-label="Rolar planilhas para a direita">→</button>
         </div>
 
-        <div className={styles.sheetScroller}>
+        <div className={styles.columnScrollBar}>
+          <button type="button" onClick={() => scrollColumns(-1)} aria-label="Rolar colunas para a esquerda">←</button>
+          <span />
+          <button type="button" onClick={() => scrollColumns(1)} aria-label="Rolar colunas para a direita">→</button>
+        </div>
+
+        <div
+          className={styles.sheetScroller}
+          ref={sheetScrollerRef}
+          onWheel={(event) => {
+            if (!event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            event.currentTarget.scrollLeft += event.deltaY;
+          }}
+        >
           <table className={styles.sheetTable}>
             <colgroup>
               <col style={{ width: 46 }} />
@@ -641,7 +682,7 @@ export default function SupportTechnologyPage() {
                       />
                     </td>
                   ))}
-                  {canEditBoard ? <td className={styles.actionCell}><button type="button" onClick={() => handleDeleteRow(row.id)} title="Remover linha"><TrashIcon size={13} /></button></td> : null}
+                  {canEditBoard ? <td className={styles.actionCell}><button type="button" className={styles.softDeleteButton} onClick={() => handleDeleteRow(row.id)} title="Remover linha"><TrashIcon size={13} /></button></td> : null}
                 </tr>
               ))}
             </tbody>
