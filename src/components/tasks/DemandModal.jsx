@@ -226,7 +226,7 @@ function FloatingSelect({ value, options, onChange, placeholder = 'Selecionar', 
         }}
       >
         {selected?.avatar || selected?.avatarName ? <Avatar src={selected.avatar || undefined} name={selected.avatarName || selected.label} size="xs" className={styles.avatar} /> : null}
-        <span>{selected?.label || placeholder}</span>
+        <span className={styles.selectLabel}>{selected?.label || placeholder}</span>
         <ChevronDownIcon size={15} />
       </button>
       {open && position ? createPortal(
@@ -251,7 +251,7 @@ function FloatingSelect({ value, options, onChange, placeholder = 'Selecionar', 
                 aria-selected={active}
               >
                 {option.avatar || option.avatarName ? <Avatar src={option.avatar || undefined} name={option.avatarName || option.label} size="xs" className={styles.avatar} /> : null}
-                <span>{option.label}</span>
+                <span className={styles.selectLabel}>{option.label}</span>
               </button>
             );
           })}

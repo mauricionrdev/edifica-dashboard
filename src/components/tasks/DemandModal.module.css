@@ -200,7 +200,7 @@
   cursor: pointer;
 }
 
-.selectButton > span {
+.selectLabel {
   display: block;
   min-width: 0;
   flex: 1 1 auto;
@@ -218,7 +218,22 @@
 }
 
 .avatar {
-  flex: 0 0 auto;
+  --avatar-size: 20px;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  min-width: var(--avatar-size);
+  max-width: var(--avatar-size);
+  flex: 0 0 var(--avatar-size);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
 }
 
 .selectMenu,

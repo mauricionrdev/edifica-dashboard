@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
+import Avatar from '../components/ui/Avatar.jsx';
 import DemandModal from '../components/tasks/DemandModal.jsx';
 import { BotIcon, CalendarIcon, CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../components/ui/Icons.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -20,7 +21,9 @@ import {
   updateSupportDailyRow,
   updateSupportDailySheet,
 } from '../api/support.js';
+import { getUserAvatar } from '../utils/avatarStorage.js';
 import { hasPermission } from '../utils/permissions.js';
+import { roleLabel } from '../utils/roles.js';
 import styles from './SupportTechnologyPage.module.css';
 
 const FALLBACK_DAILY_COLUMNS = [
@@ -44,8 +47,16 @@ function cleanText(value) {
   return String(value ?? '').trim();
 }
 
+function plainText(value = '') {
+  return String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
+}
+
+function cellHtml(value = '') {
+  return String(value ?? '');
+}
+
 function statusTone(value = '') {
-  const normalized = String(value).toLowerCase();
+  const normalized = plainText(value).toLowerCase();
   if (normalized.includes('desconect') || normalized.includes('sem/') || normalized.includes('inativo')) return 'danger';
   if (normalized.includes('pendente') || normalized.includes('revisar') || normalized.includes('ajustar')) return 'warning';
   if (normalized.includes('ok') || normalized.includes('conectado') || normalized.includes('ativo') || normalized.includes('sucesso')) return 'success';
@@ -86,16 +97,25 @@ function normalizeStyle(style = {}) {
 
 function SheetCell({ row, column, editable, saving, selected, onSelect, onChange, onCommit }) {
   const ref = useRef(null);
-  const value = row[column.key] || '';
+  const value = cellHtml(row[column.key] || '');
   const style = cellStyle(row, column.key);
+  const plainValue = plainText(value);
 
   useEffect(() => {
     if (document.activeElement === ref.current) return;
-    if (ref.current && ref.current.innerText !== value) ref.current.innerText = value;
+    if (ref.current && ref.current.innerHTML !== value) ref.current.innerHTML = value;
   }, [value]);
 
   if (!editable) {
-    return <span className={styles.readonlyCell} data-tone={statusTone(value)} style={style} title={value}>{value || '—'}</span>;
+    return (
+      <span
+        className={styles.readonlyCell}
+        data-tone={statusTone(value)}
+        style={style}
+        title={plainValue}
+        dangerouslySetInnerHTML={{ __html: value || '—' }}
+      />
+    );
   }
 
   return (
@@ -104,14 +124,17 @@ function SheetCell({ row, column, editable, saving, selected, onSelect, onChange
       className={`${styles.sheetInput} ${selected ? styles.sheetInputSelected : ''}`.trim()}
       data-tone={statusTone(value)}
       data-saving={saving || undefined}
+      data-sheet-cell={`${row.id}:${column.key}`}
       contentEditable
       suppressContentEditableWarning
       spellCheck={false}
       style={style}
       tabIndex={0}
-      onFocus={() => onSelect(row.id, column.key)}
-      onMouseDown={() => onSelect(row.id, column.key)}
-      onInput={(event) => onChange(row.id, column.key, event.currentTarget.innerText)}
+      onFocus={() => onSelect(row.id, column.key, ref.current)}
+      onMouseDown={() => onSelect(row.id, column.key, ref.current)}
+      onMouseUp={() => onSelect(row.id, column.key, ref.current)}
+      onKeyUp={() => onSelect(row.id, column.key, ref.current)}
+      onInput={(event) => onChange(row.id, column.key, event.currentTarget.innerHTML)}
       onBlur={() => onCommit(row.id, column.key)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' && !event.shiftKey) {
@@ -158,32 +181,29 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
   );
 }
 
-function SheetToolbar({ disabled, activeStyle, onApply }) {
-  const toggle = (key, value, offValue = '') => {
-    const current = activeStyle?.[key];
-    onApply({ [key]: current === value ? offValue : value });
-  };
+function SheetToolbar({ disabled, onCommand }) {
+  const preventBlur = (event) => event.preventDefault();
 
   return (
-    <div className={styles.sheetToolbar} aria-label="Formatação">
-      <button type="button" disabled={disabled} data-active={activeStyle?.fontWeight === '700' || undefined} onClick={() => toggle('fontWeight', '700')}>B</button>
-      <button type="button" disabled={disabled} data-active={activeStyle?.fontStyle === 'italic' || undefined} onClick={() => toggle('fontStyle', 'italic')}>I</button>
-      <button type="button" disabled={disabled} data-active={String(activeStyle?.textDecoration || '').includes('underline') || undefined} onClick={() => toggle('textDecoration', 'underline')}>U</button>
-      <button type="button" disabled={disabled} data-active={String(activeStyle?.textDecoration || '').includes('line-through') || undefined} onClick={() => toggle('textDecoration', 'line-through')}>S</button>
+    <div className={styles.sheetToolbar} aria-label="Formatação" onMouseDown={preventBlur}>
+      <button type="button" disabled={disabled} onClick={() => onCommand('bold')}>B</button>
+      <button type="button" disabled={disabled} onClick={() => onCommand('italic')}>I</button>
+      <button type="button" disabled={disabled} onClick={() => onCommand('underline')}>U</button>
+      <button type="button" disabled={disabled} onClick={() => onCommand('strikeThrough')}>S</button>
       <span className={styles.toolbarDivider} />
-      <button type="button" disabled={disabled} data-active={activeStyle?.textAlign === 'left' || undefined} onClick={() => onApply({ textAlign: 'left' })}>←</button>
-      <button type="button" disabled={disabled} data-active={activeStyle?.textAlign === 'center' || undefined} onClick={() => onApply({ textAlign: 'center' })}>↔</button>
-      <button type="button" disabled={disabled} data-active={activeStyle?.textAlign === 'right' || undefined} onClick={() => onApply({ textAlign: 'right' })}>→</button>
+      <button type="button" disabled={disabled} onClick={() => onCommand('justifyLeft')}>←</button>
+      <button type="button" disabled={disabled} onClick={() => onCommand('justifyCenter')}>↔</button>
+      <button type="button" disabled={disabled} onClick={() => onCommand('justifyRight')}>→</button>
       <span className={styles.toolbarDivider} />
       <label className={styles.colorTool} title="Cor do texto">
         A
-        <input type="color" disabled={disabled} value={activeStyle?.color || '#ffffff'} onChange={(event) => onApply({ color: event.target.value })} />
+        <input type="color" disabled={disabled} defaultValue="#ffffff" onChange={(event) => onCommand('foreColor', event.target.value)} />
       </label>
-      <label className={styles.colorTool} title="Fundo da célula">
+      <label className={styles.colorTool} title="Fundo da seleção">
         ▣
-        <input type="color" disabled={disabled} value={activeStyle?.backgroundColor || '#111111'} onChange={(event) => onApply({ backgroundColor: event.target.value })} />
+        <input type="color" disabled={disabled} defaultValue="#111111" onChange={(event) => onCommand('hiliteColor', event.target.value)} />
       </label>
-      <button type="button" disabled={disabled} onClick={() => onApply({ fontWeight: '', fontStyle: '', textDecoration: '', textAlign: '', color: '', backgroundColor: '' })}>Limpar</button>
+      <button type="button" disabled={disabled} onClick={() => onCommand('removeFormat')}>Limpar</button>
     </div>
   );
 }
@@ -226,7 +246,6 @@ export default function SupportTechnologyPage() {
   const defaultAssigneeId = supportMaster?.id || supportUsers[0]?.id || user?.id || '';
   const canEditBoard = hasPermission(user, 'support.board.edit');
   const canCreateDemand = hasPermission(user, 'support.view');
-  const activeStyle = selectedCell ? cellStyle(rows.find((row) => row.id === selectedCell.rowId), selectedCell.key) : {};
 
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
@@ -256,16 +275,7 @@ export default function SupportTechnologyPage() {
     refreshTasks().catch(() => showToast('Não foi possível carregar as demandas de suporte.', { variant: 'error' }));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const metrics = useMemo(() => {
-    const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'canceled');
-    const riskRows = rows.filter((row) => columns.some((column) => statusTone(row[column.key]) === 'danger'));
-    return {
-      rows: rows.length,
-      openTasks: openTasks.length,
-      risks: riskRows.length,
-      implemented: rows.filter((row) => statusTone(row.implementationStatus) === 'success').length,
-    };
-  }, [columns, rows, tasks]);
+
 
   const handleCreateTask = async (form) => {
     const title = cleanText(form.title);
@@ -377,15 +387,18 @@ export default function SupportTechnologyPage() {
     }
   };
 
-  const handleApplyStyle = async (patch) => {
+  const handleApplyFormat = async (command, value = null) => {
     if (!selectedCell || !canEditBoard) return;
-    const { rowId, key } = selectedCell;
-    const row = rows.find((entry) => entry.id === rowId);
-    const nextStyle = normalizeStyle({ ...cellStyle(row, key), ...patch });
-    setRows((current) => current.map((entry) => (entry.id === rowId ? { ...entry, __styles: { ...(entry.__styles || {}), [key]: nextStyle } } : entry)));
+    const { rowId, key, element } = selectedCell;
+    const target = element || document.querySelector(`[data-sheet-cell="${rowId}:${key}"]`);
+    if (!target) return;
+    target.focus();
+    document.execCommand(command, false, value);
+    const nextHtml = target.innerHTML;
+    setRows((current) => current.map((entry) => (entry.id === rowId ? { ...entry, [key]: nextHtml } : entry)));
     setSavingCell(`${rowId}:${key}`);
     try {
-      await updateSupportDailyRow(rowId, { styles: { [key]: nextStyle } });
+      await updateSupportDailyRow(rowId, { [key]: nextHtml });
     } catch (err) {
       showToast(err?.message || 'Não foi possível salvar a formatação.', { variant: 'error' });
       refreshRows(activeSheetId).catch(() => {});
@@ -483,9 +496,15 @@ export default function SupportTechnologyPage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
-        <div className={styles.heroTitle}>
-          <span className={styles.eyebrow}>Operação de suporte</span>
-          <h1>Suporte de tecnologia</h1>
+        <div className={styles.heroIdentity}>
+          <Avatar src={getUserAvatar(supportMaster) || supportMaster?.avatarUrl || undefined} name={supportMaster?.name || 'Mauricio Nunes'} size="lg" className={styles.supportAvatar} fallbackColor={supportMaster?.avatarColor} />
+          <div className={styles.heroTitle}>
+            <span className={styles.eyebrow}>Operação de suporte</span>
+            <div className={styles.heroNameRow}>
+              <h1>{supportMaster?.name || 'Mauricio Nunes'}</h1>
+              <span className={styles.roleBadgeBlackHole}>{roleLabel(supportMaster?.role || 'suporte_tecnologia')}</span>
+            </div>
+          </div>
         </div>
         <div className={styles.heroActions}>
           {canCreateDemand ? (
@@ -497,18 +516,12 @@ export default function SupportTechnologyPage() {
         </div>
       </section>
 
-      <section className={styles.kpis}>
-        <div><span>Clientes na programação</span><strong>{metrics.rows}</strong></div>
-        <div><span>Demandas abertas</span><strong>{metrics.openTasks}</strong></div>
-        <div><span>Pontos de atenção</span><strong>{metrics.risks}</strong></div>
-        <div><span>Implementados</span><strong>{metrics.implemented}</strong></div>
-      </section>
-
       <section className={styles.sheetPanel}>
         <header className={styles.sheetHeader}>
           <h2><CalendarIcon size={15} /> Programação diária</h2>
           {canEditBoard ? (
             <div className={styles.sheetActions}>
+              <SheetToolbar disabled={!selectedCell} onCommand={handleApplyFormat} />
               <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
               <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn}><PlusIcon size={14} /> Nova coluna</Button>
               <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow}><PlusIcon size={14} /> Nova linha</Button>
@@ -536,7 +549,6 @@ export default function SupportTechnologyPage() {
               </div>
             ))}
           </div>
-          {canEditBoard ? <SheetToolbar disabled={!selectedCell} activeStyle={activeStyle} onApply={handleApplyStyle} /> : null}
         </div>
 
         <div className={styles.sheetScroller}>
@@ -571,7 +583,7 @@ export default function SupportTechnologyPage() {
                         editable={canEditBoard}
                         saving={savingCell === `${row.id}:${column.key}`}
                         selected={selectedCell?.rowId === row.id && selectedCell?.key === column.key}
-                        onSelect={(rowId, key) => setSelectedCell({ rowId, key })}
+                        onSelect={(rowId, key, element) => setSelectedCell({ rowId, key, element })}
                         onChange={handleCellChange}
                         onCommit={handleCellCommit}
                       />
