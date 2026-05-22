@@ -4,6 +4,18 @@ export function listSupportDailyRows() {
   return api.get('/support/daily-program');
 }
 
+export function createSupportDailyColumn(body = {}) {
+  return api.post('/support/daily-program/columns', body);
+}
+
+export function updateSupportDailyColumn(key, patch = {}) {
+  return api.patch(`/support/daily-program/columns/${encodeURIComponent(key)}`, patch);
+}
+
+export function deleteSupportDailyColumn(key) {
+  return api.del(`/support/daily-program/columns/${encodeURIComponent(key)}`);
+}
+
 export function createSupportDailyRow(body = {}) {
   return api.post('/support/daily-program', body);
 }

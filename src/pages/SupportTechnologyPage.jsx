@@ -1,42 +1,64 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
 import DateField from '../components/ui/DateField.jsx';
 import Select from '../components/ui/Select.jsx';
+import Avatar from '../components/ui/Avatar.jsx';
 import { BotIcon, CalendarIcon, CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../components/ui/Icons.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { createTaskAttachment } from '../api/projects.js';
 import {
+  createSupportDailyColumn,
   createSupportDailyRow,
   createSupportTask,
+  deleteSupportDailyColumn,
   deleteSupportDailyRow,
   listSupportDailyRows,
   listSupportTasks,
+  updateSupportDailyColumn,
   updateSupportDailyRow,
 } from '../api/support.js';
-import { getUserAvatar } from '../utils/avatarStorage.js';
+import { getClientAvatar, getUserAvatar } from '../utils/avatarStorage.js';
 import { hasPermission } from '../utils/permissions.js';
 import pageStyles from './SupportTechnologyPage.module.css';
-import modalStyles from './ProfilePage.module.css';
+import styles from './ProfilePage.module.css';
 
-const DAILY_COLUMNS = [
-  { key: 'clientName', label: 'Cliente / Escritório', type: 'text', width: 340 },
-  { key: 'implementationStatus', label: 'Implementação', type: 'select', width: 230, options: ['Implementado com sucesso.', 'Em implementação', 'Pendente', 'Ajustar'] },
-  { key: 'niche', label: 'Nicho / Campanha', type: 'text', width: 210 },
-  { key: 'promptStatus', label: 'Prompt', type: 'select', width: 170, options: ['Prompt OK', 'Sem/Prompt', 'Revisar', 'Pendente'] },
-  { key: 'connectionStatus', label: 'Conexão', type: 'select', width: 190, options: ['Conectado', 'Desconectado', 'Desconectado (GDV)', 'Pendente'] },
-  { key: 'accessStatus', label: 'Acessos', type: 'select', width: 160, options: ['Acesso OK', 'Acessos OK', 'Sem/Acesso', 'Pendente'] },
-  { key: 'activityStatus', label: 'Status', type: 'select', width: 130, options: ['Ativo', 'INATIVO', 'Pausado'] },
-  { key: 'apiKey', label: 'API Key', type: 'text', width: 290 },
-  { key: 'notes', label: 'Observações', type: 'text', width: 280 },
+const FALLBACK_DAILY_COLUMNS = [
+  { key: 'clientName', label: 'Cliente / Escritório', width: 340, system: true },
+  { key: 'implementationStatus', label: 'Implementação', width: 230, system: true },
+  { key: 'niche', label: 'Nicho / Campanha', width: 210, system: true },
+  { key: 'promptStatus', label: 'Prompt', width: 170, system: true },
+  { key: 'connectionStatus', label: 'Conexão', width: 190, system: true },
+  { key: 'accessStatus', label: 'Acessos', width: 160, system: true },
+  { key: 'activityStatus', label: 'Status', width: 130, system: true },
+  { key: 'apiKey', label: 'API Key', width: 290, system: true },
+  { key: 'notes', label: 'Observações', width: 280, system: true },
 ];
 
-const PRIORITIES = [
+const DEMAND_TYPES = [
+  { value: 'support', label: 'Suporte' },
+  { value: 'briefing', label: 'Briefing' },
+  { value: 'routine', label: 'Rotina' },
+  { value: 'bug', label: 'Bug' },
+  { value: 'adjustment', label: 'Ajuste' },
+  { value: 'access', label: 'Acesso' },
+  { value: 'other', label: 'Outro' },
+];
+
+const DEMAND_PRIORITIES = [
+  { value: 'low', label: 'Baixa' },
   { value: 'medium', label: 'Normal' },
   { value: 'high', label: 'Alta' },
   { value: 'critical', label: 'Crítica' },
-  { value: 'low', label: 'Baixa' },
+];
+
+const ROUTINE_RECURRENCES = [
+  { value: 'daily', label: 'Diária' },
+  { value: 'weekly', label: 'Semanal' },
+  { value: 'monthly', label: 'Mensal' },
+  { value: 'one_time', label: 'Pontual' },
 ];
 
 const SUPPORT_ROLES = new Set(['suporte_tecnologia']);
@@ -58,8 +80,18 @@ function statusTone(value = '') {
   return 'neutral';
 }
 
-function normalizeRow(row = {}) {
-  const base = DAILY_COLUMNS.reduce((acc, column) => ({ ...acc, [column.key]: row?.[column.key] || '' }), {});
+function normalizeColumns(columns = []) {
+  const source = Array.isArray(columns) && columns.length ? columns : FALLBACK_DAILY_COLUMNS;
+  return source.map((column) => ({
+    key: column.key,
+    label: column.label || 'Coluna',
+    width: Math.max(90, Math.min(640, Number(column.width || 180))),
+    system: column.system !== false,
+  }));
+}
+
+function normalizeRow(row = {}, columns = FALLBACK_DAILY_COLUMNS) {
+  const base = columns.reduce((acc, column) => ({ ...acc, [column.key]: row?.[column.key] || '' }), {});
   return {
     id: row?.id || '',
     position: Number(row?.position || 0),
@@ -67,27 +99,68 @@ function normalizeRow(row = {}) {
   };
 }
 
-function defaultRowPayload() {
+function emptyDemandForm(userId = '') {
   return {
-    implementationStatus: 'Implementado com sucesso.',
-    promptStatus: 'Prompt OK',
-    connectionStatus: 'Conectado',
-    accessStatus: 'Acesso OK',
-    activityStatus: 'Ativo',
-  };
-}
-
-function emptyDemandDraft(assigneeUserId = '') {
-  return {
+    type: 'support',
     title: '',
-    priority: 'medium',
-    clientId: '',
-    assigneeUserId,
-    dueDate: todayIso(),
     description: '',
+    assigneeUserId: userId,
+    clientId: '',
+    dueDate: todayIso(),
+    priority: 'medium',
+    officeName: '',
+    objective: '',
+    campaign: '',
+    channels: '',
+    attendants: '',
+    greeting: '',
+    location: '',
+    notes: '',
+    recurrence: 'daily',
+    routineScope: '',
+    routineChecklist: '',
     collaboratorUserIds: [],
     attachments: [],
   };
+}
+
+function demandTypeLabel(type) {
+  return DEMAND_TYPES.find((item) => item.value === type)?.label || 'Demanda';
+}
+
+function recurrenceLabel(value) {
+  return ROUTINE_RECURRENCES.find((item) => item.value === value)?.label || value || '';
+}
+
+function buildDemandDescription(form, clientName = '') {
+  const lines = [`Tipo: ${demandTypeLabel(form.type)}`];
+  if (clientName) lines.push(`Cliente: ${clientName}`);
+
+  if (form.type === 'briefing') {
+    const briefing = [
+      ['Nome do escritório', form.officeName],
+      ['Objetivo', form.objective],
+      ['Nicho/campanha', form.campaign],
+      ['Canais', form.channels],
+      ['Atendentes', form.attendants],
+      ['Saudação', form.greeting],
+      ['Localização', form.location],
+      ['Observações', form.notes],
+    ].filter(([, value]) => cleanText(value)).map(([label, value]) => `${label}: ${cleanText(value)}`);
+    if (briefing.length) lines.push('', 'Briefing', ...briefing);
+  }
+
+  if (form.type === 'routine') {
+    const routine = [
+      ['Recorrência', recurrenceLabel(form.recurrence)],
+      ['Escopo', form.routineScope],
+      ['Checklist', form.routineChecklist],
+    ].filter(([, value]) => cleanText(value)).map(([label, value]) => `${label}: ${cleanText(value)}`);
+    if (routine.length) lines.push('', 'Rotina', ...routine);
+  }
+
+  if (cleanText(form.description)) lines.push('', cleanText(form.description));
+  return lines.join('\n');
 }
 
 function fileSignature(file) {
@@ -143,48 +216,59 @@ function formatAttachmentKind(item) {
   return 'Arquivo';
 }
 
-function userAvatarProps(user) {
-  return {
-    'data-avatar': getUserAvatar(user) || user?.avatarUrl || '',
-    'data-name': user?.name || '',
-  };
-}
-
 function SupportCell({ row, column, editable, saving, onChange, onCommit }) {
   const value = row[column.key] || '';
-
   if (!editable) {
     return <span className={pageStyles.readonlyCell} data-tone={statusTone(value)} title={value}>{value || '—'}</span>;
   }
-
-  const commonProps = {
-    disabled: saving,
-    value,
-    onChange: (event) => onChange(row.id, column.key, event.target.value),
-    onBlur: () => onCommit(row.id, column.key),
-    onKeyDown: (event) => {
-      if (event.key === 'Enter') event.currentTarget.blur();
-      if (event.key === 'Escape') event.currentTarget.blur();
-    },
-  };
-
-  if (column.type === 'select') {
-    return (
-      <select className={pageStyles.sheetSelect} data-tone={statusTone(value)} {...commonProps}>
-        <option value="">—</option>
-        {column.options.map((option) => <option key={option} value={option}>{option}</option>)}
-      </select>
-    );
-  }
-
-  return <input className={pageStyles.sheetInput} type="text" spellCheck={false} {...commonProps} />;
+  return (
+    <input
+      className={pageStyles.sheetInput}
+      data-tone={statusTone(value)}
+      type="text"
+      spellCheck={false}
+      disabled={saving}
+      value={value}
+      onChange={(event) => onChange(row.id, column.key, event.target.value)}
+      onBlur={() => onCommit(row.id, column.key)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') event.currentTarget.blur();
+        if (event.key === 'Escape') event.currentTarget.blur();
+      }}
+    />
+  );
 }
 
-function FormField({ label, className = '', children }) {
+function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeStart, onDelete }) {
   return (
-    <div className={`${modalStyles.labeledField} ${className}`.trim()}>
-      <span>{label}</span>
-      {children}
+    <div className={pageStyles.headerCellInner}>
+      {editable ? (
+        <input
+          value={column.label}
+          onChange={(event) => onLabelChange(column.key, event.target.value)}
+          onBlur={() => onLabelCommit(column.key)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') event.currentTarget.blur();
+            if (event.key === 'Escape') event.currentTarget.blur();
+          }}
+          aria-label={`Nome da coluna ${column.label}`}
+        />
+      ) : (
+        <span>{column.label}</span>
+      )}
+      {editable && !column.system ? (
+        <button type="button" onClick={() => onDelete(column.key)} aria-label={`Remover coluna ${column.label}`}>
+          <CloseIcon size={11} />
+        </button>
+      ) : null}
+      {editable ? (
+        <span
+          className={pageStyles.resizeHandle}
+          role="separator"
+          aria-orientation="vertical"
+          onMouseDown={(event) => onResizeStart(event, column.key)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -193,15 +277,24 @@ export default function SupportTechnologyPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const { clients = [], userDirectory = [], setPanelHeader } = useOutletContext();
+  const [columns, setColumns] = useState(FALLBACK_DAILY_COLUMNS);
   const [rows, setRows] = useState([]);
   const [rowsLoading, setRowsLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [savingCell, setSavingCell] = useState('');
+  const [savingColumn, setSavingColumn] = useState('');
   const [creatingRow, setCreatingRow] = useState(false);
+  const [creatingColumn, setCreatingColumn] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
   const [demandModalOpen, setDemandModalOpen] = useState(false);
-  const [draft, setDraft] = useState(() => emptyDemandDraft(''));
+  const [demandForm, setDemandForm] = useState(() => emptyDemandForm(''));
+  const [clientQuery, setClientQuery] = useState('');
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [clientSearchPosition, setClientSearchPosition] = useState(null);
   const attachmentInputRef = useRef(null);
+  const clientSearchRef = useRef(null);
+  const clientSearchPanelRef = useRef(null);
+  const resizeRef = useRef(null);
 
   const activeUsers = useMemo(() => (
     Array.isArray(userDirectory) ? userDirectory : []
@@ -217,19 +310,23 @@ export default function SupportTechnologyPage() {
   const canEditBoard = hasPermission(user, 'support.board.edit');
   const canCreateDemand = hasPermission(user, 'support.view');
 
+  const selectedClient = useMemo(() => clients.find((client) => String(client.id) === String(demandForm.clientId)) || null, [clients, demandForm.clientId]);
   const selectedCollaborators = useMemo(() => {
-    const ids = new Set(draft.collaboratorUserIds || []);
+    const ids = new Set(demandForm.collaboratorUserIds || []);
     return activeUsers.filter((item) => ids.has(item.id));
-  }, [activeUsers, draft.collaboratorUserIds]);
+  }, [activeUsers, demandForm.collaboratorUserIds]);
 
   const collaboratorOptions = useMemo(() => {
-    const selected = new Set([draft.assigneeUserId, ...(draft.collaboratorUserIds || [])].filter(Boolean));
+    const selected = new Set([demandForm.assigneeUserId, ...(demandForm.collaboratorUserIds || [])].filter(Boolean));
     return activeUsers.filter((item) => !selected.has(item.id));
-  }, [activeUsers, draft.assigneeUserId, draft.collaboratorUserIds]);
+  }, [activeUsers, demandForm.assigneeUserId, demandForm.collaboratorUserIds]);
 
-  useEffect(() => {
-    setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
-  }, [setPanelHeader]);
+  const filteredClients = useMemo(() => {
+    const term = cleanText(clientQuery).toLowerCase();
+    const source = Array.isArray(clients) ? clients : [];
+    if (!term) return source.slice(0, 12);
+    return source.filter((client) => String(client.name || '').toLowerCase().includes(term)).slice(0, 12);
+  }, [clients, clientQuery]);
 
   const defaultAssigneeId = useMemo(() => {
     const currentAsSupport = supportUsers.find((item) => item.id === user?.id);
@@ -237,15 +334,21 @@ export default function SupportTechnologyPage() {
   }, [supportUsers, user?.id]);
 
   useEffect(() => {
+    setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
+  }, [setPanelHeader]);
+
+  useEffect(() => {
     if (!defaultAssigneeId) return;
-    setDraft((current) => current.assigneeUserId ? current : { ...current, assigneeUserId: defaultAssigneeId });
+    setDemandForm((current) => current.assigneeUserId ? current : { ...current, assigneeUserId: defaultAssigneeId });
   }, [defaultAssigneeId]);
 
   const refreshRows = useCallback(async () => {
     setRowsLoading(true);
     try {
       const data = await listSupportDailyRows();
-      setRows((Array.isArray(data?.rows) ? data.rows : []).map(normalizeRow));
+      const nextColumns = normalizeColumns(data?.columns);
+      setColumns(nextColumns);
+      setRows((Array.isArray(data?.rows) ? data.rows : []).map((row) => normalizeRow(row, nextColumns)));
     } finally {
       setRowsLoading(false);
     }
@@ -263,30 +366,70 @@ export default function SupportTechnologyPage() {
 
   const metrics = useMemo(() => {
     const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'canceled');
-    const riskRows = rows.filter((row) => ['connectionStatus', 'accessStatus', 'promptStatus'].some((key) => statusTone(row[key]) === 'danger'));
+    const riskRows = rows.filter((row) => columns.some((column) => statusTone(row[column.key]) === 'danger'));
     return {
       rows: rows.length,
       openTasks: openTasks.length,
       risks: riskRows.length,
       implemented: rows.filter((row) => statusTone(row.implementationStatus) === 'success').length,
     };
-  }, [rows, tasks]);
+  }, [columns, rows, tasks]);
 
   function openDemandModal() {
-    setDraft(emptyDemandDraft(defaultAssigneeId));
+    setDemandForm(emptyDemandForm(defaultAssigneeId));
+    setClientQuery('');
+    setClientSearchOpen(false);
     setDemandModalOpen(true);
   }
 
   function closeDemandModal() {
-    if (!creatingTask) setDemandModalOpen(false);
+    if (!creatingTask) {
+      setDemandModalOpen(false);
+      setClientSearchOpen(false);
+      setClientSearchPosition(null);
+    }
   }
+
+  const openClientSearch = useCallback(() => {
+    const rect = clientSearchRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setClientSearchPosition({
+      top: rect.bottom + 6,
+      left: rect.left,
+      width: rect.width,
+      maxHeight: Math.min(320, window.innerHeight - rect.bottom - 16),
+    });
+    setClientSearchOpen(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!clientSearchOpen) return undefined;
+    const reposition = () => openClientSearch();
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
+    return () => {
+      window.removeEventListener('resize', reposition);
+      window.removeEventListener('scroll', reposition, true);
+    };
+  }, [clientSearchOpen, openClientSearch]);
+
+  useEffect(() => {
+    if (!clientSearchOpen) return undefined;
+    function handlePointerDown(event) {
+      if (clientSearchRef.current?.contains(event.target) || clientSearchPanelRef.current?.contains(event.target)) return;
+      setClientSearchOpen(false);
+      setClientSearchPosition(null);
+    }
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [clientSearchOpen]);
 
   async function addDemandAttachments(files) {
     const selected = uniqueFiles(files).filter(Boolean);
     if (!selected.length) return;
     try {
       const parsed = await Promise.all(selected.map(readAttachmentFile));
-      setDraft((current) => {
+      setDemandForm((current) => {
         const existing = Array.isArray(current.attachments) ? current.attachments : [];
         const seen = new Set(existing.map(attachmentSignature));
         const next = parsed.filter((item) => {
@@ -309,37 +452,39 @@ export default function SupportTechnologyPage() {
   }
 
   function handleRemoveAttachment(id) {
-    setDraft((current) => ({ ...current, attachments: (current.attachments || []).filter((item) => item.id !== id) }));
+    setDemandForm((current) => ({ ...current, attachments: (current.attachments || []).filter((item) => item.id !== id) }));
   }
 
   const handleCreateTask = async (event) => {
     event.preventDefault();
-    const title = cleanText(draft.title);
+    const title = cleanText(demandForm.title);
     if (!title) {
       showToast('Informe o título da demanda.', { variant: 'warning' });
       return;
     }
     setCreatingTask(true);
     try {
+      const description = buildDemandDescription(demandForm, selectedClient?.name || '');
       const data = await createSupportTask({
         title,
-        priority: draft.priority,
-        clientId: draft.clientId,
-        assigneeUserId: draft.assigneeUserId || defaultAssigneeId,
-        collaboratorUserIds: draft.collaboratorUserIds,
-        dueDate: draft.dueDate,
-        description: draft.description,
+        type: demandForm.type,
+        priority: demandForm.priority,
+        clientId: demandForm.clientId,
+        assigneeUserId: demandForm.assigneeUserId || defaultAssigneeId,
+        collaboratorUserIds: demandForm.collaboratorUserIds,
+        dueDate: demandForm.dueDate,
+        description,
       });
       const taskId = data?.task?.id;
-      if (taskId && draft.attachments?.length) {
-        await Promise.allSettled(draft.attachments.map((item) => createTaskAttachment(taskId, {
+      if (taskId && demandForm.attachments?.length) {
+        await Promise.allSettled(demandForm.attachments.map((item) => createTaskAttachment(taskId, {
           fileName: item.fileName,
           mimeType: item.mimeType,
           sizeBytes: item.sizeBytes,
           dataUrl: item.dataUrl,
         })));
       }
-      setDraft(emptyDemandDraft(defaultAssigneeId));
+      setDemandForm(emptyDemandForm(defaultAssigneeId));
       setDemandModalOpen(false);
       await refreshTasks();
       showToast('Demanda criada.');
@@ -353,8 +498,8 @@ export default function SupportTechnologyPage() {
   const handleAddRow = async () => {
     setCreatingRow(true);
     try {
-      const data = await createSupportDailyRow(defaultRowPayload());
-      setRows((current) => [...current, normalizeRow(data?.row)]);
+      const data = await createSupportDailyRow({});
+      setRows((current) => [...current, normalizeRow(data?.row, columns)]);
     } catch (err) {
       showToast(err?.message || 'Não foi possível adicionar linha.', { variant: 'error' });
     } finally {
@@ -384,7 +529,7 @@ export default function SupportTechnologyPage() {
     try {
       const data = await updateSupportDailyRow(id, { [key]: row[key] || '' });
       if (data?.row) {
-        setRows((current) => current.map((entry) => (entry.id === id ? normalizeRow(data.row) : entry)));
+        setRows((current) => current.map((entry) => (entry.id === id ? normalizeRow(data.row, columns) : entry)));
       }
     } catch (err) {
       showToast(err?.message || 'Não foi possível salvar a célula.', { variant: 'error' });
@@ -393,6 +538,93 @@ export default function SupportTechnologyPage() {
       setSavingCell('');
     }
   };
+
+  const handleAddColumn = async () => {
+    setCreatingColumn(true);
+    try {
+      const data = await createSupportDailyColumn({ label: 'Nova coluna', width: 180 });
+      if (data?.column) {
+        setColumns((current) => [...current, data.column]);
+        setRows((current) => current.map((row) => ({ ...row, [data.column.key]: '' })));
+      }
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível adicionar coluna.', { variant: 'error' });
+    } finally {
+      setCreatingColumn(false);
+    }
+  };
+
+  const handleColumnLabelChange = (key, label) => {
+    setColumns((current) => current.map((column) => (column.key === key ? { ...column, label } : column)));
+  };
+
+  const handleColumnLabelCommit = async (key) => {
+    const column = columns.find((entry) => entry.key === key);
+    if (!column) return;
+    setSavingColumn(key);
+    try {
+      const data = await updateSupportDailyColumn(key, { label: column.label || 'Coluna' });
+      if (data?.columns) setColumns(normalizeColumns(data.columns));
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível salvar a coluna.', { variant: 'error' });
+      refreshRows().catch(() => {});
+    } finally {
+      setSavingColumn('');
+    }
+  };
+
+  const handleDeleteColumn = async (key) => {
+    const column = columns.find((entry) => entry.key === key);
+    if (!column || column.system) return;
+    try {
+      await deleteSupportDailyColumn(key);
+      setColumns((current) => current.filter((entry) => entry.key !== key));
+      setRows((current) => current.map((row) => {
+        const next = { ...row };
+        delete next[key];
+        return next;
+      }));
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível remover a coluna.', { variant: 'error' });
+    }
+  };
+
+  const handleResizeStart = (event, key) => {
+    event.preventDefault();
+    const column = columns.find((entry) => entry.key === key);
+    if (!column) return;
+    resizeRef.current = { key, startX: event.clientX, startWidth: column.width };
+    document.body.style.cursor = 'col-resize';
+  };
+
+  useEffect(() => {
+    function handleMove(event) {
+      const state = resizeRef.current;
+      if (!state) return;
+      const width = Math.max(90, Math.min(640, state.startWidth + event.clientX - state.startX));
+      setColumns((current) => current.map((column) => (column.key === state.key ? { ...column, width } : column)));
+    }
+    async function handleUp() {
+      const state = resizeRef.current;
+      if (!state) return;
+      resizeRef.current = null;
+      document.body.style.cursor = '';
+      const column = columns.find((entry) => entry.key === state.key);
+      if (!column) return;
+      try {
+        await updateSupportDailyColumn(column.key, { width: column.width });
+      } catch {
+        refreshRows().catch(() => {});
+      }
+    }
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+      document.body.style.cursor = '';
+    };
+  }, [columns, refreshRows]);
 
   return (
     <div className={pageStyles.page}>
@@ -422,9 +654,14 @@ export default function SupportTechnologyPage() {
         <header className={pageStyles.sheetHeader}>
           <h2><CalendarIcon size={15} /> Programação diária</h2>
           {canEditBoard ? (
-            <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow}>
-              <PlusIcon size={14} /> Nova linha
-            </Button>
+            <div className={pageStyles.sheetActions}>
+              <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn}>
+                <PlusIcon size={14} /> Nova coluna
+              </Button>
+              <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow}>
+                <PlusIcon size={14} /> Nova linha
+              </Button>
+            </div>
           ) : null}
         </header>
 
@@ -432,27 +669,38 @@ export default function SupportTechnologyPage() {
           <table className={pageStyles.sheetTable}>
             <colgroup>
               <col style={{ width: 46 }} />
-              {DAILY_COLUMNS.map((column) => <col key={column.key} style={{ width: column.width }} />)}
+              {columns.map((column) => <col key={column.key} style={{ width: column.width }} />)}
               {canEditBoard ? <col style={{ width: 58 }} /> : null}
             </colgroup>
             <thead>
               <tr>
                 <th>#</th>
-                {DAILY_COLUMNS.map((column) => <th key={column.key}>{column.label}</th>)}
+                {columns.map((column) => (
+                  <th key={column.key} data-saving={savingColumn === column.key || undefined}>
+                    <HeaderCell
+                      column={column}
+                      editable={canEditBoard}
+                      onLabelChange={handleColumnLabelChange}
+                      onLabelCommit={handleColumnLabelCommit}
+                      onResizeStart={handleResizeStart}
+                      onDelete={handleDeleteColumn}
+                    />
+                  </th>
+                ))}
                 {canEditBoard ? <th /> : null}
               </tr>
             </thead>
             <tbody>
               {rowsLoading ? (
-                <tr><td colSpan={DAILY_COLUMNS.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Carregando</td></tr>
+                <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Carregando</td></tr>
               ) : null}
               {!rowsLoading && rows.length === 0 ? (
-                <tr><td colSpan={DAILY_COLUMNS.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Sem registros.</td></tr>
+                <tr><td colSpan={columns.length + (canEditBoard ? 2 : 1)} className={pageStyles.sheetEmpty}>Sem registros.</td></tr>
               ) : null}
               {rows.map((row, index) => (
                 <tr key={row.id}>
                   <td className={pageStyles.rowIndex}>{index + 1}</td>
-                  {DAILY_COLUMNS.map((column) => (
+                  {columns.map((column) => (
                     <td key={column.key} data-column={column.key}>
                       <SupportCell
                         row={row}
@@ -477,14 +725,14 @@ export default function SupportTechnologyPage() {
 
         <footer className={pageStyles.sheetFooter}>
           <span>{rows.length} registros</span>
-          {savingCell ? <span><SaveIcon size={13} /> Salvando</span> : null}
+          {savingCell || savingColumn ? <span><SaveIcon size={13} /> Salvando</span> : null}
         </footer>
       </section>
 
       {demandModalOpen ? (
-        <div className={modalStyles.settingsOverlay} onClick={closeDemandModal}>
+        <div className={styles.settingsOverlay} onClick={(event) => event.stopPropagation()}>
           <form
-            className={`${modalStyles.settingsModal} ${modalStyles.demandModal}`}
+            className={`${styles.settingsModal} ${styles.demandModal} ${styles[`demandModal_${demandForm.type}`] || ''}`.trim()}
             onSubmit={handleCreateTask}
             onPaste={(event) => {
               const files = filesFromClipboard(event);
@@ -497,94 +745,133 @@ export default function SupportTechnologyPage() {
             aria-label="Nova demanda"
             onClick={(event) => event.stopPropagation()}
           >
-            <header className={modalStyles.settingsHeader}>
+            <header className={styles.settingsHeader}>
               <div>
                 <h2>Nova demanda</h2>
-                <span>Suporte</span>
+                <span>{demandTypeLabel(demandForm.type)}</span>
               </div>
-              <button type="button" className={modalStyles.iconButton} onClick={closeDemandModal} aria-label="Fechar">
+              <button type="button" className={styles.iconButton} onClick={closeDemandModal} aria-label="Fechar">
                 <CloseIcon size={16} />
               </button>
             </header>
 
-            <div className={modalStyles.settingsContent}>
-              <div className={modalStyles.demandFormGrid}>
-                <FormField label="Tipo" className={modalStyles.fieldThird}>
-                  <input value="Suporte" readOnly disabled />
-                </FormField>
-                <FormField label="Prioridade" className={modalStyles.fieldThird}>
-                  <Select
-                    value={draft.priority}
-                    onChange={(event) => setDraft((current) => ({ ...current, priority: event.target.value }))}
-                    aria-label="Prioridade"
-                    className={modalStyles.formSelect}
-                  >
-                    {PRIORITIES.map((priority) => <option key={priority.value} value={priority.value}>{priority.label}</option>)}
+            <div className={styles.settingsContent}>
+              <div className={styles.demandFormGrid}>
+                <label className={`${styles.labeledField} ${styles.fieldCompact}`}>
+                  <span>Tipo</span>
+                  <Select value={demandForm.type} onChange={(event) => setDemandForm((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
+                    {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
-                </FormField>
-                <FormField label="Título" className={modalStyles.fieldHalf}>
-                  <input
-                    value={draft.title}
-                    onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
-                    placeholder="Título"
-                  />
-                </FormField>
-                <FormField label="Para quem é esta tarefa?" className={modalStyles.fieldHalf}>
+                </label>
+                <label className={`${styles.labeledField} ${styles.fieldCompact}`}>
+                  <span>Prioridade</span>
+                  <Select value={demandForm.priority} onChange={(event) => setDemandForm((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
+                    {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </Select>
+                </label>
+                <label className={`${styles.labeledField} ${styles.fieldWide}`}>
+                  <span>Título</span>
+                  <input value={demandForm.title} onChange={(event) => setDemandForm((prev) => ({ ...prev, title: event.target.value }))} placeholder="Título" />
+                </label>
+                <label className={styles.labeledField}>
+                  <span>Para quem é esta tarefa?</span>
                   <Select
                     type="user"
-                    value={draft.assigneeUserId}
-                    onChange={(event) => setDraft((current) => ({ ...current, assigneeUserId: event.target.value }))}
+                    value={demandForm.assigneeUserId}
+                    onChange={(event) => setDemandForm((prev) => ({
+                      ...prev,
+                      assigneeUserId: event.target.value,
+                      collaboratorUserIds: (prev.collaboratorUserIds || []).filter((id) => id !== event.target.value),
+                    }))}
                     aria-label="Responsável"
-                    className={modalStyles.formSelect}
+                    className={styles.formSelect}
                   >
-                    {supportUsers.map((item) => <option key={item.id} value={item.id} {...userAvatarProps(item)}>{item.name}</option>)}
+                    {(supportUsers.length ? supportUsers : activeUsers).map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                   </Select>
-                </FormField>
-                <FormField label="Cliente" className={modalStyles.fieldHalf}>
-                  <Select
-                    type="client"
-                    value={draft.clientId}
-                    onChange={(event) => setDraft((current) => ({ ...current, clientId: event.target.value }))}
-                    aria-label="Cliente"
-                    className={modalStyles.formSelect}
+                </label>
+                <label className={styles.labeledField}>
+                  <span>Cliente</span>
+                  <div
+                    className={styles.clientSearchField}
+                    data-has-avatar={selectedClient ? 'true' : undefined}
+                    ref={clientSearchRef}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={(event) => event.stopPropagation()}
                   >
-                    <option value="">Sem cliente</option>
-                    {clients.map((client) => <option key={client.id} value={client.id} data-avatar={client.avatarUrl || ''} data-name={client.name}>{client.name}</option>)}
-                  </Select>
-                </FormField>
-                <FormField label="Prazo" className={modalStyles.fieldHalf}>
-                  <DateField
-                    value={draft.dueDate}
-                    onChange={(value) => setDraft((current) => ({ ...current, dueDate: value }))}
-                    placeholder="Prazo"
-                    ariaLabel="Prazo"
-                    className={modalStyles.dateField}
-                  />
-                </FormField>
-                <FormField label="Colaboradores adicionais" className={modalStyles.fieldWide}>
+                    {selectedClient ? (
+                      <Avatar
+                        src={getClientAvatar(selectedClient) || selectedClient.avatarUrl || undefined}
+                        name={selectedClient.name}
+                        size="xs"
+                        className={styles.clientSearchAvatar}
+                      />
+                    ) : null}
+                    <input
+                      value={clientSearchOpen ? clientQuery : selectedClient?.name || clientQuery}
+                      onFocus={() => {
+                        if (selectedClient) setClientQuery(selectedClient.name || '');
+                        openClientSearch();
+                      }}
+                      onMouseDown={() => {
+                        if (!clientSearchOpen) openClientSearch();
+                      }}
+                      onChange={(event) => {
+                        setClientQuery(event.target.value);
+                        if (demandForm.clientId) setDemandForm((prev) => ({ ...prev, clientId: '' }));
+                        openClientSearch();
+                      }}
+                      placeholder="Cliente"
+                      aria-label="Cliente"
+                    />
+                    {(selectedClient || clientQuery) ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDemandForm((prev) => ({ ...prev, clientId: '' }));
+                          setClientQuery('');
+                          setClientSearchOpen(false);
+                          setClientSearchPosition(null);
+                        }}
+                        aria-label="Limpar cliente"
+                      >
+                        <CloseIcon size={13} />
+                      </button>
+                    ) : null}
+                  </div>
+                </label>
+                <label className={styles.labeledField}>
+                  <span>Prazo</span>
+                  <DateField value={demandForm.dueDate} onChange={(value) => setDemandForm((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
+                </label>
+                <label className={`${styles.labeledField} ${styles.fieldWide}`}>
+                  <span>Colaboradores adicionais</span>
                   <Select
                     type="user"
                     value=""
                     onChange={(event) => {
                       const value = event.target.value;
                       if (!value) return;
-                      setDraft((current) => ({ ...current, collaboratorUserIds: [...new Set([...(current.collaboratorUserIds || []), value])] }));
+                      setDemandForm((prev) => ({
+                        ...prev,
+                        collaboratorUserIds: [...new Set([...(prev.collaboratorUserIds || []), value])],
+                      }));
                     }}
                     aria-label="Colaboradores"
-                    className={modalStyles.formSelect}
+                    className={styles.formSelect}
                   >
                     <option value="">Adicionar colaborador</option>
-                    {collaboratorOptions.map((item) => <option key={item.id} value={item.id} {...userAvatarProps(item)}>{item.name}</option>)}
+                    {collaboratorOptions.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
                   </Select>
-                </FormField>
+                </label>
                 {selectedCollaborators.length ? (
-                  <div className={`${modalStyles.selectedCollaborators} ${modalStyles.fieldWide}`}>
+                  <div className={`${styles.selectedCollaborators} ${styles.fieldWide}`}>
                     {selectedCollaborators.map((item) => (
                       <span key={item.id}>
                         {item.name}
                         <button
                           type="button"
-                          onClick={() => setDraft((current) => ({ ...current, collaboratorUserIds: (current.collaboratorUserIds || []).filter((id) => id !== item.id) }))}
+                          onClick={() => setDemandForm((prev) => ({ ...prev, collaboratorUserIds: (prev.collaboratorUserIds || []).filter((id) => id !== item.id) }))}
                           aria-label={`Remover ${item.name}`}
                         >
                           ×
@@ -595,17 +882,40 @@ export default function SupportTechnologyPage() {
                 ) : null}
               </div>
 
-              <textarea
-                value={draft.description}
-                onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
-                placeholder="Descrição"
-                className={modalStyles.demandTextarea}
-              />
+              {demandForm.type === 'briefing' ? (
+                <div className={styles.briefingGrid}>
+                  <input value={demandForm.officeName} onChange={(event) => setDemandForm((prev) => ({ ...prev, officeName: event.target.value }))} placeholder="Escritório" />
+                  <input value={demandForm.objective} onChange={(event) => setDemandForm((prev) => ({ ...prev, objective: event.target.value }))} placeholder="Objetivo" />
+                  <input value={demandForm.campaign} onChange={(event) => setDemandForm((prev) => ({ ...prev, campaign: event.target.value }))} placeholder="Nicho/campanha" />
+                  <input value={demandForm.channels} onChange={(event) => setDemandForm((prev) => ({ ...prev, channels: event.target.value }))} placeholder="Canais" />
+                  <input value={demandForm.attendants} onChange={(event) => setDemandForm((prev) => ({ ...prev, attendants: event.target.value }))} placeholder="Atendentes" />
+                  <input value={demandForm.greeting} onChange={(event) => setDemandForm((prev) => ({ ...prev, greeting: event.target.value }))} placeholder="Saudação" />
+                  <input value={demandForm.location} onChange={(event) => setDemandForm((prev) => ({ ...prev, location: event.target.value }))} placeholder="Localização" />
+                  <textarea className={styles.fieldWide} value={demandForm.notes} onChange={(event) => setDemandForm((prev) => ({ ...prev, notes: event.target.value }))} placeholder="Observações" />
+                </div>
+              ) : null}
 
-              <div className={modalStyles.attachmentComposer}>
+              {demandForm.type === 'routine' ? (
+                <div className={styles.routineFormGrid}>
+                  <Select value={demandForm.recurrence} onChange={(event) => setDemandForm((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={`${styles.formSelect} ${styles.fieldThird}`}>
+                    {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </Select>
+                  <input value={demandForm.routineScope} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineScope: event.target.value }))} placeholder="Escopo" />
+                  <textarea className={styles.fieldWide} value={demandForm.routineChecklist} onChange={(event) => setDemandForm((prev) => ({ ...prev, routineChecklist: event.target.value }))} placeholder="Checklist" />
+                </div>
+              ) : null}
+
+              <textarea value={demandForm.description} onPaste={(event) => {
+                const files = filesFromClipboard(event);
+                if (!files.length) return;
+                event.preventDefault();
+                addDemandAttachments(files);
+              }} onChange={(event) => setDemandForm((prev) => ({ ...prev, description: event.target.value }))} placeholder="Descrição" className={styles.demandTextarea} />
+
+              <div className={styles.attachmentComposer}>
                 <div>
                   <span>Anexos</span>
-                  <strong>{(draft.attachments || []).length}</strong>
+                  <strong>{(demandForm.attachments || []).length}</strong>
                 </div>
                 <input
                   ref={attachmentInputRef}
@@ -616,12 +926,12 @@ export default function SupportTechnologyPage() {
                   hidden
                 />
                 <button type="button" onClick={() => attachmentInputRef.current?.click()}>Anexar imagem ou PDF</button>
-                {(draft.attachments || []).length ? (
-                  <div className={modalStyles.attachmentPreviewGrid}>
-                    {draft.attachments.map((item) => (
-                      <figure key={item.id} className={modalStyles.attachmentPreviewItem}>
+                {(demandForm.attachments || []).length ? (
+                  <div className={styles.attachmentPreviewGrid}>
+                    {demandForm.attachments.map((item) => (
+                      <figure key={item.id} className={styles.attachmentPreviewItem}>
                         {item.mimeType === 'application/pdf' ? (
-                          <span className={modalStyles.attachmentPdfPreview}>PDF</span>
+                          <span className={styles.attachmentPdfPreview}>PDF</span>
                         ) : (
                           <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
                         )}
@@ -634,11 +944,59 @@ export default function SupportTechnologyPage() {
               </div>
             </div>
 
-            <footer className={modalStyles.settingsFooter}>
+            <footer className={styles.settingsFooter}>
               <button type="button" onClick={closeDemandModal}>Cancelar</button>
-              <button type="submit" disabled={creatingTask || !draft.title.trim()}>{creatingTask ? 'Criando' : 'Criar demanda'}</button>
+              <button type="submit" disabled={creatingTask || !canCreateDemand}>{creatingTask ? 'Criando' : 'Criar demanda'}</button>
             </footer>
           </form>
+          {clientSearchOpen && clientSearchPosition ? createPortal(
+            <div
+              ref={clientSearchPanelRef}
+              className={`${styles.clientSearchResults} ${styles.clientSearchFloating}`}
+              style={{
+                top: clientSearchPosition.top,
+                left: clientSearchPosition.left,
+                width: clientSearchPosition.width,
+                maxHeight: clientSearchPosition.maxHeight,
+              }}
+              onPointerDown={(event) => event.stopPropagation()}
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {filteredClients.length ? filteredClients.map((client) => {
+                const clientAvatar = getClientAvatar(client) || client.avatarUrl || '';
+                return (
+                  <button
+                    key={client.id}
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setDemandForm((prev) => ({ ...prev, clientId: client.id }));
+                      setClientQuery(client.name || '');
+                      setClientSearchOpen(false);
+                      setClientSearchPosition(null);
+                    }}
+                  >
+                    <Avatar
+                      src={clientAvatar || undefined}
+                      name={client.name}
+                      size="xs"
+                      className={styles.clientSearchOptionAvatar}
+                    />
+                    <div className={styles.clientSearchOptionText}>
+                      <strong>{client.name}</strong>
+                      {client.squadName || client.managerName || client.gdvName ? (
+                        <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span>
+                      ) : null}
+                    </div>
+                  </button>
+                );
+              }) : (
+                <span className={styles.clientSearchEmpty}>Sem cliente</span>
+              )}
+            </div>,
+            document.body,
+          ) : null}
         </div>
       ) : null}
     </div>
