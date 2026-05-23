@@ -1478,3 +1478,147 @@ button.taskRow:hover {
   font-weight: var(--weight-medium);
   line-height: var(--lh-normal);
 }
+
+.personalPulse {
+  width: min(1480px, 100%);
+  margin: var(--space-3) auto 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.6fr);
+  gap: var(--space-3);
+}
+
+.weekPanel,
+.contextPanel {
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.weekGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+
+.weekDay {
+  min-width: 0;
+  min-height: 104px;
+  display: grid;
+  align-content: space-between;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: var(--space-3);
+  cursor: pointer;
+}
+
+.weekDay:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+}
+
+.weekDay span,
+.weekDay small {
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.weekDay strong {
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.weekDay em {
+  color: var(--text-primary);
+  font-size: var(--fs-xl);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+}
+
+.weekDayToday {
+  border-color: var(--line);
+  background: var(--bg-selected);
+}
+
+.contextList {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+
+.contextRow {
+  min-width: 0;
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--space-3);
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 0 var(--space-3);
+  cursor: pointer;
+}
+
+.contextRow:hover {
+  background: var(--bg-hover);
+}
+
+.contextRow span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contextRow strong {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 24px;
+  color: var(--text-primary);
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  text-align: right;
+}
+
+.contextRow em {
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+@media (max-width: 1180px) {
+  .personalPulse {
+    grid-template-columns: 1fr;
+  }
+
+  .weekGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .weekGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

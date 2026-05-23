@@ -94,6 +94,25 @@ function hasNoDueDate(task) {
   return !task?.dueDate && !isDone(task);
 }
 
+function getDateKey(offset = 0) {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + offset);
+  return date.toISOString().slice(0, 10);
+}
+
+function dayShortLabel(offset) {
+  if (offset === 0) return 'Hoje';
+  if (offset === 1) return 'Amanhã';
+  const date = new Date(`${getDateKey(offset)}T12:00:00`);
+  return new Intl.DateTimeFormat('pt-BR', { weekday: 'short' }).format(date).replace('.', '');
+}
+
+function dayDateLabel(offset) {
+  const date = new Date(`${getDateKey(offset)}T12:00:00`);
+  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(date);
+}
+
 function normalize(value) {
   return String(value || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
@@ -390,6 +409,37 @@ export default function WorkspacePage() {
     },
   ], [taskBuckets.overdue.length, taskBuckets.today.length, taskBuckets.week.length, taskStats.critical]);
 
+  const weekAgenda = useMemo(() => (
+    Array.from({ length: 7 }, (_, index) => {
+      const key = getDateKey(index);
+      const dayTasks = activeTasks.filter((task) => String(task?.dueDate || '').slice(0, 10) === key);
+      const critical = dayTasks.filter((task) => String(task?.priority || '').toLowerCase() === 'critical').length;
+      return {
+        id: key,
+        offset: index,
+        label: dayShortLabel(index),
+        date: dayDateLabel(index),
+        count: dayTasks.length,
+        critical,
+      };
+    })
+  ), [activeTasks]);
+
+  const contextSummary = useMemo(() => {
+    const groups = new Map();
+    activeTasks.forEach((task) => {
+      const key = taskContext(task);
+      const current = groups.get(key) || { label: key, total: 0, overdue: 0, critical: 0 };
+      current.total += 1;
+      if (isOverdue(task)) current.overdue += 1;
+      if (String(task?.priority || '').toLowerCase() === 'critical') current.critical += 1;
+      groups.set(key, current);
+    });
+    return Array.from(groups.values())
+      .sort((a, b) => (b.overdue + b.critical + b.total) - (a.overdue + a.critical + a.total))
+      .slice(0, 5);
+  }, [activeTasks]);
+
   return (
     <main className={styles.page}>
       <aside className={styles.sidebar} aria-label="Meu espaço de trabalho">
@@ -525,6 +575,47 @@ export default function WorkspacePage() {
                     onClick={() => { setActiveTab('tasks'); setTaskFilter(step.filter); }}
                   />
                 ))}
+              </div>
+            </section>
+
+            <section className={styles.personalPulse} aria-label="Pulso do workspace">
+              <div className={styles.weekPanel}>
+                <div className={styles.sectionHeader}>
+                  <span>Semana</span>
+                  <strong>Mapa dos próximos dias</strong>
+                </div>
+                <div className={styles.weekGrid}>
+                  {weekAgenda.map((day) => (
+                    <button
+                      key={day.id}
+                      type="button"
+                      className={`${styles.weekDay} ${day.offset === 0 ? styles.weekDayToday : ''}`.trim()}
+                      onClick={() => { setActiveTab('tasks'); setTaskFilter(day.offset === 0 ? 'today' : 'all'); }}
+                    >
+                      <span>{day.label}</span>
+                      <strong>{day.date}</strong>
+                      <em>{day.count}</em>
+                      {day.critical ? <small>{day.critical} crítica{day.critical > 1 ? 's' : ''}</small> : <small>normal</small>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.contextPanel}>
+                <div className={styles.sectionHeader}>
+                  <span>Contextos</span>
+                  <strong>Carga por origem</strong>
+                </div>
+                <div className={styles.contextList}>
+                  {!contextSummary.length ? <span className={styles.inlineState}>Nenhuma origem com tarefa aberta.</span> : null}
+                  {contextSummary.map((item) => (
+                    <button key={item.label} type="button" className={styles.contextRow} onClick={() => { setActiveTab('tasks'); setTaskQuery(item.label); }}>
+                      <span>{item.label}</span>
+                      <strong>{item.total}</strong>
+                      <em>{item.overdue ? `${item.overdue} atrasada${item.overdue > 1 ? 's' : ''}` : item.critical ? `${item.critical} crítica${item.critical > 1 ? 's' : ''}` : 'em dia'}</em>
+                    </button>
+                  ))}
+                </div>
               </div>
             </section>
 
