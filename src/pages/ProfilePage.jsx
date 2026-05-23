@@ -3348,36 +3348,28 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <section className={styles.operationBoard}>
-        <header className={styles.operationHeader}>
-          <div className={styles.operationHeaderTop}>
-            <div className={styles.operationTitleBlock}>
-              <h2 className={styles.operationHeading}>
-                <ChecklistIcon size={16} strokeWidth={2} aria-hidden="true" />
-                <span>Área interna</span>
-              </h2>
-            </div>
-            <div className={styles.profileWorkspaceActions}>
-              <div className={styles.profileWorkspaceSwitcher} aria-label="Área interna">
-                {PROFILE_WORKSPACE_TABS.map((tab) => (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    className={`${styles.profileWorkspaceTab} ${workspaceTab === tab.value ? styles.profileWorkspaceTabActive : ''}`.trim()}
-                    onClick={() => setWorkspaceTab(tab.value)}
-                    aria-current={workspaceTab === tab.value ? 'page' : undefined}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-              {workspaceTab === 'tasks' ? (
-                <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
-              ) : null}
-            </div>
-          </div>
+      <div className={styles.internalToolbar}>
+        <div className={styles.profileWorkspaceSwitcher} aria-label="Área interna">
+          {PROFILE_WORKSPACE_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              className={`${styles.profileWorkspaceTab} ${workspaceTab === tab.value ? styles.profileWorkspaceTabActive : ''}`.trim()}
+              onClick={() => setWorkspaceTab(tab.value)}
+              aria-current={workspaceTab === tab.value ? 'page' : undefined}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {workspaceTab === 'tasks' ? (
+          <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
+        ) : null}
+      </div>
 
-          {workspaceTab === 'tasks' ? (
+      <section className={styles.operationBoard}>
+        {workspaceTab === 'tasks' ? (
+          <header className={styles.operationHeader}>
             <div className={styles.operationControlPanel}>
               <nav className={styles.operationTabs} aria-label="Operação">
                 {OPERATION_TABS.map((tab) => (
@@ -3394,10 +3386,10 @@ export default function ProfilePage() {
                 ))}
               </nav>
             </div>
-          ) : null}
-        </header>
+          </header>
+        ) : null}
 
-        <div className={styles.operationBody}>
+        <div className={styles.operationBody} data-view={workspaceTab}>
           {workspaceTab === 'spreadsheets' ? (
             <UserSpreadsheetPanel ownerUserId={user?.id} canEdit showToast={showToast} />
           ) : tasksLoading ? (

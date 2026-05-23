@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import Avatar from '../components/ui/Avatar.jsx';
 import Button from '../components/ui/Button.jsx';
 import DemandModal from '../components/tasks/DemandModal.jsx';
-import { BotIcon, ChecklistIcon, PlusIcon, SearchIcon } from '../components/ui/Icons.jsx';
+import { BotIcon, PlusIcon } from '../components/ui/Icons.jsx';
 import { createTaskAttachment } from '../api/projects.js';
 import { createSupportTask } from '../api/support.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -123,27 +123,8 @@ export default function SupportTechnologyPage() {
         </div>
       </section>
 
-      <section className={styles.supportRoadmap}>
-        <header className={styles.roadmapHeader}>
-          <div>
-            <span className={styles.eyebrow}>Próxima etapa</span>
-            <h2>Área de suporte em reconstrução</h2>
-            <p>A função de planilhas saiu desta tela e foi movida para o perfil interno. Esta área ficará reservada para novas funções de suporte após a varredura completa da plataforma.</p>
-          </div>
-        </header>
-
-        <div className={styles.roadmapGrid}>
-          <article className={styles.roadmapCard}>
-            <span><SearchIcon size={16} /></span>
-            <strong>Varredura da plataforma</strong>
-            <p>Mapear telas, permissões, fluxos, gargalos e pontos de suporte recorrentes antes de criar novas funções.</p>
-          </article>
-          <article className={styles.roadmapCard}>
-            <span><ChecklistIcon size={16} /></span>
-            <strong>Funções reais de suporte</strong>
-            <p>Construir recursos próprios para diagnóstico, acompanhamento e organização técnica, sem misturar com planilhas pessoais.</p>
-          </article>
-        </div>
+      <section className={styles.supportConstruction}>
+        <strong>Em construção</strong>
       </section>
 
       {demandModalOpen ? (

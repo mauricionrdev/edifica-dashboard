@@ -13194,3 +13194,107 @@ button:focus-visible {
     width: 100%;
   }
 }
+
+/* v70 · Área interna fora do card */
+.internalToolbar {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 2px 0 -2px;
+}
+
+.internalToolbar .profileWorkspaceSwitcher {
+  margin: 0;
+}
+
+.operationBoard {
+  overflow: hidden;
+}
+
+.operationHeader {
+  padding: 0;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: transparent;
+}
+
+.operationControlPanel {
+  padding: 14px 18px;
+  border-top: 0;
+}
+
+.operationBody {
+  padding: 20px 22px 22px;
+  background: var(--workspace-bg);
+}
+
+.operationBody[data-view='spreadsheets'] {
+  padding: 0;
+  background: transparent;
+}
+
+.operationBody[data-view='spreadsheets'] > section {
+  border: 0;
+  border-radius: 0;
+}
+
+.profileWorkspaceSwitcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-control-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+.profileWorkspaceTab {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--workspace-control-radius) - 4px);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.profileWorkspaceTab:hover {
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text-secondary);
+}
+
+.profileWorkspaceTabActive,
+.profileWorkspaceTab[aria-current='page'] {
+  border-color: rgba(245, 184, 0, 0.30);
+  background: rgba(245, 184, 0, 0.12);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+@media (max-width: 760px) {
+  .internalToolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .internalToolbar .primaryAction,
+  .internalToolbar .profileWorkspaceSwitcher {
+    width: 100%;
+  }
+
+  .profileWorkspaceTab {
+    flex: 1 1 0;
+  }
+}

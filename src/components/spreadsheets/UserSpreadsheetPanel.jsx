@@ -698,8 +698,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     <section className={styles.panel}>
       <header className={styles.sheetCommandCenter}>
         <div className={styles.sheetIdentity}>
-          <span className={styles.sheetEyebrow}>Planilhas pessoais</span>
-          <strong>{sheets.find((sheet) => sheet.id === activeSheetId)?.name || 'Nenhuma planilha ativa'}</strong>
+          <strong>{sheets.find((sheet) => sheet.id === activeSheetId)?.name || 'Planilhas'}</strong>
         </div>
 
         <div className={styles.sheetTabs} aria-label="Planilhas do perfil">
@@ -751,7 +750,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       {canEdit ? (
         <div className={styles.editorBar}>
           <EditorToolbar disabled={!activeCell || !activeSheetId} onCommand={handleApplyFormat} />
-          <span className={styles.editorHint}>{activeCell ? 'Formatando célula selecionada.' : 'Selecione uma célula para liberar a edição.'}</span>
         </div>
       ) : null}
 
@@ -764,8 +762,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         >
           {!activeSheetId && !rowsLoading ? (
             <div className={styles.noSheetState}>
-              <strong>Crie sua primeira planilha</strong>
-              <span>Ela nascerá zerada, com colunas e linhas em branco preenchendo o workspace.</span>
               {canEdit ? <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button> : null}
             </div>
           ) : (

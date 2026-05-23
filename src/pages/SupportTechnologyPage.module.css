@@ -18,7 +18,7 @@
 .page * { box-sizing: border-box; }
 
 .profileHero,
-.supportRoadmap {
+.supportConstruction {
   width: 100%;
   min-width: 0;
   border: 1px solid var(--chassis-border);
@@ -131,66 +131,22 @@
   color: var(--accent);
 }
 
-.supportRoadmap {
+.supportConstruction {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
   padding: 20px;
 }
 
-.roadmapHeader {
-  margin-bottom: 16px;
-}
-
-.roadmapHeader h2 {
-  margin: 6px 0 6px;
+.supportConstruction strong {
   color: var(--text-primary);
   font-size: 18px;
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
 }
 
-.roadmapHeader p,
-.roadmapCard p {
-  margin: 0;
-  color: var(--text-tertiary);
-  font-size: var(--fs-small);
-  line-height: var(--lh-normal);
-}
-
-.roadmapGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.roadmapCard {
-  min-width: 0;
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border: 1px solid var(--chassis-border);
-  border-radius: 18px;
-  background: var(--surface-raised);
-}
-
-.roadmapCard span {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--chassis-border);
-  border-radius: 12px;
-  color: var(--text-secondary);
-}
-
-.roadmapCard strong {
-  color: var(--text-primary);
-  font-size: var(--fs-body);
-  font-weight: var(--weight-semibold);
-}
-
 @media (max-width: 900px) {
-  .heroIdentity,
-  .roadmapGrid {
+  .heroIdentity {
     grid-template-columns: 1fr;
   }
 
