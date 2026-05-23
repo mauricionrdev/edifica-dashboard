@@ -96,6 +96,48 @@ function normalizeRow(row = {}, columns = []) {
   };
 }
 
+function cellId(rowId, key) {
+  return `${rowId}:${key}`;
+}
+
+function rangeCells(rows = [], columns = [], selection = null) {
+  if (!selection?.start || !selection?.end) return [];
+  const startRow = rows.findIndex((row) => row.id === selection.start.rowId);
+  const endRow = rows.findIndex((row) => row.id === selection.end.rowId);
+  const startColumn = columns.findIndex((column) => column.key === selection.start.key);
+  const endColumn = columns.findIndex((column) => column.key === selection.end.key);
+  if ([startRow, endRow, startColumn, endColumn].some((index) => index < 0)) return [];
+  const rowFrom = Math.min(startRow, endRow);
+  const rowTo = Math.max(startRow, endRow);
+  const columnFrom = Math.min(startColumn, endColumn);
+  const columnTo = Math.max(startColumn, endColumn);
+  const cells = [];
+  for (let rowIndex = rowFrom; rowIndex <= rowTo; rowIndex += 1) {
+    for (let columnIndex = columnFrom; columnIndex <= columnTo; columnIndex += 1) {
+      cells.push({ rowId: rows[rowIndex].id, key: columns[columnIndex].key });
+    }
+  }
+  return cells;
+}
+
+function applyStyleCommand(style = {}, command, value = null) {
+  const next = { ...(style || {}) };
+  if (command === 'foreColor') next.color = value;
+  if (command === 'hiliteColor') {
+    if (value === 'transparent') delete next.backgroundColor;
+    else next.backgroundColor = value;
+  }
+  if (command === 'bold') next.fontWeight = '800';
+  if (command === 'italic') next.fontStyle = 'italic';
+  if (command === 'underline') next.textDecoration = 'underline';
+  if (command === 'strikeThrough') next.textDecoration = 'line-through';
+  if (command === 'justifyLeft') next.textAlign = 'left';
+  if (command === 'justifyCenter') next.textAlign = 'center';
+  if (command === 'justifyRight') next.textAlign = 'right';
+  if (command === 'removeFormat') return {};
+  return Object.fromEntries(Object.entries(next).filter(([, styleValue]) => styleValue !== undefined && styleValue !== null && styleValue !== ''));
+}
+
 function toneFromContent(value = '') {
   const text = stripHtml(value).toLowerCase();
   if (text.includes('desconect') || text.includes('erro') || text.includes('inativo')) return 'danger';
@@ -323,7 +365,7 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
   );
 }
 
-function SheetCell({ row, column, editable, selected, saving, onSelect, onChange, onCommit, onNavigate, onContextMenu }) {
+function SheetCell({ row, column, editable, selected, selectedGroup, saving, onSelect, onChange, onCommit, onNavigate, onContextMenu }) {
   const ref = useRef(null);
   const value = String(row[column.key] || '');
   const style = row.__styles?.[column.key] || undefined;
@@ -351,6 +393,7 @@ function SheetCell({ row, column, editable, selected, saving, onSelect, onChange
       ref={ref}
       className={styles.sheetCell}
       data-selected={selected || undefined}
+      data-range={selectedGroup && !selected ? true : undefined}
       data-saving={saving || undefined}
       data-tone={toneFromContent(value)}
       data-cell-id={`${row.id}:${column.key}`}
@@ -360,7 +403,15 @@ function SheetCell({ row, column, editable, selected, saving, onSelect, onChange
       style={style}
       tabIndex={0}
       onFocus={() => onSelect(row.id, column.key, ref.current)}
-      onMouseUp={() => onSelect(row.id, column.key, ref.current)}
+      onMouseDown={(event) => {
+        if (event.shiftKey) {
+          event.preventDefault();
+          onSelect(row.id, column.key, ref.current, true);
+        }
+      }}
+      onMouseUp={(event) => {
+        if (!event.shiftKey) onSelect(row.id, column.key, ref.current);
+      }}
       onKeyUp={() => onSelect(row.id, column.key, ref.current)}
       onInput={(event) => onChange(row.id, column.key, event.currentTarget.innerHTML)}
       onBlur={() => onCommit(row.id, column.key)}
@@ -408,7 +459,7 @@ function SheetCell({ row, column, editable, selected, saving, onSelect, onChange
   );
 }
 
-function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onDeleteRow, onDeleteColumn }) {
+function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onSelectRow, onSelectColumn, onClearSelection, onDeleteRow, onDeleteColumn }) {
   useEffect(() => {
     if (!menu) return undefined;
     const close = () => onClose();
@@ -443,6 +494,19 @@ function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onDel
         <PlusIcon size={14} /> Nova coluna
       </button>
       {menu.rowId ? (
+        <button type="button" className={styles.menuItem} onClick={() => { onSelectRow(menu.rowId); onClose(); }}>
+          Selecionar linha
+        </button>
+      ) : null}
+      {menu.columnKey ? (
+        <button type="button" className={styles.menuItem} onClick={() => { onSelectColumn(menu.columnKey); onClose(); }}>
+          Selecionar coluna
+        </button>
+      ) : null}
+      <button type="button" className={styles.menuItem} onClick={() => { onClearSelection(); onClose(); }}>
+        Limpar seleção
+      </button>
+      {menu.rowId ? (
         <button type="button" className={styles.dangerItem} onClick={() => onDeleteRow(menu.rowId)}>
           <TrashIcon size={14} /> Excluir linha
         </button>
@@ -468,6 +532,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [creatingColumn, setCreatingColumn] = useState(false);
   const [creatingSheet, setCreatingSheet] = useState(false);
   const [activeCell, setActiveCell] = useState(null);
+  const [selectionRange, setSelectionRange] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const rangeRef = useRef(null);
   const resizeRef = useRef(null);
@@ -487,6 +552,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setActiveSheetId(data?.activeSheetId || sheetId || data?.sheets?.[0]?.id || '');
       setColumns(nextColumns);
       setRows((Array.isArray(data?.rows) ? data.rows : []).map((row) => normalizeRow(row, nextColumns)));
+      setActiveCell(null);
+      setSelectionRange(null);
     } finally {
       setRowsLoading(false);
     }
@@ -506,10 +573,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     return () => document.removeEventListener('selectionchange', syncSelection);
   }, [activeCell]);
 
-  const selectCell = useCallback((rowId, key, element) => {
+  const selectCell = useCallback((rowId, key, element, extend = false) => {
     const range = saveSelectionInside(element);
     if (range) rangeRef.current = range;
-    setActiveCell({ rowId, key, element });
+    setActiveCell((current) => {
+      const start = extend && current?.rowId && current?.key ? { rowId: current.rowId, key: current.key } : { rowId, key };
+      setSelectionRange({ start, end: { rowId, key } });
+      return { rowId, key, element };
+    });
   }, []);
 
   const focusCell = useCallback((rowId, key) => {
@@ -535,6 +606,26 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!nextRow || !nextColumn) return;
     focusCell(nextRow.id, nextColumn.key);
   }, [columns, focusCell, rows]);
+
+  const selectedCells = useMemo(() => rangeCells(rows, columns, selectionRange), [columns, rows, selectionRange]);
+  const selectedCellIds = useMemo(() => new Set(selectedCells.map((cell) => cellId(cell.rowId, cell.key))), [selectedCells]);
+  const selectedCount = selectedCells.length;
+
+  const selectRow = useCallback((rowId) => {
+    if (!rowId || !columns.length) return;
+    setSelectionRange({ start: { rowId, key: columns[0].key }, end: { rowId, key: columns[columns.length - 1].key } });
+    setActiveCell((current) => ({ rowId, key: columns[0].key, element: current?.element || null }));
+  }, [columns]);
+
+  const selectColumn = useCallback((key) => {
+    if (!key || !rows.length) return;
+    setSelectionRange({ start: { rowId: rows[0].id, key }, end: { rowId: rows[rows.length - 1].id, key } });
+    setActiveCell((current) => ({ rowId: rows[0].id, key, element: current?.element || null }));
+  }, [rows]);
+
+  const clearSelection = useCallback(() => {
+    setSelectionRange(activeCell?.rowId && activeCell?.key ? { start: { rowId: activeCell.rowId, key: activeCell.key }, end: { rowId: activeCell.rowId, key: activeCell.key } } : null);
+  }, [activeCell?.key, activeCell?.rowId]);
 
   const activeCellText = useMemo(() => {
     if (!activeCell?.rowId || !activeCell?.key) return '';
@@ -654,6 +745,35 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   };
 
+  const handleApplyBulkStyle = async (command, value = null) => {
+    if (!selectedCells.length) return false;
+    const supported = ['foreColor', 'hiliteColor', 'bold', 'italic', 'underline', 'strikeThrough', 'justifyLeft', 'justifyCenter', 'justifyRight', 'removeFormat'];
+    if (!supported.includes(command)) return false;
+
+    const groupedStyles = new Map();
+    setRows((current) => current.map((row) => {
+      const cellsForRow = selectedCells.filter((cell) => cell.rowId === row.id);
+      if (!cellsForRow.length) return row;
+      const nextStyles = { ...(row.__styles || {}) };
+      cellsForRow.forEach((cell) => {
+        nextStyles[cell.key] = applyStyleCommand(nextStyles[cell.key], command, value);
+      });
+      groupedStyles.set(row.id, cellsForRow.reduce((acc, cell) => ({ ...acc, [cell.key]: nextStyles[cell.key] }), {}));
+      return { ...row, __styles: nextStyles };
+    }));
+
+    setSavingCell('bulk-selection');
+    try {
+      await Promise.all(Array.from(groupedStyles.entries()).map(([rowId, stylesPayload]) => updateSupportDailyRow(rowId, { ownerUserId, styles: stylesPayload })));
+    } catch (err) {
+      showToast?.(err?.message || 'Não foi possível aplicar a formatação em lote.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
+    } finally {
+      setSavingCell('');
+    }
+    return true;
+  };
+
   const commitActiveCellText = useCallback(() => {
     if (!activeCell?.rowId || !activeCell?.key) return;
     handleCellCommit(activeCell.rowId, activeCell.key);
@@ -661,6 +781,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleApplyFormat = async (command, value = null) => {
     if (!activeCell || !canEdit) return;
+    if (selectedCount > 1 && await handleApplyBulkStyle(command, value)) return;
     const { rowId, key } = activeCell;
     const element = activeCell.element || document.querySelector(`[data-cell-id="${rowId}:${key}"]`);
     if (!element) return;
@@ -784,9 +905,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const index = rows.findIndex((row) => row.id === activeCell.rowId);
     return index >= 0 ? index + 1 : null;
   }, [activeCell?.rowId, rows]);
-  const activeCellLabel = activeCell
-    ? `${activeColumn?.label || 'Coluna'} · L${activeRowNumber || '—'}`
-    : 'Nenhuma célula';
+  const activeCellLabel = selectedCount > 1
+    ? `${selectedCount} células selecionadas`
+    : activeCell
+      ? `${activeColumn?.label || 'Coluna'} · L${activeRowNumber || '—'}`
+      : 'Nenhuma célula';
   const savingState = savingCell || savingColumn ? 'Salvando' : 'Salvo';
 
   return (
@@ -850,7 +973,16 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       {canEdit ? (
         <div className={styles.editorBar}>
-          <EditorToolbar disabled={!activeCell || !activeSheetId} onCommand={handleApplyFormat} />
+          <div className={styles.toolbarStack}>
+            <EditorToolbar disabled={!activeCell || !activeSheetId} onCommand={handleApplyFormat} />
+            {selectedCount > 1 ? (
+              <div className={styles.bulkActions}>
+                <span>Seleção em lote</span>
+                <button type="button" onClick={() => handleApplyFormat('removeFormat')}>Limpar</button>
+                <button type="button" onClick={clearSelection}>Reduzir</button>
+              </div>
+            ) : null}
+          </div>
           <div className={styles.cellFormulaBar}>
             <span>{activeColumn?.label || 'Célula'}</span>
             <input
@@ -936,7 +1068,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                 ) : null}
                 {rows.map((row, index) => (
                   <tr key={row.id}>
-                    <td className={styles.rowIndex} onContextMenu={(event) => openContextMenu(event, row.id, null)}>{index + 1}</td>
+                    <td className={styles.rowIndex} data-range={selectionRange?.start?.rowId === row.id && selectionRange?.end?.rowId === row.id && selectedCount > 1 || undefined} onClick={() => selectRow(row.id)} onContextMenu={(event) => openContextMenu(event, row.id, null)}>{index + 1}</td>
                     {columns.map((column) => (
                       <td key={column.key} data-column={column.key}>
                         <SheetCell
@@ -944,7 +1076,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                           column={column}
                           editable={canEdit}
                           selected={activeCell?.rowId === row.id && activeCell?.key === column.key}
-                          saving={savingCell === `${row.id}:${column.key}`}
+                          selectedGroup={selectedCellIds.has(cellId(row.id, column.key))}
+                          saving={savingCell === `${row.id}:${column.key}` || savingCell === 'bulk-selection'}
                           onSelect={selectCell}
                           onChange={handleCellChange}
                           onCommit={handleCellCommit}
@@ -963,7 +1096,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.panelFooter}>
         <span><SaveIcon size={13} /> Salvamento automático</span>
-        <span>{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
+        <span>{selectedCount > 1 ? `${selectedCount} células selecionadas · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
 
       <SheetContextMenu
@@ -972,6 +1105,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onClose={closeContextMenu}
         onAddRow={handleAddRow}
         onAddColumn={handleAddColumn}
+        onSelectRow={selectRow}
+        onSelectColumn={selectColumn}
+        onClearSelection={clearSelection}
         onDeleteRow={handleDeleteRow}
         onDeleteColumn={handleDeleteColumn}
       />

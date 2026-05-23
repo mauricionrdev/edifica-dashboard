@@ -886,3 +886,60 @@
     padding-block: 10px;
   }
 }
+
+.toolbarStack {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.bulkActions {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid rgba(245, 183, 36, 0.18);
+  border-radius: 12px;
+  background: rgba(245, 183, 36, 0.045);
+}
+
+.bulkActions span {
+  padding: 0 6px;
+  color: #f5b724;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bulkActions button {
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.bulkActions button:hover {
+  border-color: rgba(245, 183, 36, 0.28);
+  background: rgba(245, 183, 36, 0.08);
+  color: var(--text-primary);
+}
+
+.sheetCell[data-range='true'] {
+  background: rgba(245, 183, 36, 0.038);
+  box-shadow: inset 0 0 0 1px rgba(245, 183, 36, 0.2);
+}
+
+.rowIndex[data-range='true'] {
+  color: var(--sheet-gold);
+  background: rgba(245, 183, 36, 0.05);
+}
