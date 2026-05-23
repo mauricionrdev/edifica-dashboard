@@ -1,247 +1,282 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import Button from '../components/ui/Button.jsx';
-import DemandModal from '../components/tasks/DemandModal.jsx';
-import { PlusIcon } from '../components/ui/Icons.jsx';
-import { createTaskAttachment } from '../api/projects.js';
-import { createSupportTask } from '../api/support.js';
-import { useAuth } from '../context/AuthContext.jsx';
-import { useToast } from '../context/ToastContext.jsx';
 import styles from './SupportTechnologyPage.module.css';
 
-const MASTER_SUPPORT_EMAIL = 'mauricionredifica@gmail.com';
-const MASTER_SUPPORT_NAME = 'mauricio nunes';
-const SUPPORT_ROLES = new Set(['suporte_tecnologia']);
-const FALLBACK_SUPPORT_ROLES = new Set(['ceo', 'admin']);
+const FILE_TABS = [
+  'SupportTechnologyPage.tsx',
+  'supportTimeline.ts',
+  'ticketQueue.service.ts',
+  'workspace.theme.css',
+  'support_schema.sql',
+];
 
-const EDITOR_LINES = [
-  [
-    ['const', 'keyword'], [' telaSuporte ', 'identifier'], ['= ', 'plain'], ['criarTela', 'function'], ['({', 'plain'],
-  ],
-  [
-    ['  nome', 'property'], [': ', 'plain'], ['\'Suporte de tecnologia\'', 'string'], [',', 'plain'],
-  ],
-  [
-    ['  tema', 'property'], [': ', 'plain'], ['\'escuro operacional\'', 'string'], [',', 'plain'],
-  ],
-  [
-    ['  estado', 'property'], [': ', 'plain'], ['\'em construção\'', 'string'], [',', 'plain'],
-  ],
-  [
-    ['  monitoramento', 'property'], [': ', 'plain'], ['true', 'value'], [',', 'plain'],
-  ],
-  [
-    ['});', 'plain'],
-  ],
-  [
-    ['carregarModulo', 'function'], ['(', 'plain'], ['\'demandas\'', 'string'], [');', 'plain'],
-  ],
-  [
-    ['validarPermissoes', 'function'], ['({ ', 'plain'], ['perfil', 'property'], [': ', 'plain'], ['\'suporte\'', 'string'], [' });', 'plain'],
-  ],
-  [
-    ['sincronizarFila', 'function'], ['(', 'plain'], ['clientesAtivos', 'identifier'], [');', 'plain'],
-  ],
-  [
-    ['renderizarInterface', 'function'], ['(', 'plain'], ['telaSuporte', 'identifier'], [');', 'plain'],
-  ],
-  [
-    ['publicarVersao', 'function'], ['(', 'plain'], ['\'proxima entrega\'', 'string'], [');', 'plain'],
-  ],
+const CODE_LINES = [
+  'import { motion } from "framer-motion";',
+  'import { createSignal, bindQueue } from "@edifica/realtime";',
+  '',
+  'type TicketPriority = "baixa" | "media" | "alta" | "critica";',
+  'type WorkspaceMode = "dracula" | "focus" | "review";',
+  '',
+  'const theme = createWorkspaceTheme({',
+  '  mode: "dracula",',
+  '  background: "#282a36",',
+  '  sidebar: "#191a21",',
+  '  editor: "#1f2030",',
+  '  accent: "#bd93f9",',
+  '});',
+  '',
+  'export function buildSupportWorkspace(context) {',
+  '  const queue = bindQueue(context.clientId);',
+  '  const permissions = resolvePermissions(context.user);',
+  '  const timeline = createTicketTimeline(queue);',
+  '',
+  '  return composeWorkspace({',
+  '    title: "Suporte de tecnologia",',
+  '    theme,',
+  '    permissions,',
+  '    timeline,',
+  '    state: "under-construction",',
+  '  });',
+  '}',
+  '',
+  'async function hydrateDemandBoard(session) {',
+  '  const tickets = await api.support.listTickets({',
+  '    accountId: session.accountId,',
+  '    includeClient: true,',
+  '    includeAssignee: true,',
+  '    status: ["new", "reviewing", "blocked"],',
+  '  });',
+  '',
+  '  return tickets.map((ticket) => ({',
+  '    id: ticket.id,',
+  '    label: ticket.title,',
+  '    priority: normalizePriority(ticket.priority),',
+  '    pulse: ticket.priority === "critica",',
+  '  }));',
+  '}',
+  '',
+  'const pipeline = createPipeline("support-technology", [',
+  '  stage("capture", validateInput),',
+  '  stage("triage", classifyDemand),',
+  '  stage("routing", assignOwner),',
+  '  stage("handoff", notifyResponsible),',
+  ']);',
+  '',
+  'function classifyDemand(demand) {',
+  '  if (demand.tags.includes("whatsapp-offline")) return "infra";',
+  '  if (demand.tags.includes("agent-error")) return "ia";',
+  '  if (demand.tags.includes("dashboard")) return "frontend";',
+  '  return "operacional";',
+  '}',
+  '',
+  'const statusMap = {',
+  '  new: { icon: "spark", color: "purple" },',
+  '  reviewing: { icon: "scan", color: "cyan" },',
+  '  blocked: { icon: "alert", color: "orange" },',
+  '  done: { icon: "check", color: "green" },',
+  '};',
+  '',
+  'CREATE TABLE support_tickets (',
+  '  id CHAR(36) PRIMARY KEY,',
+  '  client_id CHAR(36) NOT NULL,',
+  '  assignee_user_id CHAR(36) NULL,',
+  '  title VARCHAR(180) NOT NULL,',
+  '  priority ENUM("baixa", "media", "alta", "critica"),',
+  '  status ENUM("new", "reviewing", "blocked", "done"),',
+  '  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+  ');',
+  '',
+  '.workspace[data-theme="dracula"] {',
+  '  --editor-bg: #282a36;',
+  '  --panel-bg: #21222c;',
+  '  --line-number: #6272a4;',
+  '  --comment: #6272a4;',
+  '  --purple: #bd93f9;',
+  '  --pink: #ff79c6;',
+  '  --cyan: #8be9fd;',
+  '  --yellow: #f1fa8c;',
+  '}',
+  '',
+  'watchRealtime("support:ticket.created", (event) => {',
+  '  timeline.push(event.ticket);',
+  '  metrics.increment("support.created");',
+  '  refreshWorkspace({ silent: true });',
+  '});',
+  '',
+  'async function publishDraftVersion(workspace) {',
+  '  await builder.compile(workspace);',
+  '  await preview.render("support-technology");',
+  '  await quality.checkVisualRegression();',
+  '  return deploy.queue("frontend-preview");',
+  '}',
+  '',
+  'const shortcuts = registerCommandPalette({',
+  '  "ticket.create": () => openDemandComposer(),',
+  '  "ticket.search": () => focusTicketSearch(),',
+  '  "client.inspect": () => openClientDiagnostics(),',
+  '  "build.preview": () => publishDraftVersion(workspace),',
+  '});',
+  '',
+  'logger.info("support workspace compiled", {',
+  '  theme: "dracula",',
+  '  visibleActions: false,',
+  '  animation: "progressive-code-generation",',
+  '});',
+];
+
+const SECONDARY_LINES = [
+  'queue.observe("client.offline")',
+  'agent.healthcheck("openai-limit")',
+  'socket.emit("ticket:update")',
+  'layout.mount("support-workspace")',
+  'theme.apply("dracula")',
+  'composer.disableExternalActions()',
+  'metrics.track("build.frame")',
+  'access.guard("suporte_tecnologia")',
+  'diagnostics.scan("whatsapp")',
+  'preview.write("workspace-state")',
+  'cache.invalidate("tickets:list")',
+  'router.prefetch("/suporte/tecnologia")',
+  'timeline.reconcile("local-draft")',
+  'builder.paint("editor-grid")',
+  'terminal.stream("npm run build")',
+  'diff.apply("visual-refinement")',
+  'module.create("DemandQueue")',
+  'module.create("ClientTrace")',
+  'module.create("AgentStatus")',
+  'module.create("ReleasePanel")',
 ];
 
 const TERMINAL_LINES = [
-  'preparando workspace da tecnologia',
-  'montando estrutura da tela',
-  'criando área de demandas',
-  'validando permissões internas',
-  'organizando próximos módulos',
-  'compilando suporte de tecnologia',
-  'aguardando próxima versão',
+  'edifica-support booting workspace renderer',
+  'loading vscode-like shell with dracula tokens',
+  'hiding external action buttons',
+  'creating fake ticket queue service',
+  'writing support timeline hooks',
+  'generating css variables for dark editor',
+  'compiling simulated schema blocks',
+  'rendering progressive source files',
+  'mounting terminal stream without green palette',
+  'checking animation density',
+  'building non-repetitive code sequence',
+  'workspace preview ready',
 ];
 
-const BACKDROP_LINES = [
-  'const tarefa = criarDemanda(usuario, prioridade);',
-  'await sincronizarClientes({ origem: "central" });',
-  'if (alerta.critico) notificarSuporte();',
-  'painel.atualizar({ status: "em_construcao" });',
-  'monitorarFila(demandas, responsaveis);',
-  'registrarEvento("suporte_tecnologia");',
-  'validarAcesso(usuario, recurso);',
-  'renderizarModulo("tecnologia");',
-];
-
-function cleanText(value) {
-  return String(value ?? '').trim();
-}
-
-function renderTokens(line, lineIndex) {
-  return line.map(([text, type], tokenIndex) => (
-    <span key={`${lineIndex}-${tokenIndex}`} className={styles[`token_${type}`] || styles.token_plain}>
-      {text}
-    </span>
-  ));
+function getLineType(line) {
+  if (!line) return 'blank';
+  if (line.startsWith('import') || line.startsWith('export') || line.startsWith('type ') || line.startsWith('const ') || line.startsWith('async') || line.startsWith('function')) return 'keyword';
+  if (line.includes('CREATE TABLE') || line.includes('PRIMARY KEY') || line.includes('TIMESTAMP') || line.includes('VARCHAR') || line.includes('ENUM')) return 'sql';
+  if (line.trim().startsWith('--') || line.trim().startsWith('//')) return 'comment';
+  if (line.trim().startsWith('.') || line.includes('--')) return 'css';
+  if (line.includes('"') || line.includes('\'')) return 'string';
+  if (line.includes('return') || line.includes('await') || line.includes('if ')) return 'logic';
+  return 'plain';
 }
 
 export default function SupportTechnologyPage() {
-  const { user } = useAuth();
-  const { showToast } = useToast();
-  const { clients = [], userDirectory = [], setPanelHeader } = useOutletContext();
-  const [demandModalOpen, setDemandModalOpen] = useState(false);
-  const [creatingTask, setCreatingTask] = useState(false);
+  const { setPanelHeader } = useOutletContext();
 
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
 
-  const activeUsers = useMemo(() => (
-    Array.isArray(userDirectory) ? userDirectory.filter((item) => item?.id && item?.active !== false) : []
-  ), [userDirectory]);
-
-  const supportMaster = useMemo(() => {
-    const directoryMatch = activeUsers.find((item) => (
-      String(item.email || '').toLowerCase() === MASTER_SUPPORT_EMAIL
-      || String(item.name || '').trim().toLowerCase() === MASTER_SUPPORT_NAME
-    ));
-    if (directoryMatch) return directoryMatch;
-    const currentUserIsMaster = (
-      String(user?.email || '').toLowerCase() === MASTER_SUPPORT_EMAIL
-      || String(user?.name || '').trim().toLowerCase() === MASTER_SUPPORT_NAME
-    );
-    return currentUserIsMaster ? user : null;
-  }, [activeUsers, user]);
-
-  const supportUsers = useMemo(() => {
-    if (supportMaster?.id) return [supportMaster];
-    const direct = activeUsers.filter((item) => SUPPORT_ROLES.has(item.role));
-    if (direct.length) return direct;
-    const fallback = activeUsers.filter((item) => FALLBACK_SUPPORT_ROLES.has(item.role));
-    return fallback.length ? fallback : activeUsers;
-  }, [activeUsers, supportMaster]);
-
-  const defaultAssigneeId = supportMaster?.id || supportUsers[0]?.id || user?.id || '';
-
-  const handleCreateTask = async (form) => {
-    const title = cleanText(form.title);
-    if (!title) {
-      showToast('Informe o título da demanda.', { variant: 'warning' });
-      return;
-    }
-    setCreatingTask(true);
-    try {
-      const data = await createSupportTask({
-        title,
-        type: form.type,
-        priority: form.priority,
-        clientId: form.clientId,
-        assigneeUserId: form.assigneeUserId || defaultAssigneeId,
-        collaboratorUserIds: form.collaboratorUserIds,
-        dueDate: form.dueDate,
-        description: form.description,
-      });
-      const taskId = data?.task?.id;
-      if (taskId && form.attachments?.length) {
-        await Promise.allSettled(form.attachments.map((item) => createTaskAttachment(taskId, {
-          fileName: item.fileName,
-          mimeType: item.mimeType,
-          sizeBytes: item.sizeBytes,
-          dataUrl: item.dataUrl,
-        })));
-      }
-      setDemandModalOpen(false);
-      showToast('Demanda criada.');
-    } catch (err) {
-      showToast(err?.message || 'Não foi possível criar a demanda.', { variant: 'error' });
-    } finally {
-      setCreatingTask(false);
-    }
-  };
-
-  const backgroundRows = [...BACKDROP_LINES, ...BACKDROP_LINES, ...BACKDROP_LINES];
+  const codeRows = [...CODE_LINES, ...CODE_LINES.slice(0, 34)];
   const terminalRows = [...TERMINAL_LINES, ...TERMINAL_LINES];
+  const secondaryRows = [...SECONDARY_LINES, ...SECONDARY_LINES, ...SECONDARY_LINES.slice(0, 12)];
 
   return (
     <div className={styles.page}>
-      <div className={styles.toolbar}>
-        <Button type="button" size="sm" onClick={() => setDemandModalOpen(true)}>
-          <PlusIcon size={14} /> Nova demanda
-        </Button>
-      </div>
+      <section className={styles.workspace} data-theme="dracula" aria-label="Workspace de suporte de tecnologia em construção">
+        <div className={styles.vscodeShell}>
+          <aside className={styles.activityBar} aria-hidden="true">
+            <span className={styles.activityActive}>⌘</span>
+            <span>⌕</span>
+            <span>⑂</span>
+            <span>◫</span>
+            <span>⚙</span>
+          </aside>
 
-      <section className={styles.workspace} aria-label="Suporte de tecnologia em construção">
-        <div className={styles.backdrop} aria-hidden="true">
-          <div className={styles.backdropTrack}>
-            {backgroundRows.map((line, index) => (
-              <span key={`${line}-${index}`}>{line}</span>
-            ))}
-          </div>
-        </div>
-        <div className={styles.noise} aria-hidden="true" />
-        <div className={styles.sweep} aria-hidden="true" />
-
-        <div className={styles.editorShell}>
-          <header className={styles.editorHeader}>
-            <div className={styles.windowDots} aria-hidden="true">
-              <span />
-              <span />
-              <span />
+          <aside className={styles.fileExplorer} aria-hidden="true">
+            <span className={styles.explorerTitle}>EDIFICA-PLATFORM</span>
+            <div className={styles.folderTree}>
+              <strong>src</strong>
+              <span>pages</span>
+              <em>SupportTechnologyPage.tsx</em>
+              <span>services</span>
+              <em>ticketQueue.service.ts</em>
+              <span>styles</span>
+              <em>workspace.theme.css</em>
+              <span>database</span>
+              <em>support_schema.sql</em>
             </div>
-            <span className={styles.fileName}>src/pages/SupportTechnologyPage.jsx</span>
-            <span className={styles.compileStatus}>em execução</span>
-          </header>
+          </aside>
 
-          <div className={styles.editorBody}>
-            <div className={styles.codePane}>
-              {EDITOR_LINES.map((line, index) => (
-                <div
-                  key={`editor-line-${index + 1}`}
-                  className={styles.codeLine}
-                  style={{
-                    '--delay': `${index * 0.38}s`,
-                    '--duration': `${5.4 + (index % 4) * 0.4}s`,
-                  }}
-                >
-                  <span className={styles.lineNumber}>{String(index + 1).padStart(2, '0')}</span>
-                  <span className={styles.liveText}>{renderTokens(line, index)}</span>
-                </div>
+          <main className={styles.editorArea}>
+            <header className={styles.titleBar}>
+              <div className={styles.windowDots} aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <span className={styles.windowTitle}>Suporte de tecnologia — workspace em construção</span>
+            </header>
+
+            <nav className={styles.tabs} aria-hidden="true">
+              {FILE_TABS.map((tab, index) => (
+                <span key={tab} className={index === 0 ? styles.tabActive : undefined}>{tab}</span>
               ))}
-              <div className={styles.activePrompt}>
-                <span>npm run construir:suporte</span>
-                <i aria-hidden="true" />
+            </nav>
+
+            <div className={styles.editorCanvas}>
+              <div className={styles.backgroundCode} aria-hidden="true">
+                {secondaryRows.map((line, index) => (
+                  <span key={`${line}-${index}`}>{line}</span>
+                ))}
               </div>
+
+              <div className={styles.mainCodeTrack}>
+                {codeRows.map((line, index) => (
+                  <div
+                    key={`${line}-${index}`}
+                    className={`${styles.codeLine} ${styles[`line_${getLineType(line)}`]}`}
+                    style={{
+                      '--line-delay': `${(index % 24) * 0.14}s`,
+                      '--line-steps': Math.max(16, Math.min(72, line.length)),
+                    }}
+                  >
+                    <span className={styles.lineNumber}>{String(index + 1).padStart(3, '0')}</span>
+                    <span className={styles.liveCode}>{line || ' '}</span>
+                  </div>
+                ))}
+              </div>
+
+              <aside className={styles.minimap} aria-hidden="true">
+                {codeRows.slice(0, 80).map((line, index) => (
+                  <span key={`map-${index}`} style={{ width: `${28 + (line.length % 58)}%` }} />
+                ))}
+              </aside>
             </div>
 
-            <aside className={styles.terminalPanel} aria-label="Progresso da construção">
-              <span className={styles.terminalTitle}>processo interno</span>
-              <div className={styles.terminalViewport}>
-                <div className={styles.terminalTrack}>
-                  {terminalRows.map((line, index) => (
-                    <span key={`${line}-${index}`}>› {line}</span>
-                  ))}
-                </div>
-              </div>
-            </aside>
-          </div>
+            <footer className={styles.statusBar} aria-hidden="true">
+              <span>Dracula</span>
+              <span>TypeScript JSX</span>
+              <span>UTF-8</span>
+              <strong>gerando código...</strong>
+            </footer>
+          </main>
 
-          <footer className={styles.editorFooter}>
-            <span>Suporte de tecnologia</span>
-            <strong>Em construção</strong>
-          </footer>
+          <aside className={styles.terminalPanel} aria-label="Terminal de construção">
+            <header>TERMINAL</header>
+            <div className={styles.terminalViewport}>
+              <div className={styles.terminalTrack}>
+                {terminalRows.map((line, index) => (
+                  <span key={`${line}-${index}`}>λ {line}</span>
+                ))}
+              </div>
+            </div>
+          </aside>
         </div>
       </section>
-
-      {demandModalOpen ? (
-        <DemandModal
-          open={demandModalOpen}
-          clients={clients}
-          users={activeUsers}
-          assigneeUsers={supportUsers}
-          defaultAssigneeUserId={defaultAssigneeId}
-          creating={creatingTask}
-          onClose={() => setDemandModalOpen(false)}
-          onSubmit={handleCreateTask}
-        />
-      ) : null}
     </div>
   );
 }
