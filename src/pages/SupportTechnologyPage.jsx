@@ -18,6 +18,9 @@ import {
   Search,
   Settings,
   TerminalSquare,
+  CircleDot,
+  Columns3,
+  FileText,
 } from 'lucide-react';
 import styles from './SupportTechnologyPage.module.css';
 
@@ -339,7 +342,6 @@ export default function SupportTechnologyPage() {
   return (
     <div className={styles.page}>
       <section className={styles.workspace} aria-label="Área em construção">
-        <div className={styles.stageCard} aria-hidden="true" />
         <div className={styles.floatingStudio}>
           <header className={styles.ideTitlebar}>
             <div className={styles.launcherWrap}>
@@ -353,6 +355,7 @@ export default function SupportTechnologyPage() {
                 {MENUS.map((item) => <span key={item}>{item}</span>)}
               </nav>
             </div>
+            <div className={styles.titleCenter} aria-hidden="true">edifica-central</div>
             <div className={styles.windowControls} aria-hidden="true">
               <span />
               <span />
@@ -367,6 +370,7 @@ export default function SupportTechnologyPage() {
               <GitBranch size={18} />
               <Bug size={18} />
               <Package size={18} />
+              <Columns3 size={18} />
               <PanelBottom size={18} />
               <Settings size={18} />
             </aside>
@@ -377,6 +381,10 @@ export default function SupportTechnologyPage() {
                 <ChevronsLeftRightEllipsis size={14} />
               </div>
               <div className={styles.projectName}>EDIFICA-DASH</div>
+              <div className={styles.explorerMeta}>
+                <span><CircleDot size={10} /> main</span>
+                <span><BellDot size={10} /> 3 alertas</span>
+              </div>
               <div className={styles.tree}>
                 {explorerGroups.map((item, index) => {
                   const isFolder = !item.fileId && !item.name.includes('.');
@@ -405,6 +413,7 @@ export default function SupportTechnologyPage() {
                     <button key={item.id} type="button" className={`${styles.tab} ${active ? styles.tabActive : ''}`.trim()} onClick={() => { setFileIndex(FILES.findIndex((entry) => entry.id === item.id)); setLineIndex(0); setCharIndex(0); setPhase('typing'); }}>
                       <Icon size={13} />
                       <span>{item.label}</span>
+                      <FileText size={11} className={styles.tabClose} />
                     </button>
                   );
                 })}
@@ -457,6 +466,10 @@ export default function SupportTechnologyPage() {
               <div className={styles.statusBar}>
                 <span><LayoutDashboard size={12} /> main*</span>
                 <span><BellDot size={12} /> Edifica Central</span>
+                <span><Code2 size={12} /> JavaScript JSX</span>
+                <span>UTF-8</span>
+                <span>LF</span>
+                <span>Ln 18, Col 12</span>
               </div>
             </aside>
           </div>
