@@ -2,10 +2,22 @@ import { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import styles from './SupportTechnologyPage.module.css';
 
-const NETWORK_NODES = Array.from({ length: 20 }, (_, index) => index + 1);
-const DATA_TRACES = Array.from({ length: 28 }, (_, index) => index + 1);
-const ORBIT_MARKS = Array.from({ length: 18 }, (_, index) => index + 1);
-const STATUS_BARS = Array.from({ length: 12 }, (_, index) => index + 1);
+const CODE_LINES = [
+  'const atendimento = sincronizarFila(clientesAtivos);',
+  'await monitorarConexao({ canal: whatsapp, status: online });',
+  'if (alerta.critico) acionarSuporte(responsavel);',
+  'fila.processar((lead) => distribuirPorPrioridade(lead));',
+  'registrarEvento("suporte_tecnologia", tempoResposta);',
+  'cache.invalidar(chave).then(atualizarPainel);',
+  'socket.emit("operacao:atualizada", payloadSeguro);',
+  'const metricas = calcularSaudeDaOperacao(snapshot);',
+  'auditarPermissoes(usuario, recurso, acao);',
+  'deploy.validarBuild().publicarQuandoEstavel();',
+];
+
+const STREAM_COLUMNS = Array.from({ length: 18 }, (_, index) => index + 1);
+const STATUS_POINTS = Array.from({ length: 14 }, (_, index) => index + 1);
+const CONSOLE_ROWS = Array.from({ length: 9 }, (_, index) => index + 1);
 
 export default function SupportTechnologyPage() {
   const { setPanelHeader } = useOutletContext();
@@ -16,48 +28,56 @@ export default function SupportTechnologyPage() {
 
   return (
     <main className={styles.page} aria-label="Suporte de tecnologia">
-      <section className={styles.labStage} aria-label="Área em construção">
-        <div className={styles.depthLayer} aria-hidden="true" />
-        <div className={styles.gridLayer} aria-hidden="true" />
-        <div className={styles.scanLayer} aria-hidden="true" />
-
-        <div className={styles.traceField} aria-hidden="true">
-          {DATA_TRACES.map((trace) => <span key={`traco-${trace}`} />)}
+      <section className={styles.devStage} aria-label="Área em construção">
+        <div className={styles.ambientGlow} aria-hidden="true" />
+        <div className={styles.scanlines} aria-hidden="true" />
+        <div className={styles.codeRain} aria-hidden="true">
+          {STREAM_COLUMNS.map((column) => (
+            <span key={`fluxo-${column}`} style={{ '--i': column }}>
+              01&nbsp;fn&nbsp;api&nbsp;db&nbsp;sync&nbsp;log&nbsp;req&nbsp;200&nbsp;ctx&nbsp;ui&nbsp;dev
+            </span>
+          ))}
         </div>
 
-        <div className={styles.nodeField} aria-hidden="true">
-          {NETWORK_NODES.map((node) => <span key={`no-${node}`} />)}
+        <div className={styles.statusField} aria-hidden="true">
+          {STATUS_POINTS.map((point) => <span key={`ponto-${point}`} />)}
         </div>
 
-        <div className={styles.systemCore} aria-hidden="true">
-          <span className={styles.coreGlow} />
-          <span className={styles.coreRingOne} />
-          <span className={styles.coreRingTwo} />
-          <span className={styles.coreRingThree} />
-          <span className={styles.coreGrid} />
-          <span className={styles.corePulse} />
-          <span className={styles.coreDot} />
-          <span className={styles.coreOrbitOne} />
-          <span className={styles.coreOrbitTwo} />
-          <span className={styles.coreOrbitThree} />
-          <span className={styles.coreOrbitFour} />
-        </div>
+        <div className={styles.editorShell}>
+          <div className={styles.editorTopbar} aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
 
-        <div className={styles.orbitMarks} aria-hidden="true">
-          {ORBIT_MARKS.map((mark) => <span key={`marcador-${mark}`} />)}
-        </div>
+          <div className={styles.editorGrid} aria-hidden="true">
+            {CONSOLE_ROWS.map((row) => <span key={`linha-console-${row}`} />)}
+          </div>
 
-        <div className={`${styles.sidePanel} ${styles.sidePanelLeft}`} aria-hidden="true">
-          {STATUS_BARS.map((bar) => <span key={`barra-esquerda-${bar}`} />)}
-        </div>
+          <div className={styles.codePanel} aria-hidden="true">
+            {CODE_LINES.map((line, index) => (
+              <div
+                className={styles.codeLine}
+                key={line}
+                style={{ '--delay': `${index * 0.42}s`, '--chars': line.length }}
+              >
+                <span className={styles.lineNumber}>{String(index + 1).padStart(2, '0')}</span>
+                <span className={styles.typedText}>{line}</span>
+              </div>
+            ))}
+          </div>
 
-        <div className={`${styles.sidePanel} ${styles.sidePanelRight}`} aria-hidden="true">
-          {STATUS_BARS.map((bar) => <span key={`barra-direita-${bar}`} />)}
-        </div>
+          <div className={styles.terminalPanel} aria-hidden="true">
+            <span>iniciando módulos internos</span>
+            <span>validando integrações</span>
+            <span>preparando monitoramento</span>
+            <span>aguardando próxima versão</span>
+          </div>
 
-        <div className={styles.contentBlock}>
-          <span className={styles.kicker}>Suporte de tecnologia</span>
-          <h1>Em construção</h1>
+          <div className={styles.centerNotice}>
+            <span className={styles.kicker}>Suporte de tecnologia</span>
+            <h1>Em construção</h1>
+          </div>
         </div>
       </section>
     </main>
