@@ -17,7 +17,6 @@ import {
   SearchIcon,
   SettingsIcon,
   SparklesIcon,
-  TargetIcon,
 } from '../components/ui/Icons.jsx';
 import styles from './WorkspacePage.module.css';
 
@@ -153,6 +152,28 @@ function TaskMiniRow({ task }) {
   );
 }
 
+function RoutineStep({ eyebrow, title, description, count, onClick }) {
+  return (
+    <button type="button" className={styles.routineStep} onClick={onClick}>
+      <span>{eyebrow}</span>
+      <strong>{title}</strong>
+      <p>{description}</p>
+      <em>{count}</em>
+    </button>
+  );
+}
+
+function ResourceAction({ icon: Icon, title, description, onClick }) {
+  return (
+    <button type="button" className={styles.resourceAction} onClick={onClick}>
+      <span><Icon size={16} /></span>
+      <strong>{title}</strong>
+      <p>{description}</p>
+      <ArrowUpRightIcon size={14} />
+    </button>
+  );
+}
+
 function TaskBoardColumn({ title, eyebrow, tasks: columnTasks, emptyText }) {
   return (
     <section className={styles.boardColumn}>
@@ -275,6 +296,33 @@ export default function WorkspacePage() {
     sheets: 'novo',
   }), [taskStats.open]);
 
+  const routineSteps = useMemo(() => [
+    {
+      id: 'now',
+      eyebrow: 'Agora',
+      title: 'Resolver urgências',
+      description: taskBuckets.overdue.length ? 'Comece pelas demandas atrasadas e críticas.' : 'Sem atrasos. Mantenha o ritmo das tarefas do dia.',
+      count: taskBuckets.overdue.length + taskStats.critical,
+      filter: taskBuckets.overdue.length ? 'overdue' : 'critical',
+    },
+    {
+      id: 'today',
+      eyebrow: 'Hoje',
+      title: 'Executar prazos do dia',
+      description: taskBuckets.today.length ? 'Priorize o que vence hoje antes de abrir novos itens.' : 'Nenhuma tarefa com vencimento hoje.',
+      count: taskBuckets.today.length,
+      filter: 'today',
+    },
+    {
+      id: 'week',
+      eyebrow: 'Semana',
+      title: 'Organizar próximos passos',
+      description: taskBuckets.week.length ? 'Revise as entregas da semana e antecipe gargalos.' : 'Sem prazos relevantes nesta semana.',
+      count: taskBuckets.week.length,
+      filter: 'all',
+    },
+  ], [taskBuckets.overdue.length, taskBuckets.today.length, taskBuckets.week.length, taskStats.critical]);
+
   return (
     <main className={styles.page}>
       <aside className={styles.sidebar} aria-label="Meu espaço de trabalho">
@@ -394,6 +442,25 @@ export default function WorkspacePage() {
               </div>
             </section>
 
+            <section className={styles.routinePanel} aria-label="Rotina pessoal">
+              <div className={styles.sectionHeader}>
+                <span>Rotina</span>
+                <strong>Ordem sugerida de execução</strong>
+              </div>
+              <div className={styles.routineGrid}>
+                {routineSteps.map((step) => (
+                  <RoutineStep
+                    key={step.id}
+                    eyebrow={step.eyebrow}
+                    title={step.title}
+                    description={step.description}
+                    count={step.count}
+                    onClick={() => { setActiveTab('tasks'); setTaskFilter(step.filter); }}
+                  />
+                ))}
+              </div>
+            </section>
+
             <section className={styles.overviewGrid}>
               <div className={styles.summaryPanel}>
                 <div className={styles.sectionHeader}>
@@ -505,18 +572,36 @@ export default function WorkspacePage() {
         ) : null}
 
         {activeTab === 'resources' ? (
-          <section className={styles.resourceGrid}>
-            <EmptyPanel title="Recursos pessoais" icon={TargetIcon} />
-            <div className={styles.resourcePanel}>
-              <div className={styles.sectionHeader}>
-                <span>Atalhos</span>
-                <strong>Área pessoal</strong>
-              </div>
-              <div className={styles.resourceList}>
-                <button type="button" onClick={() => setActiveTab('sheets')}>Planilhas pessoais</button>
-                <button type="button" onClick={() => setActiveTab('tasks')}>Minhas tarefas</button>
-                <button type="button" onClick={() => setActiveTab('settings')}>Configurações</button>
-              </div>
+          <section className={styles.resourcesArea}>
+            <div className={styles.resourcesHero}>
+              <span>Recursos</span>
+              <strong>Atalhos do seu workspace</strong>
+            </div>
+            <div className={styles.resourceActions}>
+              <ResourceAction
+                icon={BuildingIcon}
+                title="Planilhas pessoais"
+                description="Organize controles próprios sem misturar com a operação central."
+                onClick={() => setActiveTab('sheets')}
+              />
+              <ResourceAction
+                icon={ChecklistIcon}
+                title="Quadro de tarefas"
+                description="Acompanhe prazos, atrasos, prioridades e histórico recente."
+                onClick={() => setActiveTab('tasks')}
+              />
+              <ResourceAction
+                icon={CalendarIcon}
+                title="Planejamento"
+                description="Volte para a visão inicial e revise sua agenda da semana."
+                onClick={() => setActiveTab('home')}
+              />
+              <ResourceAction
+                icon={SettingsIcon}
+                title="Preferências"
+                description="Veja o estado atual das configurações do seu espaço pessoal."
+                onClick={() => setActiveTab('settings')}
+              />
             </div>
           </section>
         ) : null}
@@ -530,7 +615,8 @@ export default function WorkspacePage() {
               <div className={styles.settingsRows}>
                 <div><span>Proprietário</span><strong>{displayName}</strong></div>
                 <div><span>Planilhas</span><strong>Pessoais</strong></div>
-                <div><span>Tarefas</span><strong>Sincronizadas</strong></div>
+                <div><span>Tarefas</span><strong>Sincronizadas pela API</strong></div>
+                <div><span>Visibilidade</span><strong>Espaço individual</strong></div>
               </div>
             </div>
           </section>

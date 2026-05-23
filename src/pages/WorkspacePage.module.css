@@ -421,6 +421,87 @@
   line-height: 1;
 }
 
+.routinePanel {
+  width: min(1480px, 100%);
+  margin: var(--space-3) auto 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.routineGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+
+.routineStep {
+  position: relative;
+  min-width: 0;
+  min-height: 118px;
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: var(--space-3);
+  cursor: pointer;
+}
+
+.routineStep:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+}
+
+.routineStep span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.routineStep strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.routineStep p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-normal);
+}
+
+.routineStep em {
+  position: absolute;
+  right: var(--space-3);
+  top: var(--space-3);
+  min-width: 24px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: var(--fs-micro);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  padding: 0 var(--space-2);
+}
+
 
 .tasksArea {
   width: min(1480px, 100%);
@@ -922,6 +1003,100 @@
 }
 
 
+.resourcesArea {
+  width: min(1480px, 100%);
+  margin: var(--space-4) auto 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.resourcesHero {
+  min-height: 92px;
+  display: grid;
+  align-content: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  padding: var(--space-4);
+}
+
+.resourcesHero span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.resourcesHero strong {
+  margin-top: var(--space-1);
+  color: var(--text-primary);
+  font-size: var(--fs-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.resourceActions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.resourceAction {
+  position: relative;
+  min-height: 158px;
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: var(--space-4);
+  cursor: pointer;
+}
+
+.resourceAction:hover {
+  border-color: var(--line);
+  background: var(--bg-raised);
+}
+
+.resourceAction > span {
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+}
+
+.resourceAction > svg {
+  position: absolute;
+  right: var(--space-4);
+  top: var(--space-4);
+  color: var(--text-quaternary);
+}
+
+.resourceAction strong {
+  color: var(--text-primary);
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.resourceAction p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-normal);
+}
+
 .resourceGrid,
 .settingsGrid {
   width: min(1480px, 100%);
@@ -1006,6 +1181,7 @@
 
   .commandGrid,
   .planningStrip,
+  .routineGrid,
   .overviewGrid,
   .tasksBoard,
   .resourceGrid,
@@ -1019,6 +1195,8 @@
   }
 
   .planningCards,
+  .routineGrid,
+  .resourceActions,
   .personalBoard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1083,12 +1261,15 @@
     overflow-x: auto;
   }
 
-  .commandGrid {
+  .commandGrid,
+  .resourceActions {
     grid-template-columns: 1fr;
   }
 
   .metricsGrid,
   .planningCards,
+  .routineGrid,
+  .resourceActions,
   .personalBoard {
     grid-template-columns: 1fr;
   }
