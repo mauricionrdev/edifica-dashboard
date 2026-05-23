@@ -14,6 +14,7 @@ import {
   HomeIcon,
   PlusIcon,
   RotateCcwIcon,
+  SearchIcon,
   SettingsIcon,
   SparklesIcon,
   TargetIcon,
@@ -44,6 +45,13 @@ const PRIORITY_LABELS = {
   critical: 'Crítica',
 };
 
+const TASK_FILTERS = [
+  { id: 'all', label: 'Todas' },
+  { id: 'overdue', label: 'Atrasadas' },
+  { id: 'critical', label: 'Críticas' },
+  { id: 'today', label: 'Hoje' },
+];
+
 function initials(name = '') {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return 'U';
@@ -59,6 +67,17 @@ function isOverdue(task) {
   const due = new Date(`${String(task.dueDate).slice(0, 10)}T23:59:59`);
   if (Number.isNaN(due.getTime())) return false;
   return due < new Date();
+}
+
+function isToday(task) {
+  if (!task?.dueDate || isDone(task)) return false;
+  const due = String(task.dueDate).slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
+  return due === today;
+}
+
+function normalize(value) {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
 function formatDate(value) {
@@ -103,6 +122,18 @@ function TaskRow({ task }) {
   );
 }
 
+function TaskMiniRow({ task }) {
+  return (
+    <article className={styles.focusItem}>
+      <span className={`${styles.taskStatus} ${isOverdue(task) ? styles.taskStatusHot : ''}`} aria-hidden="true" />
+      <div>
+        <strong>{task?.title || 'Tarefa sem título'}</strong>
+        <span>{formatDate(task?.dueDate)} · {priorityLabel(task?.priority)}</span>
+      </div>
+    </article>
+  );
+}
+
 export default function WorkspacePage() {
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -110,6 +141,8 @@ export default function WorkspacePage() {
   const [tasks, setTasks] = useState([]);
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasksError, setTasksError] = useState('');
+  const [taskFilter, setTaskFilter] = useState('all');
+  const [taskQuery, setTaskQuery] = useState('');
   const avatarUrl = getUserAvatar(user);
   const displayName = user?.name || 'Meu espaço de trabalho';
 
@@ -171,7 +204,26 @@ export default function WorkspacePage() {
   ), [tasks]);
 
   const completedTasks = useMemo(() => tasks.filter((task) => isDone(task)).slice(0, 6), [tasks]);
-  const visibleTasks = activeTab === 'tasks' ? activeTasks : activeTasks.slice(0, 5);
+
+  const focusTasks = useMemo(() => (
+    activeTasks
+      .filter((task) => isOverdue(task) || String(task?.priority || '').toLowerCase() === 'critical' || isToday(task))
+      .slice(0, 4)
+  ), [activeTasks]);
+
+  const filteredActiveTasks = useMemo(() => {
+    const query = normalize(taskQuery);
+    return activeTasks.filter((task) => {
+      const matchesQuery = !query || normalize(`${task?.title || ''} ${task?.clientName || ''} ${task?.projectName || ''} ${task?.typeLabel || ''}`).includes(query);
+      if (!matchesQuery) return false;
+      if (taskFilter === 'overdue') return isOverdue(task);
+      if (taskFilter === 'critical') return String(task?.priority || '').toLowerCase() === 'critical';
+      if (taskFilter === 'today') return isToday(task);
+      return true;
+    });
+  }, [activeTasks, taskFilter, taskQuery]);
+
+  const visibleTasks = activeTab === 'tasks' ? filteredActiveTasks : activeTasks.slice(0, 5);
 
   return (
     <main className={styles.page}>
@@ -290,6 +342,18 @@ export default function WorkspacePage() {
                     <strong>{taskStats.done}</strong>
                   </div>
                 </div>
+
+                <div className={styles.focusBlock}>
+                  <div className={styles.focusHeader}>
+                    <span>Prioridade</span>
+                    <strong>Foco atual</strong>
+                  </div>
+                  <div className={styles.focusList}>
+                    {tasksLoading ? <span className={styles.inlineState}>Carregando foco...</span> : null}
+                    {!tasksLoading && !focusTasks.length ? <span className={styles.inlineState}>Nada crítico no momento.</span> : null}
+                    {!tasksLoading ? focusTasks.map((task) => <TaskMiniRow key={task.id} task={task} />) : null}
+                  </div>
+                </div>
               </div>
 
               <div className={styles.timelinePanel}>
@@ -309,28 +373,53 @@ export default function WorkspacePage() {
         ) : null}
 
         {activeTab === 'tasks' ? (
-          <section className={styles.tasksBoard}>
-            <div className={styles.tasksColumn}>
-              <div className={styles.sectionHeader}>
-                <span>Abertas</span>
-                <strong>{activeTasks.length} tarefas</strong>
-              </div>
-              <div className={styles.taskList}>
-                {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
-                {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
-                {!tasksLoading && !tasksError && !activeTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa aberta.</span> : null}
-                {!tasksLoading && !tasksError ? activeTasks.map((task) => <TaskRow key={task.id} task={task} />) : null}
+          <section className={styles.tasksArea}>
+            <div className={styles.tasksToolbar}>
+              <label className={styles.searchBox}>
+                <SearchIcon size={15} />
+                <input
+                  value={taskQuery}
+                  onChange={(event) => setTaskQuery(event.target.value)}
+                  placeholder="Buscar tarefa, cliente ou projeto"
+                />
+              </label>
+              <div className={styles.filterRail} aria-label="Filtros de tarefas">
+                {TASK_FILTERS.map((filter) => (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    className={taskFilter === filter.id ? styles.filterActive : ''}
+                    onClick={() => setTaskFilter(filter.id)}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className={styles.tasksColumn}>
-              <div className={styles.sectionHeader}>
-                <span>Histórico</span>
-                <strong>Concluídas recentes</strong>
+            <div className={styles.tasksBoard}>
+              <div className={styles.tasksColumn}>
+                <div className={styles.sectionHeader}>
+                  <span>Abertas</span>
+                  <strong>{filteredActiveTasks.length} tarefas</strong>
+                </div>
+                <div className={styles.taskList}>
+                  {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
+                  {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
+                  {!tasksLoading && !tasksError && !filteredActiveTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa encontrada.</span> : null}
+                  {!tasksLoading && !tasksError ? filteredActiveTasks.map((task) => <TaskRow key={task.id} task={task} />) : null}
+                </div>
               </div>
-              <div className={styles.taskList}>
-                {!completedTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa concluída recente.</span> : null}
-                {completedTasks.map((task) => <TaskRow key={task.id} task={task} />)}
+
+              <div className={styles.tasksColumn}>
+                <div className={styles.sectionHeader}>
+                  <span>Histórico</span>
+                  <strong>Concluídas recentes</strong>
+                </div>
+                <div className={styles.taskList}>
+                  {!completedTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa concluída recente.</span> : null}
+                  {completedTasks.map((task) => <TaskRow key={task.id} task={task} />)}
+                </div>
               </div>
             </div>
           </section>
@@ -342,8 +431,37 @@ export default function WorkspacePage() {
           </section>
         ) : null}
 
-        {activeTab === 'resources' ? <EmptyPanel title="Recursos pessoais" icon={TargetIcon} /> : null}
-        {activeTab === 'settings' ? <EmptyPanel title="Configurações do espaço" icon={SettingsIcon} /> : null}
+        {activeTab === 'resources' ? (
+          <section className={styles.resourceGrid}>
+            <EmptyPanel title="Recursos pessoais" icon={TargetIcon} />
+            <div className={styles.resourcePanel}>
+              <div className={styles.sectionHeader}>
+                <span>Atalhos</span>
+                <strong>Área pessoal</strong>
+              </div>
+              <div className={styles.resourceList}>
+                <button type="button" onClick={() => setActiveTab('sheets')}>Planilhas pessoais</button>
+                <button type="button" onClick={() => setActiveTab('tasks')}>Minhas tarefas</button>
+                <button type="button" onClick={() => setActiveTab('settings')}>Configurações</button>
+              </div>
+            </div>
+          </section>
+        ) : null}
+        {activeTab === 'settings' ? (
+          <section className={styles.settingsGrid}>
+            <div className={styles.settingsPanel}>
+              <div className={styles.sectionHeader}>
+                <span>Workspace</span>
+                <strong>Preferências</strong>
+              </div>
+              <div className={styles.settingsRows}>
+                <div><span>Proprietário</span><strong>{displayName}</strong></div>
+                <div><span>Planilhas</span><strong>Pessoais</strong></div>
+                <div><span>Tarefas</span><strong>Sincronizadas</strong></div>
+              </div>
+            </div>
+          </section>
+        ) : null}
       </section>
     </main>
   );

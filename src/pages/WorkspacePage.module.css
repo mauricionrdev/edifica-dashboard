@@ -315,12 +315,97 @@
   line-height: var(--lh-tight);
 }
 
-.overviewGrid,
-.tasksBoard {
+
+.tasksArea {
+  width: min(1480px, 100%);
+  margin: var(--space-4) auto 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.tasksToolbar {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.searchBox {
+  min-width: 260px;
+  flex: 1 1 420px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+  color: var(--text-tertiary);
+  padding: 0 var(--space-3);
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+}
+
+.searchBox input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.filterRail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 0 0 auto;
+}
+
+.filterRail button {
+  height: 30px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.filterRail button:hover {
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+}
+
+.filterRail .filterActive {
+  color: var(--text-primary);
+  background: var(--bg-selected);
+}
+
+.overviewGrid {
   width: min(1480px, 100%);
   margin: var(--space-4) auto 0;
   display: grid;
   grid-template-columns: minmax(340px, 0.82fr) minmax(0, 1.18fr);
+  gap: var(--space-3);
+}
+
+.tasksBoard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
   gap: var(--space-3);
 }
 
@@ -386,6 +471,86 @@
   font-size: var(--fs-2xl);
   font-weight: var(--weight-semibold);
   line-height: 1;
+}
+
+.focusBlock {
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+.focusHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 34px;
+  margin-bottom: var(--space-2);
+}
+
+.focusHeader span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.focusHeader strong {
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.focusList {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-canvas);
+  overflow: hidden;
+}
+
+.focusItem {
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+}
+
+.focusItem + .focusItem {
+  border-top: 1px solid var(--line-subtle);
+}
+
+.focusItem div {
+  min-width: 0;
+}
+
+.focusItem strong,
+.focusItem span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.focusItem strong {
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.focusItem span {
+  margin-top: 3px;
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-medium);
+}
+
+.taskStatusHot {
+  background: var(--danger-text);
+  box-shadow: 0 0 0 3px var(--danger-soft);
 }
 
 .taskList {
@@ -529,6 +694,75 @@
   font-weight: var(--weight-semibold);
 }
 
+
+.resourceGrid,
+.settingsGrid {
+  width: min(1480px, 100%);
+  margin: var(--space-4) auto 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: var(--space-3);
+}
+
+.resourcePanel,
+.settingsPanel {
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.resourceList,
+.settingsRows {
+  display: grid;
+  gap: 0;
+  padding: var(--space-2);
+}
+
+.resourceList button {
+  min-height: 42px;
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  text-align: left;
+  padding: 0 var(--space-3);
+  cursor: pointer;
+}
+
+.resourceList button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.settingsRows div {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0 var(--space-3);
+}
+
+.settingsRows div + div {
+  border-top: 1px solid var(--line-subtle);
+}
+
+.settingsRows span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+}
+
+.settingsRows strong {
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
 .sheetSection {
   width: min(1520px, 100%);
   margin: var(--space-4) auto 0;
@@ -545,8 +779,25 @@
 
   .commandGrid,
   .overviewGrid,
-  .tasksBoard {
+  .tasksBoard,
+  .resourceGrid,
+  .settingsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .tasksToolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .searchBox {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filterRail {
+    width: 100%;
+    overflow-x: auto;
   }
 
   .taskRow {
