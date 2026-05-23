@@ -4,25 +4,19 @@ import { getUserAvatar } from '../utils/avatarStorage.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import {
   AlertTriangle,
-  BellDot,
-  CircleDot,
   Code2,
-  FolderCode,
   GitBranch,
-  LayoutDashboard,
   LockKeyhole,
   MonitorPlay,
   PanelBottom,
   Search,
   Settings,
   Shield,
-  Sparkles,
-  TerminalSquare,
 } from 'lucide-react';
 import styles from './SupportTechnologyPage.module.css';
 
 const MENUS = ['Arquivo', 'Editar', 'Seleção', 'Exibir', 'Acessar', 'Executar'];
-const EDITOR_TABS = ['SupportTechnologyPage.jsx', 'PreviewSupport.jsx'];
+const EDITOR_TABS = ['SupportTechnologyPage.jsx', 'PreviewSupport.jsx', 'Skynet.preview.ts'];
 
 const STAGES = [
   {
@@ -30,39 +24,27 @@ const STAGES = [
     label: 'Criando a tela de suporte',
     shortLabel: 'Construção',
     mode: 'build',
-    hold: 900,
+    hold: 820,
     snippet: [
-      "import { useEffect, useMemo, useState } from 'react';",
-      "import { MonitorPlay, Shield, TerminalSquare } from 'lucide-react';",
+      "import { useMemo, useState } from 'react';",
       "import styles from './SupportTechnologyPage.module.css';",
       '',
       'const skynet = criarConstrutoraVisual({',
-      "  id: 'skynet-support-builder',",
-      "  tela: 'Suporte de tecnologia',",
-      "  tom: 'brincadeira interna',",
-      "  destino: '/suporte/tecnologia',",
+      "  rota: '/suporte/tecnologia',",
+      "  tema: 'dark-edifica',",
+      "  fonte: 'JetBrains Mono',",
       '});',
       '',
-      'function criarPreviewDeSuporte() {',
-      '  const hero = skynet.criarHero({',
-      "    titulo: 'Suporte de tecnologia',",
-      "    status: 'Em construção',",
-      "    assinatura: 'Construção assistida pela Skynet',",
-      '  });',
-      '',
-      '  const superficie = skynet.comporTela({',
-      "    tema: 'dark-edifica',",
-      "    fonte: 'JetBrains Mono',",
-      '    blocos: [hero, criarChipsDeEstado(), criarAreaDePreview()],',
-      '  });',
-      '',
-      '  return testarPreview(superficie);',
+      'function montarTelaDeSuporte() {',
+      "  const titulo = 'Suporte de tecnologia';",
+      "  const status = 'Em construção';",
+      '  return skynet.renderizar({ titulo, status });',
       '}',
     ],
     logs: [
-      'criando SupportTechnologyPage.jsx',
-      'montando hero da tela de suporte',
+      'criando estrutura principal da interface',
       'aplicando tema dark da Edifica Central',
+      'organizando blocos do preview web',
     ],
   },
   {
@@ -70,26 +52,19 @@ const STAGES = [
     label: 'Prévia publicada',
     shortLabel: 'Resultado',
     mode: 'result',
-    hold: 1800,
+    hold: 1450,
     snippet: [
-      'export function SupportPreviewResult() {',
-      '  const preview = criarPreviewDeSuporte();',
-      '',
-      '  return (',
-      '    <WebResult variant="technology-support">',
-      '      <span>Suporte de tecnologia</span>',
-      '      <h1>Em construção</h1>',
-      '      <p>Construção assistida pela Skynet</p>',
-      '      <StatusRow>',
-      '        <Badge>IA ativa</Badge>',
-      '        <Badge>Preview local</Badge>',
-      '        <Badge>Edifica Central</Badge>',
-      '      </StatusRow>',
-      '    </WebResult>',
-      '  );',
+      'export function PreviewSupport() {',
+      '  return montarTelaDeSuporte({',
+      "    titulo: 'Suporte de tecnologia',",
+      "    subtitulo: 'Construção assistida pela Skynet',",
+      "    status: 'Em construção',",
+      "    selo: 'preview local ativo',",
+      "    origem: 'Edifica Central',",
+      '  });',
       '}',
       '',
-      'registrarEvento("support-preview-ready", preview);',
+      'registrarEvento("support-preview-ready");',
     ],
     logs: [
       'publicando preview local',
@@ -102,29 +77,24 @@ const STAGES = [
     label: 'Interferência HAL 9000',
     shortLabel: 'HAL 9000',
     mode: 'hal',
-    hold: 2600,
+    hold: 2100,
     snippet: [
       'function interceptarPreviewLocal() {',
       '  const invasao = HAL9000.assumirCanal({',
       "    alvo: 'preview web',",
-      "    assinatura: 'HAL 9000',",
-      "    comportamento: 'silencioso',",
+      "    protocolo: 'edifica-crm',",
       '  });',
       '',
-      '  invasao.revelar({',
+      '  return invasao.revelar({',
       "    projeto: 'Edifica CRM',",
-      "    status: 'criptografado',",
-      "    acesso: 'futura plataforma',",
+      "    status: 'acesso parcial',",
+      "    assinatura: 'HAL 9000',",
       '  });',
-      '',
-      '  return ativarOverlayVermelho(invasao);',
       '}',
-      '',
-      'registrarEasterEgg(interceptarPreviewLocal());',
     ],
     logs: [
       'assinatura externa detectada: HAL 9000',
-      'preview local interceptado',
+      'iniciando distorção completa do template',
       'canal oculto revelado: Edifica CRM',
     ],
   },
@@ -156,6 +126,62 @@ function tokenizeLine(line) {
   return parts;
 }
 
+function playHalGlitchSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const audioContext = new AudioCtx();
+    const duration = 0.28;
+    const now = audioContext.currentTime;
+
+    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * duration, audioContext.sampleRate);
+    const channel = buffer.getChannelData(0);
+    for (let i = 0; i < channel.length; i += 1) {
+      channel[i] = (Math.random() * 2 - 1) * (1 - i / channel.length);
+    }
+
+    const noise = audioContext.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = audioContext.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1450, now);
+    filter.Q.value = 0.85;
+
+    const gain = audioContext.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.045, now + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    const tone = audioContext.createOscillator();
+    tone.type = 'sawtooth';
+    tone.frequency.setValueAtTime(220, now);
+    tone.frequency.exponentialRampToValueAtTime(96, now + duration);
+
+    const toneGain = audioContext.createGain();
+    toneGain.gain.setValueAtTime(0.0001, now);
+    toneGain.gain.exponentialRampToValueAtTime(0.018, now + 0.04);
+    toneGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    tone.connect(toneGain);
+    gain.connect(audioContext.destination);
+    toneGain.connect(audioContext.destination);
+
+    noise.start(now);
+    tone.start(now);
+    noise.stop(now + duration);
+    tone.stop(now + duration);
+
+    window.setTimeout(() => {
+      if (audioContext.state !== 'closed') audioContext.close().catch(() => {});
+    }, 450);
+  } catch (error) {
+    // silêncio intencional quando o navegador bloquear áudio automático
+  }
+}
+
 function visibleSnippet(lines, lineIndex, charIndex) {
   return lines.map((line, index) => {
     if (index < lineIndex) return line;
@@ -179,6 +205,10 @@ export default function SupportTechnologyPage() {
   }, [setPanelHeader]);
 
   const activeStage = STAGES[stageIndex];
+
+  useEffect(() => {
+    if (activeStage.mode === 'hal') playHalGlitchSound();
+  }, [activeStage.mode]);
 
   useEffect(() => {
     setLineIndex(0);
@@ -220,18 +250,12 @@ export default function SupportTechnologyPage() {
     [activeStage.snippet, lineIndex, charIndex],
   );
 
-  const terminalLines = useMemo(() => {
-    const lines = STAGES.slice(0, stageIndex + 1).flatMap((stage) => stage.logs);
-    lines.push(activeStage.mode === 'hal' ? 'canal oculto revelado: Edifica CRM' : 'executando validação final');
-    return lines.slice(-2);
-  }, [activeStage.mode, stageIndex]);
-
   const buildStages = useMemo(() => STAGES.map((stage) => stage.shortLabel), []);
 
   return (
     <div className={styles.page}>
       <section className={styles.workspace} aria-label="Área em construção">
-        <div className={styles.floatingStudio}>
+        <div className={`${styles.floatingStudio} ${activeStage.mode === 'hal' ? styles.halSystemBreach : ''}`.trim()}>
           <header className={styles.ideTitlebar}>
             <div className={styles.launcherWrap}>
               <button type="button" className={styles.launcher} aria-label="Tela em construção pela Skynet!">
@@ -255,23 +279,6 @@ export default function SupportTechnologyPage() {
               <GitBranch size={18} />
               <PanelBottom size={18} />
               <Settings size={18} />
-            </aside>
-
-            <aside className={styles.explorer}>
-              <div className={styles.sidebarHeader}><span>Explorador</span><FolderCode size={14} /></div>
-              <div className={styles.projectName}>EDIFICA-DASH</div>
-              <div className={styles.explorerMeta}>
-                <span><CircleDot size={10} /> main</span>
-                <span><BellDot size={10} /> 3 alertas</span>
-              </div>
-              <div className={styles.tree}>
-                <div className={styles.treeItem}><FolderCode size={14} /><span>src</span></div>
-                <div className={styles.treeItem} style={{ '--depth': 1 }}><FolderCode size={14} /><span>pages</span></div>
-                <div className={`${styles.treeItem} ${styles.treeItemActive}`.trim()} style={{ '--depth': 2 }}><MonitorPlay size={14} /><span>SupportTechnologyPage.jsx</span></div>
-                <div className={styles.treeItem} style={{ '--depth': 2 }}><Shield size={14} /><span>Skynet.preview.ts</span></div>
-                <div className={styles.treeItem} style={{ '--depth': 2 }}><TerminalSquare size={14} /><span>preview.local.log</span></div>
-                <div className={`${styles.treeItem} ${styles.treeItemEaster}`.trim()} style={{ '--depth': 1 }}><Sparkles size={14} /><span>Edifica CRM</span></div>
-              </div>
             </aside>
 
             <section className={styles.mainZone}>
@@ -375,23 +382,12 @@ export default function SupportTechnologyPage() {
                 </section>
               </div>
 
-              <aside className={styles.terminalPanel}>
-                <div className={styles.terminalHeader}><TerminalSquare size={14} /> <span>Terminal</span></div>
-                <div className={styles.terminalBody}>
-                  {terminalLines.map((entry, index) => (
-                    <div key={`${entry}-${index}`} className={styles.terminalLine}>
-                      <span className={styles.terminalPrompt}>›</span>
-                      <span>{entry}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.statusBar}>
-                  <span><LayoutDashboard size={12} /> main*</span>
-                  <span><BellDot size={12} /> Edifica Central</span>
-                  <span><Code2 size={12} /> JetBrains Mono</span>
-                  <span>UTF-8</span>
-                </div>
-              </aside>
+              <div className={styles.statusBar}>
+                <span>main*</span>
+                <span>Edifica Central</span>
+                <span>JetBrains Mono</span>
+                <span>UTF-8</span>
+              </div>
             </section>
           </div>
         </div>
