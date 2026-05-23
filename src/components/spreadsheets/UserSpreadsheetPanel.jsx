@@ -559,6 +559,50 @@ function SheetCell({ row, column, editable, selected, selectedGroup, rangeEdges,
   );
 }
 
+function ImportDialog({ open, text, delimiter, preview, disabled, onTextChange, onDelimiterChange, onClose, onApply, onPickFile }) {
+  if (!open) return null;
+  return (
+    <div className={styles.importOverlay} role="dialog" aria-modal="true" aria-label="Importar dados para a planilha">
+      <div className={styles.importModal}>
+        <header className={styles.importHeader}>
+          <div>
+            <span>Importar dados</span>
+            <strong>CSV / TSV para a planilha ativa</strong>
+          </div>
+          <button type="button" className={styles.importClose} onClick={onClose} aria-label="Fechar importação"><CloseIcon size={16} /></button>
+        </header>
+        <div className={styles.importControls}>
+          <button type="button" onClick={onPickFile}>Selecionar arquivo</button>
+          <label>
+            Separador
+            <select value={delimiter} onChange={(event) => onDelimiterChange(event.target.value)}>
+              <option value="auto">Automático</option>
+              <option value="\t">Tabulação</option>
+              <option value=";">Ponto e vírgula</option>
+              <option value=",">Vírgula</option>
+            </select>
+          </label>
+        </div>
+        <textarea
+          value={text}
+          onChange={(event) => onTextChange(event.target.value)}
+          placeholder="Cole aqui dados CSV, TSV ou conteúdo copiado de outra planilha"
+          spellCheck={false}
+        />
+        <div className={styles.importPreview}>
+          <span>{preview.rows} linhas</span>
+          <span>{preview.columns} colunas</span>
+          <span>{preview.cells} células previstas</span>
+        </div>
+        <footer className={styles.importFooter}>
+          <button type="button" onClick={onClose}>Cancelar</button>
+          <button type="button" onClick={onApply} disabled={disabled}>Importar para a célula ativa</button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onInsertRow, onInsertColumn, onDuplicateRow, onDuplicateColumn, onSelectRow, onSelectColumn, onClearSelection, onDeleteRow, onDeleteColumn }) {
   useEffect(() => {
     if (!menu) return undefined;
@@ -650,6 +694,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [sheets, setSheets] = useState([]);
   const [activeSheetId, setActiveSheetId] = useState('');
   const [sheetSearch, setSheetSearch] = useState('');
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importDelimiter, setImportDelimiter] = useState('auto');
   const [columns, setColumns] = useState([]);
   const [rows, setRows] = useState([]);
   const [rowsLoading, setRowsLoading] = useState(true);
@@ -668,6 +715,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [scrollState, setScrollState] = useState({ x: false, y: false, endX: false, endY: false });
   const [syncState, setSyncState] = useState({ status: 'syncing', label: 'Sincronizando', detail: 'Carregando planilhas', at: null });
   const scrollerRef = useRef(null);
+  const importFileRef = useRef(null);
 
   const markSync = useCallback((status, detail = '') => {
     const labelMap = {
@@ -1364,6 +1412,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const savingState = savingCell || savingColumn || syncState.status === 'saving' ? 'Salvando' : syncState.label;
   const syncTime = formatSyncTime(syncState.at);
 
+  const importPreview = useMemo(() => {
+    const parsed = parseDelimitedText(importText, importDelimiter);
+    const rowsCount = parsed.length;
+    const columnsCount = parsed.reduce((max, row) => Math.max(max, row.length), 0);
+    return { rows: rowsCount, columns: columnsCount, cells: rowsCount * columnsCount };
+  }, [importDelimiter, importText]);
+
   const handleCopySelection = useCallback(async () => {
     if (!rows.length || !columns.length) return;
     let matrix = [];
@@ -1397,6 +1452,35 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeSheet?.name, columns, markSync, rows, showToast]);
 
+  const handleImportFile = useCallback(async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const content = await file.text();
+      setImportText(content);
+      setImportOpen(true);
+      markSync('saved', `Arquivo ${file.name} carregado`);
+    } catch {
+      markSync('error', 'Falha ao ler arquivo');
+      showToast?.('Não foi possível ler o arquivo selecionado.', { variant: 'error' });
+    } finally {
+      event.target.value = '';
+    }
+  }, [markSync, showToast]);
+
+  const handleApplyImport = useCallback(() => {
+    const parsed = parseDelimitedText(importText, importDelimiter);
+    if (!parsed.length) return;
+    const startRowId = activeCell?.rowId || rows[0]?.id;
+    const startKey = activeCell?.key || columns[0]?.key;
+    if (!startRowId || !startKey) {
+      showToast?.('Crie pelo menos uma linha e uma coluna antes de importar.', { variant: 'warning' });
+      return;
+    }
+    setImportOpen(false);
+    handlePasteTable(startRowId, startKey, serializeTable(parsed));
+  }, [activeCell?.key, activeCell?.rowId, columns, handlePasteTable, importDelimiter, importText, rows, showToast]);
+
   return (
     <section className={styles.panel}>
       <header className={styles.sheetHeader}>
@@ -1416,6 +1500,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         {canEdit ? (
           <div className={styles.sheetActions}>
             <Button type="button" size="sm" variant="secondary" onClick={handleCopySelection} disabled={!activeCell && selectedCount <= 1}>Copiar</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={() => setImportOpen(true)} disabled={!activeSheetId || !columns.length || !rows.length}>Importar</Button>
             <Button type="button" size="sm" variant="secondary" onClick={handleExportCsv} disabled={!activeSheetId || !columns.length}>Exportar CSV</Button>
             <Button type="button" size="sm" variant="secondary" onClick={() => handleDuplicateSheet(activeSheetId)} disabled={!activeSheetId || creatingSheet}>Duplicar</Button>
             <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
@@ -1667,6 +1752,26 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <span className={styles.footerSync} data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail || 'Salvamento automático'}{syncTime ? ` · ${syncTime}` : ''}</span>
         <span>{resizeState ? `Redimensionando ${resizeState.label}: ${resizeState.width}px · ` : ''}{selectedCount > 1 ? `${selectedCount} células selecionadas${selectionLabel ? ` · ${selectionLabel}` : ''} · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
+
+      <input
+        ref={importFileRef}
+        type="file"
+        accept=".csv,.tsv,text/csv,text/tab-separated-values,text/plain"
+        className={styles.fileInput}
+        onChange={handleImportFile}
+      />
+      <ImportDialog
+        open={importOpen}
+        text={importText}
+        delimiter={importDelimiter}
+        preview={importPreview}
+        disabled={!importPreview.cells || !activeSheetId}
+        onTextChange={setImportText}
+        onDelimiterChange={setImportDelimiter}
+        onClose={() => setImportOpen(false)}
+        onApply={handleApplyImport}
+        onPickFile={() => importFileRef.current?.click()}
+      />
 
       <SheetContextMenu
         menu={contextMenu}
