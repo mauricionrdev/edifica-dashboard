@@ -38,6 +38,14 @@ const FILL_COLORS = [
 
 const FORMAT_GROUPS = [
   {
+    title: 'Texto',
+    commands: [
+      ['formatBlock', 'Texto normal', 'P'],
+      ['formatBlock', 'Título', 'H3'],
+      ['removeFormat', 'Limpar formatação'],
+    ],
+  },
+  {
     title: 'Estrutura',
     commands: [
       ['insertUnorderedList', 'Lista com marcadores'],
@@ -51,7 +59,7 @@ const FORMAT_GROUPS = [
     commands: [
       ['undo', 'Desfazer'],
       ['redo', 'Refazer'],
-      ['removeFormat', 'Limpar formatação'],
+      ['selectAll', 'Selecionar célula'],
     ],
   },
 ];
@@ -245,14 +253,14 @@ function MoreMenu({ disabled, onCommand }) {
           {FORMAT_GROUPS.map((group) => (
             <div className={styles.moreMenuGroup} key={group.title}>
               <span className={styles.menuTitle}>{group.title}</span>
-              {group.commands.map(([command, text]) => (
+              {group.commands.map(([command, text, value]) => (
                 <button
-                  key={command}
+                  key={`${command}-${text}`}
                   type="button"
                   className={styles.menuItem}
                   onMouseDown={preventToolbarBlur}
                   onClick={() => {
-                    onCommand(command);
+                    onCommand(command, value || null);
                     setOpen(false);
                   }}
                 >
@@ -373,7 +381,7 @@ function SheetCell({ row, column, editable, selected, saving, onSelect, onChange
   );
 }
 
-function SheetContextMenu({ menu, canEdit, onClose, onDeleteRow, onDeleteColumn }) {
+function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onDeleteRow, onDeleteColumn }) {
   useEffect(() => {
     if (!menu) return undefined;
     const close = () => onClose();
@@ -400,7 +408,13 @@ function SheetContextMenu({ menu, canEdit, onClose, onDeleteRow, onDeleteColumn 
       style={{ left: menu.x, top: menu.y }}
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <span className={styles.menuTitle}>Ações</span>
+      <span className={styles.menuTitle}>Ações rápidas</span>
+      <button type="button" className={styles.menuItem} onClick={() => { onAddRow(); onClose(); }}>
+        <PlusIcon size={14} /> Nova linha
+      </button>
+      <button type="button" className={styles.menuItem} onClick={() => { onAddColumn(); onClose(); }}>
+        <PlusIcon size={14} /> Nova coluna
+      </button>
       {menu.rowId ? (
         <button type="button" className={styles.dangerItem} onClick={() => onDeleteRow(menu.rowId)}>
           <TrashIcon size={14} /> Excluir linha
@@ -785,7 +799,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         >
           {!activeSheetId && !rowsLoading ? (
             <div className={styles.noSheetState}>
-              {canEdit ? <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button> : null}
+              <div className={styles.noSheetCard}>
+                <span>Planilhas pessoais</span>
+                <strong>Comece com uma planilha zerada</strong>
+                {canEdit ? <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button> : null}
+              </div>
             </div>
           ) : (
             <table className={styles.sheetTable}>
@@ -815,7 +833,19 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                   <tr><td colSpan={columns.length + 1} className={styles.emptyState}>Carregando...</td></tr>
                 ) : null}
                 {!rowsLoading && rows.length === 0 ? (
-                  <tr><td colSpan={columns.length + 1} className={styles.emptyState}>Sem registros.</td></tr>
+                  <tr>
+                    <td colSpan={columns.length + 1} className={styles.emptyState}>
+                      <div className={styles.emptySheetContent}>
+                        <span>Planilha vazia</span>
+                        {canEdit ? (
+                          <div>
+                            <button type="button" onClick={handleAddRow} disabled={creatingRow}>Nova linha</button>
+                            <button type="button" onClick={handleAddColumn} disabled={creatingColumn}>Nova coluna</button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
                 ) : null}
                 {rows.map((row, index) => (
                   <tr key={row.id}>
@@ -852,6 +882,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         menu={contextMenu}
         canEdit={canEdit}
         onClose={closeContextMenu}
+        onAddRow={handleAddRow}
+        onAddColumn={handleAddColumn}
         onDeleteRow={handleDeleteRow}
         onDeleteColumn={handleDeleteColumn}
       />

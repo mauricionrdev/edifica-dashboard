@@ -364,14 +364,14 @@
 .moreMenu {
   top: calc(100% + 12px);
   right: 0;
-  width: 244px;
+  width: 252px;
   gap: 10px;
   padding: 10px;
 }
 
 .contextMenu {
   position: fixed;
-  min-width: 190px;
+  min-width: 206px;
   gap: 4px;
   padding: 8px;
 }
@@ -390,14 +390,14 @@
 .swatchGrid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  gap: 7px;
+  gap: 6px;
 }
 
 .swatch {
-  width: 18px;
-  min-width: 18px;
-  height: 18px;
-  min-height: 18px;
+  width: 17px;
+  min-width: 17px;
+  height: 17px;
+  min-height: 17px;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 7px;
@@ -419,6 +419,13 @@
 .moreMenuGroup {
   display: grid;
   gap: 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--sheet-line-soft);
+}
+
+.moreMenuGroup:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .menuItem,
@@ -665,7 +672,7 @@
 .readonlyCell[data-tone='warning'] { color: var(--warning-text); }
 
 .emptyState {
-  height: 92px;
+  height: 112px;
   padding: 0 18px;
   color: var(--text-tertiary);
   font-size: var(--fs-body);
@@ -673,11 +680,78 @@
   text-align: left;
 }
 
+.emptySheetContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+}
+
+.emptySheetContent span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.emptySheetContent div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptySheetContent button {
+  height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--sheet-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.emptySheetContent button:hover {
+  border-color: var(--sheet-line-strong);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
 .noSheetState {
   min-height: 360px;
   display: grid;
   place-items: center;
   padding: 32px;
+}
+
+.noSheetCard {
+  width: min(360px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--sheet-line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.022);
+  text-align: center;
+}
+
+.noSheetCard span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.noSheetCard strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
 }
 
 .panelFooter {
