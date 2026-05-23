@@ -132,76 +132,77 @@ function tokenizeLine(line) {
   return parts;
 }
 
+function unlockSkynetAudio() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+    const audioContext = window.__skynetAudioContext || new AudioCtx();
+    window.__skynetAudioContext = audioContext;
+    window.__skynetAudioUnlocked = true;
+    audioContext.resume?.();
+    return audioContext;
+  } catch (error) {
+    return null;
+  }
+}
+
 function playHalGlitchSound(force = false) {
   try {
-    if (!force && !window.__skynetAudioUnlocked) {
+    const audioContext = unlockSkynetAudio();
+    if (!audioContext) return;
+    if (!force && audioContext.state === 'suspended') {
       window.__skynetPendingGlitch = true;
       return;
     }
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const audioContext = window.__skynetAudioContext || new AudioCtx();
-    window.__skynetAudioContext = audioContext;
-    audioContext.resume?.();
 
     const now = audioContext.currentTime;
     const master = audioContext.createGain();
     master.gain.setValueAtTime(0.0001, now);
-    master.gain.linearRampToValueAtTime(0.055, now + 0.012);
-    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    master.gain.linearRampToValueAtTime(0.032, now + 0.006);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
     master.connect(audioContext.destination);
 
-    const noiseDuration = 0.22;
-    const buffer = audioContext.createBuffer(1, Math.floor(audioContext.sampleRate * noiseDuration), audioContext.sampleRate);
-    const channel = buffer.getChannelData(0);
-    for (let i = 0; i < channel.length; i += 1) {
-      const t = i / channel.length;
-      const stutter = (i % 41 < 11 || i % 67 < 8) ? 1 : 0.04;
-      channel[i] = (Math.random() * 2 - 1) * (1 - t) * stutter;
-    }
+    const bursts = [0, 0.028, 0.061, 0.096, 0.132];
+    bursts.forEach((offset, index) => {
+      const duration = index % 2 === 0 ? 0.018 : 0.026;
+      const buffer = audioContext.createBuffer(1, Math.floor(audioContext.sampleRate * duration), audioContext.sampleRate);
+      const channel = buffer.getChannelData(0);
+      for (let i = 0; i < channel.length; i += 1) {
+        const gate = i % 7 < 3 ? 1 : -0.7;
+        channel[i] = (Math.random() * 2 - 1) * gate * (1 - i / channel.length);
+      }
 
-    const noise = audioContext.createBufferSource();
-    noise.buffer = buffer;
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      const filter = audioContext.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(index % 2 === 0 ? 3900 : 2100, now + offset);
+      filter.Q.setValueAtTime(8, now + offset);
+      source.connect(filter);
+      filter.connect(master);
+      source.start(now + offset);
+      source.stop(now + offset + duration);
+    });
 
-    const highpass = audioContext.createBiquadFilter();
-    highpass.type = 'highpass';
-    highpass.frequency.setValueAtTime(1250, now);
-    highpass.Q.value = 0.7;
-
-    const bitGate = audioContext.createGain();
-    bitGate.gain.setValueAtTime(0.0001, now);
-    bitGate.gain.setValueAtTime(0.052, now + 0.01);
-    bitGate.gain.setValueAtTime(0.006, now + 0.045);
-    bitGate.gain.setValueAtTime(0.048, now + 0.072);
-    bitGate.gain.setValueAtTime(0.004, now + 0.118);
-    bitGate.gain.setValueAtTime(0.036, now + 0.148);
-    bitGate.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-
-    noise.connect(highpass);
-    highpass.connect(bitGate);
-    bitGate.connect(master);
-    noise.start(now);
-    noise.stop(now + noiseDuration);
-
-    [1380, 2310, 920].forEach((frequency, index) => {
+    [1760, 2480, 3120].forEach((frequency, index) => {
       const osc = audioContext.createOscillator();
       const gain = audioContext.createGain();
-      const startAt = now + index * 0.045;
-      osc.type = index === 1 ? 'square' : 'triangle';
+      const startAt = now + index * 0.042;
+      osc.type = 'square';
       osc.frequency.setValueAtTime(frequency, startAt);
-      osc.frequency.exponentialRampToValueAtTime(frequency * 1.9, startAt + 0.038);
+      osc.frequency.setValueAtTime(frequency * 0.54, startAt + 0.022);
       gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.linearRampToValueAtTime(0.018, startAt + 0.008);
-      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.052);
+      gain.gain.linearRampToValueAtTime(0.01, startAt + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.044);
       osc.connect(gain);
       gain.connect(master);
       osc.start(startAt);
-      osc.stop(startAt + 0.058);
+      osc.stop(startAt + 0.05);
     });
 
     window.__skynetPendingGlitch = false;
   } catch (error) {
-    // silêncio intencional quando o navegador bloquear áudio automático
+    window.__skynetPendingGlitch = true;
   }
 }
 
@@ -229,21 +230,16 @@ export default function SupportTechnologyPage() {
 
   useEffect(() => {
     const unlockAudio = () => {
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx && !window.__skynetAudioContext) window.__skynetAudioContext = new AudioCtx();
-        window.__skynetAudioUnlocked = true;
-        window.__skynetAudioContext?.resume?.();
-        if (window.__skynetPendingGlitch) playHalGlitchSound(true);
-      } catch (error) {
-        window.__skynetAudioUnlocked = true;
-      }
+      unlockSkynetAudio();
+      if (window.__skynetPendingGlitch) playHalGlitchSound(true);
     };
 
     window.addEventListener('pointerdown', unlockAudio, { once: false });
+    window.addEventListener('click', unlockAudio, { once: false });
     window.addEventListener('keydown', unlockAudio, { once: false });
     return () => {
       window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('click', unlockAudio);
       window.removeEventListener('keydown', unlockAudio);
     };
   }, []);
@@ -251,7 +247,10 @@ export default function SupportTechnologyPage() {
   const activeStage = STAGES[stageIndex];
 
   useEffect(() => {
-    if (activeStage.mode === 'hal') playHalGlitchSound();
+    if (activeStage.mode !== 'hal') return undefined;
+    playHalGlitchSound();
+    const retry = window.setTimeout(() => playHalGlitchSound(), 260);
+    return () => window.clearTimeout(retry);
   }, [activeStage.mode]);
 
   useEffect(() => {
@@ -296,6 +295,7 @@ export default function SupportTechnologyPage() {
 
   const currentLineLength = activeStage.snippet[lineIndex]?.length || 1;
   const stageProgress = Math.min(1, (lineIndex + Math.min(1, charIndex / currentLineLength)) / activeStage.snippet.length);
+  const previewProgress = activeStage.mode === 'build' ? Math.round(stageProgress * 100) : 100;
   const previewBlocks = {
     badge: activeStage.mode !== 'build' || stageProgress > 0.24,
     title: activeStage.mode !== 'build' || stageProgress > 0.46,
@@ -311,8 +311,7 @@ export default function SupportTechnologyPage() {
         className={styles.workspace}
         aria-label="Área em construção"
         onPointerDown={() => {
-          window.__skynetAudioUnlocked = true;
-          window.__skynetAudioContext?.resume?.();
+          unlockSkynetAudio();
           if (activeStage.mode === 'hal') playHalGlitchSound(true);
         }}
       >
@@ -400,9 +399,6 @@ export default function SupportTechnologyPage() {
 
                       {activeStage.mode === 'build' ? (
                         <div className={styles.previewBuilding}>
-                          <div className={styles.previewProgressTrack}>
-                            <span style={{ '--preview-progress': `${Math.round(stageProgress * 100)}%` }} />
-                          </div>
                           {previewBlocks.badge ? <div className={styles.previewBadge}>Construção assistida pela Skynet</div> : null}
                           <div className={styles.previewWireframe}>
                             {previewBlocks.title ? <span className={styles.wireLine} /> : <span className={styles.wireGhost} />}
@@ -461,6 +457,15 @@ export default function SupportTechnologyPage() {
                           ) : null}
                         </div>
                       )}
+                      <div className={styles.previewProgressDock}>
+                        <div className={styles.previewProgressLabel}>
+                          <span>Construção do preview</span>
+                          <strong>{previewProgress}%</strong>
+                        </div>
+                        <div className={styles.previewProgressTrack}>
+                          <span style={{ '--preview-progress': `${previewProgress}%` }} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </section>

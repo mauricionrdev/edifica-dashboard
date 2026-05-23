@@ -363,7 +363,7 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  padding: 14px 16px 16px;
+  padding: 16px 18px 18px;
 }
 
 .browserTopbar {
@@ -402,7 +402,9 @@
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.045);
   border-radius: 0 0 14px 14px;
-  background: linear-gradient(180deg, #0b0c10 0%, #090a0e 100%);
+  background:
+    radial-gradient(circle at 82% 22%, rgba(245, 196, 81, 0.055), transparent 32%),
+    linear-gradient(180deg, #0b0c10 0%, #090a0e 100%);
 }
 
 .previewGlow {
@@ -476,12 +478,38 @@
 }
 
 
-.previewProgressTrack {
+.previewProgressDock {
   position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 52px;
-  z-index: 2;
+  left: 22px;
+  right: 22px;
+  bottom: 18px;
+  z-index: 4;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.055);
+  border-radius: 14px;
+  background: rgba(8, 9, 10, 0.82);
+  backdrop-filter: blur(10px);
+}
+
+.previewProgressLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #8f93a6;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.previewProgressLabel strong {
+  color: #f5c451;
+  font-size: 11px;
+}
+
+.previewProgressTrack {
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
@@ -509,8 +537,8 @@
 
 .previewWireframe {
   display: grid;
-  gap: 14px;
-  margin-top: 18px;
+  gap: 16px;
+  margin-top: 24px;
 }
 
 .wireLine,
@@ -553,7 +581,7 @@
 }
 
 .previewResult {
-  padding: 82px 34px 30px;
+  padding: 78px 38px 116px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1015,4 +1043,18 @@
   20% { opacity: .75; }
   45% { transform: translateX(8%) scaleX(1); opacity: .95; }
   70% { opacity: .3; }
+}
+
+.previewSurfaceHal .previewProgressDock {
+  border-color: rgba(255, 74, 74, 0.18);
+  background: rgba(20, 6, 6, 0.82);
+}
+
+.previewSurfaceHal .previewProgressLabel strong {
+  color: #ff8585;
+}
+
+.previewSurfaceHal .previewProgressTrack span {
+  background: linear-gradient(90deg, #ff5959, #ff79c6);
+  box-shadow: 0 0 18px rgba(255, 71, 71, 0.2);
 }

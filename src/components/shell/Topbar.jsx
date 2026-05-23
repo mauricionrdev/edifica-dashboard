@@ -22,6 +22,12 @@ function initials(name = '') {
   return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
+function isMauricioUser(user) {
+  const email = String(user?.email || '').trim().toLowerCase();
+  const name = String(user?.name || '').trim().toLowerCase();
+  return email === 'mauricionredifica@gmail.com' || name === 'mauricio nunes';
+}
+
 export default function Topbar({
   onOpenSidebar,
   onToggleSidebarCollapse,
@@ -48,6 +54,7 @@ export default function Topbar({
   const panelRef = useRef(null);
   const accountRef = useRef(null);
   const avatarUrl = getUserAvatar(user);
+  const canAccessWorkspaceAvatar = isMauricioUser(user);
   const current = getRouteCrumbLabel(location.pathname);
   const unreadItems = useMemo(
     () => notifications.filter((item) => !item.readAt).length,
@@ -184,35 +191,6 @@ export default function Topbar({
             </button>
           ) : null}
 
-          <div className={styles.accountWrap} ref={accountRef}>
-            <button
-              type="button"
-              className={styles.accountButton}
-              onClick={() => setAccountOpen((current) => !current)}
-              aria-label="Abrir menu da conta"
-              aria-expanded={accountOpen ? 'true' : 'false'}
-            >
-              {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}
-            </button>
-
-            {accountOpen ? (
-              <div className={styles.accountPanel} role="menu" aria-label="Conta">
-                <div className={styles.accountIdentity}>
-                  <span className={styles.accountAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
-                  <div>
-                    <strong>{user?.name || 'Usuário'}</strong>
-                    <small>{user?.email || ''}</small>
-                  </div>
-                </div>
-                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><BuildingIcon size={16} /> Meu espaço de trabalho</button>
-                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><PlusIcon size={16} /> Novo espaço de trabalho</button>
-                <button type="button" className={styles.accountItem} onClick={() => navigate(buildProfilePath(user))}><UsersIcon size={16} /> Perfil</button>
-                <button type="button" className={styles.accountItem} onClick={() => navigate('/perfil')}><SettingsIcon size={16} /> Configurações</button>
-                <button type="button" className={`${styles.accountItem} ${styles.accountItemExit}`.trim()} onClick={() => logout()}><LogOutIcon size={16} /> Sair</button>
-              </div>
-            ) : null}
-          </div>
-
           <div className={styles.notificationsWrap} ref={panelRef}>
             <button
               type="button"
@@ -301,6 +279,37 @@ export default function Topbar({
               </div>
             ) : null}
           </div>
+
+          {canAccessWorkspaceAvatar ? (
+          <div className={styles.accountWrap} ref={accountRef}>
+            <button
+              type="button"
+              className={styles.accountButton}
+              onClick={() => setAccountOpen((current) => !current)}
+              aria-label="Abrir menu da conta"
+              aria-expanded={accountOpen ? 'true' : 'false'}
+            >
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}
+            </button>
+
+            {accountOpen ? (
+              <div className={styles.accountPanel} role="menu" aria-label="Conta">
+                <div className={styles.accountIdentity}>
+                  <span className={styles.accountAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
+                  <div>
+                    <strong>{user?.name || 'Usuário'}</strong>
+                    <small>{user?.email || ''}</small>
+                  </div>
+                </div>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><BuildingIcon size={16} /> Meu espaço de trabalho</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><PlusIcon size={16} /> Novo espaço de trabalho</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate(buildProfilePath(user))}><UsersIcon size={16} /> Perfil</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/perfil')}><SettingsIcon size={16} /> Configurações</button>
+                <button type="button" className={`${styles.accountItem} ${styles.accountItemExit}`.trim()} onClick={() => logout()}><LogOutIcon size={16} /> Sair</button>
+              </div>
+            ) : null}
+          </div>
+          ) : null}
 
         </div>
       </div>
