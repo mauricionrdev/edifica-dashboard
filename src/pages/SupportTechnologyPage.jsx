@@ -330,6 +330,11 @@ export default function SupportTechnologyPage() {
   };
 
   const buildStages = useMemo(() => STAGES.map((stage) => stage.shortLabel), []);
+  const breachClass = activeStage.mode === 'hal'
+    ? styles.halSystemBreach
+    : stageIndex === 1
+      ? styles.halForeshadowTwo
+      : styles.halForeshadowOne;
 
   return (
     <div className={styles.page}>
@@ -341,7 +346,7 @@ export default function SupportTechnologyPage() {
           if (activeStage.mode === 'hal') playHalGlitchSound(true);
         }}
       >
-        <div className={`${styles.floatingStudio} ${activeStage.mode === 'hal' ? styles.halSystemBreach : ''}`.trim()}>
+        <div className={`${styles.floatingStudio} ${breachClass}`.trim()}>
           <header className={styles.ideTitlebar}>
             <div className={styles.launcherWrap}>
               <button type="button" className={styles.launcher} aria-label="Tela em construção pela Skynet!">
@@ -410,7 +415,7 @@ export default function SupportTechnologyPage() {
                       <span className={styles.browserDots}><i /><i /><i /></span>
                       <span className={styles.browserAddress}>/suporte/tecnologia</span>
                     </div>
-                    <div className={`${styles.previewSurface} ${activeStage.mode === 'hal' ? styles.previewSurfaceHal : ''}`.trim()}>
+                    <div className={`${styles.previewSurface} ${activeStage.mode === 'hal' ? styles.previewSurfaceHal : stageIndex === 1 ? styles.previewSurfaceForeshadowTwo : styles.previewSurfaceForeshadowOne}`.trim()}>
                       <div className={styles.previewProgressTop}>
                         <div className={styles.previewProgressLabel}>
                           <span>Construção do preview</span>
@@ -438,6 +443,12 @@ export default function SupportTechnologyPage() {
                           {previewBlocks.footer ? (
                             <div className={styles.previewBuildNote}>O preview nasce conforme o código é escrito no editor.</div>
                           ) : null}
+                          <div className={styles.halSignalHint} aria-hidden="true">
+                            <span />
+                            <span />
+                            <span />
+                            <em>HAL 9000</em>
+                          </div>
                         </div>
                       ) : (
                         <div className={`${styles.previewResult} ${activeStage.mode === 'hal' ? styles.previewResultHal : ''}`.trim()}>
@@ -459,6 +470,7 @@ export default function SupportTechnologyPage() {
                             <span>Edifica Central</span>
                             <span>IA visual</span>
                           </div>
+                          <div className={styles.halSignalHintResult} aria-hidden="true"><span /> <em>HAL 9000</em></div>
                           {activeStage.mode === 'hal' ? (
                             <>
                               <div className={styles.halBreach} aria-hidden="true"><span /> <span /> <span /> <span /></div>
