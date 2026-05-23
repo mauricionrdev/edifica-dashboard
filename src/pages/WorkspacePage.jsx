@@ -105,6 +105,17 @@ function formatDate(value) {
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date).replace('.', '');
 }
 
+function formatLongDate(value) {
+  if (!value) return 'Sem prazo definido';
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return 'Sem prazo definido';
+  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }).format(date);
+}
+
+function taskContext(task) {
+  return task?.clientName || task?.projectName || task?.typeLabel || 'Demanda interna';
+}
+
 function statusLabel(value) {
   return STATUS_LABELS[String(value || '').toLowerCase()] || 'Aberta';
 }
@@ -123,32 +134,37 @@ function EmptyPanel({ title, eyebrow = 'Em construção', icon: Icon = SparklesI
   );
 }
 
-function TaskRow({ task }) {
+function TaskRow({ task, active = false, onSelect }) {
+  const Element = onSelect ? 'button' : 'article';
   return (
-    <article className={styles.taskRow}>
+    <Element
+      type={onSelect ? 'button' : undefined}
+      className={`${styles.taskRow} ${active ? styles.taskRowActive : ''}`.trim()}
+      onClick={onSelect ? () => onSelect(task) : undefined}
+    >
       <span className={`${styles.taskStatus} ${isDone(task) ? styles.taskStatusDone : ''}`} aria-hidden="true" />
       <div className={styles.taskMain}>
         <strong>{task?.title || 'Tarefa sem título'}</strong>
-        <span>{task?.clientName || task?.projectName || task?.typeLabel || 'Demanda interna'}</span>
+        <span>{taskContext(task)}</span>
       </div>
       <div className={styles.taskMeta}>
         <span>{statusLabel(task?.status)}</span>
         <em>{priorityLabel(task?.priority)}</em>
         <time className={isOverdue(task) ? styles.overdue : ''}>{formatDate(task?.dueDate)}</time>
       </div>
-    </article>
+    </Element>
   );
 }
 
-function TaskMiniRow({ task }) {
+function TaskMiniRow({ task, onSelect }) {
   return (
-    <article className={styles.focusItem}>
+    <button type="button" className={styles.focusItem} onClick={onSelect ? () => onSelect(task) : undefined}>
       <span className={`${styles.taskStatus} ${isOverdue(task) ? styles.taskStatusHot : ''}`} aria-hidden="true" />
       <div>
         <strong>{task?.title || 'Tarefa sem título'}</strong>
         <span>{formatDate(task?.dueDate)} · {priorityLabel(task?.priority)}</span>
       </div>
-    </article>
+    </button>
   );
 }
 
@@ -174,7 +190,7 @@ function ResourceAction({ icon: Icon, title, description, onClick }) {
   );
 }
 
-function TaskBoardColumn({ title, eyebrow, tasks: columnTasks, emptyText }) {
+function TaskBoardColumn({ title, eyebrow, tasks: columnTasks, emptyText, selectedTaskId, onSelectTask }) {
   return (
     <section className={styles.boardColumn}>
       <div className={styles.boardColumnHeader}>
@@ -184,11 +200,51 @@ function TaskBoardColumn({ title, eyebrow, tasks: columnTasks, emptyText }) {
       </div>
       <div className={styles.boardColumnList}>
         {!columnTasks.length ? <span className={styles.columnEmpty}>{emptyText}</span> : null}
-        {columnTasks.map((task) => <TaskRow key={task.id} task={task} />)}
+        {columnTasks.map((task) => (
+          <TaskRow key={task.id} task={task} active={String(task.id) === String(selectedTaskId)} onSelect={onSelectTask} />
+        ))}
       </div>
     </section>
   );
 }
+
+function TaskInspector({ task, onClear }) {
+  if (!task) {
+    return (
+      <aside className={styles.inspectorPanel}>
+        <div className={styles.inspectorEmpty}>
+          <span><ChecklistIcon size={18} /></span>
+          <strong>Selecione uma tarefa</strong>
+          <p>Use o painel lateral para revisar contexto, prazo e prioridade sem sair do workspace.</p>
+        </div>
+      </aside>
+    );
+  }
+
+  return (
+    <aside className={styles.inspectorPanel}>
+      <div className={styles.inspectorHeader}>
+        <span>Detalhes</span>
+        <button type="button" onClick={onClear}>Limpar</button>
+      </div>
+      <div className={styles.inspectorBody}>
+        <strong className={styles.inspectorTitle}>{task.title || 'Tarefa sem título'}</strong>
+        <span className={styles.inspectorContext}>{taskContext(task)}</span>
+        <div className={styles.inspectorMetaGrid}>
+          <div><span>Status</span><strong>{statusLabel(task.status)}</strong></div>
+          <div><span>Prioridade</span><strong>{priorityLabel(task.priority)}</strong></div>
+          <div><span>Prazo</span><strong className={isOverdue(task) ? styles.inspectorDanger : ''}>{formatLongDate(task.dueDate)}</strong></div>
+          <div><span>Origem</span><strong>{task.projectName || task.clientName || 'Workspace'}</strong></div>
+        </div>
+        <div className={styles.inspectorNote}>
+          <span>Próxima ação</span>
+          <p>{isOverdue(task) ? 'Regularizar a demanda atrasada antes de abrir novas frentes.' : isToday(task) ? 'Executar hoje e atualizar a etapa da tarefa.' : 'Acompanhar no quadro e manter o prazo atualizado.'}</p>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 
 export default function WorkspacePage() {
   const { user } = useAuth();
@@ -199,6 +255,7 @@ export default function WorkspacePage() {
   const [tasksError, setTasksError] = useState('');
   const [taskFilter, setTaskFilter] = useState('all');
   const [taskQuery, setTaskQuery] = useState('');
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
   const avatarUrl = getUserAvatar(user);
   const displayName = user?.name || 'Meu espaço de trabalho';
 
@@ -261,6 +318,12 @@ export default function WorkspacePage() {
 
   const completedTasks = useMemo(() => tasks.filter((task) => isDone(task)).slice(0, 6), [tasks]);
 
+  const selectedTask = useMemo(() => tasks.find((task) => String(task.id) === String(selectedTaskId)) || null, [selectedTaskId, tasks]);
+
+  function handleSelectTask(task) {
+    setSelectedTaskId(task?.id || null);
+  }
+
   const focusTasks = useMemo(() => (
     activeTasks
       .filter((task) => isOverdue(task) || String(task?.priority || '').toLowerCase() === 'critical' || isToday(task))
@@ -290,6 +353,10 @@ export default function WorkspacePage() {
   }, [activeTab, activeTasks, filteredActiveTasks]);
 
   const visibleTasks = activeTab === 'tasks' ? filteredActiveTasks : activeTasks.slice(0, 5);
+
+  useEffect(() => {
+    if (selectedTaskId && !tasks.some((task) => String(task.id) === String(selectedTaskId))) setSelectedTaskId(null);
+  }, [selectedTaskId, tasks]);
 
   const tabCounters = useMemo(() => ({
     tasks: taskStats.open,
@@ -495,7 +562,7 @@ export default function WorkspacePage() {
                   <div className={styles.focusList}>
                     {tasksLoading ? <span className={styles.inlineState}>Carregando foco...</span> : null}
                     {!tasksLoading && !focusTasks.length ? <span className={styles.inlineState}>Nada crítico no momento.</span> : null}
-                    {!tasksLoading ? focusTasks.map((task) => <TaskMiniRow key={task.id} task={task} />) : null}
+                    {!tasksLoading ? focusTasks.map((task) => <TaskMiniRow key={task.id} task={task} onSelect={handleSelectTask} />) : null}
                   </div>
                 </div>
               </div>
@@ -509,7 +576,7 @@ export default function WorkspacePage() {
                   {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
                   {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
                   {!tasksLoading && !tasksError && !visibleTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa aberta.</span> : null}
-                  {!tasksLoading && !tasksError ? visibleTasks.map((task) => <TaskRow key={task.id} task={task} />) : null}
+                  {!tasksLoading && !tasksError ? visibleTasks.map((task) => <TaskRow key={task.id} task={task} active={String(task.id) === String(selectedTaskId)} onSelect={handleSelectTask} />) : null}
                 </div>
               </div>
             </section>
@@ -544,11 +611,14 @@ export default function WorkspacePage() {
             {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
             {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
             {!tasksLoading && !tasksError ? (
-              <div className={styles.personalBoard}>
-                <TaskBoardColumn title="Atrasadas" eyebrow="Prioridade" tasks={taskBuckets.overdue} emptyText="Nenhuma tarefa atrasada." />
-                <TaskBoardColumn title="Hoje" eyebrow="Execução" tasks={taskBuckets.today} emptyText="Nada com prazo hoje." />
-                <TaskBoardColumn title="Esta semana" eyebrow="Próximas" tasks={taskBuckets.week} emptyText="Sem prazos nesta semana." />
-                <TaskBoardColumn title="Sem prazo" eyebrow="Backlog" tasks={taskBuckets.noDue} emptyText="Sem itens sem prazo." />
+              <div className={styles.tasksLayout}>
+                <div className={styles.personalBoard}>
+                  <TaskBoardColumn title="Atrasadas" eyebrow="Prioridade" tasks={taskBuckets.overdue} emptyText="Nenhuma tarefa atrasada." selectedTaskId={selectedTaskId} onSelectTask={handleSelectTask} />
+                  <TaskBoardColumn title="Hoje" eyebrow="Execução" tasks={taskBuckets.today} emptyText="Nada com prazo hoje." selectedTaskId={selectedTaskId} onSelectTask={handleSelectTask} />
+                  <TaskBoardColumn title="Esta semana" eyebrow="Próximas" tasks={taskBuckets.week} emptyText="Sem prazos nesta semana." selectedTaskId={selectedTaskId} onSelectTask={handleSelectTask} />
+                  <TaskBoardColumn title="Sem prazo" eyebrow="Backlog" tasks={taskBuckets.noDue} emptyText="Sem itens sem prazo." selectedTaskId={selectedTaskId} onSelectTask={handleSelectTask} />
+                </div>
+                <TaskInspector task={selectedTask} onClear={() => setSelectedTaskId(null)} />
               </div>
             ) : null}
 
@@ -559,7 +629,7 @@ export default function WorkspacePage() {
               </div>
               <div className={styles.taskList}>
                 {!completedTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa concluída recente.</span> : null}
-                {completedTasks.map((task) => <TaskRow key={task.id} task={task} />)}
+                {completedTasks.map((task) => <TaskRow key={task.id} task={task} active={String(task.id) === String(selectedTaskId)} onSelect={handleSelectTask} />)}
               </div>
             </div>
           </section>
