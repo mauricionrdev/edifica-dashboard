@@ -323,7 +323,7 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
   );
 }
 
-function SheetCell({ row, column, editable, selected, saving, onSelect, onChange, onCommit, onContextMenu }) {
+function SheetCell({ row, column, editable, selected, saving, onSelect, onChange, onCommit, onNavigate, onContextMenu }) {
   const ref = useRef(null);
   const value = String(row[column.key] || '');
   const style = row.__styles?.[column.key] || undefined;
@@ -371,9 +371,36 @@ function SheetCell({ row, column, editable, selected, saving, onSelect, onChange
         document.execCommand('insertText', false, text);
       }}
       onKeyDown={(event) => {
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          onCommit(row.id, column.key);
+          onNavigate(row.id, column.key, 0, event.shiftKey ? -1 : 1);
+          return;
+        }
         if (event.key === 'Enter' && !event.shiftKey) {
           event.preventDefault();
-          event.currentTarget.blur();
+          onCommit(row.id, column.key);
+          onNavigate(row.id, column.key, 1, 0);
+          return;
+        }
+        if (event.altKey && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+          event.preventDefault();
+          const delta = {
+            ArrowUp: [-1, 0],
+            ArrowDown: [1, 0],
+            ArrowLeft: [0, -1],
+            ArrowRight: [0, 1],
+          }[event.key];
+          onCommit(row.id, column.key);
+          onNavigate(row.id, column.key, delta[0], delta[1]);
+          return;
+        }
+        if ((event.ctrlKey || event.metaKey) && ['b', 'i', 'u'].includes(event.key.toLowerCase())) {
+          event.preventDefault();
+          const command = { b: 'bold', i: 'italic', u: 'underline' }[event.key.toLowerCase()];
+          document.execCommand(command, false, null);
+          onChange(row.id, column.key, event.currentTarget.innerHTML);
+          return;
         }
         if (event.key === 'Escape') event.currentTarget.blur();
       }}
@@ -485,6 +512,43 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setActiveCell({ rowId, key, element });
   }, []);
 
+  const focusCell = useCallback((rowId, key) => {
+    window.requestAnimationFrame(() => {
+      const element = document.querySelector(`[data-cell-id="${rowId}:${key}"]`);
+      if (!element) return;
+      element.focus({ preventScroll: true });
+      restoreSelection(element, null);
+      const scroller = scrollerRef.current;
+      if (scroller) {
+        element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+    });
+  }, []);
+
+  const navigateCell = useCallback((rowId, key, rowDelta, columnDelta) => {
+    if (!rows.length || !columns.length) return;
+    const rowIndex = rows.findIndex((row) => row.id === rowId);
+    const columnIndex = columns.findIndex((column) => column.key === key);
+    if (rowIndex < 0 || columnIndex < 0) return;
+    const nextRow = rows[Math.min(rows.length - 1, Math.max(0, rowIndex + rowDelta))];
+    const nextColumn = columns[Math.min(columns.length - 1, Math.max(0, columnIndex + columnDelta))];
+    if (!nextRow || !nextColumn) return;
+    focusCell(nextRow.id, nextColumn.key);
+  }, [columns, focusCell, rows]);
+
+  const activeCellText = useMemo(() => {
+    if (!activeCell?.rowId || !activeCell?.key) return '';
+    const row = rows.find((entry) => entry.id === activeCell.rowId);
+    return stripHtml(row?.[activeCell.key] || '');
+  }, [activeCell?.key, activeCell?.rowId, rows]);
+
+  const handleActiveCellTextChange = useCallback((value) => {
+    if (!activeCell?.rowId || !activeCell?.key) return;
+    const element = document.querySelector(`[data-cell-id="${activeCell.rowId}:${activeCell.key}"]`);
+    if (element) element.textContent = value;
+    setRows((current) => current.map((row) => (row.id === activeCell.rowId ? { ...row, [activeCell.key]: value } : row)));
+  }, [activeCell?.key, activeCell?.rowId]);
+
   const openContextMenu = useCallback((event, rowId = null, columnKey = null) => {
     if (!canEdit) return;
     event.preventDefault();
@@ -589,6 +653,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setSavingCell('');
     }
   };
+
+  const commitActiveCellText = useCallback(() => {
+    if (!activeCell?.rowId || !activeCell?.key) return;
+    handleCellCommit(activeCell.rowId, activeCell.key);
+  }, [activeCell?.key, activeCell?.rowId, handleCellCommit]);
 
   const handleApplyFormat = async (command, value = null) => {
     if (!activeCell || !canEdit) return;
@@ -782,6 +851,24 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       {canEdit ? (
         <div className={styles.editorBar}>
           <EditorToolbar disabled={!activeCell || !activeSheetId} onCommand={handleApplyFormat} />
+          <div className={styles.cellFormulaBar}>
+            <span>{activeColumn?.label || 'Célula'}</span>
+            <input
+              value={activeCellText}
+              disabled={!activeCell || !activeSheetId}
+              aria-label="Conteúdo da célula ativa"
+              placeholder="Selecione uma célula para editar"
+              onChange={(event) => handleActiveCellTextChange(event.target.value)}
+              onBlur={commitActiveCellText}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  commitActiveCellText();
+                }
+                if (event.key === 'Escape') event.currentTarget.blur();
+              }}
+            />
+          </div>
           <div className={styles.editorMeta}>
             <span>{activeCellLabel}</span>
             <span>{rows.length} linhas</span>
@@ -861,6 +948,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                           onSelect={selectCell}
                           onChange={handleCellChange}
                           onCommit={handleCellCommit}
+                          onNavigate={navigateCell}
                           onContextMenu={openContextMenu}
                         />
                       </td>
