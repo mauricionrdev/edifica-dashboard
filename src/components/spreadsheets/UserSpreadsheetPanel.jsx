@@ -694,9 +694,37 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     };
   }, [activeSheetId, columns, ownerUserId, refreshRows]);
 
+  const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
+  const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
+  const activeRowNumber = useMemo(() => {
+    if (!activeCell?.rowId) return null;
+    const index = rows.findIndex((row) => row.id === activeCell.rowId);
+    return index >= 0 ? index + 1 : null;
+  }, [activeCell?.rowId, rows]);
+  const activeCellLabel = activeCell
+    ? `${activeColumn?.label || 'Coluna'} · L${activeRowNumber || '—'}`
+    : 'Nenhuma célula';
+  const savingState = savingCell || savingColumn ? 'Salvando' : 'Salvo';
+
   return (
     <section className={styles.panel}>
       <header className={styles.sheetHeader}>
+        <div className={styles.sheetTitleGroup}>
+          <span className={styles.sheetEyebrow}>Planilhas pessoais</span>
+          <div className={styles.sheetTitleRow}>
+            <strong>{activeSheet?.name || 'Nova planilha'}</strong>
+            <span>{savingState}</span>
+          </div>
+        </div>
+
+        {canEdit ? (
+          <div className={styles.sheetActions}>
+            <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
+            <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn || !activeSheetId}><PlusIcon size={14} /> Coluna</Button>
+            <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow || !activeSheetId}><PlusIcon size={14} /> Linha</Button>
+          </div>
+        ) : null}
+
         <div className={styles.sheetTabsShell}>
           <div className={styles.sheetTabs} aria-label="Planilhas do perfil">
             {sheets.length ? sheets.map((sheet) => (
@@ -735,19 +763,16 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             )}
           </div>
         </div>
-
-        {canEdit ? (
-          <div className={styles.sheetActions}>
-            <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
-            <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn || !activeSheetId}><PlusIcon size={14} /> Coluna</Button>
-            <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow || !activeSheetId}><PlusIcon size={14} /> Linha</Button>
-          </div>
-        ) : null}
       </header>
 
       {canEdit ? (
         <div className={styles.editorBar}>
           <EditorToolbar disabled={!activeCell || !activeSheetId} onCommand={handleApplyFormat} />
+          <div className={styles.editorMeta}>
+            <span>{activeCellLabel}</span>
+            <span>{rows.length} linhas</span>
+            <span>{columns.length} colunas</span>
+          </div>
         </div>
       ) : null}
 
@@ -787,10 +812,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               </thead>
               <tbody>
                 {rowsLoading ? (
-                  <tr><td colSpan={columns.length + 1} className={styles.emptyState}>Carregando planilha...</td></tr>
+                  <tr><td colSpan={columns.length + 1} className={styles.emptyState}>Carregando...</td></tr>
                 ) : null}
                 {!rowsLoading && rows.length === 0 ? (
-                  <tr><td colSpan={columns.length + 1} className={styles.emptyState}>Nenhum registro criado nesta planilha.</td></tr>
+                  <tr><td colSpan={columns.length + 1} className={styles.emptyState}>Sem registros.</td></tr>
                 ) : null}
                 {rows.map((row, index) => (
                   <tr key={row.id}>

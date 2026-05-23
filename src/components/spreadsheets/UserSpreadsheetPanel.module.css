@@ -1,43 +1,87 @@
 .panel {
-  --sheet-line: rgba(255, 255, 255, 0.075);
-  --sheet-line-soft: rgba(255, 255, 255, 0.048);
-  --sheet-line-strong: rgba(255, 255, 255, 0.14);
+  --sheet-line: rgba(255, 255, 255, 0.07);
+  --sheet-line-soft: rgba(255, 255, 255, 0.046);
+  --sheet-line-strong: rgba(255, 255, 255, 0.13);
   --sheet-bg: #08090a;
-  --sheet-bg-soft: #0b0c0e;
-  --sheet-surface: rgba(255, 255, 255, 0.026);
-  --sheet-surface-hover: rgba(255, 255, 255, 0.046);
-  --sheet-header: rgba(255, 255, 255, 0.058);
-  --sheet-header-hover: rgba(255, 255, 255, 0.076);
+  --sheet-bg-soft: #0a0b0d;
+  --sheet-surface: rgba(255, 255, 255, 0.024);
+  --sheet-surface-hover: rgba(255, 255, 255, 0.044);
+  --sheet-header: rgba(255, 255, 255, 0.052);
+  --sheet-header-hover: rgba(255, 255, 255, 0.07);
   --sheet-gold: rgba(245, 183, 36, 0.92);
-  --sheet-gold-soft: rgba(245, 183, 36, 0.11);
-  --sheet-radius: 22px;
+  --sheet-gold-soft: rgba(245, 183, 36, 0.1);
+  --sheet-radius: 18px;
   width: 100%;
   min-width: 0;
-  min-height: 660px;
+  min-height: 640px;
   display: flex;
   flex-direction: column;
-  overflow: visible;
+  overflow: hidden;
   border: 1px solid var(--sheet-line);
   border-radius: var(--sheet-radius);
-  background:
-    radial-gradient(circle at 18% 0%, rgba(245, 183, 36, 0.055), transparent 30%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.008) 44%, rgba(255, 255, 255, 0.014)),
-    var(--sheet-bg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006)), var(--sheet-bg);
   color: var(--text-secondary);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.028);
 }
 
 .sheetHeader {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 18px;
-  padding: 18px 24px 14px;
+  gap: 12px 16px;
+  padding: 16px 18px 12px;
   border-bottom: 1px solid var(--sheet-line-soft);
+  background: rgba(255, 255, 255, 0.008);
+}
+
+.sheetTitleGroup {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.sheetEyebrow {
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.sheetTitleRow {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sheetTitleRow strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: var(--fs-title-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheetTitleRow span {
+  min-width: max-content;
+  padding: 4px 8px;
+  border: 1px solid var(--sheet-line-soft);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.028);
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
 }
 
 .sheetTabsShell {
   min-width: 0;
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
 }
@@ -47,12 +91,12 @@
   max-width: 100%;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 2px 2px 4px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 }
 
 .sheetTabs::-webkit-scrollbar,
@@ -80,9 +124,9 @@
 
 .sheetTab,
 .emptyTab {
-  height: 40px;
-  min-width: 156px;
-  max-width: 292px;
+  height: 36px;
+  min-width: 148px;
+  max-width: 260px;
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
@@ -97,7 +141,7 @@
 .sheetTab {
   position: relative;
   gap: 6px;
-  padding: 0 9px 0 15px;
+  padding: 0 8px 0 13px;
 }
 
 .sheetTab:hover {
@@ -192,7 +236,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
 
 .editorBar {
@@ -200,10 +244,34 @@
   z-index: 40;
   display: flex;
   align-items: center;
-  min-height: 58px;
-  padding: 10px 24px 12px;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 54px;
+  padding: 9px 18px;
   border-bottom: 1px solid var(--sheet-line-soft);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0.002));
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.editorMeta {
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.editorMeta span {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--sheet-line-soft);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.024);
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
 }
 
 .editorToolbar {
@@ -212,17 +280,17 @@
   min-width: 0;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 5px;
+  gap: 2px;
+  padding: 4px;
   border: 1px solid var(--sheet-line);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.042);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.034);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.026);
 }
 
 .editorButton {
-  height: 32px;
-  min-width: 34px;
+  height: 30px;
+  min-width: 32px;
   display: inline-grid;
   place-items: center;
   padding: 0 10px;
@@ -388,21 +456,18 @@
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
-  border-radius: 0 0 calc(var(--sheet-radius) - 1px) calc(var(--sheet-radius) - 1px);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.004)),
-    var(--sheet-bg-soft);
+  background: var(--sheet-bg-soft);
 }
 
 .sheetScroller {
   width: 100%;
+  height: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: auto;
-  overflow-y: visible;
-  overscroll-behavior-x: contain;
+  overflow: auto;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 .sheetTable {
@@ -432,7 +497,7 @@
   position: sticky;
   top: 0;
   z-index: 4;
-  height: 50px;
+  height: 46px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.076), rgba(255, 255, 255, 0.048));
   text-align: left;
   white-space: nowrap;
@@ -444,7 +509,7 @@
 }
 
 .sheetTable td {
-  height: 48px;
+  height: 46px;
   background: rgba(255, 255, 255, 0.004);
 }
 
@@ -452,9 +517,6 @@
   background: rgba(255, 255, 255, 0.01);
 }
 
-.sheetTable tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.032);
-}
 
 .indexHeader,
 .rowIndex {
@@ -475,7 +537,7 @@
 
 .headerCell {
   position: relative;
-  height: 50px;
+  height: 46px;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -488,9 +550,9 @@
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
-  padding: 9px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 14px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.068);
+  border-radius: 12px;
   outline: 0;
   background: rgba(255, 255, 255, 0.042);
   color: var(--text-primary);
@@ -542,10 +604,10 @@
 .readonlyCell {
   width: 100%;
   min-width: 0;
-  min-height: 47px;
+  min-height: 45px;
   display: block;
   overflow: hidden;
-  padding: 11px 16px;
+  padding: 10px 14px;
   border: 0;
   outline: 0;
   background: transparent;
@@ -619,12 +681,12 @@
 }
 
 .panelFooter {
-  min-height: 44px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 24px;
+  padding: 0 18px;
   border-top: 1px solid var(--sheet-line-soft);
   background: rgba(255, 255, 255, 0.01);
   border-radius: 0 0 calc(var(--sheet-radius) - 1px) calc(var(--sheet-radius) - 1px);
@@ -648,8 +710,18 @@
     overflow-x: auto;
   }
 
+  .editorBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .editorToolbar {
     width: 100%;
+    overflow-x: auto;
+  }
+
+  .editorMeta {
+    justify-content: flex-start;
     overflow-x: auto;
   }
 }
@@ -657,7 +729,7 @@
 @media (max-width: 760px) {
   .panel {
     min-height: 560px;
-    border-radius: 18px;
+    border-radius: 16px;
   }
 
   .sheetHeader,
