@@ -13,9 +13,9 @@
 .workspace {
   position: relative;
   min-width: 0;
-  height: clamp(400px, calc(100vh - 272px), 540px);
-  min-height: 400px;
-  padding: 14px;
+  height: calc(100vh - 176px);
+  min-height: 620px;
+  padding: 16px 18px 18px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.045);
   border-radius: 22px;
@@ -51,35 +51,33 @@
 
 .stageCard {
   position: absolute;
-  inset: 18px 28px 18px;
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(9, 11, 17, 0.88), rgba(6, 8, 13, 0.92));
-  border: 1px solid rgba(255, 255, 255, 0.038);
-  box-shadow:
-    0 24px 44px rgba(0, 0, 0, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.016);
+  inset: 10px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(8, 10, 16, 0.42), rgba(5, 7, 12, 0.32));
+  border: 1px solid rgba(255, 255, 255, 0.026);
+  box-shadow: 0 20px 38px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
 }
 
 .floatingStudio {
   position: absolute;
-  inset: 42px 56px 36px;
+  inset: 20px 26px 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  background: #07080d;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 20px;
+  background: #06070c;
   box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.34),
-    0 0 0 1px rgba(255, 255, 255, 0.012) inset;
+    0 22px 46px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.01) inset;
 }
 
 .ideTitlebar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 38px;
+  min-height: 40px;
   padding: 0 14px 0 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   background: #07080d;
@@ -89,7 +87,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .launcher {
@@ -153,7 +151,7 @@
 .menuBar {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 20px;
   min-width: 0;
   color: #8d90a1;
   font-size: 12px;
@@ -176,7 +174,7 @@
   min-height: 0;
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: 44px 230px minmax(0, 1fr) 228px;
+  grid-template-columns: 48px 250px minmax(0, 1fr) 246px;
   background: #0a0b10;
 }
 
@@ -185,7 +183,7 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 12px 0 10px;
+  padding: 14px 0 12px;
   border-right: 1px solid rgba(255,255,255,0.045);
   color: #7b7f94;
   background: #07080d;
@@ -220,7 +218,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px 8px;
+  padding: 12px 14px 10px;
   color: #8f93a6;
   font-size: 10px;
   text-transform: uppercase;
@@ -228,7 +226,7 @@
 }
 
 .projectName {
-  padding: 0 12px 8px;
+  padding: 0 14px 10px;
   color: #f8f8f2;
   font-size: 13px;
   font-weight: 700;
@@ -245,7 +243,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 24px;
+  min-height: 26px;
   padding: 0 10px;
   padding-left: calc(10px + (var(--depth) * 16px));
   border-radius: 8px;
@@ -310,7 +308,7 @@
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 66px;
+  grid-template-columns: minmax(0, 1fr) 76px;
 }
 
 .codePane {
@@ -333,7 +331,7 @@
 
 .codeList {
   margin: 0;
-  padding: 8px 0 12px;
+  padding: 12px 0 16px;
   list-style: none;
 }
 
@@ -341,7 +339,7 @@
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr);
   align-items: center;
-  min-height: 26px;
+  min-height: 28px;
 }
 
 .lineNumber {
@@ -359,7 +357,7 @@
   padding-right: 16px;
   white-space: pre;
   color: #f8f8f2;
-  font-size: 12px;
+  font-size: 13px;
   text-shadow: 0 0 8px rgba(255,255,255,0.015);
 }
 
@@ -384,7 +382,7 @@
 .token_comment { color: #6272a4; }
 
 .minimap {
-  padding: 10px 6px;
+  padding: 12px 8px;
   border-left: 1px solid rgba(255,255,255,0.045);
   background: #090a10;
   overflow: hidden;
@@ -418,7 +416,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 32px;
+  min-height: 36px;
   padding: 0 12px;
   color: #8f93a6;
   font-size: 10px;
@@ -430,17 +428,17 @@
 .terminalBody {
   min-height: 0;
   overflow: hidden;
-  padding: 8px 10px;
+  padding: 12px 12px;
 }
 
 .terminalLine {
   display: flex;
   gap: 8px;
   align-items: flex-start;
-  min-height: 20px;
+  min-height: 22px;
   color: #f8f8f2;
-  font-size: 10px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.5;
   animation: logAppear .2s ease;
 }
 
@@ -510,41 +508,42 @@
 
 @media (max-width: 1360px) {
   .workspace {
-    height: clamp(390px, calc(100vh - 264px), 500px);
+    height: calc(100vh - 168px);
+    min-height: 580px;
   }
 
   .stageCard {
-    inset: 14px 18px 14px;
+    inset: 10px;
   }
 
   .floatingStudio {
-    inset: 30px 34px 26px;
+    inset: 16px 18px 16px;
   }
 
   .ideBody {
-    grid-template-columns: 42px 200px minmax(0, 1fr) 210px;
+    grid-template-columns: 44px 220px minmax(0, 1fr) 220px;
   }
 }
 
 @media (max-width: 1100px) {
   .workspace {
-    height: clamp(380px, calc(100vh - 252px), 470px);
-    min-height: 380px;
-    padding: 10px;
+    height: calc(100vh - 156px);
+    min-height: 520px;
+    padding: 12px;
   }
 
   .stageCard {
-    inset: 10px;
-    border-radius: 16px;
+    inset: 8px;
+    border-radius: 18px;
   }
 
   .floatingStudio {
-    inset: 18px 18px 16px;
-    border-radius: 14px;
+    inset: 14px 14px 14px;
+    border-radius: 16px;
   }
 
   .ideBody {
-    grid-template-columns: 38px 178px minmax(0, 1fr);
+    grid-template-columns: 40px 194px minmax(0, 1fr);
   }
 
   .terminalPanel,
@@ -563,16 +562,16 @@
   }
 
   .workspace {
-    min-height: 360px;
+    min-height: 440px;
     border-radius: 18px;
   }
 
   .stageCard {
-    inset: 8px;
+    inset: 6px;
   }
 
   .floatingStudio {
-    inset: 14px 14px 12px;
+    inset: 10px;
     border-radius: 12px;
   }
 
