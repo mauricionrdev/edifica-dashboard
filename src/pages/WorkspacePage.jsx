@@ -76,6 +76,25 @@ function isToday(task) {
   return due === today;
 }
 
+function isThisWeek(task) {
+  if (!task?.dueDate || isDone(task)) return false;
+  const due = new Date(`${String(task.dueDate).slice(0, 10)}T12:00:00`);
+  if (Number.isNaN(due.getTime())) return false;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekday = today.getDay() || 7;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - weekday + 1);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return due >= monday && due <= sunday;
+}
+
+function hasNoDueDate(task) {
+  return !task?.dueDate && !isDone(task);
+}
+
 function normalize(value) {
   return String(value || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
@@ -131,6 +150,22 @@ function TaskMiniRow({ task }) {
         <span>{formatDate(task?.dueDate)} · {priorityLabel(task?.priority)}</span>
       </div>
     </article>
+  );
+}
+
+function TaskBoardColumn({ title, eyebrow, tasks: columnTasks, emptyText }) {
+  return (
+    <section className={styles.boardColumn}>
+      <div className={styles.boardColumnHeader}>
+        <span>{eyebrow}</span>
+        <strong>{title}</strong>
+        <em>{columnTasks.length}</em>
+      </div>
+      <div className={styles.boardColumnList}>
+        {!columnTasks.length ? <span className={styles.columnEmpty}>{emptyText}</span> : null}
+        {columnTasks.map((task) => <TaskRow key={task.id} task={task} />)}
+      </div>
+    </section>
   );
 }
 
@@ -223,7 +258,22 @@ export default function WorkspacePage() {
     });
   }, [activeTasks, taskFilter, taskQuery]);
 
+  const taskBuckets = useMemo(() => {
+    const base = activeTab === 'tasks' ? filteredActiveTasks : activeTasks;
+    const overdue = base.filter((task) => isOverdue(task));
+    const today = base.filter((task) => !isOverdue(task) && isToday(task));
+    const week = base.filter((task) => !isOverdue(task) && !isToday(task) && isThisWeek(task));
+    const noDue = base.filter((task) => hasNoDueDate(task));
+    const next = base.filter((task) => !isOverdue(task) && !isToday(task) && !isThisWeek(task) && !hasNoDueDate(task));
+    return { overdue, today, week, noDue, next };
+  }, [activeTab, activeTasks, filteredActiveTasks]);
+
   const visibleTasks = activeTab === 'tasks' ? filteredActiveTasks : activeTasks.slice(0, 5);
+
+  const tabCounters = useMemo(() => ({
+    tasks: taskStats.open,
+    sheets: 'novo',
+  }), [taskStats.open]);
 
   return (
     <main className={styles.page}>
@@ -247,7 +297,8 @@ export default function WorkspacePage() {
                 onClick={() => setActiveTab(tab.id)}
               >
                 <Icon size={15} />
-                {tab.label}
+                <span>{tab.label}</span>
+                {tabCounters[tab.id] ? <em>{tabCounters[tab.id]}</em> : null}
               </button>
             );
           })}
@@ -288,7 +339,8 @@ export default function WorkspacePage() {
                 className={tab.id === activeTab ? styles.tabActive : ''}
                 onClick={() => setActiveTab(tab.id)}
               >
-                {tab.label}
+                <span>{tab.label}</span>
+                {tabCounters[tab.id] ? <em>{tabCounters[tab.id]}</em> : null}
               </button>
             ))}
           </nav>
@@ -315,6 +367,31 @@ export default function WorkspacePage() {
                 <em>Área pessoal</em>
                 <ArrowUpRightIcon size={15} />
               </button>
+            </section>
+
+            <section className={styles.planningStrip} aria-label="Planejamento pessoal">
+              <div className={styles.planningHeader}>
+                <span>Planejamento</span>
+                <strong>Agenda da semana</strong>
+              </div>
+              <div className={styles.planningCards}>
+                <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('overdue'); }}>
+                  <span>Atrasadas</span>
+                  <strong>{taskBuckets.overdue.length}</strong>
+                </button>
+                <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('today'); }}>
+                  <span>Hoje</span>
+                  <strong>{taskBuckets.today.length}</strong>
+                </button>
+                <button type="button" onClick={() => setActiveTab('tasks')}>
+                  <span>Esta semana</span>
+                  <strong>{taskBuckets.week.length}</strong>
+                </button>
+                <button type="button" onClick={() => setActiveTab('tasks')}>
+                  <span>Sem prazo</span>
+                  <strong>{taskBuckets.noDue.length}</strong>
+                </button>
+              </div>
             </section>
 
             <section className={styles.overviewGrid}>
@@ -397,29 +474,25 @@ export default function WorkspacePage() {
               </div>
             </div>
 
-            <div className={styles.tasksBoard}>
-              <div className={styles.tasksColumn}>
-                <div className={styles.sectionHeader}>
-                  <span>Abertas</span>
-                  <strong>{filteredActiveTasks.length} tarefas</strong>
-                </div>
-                <div className={styles.taskList}>
-                  {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
-                  {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
-                  {!tasksLoading && !tasksError && !filteredActiveTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa encontrada.</span> : null}
-                  {!tasksLoading && !tasksError ? filteredActiveTasks.map((task) => <TaskRow key={task.id} task={task} />) : null}
-                </div>
+            {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
+            {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
+            {!tasksLoading && !tasksError ? (
+              <div className={styles.personalBoard}>
+                <TaskBoardColumn title="Atrasadas" eyebrow="Prioridade" tasks={taskBuckets.overdue} emptyText="Nenhuma tarefa atrasada." />
+                <TaskBoardColumn title="Hoje" eyebrow="Execução" tasks={taskBuckets.today} emptyText="Nada com prazo hoje." />
+                <TaskBoardColumn title="Esta semana" eyebrow="Próximas" tasks={taskBuckets.week} emptyText="Sem prazos nesta semana." />
+                <TaskBoardColumn title="Sem prazo" eyebrow="Backlog" tasks={taskBuckets.noDue} emptyText="Sem itens sem prazo." />
               </div>
+            ) : null}
 
-              <div className={styles.tasksColumn}>
-                <div className={styles.sectionHeader}>
-                  <span>Histórico</span>
-                  <strong>Concluídas recentes</strong>
-                </div>
-                <div className={styles.taskList}>
-                  {!completedTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa concluída recente.</span> : null}
-                  {completedTasks.map((task) => <TaskRow key={task.id} task={task} />)}
-                </div>
+            <div className={styles.completedStrip}>
+              <div className={styles.sectionHeader}>
+                <span>Histórico</span>
+                <strong>Concluídas recentes</strong>
+              </div>
+              <div className={styles.taskList}>
+                {!completedTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa concluída recente.</span> : null}
+                {completedTasks.map((task) => <TaskRow key={task.id} task={task} />)}
               </div>
             </div>
           </section>

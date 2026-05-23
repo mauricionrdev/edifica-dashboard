@@ -69,7 +69,8 @@
 
 .sideNav button {
   min-height: 34px;
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-2);
   border: 0;
@@ -82,6 +83,29 @@
   text-align: left;
   padding: 0 var(--space-2);
   cursor: pointer;
+}
+
+.sideNav button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sideNav button > em {
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  padding: 0 6px;
 }
 
 .sideNav button:hover {
@@ -316,6 +340,88 @@
 }
 
 
+.planningStrip {
+  width: min(1480px, 100%);
+  min-width: 0;
+  margin: var(--space-3) auto 0;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.planningHeader {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  padding: var(--space-4);
+}
+
+.planningHeader span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.planningHeader strong {
+  margin-top: var(--space-1);
+  color: var(--text-primary);
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.planningCards {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  padding: var(--space-2);
+}
+
+.planningCards button {
+  min-width: 0;
+  min-height: 70px;
+  display: grid;
+  align-content: space-between;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: var(--space-3);
+  cursor: pointer;
+}
+
+.planningCards button:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+}
+
+.planningCards span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+}
+
+.planningCards strong {
+  color: var(--text-primary);
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+}
+
+
 .tasksArea {
   width: min(1480px, 100%);
   margin: var(--space-4) auto 0;
@@ -393,6 +499,127 @@
 .filterRail .filterActive {
   color: var(--text-primary);
   background: var(--bg-selected);
+}
+
+
+.personalBoard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+
+.boardColumn {
+  min-width: 0;
+  min-height: 360px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.boardColumnHeader {
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  gap: 2px var(--space-2);
+  border-bottom: 1px solid var(--line-subtle);
+  padding: 0 var(--space-3);
+}
+
+.boardColumnHeader span {
+  grid-column: 1;
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.boardColumnHeader strong {
+  grid-column: 1;
+  color: var(--text-primary);
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.boardColumnHeader em {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  min-width: 28px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  padding: 0 var(--space-2);
+}
+
+.boardColumnList {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+
+.boardColumnList .taskRow {
+  grid-template-columns: 8px minmax(0, 1fr);
+  align-items: start;
+  min-height: 92px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+  padding: var(--space-3);
+}
+
+.boardColumnList .taskRow + .taskRow {
+  border-top: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+}
+
+.boardColumnList .taskMeta {
+  grid-column: 2;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: var(--space-2);
+}
+
+.boardColumnList .taskMeta span,
+.boardColumnList .taskMeta em,
+.boardColumnList .taskMeta time {
+  min-height: 22px;
+  font-size: var(--fs-micro);
+}
+
+.columnEmpty {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--radius-1);
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  text-align: center;
+  padding: var(--space-4);
+}
+
+.completedStrip {
+  min-width: 0;
+  margin-top: var(--space-3);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
 }
 
 .overviewGrid {
@@ -778,6 +1005,7 @@
   }
 
   .commandGrid,
+  .planningStrip,
   .overviewGrid,
   .tasksBoard,
   .resourceGrid,
@@ -788,6 +1016,11 @@
   .tasksToolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .planningCards,
+  .personalBoard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .searchBox {
@@ -854,7 +1087,9 @@
     grid-template-columns: 1fr;
   }
 
-  .metricsGrid {
+  .metricsGrid,
+  .planningCards,
+  .personalBoard {
     grid-template-columns: 1fr;
   }
 }
