@@ -39,7 +39,6 @@ import {
 import DateField from '../components/ui/DateField.jsx';
 import Avatar from '../components/ui/Avatar.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
-import UserSpreadsheetPanel from '../components/spreadsheets/UserSpreadsheetPanel.jsx';
 import { BellIcon, BuildingIcon, CalendarIcon, ChecklistIcon, CloseIcon, SettingsIcon, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
 
@@ -55,11 +54,6 @@ const AVATAR_OPTIONS = [
 const SETTINGS_TABS = [
   { value: 'profile', label: 'Perfil' },
   { value: 'account', label: 'Conta' },
-];
-
-const PROFILE_WORKSPACE_TABS = [
-  { value: 'tasks', label: 'Minhas tarefas' },
-  { value: 'spreadsheets', label: 'Planilhas' },
 ];
 
 const DEMAND_TYPES = [
@@ -1573,7 +1567,6 @@ export default function ProfilePage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('profile');
-  const [workspaceTab, setWorkspaceTab] = useState('tasks');
   const [operationTab, setOperationTab] = useState('all');
   const [operationPage, setOperationPage] = useState(1);
   const [tasks, setTasks] = useState([]);
@@ -3349,50 +3342,32 @@ export default function ProfilePage() {
       </section>
 
       <div className={styles.internalToolbar}>
-        <div className={styles.profileWorkspaceSwitcher} aria-label="Área interna">
-          {PROFILE_WORKSPACE_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              className={`${styles.profileWorkspaceTab} ${workspaceTab === tab.value ? styles.profileWorkspaceTabActive : ''}`.trim()}
-              onClick={() => setWorkspaceTab(tab.value)}
-              aria-current={workspaceTab === tab.value ? 'page' : undefined}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        {workspaceTab === 'tasks' ? (
-          <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
-        ) : null}
+        <div className={styles.internalToolbarTitle}>Minhas tarefas</div>
+        <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
       </div>
 
       <section className={styles.operationBoard}>
-        {workspaceTab === 'tasks' ? (
-          <header className={styles.operationHeader}>
-            <div className={styles.operationControlPanel}>
-              <nav className={styles.operationTabs} aria-label="Operação">
-                {OPERATION_TABS.map((tab) => (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    className={`${styles.operationTab} ${operationTab === tab.value ? styles.operationTabActive : ''}`.trim()}
-                    onClick={() => { setOperationTab(tab.value); setOperationPage(1); }}
-                    aria-current={operationTab === tab.value ? 'page' : undefined}
-                  >
-                    <span className={styles.operationTabLabel}>{tab.label}</span>
-                    <span className={styles.operationTabCount}>{operationCounts[tab.value] || 0}</span>
-                  </button>
-                ))}
-              </nav>
-            </div>
-          </header>
-        ) : null}
+        <header className={styles.operationHeader}>
+          <div className={styles.operationControlPanel}>
+            <nav className={styles.operationTabs} aria-label="Operação">
+              {OPERATION_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  className={`${styles.operationTab} ${operationTab === tab.value ? styles.operationTabActive : ''}`.trim()}
+                  onClick={() => { setOperationTab(tab.value); setOperationPage(1); }}
+                  aria-current={operationTab === tab.value ? 'page' : undefined}
+                >
+                  <span className={styles.operationTabLabel}>{tab.label}</span>
+                  <span className={styles.operationTabCount}>{operationCounts[tab.value] || 0}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </header>
 
-        <div className={styles.operationBody} data-view={workspaceTab}>
-          {workspaceTab === 'spreadsheets' ? (
-            <UserSpreadsheetPanel ownerUserId={user?.id} canEdit showToast={showToast} />
-          ) : tasksLoading ? (
+        <div className={styles.operationBody}>
+          {tasksLoading ? (
             <div className={styles.operationLoading} aria-label="Carregando tarefas">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className={styles.operationLoadingRow}>

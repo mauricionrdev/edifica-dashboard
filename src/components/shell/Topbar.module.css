@@ -171,7 +171,7 @@
   border: 1px solid var(--surface);
   border-radius: 999px;
   background: var(--accent-amber);
-  color: #050505;
+  color: var(--accent-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -645,4 +645,124 @@
   justify-content: center;
   font-size: 10px;
   font-weight: 820;
+}
+
+/* v9 — menu de conta com entrada para Espaço de trabalho */
+.accountWrap {
+  position: relative;
+  z-index: 5004;
+}
+
+.accountButton {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0;
+  border: 1px solid var(--chassis-border);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.accountButton img,
+.accountAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.accountPanel {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  width: 318px;
+  border: 1px solid var(--chassis-border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 22px 70px var(--shadow-dialog);
+  overflow: hidden;
+  z-index: 5012;
+}
+
+.accountIdentity {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--chassis-border-subtle);
+}
+
+.accountAvatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.accountIdentity strong,
+.accountIdentity small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountIdentity strong {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 760;
+  letter-spacing: -0.03em;
+}
+
+.accountIdentity small {
+  margin-top: 2px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.accountItem {
+  width: 100%;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  border: 0;
+  border-bottom: 1px solid var(--bg-hover);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 560;
+  text-align: left;
+  cursor: pointer;
+}
+
+.accountItem:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.accountItem svg {
+  color: var(--text-tertiary);
+}
+
+.accountItemExit {
+  border-bottom: 0;
 }

@@ -13298,3 +13298,14 @@ button:focus-visible {
     flex: 1 1 0;
   }
 }
+
+/* v9 — Perfil interno volta a ser apenas tarefas; planilhas saem para Espaço de trabalho. */
+.internalToolbarTitle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 760;
+  letter-spacing: -0.02em;
+}

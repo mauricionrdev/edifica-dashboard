@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BellIcon, ChecklistIcon, MenuIcon, PanelLeftIcon, RotateCcwIcon, ShieldIcon } from '../ui/Icons.jsx';
+import { BellIcon, BuildingIcon, ChecklistIcon, LogOutIcon, MenuIcon, PanelLeftIcon, PlusIcon, RotateCcwIcon, SettingsIcon, ShieldIcon, UsersIcon } from '../ui/Icons.jsx';
 import Button from '../ui/Button.jsx';
 import LoadingIcon from '../ui/LoadingIcon.jsx';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { buildProfilePath } from '../../utils/entityPaths.js';
 import { getRouteCrumbLabel } from '../../utils/routeMeta.js';
 import styles from './Topbar.module.css';
@@ -42,7 +43,11 @@ export default function Topbar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [accountOpen, setAccountOpen] = useState(false);
   const panelRef = useRef(null);
+  const accountRef = useRef(null);
+  const avatarUrl = getUserAvatar(user);
   const current = getRouteCrumbLabel(location.pathname);
   const unreadItems = useMemo(
     () => notifications.filter((item) => !item.readAt).length,
@@ -96,6 +101,27 @@ export default function Topbar({
   useEffect(() => {
     onCloseNotifications?.();
   }, [location.pathname, onCloseNotifications]);
+
+
+  useEffect(() => {
+    if (!accountOpen) return undefined;
+    const handlePointerDown = (event) => {
+      if (accountRef.current && !accountRef.current.contains(event.target)) setAccountOpen(false);
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setAccountOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [accountOpen]);
+
+  useEffect(() => {
+    setAccountOpen(false);
+  }, [location.pathname]);
 
   return (
     <header className={styles.topbar}>
@@ -243,6 +269,35 @@ export default function Topbar({
                     ))
                   )}
                 </div>
+              </div>
+            ) : null}
+          </div>
+
+          <div className={styles.accountWrap} ref={accountRef}>
+            <button
+              type="button"
+              className={styles.accountButton}
+              onClick={() => setAccountOpen((current) => !current)}
+              aria-label="Abrir menu da conta"
+              aria-expanded={accountOpen ? 'true' : 'false'}
+            >
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}
+            </button>
+
+            {accountOpen ? (
+              <div className={styles.accountPanel} role="menu" aria-label="Conta">
+                <div className={styles.accountIdentity}>
+                  <span className={styles.accountAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
+                  <div>
+                    <strong>{user?.name || 'Usuário'}</strong>
+                    <small>{user?.email || ''}</small>
+                  </div>
+                </div>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><BuildingIcon size={16} /> Meu espaço de trabalho</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><PlusIcon size={16} /> Novo espaço de trabalho</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate(buildProfilePath(user))}><UsersIcon size={16} /> Perfil</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/perfil')}><SettingsIcon size={16} /> Configurações</button>
+                <button type="button" className={`${styles.accountItem} ${styles.accountItemExit}`.trim()} onClick={() => logout()}><LogOutIcon size={16} /> Sair</button>
               </div>
             ) : null}
           </div>

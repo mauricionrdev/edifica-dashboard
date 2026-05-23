@@ -22,6 +22,7 @@ import SupportTechnologyPage from './pages/SupportTechnologyPage.jsx';
 import ForbiddenPage from './pages/ForbiddenPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
+import WorkspacePage from './pages/WorkspacePage.jsx';
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
 
 export default function App() {
@@ -31,6 +32,15 @@ export default function App() {
         <ToastProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+
+            <Route
+              path="/espaco-trabalho"
+              element={
+                <ProtectedRoute>
+                  <WorkspacePage />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path="/"
