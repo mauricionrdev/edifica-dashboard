@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
 import UserSpreadsheetPanel from '../components/spreadsheets/UserSpreadsheetPanel.jsx';
@@ -50,6 +50,11 @@ const TASK_FILTERS = [
   { id: 'critical', label: 'Críticas' },
   { id: 'today', label: 'Hoje' },
 ];
+
+const SIDEBAR_MIN_WIDTH = 72;
+const SIDEBAR_DEFAULT_WIDTH = 232;
+const SIDEBAR_MAX_WIDTH = 320;
+const SIDEBAR_COMPACT_WIDTH = 136;
 
 function initials(name = '') {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
@@ -327,10 +332,48 @@ export default function WorkspacePage() {
   const [taskFilter, setTaskFilter] = useState('all');
   const [taskQuery, setTaskQuery] = useState('');
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarResizing, setSidebarResizing] = useState(false);
+  const pageRef = useRef(null);
   const avatarUrl = getUserAvatar(user);
   const displayName = user?.name || 'Meu espaço de trabalho';
+  const sidebarCompact = sidebarCollapsed || sidebarWidth <= SIDEBAR_COMPACT_WIDTH;
 
   const activeTabLabel = useMemo(() => TABS.find((tab) => tab.id === activeTab)?.label || 'Início', [activeTab]);
+
+  useEffect(() => {
+    if (!sidebarResizing) return undefined;
+
+    function handlePointerMove(event) {
+      const left = pageRef.current?.getBoundingClientRect?.().left || 0;
+      const nextWidth = Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, Math.round(event.clientX - left)));
+      setSidebarWidth(nextWidth);
+      setSidebarCollapsed(false);
+    }
+
+    function handlePointerUp() {
+      setSidebarResizing(false);
+    }
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [sidebarResizing]);
+
+  function toggleSidebar() {
+    setSidebarCollapsed((value) => !value);
+  }
 
   function loadTasks() {
     setTasksLoading(true);
@@ -505,14 +548,23 @@ export default function WorkspacePage() {
   }, [activeTasks]);
 
   return (
-    <main className={styles.page}>
-      <aside className={styles.sidebar} aria-label="Meu espaço de trabalho">
+    <main ref={pageRef} className={`${styles.page} ${sidebarCompact ? styles.pageCompact : ''}`.trim()} style={{ '--workspace-sidebar-width': sidebarCollapsed ? `${SIDEBAR_MIN_WIDTH}px` : `${sidebarWidth}px` }}>
+      <aside className={`${styles.sidebar} ${sidebarCompact ? styles.sidebarCompact : ''}`.trim()} aria-label="Meu espaço de trabalho">
         <div className={styles.sidebarHeader}>
           <span className={styles.brandMark}>edi</span>
-          <div>
+          <div className={styles.sidebarTitle}>
             <strong>Workspace</strong>
             <span>pessoal</span>
           </div>
+          <button
+            type="button"
+            className={styles.sidebarToggle}
+            onClick={toggleSidebar}
+            aria-label={sidebarCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+            title={sidebarCollapsed ? 'Expandir' : 'Recolher'}
+          >
+            {sidebarCollapsed ? '›' : '‹'}
+          </button>
         </div>
 
         <nav className={styles.sideNav} aria-label="Navegação do espaço">
@@ -534,8 +586,17 @@ export default function WorkspacePage() {
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <Link to="/" className={styles.backButton}><HomeIcon size={15} /> Voltar para a central</Link>
+          <Link to="/" className={styles.backButton}><HomeIcon size={15} /> <span>Voltar para a central</span></Link>
         </div>
+        <button
+          type="button"
+          className={styles.sidebarResizeHandle}
+          aria-label="Ajustar largura da sidebar"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            setSidebarResizing(true);
+          }}
+        />
       </aside>
 
       <section className={styles.workspace}>
@@ -806,7 +867,16 @@ export default function WorkspacePage() {
 
         {activeTab === 'sheets' ? (
           <section className={styles.sheetSection} aria-label="Planilhas pessoais">
-            <UserSpreadsheetPanel ownerUserId={user?.id} canEdit showToast={showToast} />
+            <div className={styles.sheetHeader}>
+              <div>
+                <span>Planilhas</span>
+                <strong>Área de controles pessoais</strong>
+              </div>
+              <button type="button" onClick={() => setActiveTab('home')}>Voltar ao início</button>
+            </div>
+            <div className={styles.sheetShell}>
+              <UserSpreadsheetPanel ownerUserId={user?.id} canEdit showToast={showToast} />
+            </div>
           </section>
         ) : null}
 

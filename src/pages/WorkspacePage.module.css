@@ -1,12 +1,13 @@
 .page {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-columns: var(--workspace-sidebar-width, 232px) minmax(0, 1fr);
   background: var(--bg-app);
   color: var(--text-primary);
 }
 
 .sidebar {
+  position: relative;
   min-width: 0;
   min-height: 100vh;
   display: flex;
@@ -17,7 +18,9 @@
 }
 
 .sidebarHeader {
-  display: flex;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 28px;
   align-items: center;
   gap: var(--space-3);
   min-height: 42px;
@@ -38,19 +41,70 @@
   letter-spacing: var(--tracking-tight);
 }
 
-.sidebarHeader strong,
-.sidebarHeader span:last-child {
+.sidebarTitle {
+  min-width: 0;
+}
+
+.sidebarToggle {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  justify-self: end;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.sidebarToggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.sidebarResizeHandle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  z-index: 3;
+  width: 8px;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+}
+
+.sidebarResizeHandle::after {
+  content: '';
+  position: absolute;
+  top: var(--space-5);
+  bottom: var(--space-5);
+  left: 3px;
+  width: 1px;
+  background: transparent;
+}
+
+.sidebarResizeHandle:hover::after {
+  background: var(--line);
+}
+
+.sidebarTitle strong,
+.sidebarTitle span {
   display: block;
 }
 
-.sidebarHeader strong {
+.sidebarTitle strong {
   color: var(--text-primary);
   font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
   line-height: var(--lh-tight);
 }
 
-.sidebarHeader span:last-child {
+.sidebarTitle span {
   margin-top: 2px;
   color: var(--text-tertiary);
   font-size: var(--fs-micro);
@@ -142,6 +196,46 @@
   background: var(--bg-hover);
   color: var(--text-primary);
 }
+
+
+.sidebarCompact {
+  padding-inline: var(--space-3);
+}
+
+.sidebarCompact .sidebarHeader {
+  grid-template-columns: 34px;
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.sidebarCompact .sidebarTitle,
+.sidebarCompact .sideNav button > span,
+.sidebarCompact .sideNav button > em,
+.sidebarCompact .backButton span,
+.sidebarCompact .sidebarResizeHandle {
+  display: none;
+}
+
+.sidebarCompact .sidebarToggle {
+  position: absolute;
+  right: -14px;
+  top: var(--space-5);
+  z-index: 4;
+  background: var(--bg-canvas);
+}
+
+.sidebarCompact .sideNav button {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  padding-inline: 0;
+}
+
+.sidebarCompact .backButton {
+  width: 38px;
+  margin-inline: auto;
+  padding: 0;
+}
+
 
 .workspace {
   min-width: 0;
@@ -1197,11 +1291,79 @@ button.taskRow:hover {
 .sheetSection {
   width: min(1520px, 100%);
   margin: var(--space-4) auto 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sheetHeader {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  padding: 0 var(--space-4);
+}
+
+.sheetHeader span,
+.sheetHeader strong {
+  display: block;
+}
+
+.sheetHeader span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.sheetHeader strong {
+  margin-top: var(--space-1);
+  color: var(--text-primary);
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.sheetHeader button {
+  height: 30px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  padding: 0 var(--space-3);
+  cursor: pointer;
+}
+
+.sheetHeader button:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.sheetShell {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.sheetShell > * {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 @media (max-width: 1180px) {
   .page {
-    grid-template-columns: 204px minmax(0, 1fr);
+    grid-template-columns: var(--workspace-sidebar-width, 204px) minmax(0, 1fr);
   }
 
   .workspace {
@@ -1270,6 +1432,26 @@ button.taskRow:hover {
     min-height: auto;
     border-right: 0;
     border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .sidebarResizeHandle {
+    display: none;
+  }
+
+  .sidebarCompact .sidebarHeader {
+    grid-template-columns: 34px minmax(0, 1fr) 28px;
+    justify-content: stretch;
+  }
+
+  .sidebarCompact .sidebarTitle,
+  .sidebarCompact .sideNav button > span,
+  .sidebarCompact .sideNav button > em,
+  .sidebarCompact .backButton span {
+    display: block;
+  }
+
+  .sidebarCompact .sidebarToggle {
+    position: static;
   }
 
   .sideNav {
