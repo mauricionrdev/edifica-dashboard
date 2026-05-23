@@ -67,8 +67,11 @@
   white-space: nowrap;
 }
 
-.sheetTitleRow span {
+.syncBadge {
   min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 4px 8px;
   border: 1px solid var(--sheet-line-soft);
   border-radius: 999px;
@@ -77,6 +80,59 @@
   font-size: var(--fs-tiny);
   font-weight: var(--weight-semibold);
   line-height: 1;
+}
+
+.syncBadge i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.78;
+}
+
+.syncBadge em {
+  color: var(--text-tertiary);
+  font-style: normal;
+  opacity: 0.72;
+}
+
+.syncBadge[data-status='saving'],
+.syncBadge[data-status='syncing'] {
+  border-color: rgba(245, 183, 36, 0.24);
+  background: rgba(245, 183, 36, 0.08);
+  color: #f6c95f;
+}
+
+.syncBadge[data-status='saving'] i,
+.syncBadge[data-status='syncing'] i {
+  animation: syncPulse 0.95s ease-in-out infinite;
+}
+
+.syncBadge[data-status='saved'] {
+  border-color: rgba(80, 250, 123, 0.18);
+  background: rgba(80, 250, 123, 0.055);
+  color: #8ee7a6;
+}
+
+.syncBadge[data-status='error'] {
+  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(248, 113, 113, 0.07);
+  color: #fca5a5;
+}
+
+.syncDetail {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  line-height: var(--lh-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.syncDetail[data-status='error'] {
+  color: #fca5a5;
 }
 
 .sheetTabsShell {
@@ -1008,6 +1064,24 @@
   min-width: 0;
 }
 
+
+.footerSync {
+  color: var(--text-tertiary);
+}
+
+.footerSync[data-status='saving'],
+.footerSync[data-status='syncing'] {
+  color: #f6c95f;
+}
+
+.footerSync[data-status='saved'] {
+  color: #8ee7a6;
+}
+
+.footerSync[data-status='error'] {
+  color: #fca5a5;
+}
+
 @media (max-width: 1180px) {
   .sheetHeader {
     grid-template-columns: 1fr;
@@ -1121,4 +1195,10 @@
 .rowIndex[data-range='true'] {
   color: var(--sheet-gold);
   background: rgba(245, 183, 36, 0.05);
+}
+
+
+@keyframes syncPulse {
+  0%, 100% { opacity: 0.42; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.18); }
 }

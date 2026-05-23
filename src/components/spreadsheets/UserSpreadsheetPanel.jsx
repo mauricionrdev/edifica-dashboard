@@ -164,6 +164,15 @@ function toneFromContent(value = '') {
   return 'neutral';
 }
 
+function formatSyncTime(value) {
+  if (!value) return '';
+  try {
+    return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(value);
+  } catch {
+    return '';
+  }
+}
+
 function saveSelectionInside(element) {
   const selection = window.getSelection?.();
   if (!selection || selection.rangeCount === 0 || !element) return null;
@@ -588,7 +597,18 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const sheetFrameRef = useRef(null);
   const [resizeState, setResizeState] = useState(null);
   const [scrollState, setScrollState] = useState({ x: false, y: false, endX: false, endY: false });
+  const [syncState, setSyncState] = useState({ status: 'syncing', label: 'Sincronizando', detail: 'Carregando planilhas', at: null });
   const scrollerRef = useRef(null);
+
+  const markSync = useCallback((status, detail = '') => {
+    const labelMap = {
+      syncing: 'Sincronizando',
+      saving: 'Salvando',
+      saved: 'Salvo',
+      error: 'Erro ao salvar',
+    };
+    setSyncState({ status, label: labelMap[status] || 'Salvo', detail, at: status === 'saved' ? new Date() : null });
+  }, []);
 
   const sheetMinWidth = useMemo(() => {
     const total = columns.reduce((sum, column) => sum + Math.max(5, Number(column.width || 5)), 0);
@@ -597,6 +617,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const refreshRows = useCallback(async (sheetId = activeSheetId) => {
     setRowsLoading(true);
+    markSync('syncing', 'Atualizando dados da planilha');
     try {
       const data = await listSupportDailyRows(sheetId || undefined, { ownerUserId });
       const nextColumns = normalizeColumns(data?.columns);
@@ -606,10 +627,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setRows((Array.isArray(data?.rows) ? data.rows : []).map((row) => normalizeRow(row, nextColumns)));
       setActiveCell(null);
       setSelectionRange(null);
+      markSync('saved', 'Planilha sincronizada');
+    } catch (err) {
+      markSync('error', 'Falha ao sincronizar');
+      throw err;
     } finally {
       setRowsLoading(false);
     }
-  }, [activeSheetId, ownerUserId]);
+  }, [activeSheetId, markSync, ownerUserId]);
 
   useEffect(() => {
     refreshRows().catch(() => showToast?.('Não foi possível carregar suas planilhas.', { variant: 'error' }));
@@ -769,11 +794,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleAddSheet = async () => {
     setCreatingSheet(true);
+    markSync('saving', 'Criando nova planilha');
     try {
       const data = await createSupportDailySheet({ name: `Planilha ${sheets.length + 1}`, ownerUserId, ...estimateBlankSheetSize() });
       setSheets(Array.isArray(data?.sheets) ? data.sheets : []);
       if (data?.sheet?.id) await refreshRows(data.sheet.id);
+      markSync('saved', 'Nova planilha criada');
     } catch (err) {
+      markSync('error', 'Falha ao criar planilha');
       showToast?.(err?.message || 'Não foi possível criar planilha.', { variant: 'error' });
     } finally {
       setCreatingSheet(false);
@@ -781,10 +809,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   };
 
   const handleSheetNameCommit = async (sheetId, name) => {
+    markSync('saving', 'Renomeando planilha');
     try {
       const data = await updateSupportDailySheet(sheetId, { name: cleanText(name) || 'Planilha', ownerUserId });
       if (Array.isArray(data?.sheets)) setSheets(data.sheets);
+      markSync('saved', 'Nome da planilha salvo');
     } catch (err) {
+      markSync('error', 'Falha ao renomear planilha');
       showToast?.(err?.message || 'Não foi possível renomear a planilha.', { variant: 'error' });
       refreshRows(activeSheetId).catch(() => {});
     }
@@ -792,12 +823,15 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleDeleteSheet = async (sheetId) => {
     if (!sheetId) return;
+    markSync('saving', 'Removendo planilha');
     try {
       const data = await deleteSupportDailySheet(sheetId, { ownerUserId });
       const nextSheets = Array.isArray(data?.sheets) ? data.sheets : sheets.filter((sheet) => sheet.id !== sheetId);
       setSheets(nextSheets);
       await refreshRows(nextSheets[0]?.id || '');
+      markSync('saved', 'Planilha removida');
     } catch (err) {
+      markSync('error', 'Falha ao remover planilha');
       showToast?.(err?.message || 'Não foi possível excluir a planilha.', { variant: 'error' });
     }
   };
@@ -805,6 +839,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const createRowAt = async ({ anchorRowId = '', placement = 'end', duplicateFromRowId = '' } = {}) => {
     if (!activeSheetId) return null;
     setCreatingRow(true);
+    markSync('saving', duplicateFromRowId ? 'Duplicando linha' : 'Criando linha');
     try {
       const sourceRow = duplicateFromRowId ? rows.find((row) => row.id === duplicateFromRowId) : null;
       const data = await createSupportDailyRow({ sheetId: activeSheetId, ownerUserId });
@@ -831,8 +866,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         setActiveCell({ rowId: createdRow.id, key: columns[0].key, element: null });
         setSelectionRange({ start: { rowId: createdRow.id, key: columns[0].key }, end: { rowId: createdRow.id, key: columns[columns.length - 1]?.key || columns[0].key } });
       }
+      markSync('saved', duplicateFromRowId ? 'Linha duplicada' : 'Linha criada');
       return createdRow;
     } catch (err) {
+      markSync('error', 'Falha ao salvar linha');
       showToast?.(err?.message || 'Não foi possível criar a linha.', { variant: 'error' });
       refreshRows(activeSheetId).catch(() => {});
       return null;
@@ -850,10 +887,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const handleDeleteRow = async (id) => {
     if (!id) return;
     closeContextMenu();
+    markSync('saving', 'Removendo linha');
     try {
       await deleteSupportDailyRow(id, { ownerUserId });
       setRows((current) => current.filter((row) => row.id !== id));
+      markSync('saved', 'Linha removida');
     } catch (err) {
+      markSync('error', 'Falha ao remover linha');
       showToast?.(err?.message || 'Não foi possível remover a linha.', { variant: 'error' });
     }
   };
@@ -867,10 +907,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!row) return;
     const saveKey = `${id}:${key}`;
     setSavingCell(saveKey);
+    markSync('saving', 'Salvando célula');
     try {
       const data = await updateSupportDailyRow(id, { [key]: row[key] || '', ownerUserId });
       if (data?.row) setRows((current) => current.map((entry) => (entry.id === id ? normalizeRow(data.row, columns) : entry)));
+      markSync('saved', 'Célula salva');
     } catch (err) {
+      markSync('error', 'Falha ao salvar célula');
       showToast?.(err?.message || 'Não foi possível salvar a célula.', { variant: 'error' });
       refreshRows(activeSheetId).catch(() => {});
     } finally {
@@ -896,9 +939,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }));
 
     setSavingCell('bulk-selection');
+    markSync('saving', 'Aplicando formatação em lote');
     try {
       await Promise.all(Array.from(groupedStyles.entries()).map(([rowId, stylesPayload]) => updateSupportDailyRow(rowId, { ownerUserId, styles: stylesPayload })));
+      markSync('saved', 'Formatação aplicada');
     } catch (err) {
+      markSync('error', 'Falha na formatação em lote');
       showToast?.(err?.message || 'Não foi possível aplicar a formatação em lote.', { variant: 'error' });
       refreshRows(activeSheetId).catch(() => {});
     } finally {
@@ -931,9 +977,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const nextHtml = element.innerHTML;
     setRows((current) => current.map((entry) => (entry.id === rowId ? { ...entry, [key]: nextHtml } : entry)));
     setSavingCell(`${rowId}:${key}`);
+    markSync('saving', 'Salvando formatação');
     try {
       await updateSupportDailyRow(rowId, { [key]: nextHtml, ownerUserId });
+      markSync('saved', 'Formatação salva');
     } catch (err) {
+      markSync('error', 'Falha ao salvar formatação');
       showToast?.(err?.message || 'Não foi possível salvar a formatação.', { variant: 'error' });
       refreshRows(activeSheetId).catch(() => {});
     } finally {
@@ -944,6 +993,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const createColumnAt = async ({ anchorKey = '', placement = 'end', duplicateFromKey = '' } = {}) => {
     if (!activeSheetId) return null;
     setCreatingColumn(true);
+    markSync('saving', duplicateFromKey ? 'Duplicando coluna' : 'Criando coluna');
     try {
       const sourceColumn = duplicateFromKey ? columns.find((column) => column.key === duplicateFromKey) : null;
       const sourceLabel = sourceColumn?.label ? `${sourceColumn.label} cópia` : 'Nova coluna';
@@ -985,8 +1035,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         setActiveCell({ rowId: rows[0].id, key: createdColumn.key, element: null });
         setSelectionRange({ start: { rowId: rows[0].id, key: createdColumn.key }, end: { rowId: rows[rows.length - 1]?.id || rows[0].id, key: createdColumn.key } });
       }
+      markSync('saved', duplicateFromKey ? 'Coluna duplicada' : 'Coluna criada');
       return createdColumn;
     } catch (err) {
+      markSync('error', 'Falha ao salvar coluna');
       showToast?.(err?.message || 'Não foi possível criar a coluna.', { variant: 'error' });
       refreshRows(activeSheetId).catch(() => {});
       return null;
@@ -1009,10 +1061,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const column = columns.find((entry) => entry.key === key);
     if (!column) return;
     setSavingColumn(key);
+    markSync('saving', 'Salvando coluna');
     try {
       const data = await updateSupportDailyColumn(key, { ownerUserId, label: column.label || 'Coluna' });
       if (data?.columns) setColumns(normalizeColumns(data.columns));
+      markSync('saved', 'Coluna salva');
     } catch (err) {
+      markSync('error', 'Falha ao salvar coluna');
       showToast?.(err?.message || 'Não foi possível salvar a coluna.', { variant: 'error' });
       refreshRows(activeSheetId).catch(() => {});
     } finally {
@@ -1023,6 +1078,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const handleDeleteColumn = async (key) => {
     if (!key) return;
     closeContextMenu();
+    markSync('saving', 'Removendo coluna');
     try {
       await deleteSupportDailyColumn(key, { ownerUserId });
       setColumns((current) => current.filter((entry) => entry.key !== key));
@@ -1032,7 +1088,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         delete next.__styles[key];
         return next;
       }));
+      markSync('saved', 'Coluna removida');
     } catch (err) {
+      markSync('error', 'Falha ao remover coluna');
       showToast?.(err?.message || 'Não foi possível remover a coluna.', { variant: 'error' });
     }
   };
@@ -1082,9 +1140,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setResizeState(null);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      markSync('saving', 'Salvando largura da coluna');
       try {
         await updateSupportDailyColumn(state.key, { ownerUserId, width: state.width });
+        markSync('saved', 'Largura da coluna salva');
       } catch {
+        markSync('error', 'Falha ao salvar largura');
         refreshRows(activeSheetId).catch(() => {});
       }
     };
@@ -1112,7 +1173,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     : activeCell
       ? `${activeColumn?.label || 'Coluna'} · L${activeRowNumber || '—'}`
       : 'Nenhuma célula';
-  const savingState = savingCell || savingColumn ? 'Salvando' : 'Salvo';
+  const savingState = savingCell || savingColumn || syncState.status === 'saving' ? 'Salvando' : syncState.label;
+  const syncTime = formatSyncTime(syncState.at);
 
   return (
     <section className={styles.panel}>
@@ -1121,8 +1183,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <span className={styles.sheetEyebrow}>Planilhas pessoais</span>
           <div className={styles.sheetTitleRow}>
             <strong>{activeSheet?.name || 'Nova planilha'}</strong>
-            <span>{savingState}</span>
+            <span className={styles.syncBadge} data-status={syncState.status}>
+              <i aria-hidden="true" />
+              {savingState}
+              {syncTime ? <em>{syncTime}</em> : null}
+            </span>
           </div>
+          <span className={styles.syncDetail} data-status={syncState.status}>{syncState.detail || 'Alterações salvas automaticamente'}</span>
         </div>
 
         {canEdit ? (
@@ -1349,7 +1416,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       </div>
 
       <footer className={styles.panelFooter}>
-        <span><SaveIcon size={13} /> Salvamento automático</span>
+        <span className={styles.footerSync} data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail || 'Salvamento automático'}{syncTime ? ` · ${syncTime}` : ''}</span>
         <span>{resizeState ? `Redimensionando ${resizeState.label}: ${resizeState.width}px · ` : ''}{selectedCount > 1 ? `${selectedCount} células selecionadas${selectionLabel ? ` · ${selectionLabel}` : ''} · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
 
