@@ -139,7 +139,13 @@ function unlockSkynetAudio() {
     const audioContext = window.__skynetAudioContext || new AudioCtx();
     window.__skynetAudioContext = audioContext;
     window.__skynetAudioUnlocked = true;
-    audioContext.resume?.();
+
+    const resumePromise = audioContext.resume?.();
+    if (resumePromise?.then) {
+      resumePromise.then(() => {
+        if (window.__skynetPendingGlitch) playHalGlitchSound(true);
+      }).catch(() => {});
+    }
     return audioContext;
   } catch (error) {
     return null;
@@ -156,48 +162,59 @@ function playHalGlitchSound(force = false) {
     }
 
     const now = audioContext.currentTime;
-    const master = audioContext.createGain();
-    master.gain.setValueAtTime(0.0001, now);
-    master.gain.linearRampToValueAtTime(0.032, now + 0.006);
-    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-    master.connect(audioContext.destination);
+    const output = audioContext.createGain();
+    output.gain.setValueAtTime(0.0001, now);
+    output.gain.linearRampToValueAtTime(0.12, now + 0.012);
+    output.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
+    output.connect(audioContext.destination);
 
-    const bursts = [0, 0.028, 0.061, 0.096, 0.132];
-    bursts.forEach((offset, index) => {
-      const duration = index % 2 === 0 ? 0.018 : 0.026;
+    const highPass = audioContext.createBiquadFilter();
+    highPass.type = 'highpass';
+    highPass.frequency.setValueAtTime(900, now);
+    highPass.connect(output);
+
+    const bitBursts = [0, 0.032, 0.066, 0.104, 0.146, 0.196, 0.242];
+    bitBursts.forEach((offset, index) => {
+      const duration = 0.018 + (index % 3) * 0.006;
       const buffer = audioContext.createBuffer(1, Math.floor(audioContext.sampleRate * duration), audioContext.sampleRate);
       const channel = buffer.getChannelData(0);
       for (let i = 0; i < channel.length; i += 1) {
-        const gate = i % 7 < 3 ? 1 : -0.7;
-        channel[i] = (Math.random() * 2 - 1) * gate * (1 - i / channel.length);
+        const squareGate = i % (index + 5) < 2 ? 1 : -1;
+        const decay = 1 - i / channel.length;
+        channel[i] = squareGate * decay * (Math.random() * 0.92 + 0.08);
       }
 
       const source = audioContext.createBufferSource();
-      source.buffer = buffer;
       const filter = audioContext.createBiquadFilter();
+      const gain = audioContext.createGain();
+      source.buffer = buffer;
       filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(index % 2 === 0 ? 3900 : 2100, now + offset);
-      filter.Q.setValueAtTime(8, now + offset);
+      filter.frequency.setValueAtTime(index % 2 === 0 ? 5200 : 2800, now + offset);
+      filter.Q.setValueAtTime(12, now + offset);
+      gain.gain.setValueAtTime(0.0001, now + offset);
+      gain.gain.linearRampToValueAtTime(0.16, now + offset + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + duration);
       source.connect(filter);
-      filter.connect(master);
+      filter.connect(gain);
+      gain.connect(highPass);
       source.start(now + offset);
       source.stop(now + offset + duration);
     });
 
-    [1760, 2480, 3120].forEach((frequency, index) => {
+    [3300, 4700, 1900, 6100].forEach((frequency, index) => {
       const osc = audioContext.createOscillator();
       const gain = audioContext.createGain();
-      const startAt = now + index * 0.042;
-      osc.type = 'square';
+      const startAt = now + 0.018 + index * 0.045;
+      osc.type = index % 2 === 0 ? 'square' : 'sawtooth';
       osc.frequency.setValueAtTime(frequency, startAt);
-      osc.frequency.setValueAtTime(frequency * 0.54, startAt + 0.022);
+      osc.frequency.exponentialRampToValueAtTime(frequency * 0.62, startAt + 0.035);
       gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.linearRampToValueAtTime(0.01, startAt + 0.004);
-      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.044);
+      gain.gain.linearRampToValueAtTime(0.035, startAt + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.055);
       osc.connect(gain);
-      gain.connect(master);
+      gain.connect(highPass);
       osc.start(startAt);
-      osc.stop(startAt + 0.05);
+      osc.stop(startAt + 0.06);
     });
 
     window.__skynetPendingGlitch = false;
@@ -234,13 +251,17 @@ export default function SupportTechnologyPage() {
       if (window.__skynetPendingGlitch) playHalGlitchSound(true);
     };
 
-    window.addEventListener('pointerdown', unlockAudio, { once: false });
-    window.addEventListener('click', unlockAudio, { once: false });
-    window.addEventListener('keydown', unlockAudio, { once: false });
+    document.addEventListener('pointerdown', unlockAudio, { once: false, capture: true });
+    document.addEventListener('pointerup', unlockAudio, { once: false, capture: true });
+    document.addEventListener('touchstart', unlockAudio, { once: false, capture: true });
+    document.addEventListener('click', unlockAudio, { once: false, capture: true });
+    document.addEventListener('keydown', unlockAudio, { once: false, capture: true });
     return () => {
-      window.removeEventListener('pointerdown', unlockAudio);
-      window.removeEventListener('click', unlockAudio);
-      window.removeEventListener('keydown', unlockAudio);
+      document.removeEventListener('pointerdown', unlockAudio, true);
+      document.removeEventListener('pointerup', unlockAudio, true);
+      document.removeEventListener('touchstart', unlockAudio, true);
+      document.removeEventListener('click', unlockAudio, true);
+      document.removeEventListener('keydown', unlockAudio, true);
     };
   }, []);
 
@@ -248,9 +269,14 @@ export default function SupportTechnologyPage() {
 
   useEffect(() => {
     if (activeStage.mode !== 'hal') return undefined;
+    window.__skynetPendingGlitch = true;
     playHalGlitchSound();
-    const retry = window.setTimeout(() => playHalGlitchSound(), 260);
-    return () => window.clearTimeout(retry);
+    const retryOne = window.setTimeout(() => playHalGlitchSound(), 180);
+    const retryTwo = window.setTimeout(() => playHalGlitchSound(), 520);
+    return () => {
+      window.clearTimeout(retryOne);
+      window.clearTimeout(retryTwo);
+    };
   }, [activeStage.mode]);
 
   useEffect(() => {
@@ -385,62 +411,54 @@ export default function SupportTechnologyPage() {
                       <span className={styles.browserAddress}>/suporte/tecnologia</span>
                     </div>
                     <div className={`${styles.previewSurface} ${activeStage.mode === 'hal' ? styles.previewSurfaceHal : ''}`.trim()}>
-                      <div className={styles.previewGlow} />
-                      <div className={styles.previewStageRail}>
-                        {buildStages.map((item, index) => (
-                          <span
-                            key={item}
-                            className={`${styles.previewStageChip} ${index < stageIndex ? styles.previewStageChipDone : ''} ${index === stageIndex ? styles.previewStageChipActive : ''}`.trim()}
-                          >
-                            {item}
-                          </span>
-                        ))}
+                      <div className={styles.previewProgressTop}>
+                        <div className={styles.previewProgressLabel}>
+                          <span>Construção do preview</span>
+                          <strong>{previewProgress}%</strong>
+                        </div>
+                        <div className={styles.previewProgressTrack}>
+                          <span style={{ '--preview-progress': `${previewProgress}%` }} />
+                        </div>
                       </div>
+                      <div className={styles.previewGlow} />
 
                       {activeStage.mode === 'build' ? (
                         <div className={styles.previewBuilding}>
-                          {previewBlocks.badge ? <div className={styles.previewBadge}>Construção assistida pela Skynet</div> : null}
-                          <div className={styles.previewWireframe}>
-                            {previewBlocks.title ? <span className={styles.wireLine} /> : <span className={styles.wireGhost} />}
-                            {previewBlocks.title ? <span className={styles.wireLineShort} /> : null}
-                            {previewBlocks.cards ? <div className={styles.wireCards}><span /><span /><span /></div> : null}
-                            {previewBlocks.footer ? <div className={styles.wireBoard}><span /><span /></div> : null}
+                          <div className={styles.previewHeroDraft}>
+                            {previewBlocks.badge ? <span className={styles.previewBadge}>Construção assistida pela Skynet</span> : null}
+                            {previewBlocks.title ? <h3>Suporte de tecnologia</h3> : <span className={styles.wireHeroTitle} />}
+                            {previewBlocks.cards ? <p>Em construção</p> : <span className={styles.wireHeroText} />}
+                          </div>
+                          <div className={styles.previewFlow}>
+                            <span className={previewBlocks.badge ? styles.previewFlowReady : ''}>Shell visual</span>
+                            <span className={previewBlocks.title ? styles.previewFlowReady : ''}>Hero</span>
+                            <span className={previewBlocks.cards ? styles.previewFlowReady : ''}>Status</span>
+                            <span className={previewBlocks.footer ? styles.previewFlowReady : ''}>Publicação</span>
                           </div>
                           {previewBlocks.footer ? (
-                            <div className={styles.previewBuildCard}>
-                              <strong>{activeStage.label}</strong>
-                              <p>O preview está sendo montado conforme o código aparece no editor.</p>
-                            </div>
+                            <div className={styles.previewBuildNote}>O preview nasce conforme o código é escrito no editor.</div>
                           ) : null}
                         </div>
                       ) : (
                         <div className={`${styles.previewResult} ${activeStage.mode === 'hal' ? styles.previewResultHal : ''}`.trim()}>
-                          {previewBlocks.badge ? <div className={styles.previewHeroEyebrow}>Suporte de tecnologia</div> : null}
-                          {previewBlocks.title ? (
-                            <h3 className={activeStage.mode === 'hal' ? styles.halSwitchTitle : ''}>
-                              {activeStage.mode === 'hal' ? (
-                                <>
-                                  <span>Em construção</span>
-                                  <span>Edifica CRM</span>
-                                </>
-                              ) : 'Em construção'}
-                            </h3>
-                          ) : null}
-                          {previewBlocks.cards ? <p>Construção assistida pela <strong>Skynet</strong></p> : null}
-                          {previewBlocks.cards ? (
-                            <div className={styles.previewPills}>
-                              <span>IA ativa</span>
-                              <span>preview local</span>
-                              <span>Edifica Central</span>
-                            </div>
-                          ) : null}
-                          {previewBlocks.footer ? (
-                            <div className={styles.previewDashboard}>
-                              <span />
-                              <span />
-                              <span />
-                            </div>
-                          ) : null}
+                          <div className={styles.previewResultHeader}>
+                            <span>Suporte de tecnologia</span>
+                            <em>{activeStage.mode === 'hal' ? 'HAL 9000' : 'Skynet'}</em>
+                          </div>
+                          <h3 className={activeStage.mode === 'hal' ? styles.halSwitchTitle : ''}>
+                            {activeStage.mode === 'hal' ? (
+                              <>
+                                <span>Em construção</span>
+                                <span>Edifica CRM</span>
+                              </>
+                            ) : 'Em construção'}
+                          </h3>
+                          <p>Construção assistida pela <strong>Skynet</strong></p>
+                          <div className={styles.previewMetaLine}>
+                            <span>preview local ativo</span>
+                            <span>Edifica Central</span>
+                            <span>IA visual</span>
+                          </div>
                           {activeStage.mode === 'hal' ? (
                             <>
                               <div className={styles.halBreach} aria-hidden="true"><span /> <span /> <span /> <span /></div>
@@ -457,15 +475,6 @@ export default function SupportTechnologyPage() {
                           ) : null}
                         </div>
                       )}
-                      <div className={styles.previewProgressDock}>
-                        <div className={styles.previewProgressLabel}>
-                          <span>Construção do preview</span>
-                          <strong>{previewProgress}%</strong>
-                        </div>
-                        <div className={styles.previewProgressTrack}>
-                          <span style={{ '--preview-progress': `${previewProgress}%` }} />
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </section>
