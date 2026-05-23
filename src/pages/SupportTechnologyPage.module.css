@@ -747,16 +747,16 @@
 
 .halForeshadowOne::before {
   background:
-    linear-gradient(90deg, transparent 0%, rgba(255, 74, 74, 0.035) 18%, transparent 22%, transparent 70%, rgba(255, 74, 74, 0.035) 74%, transparent 100%),
-    repeating-linear-gradient(180deg, rgba(255, 74, 74, 0.035) 0 1px, transparent 1px 8px);
-  animation: foreshadowStatic 3.4s ease-in-out infinite, foreshadowShift 5.4s linear infinite;
+    linear-gradient(180deg, transparent 0 18%, rgba(255, 74, 74, 0.12) 18.4%, transparent 19.2%, transparent 48%, rgba(255, 74, 74, 0.08) 48.4%, transparent 49.1%, transparent 74%, rgba(255, 74, 74, 0.10) 74.4%, transparent 75.2%),
+    repeating-linear-gradient(180deg, rgba(255, 74, 74, 0.035) 0 1px, transparent 1px 9px);
+  animation: foreshadowGlitchOne 2.55s steps(1, end) infinite, foreshadowShift 4.2s linear infinite;
 }
 
 .halForeshadowTwo::before {
   background:
-    linear-gradient(90deg, transparent 0%, rgba(255, 74, 74, 0.07) 22%, transparent 26%, transparent 52%, rgba(255, 74, 74, 0.08) 56%, transparent 62%),
-    repeating-linear-gradient(180deg, rgba(255, 74, 74, 0.055) 0 1px, transparent 1px 6px);
-  animation: foreshadowStaticTwo 2.2s ease-in-out infinite, foreshadowShift 3.6s linear infinite;
+    linear-gradient(180deg, transparent 0 12%, rgba(255, 74, 74, 0.18) 12.3%, transparent 13.4%, transparent 31%, rgba(255, 74, 74, 0.15) 31.5%, transparent 32.4%, transparent 57%, rgba(255, 74, 74, 0.16) 57.5%, transparent 58.8%, transparent 82%, rgba(255, 74, 74, 0.13) 82.5%, transparent 83.4%),
+    repeating-linear-gradient(180deg, rgba(255, 74, 74, 0.055) 0 1px, transparent 1px 7px);
+  animation: foreshadowGlitchTwo 1.9s steps(1, end) infinite, foreshadowShift 3.1s linear infinite;
 }
 
 .previewSurfaceForeshadowOne::after,
@@ -771,17 +771,16 @@
 
 .previewSurfaceForeshadowOne::after {
   background:
-    linear-gradient(180deg, transparent 0%, rgba(255, 71, 71, 0.08) 48%, transparent 51%),
-    radial-gradient(circle at 88% 18%, rgba(255, 71, 71, 0.10), transparent 18%);
-  animation: previewSignalSoft 3s ease-in-out infinite;
+    linear-gradient(180deg, transparent 0 22%, rgba(255, 71, 71, 0.16) 22.4%, transparent 23.4%, transparent 63%, rgba(255, 71, 71, 0.10) 63.5%, transparent 64.5%),
+    linear-gradient(90deg, transparent 0%, rgba(255, 71, 71, 0.08) 18%, transparent 22%, transparent 70%, rgba(255, 71, 71, 0.07) 74%, transparent 78%);
+  animation: previewGlitchSoft 2.35s steps(1, end) infinite;
 }
 
 .previewSurfaceForeshadowTwo::after {
   background:
-    linear-gradient(180deg, transparent 0%, rgba(255, 71, 71, 0.13) 44%, transparent 47%, transparent 74%, rgba(255, 71, 71, 0.09) 76%, transparent 79%),
-    linear-gradient(90deg, transparent 0%, rgba(255, 71, 71, 0.10) 36%, transparent 39%, transparent 60%, rgba(255, 71, 71, 0.11) 63%, transparent 67%),
-    radial-gradient(circle at 84% 14%, rgba(255, 71, 71, 0.18), transparent 22%);
-  animation: previewSignalTwo 1.8s ease-in-out infinite;
+    linear-gradient(180deg, transparent 0 12%, rgba(255, 71, 71, 0.22) 12.5%, transparent 13.8%, transparent 37%, rgba(255, 71, 71, 0.18) 37.5%, transparent 39%, transparent 66%, rgba(255, 71, 71, 0.20) 66.4%, transparent 67.8%),
+    linear-gradient(90deg, transparent 0%, rgba(255, 71, 71, 0.12) 28%, transparent 32%, transparent 58%, rgba(255, 71, 71, 0.15) 62%, transparent 66%);
+  animation: previewGlitchTwo 1.55s steps(1, end) infinite;
 }
 
 .halSignalHint,
@@ -797,7 +796,7 @@
   letter-spacing: .14em;
   text-transform: uppercase;
   opacity: 0;
-  animation: hintAppear 3.4s ease-in-out infinite;
+  animation: hintAppear 2.6s steps(1, end) infinite;
 }
 
 .halSignalHint {
@@ -808,7 +807,7 @@
 .halSignalHintResult {
   right: 22px;
   top: 68px;
-  animation-duration: 2.6s;
+  animation-duration: 2.1s;
 }
 
 .halSignalHint span,
@@ -830,24 +829,24 @@
 .halForeshadowTwo::after {
   content: '';
   position: absolute;
-  right: 16px;
-  top: 54px;
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: rgba(255, 74, 74, 0.88);
-  box-shadow: 0 0 18px rgba(255, 74, 74, 0.46);
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 74, 74, 0.0) 12%, rgba(255, 74, 74, 0.72) 28%, rgba(255, 74, 74, 0.28) 45%, transparent 72%);
+  box-shadow: 0 0 14px rgba(255, 74, 74, 0.24);
   opacity: 0;
   pointer-events: none;
   z-index: 11;
 }
 
 .halForeshadowOne::after {
-  animation: hintDotOne 3.2s ease-in-out infinite;
+  top: 31%;
+  animation: hintSliceOne 2.7s steps(1, end) infinite;
 }
 
 .halForeshadowTwo::after {
-  animation: hintDotTwo 2s ease-in-out infinite;
+  top: 57%;
+  animation: hintSliceTwo 1.75s steps(1, end) infinite;
 }
 
 .halSystemBreach {
@@ -954,21 +953,24 @@
 }
 
 
-@keyframes foreshadowStatic {
-  0%, 58%, 100% { opacity: 0; transform: translate3d(0,0,0); }
-  64% { opacity: .34; transform: translate3d(-1px,0,0); }
-  68% { opacity: .12; transform: translate3d(1px,0,0); }
-  72% { opacity: .42; transform: translate3d(0,1px,0); }
-  80% { opacity: .08; transform: translate3d(0,0,0); }
+@keyframes foreshadowGlitchOne {
+  0%, 30%, 100% { opacity: 0; transform: translate3d(0,0,0); filter: none; }
+  34% { opacity: .20; transform: translate3d(-1px,0,0); filter: contrast(1.12); }
+  36% { opacity: .06; transform: translate3d(1px,0,0); }
+  47% { opacity: .28; transform: translate3d(0,1px,0); }
+  49% { opacity: .10; transform: translate3d(0,0,0); }
+  73% { opacity: .22; transform: translate3d(1px,0,0); }
+  75% { opacity: 0; }
 }
 
-@keyframes foreshadowStaticTwo {
-  0%, 42%, 100% { opacity: 0; transform: translate3d(0,0,0); }
-  48% { opacity: .48; transform: translate3d(-2px,0,0); }
-  52% { opacity: .16; transform: translate3d(2px,0,0); }
-  58% { opacity: .58; transform: translate3d(0,1px,0); }
-  66% { opacity: .22; transform: translate3d(-1px,-1px,0); }
-  74% { opacity: .06; transform: translate3d(0,0,0); }
+@keyframes foreshadowGlitchTwo {
+  0%, 22%, 100% { opacity: 0; transform: translate3d(0,0,0); filter: none; }
+  26% { opacity: .34; transform: translate3d(-2px,0,0); filter: contrast(1.18) saturate(1.12); }
+  29% { opacity: .09; transform: translate3d(2px,0,0); }
+  43% { opacity: .42; transform: translate3d(0,1px,0); }
+  47% { opacity: .16; transform: translate3d(-1px,-1px,0); }
+  63% { opacity: .30; transform: translate3d(2px,0,0); }
+  67% { opacity: 0; }
 }
 
 @keyframes foreshadowShift {
@@ -976,21 +978,24 @@
   to { background-position: 24px 0, 0 18px; }
 }
 
-@keyframes previewSignalSoft {
-  0%, 56%, 100% { opacity: 0; transform: translateY(0); }
-  62% { opacity: .46; transform: translateY(-1px); }
-  66% { opacity: .12; transform: translateY(1px); }
-  72% { opacity: .34; transform: translateY(0); }
-  80% { opacity: 0; }
+@keyframes previewGlitchSoft {
+  0%, 36%, 100% { opacity: 0; transform: translate3d(0,0,0); }
+  40% { opacity: .34; transform: translate3d(-1px,0,0); }
+  42% { opacity: .08; transform: translate3d(1px,0,0); }
+  58% { opacity: .26; transform: translate3d(0,-1px,0); }
+  61% { opacity: 0; transform: translate3d(0,0,0); }
+  82% { opacity: .20; transform: translate3d(1px,0,0); }
+  84% { opacity: 0; }
 }
 
-@keyframes previewSignalTwo {
-  0%, 34%, 100% { opacity: 0; transform: translate3d(0,0,0); }
-  42% { opacity: .58; transform: translate3d(-1px,0,0); }
-  46% { opacity: .16; transform: translate3d(1px,0,0); }
-  54% { opacity: .72; transform: translate3d(0,-1px,0); }
-  64% { opacity: .22; transform: translate3d(0,1px,0); }
-  76% { opacity: 0; transform: translate3d(0,0,0); }
+@keyframes previewGlitchTwo {
+  0%, 24%, 100% { opacity: 0; transform: translate3d(0,0,0); filter: none; }
+  30% { opacity: .46; transform: translate3d(-2px,0,0); filter: contrast(1.14); }
+  33% { opacity: .12; transform: translate3d(2px,0,0); }
+  49% { opacity: .52; transform: translate3d(0,-1px,0); }
+  54% { opacity: .18; transform: translate3d(0,1px,0); }
+  70% { opacity: .36; transform: translate3d(1px,0,0); }
+  74% { opacity: 0; }
 }
 
 @keyframes hintAppear {
@@ -999,14 +1004,20 @@
   82% { opacity: .18; transform: translateX(1px); }
 }
 
-@keyframes hintDotOne {
-  0%, 55%, 100% { opacity: 0; transform: scale(.8); }
-  62%, 76% { opacity: .78; transform: scale(1); }
+@keyframes hintSliceOne {
+  0%, 46%, 100% { opacity: 0; transform: translateX(-12%); }
+  50% { opacity: .58; transform: translateX(4%); }
+  52% { opacity: .16; transform: translateX(-2%); }
+  68% { opacity: .32; transform: translateX(10%); }
+  70% { opacity: 0; transform: translateX(0); }
 }
 
-@keyframes hintDotTwo {
-  0%, 36%, 100% { opacity: 0; transform: scale(.78); }
-  44%, 70% { opacity: 1; transform: scale(1.08); }
+@keyframes hintSliceTwo {
+  0%, 30%, 100% { opacity: 0; transform: translateX(8%); }
+  36% { opacity: .72; transform: translateX(-5%); }
+  39% { opacity: .18; transform: translateX(3%); }
+  58% { opacity: .46; transform: translateX(-10%); }
+  61% { opacity: 0; transform: translateX(0); }
 }
 
 @keyframes hintPulse {
