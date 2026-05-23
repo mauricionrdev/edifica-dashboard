@@ -641,10 +641,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [ownerUserId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    window.requestAnimationFrame(updateScrollState);
-  }, [columns.length, rows.length, sheetMinWidth, updateScrollState]);
-
-  useEffect(() => {
     const syncSelection = () => {
       if (!activeCell?.element) return;
       const range = saveSelectionInside(activeCell.element);
@@ -769,6 +765,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         : next
     ));
   }, []);
+
+
+  useEffect(() => {
+    window.requestAnimationFrame(updateScrollState);
+  }, [columns.length, rows.length, sheetMinWidth, updateScrollState]);
 
   const handleSheetWheel = useCallback((event) => {
     const scroller = scrollerRef.current;
