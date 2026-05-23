@@ -13032,3 +13032,44 @@ button:focus-visible {
 .operationRow:hover .taskAvatar {
   box-shadow: none;
 }
+
+.profileWorkspaceSwitcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--edf-surface-2);
+}
+
+.profileWorkspaceTab {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--edf-text-muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.profileWorkspaceTab:hover {
+  background: var(--edf-surface-3);
+  color: var(--edf-text-secondary);
+}
+
+.profileWorkspaceTabActive,
+.profileWorkspaceTab[aria-current="page"] {
+  background: rgba(245, 184, 0, 0.12);
+  color: var(--edf-text);
+  box-shadow: inset 0 0 0 1px var(--edf-amber-border);
+}

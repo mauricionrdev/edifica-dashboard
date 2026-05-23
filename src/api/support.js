@@ -1,8 +1,14 @@
 import { api } from './client.js';
 
-export function listSupportDailyRows(sheetId) {
-  const suffix = sheetId ? `?sheetId=${encodeURIComponent(sheetId)}` : '';
-  return api.get(`/support/daily-program${suffix}`);
+function withQuery(base, params = {}) {
+  const entries = Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '');
+  if (!entries.length) return base;
+  const query = entries.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join('&');
+  return `${base}?${query}`;
+}
+
+export function listSupportDailyRows(sheetId, params = {}) {
+  return api.get(withQuery('/support/daily-program', { ...params, sheetId }));
 }
 
 export function createSupportDailySheet(body = {}) {
@@ -13,8 +19,8 @@ export function updateSupportDailySheet(sheetId, patch = {}) {
   return api.patch(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}`, patch);
 }
 
-export function deleteSupportDailySheet(sheetId) {
-  return api.del(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}`);
+export function deleteSupportDailySheet(sheetId, params = {}) {
+  return api.del(withQuery(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}`, params));
 }
 
 export function createSupportDailyColumn(body = {}) {
@@ -25,8 +31,8 @@ export function updateSupportDailyColumn(key, patch = {}) {
   return api.patch(`/support/daily-program/columns/${encodeURIComponent(key)}`, patch);
 }
 
-export function deleteSupportDailyColumn(key) {
-  return api.del(`/support/daily-program/columns/${encodeURIComponent(key)}`);
+export function deleteSupportDailyColumn(key, params = {}) {
+  return api.del(withQuery(`/support/daily-program/columns/${encodeURIComponent(key)}`, params));
 }
 
 export function createSupportDailyRow(body = {}) {
@@ -37,8 +43,8 @@ export function updateSupportDailyRow(id, patch = {}) {
   return api.patch(`/support/daily-program/${encodeURIComponent(id)}`, patch);
 }
 
-export function deleteSupportDailyRow(id) {
-  return api.del(`/support/daily-program/${encodeURIComponent(id)}`);
+export function deleteSupportDailyRow(id, params = {}) {
+  return api.del(withQuery(`/support/daily-program/${encodeURIComponent(id)}`, params));
 }
 
 export function listSupportTasks() {

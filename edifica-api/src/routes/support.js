@@ -63,6 +63,32 @@ function supportColumnKey(label = '') {
   return `${base}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+
+function canManageSpreadsheetOwner(req, ownerUserId) {
+  if (!ownerUserId) return false;
+  return ownerUserId === req.user?.id || hasPermission(req.user, 'support.board.edit') || hasPermission(req.user, 'tasks.view.all');
+}
+
+function requestedOwnerUserId(req) {
+  return clean(req.query?.ownerUserId || req.body?.ownerUserId || req.user?.id, 36) || req.user?.id;
+}
+
+function assertSpreadsheetOwner(req, ownerUserId) {
+  if (!canManageSpreadsheetOwner(req, ownerUserId)) throw badRequest('Sem permissão para acessar esta planilha.');
+}
+
+async function resolveOwnerFromSheet(sheetId) {
+  if (!sheetId) return '';
+  const rows = await query('SELECT owner_user_id FROM support_daily_sheets WHERE id = ? LIMIT 1', [sheetId]);
+  return rows[0]?.owner_user_id || '';
+}
+
+async function assertCanUseSheet(req, sheetId) {
+  const ownerUserId = await resolveOwnerFromSheet(sheetId);
+  if (!ownerUserId) return;
+  assertSpreadsheetOwner(req, ownerUserId);
+}
+
 let supportSchemaPromise = null;
 async function ensureSupportSchema() {
   if (!supportSchemaPromise) {
@@ -73,6 +99,7 @@ async function ensureSupportSchema() {
           name VARCHAR(120) NOT NULL,
           position INT NOT NULL DEFAULT 0,
           created_by_user_id VARCHAR(36) NULL,
+          owner_user_id VARCHAR(36) NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           INDEX idx_support_daily_sheets_position (position)
@@ -135,11 +162,26 @@ async function ensureSupportSchema() {
           CONSTRAINT fk_support_daily_style_row FOREIGN KEY (row_id) REFERENCES support_daily_rows(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
+      await safeAlter('ALTER TABLE support_daily_sheets ADD COLUMN owner_user_id VARCHAR(36) NULL AFTER created_by_user_id');
+      await safeAlter('ALTER TABLE support_daily_sheets ADD INDEX idx_support_daily_sheets_owner_position (owner_user_id, position)');
+      const mauricioRows = await query(
+        `SELECT id
+           FROM users
+          WHERE COALESCE(active, 1) = 1
+            AND (LOWER(email) = 'mauricionredifica@gmail.com' OR LOWER(name) = 'mauricio nunes')
+          LIMIT 1`
+      );
+      const mauricioUserId = mauricioRows[0]?.id || null;
+
       await query(
         `INSERT IGNORE INTO support_daily_sheets (id, name, position)
          VALUES (?, 'Programação diária', 1)`,
         [DEFAULT_SHEET_ID]
       );
+      if (mauricioUserId) {
+        await query('UPDATE support_daily_sheets SET owner_user_id = ? WHERE id = ? AND owner_user_id IS NULL', [mauricioUserId, DEFAULT_SHEET_ID]);
+      }
+      await query('UPDATE support_daily_sheets SET owner_user_id = COALESCE(owner_user_id, created_by_user_id) WHERE owner_user_id IS NULL');
       await query('UPDATE support_daily_rows SET sheet_id = ? WHERE sheet_id IS NULL OR sheet_id = ""', [DEFAULT_SHEET_ID]);
       await query('UPDATE support_daily_columns SET sheet_id = ? WHERE sheet_id IS NULL OR sheet_id = ""', [DEFAULT_SHEET_ID]);
       for (const column of DEFAULT_DAILY_COLUMNS) {
@@ -158,17 +200,29 @@ async function ensureSupportSchema() {
   return supportSchemaPromise;
 }
 
-async function listSheets() {
+async function listSheets(ownerUserId) {
   await ensureSupportSchema();
-  const rows = await query('SELECT id, name, position FROM support_daily_sheets ORDER BY position ASC, created_at ASC');
-  return rows.map((row) => ({ id: row.id, name: row.name, position: Number(row.position || 0) }));
+  const rows = await query(
+    `SELECT id, name, position, owner_user_id
+       FROM support_daily_sheets
+      WHERE owner_user_id = ?
+      ORDER BY position ASC, created_at ASC`,
+    [ownerUserId]
+  );
+  return rows.map((row) => ({ id: row.id, name: row.name, position: Number(row.position || 0), ownerUserId: row.owner_user_id || '' }));
 }
 
-async function resolveSheetId(candidate) {
+async function resolveSheetId(ownerUserId, candidate) {
   await ensureSupportSchema();
-  const id = clean(candidate, 36) || DEFAULT_SHEET_ID;
-  const rows = await query('SELECT id FROM support_daily_sheets WHERE id = ? LIMIT 1', [id]);
-  return rows[0]?.id || DEFAULT_SHEET_ID;
+  const fallbackRows = await query(
+    `SELECT id FROM support_daily_sheets WHERE owner_user_id = ? ORDER BY position ASC, created_at ASC LIMIT 1`,
+    [ownerUserId]
+  );
+  const fallback = fallbackRows[0]?.id || '';
+  const id = clean(candidate, 36) || fallback;
+  if (!id) return '';
+  const rows = await query('SELECT id FROM support_daily_sheets WHERE id = ? AND owner_user_id = ? LIMIT 1', [id, ownerUserId]);
+  return rows[0]?.id || fallback;
 }
 
 async function listDailyColumns(sheetId = DEFAULT_SHEET_ID) {
@@ -263,11 +317,13 @@ async function resolveDefaultSupportAssignee() {
   return rows[0]?.id || '';
 }
 
-router.get('/daily-program', requirePermission('support.view'), async (req, res, next) => {
+router.get('/daily-program', requirePermission('profile.view'), async (req, res, next) => {
   try {
-    const sheetId = await resolveSheetId(req.query?.sheetId);
-    const sheets = await listSheets();
-    const columns = await listDailyColumns(sheetId);
+    const ownerUserId = requestedOwnerUserId(req);
+    assertSpreadsheetOwner(req, ownerUserId);
+    const sheetId = await resolveSheetId(ownerUserId, req.query?.sheetId);
+    const sheets = await listSheets(ownerUserId);
+    const columns = sheetId ? await listDailyColumns(sheetId) : [];
     const rows = await query(
       `SELECT sdr.*, u.name AS updated_by_name
          FROM support_daily_rows sdr
@@ -306,16 +362,18 @@ router.get('/daily-program', requirePermission('support.view'), async (req, res,
   }
 });
 
-router.post('/daily-program/sheets', requirePermission('support.board.edit'), async (req, res, next) => {
+router.post('/daily-program/sheets', requirePermission('profile.view'), async (req, res, next) => {
   try {
     await ensureSupportSchema();
+    const ownerUserId = requestedOwnerUserId(req);
+    assertSpreadsheetOwner(req, ownerUserId);
     const name = clean(req.body?.name || 'Nova planilha', 80) || 'Nova planilha';
     const columnCount = Math.max(1, Math.min(60, Number(req.body?.columnCount || 8)));
     const rowCount = Math.max(1, Math.min(200, Number(req.body?.rowCount || 18)));
     const columnWidth = Math.max(5, Math.min(900, Number(req.body?.columnWidth || 168)));
-    const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_sheets');
-    const sheet = { id: uuid(), name, position: Number(positionRows[0]?.next_position || 1) };
-    await query('INSERT INTO support_daily_sheets (id, name, position, created_by_user_id) VALUES (?, ?, ?, ?)', [sheet.id, sheet.name, sheet.position, req.user.id]);
+    const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_sheets WHERE owner_user_id = ?', [ownerUserId]);
+    const sheet = { id: uuid(), name, position: Number(positionRows[0]?.next_position || 1), ownerUserId };
+    await query('INSERT INTO support_daily_sheets (id, name, position, created_by_user_id, owner_user_id) VALUES (?, ?, ?, ?, ?)', [sheet.id, sheet.name, sheet.position, req.user.id, ownerUserId]);
 
     for (let index = 0; index < columnCount; index += 1) {
       const label = spreadsheetColumnLabel(index);
@@ -345,28 +403,31 @@ router.post('/daily-program/sheets', requirePermission('support.board.edit'), as
         LIMIT 500`,
       [sheet.id]
     );
-    res.status(201).json({ sheet, sheets: await listSheets(), columns: await listDailyColumns(sheet.id), rows: rows.map((row) => serializeSupportRow(row, {}, {})) });
+    res.status(201).json({ sheet, sheets: await listSheets(ownerUserId), columns: await listDailyColumns(sheet.id), rows: rows.map((row) => serializeSupportRow(row, {}, {})) });
   } catch (err) {
     next(err);
   }
 });
 
-router.patch('/daily-program/sheets/:id', requirePermission('support.board.edit'), async (req, res, next) => {
+router.patch('/daily-program/sheets/:id', requirePermission('profile.view'), async (req, res, next) => {
   try {
     const id = clean(req.params.id, 36);
+    const ownerUserId = await resolveOwnerFromSheet(id);
+    assertSpreadsheetOwner(req, ownerUserId);
     const name = clean(req.body?.name, 80);
     if (!name) throw badRequest('Informe o nome da planilha.');
     await query('UPDATE support_daily_sheets SET name = ? WHERE id = ?', [name, id]);
-    res.json({ sheets: await listSheets() });
+    res.json({ sheets: await listSheets(ownerUserId) });
   } catch (err) {
     next(err);
   }
 });
 
-router.delete('/daily-program/sheets/:id', requirePermission('support.board.edit'), async (req, res, next) => {
+router.delete('/daily-program/sheets/:id', requirePermission('profile.view'), async (req, res, next) => {
   try {
     const id = clean(req.params.id, 36);
-    if (id === DEFAULT_SHEET_ID) throw badRequest('A planilha principal não pode ser removida.');
+    const ownerUserId = await resolveOwnerFromSheet(id);
+    assertSpreadsheetOwner(req, ownerUserId);
     const rowIds = await query('SELECT id FROM support_daily_rows WHERE sheet_id = ?', [id]);
     if (rowIds.length) {
       const placeholders = rowIds.map(() => '?').join(', ');
@@ -377,15 +438,18 @@ router.delete('/daily-program/sheets/:id', requirePermission('support.board.edit
     await query('DELETE FROM support_daily_rows WHERE sheet_id = ?', [id]);
     await query('DELETE FROM support_daily_columns WHERE sheet_id = ?', [id]);
     await query('DELETE FROM support_daily_sheets WHERE id = ?', [id]);
-    res.json({ ok: true, sheets: await listSheets() });
+    res.json({ ok: true, sheets: await listSheets(ownerUserId) });
   } catch (err) {
     next(err);
   }
 });
 
-router.post('/daily-program/columns', requirePermission('support.board.edit'), async (req, res, next) => {
+router.post('/daily-program/columns', requirePermission('profile.view'), async (req, res, next) => {
   try {
-    const sheetId = await resolveSheetId(req.body?.sheetId || req.query?.sheetId);
+    const ownerUserId = requestedOwnerUserId(req);
+    assertSpreadsheetOwner(req, ownerUserId);
+    const sheetId = await resolveSheetId(ownerUserId, req.body?.sheetId || req.query?.sheetId);
+    if (!sheetId) throw badRequest('Crie uma planilha antes de adicionar colunas.');
     const label = clean(req.body?.label || 'Nova coluna', 80) || 'Nova coluna';
     const width = Math.max(5, Math.min(900, Number(req.body?.width || 180)));
     const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_columns WHERE sheet_id = ?', [sheetId]);
@@ -401,9 +465,12 @@ router.post('/daily-program/columns', requirePermission('support.board.edit'), a
   }
 });
 
-router.patch('/daily-program/columns/:key', requirePermission('support.board.edit'), async (req, res, next) => {
+router.patch('/daily-program/columns/:key', requirePermission('profile.view'), async (req, res, next) => {
   try {
     const key = clean(req.params.key, 80);
+    const columnRows = await query('SELECT sheet_id FROM support_daily_columns WHERE column_key = ? LIMIT 1', [key]);
+    const sheetId = columnRows[0]?.sheet_id || '';
+    await assertCanUseSheet(req, sheetId);
     const updates = [];
     const params = [];
     if (req.body?.label !== undefined) { updates.push('label = ?'); params.push(clean(req.body.label, 80) || 'Coluna'); }
@@ -412,17 +479,17 @@ router.patch('/daily-program/columns/:key', requirePermission('support.board.edi
     if (!updates.length) throw badRequest('Nenhum campo para atualizar.');
     params.push(key);
     await query(`UPDATE support_daily_columns SET ${updates.join(', ')} WHERE column_key = ?`, params);
-    const rows = await query('SELECT sheet_id FROM support_daily_columns WHERE column_key = ? LIMIT 1', [key]);
-    const sheetId = rows[0]?.sheet_id || DEFAULT_SHEET_ID;
     res.json({ column: (await listDailyColumns(sheetId)).find((column) => column.key === key) || null, columns: await listDailyColumns(sheetId) });
   } catch (err) {
     next(err);
   }
 });
 
-router.delete('/daily-program/columns/:key', requirePermission('support.board.edit'), async (req, res, next) => {
+router.delete('/daily-program/columns/:key', requirePermission('profile.view'), async (req, res, next) => {
   try {
     const key = clean(req.params.key, 80);
+    const columnRows = await query('SELECT sheet_id FROM support_daily_columns WHERE column_key = ? LIMIT 1', [key]);
+    await assertCanUseSheet(req, columnRows[0]?.sheet_id || '');
     await query('DELETE FROM support_daily_cell_values WHERE column_key = ?', [key]);
     await query('DELETE FROM support_daily_cell_styles WHERE column_key = ?', [key]);
     await query('DELETE FROM support_daily_columns WHERE column_key = ?', [key]);
@@ -432,9 +499,12 @@ router.delete('/daily-program/columns/:key', requirePermission('support.board.ed
   }
 });
 
-router.post('/daily-program', requirePermission('support.board.edit'), async (req, res, next) => {
+router.post('/daily-program', requirePermission('profile.view'), async (req, res, next) => {
   try {
-    const sheetId = await resolveSheetId(req.body?.sheetId || req.query?.sheetId);
+    const ownerUserId = requestedOwnerUserId(req);
+    assertSpreadsheetOwner(req, ownerUserId);
+    const sheetId = await resolveSheetId(ownerUserId, req.body?.sheetId || req.query?.sheetId);
+    if (!sheetId) throw badRequest('Crie uma planilha antes de adicionar linhas.');
     const payload = normalizeSupportPayload(req.body);
     const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_daily_rows WHERE sheet_id = ?', [sheetId]);
     const id = uuid();
@@ -451,11 +521,12 @@ router.post('/daily-program', requirePermission('support.board.edit'), async (re
   }
 });
 
-router.patch('/daily-program/:id', requirePermission('support.board.edit'), async (req, res, next) => {
+router.patch('/daily-program/:id', requirePermission('profile.view'), async (req, res, next) => {
   try {
     const id = clean(req.params.id, 36);
     const rowRows = await query('SELECT sheet_id FROM support_daily_rows WHERE id = ? LIMIT 1', [id]);
-    const sheetId = rowRows[0]?.sheet_id || DEFAULT_SHEET_ID;
+    const sheetId = rowRows[0]?.sheet_id || '';
+    await assertCanUseSheet(req, sheetId);
     const columns = await listDailyColumns(sheetId);
     const columnKeys = new Set(columns.map((column) => column.key));
     const payload = normalizeSupportPayload(req.body);
@@ -498,9 +569,12 @@ router.patch('/daily-program/:id', requirePermission('support.board.edit'), asyn
   }
 });
 
-router.delete('/daily-program/:id', requirePermission('support.board.edit'), async (req, res, next) => {
+router.delete('/daily-program/:id', requirePermission('profile.view'), async (req, res, next) => {
   try {
-    await query('DELETE FROM support_daily_rows WHERE id = ?', [clean(req.params.id, 36)]);
+    const id = clean(req.params.id, 36);
+    const rowRows = await query('SELECT sheet_id FROM support_daily_rows WHERE id = ? LIMIT 1', [id]);
+    await assertCanUseSheet(req, rowRows[0]?.sheet_id || '');
+    await query('DELETE FROM support_daily_rows WHERE id = ?', [id]);
     res.json({ ok: true });
   } catch (err) {
     next(err);
