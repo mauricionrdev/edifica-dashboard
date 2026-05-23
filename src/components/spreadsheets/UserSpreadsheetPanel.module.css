@@ -1202,3 +1202,79 @@
   0%, 100% { opacity: 0.42; transform: scale(0.85); }
   50% { opacity: 1; transform: scale(1.18); }
 }
+
+.sheetTabsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+  color: rgba(245, 247, 250, 0.64);
+  font-size: 12px;
+}
+
+.sheetTabsHeader input {
+  width: min(240px, 42vw);
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(8, 9, 10, 0.78);
+  color: #f8fafc;
+  padding: 0 10px;
+  outline: none;
+}
+
+.sheetTabsHeader input::placeholder {
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.sheetTabButton em {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(226, 232, 240, 0.72);
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.sheetTab[data-active] .sheetTabButton em {
+  background: rgba(245, 196, 81, 0.16);
+  color: #f5c451;
+}
+
+.sheetTabActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+}
+
+.sheetTabActions button:not(.deleteSheetButton) {
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(226, 232, 240, 0.72);
+  padding: 0 8px;
+  font-size: 11px;
+}
+
+.sheetOrganizer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px 10px;
+  color: rgba(148, 163, 184, 0.72);
+  font-size: 11px;
+}
+
+.sheetOrganizer span:first-child {
+  color: rgba(248, 250, 252, 0.82);
+}

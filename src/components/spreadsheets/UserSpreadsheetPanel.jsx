@@ -649,6 +649,7 @@ function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onIns
 export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, showToast }) {
   const [sheets, setSheets] = useState([]);
   const [activeSheetId, setActiveSheetId] = useState('');
+  const [sheetSearch, setSheetSearch] = useState('');
   const [columns, setColumns] = useState([]);
   const [rows, setRows] = useState([]);
   const [rowsLoading, setRowsLoading] = useState(true);
@@ -696,6 +697,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setActiveCell(null);
       setSelectionRange(null);
       markSync('saved', 'Planilha sincronizada');
+      return { ...data, columns: nextColumns, rows: (Array.isArray(data?.rows) ? data.rows : []).map((row) => normalizeRow(row, nextColumns)) };
     } catch (err) {
       markSync('error', 'Falha ao sincronizar');
       throw err;
@@ -902,6 +904,69 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     } catch (err) {
       markSync('error', 'Falha ao remover planilha');
       showToast?.(err?.message || 'Não foi possível excluir a planilha.', { variant: 'error' });
+    }
+  };
+
+  const handleDuplicateSheet = async (sheetId = activeSheetId) => {
+    if (!sheetId || creatingSheet) return;
+    const sourceSheet = sheets.find((sheet) => sheet.id === sheetId) || activeSheet;
+    const sourceName = cleanText(sourceSheet?.name || activeSheet?.name || 'Planilha');
+    setCreatingSheet(true);
+    markSync('saving', 'Duplicando planilha');
+    try {
+      const sourceColumns = [...columns];
+      const sourceRows = [...rows];
+      const data = await createSupportDailySheet({
+        name: `${sourceName} cópia`,
+        ownerUserId,
+        columnCount: Math.max(BLANK_MIN_COLUMNS, sourceColumns.length || BLANK_MIN_COLUMNS),
+        rowCount: Math.max(BLANK_MIN_ROWS, sourceRows.length || BLANK_MIN_ROWS),
+        columnWidth: sourceColumns[0]?.width || BLANK_COLUMN_WIDTH,
+      });
+      const targetSheetId = data?.sheet?.id;
+      if (!targetSheetId) throw new Error('Planilha duplicada não retornou identificador.');
+
+      const targetData = await listSupportDailyRows(targetSheetId, { ownerUserId });
+      const targetColumns = normalizeColumns(targetData?.columns).slice(0, sourceColumns.length);
+      const targetRows = (Array.isArray(targetData?.rows) ? targetData.rows : []).map((row) => normalizeRow(row, targetColumns)).slice(0, sourceRows.length);
+
+      await Promise.all(targetColumns.map((targetColumn, index) => updateSupportDailyColumn(targetColumn.key, {
+        ownerUserId,
+        label: sourceColumns[index]?.label || targetColumn.label,
+        width: sourceColumns[index]?.width || targetColumn.width || BLANK_COLUMN_WIDTH,
+        position: index + 1,
+      })));
+
+      await Promise.all(targetRows.map((targetRow, rowIndex) => {
+        const sourceRow = sourceRows[rowIndex] || {};
+        const payload = targetColumns.reduce((acc, targetColumn, columnIndex) => {
+          const sourceColumn = sourceColumns[columnIndex];
+          if (!sourceColumn) return acc;
+          return { ...acc, [targetColumn.key]: sourceRow?.[sourceColumn.key] || '' };
+        }, {});
+        const styles = targetColumns.reduce((acc, targetColumn, columnIndex) => {
+          const sourceColumn = sourceColumns[columnIndex];
+          const style = sourceColumn ? sourceRow?.__styles?.[sourceColumn.key] : null;
+          if (!style || !Object.keys(style).length) return acc;
+          return { ...acc, [targetColumn.key]: style };
+        }, {});
+        return updateSupportDailyRow(targetRow.id, { ...payload, styles, ownerUserId, position: rowIndex + 1 });
+      }));
+
+      await refreshRows(targetSheetId);
+      markSync('saved', 'Planilha duplicada');
+    } catch (err) {
+      markSync('error', 'Falha ao duplicar planilha');
+      showToast?.(err?.message || 'Não foi possível duplicar a planilha.', { variant: 'error' });
+    } finally {
+      setCreatingSheet(false);
+    }
+  };
+
+  const handleSheetTabKeyDown = (event, sheetId) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (sheetId !== activeSheetId) refreshRows(sheetId).catch(() => {});
     }
   };
 
@@ -1279,6 +1344,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [activeSheetId, ownerUserId, refreshRows]);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
+  const visibleSheets = useMemo(() => {
+    const query = cleanText(sheetSearch).toLowerCase();
+    if (!query) return sheets;
+    return sheets.filter((sheet) => String(sheet.name || '').toLowerCase().includes(query));
+  }, [sheetSearch, sheets]);
+  const activeSheetIndex = useMemo(() => sheets.findIndex((sheet) => sheet.id === activeSheetId), [activeSheetId, sheets]);
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
   const activeRowNumber = useMemo(() => {
     if (!activeCell?.rowId) return null;
@@ -1346,6 +1417,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <div className={styles.sheetActions}>
             <Button type="button" size="sm" variant="secondary" onClick={handleCopySelection} disabled={!activeCell && selectedCount <= 1}>Copiar</Button>
             <Button type="button" size="sm" variant="secondary" onClick={handleExportCsv} disabled={!activeSheetId || !columns.length}>Exportar CSV</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={() => handleDuplicateSheet(activeSheetId)} disabled={!activeSheetId || creatingSheet}>Duplicar</Button>
             <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
             <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn || !activeSheetId}><PlusIcon size={14} /> Coluna</Button>
             <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow || !activeSheetId}><PlusIcon size={14} /> Linha</Button>
@@ -1353,42 +1425,65 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         ) : null}
 
         <div className={styles.sheetTabsShell}>
+          <div className={styles.sheetTabsHeader}>
+            <span>{sheets.length} planilha{sheets.length === 1 ? '' : 's'}</span>
+            <input
+              value={sheetSearch}
+              onChange={(event) => setSheetSearch(event.target.value)}
+              placeholder="Buscar planilha"
+              aria-label="Buscar planilha"
+            />
+          </div>
           <div className={styles.sheetTabs} aria-label="Planilhas do perfil">
-            {sheets.length ? sheets.map((sheet) => (
-              <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined}>
-                <button
-                  type="button"
-                  className={styles.sheetTabButton}
-                  onClick={() => {
-                    if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
-                  }}
-                  title={sheet.name}
-                >
-                  <span>{sheet.name}</span>
-                </button>
-                <input
-                  value={sheet.name}
-                  disabled={!canEdit}
-                  aria-label={`Nome da planilha ${sheet.name}`}
-                  onFocus={() => {
-                    if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
-                  }}
-                  onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
-                  onBlur={(event) => canEdit && handleSheetNameCommit(sheet.id, event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
-                  }}
-                />
-                {canEdit ? (
-                  <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
-                    <CloseIcon size={11} />
+            {visibleSheets.length ? visibleSheets.map((sheet) => {
+              const index = sheets.findIndex((item) => item.id === sheet.id);
+              return (
+                <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined}>
+                  <button
+                    type="button"
+                    className={styles.sheetTabButton}
+                    onClick={() => {
+                      if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
+                    }}
+                    onKeyDown={(event) => handleSheetTabKeyDown(event, sheet.id)}
+                    title={sheet.name}
+                  >
+                    <em>{index + 1}</em>
+                    <span>{sheet.name}</span>
                   </button>
-                ) : null}
-              </div>
-            )) : (
-              <span className={styles.emptyTab}>Nenhuma planilha</span>
+                  <input
+                    value={sheet.name}
+                    disabled={!canEdit}
+                    aria-label={`Nome da planilha ${sheet.name}`}
+                    onFocus={() => {
+                      if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
+                    }}
+                    onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
+                    onBlur={(event) => canEdit && handleSheetNameCommit(sheet.id, event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
+                    }}
+                  />
+                  {canEdit ? (
+                    <div className={styles.sheetTabActions}>
+                      <button type="button" onClick={() => handleDuplicateSheet(sheet.id)} aria-label={`Duplicar ${sheet.name}`} title="Duplicar planilha">Duplicar</button>
+                      <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
+                        <CloseIcon size={11} />
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            }) : (
+              <span className={styles.emptyTab}>{sheetSearch ? 'Nenhuma planilha encontrada' : 'Nenhuma planilha'}</span>
             )}
           </div>
+          {sheets.length > 1 ? (
+            <div className={styles.sheetOrganizer}>
+              <span>Atual: {activeSheetIndex >= 0 ? activeSheetIndex + 1 : '—'} de {sheets.length}</span>
+              <span>Busca e duplicação ajudam a organizar muitas planilhas sem perder largura no grid.</span>
+            </div>
+          ) : null}
         </div>
       </header>
 
