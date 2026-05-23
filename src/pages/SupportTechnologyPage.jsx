@@ -1,276 +1,374 @@
 import { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
+import { getUserAvatar } from '../utils/avatarStorage.js';
 import styles from './SupportTechnologyPage.module.css';
 
-const FILE_TABS = [
-  'SupportTechnologyPage.tsx',
-  'supportTimeline.ts',
-  'ticketQueue.service.ts',
-  'workspace.theme.css',
-  'support_schema.sql',
+const FILE_TREE = [
+  { type: 'root', label: 'EDIFICA-DASH' },
+  { type: 'folder', label: '.githooks' },
+  { type: 'folder', label: 'docs' },
+  { type: 'folder', label: 'edifica-api' },
+  { type: 'folder', label: 'public' },
+  { type: 'folderOpen', label: 'src' },
+  { type: 'folder', label: 'api', level: 1 },
+  { type: 'folder', label: 'components', level: 1 },
+  { type: 'folder', label: 'context', level: 1 },
+  { type: 'folder', label: 'data', level: 1 },
+  { type: 'folder', label: 'hooks', level: 1 },
+  { type: 'folderOpen', label: 'pages', level: 1 },
+  { type: 'fileReact', label: 'ProfilePage.jsx', level: 2, active: true },
+  { type: 'fileReact', label: 'SupportTechnologyPage.jsx', level: 2 },
+  { type: 'fileCss', label: 'SupportTechnologyPage.module.css', level: 2 },
+  { type: 'folder', label: 'routes', level: 1 },
+  { type: 'folder', label: 'styles', level: 1 },
+  { type: 'folder', label: 'utils', level: 1 },
+  { type: 'fileReact', label: 'App.jsx', level: 1 },
+  { type: 'fileReact', label: 'main.jsx', level: 1 },
+  { type: 'file', label: '.env.production.example' },
+  { type: 'fileMd', label: 'README.md' },
+  { type: 'fileVite', label: 'vite.config.js' },
+];
+
+const TABS = [
+  'ProfilePage.jsx',
+  'SupportTechnologyPage.jsx',
+  'support.js',
+  'TechnologyWorkspace.jsx',
+  'theme.vivid-black.css',
 ];
 
 const CODE_LINES = [
-  'import { motion } from "framer-motion";',
-  'import { createSignal, bindQueue } from "@edifica/realtime";',
+  'import { useMemo, useEffect, useState } from "react";',
+  'import { createSupportSignal } from "../api/support.js";',
+  'import { buildProfilePath } from "../utils/entityPaths.js";',
   '',
-  'type TicketPriority = "baixa" | "media" | "alta" | "critica";',
-  'type WorkspaceMode = "dracula" | "focus" | "review";',
-  '',
-  'const theme = createWorkspaceTheme({',
-  '  mode: "dracula",',
-  '  background: "#282a36",',
-  '  sidebar: "#191a21",',
-  '  editor: "#1f2030",',
-  '  accent: "#bd93f9",',
+  'const workspace = criarWorkspace({',
+  '  nome: "Suporte de tecnologia",',
+  '  tema: "Bearded Theme Vivid Black",',
+  '  estado: "em_construcao",',
+  '  produto: "Edifica Central",',
   '});',
   '',
-  'export function buildSupportWorkspace(context) {',
-  '  const queue = bindQueue(context.clientId);',
-  '  const permissions = resolvePermissions(context.user);',
-  '  const timeline = createTicketTimeline(queue);',
+  'function construirPainelTecnologia(contexto) {',
+  '  const usuario = contexto.usuarioAutenticado;',
+  '  const permissoes = resolverPermissoes(usuario);',
+  '  const fila = conectarFilaDeDemandas(contexto.clientesAtivos);',
   '',
-  '  return composeWorkspace({',
-  '    title: "Suporte de tecnologia",',
-  '    theme,',
-  '    permissions,',
-  '    timeline,',
-  '    state: "under-construction",',
+  '  return montarInterface({',
+  '    rota: "/suporte/tecnologia",',
+  '    workspace,',
+  '    permissoes,',
+  '    fila,',
+  '    modo: "preparacao",',
   '  });',
   '}',
   '',
-  'async function hydrateDemandBoard(session) {',
-  '  const tickets = await api.support.listTickets({',
-  '    accountId: session.accountId,',
-  '    includeClient: true,',
-  '    includeAssignee: true,',
-  '    status: ["new", "reviewing", "blocked"],',
-  '  });',
+  'const mapaDeModulos = new Map();',
+  'mapaDeModulos.set("diagnostico", carregarDiagnostico());',
+  'mapaDeModulos.set("integracoes", carregarIntegracoes());',
+  'mapaDeModulos.set("monitoramento", carregarMonitoramento());',
+  'mapaDeModulos.set("historico", carregarHistoricoTecnico());',
   '',
-  '  return tickets.map((ticket) => ({',
-  '    id: ticket.id,',
-  '    label: ticket.title,',
-  '    priority: normalizePriority(ticket.priority),',
-  '    pulse: ticket.priority === "critica",',
-  '  }));',
+  'async function sincronizarAmbiente() {',
+  '  await verificarConexaoWhatsapp();',
+  '  await validarLimitesOpenAI();',
+  '  await publicarEventosInternos();',
+  '  return atualizarStatusDaOperacao();',
   '}',
   '',
-  'const pipeline = createPipeline("support-technology", [',
-  '  stage("capture", validateInput),',
-  '  stage("triage", classifyDemand),',
-  '  stage("routing", assignOwner),',
-  '  stage("handoff", notifyResponsible),',
-  ']);',
-  '',
-  'function classifyDemand(demand) {',
-  '  if (demand.tags.includes("whatsapp-offline")) return "infra";',
-  '  if (demand.tags.includes("agent-error")) return "ia";',
-  '  if (demand.tags.includes("dashboard")) return "frontend";',
-  '  return "operacional";',
+  'function renderizarCabecalho() {',
+  '  return {',
+  '    titulo: "Suporte de tecnologia",',
+  '    breadcrumbs: ["Workspace", "Ferramenta interna", "Suporte TI"],',
+  '    acoesVisiveis: false,',
+  '  };',
   '}',
   '',
-  'const statusMap = {',
-  '  new: { icon: "spark", color: "purple" },',
-  '  reviewing: { icon: "scan", color: "cyan" },',
-  '  blocked: { icon: "alert", color: "orange" },',
-  '  done: { icon: "check", color: "green" },',
+  'const blocos = [',
+  '  criarBloco("Conexões", monitorarConexoes),',
+  '  criarBloco("Agentes", monitorarAgentes),',
+  '  criarBloco("Alertas", monitorarAlertas),',
+  '  criarBloco("Deploy", monitorarPublicacao),',
+  '];',
+  '',
+  'for (const bloco of blocos) {',
+  '  bloco.assinarEvento("mudanca", atualizarInterface);',
+  '  bloco.assinarEvento("erro", registrarFalha);',
+  '}',
+  '',
+  'const service = {',
+  '  listarDemandas: () => api.get("/support/tasks"),',
+  '  criarDemanda: (payload) => api.post("/support/tasks", payload),',
+  '  atualizarStatus: (id, status) => api.patch(`/support/tasks/${id}`, { status }),',
   '};',
   '',
-  'CREATE TABLE support_tickets (',
+  'function prepararEstadoInicial() {',
+  '  return {',
+  '    carregando: false,',
+  '    salvando: false,',
+  '    selecionado: null,',
+  '    painel: "construcao",',
+  '  };',
+  '}',
+  '',
+  'const eventos = criarCanalRealtime("support:technology");',
+  'eventos.on("demand.created", anexarLinhaNaFila);',
+  'eventos.on("client.offline", acionarAlertaVisual);',
+  'eventos.on("agent.paused", sinalizarIntervencaoHumana);',
+  '',
+  'export function TechnologySupportPage() {',
+  '  const estado = prepararEstadoInicial();',
+  '  const cabecalho = renderizarCabecalho();',
+  '  const ambiente = construirPainelTecnologia({ estado, cabecalho });',
+  '',
+  '  return renderizarWorkspace(ambiente);',
+  '}',
+  '',
+  'CREATE TABLE support_technology_events (',
   '  id CHAR(36) PRIMARY KEY,',
-  '  client_id CHAR(36) NOT NULL,',
-  '  assignee_user_id CHAR(36) NULL,',
-  '  title VARCHAR(180) NOT NULL,',
-  '  priority ENUM("baixa", "media", "alta", "critica"),',
-  '  status ENUM("new", "reviewing", "blocked", "done"),',
+  '  user_id CHAR(36) NOT NULL,',
+  '  event_type VARCHAR(80) NOT NULL,',
+  '  payload JSON NULL,',
   '  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
   ');',
   '',
-  '.workspace[data-theme="dracula"] {',
-  '  --editor-bg: #282a36;',
-  '  --panel-bg: #21222c;',
-  '  --line-number: #6272a4;',
-  '  --comment: #6272a4;',
-  '  --purple: #bd93f9;',
-  '  --pink: #ff79c6;',
-  '  --cyan: #8be9fd;',
-  '  --yellow: #f1fa8c;',
+  '.technologyWorkspace {',
+  '  --fundo: #000000;',
+  '  --painel: #0d0d0f;',
+  '  --editor: #09090b;',
+  '  --linha-ativa: rgba(255, 255, 255, .035);',
+  '  --texto: #d8d8d2;',
   '}',
   '',
-  'watchRealtime("support:ticket.created", (event) => {',
-  '  timeline.push(event.ticket);',
-  '  metrics.increment("support.created");',
-  '  refreshWorkspace({ silent: true });',
-  '});',
-  '',
-  'async function publishDraftVersion(workspace) {',
-  '  await builder.compile(workspace);',
-  '  await preview.render("support-technology");',
-  '  await quality.checkVisualRegression();',
-  '  return deploy.queue("frontend-preview");',
+  '.technologyWorkspace[data-theme="vivid-black"] {',
+  '  color-scheme: dark;',
+  '  background: var(--editor);',
+  '  border-color: #1f1f24;',
   '}',
   '',
-  'const shortcuts = registerCommandPalette({',
-  '  "ticket.create": () => openDemandComposer(),',
-  '  "ticket.search": () => focusTicketSearch(),',
-  '  "client.inspect": () => openClientDiagnostics(),',
-  '  "build.preview": () => publishDraftVersion(workspace),',
+  'async function publicarPrevia() {',
+  '  await executarBuildVisual();',
+  '  await validarResponsividadeNotebook();',
+  '  await revisarAcessibilidade();',
+  '  return marcarTelaComoPreparada();',
+  '}',
+  '',
+  'const comandos = registrarPaletaDeComandos({',
+  '  "suporte.criarDemanda": abrirCompositor,',
+  '  "suporte.validarCliente": abrirDiagnostico,',
+  '  "suporte.monitorarAgente": abrirObservabilidade,',
+  '  "suporte.publicarVersao": publicarPrevia,',
   '});',
   '',
-  'logger.info("support workspace compiled", {',
-  '  theme: "dracula",',
-  '  visibleActions: false,',
-  '  animation: "progressive-code-generation",',
+  'logger.info("workspace de tecnologia em montagem", {',
+  '  aplicacao: "Edifica Central",',
+  '  tema: "vivid-black",',
+  '  animacao: "codigo_continuo",',
   '});',
 ];
 
-const SECONDARY_LINES = [
-  'queue.observe("client.offline")',
-  'agent.healthcheck("openai-limit")',
-  'socket.emit("ticket:update")',
-  'layout.mount("support-workspace")',
-  'theme.apply("dracula")',
-  'composer.disableExternalActions()',
-  'metrics.track("build.frame")',
-  'access.guard("suporte_tecnologia")',
-  'diagnostics.scan("whatsapp")',
-  'preview.write("workspace-state")',
-  'cache.invalidate("tickets:list")',
-  'router.prefetch("/suporte/tecnologia")',
-  'timeline.reconcile("local-draft")',
-  'builder.paint("editor-grid")',
-  'terminal.stream("npm run build")',
-  'diff.apply("visual-refinement")',
-  'module.create("DemandQueue")',
-  'module.create("ClientTrace")',
-  'module.create("AgentStatus")',
-  'module.create("ReleasePanel")',
+const EXTRA_CODE_LINES = [
+  'const clientes = await buscarClientesAtivos();',
+  'const conexoes = await verificarConexoesWhatsApp(clientes);',
+  'const agentes = await listarAgentesPorCliente(clientes);',
+  'const alertas = normalizarAlertas(conexoes, agentes);',
+  'renderizarBadgeDeRisco(alerta.nivel);',
+  'registrarHistoricoTecnico({ clienteId, motivo });',
+  'enfileirarDiagnostico("whatsapp", prioridadeAlta);',
+  'cache.invalidate("technology-support");',
+  'socket.emit("support:refresh", payloadSeguro);',
+  'diff.apply("remove-card-wrapper");',
+  'workspace.paint("vivid-black");',
+  'editor.write("SupportTechnologyPage.jsx");',
+  'theme.sync("Bearded Theme Vivid Black");',
+  'layout.fitToNotebookViewport();',
+  'access.require("suporte_tecnologia");',
+  'toast.silent("prévia recompilada");',
+  'pipeline.stage("triagem", classificarDemanda);',
+  'pipeline.stage("roteamento", definirResponsavel);',
+  'pipeline.stage("resolucao", acompanharEntrega);',
+  'metrics.increment("support.preview.frame");',
+  'hook.useTechnologyWorkspaceState();',
+  'hook.useSupportRealtimeChannel();',
+  'service.createSupportTask(payload);',
+  'repository.commit("refine technology workspace");',
+  'observer.watch("agent-status-change");',
+  'observer.watch("whatsapp-disconnected");',
+  'observer.watch("openai-limit-warning");',
+  'screen.lockVerticalOverflow(false);',
+  'screen.hideExternalDemandButton();',
+  'avatar.tooltip("Em construção !");',
 ];
 
 const TERMINAL_LINES = [
-  'edifica-support booting workspace renderer',
-  'loading vscode-like shell with dracula tokens',
-  'hiding external action buttons',
-  'creating fake ticket queue service',
-  'writing support timeline hooks',
-  'generating css variables for dark editor',
-  'compiling simulated schema blocks',
-  'rendering progressive source files',
-  'mounting terminal stream without green palette',
-  'checking animation density',
-  'building non-repetitive code sequence',
-  'workspace preview ready',
+  'npm run build -- --preview tecnologia',
+  'carregando tema Bearded Theme Vivid Black',
+  'removendo card extra do workspace',
+  'montando árvore da Edifica Central',
+  'sincronizando arquivos ProfilePage.jsx e SupportTechnologyPage.jsx',
+  'gerando módulos de suporte técnico',
+  'validando layout para notebook',
+  'criando animação contínua de código',
+  'ocultando ações externas da tela',
+  'aplicando avatar no lugar do logotipo',
+  'preparando tooltip: Em construção !',
+  'compilação visual concluída',
 ];
 
+const SYMBOLS = {
+  root: '▾',
+  folder: '›',
+  folderOpen: '▾',
+  fileReact: '⚛',
+  fileCss: '#',
+  fileMd: 'M↓',
+  fileVite: '▼',
+  file: '□',
+};
+
 function getLineType(line) {
-  if (!line) return 'blank';
-  if (line.startsWith('import') || line.startsWith('export') || line.startsWith('type ') || line.startsWith('const ') || line.startsWith('async') || line.startsWith('function')) return 'keyword';
-  if (line.includes('CREATE TABLE') || line.includes('PRIMARY KEY') || line.includes('TIMESTAMP') || line.includes('VARCHAR') || line.includes('ENUM')) return 'sql';
-  if (line.trim().startsWith('--') || line.trim().startsWith('//')) return 'comment';
-  if (line.trim().startsWith('.') || line.includes('--')) return 'css';
-  if (line.includes('"') || line.includes('\'')) return 'string';
-  if (line.includes('return') || line.includes('await') || line.includes('if ')) return 'logic';
+  const trimmed = String(line || '').trim();
+  if (!trimmed) return 'blank';
+  if (trimmed.startsWith('import') || trimmed.startsWith('export') || trimmed.startsWith('async') || trimmed.startsWith('function')) return 'keyword';
+  if (trimmed.startsWith('const ') || trimmed.startsWith('let ') || trimmed.startsWith('for ')) return 'declaration';
+  if (trimmed.startsWith('return') || trimmed.startsWith('await') || trimmed.startsWith('if ')) return 'logic';
+  if (trimmed.startsWith('CREATE TABLE') || trimmed.includes('PRIMARY KEY') || trimmed.includes('TIMESTAMP') || trimmed.includes('VARCHAR') || trimmed.includes('JSON')) return 'sql';
+  if (trimmed.startsWith('.') || trimmed.startsWith('--') || trimmed.includes('color-scheme') || trimmed.includes('background:')) return 'css';
+  if (trimmed.includes('"') || trimmed.includes('\'')) return 'string';
+  if (trimmed.includes('logger') || trimmed.includes('socket') || trimmed.includes('metrics')) return 'event';
   return 'plain';
+}
+
+function initials(name = '') {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'MN';
+  return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
 export default function SupportTechnologyPage() {
   const { setPanelHeader } = useOutletContext();
+  const { user } = useAuth();
+  const avatarUrl = getUserAvatar(user);
 
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
 
-  const codeRows = [...CODE_LINES, ...CODE_LINES.slice(0, 34)];
-  const terminalRows = [...TERMINAL_LINES, ...TERMINAL_LINES];
-  const secondaryRows = [...SECONDARY_LINES, ...SECONDARY_LINES, ...SECONDARY_LINES.slice(0, 12)];
+  const codeRows = [...CODE_LINES, ...EXTRA_CODE_LINES, ...CODE_LINES.slice(0, 42), ...EXTRA_CODE_LINES.slice(0, 18)];
+  const shadowRows = [...EXTRA_CODE_LINES, ...CODE_LINES.filter(Boolean).slice(0, 46), ...EXTRA_CODE_LINES];
+  const terminalRows = [...TERMINAL_LINES, ...TERMINAL_LINES, ...TERMINAL_LINES.slice(0, 7)];
 
   return (
     <div className={styles.page}>
-      <section className={styles.workspace} data-theme="dracula" aria-label="Workspace de suporte de tecnologia em construção">
+      <section className={styles.workspace} data-theme="vivid-black" aria-label="Workspace de suporte de tecnologia em construção">
+        <header className={styles.appTopbar} aria-hidden="true">
+          <div className={styles.menuCluster}>
+            <span>Arquivo</span>
+            <span>Editar</span>
+            <span>Seleção</span>
+            <span>Exibir</span>
+            <span>Acessar</span>
+            <span>Executar</span>
+            <span>...</span>
+          </div>
+          <div className={styles.commandCenter}>edifica-dash</div>
+          <div className={styles.windowControls}>
+            <span />
+            <span />
+            <span />
+          </div>
+        </header>
+
         <div className={styles.vscodeShell}>
           <aside className={styles.activityBar} aria-hidden="true">
-            <span className={styles.activityActive}>⌘</span>
+            <button className={styles.avatarLogo} type="button" aria-label="Em construção !">
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{initials(user?.name)}</span>}
+              <em>Em construção !</em>
+            </button>
+            <span className={styles.activityActive}>▣</span>
             <span>⌕</span>
             <span>⑂</span>
-            <span>◫</span>
             <span>⚙</span>
+            <span>◇</span>
           </aside>
 
           <aside className={styles.fileExplorer} aria-hidden="true">
-            <span className={styles.explorerTitle}>EDIFICA-PLATFORM</span>
+            <header className={styles.explorerHeader}>
+              <span>EXPLORADOR</span>
+              <strong>...</strong>
+            </header>
             <div className={styles.folderTree}>
-              <strong>src</strong>
-              <span>pages</span>
-              <em>SupportTechnologyPage.tsx</em>
-              <span>services</span>
-              <em>ticketQueue.service.ts</em>
-              <span>styles</span>
-              <em>workspace.theme.css</em>
-              <span>database</span>
-              <em>support_schema.sql</em>
+              {FILE_TREE.map((item, index) => (
+                <span
+                  key={`${item.label}-${index}`}
+                  className={`${styles.treeItem} ${item.active ? styles.treeActive : ''} ${styles[`tree_${item.type}`] || ''}`}
+                  style={{ '--level': item.level || 0 }}
+                >
+                  <i>{SYMBOLS[item.type] || '□'}</i>
+                  <b>{item.label}</b>
+                </span>
+              ))}
             </div>
+            <footer className={styles.timelineLabel}>LINHA DO TEMPO</footer>
           </aside>
 
           <main className={styles.editorArea}>
-            <header className={styles.titleBar}>
-              <div className={styles.windowDots} aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
-              <span className={styles.windowTitle}>Suporte de tecnologia — workspace em construção</span>
-            </header>
-
             <nav className={styles.tabs} aria-hidden="true">
-              {FILE_TABS.map((tab, index) => (
-                <span key={tab} className={index === 0 ? styles.tabActive : undefined}>{tab}</span>
+              {TABS.map((tab, index) => (
+                <span key={tab} className={index === 0 ? styles.tabActive : undefined}>
+                  <i>{tab.endsWith('.css') ? '#' : tab.endsWith('.js') ? 'JS' : '⚛'}</i>
+                  {tab}
+                  {index === 0 ? <b>×</b> : null}
+                </span>
               ))}
             </nav>
 
             <div className={styles.editorCanvas}>
               <div className={styles.backgroundCode} aria-hidden="true">
-                {secondaryRows.map((line, index) => (
+                {shadowRows.map((line, index) => (
                   <span key={`${line}-${index}`}>{line}</span>
                 ))}
               </div>
 
-              <div className={styles.mainCodeTrack}>
+              <div className={styles.mainCodeTrack} aria-hidden="true">
                 {codeRows.map((line, index) => (
                   <div
                     key={`${line}-${index}`}
                     className={`${styles.codeLine} ${styles[`line_${getLineType(line)}`]}`}
                     style={{
-                      '--line-delay': `${(index % 24) * 0.14}s`,
-                      '--line-steps': Math.max(16, Math.min(72, line.length)),
+                      '--line-delay': `${(index % 37) * 0.09}s`,
+                      '--line-steps': Math.max(12, Math.min(82, line.length)),
                     }}
                   >
-                    <span className={styles.lineNumber}>{String(index + 1).padStart(3, '0')}</span>
+                    <span className={styles.lineNumber}>{String(index + 111).padStart(3, '0')}</span>
                     <span className={styles.liveCode}>{line || ' '}</span>
                   </div>
                 ))}
               </div>
 
               <aside className={styles.minimap} aria-hidden="true">
-                {codeRows.slice(0, 80).map((line, index) => (
-                  <span key={`map-${index}`} style={{ width: `${28 + (line.length % 58)}%` }} />
+                {codeRows.slice(0, 96).map((line, index) => (
+                  <span key={`map-${index}`} style={{ width: `${18 + (line.length % 72)}%` }} />
                 ))}
               </aside>
             </div>
 
             <footer className={styles.statusBar} aria-hidden="true">
-              <span>Dracula</span>
-              <span>TypeScript JSX</span>
+              <span>main*</span>
+              <span>JavaScript JSX</span>
               <span>UTF-8</span>
-              <strong>gerando código...</strong>
+              <span>LF</span>
+              <strong>Em construção</strong>
             </footer>
           </main>
 
-          <aside className={styles.terminalPanel} aria-label="Terminal de construção">
+          <aside className={styles.terminalPanel} aria-hidden="true">
             <header>TERMINAL</header>
             <div className={styles.terminalViewport}>
               <div className={styles.terminalTrack}>
                 {terminalRows.map((line, index) => (
-                  <span key={`${line}-${index}`}>λ {line}</span>
+                  <span key={`${line}-${index}`}>› {line}</span>
                 ))}
               </div>
             </div>
