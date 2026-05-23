@@ -273,14 +273,14 @@ export default function SupportTechnologyPage() {
           return;
         }
         setPhase('pause');
-      }, lineIndex === lines.length - 1 && charIndex === (lines[lineIndex] || '').length ? 1050 : 26 + ((charIndex + lineIndex) % 5) * 12);
+      }, lineIndex === lines.length - 1 && charIndex === (lines[lineIndex] || '').length ? 420 : 12 + ((charIndex + lineIndex) % 4) * 8);
     } else {
       timer = window.setTimeout(() => {
         setFileIndex((value) => (value + 1) % FILES.length);
         setLineIndex(0);
         setCharIndex(0);
         setPhase('typing');
-      }, 1200);
+      }, 520);
     }
     return () => window.clearTimeout(timer);
   }, [activeFile, charIndex, lineIndex, phase]);
@@ -288,7 +288,7 @@ export default function SupportTechnologyPage() {
   useEffect(() => {
     const timer = window.setInterval(() => {
       setLogIndex((value) => (value >= TERMINAL_FEED.length ? 6 : value + 1));
-    }, 850);
+    }, 420);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -339,6 +339,7 @@ export default function SupportTechnologyPage() {
   return (
     <div className={styles.page}>
       <section className={styles.workspace} aria-label="Área em construção">
+        <div className={styles.stageCard} aria-hidden="true" />
         <div className={styles.floatingStudio}>
           <header className={styles.ideTitlebar}>
             <div className={styles.launcherWrap}>
