@@ -8,6 +8,10 @@ import styles from './SupportTechnologyPage.module.css';
 const MASTER_SUPPORT_EMAIL = 'mauricionredifica@gmail.com';
 const MASTER_SUPPORT_NAME = 'mauricio nunes';
 
+const STAR_POINTS = Array.from({ length: 54 }, (_, index) => index + 1);
+const DUST_POINTS = Array.from({ length: 30 }, (_, index) => index + 1);
+const ORBIT_POINTS = Array.from({ length: 18 }, (_, index) => index + 1);
+
 export default function SupportTechnologyPage() {
   const { user } = useAuth();
   const { userDirectory = [], setPanelHeader } = useOutletContext();
@@ -37,49 +41,41 @@ export default function SupportTechnologyPage() {
 
   return (
     <main className={styles.page} aria-label="Suporte de tecnologia">
-      <section className={styles.bladeStage} aria-label="Área de tecnologia em construção">
-        <div className={styles.rainLayer} aria-hidden="true" />
-        <div className={styles.cityGlow} aria-hidden="true" />
-        <div className={styles.cityBack} aria-hidden="true">
-          <span /><span /><span /><span /><span /><span /><span /><span />
+      <section className={styles.galaxyStage} aria-label="Área de tecnologia em construção">
+        <div className={styles.deepSpace} aria-hidden="true" />
+        <div className={styles.nebulaField} aria-hidden="true" />
+        <div className={styles.galaxyPlane} aria-hidden="true">
+          <span className={styles.armOne} />
+          <span className={styles.armTwo} />
+          <span className={styles.armThree} />
+          <span className={styles.armFour} />
+          <span className={styles.galaxyCore} />
         </div>
-        <div className={styles.cityFront} aria-hidden="true">
-          <span /><span /><span /><span /><span /><span />
+        <div className={styles.starField} aria-hidden="true">
+          {STAR_POINTS.map((point) => <span key={`estrela-${point}`} />)}
         </div>
-        <div className={styles.lightBeamOne} aria-hidden="true" />
-        <div className={styles.lightBeamTwo} aria-hidden="true" />
-        <div className={styles.signalGrid} aria-hidden="true" />
-        <div className={styles.scanLines} aria-hidden="true" />
-        <div className={styles.holoRing} aria-hidden="true">
-          <span /><span /><span />
+        <div className={styles.dustField} aria-hidden="true">
+          {DUST_POINTS.map((point) => <span key={`poeira-${point}`} />)}
+        </div>
+        <div className={styles.orbitField} aria-hidden="true">
+          {ORBIT_POINTS.map((point) => <span key={`orbita-${point}`} />)}
         </div>
 
-        <div className={styles.centerpiece}>
-          <div className={styles.avatarShell} aria-hidden="true">
-            <span className={styles.avatarAura} />
+        <div className={styles.identityMap} aria-hidden="true">
+          <span className={styles.avatarNode}>
             <Avatar
               src={avatarSrc}
               name={displayName}
-              size="xl"
-              className={styles.centerAvatar}
+              size="md"
+              className={styles.ownerAvatar}
               fallbackColor={supportMaster?.avatarColor || user?.avatarColor}
             />
-            <span className={styles.avatarScan} />
-          </div>
-          <span className={styles.kicker}>TECHNOLOGY SUPPORT</span>
-          <h1>mauricionrdev</h1>
-          <p>Em construção</p>
-        </div>
-
-        <div className={styles.hudLeft} aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className={styles.hudRight} aria-hidden="true">
-          <span />
-          <span />
-          <span />
+          </span>
+          <span className={`${styles.microLabel} ${styles.labelOne}`}>mauricionrdev</span>
+          <span className={`${styles.microLabel} ${styles.labelTwo}`}>Mauricio Nunes</span>
+          <span className={`${styles.microLabel} ${styles.labelThree}`}>em construção</span>
+          <span className={`${styles.microLabel} ${styles.labelFour}`}>suporte de tecnologia</span>
+          <span className={`${styles.microLabel} ${styles.labelFive}`}>área em órbita</span>
         </div>
       </section>
     </main>
