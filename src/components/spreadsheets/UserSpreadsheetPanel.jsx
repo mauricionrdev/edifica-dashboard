@@ -79,6 +79,68 @@ function stripHtml(value = '') {
     .trim();
 }
 
+
+function parseClipboardTable(text = '') {
+  const source = String(text ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const trimmed = source.endsWith('\n') ? source.slice(0, -1) : source;
+  return trimmed
+    .split('\n')
+    .map((line) => line.split('\t').map((cell) => cell.trim()))
+    .filter((line, index, lines) => line.some(Boolean) || index < lines.length - 1);
+}
+
+function serializeTable(rows = []) {
+  return rows.map((row) => row.map((cell) => String(cell ?? '').replace(/\r?\n/g, ' ')).join('\t')).join('\n');
+}
+
+function escapeCsvCell(value = '') {
+  const text = String(value ?? '').replace(/\r?\n/g, ' ');
+  return /[",;\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function serializeSheetToCsv(rows = [], columns = []) {
+  const header = columns.map((column) => escapeCsvCell(column.label || 'Coluna')).join(';');
+  const body = rows.map((row) => columns.map((column) => escapeCsvCell(stripHtml(row?.[column.key] || ''))).join(';'));
+  return [header, ...body].join('\n');
+}
+
+function safeFileName(value = 'planilha') {
+  return String(value || 'planilha')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9-_]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase() || 'planilha';
+}
+
+function downloadTextFile(filename, content, type = 'text/plain;charset=utf-8') {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+
+async function writeClipboardText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  textarea.remove();
+}
+
 function normalizeColumns(columns = []) {
   return (Array.isArray(columns) ? columns : []).map((column) => ({
     key: column.key,
@@ -393,7 +455,7 @@ function HeaderCell({ column, editable, resizing, compact, onLabelChange, onLabe
   );
 }
 
-function SheetCell({ row, column, editable, selected, selectedGroup, rangeEdges, saving, onSelect, onChange, onCommit, onNavigate, onContextMenu }) {
+function SheetCell({ row, column, editable, selected, selectedGroup, rangeEdges, saving, onSelect, onChange, onCommit, onNavigate, onContextMenu, onPasteTable }) {
   const ref = useRef(null);
   const value = String(row[column.key] || '');
   const style = row.__styles?.[column.key] || undefined;
@@ -449,8 +511,14 @@ function SheetCell({ row, column, editable, selected, selectedGroup, rangeEdges,
       onBlur={() => onCommit(row.id, column.key)}
       onContextMenu={(event) => onContextMenu(event, row.id, column.key)}
       onPaste={(event) => {
-        event.preventDefault();
         const text = event.clipboardData.getData('text/plain');
+        const table = parseClipboardTable(text);
+        if (table.length > 1 || table.some((line) => line.length > 1)) {
+          event.preventDefault();
+          onPasteTable(row.id, column.key, text);
+          return;
+        }
+        event.preventDefault();
         document.execCommand('insertText', false, text);
       }}
       onKeyDown={(event) => {
@@ -922,6 +990,54 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   };
 
+  const handlePasteTable = useCallback(async (startRowId, startKey, text) => {
+    if (!activeSheetId || !startRowId || !startKey) return;
+    const table = parseClipboardTable(text);
+    if (!table.length) return;
+
+    const startRowIndex = rows.findIndex((row) => row.id === startRowId);
+    const startColumnIndex = columns.findIndex((column) => column.key === startKey);
+    if (startRowIndex < 0 || startColumnIndex < 0) return;
+
+    const writableRows = table.slice(0, Math.max(0, rows.length - startRowIndex));
+    const updatesByRow = new Map();
+    writableRows.forEach((line, rowOffset) => {
+      const row = rows[startRowIndex + rowOffset];
+      if (!row) return;
+      const payload = {};
+      line.slice(0, Math.max(0, columns.length - startColumnIndex)).forEach((value, columnOffset) => {
+        const column = columns[startColumnIndex + columnOffset];
+        if (column?.key) payload[column.key] = value;
+      });
+      if (Object.keys(payload).length) updatesByRow.set(row.id, payload);
+    });
+
+    if (!updatesByRow.size) return;
+    setSavingCell('bulk-selection');
+    markSync('saving', 'Colando dados tabulares');
+    try {
+      setRows((current) => current.map((row) => (updatesByRow.has(row.id) ? { ...row, ...updatesByRow.get(row.id) } : row)));
+      await Promise.all([...updatesByRow.entries()].map(([rowId, payload]) => updateSupportDailyRow(rowId, { ...payload, ownerUserId })));
+      const lastRow = rows[Math.min(rows.length - 1, startRowIndex + writableRows.length - 1)];
+      const maxColumns = Math.max(...writableRows.map((line) => line.length), 1);
+      const lastColumn = columns[Math.min(columns.length - 1, startColumnIndex + maxColumns - 1)];
+      if (lastRow && lastColumn) {
+        setSelectionRange({ start: { rowId: startRowId, key: startKey }, end: { rowId: lastRow.id, key: lastColumn.key } });
+        setActiveCell((current) => ({ rowId: startRowId, key: startKey, element: current?.element || null }));
+      }
+      markSync('saved', 'Dados colados na planilha');
+      if (table.length > writableRows.length || table.some((line) => line.length > columns.length - startColumnIndex)) {
+        showToast?.('Parte dos dados não coube na área atual da planilha.', { variant: 'warning' });
+      }
+    } catch (err) {
+      markSync('error', 'Falha ao colar dados');
+      showToast?.(err?.message || 'Não foi possível colar os dados.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
+    } finally {
+      setSavingCell('');
+    }
+  }, [activeSheetId, columns, markSync, ownerUserId, refreshRows, rows, showToast]);
+
   const handleApplyBulkStyle = async (command, value = null) => {
     if (!selectedCells.length) return false;
     const supported = ['foreColor', 'hiliteColor', 'bold', 'italic', 'underline', 'strikeThrough', 'justifyLeft', 'justifyCenter', 'justifyRight', 'removeFormat'];
@@ -1177,6 +1293,39 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const savingState = savingCell || savingColumn || syncState.status === 'saving' ? 'Salvando' : syncState.label;
   const syncTime = formatSyncTime(syncState.at);
 
+  const handleCopySelection = useCallback(async () => {
+    if (!rows.length || !columns.length) return;
+    let matrix = [];
+    if (selectionBounds && selectedCount > 1) {
+      matrix = rows.slice(selectionBounds.rowFrom, selectionBounds.rowTo + 1).map((row) => (
+        columns.slice(selectionBounds.columnFrom, selectionBounds.columnTo + 1).map((column) => stripHtml(row?.[column.key] || ''))
+      ));
+    } else if (activeCell?.rowId && activeCell?.key) {
+      const row = rows.find((entry) => entry.id === activeCell.rowId);
+      matrix = [[stripHtml(row?.[activeCell.key] || '')]];
+    }
+    if (!matrix.length) return;
+    try {
+      await writeClipboardText(serializeTable(matrix));
+      markSync('saved', selectedCount > 1 ? 'Seleção copiada' : 'Célula copiada');
+    } catch {
+      markSync('error', 'Falha ao copiar seleção');
+      showToast?.('Não foi possível copiar a seleção.', { variant: 'error' });
+    }
+  }, [activeCell?.key, activeCell?.rowId, columns, markSync, rows, selectedCount, selectionBounds, showToast]);
+
+  const handleExportCsv = useCallback(() => {
+    if (!columns.length) return;
+    try {
+      const csv = serializeSheetToCsv(rows, columns);
+      downloadTextFile(`${safeFileName(activeSheet?.name || 'planilha')}.csv`, csv, 'text/csv;charset=utf-8');
+      markSync('saved', 'CSV exportado');
+    } catch {
+      markSync('error', 'Falha ao exportar CSV');
+      showToast?.('Não foi possível exportar a planilha.', { variant: 'error' });
+    }
+  }, [activeSheet?.name, columns, markSync, rows, showToast]);
+
   return (
     <section className={styles.panel}>
       <header className={styles.sheetHeader}>
@@ -1195,6 +1344,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
         {canEdit ? (
           <div className={styles.sheetActions}>
+            <Button type="button" size="sm" variant="secondary" onClick={handleCopySelection} disabled={!activeCell && selectedCount <= 1}>Copiar</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={handleExportCsv} disabled={!activeSheetId || !columns.length}>Exportar CSV</Button>
             <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
             <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn || !activeSheetId}><PlusIcon size={14} /> Coluna</Button>
             <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow || !activeSheetId}><PlusIcon size={14} /> Linha</Button>
@@ -1403,6 +1554,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                           onCommit={handleCellCommit}
                           onNavigate={navigateCell}
                           onContextMenu={openContextMenu}
+                          onPasteTable={handlePasteTable}
                         />
                       </td>
                       );
