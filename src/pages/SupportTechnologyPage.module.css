@@ -771,16 +771,75 @@
 
 .previewSurfaceForeshadowOne::after {
   background:
-    linear-gradient(180deg, transparent 0 22%, rgba(255, 71, 71, 0.16) 22.4%, transparent 23.4%, transparent 63%, rgba(255, 71, 71, 0.10) 63.5%, transparent 64.5%),
-    linear-gradient(90deg, transparent 0%, rgba(255, 71, 71, 0.08) 18%, transparent 22%, transparent 70%, rgba(255, 71, 71, 0.07) 74%, transparent 78%);
-  animation: previewGlitchSoft 2.35s steps(1, end) infinite;
+    linear-gradient(180deg, transparent 0 18%, rgba(255, 71, 71, 0.22) 18.3%, transparent 19.2%, transparent 49%, rgba(255, 71, 71, 0.16) 49.4%, transparent 50.2%, transparent 76%, rgba(255, 71, 71, 0.14) 76.4%, transparent 77.2%),
+    linear-gradient(90deg, transparent 0%, rgba(255, 71, 71, 0.13) 18%, transparent 23%, transparent 68%, rgba(255, 71, 71, 0.11) 73%, transparent 80%),
+    repeating-linear-gradient(180deg, rgba(255, 71, 71, 0.035) 0 1px, transparent 1px 10px);
+  animation: previewGlitchSoft 1.75s steps(1, end) infinite;
 }
 
 .previewSurfaceForeshadowTwo::after {
   background:
-    linear-gradient(180deg, transparent 0 12%, rgba(255, 71, 71, 0.22) 12.5%, transparent 13.8%, transparent 37%, rgba(255, 71, 71, 0.18) 37.5%, transparent 39%, transparent 66%, rgba(255, 71, 71, 0.20) 66.4%, transparent 67.8%),
-    linear-gradient(90deg, transparent 0%, rgba(255, 71, 71, 0.12) 28%, transparent 32%, transparent 58%, rgba(255, 71, 71, 0.15) 62%, transparent 66%);
-  animation: previewGlitchTwo 1.55s steps(1, end) infinite;
+    linear-gradient(180deg, transparent 0 10%, rgba(255, 71, 71, 0.30) 10.5%, transparent 11.9%, transparent 33%, rgba(255, 71, 71, 0.25) 33.5%, transparent 35%, transparent 61%, rgba(255, 71, 71, 0.28) 61.4%, transparent 63%, transparent 83%, rgba(255, 71, 71, 0.18) 83.4%, transparent 84.6%),
+    linear-gradient(90deg, transparent 0%, rgba(255, 71, 71, 0.20) 25%, transparent 31%, transparent 58%, rgba(255, 71, 71, 0.22) 64%, transparent 70%),
+    repeating-linear-gradient(180deg, rgba(255, 71, 71, 0.045) 0 1px, transparent 1px 7px);
+  animation: previewGlitchTwo 1.15s steps(1, end) infinite;
+}
+
+
+.previewForeshadowGlitch {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.82;
+}
+
+.previewForeshadowGlitch span {
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 74, 74, 0.78), rgba(255, 74, 74, 0.22), transparent);
+  box-shadow: 0 0 12px rgba(255, 74, 74, 0.26);
+  opacity: 0;
+  animation: previewWarningSlice 2.05s steps(1, end) infinite;
+}
+
+.previewForeshadowGlitch span:nth-child(1) { top: 24%; animation-delay: 0s; }
+.previewForeshadowGlitch span:nth-child(2) { top: 52%; animation-delay: .54s; opacity: .35; }
+.previewForeshadowGlitch span:nth-child(3) { top: 73%; animation-delay: 1.04s; opacity: .28; height: 1px; }
+
+.previewForeshadowGlitch em {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  color: rgba(255, 112, 112, 0.92);
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  font-style: normal;
+  opacity: 0;
+  text-shadow: 0 0 12px rgba(255, 74, 74, 0.28);
+  animation: halPreviewWhisper 2.2s steps(1, end) infinite;
+}
+
+.previewForeshadowGlitchStrong {
+  opacity: 1;
+}
+
+.previewForeshadowGlitchStrong span {
+  height: 2px;
+  animation-duration: 1.35s;
+  background: linear-gradient(90deg, transparent, rgba(255, 74, 74, 0.95), rgba(255, 74, 74, 0.34), transparent);
+}
+
+.previewForeshadowGlitchStrong span:nth-child(2) {
+  height: 3px;
+}
+
+.previewForeshadowGlitchStrong em {
+  animation-duration: 1.45s;
 }
 
 .halSignalHint,

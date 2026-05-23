@@ -426,6 +426,17 @@ export default function SupportTechnologyPage() {
                         </div>
                       </div>
                       <div className={styles.previewGlow} />
+                      {activeStage.mode !== 'hal' ? (
+                        <div
+                          className={`${styles.previewForeshadowGlitch} ${stageIndex === 1 ? styles.previewForeshadowGlitchStrong : ''}`.trim()}
+                          aria-hidden="true"
+                        >
+                          <span />
+                          <span />
+                          <span />
+                          <em>HAL 9000</em>
+                        </div>
+                      ) : null}
 
                       {activeStage.mode === 'build' ? (
                         <div className={styles.previewBuilding}>
