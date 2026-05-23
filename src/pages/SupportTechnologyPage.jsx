@@ -14,124 +14,73 @@ const MASTER_SUPPORT_NAME = 'mauricio nunes';
 const SUPPORT_ROLES = new Set(['suporte_tecnologia']);
 const FALLBACK_SUPPORT_ROLES = new Set(['ceo', 'admin']);
 
-const CODE_LINES = [
+const EDITOR_LINES = [
   [
-    { text: 'import ', type: 'keyword' },
-    { text: '{ ', type: 'plain' },
-    { text: 'monitorarInfraestrutura', type: 'function' },
-    { text: ', ', type: 'plain' },
-    { text: 'iniciarPainel', type: 'function' },
-    { text: ' } ', type: 'plain' },
-    { text: 'from ', type: 'keyword' },
-    { text: '"./suporte"', type: 'string' },
-    { text: ';', type: 'plain' },
+    ['const', 'keyword'], [' telaSuporte ', 'identifier'], ['= ', 'plain'], ['criarTela', 'function'], ['({', 'plain'],
   ],
   [
-    { text: 'const ', type: 'keyword' },
-    { text: 'titulo', type: 'identifier' },
-    { text: ' = ', type: 'plain' },
-    { text: '"Suporte de tecnologia"', type: 'string' },
-    { text: ';', type: 'plain' },
+    ['  nome', 'property'], [': ', 'plain'], ['\'Suporte de tecnologia\'', 'string'], [',', 'plain'],
   ],
   [
-    { text: 'const ', type: 'keyword' },
-    { text: 'estadoInicial', type: 'identifier' },
-    { text: ' = ', type: 'plain' },
-    { text: '{ ', type: 'plain' },
-    { text: 'status', type: 'property' },
-    { text: ': ', type: 'plain' },
-    { text: '"em_construcao"', type: 'string' },
-    { text: ', ', type: 'plain' },
-    { text: 'renderizando', type: 'property' },
-    { text: ': ', type: 'plain' },
-    { text: 'true', type: 'value' },
-    { text: ' };', type: 'plain' },
+    ['  tema', 'property'], [': ', 'plain'], ['\'escuro operacional\'', 'string'], [',', 'plain'],
   ],
   [
-    { text: 'const ', type: 'keyword' },
-    { text: 'janela', type: 'identifier' },
-    { text: ' = ', type: 'plain' },
-    { text: 'criarJanela', type: 'function' },
-    { text: '(', type: 'plain' },
-    { text: '"painel-tecnologia"', type: 'string' },
-    { text: ');', type: 'plain' },
+    ['  estado', 'property'], [': ', 'plain'], ['\'em construção\'', 'string'], [',', 'plain'],
   ],
   [
-    { text: 'janela', type: 'identifier' },
-    { text: '.', type: 'plain' },
-    { text: 'aplicarTema', type: 'function' },
-    { text: '(', type: 'plain' },
-    { text: '"dark"', type: 'string' },
-    { text: ', ', type: 'plain' },
-    { text: '"alto_contraste"', type: 'string' },
-    { text: ');', type: 'plain' },
+    ['  monitoramento', 'property'], [': ', 'plain'], ['true', 'value'], [',', 'plain'],
   ],
   [
-    { text: 'monitorarInfraestrutura', type: 'function' },
-    { text: '({ ', type: 'plain' },
-    { text: 'whatsapp', type: 'property' },
-    { text: ': ', type: 'plain' },
-    { text: 'true', type: 'value' },
-    { text: ', ', type: 'plain' },
-    { text: 'apiOpenAI', type: 'property' },
-    { text: ': ', type: 'plain' },
-    { text: 'true', type: 'value' },
-    { text: ', ', type: 'plain' },
-    { text: 'alertas', type: 'property' },
-    { text: ': ', type: 'plain' },
-    { text: '"ativos"', type: 'string' },
-    { text: ' });', type: 'plain' },
+    ['});', 'plain'],
   ],
   [
-    { text: 'const ', type: 'keyword' },
-    { text: 'etapas', type: 'identifier' },
-    { text: ' = [', type: 'plain' },
-    { text: '"layout"', type: 'string' },
-    { text: ', ', type: 'plain' },
-    { text: '"integrações"', type: 'string' },
-    { text: ', ', type: 'plain' },
-    { text: '"animações"', type: 'string' },
-    { text: '];', type: 'plain' },
+    ['carregarModulo', 'function'], ['(', 'plain'], ['\'demandas\'', 'string'], [');', 'plain'],
   ],
   [
-    { text: 'etapas', type: 'identifier' },
-    { text: '.', type: 'plain' },
-    { text: 'forEach', type: 'function' },
-    { text: '(', type: 'plain' },
-    { text: '(etapa) => ', type: 'plain' },
-    { text: 'registrarMarco', type: 'function' },
-    { text: '(etapa));', type: 'plain' },
+    ['validarPermissoes', 'function'], ['({ ', 'plain'], ['perfil', 'property'], [': ', 'plain'], ['\'suporte\'', 'string'], [' });', 'plain'],
   ],
   [
-    { text: 'iniciarPainel', type: 'function' },
-    { text: '({ ', type: 'plain' },
-    { text: 'titulo', type: 'property' },
-    { text: ', ', type: 'plain' },
-    { text: 'estado', type: 'property' },
-    { text: ': ', type: 'plain' },
-    { text: 'estadoInicial', type: 'identifier' },
-    { text: ' });', type: 'plain' },
+    ['sincronizarFila', 'function'], ['(', 'plain'], ['clientesAtivos', 'identifier'], [');', 'plain'],
   ],
   [
-    { text: 'renderizarAviso', type: 'function' },
-    { text: '(', type: 'plain' },
-    { text: '"Em construção"', type: 'string' },
-    { text: ', ', type: 'plain' },
-    { text: '"Aguardando próxima versão"', type: 'string' },
-    { text: ');', type: 'plain' },
+    ['renderizarInterface', 'function'], ['(', 'plain'], ['telaSuporte', 'identifier'], [');', 'plain'],
+  ],
+  [
+    ['publicarVersao', 'function'], ['(', 'plain'], ['\'proxima entrega\'', 'string'], [');', 'plain'],
   ],
 ];
 
-const BUILD_STEPS = [
-  'Montando estrutura da tela',
-  'Criando componentes do workspace',
-  'Conectando alertas e monitoramento',
-  'Compilando interface de suporte',
-  'Preparando próxima entrega',
+const TERMINAL_LINES = [
+  'preparando workspace da tecnologia',
+  'montando estrutura da tela',
+  'criando área de demandas',
+  'validando permissões internas',
+  'organizando próximos módulos',
+  'compilando suporte de tecnologia',
+  'aguardando próxima versão',
+];
+
+const BACKDROP_LINES = [
+  'const tarefa = criarDemanda(usuario, prioridade);',
+  'await sincronizarClientes({ origem: "central" });',
+  'if (alerta.critico) notificarSuporte();',
+  'painel.atualizar({ status: "em_construcao" });',
+  'monitorarFila(demandas, responsaveis);',
+  'registrarEvento("suporte_tecnologia");',
+  'validarAcesso(usuario, recurso);',
+  'renderizarModulo("tecnologia");',
 ];
 
 function cleanText(value) {
   return String(value ?? '').trim();
+}
+
+function renderTokens(line, lineIndex) {
+  return line.map(([text, type], tokenIndex) => (
+    <span key={`${lineIndex}-${tokenIndex}`} className={styles[`token_${type}`] || styles.token_plain}>
+      {text}
+    </span>
+  ));
 }
 
 export default function SupportTechnologyPage() {
@@ -208,6 +157,9 @@ export default function SupportTechnologyPage() {
     }
   };
 
+  const backgroundRows = [...BACKDROP_LINES, ...BACKDROP_LINES, ...BACKDROP_LINES];
+  const terminalRows = [...TERMINAL_LINES, ...TERMINAL_LINES];
+
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
@@ -216,57 +168,58 @@ export default function SupportTechnologyPage() {
         </Button>
       </div>
 
-      <section className={styles.workspace} aria-label="Painel em construção">
-        <div className={styles.grid} aria-hidden="true" />
-        <div className={styles.scanline} aria-hidden="true" />
-        <div className={styles.codeRainLeft} aria-hidden="true" />
-        <div className={styles.codeRainRight} aria-hidden="true" />
-        <div className={styles.ambientGlow} aria-hidden="true" />
+      <section className={styles.workspace} aria-label="Suporte de tecnologia em construção">
+        <div className={styles.backdrop} aria-hidden="true">
+          <div className={styles.backdropTrack}>
+            {backgroundRows.map((line, index) => (
+              <span key={`${line}-${index}`}>{line}</span>
+            ))}
+          </div>
+        </div>
+        <div className={styles.noise} aria-hidden="true" />
+        <div className={styles.sweep} aria-hidden="true" />
 
         <div className={styles.editorShell}>
-          <header className={styles.editorTopbar}>
+          <header className={styles.editorHeader}>
             <div className={styles.windowDots} aria-hidden="true">
               <span />
               <span />
               <span />
             </div>
-            <span className={styles.editorLabel}>src/pages/SupportTechnologyPage.jsx</span>
-            <span className={styles.editorStatus}>compilando</span>
+            <span className={styles.fileName}>src/pages/SupportTechnologyPage.jsx</span>
+            <span className={styles.compileStatus}>em execução</span>
           </header>
 
           <div className={styles.editorBody}>
-            <ol className={styles.codeBlock}>
-              {CODE_LINES.map((line, index) => (
-                <li
-                  key={`line-${index + 1}`}
+            <div className={styles.codePane}>
+              {EDITOR_LINES.map((line, index) => (
+                <div
+                  key={`editor-line-${index + 1}`}
                   className={styles.codeLine}
                   style={{
-                    '--delay': `${index * 0.82}s`,
-                    '--steps': Math.max(16, line.reduce((sum, token) => sum + token.text.length, 0)),
+                    '--delay': `${index * 0.38}s`,
+                    '--duration': `${5.4 + (index % 4) * 0.4}s`,
                   }}
                 >
                   <span className={styles.lineNumber}>{String(index + 1).padStart(2, '0')}</span>
-                  <span className={styles.lineInner}>
-                    {line.map((token, tokenIndex) => (
-                      <span key={`token-${index + 1}-${tokenIndex}`} className={styles[`token_${token.type}`] || styles.token_plain}>
-                        {token.text}
-                      </span>
-                    ))}
-                  </span>
-                </li>
+                  <span className={styles.liveText}>{renderTokens(line, index)}</span>
+                </div>
               ))}
-            </ol>
+              <div className={styles.activePrompt}>
+                <span>npm run construir:suporte</span>
+                <i aria-hidden="true" />
+              </div>
+            </div>
 
-            <aside className={styles.statusDock}>
-              <span className={styles.statusEyebrow}>Montagem da interface</span>
-              <ul className={styles.statusList}>
-                {BUILD_STEPS.map((step, index) => (
-                  <li key={step} style={{ '--delay': `${0.6 + index * 0.9}s` }}>
-                    <span className={styles.statusDot} aria-hidden="true" />
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ul>
+            <aside className={styles.terminalPanel} aria-label="Progresso da construção">
+              <span className={styles.terminalTitle}>processo interno</span>
+              <div className={styles.terminalViewport}>
+                <div className={styles.terminalTrack}>
+                  {terminalRows.map((line, index) => (
+                    <span key={`${line}-${index}`}>› {line}</span>
+                  ))}
+                </div>
+              </div>
             </aside>
           </div>
 
