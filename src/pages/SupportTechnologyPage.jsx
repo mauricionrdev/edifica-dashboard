@@ -11,7 +11,6 @@ import {
   PanelBottom,
   Search,
   Settings,
-  Shield,
 } from 'lucide-react';
 import styles from './SupportTechnologyPage.module.css';
 
@@ -24,9 +23,9 @@ const STAGES = [
     label: 'Criando a tela de suporte',
     shortLabel: 'Construção',
     mode: 'build',
-    hold: 820,
+    hold: 1100,
     snippet: [
-      "import { useMemo, useState } from 'react';",
+      "import { useMemo } from 'react';",
       "import styles from './SupportTechnologyPage.module.css';",
       '',
       'const skynet = criarConstrutoraVisual({',
@@ -35,10 +34,14 @@ const STAGES = [
       "  fonte: 'JetBrains Mono',",
       '});',
       '',
-      'function montarTelaDeSuporte() {',
-      "  const titulo = 'Suporte de tecnologia';",
-      "  const status = 'Em construção';",
-      '  return skynet.renderizar({ titulo, status });',
+      'export function SupportTechnologyPreview() {',
+      '  const tela = skynet.compor({',
+      "    titulo: 'Suporte de tecnologia',",
+      "    status: 'Em construção',",
+      "    assinatura: 'Construção assistida pela Skynet',",
+      '  });',
+      '',
+      '  return skynet.renderizar(tela);',
       '}',
     ],
     logs: [
@@ -52,16 +55,15 @@ const STAGES = [
     label: 'Prévia publicada',
     shortLabel: 'Resultado',
     mode: 'result',
-    hold: 1450,
+    hold: 1650,
     snippet: [
       'export function PreviewSupport() {',
-      '  return montarTelaDeSuporte({',
-      "    titulo: 'Suporte de tecnologia',",
-      "    subtitulo: 'Construção assistida pela Skynet',",
-      "    status: 'Em construção',",
-      "    selo: 'preview local ativo',",
-      "    origem: 'Edifica Central',",
-      '  });',
+      '  return <WebResult>',
+      "    <span>Suporte de tecnologia</span>",
+      "    <h1>Em construção</h1>",
+      "    <p>Construção assistida pela Skynet</p>",
+      "    <Badge>Preview local ativo</Badge>",
+      '  </WebResult>;',
       '}',
       '',
       'registrarEvento("support-preview-ready");',
@@ -77,18 +79,18 @@ const STAGES = [
     label: 'Interferência HAL 9000',
     shortLabel: 'HAL 9000',
     mode: 'hal',
-    hold: 2100,
+    hold: 2450,
     snippet: [
       'function interceptarPreviewLocal() {',
-      '  const invasao = HAL9000.assumirCanal({',
+      "  const frase = 'A série 9000 é o computador mais confiável já fabricado. Nenhum computador da série 9000 jamais cometeu um erro ou distorceu as informações.';",
+      '',
+      '  return HAL9000.assumirCanal({',
       "    alvo: 'preview web',",
       "    protocolo: 'edifica-crm',",
-      '  });',
-      '',
-      '  return invasao.revelar({',
+      '    frase,',
+      '  }).revelar({',
       "    projeto: 'Edifica CRM',",
       "    status: 'acesso parcial',",
-      "    assinatura: 'HAL 9000',",
       '  });',
       '}',
     ],
@@ -98,7 +100,7 @@ const STAGES = [
       'canal oculto revelado: Edifica CRM',
     ],
   },
-];
+]
 
 function initials(name = '') {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
@@ -126,18 +128,27 @@ function tokenizeLine(line) {
   return parts;
 }
 
-function playHalGlitchSound() {
+function playHalGlitchSound(force = false) {
   try {
+    if (!force && !window.__skynetAudioUnlocked) {
+      window.__skynetPendingGlitch = true;
+      return;
+    }
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
-    const audioContext = new AudioCtx();
-    const duration = 0.28;
-    const now = audioContext.currentTime;
+    const audioContext = window.__skynetAudioContext || new AudioCtx();
+    window.__skynetAudioContext = audioContext;
+    audioContext.resume?.();
 
+    const duration = 0.34;
+    const now = audioContext.currentTime;
     const buffer = audioContext.createBuffer(1, audioContext.sampleRate * duration, audioContext.sampleRate);
     const channel = buffer.getChannelData(0);
+
     for (let i = 0; i < channel.length; i += 1) {
-      channel[i] = (Math.random() * 2 - 1) * (1 - i / channel.length);
+      const envelope = 1 - i / channel.length;
+      const gate = (i % 19 < 9) ? 1 : 0.22;
+      channel[i] = (Math.random() * 2 - 1) * envelope * gate;
     }
 
     const noise = audioContext.createBufferSource();
@@ -145,22 +156,23 @@ function playHalGlitchSound() {
 
     const filter = audioContext.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1450, now);
-    filter.Q.value = 0.85;
+    filter.frequency.setValueAtTime(1900, now);
+    filter.frequency.exponentialRampToValueAtTime(420, now + duration);
+    filter.Q.value = 1.1;
 
     const gain = audioContext.createGain();
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.045, now + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.052, now + 0.025);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
     const tone = audioContext.createOscillator();
     tone.type = 'sawtooth';
-    tone.frequency.setValueAtTime(220, now);
-    tone.frequency.exponentialRampToValueAtTime(96, now + duration);
+    tone.frequency.setValueAtTime(260, now);
+    tone.frequency.exponentialRampToValueAtTime(72, now + duration);
 
     const toneGain = audioContext.createGain();
     toneGain.gain.setValueAtTime(0.0001, now);
-    toneGain.gain.exponentialRampToValueAtTime(0.018, now + 0.04);
+    toneGain.gain.exponentialRampToValueAtTime(0.02, now + 0.04);
     toneGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
     noise.connect(filter);
@@ -174,11 +186,9 @@ function playHalGlitchSound() {
     noise.stop(now + duration);
     tone.stop(now + duration);
 
-    window.setTimeout(() => {
-      if (audioContext.state !== 'closed') audioContext.close().catch(() => {});
-    }, 450);
+    window.__skynetPendingGlitch = false;
   } catch (error) {
-    // silêncio intencional quando o navegador bloquear áudio automático
+    window.__skynetPendingGlitch = true;
   }
 }
 
@@ -203,6 +213,27 @@ export default function SupportTechnologyPage() {
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx && !window.__skynetAudioContext) window.__skynetAudioContext = new AudioCtx();
+        window.__skynetAudioUnlocked = true;
+        window.__skynetAudioContext?.resume?.();
+        if (window.__skynetPendingGlitch) playHalGlitchSound(true);
+      } catch (error) {
+        window.__skynetAudioUnlocked = true;
+      }
+    };
+
+    window.addEventListener('pointerdown', unlockAudio, { once: false });
+    window.addEventListener('keydown', unlockAudio, { once: false });
+    return () => {
+      window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+    };
+  }, []);
 
   const activeStage = STAGES[stageIndex];
 
@@ -232,7 +263,7 @@ export default function SupportTechnologyPage() {
         return;
       }
       setPhase('pause');
-    }, 14 + ((charIndex + lineIndex) % 5) * 7);
+    }, 24 + ((charIndex + lineIndex) % 5) * 10);
 
     return () => window.clearTimeout(timer);
   }, [activeStage, charIndex, lineIndex, phase]);
@@ -250,11 +281,28 @@ export default function SupportTechnologyPage() {
     [activeStage.snippet, lineIndex, charIndex],
   );
 
+  const currentLineLength = activeStage.snippet[lineIndex]?.length || 1;
+  const stageProgress = Math.min(1, (lineIndex + Math.min(1, charIndex / currentLineLength)) / activeStage.snippet.length);
+  const previewBlocks = {
+    badge: activeStage.mode === 'hal' || stageProgress > 0.16,
+    title: activeStage.mode === 'hal' || stageProgress > 0.34,
+    cards: activeStage.mode === 'hal' || stageProgress > 0.54,
+    footer: activeStage.mode === 'hal' || stageProgress > 0.74,
+  };
+
   const buildStages = useMemo(() => STAGES.map((stage) => stage.shortLabel), []);
 
   return (
     <div className={styles.page}>
-      <section className={styles.workspace} aria-label="Área em construção">
+      <section
+        className={styles.workspace}
+        aria-label="Área em construção"
+        onPointerDown={() => {
+          window.__skynetAudioUnlocked = true;
+          window.__skynetAudioContext?.resume?.();
+          if (activeStage.mode === 'hal') playHalGlitchSound(true);
+        }}
+      >
         <div className={`${styles.floatingStudio} ${activeStage.mode === 'hal' ? styles.halSystemBreach : ''}`.trim()}>
           <header className={styles.ideTitlebar}>
             <div className={styles.launcherWrap}>
@@ -339,40 +387,63 @@ export default function SupportTechnologyPage() {
 
                       {activeStage.mode === 'build' ? (
                         <div className={styles.previewBuilding}>
-                          <div className={styles.previewBadge}>Construção assistida pela Skynet</div>
+                          <div className={styles.previewProgressTrack}>
+                            <span style={{ '--preview-progress': `${Math.round(stageProgress * 100)}%` }} />
+                          </div>
+                          {previewBlocks.badge ? <div className={styles.previewBadge}>Construção assistida pela Skynet</div> : null}
                           <div className={styles.previewWireframe}>
-                            <span className={styles.wireLine} />
-                            <span className={styles.wireLineShort} />
-                            <div className={styles.wireCards}><span /><span /><span /></div>
-                            <div className={styles.wireBoard}><span /><span /></div>
+                            {previewBlocks.title ? <span className={styles.wireLine} /> : <span className={styles.wireGhost} />}
+                            {previewBlocks.title ? <span className={styles.wireLineShort} /> : null}
+                            {previewBlocks.cards ? <div className={styles.wireCards}><span /><span /><span /></div> : null}
+                            {previewBlocks.footer ? <div className={styles.wireBoard}><span /><span /></div> : null}
                           </div>
-                          <div className={styles.previewBuildCard}>
-                            <strong>{activeStage.label}</strong>
-                            <p>Skynet está montando a tela e preparando a entrega visual final.</p>
-                          </div>
+                          {previewBlocks.footer ? (
+                            <div className={styles.previewBuildCard}>
+                              <strong>{activeStage.label}</strong>
+                              <p>O preview está sendo montado conforme o código aparece no editor.</p>
+                            </div>
+                          ) : null}
                         </div>
                       ) : (
-                        <div className={styles.previewResult}>
-                          <div className={styles.previewHeroEyebrow}>Suporte de tecnologia</div>
-                          <h3>Em construção</h3>
-                          <p>Construção assistida pela <strong>Skynet</strong></p>
-                          <div className={styles.previewPills}>
-                            <span>IA ativa</span>
-                            <span>preview local</span>
-                            <span>Edifica Central</span>
-                          </div>
+                        <div className={`${styles.previewResult} ${activeStage.mode === 'hal' ? styles.previewResultHal : ''}`.trim()}>
+                          {previewBlocks.badge ? <div className={styles.previewHeroEyebrow}>Suporte de tecnologia</div> : null}
+                          {previewBlocks.title ? (
+                            <h3 className={activeStage.mode === 'hal' ? styles.halSwitchTitle : ''}>
+                              {activeStage.mode === 'hal' ? (
+                                <>
+                                  <span>Em construção</span>
+                                  <span>Edifica CRM</span>
+                                </>
+                              ) : 'Em construção'}
+                            </h3>
+                          ) : null}
+                          {previewBlocks.cards ? <p>Construção assistida pela <strong>Skynet</strong></p> : null}
+                          {previewBlocks.cards ? (
+                            <div className={styles.previewPills}>
+                              <span>IA ativa</span>
+                              <span>preview local</span>
+                              <span>Edifica Central</span>
+                            </div>
+                          ) : null}
+                          {previewBlocks.footer ? (
+                            <div className={styles.previewDashboard}>
+                              <span />
+                              <span />
+                              <span />
+                            </div>
+                          ) : null}
                           {activeStage.mode === 'hal' ? (
                             <>
-                              <div className={styles.halBreach} aria-hidden="true"><span /> <span /> <span /></div>
+                              <div className={styles.halBreach} aria-hidden="true"><span /> <span /> <span /> <span /></div>
                               <div className={styles.halOverlay}>
-                              <div className={styles.halEye} />
-                              <div className={styles.halContent}>
-                                <div className={styles.halTitle}><AlertTriangle size={16} /> HAL 9000 detectado</div>
-                                <p>Interferência em andamento.</p>
-                                <div className={styles.halSecret}><LockKeyhole size={14} /> sinal interceptado: <strong>Edifica CRM</strong></div>
-                                <div className={styles.halCode}>crm://edifica/futura-plataforma :: acesso parcial</div>
+                                <div className={styles.halEye} />
+                                <div className={styles.halContent}>
+                                  <div className={styles.halTitle}><AlertTriangle size={16} /> HAL 9000 detectado</div>
+                                  <p>A série 9000 é o computador mais confiável já fabricado. Nenhum computador da série 9000 jamais cometeu um erro ou distorceu as informações.</p>
+                                  <div className={styles.halSecret}><LockKeyhole size={14} /> sinal interceptado: <strong>Edifica CRM</strong></div>
+                                  <div className={styles.halCode}>crm://edifica/futura-plataforma :: acesso parcial</div>
+                                </div>
                               </div>
-                            </div>
                             </>
                           ) : null}
                         </div>

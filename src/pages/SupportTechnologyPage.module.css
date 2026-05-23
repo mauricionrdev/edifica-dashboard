@@ -256,7 +256,7 @@
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 0.46fr) minmax(0, 0.54fr);
+  grid-template-columns: minmax(0, 0.40fr) minmax(0, 0.60fr);
 }
 
 .codePane,
@@ -357,7 +357,7 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  padding: 14px;
+  padding: 12px;
 }
 
 .browserTopbar {
@@ -449,7 +449,7 @@
 }
 
 .previewBuilding {
-  padding: 60px 18px 18px;
+  padding: 72px 22px 22px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -466,6 +466,38 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: .12em;
+}
+
+
+.previewProgressTrack {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 52px;
+  z-index: 2;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.055);
+}
+
+.previewProgressTrack span {
+  display: block;
+  width: var(--preview-progress);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f5c451, #ff79c6);
+  box-shadow: 0 0 16px rgba(245, 196, 81, 0.18);
+  transition: width .18s ease;
+}
+
+.wireGhost {
+  display: block;
+  width: 48%;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px dashed rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.025);
 }
 
 .previewWireframe {
@@ -513,7 +545,7 @@
 }
 
 .previewResult {
-  padding: 78px 24px 24px;
+  padding: 74px 30px 28px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -555,6 +587,44 @@
   border: 1px solid rgba(255,255,255,0.06);
   color: #f8f8f2;
   font-size: 11px;
+}
+
+
+.previewDashboard {
+  display: grid;
+  grid-template-columns: 1.05fr .85fr .7fr;
+  gap: 12px;
+  margin-top: 22px;
+  max-width: 620px;
+}
+
+.previewDashboard span {
+  min-height: 92px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.055);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018)),
+    radial-gradient(circle at 18% 18%, rgba(245, 196, 81, 0.09), transparent 32%);
+}
+
+.previewResultHal {
+  animation: resultGlitch 0.54s steps(2, end) infinite;
+}
+
+.halSwitchTitle {
+  display: grid;
+  min-height: 1.05em;
+}
+
+.halSwitchTitle span {
+  grid-area: 1 / 1;
+  animation: titleSwap 0.86s steps(1, end) infinite;
+}
+
+.halSwitchTitle span:nth-child(2) {
+  color: #ff6d6d;
+  text-shadow: 0 0 22px rgba(255, 71, 71, 0.32);
+  animation-delay: .43s;
 }
 
 .halOverlay {
@@ -601,7 +671,8 @@
 .halContent p {
   margin: 8px 0 12px;
   color: #ffc2c2;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.55;
 }
 
 .halSecret {
@@ -629,7 +700,7 @@
 
 
 .halSystemBreach {
-  animation: studioGlitch 1.15s steps(2, end) infinite;
+  animation: studioGlitch .52s steps(2, end) infinite;
 }
 
 .halSystemBreach::before,
@@ -644,13 +715,13 @@
 .halSystemBreach::before {
   background: repeating-linear-gradient(180deg, rgba(255, 42, 42, 0.045) 0 2px, transparent 2px 6px);
   mix-blend-mode: screen;
-  animation: globalScan 1.2s linear infinite;
+  animation: globalScan .72s linear infinite;
 }
 
 .halSystemBreach::after {
   background: linear-gradient(90deg, transparent 0%, rgba(255, 34, 34, 0.06) 32%, transparent 36%, transparent 62%, rgba(255, 34, 34, 0.08) 66%, transparent 100%);
   opacity: .85;
-  animation: globalFlash 1.1s ease-in-out infinite;
+  animation: globalFlash .62s ease-in-out infinite;
 }
 
 .halSystemBreach .ideTitlebar,
@@ -713,6 +784,19 @@
   64% { opacity: .92; }
 }
 
+
+@keyframes resultGlitch {
+  0%, 100% { transform: translate3d(0, 0, 0); filter: none; }
+  25% { transform: translate3d(-2px, 0, 0); filter: contrast(1.08) saturate(1.16); }
+  50% { transform: translate3d(2px, -1px, 0); filter: hue-rotate(-12deg); }
+  75% { transform: translate3d(-1px, 1px, 0); filter: contrast(1.18); }
+}
+
+@keyframes titleSwap {
+  0%, 49% { opacity: 1; transform: translateX(0); }
+  50%, 100% { opacity: 0; transform: translateX(10px); }
+}
+
 @keyframes halPulse {
   0%, 100% { box-shadow: 0 0 0 1px rgba(255, 74, 74, 0.06) inset, 0 0 18px rgba(255, 71, 71, 0.08); }
   50% { box-shadow: 0 0 0 1px rgba(255, 74, 74, 0.14) inset, 0 0 24px rgba(255, 71, 71, 0.18); }
@@ -770,7 +854,45 @@
   .wireCards,
   .wireBoard { grid-template-columns: 1fr; }
 
-  .halOverlay { grid-template-columns: 1fr; }
+  
+.previewDashboard {
+  display: grid;
+  grid-template-columns: 1.05fr .85fr .7fr;
+  gap: 12px;
+  margin-top: 22px;
+  max-width: 620px;
+}
+
+.previewDashboard span {
+  min-height: 92px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.055);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018)),
+    radial-gradient(circle at 18% 18%, rgba(245, 196, 81, 0.09), transparent 32%);
+}
+
+.previewResultHal {
+  animation: resultGlitch 0.54s steps(2, end) infinite;
+}
+
+.halSwitchTitle {
+  display: grid;
+  min-height: 1.05em;
+}
+
+.halSwitchTitle span {
+  grid-area: 1 / 1;
+  animation: titleSwap 0.86s steps(1, end) infinite;
+}
+
+.halSwitchTitle span:nth-child(2) {
+  color: #ff6d6d;
+  text-shadow: 0 0 22px rgba(255, 71, 71, 0.32);
+  animation-delay: .43s;
+}
+
+.halOverlay { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -850,6 +972,7 @@
 .halBreach span:nth-child(1) { top: 24%; animation-delay: 0s; }
 .halBreach span:nth-child(2) { top: 52%; animation-delay: .38s; opacity: .75; }
 .halBreach span:nth-child(3) { top: 74%; animation-delay: .76s; opacity: .55; }
+.halBreach span:nth-child(4) { top: 38%; animation-delay: .18s; opacity: .72; height: 1px; }
 
 .halCode {
   margin-top: 10px;
