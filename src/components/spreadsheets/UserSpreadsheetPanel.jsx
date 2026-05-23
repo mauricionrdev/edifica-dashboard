@@ -138,6 +138,22 @@ function applyStyleCommand(style = {}, command, value = null) {
   return Object.fromEntries(Object.entries(next).filter(([, styleValue]) => styleValue !== undefined && styleValue !== null && styleValue !== ''));
 }
 
+function sortByPosition(items = []) {
+  return [...items].sort((a, b) => Number(a.position || 0) - Number(b.position || 0));
+}
+
+function cloneRowPayload(row = {}, columns = []) {
+  return columns.reduce((acc, column) => ({ ...acc, [column.key]: row?.[column.key] || '' }), {});
+}
+
+function cloneRowStyles(row = {}, columns = []) {
+  return columns.reduce((acc, column) => {
+    const style = row?.__styles?.[column.key];
+    if (!style || !Object.keys(style).length) return acc;
+    return { ...acc, [column.key]: style };
+  }, {});
+}
+
 function toneFromContent(value = '') {
   const text = stripHtml(value).toLowerCase();
   if (text.includes('desconect') || text.includes('erro') || text.includes('inativo')) return 'danger';
@@ -365,7 +381,7 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
   );
 }
 
-function SheetCell({ row, column, editable, selected, selectedGroup, saving, onSelect, onChange, onCommit, onNavigate, onContextMenu }) {
+function SheetCell({ row, column, editable, selected, selectedGroup, rangeEdges, saving, onSelect, onChange, onCommit, onNavigate, onContextMenu }) {
   const ref = useRef(null);
   const value = String(row[column.key] || '');
   const style = row.__styles?.[column.key] || undefined;
@@ -394,6 +410,10 @@ function SheetCell({ row, column, editable, selected, selectedGroup, saving, onS
       className={styles.sheetCell}
       data-selected={selected || undefined}
       data-range={selectedGroup && !selected ? true : undefined}
+      data-range-top={rangeEdges?.top || undefined}
+      data-range-bottom={rangeEdges?.bottom || undefined}
+      data-range-left={rangeEdges?.left || undefined}
+      data-range-right={rangeEdges?.right || undefined}
       data-saving={saving || undefined}
       data-tone={toneFromContent(value)}
       data-cell-id={`${row.id}:${column.key}`}
@@ -459,7 +479,7 @@ function SheetCell({ row, column, editable, selected, selectedGroup, saving, onS
   );
 }
 
-function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onSelectRow, onSelectColumn, onClearSelection, onDeleteRow, onDeleteColumn }) {
+function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onInsertRow, onInsertColumn, onDuplicateRow, onDuplicateColumn, onSelectRow, onSelectColumn, onClearSelection, onDeleteRow, onDeleteColumn }) {
   useEffect(() => {
     if (!menu) return undefined;
     const close = () => onClose();
@@ -486,23 +506,49 @@ function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onSel
       style={{ left: menu.x, top: menu.y }}
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <span className={styles.menuTitle}>Ações rápidas</span>
-      <button type="button" className={styles.menuItem} onClick={() => { onAddRow(); onClose(); }}>
-        <PlusIcon size={14} /> Nova linha
-      </button>
-      <button type="button" className={styles.menuItem} onClick={() => { onAddColumn(); onClose(); }}>
-        <PlusIcon size={14} /> Nova coluna
-      </button>
+      <span className={styles.menuTitle}>Linha</span>
       {menu.rowId ? (
-        <button type="button" className={styles.menuItem} onClick={() => { onSelectRow(menu.rowId); onClose(); }}>
-          Selecionar linha
+        <>
+          <button type="button" className={styles.menuItem} onClick={() => { onInsertRow(menu.rowId, 'above'); onClose(); }}>
+            <PlusIcon size={14} /> Inserir acima
+          </button>
+          <button type="button" className={styles.menuItem} onClick={() => { onInsertRow(menu.rowId, 'below'); onClose(); }}>
+            <PlusIcon size={14} /> Inserir abaixo
+          </button>
+          <button type="button" className={styles.menuItem} onClick={() => { onDuplicateRow(menu.rowId); onClose(); }}>
+            Duplicar linha
+          </button>
+          <button type="button" className={styles.menuItem} onClick={() => { onSelectRow(menu.rowId); onClose(); }}>
+            Selecionar linha
+          </button>
+        </>
+      ) : (
+        <button type="button" className={styles.menuItem} onClick={() => { onAddRow(); onClose(); }}>
+          <PlusIcon size={14} /> Nova linha
         </button>
-      ) : null}
+      )}
+      <span className={styles.menuTitle}>Coluna</span>
       {menu.columnKey ? (
-        <button type="button" className={styles.menuItem} onClick={() => { onSelectColumn(menu.columnKey); onClose(); }}>
-          Selecionar coluna
+        <>
+          <button type="button" className={styles.menuItem} onClick={() => { onInsertColumn(menu.columnKey, 'left'); onClose(); }}>
+            <PlusIcon size={14} /> Inserir à esquerda
+          </button>
+          <button type="button" className={styles.menuItem} onClick={() => { onInsertColumn(menu.columnKey, 'right'); onClose(); }}>
+            <PlusIcon size={14} /> Inserir à direita
+          </button>
+          <button type="button" className={styles.menuItem} onClick={() => { onDuplicateColumn(menu.columnKey); onClose(); }}>
+            Duplicar coluna
+          </button>
+          <button type="button" className={styles.menuItem} onClick={() => { onSelectColumn(menu.columnKey); onClose(); }}>
+            Selecionar coluna
+          </button>
+        </>
+      ) : (
+        <button type="button" className={styles.menuItem} onClick={() => { onAddColumn(); onClose(); }}>
+          <PlusIcon size={14} /> Nova coluna
         </button>
-      ) : null}
+      )}
+      <span className={styles.menuTitle}>Seleção</span>
       <button type="button" className={styles.menuItem} onClick={() => { onClearSelection(); onClose(); }}>
         Limpar seleção
       </button>
@@ -611,6 +657,30 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const selectedCellIds = useMemo(() => new Set(selectedCells.map((cell) => cellId(cell.rowId, cell.key))), [selectedCells]);
   const selectedCount = selectedCells.length;
 
+  const selectionBounds = useMemo(() => {
+    if (!selectionRange?.start || !selectionRange?.end) return null;
+    const startRow = rows.findIndex((row) => row.id === selectionRange.start.rowId);
+    const endRow = rows.findIndex((row) => row.id === selectionRange.end.rowId);
+    const startColumn = columns.findIndex((column) => column.key === selectionRange.start.key);
+    const endColumn = columns.findIndex((column) => column.key === selectionRange.end.key);
+    if ([startRow, endRow, startColumn, endColumn].some((index) => index < 0)) return null;
+    return {
+      rowFrom: Math.min(startRow, endRow),
+      rowTo: Math.max(startRow, endRow),
+      columnFrom: Math.min(startColumn, endColumn),
+      columnTo: Math.max(startColumn, endColumn),
+    };
+  }, [columns, rows, selectionRange]);
+
+  const selectionLabel = useMemo(() => {
+    if (!selectionBounds || selectedCount <= 1) return '';
+    const startColumn = columns[selectionBounds.columnFrom]?.label || 'Coluna';
+    const endColumn = columns[selectionBounds.columnTo]?.label || startColumn;
+    const startRow = selectionBounds.rowFrom + 1;
+    const endRow = selectionBounds.rowTo + 1;
+    return `${startColumn} ${startRow} → ${endColumn} ${endRow}`;
+  }, [columns, selectedCount, selectionBounds]);
+
   const selectRow = useCallback((rowId) => {
     if (!rowId || !columns.length) return;
     setSelectionRange({ start: { rowId, key: columns[0].key }, end: { rowId, key: columns[columns.length - 1].key } });
@@ -701,18 +771,50 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   };
 
-  const handleAddRow = async () => {
-    if (!activeSheetId) return;
+  const createRowAt = async ({ anchorRowId = '', placement = 'end', duplicateFromRowId = '' } = {}) => {
+    if (!activeSheetId) return null;
     setCreatingRow(true);
     try {
+      const sourceRow = duplicateFromRowId ? rows.find((row) => row.id === duplicateFromRowId) : null;
       const data = await createSupportDailyRow({ sheetId: activeSheetId, ownerUserId });
-      setRows((current) => [...current, normalizeRow(data?.row, columns)]);
+      const createdRow = normalizeRow(data?.row, columns);
+      const ordered = sortByPosition(rows);
+      const anchorIndex = ordered.findIndex((row) => row.id === anchorRowId);
+      const insertIndex = anchorIndex < 0
+        ? ordered.length
+        : placement === 'above'
+          ? anchorIndex
+          : anchorIndex + 1;
+      const nextRows = [...ordered];
+      nextRows.splice(insertIndex, 0, sourceRow ? { ...createdRow, ...cloneRowPayload(sourceRow, columns), __styles: cloneRowStyles(sourceRow, columns) } : createdRow);
+
+      const updates = nextRows.map((row, index) => updateSupportDailyRow(row.id, {
+        ...((row.id === createdRow.id && sourceRow) ? cloneRowPayload(sourceRow, columns) : {}),
+        ...((row.id === createdRow.id && sourceRow) ? { styles: cloneRowStyles(sourceRow, columns) } : {}),
+        ownerUserId,
+        position: index + 1,
+      }));
+      await Promise.all(updates);
+      setRows(nextRows.map((row, index) => ({ ...row, position: index + 1 })));
+      if (createdRow.id && columns[0]?.key) {
+        setActiveCell({ rowId: createdRow.id, key: columns[0].key, element: null });
+        setSelectionRange({ start: { rowId: createdRow.id, key: columns[0].key }, end: { rowId: createdRow.id, key: columns[columns.length - 1]?.key || columns[0].key } });
+      }
+      return createdRow;
     } catch (err) {
-      showToast?.(err?.message || 'Não foi possível adicionar linha.', { variant: 'error' });
+      showToast?.(err?.message || 'Não foi possível criar a linha.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
+      return null;
     } finally {
       setCreatingRow(false);
     }
   };
+
+  const handleAddRow = () => createRowAt();
+
+  const handleInsertRow = (rowId, placement = 'below') => createRowAt({ anchorRowId: rowId, placement });
+
+  const handleDuplicateRow = (rowId) => createRowAt({ anchorRowId: rowId, placement: 'below', duplicateFromRowId: rowId });
 
   const handleDeleteRow = async (id) => {
     if (!id) return;
@@ -808,19 +910,65 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   };
 
-  const handleAddColumn = async () => {
-    if (!activeSheetId) return;
+  const createColumnAt = async ({ anchorKey = '', placement = 'end', duplicateFromKey = '' } = {}) => {
+    if (!activeSheetId) return null;
     setCreatingColumn(true);
     try {
-      const data = await createSupportDailyColumn({ sheetId: activeSheetId, ownerUserId, label: 'Nova coluna', width: 200 });
-      if (data?.columns) setColumns(normalizeColumns(data.columns));
-      if (data?.column) setRows((current) => current.map((row) => ({ ...row, [data.column.key]: '' })));
+      const sourceColumn = duplicateFromKey ? columns.find((column) => column.key === duplicateFromKey) : null;
+      const sourceLabel = sourceColumn?.label ? `${sourceColumn.label} cópia` : 'Nova coluna';
+      const data = await createSupportDailyColumn({ sheetId: activeSheetId, ownerUserId, label: sourceLabel, width: sourceColumn?.width || 200 });
+      const createdColumn = normalizeColumns(data?.column ? [data.column] : []).at(0);
+      const freshColumns = data?.columns ? normalizeColumns(data.columns) : [...columns, createdColumn].filter(Boolean);
+      if (!createdColumn?.key) return null;
+
+      const ordered = sortByPosition(freshColumns.filter((column) => column.key !== createdColumn.key));
+      const anchorIndex = ordered.findIndex((column) => column.key === anchorKey);
+      const insertIndex = anchorIndex < 0
+        ? ordered.length
+        : placement === 'left'
+          ? anchorIndex
+          : anchorIndex + 1;
+      const nextColumns = [...ordered];
+      nextColumns.splice(insertIndex, 0, createdColumn);
+
+      await Promise.all(nextColumns.map((column, index) => updateSupportDailyColumn(column.key, { ownerUserId, position: index + 1 })));
+
+      let nextRows = rows.map((row) => ({ ...row, [createdColumn.key]: duplicateFromKey ? row[duplicateFromKey] || '' : '', __styles: { ...(row.__styles || {}) } }));
+      if (duplicateFromKey) {
+        await Promise.all(rows.map((row) => updateSupportDailyRow(row.id, {
+          [createdColumn.key]: row[duplicateFromKey] || '',
+          styles: row.__styles?.[duplicateFromKey] ? { [createdColumn.key]: row.__styles[duplicateFromKey] } : {},
+          ownerUserId,
+        })));
+        nextRows = nextRows.map((row) => ({
+          ...row,
+          __styles: row.__styles?.[duplicateFromKey]
+            ? { ...row.__styles, [createdColumn.key]: row.__styles[duplicateFromKey] }
+            : row.__styles,
+        }));
+      }
+
+      setColumns(nextColumns.map((column, index) => ({ ...column, position: index + 1 })));
+      setRows(nextRows);
+      if (rows[0]?.id) {
+        setActiveCell({ rowId: rows[0].id, key: createdColumn.key, element: null });
+        setSelectionRange({ start: { rowId: rows[0].id, key: createdColumn.key }, end: { rowId: rows[rows.length - 1]?.id || rows[0].id, key: createdColumn.key } });
+      }
+      return createdColumn;
     } catch (err) {
-      showToast?.(err?.message || 'Não foi possível adicionar coluna.', { variant: 'error' });
+      showToast?.(err?.message || 'Não foi possível criar a coluna.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
+      return null;
     } finally {
       setCreatingColumn(false);
     }
   };
+
+  const handleAddColumn = () => createColumnAt();
+
+  const handleInsertColumn = (columnKey, placement = 'right') => createColumnAt({ anchorKey: columnKey, placement });
+
+  const handleDuplicateColumn = (columnKey) => createColumnAt({ anchorKey: columnKey, placement: 'right', duplicateFromKey: columnKey });
 
   const handleColumnLabelChange = (key, label) => {
     setColumns((current) => current.map((column) => (column.key === key ? { ...column, label } : column)));
@@ -1033,8 +1181,16 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               <thead>
                 <tr>
                   <th className={styles.indexHeader}>#</th>
-                  {columns.map((column) => (
-                    <th key={column.key} data-saving={savingColumn === column.key || undefined}>
+                  {columns.map((column, columnIndex) => {
+                    const columnInSelection = selectionBounds && columnIndex >= selectionBounds.columnFrom && columnIndex <= selectionBounds.columnTo && selectedCount > 1;
+                    const columnActive = activeCell?.key === column.key;
+                    return (
+                      <th
+                        key={column.key}
+                        data-saving={savingColumn === column.key || undefined}
+                        data-selected-column={columnInSelection || undefined}
+                        data-active-column={columnActive || undefined}
+                      >
                       <HeaderCell
                         column={column}
                         editable={canEdit}
@@ -1044,7 +1200,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                         onContextMenu={openContextMenu}
                       />
                     </th>
-                  ))}
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
@@ -1066,17 +1223,37 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                     </td>
                   </tr>
                 ) : null}
-                {rows.map((row, index) => (
-                  <tr key={row.id}>
-                    <td className={styles.rowIndex} data-range={selectionRange?.start?.rowId === row.id && selectionRange?.end?.rowId === row.id && selectedCount > 1 || undefined} onClick={() => selectRow(row.id)} onContextMenu={(event) => openContextMenu(event, row.id, null)}>{index + 1}</td>
-                    {columns.map((column) => (
-                      <td key={column.key} data-column={column.key}>
+                {rows.map((row, index) => {
+                  const rowInSelection = selectionBounds && index >= selectionBounds.rowFrom && index <= selectionBounds.rowTo && selectedCount > 1;
+                  const rowActive = activeCell?.rowId === row.id;
+                  return (
+                    <tr key={row.id} data-selected-row={rowInSelection || undefined} data-active-row={rowActive || undefined}>
+                    <td
+                      className={styles.rowIndex}
+                      data-range={rowInSelection || undefined}
+                      data-active-row={rowActive || undefined}
+                      onClick={() => selectRow(row.id)}
+                      onContextMenu={(event) => openContextMenu(event, row.id, null)}
+                    >
+                      {index + 1}
+                    </td>
+                    {columns.map((column, columnIndex) => {
+                      const inRange = selectedCellIds.has(cellId(row.id, column.key));
+                      const rangeEdges = selectionBounds && inRange ? {
+                        top: index === selectionBounds.rowFrom,
+                        bottom: index === selectionBounds.rowTo,
+                        left: columnIndex === selectionBounds.columnFrom,
+                        right: columnIndex === selectionBounds.columnTo,
+                      } : null;
+                      return (
+                      <td key={column.key} data-column={column.key} data-active-column={activeCell?.key === column.key || undefined} data-selected-column={selectionBounds && columnIndex >= selectionBounds.columnFrom && columnIndex <= selectionBounds.columnTo && selectedCount > 1 || undefined}>
                         <SheetCell
                           row={row}
                           column={column}
                           editable={canEdit}
                           selected={activeCell?.rowId === row.id && activeCell?.key === column.key}
-                          selectedGroup={selectedCellIds.has(cellId(row.id, column.key))}
+                          selectedGroup={inRange}
+                          rangeEdges={rangeEdges}
                           saving={savingCell === `${row.id}:${column.key}` || savingCell === 'bulk-selection'}
                           onSelect={selectCell}
                           onChange={handleCellChange}
@@ -1085,9 +1262,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                           onContextMenu={openContextMenu}
                         />
                       </td>
-                    ))}
+                      );
+                    })}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -1096,7 +1275,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.panelFooter}>
         <span><SaveIcon size={13} /> Salvamento automático</span>
-        <span>{selectedCount > 1 ? `${selectedCount} células selecionadas · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
+        <span>{selectedCount > 1 ? `${selectedCount} células selecionadas${selectionLabel ? ` · ${selectionLabel}` : ''} · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
 
       <SheetContextMenu
@@ -1105,6 +1284,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onClose={closeContextMenu}
         onAddRow={handleAddRow}
         onAddColumn={handleAddColumn}
+        onInsertRow={handleInsertRow}
+        onInsertColumn={handleInsertColumn}
+        onDuplicateRow={handleDuplicateRow}
+        onDuplicateColumn={handleDuplicateColumn}
         onSelectRow={selectRow}
         onSelectColumn={selectColumn}
         onClearSelection={clearSelection}
