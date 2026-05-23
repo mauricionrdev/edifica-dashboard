@@ -23,7 +23,7 @@ const STAGES = [
     label: 'Criando a tela de suporte',
     shortLabel: 'Construção',
     mode: 'build',
-    hold: 1100,
+    hold: 900,
     snippet: [
       "import { useMemo } from 'react';",
       "import styles from './SupportTechnologyPage.module.css';",
@@ -55,7 +55,7 @@ const STAGES = [
     label: 'Prévia publicada',
     shortLabel: 'Resultado',
     mode: 'result',
-    hold: 1650,
+    hold: 1350,
     snippet: [
       'export function PreviewSupport() {',
       '  return <WebResult>',
@@ -79,7 +79,7 @@ const STAGES = [
     label: 'Interferência HAL 9000',
     shortLabel: 'HAL 9000',
     mode: 'hal',
-    hold: 2450,
+    hold: 2250,
     snippet: [
       'function interceptarPreviewLocal() {',
       '  const frase = [',
@@ -301,7 +301,7 @@ export default function SupportTechnologyPage() {
         return;
       }
       setPhase('pause');
-    }, 24 + ((charIndex + lineIndex) % 5) * 10);
+    }, 20 + ((charIndex + lineIndex) % 5) * 8);
 
     return () => window.clearTimeout(timer);
   }, [activeStage, charIndex, lineIndex, phase]);
