@@ -869,3 +869,87 @@
     animation: none;
   }
 }
+
+.previewSurfaceHal {
+  border-color: rgba(255, 74, 74, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 74, 74, 0.08),
+    inset 0 0 60px rgba(255, 24, 24, 0.08);
+}
+
+.previewSurfaceHal::before,
+.previewSurfaceHal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.previewSurfaceHal::before {
+  background:
+    repeating-linear-gradient(180deg, rgba(255, 66, 66, 0.08) 0 1px, transparent 1px 7px),
+    linear-gradient(90deg, transparent 0%, rgba(255, 66, 66, 0.13) 50%, transparent 100%);
+  opacity: 0.42;
+  mix-blend-mode: screen;
+  animation: halSweep 1.25s linear infinite;
+}
+
+.previewSurfaceHal::after {
+  background:
+    radial-gradient(circle at 76% 50%, rgba(255, 70, 70, 0.22), transparent 22%),
+    linear-gradient(180deg, rgba(255, 0, 0, 0.04), transparent 45%, rgba(255, 0, 0, 0.05));
+  animation: halAtmosphere 2.4s ease-in-out infinite;
+}
+
+.halBreach {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.halBreach span {
+  position: absolute;
+  left: -18%;
+  right: -18%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 86, 86, 0.8), transparent);
+  filter: drop-shadow(0 0 10px rgba(255, 50, 50, 0.36));
+  animation: halGlitchLine 1.6s ease-in-out infinite;
+}
+
+.halBreach span:nth-child(1) { top: 24%; animation-delay: 0s; }
+.halBreach span:nth-child(2) { top: 52%; animation-delay: .38s; opacity: .75; }
+.halBreach span:nth-child(3) { top: 74%; animation-delay: .76s; opacity: .55; }
+
+.halCode {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 74, 74, 0.08);
+  border: 1px solid rgba(255, 74, 74, 0.14);
+  color: #ffb3b3;
+  font-size: 10px;
+  line-height: 1.45;
+  letter-spacing: .02em;
+}
+
+@keyframes halSweep {
+  from { transform: translateX(-6%); opacity: .28; }
+  50% { opacity: .56; }
+  to { transform: translateX(6%); opacity: .28; }
+}
+
+@keyframes halAtmosphere {
+  0%, 100% { opacity: .55; transform: scale(1); }
+  50% { opacity: .9; transform: scale(1.02); }
+}
+
+@keyframes halGlitchLine {
+  0%, 100% { transform: translateX(-8%) scaleX(.72); opacity: 0; }
+  20% { opacity: .75; }
+  45% { transform: translateX(8%) scaleX(1); opacity: .95; }
+  70% { opacity: .3; }
+}

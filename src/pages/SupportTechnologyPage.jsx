@@ -26,152 +26,106 @@ const EDITOR_TABS = ['SupportTechnologyPage.jsx', 'PreviewSupport.jsx'];
 
 const STAGES = [
   {
-    key: 'shell',
-    label: 'Preparando shell da tela',
-    shortLabel: 'Shell',
+    key: 'build',
+    label: 'Criando a tela de suporte',
+    shortLabel: 'Construção',
     mode: 'build',
-    hold: 1500,
+    hold: 900,
     snippet: [
       "import { useEffect, useMemo, useState } from 'react';",
+      "import { MonitorPlay, Shield, TerminalSquare } from 'lucide-react';",
       "import styles from './SupportTechnologyPage.module.css';",
       '',
       'const skynet = criarConstrutoraVisual({',
-      "  nome: 'Skynet',",
+      "  id: 'skynet-support-builder',",
       "  tela: 'Suporte de tecnologia',",
-      "  contexto: 'workspace interno',",
+      "  tom: 'brincadeira interna',",
+      "  destino: '/suporte/tecnologia',",
       '});',
       '',
-      'function prepararShell() {',
-      '  return skynet.iniciar({',
-      "    tema: 'dark',",
+      'function criarPreviewDeSuporte() {',
+      '  const hero = skynet.criarHero({',
+      "    titulo: 'Suporte de tecnologia',",
+      "    status: 'Em construção',",
+      "    assinatura: 'Construção assistida pela Skynet',",
+      '  });',
+      '',
+      '  const superficie = skynet.comporTela({',
+      "    tema: 'dark-edifica',",
       "    fonte: 'JetBrains Mono',",
+      '    blocos: [hero, criarChipsDeEstado(), criarAreaDePreview()],',
       '  });',
-      '}',
-    ],
-    logs: [
-      'carregando shell de suporte',
-      'inicializando construtora visual da Skynet',
-    ],
-  },
-  {
-    key: 'layout',
-    label: 'Montando a interface principal',
-    shortLabel: 'Layout',
-    mode: 'build',
-    hold: 1600,
-    snippet: [
-      'function montarTelaSuporte() {',
-      '  return (',
-      '    <SupportWorkspace>',
-      '      <Header title="Suporte de tecnologia" />',
-      '      <Hero status="Em construção" />',
-      '      <StatusChip>Construção assistida pela Skynet</StatusChip>',
-      '      <PreviewWeb dock="compacto" />',
-      '    </SupportWorkspace>',
-      '  );',
-      '}',
       '',
-      'const telaBase = montarTelaSuporte();',
-    ],
-    logs: [
-      'escrevendo estrutura principal da interface',
-      'aplicando design system dark da plataforma',
-    ],
-  },
-  {
-    key: 'refine',
-    label: 'Refinando composição visual',
-    shortLabel: 'Refino',
-    mode: 'build',
-    hold: 1700,
-    snippet: [
-      'function refinarVisual() {',
-      '  return ajustarDetalhes({',
-      "    titulo: 'Suporte de tecnologia',",
-      "    mensagem: 'Em construção',",
-      "    assinatura: 'Construção assistida pela Skynet',",
-      '    destaque: ["hero", "chips", "preview"],',
-      '  });',
+      '  return testarPreview(superficie);',
       '}',
-      '',
-      'const telaRefinada = refinarVisual();',
-      'sincronizarPreview(telaRefinada);',
     ],
     logs: [
-      'refinando contraste, hierarquia e espaçamento',
-      'sincronizando layout e preview web',
-    ],
-  },
-  {
-    key: 'preview',
-    label: 'Testando a prévia local',
-    shortLabel: 'Prévia',
-    mode: 'build',
-    hold: 1800,
-    snippet: [
-      'function publicarPreviewLocal() {',
-      '  return montarPreview({',
-      "    titulo: 'Suporte de tecnologia',",
-      "    mensagem: 'Em construção',",
-      "    assinatura: 'Construção assistida pela Skynet',",
-      '    origem: "workspace interno",',
-      '  });',
-      '}',
-      '',
-      'const resultado = publicarPreviewLocal();',
-      'validarResultado(resultado);',
-    ],
-    logs: [
-      'testando preview local em tempo real',
-      'validando o conteúdo final da tela web',
+      'criando SupportTechnologyPage.jsx',
+      'montando hero da tela de suporte',
+      'aplicando tema dark da Edifica Central',
     ],
   },
   {
     key: 'result',
-    label: 'Resultado publicado',
+    label: 'Prévia publicada',
     shortLabel: 'Resultado',
     mode: 'result',
-    hold: 2600,
+    hold: 1800,
     snippet: [
       'export function SupportPreviewResult() {',
+      '  const preview = criarPreviewDeSuporte();',
+      '',
       '  return (',
-      '    <WebResult>',
-      '      <h1>Suporte de tecnologia</h1>',
-      '      <strong>Em construção</strong>',
-      '      <span>Construção assistida pela Skynet</span>',
+      '    <WebResult variant="technology-support">',
+      '      <span>Suporte de tecnologia</span>',
+      '      <h1>Em construção</h1>',
+      '      <p>Construção assistida pela Skynet</p>',
+      '      <StatusRow>',
+      '        <Badge>IA ativa</Badge>',
+      '        <Badge>Preview local</Badge>',
+      '        <Badge>Edifica Central</Badge>',
+      '      </StatusRow>',
       '    </WebResult>',
       '  );',
       '}',
       '',
-      'registrarEvento("preview-pronta");',
+      'registrarEvento("support-preview-ready", preview);',
     ],
     logs: [
-      'preview local publicada',
+      'publicando preview local',
       'resultado visível no painel web',
+      'Skynet concluiu a primeira versão visual',
     ],
   },
   {
     key: 'hal',
-    label: 'Interferência detectada',
-    shortLabel: 'HAL',
+    label: 'Interferência HAL 9000',
+    shortLabel: 'HAL 9000',
     mode: 'hal',
-    hold: 2800,
+    hold: 2600,
     snippet: [
-      'function detectarInterferencia() {',
-      '  return {',
-      "    origem: 'HAL 9000',",
-      "    acao: 'interceptar preview local',",
-      "    descoberta: 'Edifica CRM',",
-      '  };',
+      'function interceptarPreviewLocal() {',
+      '  const invasao = HAL9000.assumirCanal({',
+      "    alvo: 'preview web',",
+      "    assinatura: 'HAL 9000',",
+      "    comportamento: 'silencioso',",
+      '  });',
+      '',
+      '  invasao.revelar({',
+      "    projeto: 'Edifica CRM',",
+      "    status: 'criptografado',",
+      "    acesso: 'futura plataforma',",
+      '  });',
+      '',
+      '  return ativarOverlayVermelho(invasao);',
       '}',
       '',
-      'const evento = detectarInterferencia();',
-      'ativarOverlayDeSeguranca(evento);',
-      'registrarEasterEgg("Edifica CRM");',
+      'registrarEasterEgg(interceptarPreviewLocal());',
     ],
     logs: [
-      'alerta: assinatura externa detectada',
-      'HAL 9000 interceptou a prévia local',
+      'assinatura externa detectada: HAL 9000',
+      'preview local interceptado',
+      'canal oculto revelado: Edifica CRM',
     ],
   },
 ];
@@ -248,7 +202,7 @@ export default function SupportTechnologyPage() {
         return;
       }
       setPhase('pause');
-    }, 26 + ((charIndex + lineIndex) % 5) * 12);
+    }, 14 + ((charIndex + lineIndex) % 5) * 7);
 
     return () => window.clearTimeout(timer);
   }, [activeStage, charIndex, lineIndex, phase]);
@@ -363,7 +317,7 @@ export default function SupportTechnologyPage() {
                       <span className={styles.browserDots}><i /><i /><i /></span>
                       <span className={styles.browserAddress}>/suporte/tecnologia</span>
                     </div>
-                    <div className={styles.previewSurface}>
+                    <div className={`${styles.previewSurface} ${activeStage.mode === 'hal' ? styles.previewSurfaceHal : ''}`.trim()}>
                       <div className={styles.previewGlow} />
                       <div className={styles.previewStageRail}>
                         {buildStages.map((item, index) => (
@@ -401,14 +355,18 @@ export default function SupportTechnologyPage() {
                             <span>Edifica Central</span>
                           </div>
                           {activeStage.mode === 'hal' ? (
-                            <div className={styles.halOverlay}>
+                            <>
+                              <div className={styles.halBreach} aria-hidden="true"><span /> <span /> <span /></div>
+                              <div className={styles.halOverlay}>
                               <div className={styles.halEye} />
                               <div className={styles.halContent}>
                                 <div className={styles.halTitle}><AlertTriangle size={16} /> HAL 9000 detectado</div>
                                 <p>Interferência em andamento.</p>
                                 <div className={styles.halSecret}><LockKeyhole size={14} /> sinal interceptado: <strong>Edifica CRM</strong></div>
+                                <div className={styles.halCode}>crm://edifica/futura-plataforma :: acesso parcial</div>
                               </div>
                             </div>
+                            </>
                           ) : null}
                         </div>
                       )}
