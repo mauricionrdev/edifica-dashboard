@@ -313,13 +313,14 @@
 .codeRow {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);
-  align-items: center;
+  align-items: start;
   min-height: 24px;
 }
 
 .lineNumber {
   display: inline-flex;
   justify-content: flex-end;
+  padding-top: 3px;
   padding-right: 12px;
   color: #545c73;
   font-size: 11px;
@@ -329,10 +330,15 @@
 .codeText {
   position: relative;
   min-width: 0;
-  padding-right: 16px;
-  white-space: pre;
+  max-width: 100%;
+  display: block;
+  padding: 3px 16px 3px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   color: #f8f8f2;
   font-size: 12px;
+  line-height: 1.55;
 }
 
 .codeTextActive { background: rgba(255,255,255,0.022); }
@@ -357,7 +363,7 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 14px 16px 16px;
 }
 
 .browserTopbar {
@@ -449,7 +455,7 @@
 }
 
 .previewBuilding {
-  padding: 72px 22px 22px;
+  padding: 76px 26px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -457,6 +463,7 @@
 
 .previewBadge {
   display: inline-flex;
+  animation: previewBlockIn .28s ease both;
   align-self: flex-start;
   padding: 7px 10px;
   border-radius: 999px;
@@ -517,15 +524,16 @@
   animation: shimmer 1.8s linear infinite;
 }
 
-.wireLine { height: 18px; width: 64%; }
-.wireLineShort { height: 12px; width: 38%; }
-.wireCards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.wireLine { height: 18px; width: 64%; animation: shimmer 1.8s linear infinite, previewBlockIn .24s ease both; }
+.wireLineShort { height: 12px; width: 38%; animation: shimmer 1.8s linear infinite, previewBlockIn .24s ease .04s both; }
+.wireCards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; animation: previewBlockIn .28s ease both; }
 .wireCards span { height: 88px; border-radius: 16px; }
-.wireBoard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.wireBoard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; animation: previewBlockIn .28s ease both; }
 .wireBoard span { height: 124px; border-radius: 18px; }
 
 .previewBuildCard {
   padding: 14px;
+  animation: previewBlockIn .3s ease both;
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.05);
   background: rgba(255,255,255,0.04);
@@ -545,7 +553,7 @@
 }
 
 .previewResult {
-  padding: 74px 30px 28px;
+  padding: 82px 34px 30px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -730,6 +738,11 @@
 .halSystemBreach .activityBar,
 .halSystemBreach .statusBar {
   animation: surfaceJitter 0.16s steps(2, end) infinite;
+}
+
+@keyframes previewBlockIn {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes caretBlink {

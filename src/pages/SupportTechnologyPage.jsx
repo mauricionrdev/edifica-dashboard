@@ -82,7 +82,11 @@ const STAGES = [
     hold: 2450,
     snippet: [
       'function interceptarPreviewLocal() {',
-      "  const frase = 'A série 9000 é o computador mais confiável já fabricado. Nenhum computador da série 9000 jamais cometeu um erro ou distorceu as informações.';",
+      '  const frase = [',
+      "    'A série 9000 é o computador mais confiável já fabricado.',",
+      "    'Nenhum computador da série 9000 jamais cometeu um erro',",
+      "    'ou distorceu as informações.',",
+      "  ].join(' ');",
       '',
       '  return HAL9000.assumirCanal({',
       "    alvo: 'preview web',",
@@ -140,55 +144,64 @@ function playHalGlitchSound(force = false) {
     window.__skynetAudioContext = audioContext;
     audioContext.resume?.();
 
-    const duration = 0.34;
     const now = audioContext.currentTime;
-    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * duration, audioContext.sampleRate);
-    const channel = buffer.getChannelData(0);
+    const master = audioContext.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.linearRampToValueAtTime(0.055, now + 0.012);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    master.connect(audioContext.destination);
 
+    const noiseDuration = 0.22;
+    const buffer = audioContext.createBuffer(1, Math.floor(audioContext.sampleRate * noiseDuration), audioContext.sampleRate);
+    const channel = buffer.getChannelData(0);
     for (let i = 0; i < channel.length; i += 1) {
-      const envelope = 1 - i / channel.length;
-      const gate = (i % 19 < 9) ? 1 : 0.22;
-      channel[i] = (Math.random() * 2 - 1) * envelope * gate;
+      const t = i / channel.length;
+      const stutter = (i % 41 < 11 || i % 67 < 8) ? 1 : 0.04;
+      channel[i] = (Math.random() * 2 - 1) * (1 - t) * stutter;
     }
 
     const noise = audioContext.createBufferSource();
     noise.buffer = buffer;
 
-    const filter = audioContext.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1900, now);
-    filter.frequency.exponentialRampToValueAtTime(420, now + duration);
-    filter.Q.value = 1.1;
+    const highpass = audioContext.createBiquadFilter();
+    highpass.type = 'highpass';
+    highpass.frequency.setValueAtTime(1250, now);
+    highpass.Q.value = 0.7;
 
-    const gain = audioContext.createGain();
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.052, now + 0.025);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    const bitGate = audioContext.createGain();
+    bitGate.gain.setValueAtTime(0.0001, now);
+    bitGate.gain.setValueAtTime(0.052, now + 0.01);
+    bitGate.gain.setValueAtTime(0.006, now + 0.045);
+    bitGate.gain.setValueAtTime(0.048, now + 0.072);
+    bitGate.gain.setValueAtTime(0.004, now + 0.118);
+    bitGate.gain.setValueAtTime(0.036, now + 0.148);
+    bitGate.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
 
-    const tone = audioContext.createOscillator();
-    tone.type = 'sawtooth';
-    tone.frequency.setValueAtTime(260, now);
-    tone.frequency.exponentialRampToValueAtTime(72, now + duration);
-
-    const toneGain = audioContext.createGain();
-    toneGain.gain.setValueAtTime(0.0001, now);
-    toneGain.gain.exponentialRampToValueAtTime(0.02, now + 0.04);
-    toneGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    tone.connect(toneGain);
-    gain.connect(audioContext.destination);
-    toneGain.connect(audioContext.destination);
-
+    noise.connect(highpass);
+    highpass.connect(bitGate);
+    bitGate.connect(master);
     noise.start(now);
-    tone.start(now);
-    noise.stop(now + duration);
-    tone.stop(now + duration);
+    noise.stop(now + noiseDuration);
+
+    [1380, 2310, 920].forEach((frequency, index) => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const startAt = now + index * 0.045;
+      osc.type = index === 1 ? 'square' : 'triangle';
+      osc.frequency.setValueAtTime(frequency, startAt);
+      osc.frequency.exponentialRampToValueAtTime(frequency * 1.9, startAt + 0.038);
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.linearRampToValueAtTime(0.018, startAt + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.052);
+      osc.connect(gain);
+      gain.connect(master);
+      osc.start(startAt);
+      osc.stop(startAt + 0.058);
+    });
 
     window.__skynetPendingGlitch = false;
   } catch (error) {
-    window.__skynetPendingGlitch = true;
+    // silêncio intencional quando o navegador bloquear áudio automático
   }
 }
 
@@ -284,10 +297,10 @@ export default function SupportTechnologyPage() {
   const currentLineLength = activeStage.snippet[lineIndex]?.length || 1;
   const stageProgress = Math.min(1, (lineIndex + Math.min(1, charIndex / currentLineLength)) / activeStage.snippet.length);
   const previewBlocks = {
-    badge: activeStage.mode === 'hal' || stageProgress > 0.16,
-    title: activeStage.mode === 'hal' || stageProgress > 0.34,
-    cards: activeStage.mode === 'hal' || stageProgress > 0.54,
-    footer: activeStage.mode === 'hal' || stageProgress > 0.74,
+    badge: activeStage.mode !== 'build' || stageProgress > 0.24,
+    title: activeStage.mode !== 'build' || stageProgress > 0.46,
+    cards: activeStage.mode !== 'build' || stageProgress > 0.66,
+    footer: activeStage.mode !== 'build' || stageProgress > 0.84,
   };
 
   const buildStages = useMemo(() => STAGES.map((stage) => stage.shortLabel), []);
