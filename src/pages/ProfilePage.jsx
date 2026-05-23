@@ -3341,13 +3341,18 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <div className={styles.internalToolbar}>
-        <div className={styles.internalToolbarTitle}>Minhas tarefas</div>
-        <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
-      </div>
-
       <section className={styles.operationBoard}>
         <header className={styles.operationHeader}>
+          <div className={styles.operationHeaderTop}>
+            <div className={styles.operationTitleBlock}>
+              <h2 className={styles.operationHeading}>
+                <ChecklistIcon size={16} strokeWidth={2} aria-hidden="true" />
+                <span>Minhas tarefas</span>
+              </h2>
+            </div>
+            <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
+          </div>
+
           <div className={styles.operationControlPanel}>
             <nav className={styles.operationTabs} aria-label="Operação">
               {OPERATION_TABS.map((tab) => (
