@@ -803,3 +803,34 @@
   border-radius: inherit;
   background: transparent;
 }
+
+/* v10 · avatar do footer sem fresta de background */
+.footer .avatar,
+.profileCard .avatar {
+  position: relative;
+  border: 0;
+  background: var(--avatar-fallback-bg, #08090a);
+  box-shadow: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.footer .avatar:has(img),
+.profileCard .avatar:has(img) {
+  background: transparent;
+}
+
+.footer .avatar img,
+.profileCard .avatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}

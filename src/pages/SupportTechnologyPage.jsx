@@ -111,7 +111,6 @@ export default function SupportTechnologyPage() {
             <div className={styles.nameRow}>
               <h1>Suporte de tecnologia</h1>
               <span className={styles.roleBadge}>{roleLabel(supportMaster?.role || 'suporte_tecnologia')}</span>
-              <span className={styles.ownerBadge}>Responsável: {supportMaster?.name || 'Mauricio Nunes'}</span>
             </div>
           </div>
           <div className={styles.heroActions}>
@@ -123,8 +122,33 @@ export default function SupportTechnologyPage() {
         </div>
       </section>
 
-      <section className={styles.supportConstruction}>
-        <strong>Em construção</strong>
+      <section className={styles.supportConstruction} aria-label="Área de tecnologia em construção">
+        <div className={styles.cyberGrid} aria-hidden="true" />
+        <div className={styles.cyberGlowOne} aria-hidden="true" />
+        <div className={styles.cyberGlowTwo} aria-hidden="true" />
+        <div className={styles.cyberScanner} aria-hidden="true" />
+        <div className={styles.cyberOrbit} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className={styles.cyberCore}>
+          <span className={styles.cyberKicker}>TECH OPS</span>
+          <strong>Em construção</strong>
+          <div className={styles.cyberBars} aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+        </div>
+        <div className={styles.cyberRails} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
       </section>
 
       {demandModalOpen ? (

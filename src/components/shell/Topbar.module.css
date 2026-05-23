@@ -766,3 +766,42 @@
 .accountItemExit {
   border-bottom: 0;
 }
+
+/* v10 · account avatar refinado e sino após avatar */
+.actions {
+  gap: 8px;
+}
+
+.accountButton,
+.accountAvatar {
+  position: relative;
+  border: 0;
+  background: var(--avatar-fallback-bg, #08090a);
+  box-shadow: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.accountButton:has(img),
+.accountAvatar:has(img) {
+  background: transparent;
+}
+
+.accountButton img,
+.accountAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.notificationButton {
+  margin-left: 2px;
+}

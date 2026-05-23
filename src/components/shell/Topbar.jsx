@@ -184,6 +184,35 @@ export default function Topbar({
             </button>
           ) : null}
 
+          <div className={styles.accountWrap} ref={accountRef}>
+            <button
+              type="button"
+              className={styles.accountButton}
+              onClick={() => setAccountOpen((current) => !current)}
+              aria-label="Abrir menu da conta"
+              aria-expanded={accountOpen ? 'true' : 'false'}
+            >
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}
+            </button>
+
+            {accountOpen ? (
+              <div className={styles.accountPanel} role="menu" aria-label="Conta">
+                <div className={styles.accountIdentity}>
+                  <span className={styles.accountAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
+                  <div>
+                    <strong>{user?.name || 'Usuário'}</strong>
+                    <small>{user?.email || ''}</small>
+                  </div>
+                </div>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><BuildingIcon size={16} /> Meu espaço de trabalho</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><PlusIcon size={16} /> Novo espaço de trabalho</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate(buildProfilePath(user))}><UsersIcon size={16} /> Perfil</button>
+                <button type="button" className={styles.accountItem} onClick={() => navigate('/perfil')}><SettingsIcon size={16} /> Configurações</button>
+                <button type="button" className={`${styles.accountItem} ${styles.accountItemExit}`.trim()} onClick={() => logout()}><LogOutIcon size={16} /> Sair</button>
+              </div>
+            ) : null}
+          </div>
+
           <div className={styles.notificationsWrap} ref={panelRef}>
             <button
               type="button"
@@ -269,35 +298,6 @@ export default function Topbar({
                     ))
                   )}
                 </div>
-              </div>
-            ) : null}
-          </div>
-
-          <div className={styles.accountWrap} ref={accountRef}>
-            <button
-              type="button"
-              className={styles.accountButton}
-              onClick={() => setAccountOpen((current) => !current)}
-              aria-label="Abrir menu da conta"
-              aria-expanded={accountOpen ? 'true' : 'false'}
-            >
-              {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}
-            </button>
-
-            {accountOpen ? (
-              <div className={styles.accountPanel} role="menu" aria-label="Conta">
-                <div className={styles.accountIdentity}>
-                  <span className={styles.accountAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(user?.name)}</span>
-                  <div>
-                    <strong>{user?.name || 'Usuário'}</strong>
-                    <small>{user?.email || ''}</small>
-                  </div>
-                </div>
-                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><BuildingIcon size={16} /> Meu espaço de trabalho</button>
-                <button type="button" className={styles.accountItem} onClick={() => navigate('/espaco-trabalho')}><PlusIcon size={16} /> Novo espaço de trabalho</button>
-                <button type="button" className={styles.accountItem} onClick={() => navigate(buildProfilePath(user))}><UsersIcon size={16} /> Perfil</button>
-                <button type="button" className={styles.accountItem} onClick={() => navigate('/perfil')}><SettingsIcon size={16} /> Configurações</button>
-                <button type="button" className={`${styles.accountItem} ${styles.accountItemExit}`.trim()} onClick={() => logout()}><LogOutIcon size={16} /> Sair</button>
               </div>
             ) : null}
           </div>
