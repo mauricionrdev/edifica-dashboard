@@ -5,8 +5,6 @@ import { useAuth } from '../context/AuthContext.jsx';
 import {
   AlertTriangle,
   BellDot,
-  Bot,
-  Bug,
   CircleDot,
   Code2,
   FolderCode,
@@ -24,71 +22,99 @@ import {
 import styles from './SupportTechnologyPage.module.css';
 
 const MENUS = ['Arquivo', 'Editar', 'Seleção', 'Exibir', 'Acessar', 'Executar'];
-const EDITOR_TABS = ['SupportTechnologyPage.jsx', 'PreviewSupport.jsx', 'terminal'];
+const EDITOR_TABS = ['SupportTechnologyPage.jsx', 'PreviewSupport.jsx'];
 
 const STAGES = [
   {
-    key: 'boot',
-    label: 'Inicializando construção',
+    key: 'shell',
+    label: 'Preparando shell da tela',
+    shortLabel: 'Shell',
     mode: 'build',
+    hold: 1500,
     snippet: [
       "import { useEffect, useMemo, useState } from 'react';",
       "import styles from './SupportTechnologyPage.module.css';",
       '',
-      'const skynet = criarAssistenteVisual({',
+      'const skynet = criarConstrutoraVisual({',
       "  nome: 'Skynet',",
       "  tela: 'Suporte de tecnologia',",
-      "  ambiente: 'workspace interno',",
+      "  contexto: 'workspace interno',",
       '});',
       '',
-      'function iniciarConstrucao() {',
-      '  return skynet.prepararShell({',
+      'function prepararShell() {',
+      '  return skynet.iniciar({',
       "    tema: 'dark',",
       "    fonte: 'JetBrains Mono',",
       '  });',
       '}',
     ],
     logs: [
-      'npm run build -- --preview tecnologia',
       'carregando shell de suporte',
-      'inicializando construtor visual da Skynet',
+      'inicializando construtora visual da Skynet',
     ],
   },
   {
     key: 'layout',
-    label: 'Escrevendo interface',
+    label: 'Montando a interface principal',
+    shortLabel: 'Layout',
     mode: 'build',
+    hold: 1600,
     snippet: [
-      'function renderizarTelaSuporte() {',
+      'function montarTelaSuporte() {',
       '  return (',
       '    <SupportWorkspace>',
       '      <Header title="Suporte de tecnologia" />',
       '      <Hero status="Em construção" />',
       '      <StatusChip>Construção assistida pela Skynet</StatusChip>',
-      '      <TerminalDock compact />',
+      '      <PreviewWeb dock="compacto" />',
       '    </SupportWorkspace>',
       '  );',
       '}',
       '',
-      'const preview = renderizarTelaSuporte();',
+      'const telaBase = montarTelaSuporte();',
     ],
     logs: [
       'escrevendo estrutura principal da interface',
       'aplicando design system dark da plataforma',
-      'ancorando terminal horizontal reduzido',
+    ],
+  },
+  {
+    key: 'refine',
+    label: 'Refinando composição visual',
+    shortLabel: 'Refino',
+    mode: 'build',
+    hold: 1700,
+    snippet: [
+      'function refinarVisual() {',
+      '  return ajustarDetalhes({',
+      "    titulo: 'Suporte de tecnologia',",
+      "    mensagem: 'Em construção',",
+      "    assinatura: 'Construção assistida pela Skynet',",
+      '    destaque: ["hero", "chips", "preview"],',
+      '  });',
+      '}',
+      '',
+      'const telaRefinada = refinarVisual();',
+      'sincronizarPreview(telaRefinada);',
+    ],
+    logs: [
+      'refinando contraste, hierarquia e espaçamento',
+      'sincronizando layout e preview web',
     ],
   },
   {
     key: 'preview',
     label: 'Testando a prévia local',
+    shortLabel: 'Prévia',
     mode: 'build',
+    hold: 1800,
     snippet: [
       'function publicarPreviewLocal() {',
       '  return montarPreview({',
       "    titulo: 'Suporte de tecnologia',",
       "    mensagem: 'Em construção',",
       "    assinatura: 'Construção assistida pela Skynet',",
-      '    estados: ["boot", "layout", "preview"],',
+      '    origem: "workspace interno",',
       '  });',
       '}',
       '',
@@ -97,14 +123,15 @@ const STAGES = [
     ],
     logs: [
       'testando preview local em tempo real',
-      'validando conteúdo final da tela web',
-      'verificando encaixe no workspace',
+      'validando o conteúdo final da tela web',
     ],
   },
   {
     key: 'result',
     label: 'Resultado publicado',
+    shortLabel: 'Resultado',
     mode: 'result',
+    hold: 2600,
     snippet: [
       'export function SupportPreviewResult() {',
       '  return (',
@@ -121,13 +148,14 @@ const STAGES = [
     logs: [
       'preview local publicada',
       'resultado visível no painel web',
-      'Skynet concluiu a primeira entrega visual',
     ],
   },
   {
     key: 'hal',
     label: 'Interferência detectada',
+    shortLabel: 'HAL',
     mode: 'hal',
+    hold: 2800,
     snippet: [
       'function detectarInterferencia() {',
       '  return {',
@@ -144,7 +172,6 @@ const STAGES = [
     logs: [
       'alerta: assinatura externa detectada',
       'HAL 9000 interceptou a prévia local',
-      'canal oculto revelado: Edifica CRM',
     ],
   },
 ];
@@ -197,12 +224,7 @@ export default function SupportTechnologyPage() {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setStageIndex((value) => (value + 1) % STAGES.length);
-    }, 3400);
-    return () => window.clearInterval(timer);
-  }, []);
+  const activeStage = STAGES[stageIndex];
 
   useEffect(() => {
     setLineIndex(0);
@@ -210,28 +232,34 @@ export default function SupportTechnologyPage() {
     setPhase('typing');
   }, [stageIndex]);
 
-  const activeStage = STAGES[stageIndex];
-
   useEffect(() => {
     const lines = activeStage.snippet;
-    let timer;
-    if (phase === 'typing') {
-      timer = window.setTimeout(() => {
-        const current = lines[lineIndex] ?? '';
-        if (charIndex < current.length) {
-          setCharIndex((value) => value + 1);
-          return;
-        }
-        if (lineIndex < lines.length - 1) {
-          setLineIndex((value) => value + 1);
-          setCharIndex(0);
-          return;
-        }
-        setPhase('pause');
-      }, 14 + ((charIndex + lineIndex) % 4) * 8);
-    }
+    if (phase !== 'typing') return undefined;
+
+    const timer = window.setTimeout(() => {
+      const current = lines[lineIndex] ?? '';
+      if (charIndex < current.length) {
+        setCharIndex((value) => value + 1);
+        return;
+      }
+      if (lineIndex < lines.length - 1) {
+        setLineIndex((value) => value + 1);
+        setCharIndex(0);
+        return;
+      }
+      setPhase('pause');
+    }, 26 + ((charIndex + lineIndex) % 5) * 12);
+
     return () => window.clearTimeout(timer);
   }, [activeStage, charIndex, lineIndex, phase]);
+
+  useEffect(() => {
+    if (phase !== 'pause') return undefined;
+    const timer = window.setTimeout(() => {
+      setStageIndex((value) => (value + 1) % STAGES.length);
+    }, activeStage.hold);
+    return () => window.clearTimeout(timer);
+  }, [activeStage.hold, phase]);
 
   const visibleLines = useMemo(
     () => visibleSnippet(activeStage.snippet, lineIndex, charIndex),
@@ -240,9 +268,11 @@ export default function SupportTechnologyPage() {
 
   const terminalLines = useMemo(() => {
     const lines = STAGES.slice(0, stageIndex + 1).flatMap((stage) => stage.logs);
-    lines.push('testando resultado da construção');
-    return lines.slice(-8);
-  }, [stageIndex]);
+    lines.push(activeStage.mode === 'hal' ? 'canal oculto revelado: Edifica CRM' : 'executando validação final');
+    return lines.slice(-2);
+  }, [activeStage.mode, stageIndex]);
+
+  const buildStages = useMemo(() => STAGES.map((stage) => stage.shortLabel), []);
 
   return (
     <div className={styles.page}>
@@ -269,7 +299,6 @@ export default function SupportTechnologyPage() {
               <Code2 size={18} />
               <Search size={18} />
               <GitBranch size={18} />
-              <Bug size={18} />
               <PanelBottom size={18} />
               <Settings size={18} />
             </aside>
@@ -282,15 +311,12 @@ export default function SupportTechnologyPage() {
                 <span><BellDot size={10} /> 3 alertas</span>
               </div>
               <div className={styles.tree}>
-                <div className={styles.treeItem}><FolderCode size={14} /><span>.github</span></div>
-                <div className={styles.treeItem}><FolderCode size={14} /><span>docs</span></div>
-                <div className={styles.treeItem}><FolderCode size={14} /><span>edifica-api</span></div>
                 <div className={styles.treeItem}><FolderCode size={14} /><span>src</span></div>
                 <div className={styles.treeItem} style={{ '--depth': 1 }}><FolderCode size={14} /><span>pages</span></div>
                 <div className={`${styles.treeItem} ${styles.treeItemActive}`.trim()} style={{ '--depth': 2 }}><MonitorPlay size={14} /><span>SupportTechnologyPage.jsx</span></div>
                 <div className={styles.treeItem} style={{ '--depth': 2 }}><Shield size={14} /><span>Skynet.preview.ts</span></div>
                 <div className={styles.treeItem} style={{ '--depth': 2 }}><TerminalSquare size={14} /><span>preview.local.log</span></div>
-                <div className={`${styles.treeItem} ${styles.treeItemEaster}`.trim()} style={{ '--depth': 1 }}><Sparkles size={14} /><span>Edifica CRM // criptografado</span></div>
+                <div className={`${styles.treeItem} ${styles.treeItemEaster}`.trim()} style={{ '--depth': 1 }}><Sparkles size={14} /><span>Edifica CRM</span></div>
               </div>
             </aside>
 
@@ -339,6 +365,17 @@ export default function SupportTechnologyPage() {
                     </div>
                     <div className={styles.previewSurface}>
                       <div className={styles.previewGlow} />
+                      <div className={styles.previewStageRail}>
+                        {buildStages.map((item, index) => (
+                          <span
+                            key={item}
+                            className={`${styles.previewStageChip} ${index < stageIndex ? styles.previewStageChipDone : ''} ${index === stageIndex ? styles.previewStageChipActive : ''}`.trim()}
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+
                       {activeStage.mode === 'build' ? (
                         <div className={styles.previewBuilding}>
                           <div className={styles.previewBadge}>Construção assistida pela Skynet</div>
@@ -346,7 +383,11 @@ export default function SupportTechnologyPage() {
                             <span className={styles.wireLine} />
                             <span className={styles.wireLineShort} />
                             <div className={styles.wireCards}><span /><span /><span /></div>
-                            <div className={styles.wireBoard}><span /><span /><span /><span /></div>
+                            <div className={styles.wireBoard}><span /><span /></div>
+                          </div>
+                          <div className={styles.previewBuildCard}>
+                            <strong>{activeStage.label}</strong>
+                            <p>Skynet está montando a tela e preparando a entrega visual final.</p>
                           </div>
                         </div>
                       ) : (
@@ -364,8 +405,8 @@ export default function SupportTechnologyPage() {
                               <div className={styles.halEye} />
                               <div className={styles.halContent}>
                                 <div className={styles.halTitle}><AlertTriangle size={16} /> HAL 9000 detectado</div>
-                                <p>Invasão silenciosa em andamento.</p>
-                                <div className={styles.halSecret}><LockKeyhole size={14} /> Sinal interceptado: <strong>Edifica CRM</strong></div>
+                                <p>Interferência em andamento.</p>
+                                <div className={styles.halSecret}><LockKeyhole size={14} /> sinal interceptado: <strong>Edifica CRM</strong></div>
                               </div>
                             </div>
                           ) : null}
@@ -385,18 +426,12 @@ export default function SupportTechnologyPage() {
                       <span>{entry}</span>
                     </div>
                   ))}
-                  <div className={styles.terminalLine}>
-                    <span className={styles.terminalPrompt}>›</span>
-                    <span className={styles.terminalTyping}>executando validação final</span>
-                  </div>
                 </div>
                 <div className={styles.statusBar}>
                   <span><LayoutDashboard size={12} /> main*</span>
                   <span><BellDot size={12} /> Edifica Central</span>
                   <span><Code2 size={12} /> JetBrains Mono</span>
                   <span>UTF-8</span>
-                  <span>LF</span>
-                  <span>Ln 24, Col 08</span>
                 </div>
               </aside>
             </section>

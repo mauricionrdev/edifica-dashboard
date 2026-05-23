@@ -159,7 +159,7 @@
 .menuBar {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
   min-width: 0;
   color: #8d90a1;
   font-size: 12px;
@@ -190,7 +190,7 @@
   min-height: 0;
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: 48px 238px minmax(0, 1fr);
+  grid-template-columns: 46px 168px minmax(0, 1fr);
   background: #08090a;
 }
 
@@ -228,7 +228,8 @@
 .previewBadge,
 .previewHeroEyebrow,
 .halTitle,
-.halSecret {
+.halSecret,
+.previewStageChip {
   font-family: 'JetBrains Mono', var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
 }
 
@@ -236,7 +237,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px 8px;
+  padding: 12px 10px 8px;
   color: #8f93a6;
   font-size: 10px;
   text-transform: uppercase;
@@ -244,23 +245,24 @@
 }
 
 .projectName {
-  padding: 0 14px 6px;
+  padding: 0 10px 6px;
   color: #f8f8f2;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .explorerMeta {
-  display: flex;
-  gap: 10px;
-  padding: 0 14px 10px;
+  display: grid;
+  gap: 6px;
+  padding: 0 10px 10px;
   color: #6f7384;
   font-size: 10px;
 }
 
 .explorerMeta span,
 .panelHeader span,
-.statusBar span {
+.statusBar span,
+.previewStageChip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -270,7 +272,7 @@
   min-height: 0;
   flex: 1 1 auto;
   overflow: hidden;
-  padding: 0 8px 10px;
+  padding: 0 6px 10px;
 }
 
 .treeItem {
@@ -278,11 +280,17 @@
   align-items: center;
   gap: 8px;
   min-height: 28px;
-  padding: 0 10px;
-  padding-left: calc(10px + (var(--depth, 0) * 16px));
+  padding: 0 8px;
+  padding-left: calc(8px + (var(--depth, 0) * 12px));
   border-radius: 8px;
   color: #9da3b8;
-  font-size: 12px;
+  font-size: 11px;
+}
+
+.treeItem span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .treeItemActive {
@@ -333,7 +341,7 @@
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 0.54fr) minmax(0, 0.46fr);
+  grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
 }
 
 .codePane,
@@ -389,7 +397,7 @@
 
 .codeRow {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
   align-items: center;
   min-height: 26px;
 }
@@ -397,7 +405,7 @@
 .lineNumber {
   display: inline-flex;
   justify-content: flex-end;
-  padding-right: 14px;
+  padding-right: 12px;
   color: #545c73;
   font-size: 11px;
   user-select: none;
@@ -409,10 +417,11 @@
   padding-right: 16px;
   white-space: pre;
   color: #f8f8f2;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .codeTextActive { background: rgba(255,255,255,0.022); }
+
 .caret {
   display: inline-block;
   width: 2px;
@@ -486,6 +495,37 @@
   filter: blur(10px);
 }
 
+.previewStageRail {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 16px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.previewStageChip {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.05);
+  color: #7f869d;
+  font-size: 10px;
+}
+
+.previewStageChipActive {
+  color: #f8f8f2;
+  border-color: rgba(245, 196, 81, 0.2);
+  background: rgba(245, 196, 81, 0.08);
+}
+
+.previewStageChipDone {
+  color: #c6cad8;
+  border-color: rgba(255,255,255,0.08);
+}
+
 .previewBuilding,
 .previewResult {
   position: relative;
@@ -494,11 +534,15 @@
 }
 
 .previewBuilding {
-  padding: 18px;
+  padding: 60px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .previewBadge {
   display: inline-flex;
+  align-self: flex-start;
   padding: 7px 10px;
   border-radius: 999px;
   border: 1px solid rgba(245, 196, 81, 0.16);
@@ -523,18 +567,38 @@
   border-radius: 999px;
   background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+  animation: shimmer 1.8s linear infinite;
 }
 
 .wireLine { height: 18px; width: 64%; }
 .wireLineShort { height: 12px; width: 38%; }
 .wireCards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.wireCards span { height: 82px; border-radius: 16px; }
+.wireCards span { height: 88px; border-radius: 16px; }
 .wireBoard { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.wireBoard span { height: 120px; border-radius: 18px; }
+.wireBoard span { height: 124px; border-radius: 18px; }
+
+.previewBuildCard {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.04);
+}
+
+.previewBuildCard strong {
+  display: block;
+  color: #f8f8f2;
+  font-size: 13px;
+}
+
+.previewBuildCard p {
+  margin: 8px 0 0;
+  color: #a0a5b6;
+  font-size: 12px;
+  line-height: 1.6;
+}
 
 .previewResult {
-  padding: 28px;
+  padding: 78px 24px 24px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -550,7 +614,7 @@
 .previewResult h3 {
   margin: 12px 0 0;
   color: #f8f8f2;
-  font-size: 38px;
+  font-size: 42px;
   line-height: 1.05;
   font-weight: 800;
 }
@@ -558,7 +622,7 @@
 .previewResult p {
   margin: 14px 0 0;
   color: #a0a5b6;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.7;
 }
 
@@ -588,7 +652,7 @@
   border: 1px solid rgba(255, 74, 74, 0.28);
   background: linear-gradient(180deg, rgba(34, 8, 8, 0.92), rgba(18, 7, 7, 0.96));
   box-shadow: 0 0 0 1px rgba(255, 74, 74, 0.06) inset;
-  animation: halPulse 1.8s ease-in-out infinite;
+  animation: halPulse 2.2s ease-in-out infinite;
 }
 
 .halEye {
@@ -638,7 +702,7 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 14px;
-  min-height: 84px;
+  min-height: 56px;
   padding: 0 12px;
   border-top: 1px solid rgba(255,255,255,0.045);
   background: #090a0f;
@@ -656,42 +720,37 @@
 
 .terminalBody {
   min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 16px;
-  padding: 10px 0;
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 2px;
+  padding: 8px 0;
+  overflow: hidden;
 }
 
 .terminalLine {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  min-height: 22px;
+  min-width: 0;
+  min-height: 18px;
   color: #f8f8f2;
-  font-size: 11px;
-  line-height: 1.4;
+  font-size: 10px;
+  line-height: 1.35;
   animation: logAppear .2s ease;
 }
 
-.terminalLine:nth-child(5n + 1) { color: #ff79c6; }
-.terminalLine:nth-child(5n + 2) { color: #8be9fd; }
-.terminalLine:nth-child(5n + 3) { color: #ffb86c; }
-.terminalLine:nth-child(5n + 4) { color: #f8f8f2; }
-.terminalLine:nth-child(5n) { color: #bd93f9; }
+.terminalLine span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminalLine:nth-child(4n + 1) { color: #ff79c6; }
+.terminalLine:nth-child(4n + 2) { color: #8be9fd; }
+.terminalLine:nth-child(4n + 3) { color: #ffb86c; }
+.terminalLine:nth-child(4n) { color: #f8f8f2; }
 
 .terminalPrompt { color: #6272a4; }
-.terminalTyping { position: relative; }
-.terminalTyping::after {
-  content: '';
-  display: inline-block;
-  width: 7px;
-  height: 12px;
-  margin-left: 4px;
-  vertical-align: -2px;
-  background: currentColor;
-  animation: caretBlink .65s step-end infinite;
-}
 
 .statusBar {
   display: inline-flex;
@@ -740,7 +799,9 @@
     min-height: 580px;
   }
 
-  .explorer { width: 220px; }
+  .contentArea {
+    grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
+  }
 }
 
 @media (max-width: 1100px) {
@@ -761,7 +822,7 @@
   .terminalPanel {
     grid-template-columns: 1fr;
     align-items: flex-start;
-    padding: 12px;
+    padding: 10px 12px;
     gap: 8px;
   }
 
@@ -802,7 +863,6 @@
   .wireLineShort,
   .wireCards span,
   .wireBoard span,
-  .terminalTyping::after,
   .tooltipTyping,
   .caret,
   .halOverlay {
