@@ -13073,3 +13073,124 @@ button:focus-visible {
   color: var(--edf-text);
   box-shadow: inset 0 0 0 1px var(--edf-amber-border);
 }
+
+/* v69 · Área interna reconstruída: abas integradas e planilha como workspace real */
+.operationBoard {
+  overflow: hidden;
+}
+
+.operationHeader {
+  padding: 20px 22px 0;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+}
+
+.operationHeaderTop {
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 16px;
+}
+
+.operationTitleBlock {
+  min-width: 0;
+}
+
+.operationHeading {
+  margin: 0;
+}
+
+.profileWorkspaceActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.profileWorkspaceSwitcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-control-radius);
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: none;
+}
+
+.profileWorkspaceTab {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: calc(var(--workspace-control-radius) - 3px);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.profileWorkspaceTab:hover {
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text-secondary);
+}
+
+.profileWorkspaceTabActive,
+.profileWorkspaceTab[aria-current="page"] {
+  border-color: rgba(245, 184, 0, 0.26);
+  background: rgba(245, 184, 0, 0.105);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.operationControlPanel {
+  padding: 0 0 16px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+}
+
+.operationBody {
+  padding: 20px 22px 22px;
+  background: var(--workspace-bg);
+}
+
+.operationBody > section {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .operationHeaderTop {
+    align-items: stretch;
+  }
+
+  .profileWorkspaceActions {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
+  }
+
+  .profileWorkspaceSwitcher {
+    flex: 1 1 auto;
+  }
+
+  .profileWorkspaceTab {
+    flex: 1 1 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .profileWorkspaceActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profileWorkspaceSwitcher {
+    width: 100%;
+  }
+}

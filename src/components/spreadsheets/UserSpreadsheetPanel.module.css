@@ -1,95 +1,118 @@
 .panel {
+  --sheet-surface: rgba(10, 11, 13, 0.96);
+  --sheet-surface-soft: rgba(255, 255, 255, 0.035);
+  --sheet-surface-raised: rgba(255, 255, 255, 0.06);
+  --sheet-line: rgba(255, 255, 255, 0.075);
+  --sheet-line-strong: rgba(255, 255, 255, 0.13);
+  --sheet-text: var(--text-primary);
+  --sheet-muted: var(--text-tertiary);
+  --sheet-accent: var(--accent);
+  --sheet-accent-soft: rgba(245, 184, 0, 0.10);
   width: 100%;
   min-width: 0;
-  overflow: visible;
-  border: 1px solid var(--chassis-border);
-  border-radius: var(--workspace-card-radius);
-  background: var(--surface-panel);
+  overflow: hidden;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: calc(var(--workspace-card-radius) + 2px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.006)), var(--sheet-surface);
   color: var(--text-secondary);
+  box-shadow: none;
 }
 
-.panelHeader {
-  min-width: 0;
+.sheetCommandCenter {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
+  grid-template-columns: minmax(180px, 0.45fr) minmax(0, 1fr) auto;
+  gap: 14px;
   align-items: center;
-  padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--chassis-border);
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--sheet-line);
+  background: rgba(255, 255, 255, 0.012);
 }
 
-.panelTitle {
+.sheetIdentity {
   min-width: 0;
   display: grid;
-  gap: 4px;
+  gap: 5px;
 }
 
-.panelTitle span {
-  color: var(--text-primary);
-  font-size: 16px;
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-snug);
-  line-height: var(--lh-tight);
-}
-
-.panelTitle p {
-  margin: 0;
+.sheetEyebrow {
   color: var(--text-tertiary);
-  font-size: var(--fs-small);
-  line-height: var(--lh-normal);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
-.panelActions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+.sheetIdentity strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 720;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.sheetTags {
+.sheetTabs {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 0;
   overflow-x: auto;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--chassis-border);
+  padding: 4px;
+  border: 1px solid var(--sheet-line);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.18);
   scrollbar-width: thin;
 }
 
-.sheetTag,
-.emptyTag {
-  min-height: 30px;
+.sheetTab,
+.emptyTab {
+  min-height: 34px;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  flex: 0 0 auto;
-  border: 1px solid var(--accent-line);
-  border-radius: 999px;
-  background: rgba(245, 184, 0, 0.08);
-  color: var(--text-secondary);
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-tertiary);
 }
 
-.sheetTag {
+.sheetTab {
+  position: relative;
   padding: 0 8px 0 12px;
 }
 
-.emptyTag {
-  padding: 0 12px;
-  border-color: var(--chassis-border);
-  background: var(--surface-raised);
-  color: var(--text-tertiary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
-}
-
-.sheetTag[data-active="true"] {
-  background: rgba(245, 184, 0, 0.14);
+.sheetTab[data-active="true"] {
+  border-color: rgba(245, 184, 0, 0.28);
+  background: linear-gradient(180deg, rgba(245, 184, 0, 0.14), rgba(245, 184, 0, 0.075));
   color: var(--text-primary);
 }
 
-.sheetTag input {
-  width: 128px;
+.sheetTabButton {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sheetTabButton span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.sheetTab input {
+  position: relative;
+  z-index: 1;
+  width: 134px;
   max-width: 220px;
   min-width: 72px;
   padding: 0;
@@ -97,13 +120,27 @@
   outline: 0;
   background: transparent;
   color: inherit;
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.sheetTab input:disabled {
+  opacity: 1;
+}
+
+.emptyTab {
+  padding: 0 12px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .deleteSheetButton {
-  width: 18px;
-  height: 18px;
+  position: relative;
+  z-index: 2;
+  width: 20px;
+  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -119,13 +156,21 @@
   color: var(--danger-text);
 }
 
+.sheetActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .editorBar {
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--chassis-border);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--sheet-line);
+  background: rgba(255, 255, 255, 0.008);
 }
 
 .editorToolbar {
@@ -135,9 +180,9 @@
   gap: 2px;
   max-width: 100%;
   padding: 5px;
-  border: 1px solid var(--chassis-border);
-  border-radius: 14px;
-  background: var(--surface-raised);
+  border: 1px solid var(--sheet-line-strong);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .editorButton {
@@ -148,23 +193,23 @@
   justify-content: center;
   padding: 0 9px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 11px;
   background: transparent;
   color: var(--text-secondary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
+  font-size: 12px;
+  font-weight: 730;
   line-height: 1;
   cursor: pointer;
 }
 
 .editorButton:hover:not(:disabled),
 .editorButton[aria-expanded="true"] {
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.075);
   color: var(--text-primary);
 }
 
 .editorButton:disabled {
-  opacity: 0.35;
+  opacity: 0.34;
   cursor: not-allowed;
 }
 
@@ -175,14 +220,16 @@
   width: 1px;
   height: 20px;
   margin: 0 5px;
-  background: var(--chassis-border);
+  background: var(--sheet-line-strong);
 }
 
 .editorHint {
-  min-width: 190px;
+  min-width: 0;
   color: var(--text-tertiary);
-  font-size: var(--fs-label);
+  font-size: 12px;
+  font-weight: 560;
   line-height: var(--lh-normal);
+  white-space: nowrap;
 }
 
 .colorMenuWrapper,
@@ -193,11 +240,9 @@
 .colorMenu,
 .moreMenu,
 .contextMenu {
-  position: fixed;
   z-index: var(--z-popover, 60);
-  min-width: 220px;
   border: 1px solid var(--chassis-border-strong);
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--chassis-panel-bg-elevated);
   box-shadow: var(--shadow-popover);
 }
@@ -205,18 +250,24 @@
 .colorMenu,
 .moreMenu {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   left: 0;
   padding: 12px;
 }
 
+.colorMenu {
+  min-width: 198px;
+}
+
 .moreMenu {
-  min-width: 236px;
+  min-width: 240px;
   display: grid;
   gap: 10px;
 }
 
 .contextMenu {
+  position: fixed;
+  min-width: 210px;
   padding: 8px;
 }
 
@@ -224,9 +275,9 @@
 .sheetTable th,
 .panelFooter {
   color: var(--text-tertiary);
-  font-size: var(--fs-tiny);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-uppercase);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.10em;
   line-height: var(--lh-tight);
   text-transform: uppercase;
 }
@@ -245,7 +296,7 @@
 .swatch {
   width: 20px;
   height: 20px;
-  border: 1px solid var(--chassis-border-strong);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 7px;
   background: var(--swatch);
   cursor: pointer;
@@ -277,8 +328,8 @@
   border-radius: 10px;
   background: transparent;
   color: var(--text-secondary);
-  font-size: var(--fs-small);
-  font-weight: var(--weight-medium);
+  font-size: 12px;
+  font-weight: 620;
   text-align: left;
   cursor: pointer;
 }
@@ -297,15 +348,16 @@
 }
 
 .sheetFrame {
-  min-height: 420px;
+  min-height: 520px;
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.16);
 }
 
 .sheetScroller {
   width: 100%;
   max-width: 100%;
-  min-height: 420px;
+  min-height: 520px;
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
@@ -325,8 +377,8 @@
 .sheetTable td {
   min-width: 5px;
   padding: 0;
-  border-right: 1px solid var(--chassis-border);
-  border-bottom: 1px solid var(--chassis-border);
+  border-right: 1px solid var(--sheet-line);
+  border-bottom: 1px solid var(--sheet-line);
   vertical-align: top;
 }
 
@@ -334,9 +386,10 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  height: 42px;
-  background: var(--surface-raised);
+  height: 44px;
+  background: #18191b;
   text-align: left;
+  box-shadow: inset 0 -1px 0 var(--sheet-line-strong);
 }
 
 .indexHeader,
@@ -347,21 +400,21 @@
   width: 54px;
   min-width: 54px;
   text-align: center;
-  background: var(--surface-raised);
+  background: #18191b;
 }
 
 .rowIndex {
   height: 44px;
-  padding-top: 12px !important;
+  padding-top: 12px;
   color: var(--text-tertiary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
+  font-size: 12px;
+  font-weight: 680;
   cursor: context-menu;
 }
 
 .headerCell {
   position: relative;
-  height: 42px;
+  height: 44px;
   display: flex;
   align-items: center;
   min-width: 5px;
@@ -376,10 +429,11 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   font: inherit;
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-uppercase);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
@@ -421,7 +475,8 @@
   overflow: hidden;
   outline: 0;
   color: var(--text-primary);
-  font-size: var(--fs-small);
+  font-size: 13px;
+  font-weight: 560;
   line-height: var(--lh-normal);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -435,7 +490,7 @@
 .sheetCell:focus,
 .sheetCell[data-selected="true"] {
   background: rgba(245, 184, 0, 0.055);
-  box-shadow: inset 0 0 0 1px var(--accent-line);
+  box-shadow: inset 0 0 0 1px rgba(245, 184, 0, 0.36);
 }
 
 .sheetCell[data-saving="true"] {
@@ -457,12 +512,12 @@
 
 .emptyState {
   height: 180px;
-  padding: 72px 24px !important;
+  padding: 72px 24px;
   background: var(--surface-panel);
 }
 
 .noSheetState {
-  min-height: 420px;
+  min-height: 520px;
   display: grid;
   place-content: center;
   justify-items: center;
@@ -477,7 +532,7 @@
 
 .noSheetState span {
   max-width: 420px;
-  font-size: var(--fs-small);
+  font-size: 13px;
   line-height: var(--lh-normal);
 }
 
@@ -485,8 +540,9 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 20px 14px;
-  border-top: 1px solid var(--chassis-border);
+  padding: 11px 20px 13px;
+  border-top: 1px solid var(--sheet-line);
+  background: rgba(255, 255, 255, 0.01);
 }
 
 .panelFooter span {
@@ -495,15 +551,18 @@
   gap: 6px;
 }
 
-@media (max-width: 980px) {
-  .panelHeader,
-  .editorBar,
-  .panelFooter {
+@media (max-width: 1180px) {
+  .sheetCommandCenter {
     grid-template-columns: 1fr;
     align-items: stretch;
   }
 
-  .panelActions,
+  .sheetActions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
   .editorBar,
   .panelFooter {
     flex-direction: column;
@@ -513,4 +572,17 @@
   .editorToolbar {
     overflow-x: auto;
   }
+
+  .editorHint {
+    white-space: normal;
+  }
+}
+
+
+.sheetTable .rowIndex {
+  padding-top: 12px;
+}
+
+.sheetTable .emptyState {
+  padding: 72px 24px;
 }

@@ -3357,23 +3357,24 @@ export default function ProfilePage() {
                 <span>Área interna</span>
               </h2>
             </div>
-            {workspaceTab === 'tasks' ? (
-              <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
-            ) : null}
-          </div>
-
-          <div className={styles.profileWorkspaceSwitcher}>
-            {PROFILE_WORKSPACE_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                className={`${styles.profileWorkspaceTab} ${workspaceTab === tab.value ? styles.profileWorkspaceTabActive : ''}`.trim()}
-                onClick={() => setWorkspaceTab(tab.value)}
-                aria-current={workspaceTab === tab.value ? 'page' : undefined}
-              >
-                {tab.label}
-              </button>
-            ))}
+            <div className={styles.profileWorkspaceActions}>
+              <div className={styles.profileWorkspaceSwitcher} aria-label="Área interna">
+                {PROFILE_WORKSPACE_TABS.map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    className={`${styles.profileWorkspaceTab} ${workspaceTab === tab.value ? styles.profileWorkspaceTabActive : ''}`.trim()}
+                    onClick={() => setWorkspaceTab(tab.value)}
+                    aria-current={workspaceTab === tab.value ? 'page' : undefined}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              {workspaceTab === 'tasks' ? (
+                <button type="button" className={styles.primaryAction} onClick={handleOpenDemandModal} disabled={!canCreateDemand} title={!canCreateDemand ? 'Sem permissão para criar demanda' : undefined}>Nova demanda</button>
+              ) : null}
+            </div>
           </div>
 
           {workspaceTab === 'tasks' ? (

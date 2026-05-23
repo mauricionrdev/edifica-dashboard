@@ -696,51 +696,62 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   return (
     <section className={styles.panel}>
-      <header className={styles.panelHeader}>
-        <div className={styles.panelTitle}>
-          <span>Planilhas</span>
-          <p>Planilhas pessoais do perfil interno.</p>
+      <header className={styles.sheetCommandCenter}>
+        <div className={styles.sheetIdentity}>
+          <span className={styles.sheetEyebrow}>Planilhas pessoais</span>
+          <strong>{sheets.find((sheet) => sheet.id === activeSheetId)?.name || 'Nenhuma planilha ativa'}</strong>
         </div>
+
+        <div className={styles.sheetTabs} aria-label="Planilhas do perfil">
+          {sheets.length ? sheets.map((sheet) => (
+            <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined}>
+              <button
+                type="button"
+                className={styles.sheetTabButton}
+                onClick={() => {
+                  if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
+                }}
+                title={sheet.name}
+              >
+                <span>{sheet.name}</span>
+              </button>
+              <input
+                value={sheet.name}
+                disabled={!canEdit}
+                aria-label={`Nome da planilha ${sheet.name}`}
+                onFocus={() => {
+                  if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
+                }}
+                onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
+                onBlur={(event) => canEdit && handleSheetNameCommit(sheet.id, event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
+                }}
+              />
+              {canEdit ? (
+                <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
+                  <CloseIcon size={11} />
+                </button>
+              ) : null}
+            </div>
+          )) : (
+            <span className={styles.emptyTab}>Nenhuma planilha criada</span>
+          )}
+        </div>
+
         {canEdit ? (
-          <div className={styles.panelActions}>
+          <div className={styles.sheetActions}>
             <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
-            <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn || !activeSheetId}><PlusIcon size={14} /> Nova coluna</Button>
-            <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow || !activeSheetId}><PlusIcon size={14} /> Nova linha</Button>
+            <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn || !activeSheetId}><PlusIcon size={14} /> Coluna</Button>
+            <Button type="button" size="sm" onClick={handleAddRow} disabled={creatingRow || !activeSheetId}><PlusIcon size={14} /> Linha</Button>
           </div>
         ) : null}
       </header>
 
-      <div className={styles.sheetTags} aria-label="Planilhas do perfil">
-        {sheets.length ? sheets.map((sheet) => (
-          <div key={sheet.id} className={styles.sheetTag} data-active={sheet.id === activeSheetId || undefined}>
-            <input
-              value={sheet.name}
-              disabled={!canEdit}
-              aria-label={`Nome da planilha ${sheet.name}`}
-              onFocus={() => {
-                if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
-              }}
-              onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
-              onBlur={(event) => canEdit && handleSheetNameCommit(sheet.id, event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
-              }}
-            />
-            {canEdit ? (
-              <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
-                <CloseIcon size={11} />
-              </button>
-            ) : null}
-          </div>
-        )) : (
-          <span className={styles.emptyTag}>Nenhuma planilha criada</span>
-        )}
-      </div>
-
       {canEdit ? (
         <div className={styles.editorBar}>
           <EditorToolbar disabled={!activeCell || !activeSheetId} onCommand={handleApplyFormat} />
-          <span className={styles.editorHint}>Selecione uma célula para editar texto. Clique direito para excluir linha ou coluna.</span>
+          <span className={styles.editorHint}>{activeCell ? 'Formatando célula selecionada.' : 'Selecione uma célula para liberar a edição.'}</span>
         </div>
       ) : null}
 
@@ -814,8 +825,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       </div>
 
       <footer className={styles.panelFooter}>
-        <span><SaveIcon size={13} /> Alterações salvas automaticamente.</span>
-        <span>{rows.length} registro{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
+        <span><SaveIcon size={13} /> Salvamento automático</span>
+        <span>{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
 
       <SheetContextMenu
