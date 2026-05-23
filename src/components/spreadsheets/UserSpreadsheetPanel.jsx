@@ -19,6 +19,8 @@ const BLANK_COLUMN_WIDTH = 168;
 const BLANK_ROW_HEIGHT = 44;
 const BLANK_MIN_COLUMNS = 6;
 const BLANK_MIN_ROWS = 14;
+const MIN_COLUMN_WIDTH = 5;
+const COMPACT_COLUMN_WIDTH = 72;
 
 const TEXT_COLORS = [
   '#ffffff', '#f8fafc', '#e5e7eb', '#cbd5e1', '#94a3b8', '#64748b',
@@ -353,9 +355,9 @@ function EditorToolbar({ disabled, onCommand }) {
   );
 }
 
-function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeStart, onContextMenu }) {
+function HeaderCell({ column, editable, resizing, compact, onLabelChange, onLabelCommit, onResizeStart, onContextMenu }) {
   return (
-    <div className={styles.headerCell} onContextMenu={(event) => onContextMenu(event, null, column.key)}>
+    <div className={styles.headerCell} data-resizing={resizing || undefined} data-compact={compact || undefined} onContextMenu={(event) => onContextMenu(event, null, column.key)}>
       {editable ? (
         <input
           value={column.label}
@@ -373,6 +375,7 @@ function HeaderCell({ column, editable, onLabelChange, onLabelCommit, onResizeSt
         <button
           type="button"
           className={styles.resizeHandle}
+          data-resizing={resizing || undefined}
           aria-label={`Redimensionar ${column.label}`}
           onMouseDown={(event) => onResizeStart(event, column.key)}
         />
@@ -582,6 +585,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [contextMenu, setContextMenu] = useState(null);
   const rangeRef = useRef(null);
   const resizeRef = useRef(null);
+  const sheetFrameRef = useRef(null);
+  const [resizeState, setResizeState] = useState(null);
   const scrollerRef = useRef(null);
 
   const sheetMinWidth = useMemo(() => {
@@ -1008,9 +1013,23 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleResizeStart = (event, key) => {
     event.preventDefault();
+    event.stopPropagation();
     const column = columns.find((entry) => entry.key === key);
     if (!column) return;
-    resizeRef.current = { key, startX: event.clientX, startWidth: column.width };
+    const frameRect = sheetFrameRef.current?.getBoundingClientRect();
+    resizeRef.current = {
+      key,
+      label: column.label || 'Coluna',
+      startX: event.clientX,
+      startWidth: Number(column.width || BLANK_COLUMN_WIDTH),
+      width: Number(column.width || BLANK_COLUMN_WIDTH),
+    };
+    setResizeState({
+      key,
+      label: column.label || 'Coluna',
+      width: Number(column.width || BLANK_COLUMN_WIDTH),
+      left: frameRect ? event.clientX - frameRect.left : 0,
+    });
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   };
@@ -1019,19 +1038,26 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const handleMove = (event) => {
       const state = resizeRef.current;
       if (!state) return;
-      const width = Math.max(5, state.startWidth + event.clientX - state.startX);
+      const width = Math.max(MIN_COLUMN_WIDTH, Math.round(state.startWidth + event.clientX - state.startX));
+      const frameRect = sheetFrameRef.current?.getBoundingClientRect();
+      resizeRef.current = { ...state, width };
+      setResizeState({
+        key: state.key,
+        label: state.label,
+        width,
+        left: frameRect ? event.clientX - frameRect.left : 0,
+      });
       setColumns((current) => current.map((column) => (column.key === state.key ? { ...column, width } : column)));
     };
     const handleUp = async () => {
       const state = resizeRef.current;
       if (!state) return;
       resizeRef.current = null;
+      setResizeState(null);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      const column = columns.find((entry) => entry.key === state.key);
-      if (!column) return;
       try {
-        await updateSupportDailyColumn(column.key, { ownerUserId, width: column.width });
+        await updateSupportDailyColumn(state.key, { ownerUserId, width: state.width });
       } catch {
         refreshRows(activeSheetId).catch(() => {});
       }
@@ -1043,8 +1069,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       window.removeEventListener('mouseup', handleUp);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      setResizeState(null);
+      resizeRef.current = null;
     };
-  }, [activeSheetId, columns, ownerUserId, refreshRows]);
+  }, [activeSheetId, ownerUserId, refreshRows]);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
@@ -1157,7 +1185,16 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </div>
       ) : null}
 
-      <div className={styles.sheetFrame}>
+      <div ref={sheetFrameRef} className={styles.sheetFrame}>
+        {resizeState ? (
+          <div
+            className={styles.resizeGuide}
+            style={{ '--resize-left': `${Math.max(0, resizeState.left)}px` }}
+            aria-hidden="true"
+          >
+            <span>{resizeState.label} · {resizeState.width}px</span>
+          </div>
+        ) : null}
         <div
           ref={scrollerRef}
           className={styles.sheetScroller}
@@ -1190,11 +1227,15 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                         data-saving={savingColumn === column.key || undefined}
                         data-selected-column={columnInSelection || undefined}
                         data-active-column={columnActive || undefined}
+                        data-resizing-column={resizeState?.key === column.key || undefined}
+                        data-compact-column={column.width <= COMPACT_COLUMN_WIDTH || undefined}
                       >
                       <HeaderCell
                         column={column}
                         editable={canEdit}
                         onLabelChange={handleColumnLabelChange}
+                        resizing={resizeState?.key === column.key}
+                        compact={column.width <= COMPACT_COLUMN_WIDTH}
                         onLabelCommit={handleColumnLabelCommit}
                         onResizeStart={handleResizeStart}
                         onContextMenu={openContextMenu}
@@ -1246,7 +1287,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                         right: columnIndex === selectionBounds.columnTo,
                       } : null;
                       return (
-                      <td key={column.key} data-column={column.key} data-active-column={activeCell?.key === column.key || undefined} data-selected-column={selectionBounds && columnIndex >= selectionBounds.columnFrom && columnIndex <= selectionBounds.columnTo && selectedCount > 1 || undefined}>
+                      <td key={column.key} data-column={column.key} data-active-column={activeCell?.key === column.key || undefined} data-selected-column={selectionBounds && columnIndex >= selectionBounds.columnFrom && columnIndex <= selectionBounds.columnTo && selectedCount > 1 || undefined} data-resizing-column={resizeState?.key === column.key || undefined} data-compact-column={column.width <= COMPACT_COLUMN_WIDTH || undefined}>
                         <SheetCell
                           row={row}
                           column={column}
@@ -1275,7 +1316,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.panelFooter}>
         <span><SaveIcon size={13} /> Salvamento automático</span>
-        <span>{selectedCount > 1 ? `${selectedCount} células selecionadas${selectionLabel ? ` · ${selectionLabel}` : ''} · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
+        <span>{resizeState ? `Redimensionando ${resizeState.label}: ${resizeState.width}px · ` : ''}{selectedCount > 1 ? `${selectedCount} células selecionadas${selectionLabel ? ` · ${selectionLabel}` : ''} · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
 
       <SheetContextMenu

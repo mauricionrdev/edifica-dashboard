@@ -518,6 +518,7 @@
 }
 
 .sheetScroller {
+  position: relative;
   width: 100%;
   height: 100%;
   max-width: 100%;
@@ -526,6 +527,45 @@
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.resizeGuide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--resize-left);
+  z-index: 9;
+  width: 0;
+  pointer-events: none;
+}
+
+.resizeGuide::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 999px;
+  background: rgba(245, 183, 36, 0.92);
+  box-shadow: 0 0 0 1px rgba(245, 183, 36, 0.18), 0 0 18px rgba(245, 183, 36, 0.32);
+}
+
+.resizeGuide span {
+  position: sticky;
+  top: 10px;
+  left: calc(var(--resize-left) + 8px);
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid rgba(245, 183, 36, 0.28);
+  border-radius: 999px;
+  background: rgba(13, 14, 18, 0.96);
+  color: var(--sheet-gold);
+  font-size: var(--fs-caption);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.24);
 }
 
 .sheetTable {
@@ -581,6 +621,23 @@
 .sheetTable th[data-selected-column='true'] .headerCell span {
   border-color: rgba(245, 183, 36, 0.28);
   background: rgba(245, 183, 36, 0.045);
+}
+
+.sheetTable th[data-resizing-column='true'] {
+  background: linear-gradient(180deg, rgba(245, 183, 36, 0.11), rgba(245, 183, 36, 0.035));
+}
+
+.sheetTable td[data-resizing-column='true'] {
+  background: rgba(245, 183, 36, 0.018);
+}
+
+.sheetTable th[data-compact-column='true'] .headerCell {
+  padding-inline: 4px;
+}
+
+.sheetTable td[data-compact-column='true'] .sheetCell,
+.sheetTable td[data-compact-column='true'] .readonlyCell {
+  padding-inline: 4px;
 }
 
 .sheetTable td {
@@ -665,6 +722,18 @@
   background: rgba(245, 183, 36, 0.07);
 }
 
+.headerCell[data-resizing='true'] input,
+.headerCell[data-resizing='true'] span {
+  border-color: rgba(245, 183, 36, 0.52);
+  background: rgba(245, 183, 36, 0.08);
+}
+
+.headerCell[data-compact='true'] input,
+.headerCell[data-compact='true'] span {
+  padding-inline: 6px;
+  text-align: center;
+}
+
 .resizeHandle {
   position: absolute;
   top: 7px;
@@ -690,9 +759,10 @@
 }
 
 .resizeHandle:hover::after,
-.resizeHandle:active::after {
-  background: rgba(245, 183, 36, 0.72);
-  box-shadow: 0 0 0 2px rgba(245, 183, 36, 0.14);
+.resizeHandle:active::after,
+.resizeHandle[data-resizing='true']::after {
+  background: rgba(245, 183, 36, 0.86);
+  box-shadow: 0 0 0 2px rgba(245, 183, 36, 0.16), 0 0 14px rgba(245, 183, 36, 0.28);
 }
 
 .sheetCell,
