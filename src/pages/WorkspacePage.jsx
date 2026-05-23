@@ -94,6 +94,27 @@ function hasNoDueDate(task) {
   return !task?.dueDate && !isDone(task);
 }
 
+
+function taskExecutionScore(task) {
+  let score = 0;
+  if (isOverdue(task)) score += 80;
+  if (String(task?.priority || '').toLowerCase() === 'critical') score += 45;
+  if (String(task?.priority || '').toLowerCase() === 'high') score += 24;
+  if (isToday(task)) score += 30;
+  if (isThisWeek(task)) score += 12;
+  if (!task?.dueDate) score -= 4;
+  return score;
+}
+
+function taskExecutionReason(task) {
+  if (isOverdue(task)) return 'Atrasada';
+  if (String(task?.priority || '').toLowerCase() === 'critical') return 'Crítica';
+  if (isToday(task)) return 'Vence hoje';
+  if (isThisWeek(task)) return 'Semana';
+  if (!task?.dueDate) return 'Sem prazo';
+  return 'Próxima';
+}
+
 function getDateKey(offset = 0) {
   const date = new Date();
   date.setHours(12, 0, 0, 0);
@@ -195,6 +216,37 @@ function RoutineStep({ eyebrow, title, description, count, onClick }) {
       <p>{description}</p>
       <em>{count}</em>
     </button>
+  );
+}
+
+
+function ExecutionQueue({ tasks: queueTasks, selectedTaskId, onSelectTask, onOpenTasks }) {
+  return (
+    <section className={styles.executionQueue} aria-label="Fila de execução">
+      <div className={styles.sectionHeader}>
+        <span>Execução</span>
+        <strong>Fila sugerida</strong>
+      </div>
+      <div className={styles.executionList}>
+        {!queueTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa aberta para organizar.</span> : null}
+        {queueTasks.map((task, index) => (
+          <button
+            key={task.id}
+            type="button"
+            className={`${styles.executionItem} ${String(task.id) === String(selectedTaskId) ? styles.executionItemActive : ''}`.trim()}
+            onClick={() => onSelectTask(task)}
+          >
+            <span className={styles.executionIndex}>{String(index + 1).padStart(2, '0')}</span>
+            <div className={styles.executionContent}>
+              <strong>{task?.title || 'Tarefa sem título'}</strong>
+              <span>{taskContext(task)} · {formatDate(task?.dueDate)}</span>
+            </div>
+            <em>{taskExecutionReason(task)}</em>
+          </button>
+        ))}
+      </div>
+      <button type="button" className={styles.executionOpenButton} onClick={onOpenTasks}>Abrir quadro</button>
+    </section>
   );
 }
 
@@ -347,6 +399,18 @@ export default function WorkspacePage() {
     activeTasks
       .filter((task) => isOverdue(task) || String(task?.priority || '').toLowerCase() === 'critical' || isToday(task))
       .slice(0, 4)
+  ), [activeTasks]);
+
+
+  const executionQueue = useMemo(() => (
+    activeTasks
+      .slice()
+      .sort((a, b) => {
+        const scoreDiff = taskExecutionScore(b) - taskExecutionScore(a);
+        if (scoreDiff !== 0) return scoreDiff;
+        return String(a?.dueDate || '9999-12-31').localeCompare(String(b?.dueDate || '9999-12-31'));
+      })
+      .slice(0, 5)
   ), [activeTasks]);
 
   const filteredActiveTasks = useMemo(() => {
@@ -578,6 +642,13 @@ export default function WorkspacePage() {
               </div>
             </section>
 
+            <ExecutionQueue
+              tasks={executionQueue}
+              selectedTaskId={selectedTaskId}
+              onSelectTask={(task) => { handleSelectTask(task); setActiveTab('tasks'); }}
+              onOpenTasks={() => setActiveTab('tasks')}
+            />
+
             <section className={styles.personalPulse} aria-label="Pulso do workspace">
               <div className={styles.weekPanel}>
                 <div className={styles.sectionHeader}>
@@ -664,7 +735,14 @@ export default function WorkspacePage() {
                   <strong>Tarefas em aberto</strong>
                 </div>
                 <div className={styles.taskList}>
-                  {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
+                  <ExecutionQueue
+              tasks={executionQueue}
+              selectedTaskId={selectedTaskId}
+              onSelectTask={handleSelectTask}
+              onOpenTasks={() => setTaskFilter('all')}
+            />
+
+            {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
                   {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
                   {!tasksLoading && !tasksError && !visibleTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa aberta.</span> : null}
                   {!tasksLoading && !tasksError ? visibleTasks.map((task) => <TaskRow key={task.id} task={task} active={String(task.id) === String(selectedTaskId)} onSelect={handleSelectTask} />) : null}
