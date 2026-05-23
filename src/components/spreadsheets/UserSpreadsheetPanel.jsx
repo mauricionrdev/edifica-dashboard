@@ -696,46 +696,44 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   return (
     <section className={styles.panel}>
-      <header className={styles.sheetCommandCenter}>
-        <div className={styles.sheetIdentity}>
-          <strong>{sheets.find((sheet) => sheet.id === activeSheetId)?.name || 'Planilhas'}</strong>
-        </div>
-
-        <div className={styles.sheetTabs} aria-label="Planilhas do perfil">
-          {sheets.length ? sheets.map((sheet) => (
-            <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined}>
-              <button
-                type="button"
-                className={styles.sheetTabButton}
-                onClick={() => {
-                  if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
-                }}
-                title={sheet.name}
-              >
-                <span>{sheet.name}</span>
-              </button>
-              <input
-                value={sheet.name}
-                disabled={!canEdit}
-                aria-label={`Nome da planilha ${sheet.name}`}
-                onFocus={() => {
-                  if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
-                }}
-                onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
-                onBlur={(event) => canEdit && handleSheetNameCommit(sheet.id, event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
-                }}
-              />
-              {canEdit ? (
-                <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
-                  <CloseIcon size={11} />
+      <header className={styles.sheetHeader}>
+        <div className={styles.sheetTabsShell}>
+          <div className={styles.sheetTabs} aria-label="Planilhas do perfil">
+            {sheets.length ? sheets.map((sheet) => (
+              <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined}>
+                <button
+                  type="button"
+                  className={styles.sheetTabButton}
+                  onClick={() => {
+                    if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
+                  }}
+                  title={sheet.name}
+                >
+                  <span>{sheet.name}</span>
                 </button>
-              ) : null}
-            </div>
-          )) : (
-            <span className={styles.emptyTab}>Nenhuma planilha criada</span>
-          )}
+                <input
+                  value={sheet.name}
+                  disabled={!canEdit}
+                  aria-label={`Nome da planilha ${sheet.name}`}
+                  onFocus={() => {
+                    if (sheet.id !== activeSheetId) refreshRows(sheet.id).catch(() => {});
+                  }}
+                  onChange={(event) => setSheets((current) => current.map((item) => (item.id === sheet.id ? { ...item, name: event.target.value } : item)))}
+                  onBlur={(event) => canEdit && handleSheetNameCommit(sheet.id, event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
+                  }}
+                />
+                {canEdit ? (
+                  <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
+                    <CloseIcon size={11} />
+                  </button>
+                ) : null}
+              </div>
+            )) : (
+              <span className={styles.emptyTab}>Nenhuma planilha</span>
+            )}
+          </div>
         </div>
 
         {canEdit ? (
