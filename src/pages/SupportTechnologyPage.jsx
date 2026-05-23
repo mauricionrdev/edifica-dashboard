@@ -1,81 +1,63 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import Avatar from '../components/ui/Avatar.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
-import { getUserAvatar } from '../utils/avatarStorage.js';
 import styles from './SupportTechnologyPage.module.css';
 
-const MASTER_SUPPORT_EMAIL = 'mauricionredifica@gmail.com';
-const MASTER_SUPPORT_NAME = 'mauricio nunes';
-
-const STAR_POINTS = Array.from({ length: 54 }, (_, index) => index + 1);
-const DUST_POINTS = Array.from({ length: 30 }, (_, index) => index + 1);
-const ORBIT_POINTS = Array.from({ length: 18 }, (_, index) => index + 1);
+const NETWORK_NODES = Array.from({ length: 20 }, (_, index) => index + 1);
+const DATA_TRACES = Array.from({ length: 28 }, (_, index) => index + 1);
+const ORBIT_MARKS = Array.from({ length: 18 }, (_, index) => index + 1);
+const STATUS_BARS = Array.from({ length: 12 }, (_, index) => index + 1);
 
 export default function SupportTechnologyPage() {
-  const { user } = useAuth();
-  const { userDirectory = [], setPanelHeader } = useOutletContext();
+  const { setPanelHeader } = useOutletContext();
 
   useEffect(() => {
     setPanelHeader?.({ title: 'Suporte de tecnologia', description: null, actions: null });
   }, [setPanelHeader]);
 
-  const supportMaster = useMemo(() => {
-    const activeUsers = Array.isArray(userDirectory)
-      ? userDirectory.filter((item) => item?.id && item?.active !== false)
-      : [];
-    const directoryMatch = activeUsers.find((item) => (
-      String(item.email || '').toLowerCase() === MASTER_SUPPORT_EMAIL
-      || String(item.name || '').trim().toLowerCase() === MASTER_SUPPORT_NAME
-    ));
-    if (directoryMatch) return directoryMatch;
-    const currentUserIsMaster = (
-      String(user?.email || '').toLowerCase() === MASTER_SUPPORT_EMAIL
-      || String(user?.name || '').trim().toLowerCase() === MASTER_SUPPORT_NAME
-    );
-    return currentUserIsMaster ? user : null;
-  }, [userDirectory, user]);
-
-  const avatarSrc = getUserAvatar(supportMaster) || supportMaster?.avatarUrl || getUserAvatar(user) || undefined;
-  const displayName = supportMaster?.name || user?.name || 'Mauricio Nunes';
-
   return (
     <main className={styles.page} aria-label="Suporte de tecnologia">
-      <section className={styles.galaxyStage} aria-label="Área de tecnologia em construção">
-        <div className={styles.deepSpace} aria-hidden="true" />
-        <div className={styles.nebulaField} aria-hidden="true" />
-        <div className={styles.galaxyPlane} aria-hidden="true">
-          <span className={styles.armOne} />
-          <span className={styles.armTwo} />
-          <span className={styles.armThree} />
-          <span className={styles.armFour} />
-          <span className={styles.galaxyCore} />
-        </div>
-        <div className={styles.starField} aria-hidden="true">
-          {STAR_POINTS.map((point) => <span key={`estrela-${point}`} />)}
-        </div>
-        <div className={styles.dustField} aria-hidden="true">
-          {DUST_POINTS.map((point) => <span key={`poeira-${point}`} />)}
-        </div>
-        <div className={styles.orbitField} aria-hidden="true">
-          {ORBIT_POINTS.map((point) => <span key={`orbita-${point}`} />)}
+      <section className={styles.labStage} aria-label="Área em construção">
+        <div className={styles.depthLayer} aria-hidden="true" />
+        <div className={styles.gridLayer} aria-hidden="true" />
+        <div className={styles.scanLayer} aria-hidden="true" />
+
+        <div className={styles.traceField} aria-hidden="true">
+          {DATA_TRACES.map((trace) => <span key={`traco-${trace}`} />)}
         </div>
 
-        <div className={styles.identityMap} aria-hidden="true">
-          <span className={styles.avatarNode}>
-            <Avatar
-              src={avatarSrc}
-              name={displayName}
-              size="md"
-              className={styles.ownerAvatar}
-              fallbackColor={supportMaster?.avatarColor || user?.avatarColor}
-            />
-          </span>
-          <span className={`${styles.microLabel} ${styles.labelOne}`}>mauricionrdev</span>
-          <span className={`${styles.microLabel} ${styles.labelTwo}`}>Mauricio Nunes</span>
-          <span className={`${styles.microLabel} ${styles.labelThree}`}>em construção</span>
-          <span className={`${styles.microLabel} ${styles.labelFour}`}>suporte de tecnologia</span>
-          <span className={`${styles.microLabel} ${styles.labelFive}`}>área em órbita</span>
+        <div className={styles.nodeField} aria-hidden="true">
+          {NETWORK_NODES.map((node) => <span key={`no-${node}`} />)}
+        </div>
+
+        <div className={styles.systemCore} aria-hidden="true">
+          <span className={styles.coreGlow} />
+          <span className={styles.coreRingOne} />
+          <span className={styles.coreRingTwo} />
+          <span className={styles.coreRingThree} />
+          <span className={styles.coreGrid} />
+          <span className={styles.corePulse} />
+          <span className={styles.coreDot} />
+          <span className={styles.coreOrbitOne} />
+          <span className={styles.coreOrbitTwo} />
+          <span className={styles.coreOrbitThree} />
+          <span className={styles.coreOrbitFour} />
+        </div>
+
+        <div className={styles.orbitMarks} aria-hidden="true">
+          {ORBIT_MARKS.map((mark) => <span key={`marcador-${mark}`} />)}
+        </div>
+
+        <div className={`${styles.sidePanel} ${styles.sidePanelLeft}`} aria-hidden="true">
+          {STATUS_BARS.map((bar) => <span key={`barra-esquerda-${bar}`} />)}
+        </div>
+
+        <div className={`${styles.sidePanel} ${styles.sidePanelRight}`} aria-hidden="true">
+          {STATUS_BARS.map((bar) => <span key={`barra-direita-${bar}`} />)}
+        </div>
+
+        <div className={styles.contentBlock}>
+          <span className={styles.kicker}>Suporte de tecnologia</span>
+          <h1>Em construção</h1>
         </div>
       </section>
     </main>
