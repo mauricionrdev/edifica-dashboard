@@ -517,6 +517,38 @@
   background: var(--sheet-bg-soft);
 }
 
+.sheetFrame::before,
+.sheetFrame::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sheetFrame::before {
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 8;
+  height: 24px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent);
+}
+
+.sheetFrame::after {
+  top: 0;
+  bottom: 0;
+  left: 54px;
+  z-index: 7;
+  width: 22px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent);
+}
+
+.sheetFrame[data-scrolled-y='true']::before,
+.sheetFrame[data-scrolled-x='true']::after {
+  opacity: 1;
+}
+
 .sheetScroller {
   position: relative;
   width: 100%;
@@ -525,6 +557,8 @@
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
+  scroll-padding-top: 48px;
+  scroll-padding-left: 58px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
@@ -594,7 +628,7 @@
 .sheetTable th {
   position: sticky;
   top: 0;
-  z-index: 4;
+  z-index: 6;
   height: 46px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.076), rgba(255, 255, 255, 0.048));
   text-align: left;
@@ -657,6 +691,14 @@
   background: rgba(245, 183, 36, 0.022);
 }
 
+.sheetTable tbody tr[data-selected-row='true'] .rowIndex {
+  background: rgba(36, 30, 14, 0.98);
+}
+
+.sheetTable tbody tr[data-active-row='true'] .rowIndex {
+  background: rgba(48, 37, 13, 0.98);
+}
+
 
 .indexHeader,
 .rowIndex {
@@ -665,10 +707,20 @@
 }
 
 .sheetTable th.indexHeader {
-  background: rgba(255, 255, 255, 0.038);
+  position: sticky;
+  left: 0;
+  z-index: 12;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.076), rgba(255, 255, 255, 0.052));
+  box-shadow: inset -1px 0 0 var(--sheet-line-soft), inset 0 -1px 0 rgba(255, 255, 255, 0.018);
 }
 
 .rowIndex {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  background: rgba(10, 11, 13, 0.98);
+  box-shadow: inset -1px 0 0 var(--sheet-line-soft);
+  backdrop-filter: blur(10px);
   color: var(--text-tertiary);
   font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;

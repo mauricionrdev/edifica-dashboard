@@ -587,6 +587,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const resizeRef = useRef(null);
   const sheetFrameRef = useRef(null);
   const [resizeState, setResizeState] = useState(null);
+  const [scrollState, setScrollState] = useState({ x: false, y: false, endX: false, endY: false });
   const scrollerRef = useRef(null);
 
   const sheetMinWidth = useMemo(() => {
@@ -613,6 +614,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   useEffect(() => {
     refreshRows().catch(() => showToast?.('Não foi possível carregar suas planilhas.', { variant: 'error' }));
   }, [ownerUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    window.requestAnimationFrame(updateScrollState);
+  }, [columns.length, rows.length, sheetMinWidth, updateScrollState]);
 
   useEffect(() => {
     const syncSelection = () => {
@@ -724,14 +729,35 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
+  const updateScrollState = useCallback(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const next = {
+      x: scroller.scrollLeft > 2,
+      y: scroller.scrollTop > 2,
+      endX: scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 2,
+      endY: scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2,
+    };
+    setScrollState((current) => (
+      current.x === next.x && current.y === next.y && current.endX === next.endX && current.endY === next.endY
+        ? current
+        : next
+    ));
+  }, []);
+
   const handleSheetWheel = useCallback((event) => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
     if (event.shiftKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
       event.preventDefault();
       scroller.scrollLeft += event.deltaY;
+      updateScrollState();
     }
-  }, []);
+  }, [updateScrollState]);
+
+  const handleSheetScroll = useCallback(() => {
+    updateScrollState();
+  }, [updateScrollState]);
 
   const estimateBlankSheetSize = useCallback(() => {
     const workspaceWidth = Math.max(900, scrollerRef.current?.clientWidth || window.innerWidth - 360 || 1100);
@@ -1185,7 +1211,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </div>
       ) : null}
 
-      <div ref={sheetFrameRef} className={styles.sheetFrame}>
+      <div
+        ref={sheetFrameRef}
+        className={styles.sheetFrame}
+        data-scrolled-x={scrollState.x || undefined}
+        data-scrolled-y={scrollState.y || undefined}
+        data-at-end-x={scrollState.endX || undefined}
+        data-at-end-y={scrollState.endY || undefined}
+      >
         {resizeState ? (
           <div
             className={styles.resizeGuide}
@@ -1200,6 +1233,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           className={styles.sheetScroller}
           style={{ '--sheet-min-width': `${sheetMinWidth}px` }}
           onWheel={handleSheetWheel}
+          onScroll={handleSheetScroll}
         >
           {!activeSheetId && !rowsLoading ? (
             <div className={styles.noSheetState}>
