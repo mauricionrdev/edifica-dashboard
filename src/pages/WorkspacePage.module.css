@@ -1933,3 +1933,33 @@ button.taskRow:hover {
     justify-self: start;
   }
 }
+
+
+/* v28: correção de espaçamento das abas do workspace */
+.tabRail button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.tabRail button em {
+  display: inline-flex;
+  min-width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+}
+
+.tabRail .tabActive em {
+  background: rgba(245, 183, 36, 0.14);
+  color: #ffe4a6;
+}

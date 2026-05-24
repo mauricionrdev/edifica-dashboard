@@ -1802,10 +1802,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             <button type="button" data-active={sheetView === 'favorites' || undefined} onClick={() => setSheetView('favorites')}>Favoritas <em>{sheetCollections.favorites.length}</em></button>
             <button type="button" data-active={sheetView === 'archived' || undefined} onClick={() => setSheetView('archived')}>Arquivadas <em>{sheetCollections.archived.length}</em></button>
           </div>
-          <div className={styles.sheetCollectionSummary}>
-            <span>{sheetView === 'favorites' ? 'Favoritas' : sheetView === 'archived' ? 'Arquivadas' : 'Ativas'}</span>
-            <strong>{visibleSheets.length}</strong>
-          </div>
           <div className={styles.sheetTabs} aria-label="Planilhas do perfil">
             {visibleSheets.length ? visibleSheets.map((sheet) => {
               const index = sheets.findIndex((item) => item.id === sheet.id);
@@ -1839,9 +1835,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                   />
                   {canEdit ? (
                     <div className={styles.sheetTabActions}>
-                      <button type="button" onClick={() => toggleFavoriteSheet(sheet.id)} aria-label={`Favoritar ${sheet.name}`} title={favoriteSheetIds.has(sheet.id) ? 'Remover favorito' : 'Favoritar'}>{favoriteSheetIds.has(sheet.id) ? '★' : '☆'}</button>
-                      <button type="button" onClick={() => handleDuplicateSheet(sheet.id)} aria-label={`Duplicar ${sheet.name}`} title="Duplicar planilha">Duplicar</button>
-                      <button type="button" onClick={() => toggleArchiveSheet(sheet.id)} aria-label={`Arquivar ${sheet.name}`} title={archivedSheetIds.has(sheet.id) ? 'Restaurar planilha' : 'Arquivar planilha'}>{archivedSheetIds.has(sheet.id) ? 'Restaurar' : 'Arquivar'}</button>
+                      <button type="button" onClick={() => toggleFavoriteSheet(sheet.id)} aria-label={`Favoritar ${sheet.name}`} title={favoriteSheetIds.has(sheet.id) ? 'Remover favorito' : 'Favoritar'}><span aria-hidden="true">{favoriteSheetIds.has(sheet.id) ? '★' : '☆'}</span></button>
+                      <button type="button" onClick={() => handleDuplicateSheet(sheet.id)} aria-label={`Duplicar ${sheet.name}`} title="Duplicar planilha"><span aria-hidden="true">⧉</span></button>
+                      <button type="button" onClick={() => toggleArchiveSheet(sheet.id)} aria-label={`Arquivar ${sheet.name}`} title={archivedSheetIds.has(sheet.id) ? 'Restaurar planilha' : 'Arquivar planilha'}><span aria-hidden="true">{archivedSheetIds.has(sheet.id) ? '↥' : '↧'}</span></button>
                       <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
                         <CloseIcon size={11} />
                       </button>
@@ -1855,8 +1851,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           </div>
           {sheets.length > 1 ? (
             <div className={styles.sheetOrganizer}>
-              <span>Atual: {activeSheetIndex >= 0 ? activeSheetIndex + 1 : '—'} de {sheets.length}</span>
-              <span>{sheetCollections.favorites.length} favoritas · {sheetCollections.archived.length} arquivadas</span>
+              <span>{visibleSheets.length} na visão atual · {sheetCollections.favorites.length} favoritas · {sheetCollections.archived.length} arquivadas</span>
               {activeSheetIsArchived ? <span className={styles.archivedNotice}>Planilha arquivada em visualização</span> : null}
             </div>
           ) : null}
