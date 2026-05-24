@@ -349,7 +349,7 @@ export default function WorkspacePage() {
       const left = pageRef.current?.getBoundingClientRect?.().left || 0;
       const nextWidth = Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, Math.round(event.clientX - left)));
       setSidebarWidth(nextWidth);
-      setSidebarCollapsed(false);
+      setSidebarCollapsed(nextWidth <= SIDEBAR_MIN_WIDTH + 8);
     }
 
     function handlePointerUp() {
@@ -372,7 +372,12 @@ export default function WorkspacePage() {
   }, [sidebarResizing]);
 
   function toggleSidebar() {
-    setSidebarCollapsed((value) => !value);
+    if (sidebarCollapsed || sidebarWidth <= SIDEBAR_COMPACT_WIDTH) {
+      setSidebarCollapsed(false);
+      setSidebarWidth(SIDEBAR_DEFAULT_WIDTH);
+      return;
+    }
+    setSidebarCollapsed(true);
   }
 
   function loadTasks() {

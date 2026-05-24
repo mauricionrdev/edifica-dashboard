@@ -772,6 +772,54 @@ function TemplateDialog({ open, templates, disabled, onClose, onCreate }) {
 }
 
 
+
+function ShareDialog({ open, sheetName, email, mode, drafts, onEmailChange, onModeChange, onAdd, onRemove, onClose }) {
+  if (!open) return null;
+  return (
+    <div className={styles.importOverlay} role="dialog" aria-modal="true" aria-label="Compartilhamento controlado da planilha">
+      <div className={styles.shareModal}>
+        <header className={styles.importHeader}>
+          <div>
+            <span>Compartilhamento controlado</span>
+            <strong>{sheetName || 'Planilha pessoal'}</strong>
+          </div>
+          <button type="button" className={styles.importClose} onClick={onClose} aria-label="Fechar compartilhamento"><CloseIcon size={16} /></button>
+        </header>
+        <div className={styles.shareIntro}>
+          <strong>Prepare acessos específicos por usuário</strong>
+          <span>Esta camada já organiza quem poderá receber acesso quando a liberação controlada for ativada no backend.</span>
+        </div>
+        <div className={styles.shareForm}>
+          <label>
+            E-mail do usuário
+            <input type="email" value={email} onChange={(event) => onEmailChange(event.target.value)} placeholder="usuario@edifica..." />
+          </label>
+          <label>
+            Permissão
+            <select value={mode} onChange={(event) => onModeChange(event.target.value)}>
+              <option value="view">Visualizar</option>
+              <option value="edit">Editar</option>
+            </select>
+          </label>
+          <button type="button" onClick={onAdd}>Adicionar</button>
+        </div>
+        <div className={styles.shareList}>
+          {drafts.length ? drafts.map((item) => (
+            <div key={item.email} className={styles.shareRow}>
+              <span>{item.email}</span>
+              <em>{item.mode === 'edit' ? 'Editar' : 'Visualizar'}</em>
+              <button type="button" onClick={() => onRemove(item.email)} aria-label={`Remover ${item.email}`}>Remover</button>
+            </div>
+          )) : <span className={styles.shareEmpty}>Nenhum usuário preparado para compartilhamento.</span>}
+        </div>
+        <footer className={styles.importFooter}>
+          <button type="button" onClick={onClose}>Fechar</button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onInsertRow, onInsertColumn, onDuplicateRow, onDuplicateColumn, onSelectRow, onSelectColumn, onClearSelection, onDeleteRow, onDeleteColumn }) {
   useEffect(() => {
     if (!menu) return undefined;
@@ -866,6 +914,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [sheetView, setSheetView] = useState('active');
   const [importOpen, setImportOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareEmail, setShareEmail] = useState('');
+  const [shareMode, setShareMode] = useState('view');
+  const [shareDrafts, setShareDrafts] = useState([]);
   const [importText, setImportText] = useState('');
   const [importDelimiter, setImportDelimiter] = useState('auto');
   const [columns, setColumns] = useState([]);
@@ -897,6 +949,25 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     };
     setSyncState({ status, label: labelMap[status] || 'Salvo', detail, at: status === 'saved' ? new Date() : null });
   }, []);
+
+  const handleShareDraftAdd = useCallback(() => {
+    const email = cleanText(shareEmail).toLowerCase();
+    if (!email || !email.includes('@')) {
+      showToast?.({ type: 'warning', message: 'Informe um e-mail válido para preparar o compartilhamento.' });
+      return;
+    }
+    setShareDrafts((current) => {
+      if (current.some((item) => item.email === email)) return current;
+      return [...current, { email, mode: shareMode }];
+    });
+    setShareEmail('');
+    markSync('saved', 'Compartilhamento preparado', 'Convite adicionado à lista de revisão');
+  }, [markSync, shareEmail, shareMode, showToast]);
+
+  const handleShareDraftRemove = useCallback((email) => {
+    setShareDrafts((current) => current.filter((item) => item.email !== email));
+    markSync('saved', 'Compartilhamento atualizado', 'Convite removido da lista de revisão');
+  }, [markSync]);
 
   const sheetMinWidth = useMemo(() => {
     const total = columns.reduce((sum, column) => sum + Math.max(5, Number(column.width || 5)), 0);
@@ -1063,10 +1134,27 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const handleSheetWheel = useCallback((event) => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    if (event.shiftKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+
+    const canScrollY = scroller.scrollHeight > scroller.clientHeight + 2;
+    const canScrollX = scroller.scrollWidth > scroller.clientWidth + 2;
+    const absY = Math.abs(event.deltaY);
+    const absX = Math.abs(event.deltaX);
+
+    if (event.shiftKey && canScrollX && absY > absX) {
       event.preventDefault();
       scroller.scrollLeft += event.deltaY;
       updateScrollState();
+      return;
+    }
+
+    if (canScrollY && absY >= absX) {
+      const nextTop = Math.max(0, Math.min(scroller.scrollHeight - scroller.clientHeight, scroller.scrollTop + event.deltaY));
+      if (nextTop !== scroller.scrollTop) {
+        event.preventDefault();
+        scroller.scrollTop = nextTop;
+        if (canScrollX && absX > 0) scroller.scrollLeft += event.deltaX;
+        updateScrollState();
+      }
     }
   }, [updateScrollState]);
 
@@ -1798,6 +1886,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             <Button type="button" size="sm" variant="secondary" onClick={() => setImportOpen(true)} disabled={!activeSheetId || !columns.length || !rows.length}>Importar</Button>
             <Button type="button" size="sm" variant="secondary" onClick={handleExportCsv} disabled={!activeSheetId || !columns.length}>Exportar CSV</Button>
             <Button type="button" size="sm" variant="secondary" onClick={handleAutoFitColumns} disabled={!activeSheetId || !columns.length}>Ajustar colunas</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)} disabled={!activeSheetId}>Compartilhar</Button>
             <Button type="button" size="sm" variant="secondary" onClick={() => handleDuplicateSheet(activeSheetId)} disabled={!activeSheetId || creatingSheet}>Duplicar</Button>
             <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
             <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn || !activeSheetId}><PlusIcon size={14} /> Coluna</Button>
@@ -2083,6 +2172,18 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         disabled={creatingSheet}
         onClose={() => setTemplateOpen(false)}
         onCreate={handleCreateTemplateSheet}
+      />
+      <ShareDialog
+        open={shareOpen}
+        sheetName={activeSheet?.name}
+        email={shareEmail}
+        mode={shareMode}
+        drafts={shareDrafts}
+        onEmailChange={setShareEmail}
+        onModeChange={setShareMode}
+        onAdd={handleShareDraftAdd}
+        onRemove={handleShareDraftRemove}
+        onClose={() => setShareOpen(false)}
       />
 
       <SheetContextMenu
