@@ -1200,30 +1200,59 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleSheetWheel = useCallback((event) => {
     const scroller = scrollerRef.current;
-    if (!scroller) return;
+    const frame = sheetFrameRef.current;
+    if (!scroller || !frame) return;
+    if (event.target && !frame.contains(event.target)) return;
 
-    const canScrollY = scroller.scrollHeight > scroller.clientHeight + 2;
-    const canScrollX = scroller.scrollWidth > scroller.clientWidth + 2;
-    const absY = Math.abs(event.deltaY);
-    const absX = Math.abs(event.deltaX);
+    const maxTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+    const maxLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+    const canScrollY = maxTop > 2;
+    const canScrollX = maxLeft > 2;
+    if (!canScrollY && !canScrollX) return;
 
-    if (event.shiftKey && canScrollX && absY > absX) {
-      event.preventDefault();
-      scroller.scrollLeft += event.deltaY;
+    const deltaY = Number(event.deltaY || 0);
+    const deltaX = Number(event.deltaX || 0);
+    const absY = Math.abs(deltaY);
+    const absX = Math.abs(deltaX);
+    const horizontalIntent = event.shiftKey || absX > absY;
+
+    let nextTop = scroller.scrollTop;
+    let nextLeft = scroller.scrollLeft;
+
+    if (horizontalIntent && canScrollX) {
+      nextLeft = Math.max(0, Math.min(maxLeft, nextLeft + (absX > 0 ? deltaX : deltaY)));
+    } else {
+      if (canScrollY) nextTop = Math.max(0, Math.min(maxTop, nextTop + deltaY));
+      if (canScrollX && absX > 0) nextLeft = Math.max(0, Math.min(maxLeft, nextLeft + deltaX));
+    }
+
+    const moved = nextTop !== scroller.scrollTop || nextLeft !== scroller.scrollLeft;
+    if (moved) {
+      event.preventDefault?.();
+      event.stopPropagation?.();
+      scroller.scrollTop = nextTop;
+      scroller.scrollLeft = nextLeft;
       updateScrollState();
       return;
     }
 
-    if (canScrollY && absY >= absX) {
-      const nextTop = Math.max(0, Math.min(scroller.scrollHeight - scroller.clientHeight, scroller.scrollTop + event.deltaY));
-      if (nextTop !== scroller.scrollTop) {
-        event.preventDefault();
-        scroller.scrollTop = nextTop;
-        if (canScrollX && absX > 0) scroller.scrollLeft += event.deltaX;
-        updateScrollState();
-      }
+    if ((canScrollY && absY > 0) || (canScrollX && (absX > 0 || event.shiftKey))) {
+      event.preventDefault?.();
+      event.stopPropagation?.();
     }
   }, [updateScrollState]);
+
+  useEffect(() => {
+    const frame = sheetFrameRef.current;
+    if (!frame) return undefined;
+
+    const handleNativeWheel = (event) => {
+      handleSheetWheel(event);
+    };
+
+    frame.addEventListener('wheel', handleNativeWheel, { passive: false, capture: true });
+    return () => frame.removeEventListener('wheel', handleNativeWheel, { capture: true });
+  }, [activeSheetId, columns.length, handleSheetWheel, rows.length]);
 
   const handleSheetScroll = useCallback(() => {
     updateScrollState();
@@ -2091,7 +2120,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           ref={scrollerRef}
           className={styles.sheetScroller}
           style={{ '--sheet-min-width': `${sheetMinWidth}px` }}
-          onWheel={handleSheetWheel}
           onScroll={handleSheetScroll}
         >
           {!activeSheetId && !rowsLoading ? (
