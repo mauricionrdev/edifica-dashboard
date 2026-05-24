@@ -1860,19 +1860,38 @@
   background: var(--surface-soft);
 }
 
+.shareRow div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.shareRow strong,
 .shareRow span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-primary);
-  font-weight: 700;
 }
 
-.shareRow em {
-  font-style: normal;
+.shareRow strong {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.shareRow span {
   color: var(--muted-text);
   font-size: 12px;
+}
+
+.shareRow select {
+  min-height: 34px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  padding: 0 10px;
+  font: inherit;
 }
 
 .shareEmpty {

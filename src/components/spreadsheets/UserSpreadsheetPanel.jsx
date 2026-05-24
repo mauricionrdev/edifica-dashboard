@@ -9,6 +9,10 @@ import {
   deleteSupportDailyRow,
   deleteSupportDailySheet,
   listSupportDailyRows,
+  listSupportDailySheetShares,
+  createSupportDailySheetShare,
+  updateSupportDailySheetShare,
+  deleteSupportDailySheetShare,
   updateSupportDailyColumn,
   updateSupportDailyRow,
   updateSupportDailySheet,
@@ -773,7 +777,7 @@ function TemplateDialog({ open, templates, disabled, onClose, onCreate }) {
 
 
 
-function ShareDialog({ open, sheetName, email, mode, drafts, onEmailChange, onModeChange, onAdd, onRemove, onClose }) {
+function ShareDialog({ open, sheetName, email, mode, shares, loading, saving, onEmailChange, onModeChange, onAdd, onPermissionChange, onRemove, onClose }) {
   if (!open) return null;
   return (
     <div className={styles.importOverlay} role="dialog" aria-modal="true" aria-label="Compartilhamento controlado da planilha">
@@ -786,8 +790,8 @@ function ShareDialog({ open, sheetName, email, mode, drafts, onEmailChange, onMo
           <button type="button" className={styles.importClose} onClick={onClose} aria-label="Fechar compartilhamento"><CloseIcon size={16} /></button>
         </header>
         <div className={styles.shareIntro}>
-          <strong>Prepare acessos específicos por usuário</strong>
-          <span>Esta camada já organiza quem poderá receber acesso quando a liberação controlada for ativada no backend.</span>
+          <strong>Acesso liberado somente para usuários escolhidos</strong>
+          <span>Use o e-mail de um usuário ativo da plataforma e escolha se ele poderá apenas visualizar ou também editar.</span>
         </div>
         <div className={styles.shareForm}>
           <label>
@@ -801,16 +805,24 @@ function ShareDialog({ open, sheetName, email, mode, drafts, onEmailChange, onMo
               <option value="edit">Editar</option>
             </select>
           </label>
-          <button type="button" onClick={onAdd}>Adicionar</button>
+          <button type="button" onClick={onAdd} disabled={saving}>{saving ? 'Salvando...' : 'Compartilhar'}</button>
         </div>
         <div className={styles.shareList}>
-          {drafts.length ? drafts.map((item) => (
-            <div key={item.email} className={styles.shareRow}>
-              <span>{item.email}</span>
-              <em>{item.mode === 'edit' ? 'Editar' : 'Visualizar'}</em>
-              <button type="button" onClick={() => onRemove(item.email)} aria-label={`Remover ${item.email}`}>Remover</button>
+          {loading ? <span className={styles.shareEmpty}>Carregando acessos...</span> : null}
+          {!loading && shares.length ? shares.map((item) => (
+            <div key={item.id || item.email} className={styles.shareRow}>
+              <div>
+                <strong>{item.userName || item.email}</strong>
+                <span>{item.email}</span>
+              </div>
+              <select value={item.permission || 'view'} onChange={(event) => onPermissionChange(item.id, event.target.value)} disabled={saving}>
+                <option value="view">Visualizar</option>
+                <option value="edit">Editar</option>
+              </select>
+              <button type="button" onClick={() => onRemove(item.id)} disabled={saving} aria-label={`Remover ${item.email}`}>Remover</button>
             </div>
-          )) : <span className={styles.shareEmpty}>Nenhum usuário preparado para compartilhamento.</span>}
+          )) : null}
+          {!loading && !shares.length ? <span className={styles.shareEmpty}>Nenhum usuário com acesso a esta planilha.</span> : null}
         </div>
         <footer className={styles.importFooter}>
           <button type="button" onClick={onClose}>Fechar</button>
@@ -917,7 +929,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [shareOpen, setShareOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState('');
   const [shareMode, setShareMode] = useState('view');
-  const [shareDrafts, setShareDrafts] = useState([]);
+  const [shareRows, setShareRows] = useState([]);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareSaving, setShareSaving] = useState(false);
   const [importText, setImportText] = useState('');
   const [importDelimiter, setImportDelimiter] = useState('auto');
   const [columns, setColumns] = useState([]);
@@ -950,24 +964,77 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setSyncState({ status, label: labelMap[status] || 'Salvo', detail, at: status === 'saved' ? new Date() : null });
   }, []);
 
-  const handleShareDraftAdd = useCallback(() => {
-    const email = cleanText(shareEmail).toLowerCase();
-    if (!email || !email.includes('@')) {
-      showToast?.({ type: 'warning', message: 'Informe um e-mail válido para preparar o compartilhamento.' });
+  const refreshShares = useCallback(async (sheetId = activeSheetId) => {
+    if (!sheetId) {
+      setShareRows([]);
       return;
     }
-    setShareDrafts((current) => {
-      if (current.some((item) => item.email === email)) return current;
-      return [...current, { email, mode: shareMode }];
-    });
-    setShareEmail('');
-    markSync('saved', 'Compartilhamento preparado', 'Convite adicionado à lista de revisão');
-  }, [markSync, shareEmail, shareMode, showToast]);
+    setShareLoading(true);
+    try {
+      const data = await listSupportDailySheetShares(sheetId, { ownerUserId });
+      setShareRows(Array.isArray(data?.shares) ? data.shares : []);
+    } catch (err) {
+      showToast?.(err?.message || 'Não foi possível carregar os acessos da planilha.', { variant: 'error' });
+    } finally {
+      setShareLoading(false);
+    }
+  }, [activeSheetId, ownerUserId, showToast]);
 
-  const handleShareDraftRemove = useCallback((email) => {
-    setShareDrafts((current) => current.filter((item) => item.email !== email));
-    markSync('saved', 'Compartilhamento atualizado', 'Convite removido da lista de revisão');
-  }, [markSync]);
+  const handleShareAdd = useCallback(async () => {
+    const email = cleanText(shareEmail).toLowerCase();
+    if (!activeSheetId) return;
+    if (!email || !email.includes('@')) {
+      showToast?.({ type: 'warning', message: 'Informe um e-mail válido para compartilhar.' });
+      return;
+    }
+    setShareSaving(true);
+    try {
+      const data = await createSupportDailySheetShare(activeSheetId, { ownerUserId, email, permission: shareMode });
+      setShareRows(Array.isArray(data?.shares) ? data.shares : []);
+      setShareEmail('');
+      markSync('saved', 'Compartilhamento salvo', 'Acesso da planilha atualizado no servidor');
+    } catch (err) {
+      markSync('error', 'Falha ao compartilhar', err?.message || 'Não foi possível compartilhar a planilha');
+      showToast?.(err?.message || 'Não foi possível compartilhar a planilha.', { variant: 'error' });
+    } finally {
+      setShareSaving(false);
+    }
+  }, [activeSheetId, markSync, ownerUserId, shareEmail, shareMode, showToast]);
+
+  const handleSharePermissionChange = useCallback(async (shareId, permission) => {
+    if (!activeSheetId || !shareId) return;
+    setShareSaving(true);
+    try {
+      const data = await updateSupportDailySheetShare(activeSheetId, shareId, { ownerUserId, permission });
+      setShareRows(Array.isArray(data?.shares) ? data.shares : []);
+      markSync('saved', 'Permissão atualizada', 'Acesso de compartilhamento salvo');
+    } catch (err) {
+      markSync('error', 'Falha ao atualizar permissão', err?.message || 'Não foi possível atualizar a permissão');
+      showToast?.(err?.message || 'Não foi possível atualizar a permissão.', { variant: 'error' });
+    } finally {
+      setShareSaving(false);
+    }
+  }, [activeSheetId, markSync, ownerUserId, showToast]);
+
+  const handleShareRemove = useCallback(async (shareId) => {
+    if (!activeSheetId || !shareId) return;
+    setShareSaving(true);
+    try {
+      const data = await deleteSupportDailySheetShare(activeSheetId, shareId, { ownerUserId });
+      setShareRows(Array.isArray(data?.shares) ? data.shares : []);
+      markSync('saved', 'Compartilhamento removido', 'Acesso removido da planilha');
+    } catch (err) {
+      markSync('error', 'Falha ao remover acesso', err?.message || 'Não foi possível remover o acesso');
+      showToast?.(err?.message || 'Não foi possível remover o acesso.', { variant: 'error' });
+    } finally {
+      setShareSaving(false);
+    }
+  }, [activeSheetId, markSync, ownerUserId, showToast]);
+
+  useEffect(() => {
+    if (!shareOpen) return;
+    refreshShares(activeSheetId).catch(() => {});
+  }, [activeSheetId, refreshShares, shareOpen]);
 
   const sheetMinWidth = useMemo(() => {
     const total = columns.reduce((sum, column) => sum + Math.max(5, Number(column.width || 5)), 0);
@@ -2178,11 +2245,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         sheetName={activeSheet?.name}
         email={shareEmail}
         mode={shareMode}
-        drafts={shareDrafts}
+        shares={shareRows}
+        loading={shareLoading}
+        saving={shareSaving}
         onEmailChange={setShareEmail}
         onModeChange={setShareMode}
-        onAdd={handleShareDraftAdd}
-        onRemove={handleShareDraftRemove}
+        onAdd={handleShareAdd}
+        onPermissionChange={handleSharePermissionChange}
+        onRemove={handleShareRemove}
         onClose={() => setShareOpen(false)}
       />
 

@@ -83,10 +83,30 @@ async function resolveOwnerFromSheet(sheetId) {
   return rows[0]?.owner_user_id || '';
 }
 
-async function assertCanUseSheet(req, sheetId) {
+async function hasSpreadsheetShareAccess(req, sheetId, required = 'view') {
+  if (!sheetId || !req.user?.id) return false;
+  const rows = await query(
+    'SELECT permission FROM support_daily_sheet_shares WHERE sheet_id = ? AND user_id = ? LIMIT 1',
+    [sheetId, req.user.id]
+  );
+  const permission = rows[0]?.permission || '';
+  if (!permission) return false;
+  return required === 'view' || permission === 'edit';
+}
+
+async function assertCanUseSheet(req, sheetId, required = 'edit') {
   const ownerUserId = await resolveOwnerFromSheet(sheetId);
   if (!ownerUserId) return;
-  assertSpreadsheetOwner(req, ownerUserId);
+  if (canManageSpreadsheetOwner(req, ownerUserId)) return;
+  if (await hasSpreadsheetShareAccess(req, sheetId, required)) return;
+  throw badRequest('Sem permissão para acessar esta planilha.');
+}
+
+async function assertCanManageSheetShares(req, sheetId) {
+  const ownerUserId = await resolveOwnerFromSheet(sheetId);
+  if (!ownerUserId) throw badRequest('Planilha não encontrada.');
+  if (!canManageSpreadsheetOwner(req, ownerUserId)) throw badRequest('Sem permissão para compartilhar esta planilha.');
+  return ownerUserId;
 }
 
 let supportSchemaPromise = null;
@@ -105,6 +125,21 @@ async function ensureSupportSchema() {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           INDEX idx_support_daily_sheets_position (position)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      await query(`
+        CREATE TABLE IF NOT EXISTS support_daily_sheet_shares (
+          id VARCHAR(36) PRIMARY KEY,
+          sheet_id VARCHAR(36) NOT NULL,
+          user_id VARCHAR(36) NOT NULL,
+          permission ENUM('view','edit') NOT NULL DEFAULT 'view',
+          created_by_user_id VARCHAR(36) NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          UNIQUE KEY uk_support_daily_sheet_user (sheet_id, user_id),
+          INDEX idx_support_daily_sheet_shares_user (user_id),
+          CONSTRAINT fk_support_daily_sheet_shares_sheet FOREIGN KEY (sheet_id) REFERENCES support_daily_sheets(id) ON DELETE CASCADE,
+          CONSTRAINT fk_support_daily_sheet_shares_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
       await query(`
@@ -222,6 +257,36 @@ async function listSheets(ownerUserId) {
     isFavorite: Boolean(Number(row.is_favorite || 0)),
     isArchived: Boolean(Number(row.is_archived || 0)),
   }));
+}
+
+function serializeSheetShare(row) {
+  return {
+    id: row.id,
+    sheetId: row.sheet_id,
+    userId: row.user_id,
+    userName: row.user_name || '',
+    email: row.email || '',
+    permission: row.permission === 'edit' ? 'edit' : 'view',
+    createdAt: row.created_at || null,
+  };
+}
+
+async function listSheetShares(sheetId) {
+  const rows = await query(
+    `SELECT sdss.id, sdss.sheet_id, sdss.user_id, sdss.permission, sdss.created_at,
+            u.name AS user_name, u.email
+       FROM support_daily_sheet_shares sdss
+       JOIN users u ON u.id = sdss.user_id
+      WHERE sdss.sheet_id = ?
+      ORDER BY u.name ASC, u.email ASC`,
+    [sheetId]
+  );
+  return rows.map(serializeSheetShare);
+}
+
+async function resolveUserByEmail(email) {
+  const rows = await query('SELECT id, name, email FROM users WHERE LOWER(email) = LOWER(?) AND COALESCE(active, 1) = 1 LIMIT 1', [email]);
+  return rows[0] || null;
 }
 
 async function resolveSheetId(ownerUserId, candidate) {
@@ -449,6 +514,68 @@ router.patch('/daily-program/sheets/:id', requirePermission('profile.view'), asy
     params.push(id);
     await query(`UPDATE support_daily_sheets SET ${updates.join(', ')} WHERE id = ?`, params);
     res.json({ sheets: await listSheets(ownerUserId) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+router.get('/daily-program/sheets/:id/shares', requirePermission('profile.view'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const id = clean(req.params.id, 36);
+    await assertCanManageSheetShares(req, id);
+    res.json({ shares: await listSheetShares(id) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/daily-program/sheets/:id/shares', requirePermission('profile.view'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const id = clean(req.params.id, 36);
+    const ownerUserId = await assertCanManageSheetShares(req, id);
+    const email = clean(req.body?.email, 190).toLowerCase();
+    const permission = req.body?.permission === 'edit' ? 'edit' : 'view';
+    if (!email || !email.includes('@')) throw badRequest('Informe um e-mail válido.');
+    const user = await resolveUserByEmail(email);
+    if (!user) throw badRequest('Usuário não encontrado ou inativo.');
+    if (user.id === ownerUserId) throw badRequest('Esta planilha já pertence a este usuário.');
+    await query(
+      `INSERT INTO support_daily_sheet_shares (id, sheet_id, user_id, permission, created_by_user_id)
+       VALUES (?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE permission = VALUES(permission), updated_at = CURRENT_TIMESTAMP`,
+      [uuid(), id, user.id, permission, req.user.id]
+    );
+    res.status(201).json({ shares: await listSheetShares(id) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/daily-program/sheets/:id/shares/:shareId', requirePermission('profile.view'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const id = clean(req.params.id, 36);
+    const shareId = clean(req.params.shareId, 36);
+    await assertCanManageSheetShares(req, id);
+    const permission = req.body?.permission === 'edit' ? 'edit' : 'view';
+    await query('UPDATE support_daily_sheet_shares SET permission = ? WHERE id = ? AND sheet_id = ?', [permission, shareId, id]);
+    res.json({ shares: await listSheetShares(id) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/daily-program/sheets/:id/shares/:shareId', requirePermission('profile.view'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const id = clean(req.params.id, 36);
+    const shareId = clean(req.params.shareId, 36);
+    await assertCanManageSheetShares(req, id);
+    await query('DELETE FROM support_daily_sheet_shares WHERE id = ? AND sheet_id = ?', [shareId, id]);
+    res.json({ shares: await listSheetShares(id) });
   } catch (err) {
     next(err);
   }

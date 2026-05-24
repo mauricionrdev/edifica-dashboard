@@ -47,6 +47,24 @@ export function deleteSupportDailyRow(id, params = {}) {
   return api.del(withQuery(`/support/daily-program/${encodeURIComponent(id)}`, params));
 }
 
+
+
+export function listSupportDailySheetShares(sheetId, params = {}) {
+  return api.get(withQuery(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}/shares`, params));
+}
+
+export function createSupportDailySheetShare(sheetId, body = {}) {
+  return api.post(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}/shares`, body);
+}
+
+export function updateSupportDailySheetShare(sheetId, shareId, patch = {}) {
+  return api.patch(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}/shares/${encodeURIComponent(shareId)}`, patch);
+}
+
+export function deleteSupportDailySheetShare(sheetId, shareId, params = {}) {
+  return api.del(withQuery(`/support/daily-program/sheets/${encodeURIComponent(sheetId)}/shares/${encodeURIComponent(shareId)}`, params));
+}
+
 export function listSupportTasks() {
   return api.get('/support/tasks');
 }
