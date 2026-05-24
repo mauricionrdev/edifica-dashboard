@@ -1724,6 +1724,39 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     handlePasteTable(startRowId, startKey, serializeTable(parsed));
   }, [activeCell?.key, activeCell?.rowId, columns, handlePasteTable, importDelimiter, importText, rows, showToast]);
 
+  const toggleFavoriteSheet = useCallback((sheetId) => {
+    if (!sheetId) return;
+    setFavoriteSheetIds((current) => {
+      const next = new Set(current);
+      if (next.has(sheetId)) next.delete(sheetId);
+      else next.add(sheetId);
+      return next;
+    });
+    markSync('saved', favoriteSheetIds.has(sheetId) ? 'Planilha removida dos favoritos' : 'Planilha marcada como favorita');
+  }, [favoriteSheetIds, markSync]);
+
+  const toggleArchiveSheet = useCallback((sheetId) => {
+    if (!sheetId) return;
+    const willArchive = !archivedSheetIds.has(sheetId);
+    setArchivedSheetIds((current) => {
+      const next = new Set(current);
+      if (next.has(sheetId)) next.delete(sheetId);
+      else next.add(sheetId);
+      return next;
+    });
+    if (willArchive) {
+      setFavoriteSheetIds((current) => {
+        const next = new Set(current);
+        next.delete(sheetId);
+        return next;
+      });
+      const nextVisible = sheets.find((sheet) => sheet.id !== sheetId && !archivedSheetIds.has(sheet.id));
+      if (sheetId === activeSheetId && nextVisible?.id) refreshRows(nextVisible.id).catch(() => {});
+    }
+    markSync('saved', willArchive ? 'Planilha arquivada' : 'Planilha restaurada');
+  }, [activeSheetId, archivedSheetIds, markSync, refreshRows, sheets]);
+
+
   return (
     <section className={styles.panel}>
       <header className={styles.sheetHeader}>
@@ -1978,38 +2011,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                         right: columnIndex === selectionBounds.columnTo,
                       } : null;
                     
-  const toggleFavoriteSheet = useCallback((sheetId) => {
-    if (!sheetId) return;
-    setFavoriteSheetIds((current) => {
-      const next = new Set(current);
-      if (next.has(sheetId)) next.delete(sheetId);
-      else next.add(sheetId);
-      return next;
-    });
-    markSync('saved', favoriteSheetIds.has(sheetId) ? 'Planilha removida dos favoritos' : 'Planilha marcada como favorita');
-  }, [favoriteSheetIds, markSync]);
-
-  const toggleArchiveSheet = useCallback((sheetId) => {
-    if (!sheetId) return;
-    const willArchive = !archivedSheetIds.has(sheetId);
-    setArchivedSheetIds((current) => {
-      const next = new Set(current);
-      if (next.has(sheetId)) next.delete(sheetId);
-      else next.add(sheetId);
-      return next;
-    });
-    if (willArchive) {
-      setFavoriteSheetIds((current) => {
-        const next = new Set(current);
-        next.delete(sheetId);
-        return next;
-      });
-      const nextVisible = sheets.find((sheet) => sheet.id !== sheetId && !archivedSheetIds.has(sheet.id));
-      if (sheetId === activeSheetId && nextVisible?.id) refreshRows(nextVisible.id).catch(() => {});
-    }
-    markSync('saved', willArchive ? 'Planilha arquivada' : 'Planilha restaurada');
-  }, [activeSheetId, archivedSheetIds, markSync, refreshRows, sheets]);
-
   return (
                       <td key={column.key} data-column={column.key} data-active-column={activeCell?.key === column.key || undefined} data-selected-column={selectionBounds && columnIndex >= selectionBounds.columnFrom && columnIndex <= selectionBounds.columnTo && selectedCount > 1 || undefined} data-resizing-column={resizeState?.key === column.key || undefined} data-compact-column={column.width <= COMPACT_COLUMN_WIDTH || undefined}>
                         <SheetCell
