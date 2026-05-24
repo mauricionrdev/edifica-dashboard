@@ -1908,3 +1908,222 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v33: restauração visual consolidada das abas e organização de planilhas */
+.sheetTabsShell {
+  display: grid;
+  grid-template-columns: minmax(260px, 380px) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--sheet-line-soft);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.sheetTabsHeader {
+  grid-column: 1;
+  display: grid;
+  grid-template-columns: auto minmax(150px, 1fr);
+  align-items: center;
+  justify-content: initial;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.sheetTabsHeader span {
+  min-width: max-content;
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-uppercase);
+}
+
+.sheetTabsHeader input {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--sheet-line-soft);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+}
+
+.sheetViewSwitch {
+  grid-column: 2;
+  width: max-content;
+  min-width: 0;
+  align-self: center;
+}
+
+.sheetViewSwitch button {
+  min-height: 30px;
+  white-space: nowrap;
+}
+
+.sheetTabs {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 8px;
+  scroll-padding-inline: 12px;
+}
+
+.sheetTab,
+.emptyTab {
+  height: 42px;
+  min-width: 220px;
+  max-width: 360px;
+  flex: 0 0 auto;
+}
+
+.sheetTab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 118px 0 12px;
+  gap: 8px;
+}
+
+.sheetTabButton {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sheetTabButton em {
+  position: static;
+  flex: 0 0 auto;
+}
+
+.sheetTabButton small {
+  flex: 0 0 auto;
+  color: #ffd76a;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.sheetTabButton span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.sheetTab input {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 0 0 0 30px;
+  font-size: var(--fs-label);
+}
+
+.sheetTabActions {
+  position: absolute;
+  z-index: 3;
+  right: 6px;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 0;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sheetTab:hover .sheetTabActions,
+.sheetTab[data-active="true"] .sheetTabActions {
+  opacity: 1;
+}
+
+.sheetTabActions button,
+.sheetTabActions button:not(.deleteSheetButton),
+.sheetTabActions button:nth-child(3),
+.deleteSheetButton {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1;
+  text-indent: 0;
+}
+
+.sheetOrganizer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: auto;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+}
+
+.sheetCollectionSummary {
+  display: none;
+}
+
+.editorBar {
+  grid-template-columns: minmax(0, auto) minmax(220px, 1fr) auto;
+}
+
+@media (max-width: 1180px) {
+  .sheetTabsShell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sheetTabsHeader,
+  .sheetViewSwitch,
+  .sheetTabs,
+  .sheetOrganizer {
+    grid-column: 1;
+  }
+
+  .sheetViewSwitch {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .sheetActions {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+}
