@@ -1204,42 +1204,22 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!scroller || !frame) return;
     if (event.target && !frame.contains(event.target)) return;
 
-    const maxTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
     const maxLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
-    const canScrollY = maxTop > 2;
     const canScrollX = maxLeft > 2;
-    if (!canScrollY && !canScrollX) return;
 
-    const deltaY = Number(event.deltaY || 0);
-    const deltaX = Number(event.deltaX || 0);
-    const absY = Math.abs(deltaY);
-    const absX = Math.abs(deltaX);
-    const horizontalIntent = event.shiftKey || absX > absY;
+    // A rolagem vertical precisa ficar nativa para não travar no fim do gesto/momentum do mouse.
+    // Só interceptamos Shift + scroll para transformar o gesto em rolagem horizontal da planilha.
+    if (!event.shiftKey || !canScrollX) return;
 
-    let nextTop = scroller.scrollTop;
-    let nextLeft = scroller.scrollLeft;
+    const delta = Number(event.deltaY || event.deltaX || 0);
+    if (!delta) return;
 
-    if (horizontalIntent && canScrollX) {
-      nextLeft = Math.max(0, Math.min(maxLeft, nextLeft + (absX > 0 ? deltaX : deltaY)));
-    } else {
-      if (canScrollY) nextTop = Math.max(0, Math.min(maxTop, nextTop + deltaY));
-      if (canScrollX && absX > 0) nextLeft = Math.max(0, Math.min(maxLeft, nextLeft + deltaX));
-    }
+    const nextLeft = Math.max(0, Math.min(maxLeft, scroller.scrollLeft + delta));
+    if (nextLeft === scroller.scrollLeft) return;
 
-    const moved = nextTop !== scroller.scrollTop || nextLeft !== scroller.scrollLeft;
-    if (moved) {
-      event.preventDefault?.();
-      event.stopPropagation?.();
-      scroller.scrollTop = nextTop;
-      scroller.scrollLeft = nextLeft;
-      updateScrollState();
-      return;
-    }
-
-    if ((canScrollY && absY > 0) || (canScrollX && (absX > 0 || event.shiftKey))) {
-      event.preventDefault?.();
-      event.stopPropagation?.();
-    }
+    event.preventDefault?.();
+    scroller.scrollLeft = nextLeft;
+    updateScrollState();
   }, [updateScrollState]);
 
   useEffect(() => {
