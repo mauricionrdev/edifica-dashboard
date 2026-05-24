@@ -15,21 +15,24 @@
   scroll-behavior: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(148,163,184,.26) transparent;
+  will-change: scroll-position;
 }
 
 .gridCanvas {
   position: relative;
   min-height: 100%;
+  contain: layout paint style;
 }
 
 .headerGrid {
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 8;
   display: grid;
   min-height: 38px;
   background: #0b0d10;
   border-bottom: 1px solid rgba(255,255,255,.07);
+  contain: layout paint;
 }
 
 .cornerCell,
@@ -47,7 +50,7 @@
 .cornerCell {
   position: sticky;
   left: 0;
-  z-index: 7;
+  z-index: 10;
   justify-content: center;
   background: #0b0d10;
 }
@@ -61,6 +64,11 @@
 .headerCell[data-active="true"] {
   color: var(--text-primary);
   background: rgba(255,255,255,.045);
+}
+
+.headerCell[data-resizing="true"] {
+  color: var(--text-primary);
+  background: rgba(148,163,184,.1);
 }
 
 .headerCell input {
@@ -98,11 +106,13 @@
 
 .bodyCanvas {
   position: relative;
+  contain: layout paint style;
 }
 
 .rowGrid {
   display: grid;
   min-width: 100%;
+  contain: layout paint style;
 }
 
 .rowGrid[data-active="true"] .rowIndex {
@@ -110,10 +120,14 @@
   background: rgba(255,255,255,.055);
 }
 
+.rowGrid[data-selected="true"] .rowIndex {
+  color: var(--text-primary);
+}
+
 .rowIndex {
   position: sticky;
   left: 0;
-  z-index: 3;
+  z-index: 6;
   width: 54px;
   height: 38px;
   border: 0;
@@ -125,20 +139,35 @@
   cursor: default;
 }
 
+.columnGap {
+  pointer-events: none;
+}
+
 .cell {
+  position: relative;
   min-width: 0;
   height: 38px;
+  padding: 0;
+  overflow: hidden;
+  border-right: 1px solid rgba(255,255,255,.045);
+  border-bottom: 1px solid rgba(255,255,255,.045);
+  color: var(--text-secondary);
+  outline: 0;
+  background: transparent;
+  contain: layout paint style;
+}
+
+.cellValue {
+  display: block;
+  height: 100%;
+  min-width: 0;
   padding: 9px 10px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  border-right: 1px solid rgba(255,255,255,.045);
-  border-bottom: 1px solid rgba(255,255,255,.045);
-  color: var(--text-secondary);
   font-size: 13px;
   line-height: 1.35;
-  outline: 0;
-  background: transparent;
+  pointer-events: none;
 }
 
 .cell:focus,
@@ -152,6 +181,13 @@
   background: rgba(148,163,184,.08);
 }
 
+.cell[data-editing="true"] {
+  z-index: 5;
+  overflow: visible;
+  box-shadow: inset 0 0 0 1px rgba(226,232,240,.84), 0 0 0 1px rgba(226,232,240,.14);
+  background: #08090a;
+}
+
 .cell[data-edge-top="true"] { border-top: 1px solid rgba(148,163,184,.62); }
 .cell[data-edge-bottom="true"] { border-bottom-color: rgba(148,163,184,.62); }
 .cell[data-edge-left="true"] { border-left: 1px solid rgba(148,163,184,.62); }
@@ -161,6 +197,27 @@
   background-image: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
   background-size: 180% 100%;
   animation: savingPulse 1.2s linear infinite;
+}
+
+.cellEditor {
+  position: absolute;
+  inset: -1px;
+  z-index: 6;
+  min-width: 100%;
+  width: 100%;
+  min-height: 38px;
+  resize: none;
+  padding: 8px 9px;
+  border: 1px solid rgba(226,232,240,.82);
+  border-radius: 0;
+  outline: 0;
+  background: #08090a;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(0,0,0,.22);
 }
 
 .emptyState,
