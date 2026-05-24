@@ -89,6 +89,74 @@ function parseClipboardTable(text = '') {
     .filter((line, index, lines) => line.some(Boolean) || index < lines.length - 1);
 }
 
+function detectDelimitedSeparator(text = '') {
+  const sample = String(text ?? '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .find((line) => line.trim()) || '';
+  const candidates = ['\t', ';', ','].map((separator) => ({
+    separator,
+    count: sample.split(separator).length - 1,
+  }));
+  const best = candidates.sort((a, b) => b.count - a.count)[0];
+  return best?.count > 0 ? best.separator : '\t';
+}
+
+function resolveDelimitedSeparator(delimiter = 'auto', text = '') {
+  if (delimiter === 'tab') return '\t';
+  if (delimiter === 'semicolon') return ';';
+  if (delimiter === 'comma') return ',';
+  return detectDelimitedSeparator(text);
+}
+
+function parseDelimitedText(text = '', delimiter = 'auto') {
+  const source = String(text ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const trimmed = source.endsWith('\n') ? source.slice(0, -1) : source;
+  if (!trimmed.trim()) return [];
+
+  const separator = resolveDelimitedSeparator(delimiter, trimmed);
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let quoted = false;
+
+  for (let index = 0; index < trimmed.length; index += 1) {
+    const char = trimmed[index];
+    const next = trimmed[index + 1];
+
+    if (char === '"') {
+      if (quoted && next === '"') {
+        cell += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+
+    if (!quoted && char === separator) {
+      row.push(cell.trim());
+      cell = '';
+      continue;
+    }
+
+    if (!quoted && char === '\n') {
+      row.push(cell.trim());
+      rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+
+    cell += char;
+  }
+
+  row.push(cell.trim());
+  rows.push(row);
+  return rows.filter((line, index, list) => line.some(Boolean) || index < list.length - 1);
+}
+
 function serializeTable(rows = []) {
   return rows.map((row) => row.map((cell) => String(cell ?? '').replace(/\r?\n/g, ' ')).join('\t')).join('\n');
 }
