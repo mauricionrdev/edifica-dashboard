@@ -1512,3 +1512,88 @@
   font-size: var(--fs-tiny);
   line-height: 1.45;
 }
+
+.sheetViewSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.sheetViewSwitch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sheetViewSwitch button[data-active="true"] {
+  background: rgba(255, 199, 44, 0.12);
+  color: #fff7d6;
+}
+
+.sheetViewSwitch em {
+  display: inline-flex;
+  min-width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font-style: normal;
+  font-size: 10px;
+}
+
+.sheetCollectionSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sheetCollectionSummary strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.sheetTab[data-favorite="true"] {
+  border-color: rgba(255, 199, 44, 0.18);
+}
+
+.sheetTab[data-archived="true"] {
+  opacity: 0.64;
+}
+
+.sheetTabButton small {
+  color: #ffd76a;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.sheetTabActions button:nth-child(3) {
+  min-width: 58px;
+}
+
+.archivedNotice {
+  color: #ffd76a;
+}

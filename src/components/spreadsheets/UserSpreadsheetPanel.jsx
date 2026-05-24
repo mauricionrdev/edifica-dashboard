@@ -852,6 +852,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [sheets, setSheets] = useState([]);
   const [activeSheetId, setActiveSheetId] = useState('');
   const [sheetSearch, setSheetSearch] = useState('');
+  const [sheetView, setSheetView] = useState('active');
+  const [favoriteSheetIds, setFavoriteSheetIds] = useState(() => new Set());
+  const [archivedSheetIds, setArchivedSheetIds] = useState(() => new Set());
   const [importOpen, setImportOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [importText, setImportText] = useState('');
@@ -1551,12 +1554,24 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [activeSheetId, ownerUserId, refreshRows]);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
+  const sheetCollections = useMemo(() => {
+    const active = sheets.filter((sheet) => !archivedSheetIds.has(sheet.id));
+    const favorites = active.filter((sheet) => favoriteSheetIds.has(sheet.id));
+    const archived = sheets.filter((sheet) => archivedSheetIds.has(sheet.id));
+    return { active, favorites, archived };
+  }, [archivedSheetIds, favoriteSheetIds, sheets]);
   const visibleSheets = useMemo(() => {
     const query = cleanText(sheetSearch).toLowerCase();
-    if (!query) return sheets;
-    return sheets.filter((sheet) => String(sheet.name || '').toLowerCase().includes(query));
-  }, [sheetSearch, sheets]);
+    const source = sheetView === 'favorites'
+      ? sheetCollections.favorites
+      : sheetView === 'archived'
+        ? sheetCollections.archived
+        : sheetCollections.active;
+    if (!query) return source;
+    return source.filter((sheet) => String(sheet.name || '').toLowerCase().includes(query));
+  }, [sheetCollections, sheetSearch, sheetView]);
   const activeSheetIndex = useMemo(() => sheets.findIndex((sheet) => sheet.id === activeSheetId), [activeSheetId, sheets]);
+  const activeSheetIsArchived = Boolean(activeSheetId && archivedSheetIds.has(activeSheetId));
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
   const activeRowNumber = useMemo(() => {
     if (!activeCell?.rowId) return null;
@@ -1749,11 +1764,20 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               aria-label="Buscar planilha"
             />
           </div>
+          <div className={styles.sheetViewSwitch} aria-label="Organização das planilhas">
+            <button type="button" data-active={sheetView === 'active' || undefined} onClick={() => setSheetView('active')}>Ativas <em>{sheetCollections.active.length}</em></button>
+            <button type="button" data-active={sheetView === 'favorites' || undefined} onClick={() => setSheetView('favorites')}>Favoritas <em>{sheetCollections.favorites.length}</em></button>
+            <button type="button" data-active={sheetView === 'archived' || undefined} onClick={() => setSheetView('archived')}>Arquivadas <em>{sheetCollections.archived.length}</em></button>
+          </div>
+          <div className={styles.sheetCollectionSummary}>
+            <span>{sheetView === 'favorites' ? 'Favoritas' : sheetView === 'archived' ? 'Arquivadas' : 'Ativas'}</span>
+            <strong>{visibleSheets.length}</strong>
+          </div>
           <div className={styles.sheetTabs} aria-label="Planilhas do perfil">
             {visibleSheets.length ? visibleSheets.map((sheet) => {
               const index = sheets.findIndex((item) => item.id === sheet.id);
               return (
-                <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined}>
+                <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined} data-favorite={favoriteSheetIds.has(sheet.id) || undefined} data-archived={archivedSheetIds.has(sheet.id) || undefined}>
                   <button
                     type="button"
                     className={styles.sheetTabButton}
@@ -1764,6 +1788,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                     title={sheet.name}
                   >
                     <em>{index + 1}</em>
+                    {favoriteSheetIds.has(sheet.id) ? <small aria-hidden="true">★</small> : null}
                     <span>{sheet.name}</span>
                   </button>
                   <input
@@ -1781,7 +1806,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                   />
                   {canEdit ? (
                     <div className={styles.sheetTabActions}>
+                      <button type="button" onClick={() => toggleFavoriteSheet(sheet.id)} aria-label={`Favoritar ${sheet.name}`} title={favoriteSheetIds.has(sheet.id) ? 'Remover favorito' : 'Favoritar'}>{favoriteSheetIds.has(sheet.id) ? '★' : '☆'}</button>
                       <button type="button" onClick={() => handleDuplicateSheet(sheet.id)} aria-label={`Duplicar ${sheet.name}`} title="Duplicar planilha">Duplicar</button>
+                      <button type="button" onClick={() => toggleArchiveSheet(sheet.id)} aria-label={`Arquivar ${sheet.name}`} title={archivedSheetIds.has(sheet.id) ? 'Restaurar planilha' : 'Arquivar planilha'}>{archivedSheetIds.has(sheet.id) ? 'Restaurar' : 'Arquivar'}</button>
                       <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
                         <CloseIcon size={11} />
                       </button>
@@ -1796,7 +1823,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           {sheets.length > 1 ? (
             <div className={styles.sheetOrganizer}>
               <span>Atual: {activeSheetIndex >= 0 ? activeSheetIndex + 1 : '—'} de {sheets.length}</span>
-              <span>Busca e duplicação ajudam a organizar muitas planilhas sem perder largura no grid.</span>
+              <span>{sheetCollections.favorites.length} favoritas · {sheetCollections.archived.length} arquivadas</span>
+              {activeSheetIsArchived ? <span className={styles.archivedNotice}>Planilha arquivada em visualização</span> : null}
             </div>
           ) : null}
         </div>
@@ -1949,7 +1977,40 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                         left: columnIndex === selectionBounds.columnFrom,
                         right: columnIndex === selectionBounds.columnTo,
                       } : null;
-                      return (
+                    
+  const toggleFavoriteSheet = useCallback((sheetId) => {
+    if (!sheetId) return;
+    setFavoriteSheetIds((current) => {
+      const next = new Set(current);
+      if (next.has(sheetId)) next.delete(sheetId);
+      else next.add(sheetId);
+      return next;
+    });
+    markSync('saved', favoriteSheetIds.has(sheetId) ? 'Planilha removida dos favoritos' : 'Planilha marcada como favorita');
+  }, [favoriteSheetIds, markSync]);
+
+  const toggleArchiveSheet = useCallback((sheetId) => {
+    if (!sheetId) return;
+    const willArchive = !archivedSheetIds.has(sheetId);
+    setArchivedSheetIds((current) => {
+      const next = new Set(current);
+      if (next.has(sheetId)) next.delete(sheetId);
+      else next.add(sheetId);
+      return next;
+    });
+    if (willArchive) {
+      setFavoriteSheetIds((current) => {
+        const next = new Set(current);
+        next.delete(sheetId);
+        return next;
+      });
+      const nextVisible = sheets.find((sheet) => sheet.id !== sheetId && !archivedSheetIds.has(sheet.id));
+      if (sheetId === activeSheetId && nextVisible?.id) refreshRows(nextVisible.id).catch(() => {});
+    }
+    markSync('saved', willArchive ? 'Planilha arquivada' : 'Planilha restaurada');
+  }, [activeSheetId, archivedSheetIds, markSync, refreshRows, sheets]);
+
+  return (
                       <td key={column.key} data-column={column.key} data-active-column={activeCell?.key === column.key || undefined} data-selected-column={selectionBounds && columnIndex >= selectionBounds.columnFrom && columnIndex <= selectionBounds.columnTo && selectedCount > 1 || undefined} data-resizing-column={resizeState?.key === column.key || undefined} data-compact-column={column.width <= COMPACT_COLUMN_WIDTH || undefined}>
                         <SheetCell
                           row={row}
