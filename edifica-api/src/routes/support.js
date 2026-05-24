@@ -100,6 +100,8 @@ async function ensureSupportSchema() {
           position INT NOT NULL DEFAULT 0,
           created_by_user_id VARCHAR(36) NULL,
           owner_user_id VARCHAR(36) NULL,
+          is_favorite TINYINT(1) NOT NULL DEFAULT 0,
+          is_archived TINYINT(1) NOT NULL DEFAULT 0,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
           INDEX idx_support_daily_sheets_position (position)
@@ -163,7 +165,10 @@ async function ensureSupportSchema() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
       await safeAlter('ALTER TABLE support_daily_sheets ADD COLUMN owner_user_id VARCHAR(36) NULL AFTER created_by_user_id');
+      await safeAlter('ALTER TABLE support_daily_sheets ADD COLUMN is_favorite TINYINT(1) NOT NULL DEFAULT 0 AFTER owner_user_id');
+      await safeAlter('ALTER TABLE support_daily_sheets ADD COLUMN is_archived TINYINT(1) NOT NULL DEFAULT 0 AFTER is_favorite');
       await safeAlter('ALTER TABLE support_daily_sheets ADD INDEX idx_support_daily_sheets_owner_position (owner_user_id, position)');
+      await safeAlter('ALTER TABLE support_daily_sheets ADD INDEX idx_support_daily_sheets_owner_state (owner_user_id, is_archived, is_favorite)');
       const mauricioRows = await query(
         `SELECT id
            FROM users
@@ -203,13 +208,20 @@ async function ensureSupportSchema() {
 async function listSheets(ownerUserId) {
   await ensureSupportSchema();
   const rows = await query(
-    `SELECT id, name, position, owner_user_id
+    `SELECT id, name, position, owner_user_id, is_favorite, is_archived
        FROM support_daily_sheets
       WHERE owner_user_id = ?
       ORDER BY position ASC, created_at ASC`,
     [ownerUserId]
   );
-  return rows.map((row) => ({ id: row.id, name: row.name, position: Number(row.position || 0), ownerUserId: row.owner_user_id || '' }));
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    position: Number(row.position || 0),
+    ownerUserId: row.owner_user_id || '',
+    isFavorite: Boolean(Number(row.is_favorite || 0)),
+    isArchived: Boolean(Number(row.is_archived || 0)),
+  }));
 }
 
 async function resolveSheetId(ownerUserId, candidate) {
@@ -414,9 +426,28 @@ router.patch('/daily-program/sheets/:id', requirePermission('profile.view'), asy
     const id = clean(req.params.id, 36);
     const ownerUserId = await resolveOwnerFromSheet(id);
     assertSpreadsheetOwner(req, ownerUserId);
-    const name = clean(req.body?.name, 80);
-    if (!name) throw badRequest('Informe o nome da planilha.');
-    await query('UPDATE support_daily_sheets SET name = ? WHERE id = ?', [name, id]);
+    const updates = [];
+    const params = [];
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'name')) {
+      const name = clean(req.body?.name, 80);
+      if (!name) throw badRequest('Informe o nome da planilha.');
+      updates.push('name = ?');
+      params.push(name);
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'isFavorite')) {
+      updates.push('is_favorite = ?');
+      params.push(req.body?.isFavorite ? 1 : 0);
+    }
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'isArchived')) {
+      updates.push('is_archived = ?');
+      params.push(req.body?.isArchived ? 1 : 0);
+      if (req.body?.isArchived) {
+        updates.push('is_favorite = 0');
+      }
+    }
+    if (!updates.length) throw badRequest('Nenhuma alteração informada.');
+    params.push(id);
+    await query(`UPDATE support_daily_sheets SET ${updates.join(', ')} WHERE id = ?`, params);
     res.json({ sheets: await listSheets(ownerUserId) });
   } catch (err) {
     next(err);

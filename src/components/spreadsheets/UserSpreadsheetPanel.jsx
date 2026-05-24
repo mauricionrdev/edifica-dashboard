@@ -284,6 +284,17 @@ function normalizeRow(row = {}, columns = []) {
   };
 }
 
+function normalizeSheets(sheets = []) {
+  return (Array.isArray(sheets) ? sheets : []).map((sheet) => ({
+    ...sheet,
+    id: sheet?.id || '',
+    name: sheet?.name || 'Planilha',
+    position: Number(sheet?.position || 0),
+    isFavorite: Boolean(sheet?.isFavorite || sheet?.is_favorite),
+    isArchived: Boolean(sheet?.isArchived || sheet?.is_archived),
+  })).filter((sheet) => sheet.id);
+}
+
 function cellId(rowId, key) {
   return `${rowId}:${key}`;
 }
@@ -853,8 +864,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [activeSheetId, setActiveSheetId] = useState('');
   const [sheetSearch, setSheetSearch] = useState('');
   const [sheetView, setSheetView] = useState('active');
-  const [favoriteSheetIds, setFavoriteSheetIds] = useState(() => new Set());
-  const [archivedSheetIds, setArchivedSheetIds] = useState(() => new Set());
   const [importOpen, setImportOpen] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [importText, setImportText] = useState('');
@@ -900,7 +909,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     try {
       const data = await listSupportDailyRows(sheetId || undefined, { ownerUserId });
       const nextColumns = normalizeColumns(data?.columns);
-      setSheets(Array.isArray(data?.sheets) ? data.sheets : []);
+      setSheets(normalizeSheets(data?.sheets));
       setActiveSheetId(data?.activeSheetId || sheetId || data?.sheets?.[0]?.id || '');
       setColumns(nextColumns);
       setRows((Array.isArray(data?.rows) ? data.rows : []).map((row) => normalizeRow(row, nextColumns)));
@@ -1078,7 +1087,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     markSync('saving', 'Criando nova planilha');
     try {
       const data = await createSupportDailySheet({ name: `Planilha ${sheets.length + 1}`, ownerUserId, ...estimateBlankSheetSize() });
-      setSheets(Array.isArray(data?.sheets) ? data.sheets : []);
+      setSheets(normalizeSheets(data?.sheets));
       if (data?.sheet?.id) await refreshRows(data.sheet.id);
       markSync('saved', 'Nova planilha criada');
     } catch (err) {
@@ -1093,7 +1102,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     markSync('saving', 'Renomeando planilha');
     try {
       const data = await updateSupportDailySheet(sheetId, { name: cleanText(name) || 'Planilha', ownerUserId });
-      if (Array.isArray(data?.sheets)) setSheets(data.sheets);
+      if (Array.isArray(data?.sheets)) setSheets(normalizeSheets(data.sheets));
       markSync('saved', 'Nome da planilha salvo');
     } catch (err) {
       markSync('error', 'Falha ao renomear planilha');
@@ -1107,7 +1116,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     markSync('saving', 'Removendo planilha');
     try {
       const data = await deleteSupportDailySheet(sheetId, { ownerUserId });
-      const nextSheets = Array.isArray(data?.sheets) ? data.sheets : sheets.filter((sheet) => sheet.id !== sheetId);
+      const nextSheets = Array.isArray(data?.sheets) ? normalizeSheets(data.sheets) : sheets.filter((sheet) => sheet.id !== sheetId);
       setSheets(nextSheets);
       await refreshRows(nextSheets[0]?.id || '');
       markSync('saved', 'Planilha removida');
@@ -1555,11 +1564,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
   const sheetCollections = useMemo(() => {
-    const active = sheets.filter((sheet) => !archivedSheetIds.has(sheet.id));
-    const favorites = active.filter((sheet) => favoriteSheetIds.has(sheet.id));
-    const archived = sheets.filter((sheet) => archivedSheetIds.has(sheet.id));
+    const active = sheets.filter((sheet) => !sheet.isArchived);
+    const favorites = active.filter((sheet) => sheet.isFavorite);
+    const archived = sheets.filter((sheet) => sheet.isArchived);
     return { active, favorites, archived };
-  }, [archivedSheetIds, favoriteSheetIds, sheets]);
+  }, [sheets]);
   const visibleSheets = useMemo(() => {
     const query = cleanText(sheetSearch).toLowerCase();
     const source = sheetView === 'favorites'
@@ -1571,7 +1580,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     return source.filter((sheet) => String(sheet.name || '').toLowerCase().includes(query));
   }, [sheetCollections, sheetSearch, sheetView]);
   const activeSheetIndex = useMemo(() => sheets.findIndex((sheet) => sheet.id === activeSheetId), [activeSheetId, sheets]);
-  const activeSheetIsArchived = Boolean(activeSheetId && archivedSheetIds.has(activeSheetId));
+  const activeSheetIsArchived = Boolean(activeSheet?.isArchived);
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
   const activeRowNumber = useMemo(() => {
     if (!activeCell?.rowId) return null;
@@ -1724,37 +1733,46 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     handlePasteTable(startRowId, startKey, serializeTable(parsed));
   }, [activeCell?.key, activeCell?.rowId, columns, handlePasteTable, importDelimiter, importText, rows, showToast]);
 
-  const toggleFavoriteSheet = useCallback((sheetId) => {
+  const toggleFavoriteSheet = useCallback(async (sheetId) => {
     if (!sheetId) return;
-    setFavoriteSheetIds((current) => {
-      const next = new Set(current);
-      if (next.has(sheetId)) next.delete(sheetId);
-      else next.add(sheetId);
-      return next;
-    });
-    markSync('saved', favoriteSheetIds.has(sheetId) ? 'Planilha removida dos favoritos' : 'Planilha marcada como favorita');
-  }, [favoriteSheetIds, markSync]);
-
-  const toggleArchiveSheet = useCallback((sheetId) => {
-    if (!sheetId) return;
-    const willArchive = !archivedSheetIds.has(sheetId);
-    setArchivedSheetIds((current) => {
-      const next = new Set(current);
-      if (next.has(sheetId)) next.delete(sheetId);
-      else next.add(sheetId);
-      return next;
-    });
-    if (willArchive) {
-      setFavoriteSheetIds((current) => {
-        const next = new Set(current);
-        next.delete(sheetId);
-        return next;
-      });
-      const nextVisible = sheets.find((sheet) => sheet.id !== sheetId && !archivedSheetIds.has(sheet.id));
-      if (sheetId === activeSheetId && nextVisible?.id) refreshRows(nextVisible.id).catch(() => {});
+    const sheet = sheets.find((item) => item.id === sheetId);
+    const nextFavorite = !sheet?.isFavorite;
+    markSync('saving', nextFavorite ? 'Marcando planilha como favorita' : 'Removendo favorito');
+    setSheets((current) => current.map((item) => (item.id === sheetId ? { ...item, isFavorite: nextFavorite } : item)));
+    try {
+      const data = await updateSupportDailySheet(sheetId, { ownerUserId, isFavorite: nextFavorite });
+      if (Array.isArray(data?.sheets)) setSheets(normalizeSheets(data.sheets));
+      markSync('saved', nextFavorite ? 'Planilha marcada como favorita' : 'Planilha removida dos favoritos');
+    } catch (err) {
+      markSync('error', 'Falha ao atualizar favorito');
+      showToast?.(err?.message || 'Não foi possível atualizar o favorito.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
     }
-    markSync('saved', willArchive ? 'Planilha arquivada' : 'Planilha restaurada');
-  }, [activeSheetId, archivedSheetIds, markSync, refreshRows, sheets]);
+  }, [activeSheetId, markSync, ownerUserId, refreshRows, sheets, showToast]);
+
+  const toggleArchiveSheet = useCallback(async (sheetId) => {
+    if (!sheetId) return;
+    const sheet = sheets.find((item) => item.id === sheetId);
+    const nextArchived = !sheet?.isArchived;
+    markSync('saving', nextArchived ? 'Arquivando planilha' : 'Restaurando planilha');
+    setSheets((current) => current.map((item) => (
+      item.id === sheetId ? { ...item, isArchived: nextArchived, isFavorite: nextArchived ? false : item.isFavorite } : item
+    )));
+    try {
+      const data = await updateSupportDailySheet(sheetId, { ownerUserId, isArchived: nextArchived });
+      const nextSheets = Array.isArray(data?.sheets) ? normalizeSheets(data.sheets) : [];
+      if (nextSheets.length) setSheets(nextSheets);
+      if (nextArchived && sheetId === activeSheetId) {
+        const nextVisible = nextSheets.find((item) => item.id !== sheetId && !item.isArchived) || sheets.find((item) => item.id !== sheetId && !item.isArchived);
+        if (nextVisible?.id) await refreshRows(nextVisible.id);
+      }
+      markSync('saved', nextArchived ? 'Planilha arquivada' : 'Planilha restaurada');
+    } catch (err) {
+      markSync('error', 'Falha ao atualizar arquivo');
+      showToast?.(err?.message || 'Não foi possível atualizar o arquivamento.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
+    }
+  }, [activeSheetId, markSync, ownerUserId, refreshRows, sheets, showToast]);
 
 
   return (
@@ -1806,7 +1824,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             {visibleSheets.length ? visibleSheets.map((sheet) => {
               const index = sheets.findIndex((item) => item.id === sheet.id);
               return (
-                <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined} data-favorite={favoriteSheetIds.has(sheet.id) || undefined} data-archived={archivedSheetIds.has(sheet.id) || undefined}>
+                <div key={sheet.id} className={styles.sheetTab} data-active={sheet.id === activeSheetId || undefined} data-favorite={sheet.isFavorite || undefined} data-archived={sheet.isArchived || undefined}>
                   <button
                     type="button"
                     className={styles.sheetTabButton}
@@ -1817,7 +1835,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                     title={sheet.name}
                   >
                     <em>{index + 1}</em>
-                    {favoriteSheetIds.has(sheet.id) ? <small aria-hidden="true">★</small> : null}
+                    {sheet.isFavorite ? <small aria-hidden="true">★</small> : null}
                     <span>{sheet.name}</span>
                   </button>
                   <input
@@ -1835,9 +1853,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                   />
                   {canEdit ? (
                     <div className={styles.sheetTabActions}>
-                      <button type="button" onClick={() => toggleFavoriteSheet(sheet.id)} aria-label={`Favoritar ${sheet.name}`} title={favoriteSheetIds.has(sheet.id) ? 'Remover favorito' : 'Favoritar'}><span aria-hidden="true">{favoriteSheetIds.has(sheet.id) ? '★' : '☆'}</span></button>
+                      <button type="button" onClick={() => toggleFavoriteSheet(sheet.id)} aria-label={`Favoritar ${sheet.name}`} title={sheet.isFavorite ? 'Remover favorito' : 'Favoritar'}><span aria-hidden="true">{sheet.isFavorite ? '★' : '☆'}</span></button>
                       <button type="button" onClick={() => handleDuplicateSheet(sheet.id)} aria-label={`Duplicar ${sheet.name}`} title="Duplicar planilha"><span aria-hidden="true">⧉</span></button>
-                      <button type="button" onClick={() => toggleArchiveSheet(sheet.id)} aria-label={`Arquivar ${sheet.name}`} title={archivedSheetIds.has(sheet.id) ? 'Restaurar planilha' : 'Arquivar planilha'}><span aria-hidden="true">{archivedSheetIds.has(sheet.id) ? '↥' : '↧'}</span></button>
+                      <button type="button" onClick={() => toggleArchiveSheet(sheet.id)} aria-label={`Arquivar ${sheet.name}`} title={sheet.isArchived ? 'Restaurar planilha' : 'Arquivar planilha'}><span aria-hidden="true">{sheet.isArchived ? '↥' : '↧'}</span></button>
                       <button type="button" className={styles.deleteSheetButton} onClick={() => handleDeleteSheet(sheet.id)} aria-label={`Remover ${sheet.name}`} title="Remover planilha">
                         <CloseIcon size={11} />
                       </button>
