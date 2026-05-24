@@ -112,6 +112,8 @@ function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup,
       data-cell-id={`${row.id}:${column.key}`}
       data-row-index={rowIndex}
       data-column-index={columnIndex}
+      data-row-id={row.id}
+      data-column-key={column.key}
       data-selected={selected || undefined}
       data-group={selectedGroup || undefined}
       data-saving={saving || undefined}
@@ -206,6 +208,8 @@ export default function SpreadsheetGrid({
   const [editingValue, setEditingValue] = useState('');
   const [dragSelection, setDragSelection] = useState(null);
   const dragSelectionRef = useRef(null);
+  const [fillSelection, setFillSelection] = useState(null);
+  const fillSelectionRef = useRef(null);
 
   const columnTemplate = useMemo(() => `${INDEX_WIDTH}px ${columns.map((column) => `${Math.max(5, Number(column.width || 5))}px`).join(' ')}`, [columns]);
   const columnOffsets = useMemo(() => {
@@ -314,6 +318,24 @@ export default function SpreadsheetGrid({
     };
   }, [columnOffsets, selectedCount, selectionBounds]);
 
+
+  const fillRect = useMemo(() => {
+    if (!fillSelection) return null;
+    const rowFrom = Math.min(fillSelection.sourceRowIndex, fillSelection.targetRowIndex);
+    const rowTo = Math.max(fillSelection.sourceRowIndex, fillSelection.targetRowIndex);
+    const columnFrom = Math.min(fillSelection.sourceColumnIndex, fillSelection.targetColumnIndex);
+    const columnTo = Math.max(fillSelection.sourceColumnIndex, fillSelection.targetColumnIndex);
+    const startColumn = columnOffsets[columnFrom];
+    const endColumn = columnOffsets[columnTo];
+    if (!startColumn || !endColumn) return null;
+    return {
+      top: HEADER_HEIGHT + rowFrom * ROW_HEIGHT,
+      left: startColumn.left,
+      width: endColumn.left + endColumn.width - startColumn.left,
+      height: (rowTo - rowFrom + 1) * ROW_HEIGHT,
+    };
+  }, [columnOffsets, fillSelection]);
+
   const resizeRect = useMemo(() => {
     if (!resizeState?.key) return null;
     const columnMeta = columnOffsets.find((item) => item.key === resizeState.key);
@@ -375,6 +397,88 @@ export default function SpreadsheetGrid({
     finishDragSelection();
   }, [finishDragSelection]);
 
+
+  const findCellFromPoint = useCallback((clientX, clientY) => {
+    const element = document.elementFromPoint(clientX, clientY)?.closest?.('[data-row-id][data-column-key]');
+    if (!element) return null;
+    const rowIndex = Number(element.dataset.rowIndex);
+    const columnIndex = Number(element.dataset.columnIndex);
+    if (!Number.isFinite(rowIndex) || !Number.isFinite(columnIndex)) return null;
+    return {
+      rowIndex,
+      columnIndex,
+      rowId: element.dataset.rowId,
+      key: element.dataset.columnKey,
+    };
+  }, []);
+
+  const startFillDrag = useCallback((event) => {
+    if (!activeCell || editingCell || !canEdit) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const sourceRowIndex = rows.findIndex((row) => row.id === activeCell.rowId);
+    const sourceColumnIndex = columns.findIndex((column) => column.key === activeCell.key);
+    if (sourceRowIndex < 0 || sourceColumnIndex < 0) return;
+    const initial = { sourceRowIndex, sourceColumnIndex, targetRowIndex: sourceRowIndex, targetColumnIndex: sourceColumnIndex };
+    fillSelectionRef.current = initial;
+    setFillSelection(initial);
+  }, [activeCell, canEdit, columns, editingCell, rows]);
+
+  const updateFillDrag = useCallback((event) => {
+    const current = fillSelectionRef.current;
+    if (!current) return;
+    const target = findCellFromPoint(event.clientX, event.clientY);
+    if (!target) return;
+    const next = { ...current, targetRowIndex: target.rowIndex, targetColumnIndex: target.columnIndex };
+    fillSelectionRef.current = next;
+    setFillSelection(next);
+  }, [findCellFromPoint]);
+
+  const commitFillDrag = useCallback(() => {
+    const current = fillSelectionRef.current;
+    fillSelectionRef.current = null;
+    setFillSelection(null);
+    if (!current || !activeCell) return;
+    const sourceRow = rows[current.sourceRowIndex];
+    const sourceColumn = columns[current.sourceColumnIndex];
+    if (!sourceRow || !sourceColumn) return;
+    const value = sourceRow[sourceColumn.key] || '';
+    const rowFrom = Math.min(current.sourceRowIndex, current.targetRowIndex);
+    const rowTo = Math.max(current.sourceRowIndex, current.targetRowIndex);
+    const columnFrom = Math.min(current.sourceColumnIndex, current.targetColumnIndex);
+    const columnTo = Math.max(current.sourceColumnIndex, current.targetColumnIndex);
+    if (rowFrom === rowTo && columnFrom === columnTo) return;
+
+    const targets = [];
+    for (let rowIndex = rowFrom; rowIndex <= rowTo; rowIndex += 1) {
+      for (let columnIndex = columnFrom; columnIndex <= columnTo; columnIndex += 1) {
+        const row = rows[rowIndex];
+        const column = columns[columnIndex];
+        if (!row || !column) continue;
+        if (row.id === activeCell.rowId && column.key === activeCell.key) continue;
+        targets.push({ rowId: row.id, key: column.key });
+      }
+    }
+    if (!targets.length) return;
+    targets.forEach((target) => onCellChange(target.rowId, target.key, value));
+    window.requestAnimationFrame(() => {
+      targets.forEach((target) => onCellCommit(target.rowId, target.key));
+    });
+  }, [activeCell, columns, onCellChange, onCellCommit, rows]);
+
+  useEffect(() => {
+    const move = (event) => updateFillDrag(event);
+    const up = () => commitFillDrag();
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('blur', up);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('blur', up);
+    };
+  }, [commitFillDrag, updateFillDrag]);
+
   useEffect(() => {
     const stop = () => finishDragSelection();
     window.addEventListener('pointerup', stop);
@@ -408,7 +512,7 @@ export default function SpreadsheetGrid({
   }, [activeCell, columnOffsets, columns, rows]);
 
   return (
-    <div className={styles.frame} data-loading={rowsLoading || undefined} data-editing={!!editingCell || undefined} data-dragging={dragSelection?.active || undefined}>
+    <div className={styles.frame} data-loading={rowsLoading || undefined} data-editing={!!editingCell || undefined} data-dragging={dragSelection?.active || undefined} data-filling={!!fillSelection || undefined}>
       <div ref={scrollerRef} className={styles.scroller} onWheel={onWheel}>
         {!activeSheetId && !rowsLoading ? (
           <div className={styles.emptyState}>
@@ -516,6 +620,16 @@ export default function SpreadsheetGrid({
                 }}
               />
             ) : null}
+            {fillRect ? (
+              <div
+                className={styles.fillOverlay}
+                style={{
+                  transform: `translate3d(${fillRect.left}px, ${fillRect.top}px, 0)`,
+                  width: fillRect.width,
+                  height: fillRect.height,
+                }}
+              />
+            ) : null}
             {activeRect ? (
               <div
                 className={styles.activeOverlay}
@@ -525,7 +639,7 @@ export default function SpreadsheetGrid({
                   height: activeRect.height,
                 }}
               >
-                <span className={styles.activeHandle} />
+                <button type="button" className={styles.activeHandle} onPointerDown={startFillDrag} aria-label="Preencher por arraste" />
                 <span className={styles.fillHint}>arraste</span>
               </div>
             ) : null}

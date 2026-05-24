@@ -182,7 +182,8 @@
   background: rgba(148,163,184,.045);
 }
 
-.frame[data-dragging="true"] .cell {
+.frame[data-dragging="true"] .cell,
+.frame[data-filling="true"] .cell {
   cursor: crosshair;
   user-select: none;
 }
@@ -266,6 +267,7 @@
 }
 
 .selectionOverlay,
+.fillOverlay,
 .activeOverlay,
 .resizeOverlay {
   position: absolute;
@@ -291,6 +293,19 @@
     0 0 22px rgba(148,163,184,.12);
 }
 
+
+.fillOverlay {
+  border: 1px dashed rgba(226,232,240,.76);
+  background: rgba(226,232,240,.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.05),
+    0 0 24px rgba(148,163,184,.13);
+}
+
+.frame[data-filling="true"] .fillHint {
+  display: inline-flex;
+}
+
 .activeOverlay {
   border: 2px solid rgba(226,232,240,.88);
   box-shadow:
@@ -304,10 +319,19 @@
   bottom: -4px;
   width: 7px;
   height: 7px;
+  border: 0;
+  padding: 0;
   border-radius: 999px;
   background: rgba(226,232,240,.92);
   box-shadow: 0 0 0 2px #08090a;
+  pointer-events: auto;
+  cursor: crosshair;
 }
+
+.activeHandle:hover {
+  transform: scale(1.35);
+}
+
 
 .fillHint {
   position: absolute;
