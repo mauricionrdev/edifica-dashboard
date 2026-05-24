@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '../ui/Button.jsx';
+import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import { CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../ui/Icons.jsx';
 import {
   createSupportDailyColumn,
@@ -1200,39 +1201,30 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleSheetWheel = useCallback((event) => {
     const scroller = scrollerRef.current;
-    const frame = sheetFrameRef.current;
-    if (!scroller || !frame) return;
-    if (event.target && !frame.contains(event.target)) return;
+    if (!scroller) return;
 
-    const maxLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
-    const canScrollX = maxLeft > 2;
+    const canScrollY = scroller.scrollHeight > scroller.clientHeight + 2;
+    const canScrollX = scroller.scrollWidth > scroller.clientWidth + 2;
+    const absY = Math.abs(event.deltaY);
+    const absX = Math.abs(event.deltaX);
 
-    // A rolagem vertical precisa ficar nativa para não travar no fim do gesto/momentum do mouse.
-    // Só interceptamos Shift + scroll para transformar o gesto em rolagem horizontal da planilha.
-    if (!event.shiftKey || !canScrollX) return;
+    if (event.shiftKey && canScrollX && absY > absX) {
+      event.preventDefault();
+      scroller.scrollLeft += event.deltaY;
+      updateScrollState();
+      return;
+    }
 
-    const delta = Number(event.deltaY || event.deltaX || 0);
-    if (!delta) return;
-
-    const nextLeft = Math.max(0, Math.min(maxLeft, scroller.scrollLeft + delta));
-    if (nextLeft === scroller.scrollLeft) return;
-
-    event.preventDefault?.();
-    scroller.scrollLeft = nextLeft;
-    updateScrollState();
+    if (canScrollY && absY >= absX) {
+      const nextTop = Math.max(0, Math.min(scroller.scrollHeight - scroller.clientHeight, scroller.scrollTop + event.deltaY));
+      if (nextTop !== scroller.scrollTop) {
+        event.preventDefault();
+        scroller.scrollTop = nextTop;
+        if (canScrollX && absX > 0) scroller.scrollLeft += event.deltaX;
+        updateScrollState();
+      }
+    }
   }, [updateScrollState]);
-
-  useEffect(() => {
-    const frame = sheetFrameRef.current;
-    if (!frame) return undefined;
-
-    const handleNativeWheel = (event) => {
-      handleSheetWheel(event);
-    };
-
-    frame.addEventListener('wheel', handleNativeWheel, { passive: false, capture: true });
-    return () => frame.removeEventListener('wheel', handleNativeWheel, { capture: true });
-  }, [activeSheetId, columns.length, handleSheetWheel, rows.length]);
 
   const handleSheetScroll = useCallback(() => {
     updateScrollState();
@@ -2096,125 +2088,35 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             <span>{resizeState.label} · {resizeState.width}px</span>
           </div>
         ) : null}
-        <div
-          ref={scrollerRef}
-          className={styles.sheetScroller}
-          style={{ '--sheet-min-width': `${sheetMinWidth}px` }}
-          onScroll={handleSheetScroll}
-        >
-          {!activeSheetId && !rowsLoading ? (
-            <div className={styles.noSheetState}>
-              <div className={styles.noSheetCard}>
-                <span>Planilhas pessoais</span>
-                <strong>Comece com uma planilha zerada</strong>
-                {canEdit ? <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button> : null}
-              </div>
-            </div>
-          ) : (
-            <table className={styles.sheetTable}>
-              <colgroup>
-                <col style={{ width: 54 }} />
-                {columns.map((column) => <col key={column.key} style={{ width: column.width }} />)}
-              </colgroup>
-              <thead>
-                <tr>
-                  <th className={styles.indexHeader}>#</th>
-                  {columns.map((column, columnIndex) => {
-                    const columnInSelection = selectionBounds && columnIndex >= selectionBounds.columnFrom && columnIndex <= selectionBounds.columnTo && selectedCount > 1;
-                    const columnActive = activeCell?.key === column.key;
-                    return (
-                      <th
-                        key={column.key}
-                        data-saving={savingColumn === column.key || undefined}
-                        data-selected-column={columnInSelection || undefined}
-                        data-active-column={columnActive || undefined}
-                        data-resizing-column={resizeState?.key === column.key || undefined}
-                        data-compact-column={column.width <= COMPACT_COLUMN_WIDTH || undefined}
-                      >
-                      <HeaderCell
-                        column={column}
-                        editable={canEdit}
-                        onLabelChange={handleColumnLabelChange}
-                        resizing={resizeState?.key === column.key}
-                        compact={column.width <= COMPACT_COLUMN_WIDTH}
-                        onLabelCommit={handleColumnLabelCommit}
-                        onResizeStart={handleResizeStart}
-                        onContextMenu={openContextMenu}
-                      />
-                    </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {rowsLoading ? (
-                  <tr><td colSpan={columns.length + 1} className={styles.emptyState}>Carregando...</td></tr>
-                ) : null}
-                {!rowsLoading && rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length + 1} className={styles.emptyState}>
-                      <div className={styles.emptySheetContent}>
-                        <span>Planilha vazia</span>
-                        {canEdit ? (
-                          <div>
-                            <button type="button" onClick={handleAddRow} disabled={creatingRow}>Nova linha</button>
-                            <button type="button" onClick={handleAddColumn} disabled={creatingColumn}>Nova coluna</button>
-                          </div>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ) : null}
-                {rows.map((row, index) => {
-                  const rowInSelection = selectionBounds && index >= selectionBounds.rowFrom && index <= selectionBounds.rowTo && selectedCount > 1;
-                  const rowActive = activeCell?.rowId === row.id;
-                  return (
-                    <tr key={row.id} data-selected-row={rowInSelection || undefined} data-active-row={rowActive || undefined}>
-                    <td
-                      className={styles.rowIndex}
-                      data-range={rowInSelection || undefined}
-                      data-active-row={rowActive || undefined}
-                      onClick={() => selectRow(row.id)}
-                      onContextMenu={(event) => openContextMenu(event, row.id, null)}
-                    >
-                      {index + 1}
-                    </td>
-                    {columns.map((column, columnIndex) => {
-                      const inRange = selectedCellIds.has(cellId(row.id, column.key));
-                      const rangeEdges = selectionBounds && inRange ? {
-                        top: index === selectionBounds.rowFrom,
-                        bottom: index === selectionBounds.rowTo,
-                        left: columnIndex === selectionBounds.columnFrom,
-                        right: columnIndex === selectionBounds.columnTo,
-                      } : null;
-                    
-  return (
-                      <td key={column.key} data-column={column.key} data-active-column={activeCell?.key === column.key || undefined} data-selected-column={selectionBounds && columnIndex >= selectionBounds.columnFrom && columnIndex <= selectionBounds.columnTo && selectedCount > 1 || undefined} data-resizing-column={resizeState?.key === column.key || undefined} data-compact-column={column.width <= COMPACT_COLUMN_WIDTH || undefined}>
-                        <SheetCell
-                          row={row}
-                          column={column}
-                          editable={canEdit}
-                          selected={activeCell?.rowId === row.id && activeCell?.key === column.key}
-                          selectedGroup={inRange}
-                          rangeEdges={rangeEdges}
-                          saving={savingCell === `${row.id}:${column.key}` || savingCell === 'bulk-selection'}
-                          onSelect={selectCell}
-                          onChange={handleCellChange}
-                          onCommit={handleCellCommit}
-                          onNavigate={navigateCell}
-                          onContextMenu={openContextMenu}
-                          onPasteTable={handlePasteTable}
-                        />
-                      </td>
-                      );
-                    })}
-                  </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <SpreadsheetGrid
+          columns={columns}
+          rows={rows}
+          rowsLoading={rowsLoading}
+          activeCell={activeCell}
+          selectedCellIds={selectedCellIds}
+          selectionBounds={selectionBounds}
+          selectedCount={selectedCount}
+          savingCell={savingCell}
+          savingColumn={savingColumn}
+          resizeState={resizeState}
+          canEdit={canEdit}
+          creatingRow={creatingRow}
+          creatingColumn={creatingColumn}
+          activeSheetId={activeSheetId}
+          onAddRow={handleAddRow}
+          onAddColumn={handleAddColumn}
+          onSelectCell={selectCell}
+          onSelectRow={selectRow}
+          onCellChange={handleCellChange}
+          onCellCommit={handleCellCommit}
+          onNavigateCell={navigateCell}
+          onContextMenu={openContextMenu}
+          onPasteTable={handlePasteTable}
+          onColumnLabelChange={handleColumnLabelChange}
+          onColumnLabelCommit={handleColumnLabelCommit}
+          onResizeStart={handleResizeStart}
+          onScrollStateChange={setScrollState}
+        />
       </div>
 
       <footer className={styles.panelFooter}>

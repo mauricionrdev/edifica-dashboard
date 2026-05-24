@@ -291,7 +291,7 @@ function TaskInspector({ task, onClear }) {
         <div className={styles.inspectorEmpty}>
           <span><ChecklistIcon size={18} /></span>
           <strong>Selecione uma tarefa</strong>
-          <p>Use o painel lateral para revisar contexto, prazo e prioridade sem sair do workspace.</p>
+          <p></p>
         </div>
       </aside>
     );
@@ -499,7 +499,7 @@ export default function WorkspacePage() {
       id: 'now',
       eyebrow: 'Agora',
       title: 'Resolver urgências',
-      description: taskBuckets.overdue.length ? 'Comece pelas demandas atrasadas e críticas.' : 'Sem atrasos. Mantenha o ritmo das tarefas do dia.',
+      description: taskBuckets.overdue.length ? 'Comece pelas demandas atrasadas e críticas.' : 'Sem atrasos.',
       count: taskBuckets.overdue.length + taskStats.critical,
       filter: taskBuckets.overdue.length ? 'overdue' : 'critical',
     },
@@ -507,7 +507,7 @@ export default function WorkspacePage() {
       id: 'today',
       eyebrow: 'Hoje',
       title: 'Executar prazos do dia',
-      description: taskBuckets.today.length ? 'Priorize o que vence hoje antes de abrir novos itens.' : 'Nenhuma tarefa com vencimento hoje.',
+      description: taskBuckets.today.length ? 'Prioridade do dia.' : 'Nenhuma tarefa com vencimento hoje.',
       count: taskBuckets.today.length,
       filter: 'today',
     },
@@ -515,7 +515,7 @@ export default function WorkspacePage() {
       id: 'week',
       eyebrow: 'Semana',
       title: 'Organizar próximos passos',
-      description: taskBuckets.week.length ? 'Revise as entregas da semana e antecipe gargalos.' : 'Sem prazos relevantes nesta semana.',
+      description: taskBuckets.week.length ? 'Entregas da semana.' : 'Sem prazos relevantes nesta semana.',
       count: taskBuckets.week.length,
       filter: 'all',
     },
@@ -871,7 +871,7 @@ export default function WorkspacePage() {
         ) : null}
 
         {activeTab === 'sheets' ? (
-          <section className={styles.sheetSection} aria-label="Planilhas pessoais">
+          <section className={styles.sheetSection} aria-label="Planilhas">
             <div className={styles.sheetHeader}>
               <div>
                 <span>Planilhas</span>
@@ -894,7 +894,7 @@ export default function WorkspacePage() {
             <div className={styles.resourceActions}>
               <ResourceAction
                 icon={BuildingIcon}
-                title="Planilhas pessoais"
+                title="Planilhas"
                 description="Organize controles próprios sem misturar com a operação central."
                 onClick={() => setActiveTab('sheets')}
               />
@@ -912,7 +912,7 @@ export default function WorkspacePage() {
               />
               <ResourceAction
                 icon={SettingsIcon}
-                title="Preferências"
+                title="Configurações"
                 description="Veja o estado atual das configurações do seu espaço pessoal."
                 onClick={() => setActiveTab('settings')}
               />
@@ -924,7 +924,7 @@ export default function WorkspacePage() {
             <div className={styles.settingsPanel}>
               <div className={styles.sectionHeader}>
                 <span>Workspace</span>
-                <strong>Preferências</strong>
+                <strong>Configurações</strong>
               </div>
               <div className={styles.settingsRows}>
                 <div><span>Proprietário</span><strong>{displayName}</strong></div>
