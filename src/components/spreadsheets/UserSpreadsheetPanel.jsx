@@ -2079,15 +2079,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         data-at-end-x={scrollState.endX || undefined}
         data-at-end-y={scrollState.endY || undefined}
       >
-        {resizeState ? (
-          <div
-            className={styles.resizeGuide}
-            style={{ '--resize-left': `${Math.max(0, resizeState.left)}px` }}
-            aria-hidden="true"
-          >
-            <span>{resizeState.label} · {resizeState.width}px</span>
-          </div>
-        ) : null}
         <SpreadsheetGrid
           columns={columns}
           rows={rows}

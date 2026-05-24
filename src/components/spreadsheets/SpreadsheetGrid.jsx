@@ -33,7 +33,7 @@ function getStyle(row, key) {
   return row?.__styles?.[key] || {};
 }
 
-function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup, rangeEdges, saving, editing, editingValue, canEdit, onSelect, onStartEdit, onEditorChange, onCommitEdit, onCancelEdit, onNavigate, onContextMenu, onPasteTable }) {
+function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup, saving, editing, editingValue, canEdit, onSelect, onStartEdit, onEditorChange, onCommitEdit, onCancelEdit, onNavigate, onContextMenu, onPasteTable }) {
   const ref = useRef(null);
   const editorRef = useRef(null);
   const style = getStyle(row, column.key);
@@ -116,10 +116,6 @@ function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup,
       data-group={selectedGroup || undefined}
       data-saving={saving || undefined}
       data-editing={editing || undefined}
-      data-edge-top={rangeEdges?.top || undefined}
-      data-edge-bottom={rangeEdges?.bottom || undefined}
-      data-edge-left={rangeEdges?.left || undefined}
-      data-edge-right={rangeEdges?.right || undefined}
       role="gridcell"
       tabIndex={0}
       style={{
@@ -283,6 +279,43 @@ export default function SpreadsheetGrid({
   const topSpacer = visibleRange.first * ROW_HEIGHT;
   const bottomSpacer = Math.max(0, bodyHeight - topSpacer - visibleRows.length * ROW_HEIGHT);
 
+  const activeRect = useMemo(() => {
+    if (!activeCell) return null;
+    const rowIndex = rows.findIndex((row) => row.id === activeCell.rowId);
+    const columnIndex = columns.findIndex((column) => column.key === activeCell.key);
+    const columnMeta = columnOffsets[columnIndex];
+    if (rowIndex < 0 || !columnMeta) return null;
+    return {
+      top: HEADER_HEIGHT + rowIndex * ROW_HEIGHT,
+      left: columnMeta.left,
+      width: columnMeta.width,
+      height: ROW_HEIGHT,
+    };
+  }, [activeCell, columnOffsets, columns, rows]);
+
+  const selectionRect = useMemo(() => {
+    if (!selectionBounds || selectedCount <= 1) return null;
+    const startColumn = columnOffsets[selectionBounds.columnFrom];
+    const endColumn = columnOffsets[selectionBounds.columnTo];
+    if (!startColumn || !endColumn) return null;
+    return {
+      top: HEADER_HEIGHT + selectionBounds.rowFrom * ROW_HEIGHT,
+      left: startColumn.left,
+      width: endColumn.left + endColumn.width - startColumn.left,
+      height: (selectionBounds.rowTo - selectionBounds.rowFrom + 1) * ROW_HEIGHT,
+    };
+  }, [columnOffsets, selectedCount, selectionBounds]);
+
+  const resizeRect = useMemo(() => {
+    if (!resizeState?.key) return null;
+    const columnMeta = columnOffsets.find((item) => item.key === resizeState.key);
+    if (!columnMeta) return null;
+    return {
+      left: columnMeta.left + columnMeta.width,
+      label: `${resizeState.label || 'Coluna'} · ${resizeState.width || Math.round(columnMeta.width)}px`,
+    };
+  }, [columnOffsets, resizeState]);
+
   const startEdit = useCallback((rowId, key, value) => {
     if (!canEdit) return;
     setEditingCell({ rowId, key });
@@ -390,12 +423,6 @@ export default function SpreadsheetGrid({
                   {visibleColumns.map((column, offsetIndex) => {
                     const columnIndex = visibleColumnRange.first + offsetIndex;
                     const selectedGroup = selectedCellIds.has(`${row.id}:${column.key}`);
-                    const rangeEdges = selectionBounds && selectedGroup ? {
-                      top: rowIndex === selectionBounds.rowFrom,
-                      bottom: rowIndex === selectionBounds.rowTo,
-                      left: columnIndex === selectionBounds.columnFrom,
-                      right: columnIndex === selectionBounds.columnTo,
-                    } : null;
                     return (
                       <CellView
                         key={column.key}
@@ -405,7 +432,6 @@ export default function SpreadsheetGrid({
                         columnIndex={columnIndex}
                         selected={activeCell?.rowId === row.id && activeCell?.key === column.key}
                         selectedGroup={selectedGroup}
-                        rangeEdges={rangeEdges}
                         saving={savingCell === `${row.id}:${column.key}` || savingCell === 'bulk-selection'}
                         editing={editingCell?.rowId === row.id && editingCell?.key === column.key}
                         editingValue={editingValue}
@@ -425,6 +451,36 @@ export default function SpreadsheetGrid({
               );
             })}
             <div style={{ height: bottomSpacer }} />
+          </div>
+
+          <div className={styles.overlayLayer} aria-hidden="true">
+            {selectionRect ? (
+              <div
+                className={styles.selectionOverlay}
+                style={{
+                  transform: `translate3d(${selectionRect.left}px, ${selectionRect.top}px, 0)`,
+                  width: selectionRect.width,
+                  height: selectionRect.height,
+                }}
+              />
+            ) : null}
+            {activeRect ? (
+              <div
+                className={styles.activeOverlay}
+                style={{
+                  transform: `translate3d(${activeRect.left}px, ${activeRect.top}px, 0)`,
+                  width: activeRect.width,
+                  height: activeRect.height,
+                }}
+              >
+                <span />
+              </div>
+            ) : null}
+            {resizeRect ? (
+              <div className={styles.resizeOverlay} style={{ transform: `translate3d(${resizeRect.left}px, 0, 0)` }}>
+                <span>{resizeRect.label}</span>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
