@@ -1278,3 +1278,237 @@
 .sheetOrganizer span:first-child {
   color: rgba(248, 250, 252, 0.82);
 }
+
+.importOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(18px);
+}
+
+.importModal,
+.templateModal {
+  width: min(720px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--sheet-line);
+  border-radius: 18px;
+  background: #08090a;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.028);
+}
+
+.templateModal {
+  width: min(860px, 100%);
+}
+
+.importHeader {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--sheet-line-soft);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.importHeader div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.importHeader span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.importHeader strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: var(--fs-title-sm);
+  font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.importClose {
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--sheet-line-soft);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.026);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.importClose:hover {
+  border-color: var(--sheet-line-strong);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.importControls {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 0;
+}
+
+.importControls button,
+.importFooter button {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--sheet-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.032);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.importControls label {
+  display: grid;
+  gap: 6px;
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.importControls select {
+  height: 34px;
+  min-width: 150px;
+  border: 1px solid var(--sheet-line);
+  border-radius: 10px;
+  background: #0b0c0f;
+  color: var(--text-primary);
+  padding: 0 10px;
+  outline: none;
+}
+
+.importModal textarea {
+  min-height: 260px;
+  margin: 14px 18px;
+  resize: vertical;
+  border: 1px solid var(--sheet-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+  padding: 14px;
+  font: inherit;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: var(--fs-body-sm);
+  line-height: 1.55;
+  outline: none;
+}
+
+.importPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 18px 14px;
+}
+
+.importPreview span {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--sheet-line-soft);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.024);
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+}
+
+.importFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--sheet-line-soft);
+}
+
+.importFooter button:last-child {
+  border-color: rgba(245, 183, 36, 0.42);
+  background: rgba(245, 183, 36, 0.12);
+  color: #ffe4a6;
+}
+
+.importFooter button:disabled,
+.templateCard:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.templateGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  overflow: auto;
+  padding: 18px;
+}
+
+.templateCard {
+  min-height: 150px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--sheet-line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.022);
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.templateCard:hover {
+  border-color: rgba(245, 183, 36, 0.32);
+  background: rgba(245, 183, 36, 0.055);
+}
+
+.templateCard span {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+}
+
+.templateCard strong {
+  color: #f6c95f;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.templateCard em {
+  color: var(--text-tertiary);
+  font-style: normal;
+  font-size: var(--fs-body-sm);
+  line-height: 1.5;
+}
+
+.templateCard small {
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  line-height: 1.45;
+}

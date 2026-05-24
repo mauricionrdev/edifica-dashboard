@@ -66,6 +66,62 @@ const FORMAT_GROUPS = [
   },
 ];
 
+const SHEET_TEMPLATES = [
+  {
+    id: 'blank-workspace',
+    name: 'Planilha zerada',
+    description: 'Base ampla e vazia para montar do zero.',
+    columns: ['Item', 'Status', 'Responsável', 'Prazo', 'Observações'],
+    rows: Array.from({ length: 12 }, () => ['', '', '', '', '']),
+  },
+  {
+    id: 'ai-crm-implementation',
+    name: 'Implantação IA/CRM',
+    description: 'Acompanhamento rápido de cliente, prompt, conexão, acessos e status.',
+    columns: ['Cliente / escritório', 'Implementação', 'Nicho / campanha', 'Prompt', 'Conexão', 'Acessos', 'Status', 'API Key', 'Observações'],
+    rows: [
+      ['Cliente exemplo', 'Pendente', 'Vínculo empregatício', 'Revisar', 'Desconectado', 'Pendente', 'Em implantação', '', ''],
+      ['', '', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', '', '', ''],
+    ],
+  },
+  {
+    id: 'weekly-ops',
+    name: 'Rotina semanal',
+    description: 'Organização pessoal por prioridade, etapa e próxima ação.',
+    columns: ['Prioridade', 'Tarefa', 'Origem', 'Etapa', 'Prazo', 'Próxima ação', 'Status'],
+    rows: [
+      ['Alta', '', '', '', '', '', 'Aberta'],
+      ['Média', '', '', '', '', '', 'Aberta'],
+      ['Baixa', '', '', '', '', '', 'Aberta'],
+      ['', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', ''],
+      ['', '', '', '', '', '', ''],
+    ],
+  },
+  {
+    id: 'client-checklist',
+    name: 'Checklist operacional',
+    description: 'Checklist simples para validações de suporte e implantação.',
+    columns: ['Check', 'Descrição', 'Responsável', 'Validação', 'Status', 'Evidência'],
+    rows: [
+      ['01', 'Briefing recebido', '', '', 'Pendente', ''],
+      ['02', 'Prompt implementado', '', '', 'Pendente', ''],
+      ['03', 'WhatsApp conectado', '', '', 'Pendente', ''],
+      ['04', 'Acessos enviados', '', '', 'Pendente', ''],
+      ['05', 'Operação validada', '', '', 'Pendente', ''],
+    ],
+  },
+];
+
+function estimateColumnWidth(label = '', values = []) {
+  const longest = [label, ...values].reduce((max, value) => Math.max(max, stripHtml(value).length), 0);
+  return Math.min(340, Math.max(96, longest * 9 + 42));
+}
+
 function cleanText(value) {
   return String(value ?? '').trim();
 }
@@ -671,6 +727,40 @@ function ImportDialog({ open, text, delimiter, preview, disabled, onTextChange, 
   );
 }
 
+function TemplateDialog({ open, templates, disabled, onClose, onCreate }) {
+  if (!open) return null;
+  return (
+    <div className={styles.importOverlay} role="dialog" aria-modal="true" aria-label="Criar planilha por modelo">
+      <div className={styles.templateModal}>
+        <header className={styles.importHeader}>
+          <div>
+            <span>Modelos de planilha</span>
+            <strong>Comece com uma estrutura pronta</strong>
+          </div>
+          <button type="button" className={styles.importClose} onClick={onClose} aria-label="Fechar modelos"><CloseIcon size={16} /></button>
+        </header>
+        <div className={styles.templateGrid}>
+          {templates.map((template) => (
+            <button
+              key={template.id}
+              type="button"
+              className={styles.templateCard}
+              disabled={disabled}
+              onClick={() => onCreate(template)}
+            >
+              <span>{template.name}</span>
+              <strong>{template.columns.length} colunas · {template.rows.length} linhas</strong>
+              <em>{template.description}</em>
+              <small>{template.columns.slice(0, 4).join(' · ')}{template.columns.length > 4 ? ' · ...' : ''}</small>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 function SheetContextMenu({ menu, canEdit, onClose, onAddRow, onAddColumn, onInsertRow, onInsertColumn, onDuplicateRow, onDuplicateColumn, onSelectRow, onSelectColumn, onClearSelection, onDeleteRow, onDeleteColumn }) {
   useEffect(() => {
     if (!menu) return undefined;
@@ -763,6 +853,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [activeSheetId, setActiveSheetId] = useState('');
   const [sheetSearch, setSheetSearch] = useState('');
   const [importOpen, setImportOpen] = useState(false);
+  const [templateOpen, setTemplateOpen] = useState(false);
   const [importText, setImportText] = useState('');
   const [importDelimiter, setImportDelimiter] = useState('auto');
   const [columns, setColumns] = useState([]);
@@ -1520,6 +1611,75 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeSheet?.name, columns, markSync, rows, showToast]);
 
+  const handleAutoFitColumns = useCallback(async () => {
+    if (!columns.length) return;
+    markSync('saving', 'Ajustando largura das colunas');
+    const nextColumns = columns.map((column) => ({
+      ...column,
+      width: estimateColumnWidth(column.label, rows.map((row) => row?.[column.key] || '')),
+    }));
+    setColumns(nextColumns);
+    try {
+      await Promise.all(nextColumns.map((column) => updateSupportDailyColumn(column.key, { ownerUserId, width: column.width })));
+      markSync('saved', 'Colunas ajustadas automaticamente');
+    } catch (err) {
+      markSync('error', 'Falha ao ajustar colunas');
+      showToast?.(err?.message || 'Não foi possível ajustar as colunas.', { variant: 'error' });
+      refreshRows(activeSheetId).catch(() => {});
+    }
+  }, [activeSheetId, columns, markSync, ownerUserId, refreshRows, rows, showToast]);
+
+  const handleCreateTemplateSheet = useCallback(async (template) => {
+    if (!template || creatingSheet) return;
+    setCreatingSheet(true);
+    setTemplateOpen(false);
+    markSync('saving', `Criando ${template.name}`);
+    try {
+      const columnCount = Math.max(1, template.columns.length);
+      const rowCount = Math.max(1, template.rows.length || BLANK_MIN_ROWS);
+      const data = await createSupportDailySheet({
+        name: template.name,
+        ownerUserId,
+        columnCount,
+        rowCount,
+        columnWidth: BLANK_COLUMN_WIDTH,
+      });
+      const targetSheetId = data?.sheet?.id;
+      if (!targetSheetId) throw new Error('Modelo não retornou identificador da planilha.');
+
+      const targetData = await listSupportDailyRows(targetSheetId, { ownerUserId });
+      const targetColumns = normalizeColumns(targetData?.columns).slice(0, columnCount);
+      const targetRows = (Array.isArray(targetData?.rows) ? targetData.rows : [])
+        .map((row) => normalizeRow(row, targetColumns))
+        .slice(0, rowCount);
+
+      await Promise.all(targetColumns.map((column, index) => updateSupportDailyColumn(column.key, {
+        ownerUserId,
+        label: template.columns[index] || `Coluna ${index + 1}`,
+        width: estimateColumnWidth(template.columns[index] || '', template.rows.map((row) => row[index] || '')),
+        position: index + 1,
+      })));
+
+      await Promise.all(targetRows.map((row, rowIndex) => {
+        const sourceRow = template.rows[rowIndex] || [];
+        const payload = targetColumns.reduce((acc, column, columnIndex) => ({
+          ...acc,
+          [column.key]: sourceRow[columnIndex] || '',
+        }), {});
+        return updateSupportDailyRow(row.id, { ...payload, ownerUserId, position: rowIndex + 1 });
+      }));
+
+      await refreshRows(targetSheetId);
+      markSync('saved', `${template.name} criada`);
+      showToast?.(`Modelo ${template.name} criado.`, { variant: 'success' });
+    } catch (err) {
+      markSync('error', 'Falha ao criar modelo');
+      showToast?.(err?.message || 'Não foi possível criar a planilha por modelo.', { variant: 'error' });
+    } finally {
+      setCreatingSheet(false);
+    }
+  }, [creatingSheet, markSync, ownerUserId, refreshRows, showToast]);
+
   const handleImportFile = useCallback(async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -1567,9 +1727,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
         {canEdit ? (
           <div className={styles.sheetActions}>
+            <Button type="button" size="sm" variant="secondary" onClick={() => setTemplateOpen(true)} disabled={creatingSheet}>Modelos</Button>
             <Button type="button" size="sm" variant="secondary" onClick={handleCopySelection} disabled={!activeCell && selectedCount <= 1}>Copiar</Button>
             <Button type="button" size="sm" variant="secondary" onClick={() => setImportOpen(true)} disabled={!activeSheetId || !columns.length || !rows.length}>Importar</Button>
             <Button type="button" size="sm" variant="secondary" onClick={handleExportCsv} disabled={!activeSheetId || !columns.length}>Exportar CSV</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={handleAutoFitColumns} disabled={!activeSheetId || !columns.length}>Ajustar colunas</Button>
             <Button type="button" size="sm" variant="secondary" onClick={() => handleDuplicateSheet(activeSheetId)} disabled={!activeSheetId || creatingSheet}>Duplicar</Button>
             <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button>
             <Button type="button" size="sm" onClick={handleAddColumn} disabled={creatingColumn || !activeSheetId}><PlusIcon size={14} /> Coluna</Button>
@@ -1839,6 +2001,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onClose={() => setImportOpen(false)}
         onApply={handleApplyImport}
         onPickFile={() => importFileRef.current?.click()}
+      />
+      <TemplateDialog
+        open={templateOpen}
+        templates={SHEET_TEMPLATES}
+        disabled={creatingSheet}
+        onClose={() => setTemplateOpen(false)}
+        onCreate={handleCreateTemplateSheet}
       />
 
       <SheetContextMenu
