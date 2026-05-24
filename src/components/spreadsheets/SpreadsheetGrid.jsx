@@ -5,6 +5,8 @@ const ROW_HEIGHT = 38;
 const HEADER_HEIGHT = 38;
 const BUFFER_ROWS = 10;
 const INDEX_WIDTH = 54;
+const AUTO_SCROLL_EDGE = 42;
+const AUTO_SCROLL_MAX_STEP = 22;
 
 function stripText(value = '') {
   return String(value ?? '')
@@ -210,6 +212,8 @@ export default function SpreadsheetGrid({
   const dragSelectionRef = useRef(null);
   const [fillSelection, setFillSelection] = useState(null);
   const fillSelectionRef = useRef(null);
+  const pointerPositionRef = useRef(null);
+  const autoScrollFrameRef = useRef(0);
 
   const columnTemplate = useMemo(() => `${INDEX_WIDTH}px ${columns.map((column) => `${Math.max(5, Number(column.width || 5))}px`).join(' ')}`, [columns]);
   const columnOffsets = useMemo(() => {
@@ -269,6 +273,92 @@ export default function SpreadsheetGrid({
       updateViewport();
     }
   }, [updateViewport]);
+
+  const stopAutoScroll = useCallback(() => {
+    if (autoScrollFrameRef.current) {
+      window.cancelAnimationFrame(autoScrollFrameRef.current);
+      autoScrollFrameRef.current = 0;
+    }
+    pointerPositionRef.current = null;
+  }, []);
+
+  const applyDragTargetFromPoint = useCallback((clientX, clientY) => {
+    const element = document.elementFromPoint(clientX, clientY)?.closest?.('[data-row-id][data-column-key]');
+    if (!element) return;
+    const rowId = element.dataset.rowId;
+    const key = element.dataset.columnKey;
+    if (!rowId || !key) return;
+
+    const activeDrag = dragSelectionRef.current;
+    if (activeDrag && !editingCell) {
+      if (activeDrag.lastRowId !== rowId || activeDrag.lastKey !== key) {
+        dragSelectionRef.current = { ...activeDrag, lastRowId: rowId, lastKey: key };
+        setDragSelection({ active: true, startRowId: activeDrag.startRowId, startKey: activeDrag.startKey, lastRowId: rowId, lastKey: key });
+        onSelectCell(rowId, key, element, true);
+      }
+    }
+
+    const activeFill = fillSelectionRef.current;
+    if (activeFill) {
+      const rowIndex = Number(element.dataset.rowIndex);
+      const columnIndex = Number(element.dataset.columnIndex);
+      if (Number.isFinite(rowIndex) && Number.isFinite(columnIndex) && (activeFill.targetRowIndex !== rowIndex || activeFill.targetColumnIndex !== columnIndex)) {
+        const next = { ...activeFill, targetRowIndex: rowIndex, targetColumnIndex: columnIndex };
+        fillSelectionRef.current = next;
+        setFillSelection(next);
+      }
+    }
+  }, [editingCell, onSelectCell]);
+
+  const runAutoScroll = useCallback(() => {
+    const scroller = scrollerRef.current;
+    const pointer = pointerPositionRef.current;
+    const dragging = dragSelectionRef.current || fillSelectionRef.current;
+    if (!scroller || !pointer || !dragging) {
+      autoScrollFrameRef.current = 0;
+      return;
+    }
+
+    const rect = scroller.getBoundingClientRect();
+    const maxTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+    const maxLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+    let deltaY = 0;
+    let deltaX = 0;
+
+    if (pointer.y < rect.top + AUTO_SCROLL_EDGE) {
+      const ratio = (rect.top + AUTO_SCROLL_EDGE - pointer.y) / AUTO_SCROLL_EDGE;
+      deltaY = -Math.ceil(Math.min(1, ratio) * AUTO_SCROLL_MAX_STEP);
+    } else if (pointer.y > rect.bottom - AUTO_SCROLL_EDGE) {
+      const ratio = (pointer.y - (rect.bottom - AUTO_SCROLL_EDGE)) / AUTO_SCROLL_EDGE;
+      deltaY = Math.ceil(Math.min(1, ratio) * AUTO_SCROLL_MAX_STEP);
+    }
+
+    if (pointer.x < rect.left + AUTO_SCROLL_EDGE) {
+      const ratio = (rect.left + AUTO_SCROLL_EDGE - pointer.x) / AUTO_SCROLL_EDGE;
+      deltaX = -Math.ceil(Math.min(1, ratio) * AUTO_SCROLL_MAX_STEP);
+    } else if (pointer.x > rect.right - AUTO_SCROLL_EDGE) {
+      const ratio = (pointer.x - (rect.right - AUTO_SCROLL_EDGE)) / AUTO_SCROLL_EDGE;
+      deltaX = Math.ceil(Math.min(1, ratio) * AUTO_SCROLL_MAX_STEP);
+    }
+
+    if (deltaY || deltaX) {
+      const nextTop = Math.max(0, Math.min(maxTop, scroller.scrollTop + deltaY));
+      const nextLeft = Math.max(0, Math.min(maxLeft, scroller.scrollLeft + deltaX));
+      if (nextTop !== scroller.scrollTop || nextLeft !== scroller.scrollLeft) {
+        scroller.scrollTop = nextTop;
+        scroller.scrollLeft = nextLeft;
+        updateViewport();
+        applyDragTargetFromPoint(pointer.x, pointer.y);
+      }
+    }
+
+    autoScrollFrameRef.current = window.requestAnimationFrame(runAutoScroll);
+  }, [applyDragTargetFromPoint, updateViewport]);
+
+  const startAutoScroll = useCallback((event) => {
+    pointerPositionRef.current = { x: event.clientX, y: event.clientY };
+    if (!autoScrollFrameRef.current) autoScrollFrameRef.current = window.requestAnimationFrame(runAutoScroll);
+  }, [runAutoScroll]);
 
   const visibleRange = useMemo(() => {
     const first = Math.max(0, Math.floor(viewport.top / ROW_HEIGHT) - BUFFER_ROWS);
@@ -370,7 +460,8 @@ export default function SpreadsheetGrid({
   const finishDragSelection = useCallback(() => {
     dragSelectionRef.current = null;
     setDragSelection(null);
-  }, []);
+    if (!fillSelectionRef.current) stopAutoScroll();
+  }, [stopAutoScroll]);
 
   const handleDragSelectionStart = useCallback((event, rowId, key, element) => {
     if (event.shiftKey) {
@@ -381,16 +472,19 @@ export default function SpreadsheetGrid({
     setDragSelection({ active: true, startRowId: rowId, startKey: key, lastRowId: rowId, lastKey: key });
     onSelectCell(rowId, key, element, false);
     element?.setPointerCapture?.(event.pointerId);
-  }, [onSelectCell]);
+    startAutoScroll(event);
+  }, [onSelectCell, startAutoScroll]);
 
   const handleDragSelectionEnter = useCallback((event, rowId, key, element) => {
+    pointerPositionRef.current = { x: event.clientX, y: event.clientY };
+    if (dragSelectionRef.current) startAutoScroll(event);
     const drag = dragSelectionRef.current;
     if (!drag || editingCell) return;
     if (drag.lastRowId === rowId && drag.lastKey === key) return;
     dragSelectionRef.current = { ...drag, lastRowId: rowId, lastKey: key };
     setDragSelection({ active: true, startRowId: drag.startRowId, startKey: drag.startKey, lastRowId: rowId, lastKey: key });
     onSelectCell(rowId, key, element, true);
-  }, [editingCell, onSelectCell]);
+  }, [editingCell, onSelectCell, startAutoScroll]);
 
   const handleDragSelectionEnd = useCallback((event) => {
     event.currentTarget?.releasePointerCapture?.(event.pointerId);
@@ -422,22 +516,26 @@ export default function SpreadsheetGrid({
     const initial = { sourceRowIndex, sourceColumnIndex, targetRowIndex: sourceRowIndex, targetColumnIndex: sourceColumnIndex };
     fillSelectionRef.current = initial;
     setFillSelection(initial);
-  }, [activeCell, canEdit, columns, editingCell, rows]);
+    startAutoScroll(event);
+  }, [activeCell, canEdit, columns, editingCell, rows, startAutoScroll]);
 
   const updateFillDrag = useCallback((event) => {
     const current = fillSelectionRef.current;
     if (!current) return;
+    pointerPositionRef.current = { x: event.clientX, y: event.clientY };
+    startAutoScroll(event);
     const target = findCellFromPoint(event.clientX, event.clientY);
     if (!target) return;
     const next = { ...current, targetRowIndex: target.rowIndex, targetColumnIndex: target.columnIndex };
     fillSelectionRef.current = next;
     setFillSelection(next);
-  }, [findCellFromPoint]);
+  }, [findCellFromPoint, startAutoScroll]);
 
   const commitFillDrag = useCallback(() => {
     const current = fillSelectionRef.current;
     fillSelectionRef.current = null;
     setFillSelection(null);
+    if (!dragSelectionRef.current) stopAutoScroll();
     if (!current || !activeCell) return;
     const sourceRow = rows[current.sourceRowIndex];
     const sourceColumn = columns[current.sourceColumnIndex];
@@ -464,10 +562,18 @@ export default function SpreadsheetGrid({
     window.requestAnimationFrame(() => {
       targets.forEach((target) => onCellCommit(target.rowId, target.key));
     });
-  }, [activeCell, columns, onCellChange, onCellCommit, rows]);
+  }, [activeCell, columns, onCellChange, onCellCommit, rows, stopAutoScroll]);
 
   useEffect(() => {
-    const move = (event) => updateFillDrag(event);
+    const move = (event) => {
+      if (!fillSelectionRef.current && !dragSelectionRef.current) return;
+      pointerPositionRef.current = { x: event.clientX, y: event.clientY };
+      if (fillSelectionRef.current) updateFillDrag(event);
+      if (dragSelectionRef.current) {
+        startAutoScroll(event);
+        applyDragTargetFromPoint(event.clientX, event.clientY);
+      }
+    };
     const up = () => commitFillDrag();
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
@@ -477,7 +583,7 @@ export default function SpreadsheetGrid({
       window.removeEventListener('pointerup', up);
       window.removeEventListener('blur', up);
     };
-  }, [commitFillDrag, updateFillDrag]);
+  }, [applyDragTargetFromPoint, commitFillDrag, startAutoScroll, updateFillDrag]);
 
   useEffect(() => {
     const stop = () => finishDragSelection();
@@ -488,6 +594,10 @@ export default function SpreadsheetGrid({
       window.removeEventListener('blur', stop);
     };
   }, [finishDragSelection]);
+
+  useEffect(() => () => {
+    stopAutoScroll();
+  }, [stopAutoScroll]);
 
   useEffect(() => {
     if (!activeCell) return;
