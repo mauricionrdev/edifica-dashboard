@@ -850,6 +850,8 @@ function SheetContextMenu({
   onCopy,
   onCut,
   onPaste,
+  onPasteValues,
+  onPasteFormatting,
   onSelectAll,
   onSelectUsedRange,
   onSelectRow,
@@ -944,6 +946,8 @@ function SheetContextMenu({
           <Item icon="✂" label="Recortar" shortcut="Ctrl X" onClick={onCut} disabled={!canEdit} />
           <Item icon="⧉" label="Copiar" shortcut="Ctrl C" onClick={onCopy} />
           <Item icon="▣" label="Colar" shortcut="Ctrl V" onClick={onPaste} disabled={!canEdit} />
+          <Item icon="123" label="Colar somente valores" onClick={onPasteValues} disabled={!canEdit} />
+          <Item icon="▧" label="Colar somente formatação" onClick={onPasteFormatting} disabled={!canEdit} />
         </Section>
 
         {isCell ? (
@@ -1083,7 +1087,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [replaceValue, setReplaceValue] = useState('');
   const [replaceScope, setReplaceScope] = useState('selection');
   const [replaceMatchCase, setReplaceMatchCase] = useState(false);
-  const [advancedPanelOpen, setAdvancedPanelOpen] = useState(false);
+  const [replaceBarOpen, setReplaceBarOpen] = useState(false);
   const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -2014,29 +2018,35 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeCell?.rowId, activeColumn, activeSheetId, canMutateSheet, columns, loadSheet, markSync, notifyError, ownerUserId, persistColumnOrder, rows]);
 
-  const clearSelectionValues = useCallback(async () => {
+  const clearSelectionValues = useCallback(async (options = {}) => {
     if (!canEdit || !selectedCells.length) return;
+    const clearStyles = Boolean(options.clearStyles);
     const updatesByRow = new Map();
     const optimistic = rows.map((row) => {
       const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
       if (!targetCells.length) return row;
-      const next = { ...row };
+      const next = { ...row, __styles: { ...(row.__styles || {}) } };
       const patch = {};
+      const stylePatch = {};
       targetCells.forEach(({ column }) => {
         next[column.key] = '';
         patch[column.key] = '';
+        if (clearStyles) {
+          next.__styles[column.key] = {};
+          stylePatch[column.key] = {};
+        }
       });
-      updatesByRow.set(row.id, patch);
+      updatesByRow.set(row.id, Object.keys(stylePatch).length ? { ...patch, styles: stylePatch } : patch);
       return next;
     });
     setRows(optimistic);
-    markSync('saving', 'Limpando conteúdo');
-    setBusy('clear-values');
+    markSync('saving', clearStyles ? 'Recortando seleção' : 'Limpando conteúdo');
+    setBusy(clearStyles ? 'cut-values' : 'clear-values');
     try {
       await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
-      markSync('saved', 'Conteúdo limpo');
+      markSync('saved', clearStyles ? 'Seleção recortada' : 'Conteúdo limpo');
     } catch (error) {
-      notifyError(error, 'Não foi possível limpar o conteúdo.');
+      notifyError(error, clearStyles ? 'Não foi possível recortar a seleção.' : 'Não foi possível limpar o conteúdo.');
       loadSheet(activeSheetId).catch(() => {});
     } finally {
       setBusy('');
@@ -2132,7 +2142,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const cutSelection = useCallback(async () => {
     if (!canEdit || !selectedCells.length) return;
     await copySelection();
-    await clearSelectionValues();
+    await clearSelectionValues({ clearStyles: true });
   }, [canEdit, clearSelectionValues, copySelection, selectedCells.length]);
 
   const transformSelectionText = useCallback(async (mode) => {
@@ -2249,7 +2259,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const value = activeCellText(activeCell, rows);
     if (!value) return;
     setReplaceQuery(value);
-    setAdvancedPanelOpen(true);
+    setReplaceBarOpen(true);
     requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true }));
   }, [activeCell, rows]);
 
@@ -2419,6 +2429,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const pasteTable = useCallback(async (startRowId, startKey, text, options = {}) => {
     if (!canEdit || !activeSheetId) return;
+    const pasteMode = options.mode || 'all';
     const table = parseClipboardTable(text).slice(0, MAX_IMPORT_ROWS);
     if (!table.length) return;
     const clipboardStyles = Array.isArray(options.styles)
@@ -2444,21 +2455,27 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         sourceRow.forEach((cell, offset) => {
           const column = nextColumns[startColumnIndex + offset];
           if (!column) return;
-          next[column.key] = cell;
           const patch = rowPatches.get(row.id) || {};
-          patch[column.key] = cell;
           const sourceStyle = clipboardStyles?.[rowIndex - startRowIndex]?.[offset];
-          if (sourceStyle && Object.keys(sourceStyle).length) {
-            next.__styles[column.key] = cloneStyleForClipboard(sourceStyle);
-            patch.styles = { ...(patch.styles || {}), [column.key]: cloneStyleForClipboard(sourceStyle) };
+
+          if (pasteMode !== 'formats') {
+            next[column.key] = cell;
+            patch[column.key] = cell;
           }
-          rowPatches.set(row.id, patch);
+
+          if (pasteMode !== 'values' && sourceStyle) {
+            const nextStyle = cloneStyleForClipboard(sourceStyle);
+            next.__styles[column.key] = nextStyle;
+            patch.styles = { ...(patch.styles || {}), [column.key]: nextStyle };
+          }
+
+          if (Object.keys(patch).length) rowPatches.set(row.id, patch);
         });
         return next;
       });
       setRows(normalizeRows(optimistic, nextColumns));
       await Promise.all([...rowPatches.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
-      markSync('saved', 'Dados colados');
+      markSync('saved', pasteMode === 'formats' ? 'Formatação colada' : pasteMode === 'values' ? 'Valores colados' : 'Dados colados com formatação');
     } catch (error) {
       notifyError(error, 'Não foi possível colar os dados.');
       loadSheet(activeSheetId).catch(() => {});
@@ -2467,18 +2484,23 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeSheetId, canEdit, columns, ensureGridSize, loadSheet, markSync, notifyError, rows]);
 
-  const pasteClipboardAtActive = useCallback(async () => {
-    if (!canEdit || !activeCell?.rowId || !activeCell?.key || !navigator.clipboard?.readText) return;
+  const pasteClipboardAtActive = useCallback(async (mode = 'all') => {
+    if (!canEdit || !activeCell?.rowId || !activeCell?.key) return;
     try {
-      const text = await navigator.clipboard.readText();
-      if (!text) return;
+      const text = navigator.clipboard?.readText ? await navigator.clipboard.readText() : internalClipboardRef.current?.text || '';
       const internalClipboard = internalClipboardRef.current;
-      const styles = internalClipboard?.text === text ? internalClipboard.styles : null;
-      await pasteTable(activeCell.rowId, activeCell.key, text, { styles });
+      const effectiveText = text || internalClipboard?.text || '';
+      if (!effectiveText) return;
+      const styles = internalClipboard?.text === effectiveText ? internalClipboard.styles : null;
+      if (mode === 'formats' && !styles) {
+        markSync('saved', 'Nenhuma formatação interna copiada');
+        return;
+      }
+      await pasteTable(activeCell.rowId, activeCell.key, effectiveText, { styles, mode });
     } catch (error) {
       notifyError(error, 'Não foi possível ler a área de transferência.');
     }
-  }, [activeCell?.key, activeCell?.rowId, canEdit, notifyError, pasteTable]);
+  }, [activeCell?.key, activeCell?.rowId, canEdit, markSync, notifyError, pasteTable]);
 
   const exportCsv = useCallback(() => {
     if (!activeSheet) return;
@@ -2609,7 +2631,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       }
       if (modifier && key === 'h') {
         event.preventDefault();
-        setAdvancedPanelOpen(true);
+        setReplaceBarOpen(true);
         requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true }));
         return;
       }
@@ -2702,6 +2724,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <div className={styles.sheetsToolbar} aria-label="Barra de ferramentas da planilha">
         <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Pesquisar">⌕</button>
+        <button type="button" onClick={() => { setReplaceBarOpen(true); requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true })); }} disabled={!activeSheetId} aria-label="Localizar e substituir">Substituir</button>
         <button type="button" onClick={copySelection} disabled={!activeCell} aria-label="Copiar">Copiar</button>
         <button type="button" onClick={cutSelection} disabled={!activeCell || !canEdit || !!busy} aria-label="Recortar">Recortar</button>
         <button type="button" onClick={pasteClipboardAtActive} disabled={!activeCell || !canEdit || !!busy} aria-label="Colar">Colar</button>
@@ -2777,6 +2800,36 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Criar filtro">Filtro</button>
         <button type="button" onClick={() => insertFormulaTemplate('SOMA')} disabled={!activeCell || !canEdit || !!busy} aria-label="Inserir soma">Σ</button>
       </div>
+
+      {replaceBarOpen ? (
+        <div className={styles.replaceBar} aria-label="Localizar e substituir">
+          <span>Localizar e substituir</span>
+          <input
+            ref={replaceInputRef}
+            value={replaceQuery}
+            placeholder="Localizar"
+            aria-label="Localizar"
+            onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
+          />
+          <input
+            value={replaceValue}
+            placeholder="Substituir por"
+            aria-label="Substituir por"
+            onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
+          />
+          <select value={replaceScope} aria-label="Escopo da substituição" onChange={(event) => setReplaceScope(event.target.value)}>
+            <option value="selection">Seleção</option>
+            <option value="sheet">Planilha inteira</option>
+          </select>
+          <label>
+            <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
+            Diferenciar maiúsculas
+          </label>
+          <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
+          <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
+          <button type="button" onClick={() => setReplaceBarOpen(false)} aria-label="Fechar localizar e substituir">×</button>
+        </div>
+      ) : null}
 
       <div className={styles.filterBar}>
         <span>Filtro</span>
@@ -2937,147 +2990,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           </div>
         ) : null}
         </div>
-
-        {false && advancedPanelOpen ? (
-          <aside className={styles.advancedPanel} aria-label="Painel avançado da planilha">
-            <header>
-              <strong>Painel avançado</strong>
-              <button type="button" onClick={() => setAdvancedPanelOpen(false)} aria-label="Fechar painel">×</button>
-            </header>
-            <section>
-              <span>Seleção</span>
-              <strong>{selectedSummary}</strong>
-              <button type="button" onClick={selectAllCells} disabled={!activeSheetId}>Selecionar tudo</button>
-              <button type="button" onClick={selectUsedRange} disabled={!activeSheetId}>Selecionar área preenchida</button>
-              <button type="button" onClick={() => activeCell?.rowId && selectRow(activeCell.rowId)} disabled={!activeCell}>Selecionar linha</button>
-              <button type="button" onClick={() => activeCell?.key && selectColumn(activeCell.key)} disabled={!activeCell}>Selecionar coluna</button>
-            </section>
-            <section>
-              <span>Localizar e substituir</span>
-              <strong>Busca avançada na seleção ou planilha inteira</strong>
-              <input
-                ref={replaceInputRef}
-                className={styles.panelInput}
-                value={replaceQuery}
-                placeholder="Localizar"
-                onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
-              />
-              <input
-                className={styles.panelInput}
-                value={replaceValue}
-                placeholder="Substituir por"
-                onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
-              />
-              <select
-                className={styles.panelInput}
-                value={replaceScope}
-                aria-label="Escopo da substituição"
-                onChange={(event) => setReplaceScope(event.target.value)}
-              >
-                <option value="selection">Seleção</option>
-                <option value="sheet">Planilha inteira</option>
-              </select>
-              <label className={styles.panelCheck}>
-                <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
-                Diferenciar maiúsculas
-              </label>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
-                <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
-              </div>
-            </section>
-            <section>
-              <span>Texto</span>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>Negrito</button>
-                <button type="button" onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}>Itálico</button>
-                <button type="button" onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}>Sublinhado</button>
-                <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy}>Tachado</button>
-              </div>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={() => transformSelectionText('uppercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Maiúsculas</button>
-                <button type="button" onClick={() => transformSelectionText('lowercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Minúsculas</button>
-                <button type="button" onClick={() => transformSelectionText('titlecase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Capitalizar</button>
-                <button type="button" onClick={() => transformSelectionText('trim').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Limpar espaços</button>
-              </div>
-            </section>
-            <section>
-              <span>Alinhamento</span>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy}>Esquerda</button>
-                <button type="button" onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy}>Centro</button>
-                <button type="button" onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>Direita</button>
-              </div>
-            </section>
-            <section>
-              <span>Filtros da coluna</span>
-              <strong>{activeColumn ? activeColumn.label : 'Nenhuma coluna ativa'}</strong>
-              <input
-                className={styles.panelInput}
-                value={activeColumn ? (columnFilters[activeColumn.key] || '') : ''}
-                placeholder="Valor do filtro"
-                disabled={!activeColumn}
-                onChange={(event) => activeColumn && setColumnFilters((current) => ({ ...current, [activeColumn.key]: sanitizeCellValue(event.target.value) }))}
-              />
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor ativo</button>
-                <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
-                <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar todos</button>
-                <button type="button" onClick={() => setFilterQuery('')} disabled={!filterQuery}>Limpar busca</button>
-              </div>
-            </section>
-            <section>
-              <span>Planilha</span>
-              <button type="button" onClick={fitActiveColumnWidth} disabled={!activeColumn || !canEdit || !!busy}>Ajustar largura da coluna</button>
-              <button type="button" onClick={() => sortActiveColumn('asc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna A → Z</button>
-              <button type="button" onClick={() => sortActiveColumn('desc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna Z → A</button>
-              <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar formatação</button>
-            </section>
-            <section>
-              <span>Texto avançado</span>
-              <strong>Quebra, tamanho e alinhamento vertical da seleção</strong>
-              <div className={styles.panelGrid}>
-                <button type="button" data-active={selectedWrapMode === 'wrap' || undefined} onClick={() => setWrapMode('wrap')} disabled={!selectedCount || !canEdit || !!busy}>Quebrar texto</button>
-                <button type="button" data-active={selectedWrapMode === 'clip' || undefined} onClick={() => setWrapMode('clip')} disabled={!selectedCount || !canEdit || !!busy}>Cortar texto</button>
-                <button type="button" data-active={selectedFontSize === 'small' || undefined} onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy}>Fonte pequena</button>
-                <button type="button" data-active={selectedFontSize === 'normal' || undefined} onClick={() => setFontSize('')} disabled={!selectedCount || !canEdit || !!busy}>Fonte normal</button>
-                <button type="button" data-active={selectedFontSize === 'large' || undefined} onClick={() => setFontSize('large')} disabled={!selectedCount || !canEdit || !!busy}>Fonte grande</button>
-                <button type="button" data-active={selectedVerticalAlign === 'top' || undefined} onClick={() => setVerticalAlign('top')} disabled={!selectedCount || !canEdit || !!busy}>Topo</button>
-                <button type="button" data-active={selectedVerticalAlign === 'middle' || undefined} onClick={() => setVerticalAlign('')} disabled={!selectedCount || !canEdit || !!busy}>Meio</button>
-                <button type="button" data-active={selectedVerticalAlign === 'bottom' || undefined} onClick={() => setVerticalAlign('bottom')} disabled={!selectedCount || !canEdit || !!busy}>Abaixo</button>
-              </div>
-            </section>
-            <section>
-              <span>Filtros da coluna</span>
-              <strong>{activeColumn ? activeColumn.label : 'Nenhuma coluna ativa'}</strong>
-              <input
-                className={styles.panelInput}
-                value={activeColumn ? (columnFilters[activeColumn.key] || '') : ''}
-                placeholder="Valor do filtro"
-                disabled={!activeColumn}
-                onChange={(event) => activeColumn && setColumnFilters((current) => ({ ...current, [activeColumn.key]: sanitizeCellValue(event.target.value) }))}
-              />
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor ativo</button>
-                <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
-                <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar todos</button>
-                <button type="button" onClick={() => setFilterQuery('')} disabled={!filterQuery}>Limpar busca</button>
-              </div>
-            </section>
-            <section>
-              <span>Planilha</span>
-              <strong>Comandos estruturais da linha e coluna ativa</strong>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={() => insertRowAtActive('above').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha acima</button>
-                <button type="button" onClick={() => insertRowAtActive('below').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha abaixo</button>
-                <button type="button" onClick={() => insertColumnAtActive('left').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna à esquerda</button>
-                <button type="button" onClick={() => insertColumnAtActive('right').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna à direita</button>
-                <button type="button" onClick={() => duplicateActiveRow().catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Duplicar linha</button>
-                <button type="button" onClick={() => duplicateActiveColumn().catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Duplicar coluna</button>
-              </div>
-            </section>
-          </aside>
-        ) : null}
       </div>
 
       <footer className={styles.footer}>
@@ -3091,7 +3003,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onClose={closeContextMenu}
         onCopy={() => { closeContextMenu(); copySelection().catch(() => {}); }}
         onCut={() => { closeContextMenu(); cutSelection().catch(() => {}); }}
-        onPaste={() => { closeContextMenu(); pasteClipboardAtActive().catch(() => {}); }}
+        onPaste={() => { closeContextMenu(); pasteClipboardAtActive('all').catch(() => {}); }}
+        onPasteValues={() => { closeContextMenu(); pasteClipboardAtActive('values').catch(() => {}); }}
+        onPasteFormatting={() => { closeContextMenu(); pasteClipboardAtActive('formats').catch(() => {}); }}
         onSelectAll={() => { closeContextMenu(); selectAllCells(); }}
         onSelectUsedRange={() => { closeContextMenu(); selectUsedRange(); }}
         onSelectRow={() => { closeContextMenu(); activeCell?.rowId && selectRow(activeCell.rowId); }}

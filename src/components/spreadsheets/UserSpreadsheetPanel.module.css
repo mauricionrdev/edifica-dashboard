@@ -564,15 +564,14 @@
   inset: 0;
   z-index: 2147483000;
   background: transparent;
-  pointer-events: auto;
 }
 
 .contextMenu {
   position: fixed;
-  width: min(332px, calc(100vw - 24px));
+  min-width: 284px;
   z-index: 2147483001;
+  max-height: min(720px, calc(100vh - 24px));
   overflow: auto;
-  overscroll-behavior: contain;
   padding: var(--space-1);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
@@ -617,29 +616,11 @@
   opacity: var(--opacity-disabled);
 }
 
-.contextSection {
-  display: grid;
-  gap: 1px;
-  padding: var(--space-1) 0;
-  border-top: 1px solid var(--line-subtle);
-}
-
-.contextSection:first-of-type {
-  border-top: 0;
-}
-
-.contextSectionTitle {
-  display: block;
-  padding: var(--space-1) var(--space-2);
-  color: var(--text-quaternary);
-  font-size: var(--fs-micro);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-}
-
 .contextDivider {
-  display: none;
+  display: block;
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--line-subtle);
 }
 
 .contextIcon {
@@ -971,15 +952,11 @@
 }
 
 .contextMenuHeader {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   display: grid;
   gap: var(--space-1);
   padding: var(--space-2);
   border-bottom: 1px solid var(--line-subtle);
-  margin: calc(var(--space-1) * -1) calc(var(--space-1) * -1) var(--space-1);
-  background: var(--bg-elevated);
+  margin-bottom: var(--space-1);
 }
 
 .contextMenuHeader strong {
@@ -1111,6 +1088,84 @@
 
 .sheetsToolbar button:disabled,
 .sheetsToolbar select:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.replaceBar {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+}
+
+.replaceBar > span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.replaceBar input,
+.replaceBar select {
+  height: 28px;
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+  outline: 0;
+}
+
+.replaceBar input {
+  width: min(220px, 100%);
+  padding: 0 var(--space-2);
+}
+
+.replaceBar select {
+  width: 144px;
+  padding: 0 var(--space-2);
+}
+
+.replaceBar label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  white-space: nowrap;
+}
+
+.replaceBar button {
+  height: 28px;
+  min-width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.replaceBar button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.replaceBar button:disabled {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
 }
