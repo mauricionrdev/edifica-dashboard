@@ -1975,3 +1975,152 @@ button.taskRow:hover {
   background: rgba(245, 196, 81, 0.14);
   color: #f5c451;
 }
+
+/* Workspace cleanup v44 */
+.topStrip {
+  width: min(1480px, 100%);
+  margin: var(--space-4) auto 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.workspaceTitle {
+  display: none;
+}
+
+.homeArea {
+  width: min(1480px, 100%);
+  margin: var(--space-4) auto 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.quickStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.quickStats button {
+  min-width: 0;
+  min-height: 74px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: var(--space-3);
+  cursor: pointer;
+}
+
+.quickStats button:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+}
+
+.quickStats span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+}
+
+.quickStats strong {
+  color: var(--text-primary);
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+}
+
+.homeLayout {
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(300px, .72fr) minmax(300px, .72fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.sectionHeaderCompact {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.sectionHeaderCompact strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+}
+
+.weekGridCompact,
+.contextListCompact {
+  padding: var(--space-2);
+}
+
+.weekGridCompact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.contextListCompact {
+  display: grid;
+  gap: 0;
+}
+
+.commandGrid,
+.planningStrip,
+.routinePanel,
+.personalPulse,
+.overviewGrid {
+  display: none;
+}
+
+.sheetSection {
+  width: min(1480px, 100%);
+  margin: var(--space-4) auto 0;
+}
+
+.sheetHeader {
+  display: none;
+}
+
+.sheetShell {
+  margin-top: 0;
+}
+
+.resourcesHero {
+  min-height: 46px;
+  align-content: center;
+}
+
+.resourcesHero span {
+  display: none;
+}
+
+.resourceAction p {
+  margin-top: 2px;
+  line-height: var(--lh-tight);
+}
+
+@media (max-width: 1240px) {
+  .homeLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .weekGridCompact {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .quickStats,
+  .weekGridCompact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

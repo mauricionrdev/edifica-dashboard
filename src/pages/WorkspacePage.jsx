@@ -24,7 +24,7 @@ const TABS = [
   { id: 'home', label: 'Início', icon: HomeIcon },
   { id: 'tasks', label: 'Tarefas', icon: ChecklistIcon },
   { id: 'sheets', label: 'Planilhas', icon: BuildingIcon },
-  { id: 'resources', label: 'Recursos', icon: SparklesIcon },
+  { id: 'resources', label: 'Documentos', icon: SparklesIcon },
   { id: 'settings', label: 'Configurações', icon: SettingsIcon },
 ];
 
@@ -642,86 +642,39 @@ export default function WorkspacePage() {
         </div>
 
         {activeTab === 'home' ? (
-          <>
-            <section className={styles.commandGrid}>
-              <button type="button" className={styles.commandCard} onClick={() => setActiveTab('tasks')}>
-                <span><ChecklistIcon size={17} /></span>
-                <strong>Minhas tarefas</strong>
-                <em>{taskStats.open} abertas</em>
-                <ArrowUpRightIcon size={15} />
+          <section className={styles.homeArea}>
+            <div className={styles.quickStats} aria-label="Resumo pessoal">
+              <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('all'); }}>
+                <span>Abertas</span>
+                <strong>{taskStats.open}</strong>
               </button>
-              <button type="button" className={styles.commandCard} onClick={() => setActiveTab('sheets')}>
-                <span><BuildingIcon size={17} /></span>
-                <strong>Planilhas</strong>
-                <em>Workspace pessoal</em>
-                <ArrowUpRightIcon size={15} />
+              <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('overdue'); }}>
+                <span>Atrasadas</span>
+                <strong>{taskStats.overdue}</strong>
               </button>
-              <button type="button" className={styles.commandCard} onClick={() => setActiveTab('resources')}>
-                <span><SparklesIcon size={17} /></span>
-                <strong>Recursos</strong>
-                <em>Área pessoal</em>
-                <ArrowUpRightIcon size={15} />
+              <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('critical'); }}>
+                <span>Críticas</span>
+                <strong>{taskStats.critical}</strong>
               </button>
-            </section>
+              <button type="button" onClick={() => setActiveTab('sheets')}>
+                <span>Planilhas</span>
+                <strong>+</strong>
+              </button>
+            </div>
 
-            <section className={styles.planningStrip} aria-label="Planejamento pessoal">
-              <div className={styles.planningHeader}>
-                <span>Planejamento</span>
-                <strong>Agenda da semana</strong>
-              </div>
-              <div className={styles.planningCards}>
-                <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('overdue'); }}>
-                  <span>Atrasadas</span>
-                  <strong>{taskBuckets.overdue.length}</strong>
-                </button>
-                <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('today'); }}>
-                  <span>Hoje</span>
-                  <strong>{taskBuckets.today.length}</strong>
-                </button>
-                <button type="button" onClick={() => setActiveTab('tasks')}>
-                  <span>Esta semana</span>
-                  <strong>{taskBuckets.week.length}</strong>
-                </button>
-                <button type="button" onClick={() => setActiveTab('tasks')}>
-                  <span>Sem prazo</span>
-                  <strong>{taskBuckets.noDue.length}</strong>
-                </button>
-              </div>
-            </section>
+            <div className={styles.homeLayout}>
+              <ExecutionQueue
+                tasks={executionQueue}
+                selectedTaskId={selectedTaskId}
+                onSelectTask={(task) => { handleSelectTask(task); setActiveTab('tasks'); }}
+                onOpenTasks={() => setActiveTab('tasks')}
+              />
 
-            <section className={styles.routinePanel} aria-label="Rotina pessoal">
-              <div className={styles.sectionHeader}>
-                <span>Rotina</span>
-                <strong>Ordem sugerida de execução</strong>
-              </div>
-              <div className={styles.routineGrid}>
-                {routineSteps.map((step) => (
-                  <RoutineStep
-                    key={step.id}
-                    eyebrow={step.eyebrow}
-                    title={step.title}
-                    description={step.description}
-                    count={step.count}
-                    onClick={() => { setActiveTab('tasks'); setTaskFilter(step.filter); }}
-                  />
-                ))}
-              </div>
-            </section>
-
-            <ExecutionQueue
-              tasks={executionQueue}
-              selectedTaskId={selectedTaskId}
-              onSelectTask={(task) => { handleSelectTask(task); setActiveTab('tasks'); }}
-              onOpenTasks={() => setActiveTab('tasks')}
-            />
-
-            <section className={styles.personalPulse} aria-label="Pulso do workspace">
-              <div className={styles.weekPanel}>
-                <div className={styles.sectionHeader}>
-                  <span>Semana</span>
-                  <strong>Mapa dos próximos dias</strong>
+              <section className={styles.weekPanel} aria-label="Semana">
+                <div className={styles.sectionHeaderCompact}>
+                  <strong>Semana</strong>
                 </div>
-                <div className={styles.weekGrid}>
+                <div className={styles.weekGridCompact}>
                   {weekAgenda.map((day) => (
                     <button
                       key={day.id}
@@ -732,19 +685,17 @@ export default function WorkspacePage() {
                       <span>{day.label}</span>
                       <strong>{day.date}</strong>
                       <em>{day.count}</em>
-                      {day.critical ? <small>{day.critical} crítica{day.critical > 1 ? 's' : ''}</small> : <small>normal</small>}
                     </button>
                   ))}
                 </div>
-              </div>
+              </section>
 
-              <div className={styles.contextPanel}>
-                <div className={styles.sectionHeader}>
-                  <span>Contextos</span>
-                  <strong>Carga por origem</strong>
+              <section className={styles.contextPanel} aria-label="Origens">
+                <div className={styles.sectionHeaderCompact}>
+                  <strong>Origens</strong>
                 </div>
-                <div className={styles.contextList}>
-                  {!contextSummary.length ? <span className={styles.inlineState}>Nenhuma origem com tarefa aberta.</span> : null}
+                <div className={styles.contextListCompact}>
+                  {!contextSummary.length ? <span className={styles.inlineState}>Sem tarefas abertas.</span> : null}
                   {contextSummary.map((item) => (
                     <button key={item.label} type="button" className={styles.contextRow} onClick={() => { setActiveTab('tasks'); setTaskQuery(item.label); }}>
                       <span>{item.label}</span>
@@ -753,69 +704,9 @@ export default function WorkspacePage() {
                     </button>
                   ))}
                 </div>
-              </div>
-            </section>
-
-            <section className={styles.overviewGrid}>
-              <div className={styles.summaryPanel}>
-                <div className={styles.sectionHeader}>
-                  <span>Resumo</span>
-                  <strong>Operação pessoal</strong>
-                </div>
-
-                <div className={styles.metricsGrid}>
-                  <div>
-                    <span>Abertas</span>
-                    <strong>{taskStats.open}</strong>
-                  </div>
-                  <div>
-                    <span>Atrasadas</span>
-                    <strong>{taskStats.overdue}</strong>
-                  </div>
-                  <div>
-                    <span>Críticas</span>
-                    <strong>{taskStats.critical}</strong>
-                  </div>
-                  <div>
-                    <span>Concluídas</span>
-                    <strong>{taskStats.done}</strong>
-                  </div>
-                </div>
-
-                <div className={styles.focusBlock}>
-                  <div className={styles.focusHeader}>
-                    <span>Prioridade</span>
-                    <strong>Foco atual</strong>
-                  </div>
-                  <div className={styles.focusList}>
-                    {tasksLoading ? <span className={styles.inlineState}>Carregando foco...</span> : null}
-                    {!tasksLoading && !focusTasks.length ? <span className={styles.inlineState}>Nada crítico no momento.</span> : null}
-                    {!tasksLoading ? focusTasks.map((task) => <TaskMiniRow key={task.id} task={task} onSelect={handleSelectTask} />) : null}
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.timelinePanel}>
-                <div className={styles.sectionHeader}>
-                  <span>Próximas</span>
-                  <strong>Tarefas em aberto</strong>
-                </div>
-                <div className={styles.taskList}>
-                  <ExecutionQueue
-              tasks={executionQueue}
-              selectedTaskId={selectedTaskId}
-              onSelectTask={handleSelectTask}
-              onOpenTasks={() => setTaskFilter('all')}
-            />
-
-            {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
-                  {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
-                  {!tasksLoading && !tasksError && !visibleTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa aberta.</span> : null}
-                  {!tasksLoading && !tasksError ? visibleTasks.map((task) => <TaskRow key={task.id} task={task} active={String(task.id) === String(selectedTaskId)} onSelect={handleSelectTask} />) : null}
-                </div>
-              </div>
-            </section>
-          </>
+              </section>
+            </div>
+          </section>
         ) : null}
 
         {activeTab === 'tasks' ? (
@@ -872,13 +763,6 @@ export default function WorkspacePage() {
 
         {activeTab === 'sheets' ? (
           <section className={styles.sheetSection} aria-label="Planilhas">
-            <div className={styles.sheetHeader}>
-              <div>
-                <span>Planilhas</span>
-                <strong>Área de controles pessoais</strong>
-              </div>
-              <button type="button" onClick={() => setActiveTab('home')}>Voltar ao início</button>
-            </div>
             <div className={styles.sheetShell}>
               <UserSpreadsheetPanel ownerUserId={user?.id} canEdit showToast={showToast} />
             </div>
@@ -888,32 +772,32 @@ export default function WorkspacePage() {
         {activeTab === 'resources' ? (
           <section className={styles.resourcesArea}>
             <div className={styles.resourcesHero}>
-              <span>Recursos</span>
-              <strong>Atalhos do seu workspace</strong>
+              <span>Documentos</span>
+              <strong>Blocos do workspace</strong>
             </div>
             <div className={styles.resourceActions}>
               <ResourceAction
                 icon={BuildingIcon}
                 title="Planilhas"
-                description="Organize controles próprios sem misturar com a operação central."
+                description="Controles pessoais."
                 onClick={() => setActiveTab('sheets')}
               />
               <ResourceAction
                 icon={ChecklistIcon}
                 title="Quadro de tarefas"
-                description="Acompanhe prazos, atrasos, prioridades e histórico recente."
+                description="Execução pessoal."
                 onClick={() => setActiveTab('tasks')}
               />
               <ResourceAction
                 icon={CalendarIcon}
                 title="Planejamento"
-                description="Volte para a visão inicial e revise sua agenda da semana."
+                description="Resumo semanal."
                 onClick={() => setActiveTab('home')}
               />
               <ResourceAction
                 icon={SettingsIcon}
                 title="Configurações"
-                description="Veja o estado atual das configurações do seu espaço pessoal."
+                description="Preferências."
                 onClick={() => setActiveTab('settings')}
               />
             </div>
