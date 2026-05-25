@@ -487,6 +487,7 @@ function normalizeValueForType(value = '', style = {}) {
 function transformTextValue(value = '', mode = 'uppercase') {
   const raw = sanitizeCellValue(value);
   if (!raw || raw.startsWith('=')) return raw;
+  if (mode === 'trim') return raw.replace(/\s+/g, ' ').trim();
   if (mode === 'lowercase') return raw.toLocaleLowerCase('pt-BR');
   if (mode === 'titlecase') {
     return raw
@@ -494,6 +495,18 @@ function transformTextValue(value = '', mode = 'uppercase') {
       .replace(/(^|[\s/\-])([\p{L}\p{N}])/gu, (match, prefix, letter) => `${prefix}${letter.toLocaleUpperCase('pt-BR')}`);
   }
   return raw.toLocaleUpperCase('pt-BR');
+}
+
+function escapeRegExp(value = '') {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function replaceTextValue(value = '', query = '', replacement = '', matchCase = false) {
+  const raw = sanitizeCellValue(value);
+  const needle = sanitizeCellValue(query);
+  if (!raw || !needle) return raw;
+  const flags = matchCase ? 'g' : 'gi';
+  return raw.replace(new RegExp(escapeRegExp(needle), flags), sanitizeCellValue(replacement));
 }
 
 function calculateBestColumnWidth(column, rows = []) {
@@ -683,6 +696,9 @@ function SheetContextMenu({
   onUppercase,
   onLowercase,
   onTitlecase,
+  onTrimSpaces,
+  onFindCellValue,
+  onUseCellValueAsReplaceQuery,
   onFitColumnWidth,
   onSortColumnAscending,
   onSortColumnDescending,
@@ -725,6 +741,8 @@ function SheetContextMenu({
         <button type="button" role="menuitem" onClick={onSelectUsedRange}>Selecionar área preenchida</button>
         <button type="button" role="menuitem" onClick={onSelectRow} disabled={isColumn}>Selecionar linha</button>
         <button type="button" role="menuitem" onClick={onSelectColumn} disabled={isRow}>Selecionar coluna</button>
+        <button type="button" role="menuitem" onClick={onFindCellValue}>Localizar este valor</button>
+        <button type="button" role="menuitem" onClick={onUseCellValueAsReplaceQuery}>Usar no substituir</button>
         <span aria-hidden="true" />
         <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção <kbd>Ctrl Enter</kbd></button>
         <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo <kbd>Del</kbd></button>
@@ -732,6 +750,7 @@ function SheetContextMenu({
         <button type="button" role="menuitem" onClick={onUppercase} disabled={!canEdit}>Texto em MAIÚSCULAS</button>
         <button type="button" role="menuitem" onClick={onLowercase} disabled={!canEdit}>Texto em minúsculas</button>
         <button type="button" role="menuitem" onClick={onTitlecase} disabled={!canEdit}>Texto Capitalizado</button>
+        <button type="button" role="menuitem" onClick={onTrimSpaces} disabled={!canEdit}>Remover espaços extras</button>
         <span aria-hidden="true" />
         <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito <kbd>Ctrl B</kbd></button>
         <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico <kbd>Ctrl I</kbd></button>
@@ -803,9 +822,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [filterColumnKey, setFilterColumnKey] = useState('all');
   const [filterQuery, setFilterQuery] = useState('');
   const [columnFilters, setColumnFilters] = useState({});
+  const [replaceQuery, setReplaceQuery] = useState('');
+  const [replaceValue, setReplaceValue] = useState('');
+  const [replaceScope, setReplaceScope] = useState('selection');
+  const [replaceMatchCase, setReplaceMatchCase] = useState(false);
   const [advancedPanelOpen, setAdvancedPanelOpen] = useState(true);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
+  const replaceInputRef = useRef(null);
   const formulaInputRef = useRef(null);
   const draftRef = useRef(new Map());
   const formulaReferenceBaseRef = useRef('');
@@ -1772,6 +1796,94 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
 
+  const findReplaceMatch = useCallback(() => {
+    const query = sanitizeCellValue(replaceQuery);
+    if (!query) return;
+    const normalizedQuery = replaceMatchCase ? query : query.toLocaleLowerCase('pt-BR');
+    const cells = [];
+    viewRows.forEach((row) => {
+      columns.forEach((column) => {
+        const raw = sanitizeCellValue(row?.[column.key] || '');
+        const haystack = replaceMatchCase ? raw : raw.toLocaleLowerCase('pt-BR');
+        if (haystack.includes(normalizedQuery)) cells.push({ rowId: row.id, key: column.key });
+      });
+    });
+    if (!cells.length) {
+      markSync('saved', 'Nenhum resultado encontrado');
+      return;
+    }
+    const currentIndex = cells.findIndex((cell) => cell.rowId === activeCell?.rowId && cell.key === activeCell?.key);
+    const nextCell = cells[(currentIndex + 1 + cells.length) % cells.length];
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus(nextCell);
+    markSync('saved', `${cells.length} ocorrência${cells.length === 1 ? '' : 's'} encontrada${cells.length === 1 ? '' : 's'}`);
+  }, [activeCell?.key, activeCell?.rowId, columns, markSync, replaceMatchCase, replaceQuery, viewRows]);
+
+  const replaceTextInScope = useCallback(async () => {
+    if (!canEdit) return;
+    const query = sanitizeCellValue(replaceQuery);
+    if (!query) return;
+    const replacement = sanitizeCellValue(replaceValue);
+    const selectionIds = new Set(selectedCells.map((cell) => cell.id));
+    const useSelection = replaceScope === 'selection' && selectedCells.length > 1;
+    const updatesByRow = new Map();
+    let changedCount = 0;
+
+    const optimistic = rows.map((row) => {
+      let changed = false;
+      const next = { ...row };
+      const patch = {};
+      columns.forEach((column) => {
+        const cellId = `${row.id}:${column.key}`;
+        if (useSelection && !selectionIds.has(cellId)) return;
+        const currentValue = sanitizeCellValue(row?.[column.key] || '');
+        const nextValue = replaceTextValue(currentValue, query, replacement, replaceMatchCase);
+        if (nextValue === currentValue) return;
+        changed = true;
+        changedCount += 1;
+        next[column.key] = nextValue;
+        patch[column.key] = nextValue;
+      });
+      if (changed) updatesByRow.set(row.id, patch);
+      return changed ? next : row;
+    });
+
+    if (!updatesByRow.size) {
+      markSync('saved', 'Nada para substituir');
+      return;
+    }
+
+    setRows(optimistic);
+    markSync('saving', 'Substituindo valores');
+    setBusy('replace-text');
+    try {
+      await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
+      markSync('saved', `${changedCount} célula${changedCount === 1 ? '' : 's'} atualizada${changedCount === 1 ? '' : 's'}`);
+    } catch (error) {
+      notifyError(error, 'Não foi possível substituir os valores.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, canEdit, columns, loadSheet, markSync, notifyError, replaceMatchCase, replaceQuery, replaceScope, replaceValue, rows, selectedCells]);
+
+  const useActiveCellValueAsSearch = useCallback(() => {
+    const value = activeCellText(activeCell, rows);
+    if (!value) return;
+    setSearchQuery(value);
+    setFilterQuery('');
+    requestAnimationFrame(() => searchInputRef.current?.focus({ preventScroll: true }));
+  }, [activeCell, rows]);
+
+  const useActiveCellValueAsReplaceQuery = useCallback(() => {
+    const value = activeCellText(activeCell, rows);
+    if (!value) return;
+    setReplaceQuery(value);
+    setAdvancedPanelOpen(true);
+    requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true }));
+  }, [activeCell, rows]);
+
   const fitActiveColumnWidth = useCallback(async () => {
     if (!canEdit || !activeColumn) return;
     const width = calculateBestColumnWidth(activeColumn, rows);
@@ -2114,6 +2226,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         searchInputRef.current?.select();
         return;
       }
+      if (modifier && key === 'h') {
+        event.preventDefault();
+        setAdvancedPanelOpen(true);
+        requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true }));
+        return;
+      }
       if (modifier && key === 'enter' && canEdit) {
         event.preventDefault();
         applyValueToSelection().catch(() => {});
@@ -2446,6 +2564,40 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               <button type="button" onClick={() => activeCell?.key && selectColumn(activeCell.key)} disabled={!activeCell}>Selecionar coluna</button>
             </section>
             <section>
+              <span>Localizar e substituir</span>
+              <strong>Busca avançada na seleção ou planilha inteira</strong>
+              <input
+                ref={replaceInputRef}
+                className={styles.panelInput}
+                value={replaceQuery}
+                placeholder="Localizar"
+                onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
+              />
+              <input
+                className={styles.panelInput}
+                value={replaceValue}
+                placeholder="Substituir por"
+                onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
+              />
+              <select
+                className={styles.panelInput}
+                value={replaceScope}
+                aria-label="Escopo da substituição"
+                onChange={(event) => setReplaceScope(event.target.value)}
+              >
+                <option value="selection">Seleção</option>
+                <option value="sheet">Planilha inteira</option>
+              </select>
+              <label className={styles.panelCheck}>
+                <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
+                Diferenciar maiúsculas
+              </label>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
+                <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
+              </div>
+            </section>
+            <section>
               <span>Texto</span>
               <div className={styles.panelGrid}>
                 <button type="button" onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>Negrito</button>
@@ -2457,6 +2609,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
                 <button type="button" onClick={() => transformSelectionText('uppercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Maiúsculas</button>
                 <button type="button" onClick={() => transformSelectionText('lowercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Minúsculas</button>
                 <button type="button" onClick={() => transformSelectionText('titlecase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Capitalizar</button>
+                <button type="button" onClick={() => transformSelectionText('trim').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Limpar espaços</button>
               </div>
             </section>
             <section>
@@ -2575,6 +2728,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onUppercase={() => { closeContextMenu(); transformSelectionText('uppercase').catch(() => {}); }}
         onLowercase={() => { closeContextMenu(); transformSelectionText('lowercase').catch(() => {}); }}
         onTitlecase={() => { closeContextMenu(); transformSelectionText('titlecase').catch(() => {}); }}
+        onTrimSpaces={() => { closeContextMenu(); transformSelectionText('trim').catch(() => {}); }}
+        onFindCellValue={() => { closeContextMenu(); useActiveCellValueAsSearch(); }}
+        onUseCellValueAsReplaceQuery={() => { closeContextMenu(); useActiveCellValueAsReplaceQuery(); }}
         onFitColumnWidth={() => { closeContextMenu(); fitActiveColumnWidth().catch(() => {}); }}
         onSortColumnAscending={() => { closeContextMenu(); sortActiveColumn('asc').catch(() => {}); }}
         onSortColumnDescending={() => { closeContextMenu(); sortActiveColumn('desc').catch(() => {}); }}
