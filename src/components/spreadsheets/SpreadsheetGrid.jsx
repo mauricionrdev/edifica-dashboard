@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './SpreadsheetGrid.module.css';
 
-const ROW_HEIGHT = 38;
-const HEADER_HEIGHT = 38;
-const BUFFER_ROWS = 10;
-const INDEX_WIDTH = 54;
-const AUTO_SCROLL_EDGE = 42;
-const AUTO_SCROLL_MAX_STEP = 22;
+const ROW_HEIGHT = 36;
+const HEADER_HEIGHT = 36;
+const INDEX_WIDTH = 52;
+const BUFFER_ROWS = 14;
+const BUFFER_COLUMNS = 4;
 
 function stripText(value = '') {
   return String(value ?? '')
@@ -35,18 +34,42 @@ function getStyle(row, key) {
   return row?.__styles?.[key] || {};
 }
 
-function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup, saving, editing, editingValue, canEdit, onSelect, onStartEdit, onEditorChange, onCommitEdit, onCancelEdit, onNavigate, onContextMenu, onPasteTable, onDragStart, onDragEnter, onDragEnd }) {
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function Cell({
+  row,
+  rowIndex,
+  column,
+  columnIndex,
+  left,
+  top,
+  width,
+  selected,
+  active,
+  saving,
+  editing,
+  editValue,
+  canEdit,
+  onSelect,
+  onStartEdit,
+  onEditChange,
+  onCommit,
+  onCancel,
+  onNavigate,
+  onContextMenu,
+  onPasteTable,
+}) {
   const ref = useRef(null);
   const editorRef = useRef(null);
-  const style = getStyle(row, column.key);
   const value = row?.[column.key] || '';
+  const style = getStyle(row, column.key);
 
   useEffect(() => {
-    if (!selected || editing || !ref.current) return;
-    const active = document.activeElement;
-    if (active?.dataset?.cellId === `${row.id}:${column.key}`) return;
+    if (!active || editing || !ref.current) return;
     ref.current.focus({ preventScroll: true });
-  }, [column.key, editing, row.id, selected]);
+  }, [active, editing]);
 
   useEffect(() => {
     if (!editing || !editorRef.current) return;
@@ -58,26 +81,24 @@ function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup,
     if (editing) {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onCancelEdit();
+        onCancel();
         ref.current?.focus({ preventScroll: true });
         return;
       }
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        onCommitEdit(row.id, column.key, 1, 0);
+        onCommit(row.id, column.key, 1, 0);
         return;
       }
       if (event.key === 'Tab') {
         event.preventDefault();
-        onCommitEdit(row.id, column.key, 0, event.shiftKey ? -1 : 1);
-        return;
+        onCommit(row.id, column.key, 0, event.shiftKey ? -1 : 1);
       }
       return;
     }
 
-    if (!canEdit && ['Enter', 'F2'].includes(event.key)) return;
-
     if (event.key === 'Enter' || event.key === 'F2') {
+      if (!canEdit) return;
       event.preventDefault();
       onStartEdit(row.id, column.key, stripText(value));
       return;
@@ -89,15 +110,16 @@ function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup,
       return;
     }
 
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+    const deltas = {
+      ArrowUp: [-1, 0],
+      ArrowDown: [1, 0],
+      ArrowLeft: [0, -1],
+      ArrowRight: [0, 1],
+    };
+    if (deltas[event.key]) {
       event.preventDefault();
-      const delta = {
-        ArrowUp: [-1, 0],
-        ArrowDown: [1, 0],
-        ArrowLeft: [0, -1],
-        ArrowRight: [0, 1],
-      }[event.key];
-      onNavigate(row.id, column.key, delta[0], delta[1]);
+      const [rowDelta, columnDelta] = deltas[event.key];
+      onNavigate(row.id, column.key, rowDelta, columnDelta);
       return;
     }
 
@@ -112,17 +134,20 @@ function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup,
       ref={ref}
       className={styles.cell}
       data-cell-id={`${row.id}:${column.key}`}
-      data-row-index={rowIndex}
-      data-column-index={columnIndex}
       data-row-id={row.id}
       data-column-key={column.key}
+      data-row-index={rowIndex}
+      data-column-index={columnIndex}
       data-selected={selected || undefined}
-      data-group={selectedGroup || undefined}
+      data-active={active || undefined}
       data-saving={saving || undefined}
-      data-editing={editing || undefined}
       role="gridcell"
       tabIndex={0}
       style={{
+        left,
+        top,
+        width,
+        height: ROW_HEIGHT,
         color: style.color || undefined,
         backgroundColor: style.backgroundColor || undefined,
         fontWeight: style.bold || style.fontWeight ? style.fontWeight || 700 : undefined,
@@ -131,12 +156,6 @@ function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup,
         textAlign: style.textAlign || undefined,
       }}
       onFocus={(event) => onSelect(row.id, column.key, event.currentTarget, false)}
-      onPointerDown={(event) => {
-        if (event.button !== 0 || editing) return;
-        onDragStart(event, row.id, column.key, event.currentTarget);
-      }}
-      onPointerEnter={(event) => onDragEnter(event, row.id, column.key, event.currentTarget)}
-      onPointerUp={(event) => onDragEnd(event)}
       onClick={(event) => onSelect(row.id, column.key, event.currentTarget, event.shiftKey)}
       onDoubleClick={() => canEdit && onStartEdit(row.id, column.key, stripText(value))}
       onContextMenu={(event) => onContextMenu(event, row.id, column.key)}
@@ -154,18 +173,18 @@ function CellView({ row, rowIndex, column, columnIndex, selected, selectedGroup,
         <textarea
           ref={editorRef}
           className={styles.cellEditor}
-          value={editingValue}
+          value={editValue}
           rows={1}
           spellCheck={false}
-          onChange={(event) => onEditorChange(event.target.value)}
-          onBlur={() => onCommitEdit(row.id, column.key, 0, 0, false)}
+          onChange={(event) => onEditChange(event.target.value)}
+          onBlur={() => onCommit(row.id, column.key, 0, 0, false)}
           onKeyDown={handleKeyDown}
           onPaste={(event) => {
             const text = event.clipboardData?.getData('text/plain') || '';
             if (text.includes('\t') || text.includes('\n')) {
               event.preventDefault();
               onPasteTable(row.id, column.key, text);
-              onCancelEdit();
+              onCancel();
             }
           }}
         />
@@ -204,40 +223,52 @@ export default function SpreadsheetGrid({
   onScrollStateChange,
 }) {
   const scrollerRef = useRef(null);
-  const animationFrameRef = useRef(0);
-  const [viewport, setViewport] = useState({ top: 0, height: 520, left: 0, width: 900 });
+  const frameRef = useRef(null);
+  const rafRef = useRef(0);
+  const [viewport, setViewport] = useState({ top: 0, left: 0, width: 900, height: 520 });
   const [editingCell, setEditingCell] = useState(null);
   const [editingValue, setEditingValue] = useState('');
-  const [dragSelection, setDragSelection] = useState(null);
-  const dragSelectionRef = useRef(null);
-  const [fillSelection, setFillSelection] = useState(null);
-  const fillSelectionRef = useRef(null);
-  const pointerPositionRef = useRef(null);
-  const autoScrollFrameRef = useRef(0);
 
-  const columnTemplate = useMemo(() => `${INDEX_WIDTH}px ${columns.map((column) => `${Math.max(5, Number(column.width || 5))}px`).join(' ')}`, [columns]);
-  const columnOffsets = useMemo(() => {
-    let current = INDEX_WIDTH;
+  const columnMetrics = useMemo(() => {
+    let left = INDEX_WIDTH;
     return columns.map((column) => {
-      const width = Math.max(5, Number(column.width || 5));
-      const offset = { key: column.key, left: current, width };
-      current += width;
-      return offset;
+      const width = Math.max(5, Number(column.width || 160));
+      const metric = { column, left, width };
+      left += width;
+      return metric;
     });
   }, [columns]);
-  const totalWidth = useMemo(() => INDEX_WIDTH + columns.reduce((sum, column) => sum + Math.max(5, Number(column.width || 5)), 0), [columns]);
-  const bodyHeight = rows.length * ROW_HEIGHT;
+
+  const totalWidth = useMemo(() => columnMetrics.reduce((last, metric) => metric.left + metric.width, INDEX_WIDTH), [columnMetrics]);
+  const totalHeight = HEADER_HEIGHT + rows.length * ROW_HEIGHT;
+
+  const visibleRows = useMemo(() => {
+    const first = clamp(Math.floor(Math.max(0, viewport.top - HEADER_HEIGHT) / ROW_HEIGHT) - BUFFER_ROWS, 0, rows.length);
+    const last = clamp(Math.ceil((Math.max(0, viewport.top - HEADER_HEIGHT) + viewport.height) / ROW_HEIGHT) + BUFFER_ROWS, first, rows.length);
+    return rows.slice(first, last).map((row, index) => ({ row, index: first + index, top: HEADER_HEIGHT + (first + index) * ROW_HEIGHT }));
+  }, [rows, viewport.height, viewport.top]);
+
+  const visibleColumns = useMemo(() => {
+    const leftEdge = viewport.left;
+    const rightEdge = viewport.left + viewport.width;
+    const firstVisible = columnMetrics.findIndex((metric) => metric.left + metric.width >= leftEdge - 240);
+    const start = Math.max(0, (firstVisible < 0 ? 0 : firstVisible) - BUFFER_COLUMNS);
+    let end = columnMetrics.findIndex((metric) => metric.left > rightEdge + 240);
+    if (end < 0) end = columnMetrics.length;
+    end = Math.min(columnMetrics.length, end + BUFFER_COLUMNS);
+    return columnMetrics.slice(start, end);
+  }, [columnMetrics, viewport.left, viewport.width]);
 
   const updateViewport = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    if (animationFrameRef.current) window.cancelAnimationFrame(animationFrameRef.current);
-    animationFrameRef.current = window.requestAnimationFrame(() => {
+    if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
+    rafRef.current = window.requestAnimationFrame(() => {
       const next = {
         top: scroller.scrollTop,
-        height: scroller.clientHeight,
         left: scroller.scrollLeft,
         width: scroller.clientWidth,
+        height: scroller.clientHeight,
       };
       setViewport(next);
       onScrollStateChange?.({
@@ -256,509 +287,164 @@ export default function SpreadsheetGrid({
     scroller.addEventListener('scroll', updateViewport, { passive: true });
     return () => {
       scroller.removeEventListener('scroll', updateViewport);
-      if (animationFrameRef.current) window.cancelAnimationFrame(animationFrameRef.current);
+      if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
     };
-  }, [updateViewport, rows.length, columns.length]);
+  }, [updateViewport, activeSheetId]);
 
-  const onWheel = useCallback((event) => {
-    if (!event.shiftKey) return;
+  useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-    const maxLeft = scroller.scrollWidth - scroller.clientWidth;
-    if (maxLeft <= 0) return;
-    const next = Math.max(0, Math.min(maxLeft, scroller.scrollLeft + event.deltaY));
-    if (next !== scroller.scrollLeft) {
-      event.preventDefault();
-      scroller.scrollLeft = next;
-      updateViewport();
-    }
-  }, [updateViewport]);
-
-  const stopAutoScroll = useCallback(() => {
-    if (autoScrollFrameRef.current) {
-      window.cancelAnimationFrame(autoScrollFrameRef.current);
-      autoScrollFrameRef.current = 0;
-    }
-    pointerPositionRef.current = null;
-  }, []);
-
-  const applyDragTargetFromPoint = useCallback((clientX, clientY) => {
-    const element = document.elementFromPoint(clientX, clientY)?.closest?.('[data-row-id][data-column-key]');
-    if (!element) return;
-    const rowId = element.dataset.rowId;
-    const key = element.dataset.columnKey;
-    if (!rowId || !key) return;
-
-    const activeDrag = dragSelectionRef.current;
-    if (activeDrag && !editingCell) {
-      if (activeDrag.lastRowId !== rowId || activeDrag.lastKey !== key) {
-        dragSelectionRef.current = { ...activeDrag, lastRowId: rowId, lastKey: key };
-        setDragSelection({ active: true, startRowId: activeDrag.startRowId, startKey: activeDrag.startKey, lastRowId: rowId, lastKey: key });
-        onSelectCell(rowId, key, element, true);
-      }
-    }
-
-    const activeFill = fillSelectionRef.current;
-    if (activeFill) {
-      const rowIndex = Number(element.dataset.rowIndex);
-      const columnIndex = Number(element.dataset.columnIndex);
-      if (Number.isFinite(rowIndex) && Number.isFinite(columnIndex) && (activeFill.targetRowIndex !== rowIndex || activeFill.targetColumnIndex !== columnIndex)) {
-        const next = { ...activeFill, targetRowIndex: rowIndex, targetColumnIndex: columnIndex };
-        fillSelectionRef.current = next;
-        setFillSelection(next);
-      }
-    }
-  }, [editingCell, onSelectCell]);
-
-  const runAutoScroll = useCallback(() => {
-    const scroller = scrollerRef.current;
-    const pointer = pointerPositionRef.current;
-    const dragging = dragSelectionRef.current || fillSelectionRef.current;
-    if (!scroller || !pointer || !dragging) {
-      autoScrollFrameRef.current = 0;
-      return;
-    }
-
-    const rect = scroller.getBoundingClientRect();
-    const maxTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-    const maxLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
-    let deltaY = 0;
-    let deltaX = 0;
-
-    if (pointer.y < rect.top + AUTO_SCROLL_EDGE) {
-      const ratio = (rect.top + AUTO_SCROLL_EDGE - pointer.y) / AUTO_SCROLL_EDGE;
-      deltaY = -Math.ceil(Math.min(1, ratio) * AUTO_SCROLL_MAX_STEP);
-    } else if (pointer.y > rect.bottom - AUTO_SCROLL_EDGE) {
-      const ratio = (pointer.y - (rect.bottom - AUTO_SCROLL_EDGE)) / AUTO_SCROLL_EDGE;
-      deltaY = Math.ceil(Math.min(1, ratio) * AUTO_SCROLL_MAX_STEP);
-    }
-
-    if (pointer.x < rect.left + AUTO_SCROLL_EDGE) {
-      const ratio = (rect.left + AUTO_SCROLL_EDGE - pointer.x) / AUTO_SCROLL_EDGE;
-      deltaX = -Math.ceil(Math.min(1, ratio) * AUTO_SCROLL_MAX_STEP);
-    } else if (pointer.x > rect.right - AUTO_SCROLL_EDGE) {
-      const ratio = (pointer.x - (rect.right - AUTO_SCROLL_EDGE)) / AUTO_SCROLL_EDGE;
-      deltaX = Math.ceil(Math.min(1, ratio) * AUTO_SCROLL_MAX_STEP);
-    }
-
-    if (deltaY || deltaX) {
-      const nextTop = Math.max(0, Math.min(maxTop, scroller.scrollTop + deltaY));
-      const nextLeft = Math.max(0, Math.min(maxLeft, scroller.scrollLeft + deltaX));
-      if (nextTop !== scroller.scrollTop || nextLeft !== scroller.scrollLeft) {
-        scroller.scrollTop = nextTop;
-        scroller.scrollLeft = nextLeft;
-        updateViewport();
-        applyDragTargetFromPoint(pointer.x, pointer.y);
-      }
-    }
-
-    autoScrollFrameRef.current = window.requestAnimationFrame(runAutoScroll);
-  }, [applyDragTargetFromPoint, updateViewport]);
-
-  const startAutoScroll = useCallback((event) => {
-    pointerPositionRef.current = { x: event.clientX, y: event.clientY };
-    if (!autoScrollFrameRef.current) autoScrollFrameRef.current = window.requestAnimationFrame(runAutoScroll);
-  }, [runAutoScroll]);
-
-  const visibleRange = useMemo(() => {
-    const first = Math.max(0, Math.floor(viewport.top / ROW_HEIGHT) - BUFFER_ROWS);
-    const visibleCount = Math.ceil(viewport.height / ROW_HEIGHT) + BUFFER_ROWS * 2;
-    const last = Math.min(rows.length, first + visibleCount);
-    return { first, last };
-  }, [rows.length, viewport.height, viewport.top]);
-
-  const visibleColumnRange = useMemo(() => {
-    const leftLimit = Math.max(0, viewport.left - 220);
-    const rightLimit = viewport.left + viewport.width + 220;
-    const first = Math.max(0, columnOffsets.findIndex((item) => item.left + item.width >= leftLimit));
-    const lastRaw = columnOffsets.findIndex((item) => item.left > rightLimit);
-    const last = lastRaw === -1 ? columns.length : Math.min(columns.length, lastRaw + 1);
-    return { first, last };
-  }, [columnOffsets, columns.length, viewport.left, viewport.width]);
-
-  const visibleRows = rows.slice(visibleRange.first, visibleRange.last);
-  const visibleColumns = columns.slice(visibleColumnRange.first, visibleColumnRange.last);
-  const topSpacer = visibleRange.first * ROW_HEIGHT;
-  const bottomSpacer = Math.max(0, bodyHeight - topSpacer - visibleRows.length * ROW_HEIGHT);
-
-  const activeRect = useMemo(() => {
-    if (!activeCell) return null;
+    if (!scroller || !activeCell?.rowId || !activeCell?.key) return;
     const rowIndex = rows.findIndex((row) => row.id === activeCell.rowId);
-    const columnIndex = columns.findIndex((column) => column.key === activeCell.key);
-    const columnMeta = columnOffsets[columnIndex];
-    if (rowIndex < 0 || !columnMeta) return null;
-    return {
-      top: HEADER_HEIGHT + rowIndex * ROW_HEIGHT,
-      left: columnMeta.left,
-      width: columnMeta.width,
-      height: ROW_HEIGHT,
-    };
-  }, [activeCell, columnOffsets, columns, rows]);
+    const columnMetric = columnMetrics.find((metric) => metric.column.key === activeCell.key);
+    if (rowIndex < 0 || !columnMetric) return;
 
-  const selectionRect = useMemo(() => {
-    if (!selectionBounds || selectedCount <= 1) return null;
-    const startColumn = columnOffsets[selectionBounds.columnFrom];
-    const endColumn = columnOffsets[selectionBounds.columnTo];
-    if (!startColumn || !endColumn) return null;
-    return {
-      top: HEADER_HEIGHT + selectionBounds.rowFrom * ROW_HEIGHT,
-      left: startColumn.left,
-      width: endColumn.left + endColumn.width - startColumn.left,
-      height: (selectionBounds.rowTo - selectionBounds.rowFrom + 1) * ROW_HEIGHT,
-    };
-  }, [columnOffsets, selectedCount, selectionBounds]);
+    const cellTop = HEADER_HEIGHT + rowIndex * ROW_HEIGHT;
+    const cellBottom = cellTop + ROW_HEIGHT;
+    const cellLeft = columnMetric.left;
+    const cellRight = cellLeft + columnMetric.width;
 
+    if (cellTop < scroller.scrollTop + HEADER_HEIGHT) scroller.scrollTop = Math.max(0, cellTop - HEADER_HEIGHT);
+    else if (cellBottom > scroller.scrollTop + scroller.clientHeight) scroller.scrollTop = cellBottom - scroller.clientHeight;
 
-  const fillRect = useMemo(() => {
-    if (!fillSelection) return null;
-    const rowFrom = Math.min(fillSelection.sourceRowIndex, fillSelection.targetRowIndex);
-    const rowTo = Math.max(fillSelection.sourceRowIndex, fillSelection.targetRowIndex);
-    const columnFrom = Math.min(fillSelection.sourceColumnIndex, fillSelection.targetColumnIndex);
-    const columnTo = Math.max(fillSelection.sourceColumnIndex, fillSelection.targetColumnIndex);
-    const startColumn = columnOffsets[columnFrom];
-    const endColumn = columnOffsets[columnTo];
-    if (!startColumn || !endColumn) return null;
-    return {
-      top: HEADER_HEIGHT + rowFrom * ROW_HEIGHT,
-      left: startColumn.left,
-      width: endColumn.left + endColumn.width - startColumn.left,
-      height: (rowTo - rowFrom + 1) * ROW_HEIGHT,
-    };
-  }, [columnOffsets, fillSelection]);
+    if (cellLeft < scroller.scrollLeft + INDEX_WIDTH) scroller.scrollLeft = Math.max(0, cellLeft - INDEX_WIDTH);
+    else if (cellRight > scroller.scrollLeft + scroller.clientWidth) scroller.scrollLeft = cellRight - scroller.clientWidth;
+  }, [activeCell?.key, activeCell?.rowId, columnMetrics, rows]);
 
-  const resizeRect = useMemo(() => {
-    if (!resizeState?.key) return null;
-    const columnMeta = columnOffsets.find((item) => item.key === resizeState.key);
-    if (!columnMeta) return null;
-    return {
-      left: columnMeta.left + columnMeta.width,
-      label: `${resizeState.label || 'Coluna'} · ${resizeState.width || Math.round(columnMeta.width)}px`,
-    };
-  }, [columnOffsets, resizeState]);
-
-  const startEdit = useCallback((rowId, key, value) => {
+  const startEdit = useCallback((rowId, key, initialValue) => {
     if (!canEdit) return;
+    const row = rows.find((entry) => entry.id === rowId);
     setEditingCell({ rowId, key });
-    setEditingValue(value);
-  }, [canEdit]);
+    setEditingValue(initialValue ?? stripText(row?.[key] || ''));
+  }, [canEdit, rows]);
 
   const cancelEdit = useCallback(() => {
     setEditingCell(null);
     setEditingValue('');
   }, []);
 
-  const commitEdit = useCallback((rowId, key, rowDelta = 0, columnDelta = 0, navigate = true) => {
-    if (!editingCell || editingCell.rowId !== rowId || editingCell.key !== key) return;
+  const commitEdit = useCallback(async (rowId, key, rowDelta = 0, columnDelta = 0, navigateAfter = true) => {
     onCellChange(rowId, key, escapeHtml(editingValue));
-    window.requestAnimationFrame(() => {
-      onCellCommit(rowId, key);
-      if (navigate && (rowDelta !== 0 || columnDelta !== 0)) onNavigateCell(rowId, key, rowDelta, columnDelta);
-    });
-    cancelEdit();
-  }, [cancelEdit, editingCell, editingValue, onCellChange, onCellCommit, onNavigateCell]);
+    setEditingCell(null);
+    setEditingValue('');
+    await onCellCommit(rowId, key);
+    if (navigateAfter && (rowDelta || columnDelta)) onNavigateCell(rowId, key, rowDelta, columnDelta);
+  }, [editingValue, onCellChange, onCellCommit, onNavigateCell]);
 
-  const finishDragSelection = useCallback(() => {
-    dragSelectionRef.current = null;
-    setDragSelection(null);
-    if (!fillSelectionRef.current) stopAutoScroll();
-  }, [stopAutoScroll]);
-
-  const handleDragSelectionStart = useCallback((event, rowId, key, element) => {
-    if (event.shiftKey) {
-      onSelectCell(rowId, key, element, true);
-      return;
-    }
-    dragSelectionRef.current = { startRowId: rowId, startKey: key, lastRowId: rowId, lastKey: key };
-    setDragSelection({ active: true, startRowId: rowId, startKey: key, lastRowId: rowId, lastKey: key });
-    onSelectCell(rowId, key, element, false);
-    element?.setPointerCapture?.(event.pointerId);
-    startAutoScroll(event);
-  }, [onSelectCell, startAutoScroll]);
-
-  const handleDragSelectionEnter = useCallback((event, rowId, key, element) => {
-    pointerPositionRef.current = { x: event.clientX, y: event.clientY };
-    if (dragSelectionRef.current) startAutoScroll(event);
-    const drag = dragSelectionRef.current;
-    if (!drag || editingCell) return;
-    if (drag.lastRowId === rowId && drag.lastKey === key) return;
-    dragSelectionRef.current = { ...drag, lastRowId: rowId, lastKey: key };
-    setDragSelection({ active: true, startRowId: drag.startRowId, startKey: drag.startKey, lastRowId: rowId, lastKey: key });
-    onSelectCell(rowId, key, element, true);
-  }, [editingCell, onSelectCell, startAutoScroll]);
-
-  const handleDragSelectionEnd = useCallback((event) => {
-    event.currentTarget?.releasePointerCapture?.(event.pointerId);
-    finishDragSelection();
-  }, [finishDragSelection]);
-
-
-  const findCellFromPoint = useCallback((clientX, clientY) => {
-    const element = document.elementFromPoint(clientX, clientY)?.closest?.('[data-row-id][data-column-key]');
-    if (!element) return null;
-    const rowIndex = Number(element.dataset.rowIndex);
-    const columnIndex = Number(element.dataset.columnIndex);
-    if (!Number.isFinite(rowIndex) || !Number.isFinite(columnIndex)) return null;
-    return {
-      rowIndex,
-      columnIndex,
-      rowId: element.dataset.rowId,
-      key: element.dataset.columnKey,
-    };
-  }, []);
-
-  const startFillDrag = useCallback((event) => {
-    if (!activeCell || editingCell || !canEdit) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const sourceRowIndex = rows.findIndex((row) => row.id === activeCell.rowId);
-    const sourceColumnIndex = columns.findIndex((column) => column.key === activeCell.key);
-    if (sourceRowIndex < 0 || sourceColumnIndex < 0) return;
-    const initial = { sourceRowIndex, sourceColumnIndex, targetRowIndex: sourceRowIndex, targetColumnIndex: sourceColumnIndex };
-    fillSelectionRef.current = initial;
-    setFillSelection(initial);
-    startAutoScroll(event);
-  }, [activeCell, canEdit, columns, editingCell, rows, startAutoScroll]);
-
-  const updateFillDrag = useCallback((event) => {
-    const current = fillSelectionRef.current;
-    if (!current) return;
-    pointerPositionRef.current = { x: event.clientX, y: event.clientY };
-    startAutoScroll(event);
-    const target = findCellFromPoint(event.clientX, event.clientY);
-    if (!target) return;
-    const next = { ...current, targetRowIndex: target.rowIndex, targetColumnIndex: target.columnIndex };
-    fillSelectionRef.current = next;
-    setFillSelection(next);
-  }, [findCellFromPoint, startAutoScroll]);
-
-  const commitFillDrag = useCallback(() => {
-    const current = fillSelectionRef.current;
-    fillSelectionRef.current = null;
-    setFillSelection(null);
-    if (!dragSelectionRef.current) stopAutoScroll();
-    if (!current || !activeCell) return;
-    const sourceRow = rows[current.sourceRowIndex];
-    const sourceColumn = columns[current.sourceColumnIndex];
-    if (!sourceRow || !sourceColumn) return;
-    const value = sourceRow[sourceColumn.key] || '';
-    const rowFrom = Math.min(current.sourceRowIndex, current.targetRowIndex);
-    const rowTo = Math.max(current.sourceRowIndex, current.targetRowIndex);
-    const columnFrom = Math.min(current.sourceColumnIndex, current.targetColumnIndex);
-    const columnTo = Math.max(current.sourceColumnIndex, current.targetColumnIndex);
-    if (rowFrom === rowTo && columnFrom === columnTo) return;
-
-    const targets = [];
-    for (let rowIndex = rowFrom; rowIndex <= rowTo; rowIndex += 1) {
-      for (let columnIndex = columnFrom; columnIndex <= columnTo; columnIndex += 1) {
-        const row = rows[rowIndex];
-        const column = columns[columnIndex];
-        if (!row || !column) continue;
-        if (row.id === activeCell.rowId && column.key === activeCell.key) continue;
-        targets.push({ rowId: row.id, key: column.key });
-      }
-    }
-    if (!targets.length) return;
-    targets.forEach((target) => onCellChange(target.rowId, target.key, value));
-    window.requestAnimationFrame(() => {
-      targets.forEach((target) => onCellCommit(target.rowId, target.key));
-    });
-  }, [activeCell, columns, onCellChange, onCellCommit, rows, stopAutoScroll]);
-
-  useEffect(() => {
-    const move = (event) => {
-      if (!fillSelectionRef.current && !dragSelectionRef.current) return;
-      pointerPositionRef.current = { x: event.clientX, y: event.clientY };
-      if (fillSelectionRef.current) updateFillDrag(event);
-      if (dragSelectionRef.current) {
-        startAutoScroll(event);
-        applyDragTargetFromPoint(event.clientX, event.clientY);
-      }
-    };
-    const up = () => commitFillDrag();
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
-    window.addEventListener('blur', up);
-    return () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
-      window.removeEventListener('blur', up);
-    };
-  }, [applyDragTargetFromPoint, commitFillDrag, startAutoScroll, updateFillDrag]);
-
-  useEffect(() => {
-    const stop = () => finishDragSelection();
-    window.addEventListener('pointerup', stop);
-    window.addEventListener('blur', stop);
-    return () => {
-      window.removeEventListener('pointerup', stop);
-      window.removeEventListener('blur', stop);
-    };
-  }, [finishDragSelection]);
-
-  useEffect(() => () => {
-    stopAutoScroll();
-  }, [stopAutoScroll]);
-
-  useEffect(() => {
-    if (!activeCell) return;
-    const rowIndex = rows.findIndex((row) => row.id === activeCell.rowId);
-    const columnIndex = columns.findIndex((column) => column.key === activeCell.key);
-    if (rowIndex < 0 || columnIndex < 0) return;
+  const handleWheel = useCallback((event) => {
+    if (!event.shiftKey) return;
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    const columnMeta = columnOffsets[columnIndex];
-    const rowTop = rowIndex * ROW_HEIGHT;
-    const rowBottom = rowTop + ROW_HEIGHT;
-    const columnLeft = columnMeta.left;
-    const columnRight = columnMeta.left + columnMeta.width;
+    event.preventDefault();
+    scroller.scrollLeft += event.deltaY || event.deltaX;
+  }, []);
 
-    let nextTop = scroller.scrollTop;
-    let nextLeft = scroller.scrollLeft;
-    if (rowTop < scroller.scrollTop) nextTop = rowTop;
-    if (rowBottom > scroller.scrollTop + scroller.clientHeight) nextTop = rowBottom - scroller.clientHeight;
-    if (columnLeft < scroller.scrollLeft + INDEX_WIDTH) nextLeft = Math.max(0, columnLeft - INDEX_WIDTH);
-    if (columnRight > scroller.scrollLeft + scroller.clientWidth) nextLeft = columnRight - scroller.clientWidth + 12;
-    if (nextTop !== scroller.scrollTop || nextLeft !== scroller.scrollLeft) scroller.scrollTo({ top: nextTop, left: nextLeft, behavior: 'auto' });
-  }, [activeCell, columnOffsets, columns, rows]);
+  const selectionRect = useMemo(() => {
+    if (!selectionBounds) return null;
+    const top = HEADER_HEIGHT + selectionBounds.startRow * ROW_HEIGHT;
+    const height = (selectionBounds.endRow - selectionBounds.startRow + 1) * ROW_HEIGHT;
+    const startMetric = columnMetrics[selectionBounds.startColumn];
+    const endMetric = columnMetrics[selectionBounds.endColumn];
+    if (!startMetric || !endMetric) return null;
+    return { top, left: startMetric.left, width: endMetric.left + endMetric.width - startMetric.left, height };
+  }, [columnMetrics, selectionBounds]);
 
   return (
-    <div className={styles.frame} data-loading={rowsLoading || undefined} data-editing={!!editingCell || undefined} data-dragging={dragSelection?.active || undefined} data-filling={!!fillSelection || undefined}>
-      <div ref={scrollerRef} className={styles.scroller} onWheel={onWheel}>
-        {!activeSheetId && !rowsLoading ? (
-          <div className={styles.emptyState}>
-            <strong>Planilha vazia</strong>
-            {canEdit ? <button type="button" onClick={onAddRow}>Criar primeira linha</button> : null}
-          </div>
-        ) : null}
-
-        <div className={styles.gridCanvas} style={{ minWidth: totalWidth }}>
-          <div className={styles.headerGrid} style={{ gridTemplateColumns: columnTemplate }}>
-            <div className={styles.cornerCell}>#</div>
-            {columns.map((column) => (
+    <div ref={frameRef} className={styles.frame}>
+      <div ref={scrollerRef} className={styles.scroller} onWheel={handleWheel}>
+        <div className={styles.canvas} style={{ width: totalWidth, height: Math.max(totalHeight, viewport.height) }}>
+          <div className={styles.header} style={{ width: totalWidth, height: HEADER_HEIGHT }}>
+            <div className={styles.corner} style={{ width: INDEX_WIDTH, height: HEADER_HEIGHT }} />
+            {visibleColumns.map(({ column, left, width }) => (
               <div
                 key={column.key}
                 className={styles.headerCell}
                 data-active={activeCell?.key === column.key || undefined}
                 data-saving={savingColumn === column.key || undefined}
-                data-resizing={resizeState?.key === column.key || undefined}
-                onContextMenu={(event) => onContextMenu(event, null, column.key)}
+                style={{ left, width, height: HEADER_HEIGHT }}
               >
-                {canEdit ? (
-                  <input
-                    value={column.label || ''}
-                    onChange={(event) => onColumnLabelChange(column.key, event.target.value)}
-                    onBlur={() => onColumnLabelCommit(column.key)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === 'Escape') event.currentTarget.blur();
-                    }}
-                    aria-label={`Nome da ${column.label || 'coluna'}`}
-                  />
-                ) : <span>{column.label}</span>}
-                {canEdit ? <button type="button" className={styles.resizeHandle} onPointerDown={(event) => onResizeStart(event, column.key)} aria-label={`Redimensionar ${column.label}`} /> : null}
+                <input
+                  value={column.label}
+                  disabled={!canEdit}
+                  onChange={(event) => onColumnLabelChange(column.key, event.target.value)}
+                  onBlur={() => onColumnLabelCommit(column.key)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') event.currentTarget.blur();
+                  }}
+                />
+                <button
+                  type="button"
+                  className={styles.resizeHandle}
+                  aria-label={`Redimensionar ${column.label}`}
+                  onPointerDown={(event) => canEdit && onResizeStart(event, column.key)}
+                />
               </div>
             ))}
           </div>
 
-          <div className={styles.bodyCanvas} style={{ height: bodyHeight || ROW_HEIGHT }}>
-            <div style={{ height: topSpacer }} />
-            {rowsLoading ? <div className={styles.loadingState}>Carregando...</div> : null}
-            {!rowsLoading && rows.length === 0 && activeSheetId ? (
-              <div className={styles.emptyState}>
-                <strong>Sem registros</strong>
-                {canEdit ? (
-                  <div className={styles.emptyActions}>
-                    <button type="button" onClick={onAddRow} disabled={creatingRow}>Nova linha</button>
-                    <button type="button" onClick={onAddColumn} disabled={creatingColumn}>Nova coluna</button>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
+          {visibleRows.map(({ row, index, top }) => (
+            <button
+              key={row.id}
+              type="button"
+              className={styles.rowIndex}
+              data-active={activeCell?.rowId === row.id || undefined}
+              style={{ top, width: INDEX_WIDTH, height: ROW_HEIGHT }}
+              onClick={() => onSelectRow(row.id)}
+            >
+              {index + 1}
+            </button>
+          ))}
 
-            {visibleRows.map((row, visibleIndex) => {
-              const rowIndex = visibleRange.first + visibleIndex;
-              const rowActive = activeCell?.rowId === row.id;
-              const rowSelected = selectionBounds && rowIndex >= selectionBounds.rowFrom && rowIndex <= selectionBounds.rowTo && selectedCount > 1;
+          {visibleRows.map(({ row, index: rowIndex, top }) => (
+            visibleColumns.map(({ column, left, width }, columnIndex) => {
+              const id = `${row.id}:${column.key}`;
+              const active = activeCell?.rowId === row.id && activeCell?.key === column.key;
+              const editing = editingCell?.rowId === row.id && editingCell?.key === column.key;
               return (
-                <div key={row.id} className={styles.rowGrid} style={{ gridTemplateColumns: columnTemplate, height: ROW_HEIGHT }} data-active={rowActive || undefined} data-selected={rowSelected || undefined}>
-                  <button type="button" className={styles.rowIndex} onClick={() => onSelectRow(row.id)} onContextMenu={(event) => onContextMenu(event, row.id, null)}>{rowIndex + 1}</button>
-                  {visibleColumnRange.first > 0 ? <div className={styles.columnGap} style={{ gridColumn: `2 / ${visibleColumnRange.first + 2}` }} aria-hidden="true" /> : null}
-                  {visibleColumns.map((column, offsetIndex) => {
-                    const columnIndex = visibleColumnRange.first + offsetIndex;
-                    const selectedGroup = selectedCellIds.has(`${row.id}:${column.key}`);
-                    return (
-                      <CellView
-                        key={column.key}
-                        row={row}
-                        rowIndex={rowIndex}
-                        column={column}
-                        columnIndex={columnIndex}
-                        selected={activeCell?.rowId === row.id && activeCell?.key === column.key}
-                        selectedGroup={selectedGroup}
-                        saving={savingCell === `${row.id}:${column.key}` || savingCell === 'bulk-selection'}
-                        editing={editingCell?.rowId === row.id && editingCell?.key === column.key}
-                        editingValue={editingValue}
-                        canEdit={canEdit}
-                        onSelect={onSelectCell}
-                        onStartEdit={startEdit}
-                        onEditorChange={setEditingValue}
-                        onCommitEdit={commitEdit}
-                        onCancelEdit={cancelEdit}
-                        onNavigate={onNavigateCell}
-                        onContextMenu={onContextMenu}
-                        onPasteTable={onPasteTable}
-                        onDragStart={handleDragSelectionStart}
-                        onDragEnter={handleDragSelectionEnter}
-                        onDragEnd={handleDragSelectionEnd}
-                      />
-                    );
-                  })}
-                </div>
+                <Cell
+                  key={id}
+                  row={row}
+                  rowIndex={rowIndex}
+                  column={column}
+                  columnIndex={columnIndex}
+                  left={left}
+                  top={top}
+                  width={width}
+                  selected={selectedCellIds?.has(id)}
+                  active={active}
+                  saving={savingCell === id}
+                  editing={editing}
+                  editValue={editingValue}
+                  canEdit={canEdit}
+                  onSelect={onSelectCell}
+                  onStartEdit={startEdit}
+                  onEditChange={setEditingValue}
+                  onCommit={commitEdit}
+                  onCancel={cancelEdit}
+                  onNavigate={onNavigateCell}
+                  onContextMenu={onContextMenu}
+                  onPasteTable={onPasteTable}
+                />
               );
-            })}
-            <div style={{ height: bottomSpacer }} />
-          </div>
+            })
+          ))}
 
-          <div className={styles.overlayLayer} aria-hidden="true">
-            {selectionRect ? (
-              <div
-                className={styles.selectionOverlay}
-                data-dragging={dragSelection?.active || undefined}
-                style={{
-                  transform: `translate3d(${selectionRect.left}px, ${selectionRect.top}px, 0)`,
-                  width: selectionRect.width,
-                  height: selectionRect.height,
-                }}
-              />
-            ) : null}
-            {fillRect ? (
-              <div
-                className={styles.fillOverlay}
-                style={{
-                  transform: `translate3d(${fillRect.left}px, ${fillRect.top}px, 0)`,
-                  width: fillRect.width,
-                  height: fillRect.height,
-                }}
-              />
-            ) : null}
-            {activeRect ? (
-              <div
-                className={styles.activeOverlay}
-                style={{
-                  transform: `translate3d(${activeRect.left}px, ${activeRect.top}px, 0)`,
-                  width: activeRect.width,
-                  height: activeRect.height,
-                }}
-              >
-                <button type="button" className={styles.activeHandle} onPointerDown={startFillDrag} aria-label="Preencher por arraste" />
-                <span className={styles.fillHint}>arraste</span>
-              </div>
-            ) : null}
-            {resizeRect ? (
-              <div className={styles.resizeOverlay} style={{ transform: `translate3d(${resizeRect.left}px, 0, 0)` }}>
-                <span>{resizeRect.label}</span>
-              </div>
-            ) : null}
-          </div>
+          {selectionRect && selectedCount > 1 ? (
+            <div className={styles.selectionLayer} style={selectionRect} />
+          ) : null}
+
+          {resizeState ? (
+            <div className={styles.resizeGuide} style={{ left: resizeState.left }}>
+              <span>{resizeState.label}: {resizeState.width}px</span>
+            </div>
+          ) : null}
+
+          {!rows.length && !rowsLoading ? (
+            <div className={styles.emptyState}>
+              <span>Planilha vazia</span>
+              <button type="button" onClick={onAddRow} disabled={!canEdit || creatingRow}>Criar linha</button>
+              <button type="button" onClick={onAddColumn} disabled={!canEdit || creatingColumn}>Criar coluna</button>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
