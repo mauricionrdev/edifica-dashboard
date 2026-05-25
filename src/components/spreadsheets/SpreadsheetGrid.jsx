@@ -47,6 +47,7 @@ function Cell({
   saving,
   editing,
   editValue,
+  displayMeta,
   canEdit,
   onSelect,
   onCellClick,
@@ -66,7 +67,8 @@ function Cell({
   const ref = useRef(null);
   const editorRef = useRef(null);
   const value = row?.[column.key] || '';
-  const displayValue = stripText(value);
+  const rawValue = stripText(value);
+  const displayValue = displayMeta?.value ?? rawValue;
   const style = getStyle(row, column.key);
 
   useEffect(() => {
@@ -103,7 +105,7 @@ function Cell({
     if (event.key === 'Enter' || event.key === 'F2') {
       if (!canEdit) return;
       event.preventDefault();
-      onStartEdit(row.id, column.key, displayValue);
+      onStartEdit(row.id, column.key, rawValue);
       return;
     }
 
@@ -154,6 +156,8 @@ function Cell({
       data-selected={selected || undefined}
       data-active={active || undefined}
       data-saving={saving || undefined}
+      data-formula={displayMeta?.isFormula || undefined}
+      data-formula-error={displayMeta?.hasFormulaError || undefined}
       role="gridcell"
       tabIndex={0}
       style={{
@@ -175,7 +179,7 @@ function Cell({
         onDragSelectionStart?.(event, row.id, column.key);
       }}
       onPointerEnter={() => onDragSelectionMove?.(row.id, column.key)}
-      onDoubleClick={() => canEdit && onStartEdit(row.id, column.key, displayValue)}
+      onDoubleClick={() => canEdit && onStartEdit(row.id, column.key, rawValue)}
       onContextMenu={(event) => onContextMenu(event, row.id, column.key)}
       onKeyDown={handleKeyDown}
       onPaste={(event) => {
@@ -219,6 +223,7 @@ export default function SpreadsheetGrid({
   selectedCellIds,
   selectionBounds,
   selectedCount,
+  displayValueMap,
   savingCell,
   savingColumn,
   resizeState,
@@ -571,6 +576,7 @@ export default function SpreadsheetGrid({
                   saving={savingCell === id}
                   editing={editing}
                   editValue={editingValue}
+                  displayMeta={displayValueMap?.get(id)}
                   canEdit={canEdit}
                   onSelect={onSelectCell}
                   onCellClick={handleCellClick}

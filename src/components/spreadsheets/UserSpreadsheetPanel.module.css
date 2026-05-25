@@ -618,3 +618,58 @@
   margin: var(--space-1) 0;
   background: var(--line-subtle);
 }
+
+.typeGroup {
+  min-width: 142px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-soft);
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+}
+
+.typeGroup span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.typeGroup select {
+  min-width: 92px;
+  height: 26px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+  outline: 0;
+}
+
+.typeGroup select:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.formulaBadge {
+  width: auto;
+  min-height: 22px;
+  margin-left: var(--space-2);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-1);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-style: normal;
+  font-family: inherit;
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+}

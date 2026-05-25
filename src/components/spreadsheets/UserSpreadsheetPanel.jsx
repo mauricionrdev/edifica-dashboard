@@ -230,6 +230,113 @@ function formatStatusNumber(value) {
   return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(value);
 }
 
+function parsePlainNumber(value = '') {
+  const text = sanitizeCellValue(value)
+    .replace(/\s/g, '')
+    .replace(/%$/, '')
+    .replace(/R\$|US\$/gi, '')
+    .replace(/\./g, '')
+    .replace(',', '.');
+  if (!text || !/^-?\d+(\.\d+)?$/.test(text)) return null;
+  const number = Number(text);
+  return Number.isFinite(number) ? number : null;
+}
+
+function parseCellRef(ref = '') {
+  const match = String(ref).trim().toUpperCase().match(/^([A-Z]+)(\d+)$/);
+  if (!match) return null;
+  const letters = match[1];
+  let columnIndex = 0;
+  for (let index = 0; index < letters.length; index += 1) {
+    columnIndex = columnIndex * 26 + (letters.charCodeAt(index) - 64);
+  }
+  const rowIndex = Number(match[2]) - 1;
+  return { rowIndex, columnIndex: columnIndex - 1 };
+}
+
+function expandCellRange(range = '', rows = [], columns = []) {
+  const [startRef, endRef] = String(range).split(':').map((item) => parseCellRef(item));
+  if (!startRef || !endRef) return [];
+  const startRow = Math.max(0, Math.min(startRef.rowIndex, endRef.rowIndex));
+  const endRow = Math.min(rows.length - 1, Math.max(startRef.rowIndex, endRef.rowIndex));
+  const startColumn = Math.max(0, Math.min(startRef.columnIndex, endRef.columnIndex));
+  const endColumn = Math.min(columns.length - 1, Math.max(startRef.columnIndex, endRef.columnIndex));
+  const refs = [];
+  for (let rowIndex = startRow; rowIndex <= endRow; rowIndex += 1) {
+    for (let columnIndex = startColumn; columnIndex <= endColumn; columnIndex += 1) {
+      refs.push({ rowIndex, columnIndex });
+    }
+  }
+  return refs;
+}
+
+function formatCellDisplayValue(value = '', style = {}) {
+  const raw = sanitizeCellValue(value);
+  const number = parsePlainNumber(raw);
+  if (number === null || !style?.numberFormat || style.numberFormat === 'text') return raw;
+  if (style.numberFormat === 'number') return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(number);
+  if (style.numberFormat === 'currency') return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(number);
+  if (style.numberFormat === 'percent') return new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 2 }).format(number);
+  return raw;
+}
+
+function evaluateFormula(rawFormula = '', rows = [], columns = [], stack = new Set()) {
+  const formula = sanitizeCellValue(rawFormula).trim();
+  if (!formula.startsWith('=')) return { value: formula, ok: true };
+  const expression = formula.slice(1).trim();
+  if (!expression) return { value: '', ok: true };
+
+  const resolveCell = (ref) => {
+    const coords = parseCellRef(ref);
+    if (!coords) return 0;
+    const row = rows[coords.rowIndex];
+    const column = columns[coords.columnIndex];
+    if (!row || !column) return 0;
+    const key = `${row.id}:${column.key}`;
+    if (stack.has(key)) throw new Error('Formula circular');
+    const raw = sanitizeCellValue(row?.[column.key] || '');
+    if (raw.startsWith('=')) {
+      const nested = evaluateFormula(raw, rows, columns, new Set([...stack, key]));
+      if (!nested.ok) throw new Error('Formula invalida');
+      return parsePlainNumber(nested.value) ?? 0;
+    }
+    return parsePlainNumber(raw) ?? 0;
+  };
+
+  const functionMatch = expression.match(/^([A-ZÁÉÍÓÚÇ.]+)\((.*)\)$/i);
+  if (functionMatch) {
+    const name = functionMatch[1].normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+    const args = functionMatch[2].split(';').flatMap((chunk) => chunk.split(',')).map((item) => item.trim()).filter(Boolean);
+    const values = args.flatMap((arg) => {
+      if (arg.includes(':')) return expandCellRange(arg, rows, columns).map(({ rowIndex, columnIndex }) => {
+        const row = rows[rowIndex];
+        const column = columns[columnIndex];
+        return row && column ? resolveCell(`${columnName(columnIndex)}${rowIndex + 1}`) : 0;
+      });
+      const ref = parseCellRef(arg);
+      if (ref) return [resolveCell(arg)];
+      return [parsePlainNumber(arg) ?? 0];
+    });
+    if (['SUM', 'SOMA'].includes(name)) return { value: String(values.reduce((total, value) => total + value, 0)), ok: true };
+    if (['AVERAGE', 'MEDIA'].includes(name)) return { value: values.length ? String(values.reduce((total, value) => total + value, 0) / values.length) : '0', ok: true };
+    if (name === 'MIN') return { value: values.length ? String(Math.min(...values)) : '0', ok: true };
+    if (name === 'MAX') return { value: values.length ? String(Math.max(...values)) : '0', ok: true };
+    if (['COUNT', 'CONT.NUM'].includes(name)) return { value: String(values.filter((value) => Number.isFinite(value)).length), ok: true };
+    if (['COUNTA', 'CONT.VALORES'].includes(name)) return { value: String(values.filter((value) => String(value ?? '') !== '').length), ok: true };
+  }
+
+  try {
+    const safeExpression = expression.replace(/([A-Z]+\d+)/gi, (ref) => String(resolveCell(ref)));
+    if (!/^[0-9+\-*/().,\s]+$/.test(safeExpression)) return { value: '#ERRO', ok: false };
+    const normalized = safeExpression.replace(/,/g, '.');
+    const result = Function(`"use strict"; return (${normalized});`)();
+    if (!Number.isFinite(result)) return { value: '#ERRO', ok: false };
+    return { value: String(result), ok: true };
+  } catch {
+    return { value: '#ERRO', ok: false };
+  }
+}
+
 function positiveModulo(value, divisor) {
   if (!divisor) return 0;
   return ((value % divisor) + divisor) % divisor;
@@ -444,6 +551,39 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.textAlign || '';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.textAlign || '') === first) ? first : '';
   }, [selectedCells]);
+  const selectedNumberFormat = useMemo(() => {
+    if (!selectedCells.length) return 'text';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.numberFormat || 'text';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.numberFormat || 'text') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const displayValueMap = useMemo(() => {
+    const map = new Map();
+    rows.forEach((row) => {
+      columns.forEach((column) => {
+        const raw = sanitizeCellValue(row?.[column.key] || '');
+        const style = getCellStyle(row, column.key);
+        const result = raw.startsWith('=') ? evaluateFormula(raw, rows, columns, new Set([`${row.id}:${column.key}`])) : { value: raw, ok: true };
+        map.set(`${row.id}:${column.key}`, {
+          value: formatCellDisplayValue(result.value, style),
+          raw,
+          isFormula: raw.startsWith('='),
+          hasFormulaError: raw.startsWith('=') && !result.ok,
+        });
+      });
+    });
+    return map;
+  }, [columns, rows]);
+
+  const formulaCount = useMemo(() => {
+    let count = 0;
+    rows.forEach((row) => {
+      columns.forEach((column) => {
+        if (sanitizeCellValue(row?.[column.key] || '').startsWith('=')) count += 1;
+      });
+    });
+    return count;
+  }, [columns, rows]);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
@@ -618,6 +758,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const nextAlign = selectedAlign === textAlign ? '' : textAlign;
     applyStyleToSelection({ textAlign: nextAlign }).catch(() => {});
   }, [applyStyleToSelection, selectedAlign]);
+
+  const setNumberFormat = useCallback((numberFormat) => {
+    applyStyleToSelection({ numberFormat }).catch(() => {});
+  }, [applyStyleToSelection]);
 
   const clearSelectionFormatting = useCallback(() => {
     applyStyleToSelection({ bold: false, italic: false, underline: false, textAlign: '' }).catch(() => {});
@@ -1432,6 +1576,20 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <button type="button" data-active={selectedAlign === 'right' || undefined} onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>D</button>
           <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar</button>
         </div>
+        <label className={styles.typeGroup}>
+          <span>Tipo</span>
+          <select
+            value={selectedNumberFormat === 'mixed' ? 'text' : selectedNumberFormat}
+            aria-label="Tipo da seleção"
+            disabled={!selectedCount || !canEdit || !!busy}
+            onChange={(event) => setNumberFormat(event.target.value)}
+          >
+            <option value="text">Texto</option>
+            <option value="number">Número</option>
+            <option value="currency">Moeda</option>
+            <option value="percent">Percentual</option>
+          </select>
+        </label>
         <div className={styles.findGroup}>
           <input
             ref={searchInputRef}
@@ -1476,6 +1634,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <div className={styles.nameBox}>{activeColumn && activeRowIndex >= 0 ? `${columnName(activeColumnIndex)}${activeRowIndex + 1}` : '—'}</div>
         <div className={styles.formulaBar}>
           <span>fx</span>
+          {formulaValue.trim().startsWith('=') ? <em className={styles.formulaBadge}>Fórmula</em> : null}
           <input
             value={formulaValue}
             disabled={!activeCell || !canEdit}
@@ -1512,6 +1671,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             selectedCellIds={selectedCellIds}
             selectionBounds={selectionBounds}
             selectedCount={selectedCount}
+            displayValueMap={displayValueMap}
             savingCell={savingCell}
             savingColumn={savingColumn}
             resizeState={resizeState}
@@ -1549,7 +1709,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.footer}>
         <span data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail}</span>
-        <span>{selectedSummary} · {filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
+        <span>{selectedSummary} · {filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}{formulaCount ? ` · ${formulaCount} fórmula${formulaCount === 1 ? '' : 's'}` : ''}</span>
       </footer>
 
       <SheetContextMenu

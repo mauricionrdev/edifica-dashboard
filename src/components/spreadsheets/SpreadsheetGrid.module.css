@@ -352,3 +352,17 @@
   border: 1px dashed var(--accent-line);
   background: var(--accent-soft);
 }
+
+.cell[data-formula="true"] .cellValue::before {
+  content: '=';
+  margin-right: var(--space-1);
+  color: var(--accent-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+}
+
+.cell[data-formula-error="true"] {
+  color: var(--danger-text);
+  background: var(--danger-soft);
+}
