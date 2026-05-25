@@ -243,6 +243,7 @@ export default function SpreadsheetGrid({
   onSelectColumn,
   onCellChange,
   onCellCommit,
+  onFormulaDraftChange,
   onNavigateCell,
   onJumpCell,
   onContextMenu,
@@ -415,9 +416,11 @@ export default function SpreadsheetGrid({
   const startEdit = useCallback((rowId, key, initialValue) => {
     if (!canEdit) return;
     const row = rows.find((entry) => entry.id === rowId);
+    const nextValue = initialValue ?? stripText(row?.[key] || '');
     setEditingCell({ rowId, key });
-    setEditingValue(initialValue ?? stripText(row?.[key] || ''));
-  }, [canEdit, rows]);
+    setEditingValue(nextValue);
+    onFormulaDraftChange?.(nextValue);
+  }, [canEdit, onFormulaDraftChange, rows]);
 
   const cancelEdit = useCallback(() => {
     setEditingCell(null);
@@ -589,7 +592,10 @@ export default function SpreadsheetGrid({
                   onSelect={onSelectCell}
                   onCellClick={handleCellClick}
                   onStartEdit={startEdit}
-                  onEditChange={setEditingValue}
+                  onEditChange={(value) => {
+                    setEditingValue(value);
+                    onFormulaDraftChange?.(value);
+                  }}
                   onCommit={commitEdit}
                   onCancel={cancelEdit}
                   onNavigate={onNavigateCell}

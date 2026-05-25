@@ -17,6 +17,49 @@ import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import styles from './UserSpreadsheetPanel.module.css';
 
 const DEFAULT_COLUMN_WIDTH = 168;
+
+const FORMULA_LIBRARY = [
+  { name: 'SOMA', aliases: ['SUM'], signature: 'SOMA(A1:A5)', description: 'Soma os valores de um intervalo.' },
+  { name: 'MEDIA', aliases: ['AVERAGE'], signature: 'MEDIA(A1:A5)', description: 'Calcula a média de um intervalo.' },
+  { name: 'MIN', aliases: [], signature: 'MIN(A1:A5)', description: 'Retorna o menor valor.' },
+  { name: 'MAX', aliases: [], signature: 'MAX(A1:A5)', description: 'Retorna o maior valor.' },
+  { name: 'CONT.NUM', aliases: ['COUNT'], signature: 'CONT.NUM(A1:A5)', description: 'Conta células numéricas.' },
+  { name: 'CONT.VALORES', aliases: ['COUNTA'], signature: 'CONT.VALORES(A1:A5)', description: 'Conta células preenchidas.' },
+];
+
+function normalizeFormulaName(value = '') {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toUpperCase();
+}
+
+function getFormulaToken(value = '') {
+  const formula = sanitizeCellValue(value);
+  if (!formula.trim().startsWith('=')) return '';
+  const withoutEquals = formula.slice(1);
+  const match = withoutEquals.match(/([A-ZÁÉÍÓÚÇ.]+)$/i);
+  return match ? match[1] : '';
+}
+
+function getFormulaSuggestions(value = '') {
+  const token = normalizeFormulaName(getFormulaToken(value));
+  if (!sanitizeCellValue(value).trim().startsWith('=')) return [];
+  if (!token) return FORMULA_LIBRARY.slice(0, 6);
+  return FORMULA_LIBRARY.filter((formula) => {
+    const names = [formula.name, ...(formula.aliases || [])].map(normalizeFormulaName);
+    return names.some((name) => name.startsWith(token));
+  }).slice(0, 6);
+}
+
+function insertFormulaSuggestion(currentValue = '', formulaName = '') {
+  const current = sanitizeCellValue(currentValue);
+  const base = current.trim().startsWith('=') ? current : '=';
+  const token = getFormulaToken(base);
+  if (token) return `${base.slice(0, base.length - token.length)}${formulaName}(`;
+  return `${base}${formulaName}(`;
+}
+
 const MIN_COLUMN_WIDTH = 5;
 const MAX_COLUMN_WIDTH = 900;
 const MAX_IMPORT_COLUMNS = 60;
@@ -282,6 +325,50 @@ function getFormulaReferences(rawFormula = '', rows = [], columns = []) {
   return [...refs.keys()];
 }
 
+
+function validateFormulaStructure(rawFormula = '', rows = [], columns = []) {
+  const formula = sanitizeCellValue(rawFormula).trim();
+  if (!formula.startsWith('=')) return { ok: true, message: '' };
+  const expression = formula.slice(1).trim();
+  if (!expression) return { ok: false, message: 'Fórmula incompleta' };
+
+  let parenBalance = 0;
+  for (const char of expression) {
+    if (char === '(') parenBalance += 1;
+    if (char === ')') parenBalance -= 1;
+    if (parenBalance < 0) return { ok: false, message: 'Parênteses inválidos' };
+  }
+  if (parenBalance !== 0) return { ok: false, message: 'Feche os parênteses da fórmula' };
+
+  const ranges = [...formula.matchAll(/([A-Z]+\d+)\s*:\s*([A-Z]+\d+)/gi)];
+  for (const range of ranges) {
+    const start = parseCellRef(range[1]);
+    const end = parseCellRef(range[2]);
+    if (!start || !end) return { ok: false, message: 'Intervalo inválido' };
+    if (start.rowIndex >= rows.length || end.rowIndex >= rows.length || start.columnIndex >= columns.length || end.columnIndex >= columns.length) {
+      return { ok: false, message: `Intervalo fora da planilha: ${range[0].toUpperCase()}` };
+    }
+  }
+
+  const withoutRanges = formula.replace(/([A-Z]+\d+)\s*:\s*([A-Z]+\d+)/gi, '');
+  const refs = [...withoutRanges.matchAll(/([A-Z]+\d+)/gi)];
+  for (const ref of refs) {
+    const coords = parseCellRef(ref[1]);
+    if (!coords || coords.rowIndex >= rows.length || coords.columnIndex >= columns.length) {
+      return { ok: false, message: `Referência fora da planilha: ${ref[1].toUpperCase()}` };
+    }
+  }
+
+  const functionMatch = expression.match(/^([A-ZÁÉÍÓÚÇ.]+)\(/i);
+  if (functionMatch) {
+    const requested = normalizeFormulaName(functionMatch[1]);
+    const supported = FORMULA_LIBRARY.some((formulaItem) => [formulaItem.name, ...(formulaItem.aliases || [])].map(normalizeFormulaName).includes(requested));
+    if (!supported) return { ok: false, message: `Função não suportada: ${functionMatch[1].toUpperCase()}` };
+  }
+
+  return { ok: true, message: '' };
+}
+
 function adjustFormulaReferences(rawFormula = '', rowOffset = 0, columnOffset = 0) {
   const formula = sanitizeCellValue(rawFormula);
   if (!formula.startsWith('=')) return formula;
@@ -341,10 +428,11 @@ function formatCellDisplayValue(value = '', style = {}) {
   return raw;
 }
 
-function validateCellValue(value = '', style = {}, formulaResult = null) {
+function validateCellValue(value = '', style = {}, formulaResult = null, formulaValidation = null) {
   const raw = sanitizeCellValue(value);
   if (!raw) return { ok: true, message: '' };
   if (raw.startsWith('=')) {
+    if (formulaValidation && !formulaValidation.ok) return { ok: false, message: formulaValidation.message || 'Fórmula inválida' };
     if (formulaResult && !formulaResult.ok) return { ok: false, message: 'Fórmula inválida' };
     return { ok: true, message: '' };
   }
@@ -670,7 +758,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         const raw = sanitizeCellValue(row?.[column.key] || '');
         const style = getCellStyle(row, column.key);
         const result = raw.startsWith('=') ? evaluateFormula(raw, rows, columns, new Set([`${row.id}:${column.key}`])) : { value: raw, ok: true };
-        const validation = validateCellValue(raw, style, result);
+        const formulaValidation = raw.startsWith('=') ? validateFormulaStructure(raw, rows, columns) : { ok: true, message: '' };
+        const validation = validateCellValue(raw, style, result, formulaValidation);
         map.set(`${row.id}:${column.key}`, {
           value: formatCellDisplayValue(result.value, style),
           raw,
@@ -703,6 +792,15 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [columns, rows]);
 
   const formulaReferenceIds = useMemo(() => getFormulaReferences(formulaValue, rows, columns), [columns, formulaValue, rows]);
+  const formulaAssist = useMemo(() => {
+    const value = sanitizeCellValue(formulaValue);
+    if (!value.trim().startsWith('=')) return { visible: false, suggestions: [], validation: { ok: true, message: '' } };
+    return {
+      visible: true,
+      suggestions: getFormulaSuggestions(value),
+      validation: validateFormulaStructure(value, rows, columns),
+    };
+  }, [columns, formulaValue, rows]);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
@@ -1639,6 +1737,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setSelectionFocus(nextCell);
   }, [activeCell?.key, activeCell?.rowId, searchMatches]);
 
+  const applyFormulaSuggestion = useCallback((formulaName) => {
+    setFormulaValue((current) => insertFormulaSuggestion(current, formulaName));
+  }, []);
+
   useEffect(() => {
     const onKeyDown = (event) => {
       const target = event.target;
@@ -1828,7 +1930,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <div className={styles.controlBar}>
         <div className={styles.nameBox}>{activeColumn && activeRowIndex >= 0 ? `${columnName(activeColumnIndex)}${activeRowIndex + 1}` : '—'}</div>
-        <div className={styles.formulaBar}>
+        <div className={styles.formulaBar} data-invalid={formulaAssist.visible && !formulaAssist.validation.ok || undefined}>
           <span>fx</span>
           {formulaValue.trim().startsWith('=') ? <em className={styles.formulaBadge}>Fórmula</em> : null}
           <input
@@ -1849,6 +1951,26 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               }
             }}
           />
+          {formulaAssist.visible && activeCell && canEdit ? (
+            <div className={styles.formulaAssist}>
+              {!formulaAssist.validation.ok ? <strong>{formulaAssist.validation.message}</strong> : null}
+              {formulaAssist.suggestions.length ? (
+                <div className={styles.formulaSuggestions}>
+                  {formulaAssist.suggestions.map((formula) => (
+                    <button
+                      key={formula.name}
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => applyFormulaSuggestion(formula.name)}
+                    >
+                      <span>{formula.signature}</span>
+                      <em>{formula.description}</em>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -1883,6 +2005,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             onSelectColumn={selectColumn}
             onCellChange={setCellDraft}
             onCellCommit={commitCell}
+            onFormulaDraftChange={setFormulaValue}
             onNavigateCell={navigateCell}
             onJumpCell={jumpCell}
             onContextMenu={openContextMenu}
