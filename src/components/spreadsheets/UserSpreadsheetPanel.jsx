@@ -114,39 +114,6 @@ const MIN_COLUMN_WIDTH = 5;
 const MAX_COLUMN_WIDTH = 900;
 const MAX_IMPORT_COLUMNS = 60;
 const MAX_IMPORT_ROWS = 200;
-const CONTEXT_MENU_WIDTH = 332;
-
-function estimateContextMenuHeight(scope = 'cell') {
-  if (scope === 'row') return 420;
-  if (scope === 'column') return 560;
-  return 640;
-}
-
-function getContextMenuPosition(event, scope = 'cell') {
-  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1280;
-  const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 820;
-  const margin = 12;
-  const estimatedHeight = estimateContextMenuHeight(scope);
-  const maxHeight = Math.max(260, viewportHeight - margin * 2);
-  const safeHeight = Math.min(estimatedHeight, maxHeight);
-  const openToLeft = event.clientX + CONTEXT_MENU_WIDTH + margin > viewportWidth;
-  const openUp = event.clientY + safeHeight + margin > viewportHeight;
-  const x = Math.max(margin, Math.min(
-    openToLeft ? event.clientX - CONTEXT_MENU_WIDTH : event.clientX,
-    viewportWidth - CONTEXT_MENU_WIDTH - margin,
-  ));
-  const y = Math.max(margin, Math.min(
-    openUp ? event.clientY - safeHeight : event.clientY,
-    viewportHeight - safeHeight - margin,
-  ));
-
-  return {
-    x,
-    y,
-    maxHeight: safeHeight,
-    placement: `${openUp ? 'top' : 'bottom'}-${openToLeft ? 'left' : 'right'}`,
-  };
-}
 
 
 function decodeEntities(value = '') {
@@ -184,23 +151,9 @@ function normalizeColumns(columns = []) {
   }));
 }
 
-function normalizeCellStyles(styles = {}, columns = []) {
-  if (!styles || typeof styles !== 'object' || Array.isArray(styles)) return {};
-  const allowedKeys = new Set(columns.map((column) => column.key));
-  return Object.entries(styles).reduce((acc, [key, value]) => {
-    if (!allowedKeys.has(key) || !value || typeof value !== 'object' || Array.isArray(value)) return acc;
-    acc[key] = { ...value };
-    return acc;
-  }, {});
-}
-
 function normalizeRows(rows = [], columns = []) {
   return rows.map((row, index) => {
-    const next = {
-      ...row,
-      position: Number(row.position || index + 1),
-      __styles: normalizeCellStyles(row.__styles, columns),
-    };
+    const next = { ...row, position: Number(row.position || index + 1), __styles: {} };
     columns.forEach((column) => {
       next[column.key] = sanitizeCellValue(next[column.key] || '');
     });
@@ -847,6 +800,7 @@ function SheetContextMenu({
   onSortColumnAscending,
   onSortColumnDescending,
   onFilterColumnBySelection,
+  onPrepareColumnFilter,
   onClearColumnFilter,
   onSetTypeText,
   onSetTypeNumber,
@@ -863,7 +817,6 @@ function SheetContextMenu({
   onVerticalBottom,
 }) {
   if (!menu) return null;
-  const isCell = menu.scope === 'cell';
   const isRow = menu.scope === 'row';
   const isColumn = menu.scope === 'column';
   const typeLabel = isRow ? 'Linha' : isColumn ? 'Coluna' : 'Célula';
@@ -875,18 +828,7 @@ function SheetContextMenu({
       {shortcut ? <kbd>{shortcut}</kbd> : null}
     </button>
   );
-  const Section = ({ title, children }) => (
-    <div className={styles.contextSection} role="group" aria-label={title}>
-      <span className={styles.contextSectionTitle}>{title}</span>
-      {children}
-    </div>
-  );
-
-  const menuStyle = {
-    left: menu.x,
-    top: menu.y,
-    maxHeight: menu.maxHeight || undefined,
-  };
+  const Divider = () => <span className={styles.contextDivider} aria-hidden="true" />;
 
   return (
     <div className={styles.contextBackdrop} role="presentation" onMouseDown={onClose} onContextMenu={(event) => event.preventDefault()}>
@@ -894,9 +836,7 @@ function SheetContextMenu({
         className={styles.contextMenu}
         role="menu"
         aria-label="Ações da planilha"
-        data-scope={menu.scope}
-        data-placement={menu.placement}
-        style={menuStyle}
+        style={{ left: menu.x, top: menu.y }}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className={styles.contextMenuHeader}>
@@ -904,115 +844,87 @@ function SheetContextMenu({
           <span>{menu.label || 'Ações rápidas'}</span>
         </header>
 
-        <Section title="Área de transferência">
-          <Item icon="✂" label="Recortar" shortcut="Ctrl X" onClick={onCut} disabled={!canEdit} />
-          <Item icon="⧉" label="Copiar" shortcut="Ctrl C" onClick={onCopy} />
-          <Item icon="▣" label="Colar" shortcut="Ctrl V" onClick={onPaste} disabled={!canEdit} />
-        </Section>
+        <Item icon="✂" label="Recortar" shortcut="Ctrl X" onClick={onCut} disabled={!canEdit} />
+        <Item icon="⧉" label="Copiar" shortcut="Ctrl C" onClick={onCopy} />
+        <Item icon="▣" label="Colar" shortcut="Ctrl V" onClick={onPaste} disabled={!canEdit} />
+        <Divider />
 
-        {isCell ? (
-          <Section title="Seleção">
-            <Item icon="▦" label="Selecionar tudo" shortcut="Ctrl A" onClick={onSelectAll} />
-            <Item icon="▣" label="Selecionar área preenchida" onClick={onSelectUsedRange} />
-            <Item icon="↔" label="Selecionar linha" onClick={onSelectRow} />
-            <Item icon="↕" label="Selecionar coluna" onClick={onSelectColumn} />
-          </Section>
-        ) : null}
+        {!isColumn ? <Item icon="＋" label="Inserir linha acima" onClick={onInsertRowAbove} disabled={!canEdit} /> : null}
+        {!isColumn ? <Item icon="＋" label="Inserir linha abaixo" onClick={onInsertRowBelow} disabled={!canEdit} /> : null}
+        {!isRow ? <Item icon="＋" label="Inserir coluna à esquerda" onClick={onInsertColumnLeft} disabled={!canEdit} /> : null}
+        {!isRow ? <Item icon="＋" label="Inserir coluna à direita" onClick={onInsertColumnRight} disabled={!canEdit} /> : null}
+        {isRow ? <Item icon="⧉" label="Duplicar linha" onClick={onDuplicateRow} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⧉" label="Duplicar coluna" onClick={onDuplicateColumn} disabled={!canEdit} /> : null}
+        <Divider />
 
-        {isRow ? (
-          <Section title="Linha">
-            <Item icon="↔" label="Selecionar linha" onClick={onSelectRow} />
-            <Item icon="＋" label="Inserir linha acima" onClick={onInsertRowAbove} disabled={!canEdit} />
-            <Item icon="＋" label="Inserir linha abaixo" onClick={onInsertRowBelow} disabled={!canEdit} />
-            <Item icon="⧉" label="Duplicar linha" onClick={onDuplicateRow} disabled={!canEdit} />
-            <Item icon="⌫" label="Limpar conteúdo da linha" shortcut="Del" onClick={onClearSelection} disabled={!canEdit} />
-            <Item icon="🗑" label="Excluir linha" onClick={onDeleteRow} disabled={!canEdit} danger />
-          </Section>
-        ) : null}
+        {!isColumn ? <Item icon="🗑" label="Excluir linha" onClick={onDeleteRow} disabled={!canEdit || isColumn} danger /> : null}
+        {!isRow ? <Item icon="🗑" label="Excluir coluna" onClick={onDeleteColumn} disabled={!canEdit || isRow} danger /> : null}
+        <Item icon="⌫" label="Limpar conteúdo" shortcut="Del" onClick={onClearSelection} disabled={!canEdit} />
+        <Divider />
 
-        {isColumn ? (
-          <Section title="Coluna">
-            <Item icon="↕" label="Selecionar coluna" onClick={onSelectColumn} />
-            <Item icon="＋" label="Inserir coluna à esquerda" onClick={onInsertColumnLeft} disabled={!canEdit} />
-            <Item icon="＋" label="Inserir coluna à direita" onClick={onInsertColumnRight} disabled={!canEdit} />
-            <Item icon="⧉" label="Duplicar coluna" onClick={onDuplicateColumn} disabled={!canEdit} />
-            <Item icon="↔" label="Ajustar largura ao conteúdo" onClick={onFitColumnWidth} disabled={!canEdit} />
-            <Item icon="⌫" label="Limpar conteúdo da coluna" shortcut="Del" onClick={onClearSelection} disabled={!canEdit} />
-            <Item icon="🗑" label="Excluir coluna" onClick={onDeleteColumn} disabled={!canEdit} danger />
-          </Section>
-        ) : null}
+        <Item icon="▦" label="Selecionar tudo" shortcut="Ctrl A" onClick={onSelectAll} />
+        <Item icon="▣" label="Selecionar área preenchida" onClick={onSelectUsedRange} />
+        {!isColumn ? <Item icon="↔" label="Selecionar linha" onClick={onSelectRow} disabled={isColumn} /> : null}
+        {!isRow ? <Item icon="↕" label="Selecionar coluna" onClick={onSelectColumn} disabled={isRow} /> : null}
+        <Divider />
 
-        {isCell ? (
-          <Section title="Célula">
-            <Item icon="↵" label="Preencher seleção" shortcut="Ctrl Enter" onClick={onFillSelection} disabled={!canEdit} />
-            <Item icon="⌫" label="Limpar conteúdo" shortcut="Del" onClick={onClearSelection} disabled={!canEdit} />
-            <Item icon="⌕" label="Localizar este valor" onClick={onFindCellValue} />
-            <Item icon="↔" label="Usar no substituir" onClick={onUseCellValueAsReplaceQuery} />
-          </Section>
-        ) : null}
+        <Item icon="B" label="Negrito" shortcut="Ctrl B" onClick={onBold} disabled={!canEdit} />
+        <Item icon="I" label="Itálico" shortcut="Ctrl I" onClick={onItalic} disabled={!canEdit} />
+        <Item icon="U" label="Sublinhado" shortcut="Ctrl U" onClick={onUnderline} disabled={!canEdit} />
+        <Item icon="S" label="Tachado" onClick={onStrikeThrough} disabled={!canEdit} />
+        <div className={styles.contextPalette} role="group" aria-label="Cor do texto">
+          <span>Cor do texto</span>
+          {TEXT_COLOR_OPTIONS.slice(1).map((option) => (
+            <button
+              key={option.label}
+              type="button"
+              title={option.label}
+              aria-label={`Cor do texto: ${option.label}`}
+              style={{ '--swatch': option.value }}
+              onClick={() => onTextColor(option.value)}
+              disabled={!canEdit}
+            />
+          ))}
+        </div>
+        <Divider />
 
-        {(isCell || isRow) ? (
-          <Section title="Texto">
-            <Item icon="B" label="Negrito" shortcut="Ctrl B" onClick={onBold} disabled={!canEdit} />
-            <Item icon="I" label="Itálico" shortcut="Ctrl I" onClick={onItalic} disabled={!canEdit} />
-            <Item icon="U" label="Sublinhado" shortcut="Ctrl U" onClick={onUnderline} disabled={!canEdit} />
-            <Item icon="S" label="Tachado" onClick={onStrikeThrough} disabled={!canEdit} />
-            <div className={styles.contextPalette} role="group" aria-label="Cor do texto">
-              <span>Cor do texto</span>
-              {TEXT_COLOR_OPTIONS.slice(1).map((option) => (
-                <button
-                  key={option.label}
-                  type="button"
-                  title={option.label}
-                  aria-label={`Cor do texto: ${option.label}`}
-                  style={{ '--swatch': option.value }}
-                  onClick={() => onTextColor(option.value)}
-                  disabled={!canEdit}
-                />
-              ))}
-            </div>
-            <Item icon="✕" label="Limpar formatação" onClick={onClearFormatting} disabled={!canEdit} />
-          </Section>
-        ) : null}
+        <Item icon="≡" label="Alinhar à esquerda" onClick={onAlignLeft} disabled={!canEdit} />
+        <Item icon="≣" label="Centralizar" onClick={onAlignCenter} disabled={!canEdit} />
+        <Item icon="≡" label="Alinhar à direita" onClick={onAlignRight} disabled={!canEdit} />
+        <Item icon="↵" label="Quebrar texto" onClick={onWrapText} disabled={!canEdit} />
+        <Item icon="▸" label="Cortar texto" onClick={onClipText} disabled={!canEdit} />
+        <Divider />
 
-        {isColumn ? (
-          <Section title="Dados da coluna">
-            <Item icon="⇅" label="Ordenar A → Z" onClick={onSortColumnAscending} disabled={!canEdit} />
-            <Item icon="⇵" label="Ordenar Z → A" onClick={onSortColumnDescending} disabled={!canEdit} />
-            <Item icon="⌕" label="Filtrar esta coluna..." onClick={onFilterColumnBySelection} />
-            <Item icon="×" label="Limpar filtro da coluna" onClick={onClearColumnFilter} />
-          </Section>
-        ) : null}
+        <Item icon="A" label="Texto em MAIÚSCULAS" onClick={onUppercase} disabled={!canEdit} />
+        <Item icon="a" label="Texto em minúsculas" onClick={onLowercase} disabled={!canEdit} />
+        <Item icon="Aa" label="Texto Capitalizado" onClick={onTitlecase} disabled={!canEdit} />
+        <Item icon="␠" label="Remover espaços extras" onClick={onTrimSpaces} disabled={!canEdit} />
+        <Item icon="⌁" label="Normalizar pelo tipo" onClick={onNormalizeSelection} disabled={!canEdit} />
+        <Divider />
 
-        {isColumn ? (
-          <Section title="Tipo da coluna">
-            <Item icon="T" label="Texto" onClick={onSetTypeText} disabled={!canEdit} />
-            <Item icon="123" label="Número" onClick={onSetTypeNumber} disabled={!canEdit} />
-            <Item icon="R$" label="Moeda" onClick={onSetTypeCurrency} disabled={!canEdit} />
-            <Item icon="%" label="Percentual" onClick={onSetTypePercent} disabled={!canEdit} />
-          </Section>
-        ) : null}
+        {isColumn ? <Item icon="⇅" label="Ordenar A → Z" onClick={onSortColumnAscending} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⇵" label="Ordenar Z → A" onClick={onSortColumnDescending} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⌕" label="Filtrar esta coluna..." onClick={onPrepareColumnFilter} /> : null}
+        {isColumn ? <Item icon="×" label="Limpar filtro da coluna" onClick={onClearColumnFilter} /> : null}
+        {isColumn ? <Item icon="↔" label="Ajustar largura ao conteúdo" onClick={onFitColumnWidth} disabled={!canEdit} /> : null}
+        {isColumn ? <Divider /> : null}
 
-        {isCell ? (
-          <Section title="Alinhamento e limpeza">
-            <Item icon="≡" label="Alinhar à esquerda" onClick={onAlignLeft} disabled={!canEdit} />
-            <Item icon="≣" label="Centralizar" onClick={onAlignCenter} disabled={!canEdit} />
-            <Item icon="≡" label="Alinhar à direita" onClick={onAlignRight} disabled={!canEdit} />
-            <Item icon="↵" label="Quebrar texto" onClick={onWrapText} disabled={!canEdit} />
-            <Item icon="▸" label="Cortar texto" onClick={onClipText} disabled={!canEdit} />
-            <Item icon="A" label="Texto em MAIÚSCULAS" onClick={onUppercase} disabled={!canEdit} />
-            <Item icon="a" label="Texto em minúsculas" onClick={onLowercase} disabled={!canEdit} />
-            <Item icon="Aa" label="Texto Capitalizado" onClick={onTitlecase} disabled={!canEdit} />
-            <Item icon="␠" label="Remover espaços extras" onClick={onTrimSpaces} disabled={!canEdit} />
-            <Item icon="⌁" label="Normalizar pelo tipo" onClick={onNormalizeSelection} disabled={!canEdit} />
-            <Item icon="−" label="Fonte pequena" onClick={onFontSmall} disabled={!canEdit} />
-            <Item icon="10" label="Fonte normal" onClick={onFontNormal} disabled={!canEdit} />
-            <Item icon="+" label="Fonte grande" onClick={onFontLarge} disabled={!canEdit} />
-            <Item icon="⇡" label="Alinhar no topo" onClick={onVerticalTop} disabled={!canEdit} />
-            <Item icon="↕" label="Alinhar ao meio" onClick={onVerticalMiddle} disabled={!canEdit} />
-            <Item icon="⇣" label="Alinhar abaixo" onClick={onVerticalBottom} disabled={!canEdit} />
-          </Section>
-        ) : null}
+        {isColumn ? <Item icon="T" label="Tipo: texto" onClick={onSetTypeText} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="123" label="Tipo: número" onClick={onSetTypeNumber} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="R$" label="Tipo: moeda" onClick={onSetTypeCurrency} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="%" label="Tipo: percentual" onClick={onSetTypePercent} disabled={!canEdit} /> : null}
+        {isColumn ? <Divider /> : null}
+
+        {!isRow && !isColumn ? <Item icon="⌕" label="Localizar este valor" onClick={onFindCellValue} /> : null}
+        {!isRow && !isColumn ? <Item icon="↔" label="Usar no substituir" onClick={onUseCellValueAsReplaceQuery} /> : null}
+        <Item icon="✕" label="Limpar formatação" onClick={onClearFormatting} disabled={!canEdit} />
+        <Item icon="−" label="Fonte pequena" onClick={onFontSmall} disabled={!canEdit} />
+        <Item icon="10" label="Fonte normal" onClick={onFontNormal} disabled={!canEdit} />
+        <Item icon="+" label="Fonte grande" onClick={onFontLarge} disabled={!canEdit} />
+        <Item icon="⇡" label="Alinhar no topo" onClick={onVerticalTop} disabled={!canEdit} />
+        <Item icon="↕" label="Alinhar ao meio" onClick={onVerticalMiddle} disabled={!canEdit} />
+        <Item icon="⇣" label="Alinhar abaixo" onClick={onVerticalBottom} disabled={!canEdit} />
+        <Item icon="↵" label="Preencher seleção" shortcut="Ctrl Enter" onClick={onFillSelection} disabled={!canEdit} />
       </section>
     </div>
   );
@@ -1051,6 +963,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
+  const filterInputRef = useRef(null);
   const replaceInputRef = useRef(null);
   const formulaInputRef = useRef(null);
   const draftRef = useRef(new Map());
@@ -1278,6 +1191,15 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setColumnFilters((current) => ({ ...current, [activeCell.key]: value }));
     markSync('saved', 'Filtro aplicado');
   }, [activeCell?.key, activeCell?.rowId, markSync, rows]);
+
+  const prepareActiveColumnFilter = useCallback(() => {
+    const key = activeColumn?.key || activeCell?.key;
+    if (!key) return;
+    setFilterColumnKey(key);
+    setFilterQuery('');
+    requestAnimationFrame(() => filterInputRef.current?.focus({ preventScroll: true }));
+    markSync('saved', 'Filtro da coluna preparado');
+  }, [activeCell?.key, activeColumn?.key, markSync]);
 
   const loadSheet = useCallback(async (sheetId) => {
     if (!ownerUserId) return;
@@ -2480,21 +2402,21 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setSelectionAnchor(nextCell);
       setSelectionFocus(nextCell);
     }
-    setContextMenu({ ...getContextMenuPosition(event, 'cell'), scope: 'cell', label: getCellAddress(nextCell, viewRows, columns) });
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'cell', label: getCellAddress(nextCell, viewRows, columns) });
   }, [columns, selectedCellIds, viewRows]);
 
   const openRowContextMenu = useCallback((event, rowId) => {
     event.preventDefault();
     selectRow(rowId);
     const rowIndex = viewRows.findIndex((row) => row.id === rowId);
-    setContextMenu({ ...getContextMenuPosition(event, 'row'), scope: 'row', label: rowIndex >= 0 ? `Linha ${rowIndex + 1}` : 'Linha' });
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'row', label: rowIndex >= 0 ? `Linha ${rowIndex + 1}` : 'Linha' });
   }, [selectRow, viewRows]);
 
   const openColumnContextMenu = useCallback((event, key) => {
     event.preventDefault();
     selectColumn(key);
     const columnIndex = columns.findIndex((column) => column.key === key);
-    setContextMenu({ ...getContextMenuPosition(event, 'column'), scope: 'column', label: columnIndex >= 0 ? `Coluna ${columns[columnIndex]?.label || columnName(columnIndex)}` : 'Coluna' });
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'column', label: columnIndex >= 0 ? `Coluna ${columns[columnIndex]?.label || columnName(columnIndex)}` : 'Coluna' });
   }, [columns, selectColumn]);
 
   const goToSearchMatch = useCallback((direction = 1) => {
@@ -2719,6 +2641,40 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <button type="button" onClick={() => insertFormulaTemplate('SOMA')} disabled={!activeCell || !canEdit || !!busy} aria-label="Inserir soma">Σ</button>
       </div>
 
+      {replaceBarOpen ? (
+        <div className={styles.replaceBar} aria-label="Localizar e substituir">
+          <span>Substituir</span>
+          <input
+            ref={replaceInputRef}
+            value={replaceQuery}
+            aria-label="Localizar"
+            placeholder="Localizar"
+            onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
+          />
+          <input
+            value={replaceValue}
+            aria-label="Substituir por"
+            placeholder="Substituir por"
+            onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
+          />
+          <select
+            value={replaceScope}
+            aria-label="Escopo da substituição"
+            onChange={(event) => setReplaceScope(event.target.value)}
+          >
+            <option value="selection">Seleção</option>
+            <option value="sheet">Planilha inteira</option>
+          </select>
+          <label>
+            <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
+            Diferenciar maiúsculas
+          </label>
+          <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
+          <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
+          <button type="button" onClick={() => setReplaceBarOpen(false)} aria-label="Fechar localizar e substituir">×</button>
+        </div>
+      ) : null}
+
       <div className={styles.filterBar}>
         <span>Filtro</span>
         <select value={filterColumnKey} onChange={(event) => setFilterColumnKey(event.target.value)} aria-label="Coluna do filtro">
@@ -2726,6 +2682,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           {columns.map((column, index) => <option key={column.key} value={column.key}>{column.label || columnName(index)}</option>)}
         </select>
         <input
+          ref={filterInputRef}
           value={filterQuery}
           aria-label="Texto do filtro"
           placeholder="Filtrar linhas"
@@ -2879,50 +2836,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         ) : null}
         </div>
 
-        {replaceBarOpen ? (
-          <div className={styles.replaceBar} role="search" aria-label="Localizar e substituir na planilha">
-            <div className={styles.replaceBarHeader}>
-              <strong>Localizar e substituir</strong>
-              <button type="button" onClick={() => setReplaceBarOpen(false)} aria-label="Fechar localizar e substituir">×</button>
-            </div>
-            <label>
-              <span>Localizar</span>
-              <input
-                ref={replaceInputRef}
-                value={replaceQuery}
-                placeholder="Texto ou valor"
-                onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
-              />
-            </label>
-            <label>
-              <span>Substituir por</span>
-              <input
-                value={replaceValue}
-                placeholder="Novo valor"
-                onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
-              />
-            </label>
-            <label>
-              <span>Escopo</span>
-              <select
-                value={replaceScope}
-                aria-label="Escopo da substituição"
-                onChange={(event) => setReplaceScope(event.target.value)}
-              >
-                <option value="selection">Seleção</option>
-                <option value="sheet">Planilha inteira</option>
-              </select>
-            </label>
-            <label className={styles.replaceCheck}>
-              <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
-              <span>Diferenciar maiúsculas</span>
-            </label>
-            <div className={styles.replaceActions}>
-              <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
-              <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
-            </div>
-          </div>
-        ) : null}
       </div>
 
       <footer className={styles.footer}>
@@ -2969,6 +2882,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onSortColumnAscending={() => { closeContextMenu(); sortActiveColumn('asc').catch(() => {}); }}
         onSortColumnDescending={() => { closeContextMenu(); sortActiveColumn('desc').catch(() => {}); }}
         onFilterColumnBySelection={() => { closeContextMenu(); filterActiveColumnBySelection(); }}
+        onPrepareColumnFilter={() => { closeContextMenu(); prepareActiveColumnFilter(); }}
         onClearColumnFilter={() => { closeContextMenu(); if (activeCell?.key) clearColumnFilter(activeCell.key); }}
         onSetTypeText={() => { closeContextMenu(); setNumberFormat('text'); }}
         onSetTypeNumber={() => { closeContextMenu(); setNumberFormat('number'); }}

@@ -460,6 +460,67 @@
 }
 
 .findGroup,
+.replaceBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-elevated);
+  overflow-x: auto;
+}
+
+.replaceBar span {
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.replaceBar input,
+.replaceBar select {
+  min-width: 140px;
+  height: 30px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  padding: 0 var(--space-2);
+}
+
+.replaceBar label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  white-space: nowrap;
+}
+
+.replaceBar button {
+  height: 30px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: 700;
+  padding: 0 var(--space-2);
+}
+
+.replaceBar button:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--bg-subtle);
+}
+
+.replaceBar button:disabled {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
 .filterBar {
   min-width: 0;
   display: inline-flex;
@@ -564,15 +625,14 @@
   inset: 0;
   z-index: 2147483000;
   background: transparent;
-  pointer-events: auto;
 }
 
 .contextMenu {
   position: fixed;
-  width: min(332px, calc(100vw - 24px));
+  min-width: 284px;
   z-index: 2147483001;
+  max-height: min(720px, calc(100vh - 24px));
   overflow: auto;
-  overscroll-behavior: contain;
   padding: var(--space-1);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
@@ -617,29 +677,11 @@
   opacity: var(--opacity-disabled);
 }
 
-.contextSection {
-  display: grid;
-  gap: 1px;
-  padding: var(--space-1) 0;
-  border-top: 1px solid var(--line-subtle);
-}
-
-.contextSection:first-of-type {
-  border-top: 0;
-}
-
-.contextSectionTitle {
-  display: block;
-  padding: var(--space-1) var(--space-2);
-  color: var(--text-quaternary);
-  font-size: var(--fs-micro);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-}
-
 .contextDivider {
-  display: none;
+  display: block;
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--line-subtle);
 }
 
 .contextIcon {
@@ -879,111 +921,24 @@
 }
 
 
-.replaceBar {
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) minmax(130px, 0.6fr) auto auto;
-  gap: var(--space-2);
-  align-items: end;
-  padding: var(--space-3);
-  border-top: 1px solid var(--line-subtle);
-  background: var(--bg-elevated);
-}
 
-.replaceBarHeader {
-  display: flex;
-  grid-column: 1 / -1;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
 
-.replaceBarHeader strong {
-  font-size: var(--font-size-xs);
-  color: var(--text-primary);
-}
 
-.replaceBarHeader button,
-.replaceActions button {
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  cursor: pointer;
-}
 
-.replaceBarHeader button {
-  width: 26px;
-  height: 26px;
-}
 
-.replaceBar label {
-  display: grid;
-  gap: var(--space-1);
-  min-width: 0;
-}
 
-.replaceBar label > span {
-  font-size: var(--font-size-2xs);
-  color: var(--text-muted);
-}
 
-.replaceBar input,
-.replaceBar select {
-  width: 100%;
-  min-width: 0;
-  height: 30px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  font-size: var(--font-size-xs);
-  padding: 0 var(--space-2);
-}
 
-.replaceCheck {
-  display: inline-flex !important;
-  grid-template-columns: none !important;
-  align-items: center;
-  gap: var(--space-2) !important;
-  height: 30px;
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  white-space: nowrap;
-}
 
-.replaceCheck input {
-  width: 14px;
-  height: 14px;
-  padding: 0;
-}
 
-.replaceActions {
-  display: inline-flex;
-  gap: var(--space-2);
-}
-
-.replaceActions button {
-  height: 30px;
-  padding: 0 var(--space-3);
-}
-
-.replaceActions button:disabled {
-  cursor: not-allowed;
-  opacity: .45;
-}
 
 
 .contextMenuHeader {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   display: grid;
   gap: var(--space-1);
   padding: var(--space-2);
   border-bottom: 1px solid var(--line-subtle);
-  margin: calc(var(--space-1) * -1) calc(var(--space-1) * -1) var(--space-1);
-  background: var(--bg-elevated);
+  margin-bottom: var(--space-1);
 }
 
 .contextMenuHeader strong {
@@ -1009,6 +964,16 @@
   font-size: var(--fs-micro);
   font-weight: var(--weight-medium);
 }
+
+@media (max-width: 1180px) {
+  .sheetWorkspace[data-panel-open="true"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
+
+
+
 
 .sheetsToolbar {
   min-height: 44px;
