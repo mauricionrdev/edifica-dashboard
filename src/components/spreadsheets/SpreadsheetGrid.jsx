@@ -36,6 +36,12 @@ function resolveCellFontSize(value = '') {
   return undefined;
 }
 
+function resolveCellFontFamily(value = '') {
+  if (value === 'mono') return 'var(--font-mono)';
+  if (value === 'sans') return 'var(--font-sans)';
+  return undefined;
+}
+
 function resolveVerticalAlign(value = '') {
   if (value === 'top') return 'flex-start';
   if (value === 'bottom') return 'flex-end';
@@ -103,6 +109,7 @@ function Cell({
   left,
   top,
   width,
+  rowHeight,
   selected,
   active,
   saving,
@@ -251,7 +258,7 @@ function Cell({
         left,
         top,
         width,
-        height: ROW_HEIGHT,
+        height: rowHeight,
         color: style.color || undefined,
         backgroundColor: style.backgroundColor || undefined,
         fontWeight: style.bold || style.fontWeight ? style.fontWeight || 700 : undefined,
@@ -259,6 +266,7 @@ function Cell({
         textDecoration: style.textDecoration || [style.underline ? 'underline' : '', style.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined,
         textAlign: style.textAlign || undefined,
         fontSize: resolveCellFontSize(style.fontSize),
+        fontFamily: resolveCellFontFamily(style.fontFamily),
         alignItems: resolveVerticalAlign(style.verticalAlign),
       }}
       onFocus={(event) => onSelect(row.id, column.key, event.currentTarget, false)}
@@ -330,6 +338,7 @@ export default function SpreadsheetGrid({
   creatingRow,
   creatingColumn,
   activeSheetId,
+  zoomScale = 1,
   onAddRow,
   onAddColumn,
   onSelectCell,
@@ -367,27 +376,31 @@ export default function SpreadsheetGrid({
   const autoScrollRef = useRef(0);
   const fillDragRef = useRef(null);
   const [fillPreview, setFillPreview] = useState(null);
+  const gridScale = Math.max(0.75, Math.min(1.5, Number(zoomScale) || 1));
+  const rowHeight = Math.round(ROW_HEIGHT * gridScale);
+  const headerHeight = Math.round(HEADER_HEIGHT * gridScale);
+  const indexWidth = Math.round(INDEX_WIDTH * gridScale);
 
   const formulaReferenceSet = useMemo(() => new Set(formulaReferenceIds || []), [formulaReferenceIds]);
 
   const columnMetrics = useMemo(() => {
-    let left = INDEX_WIDTH;
+    let left = indexWidth;
     return columns.map((column) => {
-      const width = Math.max(5, Number(column.width || 160));
+      const width = Math.max(5, Number(column.width || 160) * gridScale);
       const metric = { column, left, width };
       left += width;
       return metric;
     });
-  }, [columns]);
+  }, [columns, gridScale, indexWidth]);
 
-  const totalWidth = useMemo(() => columnMetrics.reduce((last, metric) => metric.left + metric.width, INDEX_WIDTH), [columnMetrics]);
-  const totalHeight = HEADER_HEIGHT + rows.length * ROW_HEIGHT;
+  const totalWidth = useMemo(() => columnMetrics.reduce((last, metric) => metric.left + metric.width, indexWidth), [columnMetrics, indexWidth]);
+  const totalHeight = headerHeight + rows.length * rowHeight;
 
   const visibleRows = useMemo(() => {
-    const first = clamp(Math.floor(Math.max(0, viewport.top - HEADER_HEIGHT) / ROW_HEIGHT) - BUFFER_ROWS, 0, rows.length);
-    const last = clamp(Math.ceil((Math.max(0, viewport.top - HEADER_HEIGHT) + viewport.height) / ROW_HEIGHT) + BUFFER_ROWS, first, rows.length);
-    return rows.slice(first, last).map((row, index) => ({ row, index: first + index, top: HEADER_HEIGHT + (first + index) * ROW_HEIGHT }));
-  }, [rows, viewport.height, viewport.top]);
+    const first = clamp(Math.floor(Math.max(0, viewport.top - headerHeight) / rowHeight) - BUFFER_ROWS, 0, rows.length);
+    const last = clamp(Math.ceil((Math.max(0, viewport.top - headerHeight) + viewport.height) / rowHeight) + BUFFER_ROWS, first, rows.length);
+    return rows.slice(first, last).map((row, index) => ({ row, index: first + index, top: headerHeight + (first + index) * rowHeight }));
+  }, [headerHeight, rowHeight, rows, viewport.height, viewport.top]);
 
   const visibleColumns = useMemo(() => {
     const leftEdge = viewport.left;
@@ -427,14 +440,14 @@ export default function SpreadsheetGrid({
     const rect = scroller.getBoundingClientRect();
     const x = clientX - rect.left + scroller.scrollLeft;
     const y = clientY - rect.top + scroller.scrollTop;
-    if (y < HEADER_HEIGHT || x < INDEX_WIDTH) return null;
-    const rowIndex = clamp(Math.floor((y - HEADER_HEIGHT) / ROW_HEIGHT), 0, rows.length - 1);
+    if (y < headerHeight || x < indexWidth) return null;
+    const rowIndex = clamp(Math.floor((y - headerHeight) / rowHeight), 0, rows.length - 1);
     const columnIndex = columnMetrics.findIndex((metric) => x >= metric.left && x <= metric.left + metric.width);
     const row = rows[rowIndex];
     const column = columnMetrics[columnIndex]?.column;
     if (!row || !column) return null;
     return { rowId: row.id, key: column.key, rowIndex, columnIndex };
-  }, [columnMetrics, rows]);
+  }, [columnMetrics, headerHeight, indexWidth, rowHeight, rows]);
 
   const buildFillPreview = useCallback((target) => {
     if (!selectionBounds || !target) return null;
@@ -444,8 +457,8 @@ export default function SpreadsheetGrid({
       startColumn: Math.min(selectionBounds.startColumn, target.columnIndex),
       endColumn: Math.max(selectionBounds.endColumn, target.columnIndex),
     };
-    const top = HEADER_HEIGHT + nextBounds.startRow * ROW_HEIGHT;
-    const height = (nextBounds.endRow - nextBounds.startRow + 1) * ROW_HEIGHT;
+    const top = headerHeight + nextBounds.startRow * rowHeight;
+    const height = (nextBounds.endRow - nextBounds.startRow + 1) * rowHeight;
     const startMetric = columnMetrics[nextBounds.startColumn];
     const endMetric = columnMetrics[nextBounds.endColumn];
     if (!startMetric || !endMetric) return null;
@@ -454,7 +467,7 @@ export default function SpreadsheetGrid({
       target,
       rect: { top, left: startMetric.left, width: endMetric.left + endMetric.width - startMetric.left, height },
     };
-  }, [columnMetrics, selectionBounds]);
+  }, [columnMetrics, headerHeight, rowHeight, selectionBounds]);
 
   const startFillDrag = useCallback((event) => {
     if (!canEdit || !selectionBounds) return;
@@ -501,15 +514,15 @@ export default function SpreadsheetGrid({
     const columnMetric = columnMetrics.find((metric) => metric.column.key === activeCell.key);
     if (rowIndex < 0 || !columnMetric) return;
 
-    const cellTop = HEADER_HEIGHT + rowIndex * ROW_HEIGHT;
-    const cellBottom = cellTop + ROW_HEIGHT;
+    const cellTop = headerHeight + rowIndex * rowHeight;
+    const cellBottom = cellTop + rowHeight;
     const cellLeft = columnMetric.left;
     const cellRight = cellLeft + columnMetric.width;
 
-    if (cellTop < scroller.scrollTop + HEADER_HEIGHT) scroller.scrollTop = Math.max(0, cellTop - HEADER_HEIGHT);
+    if (cellTop < scroller.scrollTop + headerHeight) scroller.scrollTop = Math.max(0, cellTop - headerHeight);
     else if (cellBottom > scroller.scrollTop + scroller.clientHeight) scroller.scrollTop = cellBottom - scroller.clientHeight;
 
-    if (cellLeft < scroller.scrollLeft + INDEX_WIDTH) scroller.scrollLeft = Math.max(0, cellLeft - INDEX_WIDTH);
+    if (cellLeft < scroller.scrollLeft + indexWidth) scroller.scrollLeft = Math.max(0, cellLeft - indexWidth);
     else if (cellRight > scroller.scrollLeft + scroller.clientWidth) scroller.scrollLeft = cellRight - scroller.clientWidth;
   }, [activeCell?.key, activeCell?.rowId, columnMetrics, rows]);
 
@@ -656,13 +669,13 @@ export default function SpreadsheetGrid({
 
   const selectionRect = useMemo(() => {
     if (!selectionBounds) return null;
-    const top = HEADER_HEIGHT + selectionBounds.startRow * ROW_HEIGHT;
-    const height = (selectionBounds.endRow - selectionBounds.startRow + 1) * ROW_HEIGHT;
+    const top = headerHeight + selectionBounds.startRow * rowHeight;
+    const height = (selectionBounds.endRow - selectionBounds.startRow + 1) * rowHeight;
     const startMetric = columnMetrics[selectionBounds.startColumn];
     const endMetric = columnMetrics[selectionBounds.endColumn];
     if (!startMetric || !endMetric) return null;
     return { top, left: startMetric.left, width: endMetric.left + endMetric.width - startMetric.left, height };
-  }, [columnMetrics, selectionBounds]);
+  }, [columnMetrics, headerHeight, rowHeight, selectionBounds]);
 
   const handleGridContextMenuCapture = useCallback((event) => {
     const target = event.target;
@@ -696,8 +709,8 @@ export default function SpreadsheetGrid({
     <div ref={frameRef} className={styles.frame}>
       <div ref={scrollerRef} className={styles.scroller} data-scrolled-x={viewport.left > 2 || undefined} data-scrolled-y={viewport.top > 2 || undefined} onContextMenuCapture={handleGridContextMenuCapture}>
         <div className={styles.canvas} style={{ width: totalWidth, height: Math.max(totalHeight, viewport.height) }}>
-          <div className={styles.header} style={{ width: totalWidth, height: HEADER_HEIGHT }}>
-            <div className={styles.corner} style={{ left: viewport.left, width: INDEX_WIDTH, height: HEADER_HEIGHT }} />
+          <div className={styles.header} style={{ width: totalWidth, height: headerHeight }}>
+            <div className={styles.corner} style={{ left: viewport.left, width: indexWidth, height: headerHeight }} />
             {visibleColumns.map(({ column, left, width }) => (
               <div
                 key={column.key}
@@ -706,7 +719,7 @@ export default function SpreadsheetGrid({
                 data-column-key={column.key}
                 data-active={activeCell?.key === column.key || undefined}
                 data-saving={savingColumn === column.key || undefined}
-                style={{ left, width, height: HEADER_HEIGHT }}
+                style={{ left, width, height: headerHeight }}
                 onClick={(event) => {
                   if (event.target?.tagName === 'INPUT' || event.target?.className?.includes?.('resizeHandle')) return;
                   onSelectColumn?.(column.key);
@@ -756,7 +769,7 @@ export default function SpreadsheetGrid({
               data-row-header="true"
               data-row-id={row.id}
               data-active={activeCell?.rowId === row.id || undefined}
-              style={{ left: viewport.left, top, width: INDEX_WIDTH, height: ROW_HEIGHT }}
+              style={{ left: viewport.left, top, width: indexWidth, height: rowHeight }}
               onClick={() => onSelectRow(row.id)}
               onPointerDown={(event) => startRowHeaderDrag(event, row.id)}
               onPointerEnter={() => moveRowHeaderDrag(row.id)}
@@ -792,6 +805,7 @@ export default function SpreadsheetGrid({
                   left={left}
                   top={top}
                   width={width}
+                  rowHeight={rowHeight}
                   selected={selectedCellIds?.has(id)}
                   active={active}
                   saving={savingCell === id}

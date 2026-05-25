@@ -859,91 +859,17 @@
   grid-template-columns: minmax(0, 1fr) minmax(260px, 292px);
 }
 
-.advancedPanel {
-  min-width: 0;
-  border-left: 1px solid var(--line-subtle);
-  background: var(--bg-canvas);
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  scrollbar-width: none;
-}
 
-.advancedPanel::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
 
-.advancedPanel header {
-  min-height: 42px;
-  padding: 0 var(--space-3);
-  border-bottom: 1px solid var(--line-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
 
-.advancedPanel header strong {
-  color: var(--text-primary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
-}
 
-.advancedPanel header button,
-.advancedPanel section button {
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-soft);
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: var(--fs-label);
-  cursor: pointer;
-}
 
-.advancedPanel header button {
-  width: 26px;
-  height: 26px;
-}
 
-.advancedPanel section {
-  display: grid;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-bottom: 1px solid var(--line-subtle);
-}
 
-.advancedPanel section > span {
-  color: var(--text-quaternary);
-  font-size: var(--fs-micro);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-uppercase);
-  text-transform: uppercase;
-}
 
-.advancedPanel section > strong {
-  color: var(--text-primary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
-  line-height: var(--lh-snug);
-}
 
-.advancedPanel section button {
-  min-height: 30px;
-  padding: 0 var(--space-2);
-  text-align: left;
-}
 
-.advancedPanel button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
 
-.advancedPanel button:disabled {
-  cursor: not-allowed;
-  opacity: var(--opacity-disabled);
-}
 
 .panelGrid {
   display: grid;
@@ -983,40 +909,7 @@
   font-weight: var(--weight-medium);
 }
 
-@media (max-width: 1180px) {
-  .sheetWorkspace[data-panel-open="true"] {
-    grid-template-columns: minmax(0, 1fr);
-  }
 
-  .advancedPanel {
-    max-height: 280px;
-    border-left: 0;
-    border-top: 1px solid var(--line-subtle);
-  }
-}
-
-.advancedPanel section button[data-active="true"] {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--text-primary);
-}
-
-.panelInput {
-  min-height: 30px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  padding: 0 var(--space-2);
-  background: var(--bg-soft);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: var(--fs-label);
-  outline: 0;
-}
-
-.panelInput:disabled {
-  cursor: not-allowed;
-  opacity: var(--opacity-disabled);
-}
 
 .sheetsToolbar {
   min-height: 44px;

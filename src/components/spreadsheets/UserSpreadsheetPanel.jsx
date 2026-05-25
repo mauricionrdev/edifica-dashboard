@@ -37,6 +37,22 @@ const FILL_COLOR_OPTIONS = [
   { value: 'var(--info-soft)', label: 'Azul suave' },
 ];
 
+
+const FONT_FAMILY_OPTIONS = [
+  { value: '', label: 'Padrão' },
+  { value: 'sans', label: 'Sans' },
+  { value: 'mono', label: 'Mono' },
+];
+
+const ZOOM_OPTIONS = [
+  { value: '0.75', label: '75%' },
+  { value: '0.9', label: '90%' },
+  { value: '1', label: '100%' },
+  { value: '1.1', label: '110%' },
+  { value: '1.25', label: '125%' },
+  { value: '1.5', label: '150%' },
+];
+
 const INLINE_TEXT_STYLE_KEYS = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'color']);
 
 const FORMULA_LIBRARY = [
@@ -1088,6 +1104,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [replaceScope, setReplaceScope] = useState('selection');
   const [replaceMatchCase, setReplaceMatchCase] = useState(false);
   const [replaceBarOpen, setReplaceBarOpen] = useState(false);
+  const [sheetZoom, setSheetZoom] = useState('1');
   const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -1158,6 +1175,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!selectedCells.length) return 'normal';
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontSize || 'normal';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontSize || 'normal') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const selectedFontFamily = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontFamily || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontFamily || '') === first) ? first : 'mixed';
   }, [selectedCells]);
 
   const selectedVerticalAlign = useMemo(() => {
@@ -1531,6 +1554,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     applyStyleToSelection({ fontSize }).catch(() => {});
   }, [applyStyleToSelection]);
 
+  const setFontFamily = useCallback((fontFamily) => {
+    applyStyleToSelection({ fontFamily }).catch(() => {});
+  }, [applyStyleToSelection]);
+
   const setVerticalAlign = useCallback((verticalAlign) => {
     applyStyleToSelection({ verticalAlign }).catch(() => {});
   }, [applyStyleToSelection]);
@@ -1571,7 +1598,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, []);
 
   const clearSelectionFormatting = useCallback(() => {
-    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
+    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', fontFamily: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
   }, [applyStyleToSelection]);
 
   const applyValueToSelection = useCallback(async () => {
@@ -2729,8 +2756,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <button type="button" onClick={cutSelection} disabled={!activeCell || !canEdit || !!busy} aria-label="Recortar">Recortar</button>
         <button type="button" onClick={pasteClipboardAtActive} disabled={!activeCell || !canEdit || !!busy} aria-label="Colar">Colar</button>
         <span aria-hidden="true" />
-        <select aria-label="Zoom da planilha" value="100" disabled>
-          <option value="100">100%</option>
+        <select
+          aria-label="Zoom da planilha"
+          value={sheetZoom}
+          onChange={(event) => setSheetZoom(event.target.value)}
+          disabled={!activeSheetId || !!busy}
+        >
+          {ZOOM_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
         <select
           value={selectedNumberFormat === 'mixed' ? 'text' : selectedNumberFormat}
@@ -2744,8 +2776,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <option value="percent">% Percentual</option>
         </select>
         <span aria-hidden="true" />
-        <select aria-label="Fonte" value="Roboto" disabled>
-          <option value="Roboto">Roboto</option>
+        <select
+          aria-label="Fonte"
+          value={selectedFontFamily === 'mixed' ? '' : selectedFontFamily}
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setFontFamily(event.target.value)}
+        >
+          {FONT_FAMILY_OPTIONS.map((option) => <option key={option.value || 'default'} value={option.value}>{option.label}</option>)}
         </select>
         <button type="button" onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Diminuir fonte">−</button>
         <select
@@ -2959,6 +2996,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             creatingRow={busy === 'row'}
             creatingColumn={busy === 'column'}
             activeSheetId={activeSheetId}
+            zoomScale={Number(sheetZoom) || 1}
             onAddRow={addRow}
             onAddColumn={addColumn}
             onSelectCell={selectCell}
