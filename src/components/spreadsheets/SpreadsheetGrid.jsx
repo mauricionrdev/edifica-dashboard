@@ -10,24 +10,20 @@ const BUFFER_COLUMNS = 4;
 function stripText(value = '') {
   return String(value ?? '')
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<div>/gi, '\n')
-    .replace(/<\/div>/gi, '')
-    .replace(/<[^>]*>/g, '')
+    .replace(/<\/?div[^>]*>/gi, '\n')
+    .replace(/<\/?span[^>]*>?/gi, ' ')
+    .replace(/<\/?strong[^>]*>?/gi, ' ')
+    .replace(/<\/?b[^>]*>?/gi, ' ')
+    .replace(/<\/?i[^>]*>?/gi, ' ')
+    .replace(/<\/?u[^>]*>?/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[<>]/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
     .trim();
-}
-
-function escapeHtml(value = '') {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-    .replace(/\n/g, '<br>');
 }
 
 function getStyle(row, key) {
@@ -64,6 +60,7 @@ function Cell({
   const ref = useRef(null);
   const editorRef = useRef(null);
   const value = row?.[column.key] || '';
+  const displayValue = stripText(value);
   const style = getStyle(row, column.key);
 
   useEffect(() => {
@@ -100,7 +97,7 @@ function Cell({
     if (event.key === 'Enter' || event.key === 'F2') {
       if (!canEdit) return;
       event.preventDefault();
-      onStartEdit(row.id, column.key, stripText(value));
+      onStartEdit(row.id, column.key, displayValue);
       return;
     }
 
@@ -157,7 +154,7 @@ function Cell({
       }}
       onFocus={(event) => onSelect(row.id, column.key, event.currentTarget, false)}
       onClick={(event) => onSelect(row.id, column.key, event.currentTarget, event.shiftKey)}
-      onDoubleClick={() => canEdit && onStartEdit(row.id, column.key, stripText(value))}
+      onDoubleClick={() => canEdit && onStartEdit(row.id, column.key, displayValue)}
       onContextMenu={(event) => onContextMenu(event, row.id, column.key)}
       onKeyDown={handleKeyDown}
       onPaste={(event) => {
@@ -168,7 +165,7 @@ function Cell({
         }
       }}
     >
-      <span className={styles.cellValue} dangerouslySetInnerHTML={{ __html: value || '' }} />
+      <span className={styles.cellValue}>{displayValue}</span>
       {editing ? (
         <textarea
           ref={editorRef}
@@ -323,19 +320,25 @@ export default function SpreadsheetGrid({
   }, []);
 
   const commitEdit = useCallback(async (rowId, key, rowDelta = 0, columnDelta = 0, navigateAfter = true) => {
-    onCellChange(rowId, key, escapeHtml(editingValue));
+    onCellChange(rowId, key, editingValue);
     setEditingCell(null);
     setEditingValue('');
     await onCellCommit(rowId, key);
     if (navigateAfter && (rowDelta || columnDelta)) onNavigateCell(rowId, key, rowDelta, columnDelta);
   }, [editingValue, onCellChange, onCellCommit, onNavigateCell]);
 
-  const handleWheel = useCallback((event) => {
-    if (!event.shiftKey) return;
+  useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller) return;
-    event.preventDefault();
-    scroller.scrollLeft += event.deltaY || event.deltaX;
+    if (!scroller) return undefined;
+    const onWheel = (event) => {
+      if (!event.shiftKey) return;
+      const amount = event.deltaY || event.deltaX;
+      if (!amount) return;
+      event.preventDefault();
+      scroller.scrollLeft += amount;
+    };
+    scroller.addEventListener('wheel', onWheel, { passive: false });
+    return () => scroller.removeEventListener('wheel', onWheel);
   }, []);
 
   const selectionRect = useMemo(() => {
@@ -350,7 +353,7 @@ export default function SpreadsheetGrid({
 
   return (
     <div ref={frameRef} className={styles.frame}>
-      <div ref={scrollerRef} className={styles.scroller} onWheel={handleWheel}>
+      <div ref={scrollerRef} className={styles.scroller}>
         <div className={styles.canvas} style={{ width: totalWidth, height: Math.max(totalHeight, viewport.height) }}>
           <div className={styles.header} style={{ width: totalWidth, height: HEADER_HEIGHT }}>
             <div className={styles.corner} style={{ width: INDEX_WIDTH, height: HEADER_HEIGHT }} />

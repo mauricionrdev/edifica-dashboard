@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '../ui/Button.jsx';
-import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import { CloseIcon, PlusIcon, SaveIcon, TrashIcon } from '../ui/Icons.jsx';
 import {
   createSupportDailyColumn,
@@ -18,6 +17,7 @@ import {
   updateSupportDailyRow,
   updateSupportDailySheet,
 } from '../../api/support.js';
+import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import styles from './UserSpreadsheetPanel.module.css';
 
 const BLANK_COLUMN_WIDTH = 168;
@@ -134,8 +134,18 @@ function cleanText(value) {
 function stripHtml(value = '') {
   return String(value ?? '')
     .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/?div[^>]*>/gi, ' ')
+    .replace(/<\/?span[^>]*>?/gi, ' ')
+    .replace(/<\/?strong[^>]*>?/gi, ' ')
+    .replace(/<\/?b[^>]*>?/gi, ' ')
+    .replace(/<\/?i[^>]*>?/gi, ' ')
+    .replace(/<\/?u[^>]*>?/gi, ' ')
     .replace(/<[^>]*>/g, ' ')
+    .replace(/[<>]/g, ' ')
     .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -1517,35 +1527,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleApplyFormat = async (command, value = null) => {
     if (!activeCell || !canEdit) return;
-    if (selectedCount > 1 && await handleApplyBulkStyle(command, value)) return;
-    const { rowId, key } = activeCell;
-    const element = activeCell.element || document.querySelector(`[data-cell-id="${rowId}:${key}"]`);
-    if (!element) return;
-    restoreSelection(element, rangeRef.current);
-    if (command === 'hiliteColor' && value === 'transparent') {
-      document.execCommand('removeFormat', false, null);
-    } else if (command === 'hiliteColor') {
-      const ran = document.execCommand('hiliteColor', false, value);
-      if (!ran) document.execCommand('backColor', false, value);
-    } else {
-      document.execCommand(command, false, value);
-    }
-    rangeRef.current = saveSelectionInside(element);
-    const nextHtml = element.innerHTML;
-    setRows((current) => current.map((entry) => (entry.id === rowId ? { ...entry, [key]: nextHtml } : entry)));
-    setSavingCell(`${rowId}:${key}`);
-    markSync('saving', 'Salvando formatação');
-    try {
-      await updateSupportDailyRow(rowId, { [key]: nextHtml, ownerUserId });
-      markSync('saved', 'Formatação salva');
-    } catch (err) {
-      markSync('error', 'Falha ao salvar formatação');
-      showToast?.(err?.message || 'Não foi possível salvar a formatação.', { variant: 'error' });
-      refreshRows(activeSheetId).catch(() => {});
-    } finally {
-      setSavingCell('');
-    }
+    await handleApplyBulkStyle(command, value);
   };
+
 
   const createColumnAt = async ({ anchorKey = '', placement = 'end', duplicateFromKey = '' } = {}) => {
     if (!activeSheetId) return null;
@@ -2079,35 +2063,49 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         data-at-end-x={scrollState.endX || undefined}
         data-at-end-y={scrollState.endY || undefined}
       >
-        <SpreadsheetGrid
-          columns={columns}
-          rows={rows}
-          rowsLoading={rowsLoading}
-          activeCell={activeCell}
-          selectedCellIds={selectedCellIds}
-          selectionBounds={selectionBounds}
-          selectedCount={selectedCount}
-          savingCell={savingCell}
-          savingColumn={savingColumn}
-          resizeState={resizeState}
-          canEdit={canEdit}
-          creatingRow={creatingRow}
-          creatingColumn={creatingColumn}
-          activeSheetId={activeSheetId}
-          onAddRow={handleAddRow}
-          onAddColumn={handleAddColumn}
-          onSelectCell={selectCell}
-          onSelectRow={selectRow}
-          onCellChange={handleCellChange}
-          onCellCommit={handleCellCommit}
-          onNavigateCell={navigateCell}
-          onContextMenu={openContextMenu}
-          onPasteTable={handlePasteTable}
-          onColumnLabelChange={handleColumnLabelChange}
-          onColumnLabelCommit={handleColumnLabelCommit}
-          onResizeStart={handleResizeStart}
-          onScrollStateChange={setScrollState}
-        />
+        {!activeSheetId && !rowsLoading ? (
+          <div className={styles.noSheetState}>
+            <div className={styles.noSheetCard}>
+              <strong>Sem planilha ativa</strong>
+              {canEdit ? <Button type="button" size="sm" onClick={handleAddSheet} disabled={creatingSheet}><PlusIcon size={14} /> Nova planilha</Button> : null}
+            </div>
+          </div>
+        ) : (
+          <SpreadsheetGrid
+            columns={columns}
+            rows={rows}
+            rowsLoading={rowsLoading}
+            activeCell={activeCell}
+            selectedCellIds={selectedCellIds}
+            selectedCount={selectedCount}
+            selectionBounds={selectionBounds ? {
+              startRow: selectionBounds.rowFrom,
+              endRow: selectionBounds.rowTo,
+              startColumn: selectionBounds.columnFrom,
+              endColumn: selectionBounds.columnTo,
+            } : null}
+            savingCell={savingCell}
+            savingColumn={savingColumn}
+            resizeState={resizeState}
+            canEdit={canEdit}
+            creatingRow={creatingRow}
+            creatingColumn={creatingColumn}
+            activeSheetId={activeSheetId}
+            onAddRow={handleAddRow}
+            onAddColumn={handleAddColumn}
+            onSelectCell={selectCell}
+            onSelectRow={selectRow}
+            onCellChange={handleCellChange}
+            onCellCommit={handleCellCommit}
+            onNavigateCell={navigateCell}
+            onContextMenu={openContextMenu}
+            onPasteTable={handlePasteTable}
+            onColumnLabelChange={handleColumnLabelChange}
+            onColumnLabelCommit={handleColumnLabelCommit}
+            onResizeStart={handleResizeStart}
+            onScrollStateChange={setScrollState}
+          />
+        )}
       </div>
 
       <footer className={styles.panelFooter}>
