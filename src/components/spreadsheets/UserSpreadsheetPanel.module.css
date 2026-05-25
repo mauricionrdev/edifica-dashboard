@@ -803,56 +803,65 @@
   background: var(--bg-app);
 }
 
-.panelInput {
-  min-height: 30px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  padding: 0 var(--space-2);
-  background: var(--bg-soft);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: var(--fs-label);
-  outline: 0;
+.sheetWorkspace[data-panel-open="true"] {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 292px);
 }
 
-.panelInput:disabled {
-  cursor: not-allowed;
-  opacity: var(--opacity-disabled);
-}
-
-.advancedToolbar {
+.advancedPanel {
   min-width: 0;
-  border-top: 1px solid var(--line-subtle);
-  border-bottom: 1px solid var(--line-subtle);
+  border-left: 1px solid var(--line-subtle);
   background: var(--bg-canvas);
   display: flex;
-  align-items: stretch;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  overflow-x: auto;
+  flex-direction: column;
+  overflow: auto;
   scrollbar-width: none;
 }
 
-.advancedToolbar::-webkit-scrollbar {
+.advancedPanel::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-.advancedToolbar section {
-  min-width: max-content;
+.advancedPanel header {
+  min-height: 42px;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  padding-right: var(--space-2);
-  border-right: 1px solid var(--line-subtle);
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
-.advancedToolbar section:last-child {
-  border-right: 0;
+.advancedPanel header strong {
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
 }
 
-.advancedToolbar section > span {
-  margin-right: var(--space-1);
+.advancedPanel header button,
+.advancedPanel section button {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  cursor: pointer;
+}
+
+.advancedPanel header button {
+  width: 26px;
+  height: 26px;
+}
+
+.advancedPanel section {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.advancedPanel section > span {
   color: var(--text-quaternary);
   font-size: var(--fs-micro);
   font-weight: var(--weight-semibold);
@@ -860,70 +869,34 @@
   text-transform: uppercase;
 }
 
-.advancedToolbar section > strong {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-secondary);
+.advancedPanel section > strong {
+  color: var(--text-primary);
   font-size: var(--fs-label);
   font-weight: var(--weight-semibold);
+  line-height: var(--lh-snug);
 }
 
-.advancedToolbar button,
-.advancedToolbar input,
-.advancedToolbar select {
+.advancedPanel section button {
   min-height: 30px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-soft);
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: var(--fs-label);
-  outline: 0;
-}
-
-.advancedToolbar button {
   padding: 0 var(--space-2);
-  cursor: pointer;
+  text-align: left;
 }
 
-.advancedToolbar input,
-.advancedToolbar select {
-  width: 136px;
-  padding: 0 var(--space-2);
-}
-
-.advancedToolbar button:hover:not(:disabled) {
+.advancedPanel button:hover:not(:disabled) {
   border-color: var(--line);
   background: var(--bg-hover);
   color: var(--text-primary);
 }
 
-.advancedToolbar button:disabled,
-.advancedToolbar input:disabled,
-.advancedToolbar select:disabled {
+.advancedPanel button:disabled {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
 }
 
-.advancedToolbar button[data-active="true"] {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--text-primary);
-}
-
-.replaceTools label {
-  min-height: 30px;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: 0 var(--space-2);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-soft);
-  color: var(--text-secondary);
-  font-size: var(--fs-label);
+.panelGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
 }
 
 .contextMenuHeader {
@@ -956,4 +929,113 @@
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   font-weight: var(--weight-medium);
+}
+
+@media (max-width: 1180px) {
+  .sheetWorkspace[data-panel-open="true"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .advancedPanel {
+    max-height: 280px;
+    border-left: 0;
+    border-top: 1px solid var(--line-subtle);
+  }
+}
+
+.advancedPanel section button[data-active="true"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.panelInput {
+  min-height: 30px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  padding: 0 var(--space-2);
+  background: var(--bg-soft);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+  outline: 0;
+}
+
+.panelInput:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.sheetsToolbar {
+  min-height: 44px;
+  padding: var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-raised);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.sheetsToolbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.sheetsToolbar > span[aria-hidden="true"] {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 22px;
+  margin: 0 var(--space-1);
+  background: var(--line-subtle);
+}
+
+.sheetsToolbar button,
+.sheetsToolbar select {
+  height: 30px;
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.sheetsToolbar button {
+  min-width: 30px;
+  padding: 0 var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sheetsToolbar select {
+  max-width: 138px;
+  padding: 0 var(--space-2);
+  cursor: pointer;
+}
+
+.sheetsToolbar button:hover:not(:disabled),
+.sheetsToolbar select:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sheetsToolbar button[data-active="true"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.sheetsToolbar button:disabled,
+.sheetsToolbar select:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
 }

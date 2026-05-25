@@ -585,9 +585,37 @@ export default function SpreadsheetGrid({
     return { top, left: startMetric.left, width: endMetric.left + endMetric.width - startMetric.left, height };
   }, [columnMetrics, selectionBounds]);
 
+  const handleGridContextMenuCapture = useCallback((event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const rowHeader = target.closest('[data-row-header="true"]');
+    if (rowHeader?.dataset?.rowId) {
+      event.preventDefault();
+      event.stopPropagation();
+      onRowContextMenu?.(event, rowHeader.dataset.rowId);
+      return;
+    }
+
+    const columnHeader = target.closest('[data-column-header="true"]');
+    if (columnHeader?.dataset?.columnKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      onColumnContextMenu?.(event, columnHeader.dataset.columnKey);
+      return;
+    }
+
+    const cell = target.closest('[data-cell-id]');
+    if (cell?.dataset?.rowId && cell?.dataset?.columnKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      onContextMenu?.(event, cell.dataset.rowId, cell.dataset.columnKey);
+    }
+  }, [onColumnContextMenu, onContextMenu, onRowContextMenu]);
+
   return (
     <div ref={frameRef} className={styles.frame}>
-      <div ref={scrollerRef} className={styles.scroller} data-scrolled-x={viewport.left > 2 || undefined} data-scrolled-y={viewport.top > 2 || undefined}>
+      <div ref={scrollerRef} className={styles.scroller} data-scrolled-x={viewport.left > 2 || undefined} data-scrolled-y={viewport.top > 2 || undefined} onContextMenuCapture={handleGridContextMenuCapture}>
         <div className={styles.canvas} style={{ width: totalWidth, height: Math.max(totalHeight, viewport.height) }}>
           <div className={styles.header} style={{ width: totalWidth, height: HEADER_HEIGHT }}>
             <div className={styles.corner} style={{ left: viewport.left, width: INDEX_WIDTH, height: HEADER_HEIGHT }} />
@@ -595,6 +623,8 @@ export default function SpreadsheetGrid({
               <div
                 key={column.key}
                 className={styles.headerCell}
+                data-column-header="true"
+                data-column-key={column.key}
                 data-active={activeCell?.key === column.key || undefined}
                 data-saving={savingColumn === column.key || undefined}
                 style={{ left, width, height: HEADER_HEIGHT }}
@@ -644,6 +674,8 @@ export default function SpreadsheetGrid({
               key={row.id}
               type="button"
               className={styles.rowIndex}
+              data-row-header="true"
+              data-row-id={row.id}
               data-active={activeCell?.rowId === row.id || undefined}
               style={{ left: viewport.left, top, width: INDEX_WIDTH, height: ROW_HEIGHT }}
               onClick={() => onSelectRow(row.id)}
