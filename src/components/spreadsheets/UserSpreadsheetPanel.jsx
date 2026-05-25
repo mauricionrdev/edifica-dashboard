@@ -60,6 +60,35 @@ function insertFormulaSuggestion(currentValue = '', formulaName = '') {
   return `${base}${formulaName}(`;
 }
 
+function cellAddressFromPosition(rowIndex = -1, columnIndex = -1) {
+  if (rowIndex < 0 || columnIndex < 0) return '';
+  return `${columnName(columnIndex)}${rowIndex + 1}`;
+}
+
+function getCellAddress(cell, rows = [], columns = []) {
+  if (!cell?.rowId || !cell?.key) return '';
+  const rowIndex = rows.findIndex((row) => row.id === cell.rowId);
+  const columnIndex = columns.findIndex((column) => column.key === cell.key);
+  return cellAddressFromPosition(rowIndex, columnIndex);
+}
+
+function buildFormulaReference(startCell, endCell, rows = [], columns = []) {
+  const startAddress = getCellAddress(startCell, rows, columns);
+  const endAddress = getCellAddress(endCell || startCell, rows, columns);
+  if (!startAddress || !endAddress) return '';
+  return startAddress === endAddress ? startAddress : `${startAddress}:${endAddress}`;
+}
+
+function replaceFormulaTailWithReference(currentValue = '', reference = '') {
+  const value = sanitizeCellValue(currentValue);
+  if (!reference) return value;
+  const base = value.trim().startsWith('=') ? value : '=';
+  const trailingReference = /([A-Z]+\d+(?:\s*:\s*[A-Z]+\d+)?)\s*$/i;
+  if (trailingReference.test(base)) return base.replace(trailingReference, reference);
+  if (/([=(+\-*/,;:]|\s)$/.test(base) || base.endsWith('=')) return `${base}${reference}`;
+  return `${base}${reference}`;
+}
+
 const MIN_COLUMN_WIDTH = 5;
 const MAX_COLUMN_WIDTH = 900;
 const MAX_IMPORT_COLUMNS = 60;
@@ -693,6 +722,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [selectionAnchor, setSelectionAnchor] = useState(null);
   const [selectionFocus, setSelectionFocus] = useState(null);
   const [formulaValue, setFormulaValue] = useState('');
+  const [formulaInputFocused, setFormulaInputFocused] = useState(false);
+  const [formulaSuggestionIndex, setFormulaSuggestionIndex] = useState(0);
+  const [formulaRangeAnchor, setFormulaRangeAnchor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
   const [savingCell, setSavingCell] = useState('');
@@ -707,7 +739,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [filterQuery, setFilterQuery] = useState('');
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
+  const formulaInputRef = useRef(null);
   const draftRef = useRef(new Map());
+  const formulaReferenceBaseRef = useRef('');
 
   const viewRows = useMemo(() => {
     const query = sanitizeCellValue(filterQuery).toLowerCase();
@@ -801,6 +835,18 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       validation: validateFormulaStructure(value, rows, columns),
     };
   }, [columns, formulaValue, rows]);
+  const formulaSelectionMode = canEdit && formulaInputFocused && !!activeCell && sanitizeCellValue(formulaValue).trim().startsWith('=');
+  const formulaReferenceIdsWithSelection = useMemo(() => {
+    const ids = new Set(formulaReferenceIds);
+    if (formulaSelectionMode && selectionBounds) {
+      buildSelectedCells(viewRows, columns, selectionBounds).forEach((cell) => ids.add(cell.id));
+    }
+    return Array.from(ids);
+  }, [columns, formulaReferenceIds, formulaSelectionMode, selectionBounds, viewRows]);
+
+  useEffect(() => {
+    setFormulaSuggestionIndex(0);
+  }, [formulaAssist.suggestions.length, formulaValue]);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
@@ -855,6 +901,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setSelectionAnchor(null);
       setSelectionFocus(null);
       setFormulaValue('');
+      setFormulaInputFocused(false);
+      setFormulaRangeAnchor(null);
+      formulaReferenceBaseRef.current = '';
       setContextMenu(null);
       setSearchQuery('');
       setFilterQuery('');
@@ -872,15 +921,34 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [ownerUserId]);
 
   useEffect(() => {
+    if (formulaInputFocused) return;
     setFormulaValue(activeCellText(activeCell, rows));
-  }, [activeCell, rows]);
+    setFormulaRangeAnchor(null);
+    formulaReferenceBaseRef.current = '';
+  }, [activeCell, formulaInputFocused, rows]);
 
   const selectCell = useCallback((rowId, key, _element, extendSelection = false) => {
     const nextCell = { rowId, key };
+    if (formulaSelectionMode) {
+      const anchor = extendSelection && formulaRangeAnchor ? formulaRangeAnchor : nextCell;
+      if (!extendSelection || !formulaRangeAnchor) {
+        formulaReferenceBaseRef.current = sanitizeCellValue(formulaValue);
+        setFormulaRangeAnchor(nextCell);
+      }
+      setSelectionAnchor(anchor);
+      setSelectionFocus(nextCell);
+      const reference = buildFormulaReference(anchor, nextCell, rows, columns);
+      const base = formulaReferenceBaseRef.current || formulaValue;
+      setFormulaValue(replaceFormulaTailWithReference(base, reference));
+      requestAnimationFrame(() => formulaInputRef.current?.focus({ preventScroll: true }));
+      return;
+    }
     setActiveCell(nextCell);
     setSelectionFocus(nextCell);
     setSelectionAnchor((current) => (extendSelection && current ? current : nextCell));
-  }, []);
+    setFormulaRangeAnchor(null);
+    formulaReferenceBaseRef.current = '';
+  }, [columns, formulaRangeAnchor, formulaSelectionMode, formulaValue, rows]);
 
   const selectRow = useCallback((rowId) => {
     const firstColumn = columns[0];
@@ -1125,6 +1193,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const commitFormula = useCallback(() => {
     if (!activeCell?.rowId || !activeCell?.key) return;
     setCellDraft(activeCell.rowId, activeCell.key, formulaValue);
+    setFormulaRangeAnchor(null);
+    formulaReferenceBaseRef.current = '';
     commitCell(activeCell.rowId, activeCell.key).catch(() => {});
   }, [activeCell, commitCell, formulaValue, setCellDraft]);
 
@@ -1739,6 +1809,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const applyFormulaSuggestion = useCallback((formulaName) => {
     setFormulaValue((current) => insertFormulaSuggestion(current, formulaName));
+    requestAnimationFrame(() => formulaInputRef.current?.focus({ preventScroll: true }));
   }, []);
 
   useEffect(() => {
@@ -1934,19 +2005,46 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <span>fx</span>
           {formulaValue.trim().startsWith('=') ? <em className={styles.formulaBadge}>Fórmula</em> : null}
           <input
+            ref={formulaInputRef}
             value={formulaValue}
             disabled={!activeCell || !canEdit}
             aria-label="Conteúdo da célula ativa"
             placeholder="Selecione uma célula"
-            onChange={(event) => setFormulaValue(sanitizeCellValue(event.target.value))}
-            onBlur={commitFormula}
+            onFocus={() => setFormulaInputFocused(true)}
+            onChange={(event) => {
+              setFormulaValue(sanitizeCellValue(event.target.value));
+              setFormulaRangeAnchor(null);
+              formulaReferenceBaseRef.current = '';
+            }}
+            onBlur={() => {
+              commitFormula();
+              window.setTimeout(() => setFormulaInputFocused(false), 120);
+            }}
             onKeyDown={(event) => {
+              if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && formulaAssist.suggestions.length) {
+                event.preventDefault();
+                setFormulaSuggestionIndex((current) => {
+                  const direction = event.key === 'ArrowDown' ? 1 : -1;
+                  return (current + direction + formulaAssist.suggestions.length) % formulaAssist.suggestions.length;
+                });
+                return;
+              }
+              if ((event.key === 'Tab' || event.key === 'Enter') && formulaAssist.suggestions.length) {
+                const suggestion = formulaAssist.suggestions[formulaSuggestionIndex] || formulaAssist.suggestions[0];
+                if (suggestion) {
+                  event.preventDefault();
+                  applyFormulaSuggestion(suggestion.name);
+                  return;
+                }
+              }
               if (event.key === 'Enter') {
                 event.preventDefault();
                 event.currentTarget.blur();
               }
               if (event.key === 'Escape') {
                 setFormulaValue(activeCellText(activeCell, rows));
+                setFormulaRangeAnchor(null);
+                formulaReferenceBaseRef.current = '';
                 event.currentTarget.blur();
               }
             }}
@@ -1956,10 +2054,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               {!formulaAssist.validation.ok ? <strong>{formulaAssist.validation.message}</strong> : null}
               {formulaAssist.suggestions.length ? (
                 <div className={styles.formulaSuggestions}>
-                  {formulaAssist.suggestions.map((formula) => (
+                  {formulaAssist.suggestions.map((formula, index) => (
                     <button
                       key={formula.name}
                       type="button"
+                      data-active={index === formulaSuggestionIndex || undefined}
+                      onMouseEnter={() => setFormulaSuggestionIndex(index)}
                       onMouseDown={(event) => event.preventDefault()}
                       onClick={() => applyFormulaSuggestion(formula.name)}
                     >
@@ -1971,6 +2071,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               ) : null}
             </div>
           ) : null}
+          {formulaSelectionMode ? <small className={styles.formulaHint}>Clique ou arraste no grid para inserir referência</small> : null}
         </div>
       </div>
 
@@ -1990,7 +2091,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             selectionBounds={selectionBounds}
             selectedCount={selectedCount}
             displayValueMap={displayValueMap}
-            formulaReferenceIds={formulaReferenceIds}
+            formulaReferenceIds={formulaReferenceIdsWithSelection}
             savingCell={savingCell}
             savingColumn={savingColumn}
             resizeState={resizeState}

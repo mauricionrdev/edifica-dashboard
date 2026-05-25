@@ -756,3 +756,29 @@
   font-style: normal;
   line-height: var(--lh-snug);
 }
+
+.formulaHint {
+  position: absolute;
+  right: var(--space-2);
+  bottom: calc(-1 * var(--space-5));
+  z-index: var(--z-dropdown);
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-1);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.formulaSuggestions button[data-active="true"] {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
