@@ -2253,14 +2253,24 @@ button.taskRow:hover {
 
 .documentBlockToolbar {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--line-subtle);
 }
 
+.documentBlockToolbar > span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
 .documentBlockToolbar button,
-.documentBlockControls button {
+.documentBlockControls button,
+.documentBlockControls select {
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1);
   background: var(--bg-elevated);
@@ -2277,7 +2287,8 @@ button.taskRow:hover {
 }
 
 .documentBlockToolbar button:hover,
-.documentBlockControls button:hover:not(:disabled) {
+.documentBlockControls button:hover:not(:disabled),
+.documentBlockControls select:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
@@ -2295,7 +2306,7 @@ button.taskRow:hover {
 .documentBlock {
   position: relative;
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-columns: 148px minmax(0, 1fr);
   gap: var(--space-3);
   align-items: start;
   border: 1px solid transparent;
@@ -2303,25 +2314,36 @@ button.taskRow:hover {
   padding: var(--space-2);
 }
 
-.documentBlock:hover {
+.documentBlock:hover,
+.documentBlock:focus-within {
   border-color: var(--line-subtle);
   background: var(--bg-elevated);
 }
 
 .documentBlockControls {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr repeat(5, 24px);
   gap: 4px;
-  opacity: .5;
+  opacity: .55;
   transition: opacity .16s ease;
 }
 
-.documentBlock:hover .documentBlockControls {
+.documentBlock:hover .documentBlockControls,
+.documentBlock:focus-within .documentBlockControls {
   opacity: 1;
 }
 
+.documentBlockControls select {
+  width: 100%;
+  min-width: 0;
+  height: 24px;
+  padding: 0 6px;
+  outline: 0;
+}
+
 .documentBlockControls button {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   display: inline-grid;
   place-items: center;
   padding: 0;
@@ -2343,6 +2365,12 @@ button.taskRow:hover {
   background: transparent;
   color: var(--text-primary);
   font: inherit;
+}
+
+.documentHeadingInput:focus,
+.documentTextBlock:focus,
+.documentChecklistBlock input:focus {
+  color: var(--text-primary);
 }
 
 .documentHeadingInput {
@@ -2402,5 +2430,6 @@ button.taskRow:hover {
 
   .documentBlockControls {
     order: 2;
+    grid-template-columns: 1fr repeat(5, 24px);
   }
 }

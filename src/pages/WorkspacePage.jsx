@@ -478,6 +478,7 @@ export default function WorkspacePage() {
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsError, setDocumentsError] = useState('');
   const [selectedDocumentId, setSelectedDocumentId] = useState(null);
+  const [documentQuery, setDocumentQuery] = useState('');
   const [documentDraft, setDocumentDraft] = useState({ title: '', blocks: [createDocumentBlock('text', '')] });
   const [documentSaving, setDocumentSaving] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH);
@@ -623,6 +624,78 @@ export default function WorkspacePage() {
     }));
   }
 
+  function handleInsertDocumentBlockAfter(blockId, type = 'text') {
+    setDocumentDraft((current) => {
+      const blocks = [...(current.blocks || [])];
+      const index = blocks.findIndex((block) => block.id === blockId);
+      const nextBlock = createDocumentBlock(type, type === 'heading' ? 'Título' : '');
+      if (index < 0) return { ...current, blocks: [...blocks, nextBlock] };
+      blocks.splice(index + 1, 0, nextBlock);
+      return { ...current, blocks };
+    });
+  }
+
+  function handleDuplicateDocumentBlock(blockId) {
+    setDocumentDraft((current) => {
+      const blocks = [...(current.blocks || [])];
+      const index = blocks.findIndex((block) => block.id === blockId);
+      if (index < 0) return current;
+      const source = blocks[index];
+      blocks.splice(index + 1, 0, {
+        ...source,
+        id: `block_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      });
+      return { ...current, blocks };
+    });
+  }
+
+  function handleChangeDocumentBlockType(blockId, type) {
+    setDocumentDraft((current) => ({
+      ...current,
+      blocks: (current.blocks || []).map((block) => (
+        block.id === blockId
+          ? { ...block, type, value: type === 'divider' ? '' : block.value, checked: type === 'checklist' ? Boolean(block.checked) : false }
+          : block
+      )),
+    }));
+  }
+
+  function handleBlockValueChange(blockId, value) {
+    const trimmed = String(value || '').trim().toLowerCase();
+    if (trimmed === '/titulo' || trimmed === '/título') {
+      handleChangeDocumentBlockType(blockId, 'heading');
+      handleUpdateDocumentBlock(blockId, { value: '' });
+      return;
+    }
+    if (trimmed === '/check' || trimmed === '/checklist' || trimmed === '/tarefa') {
+      handleChangeDocumentBlockType(blockId, 'checklist');
+      handleUpdateDocumentBlock(blockId, { value: '' });
+      return;
+    }
+    if (trimmed === '/linha' || trimmed === '/separador') {
+      handleChangeDocumentBlockType(blockId, 'divider');
+      handleUpdateDocumentBlock(blockId, { value: '' });
+      return;
+    }
+    handleUpdateDocumentBlock(blockId, { value });
+  }
+
+  function handleDocumentBlockKeyDown(event, block, index) {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      handleSaveDocument();
+      return;
+    }
+    if (event.key === 'Enter' && !event.shiftKey && block.type !== 'text') {
+      event.preventDefault();
+      handleInsertDocumentBlockAfter(block.id, 'text');
+    }
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+      event.preventDefault();
+      handleInsertDocumentBlockAfter(block.id, index === (documentDraft.blocks || []).length - 1 ? 'text' : block.type);
+    }
+  }
+
   function handleUpdateDocumentBlock(blockId, updates) {
     setDocumentDraft((current) => ({
       ...current,
@@ -699,6 +772,12 @@ export default function WorkspacePage() {
 
   const selectedTask = useMemo(() => tasks.find((task) => String(task.id) === String(selectedTaskId)) || null, [selectedTaskId, tasks]);
   const selectedDocument = useMemo(() => documents.find((document) => String(document.id) === String(selectedDocumentId)) || null, [documents, selectedDocumentId]);
+
+  const filteredDocuments = useMemo(() => {
+    const query = normalize(documentQuery);
+    if (!query) return documents;
+    return documents.filter((document) => normalize(`${document?.title || ''} ${documentPlainText(document?.content)}`).includes(query));
+  }, [documentQuery, documents]);
 
   function handleSelectTask(task) {
     setSelectedTaskId(task?.id || null);
@@ -1150,7 +1229,7 @@ export default function WorkspacePage() {
               <div className={styles.documentsToolbar}>
                 <label className={styles.documentSearch}>
                   <SearchIcon size={14} />
-                  <input placeholder="Buscar documento" disabled />
+                  <input value={documentQuery} onChange={(event) => setDocumentQuery(event.target.value)} placeholder="Buscar" />
                 </label>
                 <button type="button" onClick={() => handleCreateDocument('blank')}><PlusIcon size={14} /> Novo</button>
               </div>
@@ -1166,8 +1245,8 @@ export default function WorkspacePage() {
               <div className={styles.documentsList}>
                 {documentsLoading ? <span className={styles.inlineState}>Carregando...</span> : null}
                 {!documentsLoading && documentsError ? <span className={styles.inlineState}>{documentsError}</span> : null}
-                {!documentsLoading && !documentsError && !documents.length ? <span className={styles.inlineState}>Nenhum documento.</span> : null}
-                {documents.map((document) => (
+                {!documentsLoading && !documentsError && !filteredDocuments.length ? <span className={styles.inlineState}>{documentQuery ? 'Nenhum resultado.' : 'Nenhum documento.'}</span> : null}
+                {filteredDocuments.map((document) => (
                   <DocumentCard
                     key={document.id}
                     document={document}
@@ -1195,18 +1274,27 @@ export default function WorkspacePage() {
                   </div>
 
                   <div className={styles.documentBlockToolbar} aria-label="Adicionar bloco">
+                    <span>Inserir</span>
                     <button type="button" onClick={() => handleAddDocumentBlock('text')}>Texto</button>
                     <button type="button" onClick={() => handleAddDocumentBlock('heading')}>Título</button>
-                    <button type="button" onClick={() => handleAddDocumentBlock('checklist')}>Checklist</button>
-                    <button type="button" onClick={() => handleAddDocumentBlock('divider')}>Separador</button>
+                    <button type="button" onClick={() => handleAddDocumentBlock('checklist')}>Tarefa</button>
+                    <button type="button" onClick={() => handleAddDocumentBlock('divider')}>Linha</button>
                   </div>
 
                   <div className={styles.documentBlocks}>
                     {(documentDraft.blocks || []).map((block, index) => (
                       <div key={block.id} className={`${styles.documentBlock} ${styles[`documentBlock_${block.type}`] || ''}`.trim()}>
                         <div className={styles.documentBlockControls}>
-                          <button type="button" onClick={() => handleMoveDocumentBlock(block.id, -1)} disabled={index === 0}>↑</button>
-                          <button type="button" onClick={() => handleMoveDocumentBlock(block.id, 1)} disabled={index === (documentDraft.blocks || []).length - 1}>↓</button>
+                          <select value={block.type} onChange={(event) => handleChangeDocumentBlockType(block.id, event.target.value)} aria-label="Tipo do bloco">
+                            <option value="text">Texto</option>
+                            <option value="heading">Título</option>
+                            <option value="checklist">Tarefa</option>
+                            <option value="divider">Linha</option>
+                          </select>
+                          <button type="button" onClick={() => handleInsertDocumentBlockAfter(block.id, 'text')} aria-label="Adicionar bloco abaixo">+</button>
+                          <button type="button" onClick={() => handleDuplicateDocumentBlock(block.id)} aria-label="Duplicar bloco">⧉</button>
+                          <button type="button" onClick={() => handleMoveDocumentBlock(block.id, -1)} disabled={index === 0} aria-label="Mover para cima">↑</button>
+                          <button type="button" onClick={() => handleMoveDocumentBlock(block.id, 1)} disabled={index === (documentDraft.blocks || []).length - 1} aria-label="Mover para baixo">↓</button>
                           <button type="button" onClick={() => handleDeleteDocumentBlock(block.id)} aria-label="Excluir bloco"><TrashIcon size={13} /></button>
                         </div>
 
@@ -1221,21 +1309,24 @@ export default function WorkspacePage() {
                             />
                             <input
                               value={block.value || ''}
-                              onChange={(event) => handleUpdateDocumentBlock(block.id, { value: event.target.value })}
-                              placeholder="Item"
+                              onChange={(event) => handleBlockValueChange(block.id, event.target.value)}
+                              onKeyDown={(event) => handleDocumentBlockKeyDown(event, block, index)}
+                              placeholder="Tarefa"
                             />
                           </label>
                         ) : block.type === 'heading' ? (
                           <input
                             value={block.value || ''}
-                            onChange={(event) => handleUpdateDocumentBlock(block.id, { value: event.target.value })}
+                            onChange={(event) => handleBlockValueChange(block.id, event.target.value)}
+                            onKeyDown={(event) => handleDocumentBlockKeyDown(event, block, index)}
                             className={styles.documentHeadingInput}
                             placeholder="Título"
                           />
                         ) : (
                           <textarea
                             value={block.value || ''}
-                            onChange={(event) => handleUpdateDocumentBlock(block.id, { value: event.target.value })}
+                            onChange={(event) => handleBlockValueChange(block.id, event.target.value)}
+                            onKeyDown={(event) => handleDocumentBlockKeyDown(event, block, index)}
                             className={styles.documentTextBlock}
                             placeholder="Texto"
                             rows={Math.max(2, Math.min(8, String(block.value || '').split('\n').length + 1))}
