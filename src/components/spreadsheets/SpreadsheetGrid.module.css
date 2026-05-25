@@ -247,3 +247,20 @@
   background: var(--bg-hover);
   color: var(--text-primary);
 }
+
+.scroller[data-scrolled-x="true"] .corner,
+.scroller[data-scrolled-x="true"] .rowIndex {
+  box-shadow: 1px 0 0 var(--line);
+}
+
+.scroller[data-scrolled-y="true"] .header {
+  box-shadow: 0 1px 0 var(--line);
+}
+
+.cell {
+  user-select: none;
+}
+
+.cellEditor {
+  user-select: text;
+}

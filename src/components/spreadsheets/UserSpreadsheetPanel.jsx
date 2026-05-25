@@ -219,6 +219,32 @@ function buildSelectedCells(rows = [], columns = [], bounds) {
   return cells;
 }
 
+function parseNumericValue(value = '') {
+  const text = sanitizeCellValue(value).replace(/\./g, '').replace(',', '.');
+  if (!text || !/^-?\d+(\.\d+)?$/.test(text)) return null;
+  const number = Number(text);
+  return Number.isFinite(number) ? number : null;
+}
+
+function formatStatusNumber(value) {
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(value);
+}
+
+function buildSelectionSummary(cells = []) {
+  if (!cells.length) return 'Nenhuma célula selecionada';
+  const values = cells.map(({ row, column }) => sanitizeCellValue(row?.[column.key] || ''));
+  const filled = values.filter(Boolean).length;
+  const numbers = values.map(parseNumericValue).filter((value) => value !== null);
+  const parts = [`${cells.length} célula${cells.length === 1 ? '' : 's'}`];
+  if (filled) parts.push(`${filled} preenchida${filled === 1 ? '' : 's'}`);
+  if (numbers.length) {
+    const sum = numbers.reduce((total, value) => total + value, 0);
+    parts.push(`Soma ${formatStatusNumber(sum)}`);
+    if (numbers.length > 1) parts.push(`Média ${formatStatusNumber(sum / numbers.length)}`);
+  }
+  return parts.join(' · ');
+}
+
 function serializeCellsToTsv(rows = [], columns = [], bounds) {
   if (!bounds) return '';
   const lines = [];
@@ -354,6 +380,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const selectedCells = useMemo(() => buildSelectedCells(viewRows, columns, selectionBounds), [columns, viewRows, selectionBounds]);
   const selectedCellIds = useMemo(() => new Set(selectedCells.map((cell) => cell.id)), [selectedCells]);
   const selectedCount = selectedCells.length || (activeCell ? 1 : 0);
+  const selectedSummary = useMemo(() => buildSelectionSummary(selectedCells), [selectedCells]);
   const selectedHasBold = useMemo(() => sameStyleValue(selectedCells, 'bold', true), [selectedCells]);
   const selectedHasItalic = useMemo(() => sameStyleValue(selectedCells, 'italic', true), [selectedCells]);
   const selectedHasUnderline = useMemo(() => sameStyleValue(selectedCells, 'underline', true), [selectedCells]);
@@ -1150,7 +1177,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.footer}>
         <span data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail}</span>
-        <span>{selectedCount > 1 ? `${selectedCount} células selecionadas · ` : ''}{filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
+        <span>{selectedSummary} · {filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
 
       <SheetContextMenu

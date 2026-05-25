@@ -49,6 +49,7 @@ function Cell({
   editValue,
   canEdit,
   onSelect,
+  onCellClick,
   onStartEdit,
   onEditChange,
   onCommit,
@@ -58,6 +59,8 @@ function Cell({
   onRowContextMenu,
   onColumnContextMenu,
   onPasteTable,
+  onDragSelectionStart,
+  onDragSelectionMove,
 }) {
   const ref = useRef(null);
   const editorRef = useRef(null);
@@ -155,7 +158,12 @@ function Cell({
         textAlign: style.textAlign || undefined,
       }}
       onFocus={(event) => onSelect(row.id, column.key, event.currentTarget, false)}
-      onClick={(event) => onSelect(row.id, column.key, event.currentTarget, event.shiftKey)}
+      onClick={(event) => onCellClick?.(event, row.id, column.key, event.currentTarget)}
+      onPointerDown={(event) => {
+        if (event.button !== 0 || editing) return;
+        onDragSelectionStart?.(event, row.id, column.key);
+      }}
+      onPointerEnter={() => onDragSelectionMove?.(row.id, column.key)}
       onDoubleClick={() => canEdit && onStartEdit(row.id, column.key, displayValue)}
       onContextMenu={(event) => onContextMenu(event, row.id, column.key)}
       onKeyDown={handleKeyDown}
@@ -230,6 +238,9 @@ export default function SpreadsheetGrid({
   const [viewport, setViewport] = useState({ top: 0, left: 0, width: 900, height: 520 });
   const [editingCell, setEditingCell] = useState(null);
   const [editingValue, setEditingValue] = useState('');
+  const draggingSelectionRef = useRef(false);
+  const lastDragCellRef = useRef('');
+  const selectionDraggedRef = useRef(false);
 
   const columnMetrics = useMemo(() => {
     let left = INDEX_WIDTH;
@@ -346,6 +357,39 @@ export default function SpreadsheetGrid({
     return () => scroller.removeEventListener('wheel', onWheel);
   }, []);
 
+  const startDragSelection = useCallback((event, rowId, key) => {
+    if (event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) return;
+    draggingSelectionRef.current = true;
+    lastDragCellRef.current = `${rowId}:${key}`;
+    selectionDraggedRef.current = false;
+    onSelectCell(rowId, key, event.currentTarget, false);
+    const finish = () => {
+      draggingSelectionRef.current = false;
+      lastDragCellRef.current = '';
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', finish);
+    };
+    window.addEventListener('pointerup', finish, { once: true });
+    window.addEventListener('pointercancel', finish, { once: true });
+  }, [onSelectCell]);
+
+  const moveDragSelection = useCallback((rowId, key) => {
+    if (!draggingSelectionRef.current) return;
+    const nextId = `${rowId}:${key}`;
+    if (lastDragCellRef.current === nextId) return;
+    lastDragCellRef.current = nextId;
+    selectionDraggedRef.current = true;
+    onSelectCell(rowId, key, null, true);
+  }, [onSelectCell]);
+
+  const handleCellClick = useCallback((event, rowId, key, element) => {
+    if (selectionDraggedRef.current) {
+      selectionDraggedRef.current = false;
+      return;
+    }
+    onSelectCell(rowId, key, element, event.shiftKey);
+  }, [onSelectCell]);
+
   const selectionRect = useMemo(() => {
     if (!selectionBounds) return null;
     const top = HEADER_HEIGHT + selectionBounds.startRow * ROW_HEIGHT;
@@ -358,10 +402,10 @@ export default function SpreadsheetGrid({
 
   return (
     <div ref={frameRef} className={styles.frame}>
-      <div ref={scrollerRef} className={styles.scroller}>
+      <div ref={scrollerRef} className={styles.scroller} data-scrolled-x={viewport.left > 2 || undefined} data-scrolled-y={viewport.top > 2 || undefined}>
         <div className={styles.canvas} style={{ width: totalWidth, height: Math.max(totalHeight, viewport.height) }}>
           <div className={styles.header} style={{ width: totalWidth, height: HEADER_HEIGHT }}>
-            <div className={styles.corner} style={{ width: INDEX_WIDTH, height: HEADER_HEIGHT }} />
+            <div className={styles.corner} style={{ left: viewport.left, width: INDEX_WIDTH, height: HEADER_HEIGHT }} />
             {visibleColumns.map(({ column, left, width }) => (
               <div
                 key={column.key}
@@ -400,7 +444,7 @@ export default function SpreadsheetGrid({
               type="button"
               className={styles.rowIndex}
               data-active={activeCell?.rowId === row.id || undefined}
-              style={{ top, width: INDEX_WIDTH, height: ROW_HEIGHT }}
+              style={{ left: viewport.left, top, width: INDEX_WIDTH, height: ROW_HEIGHT }}
               onClick={() => onSelectRow(row.id)}
               onContextMenu={(event) => onRowContextMenu?.(event, row.id)}
             >
@@ -430,6 +474,7 @@ export default function SpreadsheetGrid({
                   editValue={editingValue}
                   canEdit={canEdit}
                   onSelect={onSelectCell}
+                  onCellClick={handleCellClick}
                   onStartEdit={startEdit}
                   onEditChange={setEditingValue}
                   onCommit={commitEdit}
@@ -437,6 +482,8 @@ export default function SpreadsheetGrid({
                   onNavigate={onNavigateCell}
                   onContextMenu={onContextMenu}
                   onPasteTable={onPasteTable}
+                  onDragSelectionStart={startDragSelection}
+                  onDragSelectionMove={moveDragSelection}
                 />
               );
             })
