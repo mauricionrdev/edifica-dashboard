@@ -254,6 +254,7 @@ function Cell({
         textDecoration: style.textDecoration || [style.underline ? 'underline' : '', style.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined,
         textAlign: style.textAlign || undefined,
         fontSize: resolveCellFontSize(style.fontSize),
+        fontFamily: style.fontFamily || undefined,
         alignItems: resolveVerticalAlign(style.verticalAlign),
       }}
       onFocus={(event) => onSelect(row.id, column.key, event.currentTarget, false)}

@@ -37,6 +37,13 @@ const FILL_COLOR_OPTIONS = [
   { value: 'var(--info-soft)', label: 'Azul suave' },
 ];
 
+
+const FONT_FAMILY_OPTIONS = [
+  { value: '', label: 'Inter' },
+  { value: 'var(--font-sans)', label: 'Sans' },
+  { value: 'var(--font-mono)', label: 'Mono' },
+];
+
 const INLINE_TEXT_STYLE_KEYS = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'color']);
 
 const FORMULA_LIBRARY = [
@@ -958,7 +965,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [replaceValue, setReplaceValue] = useState('');
   const [replaceScope, setReplaceScope] = useState('selection');
   const [replaceMatchCase, setReplaceMatchCase] = useState(false);
-  const [advancedPanelOpen, setAdvancedPanelOpen] = useState(false);
+  const [replaceBarOpen, setReplaceBarOpen] = useState(false);
   const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -1046,6 +1053,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!selectedCells.length) return '';
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.backgroundColor || '';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.backgroundColor || '') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const selectedFontFamily = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontFamily || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontFamily || '') === first) ? first : 'mixed';
   }, [selectedCells]);
 
   const hasActiveTextRange = !!activeTextSelection
@@ -1401,6 +1414,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     applyStyleToSelection({ fontSize }).catch(() => {});
   }, [applyStyleToSelection]);
 
+  const setFontFamily = useCallback((fontFamily) => {
+    applyStyleToSelection({ fontFamily }).catch(() => {});
+  }, [applyStyleToSelection]);
+
   const setVerticalAlign = useCallback((verticalAlign) => {
     applyStyleToSelection({ verticalAlign }).catch(() => {});
   }, [applyStyleToSelection]);
@@ -1441,7 +1458,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, []);
 
   const clearSelectionFormatting = useCallback(() => {
-    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
+    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '', color: '', backgroundColor: '', fontFamily: '', richText: [] }).catch(() => {});
   }, [applyStyleToSelection]);
 
   const applyValueToSelection = useCallback(async () => {
@@ -2113,7 +2130,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const value = activeCellText(activeCell, rows);
     if (!value) return;
     setReplaceQuery(value);
-    setAdvancedPanelOpen(true);
+    setReplaceBarOpen(true);
     requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true }));
   }, [activeCell, rows]);
 
@@ -2461,7 +2478,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       }
       if (modifier && key === 'h') {
         event.preventDefault();
-        setAdvancedPanelOpen(true);
+        setReplaceBarOpen(true);
         requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true }));
         return;
       }
@@ -2558,9 +2575,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <button type="button" onClick={cutSelection} disabled={!activeCell || !canEdit || !!busy} aria-label="Recortar">Recortar</button>
         <button type="button" onClick={pasteClipboardAtActive} disabled={!activeCell || !canEdit || !!busy} aria-label="Colar">Colar</button>
         <span aria-hidden="true" />
-        <select aria-label="Zoom da planilha" value="100" disabled>
-          <option value="100">100%</option>
-        </select>
         <select
           value={selectedNumberFormat === 'mixed' ? 'text' : selectedNumberFormat}
           aria-label="Formato da seleção"
@@ -2573,8 +2587,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <option value="percent">% Percentual</option>
         </select>
         <span aria-hidden="true" />
-        <select aria-label="Fonte" value="Roboto" disabled>
-          <option value="Roboto">Roboto</option>
+        <select
+          value={selectedFontFamily === 'mixed' ? '' : selectedFontFamily}
+          aria-label="Fonte"
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setFontFamily(event.target.value)}
+        >
+          {FONT_FAMILY_OPTIONS.map((option) => <option key={option.label} value={option.value}>{option.label}</option>)}
         </select>
         <button type="button" onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Diminuir fonte">−</button>
         <select
@@ -2626,7 +2645,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <span aria-hidden="true" />
         <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy} aria-label="Limpar formatação">Limpar</button>
         <button type="button" onClick={normalizeSelectionValues} disabled={!selectedCount || !canEdit || !!busy} aria-label="Normalizar">Normalizar</button>
-        <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Criar filtro">Filtro</button>
+        <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Buscar na planilha">Buscar</button>
+        <button type="button" onClick={() => { setReplaceBarOpen((current) => !current); requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true })); }} disabled={!activeSheetId} aria-label="Localizar e substituir">Substituir</button>
         <button type="button" onClick={() => insertFormulaTemplate('SOMA')} disabled={!activeCell || !canEdit || !!busy} aria-label="Inserir soma">Σ</button>
       </div>
 
@@ -2656,6 +2676,40 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           );
         })}
       </div>
+
+      {replaceBarOpen ? (
+        <div className={styles.replaceBar} aria-label="Localizar e substituir">
+          <span>Substituir</span>
+          <input
+            ref={replaceInputRef}
+            value={replaceQuery}
+            aria-label="Localizar"
+            placeholder="Localizar"
+            onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
+          />
+          <input
+            value={replaceValue}
+            aria-label="Substituir por"
+            placeholder="Substituir por"
+            onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
+          />
+          <select
+            value={replaceScope}
+            aria-label="Escopo da substituição"
+            onChange={(event) => setReplaceScope(event.target.value)}
+          >
+            <option value="selection">Seleção</option>
+            <option value="sheet">Planilha inteira</option>
+          </select>
+          <label>
+            <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
+            Diferenciar maiúsculas
+          </label>
+          <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
+          <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
+          <button type="button" onClick={() => setReplaceBarOpen(false)} aria-label="Fechar localizar e substituir">×</button>
+        </div>
+      ) : null}
 
       <div className={styles.controlBar}>
         <div className={styles.nameBox}>{activeColumn && activeRowIndex >= 0 ? `${columnName(activeColumnIndex)}${activeRowIndex + 1}` : '—'}</div>
@@ -2790,146 +2844,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         ) : null}
         </div>
 
-        {false && advancedPanelOpen ? (
-          <aside className={styles.advancedPanel} aria-label="Painel avançado da planilha">
-            <header>
-              <strong>Painel avançado</strong>
-              <button type="button" onClick={() => setAdvancedPanelOpen(false)} aria-label="Fechar painel">×</button>
-            </header>
-            <section>
-              <span>Seleção</span>
-              <strong>{selectedSummary}</strong>
-              <button type="button" onClick={selectAllCells} disabled={!activeSheetId}>Selecionar tudo</button>
-              <button type="button" onClick={selectUsedRange} disabled={!activeSheetId}>Selecionar área preenchida</button>
-              <button type="button" onClick={() => activeCell?.rowId && selectRow(activeCell.rowId)} disabled={!activeCell}>Selecionar linha</button>
-              <button type="button" onClick={() => activeCell?.key && selectColumn(activeCell.key)} disabled={!activeCell}>Selecionar coluna</button>
-            </section>
-            <section>
-              <span>Localizar e substituir</span>
-              <strong>Busca avançada na seleção ou planilha inteira</strong>
-              <input
-                ref={replaceInputRef}
-                className={styles.panelInput}
-                value={replaceQuery}
-                placeholder="Localizar"
-                onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
-              />
-              <input
-                className={styles.panelInput}
-                value={replaceValue}
-                placeholder="Substituir por"
-                onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
-              />
-              <select
-                className={styles.panelInput}
-                value={replaceScope}
-                aria-label="Escopo da substituição"
-                onChange={(event) => setReplaceScope(event.target.value)}
-              >
-                <option value="selection">Seleção</option>
-                <option value="sheet">Planilha inteira</option>
-              </select>
-              <label className={styles.panelCheck}>
-                <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
-                Diferenciar maiúsculas
-              </label>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
-                <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
-              </div>
-            </section>
-            <section>
-              <span>Texto</span>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>Negrito</button>
-                <button type="button" onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}>Itálico</button>
-                <button type="button" onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}>Sublinhado</button>
-                <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy}>Tachado</button>
-              </div>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={() => transformSelectionText('uppercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Maiúsculas</button>
-                <button type="button" onClick={() => transformSelectionText('lowercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Minúsculas</button>
-                <button type="button" onClick={() => transformSelectionText('titlecase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Capitalizar</button>
-                <button type="button" onClick={() => transformSelectionText('trim').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Limpar espaços</button>
-              </div>
-            </section>
-            <section>
-              <span>Alinhamento</span>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy}>Esquerda</button>
-                <button type="button" onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy}>Centro</button>
-                <button type="button" onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>Direita</button>
-              </div>
-            </section>
-            <section>
-              <span>Filtros da coluna</span>
-              <strong>{activeColumn ? activeColumn.label : 'Nenhuma coluna ativa'}</strong>
-              <input
-                className={styles.panelInput}
-                value={activeColumn ? (columnFilters[activeColumn.key] || '') : ''}
-                placeholder="Valor do filtro"
-                disabled={!activeColumn}
-                onChange={(event) => activeColumn && setColumnFilters((current) => ({ ...current, [activeColumn.key]: sanitizeCellValue(event.target.value) }))}
-              />
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor ativo</button>
-                <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
-                <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar todos</button>
-                <button type="button" onClick={() => setFilterQuery('')} disabled={!filterQuery}>Limpar busca</button>
-              </div>
-            </section>
-            <section>
-              <span>Planilha</span>
-              <button type="button" onClick={fitActiveColumnWidth} disabled={!activeColumn || !canEdit || !!busy}>Ajustar largura da coluna</button>
-              <button type="button" onClick={() => sortActiveColumn('asc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna A → Z</button>
-              <button type="button" onClick={() => sortActiveColumn('desc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna Z → A</button>
-              <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar formatação</button>
-            </section>
-            <section>
-              <span>Texto avançado</span>
-              <strong>Quebra, tamanho e alinhamento vertical da seleção</strong>
-              <div className={styles.panelGrid}>
-                <button type="button" data-active={selectedWrapMode === 'wrap' || undefined} onClick={() => setWrapMode('wrap')} disabled={!selectedCount || !canEdit || !!busy}>Quebrar texto</button>
-                <button type="button" data-active={selectedWrapMode === 'clip' || undefined} onClick={() => setWrapMode('clip')} disabled={!selectedCount || !canEdit || !!busy}>Cortar texto</button>
-                <button type="button" data-active={selectedFontSize === 'small' || undefined} onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy}>Fonte pequena</button>
-                <button type="button" data-active={selectedFontSize === 'normal' || undefined} onClick={() => setFontSize('')} disabled={!selectedCount || !canEdit || !!busy}>Fonte normal</button>
-                <button type="button" data-active={selectedFontSize === 'large' || undefined} onClick={() => setFontSize('large')} disabled={!selectedCount || !canEdit || !!busy}>Fonte grande</button>
-                <button type="button" data-active={selectedVerticalAlign === 'top' || undefined} onClick={() => setVerticalAlign('top')} disabled={!selectedCount || !canEdit || !!busy}>Topo</button>
-                <button type="button" data-active={selectedVerticalAlign === 'middle' || undefined} onClick={() => setVerticalAlign('')} disabled={!selectedCount || !canEdit || !!busy}>Meio</button>
-                <button type="button" data-active={selectedVerticalAlign === 'bottom' || undefined} onClick={() => setVerticalAlign('bottom')} disabled={!selectedCount || !canEdit || !!busy}>Abaixo</button>
-              </div>
-            </section>
-            <section>
-              <span>Filtros da coluna</span>
-              <strong>{activeColumn ? activeColumn.label : 'Nenhuma coluna ativa'}</strong>
-              <input
-                className={styles.panelInput}
-                value={activeColumn ? (columnFilters[activeColumn.key] || '') : ''}
-                placeholder="Valor do filtro"
-                disabled={!activeColumn}
-                onChange={(event) => activeColumn && setColumnFilters((current) => ({ ...current, [activeColumn.key]: sanitizeCellValue(event.target.value) }))}
-              />
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor ativo</button>
-                <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
-                <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar todos</button>
-                <button type="button" onClick={() => setFilterQuery('')} disabled={!filterQuery}>Limpar busca</button>
-              </div>
-            </section>
-            <section>
-              <span>Planilha</span>
-              <strong>Comandos estruturais da linha e coluna ativa</strong>
-              <div className={styles.panelGrid}>
-                <button type="button" onClick={() => insertRowAtActive('above').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha acima</button>
-                <button type="button" onClick={() => insertRowAtActive('below').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha abaixo</button>
-                <button type="button" onClick={() => insertColumnAtActive('left').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna à esquerda</button>
-                <button type="button" onClick={() => insertColumnAtActive('right').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna à direita</button>
-                <button type="button" onClick={() => duplicateActiveRow().catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Duplicar linha</button>
-                <button type="button" onClick={() => duplicateActiveColumn().catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Duplicar coluna</button>
-              </div>
-            </section>
-          </aside>
-        ) : null}
       </div>
 
       <footer className={styles.footer}>
