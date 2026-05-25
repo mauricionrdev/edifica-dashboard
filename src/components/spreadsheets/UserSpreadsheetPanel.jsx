@@ -341,6 +341,32 @@ function formatCellDisplayValue(value = '', style = {}) {
   return raw;
 }
 
+function validateCellValue(value = '', style = {}, formulaResult = null) {
+  const raw = sanitizeCellValue(value);
+  if (!raw) return { ok: true, message: '' };
+  if (raw.startsWith('=')) {
+    if (formulaResult && !formulaResult.ok) return { ok: false, message: 'Fórmula inválida' };
+    return { ok: true, message: '' };
+  }
+  const format = style?.numberFormat || 'text';
+  if (format === 'text') return { ok: true, message: '' };
+  const number = parsePlainNumber(raw);
+  if (number === null) {
+    const labels = { number: 'número', currency: 'moeda', percent: 'percentual' };
+    return { ok: false, message: `Valor incompatível com ${labels[format] || 'tipo numérico'}` };
+  }
+  return { ok: true, message: '' };
+}
+
+function normalizeValueForType(value = '', style = {}) {
+  const raw = sanitizeCellValue(value);
+  if (!raw || raw.startsWith('=') || !style?.numberFormat || style.numberFormat === 'text') return raw;
+  const number = parsePlainNumber(raw);
+  if (number === null) return raw;
+  if (style.numberFormat === 'percent' && /%\s*$/.test(raw)) return String(number / 100);
+  return String(number);
+}
+
 function evaluateFormula(rawFormula = '', rows = [], columns = [], stack = new Set()) {
   const formula = sanitizeCellValue(rawFormula).trim();
   if (!formula.startsWith('=')) return { value: formula, ok: true };
@@ -518,6 +544,7 @@ function SheetContextMenu({
   onSetTypeNumber,
   onSetTypeCurrency,
   onSetTypePercent,
+  onNormalizeSelection,
 }) {
   if (!menu) return null;
   const isRow = menu.scope === 'row';
@@ -534,6 +561,7 @@ function SheetContextMenu({
         <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção</button>
         <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção</button>
         <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo</button>
+        <button type="button" role="menuitem" onClick={onNormalizeSelection} disabled={!canEdit}>Normalizar pelo tipo</button>
         <span aria-hidden="true" />
         <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito</button>
         <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico</button>
@@ -642,16 +670,27 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         const raw = sanitizeCellValue(row?.[column.key] || '');
         const style = getCellStyle(row, column.key);
         const result = raw.startsWith('=') ? evaluateFormula(raw, rows, columns, new Set([`${row.id}:${column.key}`])) : { value: raw, ok: true };
+        const validation = validateCellValue(raw, style, result);
         map.set(`${row.id}:${column.key}`, {
           value: formatCellDisplayValue(result.value, style),
           raw,
           isFormula: raw.startsWith('='),
           hasFormulaError: raw.startsWith('=') && !result.ok,
+          hasValidationError: !validation.ok,
+          validationMessage: validation.message,
         });
       });
     });
     return map;
   }, [columns, rows]);
+
+  const validationIssueCount = useMemo(() => {
+    let count = 0;
+    displayValueMap.forEach((meta) => {
+      if (meta?.hasValidationError) count += 1;
+    });
+    return count;
+  }, [displayValueMap]);
 
   const formulaCount = useMemo(() => {
     let count = 0;
@@ -1319,6 +1358,40 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
 
 
+
+  const normalizeSelectionValues = useCallback(async () => {
+    if (!canEdit || !selectedCells.length) return;
+    const updatesByRow = new Map();
+    const optimistic = rows.map((row) => {
+      const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
+      if (!targetCells.length) return row;
+      const next = { ...row };
+      const patch = {};
+      targetCells.forEach(({ column }) => {
+        const style = getCellStyle(row, column.key);
+        const currentValue = sanitizeCellValue(row?.[column.key] || '');
+        const nextValue = normalizeValueForType(currentValue, style);
+        next[column.key] = nextValue;
+        patch[column.key] = nextValue;
+      });
+      updatesByRow.set(row.id, patch);
+      return next;
+    });
+    if (!updatesByRow.size) return;
+    setRows(optimistic);
+    markSync('saving', 'Normalizando seleção');
+    setBusy('normalize-values');
+    try {
+      await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
+      markSync('saved', 'Seleção normalizada');
+    } catch (error) {
+      notifyError(error, 'Não foi possível normalizar a seleção.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
+
   const sortActiveColumn = useCallback(async (direction = 'asc') => {
     if (!canMutateSheet || !activeColumn) return;
     setBusy(`sort-column-${direction}`);
@@ -1687,6 +1760,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <Button size="xs" variant="ghost" onClick={addColumn} disabled={!canMutateSheet}><PlusIcon size={13} /> Coluna</Button>
           <Button size="xs" variant="ghost" onClick={copySelection} disabled={!activeCell}>Copiar</Button>
           <Button size="xs" variant="ghost" onClick={applyValueToSelection} disabled={!selectedCount || !canEdit || !!busy}>Preencher</Button>
+          <Button size="xs" variant="ghost" onClick={normalizeSelectionValues} disabled={!selectedCount || !canEdit || !!busy}>Normalizar</Button>
         </div>
         <div className={styles.formatGroup} aria-label="Formatação da seleção">
           <button type="button" data-active={selectedHasBold || undefined} onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>B</button>
@@ -1832,7 +1906,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.footer}>
         <span data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail}</span>
-        <span>{selectedSummary} · {filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}{formulaCount ? ` · ${formulaCount} fórmula${formulaCount === 1 ? '' : 's'}` : ''}</span>
+        <span>{selectedSummary} · {filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}{formulaCount ? ` · ${formulaCount} fórmula${formulaCount === 1 ? '' : 's'}` : ''}{validationIssueCount ? ` · ${validationIssueCount} ajuste${validationIssueCount === 1 ? '' : 's'} de tipo` : ''}</span>
       </footer>
 
       <SheetContextMenu
@@ -1863,6 +1937,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onSetTypeNumber={() => { closeContextMenu(); setNumberFormat('number'); }}
         onSetTypeCurrency={() => { closeContextMenu(); setNumberFormat('currency'); }}
         onSetTypePercent={() => { closeContextMenu(); setNumberFormat('percent'); }}
+        onNormalizeSelection={() => { closeContextMenu(); normalizeSelectionValues().catch(() => {}); }}
       />
 
       <ConfirmDeleteDialog

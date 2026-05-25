@@ -159,7 +159,9 @@ function Cell({
       data-saving={saving || undefined}
       data-formula={displayMeta?.isFormula || undefined}
       data-formula-error={displayMeta?.hasFormulaError || undefined}
+      data-validation-error={displayMeta?.hasValidationError || undefined}
       data-formula-reference={formulaReference || undefined}
+      title={displayMeta?.validationMessage || undefined}
       role="gridcell"
       tabIndex={0}
       style={{
