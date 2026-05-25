@@ -807,6 +807,7 @@ function SheetContextMenu({
   onSortColumnAscending,
   onSortColumnDescending,
   onFilterColumnBySelection,
+  onOpenColumnFilter,
   onClearColumnFilter,
   onSetTypeText,
   onSetTypeNumber,
@@ -910,7 +911,7 @@ function SheetContextMenu({
 
         {isColumn ? <Item icon="⇅" label="Ordenar A → Z" onClick={onSortColumnAscending} disabled={!canEdit} /> : null}
         {isColumn ? <Item icon="⇵" label="Ordenar Z → A" onClick={onSortColumnDescending} disabled={!canEdit} /> : null}
-        {isColumn ? <Item icon="⌕" label="Filtrar por valor da célula" onClick={onFilterColumnBySelection} /> : null}
+        {isColumn ? <Item icon="⌕" label="Filtrar esta coluna..." onClick={onOpenColumnFilter} /> : null}
         {isColumn ? <Item icon="×" label="Limpar filtro da coluna" onClick={onClearColumnFilter} /> : null}
         {isColumn ? <Item icon="↔" label="Ajustar largura ao conteúdo" onClick={onFitColumnWidth} disabled={!canEdit} /> : null}
         {isColumn ? <Divider /> : null}
@@ -921,8 +922,8 @@ function SheetContextMenu({
         {isColumn ? <Item icon="%" label="Tipo: percentual" onClick={onSetTypePercent} disabled={!canEdit} /> : null}
         {isColumn ? <Divider /> : null}
 
-        <Item icon="⌕" label="Localizar este valor" onClick={onFindCellValue} />
-        <Item icon="↔" label="Usar no substituir" onClick={onUseCellValueAsReplaceQuery} />
+        {!isRow && !isColumn ? <Item icon="⌕" label="Localizar este valor" onClick={onFindCellValue} /> : null}
+        {!isRow && !isColumn ? <Item icon="↔" label="Usar no substituir" onClick={onUseCellValueAsReplaceQuery} /> : null}
         <Item icon="✕" label="Limpar formatação" onClick={onClearFormatting} disabled={!canEdit} />
         <Item icon="−" label="Fonte pequena" onClick={onFontSmall} disabled={!canEdit} />
         <Item icon="10" label="Fonte normal" onClick={onFontNormal} disabled={!canEdit} />
@@ -970,6 +971,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const replaceInputRef = useRef(null);
+  const filterInputRef = useRef(null);
   const formulaInputRef = useRef(null);
   const draftRef = useRef(new Map());
   const formulaReferenceBaseRef = useRef('');
@@ -1187,7 +1189,16 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       delete next[key];
       return next;
     });
-  }, []);
+    markSync('saved', 'Filtro removido');
+  }, [markSync]);
+
+  const openColumnFilterFromContext = useCallback(() => {
+    if (!activeCell?.key) return;
+    setFilterColumnKey(activeCell.key);
+    setFilterQuery('');
+    markSync('idle', 'Filtro da coluna selecionado');
+    requestAnimationFrame(() => filterInputRef.current?.focus({ preventScroll: true }));
+  }, [activeCell?.key, markSync]);
 
   const clearAllColumnFilters = useCallback(() => {
     setColumnFilters({});
@@ -2657,6 +2668,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           {columns.map((column, index) => <option key={column.key} value={column.key}>{column.label || columnName(index)}</option>)}
         </select>
         <input
+          ref={filterInputRef}
           value={filterQuery}
           aria-label="Texto do filtro"
           placeholder="Filtrar linhas"
@@ -2890,6 +2902,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onSortColumnAscending={() => { closeContextMenu(); sortActiveColumn('asc').catch(() => {}); }}
         onSortColumnDescending={() => { closeContextMenu(); sortActiveColumn('desc').catch(() => {}); }}
         onFilterColumnBySelection={() => { closeContextMenu(); filterActiveColumnBySelection(); }}
+        onOpenColumnFilter={() => { closeContextMenu(); openColumnFilterFromContext(); }}
         onClearColumnFilter={() => { closeContextMenu(); if (activeCell?.key) clearColumnFilter(activeCell.key); }}
         onSetTypeText={() => { closeContextMenu(); setNumberFormat('text'); }}
         onSetTypeNumber={() => { closeContextMenu(); setNumberFormat('number'); }}
