@@ -18,22 +18,31 @@ import styles from './UserSpreadsheetPanel.module.css';
 
 const DEFAULT_COLUMN_WIDTH = 168;
 const MIN_COLUMN_WIDTH = 5;
+const MAX_COLUMN_WIDTH = 900;
+const MAX_IMPORT_COLUMNS = 60;
+const MAX_IMPORT_ROWS = 200;
 
 function confirmDestructiveAction(message) {
   if (typeof window === 'undefined') return false;
   return window.confirm(message);
 }
 
-function stripHtml(value = '') {
+function decodeEntities(value = '') {
   return String(value ?? '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/div>/gi, '\n')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/[<>]/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function stripHtml(value = '') {
+  return decodeEntities(value)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[<>]/g, ' ')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n\s+/g, '\n')
     .trim();
@@ -47,8 +56,8 @@ function normalizeColumns(columns = []) {
   return columns.map((column, index) => ({
     ...column,
     key: column.key,
-    label: column.label || `Coluna ${index + 1}`,
-    width: Math.max(MIN_COLUMN_WIDTH, Math.min(900, Number(column.width || DEFAULT_COLUMN_WIDTH))),
+    label: sanitizeCellValue(column.label || columnName(index)).slice(0, 80) || columnName(index),
+    width: Math.max(MIN_COLUMN_WIDTH, Math.min(MAX_COLUMN_WIDTH, Number(column.width || DEFAULT_COLUMN_WIDTH))),
     position: Number(column.position || index + 1),
   }));
 }
@@ -66,10 +75,96 @@ function normalizeRows(rows = [], columns = []) {
 function parseClipboardTable(text = '') {
   const normalized = String(text ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const source = normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized;
+  if (!source) return [];
   return source
     .split('\n')
     .map((line) => line.split('\t').map((cell) => sanitizeCellValue(cell)))
     .filter((line, index, lines) => line.some(Boolean) || index < lines.length - 1);
+}
+
+function detectDelimitedSeparator(text = '') {
+  const sample = String(text ?? '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .find((line) => line.trim()) || '';
+  const candidates = ['\t', ';', ','].map((separator) => ({ separator, count: sample.split(separator).length - 1 }));
+  const best = candidates.sort((a, b) => b.count - a.count)[0];
+  return best?.count > 0 ? best.separator : '\t';
+}
+
+function parseDelimitedText(text = '') {
+  const normalized = String(text ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const source = normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized;
+  if (!source.trim()) return [];
+  const separator = detectDelimitedSeparator(source);
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let quoted = false;
+
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (char === '"') {
+      if (quoted && next === '"') {
+        cell += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+      continue;
+    }
+    if (!quoted && char === separator) {
+      row.push(sanitizeCellValue(cell));
+      cell = '';
+      continue;
+    }
+    if (!quoted && char === '\n') {
+      row.push(sanitizeCellValue(cell));
+      rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+    cell += char;
+  }
+
+  row.push(sanitizeCellValue(cell));
+  rows.push(row);
+  return rows.filter((line, index, list) => line.some(Boolean) || index < list.length - 1);
+}
+
+function escapeCsvCell(value = '') {
+  const text = sanitizeCellValue(value).replace(/\r?\n/g, ' ');
+  return /[",;\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function serializeSheetToCsv(rows = [], columns = []) {
+  const header = columns.map((column) => escapeCsvCell(column.label || 'Coluna')).join(';');
+  const body = rows.map((row) => columns.map((column) => escapeCsvCell(row?.[column.key] || '')).join(';'));
+  return [header, ...body].join('\n');
+}
+
+function downloadTextFile(filename, content, type = 'text/csv;charset=utf-8') {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+function safeFileName(value = 'planilha') {
+  return String(value || 'planilha')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9-_]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase() || 'planilha';
 }
 
 function columnName(index) {
@@ -102,6 +197,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [resizeState, setResizeState] = useState(null);
   const [scrollState, setScrollState] = useState({});
   const [syncState, setSyncState] = useState({ status: 'idle', detail: 'Pronto' });
+  const fileInputRef = useRef(null);
   const draftRef = useRef(new Map());
 
   const selectedCellIds = useMemo(() => {
@@ -213,11 +309,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setBusy('sheet');
     markSync('saving', 'Criando planilha');
     try {
-      const response = await createSupportDailySheet({ ownerUserId, name: 'Nova planilha', columnCount: 8, rowCount: 18, columnWidth: DEFAULT_COLUMN_WIDTH });
+      const response = await createSupportDailySheet({ ownerUserId, name: 'Nova planilha', columnCount: 8, rowCount: 24, columnWidth: DEFAULT_COLUMN_WIDTH });
+      const nextColumns = normalizeColumns(response.columns || []);
       setSheets(response.sheets || (response.sheet ? [response.sheet] : []));
       setActiveSheetId(response.sheet?.id || response.activeSheetId || '');
-      setColumns(normalizeColumns(response.columns || []));
-      setRows(normalizeRows(response.rows || [], response.columns || []));
+      setColumns(nextColumns);
+      setRows(normalizeRows(response.rows || [], nextColumns));
       markSync('saved', 'Planilha criada');
     } catch (error) {
       notifyError(error, 'Não foi possível criar a planilha.');
@@ -255,7 +352,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [loadSheet, markSync, notifyError, ownerUserId, sheets]);
 
   const addRow = useCallback(async () => {
-    if (!canMutateSheet) return;
+    if (!canMutateSheet) return null;
     setBusy('row');
     try {
       const response = await createSupportDailyRow({ ownerUserId, sheetId: activeSheetId });
@@ -263,12 +360,19 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setRows((current) => [...current, nextRow]);
       setActiveCell({ rowId: nextRow.id, key: columns[0]?.key || '' });
       markSync('saved', 'Linha criada');
+      return nextRow;
     } catch (error) {
       notifyError(error, 'Não foi possível criar a linha.');
+      return null;
     } finally {
       setBusy('');
     }
   }, [activeSheetId, canMutateSheet, columns, markSync, notifyError, ownerUserId]);
+
+  const createRowSilently = useCallback(async () => {
+    const response = await createSupportDailyRow({ ownerUserId, sheetId: activeSheetId });
+    return normalizeRows([response.row], columns)[0];
+  }, [activeSheetId, columns, ownerUserId]);
 
   const deleteRow = useCallback(async () => {
     if (!activeRow || !confirmDestructiveAction(`Excluir a linha ${activeRowIndex + 1}? Esta ação não pode ser desfeita.`)) return;
@@ -286,7 +390,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [activeRow, activeRowIndex, activeSheetId, markSync, notifyError, ownerUserId]);
 
   const addColumn = useCallback(async () => {
-    if (!canMutateSheet) return;
+    if (!canMutateSheet) return null;
     setBusy('column');
     try {
       const label = columnName(columns.length);
@@ -295,12 +399,20 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setColumns(nextColumns);
       setRows((current) => normalizeRows(current, nextColumns));
       markSync('saved', 'Coluna criada');
+      return nextColumns[nextColumns.length - 1] || null;
     } catch (error) {
       notifyError(error, 'Não foi possível criar a coluna.');
+      return null;
     } finally {
       setBusy('');
     }
   }, [activeSheetId, canMutateSheet, columns, markSync, notifyError, ownerUserId]);
+
+  const createColumnSilently = useCallback(async (index) => {
+    const label = columnName(index);
+    const response = await createSupportDailyColumn({ ownerUserId, sheetId: activeSheetId, label, width: DEFAULT_COLUMN_WIDTH });
+    return normalizeColumns(response.columns || [response.column]).at(-1) || response.column;
+  }, [activeSheetId, ownerUserId]);
 
   const deleteColumn = useCallback(async () => {
     if (!activeColumn || !confirmDestructiveAction(`Excluir a coluna "${activeColumn.label}"? Esta ação não pode ser desfeita.`)) return;
@@ -354,7 +466,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setResizeState({ key, label: column.label, width: startWidth, left });
 
     const onMove = (moveEvent) => {
-      const width = Math.max(MIN_COLUMN_WIDTH, Math.min(900, startWidth + moveEvent.clientX - startX));
+      const width = Math.max(MIN_COLUMN_WIDTH, Math.min(MAX_COLUMN_WIDTH, startWidth + moveEvent.clientX - startX));
       setColumns((current) => current.map((item) => (item.key === key ? { ...item, width } : item)));
       setResizeState((current) => current ? { ...current, width, left: left + width - startWidth } : current);
     };
@@ -362,7 +474,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const onUp = async (upEvent) => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      const width = Math.max(MIN_COLUMN_WIDTH, Math.min(900, startWidth + upEvent.clientX - startX));
+      const width = Math.max(MIN_COLUMN_WIDTH, Math.min(MAX_COLUMN_WIDTH, startWidth + upEvent.clientX - startX));
       setResizeState(null);
       setSavingColumn(key);
       try {
@@ -380,37 +492,138 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     window.addEventListener('pointerup', onUp, { once: true });
   }, [activeSheetId, canEdit, columns, loadSheet, markSync, notifyError]);
 
+  const ensureGridSize = useCallback(async (requiredRowCount, requiredColumnCount) => {
+    let nextRows = rows;
+    let nextColumns = columns;
+
+    if (requiredColumnCount > nextColumns.length) {
+      const amount = Math.min(MAX_IMPORT_COLUMNS, requiredColumnCount) - nextColumns.length;
+      const createdColumns = [];
+      for (let index = 0; index < amount; index += 1) {
+        const created = await createColumnSilently(nextColumns.length + index);
+        if (created) createdColumns.push(created);
+      }
+      const fresh = await listSupportDailyRows(activeSheetId, { ownerUserId });
+      nextColumns = normalizeColumns(fresh.columns || [...nextColumns, ...createdColumns]);
+      nextRows = normalizeRows(fresh.rows || nextRows, nextColumns);
+      setColumns(nextColumns);
+      setRows(nextRows);
+    }
+
+    if (requiredRowCount > nextRows.length) {
+      const amount = Math.min(MAX_IMPORT_ROWS, requiredRowCount) - nextRows.length;
+      const createdRows = [];
+      for (let index = 0; index < amount; index += 1) {
+        const created = await createRowSilently();
+        if (created) createdRows.push(created);
+      }
+      nextRows = normalizeRows([...nextRows, ...createdRows], nextColumns);
+      setRows(nextRows);
+    }
+
+    return { nextRows, nextColumns };
+  }, [activeSheetId, columns, createColumnSilently, createRowSilently, ownerUserId, rows]);
+
   const pasteTable = useCallback(async (startRowId, startKey, text) => {
-    if (!canEdit) return;
-    const table = parseClipboardTable(text);
+    if (!canEdit || !activeSheetId) return;
+    const table = parseClipboardTable(text).slice(0, MAX_IMPORT_ROWS);
     if (!table.length) return;
     const startRowIndex = rows.findIndex((row) => row.id === startRowId);
     const startColumnIndex = columns.findIndex((column) => column.key === startKey);
     if (startRowIndex < 0 || startColumnIndex < 0) return;
 
-    const updates = [];
-    setRows((current) => current.map((row, rowIndex) => {
-      const sourceRow = table[rowIndex - startRowIndex];
-      if (!sourceRow) return row;
-      const next = { ...row };
-      sourceRow.forEach((cell, offset) => {
-        const column = columns[startColumnIndex + offset];
-        if (!column) return;
-        next[column.key] = cell;
-        updates.push({ rowId: row.id, key: column.key, value: cell });
-      });
-      return next;
-    }));
-
+    setBusy('paste');
     markSync('saving', 'Colando dados');
     try {
-      await Promise.all(updates.map((item) => updateSupportDailyRow(item.rowId, { [item.key]: item.value })));
+      const requiredRows = startRowIndex + table.length;
+      const requiredColumns = startColumnIndex + Math.max(...table.map((line) => line.length));
+      const { nextRows, nextColumns } = await ensureGridSize(requiredRows, requiredColumns);
+      const rowPatches = new Map();
+      const optimistic = nextRows.map((row, rowIndex) => {
+        const sourceRow = table[rowIndex - startRowIndex];
+        if (!sourceRow) return row;
+        const next = { ...row };
+        sourceRow.forEach((cell, offset) => {
+          const column = nextColumns[startColumnIndex + offset];
+          if (!column) return;
+          next[column.key] = cell;
+          const patch = rowPatches.get(row.id) || {};
+          patch[column.key] = cell;
+          rowPatches.set(row.id, patch);
+        });
+        return next;
+      });
+      setRows(normalizeRows(optimistic, nextColumns));
+      await Promise.all([...rowPatches.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
       markSync('saved', 'Dados colados');
     } catch (error) {
       notifyError(error, 'Não foi possível colar os dados.');
       loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
     }
-  }, [activeSheetId, canEdit, columns, loadSheet, markSync, notifyError, rows]);
+  }, [activeSheetId, canEdit, columns, ensureGridSize, loadSheet, markSync, notifyError, rows]);
+
+  const copyActiveCell = useCallback(async () => {
+    if (!activeCell?.rowId || !activeCell?.key) return;
+    const text = activeCellText(activeCell, rows);
+    try {
+      await navigator.clipboard.writeText(text);
+      markSync('saved', 'Célula copiada');
+    } catch (error) {
+      notifyError(error, 'Não foi possível copiar a célula.');
+    }
+  }, [activeCell, markSync, notifyError, rows]);
+
+  const exportCsv = useCallback(() => {
+    if (!activeSheet) return;
+    const filename = `${safeFileName(activeSheet.name)}.csv`;
+    downloadTextFile(filename, serializeSheetToCsv(rows, columns));
+    markSync('saved', 'CSV exportado');
+  }, [activeSheet, columns, markSync, rows]);
+
+  const importDelimitedFile = useCallback(async (file) => {
+    if (!file || !ownerUserId || !canEdit) return;
+    setBusy('import');
+    markSync('saving', 'Importando arquivo');
+    try {
+      const text = await file.text();
+      const matrix = parseDelimitedText(text).slice(0, MAX_IMPORT_ROWS + 1);
+      if (!matrix.length) throw new Error('Arquivo sem dados válidos.');
+      const header = matrix[0].slice(0, MAX_IMPORT_COLUMNS).map((cell, index) => sanitizeCellValue(cell) || columnName(index));
+      const body = matrix.slice(1).map((line) => line.slice(0, MAX_IMPORT_COLUMNS));
+      const columnCount = Math.max(1, header.length, ...body.map((line) => line.length));
+      const rowCount = Math.max(1, body.length || matrix.length);
+      const response = await createSupportDailySheet({
+        ownerUserId,
+        name: sanitizeCellValue(file.name.replace(/\.[^.]+$/, '')) || 'Planilha importada',
+        columnCount,
+        rowCount,
+        columnWidth: DEFAULT_COLUMN_WIDTH,
+      });
+      const nextColumns = normalizeColumns(response.columns || []);
+      const nextRows = normalizeRows(response.rows || [], nextColumns);
+      await Promise.all(nextColumns.map((column, index) => updateSupportDailyColumn(column.key, { label: header[index] || columnName(index) })));
+      const rowPatches = new Map();
+      nextRows.forEach((row, rowIndex) => {
+        const sourceRow = body[rowIndex] || (body.length ? [] : matrix[rowIndex] || []);
+        const patch = {};
+        sourceRow.forEach((cell, offset) => {
+          const column = nextColumns[offset];
+          if (column) patch[column.key] = sanitizeCellValue(cell);
+        });
+        if (Object.keys(patch).length) rowPatches.set(row.id, patch);
+      });
+      await Promise.all([...rowPatches.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
+      await loadSheet(response.sheet?.id || '');
+      markSync('saved', 'Arquivo importado');
+    } catch (error) {
+      notifyError(error, 'Não foi possível importar o arquivo.');
+    } finally {
+      setBusy('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }, [canEdit, loadSheet, markSync, notifyError, ownerUserId]);
 
   const openContextMenu = useCallback((event, rowId, key) => {
     event.preventDefault();
@@ -426,10 +639,18 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </div>
         <div className={styles.headerActions}>
           <Button size="sm" variant="secondary" onClick={addSheet} disabled={!canEdit || !!busy}><PlusIcon size={14} /> Nova</Button>
-          <Button size="sm" variant="secondary" onClick={addRow} disabled={!canMutateSheet}><PlusIcon size={14} /> Linha</Button>
-          <Button size="sm" variant="secondary" onClick={addColumn} disabled={!canMutateSheet}><PlusIcon size={14} /> Coluna</Button>
+          <Button size="sm" variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={!canEdit || !!busy}>Importar</Button>
+          <Button size="sm" variant="secondary" onClick={exportCsv} disabled={!activeSheet || !!busy}>Exportar</Button>
         </div>
       </header>
+
+      <input
+        ref={fileInputRef}
+        className={styles.fileInput}
+        type="file"
+        accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain"
+        onChange={(event) => importDelimitedFile(event.target.files?.[0]).catch(() => {})}
+      />
 
       <div className={styles.tabsBar}>
         <div className={styles.tabsScroller} aria-label="Planilhas">
@@ -461,9 +682,22 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </div>
       </div>
 
+      <div className={styles.toolbar}>
+        <div className={styles.toolbarGroup}>
+          <Button size="xs" variant="ghost" onClick={addRow} disabled={!canMutateSheet}><PlusIcon size={13} /> Linha</Button>
+          <Button size="xs" variant="ghost" onClick={addColumn} disabled={!canMutateSheet}><PlusIcon size={13} /> Coluna</Button>
+          <Button size="xs" variant="ghost" onClick={copyActiveCell} disabled={!activeCell}>Copiar</Button>
+        </div>
+        <div className={styles.toolbarGroup}>
+          <Button size="xs" variant="ghost" onClick={deleteRow} disabled={!activeRow || !canEdit || !!busy}><TrashIcon size={13} /> Linha</Button>
+          <Button size="xs" variant="ghost" onClick={deleteColumn} disabled={!activeColumn || !canEdit || !!busy}><TrashIcon size={13} /> Coluna</Button>
+        </div>
+      </div>
+
       <div className={styles.controlBar}>
+        <div className={styles.nameBox}>{activeColumn && activeRowIndex >= 0 ? `${columnName(activeColumnIndex)}${activeRowIndex + 1}` : '—'}</div>
         <div className={styles.formulaBar}>
-          <span>{activeColumn ? `${activeColumn.label}${activeRowIndex >= 0 ? ` · linha ${activeRowIndex + 1}` : ''}` : 'Célula'}</span>
+          <span>fx</span>
           <input
             value={formulaValue}
             disabled={!activeCell || !canEdit}
@@ -482,10 +716,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               }
             }}
           />
-        </div>
-        <div className={styles.rowColumnActions}>
-          <Button size="sm" variant="ghost" onClick={deleteRow} disabled={!activeRow || !canEdit || !!busy}><TrashIcon size={13} /> Linha</Button>
-          <Button size="sm" variant="ghost" onClick={deleteColumn} disabled={!activeColumn || !canEdit || !!busy}><TrashIcon size={13} /> Coluna</Button>
         </div>
       </div>
 
