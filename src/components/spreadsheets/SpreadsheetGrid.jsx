@@ -42,6 +42,12 @@ function resolveVerticalAlign(value = '') {
   return undefined;
 }
 
+function resolveCellFontFamily(value = '') {
+  if (value === 'mono') return 'var(--font-mono)';
+  if (value === 'sans') return 'var(--font-sans)';
+  return undefined;
+}
+
 function normalizeRichRuns(style = {}, textLength = 0) {
   const runs = Array.isArray(style.richText) ? style.richText : [];
   return runs
@@ -254,7 +260,7 @@ function Cell({
         textDecoration: style.textDecoration || [style.underline ? 'underline' : '', style.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined,
         textAlign: style.textAlign || undefined,
         fontSize: resolveCellFontSize(style.fontSize),
-        fontFamily: style.fontFamily || undefined,
+        fontFamily: resolveCellFontFamily(style.fontFamily),
         alignItems: resolveVerticalAlign(style.verticalAlign),
       }}
       onFocus={(event) => onSelect(row.id, column.key, event.currentTarget, false)}

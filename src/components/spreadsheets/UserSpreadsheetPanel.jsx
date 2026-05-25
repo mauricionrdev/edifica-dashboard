@@ -37,12 +37,13 @@ const FILL_COLOR_OPTIONS = [
   { value: 'var(--info-soft)', label: 'Azul suave' },
 ];
 
-
 const FONT_FAMILY_OPTIONS = [
   { value: '', label: 'Inter' },
-  { value: 'var(--font-sans)', label: 'Sans' },
-  { value: 'var(--font-mono)', label: 'Mono' },
+  { value: 'sans', label: 'Sans' },
+  { value: 'mono', label: 'Mono' },
 ];
+
+const ZOOM_OPTIONS = [75, 90, 100, 110, 125, 150];
 
 const INLINE_TEXT_STYLE_KEYS = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'color']);
 
@@ -807,7 +808,6 @@ function SheetContextMenu({
   onSortColumnAscending,
   onSortColumnDescending,
   onFilterColumnBySelection,
-  onOpenColumnFilter,
   onClearColumnFilter,
   onSetTypeText,
   onSetTypeNumber,
@@ -911,7 +911,7 @@ function SheetContextMenu({
 
         {isColumn ? <Item icon="⇅" label="Ordenar A → Z" onClick={onSortColumnAscending} disabled={!canEdit} /> : null}
         {isColumn ? <Item icon="⇵" label="Ordenar Z → A" onClick={onSortColumnDescending} disabled={!canEdit} /> : null}
-        {isColumn ? <Item icon="⌕" label="Filtrar esta coluna..." onClick={onOpenColumnFilter} /> : null}
+        {isColumn ? <Item icon="⌕" label="Filtrar esta coluna..." onClick={onFilterColumnBySelection} /> : null}
         {isColumn ? <Item icon="×" label="Limpar filtro da coluna" onClick={onClearColumnFilter} /> : null}
         {isColumn ? <Item icon="↔" label="Ajustar largura ao conteúdo" onClick={onFitColumnWidth} disabled={!canEdit} /> : null}
         {isColumn ? <Divider /> : null}
@@ -967,11 +967,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [replaceScope, setReplaceScope] = useState('selection');
   const [replaceMatchCase, setReplaceMatchCase] = useState(false);
   const [replaceBarOpen, setReplaceBarOpen] = useState(false);
+  const [zoomPercent, setZoomPercent] = useState(100);
   const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const replaceInputRef = useRef(null);
-  const filterInputRef = useRef(null);
   const formulaInputRef = useRef(null);
   const draftRef = useRef(new Map());
   const formulaReferenceBaseRef = useRef('');
@@ -1039,6 +1039,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontSize || 'normal') === first) ? first : 'mixed';
   }, [selectedCells]);
 
+  const selectedFontFamily = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontFamily || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontFamily || '') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
   const selectedVerticalAlign = useMemo(() => {
     if (!selectedCells.length) return 'middle';
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.verticalAlign || 'middle';
@@ -1055,12 +1061,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!selectedCells.length) return '';
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.backgroundColor || '';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.backgroundColor || '') === first) ? first : 'mixed';
-  }, [selectedCells]);
-
-  const selectedFontFamily = useMemo(() => {
-    if (!selectedCells.length) return '';
-    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontFamily || '';
-    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontFamily || '') === first) ? first : 'mixed';
   }, [selectedCells]);
 
   const hasActiveTextRange = !!activeTextSelection
@@ -1192,27 +1192,19 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     markSync('saved', 'Filtro removido');
   }, [markSync]);
 
-  const openColumnFilterFromContext = useCallback(() => {
-    if (!activeCell?.key) return;
-    setFilterColumnKey(activeCell.key);
-    setFilterQuery('');
-    markSync('idle', 'Filtro da coluna selecionado');
-    requestAnimationFrame(() => filterInputRef.current?.focus({ preventScroll: true }));
-  }, [activeCell?.key, markSync]);
-
   const clearAllColumnFilters = useCallback(() => {
     setColumnFilters({});
     setFilterQuery('');
-  }, []);
+    markSync('saved', 'Filtros limpos');
+  }, [markSync]);
 
-  const filterActiveColumnBySelection = useCallback(() => {
+  const openColumnFilterBar = useCallback(() => {
     if (!activeCell?.key) return;
-    const row = rows.find((entry) => entry.id === activeCell.rowId);
-    const value = sanitizeCellValue(row?.[activeCell.key] || '');
-    if (!value) return;
-    setColumnFilters((current) => ({ ...current, [activeCell.key]: value }));
-    markSync('saved', 'Filtro aplicado');
-  }, [activeCell?.key, activeCell?.rowId, markSync, rows]);
+    setFilterColumnKey(activeCell.key);
+    setFilterQuery('');
+    markSync('saved', 'Filtro pronto');
+    requestAnimationFrame(() => searchInputRef.current?.focus({ preventScroll: true }));
+  }, [activeCell?.key, markSync]);
 
   const loadSheet = useCallback(async (sheetId) => {
     if (!ownerUserId) return;
@@ -1469,7 +1461,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, []);
 
   const clearSelectionFormatting = useCallback(() => {
-    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '', color: '', backgroundColor: '', fontFamily: '', richText: [] }).catch(() => {});
+    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', fontFamily: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
   }, [applyStyleToSelection]);
 
   const applyValueToSelection = useCallback(async () => {
@@ -2587,6 +2579,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <button type="button" onClick={pasteClipboardAtActive} disabled={!activeCell || !canEdit || !!busy} aria-label="Colar">Colar</button>
         <span aria-hidden="true" />
         <select
+          aria-label="Zoom da planilha"
+          value={zoomPercent}
+          disabled={!activeSheetId}
+          onChange={(event) => setZoomPercent(Number(event.target.value) || 100)}
+        >
+          {ZOOM_OPTIONS.map((option) => <option key={option} value={option}>{option}%</option>)}
+        </select>
+        <select
           value={selectedNumberFormat === 'mixed' ? 'text' : selectedNumberFormat}
           aria-label="Formato da seleção"
           disabled={!selectedCount || !canEdit || !!busy}
@@ -2599,8 +2599,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </select>
         <span aria-hidden="true" />
         <select
-          value={selectedFontFamily === 'mixed' ? '' : selectedFontFamily}
           aria-label="Fonte"
+          value={selectedFontFamily === 'mixed' ? '' : selectedFontFamily}
           disabled={!selectedCount || !canEdit || !!busy}
           onChange={(event) => setFontFamily(event.target.value)}
         >
@@ -2656,8 +2656,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <span aria-hidden="true" />
         <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy} aria-label="Limpar formatação">Limpar</button>
         <button type="button" onClick={normalizeSelectionValues} disabled={!selectedCount || !canEdit || !!busy} aria-label="Normalizar">Normalizar</button>
-        <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Buscar na planilha">Buscar</button>
-        <button type="button" onClick={() => { setReplaceBarOpen((current) => !current); requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true })); }} disabled={!activeSheetId} aria-label="Localizar e substituir">Substituir</button>
+        <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Criar filtro">Filtro</button>
         <button type="button" onClick={() => insertFormulaTemplate('SOMA')} disabled={!activeCell || !canEdit || !!busy} aria-label="Inserir soma">Σ</button>
       </div>
 
@@ -2668,7 +2667,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           {columns.map((column, index) => <option key={column.key} value={column.key}>{column.label || columnName(index)}</option>)}
         </select>
         <input
-          ref={filterInputRef}
           value={filterQuery}
           aria-label="Texto do filtro"
           placeholder="Filtrar linhas"
@@ -2691,25 +2689,19 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       {replaceBarOpen ? (
         <div className={styles.replaceBar} aria-label="Localizar e substituir">
-          <span>Substituir</span>
+          <span>Localizar e substituir</span>
           <input
             ref={replaceInputRef}
             value={replaceQuery}
-            aria-label="Localizar"
             placeholder="Localizar"
             onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
           />
           <input
             value={replaceValue}
-            aria-label="Substituir por"
             placeholder="Substituir por"
             onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
           />
-          <select
-            value={replaceScope}
-            aria-label="Escopo da substituição"
-            onChange={(event) => setReplaceScope(event.target.value)}
-          >
+          <select value={replaceScope} onChange={(event) => setReplaceScope(event.target.value)} aria-label="Escopo da substituição">
             <option value="selection">Seleção</option>
             <option value="sheet">Planilha inteira</option>
           </select>
@@ -2804,6 +2796,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           className={styles.sheetFrame}
           data-scrolled-x={scrollState.x || undefined}
           data-scrolled-y={scrollState.y || undefined}
+          style={{ '--sheet-zoom': `${zoomPercent}%` }}
         >
         {loading ? <div className={styles.loadingState}>Carregando planilha</div> : null}
         {!loading && activeSheetId ? (
@@ -2901,8 +2894,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onFitColumnWidth={() => { closeContextMenu(); fitActiveColumnWidth().catch(() => {}); }}
         onSortColumnAscending={() => { closeContextMenu(); sortActiveColumn('asc').catch(() => {}); }}
         onSortColumnDescending={() => { closeContextMenu(); sortActiveColumn('desc').catch(() => {}); }}
-        onFilterColumnBySelection={() => { closeContextMenu(); filterActiveColumnBySelection(); }}
-        onOpenColumnFilter={() => { closeContextMenu(); openColumnFilterFromContext(); }}
+        onFilterColumnBySelection={() => { closeContextMenu(); openColumnFilterBar(); }}
         onClearColumnFilter={() => { closeContextMenu(); if (activeCell?.key) clearColumnFilter(activeCell.key); }}
         onSetTypeText={() => { closeContextMenu(); setNumberFormat('text'); }}
         onSetTypeNumber={() => { closeContextMenu(); setNumberFormat('number'); }}

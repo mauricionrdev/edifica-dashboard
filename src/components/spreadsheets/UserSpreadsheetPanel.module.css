@@ -261,6 +261,7 @@
 
 .sheetFrame {
   position: relative;
+  zoom: var(--sheet-zoom, 100%);
   min-width: 0;
   min-height: 520px;
   flex: 1 1 auto;
@@ -559,6 +560,77 @@
   font-feature-settings: var(--font-features-tabular);
 }
 
+.replaceBar {
+  min-height: 42px;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.replaceBar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.replaceBar span {
+  flex: 0 0 auto;
+  color: var(--text-quaternary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.replaceBar input,
+.replaceBar select {
+  height: 28px;
+  min-width: 120px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+  outline: 0;
+  padding: 0 var(--space-2);
+}
+
+.replaceBar label {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+}
+
+.replaceBar button {
+  height: 28px;
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.replaceBar button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.replaceBar button:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
 .contextBackdrop {
   position: fixed;
   inset: 0;
@@ -855,102 +927,6 @@
   background: var(--bg-app);
 }
 
-.sheetWorkspace[data-panel-open="true"] {
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 292px);
-}
-
-.advancedPanel {
-  min-width: 0;
-  border-left: 1px solid var(--line-subtle);
-  background: var(--bg-canvas);
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  scrollbar-width: none;
-}
-
-.advancedPanel::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-.advancedPanel header {
-  min-height: 42px;
-  padding: 0 var(--space-3);
-  border-bottom: 1px solid var(--line-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.advancedPanel header strong {
-  color: var(--text-primary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
-}
-
-.advancedPanel header button,
-.advancedPanel section button {
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-soft);
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: var(--fs-label);
-  cursor: pointer;
-}
-
-.advancedPanel header button {
-  width: 26px;
-  height: 26px;
-}
-
-.advancedPanel section {
-  display: grid;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.advancedPanel section > span {
-  color: var(--text-quaternary);
-  font-size: var(--fs-micro);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-uppercase);
-  text-transform: uppercase;
-}
-
-.advancedPanel section > strong {
-  color: var(--text-primary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
-  line-height: var(--lh-snug);
-}
-
-.advancedPanel section button {
-  min-height: 30px;
-  padding: 0 var(--space-2);
-  text-align: left;
-}
-
-.advancedPanel button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.advancedPanel button:disabled {
-  cursor: not-allowed;
-  opacity: var(--opacity-disabled);
-}
-
-.panelGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-2);
-}
-
 .contextMenuHeader {
   display: grid;
   gap: var(--space-1);
@@ -981,24 +957,6 @@
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   font-weight: var(--weight-medium);
-}
-
-@media (max-width: 1180px) {
-  .sheetWorkspace[data-panel-open="true"] {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .advancedPanel {
-    max-height: 280px;
-    border-left: 0;
-    border-top: 1px solid var(--line-subtle);
-  }
-}
-
-.advancedPanel section button[data-active="true"] {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--text-primary);
 }
 
 .panelInput {
@@ -1088,77 +1046,6 @@
 
 .sheetsToolbar button:disabled,
 .sheetsToolbar select:disabled {
-  cursor: not-allowed;
-  opacity: var(--opacity-disabled);
-}
-
-.replaceBar {
-  min-height: 40px;
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--line-subtle);
-  background: var(--bg-canvas);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  overflow-x: auto;
-}
-
-.replaceBar > span {
-  color: var(--text-tertiary);
-  font-size: var(--fs-micro);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.replaceBar input,
-.replaceBar select {
-  height: 28px;
-  min-width: 128px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--field-bg);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: var(--fs-label);
-  outline: 0;
-}
-
-.replaceBar input {
-  padding: 0 var(--space-2);
-}
-
-.replaceBar label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  color: var(--text-secondary);
-  font-size: var(--fs-label);
-  white-space: nowrap;
-}
-
-.replaceBar button {
-  height: 28px;
-  min-width: 28px;
-  padding: 0 var(--space-2);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-soft);
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: var(--fs-label);
-  font-weight: var(--weight-semibold);
-  cursor: pointer;
-}
-
-.replaceBar button:hover:not(:disabled) {
-  border-color: var(--line);
-  background: var(--bg-raised);
-  color: var(--text-primary);
-}
-
-.replaceBar button:disabled {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
 }
