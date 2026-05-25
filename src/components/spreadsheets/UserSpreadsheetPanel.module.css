@@ -782,3 +782,13 @@
   background: var(--bg-hover);
   color: var(--text-primary);
 }
+
+.filterBar .filterChip {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-color: var(--accent-line);
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}

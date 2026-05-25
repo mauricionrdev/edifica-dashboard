@@ -657,6 +657,8 @@ function SheetContextMenu({
   onClearFormatting,
   onSortColumnAscending,
   onSortColumnDescending,
+  onFilterColumnBySelection,
+  onClearColumnFilter,
   onSetTypeText,
   onSetTypeNumber,
   onSetTypeCurrency,
@@ -692,6 +694,8 @@ function SheetContextMenu({
             <span aria-hidden="true" />
             <button type="button" role="menuitem" onClick={onSortColumnAscending} disabled={!canEdit}>Ordenar A → Z</button>
             <button type="button" role="menuitem" onClick={onSortColumnDescending} disabled={!canEdit}>Ordenar Z → A</button>
+            <button type="button" role="menuitem" onClick={onFilterColumnBySelection}>Filtrar por valor selecionado</button>
+            <button type="button" role="menuitem" onClick={onClearColumnFilter}>Limpar filtro da coluna</button>
             <button type="button" role="menuitem" onClick={onSetTypeText} disabled={!canEdit}>Tipo: texto</button>
             <button type="button" role="menuitem" onClick={onSetTypeNumber} disabled={!canEdit}>Tipo: número</button>
             <button type="button" role="menuitem" onClick={onSetTypeCurrency} disabled={!canEdit}>Tipo: moeda</button>
@@ -737,6 +741,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [searchQuery, setSearchQuery] = useState('');
   const [filterColumnKey, setFilterColumnKey] = useState('all');
   const [filterQuery, setFilterQuery] = useState('');
+  const [columnFilters, setColumnFilters] = useState({});
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const formulaInputRef = useRef(null);
@@ -745,12 +750,21 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const viewRows = useMemo(() => {
     const query = sanitizeCellValue(filterQuery).toLowerCase();
-    if (!query) return rows;
+    const activeColumnFilters = Object.entries(columnFilters)
+      .map(([key, value]) => [key, sanitizeCellValue(value).toLowerCase()])
+      .filter(([, value]) => value);
+
     return rows.filter((row) => {
-      const keys = filterColumnKey === 'all' ? columns.map((column) => column.key) : [filterColumnKey];
-      return keys.some((key) => sanitizeCellValue(row?.[key] || '').toLowerCase().includes(query));
+      const globalMatch = !query || (filterColumnKey === 'all'
+        ? columns.some((column) => sanitizeCellValue(row?.[column.key] || '').toLowerCase().includes(query))
+        : sanitizeCellValue(row?.[filterColumnKey] || '').toLowerCase().includes(query));
+
+      if (!globalMatch) return false;
+      return activeColumnFilters.every(([key, value]) => sanitizeCellValue(row?.[key] || '').toLowerCase().includes(value));
     });
-  }, [columns, filterColumnKey, filterQuery, rows]);
+  }, [columnFilters, columns, filterColumnKey, filterQuery, rows]);
+
+  const activeColumnFilterCount = useMemo(() => Object.values(columnFilters).filter((value) => sanitizeCellValue(value)).length, [columnFilters]);
 
   const searchMatches = useMemo(() => {
     const query = sanitizeCellValue(searchQuery).toLowerCase();
@@ -885,6 +899,35 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const closeContextMenu = useCallback(() => {
     setContextMenu(null);
   }, []);
+
+  const applyColumnFilterFromBar = useCallback(() => {
+    const value = sanitizeCellValue(filterQuery);
+    if (!value || filterColumnKey === 'all') return;
+    setColumnFilters((current) => ({ ...current, [filterColumnKey]: value }));
+    markSync('saved', 'Filtro aplicado');
+  }, [filterColumnKey, filterQuery, markSync]);
+
+  const clearColumnFilter = useCallback((key) => {
+    setColumnFilters((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  const clearAllColumnFilters = useCallback(() => {
+    setColumnFilters({});
+    setFilterQuery('');
+  }, []);
+
+  const filterActiveColumnBySelection = useCallback(() => {
+    if (!activeCell?.key) return;
+    const row = rows.find((entry) => entry.id === activeCell.rowId);
+    const value = sanitizeCellValue(row?.[activeCell.key] || '');
+    if (!value) return;
+    setColumnFilters((current) => ({ ...current, [activeCell.key]: value }));
+    markSync('saved', 'Filtro aplicado');
+  }, [activeCell?.key, activeCell?.rowId, markSync, rows]);
 
   const loadSheet = useCallback(async (sheetId) => {
     if (!ownerUserId) return;
@@ -1995,8 +2038,19 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           placeholder="Filtrar linhas"
           onChange={(event) => setFilterQuery(sanitizeCellValue(event.target.value))}
         />
+        {filterColumnKey !== 'all' && filterQuery ? <button type="button" onClick={applyColumnFilterFromBar}>Fixar</button> : null}
         {filterQuery ? <button type="button" onClick={() => setFilterQuery('')}>Limpar</button> : null}
-        <strong>{filterQuery ? `${viewRows.length}/${rows.length}` : `${rows.length}`}</strong>
+        {activeColumnFilterCount ? <button type="button" onClick={clearAllColumnFilters}>Limpar filtros</button> : null}
+        <strong>{filterQuery || activeColumnFilterCount ? `${viewRows.length}/${rows.length}` : `${rows.length}`}</strong>
+        {Object.entries(columnFilters).map(([key, value]) => {
+          const column = columns.find((item) => item.key === key);
+          if (!sanitizeCellValue(value)) return null;
+          return (
+            <button key={key} type="button" className={styles.filterChip} onClick={() => clearColumnFilter(key)} title="Remover filtro">
+              {column?.label || key}: {value} ×
+            </button>
+          );
+        })}
       </div>
 
       <div className={styles.controlBar}>
@@ -2130,7 +2184,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.footer}>
         <span data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail}</span>
-        <span>{selectedSummary} · {filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}{formulaCount ? ` · ${formulaCount} fórmula${formulaCount === 1 ? '' : 's'}` : ''}{validationIssueCount ? ` · ${validationIssueCount} ajuste${validationIssueCount === 1 ? '' : 's'} de tipo` : ''}</span>
+        <span>{selectedSummary} · {filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}{formulaCount ? ` · ${formulaCount} fórmula${formulaCount === 1 ? '' : 's'}` : ''}{validationIssueCount ? ` · ${validationIssueCount} ajuste${validationIssueCount === 1 ? '' : 's'} de tipo` : ''}{activeColumnFilterCount ? ` · ${activeColumnFilterCount} filtro${activeColumnFilterCount === 1 ? '' : 's'}` : ''}</span>
       </footer>
 
       <SheetContextMenu
@@ -2157,6 +2211,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onClearFormatting={() => { closeContextMenu(); clearSelectionFormatting(); }}
         onSortColumnAscending={() => { closeContextMenu(); sortActiveColumn('asc').catch(() => {}); }}
         onSortColumnDescending={() => { closeContextMenu(); sortActiveColumn('desc').catch(() => {}); }}
+        onFilterColumnBySelection={() => { closeContextMenu(); filterActiveColumnBySelection(); }}
+        onClearColumnFilter={() => { closeContextMenu(); if (activeCell?.key) clearColumnFilter(activeCell.key); }}
         onSetTypeText={() => { closeContextMenu(); setNumberFormat('text'); }}
         onSetTypeNumber={() => { closeContextMenu(); setNumberFormat('number'); }}
         onSetTypeCurrency={() => { closeContextMenu(); setNumberFormat('currency'); }}
