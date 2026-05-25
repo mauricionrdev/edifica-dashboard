@@ -37,14 +37,6 @@ const FILL_COLOR_OPTIONS = [
   { value: 'var(--info-soft)', label: 'Azul suave' },
 ];
 
-const FONT_FAMILY_OPTIONS = [
-  { value: '', label: 'Inter' },
-  { value: 'sans', label: 'Sans' },
-  { value: 'mono', label: 'Mono' },
-];
-
-const ZOOM_OPTIONS = [75, 90, 100, 110, 125, 150];
-
 const INLINE_TEXT_STYLE_KEYS = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'color']);
 
 const FORMULA_LIBRARY = [
@@ -159,9 +151,23 @@ function normalizeColumns(columns = []) {
   }));
 }
 
+function normalizeCellStyles(styles = {}, columns = []) {
+  if (!styles || typeof styles !== 'object' || Array.isArray(styles)) return {};
+  const allowedKeys = new Set(columns.map((column) => column.key));
+  return Object.entries(styles).reduce((acc, [key, value]) => {
+    if (!allowedKeys.has(key) || !value || typeof value !== 'object' || Array.isArray(value)) return acc;
+    acc[key] = { ...value };
+    return acc;
+  }, {});
+}
+
 function normalizeRows(rows = [], columns = []) {
   return rows.map((row, index) => {
-    const next = { ...row, position: Number(row.position || index + 1), __styles: {} };
+    const next = {
+      ...row,
+      position: Number(row.position || index + 1),
+      __styles: normalizeCellStyles(row.__styles, columns),
+    };
     columns.forEach((column) => {
       next[column.key] = sanitizeCellValue(next[column.key] || '');
     });
@@ -911,7 +917,7 @@ function SheetContextMenu({
 
         {isColumn ? <Item icon="⇅" label="Ordenar A → Z" onClick={onSortColumnAscending} disabled={!canEdit} /> : null}
         {isColumn ? <Item icon="⇵" label="Ordenar Z → A" onClick={onSortColumnDescending} disabled={!canEdit} /> : null}
-        {isColumn ? <Item icon="⌕" label="Filtrar esta coluna..." onClick={onFilterColumnBySelection} /> : null}
+        {isColumn ? <Item icon="⌕" label="Filtrar por valor da célula" onClick={onFilterColumnBySelection} /> : null}
         {isColumn ? <Item icon="×" label="Limpar filtro da coluna" onClick={onClearColumnFilter} /> : null}
         {isColumn ? <Item icon="↔" label="Ajustar largura ao conteúdo" onClick={onFitColumnWidth} disabled={!canEdit} /> : null}
         {isColumn ? <Divider /> : null}
@@ -922,8 +928,8 @@ function SheetContextMenu({
         {isColumn ? <Item icon="%" label="Tipo: percentual" onClick={onSetTypePercent} disabled={!canEdit} /> : null}
         {isColumn ? <Divider /> : null}
 
-        {!isRow && !isColumn ? <Item icon="⌕" label="Localizar este valor" onClick={onFindCellValue} /> : null}
-        {!isRow && !isColumn ? <Item icon="↔" label="Usar no substituir" onClick={onUseCellValueAsReplaceQuery} /> : null}
+        <Item icon="⌕" label="Localizar este valor" onClick={onFindCellValue} />
+        <Item icon="↔" label="Usar no substituir" onClick={onUseCellValueAsReplaceQuery} />
         <Item icon="✕" label="Limpar formatação" onClick={onClearFormatting} disabled={!canEdit} />
         <Item icon="−" label="Fonte pequena" onClick={onFontSmall} disabled={!canEdit} />
         <Item icon="10" label="Fonte normal" onClick={onFontNormal} disabled={!canEdit} />
@@ -966,8 +972,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [replaceValue, setReplaceValue] = useState('');
   const [replaceScope, setReplaceScope] = useState('selection');
   const [replaceMatchCase, setReplaceMatchCase] = useState(false);
-  const [replaceBarOpen, setReplaceBarOpen] = useState(false);
-  const [zoomPercent, setZoomPercent] = useState(100);
+  const [advancedPanelOpen, setAdvancedPanelOpen] = useState(false);
   const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -1037,12 +1042,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!selectedCells.length) return 'normal';
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontSize || 'normal';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontSize || 'normal') === first) ? first : 'mixed';
-  }, [selectedCells]);
-
-  const selectedFontFamily = useMemo(() => {
-    if (!selectedCells.length) return '';
-    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontFamily || '';
-    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontFamily || '') === first) ? first : 'mixed';
   }, [selectedCells]);
 
   const selectedVerticalAlign = useMemo(() => {
@@ -1189,22 +1188,21 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       delete next[key];
       return next;
     });
-    markSync('saved', 'Filtro removido');
-  }, [markSync]);
+  }, []);
 
   const clearAllColumnFilters = useCallback(() => {
     setColumnFilters({});
     setFilterQuery('');
-    markSync('saved', 'Filtros limpos');
-  }, [markSync]);
+  }, []);
 
-  const openColumnFilterBar = useCallback(() => {
+  const filterActiveColumnBySelection = useCallback(() => {
     if (!activeCell?.key) return;
-    setFilterColumnKey(activeCell.key);
-    setFilterQuery('');
-    markSync('saved', 'Filtro pronto');
-    requestAnimationFrame(() => searchInputRef.current?.focus({ preventScroll: true }));
-  }, [activeCell?.key, markSync]);
+    const row = rows.find((entry) => entry.id === activeCell.rowId);
+    const value = sanitizeCellValue(row?.[activeCell.key] || '');
+    if (!value) return;
+    setColumnFilters((current) => ({ ...current, [activeCell.key]: value }));
+    markSync('saved', 'Filtro aplicado');
+  }, [activeCell?.key, activeCell?.rowId, markSync, rows]);
 
   const loadSheet = useCallback(async (sheetId) => {
     if (!ownerUserId) return;
@@ -1417,10 +1415,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     applyStyleToSelection({ fontSize }).catch(() => {});
   }, [applyStyleToSelection]);
 
-  const setFontFamily = useCallback((fontFamily) => {
-    applyStyleToSelection({ fontFamily }).catch(() => {});
-  }, [applyStyleToSelection]);
-
   const setVerticalAlign = useCallback((verticalAlign) => {
     applyStyleToSelection({ verticalAlign }).catch(() => {});
   }, [applyStyleToSelection]);
@@ -1461,7 +1455,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, []);
 
   const clearSelectionFormatting = useCallback(() => {
-    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', fontFamily: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
+    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
   }, [applyStyleToSelection]);
 
   const applyValueToSelection = useCallback(async () => {
@@ -2133,7 +2127,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const value = activeCellText(activeCell, rows);
     if (!value) return;
     setReplaceQuery(value);
-    setReplaceBarOpen(true);
+    setAdvancedPanelOpen(true);
     requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true }));
   }, [activeCell, rows]);
 
@@ -2481,7 +2475,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       }
       if (modifier && key === 'h') {
         event.preventDefault();
-        setReplaceBarOpen(true);
+        setAdvancedPanelOpen(true);
         requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true }));
         return;
       }
@@ -2578,13 +2572,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <button type="button" onClick={cutSelection} disabled={!activeCell || !canEdit || !!busy} aria-label="Recortar">Recortar</button>
         <button type="button" onClick={pasteClipboardAtActive} disabled={!activeCell || !canEdit || !!busy} aria-label="Colar">Colar</button>
         <span aria-hidden="true" />
-        <select
-          aria-label="Zoom da planilha"
-          value={zoomPercent}
-          disabled={!activeSheetId}
-          onChange={(event) => setZoomPercent(Number(event.target.value) || 100)}
-        >
-          {ZOOM_OPTIONS.map((option) => <option key={option} value={option}>{option}%</option>)}
+        <select aria-label="Zoom da planilha" value="100" disabled>
+          <option value="100">100%</option>
         </select>
         <select
           value={selectedNumberFormat === 'mixed' ? 'text' : selectedNumberFormat}
@@ -2598,13 +2587,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <option value="percent">% Percentual</option>
         </select>
         <span aria-hidden="true" />
-        <select
-          aria-label="Fonte"
-          value={selectedFontFamily === 'mixed' ? '' : selectedFontFamily}
-          disabled={!selectedCount || !canEdit || !!busy}
-          onChange={(event) => setFontFamily(event.target.value)}
-        >
-          {FONT_FAMILY_OPTIONS.map((option) => <option key={option.label} value={option.value}>{option.label}</option>)}
+        <select aria-label="Fonte" value="Roboto" disabled>
+          <option value="Roboto">Roboto</option>
         </select>
         <button type="button" onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Diminuir fonte">−</button>
         <select
@@ -2687,34 +2671,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         })}
       </div>
 
-      {replaceBarOpen ? (
-        <div className={styles.replaceBar} aria-label="Localizar e substituir">
-          <span>Localizar e substituir</span>
-          <input
-            ref={replaceInputRef}
-            value={replaceQuery}
-            placeholder="Localizar"
-            onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
-          />
-          <input
-            value={replaceValue}
-            placeholder="Substituir por"
-            onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
-          />
-          <select value={replaceScope} onChange={(event) => setReplaceScope(event.target.value)} aria-label="Escopo da substituição">
-            <option value="selection">Seleção</option>
-            <option value="sheet">Planilha inteira</option>
-          </select>
-          <label>
-            <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
-            Diferenciar maiúsculas
-          </label>
-          <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
-          <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
-          <button type="button" onClick={() => setReplaceBarOpen(false)} aria-label="Fechar localizar e substituir">×</button>
-        </div>
-      ) : null}
-
       <div className={styles.controlBar}>
         <div className={styles.nameBox}>{activeColumn && activeRowIndex >= 0 ? `${columnName(activeColumnIndex)}${activeRowIndex + 1}` : '—'}</div>
         <div className={styles.formulaBar} data-invalid={formulaAssist.visible && !formulaAssist.validation.ok || undefined}>
@@ -2796,7 +2752,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           className={styles.sheetFrame}
           data-scrolled-x={scrollState.x || undefined}
           data-scrolled-y={scrollState.y || undefined}
-          style={{ '--sheet-zoom': `${zoomPercent}%` }}
         >
         {loading ? <div className={styles.loadingState}>Carregando planilha</div> : null}
         {!loading && activeSheetId ? (
@@ -2849,6 +2804,146 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         ) : null}
         </div>
 
+        {false && advancedPanelOpen ? (
+          <aside className={styles.advancedPanel} aria-label="Painel avançado da planilha">
+            <header>
+              <strong>Painel avançado</strong>
+              <button type="button" onClick={() => setAdvancedPanelOpen(false)} aria-label="Fechar painel">×</button>
+            </header>
+            <section>
+              <span>Seleção</span>
+              <strong>{selectedSummary}</strong>
+              <button type="button" onClick={selectAllCells} disabled={!activeSheetId}>Selecionar tudo</button>
+              <button type="button" onClick={selectUsedRange} disabled={!activeSheetId}>Selecionar área preenchida</button>
+              <button type="button" onClick={() => activeCell?.rowId && selectRow(activeCell.rowId)} disabled={!activeCell}>Selecionar linha</button>
+              <button type="button" onClick={() => activeCell?.key && selectColumn(activeCell.key)} disabled={!activeCell}>Selecionar coluna</button>
+            </section>
+            <section>
+              <span>Localizar e substituir</span>
+              <strong>Busca avançada na seleção ou planilha inteira</strong>
+              <input
+                ref={replaceInputRef}
+                className={styles.panelInput}
+                value={replaceQuery}
+                placeholder="Localizar"
+                onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
+              />
+              <input
+                className={styles.panelInput}
+                value={replaceValue}
+                placeholder="Substituir por"
+                onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
+              />
+              <select
+                className={styles.panelInput}
+                value={replaceScope}
+                aria-label="Escopo da substituição"
+                onChange={(event) => setReplaceScope(event.target.value)}
+              >
+                <option value="selection">Seleção</option>
+                <option value="sheet">Planilha inteira</option>
+              </select>
+              <label className={styles.panelCheck}>
+                <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
+                Diferenciar maiúsculas
+              </label>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
+                <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
+              </div>
+            </section>
+            <section>
+              <span>Texto</span>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>Negrito</button>
+                <button type="button" onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}>Itálico</button>
+                <button type="button" onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}>Sublinhado</button>
+                <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy}>Tachado</button>
+              </div>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={() => transformSelectionText('uppercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Maiúsculas</button>
+                <button type="button" onClick={() => transformSelectionText('lowercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Minúsculas</button>
+                <button type="button" onClick={() => transformSelectionText('titlecase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Capitalizar</button>
+                <button type="button" onClick={() => transformSelectionText('trim').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Limpar espaços</button>
+              </div>
+            </section>
+            <section>
+              <span>Alinhamento</span>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy}>Esquerda</button>
+                <button type="button" onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy}>Centro</button>
+                <button type="button" onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>Direita</button>
+              </div>
+            </section>
+            <section>
+              <span>Filtros da coluna</span>
+              <strong>{activeColumn ? activeColumn.label : 'Nenhuma coluna ativa'}</strong>
+              <input
+                className={styles.panelInput}
+                value={activeColumn ? (columnFilters[activeColumn.key] || '') : ''}
+                placeholder="Valor do filtro"
+                disabled={!activeColumn}
+                onChange={(event) => activeColumn && setColumnFilters((current) => ({ ...current, [activeColumn.key]: sanitizeCellValue(event.target.value) }))}
+              />
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor ativo</button>
+                <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
+                <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar todos</button>
+                <button type="button" onClick={() => setFilterQuery('')} disabled={!filterQuery}>Limpar busca</button>
+              </div>
+            </section>
+            <section>
+              <span>Planilha</span>
+              <button type="button" onClick={fitActiveColumnWidth} disabled={!activeColumn || !canEdit || !!busy}>Ajustar largura da coluna</button>
+              <button type="button" onClick={() => sortActiveColumn('asc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna A → Z</button>
+              <button type="button" onClick={() => sortActiveColumn('desc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna Z → A</button>
+              <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar formatação</button>
+            </section>
+            <section>
+              <span>Texto avançado</span>
+              <strong>Quebra, tamanho e alinhamento vertical da seleção</strong>
+              <div className={styles.panelGrid}>
+                <button type="button" data-active={selectedWrapMode === 'wrap' || undefined} onClick={() => setWrapMode('wrap')} disabled={!selectedCount || !canEdit || !!busy}>Quebrar texto</button>
+                <button type="button" data-active={selectedWrapMode === 'clip' || undefined} onClick={() => setWrapMode('clip')} disabled={!selectedCount || !canEdit || !!busy}>Cortar texto</button>
+                <button type="button" data-active={selectedFontSize === 'small' || undefined} onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy}>Fonte pequena</button>
+                <button type="button" data-active={selectedFontSize === 'normal' || undefined} onClick={() => setFontSize('')} disabled={!selectedCount || !canEdit || !!busy}>Fonte normal</button>
+                <button type="button" data-active={selectedFontSize === 'large' || undefined} onClick={() => setFontSize('large')} disabled={!selectedCount || !canEdit || !!busy}>Fonte grande</button>
+                <button type="button" data-active={selectedVerticalAlign === 'top' || undefined} onClick={() => setVerticalAlign('top')} disabled={!selectedCount || !canEdit || !!busy}>Topo</button>
+                <button type="button" data-active={selectedVerticalAlign === 'middle' || undefined} onClick={() => setVerticalAlign('')} disabled={!selectedCount || !canEdit || !!busy}>Meio</button>
+                <button type="button" data-active={selectedVerticalAlign === 'bottom' || undefined} onClick={() => setVerticalAlign('bottom')} disabled={!selectedCount || !canEdit || !!busy}>Abaixo</button>
+              </div>
+            </section>
+            <section>
+              <span>Filtros da coluna</span>
+              <strong>{activeColumn ? activeColumn.label : 'Nenhuma coluna ativa'}</strong>
+              <input
+                className={styles.panelInput}
+                value={activeColumn ? (columnFilters[activeColumn.key] || '') : ''}
+                placeholder="Valor do filtro"
+                disabled={!activeColumn}
+                onChange={(event) => activeColumn && setColumnFilters((current) => ({ ...current, [activeColumn.key]: sanitizeCellValue(event.target.value) }))}
+              />
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor ativo</button>
+                <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
+                <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar todos</button>
+                <button type="button" onClick={() => setFilterQuery('')} disabled={!filterQuery}>Limpar busca</button>
+              </div>
+            </section>
+            <section>
+              <span>Planilha</span>
+              <strong>Comandos estruturais da linha e coluna ativa</strong>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={() => insertRowAtActive('above').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha acima</button>
+                <button type="button" onClick={() => insertRowAtActive('below').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha abaixo</button>
+                <button type="button" onClick={() => insertColumnAtActive('left').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna à esquerda</button>
+                <button type="button" onClick={() => insertColumnAtActive('right').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna à direita</button>
+                <button type="button" onClick={() => duplicateActiveRow().catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Duplicar linha</button>
+                <button type="button" onClick={() => duplicateActiveColumn().catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Duplicar coluna</button>
+              </div>
+            </section>
+          </aside>
+        ) : null}
       </div>
 
       <footer className={styles.footer}>
@@ -2894,7 +2989,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onFitColumnWidth={() => { closeContextMenu(); fitActiveColumnWidth().catch(() => {}); }}
         onSortColumnAscending={() => { closeContextMenu(); sortActiveColumn('asc').catch(() => {}); }}
         onSortColumnDescending={() => { closeContextMenu(); sortActiveColumn('desc').catch(() => {}); }}
-        onFilterColumnBySelection={() => { closeContextMenu(); openColumnFilterBar(); }}
+        onFilterColumnBySelection={() => { closeContextMenu(); filterActiveColumnBySelection(); }}
         onClearColumnFilter={() => { closeContextMenu(); if (activeCell?.key) clearColumnFilter(activeCell.key); }}
         onSetTypeText={() => { closeContextMenu(); setNumberFormat('text'); }}
         onSetTypeNumber={() => { closeContextMenu(); setNumberFormat('number'); }}

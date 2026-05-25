@@ -42,12 +42,6 @@ function resolveVerticalAlign(value = '') {
   return undefined;
 }
 
-function resolveCellFontFamily(value = '') {
-  if (value === 'mono') return 'var(--font-mono)';
-  if (value === 'sans') return 'var(--font-sans)';
-  return undefined;
-}
-
 function normalizeRichRuns(style = {}, textLength = 0) {
   const runs = Array.isArray(style.richText) ? style.richText : [];
   return runs
@@ -147,10 +141,15 @@ function Cell({
 
   useEffect(() => {
     if (!editing || !editorRef.current) return;
-    editorRef.current.focus({ preventScroll: true });
-    editorRef.current.select();
+    const editor = editorRef.current;
+    editor.focus({ preventScroll: true });
+    editor.select();
     onEditorSelectionChange?.({ rowId: row.id, key: column.key, start: 0, end: String(editValue || '').length, value: editValue || '' });
-  }, [column.key, editValue, editing, onEditorSelectionChange, row.id]);
+    // Do not depend on editValue here. Re-selecting on every keystroke makes
+    // the next typed character replace the previous one, so users can only type
+    // one letter at a time. This effect is only for opening the editor.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [column.key, editing, row.id]);
 
   const reportEditorSelection = () => {
     const editor = editorRef.current;
@@ -260,7 +259,6 @@ function Cell({
         textDecoration: style.textDecoration || [style.underline ? 'underline' : '', style.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined,
         textAlign: style.textAlign || undefined,
         fontSize: resolveCellFontSize(style.fontSize),
-        fontFamily: resolveCellFontFamily(style.fontFamily),
         alignItems: resolveVerticalAlign(style.verticalAlign),
       }}
       onFocus={(event) => onSelect(row.id, column.key, event.currentTarget, false)}
