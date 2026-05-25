@@ -242,6 +242,8 @@ export default function SpreadsheetGrid({
   onSelectCell,
   onSelectRow,
   onSelectColumn,
+  onSelectRowRange,
+  onSelectColumnRange,
   onCellChange,
   onCellCommit,
   onFormulaDraftChange,
@@ -266,6 +268,9 @@ export default function SpreadsheetGrid({
   const draggingSelectionRef = useRef(false);
   const lastDragCellRef = useRef('');
   const selectionDraggedRef = useRef(false);
+  const rowHeaderDragRef = useRef(null);
+  const columnHeaderDragRef = useRef(null);
+  const autoScrollRef = useRef(0);
   const fillDragRef = useRef(null);
   const [fillPreview, setFillPreview] = useState(null);
 
@@ -450,21 +455,48 @@ export default function SpreadsheetGrid({
     return () => scroller.removeEventListener('wheel', onWheel);
   }, []);
 
+
+  const stopAutoScroll = useCallback(() => {
+    if (autoScrollRef.current) window.cancelAnimationFrame(autoScrollRef.current);
+    autoScrollRef.current = 0;
+  }, []);
+
+  const autoScrollWhileSelecting = useCallback((clientX, clientY) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const rect = scroller.getBoundingClientRect();
+    const edge = 44;
+    const horizontal = clientX > rect.right - edge ? 18 : clientX < rect.left + edge ? -18 : 0;
+    const vertical = clientY > rect.bottom - edge ? 18 : clientY < rect.top + edge ? -18 : 0;
+    stopAutoScroll();
+    if (!horizontal && !vertical) return;
+    const tick = () => {
+      scroller.scrollLeft += horizontal;
+      scroller.scrollTop += vertical;
+      autoScrollRef.current = window.requestAnimationFrame(tick);
+    };
+    autoScrollRef.current = window.requestAnimationFrame(tick);
+  }, [stopAutoScroll]);
+
   const startDragSelection = useCallback((event, rowId, key) => {
     if (event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) return;
     draggingSelectionRef.current = true;
     lastDragCellRef.current = `${rowId}:${key}`;
     selectionDraggedRef.current = false;
     onSelectCell(rowId, key, event.currentTarget, false);
+    const onMove = (moveEvent) => autoScrollWhileSelecting(moveEvent.clientX, moveEvent.clientY);
     const finish = () => {
       draggingSelectionRef.current = false;
       lastDragCellRef.current = '';
+      stopAutoScroll();
+      window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', finish);
       window.removeEventListener('pointercancel', finish);
     };
+    window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', finish, { once: true });
     window.addEventListener('pointercancel', finish, { once: true });
-  }, [onSelectCell]);
+  }, [autoScrollWhileSelecting, onSelectCell, stopAutoScroll]);
 
   const moveDragSelection = useCallback((rowId, key) => {
     if (!draggingSelectionRef.current) return;
@@ -482,6 +514,51 @@ export default function SpreadsheetGrid({
     }
     onSelectCell(rowId, key, element, event.shiftKey);
   }, [onSelectCell]);
+
+
+  const startRowHeaderDrag = useCallback((event, rowId) => {
+    if (event.button !== 0) return;
+    rowHeaderDragRef.current = { anchorRowId: rowId };
+    onSelectRow?.(rowId);
+    const onMove = (moveEvent) => autoScrollWhileSelecting(moveEvent.clientX, moveEvent.clientY);
+    const finish = () => {
+      rowHeaderDragRef.current = null;
+      stopAutoScroll();
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', finish);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', finish, { once: true });
+    window.addEventListener('pointercancel', finish, { once: true });
+  }, [autoScrollWhileSelecting, onSelectRow, stopAutoScroll]);
+
+  const moveRowHeaderDrag = useCallback((rowId) => {
+    if (!rowHeaderDragRef.current?.anchorRowId) return;
+    onSelectRowRange?.(rowHeaderDragRef.current.anchorRowId, rowId);
+  }, [onSelectRowRange]);
+
+  const startColumnHeaderDrag = useCallback((event, key) => {
+    if (event.button !== 0) return;
+    columnHeaderDragRef.current = { anchorKey: key };
+    onSelectColumn?.(key);
+    const onMove = (moveEvent) => autoScrollWhileSelecting(moveEvent.clientX, moveEvent.clientY);
+    const finish = () => {
+      columnHeaderDragRef.current = null;
+      stopAutoScroll();
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', finish);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', finish, { once: true });
+    window.addEventListener('pointercancel', finish, { once: true });
+  }, [autoScrollWhileSelecting, onSelectColumn, stopAutoScroll]);
+
+  const moveColumnHeaderDrag = useCallback((key) => {
+    if (!columnHeaderDragRef.current?.anchorKey) return;
+    onSelectColumnRange?.(columnHeaderDragRef.current.anchorKey, key);
+  }, [onSelectColumnRange]);
 
   const selectionRect = useMemo(() => {
     if (!selectionBounds) return null;
@@ -510,6 +587,11 @@ export default function SpreadsheetGrid({
                   if (event.target?.tagName === 'INPUT' || event.target?.className?.includes?.('resizeHandle')) return;
                   onSelectColumn?.(column.key);
                 }}
+                onPointerDown={(event) => {
+                  if (event.target?.tagName === 'INPUT' || event.target?.className?.includes?.('resizeHandle') || event.target?.className?.includes?.('headerMenu')) return;
+                  startColumnHeaderDrag(event, column.key);
+                }}
+                onPointerEnter={() => moveColumnHeaderDrag(column.key)}
                 onContextMenu={(event) => onColumnContextMenu?.(event, column.key)}
               >
                 <input
@@ -550,6 +632,8 @@ export default function SpreadsheetGrid({
               data-active={activeCell?.rowId === row.id || undefined}
               style={{ left: viewport.left, top, width: INDEX_WIDTH, height: ROW_HEIGHT }}
               onClick={() => onSelectRow(row.id)}
+              onPointerDown={(event) => startRowHeaderDrag(event, row.id)}
+              onPointerEnter={() => moveRowHeaderDrag(row.id)}
               onContextMenu={(event) => onRowContextMenu?.(event, row.id)}
             >
               <span>{index + 1}</span>

@@ -484,6 +484,24 @@ function normalizeValueForType(value = '', style = {}) {
   return String(number);
 }
 
+function transformTextValue(value = '', mode = 'uppercase') {
+  const raw = sanitizeCellValue(value);
+  if (!raw || raw.startsWith('=')) return raw;
+  if (mode === 'lowercase') return raw.toLocaleLowerCase('pt-BR');
+  if (mode === 'titlecase') {
+    return raw
+      .toLocaleLowerCase('pt-BR')
+      .replace(/(^|[\s/\-])([\p{L}\p{N}])/gu, (match, prefix, letter) => `${prefix}${letter.toLocaleUpperCase('pt-BR')}`);
+  }
+  return raw.toLocaleUpperCase('pt-BR');
+}
+
+function calculateBestColumnWidth(column, rows = []) {
+  const labelLength = sanitizeCellValue(column?.label || '').length;
+  const valueLength = rows.reduce((max, row) => Math.max(max, sanitizeCellValue(row?.[column.key] || '').length), labelLength);
+  return Math.max(MIN_COLUMN_WIDTH, Math.min(MAX_COLUMN_WIDTH, Math.max(92, valueLength * 8 + 36)));
+}
+
 function evaluateFormula(rawFormula = '', rows = [], columns = [], stack = new Set()) {
   const formula = sanitizeCellValue(rawFormula).trim();
   if (!formula.startsWith('=')) return { value: formula, ok: true };
@@ -638,6 +656,11 @@ function SheetContextMenu({
   canEdit,
   onClose,
   onCopy,
+  onCut,
+  onPaste,
+  onSelectAll,
+  onSelectRow,
+  onSelectColumn,
   onFillSelection,
   onClearSelection,
   onInsertRowAbove,
@@ -651,10 +674,15 @@ function SheetContextMenu({
   onBold,
   onItalic,
   onUnderline,
+  onStrikeThrough,
   onAlignLeft,
   onAlignCenter,
   onAlignRight,
   onClearFormatting,
+  onUppercase,
+  onLowercase,
+  onTitlecase,
+  onFitColumnWidth,
   onSortColumnAscending,
   onSortColumnDescending,
   onFilterColumnBySelection,
@@ -677,14 +705,28 @@ function SheetContextMenu({
         style={{ left: menu.x, top: menu.y }}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção</button>
-        <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção</button>
-        <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo</button>
-        <button type="button" role="menuitem" onClick={onNormalizeSelection} disabled={!canEdit}>Normalizar pelo tipo</button>
+        <header className={styles.contextMenuHeader}>
+          <strong>{isRow ? 'Linha' : isColumn ? 'Coluna' : 'Célula'}</strong>
+          <span>{menu.label || 'Ações rápidas'}</span>
+        </header>
+        <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção <kbd>Ctrl C</kbd></button>
+        <button type="button" role="menuitem" onClick={onCut} disabled={!canEdit}>Recortar seleção <kbd>Ctrl X</kbd></button>
+        <button type="button" role="menuitem" onClick={onPaste} disabled={!canEdit}>Colar <kbd>Ctrl V</kbd></button>
+        <button type="button" role="menuitem" onClick={onSelectAll}>Selecionar tudo <kbd>Ctrl A</kbd></button>
+        <button type="button" role="menuitem" onClick={onSelectRow} disabled={isColumn}>Selecionar linha</button>
+        <button type="button" role="menuitem" onClick={onSelectColumn} disabled={isRow}>Selecionar coluna</button>
         <span aria-hidden="true" />
-        <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito</button>
-        <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico</button>
-        <button type="button" role="menuitem" onClick={onUnderline} disabled={!canEdit}>Sublinhado</button>
+        <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção <kbd>Ctrl Enter</kbd></button>
+        <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo <kbd>Del</kbd></button>
+        <button type="button" role="menuitem" onClick={onNormalizeSelection} disabled={!canEdit}>Normalizar pelo tipo</button>
+        <button type="button" role="menuitem" onClick={onUppercase} disabled={!canEdit}>Texto em MAIÚSCULAS</button>
+        <button type="button" role="menuitem" onClick={onLowercase} disabled={!canEdit}>Texto em minúsculas</button>
+        <button type="button" role="menuitem" onClick={onTitlecase} disabled={!canEdit}>Texto Capitalizado</button>
+        <span aria-hidden="true" />
+        <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito <kbd>Ctrl B</kbd></button>
+        <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico <kbd>Ctrl I</kbd></button>
+        <button type="button" role="menuitem" onClick={onUnderline} disabled={!canEdit}>Sublinhado <kbd>Ctrl U</kbd></button>
+        <button type="button" role="menuitem" onClick={onStrikeThrough} disabled={!canEdit}>Tachado</button>
         <button type="button" role="menuitem" onClick={onAlignLeft} disabled={!canEdit}>Alinhar à esquerda</button>
         <button type="button" role="menuitem" onClick={onAlignCenter} disabled={!canEdit}>Centralizar</button>
         <button type="button" role="menuitem" onClick={onAlignRight} disabled={!canEdit}>Alinhar à direita</button>
@@ -696,6 +738,7 @@ function SheetContextMenu({
             <button type="button" role="menuitem" onClick={onSortColumnDescending} disabled={!canEdit}>Ordenar Z → A</button>
             <button type="button" role="menuitem" onClick={onFilterColumnBySelection}>Filtrar por valor selecionado</button>
             <button type="button" role="menuitem" onClick={onClearColumnFilter}>Limpar filtro da coluna</button>
+            <button type="button" role="menuitem" onClick={onFitColumnWidth} disabled={!canEdit}>Ajustar largura ao conteúdo</button>
             <button type="button" role="menuitem" onClick={onSetTypeText} disabled={!canEdit}>Tipo: texto</button>
             <button type="button" role="menuitem" onClick={onSetTypeNumber} disabled={!canEdit}>Tipo: número</button>
             <button type="button" role="menuitem" onClick={onSetTypeCurrency} disabled={!canEdit}>Tipo: moeda</button>
@@ -742,6 +785,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [filterColumnKey, setFilterColumnKey] = useState('all');
   const [filterQuery, setFilterQuery] = useState('');
   const [columnFilters, setColumnFilters] = useState({});
+  const [advancedPanelOpen, setAdvancedPanelOpen] = useState(true);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const formulaInputRef = useRef(null);
@@ -1570,6 +1614,102 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
 
 
+
+  const selectAllCells = useCallback(() => {
+    const firstRow = viewRows[0];
+    const lastRow = viewRows[viewRows.length - 1];
+    const firstColumn = columns[0];
+    const lastColumn = columns[columns.length - 1];
+    if (!firstRow || !lastRow || !firstColumn || !lastColumn) return;
+    const nextCell = { rowId: firstRow.id, key: firstColumn.key };
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus({ rowId: lastRow.id, key: lastColumn.key });
+  }, [columns, viewRows]);
+
+  const selectRowRange = useCallback((anchorRowId, focusRowId) => {
+    if (!columns.length || !anchorRowId || !focusRowId) return;
+    const firstColumn = columns[0];
+    const lastColumn = columns[columns.length - 1];
+    const nextCell = { rowId: anchorRowId, key: firstColumn.key };
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus({ rowId: focusRowId, key: lastColumn.key });
+  }, [columns]);
+
+  const selectColumnRange = useCallback((anchorKey, focusKey) => {
+    if (!viewRows.length || !anchorKey || !focusKey) return;
+    const firstRow = viewRows[0];
+    const lastRow = viewRows[viewRows.length - 1];
+    const nextCell = { rowId: firstRow.id, key: anchorKey };
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus({ rowId: lastRow.id, key: focusKey });
+  }, [viewRows]);
+
+  const cutSelection = useCallback(async () => {
+    if (!canEdit || !selectedCells.length) return;
+    await copySelection();
+    await clearSelectionValues();
+  }, [canEdit, clearSelectionValues, copySelection, selectedCells.length]);
+
+  const pasteClipboardAtActive = useCallback(async () => {
+    if (!canEdit || !activeCell?.rowId || !activeCell?.key || !navigator.clipboard?.readText) return;
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) return;
+      await pasteTable(activeCell.rowId, activeCell.key, text);
+    } catch (error) {
+      notifyError(error, 'Não foi possível ler a área de transferência.');
+    }
+  }, [activeCell?.key, activeCell?.rowId, canEdit, notifyError, pasteTable]);
+
+  const transformSelectionText = useCallback(async (mode) => {
+    if (!canEdit || !selectedCells.length) return;
+    const updatesByRow = new Map();
+    const optimistic = rows.map((row) => {
+      const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
+      if (!targetCells.length) return row;
+      const next = { ...row };
+      const patch = {};
+      targetCells.forEach(({ column }) => {
+        const nextValue = transformTextValue(row?.[column.key] || '', mode);
+        next[column.key] = nextValue;
+        patch[column.key] = nextValue;
+      });
+      updatesByRow.set(row.id, patch);
+      return next;
+    });
+    setRows(optimistic);
+    markSync('saving', 'Atualizando texto');
+    setBusy(`text-${mode}`);
+    try {
+      await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
+      markSync('saved', 'Texto atualizado');
+    } catch (error) {
+      notifyError(error, 'Não foi possível atualizar o texto.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
+
+  const fitActiveColumnWidth = useCallback(async () => {
+    if (!canEdit || !activeColumn) return;
+    const width = calculateBestColumnWidth(activeColumn, rows);
+    setColumns((current) => current.map((column) => (column.key === activeColumn.key ? { ...column, width } : column)));
+    setSavingColumn(activeColumn.key);
+    try {
+      await updateSupportDailyColumn(activeColumn.key, { width });
+      markSync('saved', 'Largura ajustada');
+    } catch (error) {
+      notifyError(error, 'Não foi possível ajustar a largura da coluna.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setSavingColumn('');
+    }
+  }, [activeColumn, activeSheetId, canEdit, loadSheet, markSync, notifyError, rows]);
+
   const normalizeSelectionValues = useCallback(async () => {
     if (!canEdit || !selectedCells.length) return;
     const updatesByRow = new Map();
@@ -1811,23 +1951,28 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const openContextMenu = useCallback((event, rowId, key) => {
     event.preventDefault();
     const nextCell = { rowId, key };
+    const clickedInsideSelection = selectedCellIds.has(`${rowId}:${key}`);
     setActiveCell(nextCell);
-    setSelectionAnchor((current) => current || nextCell);
-    setSelectionFocus((current) => current || nextCell);
-    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'cell' });
-  }, []);
+    if (!clickedInsideSelection) {
+      setSelectionAnchor(nextCell);
+      setSelectionFocus(nextCell);
+    }
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'cell', label: getCellAddress(nextCell, viewRows, columns) });
+  }, [columns, selectedCellIds, viewRows]);
 
   const openRowContextMenu = useCallback((event, rowId) => {
     event.preventDefault();
     selectRow(rowId);
-    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'row' });
-  }, [selectRow]);
+    const rowIndex = viewRows.findIndex((row) => row.id === rowId);
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'row', label: rowIndex >= 0 ? `Linha ${rowIndex + 1}` : 'Linha' });
+  }, [selectRow, viewRows]);
 
   const openColumnContextMenu = useCallback((event, key) => {
     event.preventDefault();
     selectColumn(key);
-    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'column' });
-  }, [selectColumn]);
+    const columnIndex = columns.findIndex((column) => column.key === key);
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'column', label: columnIndex >= 0 ? `Coluna ${columns[columnIndex]?.label || columnName(columnIndex)}` : 'Coluna' });
+  }, [columns, selectColumn]);
 
   const copySelection = useCallback(async () => {
     const text = serializeCellsToTsv(viewRows, columns, selectionBounds) || activeCellText(activeCell, rows);
@@ -1901,6 +2046,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         event.preventDefault();
         copySelection().catch(() => {});
       }
+      if (key === 'x' && canEdit) {
+        event.preventDefault();
+        cutSelection().catch(() => {});
+      }
+      if (key === 'v' && canEdit) {
+        event.preventDefault();
+        pasteClipboardAtActive().catch(() => {});
+      }
       if (key === 'b' && canEdit) {
         event.preventDefault();
         toggleStyle('bold');
@@ -1916,7 +2069,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [activeCell, applyValueToSelection, canEdit, clearSelectionValues, columns, copySelection, toggleStyle, viewRows]);
+  }, [activeCell, applyValueToSelection, canEdit, clearSelectionValues, columns, copySelection, cutSelection, pasteClipboardAtActive, toggleStyle, viewRows]);
 
   return (
     <section className={styles.panel} data-loading={loading || undefined}>
@@ -1977,11 +2130,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <Button size="xs" variant="ghost" onClick={copySelection} disabled={!activeCell}>Copiar</Button>
           <Button size="xs" variant="ghost" onClick={applyValueToSelection} disabled={!selectedCount || !canEdit || !!busy}>Preencher</Button>
           <Button size="xs" variant="ghost" onClick={normalizeSelectionValues} disabled={!selectedCount || !canEdit || !!busy}>Normalizar</Button>
+          <Button size="xs" variant="ghost" onClick={() => setAdvancedPanelOpen((current) => !current)} disabled={!activeSheetId}>Painel</Button>
         </div>
         <div className={styles.formatGroup} aria-label="Formatação da seleção">
           <button type="button" data-active={selectedHasBold || undefined} onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>B</button>
           <button type="button" data-active={selectedHasItalic || undefined} onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}><em>I</em></button>
           <button type="button" data-active={selectedHasUnderline || undefined} onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}><u>U</u></button>
+          <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy}><s>S</s></button>
           <span aria-hidden="true" />
           <button type="button" data-active={selectedAlign === 'left' || undefined} onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy}>E</button>
           <button type="button" data-active={selectedAlign === 'center' || undefined} onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy}>C</button>
@@ -2129,11 +2284,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </div>
       </div>
 
-      <div
-        className={styles.sheetFrame}
-        data-scrolled-x={scrollState.x || undefined}
-        data-scrolled-y={scrollState.y || undefined}
-      >
+      <div className={styles.sheetWorkspace} data-panel-open={advancedPanelOpen || undefined}>
+        <div
+          className={styles.sheetFrame}
+          data-scrolled-x={scrollState.x || undefined}
+          data-scrolled-y={scrollState.y || undefined}
+        >
         {loading ? <div className={styles.loadingState}>Carregando planilha</div> : null}
         {!loading && activeSheetId ? (
           <SpreadsheetGrid
@@ -2158,6 +2314,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             onSelectCell={selectCell}
             onSelectRow={selectRow}
             onSelectColumn={selectColumn}
+            onSelectRowRange={selectRowRange}
+            onSelectColumnRange={selectColumnRange}
             onCellChange={setCellDraft}
             onCellCommit={commitCell}
             onFormulaDraftChange={setFormulaValue}
@@ -2180,6 +2338,52 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             <Button size="sm" onClick={addSheet} disabled={!canEdit || !!busy}><PlusIcon size={14} /> Criar planilha</Button>
           </div>
         ) : null}
+        </div>
+
+        {advancedPanelOpen ? (
+          <aside className={styles.advancedPanel} aria-label="Painel avançado da planilha">
+            <header>
+              <strong>Painel avançado</strong>
+              <button type="button" onClick={() => setAdvancedPanelOpen(false)} aria-label="Fechar painel">×</button>
+            </header>
+            <section>
+              <span>Seleção</span>
+              <strong>{selectedSummary}</strong>
+              <button type="button" onClick={selectAllCells} disabled={!activeSheetId}>Selecionar tudo</button>
+              <button type="button" onClick={() => activeCell?.rowId && selectRow(activeCell.rowId)} disabled={!activeCell}>Selecionar linha</button>
+              <button type="button" onClick={() => activeCell?.key && selectColumn(activeCell.key)} disabled={!activeCell}>Selecionar coluna</button>
+            </section>
+            <section>
+              <span>Texto</span>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>Negrito</button>
+                <button type="button" onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}>Itálico</button>
+                <button type="button" onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}>Sublinhado</button>
+                <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy}>Tachado</button>
+              </div>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={() => transformSelectionText('uppercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Maiúsculas</button>
+                <button type="button" onClick={() => transformSelectionText('lowercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Minúsculas</button>
+                <button type="button" onClick={() => transformSelectionText('titlecase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Capitalizar</button>
+              </div>
+            </section>
+            <section>
+              <span>Alinhamento</span>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy}>Esquerda</button>
+                <button type="button" onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy}>Centro</button>
+                <button type="button" onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>Direita</button>
+              </div>
+            </section>
+            <section>
+              <span>Planilha</span>
+              <button type="button" onClick={fitActiveColumnWidth} disabled={!activeColumn || !canEdit || !!busy}>Ajustar largura da coluna</button>
+              <button type="button" onClick={() => sortActiveColumn('asc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna A → Z</button>
+              <button type="button" onClick={() => sortActiveColumn('desc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna Z → A</button>
+              <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar formatação</button>
+            </section>
+          </aside>
+        ) : null}
       </div>
 
       <footer className={styles.footer}>
@@ -2192,6 +2396,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         canEdit={canEdit && !busy}
         onClose={closeContextMenu}
         onCopy={() => { closeContextMenu(); copySelection().catch(() => {}); }}
+        onCut={() => { closeContextMenu(); cutSelection().catch(() => {}); }}
+        onPaste={() => { closeContextMenu(); pasteClipboardAtActive().catch(() => {}); }}
+        onSelectAll={() => { closeContextMenu(); selectAllCells(); }}
+        onSelectRow={() => { closeContextMenu(); activeCell?.rowId && selectRow(activeCell.rowId); }}
+        onSelectColumn={() => { closeContextMenu(); activeCell?.key && selectColumn(activeCell.key); }}
         onFillSelection={() => { closeContextMenu(); applyValueToSelection().catch(() => {}); }}
         onClearSelection={() => { closeContextMenu(); clearSelectionValues().catch(() => {}); }}
         onInsertRowAbove={() => { closeContextMenu(); insertRowAtActive('above').catch(() => {}); }}
@@ -2205,10 +2414,15 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onBold={() => { closeContextMenu(); toggleStyle('bold'); }}
         onItalic={() => { closeContextMenu(); toggleStyle('italic'); }}
         onUnderline={() => { closeContextMenu(); toggleStyle('underline'); }}
+        onStrikeThrough={() => { closeContextMenu(); applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough })); }}
         onAlignLeft={() => { closeContextMenu(); setTextAlign('left'); }}
         onAlignCenter={() => { closeContextMenu(); setTextAlign('center'); }}
         onAlignRight={() => { closeContextMenu(); setTextAlign('right'); }}
         onClearFormatting={() => { closeContextMenu(); clearSelectionFormatting(); }}
+        onUppercase={() => { closeContextMenu(); transformSelectionText('uppercase').catch(() => {}); }}
+        onLowercase={() => { closeContextMenu(); transformSelectionText('lowercase').catch(() => {}); }}
+        onTitlecase={() => { closeContextMenu(); transformSelectionText('titlecase').catch(() => {}); }}
+        onFitColumnWidth={() => { closeContextMenu(); fitActiveColumnWidth().catch(() => {}); }}
         onSortColumnAscending={() => { closeContextMenu(); sortActiveColumn('asc').catch(() => {}); }}
         onSortColumnDescending={() => { closeContextMenu(); sortActiveColumn('desc').catch(() => {}); }}
         onFilterColumnBySelection={() => { closeContextMenu(); filterActiveColumnBySelection(); }}
