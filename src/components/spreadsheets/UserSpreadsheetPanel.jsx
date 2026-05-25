@@ -20,6 +20,11 @@ import {
 import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import styles from './UserSpreadsheetPanel.module.css';
 
+function confirmDestructiveAction(message) {
+  if (typeof window === 'undefined') return false;
+  return window.confirm(message);
+}
+
 const BLANK_COLUMN_WIDTH = 168;
 const BLANK_ROW_HEIGHT = 44;
 const BLANK_MIN_COLUMNS = 6;
@@ -1029,6 +1034,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleShareRemove = useCallback(async (shareId) => {
     if (!activeSheetId || !shareId) return;
+    const share = shareRows.find((item) => String(item.id) === String(shareId));
+    const label = share?.email || 'este acesso';
+    if (!confirmDestructiveAction(`Remover o acesso de ${label}?`)) return;
     setShareSaving(true);
     try {
       const data = await deleteSupportDailySheetShare(activeSheetId, shareId, { ownerUserId });
@@ -1040,7 +1048,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     } finally {
       setShareSaving(false);
     }
-  }, [activeSheetId, markSync, ownerUserId, showToast]);
+  }, [activeSheetId, markSync, ownerUserId, shareRows, showToast]);
 
   useEffect(() => {
     if (!shareOpen) return;
@@ -1279,6 +1287,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const handleDeleteSheet = async (sheetId) => {
     if (!sheetId) return;
+    const sheet = sheets.find((item) => String(item.id) === String(sheetId));
+    const label = sheet?.name ? `"${sheet.name}"` : 'esta planilha';
+    if (!confirmDestructiveAction(`Excluir ${label}? Esta ação remove linhas, colunas e compartilhamentos da planilha.`)) return;
     markSync('saving', 'Removendo planilha');
     try {
       const data = await deleteSupportDailySheet(sheetId, { ownerUserId });
@@ -1406,6 +1417,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const handleDeleteRow = async (id) => {
     if (!id) return;
     closeContextMenu();
+    const rowIndex = rows.findIndex((row) => String(row.id) === String(id));
+    const label = rowIndex >= 0 ? `linha ${rowIndex + 1}` : 'esta linha';
+    if (!confirmDestructiveAction(`Excluir ${label}? Esta ação não poderá ser desfeita.`)) return;
     markSync('saving', 'Removendo linha');
     try {
       await deleteSupportDailyRow(id, { ownerUserId });
@@ -1619,6 +1633,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const handleDeleteColumn = async (key) => {
     if (!key) return;
     closeContextMenu();
+    const column = columns.find((entry) => String(entry.key) === String(key));
+    const label = column?.label ? `"${column.label}"` : 'esta coluna';
+    if (!confirmDestructiveAction(`Excluir a coluna ${label}? Os dados dessa coluna serão removidos.`)) return;
     markSync('saving', 'Removendo coluna');
     try {
       await deleteSupportDailyColumn(key, { ownerUserId });

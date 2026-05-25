@@ -160,6 +160,11 @@ function formatLongDate(value) {
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }).format(date);
 }
 
+function confirmDestructiveAction(message) {
+  if (typeof window === 'undefined') return false;
+  return window.confirm(message);
+}
+
 function taskContext(task) {
   return task?.clientName || task?.projectName || task?.typeLabel || 'Demanda interna';
 }
@@ -514,6 +519,9 @@ export default function WorkspacePage() {
 
   async function handleDeleteDocument(documentId) {
     if (!documentId) return;
+    const document = documents.find((item) => String(item.id) === String(documentId));
+    const label = document?.title ? `"${document.title}"` : 'este documento';
+    if (!confirmDestructiveAction(`Excluir ${label}? Esta ação não poderá ser desfeita.`)) return;
     try {
       await deleteWorkspaceDocument(documentId);
       setDocuments((current) => {
