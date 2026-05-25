@@ -562,14 +562,16 @@
 .contextBackdrop {
   position: fixed;
   inset: 0;
-  z-index: var(--z-dropdown);
+  z-index: 2147483000;
   background: transparent;
 }
 
 .contextMenu {
   position: fixed;
-  min-width: 216px;
-  overflow: hidden;
+  min-width: 284px;
+  z-index: 2147483001;
+  max-height: min(720px, calc(100vh - 24px));
+  overflow: auto;
   padding: var(--space-1);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
@@ -579,10 +581,12 @@
 
 .contextMenu button {
   width: 100%;
-  height: 30px;
-  display: flex;
+  height: 32px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   justify-content: flex-start;
+  gap: var(--space-2);
   padding: 0 var(--space-2);
   border: 0;
   border-radius: var(--radius-1);
@@ -612,11 +616,59 @@
   opacity: var(--opacity-disabled);
 }
 
-.contextMenu span {
+.contextDivider {
   display: block;
   height: 1px;
   margin: var(--space-1) 0;
   background: var(--line-subtle);
+}
+
+.contextIcon {
+  width: 24px;
+  min-width: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.contextLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contextPalette {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(6, 24px);
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+}
+
+.contextPalette span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+}
+
+.contextPalette button {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--swatch);
+}
+
+.contextPalette button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--swatch);
 }
 
 .typeGroup {
@@ -689,7 +741,7 @@
   left: 42px;
   right: 0;
   top: calc(100% + var(--space-1));
-  z-index: var(--z-dropdown);
+  z-index: 10000;
   display: grid;
   gap: var(--space-1);
   max-height: 260px;
@@ -761,7 +813,7 @@
   position: absolute;
   right: var(--space-2);
   bottom: calc(-1 * var(--space-5));
-  z-index: var(--z-dropdown);
+  z-index: 10000;
   display: inline-flex;
   align-items: center;
   min-height: 20px;
@@ -966,40 +1018,76 @@
   opacity: var(--opacity-disabled);
 }
 
-.colorGroup {
-  min-width: 128px;
-  display: inline-flex;
+.sheetsToolbar {
+  min-height: 44px;
+  padding: var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-raised);
+  display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--bg-soft);
-  color: var(--text-tertiary);
-  font-size: var(--fs-label);
+  gap: var(--space-1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
 
-.colorGroup span {
-  color: var(--text-quaternary);
-  font-size: var(--fs-micro);
-  font-weight: var(--weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-uppercase);
+.sheetsToolbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
-.colorGroup select {
-  min-width: 82px;
-  height: 26px;
-  border: 1px solid var(--line-subtle);
+.sheetsToolbar > span[aria-hidden="true"] {
+  flex: 0 0 1px;
+  width: 1px;
+  height: 22px;
+  margin: 0 var(--space-1);
+  background: var(--line-subtle);
+}
+
+.sheetsToolbar button,
+.sheetsToolbar select {
+  height: 30px;
+  flex: 0 0 auto;
+  border: 1px solid transparent;
   border-radius: var(--radius-1);
-  background: var(--field-bg);
-  color: var(--text-primary);
+  background: transparent;
+  color: var(--text-secondary);
   font: inherit;
   font-size: var(--fs-label);
-  outline: 0;
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
 }
 
-.colorGroup select:disabled {
+.sheetsToolbar button {
+  min-width: 30px;
+  padding: 0 var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sheetsToolbar select {
+  max-width: 138px;
+  padding: 0 var(--space-2);
+  cursor: pointer;
+}
+
+.sheetsToolbar button:hover:not(:disabled),
+.sheetsToolbar select:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sheetsToolbar button[data-active="true"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.sheetsToolbar button:disabled,
+.sheetsToolbar select:disabled {
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
 }

@@ -18,6 +18,27 @@ import styles from './UserSpreadsheetPanel.module.css';
 
 const DEFAULT_COLUMN_WIDTH = 168;
 
+const TEXT_COLOR_OPTIONS = [
+  { value: '', label: 'Texto' },
+  { value: 'var(--text-primary)', label: 'Padrão' },
+  { value: 'var(--accent)', label: 'Amarelo' },
+  { value: 'var(--success-text)', label: 'Verde' },
+  { value: 'var(--danger-text)', label: 'Vermelho' },
+  { value: 'var(--warning-text)', label: 'Atenção' },
+  { value: 'var(--info-text)', label: 'Azul' },
+];
+
+const FILL_COLOR_OPTIONS = [
+  { value: '', label: 'Fundo' },
+  { value: 'var(--accent-soft)', label: 'Amarelo suave' },
+  { value: 'var(--success-soft)', label: 'Verde suave' },
+  { value: 'var(--danger-soft)', label: 'Vermelho suave' },
+  { value: 'var(--warning-soft)', label: 'Atenção suave' },
+  { value: 'var(--info-soft)', label: 'Azul suave' },
+];
+
+const INLINE_TEXT_STYLE_KEYS = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'color']);
+
 const FORMULA_LIBRARY = [
   { name: 'SOMA', aliases: ['SUM'], signature: 'SOMA(A1:A5)', description: 'Soma os valores de um intervalo.' },
   { name: 'MEDIA', aliases: ['AVERAGE'], signature: 'MEDIA(A1:A5)', description: 'Calcula a média de um intervalo.' },
@@ -26,29 +47,6 @@ const FORMULA_LIBRARY = [
   { name: 'CONT.NUM', aliases: ['COUNT'], signature: 'CONT.NUM(A1:A5)', description: 'Conta células numéricas.' },
   { name: 'CONT.VALORES', aliases: ['COUNTA'], signature: 'CONT.VALORES(A1:A5)', description: 'Conta células preenchidas.' },
 ];
-
-const TEXT_COLOR_OPTIONS = [
-  { value: '', label: 'Automático' },
-  { value: 'var(--text-primary)', label: 'Primário' },
-  { value: 'var(--text-secondary)', label: 'Secundário' },
-  { value: 'var(--success-text)', label: 'Verde' },
-  { value: 'var(--danger-text)', label: 'Vermelho' },
-  { value: 'var(--warning-text)', label: 'Atenção' },
-  { value: 'var(--info-text)', label: 'Azul' },
-];
-
-const FILL_COLOR_OPTIONS = [
-  { value: '', label: 'Sem preenchimento' },
-  { value: 'var(--bg-selected)', label: 'Selecionado' },
-  { value: 'var(--success-soft)', label: 'Verde suave' },
-  { value: 'var(--danger-soft)', label: 'Vermelho suave' },
-  { value: 'var(--warning-soft)', label: 'Atenção suave' },
-  { value: 'var(--info-soft)', label: 'Azul suave' },
-  { value: 'var(--accent-soft)', label: 'Edifica suave' },
-];
-
-const RICH_TEXT_STYLE_KEYS = ['bold', 'italic', 'underline', 'strikeThrough', 'color'];
-
 
 function normalizeFormulaName(value = '') {
   return String(value || '')
@@ -645,75 +643,87 @@ function serializeCellsToTsv(rows = [], columns = [], bounds) {
   return lines.join('\n');
 }
 
-function normalizeRichTextRuns(runs = [], textLength = 0) {
-  if (!Array.isArray(runs) || textLength <= 0) return [];
-  return runs
-    .map((run) => {
-      const start = Math.max(0, Math.min(textLength, Number(run.start) || 0));
-      const end = Math.max(start, Math.min(textLength, Number(run.end) || 0));
-      const cleanRun = { start, end };
-      RICH_TEXT_STYLE_KEYS.forEach((key) => {
-        if (run[key] !== false && run[key] !== '' && run[key] !== null && run[key] !== undefined) cleanRun[key] = run[key];
-      });
-      return cleanRun;
-    })
-    .filter((run) => run.end > run.start && RICH_TEXT_STYLE_KEYS.some((key) => run[key] !== undefined));
-}
-
-function applyRichTextPatch(currentRuns = [], selection = {}, textLength = 0, patch = {}) {
-  const start = Math.max(0, Math.min(textLength, Number(selection.start) || 0));
-  const end = Math.max(start, Math.min(textLength, Number(selection.end) || 0));
-  if (end <= start || textLength <= 0) return normalizeRichTextRuns(currentRuns, textLength);
-
-  const perChar = Array.from({ length: textLength }, () => ({}));
-  normalizeRichTextRuns(currentRuns, textLength).forEach((run) => {
-    for (let index = run.start; index < run.end; index += 1) {
-      RICH_TEXT_STYLE_KEYS.forEach((key) => {
-        if (run[key] !== undefined) perChar[index][key] = run[key];
-      });
-    }
-  });
-
-  for (let index = start; index < end; index += 1) {
-    Object.entries(patch).forEach(([key, value]) => {
-      if (!RICH_TEXT_STYLE_KEYS.includes(key)) return;
-      if (value === false || value === '' || value === null || value === undefined) delete perChar[index][key];
-      else perChar[index][key] = value;
-    });
-  }
-
-  const runs = [];
-  let current = null;
-  const styleSignature = (style) => JSON.stringify(RICH_TEXT_STYLE_KEYS.reduce((acc, key) => {
-    if (style[key] !== undefined) acc[key] = style[key];
-    return acc;
-  }, {}));
-
-  for (let index = 0; index < perChar.length; index += 1) {
-    const style = perChar[index];
-    const signature = styleSignature(style);
-    if (signature === '{}') {
-      if (current) { runs.push(current); current = null; }
-      continue;
-    }
-    if (!current || current.signature !== signature) {
-      if (current) runs.push(current);
-      current = { start: index, end: index + 1, signature, ...JSON.parse(signature) };
-    } else {
-      current.end = index + 1;
-    }
-  }
-  if (current) runs.push(current);
-  return runs.map(({ signature, ...run }) => run);
-}
-
 function mergeCellStyle(currentStyle = {}, patch = {}) {
   const next = { ...currentStyle, ...patch };
   Object.keys(next).forEach((key) => {
-    if (Array.isArray(next[key]) && next[key].length === 0) delete next[key];
     if (next[key] === false || next[key] === '' || next[key] === null || next[key] === undefined) delete next[key];
+    if (key === 'richText' && Array.isArray(next[key]) && !next[key].length) delete next[key];
   });
   return next;
+}
+
+function normalizeRichTextRuns(runs = [], textLength = 0) {
+  return (Array.isArray(runs) ? runs : [])
+    .map((run) => ({
+      ...run,
+      start: Math.max(0, Math.min(textLength, Number(run.start || 0))),
+      end: Math.max(0, Math.min(textLength, Number(run.end || 0))),
+    }))
+    .filter((run) => run.end > run.start);
+}
+
+function isInlinePatch(patch = {}) {
+  const keys = Object.keys(patch || {}).filter((key) => patch[key] !== false && patch[key] !== '' && patch[key] !== null && patch[key] !== undefined);
+  return keys.length > 0 && keys.every((key) => INLINE_TEXT_STYLE_KEYS.has(key));
+}
+
+function mergeRichTextRun(currentStyle = {}, selection = {}, patch = {}) {
+  const value = sanitizeCellValue(selection.value || '');
+  const start = Math.max(0, Math.min(value.length, Number(selection.start || 0)));
+  const end = Math.max(0, Math.min(value.length, Number(selection.end || 0)));
+  if (end <= start) return currentStyle;
+
+  const patchEntries = Object.entries(patch || {}).filter(([key]) => INLINE_TEXT_STYLE_KEYS.has(key));
+  if (!patchEntries.length) return currentStyle;
+
+  const previousRuns = normalizeRichTextRuns(currentStyle.richText, value.length);
+  const boundaries = new Set([0, value.length, start, end]);
+  previousRuns.forEach((run) => {
+    boundaries.add(run.start);
+    boundaries.add(run.end);
+  });
+
+  const points = [...boundaries].sort((a, b) => a - b);
+  const nextRuns = [];
+  points.slice(0, -1).forEach((point, index) => {
+    const nextPoint = points[index + 1];
+    if (nextPoint <= point) return;
+    const baseStyle = previousRuns.reduce((acc, run) => {
+      if (run.start < nextPoint && run.end > point) return { ...acc, ...run };
+      return acc;
+    }, {});
+
+    if (point >= start && nextPoint <= end) {
+      patchEntries.forEach(([key, value]) => {
+        if (value === false || value === '' || value === null || value === undefined) delete baseStyle[key];
+        else baseStyle[key] = value;
+      });
+    }
+
+    const clean = Object.fromEntries(Object.entries(baseStyle).filter(([key, value]) => (
+      INLINE_TEXT_STYLE_KEYS.has(key) && value !== false && value !== '' && value !== null && value !== undefined
+    )));
+    if (Object.keys(clean).length) nextRuns.push({ start: point, end: nextPoint, ...clean });
+  });
+
+  const mergedRuns = [];
+  nextRuns.forEach((run) => {
+    const last = mergedRuns[mergedRuns.length - 1];
+    const sameStyle = last && last.end === run.start && INLINE_TEXT_STYLE_KEYS.size && [...INLINE_TEXT_STYLE_KEYS].every((key) => (last[key] || '') === (run[key] || ''));
+    if (sameStyle) last.end = run.end;
+    else mergedRuns.push(run);
+  });
+
+  return mergeCellStyle(currentStyle, { richText: mergedRuns });
+}
+
+function getInlineSelectionStyle(cellStyle = {}, selection = {}) {
+  const value = sanitizeCellValue(selection.value || '');
+  const start = Math.max(0, Math.min(value.length, Number(selection.start || 0)));
+  const end = Math.max(0, Math.min(value.length, Number(selection.end || 0)));
+  if (end <= start) return {};
+  const runs = normalizeRichTextRuns(cellStyle.richText, value.length).filter((run) => run.start < end && run.end > start);
+  return runs.reduce((acc, run) => ({ ...acc, ...run }), {});
 }
 
 function sameStyleValue(cells = [], key, expectedValue) {
@@ -775,6 +785,7 @@ function SheetContextMenu({
   onItalic,
   onUnderline,
   onStrikeThrough,
+  onTextColor,
   onAlignLeft,
   onAlignCenter,
   onAlignRight,
@@ -807,6 +818,17 @@ function SheetContextMenu({
   if (!menu) return null;
   const isRow = menu.scope === 'row';
   const isColumn = menu.scope === 'column';
+  const typeLabel = isRow ? 'Linha' : isColumn ? 'Coluna' : 'Célula';
+
+  const Item = ({ icon, label, shortcut, onClick, disabled, danger }) => (
+    <button type="button" role="menuitem" onClick={onClick} disabled={disabled} data-danger={danger || undefined}>
+      <span className={styles.contextIcon} aria-hidden="true">{icon}</span>
+      <span className={styles.contextLabel}>{label}</span>
+      {shortcut ? <kbd>{shortcut}</kbd> : null}
+    </button>
+  );
+  const Divider = () => <span className={styles.contextDivider} aria-hidden="true" />;
+
   return (
     <div className={styles.contextBackdrop} role="presentation" onMouseDown={onClose} onContextMenu={(event) => event.preventDefault()}>
       <section
@@ -817,67 +839,91 @@ function SheetContextMenu({
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className={styles.contextMenuHeader}>
-          <strong>{isRow ? 'Linha' : isColumn ? 'Coluna' : 'Célula'}</strong>
+          <strong>{typeLabel}</strong>
           <span>{menu.label || 'Ações rápidas'}</span>
         </header>
-        <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção <kbd>Ctrl C</kbd></button>
-        <button type="button" role="menuitem" onClick={onCut} disabled={!canEdit}>Recortar seleção <kbd>Ctrl X</kbd></button>
-        <button type="button" role="menuitem" onClick={onPaste} disabled={!canEdit}>Colar <kbd>Ctrl V</kbd></button>
-        <button type="button" role="menuitem" onClick={onSelectAll}>Selecionar tudo <kbd>Ctrl A</kbd></button>
-        <button type="button" role="menuitem" onClick={onSelectUsedRange}>Selecionar área preenchida</button>
-        <button type="button" role="menuitem" onClick={onSelectRow} disabled={isColumn}>Selecionar linha</button>
-        <button type="button" role="menuitem" onClick={onSelectColumn} disabled={isRow}>Selecionar coluna</button>
-        <button type="button" role="menuitem" onClick={onFindCellValue}>Localizar este valor</button>
-        <button type="button" role="menuitem" onClick={onUseCellValueAsReplaceQuery}>Usar no substituir</button>
-        <span aria-hidden="true" />
-        <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção <kbd>Ctrl Enter</kbd></button>
-        <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo <kbd>Del</kbd></button>
-        <button type="button" role="menuitem" onClick={onNormalizeSelection} disabled={!canEdit}>Normalizar pelo tipo</button>
-        <button type="button" role="menuitem" onClick={onUppercase} disabled={!canEdit}>Texto em MAIÚSCULAS</button>
-        <button type="button" role="menuitem" onClick={onLowercase} disabled={!canEdit}>Texto em minúsculas</button>
-        <button type="button" role="menuitem" onClick={onTitlecase} disabled={!canEdit}>Texto Capitalizado</button>
-        <button type="button" role="menuitem" onClick={onTrimSpaces} disabled={!canEdit}>Remover espaços extras</button>
-        <span aria-hidden="true" />
-        <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito <kbd>Ctrl B</kbd></button>
-        <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico <kbd>Ctrl I</kbd></button>
-        <button type="button" role="menuitem" onClick={onUnderline} disabled={!canEdit}>Sublinhado <kbd>Ctrl U</kbd></button>
-        <button type="button" role="menuitem" onClick={onStrikeThrough} disabled={!canEdit}>Tachado</button>
-        <button type="button" role="menuitem" onClick={onAlignLeft} disabled={!canEdit}>Alinhar à esquerda</button>
-        <button type="button" role="menuitem" onClick={onAlignCenter} disabled={!canEdit}>Centralizar</button>
-        <button type="button" role="menuitem" onClick={onAlignRight} disabled={!canEdit}>Alinhar à direita</button>
-        <button type="button" role="menuitem" onClick={onClearFormatting} disabled={!canEdit}>Limpar formatação</button>
-        <button type="button" role="menuitem" onClick={onWrapText} disabled={!canEdit}>Quebrar texto</button>
-        <button type="button" role="menuitem" onClick={onClipText} disabled={!canEdit}>Cortar texto</button>
-        <button type="button" role="menuitem" onClick={onFontSmall} disabled={!canEdit}>Fonte pequena</button>
-        <button type="button" role="menuitem" onClick={onFontNormal} disabled={!canEdit}>Fonte normal</button>
-        <button type="button" role="menuitem" onClick={onFontLarge} disabled={!canEdit}>Fonte grande</button>
-        <button type="button" role="menuitem" onClick={onVerticalTop} disabled={!canEdit}>Alinhar no topo</button>
-        <button type="button" role="menuitem" onClick={onVerticalMiddle} disabled={!canEdit}>Alinhar ao meio</button>
-        <button type="button" role="menuitem" onClick={onVerticalBottom} disabled={!canEdit}>Alinhar abaixo</button>
-        {isColumn ? (
-          <>
-            <span aria-hidden="true" />
-            <button type="button" role="menuitem" onClick={onSortColumnAscending} disabled={!canEdit}>Ordenar A → Z</button>
-            <button type="button" role="menuitem" onClick={onSortColumnDescending} disabled={!canEdit}>Ordenar Z → A</button>
-            <button type="button" role="menuitem" onClick={onFilterColumnBySelection}>Filtrar por valor selecionado</button>
-            <button type="button" role="menuitem" onClick={onClearColumnFilter}>Limpar filtro da coluna</button>
-            <button type="button" role="menuitem" onClick={onFitColumnWidth} disabled={!canEdit}>Ajustar largura ao conteúdo</button>
-            <button type="button" role="menuitem" onClick={onSetTypeText} disabled={!canEdit}>Tipo: texto</button>
-            <button type="button" role="menuitem" onClick={onSetTypeNumber} disabled={!canEdit}>Tipo: número</button>
-            <button type="button" role="menuitem" onClick={onSetTypeCurrency} disabled={!canEdit}>Tipo: moeda</button>
-            <button type="button" role="menuitem" onClick={onSetTypePercent} disabled={!canEdit}>Tipo: percentual</button>
-          </>
-        ) : null}
-        <span aria-hidden="true" />
-        <button type="button" role="menuitem" onClick={onInsertRowAbove} disabled={!canEdit}>Inserir linha acima</button>
-        <button type="button" role="menuitem" onClick={onInsertRowBelow} disabled={!canEdit}>Inserir linha abaixo</button>
-        <button type="button" role="menuitem" onClick={onDuplicateRow} disabled={!canEdit || isColumn}>Duplicar linha</button>
-        <button type="button" role="menuitem" onClick={onInsertColumnLeft} disabled={!canEdit}>Inserir coluna à esquerda</button>
-        <button type="button" role="menuitem" onClick={onInsertColumnRight} disabled={!canEdit}>Inserir coluna à direita</button>
-        <button type="button" role="menuitem" onClick={onDuplicateColumn} disabled={!canEdit || isRow}>Duplicar coluna</button>
-        <span aria-hidden="true" />
-        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteRow} disabled={!canEdit || isColumn}>Excluir linha</button>
-        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteColumn} disabled={!canEdit || isRow}>Excluir coluna</button>
+
+        <Item icon="✂" label="Recortar" shortcut="Ctrl X" onClick={onCut} disabled={!canEdit} />
+        <Item icon="⧉" label="Copiar" shortcut="Ctrl C" onClick={onCopy} />
+        <Item icon="▣" label="Colar" shortcut="Ctrl V" onClick={onPaste} disabled={!canEdit} />
+        <Divider />
+
+        {!isColumn ? <Item icon="＋" label="Inserir linha acima" onClick={onInsertRowAbove} disabled={!canEdit} /> : null}
+        {!isColumn ? <Item icon="＋" label="Inserir linha abaixo" onClick={onInsertRowBelow} disabled={!canEdit} /> : null}
+        {!isRow ? <Item icon="＋" label="Inserir coluna à esquerda" onClick={onInsertColumnLeft} disabled={!canEdit} /> : null}
+        {!isRow ? <Item icon="＋" label="Inserir coluna à direita" onClick={onInsertColumnRight} disabled={!canEdit} /> : null}
+        {isRow ? <Item icon="⧉" label="Duplicar linha" onClick={onDuplicateRow} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⧉" label="Duplicar coluna" onClick={onDuplicateColumn} disabled={!canEdit} /> : null}
+        <Divider />
+
+        {!isColumn ? <Item icon="🗑" label="Excluir linha" onClick={onDeleteRow} disabled={!canEdit || isColumn} danger /> : null}
+        {!isRow ? <Item icon="🗑" label="Excluir coluna" onClick={onDeleteColumn} disabled={!canEdit || isRow} danger /> : null}
+        <Item icon="⌫" label="Limpar conteúdo" shortcut="Del" onClick={onClearSelection} disabled={!canEdit} />
+        <Divider />
+
+        <Item icon="▦" label="Selecionar tudo" shortcut="Ctrl A" onClick={onSelectAll} />
+        <Item icon="▣" label="Selecionar área preenchida" onClick={onSelectUsedRange} />
+        {!isColumn ? <Item icon="↔" label="Selecionar linha" onClick={onSelectRow} disabled={isColumn} /> : null}
+        {!isRow ? <Item icon="↕" label="Selecionar coluna" onClick={onSelectColumn} disabled={isRow} /> : null}
+        <Divider />
+
+        <Item icon="B" label="Negrito" shortcut="Ctrl B" onClick={onBold} disabled={!canEdit} />
+        <Item icon="I" label="Itálico" shortcut="Ctrl I" onClick={onItalic} disabled={!canEdit} />
+        <Item icon="U" label="Sublinhado" shortcut="Ctrl U" onClick={onUnderline} disabled={!canEdit} />
+        <Item icon="S" label="Tachado" onClick={onStrikeThrough} disabled={!canEdit} />
+        <div className={styles.contextPalette} role="group" aria-label="Cor do texto">
+          <span>Cor do texto</span>
+          {TEXT_COLOR_OPTIONS.slice(1).map((option) => (
+            <button
+              key={option.label}
+              type="button"
+              title={option.label}
+              aria-label={`Cor do texto: ${option.label}`}
+              style={{ '--swatch': option.value }}
+              onClick={() => onTextColor(option.value)}
+              disabled={!canEdit}
+            />
+          ))}
+        </div>
+        <Divider />
+
+        <Item icon="≡" label="Alinhar à esquerda" onClick={onAlignLeft} disabled={!canEdit} />
+        <Item icon="≣" label="Centralizar" onClick={onAlignCenter} disabled={!canEdit} />
+        <Item icon="≡" label="Alinhar à direita" onClick={onAlignRight} disabled={!canEdit} />
+        <Item icon="↵" label="Quebrar texto" onClick={onWrapText} disabled={!canEdit} />
+        <Item icon="▸" label="Cortar texto" onClick={onClipText} disabled={!canEdit} />
+        <Divider />
+
+        <Item icon="A" label="Texto em MAIÚSCULAS" onClick={onUppercase} disabled={!canEdit} />
+        <Item icon="a" label="Texto em minúsculas" onClick={onLowercase} disabled={!canEdit} />
+        <Item icon="Aa" label="Texto Capitalizado" onClick={onTitlecase} disabled={!canEdit} />
+        <Item icon="␠" label="Remover espaços extras" onClick={onTrimSpaces} disabled={!canEdit} />
+        <Item icon="⌁" label="Normalizar pelo tipo" onClick={onNormalizeSelection} disabled={!canEdit} />
+        <Divider />
+
+        {isColumn ? <Item icon="⇅" label="Ordenar A → Z" onClick={onSortColumnAscending} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⇵" label="Ordenar Z → A" onClick={onSortColumnDescending} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⌕" label="Filtrar por valor da célula" onClick={onFilterColumnBySelection} /> : null}
+        {isColumn ? <Item icon="×" label="Limpar filtro da coluna" onClick={onClearColumnFilter} /> : null}
+        {isColumn ? <Item icon="↔" label="Ajustar largura ao conteúdo" onClick={onFitColumnWidth} disabled={!canEdit} /> : null}
+        {isColumn ? <Divider /> : null}
+
+        {isColumn ? <Item icon="T" label="Tipo: texto" onClick={onSetTypeText} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="123" label="Tipo: número" onClick={onSetTypeNumber} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="R$" label="Tipo: moeda" onClick={onSetTypeCurrency} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="%" label="Tipo: percentual" onClick={onSetTypePercent} disabled={!canEdit} /> : null}
+        {isColumn ? <Divider /> : null}
+
+        <Item icon="⌕" label="Localizar este valor" onClick={onFindCellValue} />
+        <Item icon="↔" label="Usar no substituir" onClick={onUseCellValueAsReplaceQuery} />
+        <Item icon="✕" label="Limpar formatação" onClick={onClearFormatting} disabled={!canEdit} />
+        <Item icon="−" label="Fonte pequena" onClick={onFontSmall} disabled={!canEdit} />
+        <Item icon="10" label="Fonte normal" onClick={onFontNormal} disabled={!canEdit} />
+        <Item icon="+" label="Fonte grande" onClick={onFontLarge} disabled={!canEdit} />
+        <Item icon="⇡" label="Alinhar no topo" onClick={onVerticalTop} disabled={!canEdit} />
+        <Item icon="↕" label="Alinhar ao meio" onClick={onVerticalMiddle} disabled={!canEdit} />
+        <Item icon="⇣" label="Alinhar abaixo" onClick={onVerticalBottom} disabled={!canEdit} />
+        <Item icon="↵" label="Preencher seleção" shortcut="Ctrl Enter" onClick={onFillSelection} disabled={!canEdit} />
       </section>
     </div>
   );
@@ -904,7 +950,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [syncState, setSyncState] = useState({ status: 'idle', detail: 'Pronto' });
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
-  const [editSelection, setEditSelection] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterColumnKey, setFilterColumnKey] = useState('all');
   const [filterQuery, setFilterQuery] = useState('');
@@ -914,6 +959,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [replaceScope, setReplaceScope] = useState('selection');
   const [replaceMatchCase, setReplaceMatchCase] = useState(false);
   const [advancedPanelOpen, setAdvancedPanelOpen] = useState(false);
+  const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const replaceInputRef = useRef(null);
@@ -989,6 +1035,30 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.verticalAlign || 'middle';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.verticalAlign || 'middle') === first) ? first : 'mixed';
   }, [selectedCells]);
+
+  const selectedTextColor = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.color || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.color || '') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const selectedFillColor = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.backgroundColor || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.backgroundColor || '') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const hasActiveTextRange = !!activeTextSelection
+    && activeTextSelection.rowId === activeCell?.rowId
+    && activeTextSelection.key === activeCell?.key
+    && Number(activeTextSelection.end || 0) > Number(activeTextSelection.start || 0);
+
+  const inlineSelectionStyle = useMemo(() => {
+    if (!hasActiveTextRange) return {};
+    const row = rows.find((entry) => entry.id === activeTextSelection.rowId);
+    if (!row) return {};
+    return getInlineSelectionStyle(getCellStyle(row, activeTextSelection.key), activeTextSelection);
+  }, [activeTextSelection, hasActiveTextRange, rows]);
 
   const displayValueMap = useMemo(() => {
     const map = new Map();
@@ -1238,18 +1308,44 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setRows((current) => current.map((row) => (row.id === rowId ? { ...row, [key]: cleanValue } : row)));
   }, []);
 
+
+  const applyInlineStyleToActiveTextSelection = useCallback(async (patch) => {
+    if (!canEdit || !activeTextSelection?.rowId || !activeTextSelection?.key) return false;
+    const start = Number(activeTextSelection.start || 0);
+    const end = Number(activeTextSelection.end || 0);
+    if (end <= start || !isInlinePatch(patch)) return false;
+    const row = rows.find((entry) => entry.id === activeTextSelection.rowId);
+    if (!row) return false;
+    const currentStyle = getCellStyle(row, activeTextSelection.key);
+    const nextStyle = mergeRichTextRun(currentStyle, activeTextSelection, patch);
+    setCellDraft(activeTextSelection.rowId, activeTextSelection.key, activeTextSelection.value);
+    setRows((current) => current.map((entry) => (entry.id === activeTextSelection.rowId
+      ? {
+          ...entry,
+          [activeTextSelection.key]: sanitizeCellValue(activeTextSelection.value),
+          __styles: { ...(entry.__styles || {}), [activeTextSelection.key]: nextStyle },
+        }
+      : entry)));
+    markSync('saving', 'Salvando trecho formatado');
+    setBusy('format');
+    try {
+      await updateSupportDailyRow(activeTextSelection.rowId, {
+        [activeTextSelection.key]: sanitizeCellValue(activeTextSelection.value),
+        styles: { [activeTextSelection.key]: nextStyle },
+      });
+      markSync('saved', 'Trecho formatado');
+      return true;
+    } catch (error) {
+      notifyError(error, 'Não foi possível salvar a formatação do trecho.');
+      loadSheet(activeSheetId).catch(() => {});
+      return false;
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, activeTextSelection, canEdit, loadSheet, markSync, notifyError, rows, setCellDraft]);
+
   const applyStyleToSelection = useCallback(async (patchFactory) => {
     if (!canEdit || !selectedCells.length) return;
-
-    const canApplyPartial = editSelection
-      && editSelection.rowId
-      && editSelection.key
-      && editSelection.start >= 0
-      && editSelection.end > editSelection.start
-      && selectedCells.length === 1
-      && selectedCells[0]?.row?.id === editSelection.rowId
-      && selectedCells[0]?.column?.key === editSelection.key;
-
     const updatesByRow = new Map();
     const nextRows = rows.map((row) => {
       const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
@@ -1258,15 +1354,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       targetCells.forEach(({ column }) => {
         const currentStyle = nextStyles[column.key] || {};
         const patch = typeof patchFactory === 'function' ? patchFactory(currentStyle, column.key, row) : patchFactory;
-        if (canApplyPartial && row.id === editSelection.rowId && column.key === editSelection.key) {
-          const raw = sanitizeCellValue(row?.[column.key] || '');
-          const partialPatch = Object.fromEntries(Object.entries(patch).filter(([key]) => RICH_TEXT_STYLE_KEYS.includes(key)));
-          const blockPatch = Object.fromEntries(Object.entries(patch).filter(([key]) => !RICH_TEXT_STYLE_KEYS.includes(key)));
-          const richText = applyRichTextPatch(currentStyle.richText || [], editSelection, raw.length, partialPatch);
-          nextStyles[column.key] = mergeCellStyle(currentStyle, { ...blockPatch, richText });
-        } else {
-          nextStyles[column.key] = mergeCellStyle(currentStyle, patch);
-        }
+        nextStyles[column.key] = mergeCellStyle(currentStyle, patch);
       });
       updatesByRow.set(row.id, Object.fromEntries(targetCells.map(({ column }) => [column.key, nextStyles[column.key]])));
       return { ...row, __styles: nextStyles };
@@ -1277,19 +1365,24 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setBusy('format');
     try {
       await Promise.all([...updatesByRow.entries()].map(([rowId, styles]) => updateSupportDailyRow(rowId, { styles })));
-      markSync('saved', canApplyPartial ? 'Formatação parcial salva' : 'Formatação salva');
+      markSync('saved', 'Formatação salva');
     } catch (error) {
       notifyError(error, 'Não foi possível salvar a formatação.');
       loadSheet(activeSheetId).catch(() => {});
     } finally {
       setBusy('');
     }
-  }, [activeSheetId, canEdit, editSelection, loadSheet, markSync, notifyError, rows, selectedCells]);
+  }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
 
   const toggleStyle = useCallback((styleKey) => {
+    if (hasActiveTextRange && INLINE_TEXT_STYLE_KEYS.has(styleKey)) {
+      const enabled = inlineSelectionStyle?.[styleKey] !== true;
+      applyInlineStyleToActiveTextSelection({ [styleKey]: enabled }).catch(() => {});
+      return;
+    }
     const enabled = !sameStyleValue(selectedCells, styleKey, true);
     applyStyleToSelection({ [styleKey]: enabled }).catch(() => {});
-  }, [applyStyleToSelection, selectedCells]);
+  }, [applyInlineStyleToActiveTextSelection, applyStyleToSelection, hasActiveTextRange, inlineSelectionStyle, selectedCells]);
 
   const setTextAlign = useCallback((textAlign) => {
     const nextAlign = selectedAlign === textAlign ? '' : textAlign;
@@ -1312,14 +1405,40 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     applyStyleToSelection({ verticalAlign }).catch(() => {});
   }, [applyStyleToSelection]);
 
-
   const setTextColor = useCallback((color) => {
+    if (hasActiveTextRange) {
+      applyInlineStyleToActiveTextSelection({ color }).catch(() => {});
+      return;
+    }
     applyStyleToSelection({ color }).catch(() => {});
-  }, [applyStyleToSelection]);
+  }, [applyInlineStyleToActiveTextSelection, applyStyleToSelection, hasActiveTextRange]);
 
   const setFillColor = useCallback((backgroundColor) => {
     applyStyleToSelection({ backgroundColor }).catch(() => {});
   }, [applyStyleToSelection]);
+
+  const focusSearch = useCallback(() => {
+    searchInputRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  const insertFormulaTemplate = useCallback((name = 'SOMA') => {
+    if (!activeCell || !canEdit) return;
+    const next = `=${name}()`;
+    setFormulaValue(next);
+    window.requestAnimationFrame(() => {
+      const input = formulaInputRef.current;
+      if (!input) return;
+      input.focus({ preventScroll: true });
+      const caret = Math.max(1, next.length - 1);
+      input.setSelectionRange(caret, caret);
+    });
+  }, [activeCell, canEdit]);
+
+  const clearSelectionAndFilters = useCallback(() => {
+    setFilterQuery('');
+    setColumnFilters({});
+    setSearchQuery('');
+  }, []);
 
   const clearSelectionFormatting = useCallback(() => {
     applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
@@ -2433,96 +2552,82 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </div>
       </div>
 
-      <div className={styles.toolbar}>
-        <div className={styles.toolbarGroup}>
-          <Button size="xs" variant="ghost" onClick={addRow} disabled={!canMutateSheet}><PlusIcon size={13} /> Linha</Button>
-          <Button size="xs" variant="ghost" onClick={addColumn} disabled={!canMutateSheet}><PlusIcon size={13} /> Coluna</Button>
-          <Button size="xs" variant="ghost" onClick={copySelection} disabled={!activeCell}>Copiar</Button>
-          <Button size="xs" variant="ghost" onClick={applyValueToSelection} disabled={!selectedCount || !canEdit || !!busy}>Preencher</Button>
-          <Button size="xs" variant="ghost" onClick={normalizeSelectionValues} disabled={!selectedCount || !canEdit || !!busy}>Normalizar</Button>
-        </div>
-        <div className={styles.formatGroup} aria-label="Formatação da seleção">
-          <button type="button" data-active={selectedHasBold || undefined} onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>B</button>
-          <button type="button" data-active={selectedHasItalic || undefined} onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}><em>I</em></button>
-          <button type="button" data-active={selectedHasUnderline || undefined} onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}><u>U</u></button>
-          <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy}><s>S</s></button>
-          <span aria-hidden="true" />
-          <button type="button" data-active={selectedAlign === 'left' || undefined} onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy}>E</button>
-          <button type="button" data-active={selectedAlign === 'center' || undefined} onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy}>C</button>
-          <button type="button" data-active={selectedAlign === 'right' || undefined} onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>D</button>
-          <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar</button>
-        </div>
-        <label className={styles.typeGroup}>
-          <span>Tipo</span>
-          <select
-            value={selectedNumberFormat === 'mixed' ? 'text' : selectedNumberFormat}
-            aria-label="Tipo da seleção"
-            disabled={!selectedCount || !canEdit || !!busy}
-            onChange={(event) => setNumberFormat(event.target.value)}
-          >
-            <option value="text">Texto</option>
-            <option value="number">Número</option>
-            <option value="currency">Moeda</option>
-            <option value="percent">Percentual</option>
-          </select>
-        </label>
-        <label className={styles.typeGroup}>
-          <span>Texto</span>
-          <select
-            value={selectedWrapMode === 'mixed' ? '' : selectedWrapMode}
-            aria-label="Modo do texto"
-            disabled={!selectedCount || !canEdit || !!busy}
-            onChange={(event) => setWrapMode(event.target.value)}
-          >
-            <option value="">Transbordar</option>
-            <option value="wrap">Quebrar</option>
-            <option value="clip">Cortar</option>
-          </select>
-        </label>
-        <label className={styles.colorGroup}>
-          <span>A</span>
-          <select
-            value={selectedCells[0] ? (getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.color || '') : ''}
-            aria-label="Cor do texto"
-            disabled={!selectedCount || !canEdit || !!busy}
-            onChange={(event) => setTextColor(event.target.value)}
-          >
-            {TEXT_COLOR_OPTIONS.map((option) => <option key={option.label} value={option.value}>{option.label}</option>)}
-          </select>
-        </label>
-        <label className={styles.colorGroup}>
-          <span>Fundo</span>
-          <select
-            value={selectedCells[0] ? (getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.backgroundColor || '') : ''}
-            aria-label="Cor de preenchimento"
-            disabled={!selectedCount || !canEdit || !!busy}
-            onChange={(event) => setFillColor(event.target.value)}
-          >
-            {FILL_COLOR_OPTIONS.map((option) => <option key={option.label} value={option.value}>{option.label}</option>)}
-          </select>
-        </label>
-        <div className={styles.findGroup}>
-          <input
-            ref={searchInputRef}
-            value={searchQuery}
-            aria-label="Buscar na planilha"
-            placeholder="Buscar"
-            onChange={(event) => setSearchQuery(sanitizeCellValue(event.target.value))}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                goToSearchMatch(event.shiftKey ? -1 : 1);
-              }
-            }}
-          />
-          <button type="button" onClick={() => goToSearchMatch(-1)} disabled={!searchMatches.length}>↑</button>
-          <button type="button" onClick={() => goToSearchMatch(1)} disabled={!searchMatches.length}>↓</button>
-          <span>{searchQuery ? `${searchMatches.length}` : '0'}</span>
-        </div>
-        <div className={styles.toolbarGroup}>
-          <Button size="xs" variant="ghost" onClick={deleteRow} disabled={!activeRow || !canEdit || !!busy}><TrashIcon size={13} /> Linha</Button>
-          <Button size="xs" variant="ghost" onClick={deleteColumn} disabled={!activeColumn || !canEdit || !!busy}><TrashIcon size={13} /> Coluna</Button>
-        </div>
+      <div className={styles.sheetsToolbar} aria-label="Barra de ferramentas da planilha">
+        <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Pesquisar">⌕</button>
+        <button type="button" onClick={copySelection} disabled={!activeCell} aria-label="Copiar">Copiar</button>
+        <button type="button" onClick={cutSelection} disabled={!activeCell || !canEdit || !!busy} aria-label="Recortar">Recortar</button>
+        <button type="button" onClick={pasteClipboardAtActive} disabled={!activeCell || !canEdit || !!busy} aria-label="Colar">Colar</button>
+        <span aria-hidden="true" />
+        <select aria-label="Zoom da planilha" value="100" disabled>
+          <option value="100">100%</option>
+        </select>
+        <select
+          value={selectedNumberFormat === 'mixed' ? 'text' : selectedNumberFormat}
+          aria-label="Formato da seleção"
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setNumberFormat(event.target.value)}
+        >
+          <option value="text">123</option>
+          <option value="number">Número</option>
+          <option value="currency">R$ Moeda</option>
+          <option value="percent">% Percentual</option>
+        </select>
+        <span aria-hidden="true" />
+        <select aria-label="Fonte" value="Roboto" disabled>
+          <option value="Roboto">Roboto</option>
+        </select>
+        <button type="button" onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Diminuir fonte">−</button>
+        <select
+          value={selectedFontSize === 'mixed' ? '' : selectedFontSize}
+          aria-label="Tamanho da fonte"
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setFontSize(event.target.value)}
+        >
+          <option value="small">9</option>
+          <option value="">10</option>
+          <option value="large">12</option>
+        </select>
+        <button type="button" onClick={() => setFontSize('large')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Aumentar fonte">+</button>
+        <span aria-hidden="true" />
+        <button type="button" data-active={selectedHasBold || undefined} onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Negrito"><strong>B</strong></button>
+        <button type="button" data-active={selectedHasItalic || undefined} onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Itálico"><em>I</em></button>
+        <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy} aria-label="Tachado"><s>S</s></button>
+        <button type="button" data-active={selectedHasUnderline || undefined} onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Sublinhado"><u>U</u></button>
+        <select
+          value={selectedTextColor === 'mixed' ? '' : selectedTextColor}
+          aria-label="Cor do texto"
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setTextColor(event.target.value)}
+        >
+          {TEXT_COLOR_OPTIONS.map((option) => <option key={option.label} value={option.value}>{option.label}</option>)}
+        </select>
+        <select
+          value={selectedFillColor === 'mixed' ? '' : selectedFillColor}
+          aria-label="Cor de preenchimento"
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setFillColor(event.target.value)}
+        >
+          {FILL_COLOR_OPTIONS.map((option) => <option key={option.label} value={option.value}>{option.label}</option>)}
+        </select>
+        <span aria-hidden="true" />
+        <button type="button" data-active={selectedAlign === 'left' || undefined} onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Alinhar à esquerda">≡</button>
+        <button type="button" data-active={selectedAlign === 'center' || undefined} onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Centralizar">≣</button>
+        <button type="button" data-active={selectedAlign === 'right' || undefined} onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Alinhar à direita">≡</button>
+        <select
+          value={selectedWrapMode === 'mixed' ? '' : selectedWrapMode}
+          aria-label="Ajuste de texto"
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setWrapMode(event.target.value)}
+        >
+          <option value="">Transbordar</option>
+          <option value="wrap">Quebrar</option>
+          <option value="clip">Cortar</option>
+        </select>
+        <span aria-hidden="true" />
+        <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy} aria-label="Limpar formatação">Limpar</button>
+        <button type="button" onClick={normalizeSelectionValues} disabled={!selectedCount || !canEdit || !!busy} aria-label="Normalizar">Normalizar</button>
+        <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Criar filtro">Filtro</button>
+        <button type="button" onClick={() => insertFormulaTemplate('SOMA')} disabled={!activeCell || !canEdit || !!busy} aria-label="Inserir soma">Σ</button>
       </div>
 
       <div className={styles.filterBar}>
@@ -2628,7 +2733,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </div>
       </div>
 
-      <div className={styles.sheetWorkspace} data-panel-open={advancedPanelOpen || undefined}>
+      <div className={styles.sheetWorkspace}>
         <div
           className={styles.sheetFrame}
           data-scrolled-x={scrollState.x || undefined}
@@ -2663,6 +2768,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             onCellChange={setCellDraft}
             onCellCommit={commitCell}
             onFormulaDraftChange={setFormulaValue}
+            onEditorSelectionChange={setActiveTextSelection}
             onNavigateCell={navigateCell}
             onJumpCell={jumpCell}
             onContextMenu={openContextMenu}
@@ -2674,7 +2780,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             onResizeStart={startResize}
             onScrollStateChange={setScrollState}
             onAutoFillSelection={autoFillSelection}
-            onEditorSelectionChange={setEditSelection}
           />
         ) : null}
         {!loading && !activeSheetId ? (
@@ -2685,7 +2790,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         ) : null}
         </div>
 
-        {advancedPanelOpen ? (
+        {false && advancedPanelOpen ? (
           <aside className={styles.advancedPanel} aria-label="Painel avançado da planilha">
             <header>
               <strong>Painel avançado</strong>
