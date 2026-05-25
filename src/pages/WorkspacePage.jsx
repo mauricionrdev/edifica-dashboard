@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
 import UserSpreadsheetPanel from '../components/spreadsheets/UserSpreadsheetPanel.jsx';
 import { listMyProjectTasks } from '../api/projects.js';
+import { createWorkspaceDocument, deleteWorkspaceDocument, listWorkspaceDocuments, updateWorkspaceDocument } from '../api/support.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { getUserAvatar } from '../utils/avatarStorage.js';
@@ -14,8 +15,10 @@ import {
   HomeIcon,
   PlusIcon,
   RotateCcwIcon,
+  SaveIcon,
   SearchIcon,
   SettingsIcon,
+  TrashIcon,
   SparklesIcon,
 } from '../components/ui/Icons.jsx';
 import styles from './WorkspacePage.module.css';
@@ -24,7 +27,7 @@ const TABS = [
   { id: 'home', label: 'Início', icon: HomeIcon },
   { id: 'tasks', label: 'Tarefas', icon: ChecklistIcon },
   { id: 'sheets', label: 'Planilhas', icon: BuildingIcon },
-  { id: 'resources', label: 'Documentos', icon: SparklesIcon },
+  { id: 'documents', label: 'Documentos', icon: SparklesIcon },
   { id: 'settings', label: 'Configurações', icon: SettingsIcon },
 ];
 
@@ -266,6 +269,62 @@ function ResourceAction({ icon: Icon, title, description, onClick }) {
   );
 }
 
+
+const DOCUMENT_TEMPLATES = [
+  {
+    id: 'blank',
+    title: 'Página em branco',
+    content: '',
+  },
+  {
+    id: 'meeting',
+    title: 'Reunião',
+    content: '- Decisões\n- Pendências\n- Próximos passos',
+  },
+  {
+    id: 'process',
+    title: 'Processo interno',
+    content: 'Objetivo\n\nEtapas\n- \n\nChecklist\n- [ ] ',
+  },
+];
+
+function documentExcerpt(content = '') {
+  const text = String(content || '').replace(/\s+/g, ' ').trim();
+  return text ? text.slice(0, 120) : 'Sem conteúdo';
+}
+
+function formatDocumentDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date).replace('.', '');
+}
+
+function DocumentCard({ document, active, onSelect, onDelete }) {
+  return (
+    <button type="button" className={`${styles.documentCard} ${active ? styles.documentCardActive : ''}`.trim()} onClick={() => onSelect(document.id)}>
+      <div>
+        <strong>{document.title || 'Sem título'}</strong>
+        <span>{documentExcerpt(document.content)}</span>
+      </div>
+      <footer>
+        <em>{formatDocumentDate(document.updatedAt || document.createdAt)}</em>
+        <button
+          type="button"
+          className={styles.documentDelete}
+          onClick={(event) => {
+            event.stopPropagation();
+            onDelete(document.id);
+          }}
+          aria-label="Excluir documento"
+        >
+          <TrashIcon size={13} />
+        </button>
+      </footer>
+    </button>
+  );
+}
+
 function TaskBoardColumn({ title, eyebrow, tasks: columnTasks, emptyText, selectedTaskId, onSelectTask }) {
   return (
     <section className={styles.boardColumn}>
@@ -332,6 +391,12 @@ export default function WorkspacePage() {
   const [taskFilter, setTaskFilter] = useState('all');
   const [taskQuery, setTaskQuery] = useState('');
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentsError, setDocumentsError] = useState('');
+  const [selectedDocumentId, setSelectedDocumentId] = useState(null);
+  const [documentDraft, setDocumentDraft] = useState({ title: '', content: '' });
+  const [documentSaving, setDocumentSaving] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarResizing, setSidebarResizing] = useState(false);
@@ -394,6 +459,74 @@ export default function WorkspacePage() {
       .finally(() => setTasksLoading(false));
   }
 
+  function loadDocuments() {
+    setDocumentsLoading(true);
+    setDocumentsError('');
+
+    listWorkspaceDocuments()
+      .then((res) => {
+        const nextDocuments = Array.isArray(res?.documents) ? res.documents : [];
+        setDocuments(nextDocuments);
+        setSelectedDocumentId((currentId) => currentId || nextDocuments[0]?.id || null);
+      })
+      .catch((err) => {
+        const message = err?.message || 'Não foi possível carregar documentos.';
+        setDocumentsError(message);
+        showToast?.(message, { variant: 'error' });
+      })
+      .finally(() => setDocumentsLoading(false));
+  }
+
+  async function handleCreateDocument(templateId = 'blank') {
+    const template = DOCUMENT_TEMPLATES.find((item) => item.id === templateId) || DOCUMENT_TEMPLATES[0];
+    try {
+      const response = await createWorkspaceDocument({
+        title: template.title,
+        content: template.content,
+      });
+      const document = response?.document;
+      if (!document?.id) return;
+      setDocuments((current) => [document, ...current]);
+      setSelectedDocumentId(document.id);
+      showToast?.('Documento criado.', { variant: 'success' });
+    } catch (err) {
+      showToast?.(err?.message || 'Não foi possível criar o documento.', { variant: 'error' });
+    }
+  }
+
+  async function handleSaveDocument() {
+    if (!selectedDocumentId) return;
+    setDocumentSaving(true);
+    try {
+      const response = await updateWorkspaceDocument(selectedDocumentId, documentDraft);
+      const updated = response?.document;
+      if (updated?.id) {
+        setDocuments((current) => current.map((item) => (String(item.id) === String(updated.id) ? updated : item)));
+        setDocumentDraft({ title: updated.title || '', content: updated.content || '' });
+      }
+      showToast?.('Documento salvo.', { variant: 'success' });
+    } catch (err) {
+      showToast?.(err?.message || 'Não foi possível salvar o documento.', { variant: 'error' });
+    } finally {
+      setDocumentSaving(false);
+    }
+  }
+
+  async function handleDeleteDocument(documentId) {
+    if (!documentId) return;
+    try {
+      await deleteWorkspaceDocument(documentId);
+      setDocuments((current) => {
+        const next = current.filter((item) => String(item.id) !== String(documentId));
+        setSelectedDocumentId((currentId) => (String(currentId) === String(documentId) ? next[0]?.id || null : currentId));
+        return next;
+      });
+      showToast?.('Documento excluído.', { variant: 'success' });
+    } catch (err) {
+      showToast?.(err?.message || 'Não foi possível excluir o documento.', { variant: 'error' });
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
     setTasksLoading(true);
@@ -413,6 +546,10 @@ export default function WorkspacePage() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    loadDocuments();
   }, []);
 
   const taskStats = useMemo(() => {
@@ -438,10 +575,15 @@ export default function WorkspacePage() {
   const completedTasks = useMemo(() => tasks.filter((task) => isDone(task)).slice(0, 6), [tasks]);
 
   const selectedTask = useMemo(() => tasks.find((task) => String(task.id) === String(selectedTaskId)) || null, [selectedTaskId, tasks]);
+  const selectedDocument = useMemo(() => documents.find((document) => String(document.id) === String(selectedDocumentId)) || null, [documents, selectedDocumentId]);
 
   function handleSelectTask(task) {
     setSelectedTaskId(task?.id || null);
   }
+
+  useEffect(() => {
+    setDocumentDraft({ title: selectedDocument?.title || '', content: selectedDocument?.content || '' });
+  }, [selectedDocument]);
 
   const focusTasks = useMemo(() => (
     activeTasks
@@ -491,8 +633,9 @@ export default function WorkspacePage() {
 
   const tabCounters = useMemo(() => ({
     tasks: taskStats.open,
-    sheets: 'novo',
-  }), [taskStats.open]);
+    sheets: '',
+    documents: documents.length || '',
+  }), [documents.length, taskStats.open]);
 
   const routineSteps = useMemo(() => [
     {
@@ -617,7 +760,7 @@ export default function WorkspacePage() {
           <div className={styles.headerActions}>
             <Button size="sm" variant="secondary" onClick={loadTasks} disabled={tasksLoading}><RotateCcwIcon size={15} /> Atualizar</Button>
             <Button size="sm" variant="secondary" onClick={() => setActiveTab('settings')}><SettingsIcon size={15} /> Configurações</Button>
-            <Button size="sm" variant="primary" onClick={() => setActiveTab('sheets')}><PlusIcon size={15} /> Nova planilha</Button>
+            <Button size="sm" variant="primary" onClick={() => activeTab === 'documents' ? handleCreateDocument('blank') : setActiveTab('sheets')}><PlusIcon size={15} /> {activeTab === 'documents' ? 'Novo documento' : 'Nova planilha'}</Button>
           </div>
         </header>
 
@@ -642,39 +785,86 @@ export default function WorkspacePage() {
         </div>
 
         {activeTab === 'home' ? (
-          <section className={styles.homeArea}>
-            <div className={styles.quickStats} aria-label="Resumo pessoal">
-              <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('all'); }}>
-                <span>Abertas</span>
-                <strong>{taskStats.open}</strong>
+          <>
+            <section className={styles.commandGrid}>
+              <button type="button" className={styles.commandCard} onClick={() => setActiveTab('tasks')}>
+                <span><ChecklistIcon size={17} /></span>
+                <strong>Minhas tarefas</strong>
+                <em>{taskStats.open} abertas</em>
+                <ArrowUpRightIcon size={15} />
               </button>
-              <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('overdue'); }}>
-                <span>Atrasadas</span>
-                <strong>{taskStats.overdue}</strong>
+              <button type="button" className={styles.commandCard} onClick={() => setActiveTab('sheets')}>
+                <span><BuildingIcon size={17} /></span>
+                <strong>Planilhas</strong>
+                <em>Workspace pessoal</em>
+                <ArrowUpRightIcon size={15} />
               </button>
-              <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('critical'); }}>
-                <span>Críticas</span>
-                <strong>{taskStats.critical}</strong>
+              <button type="button" className={styles.commandCard} onClick={() => setActiveTab('documents')}>
+                <span><SparklesIcon size={17} /></span>
+                <strong>Documentos</strong>
+                <em>Páginas pessoais</em>
+                <ArrowUpRightIcon size={15} />
               </button>
-              <button type="button" onClick={() => setActiveTab('sheets')}>
-                <span>Planilhas</span>
-                <strong>+</strong>
-              </button>
-            </div>
+            </section>
 
-            <div className={styles.homeLayout}>
-              <ExecutionQueue
-                tasks={executionQueue}
-                selectedTaskId={selectedTaskId}
-                onSelectTask={(task) => { handleSelectTask(task); setActiveTab('tasks'); }}
-                onOpenTasks={() => setActiveTab('tasks')}
-              />
+            <section className={styles.planningStrip} aria-label="Planejamento pessoal">
+              <div className={styles.planningHeader}>
+                <span>Planejamento</span>
+                <strong>Agenda da semana</strong>
+              </div>
+              <div className={styles.planningCards}>
+                <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('overdue'); }}>
+                  <span>Atrasadas</span>
+                  <strong>{taskBuckets.overdue.length}</strong>
+                </button>
+                <button type="button" onClick={() => { setActiveTab('tasks'); setTaskFilter('today'); }}>
+                  <span>Hoje</span>
+                  <strong>{taskBuckets.today.length}</strong>
+                </button>
+                <button type="button" onClick={() => setActiveTab('tasks')}>
+                  <span>Esta semana</span>
+                  <strong>{taskBuckets.week.length}</strong>
+                </button>
+                <button type="button" onClick={() => setActiveTab('tasks')}>
+                  <span>Sem prazo</span>
+                  <strong>{taskBuckets.noDue.length}</strong>
+                </button>
+              </div>
+            </section>
 
-              <section className={styles.weekPanel} aria-label="Semana">
-                <div className={styles.sectionHeaderCompact}>
-                  <strong>Semana</strong>
+            <section className={styles.routinePanel} aria-label="Rotina pessoal">
+              <div className={styles.sectionHeader}>
+                <span>Rotina</span>
+                <strong>Ordem sugerida de execução</strong>
+              </div>
+              <div className={styles.routineGrid}>
+                {routineSteps.map((step) => (
+                  <RoutineStep
+                    key={step.id}
+                    eyebrow={step.eyebrow}
+                    title={step.title}
+                    description={step.description}
+                    count={step.count}
+                    onClick={() => { setActiveTab('tasks'); setTaskFilter(step.filter); }}
+                  />
+                ))}
+              </div>
+            </section>
+
+            <ExecutionQueue
+              tasks={executionQueue}
+              selectedTaskId={selectedTaskId}
+              onSelectTask={(task) => { handleSelectTask(task); setActiveTab('tasks'); }}
+              onOpenTasks={() => setActiveTab('tasks')}
+            />
+
+            <section className={styles.personalPulse} aria-label="Pulso do workspace">
+              <div className={styles.weekPanel}>
+                <div className={styles.sectionHeader}>
+                  <span>Semana</span>
+                  <strong>Mapa dos próximos dias</strong>
                 </div>
-                <div className={styles.weekGridCompact}>
+                <div className={styles.weekGrid}>
                   {weekAgenda.map((day) => (
                     <button
                       key={day.id}
@@ -685,17 +875,19 @@ export default function WorkspacePage() {
                       <span>{day.label}</span>
                       <strong>{day.date}</strong>
                       <em>{day.count}</em>
+                      {day.critical ? <small>{day.critical} crítica{day.critical > 1 ? 's' : ''}</small> : <small>normal</small>}
                     </button>
                   ))}
                 </div>
-              </section>
+              </div>
 
-              <section className={styles.contextPanel} aria-label="Origens">
-                <div className={styles.sectionHeaderCompact}>
-                  <strong>Origens</strong>
+              <div className={styles.contextPanel}>
+                <div className={styles.sectionHeader}>
+                  <span>Contextos</span>
+                  <strong>Carga por origem</strong>
                 </div>
-                <div className={styles.contextListCompact}>
-                  {!contextSummary.length ? <span className={styles.inlineState}>Sem tarefas abertas.</span> : null}
+                <div className={styles.contextList}>
+                  {!contextSummary.length ? <span className={styles.inlineState}>Nenhuma origem com tarefa aberta.</span> : null}
                   {contextSummary.map((item) => (
                     <button key={item.label} type="button" className={styles.contextRow} onClick={() => { setActiveTab('tasks'); setTaskQuery(item.label); }}>
                       <span>{item.label}</span>
@@ -704,9 +896,69 @@ export default function WorkspacePage() {
                     </button>
                   ))}
                 </div>
-              </section>
-            </div>
-          </section>
+              </div>
+            </section>
+
+            <section className={styles.overviewGrid}>
+              <div className={styles.summaryPanel}>
+                <div className={styles.sectionHeader}>
+                  <span>Resumo</span>
+                  <strong>Operação pessoal</strong>
+                </div>
+
+                <div className={styles.metricsGrid}>
+                  <div>
+                    <span>Abertas</span>
+                    <strong>{taskStats.open}</strong>
+                  </div>
+                  <div>
+                    <span>Atrasadas</span>
+                    <strong>{taskStats.overdue}</strong>
+                  </div>
+                  <div>
+                    <span>Críticas</span>
+                    <strong>{taskStats.critical}</strong>
+                  </div>
+                  <div>
+                    <span>Concluídas</span>
+                    <strong>{taskStats.done}</strong>
+                  </div>
+                </div>
+
+                <div className={styles.focusBlock}>
+                  <div className={styles.focusHeader}>
+                    <span>Prioridade</span>
+                    <strong>Foco atual</strong>
+                  </div>
+                  <div className={styles.focusList}>
+                    {tasksLoading ? <span className={styles.inlineState}>Carregando foco...</span> : null}
+                    {!tasksLoading && !focusTasks.length ? <span className={styles.inlineState}>Nada crítico no momento.</span> : null}
+                    {!tasksLoading ? focusTasks.map((task) => <TaskMiniRow key={task.id} task={task} onSelect={handleSelectTask} />) : null}
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.timelinePanel}>
+                <div className={styles.sectionHeader}>
+                  <span>Próximas</span>
+                  <strong>Tarefas em aberto</strong>
+                </div>
+                <div className={styles.taskList}>
+                  <ExecutionQueue
+              tasks={executionQueue}
+              selectedTaskId={selectedTaskId}
+              onSelectTask={handleSelectTask}
+              onOpenTasks={() => setTaskFilter('all')}
+            />
+
+            {tasksLoading ? <span className={styles.inlineState}>Carregando tarefas...</span> : null}
+                  {!tasksLoading && tasksError ? <span className={styles.inlineState}>{tasksError}</span> : null}
+                  {!tasksLoading && !tasksError && !visibleTasks.length ? <span className={styles.inlineState}>Nenhuma tarefa aberta.</span> : null}
+                  {!tasksLoading && !tasksError ? visibleTasks.map((task) => <TaskRow key={task.id} task={task} active={String(task.id) === String(selectedTaskId)} onSelect={handleSelectTask} />) : null}
+                </div>
+              </div>
+            </section>
+          </>
         ) : null}
 
         {activeTab === 'tasks' ? (
@@ -769,38 +1021,70 @@ export default function WorkspacePage() {
           </section>
         ) : null}
 
-        {activeTab === 'resources' ? (
-          <section className={styles.resourcesArea}>
-            <div className={styles.resourcesHero}>
-              <span>Documentos</span>
-              <strong>Blocos do workspace</strong>
-            </div>
-            <div className={styles.resourceActions}>
-              <ResourceAction
-                icon={BuildingIcon}
-                title="Planilhas"
-                description="Controles pessoais."
-                onClick={() => setActiveTab('sheets')}
-              />
-              <ResourceAction
-                icon={ChecklistIcon}
-                title="Quadro de tarefas"
-                description="Execução pessoal."
-                onClick={() => setActiveTab('tasks')}
-              />
-              <ResourceAction
-                icon={CalendarIcon}
-                title="Planejamento"
-                description="Resumo semanal."
-                onClick={() => setActiveTab('home')}
-              />
-              <ResourceAction
-                icon={SettingsIcon}
-                title="Configurações"
-                description="Preferências."
-                onClick={() => setActiveTab('settings')}
-              />
-            </div>
+        {activeTab === 'documents' ? (
+          <section className={styles.documentsArea} aria-label="Documentos">
+            <aside className={styles.documentsSidebar}>
+              <div className={styles.documentsToolbar}>
+                <label className={styles.documentSearch}>
+                  <SearchIcon size={14} />
+                  <input placeholder="Buscar documento" disabled />
+                </label>
+                <button type="button" onClick={() => handleCreateDocument('blank')}><PlusIcon size={14} /> Novo</button>
+              </div>
+
+              <div className={styles.documentTemplates}>
+                {DOCUMENT_TEMPLATES.map((template) => (
+                  <button key={template.id} type="button" onClick={() => handleCreateDocument(template.id)}>
+                    {template.title}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.documentsList}>
+                {documentsLoading ? <span className={styles.inlineState}>Carregando...</span> : null}
+                {!documentsLoading && documentsError ? <span className={styles.inlineState}>{documentsError}</span> : null}
+                {!documentsLoading && !documentsError && !documents.length ? <span className={styles.inlineState}>Nenhum documento.</span> : null}
+                {documents.map((document) => (
+                  <DocumentCard
+                    key={document.id}
+                    document={document}
+                    active={String(document.id) === String(selectedDocumentId)}
+                    onSelect={setSelectedDocumentId}
+                    onDelete={handleDeleteDocument}
+                  />
+                ))}
+              </div>
+            </aside>
+
+            <section className={styles.documentEditor}>
+              {selectedDocument ? (
+                <>
+                  <div className={styles.documentEditorTopbar}>
+                    <input
+                      value={documentDraft.title}
+                      onChange={(event) => setDocumentDraft((current) => ({ ...current, title: event.target.value }))}
+                      placeholder="Sem título"
+                      className={styles.documentTitleInput}
+                    />
+                    <Button size="sm" variant="secondary" onClick={handleSaveDocument} disabled={documentSaving}>
+                      <SaveIcon size={14} /> {documentSaving ? 'Salvando' : 'Salvar'}
+                    </Button>
+                  </div>
+                  <textarea
+                    value={documentDraft.content}
+                    onChange={(event) => setDocumentDraft((current) => ({ ...current, content: event.target.value }))}
+                    className={styles.documentTextarea}
+                    placeholder="Escreva aqui..."
+                  />
+                </>
+              ) : (
+                <div className={styles.documentEmptyState}>
+                  <span><SparklesIcon size={18} /></span>
+                  <strong>Nenhum documento selecionado</strong>
+                  <button type="button" onClick={() => handleCreateDocument('blank')}>Criar documento</button>
+                </div>
+              )}
+            </section>
           </section>
         ) : null}
         {activeTab === 'settings' ? (

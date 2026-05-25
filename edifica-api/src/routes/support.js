@@ -143,6 +143,20 @@ async function ensureSupportSchema() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
       await query(`
+        CREATE TABLE IF NOT EXISTS support_workspace_documents (
+          id VARCHAR(36) PRIMARY KEY,
+          owner_user_id VARCHAR(36) NOT NULL,
+          title VARCHAR(160) NOT NULL DEFAULT '',
+          content MEDIUMTEXT NULL,
+          position INT NOT NULL DEFAULT 0,
+          created_by_user_id VARCHAR(36) NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_support_workspace_documents_owner_position (owner_user_id, position, updated_at),
+          CONSTRAINT fk_support_workspace_documents_owner FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      await query(`
         CREATE TABLE IF NOT EXISTS support_daily_rows (
           id VARCHAR(36) PRIMARY KEY,
           position INT NOT NULL DEFAULT 0,
@@ -269,6 +283,26 @@ function serializeSheetShare(row) {
     permission: row.permission === 'edit' ? 'edit' : 'view',
     createdAt: row.created_at || null,
   };
+}
+
+function serializeWorkspaceDocument(row) {
+  return {
+    id: row.id,
+    ownerUserId: row.owner_user_id || '',
+    title: row.title || '',
+    content: row.content || '',
+    position: Number(row.position || 0),
+    createdAt: row.created_at || null,
+    updatedAt: row.updated_at || null,
+  };
+}
+
+function requestedWorkspaceOwnerUserId(req) {
+  return clean(req.query?.ownerUserId || req.body?.ownerUserId || req.user?.id, 36) || req.user?.id;
+}
+
+function assertWorkspaceOwner(req, ownerUserId) {
+  if (!canManageSpreadsheetOwner(req, ownerUserId)) throw badRequest('Sem permissão para acessar este workspace.');
 }
 
 async function listSheetShares(sheetId) {
@@ -733,6 +767,100 @@ router.delete('/daily-program/:id', requirePermission('profile.view'), async (re
     const rowRows = await query('SELECT sheet_id FROM support_daily_rows WHERE id = ? LIMIT 1', [id]);
     await assertCanUseSheet(req, rowRows[0]?.sheet_id || '');
     await query('DELETE FROM support_daily_rows WHERE id = ?', [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+router.get('/workspace-documents', requirePermission('profile.view'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const ownerUserId = requestedWorkspaceOwnerUserId(req);
+    assertWorkspaceOwner(req, ownerUserId);
+    const rows = await query(
+      `SELECT id, owner_user_id, title, content, position, created_at, updated_at
+         FROM support_workspace_documents
+        WHERE owner_user_id = ?
+        ORDER BY position ASC, updated_at DESC`,
+      [ownerUserId]
+    );
+    res.json({ documents: rows.map(serializeWorkspaceDocument) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/workspace-documents', requirePermission('profile.view'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const ownerUserId = requestedWorkspaceOwnerUserId(req);
+    assertWorkspaceOwner(req, ownerUserId);
+    const positionRows = await query('SELECT COALESCE(MAX(position), 0) + 1 AS next_position FROM support_workspace_documents WHERE owner_user_id = ?', [ownerUserId]);
+    const id = uuid();
+    await query(
+      `INSERT INTO support_workspace_documents (id, owner_user_id, title, content, position, created_by_user_id)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        ownerUserId,
+        clean(req.body?.title || 'Documento sem título', 160),
+        clean(req.body?.content || '', 65000),
+        Number(positionRows[0]?.next_position || 1),
+        req.user.id,
+      ]
+    );
+    const rows = await query('SELECT id, owner_user_id, title, content, position, created_at, updated_at FROM support_workspace_documents WHERE id = ? LIMIT 1', [id]);
+    res.status(201).json({ document: serializeWorkspaceDocument(rows[0]) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/workspace-documents/:id', requirePermission('profile.view'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const id = clean(req.params.id, 36);
+    const rows = await query('SELECT owner_user_id FROM support_workspace_documents WHERE id = ? LIMIT 1', [id]);
+    const ownerUserId = rows[0]?.owner_user_id || '';
+    if (!ownerUserId) throw badRequest('Documento não encontrado.');
+    assertWorkspaceOwner(req, ownerUserId);
+
+    const updates = [];
+    const params = [];
+    if (req.body?.title !== undefined) {
+      updates.push('title = ?');
+      params.push(clean(req.body.title || 'Sem título', 160));
+    }
+    if (req.body?.content !== undefined) {
+      updates.push('content = ?');
+      params.push(clean(req.body.content || '', 65000));
+    }
+    if (req.body?.position !== undefined) {
+      updates.push('position = ?');
+      params.push(Math.max(0, Number(req.body.position) || 0));
+    }
+    if (!updates.length) throw badRequest('Nenhum campo para atualizar.');
+    params.push(id);
+    await query(`UPDATE support_workspace_documents SET ${updates.join(', ')} WHERE id = ?`, params);
+
+    const updatedRows = await query('SELECT id, owner_user_id, title, content, position, created_at, updated_at FROM support_workspace_documents WHERE id = ? LIMIT 1', [id]);
+    res.json({ document: serializeWorkspaceDocument(updatedRows[0]) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/workspace-documents/:id', requirePermission('profile.view'), async (req, res, next) => {
+  try {
+    await ensureSupportSchema();
+    const id = clean(req.params.id, 36);
+    const rows = await query('SELECT owner_user_id FROM support_workspace_documents WHERE id = ? LIMIT 1', [id]);
+    const ownerUserId = rows[0]?.owner_user_id || '';
+    if (!ownerUserId) throw badRequest('Documento não encontrado.');
+    assertWorkspaceOwner(req, ownerUserId);
+    await query('DELETE FROM support_workspace_documents WHERE id = ?', [id]);
     res.json({ ok: true });
   } catch (err) {
     next(err);

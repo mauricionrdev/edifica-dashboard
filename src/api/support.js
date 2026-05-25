@@ -72,3 +72,20 @@ export function listSupportTasks() {
 export function createSupportTask(body = {}) {
   return api.post('/support/tasks', body);
 }
+
+
+export function listWorkspaceDocuments(params = {}) {
+  return api.get(withQuery('/support/workspace-documents', params));
+}
+
+export function createWorkspaceDocument(body = {}) {
+  return api.post('/support/workspace-documents', body);
+}
+
+export function updateWorkspaceDocument(documentId, patch = {}) {
+  return api.patch(`/support/workspace-documents/${encodeURIComponent(documentId)}`, patch);
+}
+
+export function deleteWorkspaceDocument(documentId, params = {}) {
+  return api.del(withQuery(`/support/workspace-documents/${encodeURIComponent(documentId)}`, params));
+}
