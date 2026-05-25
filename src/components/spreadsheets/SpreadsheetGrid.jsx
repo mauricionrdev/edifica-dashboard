@@ -161,6 +161,7 @@ function Cell({
       data-formula-error={displayMeta?.hasFormulaError || undefined}
       data-validation-error={displayMeta?.hasValidationError || undefined}
       data-formula-reference={formulaReference || undefined}
+      data-editing={editing || undefined}
       title={displayMeta?.validationMessage || undefined}
       role="gridcell"
       tabIndex={0}
@@ -194,7 +195,7 @@ function Cell({
         }
       }}
     >
-      <span className={styles.cellValue}>{displayValue}</span>
+      {!editing ? <span className={styles.cellValue}>{displayValue}</span> : null}
       {editing ? (
         <textarea
           ref={editorRef}
