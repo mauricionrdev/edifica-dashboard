@@ -183,12 +183,81 @@ function activeCellText(activeCell, rows) {
   return sanitizeCellValue(row?.[activeCell.key] || '');
 }
 
+
+function getCellCoordinates(rows = [], columns = [], rowId, key) {
+  return {
+    rowIndex: rows.findIndex((row) => row.id === rowId),
+    columnIndex: columns.findIndex((column) => column.key === key),
+  };
+}
+
+function normalizeSelectionRange(anchor, focus, rows = [], columns = []) {
+  if (!anchor?.rowId || !anchor?.key || !focus?.rowId || !focus?.key) return null;
+  const start = getCellCoordinates(rows, columns, anchor.rowId, anchor.key);
+  const end = getCellCoordinates(rows, columns, focus.rowId, focus.key);
+  if (start.rowIndex < 0 || start.columnIndex < 0 || end.rowIndex < 0 || end.columnIndex < 0) return null;
+  return {
+    startRow: Math.min(start.rowIndex, end.rowIndex),
+    endRow: Math.max(start.rowIndex, end.rowIndex),
+    startColumn: Math.min(start.columnIndex, end.columnIndex),
+    endColumn: Math.max(start.columnIndex, end.columnIndex),
+  };
+}
+
+function getCellStyle(row, key) {
+  return row?.__styles?.[key] || {};
+}
+
+function buildSelectedCells(rows = [], columns = [], bounds) {
+  if (!bounds) return [];
+  const cells = [];
+  for (let rowIndex = bounds.startRow; rowIndex <= bounds.endRow; rowIndex += 1) {
+    const row = rows[rowIndex];
+    if (!row) continue;
+    for (let columnIndex = bounds.startColumn; columnIndex <= bounds.endColumn; columnIndex += 1) {
+      const column = columns[columnIndex];
+      if (!column) continue;
+      cells.push({ row, column, rowIndex, columnIndex, id: `${row.id}:${column.key}` });
+    }
+  }
+  return cells;
+}
+
+function serializeCellsToTsv(rows = [], columns = [], bounds) {
+  if (!bounds) return '';
+  const lines = [];
+  for (let rowIndex = bounds.startRow; rowIndex <= bounds.endRow; rowIndex += 1) {
+    const row = rows[rowIndex];
+    const line = [];
+    for (let columnIndex = bounds.startColumn; columnIndex <= bounds.endColumn; columnIndex += 1) {
+      const column = columns[columnIndex];
+      line.push(sanitizeCellValue(row?.[column?.key] || ''));
+    }
+    lines.push(line.join('\t'));
+  }
+  return lines.join('\n');
+}
+
+function mergeCellStyle(currentStyle = {}, patch = {}) {
+  const next = { ...currentStyle, ...patch };
+  Object.keys(next).forEach((key) => {
+    if (next[key] === false || next[key] === '' || next[key] === null || next[key] === undefined) delete next[key];
+  });
+  return next;
+}
+
+function sameStyleValue(cells = [], key, expectedValue) {
+  return cells.length > 0 && cells.every(({ row, column }) => getCellStyle(row, column.key)?.[key] === expectedValue);
+}
+
 export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, showToast }) {
   const [sheets, setSheets] = useState([]);
   const [activeSheetId, setActiveSheetId] = useState('');
   const [columns, setColumns] = useState([]);
   const [rows, setRows] = useState([]);
   const [activeCell, setActiveCell] = useState(null);
+  const [selectionAnchor, setSelectionAnchor] = useState(null);
+  const [selectionFocus, setSelectionFocus] = useState(null);
   const [formulaValue, setFormulaValue] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
@@ -200,10 +269,18 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const fileInputRef = useRef(null);
   const draftRef = useRef(new Map());
 
-  const selectedCellIds = useMemo(() => {
-    if (!activeCell?.rowId || !activeCell?.key) return new Set();
-    return new Set([`${activeCell.rowId}:${activeCell.key}`]);
-  }, [activeCell]);
+  const selectionBounds = useMemo(() => normalizeSelectionRange(selectionAnchor || activeCell, selectionFocus || activeCell, rows, columns), [activeCell, columns, rows, selectionAnchor, selectionFocus]);
+  const selectedCells = useMemo(() => buildSelectedCells(rows, columns, selectionBounds), [columns, rows, selectionBounds]);
+  const selectedCellIds = useMemo(() => new Set(selectedCells.map((cell) => cell.id)), [selectedCells]);
+  const selectedCount = selectedCells.length || (activeCell ? 1 : 0);
+  const selectedHasBold = useMemo(() => sameStyleValue(selectedCells, 'bold', true), [selectedCells]);
+  const selectedHasItalic = useMemo(() => sameStyleValue(selectedCells, 'italic', true), [selectedCells]);
+  const selectedHasUnderline = useMemo(() => sameStyleValue(selectedCells, 'underline', true), [selectedCells]);
+  const selectedAlign = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.textAlign || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.textAlign || '') === first) ? first : '';
+  }, [selectedCells]);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
@@ -234,6 +311,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setColumns(nextColumns);
       setRows(nextRows);
       setActiveCell(null);
+      setSelectionAnchor(null);
+      setSelectionFocus(null);
       setFormulaValue('');
       markSync('saved', 'Planilha carregada');
     } catch (error) {
@@ -251,14 +330,20 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setFormulaValue(activeCellText(activeCell, rows));
   }, [activeCell, rows]);
 
-  const selectCell = useCallback((rowId, key) => {
-    setActiveCell({ rowId, key });
+  const selectCell = useCallback((rowId, key, _element, extendSelection = false) => {
+    const nextCell = { rowId, key };
+    setActiveCell(nextCell);
+    setSelectionFocus(nextCell);
+    setSelectionAnchor((current) => (extendSelection && current ? current : nextCell));
   }, []);
 
   const selectRow = useCallback((rowId) => {
     const firstColumn = columns[0];
     if (!firstColumn) return;
-    setActiveCell({ rowId, key: firstColumn.key });
+    const nextCell = { rowId, key: firstColumn.key };
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus({ rowId, key: columns[columns.length - 1]?.key || firstColumn.key });
   }, [columns]);
 
   const navigateCell = useCallback((rowId, key, rowDelta = 0, columnDelta = 0) => {
@@ -267,7 +352,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (rowIndex < 0 || columnIndex < 0) return;
     const nextRow = rows[Math.max(0, Math.min(rows.length - 1, rowIndex + rowDelta))];
     const nextColumn = columns[Math.max(0, Math.min(columns.length - 1, columnIndex + columnDelta))];
-    if (nextRow && nextColumn) setActiveCell({ rowId: nextRow.id, key: nextColumn.key });
+    if (nextRow && nextColumn) {
+      const nextCell = { rowId: nextRow.id, key: nextColumn.key };
+      setActiveCell(nextCell);
+      setSelectionAnchor(nextCell);
+      setSelectionFocus(nextCell);
+    }
   }, [columns, rows]);
 
   const setCellDraft = useCallback((rowId, key, value) => {
@@ -275,6 +365,50 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     draftRef.current.set(`${rowId}:${key}`, cleanValue);
     setRows((current) => current.map((row) => (row.id === rowId ? { ...row, [key]: cleanValue } : row)));
   }, []);
+
+  const applyStyleToSelection = useCallback(async (patchFactory) => {
+    if (!canEdit || !selectedCells.length) return;
+    const updatesByRow = new Map();
+    const nextRows = rows.map((row) => {
+      const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
+      if (!targetCells.length) return row;
+      const nextStyles = { ...(row.__styles || {}) };
+      targetCells.forEach(({ column }) => {
+        const currentStyle = nextStyles[column.key] || {};
+        const patch = typeof patchFactory === 'function' ? patchFactory(currentStyle, column.key, row) : patchFactory;
+        nextStyles[column.key] = mergeCellStyle(currentStyle, patch);
+      });
+      updatesByRow.set(row.id, Object.fromEntries(targetCells.map(({ column }) => [column.key, nextStyles[column.key]])));
+      return { ...row, __styles: nextStyles };
+    });
+
+    setRows(nextRows);
+    markSync('saving', 'Salvando formatação');
+    setBusy('format');
+    try {
+      await Promise.all([...updatesByRow.entries()].map(([rowId, styles]) => updateSupportDailyRow(rowId, { styles })));
+      markSync('saved', 'Formatação salva');
+    } catch (error) {
+      notifyError(error, 'Não foi possível salvar a formatação.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
+
+  const toggleStyle = useCallback((styleKey) => {
+    const enabled = !sameStyleValue(selectedCells, styleKey, true);
+    applyStyleToSelection({ [styleKey]: enabled }).catch(() => {});
+  }, [applyStyleToSelection, selectedCells]);
+
+  const setTextAlign = useCallback((textAlign) => {
+    const nextAlign = selectedAlign === textAlign ? '' : textAlign;
+    applyStyleToSelection({ textAlign: nextAlign }).catch(() => {});
+  }, [applyStyleToSelection, selectedAlign]);
+
+  const clearSelectionFormatting = useCallback(() => {
+    applyStyleToSelection({ bold: false, italic: false, underline: false, textAlign: '' }).catch(() => {});
+  }, [applyStyleToSelection]);
 
   const commitCell = useCallback(async (rowId, key) => {
     if (!rowId || !key || !canEdit) return;
@@ -564,17 +698,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeSheetId, canEdit, columns, ensureGridSize, loadSheet, markSync, notifyError, rows]);
 
-  const copyActiveCell = useCallback(async () => {
-    if (!activeCell?.rowId || !activeCell?.key) return;
-    const text = activeCellText(activeCell, rows);
-    try {
-      await navigator.clipboard.writeText(text);
-      markSync('saved', 'Célula copiada');
-    } catch (error) {
-      notifyError(error, 'Não foi possível copiar a célula.');
-    }
-  }, [activeCell, markSync, notifyError, rows]);
-
   const exportCsv = useCallback(() => {
     if (!activeSheet) return;
     const filename = `${safeFileName(activeSheet.name)}.csv`;
@@ -627,8 +750,51 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const openContextMenu = useCallback((event, rowId, key) => {
     event.preventDefault();
-    setActiveCell({ rowId, key });
+    const nextCell = { rowId, key };
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus(nextCell);
   }, []);
+
+  const copySelection = useCallback(async () => {
+    const text = serializeCellsToTsv(rows, columns, selectionBounds) || activeCellText(activeCell, rows);
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      markSync('saved', selectedCount > 1 ? 'Intervalo copiado' : 'Célula copiada');
+    } catch (error) {
+      notifyError(error, 'Não foi possível copiar a seleção.');
+    }
+  }, [activeCell, columns, markSync, notifyError, rows, selectedCount, selectionBounds]);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      const target = event.target;
+      const isTyping = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable;
+      if (isTyping || !activeCell) return;
+      const modifier = event.metaKey || event.ctrlKey;
+      if (!modifier) return;
+      const key = event.key.toLowerCase();
+      if (key === 'c') {
+        event.preventDefault();
+        copySelection().catch(() => {});
+      }
+      if (key === 'b' && canEdit) {
+        event.preventDefault();
+        toggleStyle('bold');
+      }
+      if (key === 'i' && canEdit) {
+        event.preventDefault();
+        toggleStyle('italic');
+      }
+      if (key === 'u' && canEdit) {
+        event.preventDefault();
+        toggleStyle('underline');
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeCell, canEdit, copySelection, toggleStyle]);
 
   return (
     <section className={styles.panel} data-loading={loading || undefined}>
@@ -686,7 +852,17 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <div className={styles.toolbarGroup}>
           <Button size="xs" variant="ghost" onClick={addRow} disabled={!canMutateSheet}><PlusIcon size={13} /> Linha</Button>
           <Button size="xs" variant="ghost" onClick={addColumn} disabled={!canMutateSheet}><PlusIcon size={13} /> Coluna</Button>
-          <Button size="xs" variant="ghost" onClick={copyActiveCell} disabled={!activeCell}>Copiar</Button>
+          <Button size="xs" variant="ghost" onClick={copySelection} disabled={!activeCell}>Copiar</Button>
+        </div>
+        <div className={styles.formatGroup} aria-label="Formatação da seleção">
+          <button type="button" data-active={selectedHasBold || undefined} onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>B</button>
+          <button type="button" data-active={selectedHasItalic || undefined} onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}><em>I</em></button>
+          <button type="button" data-active={selectedHasUnderline || undefined} onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}><u>U</u></button>
+          <span aria-hidden="true" />
+          <button type="button" data-active={selectedAlign === 'left' || undefined} onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy}>E</button>
+          <button type="button" data-active={selectedAlign === 'center' || undefined} onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy}>C</button>
+          <button type="button" data-active={selectedAlign === 'right' || undefined} onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>D</button>
+          <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar</button>
         </div>
         <div className={styles.toolbarGroup}>
           <Button size="xs" variant="ghost" onClick={deleteRow} disabled={!activeRow || !canEdit || !!busy}><TrashIcon size={13} /> Linha</Button>
@@ -732,8 +908,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             rowsLoading={loading}
             activeCell={activeCell}
             selectedCellIds={selectedCellIds}
-            selectionBounds={null}
-            selectedCount={activeCell ? 1 : 0}
+            selectionBounds={selectionBounds}
+            selectedCount={selectedCount}
             savingCell={savingCell}
             savingColumn={savingColumn}
             resizeState={resizeState}
@@ -766,7 +942,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.footer}>
         <span data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail}</span>
-        <span>{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
+        <span>{selectedCount > 1 ? `${selectedCount} células selecionadas · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
     </section>
   );
