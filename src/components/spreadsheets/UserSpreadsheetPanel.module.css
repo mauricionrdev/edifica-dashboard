@@ -562,15 +562,15 @@
 .contextBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: 2147483000;
   background: transparent;
 }
 
 .contextMenu {
   position: fixed;
-  min-width: 216px;
-  z-index: 10001;
-  max-height: min(680px, calc(100vh - 32px));
+  min-width: 284px;
+  z-index: 2147483001;
+  max-height: min(720px, calc(100vh - 24px));
   overflow: auto;
   padding: var(--space-1);
   border: 1px solid var(--line-subtle);
@@ -581,10 +581,12 @@
 
 .contextMenu button {
   width: 100%;
-  height: 30px;
-  display: flex;
+  height: 32px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   justify-content: flex-start;
+  gap: var(--space-2);
   padding: 0 var(--space-2);
   border: 0;
   border-radius: var(--radius-1);
@@ -614,11 +616,59 @@
   opacity: var(--opacity-disabled);
 }
 
-.contextMenu span {
+.contextDivider {
   display: block;
   height: 1px;
   margin: var(--space-1) 0;
   background: var(--line-subtle);
+}
+
+.contextIcon {
+  width: 24px;
+  min-width: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.contextLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contextPalette {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(6, 24px);
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+}
+
+.contextPalette span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+}
+
+.contextPalette button {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--swatch);
+}
+
+.contextPalette button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--swatch);
 }
 
 .typeGroup {

@@ -672,12 +672,58 @@ function mergeRichTextRun(currentStyle = {}, selection = {}, patch = {}) {
   const start = Math.max(0, Math.min(value.length, Number(selection.start || 0)));
   const end = Math.max(0, Math.min(value.length, Number(selection.end || 0)));
   if (end <= start) return currentStyle;
-  const cleanPatch = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== false && value !== '' && value !== null && value !== undefined));
-  if (!Object.keys(cleanPatch).length) return currentStyle;
-  const richText = normalizeRichTextRuns(currentStyle.richText, value.length)
-    .filter((run) => !(run.start === start && run.end === end && Object.keys(cleanPatch).some((key) => run[key] !== undefined)));
-  richText.push({ start, end, ...cleanPatch });
-  return mergeCellStyle(currentStyle, { richText });
+
+  const patchEntries = Object.entries(patch || {}).filter(([key]) => INLINE_TEXT_STYLE_KEYS.has(key));
+  if (!patchEntries.length) return currentStyle;
+
+  const previousRuns = normalizeRichTextRuns(currentStyle.richText, value.length);
+  const boundaries = new Set([0, value.length, start, end]);
+  previousRuns.forEach((run) => {
+    boundaries.add(run.start);
+    boundaries.add(run.end);
+  });
+
+  const points = [...boundaries].sort((a, b) => a - b);
+  const nextRuns = [];
+  points.slice(0, -1).forEach((point, index) => {
+    const nextPoint = points[index + 1];
+    if (nextPoint <= point) return;
+    const baseStyle = previousRuns.reduce((acc, run) => {
+      if (run.start < nextPoint && run.end > point) return { ...acc, ...run };
+      return acc;
+    }, {});
+
+    if (point >= start && nextPoint <= end) {
+      patchEntries.forEach(([key, value]) => {
+        if (value === false || value === '' || value === null || value === undefined) delete baseStyle[key];
+        else baseStyle[key] = value;
+      });
+    }
+
+    const clean = Object.fromEntries(Object.entries(baseStyle).filter(([key, value]) => (
+      INLINE_TEXT_STYLE_KEYS.has(key) && value !== false && value !== '' && value !== null && value !== undefined
+    )));
+    if (Object.keys(clean).length) nextRuns.push({ start: point, end: nextPoint, ...clean });
+  });
+
+  const mergedRuns = [];
+  nextRuns.forEach((run) => {
+    const last = mergedRuns[mergedRuns.length - 1];
+    const sameStyle = last && last.end === run.start && INLINE_TEXT_STYLE_KEYS.size && [...INLINE_TEXT_STYLE_KEYS].every((key) => (last[key] || '') === (run[key] || ''));
+    if (sameStyle) last.end = run.end;
+    else mergedRuns.push(run);
+  });
+
+  return mergeCellStyle(currentStyle, { richText: mergedRuns });
+}
+
+function getInlineSelectionStyle(cellStyle = {}, selection = {}) {
+  const value = sanitizeCellValue(selection.value || '');
+  const start = Math.max(0, Math.min(value.length, Number(selection.start || 0)));
+  const end = Math.max(0, Math.min(value.length, Number(selection.end || 0)));
+  if (end <= start) return {};
+  const runs = normalizeRichTextRuns(cellStyle.richText, value.length).filter((run) => run.start < end && run.end > start);
+  return runs.reduce((acc, run) => ({ ...acc, ...run }), {});
 }
 
 function sameStyleValue(cells = [], key, expectedValue) {
@@ -772,6 +818,17 @@ function SheetContextMenu({
   if (!menu) return null;
   const isRow = menu.scope === 'row';
   const isColumn = menu.scope === 'column';
+  const typeLabel = isRow ? 'Linha' : isColumn ? 'Coluna' : 'Célula';
+
+  const Item = ({ icon, label, shortcut, onClick, disabled, danger }) => (
+    <button type="button" role="menuitem" onClick={onClick} disabled={disabled} data-danger={danger || undefined}>
+      <span className={styles.contextIcon} aria-hidden="true">{icon}</span>
+      <span className={styles.contextLabel}>{label}</span>
+      {shortcut ? <kbd>{shortcut}</kbd> : null}
+    </button>
+  );
+  const Divider = () => <span className={styles.contextDivider} aria-hidden="true" />;
+
   return (
     <div className={styles.contextBackdrop} role="presentation" onMouseDown={onClose} onContextMenu={(event) => event.preventDefault()}>
       <section
@@ -782,70 +839,91 @@ function SheetContextMenu({
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className={styles.contextMenuHeader}>
-          <strong>{isRow ? 'Linha' : isColumn ? 'Coluna' : 'Célula'}</strong>
+          <strong>{typeLabel}</strong>
           <span>{menu.label || 'Ações rápidas'}</span>
         </header>
-        <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção <kbd>Ctrl C</kbd></button>
-        <button type="button" role="menuitem" onClick={onCut} disabled={!canEdit}>Recortar seleção <kbd>Ctrl X</kbd></button>
-        <button type="button" role="menuitem" onClick={onPaste} disabled={!canEdit}>Colar <kbd>Ctrl V</kbd></button>
-        <button type="button" role="menuitem" onClick={onSelectAll}>Selecionar tudo <kbd>Ctrl A</kbd></button>
-        <button type="button" role="menuitem" onClick={onSelectUsedRange}>Selecionar área preenchida</button>
-        <button type="button" role="menuitem" onClick={onSelectRow} disabled={isColumn}>Selecionar linha</button>
-        <button type="button" role="menuitem" onClick={onSelectColumn} disabled={isRow}>Selecionar coluna</button>
-        <button type="button" role="menuitem" onClick={onFindCellValue}>Localizar este valor</button>
-        <button type="button" role="menuitem" onClick={onUseCellValueAsReplaceQuery}>Usar no substituir</button>
-        <span aria-hidden="true" />
-        <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção <kbd>Ctrl Enter</kbd></button>
-        <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo <kbd>Del</kbd></button>
-        <button type="button" role="menuitem" onClick={onNormalizeSelection} disabled={!canEdit}>Normalizar pelo tipo</button>
-        <button type="button" role="menuitem" onClick={onUppercase} disabled={!canEdit}>Texto em MAIÚSCULAS</button>
-        <button type="button" role="menuitem" onClick={onLowercase} disabled={!canEdit}>Texto em minúsculas</button>
-        <button type="button" role="menuitem" onClick={onTitlecase} disabled={!canEdit}>Texto Capitalizado</button>
-        <button type="button" role="menuitem" onClick={onTrimSpaces} disabled={!canEdit}>Remover espaços extras</button>
-        <span aria-hidden="true" />
-        <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito <kbd>Ctrl B</kbd></button>
-        <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico <kbd>Ctrl I</kbd></button>
-        <button type="button" role="menuitem" onClick={onUnderline} disabled={!canEdit}>Sublinhado <kbd>Ctrl U</kbd></button>
-        <button type="button" role="menuitem" onClick={onStrikeThrough} disabled={!canEdit}>Tachado</button>
-        <button type="button" role="menuitem" onClick={() => onTextColor('var(--text-primary)')} disabled={!canEdit}>Cor do texto: padrão</button>
-        <button type="button" role="menuitem" onClick={() => onTextColor('var(--success-text)')} disabled={!canEdit}>Cor do texto: verde</button>
-        <button type="button" role="menuitem" onClick={() => onTextColor('var(--danger-text)')} disabled={!canEdit}>Cor do texto: vermelho</button>
-        <button type="button" role="menuitem" onClick={onAlignLeft} disabled={!canEdit}>Alinhar à esquerda</button>
-        <button type="button" role="menuitem" onClick={onAlignCenter} disabled={!canEdit}>Centralizar</button>
-        <button type="button" role="menuitem" onClick={onAlignRight} disabled={!canEdit}>Alinhar à direita</button>
-        <button type="button" role="menuitem" onClick={onClearFormatting} disabled={!canEdit}>Limpar formatação</button>
-        <button type="button" role="menuitem" onClick={onWrapText} disabled={!canEdit}>Quebrar texto</button>
-        <button type="button" role="menuitem" onClick={onClipText} disabled={!canEdit}>Cortar texto</button>
-        <button type="button" role="menuitem" onClick={onFontSmall} disabled={!canEdit}>Fonte pequena</button>
-        <button type="button" role="menuitem" onClick={onFontNormal} disabled={!canEdit}>Fonte normal</button>
-        <button type="button" role="menuitem" onClick={onFontLarge} disabled={!canEdit}>Fonte grande</button>
-        <button type="button" role="menuitem" onClick={onVerticalTop} disabled={!canEdit}>Alinhar no topo</button>
-        <button type="button" role="menuitem" onClick={onVerticalMiddle} disabled={!canEdit}>Alinhar ao meio</button>
-        <button type="button" role="menuitem" onClick={onVerticalBottom} disabled={!canEdit}>Alinhar abaixo</button>
-        {isColumn ? (
-          <>
-            <span aria-hidden="true" />
-            <button type="button" role="menuitem" onClick={onSortColumnAscending} disabled={!canEdit}>Ordenar A → Z</button>
-            <button type="button" role="menuitem" onClick={onSortColumnDescending} disabled={!canEdit}>Ordenar Z → A</button>
-            <button type="button" role="menuitem" onClick={onFilterColumnBySelection}>Filtrar por valor selecionado</button>
-            <button type="button" role="menuitem" onClick={onClearColumnFilter}>Limpar filtro da coluna</button>
-            <button type="button" role="menuitem" onClick={onFitColumnWidth} disabled={!canEdit}>Ajustar largura ao conteúdo</button>
-            <button type="button" role="menuitem" onClick={onSetTypeText} disabled={!canEdit}>Tipo: texto</button>
-            <button type="button" role="menuitem" onClick={onSetTypeNumber} disabled={!canEdit}>Tipo: número</button>
-            <button type="button" role="menuitem" onClick={onSetTypeCurrency} disabled={!canEdit}>Tipo: moeda</button>
-            <button type="button" role="menuitem" onClick={onSetTypePercent} disabled={!canEdit}>Tipo: percentual</button>
-          </>
-        ) : null}
-        <span aria-hidden="true" />
-        <button type="button" role="menuitem" onClick={onInsertRowAbove} disabled={!canEdit}>Inserir linha acima</button>
-        <button type="button" role="menuitem" onClick={onInsertRowBelow} disabled={!canEdit}>Inserir linha abaixo</button>
-        <button type="button" role="menuitem" onClick={onDuplicateRow} disabled={!canEdit || isColumn}>Duplicar linha</button>
-        <button type="button" role="menuitem" onClick={onInsertColumnLeft} disabled={!canEdit}>Inserir coluna à esquerda</button>
-        <button type="button" role="menuitem" onClick={onInsertColumnRight} disabled={!canEdit}>Inserir coluna à direita</button>
-        <button type="button" role="menuitem" onClick={onDuplicateColumn} disabled={!canEdit || isRow}>Duplicar coluna</button>
-        <span aria-hidden="true" />
-        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteRow} disabled={!canEdit || isColumn}>Excluir linha</button>
-        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteColumn} disabled={!canEdit || isRow}>Excluir coluna</button>
+
+        <Item icon="✂" label="Recortar" shortcut="Ctrl X" onClick={onCut} disabled={!canEdit} />
+        <Item icon="⧉" label="Copiar" shortcut="Ctrl C" onClick={onCopy} />
+        <Item icon="▣" label="Colar" shortcut="Ctrl V" onClick={onPaste} disabled={!canEdit} />
+        <Divider />
+
+        {!isColumn ? <Item icon="＋" label="Inserir linha acima" onClick={onInsertRowAbove} disabled={!canEdit} /> : null}
+        {!isColumn ? <Item icon="＋" label="Inserir linha abaixo" onClick={onInsertRowBelow} disabled={!canEdit} /> : null}
+        {!isRow ? <Item icon="＋" label="Inserir coluna à esquerda" onClick={onInsertColumnLeft} disabled={!canEdit} /> : null}
+        {!isRow ? <Item icon="＋" label="Inserir coluna à direita" onClick={onInsertColumnRight} disabled={!canEdit} /> : null}
+        {isRow ? <Item icon="⧉" label="Duplicar linha" onClick={onDuplicateRow} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⧉" label="Duplicar coluna" onClick={onDuplicateColumn} disabled={!canEdit} /> : null}
+        <Divider />
+
+        {!isColumn ? <Item icon="🗑" label="Excluir linha" onClick={onDeleteRow} disabled={!canEdit || isColumn} danger /> : null}
+        {!isRow ? <Item icon="🗑" label="Excluir coluna" onClick={onDeleteColumn} disabled={!canEdit || isRow} danger /> : null}
+        <Item icon="⌫" label="Limpar conteúdo" shortcut="Del" onClick={onClearSelection} disabled={!canEdit} />
+        <Divider />
+
+        <Item icon="▦" label="Selecionar tudo" shortcut="Ctrl A" onClick={onSelectAll} />
+        <Item icon="▣" label="Selecionar área preenchida" onClick={onSelectUsedRange} />
+        {!isColumn ? <Item icon="↔" label="Selecionar linha" onClick={onSelectRow} disabled={isColumn} /> : null}
+        {!isRow ? <Item icon="↕" label="Selecionar coluna" onClick={onSelectColumn} disabled={isRow} /> : null}
+        <Divider />
+
+        <Item icon="B" label="Negrito" shortcut="Ctrl B" onClick={onBold} disabled={!canEdit} />
+        <Item icon="I" label="Itálico" shortcut="Ctrl I" onClick={onItalic} disabled={!canEdit} />
+        <Item icon="U" label="Sublinhado" shortcut="Ctrl U" onClick={onUnderline} disabled={!canEdit} />
+        <Item icon="S" label="Tachado" onClick={onStrikeThrough} disabled={!canEdit} />
+        <div className={styles.contextPalette} role="group" aria-label="Cor do texto">
+          <span>Cor do texto</span>
+          {TEXT_COLOR_OPTIONS.slice(1).map((option) => (
+            <button
+              key={option.label}
+              type="button"
+              title={option.label}
+              aria-label={`Cor do texto: ${option.label}`}
+              style={{ '--swatch': option.value }}
+              onClick={() => onTextColor(option.value)}
+              disabled={!canEdit}
+            />
+          ))}
+        </div>
+        <Divider />
+
+        <Item icon="≡" label="Alinhar à esquerda" onClick={onAlignLeft} disabled={!canEdit} />
+        <Item icon="≣" label="Centralizar" onClick={onAlignCenter} disabled={!canEdit} />
+        <Item icon="≡" label="Alinhar à direita" onClick={onAlignRight} disabled={!canEdit} />
+        <Item icon="↵" label="Quebrar texto" onClick={onWrapText} disabled={!canEdit} />
+        <Item icon="▸" label="Cortar texto" onClick={onClipText} disabled={!canEdit} />
+        <Divider />
+
+        <Item icon="A" label="Texto em MAIÚSCULAS" onClick={onUppercase} disabled={!canEdit} />
+        <Item icon="a" label="Texto em minúsculas" onClick={onLowercase} disabled={!canEdit} />
+        <Item icon="Aa" label="Texto Capitalizado" onClick={onTitlecase} disabled={!canEdit} />
+        <Item icon="␠" label="Remover espaços extras" onClick={onTrimSpaces} disabled={!canEdit} />
+        <Item icon="⌁" label="Normalizar pelo tipo" onClick={onNormalizeSelection} disabled={!canEdit} />
+        <Divider />
+
+        {isColumn ? <Item icon="⇅" label="Ordenar A → Z" onClick={onSortColumnAscending} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⇵" label="Ordenar Z → A" onClick={onSortColumnDescending} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="⌕" label="Filtrar por valor da célula" onClick={onFilterColumnBySelection} /> : null}
+        {isColumn ? <Item icon="×" label="Limpar filtro da coluna" onClick={onClearColumnFilter} /> : null}
+        {isColumn ? <Item icon="↔" label="Ajustar largura ao conteúdo" onClick={onFitColumnWidth} disabled={!canEdit} /> : null}
+        {isColumn ? <Divider /> : null}
+
+        {isColumn ? <Item icon="T" label="Tipo: texto" onClick={onSetTypeText} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="123" label="Tipo: número" onClick={onSetTypeNumber} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="R$" label="Tipo: moeda" onClick={onSetTypeCurrency} disabled={!canEdit} /> : null}
+        {isColumn ? <Item icon="%" label="Tipo: percentual" onClick={onSetTypePercent} disabled={!canEdit} /> : null}
+        {isColumn ? <Divider /> : null}
+
+        <Item icon="⌕" label="Localizar este valor" onClick={onFindCellValue} />
+        <Item icon="↔" label="Usar no substituir" onClick={onUseCellValueAsReplaceQuery} />
+        <Item icon="✕" label="Limpar formatação" onClick={onClearFormatting} disabled={!canEdit} />
+        <Item icon="−" label="Fonte pequena" onClick={onFontSmall} disabled={!canEdit} />
+        <Item icon="10" label="Fonte normal" onClick={onFontNormal} disabled={!canEdit} />
+        <Item icon="+" label="Fonte grande" onClick={onFontLarge} disabled={!canEdit} />
+        <Item icon="⇡" label="Alinhar no topo" onClick={onVerticalTop} disabled={!canEdit} />
+        <Item icon="↕" label="Alinhar ao meio" onClick={onVerticalMiddle} disabled={!canEdit} />
+        <Item icon="⇣" label="Alinhar abaixo" onClick={onVerticalBottom} disabled={!canEdit} />
+        <Item icon="↵" label="Preencher seleção" shortcut="Ctrl Enter" onClick={onFillSelection} disabled={!canEdit} />
       </section>
     </div>
   );
@@ -974,6 +1052,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     && activeTextSelection.rowId === activeCell?.rowId
     && activeTextSelection.key === activeCell?.key
     && Number(activeTextSelection.end || 0) > Number(activeTextSelection.start || 0);
+
+  const inlineSelectionStyle = useMemo(() => {
+    if (!hasActiveTextRange) return {};
+    const row = rows.find((entry) => entry.id === activeTextSelection.rowId);
+    if (!row) return {};
+    return getInlineSelectionStyle(getCellStyle(row, activeTextSelection.key), activeTextSelection);
+  }, [activeTextSelection, hasActiveTextRange, rows]);
 
   const displayValueMap = useMemo(() => {
     const map = new Map();
@@ -1290,13 +1375,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
 
   const toggleStyle = useCallback((styleKey) => {
-    const enabled = !sameStyleValue(selectedCells, styleKey, true);
     if (hasActiveTextRange && INLINE_TEXT_STYLE_KEYS.has(styleKey)) {
-      applyInlineStyleToActiveTextSelection({ [styleKey]: true }).catch(() => {});
+      const enabled = inlineSelectionStyle?.[styleKey] !== true;
+      applyInlineStyleToActiveTextSelection({ [styleKey]: enabled }).catch(() => {});
       return;
     }
+    const enabled = !sameStyleValue(selectedCells, styleKey, true);
     applyStyleToSelection({ [styleKey]: enabled }).catch(() => {});
-  }, [applyInlineStyleToActiveTextSelection, applyStyleToSelection, hasActiveTextRange, selectedCells]);
+  }, [applyInlineStyleToActiveTextSelection, applyStyleToSelection, hasActiveTextRange, inlineSelectionStyle, selectedCells]);
 
   const setTextAlign = useCallback((textAlign) => {
     const nextAlign = selectedAlign === textAlign ? '' : textAlign;

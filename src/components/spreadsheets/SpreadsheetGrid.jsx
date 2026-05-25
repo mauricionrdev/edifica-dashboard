@@ -282,7 +282,13 @@ function Cell({
           value={editValue}
           rows={1}
           spellCheck={false}
-          onChange={(event) => onEditChange(event.target.value)}
+          onChange={(event) => {
+            onEditChange(event.target.value);
+            window.requestAnimationFrame(reportEditorSelection);
+          }}
+          onSelect={reportEditorSelection}
+          onMouseUp={reportEditorSelection}
+          onKeyUp={reportEditorSelection}
           onBlur={() => {
             onEditorSelectionChange?.(null);
             onCommit(row.id, column.key, 0, 0, false);
