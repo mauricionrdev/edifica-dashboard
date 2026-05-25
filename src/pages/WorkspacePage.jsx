@@ -160,10 +160,6 @@ function formatLongDate(value) {
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }).format(date);
 }
 
-function confirmDestructiveAction(message) {
-  if (typeof window === 'undefined') return false;
-  return window.confirm(message);
-}
 
 function taskContext(task) {
   return task?.clientName || task?.projectName || task?.typeLabel || 'Demanda interna';
@@ -184,6 +180,36 @@ function EmptyPanel({ title, eyebrow = 'Em construção', icon: Icon = SparklesI
       <span>{eyebrow}</span>
       <strong>{title}</strong>
     </section>
+  );
+}
+
+
+function ConfirmDeleteDialog({ confirmation, busy, onCancel, onConfirm }) {
+  if (!confirmation) return null;
+  return (
+    <div className={styles.confirmOverlay} role="presentation" onMouseDown={onCancel}>
+      <section
+        className={styles.confirmDialog}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="workspace-confirm-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header className={styles.confirmHeader}>
+          <span><TrashIcon size={15} /></span>
+          <div>
+            <strong id="workspace-confirm-title">{confirmation.title}</strong>
+            <p>{confirmation.message}</p>
+          </div>
+        </header>
+        <footer className={styles.confirmFooter}>
+          <Button size="sm" variant="secondary" onClick={onCancel} disabled={Boolean(busy)}>Cancelar</Button>
+          <Button size="sm" variant="danger" onClick={onConfirm} disabled={Boolean(busy)}>
+            <TrashIcon size={14} /> {busy ? 'Excluindo' : confirmation.confirmLabel}
+          </Button>
+        </footer>
+      </section>
+    </div>
   );
 }
 
@@ -481,6 +507,8 @@ export default function WorkspacePage() {
   const [documentQuery, setDocumentQuery] = useState('');
   const [documentDraft, setDocumentDraft] = useState({ title: '', blocks: [createDocumentBlock('text', '')] });
   const [documentSaving, setDocumentSaving] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarResizing, setSidebarResizing] = useState(false);
@@ -527,6 +555,23 @@ export default function WorkspacePage() {
       return;
     }
     setSidebarCollapsed(true);
+  }
+
+
+  function requestDeleteConfirmation(confirmation) {
+    setDeleteConfirmation(confirmation);
+  }
+
+  function closeDeleteConfirmation() {
+    if (deleteBusy) return;
+    setDeleteConfirmation(null);
+  }
+
+  function confirmDeleteAction() {
+    const action = deleteConfirmation?.action;
+    if (!action) return;
+    setDeleteConfirmation(null);
+    action();
   }
 
   function loadTasks() {
@@ -599,11 +644,8 @@ export default function WorkspacePage() {
     }
   }
 
-  async function handleDeleteDocument(documentId) {
-    if (!documentId) return;
-    const document = documents.find((item) => String(item.id) === String(documentId));
-    const label = document?.title ? `"${document.title}"` : 'este documento';
-    if (!confirmDestructiveAction(`Excluir ${label}? Esta ação não poderá ser desfeita.`)) return;
+  async function performDeleteDocument(documentId) {
+    setDeleteBusy(true);
     try {
       await deleteWorkspaceDocument(documentId);
       setDocuments((current) => {
@@ -614,7 +656,21 @@ export default function WorkspacePage() {
       showToast?.('Documento excluído.', { variant: 'success' });
     } catch (err) {
       showToast?.(err?.message || 'Não foi possível excluir o documento.', { variant: 'error' });
+    } finally {
+      setDeleteBusy(false);
     }
+  }
+
+  function handleDeleteDocument(documentId) {
+    if (!documentId) return;
+    const document = documents.find((item) => String(item.id) === String(documentId));
+    const label = document?.title ? `"${document.title}"` : 'este documento';
+    requestDeleteConfirmation({
+      title: 'Excluir documento',
+      message: `${label} será removido definitivamente.`,
+      confirmLabel: 'Excluir documento',
+      action: () => { performDeleteDocument(documentId).catch(() => {}); },
+    });
   }
 
   function handleAddDocumentBlock(type = 'text') {
@@ -703,11 +759,19 @@ export default function WorkspacePage() {
     }));
   }
 
-  function handleDeleteDocumentBlock(blockId) {
-    if (!confirmDestructiveAction('Excluir este bloco?')) return;
+  function performDeleteDocumentBlock(blockId) {
     setDocumentDraft((current) => {
       const nextBlocks = (current.blocks || []).filter((block) => block.id !== blockId);
       return { ...current, blocks: nextBlocks.length ? nextBlocks : [createDocumentBlock('text', '')] };
+    });
+  }
+
+  function handleDeleteDocumentBlock(blockId) {
+    requestDeleteConfirmation({
+      title: 'Excluir bloco',
+      message: 'Este bloco será removido do documento aberto.',
+      confirmLabel: 'Excluir bloco',
+      action: () => { performDeleteDocumentBlock(blockId); },
     });
   }
 
@@ -1363,6 +1427,13 @@ export default function WorkspacePage() {
           </section>
         ) : null}
       </section>
+
+      <ConfirmDeleteDialog
+        confirmation={deleteConfirmation}
+        busy={deleteBusy}
+        onCancel={closeDeleteConfirmation}
+        onConfirm={confirmDeleteAction}
+      />
     </main>
   );
 }

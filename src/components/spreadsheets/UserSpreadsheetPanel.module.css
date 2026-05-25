@@ -393,3 +393,68 @@
   cursor: not-allowed;
   opacity: var(--opacity-disabled);
 }
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.confirmDialog {
+  width: min(420px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-dialog);
+}
+
+.confirmHeader {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.confirmHeader > span {
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-2);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.confirmHeader strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.confirmHeader p {
+  margin: var(--space-1) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+}
+
+.confirmFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line-subtle);
+  background: var(--bg-raised);
+}

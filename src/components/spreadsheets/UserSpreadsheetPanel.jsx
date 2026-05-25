@@ -22,10 +22,6 @@ const MAX_COLUMN_WIDTH = 900;
 const MAX_IMPORT_COLUMNS = 60;
 const MAX_IMPORT_ROWS = 200;
 
-function confirmDestructiveAction(message) {
-  if (typeof window === 'undefined') return false;
-  return window.confirm(message);
-}
 
 function decodeEntities(value = '') {
   return String(value ?? '')
@@ -250,6 +246,35 @@ function sameStyleValue(cells = [], key, expectedValue) {
   return cells.length > 0 && cells.every(({ row, column }) => getCellStyle(row, column.key)?.[key] === expectedValue);
 }
 
+function ConfirmDeleteDialog({ confirmation, busy, onCancel, onConfirm }) {
+  if (!confirmation) return null;
+  return (
+    <div className={styles.confirmOverlay} role="presentation" onMouseDown={onCancel}>
+      <section
+        className={styles.confirmDialog}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="spreadsheet-confirm-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header className={styles.confirmHeader}>
+          <span><TrashIcon size={15} /></span>
+          <div>
+            <strong id="spreadsheet-confirm-title">{confirmation.title}</strong>
+            <p>{confirmation.message}</p>
+          </div>
+        </header>
+        <footer className={styles.confirmFooter}>
+          <Button size="sm" variant="secondary" onClick={onCancel} disabled={Boolean(busy)}>Cancelar</Button>
+          <Button size="sm" variant="danger" onClick={onConfirm} disabled={Boolean(busy)}>
+            <TrashIcon size={14} /> {busy ? 'Excluindo' : confirmation.confirmLabel}
+          </Button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, showToast }) {
   const [sheets, setSheets] = useState([]);
   const [activeSheetId, setActiveSheetId] = useState('');
@@ -266,6 +291,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [resizeState, setResizeState] = useState(null);
   const [scrollState, setScrollState] = useState({});
   const [syncState, setSyncState] = useState({ status: 'idle', detail: 'Pronto' });
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const fileInputRef = useRef(null);
   const draftRef = useRef(new Map());
 
@@ -298,6 +324,23 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     markSync('error', message);
     showToast?.(message, { variant: 'error' });
   }, [markSync, showToast]);
+
+
+  const requestDeleteConfirmation = useCallback((confirmation) => {
+    setDeleteConfirmation(confirmation);
+  }, []);
+
+  const closeDeleteConfirmation = useCallback(() => {
+    if (busy) return;
+    setDeleteConfirmation(null);
+  }, [busy]);
+
+  const confirmDeleteAction = useCallback(() => {
+    const action = deleteConfirmation?.action;
+    if (!action) return;
+    setDeleteConfirmation(null);
+    action();
+  }, [deleteConfirmation]);
 
   const loadSheet = useCallback(async (sheetId) => {
     if (!ownerUserId) return;
@@ -469,9 +512,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeSheetId, loadSheet, markSync, notifyError, ownerUserId]);
 
-  const deleteSheet = useCallback(async (sheetId) => {
-    const sheet = sheets.find((item) => item.id === sheetId);
-    if (!sheet || !confirmDestructiveAction(`Excluir a planilha "${sheet.name}"? Esta ação não pode ser desfeita.`)) return;
+  const performDeleteSheet = useCallback(async (sheetId) => {
     setBusy('delete-sheet');
     try {
       await deleteSupportDailySheet(sheetId, { ownerUserId });
@@ -484,6 +525,17 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setBusy('');
     }
   }, [loadSheet, markSync, notifyError, ownerUserId, sheets]);
+
+  const deleteSheet = useCallback((sheetId) => {
+    const sheet = sheets.find((item) => item.id === sheetId);
+    if (!sheet) return;
+    requestDeleteConfirmation({
+      title: 'Excluir planilha',
+      message: `A planilha "${sheet.name}" será removida definitivamente.`,
+      confirmLabel: 'Excluir planilha',
+      action: () => { performDeleteSheet(sheetId).catch(() => {}); },
+    });
+  }, [performDeleteSheet, requestDeleteConfirmation, sheets]);
 
   const addRow = useCallback(async () => {
     if (!canMutateSheet) return null;
@@ -508,20 +560,32 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     return normalizeRows([response.row], columns)[0];
   }, [activeSheetId, columns, ownerUserId]);
 
-  const deleteRow = useCallback(async () => {
-    if (!activeRow || !confirmDestructiveAction(`Excluir a linha ${activeRowIndex + 1}? Esta ação não pode ser desfeita.`)) return;
+  const performDeleteRow = useCallback(async (row) => {
     setBusy('delete-row');
     try {
-      await deleteSupportDailyRow(activeRow.id, { ownerUserId, sheetId: activeSheetId });
-      setRows((current) => current.filter((row) => row.id !== activeRow.id));
+      await deleteSupportDailyRow(row.id, { ownerUserId, sheetId: activeSheetId });
+      setRows((current) => current.filter((entry) => entry.id !== row.id));
       setActiveCell(null);
+      setSelectionAnchor(null);
+      setSelectionFocus(null);
       markSync('saved', 'Linha excluída');
     } catch (error) {
       notifyError(error, 'Não foi possível excluir a linha.');
     } finally {
       setBusy('');
     }
-  }, [activeRow, activeRowIndex, activeSheetId, markSync, notifyError, ownerUserId]);
+  }, [activeSheetId, markSync, notifyError, ownerUserId]);
+
+  const deleteRow = useCallback(() => {
+    if (!activeRow) return;
+    const row = activeRow;
+    requestDeleteConfirmation({
+      title: 'Excluir linha',
+      message: `A linha ${activeRowIndex + 1} será removida definitivamente da planilha ativa.`,
+      confirmLabel: 'Excluir linha',
+      action: () => { performDeleteRow(row).catch(() => {}); },
+    });
+  }, [activeRow, activeRowIndex, performDeleteRow, requestDeleteConfirmation]);
 
   const addColumn = useCallback(async () => {
     if (!canMutateSheet) return null;
@@ -548,26 +612,38 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     return normalizeColumns(response.columns || [response.column]).at(-1) || response.column;
   }, [activeSheetId, ownerUserId]);
 
-  const deleteColumn = useCallback(async () => {
-    if (!activeColumn || !confirmDestructiveAction(`Excluir a coluna "${activeColumn.label}"? Esta ação não pode ser desfeita.`)) return;
+  const performDeleteColumn = useCallback(async (columnToDelete) => {
     setBusy('delete-column');
     try {
-      await deleteSupportDailyColumn(activeColumn.key, { ownerUserId, sheetId: activeSheetId });
-      const nextColumns = columns.filter((column) => column.key !== activeColumn.key);
+      await deleteSupportDailyColumn(columnToDelete.key, { ownerUserId, sheetId: activeSheetId });
+      const nextColumns = columns.filter((column) => column.key !== columnToDelete.key);
       setColumns(nextColumns);
       setRows((current) => current.map((row) => {
         const next = { ...row };
-        delete next[activeColumn.key];
+        delete next[columnToDelete.key];
         return next;
       }));
       setActiveCell(null);
+      setSelectionAnchor(null);
+      setSelectionFocus(null);
       markSync('saved', 'Coluna excluída');
     } catch (error) {
       notifyError(error, 'Não foi possível excluir a coluna.');
     } finally {
       setBusy('');
     }
-  }, [activeColumn, activeSheetId, columns, markSync, notifyError, ownerUserId]);
+  }, [activeSheetId, columns, markSync, notifyError, ownerUserId]);
+
+  const deleteColumn = useCallback(() => {
+    if (!activeColumn) return;
+    const columnToDelete = activeColumn;
+    requestDeleteConfirmation({
+      title: 'Excluir coluna',
+      message: `A coluna "${columnToDelete.label}" será removida definitivamente da planilha ativa.`,
+      confirmLabel: 'Excluir coluna',
+      action: () => { performDeleteColumn(columnToDelete).catch(() => {}); },
+    });
+  }, [activeColumn, performDeleteColumn, requestDeleteConfirmation]);
 
   const changeColumnLabel = useCallback((key, label) => {
     setColumns((current) => current.map((column) => (column.key === key ? { ...column, label: sanitizeCellValue(label).slice(0, 80) } : column)));
@@ -944,6 +1020,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <span data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail}</span>
         <span>{selectedCount > 1 ? `${selectedCount} células selecionadas · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
+
+      <ConfirmDeleteDialog
+        confirmation={deleteConfirmation}
+        busy={busy}
+        onCancel={closeDeleteConfirmation}
+        onConfirm={confirmDeleteAction}
+      />
     </section>
   );
 }
