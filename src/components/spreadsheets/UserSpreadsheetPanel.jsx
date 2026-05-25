@@ -250,6 +250,21 @@ function buildSelectionSummary(cells = []) {
   return parts.join(' · ');
 }
 
+function reorderByIndex(items = [], sourceIndex, targetIndex) {
+  if (sourceIndex < 0 || targetIndex < 0 || sourceIndex >= items.length) return items;
+  const next = [...items];
+  const [item] = next.splice(sourceIndex, 1);
+  next.splice(Math.min(targetIndex, next.length), 0, item);
+  return next.map((entry, index) => ({ ...entry, position: index + 1 }));
+}
+
+function cloneRowValues(row = {}, columns = []) {
+  return columns.reduce((patch, column) => {
+    patch[column.key] = sanitizeCellValue(row?.[column.key] || '');
+    return patch;
+  }, {});
+}
+
 function serializeCellsToTsv(rows = [], columns = [], bounds) {
   if (!bounds) return '';
   const lines = [];
@@ -307,8 +322,32 @@ function ConfirmDeleteDialog({ confirmation, busy, onCancel, onConfirm }) {
 }
 
 
-function SheetContextMenu({ menu, canEdit, onClose, onCopy, onFillSelection, onAddRow, onAddColumn, onDeleteRow, onDeleteColumn, onBold, onItalic, onClearFormatting }) {
+function SheetContextMenu({
+  menu,
+  canEdit,
+  onClose,
+  onCopy,
+  onFillSelection,
+  onClearSelection,
+  onInsertRowAbove,
+  onInsertRowBelow,
+  onDuplicateRow,
+  onInsertColumnLeft,
+  onInsertColumnRight,
+  onDuplicateColumn,
+  onDeleteRow,
+  onDeleteColumn,
+  onBold,
+  onItalic,
+  onUnderline,
+  onAlignLeft,
+  onAlignCenter,
+  onAlignRight,
+  onClearFormatting,
+}) {
   if (!menu) return null;
+  const isRow = menu.scope === 'row';
+  const isColumn = menu.scope === 'column';
   return (
     <div className={styles.contextBackdrop} role="presentation" onMouseDown={onClose} onContextMenu={(event) => event.preventDefault()}>
       <section
@@ -320,16 +359,25 @@ function SheetContextMenu({ menu, canEdit, onClose, onCopy, onFillSelection, onA
       >
         <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção</button>
         <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção</button>
+        <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo</button>
         <span aria-hidden="true" />
         <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito</button>
         <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico</button>
+        <button type="button" role="menuitem" onClick={onUnderline} disabled={!canEdit}>Sublinhado</button>
+        <button type="button" role="menuitem" onClick={onAlignLeft} disabled={!canEdit}>Alinhar à esquerda</button>
+        <button type="button" role="menuitem" onClick={onAlignCenter} disabled={!canEdit}>Centralizar</button>
+        <button type="button" role="menuitem" onClick={onAlignRight} disabled={!canEdit}>Alinhar à direita</button>
         <button type="button" role="menuitem" onClick={onClearFormatting} disabled={!canEdit}>Limpar formatação</button>
         <span aria-hidden="true" />
-        <button type="button" role="menuitem" onClick={onAddRow} disabled={!canEdit}>Inserir linha abaixo</button>
-        <button type="button" role="menuitem" onClick={onAddColumn} disabled={!canEdit}>Inserir coluna à direita</button>
+        <button type="button" role="menuitem" onClick={onInsertRowAbove} disabled={!canEdit}>Inserir linha acima</button>
+        <button type="button" role="menuitem" onClick={onInsertRowBelow} disabled={!canEdit}>Inserir linha abaixo</button>
+        <button type="button" role="menuitem" onClick={onDuplicateRow} disabled={!canEdit || isColumn}>Duplicar linha</button>
+        <button type="button" role="menuitem" onClick={onInsertColumnLeft} disabled={!canEdit}>Inserir coluna à esquerda</button>
+        <button type="button" role="menuitem" onClick={onInsertColumnRight} disabled={!canEdit}>Inserir coluna à direita</button>
+        <button type="button" role="menuitem" onClick={onDuplicateColumn} disabled={!canEdit || isRow}>Duplicar coluna</button>
         <span aria-hidden="true" />
-        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteRow} disabled={!canEdit}>Excluir linha</button>
-        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteColumn} disabled={!canEdit}>Excluir coluna</button>
+        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteRow} disabled={!canEdit || isColumn}>Excluir linha</button>
+        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteColumn} disabled={!canEdit || isRow}>Excluir coluna</button>
       </section>
     </div>
   );
@@ -357,6 +405,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [filterColumnKey, setFilterColumnKey] = useState('all');
   const [filterQuery, setFilterQuery] = useState('');
   const fileInputRef = useRef(null);
+  const searchInputRef = useRef(null);
   const draftRef = useRef(new Map());
 
   const viewRows = useMemo(() => {
@@ -495,7 +544,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setSelectionFocus({ rowId: lastRow.id, key });
   }, [viewRows]);
 
-  const navigateCell = useCallback((rowId, key, rowDelta = 0, columnDelta = 0) => {
+  const navigateCell = useCallback((rowId, key, rowDelta = 0, columnDelta = 0, extendSelection = false) => {
     const rowIndex = rows.findIndex((row) => row.id === rowId);
     const columnIndex = columns.findIndex((column) => column.key === key);
     if (rowIndex < 0 || columnIndex < 0) return;
@@ -504,9 +553,24 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (nextRow && nextColumn) {
       const nextCell = { rowId: nextRow.id, key: nextColumn.key };
       setActiveCell(nextCell);
-      setSelectionAnchor(nextCell);
       setSelectionFocus(nextCell);
+      setSelectionAnchor((current) => (extendSelection && current ? current : nextCell));
     }
+  }, [columns, rows]);
+
+  const jumpCell = useCallback((rowId, key, options = {}) => {
+    const rowIndex = rows.findIndex((row) => row.id === rowId);
+    const columnIndex = columns.findIndex((column) => column.key === key);
+    if (rowIndex < 0 || columnIndex < 0) return;
+    const targetRowIndex = options.axis === 'both' ? (options.edge === 'start' ? 0 : rows.length - 1) : rowIndex;
+    const targetColumnIndex = options.edge === 'start' ? 0 : columns.length - 1;
+    const targetRow = rows[targetRowIndex];
+    const targetColumn = columns[targetColumnIndex];
+    if (!targetRow || !targetColumn) return;
+    const nextCell = { rowId: targetRow.id, key: targetColumn.key };
+    setActiveCell(nextCell);
+    setSelectionFocus(nextCell);
+    setSelectionAnchor((current) => (options.extendSelection && current ? current : nextCell));
   }, [columns, rows]);
 
   const setCellDraft = useCallback((rowId, key, value) => {
@@ -852,6 +916,169 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     });
   }, [activeColumn, performDeleteColumn, requestDeleteConfirmation]);
 
+  const persistRowOrder = useCallback(async (nextRows) => {
+    const ordered = nextRows.map((row, index) => ({ ...row, position: index + 1 }));
+    setRows(normalizeRows(ordered, columns));
+    await Promise.all(ordered.map((row) => updateSupportDailyRow(row.id, { position: row.position })));
+    return ordered;
+  }, [columns]);
+
+  const persistColumnOrder = useCallback(async (nextColumns) => {
+    const ordered = normalizeColumns(nextColumns.map((column, index) => ({ ...column, position: index + 1 })));
+    setColumns(ordered);
+    setRows((current) => normalizeRows(current, ordered));
+    await Promise.all(ordered.map((column) => updateSupportDailyColumn(column.key, { position: column.position })));
+    return ordered;
+  }, []);
+
+  const insertRowAtActive = useCallback(async (placement = 'below') => {
+    if (!canMutateSheet) return;
+    const referenceIndex = activeRow ? rows.findIndex((row) => row.id === activeRow.id) : rows.length - 1;
+    const targetIndex = placement === 'above' ? Math.max(0, referenceIndex) : Math.max(0, referenceIndex + 1);
+    setBusy(`insert-row-${placement}`);
+    markSync('saving', 'Inserindo linha');
+    try {
+      const response = await createSupportDailyRow({ ownerUserId, sheetId: activeSheetId });
+      const created = normalizeRows([response.row], columns)[0];
+      const withoutCreated = rows.filter((row) => row.id !== created.id);
+      const ordered = reorderByIndex([...withoutCreated, created], withoutCreated.length, Math.min(targetIndex, withoutCreated.length));
+      await persistRowOrder(ordered);
+      const nextCell = { rowId: created.id, key: columns[0]?.key || '' };
+      setActiveCell(nextCell);
+      setSelectionAnchor(nextCell);
+      setSelectionFocus(nextCell);
+      markSync('saved', placement === 'above' ? 'Linha inserida acima' : 'Linha inserida abaixo');
+    } catch (error) {
+      notifyError(error, 'Não foi possível inserir a linha.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeRow, activeSheetId, canMutateSheet, columns, loadSheet, markSync, notifyError, ownerUserId, persistRowOrder, rows]);
+
+  const duplicateActiveRow = useCallback(async () => {
+    if (!canMutateSheet || !activeRow) return;
+    const referenceIndex = rows.findIndex((row) => row.id === activeRow.id);
+    setBusy('duplicate-row');
+    markSync('saving', 'Duplicando linha');
+    try {
+      const response = await createSupportDailyRow({ ownerUserId, sheetId: activeSheetId });
+      const created = normalizeRows([response.row], columns)[0];
+      const valuePatch = cloneRowValues(activeRow, columns);
+      const stylePatch = activeRow.__styles && Object.keys(activeRow.__styles).length ? { styles: activeRow.__styles } : {};
+      await updateSupportDailyRow(created.id, { ...valuePatch, ...stylePatch });
+      const hydrated = { ...created, ...valuePatch, __styles: { ...(activeRow.__styles || {}) } };
+      const withoutCreated = rows.filter((row) => row.id !== created.id);
+      const ordered = reorderByIndex([...withoutCreated, hydrated], withoutCreated.length, Math.min(referenceIndex + 1, withoutCreated.length));
+      await persistRowOrder(ordered);
+      const nextCell = { rowId: hydrated.id, key: activeCell?.key || columns[0]?.key || '' };
+      setActiveCell(nextCell);
+      setSelectionAnchor(nextCell);
+      setSelectionFocus(nextCell);
+      markSync('saved', 'Linha duplicada');
+    } catch (error) {
+      notifyError(error, 'Não foi possível duplicar a linha.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeCell?.key, activeRow, activeSheetId, canMutateSheet, columns, loadSheet, markSync, notifyError, ownerUserId, persistRowOrder, rows]);
+
+  const insertColumnAtActive = useCallback(async (placement = 'right') => {
+    if (!canMutateSheet) return;
+    const referenceIndex = activeColumn ? columns.findIndex((column) => column.key === activeColumn.key) : columns.length - 1;
+    const targetIndex = placement === 'left' ? Math.max(0, referenceIndex) : Math.max(0, referenceIndex + 1);
+    setBusy(`insert-column-${placement}`);
+    markSync('saving', 'Inserindo coluna');
+    try {
+      const label = columnName(columns.length);
+      const response = await createSupportDailyColumn({ ownerUserId, sheetId: activeSheetId, label, width: DEFAULT_COLUMN_WIDTH });
+      const created = normalizeColumns(response.columns || [response.column]).find((column) => !columns.some((item) => item.key === column.key)) || normalizeColumns([response.column]).at(0);
+      if (!created) throw new Error('Coluna criada não retornou da API.');
+      const withoutCreated = columns.filter((column) => column.key !== created.key);
+      const ordered = reorderByIndex([...withoutCreated, created], withoutCreated.length, Math.min(targetIndex, withoutCreated.length));
+      await persistColumnOrder(ordered);
+      const nextCell = { rowId: activeCell?.rowId || rows[0]?.id || '', key: created.key };
+      setActiveCell(nextCell);
+      setSelectionAnchor(nextCell);
+      setSelectionFocus(nextCell);
+      markSync('saved', placement === 'left' ? 'Coluna inserida à esquerda' : 'Coluna inserida à direita');
+    } catch (error) {
+      notifyError(error, 'Não foi possível inserir a coluna.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeCell?.rowId, activeColumn, activeSheetId, canMutateSheet, columns, loadSheet, markSync, notifyError, ownerUserId, persistColumnOrder, rows]);
+
+  const duplicateActiveColumn = useCallback(async () => {
+    if (!canMutateSheet || !activeColumn) return;
+    const referenceIndex = columns.findIndex((column) => column.key === activeColumn.key);
+    setBusy('duplicate-column');
+    markSync('saving', 'Duplicando coluna');
+    try {
+      const response = await createSupportDailyColumn({ ownerUserId, sheetId: activeSheetId, label: `${activeColumn.label || 'Coluna'} cópia`, width: activeColumn.width || DEFAULT_COLUMN_WIDTH });
+      const created = normalizeColumns(response.columns || [response.column]).find((column) => !columns.some((item) => item.key === column.key)) || normalizeColumns([response.column]).at(0);
+      if (!created) throw new Error('Coluna criada não retornou da API.');
+      const rowUpdates = rows.map((row) => {
+        const value = sanitizeCellValue(row?.[activeColumn.key] || '');
+        const sourceStyle = getCellStyle(row, activeColumn.key);
+        const patch = Object.keys(sourceStyle).length ? { [created.key]: value, styles: { [created.key]: sourceStyle } } : { [created.key]: value };
+        return updateSupportDailyRow(row.id, patch);
+      });
+      await Promise.all(rowUpdates);
+      const withoutCreated = columns.filter((column) => column.key !== created.key);
+      const ordered = reorderByIndex([...withoutCreated, created], withoutCreated.length, Math.min(referenceIndex + 1, withoutCreated.length));
+      await persistColumnOrder(ordered);
+      setRows((current) => normalizeRows(current.map((row) => ({
+        ...row,
+        [created.key]: sanitizeCellValue(row?.[activeColumn.key] || ''),
+        __styles: getCellStyle(row, activeColumn.key) && Object.keys(getCellStyle(row, activeColumn.key)).length
+          ? { ...(row.__styles || {}), [created.key]: { ...getCellStyle(row, activeColumn.key) } }
+          : row.__styles,
+      })), ordered));
+      const nextCell = { rowId: activeCell?.rowId || rows[0]?.id || '', key: created.key };
+      setActiveCell(nextCell);
+      setSelectionAnchor(nextCell);
+      setSelectionFocus(nextCell);
+      markSync('saved', 'Coluna duplicada');
+    } catch (error) {
+      notifyError(error, 'Não foi possível duplicar a coluna.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeCell?.rowId, activeColumn, activeSheetId, canMutateSheet, columns, loadSheet, markSync, notifyError, ownerUserId, persistColumnOrder, rows]);
+
+  const clearSelectionValues = useCallback(async () => {
+    if (!canEdit || !selectedCells.length) return;
+    const updatesByRow = new Map();
+    const optimistic = rows.map((row) => {
+      const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
+      if (!targetCells.length) return row;
+      const next = { ...row };
+      const patch = {};
+      targetCells.forEach(({ column }) => {
+        next[column.key] = '';
+        patch[column.key] = '';
+      });
+      updatesByRow.set(row.id, patch);
+      return next;
+    });
+    setRows(optimistic);
+    markSync('saving', 'Limpando conteúdo');
+    setBusy('clear-values');
+    try {
+      await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
+      markSync('saved', 'Conteúdo limpo');
+    } catch (error) {
+      notifyError(error, 'Não foi possível limpar o conteúdo.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
+
   const changeColumnLabel = useCallback((key, label) => {
     setColumns((current) => current.map((column) => (column.key === key ? { ...column, label: sanitizeCellValue(label).slice(0, 80) } : column)));
   }, []);
@@ -1077,10 +1304,44 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const onKeyDown = (event) => {
       const target = event.target;
       const isTyping = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable;
+      if (event.key === 'Escape') {
+        setContextMenu(null);
+        return;
+      }
       if (isTyping || !activeCell) return;
       const modifier = event.metaKey || event.ctrlKey;
-      if (!modifier) return;
       const key = event.key.toLowerCase();
+      if ((event.key === 'Delete' || event.key === 'Backspace') && canEdit) {
+        event.preventDefault();
+        clearSelectionValues().catch(() => {});
+        return;
+      }
+      if (modifier && key === 'a') {
+        event.preventDefault();
+        const firstRow = viewRows[0];
+        const lastRow = viewRows[viewRows.length - 1];
+        const firstColumn = columns[0];
+        const lastColumn = columns[columns.length - 1];
+        if (firstRow && lastRow && firstColumn && lastColumn) {
+          const nextCell = { rowId: firstRow.id, key: firstColumn.key };
+          setActiveCell(nextCell);
+          setSelectionAnchor(nextCell);
+          setSelectionFocus({ rowId: lastRow.id, key: lastColumn.key });
+        }
+        return;
+      }
+      if (modifier && key === 'f') {
+        event.preventDefault();
+        searchInputRef.current?.focus({ preventScroll: true });
+        searchInputRef.current?.select();
+        return;
+      }
+      if (modifier && key === 'enter' && canEdit) {
+        event.preventDefault();
+        applyValueToSelection().catch(() => {});
+        return;
+      }
+      if (!modifier) return;
       if (key === 'c') {
         event.preventDefault();
         copySelection().catch(() => {});
@@ -1100,7 +1361,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [activeCell, canEdit, copySelection, toggleStyle]);
+  }, [activeCell, applyValueToSelection, canEdit, clearSelectionValues, columns, copySelection, toggleStyle, viewRows]);
 
   return (
     <section className={styles.panel} data-loading={loading || undefined}>
@@ -1173,6 +1434,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         </div>
         <div className={styles.findGroup}>
           <input
+            ref={searchInputRef}
             value={searchQuery}
             aria-label="Buscar na planilha"
             placeholder="Buscar"
@@ -1265,6 +1527,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             onCellChange={setCellDraft}
             onCellCommit={commitCell}
             onNavigateCell={navigateCell}
+            onJumpCell={jumpCell}
             onContextMenu={openContextMenu}
             onRowContextMenu={openRowContextMenu}
             onColumnContextMenu={openColumnContextMenu}
@@ -1295,12 +1558,21 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onClose={closeContextMenu}
         onCopy={() => { closeContextMenu(); copySelection().catch(() => {}); }}
         onFillSelection={() => { closeContextMenu(); applyValueToSelection().catch(() => {}); }}
-        onAddRow={() => { closeContextMenu(); addRow().catch(() => {}); }}
-        onAddColumn={() => { closeContextMenu(); addColumn().catch(() => {}); }}
+        onClearSelection={() => { closeContextMenu(); clearSelectionValues().catch(() => {}); }}
+        onInsertRowAbove={() => { closeContextMenu(); insertRowAtActive('above').catch(() => {}); }}
+        onInsertRowBelow={() => { closeContextMenu(); insertRowAtActive('below').catch(() => {}); }}
+        onDuplicateRow={() => { closeContextMenu(); duplicateActiveRow().catch(() => {}); }}
+        onInsertColumnLeft={() => { closeContextMenu(); insertColumnAtActive('left').catch(() => {}); }}
+        onInsertColumnRight={() => { closeContextMenu(); insertColumnAtActive('right').catch(() => {}); }}
+        onDuplicateColumn={() => { closeContextMenu(); duplicateActiveColumn().catch(() => {}); }}
         onDeleteRow={() => { closeContextMenu(); deleteRow(); }}
         onDeleteColumn={() => { closeContextMenu(); deleteColumn(); }}
         onBold={() => { closeContextMenu(); toggleStyle('bold'); }}
         onItalic={() => { closeContextMenu(); toggleStyle('italic'); }}
+        onUnderline={() => { closeContextMenu(); toggleStyle('underline'); }}
+        onAlignLeft={() => { closeContextMenu(); setTextAlign('left'); }}
+        onAlignCenter={() => { closeContextMenu(); setTextAlign('center'); }}
+        onAlignRight={() => { closeContextMenu(); setTextAlign('right'); }}
         onClearFormatting={() => { closeContextMenu(); clearSelectionFormatting(); }}
       />
 

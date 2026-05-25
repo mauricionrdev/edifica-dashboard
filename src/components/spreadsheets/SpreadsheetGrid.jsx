@@ -55,6 +55,7 @@ function Cell({
   onCommit,
   onCancel,
   onNavigate,
+  onJump,
   onContextMenu,
   onRowContextMenu,
   onColumnContextMenu,
@@ -121,7 +122,17 @@ function Cell({
     if (deltas[event.key]) {
       event.preventDefault();
       const [rowDelta, columnDelta] = deltas[event.key];
-      onNavigate(row.id, column.key, rowDelta, columnDelta);
+      onNavigate(row.id, column.key, rowDelta, columnDelta, event.shiftKey);
+      return;
+    }
+
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault();
+      onJump(row.id, column.key, {
+        edge: event.key === 'Home' ? 'start' : 'end',
+        axis: event.metaKey || event.ctrlKey ? 'both' : 'column',
+        extendSelection: event.shiftKey,
+      });
       return;
     }
 
@@ -223,6 +234,7 @@ export default function SpreadsheetGrid({
   onCellChange,
   onCellCommit,
   onNavigateCell,
+  onJumpCell,
   onContextMenu,
   onRowContextMenu,
   onColumnContextMenu,
@@ -495,6 +507,17 @@ export default function SpreadsheetGrid({
                 />
                 <button
                   type="button"
+                  className={styles.headerMenu}
+                  aria-label={`Abrir menu da coluna ${column.label}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onColumnContextMenu?.(event, column.key);
+                  }}
+                >
+                  ⋯
+                </button>
+                <button
+                  type="button"
                   className={styles.resizeHandle}
                   aria-label={`Redimensionar ${column.label}`}
                   onPointerDown={(event) => canEdit && onResizeStart(event, column.key)}
@@ -513,7 +536,18 @@ export default function SpreadsheetGrid({
               onClick={() => onSelectRow(row.id)}
               onContextMenu={(event) => onRowContextMenu?.(event, row.id)}
             >
-              {index + 1}
+              <span>{index + 1}</span>
+              <em
+                role="button"
+                tabIndex={-1}
+                aria-label={`Abrir menu da linha ${index + 1}`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onRowContextMenu?.(event, row.id);
+                }}
+              >
+                ⋯
+              </em>
             </button>
           ))}
 
@@ -545,6 +579,7 @@ export default function SpreadsheetGrid({
                   onCommit={commitEdit}
                   onCancel={cancelEdit}
                   onNavigate={onNavigateCell}
+                  onJump={onJumpCell}
                   onContextMenu={onContextMenu}
                   onPasteTable={onPasteTable}
                   onDragSelectionStart={startDragSelection}
