@@ -264,3 +264,30 @@
 .cellEditor {
   user-select: text;
 }
+
+.fillHandle {
+  position: absolute;
+  right: calc(var(--space-1) * -1);
+  bottom: calc(var(--space-1) * -1);
+  z-index: 8;
+  width: var(--space-3);
+  height: var(--space-3);
+  padding: 0;
+  border: 1px solid var(--bg-app);
+  border-radius: var(--radius-1);
+  background: var(--accent-line);
+  cursor: crosshair;
+  pointer-events: auto;
+}
+
+.fillHandle:hover {
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.fillPreview {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  border: 1px dashed var(--accent-line);
+  background: var(--accent-soft);
+}

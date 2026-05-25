@@ -230,6 +230,11 @@ function formatStatusNumber(value) {
   return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(value);
 }
 
+function positiveModulo(value, divisor) {
+  if (!divisor) return 0;
+  return ((value % divisor) + divisor) % divisor;
+}
+
 function buildSelectionSummary(cells = []) {
   if (!cells.length) return 'Nenhuma célula selecionada';
   const values = cells.map(({ row, column }) => sanitizeCellValue(row?.[column.key] || ''));
@@ -302,7 +307,7 @@ function ConfirmDeleteDialog({ confirmation, busy, onCancel, onConfirm }) {
 }
 
 
-function SheetContextMenu({ menu, canEdit, onClose, onCopy, onAddRow, onAddColumn, onDeleteRow, onDeleteColumn, onBold, onItalic, onClearFormatting }) {
+function SheetContextMenu({ menu, canEdit, onClose, onCopy, onFillSelection, onAddRow, onAddColumn, onDeleteRow, onDeleteColumn, onBold, onItalic, onClearFormatting }) {
   if (!menu) return null;
   return (
     <div className={styles.contextBackdrop} role="presentation" onMouseDown={onClose} onContextMenu={(event) => event.preventDefault()}>
@@ -314,6 +319,7 @@ function SheetContextMenu({ menu, canEdit, onClose, onCopy, onAddRow, onAddColum
         onMouseDown={(event) => event.stopPropagation()}
       >
         <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção</button>
+        <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção</button>
         <span aria-hidden="true" />
         <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito</button>
         <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico</button>
@@ -552,6 +558,107 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const clearSelectionFormatting = useCallback(() => {
     applyStyleToSelection({ bold: false, italic: false, underline: false, textAlign: '' }).catch(() => {});
   }, [applyStyleToSelection]);
+
+  const applyValueToSelection = useCallback(async () => {
+    if (!canEdit || !selectedCells.length || !activeCell?.rowId || !activeCell?.key) return;
+    const sourceValue = sanitizeCellValue(formulaValue || activeCellText(activeCell, rows));
+    const updatesByRow = new Map();
+    const optimistic = rows.map((row) => {
+      const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
+      if (!targetCells.length) return row;
+      const next = { ...row };
+      const patch = {};
+      targetCells.forEach(({ column }) => {
+        next[column.key] = sourceValue;
+        patch[column.key] = sourceValue;
+      });
+      updatesByRow.set(row.id, patch);
+      return next;
+    });
+
+    setRows(optimistic);
+    markSync('saving', 'Preenchendo seleção');
+    setBusy('fill-selection');
+    try {
+      await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
+      markSync('saved', 'Seleção preenchida');
+    } catch (error) {
+      notifyError(error, 'Não foi possível preencher a seleção.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeCell, activeSheetId, canEdit, formulaValue, loadSheet, markSync, notifyError, rows, selectedCells]);
+
+  const autoFillSelection = useCallback(async (targetCell) => {
+    if (!canEdit || !selectionBounds || !targetCell?.rowId || !targetCell?.key) return;
+    const targetRowIndex = viewRows.findIndex((row) => row.id === targetCell.rowId);
+    const targetColumnIndex = columns.findIndex((column) => column.key === targetCell.key);
+    if (targetRowIndex < 0 || targetColumnIndex < 0) return;
+
+    const fillBounds = {
+      startRow: Math.min(selectionBounds.startRow, targetRowIndex),
+      endRow: Math.max(selectionBounds.endRow, targetRowIndex),
+      startColumn: Math.min(selectionBounds.startColumn, targetColumnIndex),
+      endColumn: Math.max(selectionBounds.endColumn, targetColumnIndex),
+    };
+
+    const sourceRowCount = selectionBounds.endRow - selectionBounds.startRow + 1;
+    const sourceColumnCount = selectionBounds.endColumn - selectionBounds.startColumn + 1;
+    const updatesByRow = new Map();
+    const optimistic = rows.map((row) => {
+      const visibleRowIndex = viewRows.findIndex((entry) => entry.id === row.id);
+      if (visibleRowIndex < fillBounds.startRow || visibleRowIndex > fillBounds.endRow) return row;
+      const next = { ...row, __styles: { ...(row.__styles || {}) } };
+      const patch = {};
+      const stylePatch = {};
+
+      for (let columnIndex = fillBounds.startColumn; columnIndex <= fillBounds.endColumn; columnIndex += 1) {
+        const column = columns[columnIndex];
+        if (!column) continue;
+        const insideSource = visibleRowIndex >= selectionBounds.startRow && visibleRowIndex <= selectionBounds.endRow && columnIndex >= selectionBounds.startColumn && columnIndex <= selectionBounds.endColumn;
+        if (insideSource) continue;
+
+        const sourceRowIndex = selectionBounds.startRow + positiveModulo(visibleRowIndex - selectionBounds.startRow, sourceRowCount);
+        const sourceColumnIndex = selectionBounds.startColumn + positiveModulo(columnIndex - selectionBounds.startColumn, sourceColumnCount);
+        const sourceRow = viewRows[sourceRowIndex];
+        const sourceColumn = columns[sourceColumnIndex];
+        if (!sourceRow || !sourceColumn) continue;
+
+        const value = sanitizeCellValue(sourceRow?.[sourceColumn.key] || '');
+        next[column.key] = value;
+        patch[column.key] = value;
+
+        const sourceStyle = getCellStyle(sourceRow, sourceColumn.key);
+        if (Object.keys(sourceStyle).length) {
+          next.__styles[column.key] = { ...sourceStyle };
+          stylePatch[column.key] = { ...sourceStyle };
+        }
+      }
+
+      if (Object.keys(patch).length || Object.keys(stylePatch).length) {
+        updatesByRow.set(row.id, Object.keys(stylePatch).length ? { ...patch, styles: stylePatch } : patch);
+        return next;
+      }
+      return row;
+    });
+
+    if (!updatesByRow.size) return;
+    setRows(optimistic);
+    setSelectionAnchor({ rowId: viewRows[fillBounds.startRow]?.id, key: columns[fillBounds.startColumn]?.key });
+    setSelectionFocus({ rowId: viewRows[fillBounds.endRow]?.id, key: columns[fillBounds.endColumn]?.key });
+    markSync('saving', 'Aplicando preenchimento');
+    setBusy('autofill');
+    try {
+      await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
+      markSync('saved', 'Preenchimento aplicado');
+    } catch (error) {
+      notifyError(error, 'Não foi possível aplicar o preenchimento.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, canEdit, columns, loadSheet, markSync, notifyError, rows, selectionBounds, viewRows]);
 
   const commitCell = useCallback(async (rowId, key) => {
     if (!rowId || !key || !canEdit) return;
@@ -1052,6 +1159,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <Button size="xs" variant="ghost" onClick={addRow} disabled={!canMutateSheet}><PlusIcon size={13} /> Linha</Button>
           <Button size="xs" variant="ghost" onClick={addColumn} disabled={!canMutateSheet}><PlusIcon size={13} /> Coluna</Button>
           <Button size="xs" variant="ghost" onClick={copySelection} disabled={!activeCell}>Copiar</Button>
+          <Button size="xs" variant="ghost" onClick={applyValueToSelection} disabled={!selectedCount || !canEdit || !!busy}>Preencher</Button>
         </div>
         <div className={styles.formatGroup} aria-label="Formatação da seleção">
           <button type="button" data-active={selectedHasBold || undefined} onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>B</button>
@@ -1165,6 +1273,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             onColumnLabelCommit={commitColumnLabel}
             onResizeStart={startResize}
             onScrollStateChange={setScrollState}
+            onAutoFillSelection={autoFillSelection}
           />
         ) : null}
         {!loading && !activeSheetId ? (
@@ -1185,6 +1294,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         canEdit={canEdit && !busy}
         onClose={closeContextMenu}
         onCopy={() => { closeContextMenu(); copySelection().catch(() => {}); }}
+        onFillSelection={() => { closeContextMenu(); applyValueToSelection().catch(() => {}); }}
         onAddRow={() => { closeContextMenu(); addRow().catch(() => {}); }}
         onAddColumn={() => { closeContextMenu(); addColumn().catch(() => {}); }}
         onDeleteRow={() => { closeContextMenu(); deleteRow(); }}

@@ -231,6 +231,7 @@ export default function SpreadsheetGrid({
   onColumnLabelCommit,
   onResizeStart,
   onScrollStateChange,
+  onAutoFillSelection,
 }) {
   const scrollerRef = useRef(null);
   const frameRef = useRef(null);
@@ -241,6 +242,8 @@ export default function SpreadsheetGrid({
   const draggingSelectionRef = useRef(false);
   const lastDragCellRef = useRef('');
   const selectionDraggedRef = useRef(false);
+  const fillDragRef = useRef(null);
+  const [fillPreview, setFillPreview] = useState(null);
 
   const columnMetrics = useMemo(() => {
     let left = INDEX_WIDTH;
@@ -292,6 +295,68 @@ export default function SpreadsheetGrid({
       });
     });
   }, [onScrollStateChange]);
+
+  const getCellAtPointer = useCallback((clientX, clientY) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return null;
+    const rect = scroller.getBoundingClientRect();
+    const x = clientX - rect.left + scroller.scrollLeft;
+    const y = clientY - rect.top + scroller.scrollTop;
+    if (y < HEADER_HEIGHT || x < INDEX_WIDTH) return null;
+    const rowIndex = clamp(Math.floor((y - HEADER_HEIGHT) / ROW_HEIGHT), 0, rows.length - 1);
+    const columnIndex = columnMetrics.findIndex((metric) => x >= metric.left && x <= metric.left + metric.width);
+    const row = rows[rowIndex];
+    const column = columnMetrics[columnIndex]?.column;
+    if (!row || !column) return null;
+    return { rowId: row.id, key: column.key, rowIndex, columnIndex };
+  }, [columnMetrics, rows]);
+
+  const buildFillPreview = useCallback((target) => {
+    if (!selectionBounds || !target) return null;
+    const nextBounds = {
+      startRow: Math.min(selectionBounds.startRow, target.rowIndex),
+      endRow: Math.max(selectionBounds.endRow, target.rowIndex),
+      startColumn: Math.min(selectionBounds.startColumn, target.columnIndex),
+      endColumn: Math.max(selectionBounds.endColumn, target.columnIndex),
+    };
+    const top = HEADER_HEIGHT + nextBounds.startRow * ROW_HEIGHT;
+    const height = (nextBounds.endRow - nextBounds.startRow + 1) * ROW_HEIGHT;
+    const startMetric = columnMetrics[nextBounds.startColumn];
+    const endMetric = columnMetrics[nextBounds.endColumn];
+    if (!startMetric || !endMetric) return null;
+    return {
+      bounds: nextBounds,
+      target,
+      rect: { top, left: startMetric.left, width: endMetric.left + endMetric.width - startMetric.left, height },
+    };
+  }, [columnMetrics, selectionBounds]);
+
+  const startFillDrag = useCallback((event) => {
+    if (!canEdit || !selectionBounds) return;
+    event.preventDefault();
+    event.stopPropagation();
+    fillDragRef.current = { active: true, target: null };
+
+    const onMove = (moveEvent) => {
+      const target = getCellAtPointer(moveEvent.clientX, moveEvent.clientY);
+      if (!target) return;
+      const preview = buildFillPreview(target);
+      fillDragRef.current = { active: true, target };
+      setFillPreview(preview);
+    };
+
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      const target = fillDragRef.current?.target;
+      fillDragRef.current = null;
+      setFillPreview(null);
+      if (target) onAutoFillSelection?.({ rowId: target.rowId, key: target.key });
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+  }, [buildFillPreview, canEdit, getCellAtPointer, onAutoFillSelection, selectionBounds]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -490,7 +555,20 @@ export default function SpreadsheetGrid({
           ))}
 
           {selectionRect && selectedCount > 1 ? (
-            <div className={styles.selectionLayer} style={selectionRect} />
+            <div className={styles.selectionLayer} style={selectionRect}>
+              {canEdit ? (
+                <button
+                  type="button"
+                  className={styles.fillHandle}
+                  aria-label="Preencher seleção"
+                  onPointerDown={startFillDrag}
+                />
+              ) : null}
+            </div>
+          ) : null}
+
+          {fillPreview?.rect ? (
+            <div className={styles.fillPreview} style={fillPreview.rect} />
           ) : null}
 
           {resizeState ? (
