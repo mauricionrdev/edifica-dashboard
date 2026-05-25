@@ -664,14 +664,6 @@ function ConfirmDeleteDialog({ confirmation, busy, onCancel, onConfirm }) {
 }
 
 
-function MenuDivider() {
-  return <span aria-hidden="true" className={styles.contextDivider} />;
-}
-
-function MenuSectionLabel({ children }) {
-  return <em className={styles.contextSectionLabel}>{children}</em>;
-}
-
 function SheetContextMenu({
   menu,
   canEdit,
@@ -729,89 +721,69 @@ function SheetContextMenu({
   if (!menu) return null;
   const isRow = menu.scope === 'row';
   const isColumn = menu.scope === 'column';
-  const title = isRow ? 'Linha' : isColumn ? 'Coluna' : 'Célula';
-
   return (
     <div className={styles.contextBackdrop} role="presentation" onMouseDown={onClose} onContextMenu={(event) => event.preventDefault()}>
       <section
         className={styles.contextMenu}
         role="menu"
         aria-label="Ações da planilha"
-        data-scope={menu.scope || 'cell'}
         style={{ left: menu.x, top: menu.y }}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header className={styles.contextMenuHeader}>
-          <strong>{title}</strong>
+          <strong>{isRow ? 'Linha' : isColumn ? 'Coluna' : 'Célula'}</strong>
           <span>{menu.label || 'Ações rápidas'}</span>
         </header>
-
-        <MenuSectionLabel>Área</MenuSectionLabel>
-        <button type="button" role="menuitem" onClick={onCopy}>Copiar <kbd>Ctrl C</kbd></button>
-        <button type="button" role="menuitem" onClick={onCut} disabled={!canEdit}>Recortar <kbd>Ctrl X</kbd></button>
-        <button type="button" role="menuitem" onClick={onPaste} disabled={!canEdit}>Colar <kbd>Ctrl V</kbd></button>
-        <button type="button" role="menuitem" onClick={onSelectAll}>Selecionar tudo <kbd>Ctrl A</kbd></button>
-        <button type="button" role="menuitem" onClick={onSelectUsedRange}>Selecionar área preenchida</button>
-        {!isColumn ? <button type="button" role="menuitem" onClick={onSelectRow}>Selecionar linha</button> : null}
-        {!isRow ? <button type="button" role="menuitem" onClick={onSelectColumn}>Selecionar coluna</button> : null}
-
-        {isColumn ? (
-          <>
-            <MenuDivider />
-            <MenuSectionLabel>Coluna</MenuSectionLabel>
-            <button type="button" role="menuitem" onClick={onSortColumnAscending} disabled={!canEdit}>Ordenar A → Z</button>
-            <button type="button" role="menuitem" onClick={onSortColumnDescending} disabled={!canEdit}>Ordenar Z → A</button>
-            <button type="button" role="menuitem" onClick={onFilterColumnBySelection}>Filtrar por valor selecionado</button>
-            <button type="button" role="menuitem" onClick={onClearColumnFilter}>Limpar filtro da coluna</button>
-            <button type="button" role="menuitem" onClick={onFitColumnWidth} disabled={!canEdit}>Ajustar largura ao conteúdo</button>
-            <MenuDivider />
-            <MenuSectionLabel>Tipo da coluna</MenuSectionLabel>
-            <button type="button" role="menuitem" onClick={onSetTypeText} disabled={!canEdit}>Texto</button>
-            <button type="button" role="menuitem" onClick={onSetTypeNumber} disabled={!canEdit}>Número</button>
-            <button type="button" role="menuitem" onClick={onSetTypeCurrency} disabled={!canEdit}>Moeda</button>
-            <button type="button" role="menuitem" onClick={onSetTypePercent} disabled={!canEdit}>Percentual</button>
-            <MenuDivider />
-            <MenuSectionLabel>Estrutura</MenuSectionLabel>
-            <button type="button" role="menuitem" onClick={onInsertColumnLeft} disabled={!canEdit}>Inserir coluna à esquerda</button>
-            <button type="button" role="menuitem" onClick={onInsertColumnRight} disabled={!canEdit}>Inserir coluna à direita</button>
-            <button type="button" role="menuitem" onClick={onDuplicateColumn} disabled={!canEdit}>Duplicar coluna</button>
-            <button type="button" role="menuitem" data-danger="true" onClick={onDeleteColumn} disabled={!canEdit}>Excluir coluna</button>
-          </>
-        ) : null}
-
         {isRow ? (
           <>
-            <MenuDivider />
-            <MenuSectionLabel>Linha</MenuSectionLabel>
+            <button type="button" role="menuitem" onClick={onSelectRow}>Selecionar linha</button>
             <button type="button" role="menuitem" onClick={onInsertRowAbove} disabled={!canEdit}>Inserir linha acima</button>
             <button type="button" role="menuitem" onClick={onInsertRowBelow} disabled={!canEdit}>Inserir linha abaixo</button>
             <button type="button" role="menuitem" onClick={onDuplicateRow} disabled={!canEdit}>Duplicar linha</button>
             <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo da linha</button>
+            <span aria-hidden="true" />
             <button type="button" role="menuitem" data-danger="true" onClick={onDeleteRow} disabled={!canEdit}>Excluir linha</button>
           </>
-        ) : null}
-
-        {!isRow && !isColumn ? (
+        ) : isColumn ? (
           <>
-            <MenuDivider />
-            <MenuSectionLabel>Editar células</MenuSectionLabel>
+            <button type="button" role="menuitem" onClick={onSelectColumn}>Selecionar coluna</button>
+            <button type="button" role="menuitem" onClick={onInsertColumnLeft} disabled={!canEdit}>Inserir coluna à esquerda</button>
+            <button type="button" role="menuitem" onClick={onInsertColumnRight} disabled={!canEdit}>Inserir coluna à direita</button>
+            <button type="button" role="menuitem" onClick={onDuplicateColumn} disabled={!canEdit}>Duplicar coluna</button>
+            <button type="button" role="menuitem" onClick={onFitColumnWidth} disabled={!canEdit}>Ajustar largura ao conteúdo</button>
+            <span aria-hidden="true" />
+            <button type="button" role="menuitem" onClick={onSortColumnAscending} disabled={!canEdit}>Ordenar A → Z</button>
+            <button type="button" role="menuitem" onClick={onSortColumnDescending} disabled={!canEdit}>Ordenar Z → A</button>
+            <button type="button" role="menuitem" onClick={onFilterColumnBySelection}>Filtrar por valor selecionado</button>
+            <button type="button" role="menuitem" onClick={onClearColumnFilter}>Limpar filtro da coluna</button>
+            <span aria-hidden="true" />
+            <button type="button" role="menuitem" onClick={onSetTypeText} disabled={!canEdit}>Tipo: texto</button>
+            <button type="button" role="menuitem" onClick={onSetTypeNumber} disabled={!canEdit}>Tipo: número</button>
+            <button type="button" role="menuitem" onClick={onSetTypeCurrency} disabled={!canEdit}>Tipo: moeda</button>
+            <button type="button" role="menuitem" onClick={onSetTypePercent} disabled={!canEdit}>Tipo: percentual</button>
+            <span aria-hidden="true" />
+            <button type="button" role="menuitem" data-danger="true" onClick={onDeleteColumn} disabled={!canEdit}>Excluir coluna</button>
+          </>
+        ) : (
+          <>
+            <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção <kbd>Ctrl C</kbd></button>
+            <button type="button" role="menuitem" onClick={onCut} disabled={!canEdit}>Recortar seleção <kbd>Ctrl X</kbd></button>
+            <button type="button" role="menuitem" onClick={onPaste} disabled={!canEdit}>Colar <kbd>Ctrl V</kbd></button>
             <button type="button" role="menuitem" onClick={onFillSelection} disabled={!canEdit}>Preencher seleção <kbd>Ctrl Enter</kbd></button>
             <button type="button" role="menuitem" onClick={onClearSelection} disabled={!canEdit}>Limpar conteúdo <kbd>Del</kbd></button>
             <button type="button" role="menuitem" onClick={onNormalizeSelection} disabled={!canEdit}>Normalizar pelo tipo</button>
+            <span aria-hidden="true" />
             <button type="button" role="menuitem" onClick={onFindCellValue}>Localizar este valor</button>
             <button type="button" role="menuitem" onClick={onUseCellValueAsReplaceQuery}>Usar no substituir</button>
-            <MenuDivider />
-            <MenuSectionLabel>Texto</MenuSectionLabel>
-            <button type="button" role="menuitem" onClick={onUppercase} disabled={!canEdit}>Texto em MAIÚSCULAS</button>
-            <button type="button" role="menuitem" onClick={onLowercase} disabled={!canEdit}>Texto em minúsculas</button>
-            <button type="button" role="menuitem" onClick={onTitlecase} disabled={!canEdit}>Texto Capitalizado</button>
-            <button type="button" role="menuitem" onClick={onTrimSpaces} disabled={!canEdit}>Remover espaços extras</button>
-            <MenuDivider />
-            <MenuSectionLabel>Formatação</MenuSectionLabel>
+            <button type="button" role="menuitem" onClick={onSelectAll}>Selecionar tudo <kbd>Ctrl A</kbd></button>
+            <button type="button" role="menuitem" onClick={onSelectUsedRange}>Selecionar área preenchida</button>
+            <span aria-hidden="true" />
             <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito <kbd>Ctrl B</kbd></button>
             <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico <kbd>Ctrl I</kbd></button>
             <button type="button" role="menuitem" onClick={onUnderline} disabled={!canEdit}>Sublinhado <kbd>Ctrl U</kbd></button>
             <button type="button" role="menuitem" onClick={onStrikeThrough} disabled={!canEdit}>Tachado</button>
+            <button type="button" role="menuitem" onClick={onClearFormatting} disabled={!canEdit}>Limpar formatação</button>
+            <span aria-hidden="true" />
             <button type="button" role="menuitem" onClick={onAlignLeft} disabled={!canEdit}>Alinhar à esquerda</button>
             <button type="button" role="menuitem" onClick={onAlignCenter} disabled={!canEdit}>Centralizar</button>
             <button type="button" role="menuitem" onClick={onAlignRight} disabled={!canEdit}>Alinhar à direita</button>
@@ -823,20 +795,17 @@ function SheetContextMenu({
             <button type="button" role="menuitem" onClick={onVerticalTop} disabled={!canEdit}>Alinhar no topo</button>
             <button type="button" role="menuitem" onClick={onVerticalMiddle} disabled={!canEdit}>Alinhar ao meio</button>
             <button type="button" role="menuitem" onClick={onVerticalBottom} disabled={!canEdit}>Alinhar abaixo</button>
-            <button type="button" role="menuitem" onClick={onClearFormatting} disabled={!canEdit}>Limpar formatação</button>
-            <MenuDivider />
-            <MenuSectionLabel>Inserir</MenuSectionLabel>
-            <button type="button" role="menuitem" onClick={onInsertRowAbove} disabled={!canEdit}>Inserir linha acima</button>
-            <button type="button" role="menuitem" onClick={onInsertRowBelow} disabled={!canEdit}>Inserir linha abaixo</button>
-            <button type="button" role="menuitem" onClick={onInsertColumnLeft} disabled={!canEdit}>Inserir coluna à esquerda</button>
-            <button type="button" role="menuitem" onClick={onInsertColumnRight} disabled={!canEdit}>Inserir coluna à direita</button>
+            <span aria-hidden="true" />
+            <button type="button" role="menuitem" onClick={onUppercase} disabled={!canEdit}>Texto em MAIÚSCULAS</button>
+            <button type="button" role="menuitem" onClick={onLowercase} disabled={!canEdit}>Texto em minúsculas</button>
+            <button type="button" role="menuitem" onClick={onTitlecase} disabled={!canEdit}>Texto Capitalizado</button>
+            <button type="button" role="menuitem" onClick={onTrimSpaces} disabled={!canEdit}>Remover espaços extras</button>
           </>
-        ) : null}
+        )}
       </section>
     </div>
   );
 }
-
 
 export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, showToast }) {
   const [sheets, setSheets] = useState([]);
@@ -2367,7 +2336,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <Button size="xs" variant="ghost" onClick={copySelection} disabled={!activeCell}>Copiar</Button>
           <Button size="xs" variant="ghost" onClick={applyValueToSelection} disabled={!selectedCount || !canEdit || !!busy}>Preencher</Button>
           <Button size="xs" variant="ghost" onClick={normalizeSelectionValues} disabled={!selectedCount || !canEdit || !!busy}>Normalizar</Button>
-          <Button size="xs" variant="ghost" onClick={() => setAdvancedPanelOpen((current) => !current)} disabled={!activeSheetId}>{advancedPanelOpen ? 'Fechar ferramentas' : 'Ferramentas'}</Button>
+          <Button size="xs" variant="ghost" onClick={() => setAdvancedPanelOpen((current) => !current)} disabled={!activeSheetId}>{advancedPanelOpen ? 'Ocultar ferramentas' : 'Ferramentas'}</Button>
         </div>
         <div className={styles.formatGroup} aria-label="Formatação da seleção">
           <button type="button" data-active={selectedHasBold || undefined} onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>B</button>
@@ -2590,100 +2559,62 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         ) : null}
         </div>
 
+        {advancedPanelOpen ? (
+          <div className={styles.advancedToolbar} aria-label="Ferramentas avançadas da planilha">
+            <section>
+              <span>Selecionar</span>
+              <strong>{selectedSummary}</strong>
+              <button type="button" onClick={selectAllCells} disabled={!activeSheetId}>Tudo</button>
+              <button type="button" onClick={selectUsedRange} disabled={!activeSheetId}>Área preenchida</button>
+              <button type="button" onClick={() => activeCell?.rowId && selectRow(activeCell.rowId)} disabled={!activeCell}>Linha</button>
+              <button type="button" onClick={() => activeCell?.key && selectColumn(activeCell.key)} disabled={!activeCell}>Coluna</button>
+            </section>
+            <section>
+              <span>Texto</span>
+              <button type="button" onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>B</button>
+              <button type="button" onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}>I</button>
+              <button type="button" onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}>U</button>
+              <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy}>S</button>
+              <button type="button" onClick={() => transformSelectionText('uppercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>AA</button>
+              <button type="button" onClick={() => transformSelectionText('lowercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>aa</button>
+              <button type="button" onClick={() => transformSelectionText('titlecase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Aa</button>
+            </section>
+            <section>
+              <span>Layout</span>
+              <button type="button" data-active={selectedWrapMode === 'wrap' || undefined} onClick={() => setWrapMode('wrap')} disabled={!selectedCount || !canEdit || !!busy}>Quebrar</button>
+              <button type="button" data-active={selectedWrapMode === 'clip' || undefined} onClick={() => setWrapMode('clip')} disabled={!selectedCount || !canEdit || !!busy}>Cortar</button>
+              <button type="button" data-active={selectedFontSize === 'small' || undefined} onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy}>Peq.</button>
+              <button type="button" data-active={selectedFontSize === 'large' || undefined} onClick={() => setFontSize('large')} disabled={!selectedCount || !canEdit || !!busy}>Grande</button>
+              <button type="button" data-active={selectedVerticalAlign === 'top' || undefined} onClick={() => setVerticalAlign('top')} disabled={!selectedCount || !canEdit || !!busy}>Topo</button>
+              <button type="button" data-active={selectedVerticalAlign === 'bottom' || undefined} onClick={() => setVerticalAlign('bottom')} disabled={!selectedCount || !canEdit || !!busy}>Base</button>
+            </section>
+            <section>
+              <span>Dados</span>
+              <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor</button>
+              <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
+              <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar filtros</button>
+              <button type="button" onClick={() => sortActiveColumn('asc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>A → Z</button>
+              <button type="button" onClick={() => sortActiveColumn('desc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Z → A</button>
+              <button type="button" onClick={fitActiveColumnWidth} disabled={!activeColumn || !canEdit || !!busy}>Ajustar largura</button>
+            </section>
+            <section className={styles.replaceTools}>
+              <span>Localizar e substituir</span>
+              <input ref={replaceInputRef} value={replaceQuery} placeholder="Localizar" onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))} />
+              <input value={replaceValue} placeholder="Substituir por" onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))} />
+              <select value={replaceScope} aria-label="Escopo da substituição" onChange={(event) => setReplaceScope(event.target.value)}>
+                <option value="selection">Seleção</option>
+                <option value="sheet">Planilha inteira</option>
+              </select>
+              <label>
+                <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
+                Aa
+              </label>
+              <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
+              <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
+            </section>
+          </div>
+        ) : null}
       </div>
-
-      {advancedPanelOpen ? (
-        <div className={styles.toolsPanel} aria-label="Ferramentas avançadas da planilha">
-          <section className={styles.toolsGroup}>
-            <span>Seleção</span>
-            <button type="button" onClick={selectAllCells} disabled={!activeSheetId}>Tudo</button>
-            <button type="button" onClick={selectUsedRange} disabled={!activeSheetId}>Área preenchida</button>
-            <button type="button" onClick={() => activeCell?.rowId && selectRow(activeCell.rowId)} disabled={!activeCell}>Linha</button>
-            <button type="button" onClick={() => activeCell?.key && selectColumn(activeCell.key)} disabled={!activeCell}>Coluna</button>
-          </section>
-
-          <section className={styles.toolsGroup}>
-            <span>Texto</span>
-            <button type="button" onClick={() => toggleStyle('bold')} disabled={!selectedCount || !canEdit || !!busy}>B</button>
-            <button type="button" onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy}><em>I</em></button>
-            <button type="button" onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy}><u>U</u></button>
-            <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy}><s>S</s></button>
-            <button type="button" onClick={() => transformSelectionText('uppercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>AA</button>
-            <button type="button" onClick={() => transformSelectionText('lowercase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>aa</button>
-            <button type="button" onClick={() => transformSelectionText('titlecase').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Aa</button>
-            <button type="button" onClick={() => transformSelectionText('trim').catch(() => {})} disabled={!selectedCount || !canEdit || !!busy}>Espaços</button>
-          </section>
-
-          <section className={styles.toolsGroup}>
-            <span>Alinhamento</span>
-            <button type="button" data-active={selectedAlign === 'left' || undefined} onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy}>Esq.</button>
-            <button type="button" data-active={selectedAlign === 'center' || undefined} onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy}>Centro</button>
-            <button type="button" data-active={selectedAlign === 'right' || undefined} onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>Dir.</button>
-            <button type="button" data-active={selectedVerticalAlign === 'top' || undefined} onClick={() => setVerticalAlign('top')} disabled={!selectedCount || !canEdit || !!busy}>Topo</button>
-            <button type="button" data-active={selectedVerticalAlign === 'middle' || undefined} onClick={() => setVerticalAlign('')} disabled={!selectedCount || !canEdit || !!busy}>Meio</button>
-            <button type="button" data-active={selectedVerticalAlign === 'bottom' || undefined} onClick={() => setVerticalAlign('bottom')} disabled={!selectedCount || !canEdit || !!busy}>Base</button>
-          </section>
-
-          <section className={styles.toolsGroup}>
-            <span>Texto na célula</span>
-            <button type="button" data-active={selectedWrapMode === 'wrap' || undefined} onClick={() => setWrapMode('wrap')} disabled={!selectedCount || !canEdit || !!busy}>Quebrar</button>
-            <button type="button" data-active={selectedWrapMode === 'clip' || undefined} onClick={() => setWrapMode('clip')} disabled={!selectedCount || !canEdit || !!busy}>Cortar</button>
-            <button type="button" data-active={selectedFontSize === 'small' || undefined} onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy}>Pequena</button>
-            <button type="button" data-active={selectedFontSize === 'normal' || undefined} onClick={() => setFontSize('')} disabled={!selectedCount || !canEdit || !!busy}>Normal</button>
-            <button type="button" data-active={selectedFontSize === 'large' || undefined} onClick={() => setFontSize('large')} disabled={!selectedCount || !canEdit || !!busy}>Grande</button>
-            <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar formato</button>
-          </section>
-
-          <section className={styles.toolsGroup}>
-            <span>Dados</span>
-            <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor</button>
-            <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
-            <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar filtros</button>
-            <button type="button" onClick={() => sortActiveColumn('asc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>A → Z</button>
-            <button type="button" onClick={() => sortActiveColumn('desc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Z → A</button>
-            <button type="button" onClick={fitActiveColumnWidth} disabled={!activeColumn || !canEdit || !!busy}>Ajustar largura</button>
-          </section>
-
-          <section className={styles.toolsGroup}>
-            <span>Inserir</span>
-            <button type="button" onClick={() => insertRowAtActive('above').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha acima</button>
-            <button type="button" onClick={() => insertRowAtActive('below').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha abaixo</button>
-            <button type="button" onClick={() => insertColumnAtActive('left').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna esquerda</button>
-            <button type="button" onClick={() => insertColumnAtActive('right').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna direita</button>
-            <button type="button" onClick={() => duplicateActiveRow().catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Duplicar linha</button>
-            <button type="button" onClick={() => duplicateActiveColumn().catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Duplicar coluna</button>
-          </section>
-
-          <section className={styles.toolsGroup}>
-            <span>Localizar e substituir</span>
-            <input
-              ref={replaceInputRef}
-              value={replaceQuery}
-              placeholder="Localizar"
-              onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
-            />
-            <input
-              value={replaceValue}
-              placeholder="Substituir por"
-              onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
-            />
-            <select
-              value={replaceScope}
-              aria-label="Escopo da substituição"
-              onChange={(event) => setReplaceScope(event.target.value)}
-            >
-              <option value="selection">Seleção</option>
-              <option value="sheet">Planilha inteira</option>
-            </select>
-            <label className={styles.toolsCheck}>
-              <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
-              Aa
-            </label>
-            <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
-            <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
-          </section>
-        </div>
-      ) : null}
 
       <footer className={styles.footer}>
         <span data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail}</span>
