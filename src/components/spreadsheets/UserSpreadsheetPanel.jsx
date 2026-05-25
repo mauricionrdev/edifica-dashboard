@@ -151,25 +151,31 @@ function normalizeColumns(columns = []) {
   }));
 }
 
+function cloneCellStyle(style = {}) {
+  if (!style || typeof style !== 'object' || Array.isArray(style)) return {};
+  try {
+    return JSON.parse(JSON.stringify(style));
+  } catch {
+    return { ...style };
+  }
+}
+
+function hasCellStyle(style = {}) {
+  return Boolean(style && typeof style === 'object' && Object.keys(style).length);
+}
+
 function normalizeRows(rows = [], columns = []) {
   return rows.map((row, index) => {
-    const incomingStyles = row?.__styles && typeof row.__styles === 'object'
+    const sourceStyles = row?.__styles && typeof row.__styles === 'object'
       ? row.__styles
       : row?.styles && typeof row.styles === 'object'
         ? row.styles
         : {};
-    const nextStyles = {};
-
-    columns.forEach((column) => {
-      const style = incomingStyles?.[column.key];
-      if (style && typeof style === 'object' && Object.keys(style).length) {
-        nextStyles[column.key] = { ...style };
-      }
-    });
-
-    const next = { ...row, position: Number(row.position || index + 1), __styles: nextStyles };
+    const next = { ...row, position: Number(row.position || index + 1), __styles: {} };
     columns.forEach((column) => {
       next[column.key] = sanitizeCellValue(next[column.key] || '');
+      const style = cloneCellStyle(sourceStyles?.[column.key]);
+      if (hasCellStyle(style)) next.__styles[column.key] = style;
     });
     return next;
   });
@@ -657,16 +663,7 @@ function serializeCellsToTsv(rows = [], columns = [], bounds) {
   return lines.join('\n');
 }
 
-function cloneCellStyle(style = {}) {
-  if (!style || typeof style !== 'object' || !Object.keys(style).length) return {};
-  try {
-    return JSON.parse(JSON.stringify(style));
-  } catch {
-    return { ...style };
-  }
-}
-
-function buildClipboardPayload(rows = [], columns = [], bounds) {
+function buildClipboardSnapshot(rows = [], columns = [], bounds) {
   if (!bounds) return null;
   const values = [];
   const styles = [];
@@ -815,6 +812,8 @@ function SheetContextMenu({
   onCopy,
   onCut,
   onPaste,
+  onPasteValues,
+  onPasteFormatting,
   onSelectAll,
   onSelectUsedRange,
   onSelectRow,
@@ -895,6 +894,8 @@ function SheetContextMenu({
         <Item icon="✂" label="Recortar" shortcut="Ctrl X" onClick={onCut} disabled={!canEdit} />
         <Item icon="⧉" label="Copiar" shortcut="Ctrl C" onClick={onCopy} />
         <Item icon="▣" label="Colar" shortcut="Ctrl V" onClick={onPaste} disabled={!canEdit} />
+        <Item icon="T" label="Colar somente valores" onClick={onPasteValues} disabled={!canEdit} />
+        <Item icon="◇" label="Colar somente formatação" onClick={onPasteFormatting} disabled={!canEdit} />
         <Divider />
 
         {!isColumn ? <Item icon="＋" label="Inserir linha acima" onClick={onInsertRowAbove} disabled={!canEdit} /> : null}
@@ -1948,7 +1949,39 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeCell?.rowId, activeColumn, activeSheetId, canMutateSheet, columns, loadSheet, markSync, notifyError, ownerUserId, persistColumnOrder, rows]);
 
-  const clearSelectionValues = useCallback(async ({ clearStyles = false } = {}) => {
+  const clearSelectionValues = useCallback(async () => {
+    if (!canEdit || !selectedCells.length) return;
+    const updatesByRow = new Map();
+    const optimistic = rows.map((row) => {
+      const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
+      if (!targetCells.length) return row;
+      const next = { ...row };
+      const patch = {};
+      targetCells.forEach(({ column }) => {
+        next[column.key] = '';
+        patch[column.key] = '';
+      });
+      updatesByRow.set(row.id, patch);
+      return next;
+    });
+    setRows(optimistic);
+    markSync('saving', 'Limpando conteúdo');
+    setBusy('clear-values');
+    try {
+      await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
+      markSync('saved', 'Conteúdo limpo');
+    } catch (error) {
+      notifyError(error, 'Não foi possível limpar o conteúdo.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
+
+
+
+
+  const clearSelectionValuesAndStyles = useCallback(async () => {
     if (!canEdit || !selectedCells.length) return;
     const updatesByRow = new Map();
     const optimistic = rows.map((row) => {
@@ -1959,23 +1992,21 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       const stylePatch = {};
       targetCells.forEach(({ column }) => {
         next[column.key] = '';
+        delete next.__styles[column.key];
         patch[column.key] = '';
-        if (clearStyles) {
-          next.__styles[column.key] = {};
-          stylePatch[column.key] = {};
-        }
+        stylePatch[column.key] = {};
       });
-      updatesByRow.set(row.id, clearStyles ? { ...patch, styles: stylePatch } : patch);
+      updatesByRow.set(row.id, { ...patch, styles: stylePatch });
       return next;
     });
     setRows(optimistic);
-    markSync('saving', clearStyles ? 'Recortando seleção' : 'Limpando conteúdo');
-    setBusy(clearStyles ? 'cut-values' : 'clear-values');
+    markSync('saving', 'Movendo seleção');
+    setBusy('cut-values');
     try {
       await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
-      markSync('saved', clearStyles ? 'Seleção recortada' : 'Conteúdo limpo');
+      markSync('saved', 'Seleção recortada');
     } catch (error) {
-      notifyError(error, clearStyles ? 'Não foi possível recortar a seleção.' : 'Não foi possível limpar o conteúdo.');
+      notifyError(error, 'Não foi possível recortar a seleção.');
       loadSheet(activeSheetId).catch(() => {});
     } finally {
       setBusy('');
@@ -2048,23 +2079,29 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [viewRows]);
 
   const copySelection = useCallback(async () => {
-    const payload = buildClipboardPayload(viewRows, columns, selectionBounds);
-    const text = payload?.text || activeCellText(activeCell, rows);
+    const snapshot = buildClipboardSnapshot(viewRows, columns, selectionBounds);
+    const text = snapshot?.text || activeCellText(activeCell, rows);
     if (!text) return;
-    internalClipboardRef.current = payload || null;
+    internalClipboardRef.current = snapshot || {
+      text,
+      values: [[text]],
+      styles: [[cloneCellStyle(getCellStyle(activeRow, activeCell?.key))]],
+      rowCount: 1,
+      columnCount: 1,
+    };
     try {
       await navigator.clipboard.writeText(text);
       markSync('saved', selectedCount > 1 ? 'Intervalo copiado' : 'Célula copiada');
     } catch (error) {
       notifyError(error, 'Não foi possível copiar a seleção.');
     }
-  }, [activeCell, columns, markSync, notifyError, rows, selectedCount, selectionBounds, viewRows]);
+  }, [activeCell, activeRow, columns, markSync, notifyError, rows, selectedCount, selectionBounds, viewRows]);
 
   const cutSelection = useCallback(async () => {
     if (!canEdit || !selectedCells.length) return;
     await copySelection();
-    await clearSelectionValues({ clearStyles: true });
-  }, [canEdit, clearSelectionValues, copySelection, selectedCells.length]);
+    await clearSelectionValuesAndStyles();
+  }, [canEdit, clearSelectionValuesAndStyles, copySelection, selectedCells.length]);
 
   const transformSelectionText = useCallback(async (mode) => {
     if (!canEdit || !selectedCells.length) return;
@@ -2348,44 +2385,48 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     return { nextRows, nextColumns };
   }, [activeSheetId, columns, createColumnSilently, createRowSilently, ownerUserId, rows]);
 
-  const pasteTable = useCallback(async (startRowId, startKey, text) => {
+  const pasteTable = useCallback(async (startRowId, startKey, text, mode = 'all') => {
     if (!canEdit || !activeSheetId) return;
-    const table = parseClipboardTable(text).slice(0, MAX_IMPORT_ROWS);
+    const clipboard = internalClipboardRef.current;
+    const canUseInternalClipboard = Boolean(clipboard?.values?.length && clipboard.text === text);
+    const table = (canUseInternalClipboard ? clipboard.values : parseClipboardTable(text)).slice(0, MAX_IMPORT_ROWS);
     if (!table.length) return;
+    if (mode === 'format' && !canUseInternalClipboard) {
+      markSync('saved', 'Copie uma área da planilha para colar somente formatação');
+      return;
+    }
+
     const startRowIndex = rows.findIndex((row) => row.id === startRowId);
     const startColumnIndex = columns.findIndex((column) => column.key === startKey);
     if (startRowIndex < 0 || startColumnIndex < 0) return;
 
-    const internalClipboard = internalClipboardRef.current;
-    const shouldPasteStyles = Boolean(
-      internalClipboard?.text
-      && sanitizeCellValue(internalClipboard.text) === sanitizeCellValue(text)
-      && Array.isArray(internalClipboard.styles)
-    );
-
     setBusy('paste');
-    markSync('saving', shouldPasteStyles ? 'Colando dados e formatação' : 'Colando dados');
+    markSync('saving', mode === 'format' ? 'Colando formatação' : 'Colando dados');
     try {
       const requiredRows = startRowIndex + table.length;
       const requiredColumns = startColumnIndex + Math.max(...table.map((line) => line.length));
       const { nextRows, nextColumns } = await ensureGridSize(requiredRows, requiredColumns);
       const rowPatches = new Map();
       const optimistic = nextRows.map((row, rowIndex) => {
-        const sourceRow = table[rowIndex - startRowIndex];
+        const sourceRowIndex = rowIndex - startRowIndex;
+        const sourceRow = table[sourceRowIndex];
         if (!sourceRow) return row;
         const next = { ...row, __styles: { ...(row.__styles || {}) } };
         sourceRow.forEach((cell, offset) => {
           const column = nextColumns[startColumnIndex + offset];
           if (!column) return;
-          const sourceRowOffset = rowIndex - startRowIndex;
-          const sourceStyle = shouldPasteStyles ? internalClipboard.styles?.[sourceRowOffset]?.[offset] : null;
-          next[column.key] = cell;
           const patch = rowPatches.get(row.id) || {};
-          patch[column.key] = cell;
-          if (shouldPasteStyles) {
-            const clonedStyle = cloneCellStyle(sourceStyle || {});
-            next.__styles[column.key] = clonedStyle;
-            patch.styles = { ...(patch.styles || {}), [column.key]: clonedStyle };
+          if (mode !== 'format') {
+            next[column.key] = sanitizeCellValue(cell);
+            patch[column.key] = sanitizeCellValue(cell);
+          }
+          if (canUseInternalClipboard && mode !== 'values') {
+            const sourceStyle = cloneCellStyle(clipboard.styles?.[sourceRowIndex]?.[offset]);
+            const styles = patch.styles || {};
+            styles[column.key] = sourceStyle;
+            patch.styles = styles;
+            if (hasCellStyle(sourceStyle)) next.__styles[column.key] = sourceStyle;
+            else delete next.__styles[column.key];
           }
           rowPatches.set(row.id, patch);
         });
@@ -2393,21 +2434,22 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       });
       setRows(normalizeRows(optimistic, nextColumns));
       await Promise.all([...rowPatches.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
-      markSync('saved', shouldPasteStyles ? 'Dados e formatação colados' : 'Dados colados');
+      markSync('saved', mode === 'format' ? 'Formatação colada' : mode === 'values' ? 'Valores colados' : 'Dados colados');
     } catch (error) {
-      notifyError(error, 'Não foi possível colar os dados.');
+      notifyError(error, mode === 'format' ? 'Não foi possível colar a formatação.' : 'Não foi possível colar os dados.');
       loadSheet(activeSheetId).catch(() => {});
     } finally {
       setBusy('');
     }
   }, [activeSheetId, canEdit, columns, ensureGridSize, loadSheet, markSync, notifyError, rows]);
 
-  const pasteClipboardAtActive = useCallback(async () => {
-    if (!canEdit || !activeCell?.rowId || !activeCell?.key || !navigator.clipboard?.readText) return;
+  const pasteClipboardAtActive = useCallback(async (mode = 'all') => {
+    if (!canEdit || !activeCell?.rowId || !activeCell?.key) return;
     try {
-      const text = await navigator.clipboard.readText();
-      if (!text) return;
-      await pasteTable(activeCell.rowId, activeCell.key, text);
+      const text = navigator.clipboard?.readText ? await navigator.clipboard.readText() : internalClipboardRef.current?.text || '';
+      const clipboardText = mode === 'format' ? internalClipboardRef.current?.text || text : text;
+      if (!clipboardText && mode !== 'format') return;
+      await pasteTable(activeCell.rowId, activeCell.key, clipboardText, mode);
     } catch (error) {
       notifyError(error, 'Não foi possível ler a área de transferência.');
     }
@@ -2919,7 +2961,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onClose={closeContextMenu}
         onCopy={() => { closeContextMenu(); copySelection().catch(() => {}); }}
         onCut={() => { closeContextMenu(); cutSelection().catch(() => {}); }}
-        onPaste={() => { closeContextMenu(); pasteClipboardAtActive().catch(() => {}); }}
+        onPaste={() => { closeContextMenu(); pasteClipboardAtActive('all').catch(() => {}); }}
+        onPasteValues={() => { closeContextMenu(); pasteClipboardAtActive('values').catch(() => {}); }}
+        onPasteFormatting={() => { closeContextMenu(); pasteClipboardAtActive('format').catch(() => {}); }}
         onSelectAll={() => { closeContextMenu(); selectAllCells(); }}
         onSelectUsedRange={() => { closeContextMenu(); selectUsedRange(); }}
         onSelectRow={() => { closeContextMenu(); activeCell?.rowId && selectRow(activeCell.rowId); }}
