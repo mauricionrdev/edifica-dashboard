@@ -153,7 +153,21 @@ function normalizeColumns(columns = []) {
 
 function normalizeRows(rows = [], columns = []) {
   return rows.map((row, index) => {
-    const next = { ...row, position: Number(row.position || index + 1), __styles: {} };
+    const incomingStyles = row?.__styles && typeof row.__styles === 'object'
+      ? row.__styles
+      : row?.styles && typeof row.styles === 'object'
+        ? row.styles
+        : {};
+    const nextStyles = {};
+
+    columns.forEach((column) => {
+      const style = incomingStyles?.[column.key];
+      if (style && typeof style === 'object' && Object.keys(style).length) {
+        nextStyles[column.key] = { ...style };
+      }
+    });
+
+    const next = { ...row, position: Number(row.position || index + 1), __styles: nextStyles };
     columns.forEach((column) => {
       next[column.key] = sanitizeCellValue(next[column.key] || '');
     });
@@ -643,6 +657,40 @@ function serializeCellsToTsv(rows = [], columns = [], bounds) {
   return lines.join('\n');
 }
 
+function cloneCellStyle(style = {}) {
+  if (!style || typeof style !== 'object' || !Object.keys(style).length) return {};
+  try {
+    return JSON.parse(JSON.stringify(style));
+  } catch {
+    return { ...style };
+  }
+}
+
+function buildClipboardPayload(rows = [], columns = [], bounds) {
+  if (!bounds) return null;
+  const values = [];
+  const styles = [];
+  for (let rowIndex = bounds.startRow; rowIndex <= bounds.endRow; rowIndex += 1) {
+    const row = rows[rowIndex];
+    const valueLine = [];
+    const styleLine = [];
+    for (let columnIndex = bounds.startColumn; columnIndex <= bounds.endColumn; columnIndex += 1) {
+      const column = columns[columnIndex];
+      valueLine.push(sanitizeCellValue(row?.[column?.key] || ''));
+      styleLine.push(cloneCellStyle(getCellStyle(row, column?.key)));
+    }
+    values.push(valueLine);
+    styles.push(styleLine);
+  }
+  return {
+    text: values.map((line) => line.join('\t')).join('\n'),
+    values,
+    styles,
+    rowCount: values.length,
+    columnCount: values[0]?.length || 0,
+  };
+}
+
 function mergeCellStyle(currentStyle = {}, patch = {}) {
   const next = { ...currentStyle, ...patch };
   Object.keys(next).forEach((key) => {
@@ -967,6 +1015,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const replaceInputRef = useRef(null);
   const formulaInputRef = useRef(null);
   const draftRef = useRef(new Map());
+  const internalClipboardRef = useRef(null);
   const formulaReferenceBaseRef = useRef('');
 
   const viewRows = useMemo(() => {
@@ -1899,29 +1948,34 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeCell?.rowId, activeColumn, activeSheetId, canMutateSheet, columns, loadSheet, markSync, notifyError, ownerUserId, persistColumnOrder, rows]);
 
-  const clearSelectionValues = useCallback(async () => {
+  const clearSelectionValues = useCallback(async ({ clearStyles = false } = {}) => {
     if (!canEdit || !selectedCells.length) return;
     const updatesByRow = new Map();
     const optimistic = rows.map((row) => {
       const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
       if (!targetCells.length) return row;
-      const next = { ...row };
+      const next = { ...row, __styles: { ...(row.__styles || {}) } };
       const patch = {};
+      const stylePatch = {};
       targetCells.forEach(({ column }) => {
         next[column.key] = '';
         patch[column.key] = '';
+        if (clearStyles) {
+          next.__styles[column.key] = {};
+          stylePatch[column.key] = {};
+        }
       });
-      updatesByRow.set(row.id, patch);
+      updatesByRow.set(row.id, clearStyles ? { ...patch, styles: stylePatch } : patch);
       return next;
     });
     setRows(optimistic);
-    markSync('saving', 'Limpando conteúdo');
-    setBusy('clear-values');
+    markSync('saving', clearStyles ? 'Recortando seleção' : 'Limpando conteúdo');
+    setBusy(clearStyles ? 'cut-values' : 'clear-values');
     try {
       await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
-      markSync('saved', 'Conteúdo limpo');
+      markSync('saved', clearStyles ? 'Seleção recortada' : 'Conteúdo limpo');
     } catch (error) {
-      notifyError(error, 'Não foi possível limpar o conteúdo.');
+      notifyError(error, clearStyles ? 'Não foi possível recortar a seleção.' : 'Não foi possível limpar o conteúdo.');
       loadSheet(activeSheetId).catch(() => {});
     } finally {
       setBusy('');
@@ -1994,8 +2048,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [viewRows]);
 
   const copySelection = useCallback(async () => {
-    const text = serializeCellsToTsv(viewRows, columns, selectionBounds) || activeCellText(activeCell, rows);
+    const payload = buildClipboardPayload(viewRows, columns, selectionBounds);
+    const text = payload?.text || activeCellText(activeCell, rows);
     if (!text) return;
+    internalClipboardRef.current = payload || null;
     try {
       await navigator.clipboard.writeText(text);
       markSync('saved', selectedCount > 1 ? 'Intervalo copiado' : 'Célula copiada');
@@ -2007,7 +2063,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const cutSelection = useCallback(async () => {
     if (!canEdit || !selectedCells.length) return;
     await copySelection();
-    await clearSelectionValues();
+    await clearSelectionValues({ clearStyles: true });
   }, [canEdit, clearSelectionValues, copySelection, selectedCells.length]);
 
   const transformSelectionText = useCallback(async (mode) => {
@@ -2300,8 +2356,15 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const startColumnIndex = columns.findIndex((column) => column.key === startKey);
     if (startRowIndex < 0 || startColumnIndex < 0) return;
 
+    const internalClipboard = internalClipboardRef.current;
+    const shouldPasteStyles = Boolean(
+      internalClipboard?.text
+      && sanitizeCellValue(internalClipboard.text) === sanitizeCellValue(text)
+      && Array.isArray(internalClipboard.styles)
+    );
+
     setBusy('paste');
-    markSync('saving', 'Colando dados');
+    markSync('saving', shouldPasteStyles ? 'Colando dados e formatação' : 'Colando dados');
     try {
       const requiredRows = startRowIndex + table.length;
       const requiredColumns = startColumnIndex + Math.max(...table.map((line) => line.length));
@@ -2310,20 +2373,27 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       const optimistic = nextRows.map((row, rowIndex) => {
         const sourceRow = table[rowIndex - startRowIndex];
         if (!sourceRow) return row;
-        const next = { ...row };
+        const next = { ...row, __styles: { ...(row.__styles || {}) } };
         sourceRow.forEach((cell, offset) => {
           const column = nextColumns[startColumnIndex + offset];
           if (!column) return;
+          const sourceRowOffset = rowIndex - startRowIndex;
+          const sourceStyle = shouldPasteStyles ? internalClipboard.styles?.[sourceRowOffset]?.[offset] : null;
           next[column.key] = cell;
           const patch = rowPatches.get(row.id) || {};
           patch[column.key] = cell;
+          if (shouldPasteStyles) {
+            const clonedStyle = cloneCellStyle(sourceStyle || {});
+            next.__styles[column.key] = clonedStyle;
+            patch.styles = { ...(patch.styles || {}), [column.key]: clonedStyle };
+          }
           rowPatches.set(row.id, patch);
         });
         return next;
       });
       setRows(normalizeRows(optimistic, nextColumns));
       await Promise.all([...rowPatches.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
-      markSync('saved', 'Dados colados');
+      markSync('saved', shouldPasteStyles ? 'Dados e formatação colados' : 'Dados colados');
     } catch (error) {
       notifyError(error, 'Não foi possível colar os dados.');
       loadSheet(activeSheetId).catch(() => {});
