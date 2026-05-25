@@ -48,6 +48,7 @@ function Cell({
   editing,
   editValue,
   displayMeta,
+  formulaReference,
   canEdit,
   onSelect,
   onCellClick,
@@ -158,6 +159,7 @@ function Cell({
       data-saving={saving || undefined}
       data-formula={displayMeta?.isFormula || undefined}
       data-formula-error={displayMeta?.hasFormulaError || undefined}
+      data-formula-reference={formulaReference || undefined}
       role="gridcell"
       tabIndex={0}
       style={{
@@ -224,6 +226,7 @@ export default function SpreadsheetGrid({
   selectionBounds,
   selectedCount,
   displayValueMap,
+  formulaReferenceIds,
   savingCell,
   savingColumn,
   resizeState,
@@ -261,6 +264,8 @@ export default function SpreadsheetGrid({
   const selectionDraggedRef = useRef(false);
   const fillDragRef = useRef(null);
   const [fillPreview, setFillPreview] = useState(null);
+
+  const formulaReferenceSet = useMemo(() => new Set(formulaReferenceIds || []), [formulaReferenceIds]);
 
   const columnMetrics = useMemo(() => {
     let left = INDEX_WIDTH;
@@ -577,6 +582,7 @@ export default function SpreadsheetGrid({
                   editing={editing}
                   editValue={editingValue}
                   displayMeta={displayValueMap?.get(id)}
+                  formulaReference={formulaReferenceSet.has(id)}
                   canEdit={canEdit}
                   onSelect={onSelectCell}
                   onCellClick={handleCellClick}

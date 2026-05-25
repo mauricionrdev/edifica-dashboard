@@ -254,6 +254,67 @@ function parseCellRef(ref = '') {
   return { rowIndex, columnIndex: columnIndex - 1 };
 }
 
+
+function cellRefFromCoordinates(rowIndex = 0, columnIndex = 0) {
+  return `${columnName(columnIndex)}${rowIndex + 1}`;
+}
+
+function getFormulaReferences(rawFormula = '', rows = [], columns = []) {
+  const formula = sanitizeCellValue(rawFormula).trim();
+  if (!formula.startsWith('=')) return [];
+  const refs = new Map();
+  const rangePattern = /([A-Z]+\d+)\s*:\s*([A-Z]+\d+)/gi;
+  formula.replace(rangePattern, (match) => {
+    expandCellRange(match, rows, columns).forEach(({ rowIndex, columnIndex }) => {
+      const row = rows[rowIndex];
+      const column = columns[columnIndex];
+      if (row && column) refs.set(`${row.id}:${column.key}`, true);
+    });
+    return match;
+  });
+  formula.replace(/\b([A-Z]+\d+)\b/gi, (match) => {
+    const coords = parseCellRef(match);
+    const row = rows[coords?.rowIndex];
+    const column = columns[coords?.columnIndex];
+    if (row && column) refs.set(`${row.id}:${column.key}`, true);
+    return match;
+  });
+  return [...refs.keys()];
+}
+
+function adjustFormulaReferences(rawFormula = '', rowOffset = 0, columnOffset = 0) {
+  const formula = sanitizeCellValue(rawFormula);
+  if (!formula.startsWith('=')) return formula;
+  return formula.replace(/\b([A-Z]+)(\d+)\b/gi, (match) => {
+    const coords = parseCellRef(match);
+    if (!coords) return match;
+    const nextRow = Math.max(0, coords.rowIndex + rowOffset);
+    const nextColumn = Math.max(0, coords.columnIndex + columnOffset);
+    return cellRefFromCoordinates(nextRow, nextColumn);
+  });
+}
+
+function buildSequenceValue(sourceValues = [], targetOffset = 0, axis = 'row') {
+  const values = sourceValues.map((value) => sanitizeCellValue(value));
+  if (!values.length) return '';
+  const numbers = values.map(parsePlainNumber);
+  if (numbers.every((value) => value !== null)) {
+    if (numbers.length === 1) return String(numbers[0]);
+    const step = numbers[numbers.length - 1] - numbers[numbers.length - 2];
+    return String(numbers[numbers.length - 1] + step * Math.max(1, targetOffset));
+  }
+  const lastFormula = [...values].reverse().find((value) => value.startsWith('='));
+  if (lastFormula) return adjustFormulaReferences(lastFormula, axis === 'row' ? targetOffset : 0, axis === 'column' ? targetOffset : 0);
+  return values[positiveModulo(values.length - 1 + targetOffset, values.length)] || values[0] || '';
+}
+
+function compareSheetValues(a = '', b = '') {
+  const aNumber = parsePlainNumber(a);
+  const bNumber = parsePlainNumber(b);
+  if (aNumber !== null && bNumber !== null) return aNumber - bNumber;
+  return sanitizeCellValue(a).localeCompare(sanitizeCellValue(b), 'pt-BR', { numeric: true, sensitivity: 'base' });
+}
+
 function expandCellRange(range = '', rows = [], columns = []) {
   const [startRef, endRef] = String(range).split(':').map((item) => parseCellRef(item));
   if (!startRef || !endRef) return [];
@@ -305,7 +366,7 @@ function evaluateFormula(rawFormula = '', rows = [], columns = [], stack = new S
 
   const functionMatch = expression.match(/^([A-ZÁÉÍÓÚÇ.]+)\((.*)\)$/i);
   if (functionMatch) {
-    const name = functionMatch[1].normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+    const name = functionMatch[1].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
     const args = functionMatch[2].split(';').flatMap((chunk) => chunk.split(',')).map((item) => item.trim()).filter(Boolean);
     const values = args.flatMap((arg) => {
       if (arg.includes(':')) return expandCellRange(arg, rows, columns).map(({ rowIndex, columnIndex }) => {
@@ -451,6 +512,12 @@ function SheetContextMenu({
   onAlignCenter,
   onAlignRight,
   onClearFormatting,
+  onSortColumnAscending,
+  onSortColumnDescending,
+  onSetTypeText,
+  onSetTypeNumber,
+  onSetTypeCurrency,
+  onSetTypePercent,
 }) {
   if (!menu) return null;
   const isRow = menu.scope === 'row';
@@ -475,6 +542,17 @@ function SheetContextMenu({
         <button type="button" role="menuitem" onClick={onAlignCenter} disabled={!canEdit}>Centralizar</button>
         <button type="button" role="menuitem" onClick={onAlignRight} disabled={!canEdit}>Alinhar à direita</button>
         <button type="button" role="menuitem" onClick={onClearFormatting} disabled={!canEdit}>Limpar formatação</button>
+        {isColumn ? (
+          <>
+            <span aria-hidden="true" />
+            <button type="button" role="menuitem" onClick={onSortColumnAscending} disabled={!canEdit}>Ordenar A → Z</button>
+            <button type="button" role="menuitem" onClick={onSortColumnDescending} disabled={!canEdit}>Ordenar Z → A</button>
+            <button type="button" role="menuitem" onClick={onSetTypeText} disabled={!canEdit}>Tipo: texto</button>
+            <button type="button" role="menuitem" onClick={onSetTypeNumber} disabled={!canEdit}>Tipo: número</button>
+            <button type="button" role="menuitem" onClick={onSetTypeCurrency} disabled={!canEdit}>Tipo: moeda</button>
+            <button type="button" role="menuitem" onClick={onSetTypePercent} disabled={!canEdit}>Tipo: percentual</button>
+          </>
+        ) : null}
         <span aria-hidden="true" />
         <button type="button" role="menuitem" onClick={onInsertRowAbove} disabled={!canEdit}>Inserir linha acima</button>
         <button type="button" role="menuitem" onClick={onInsertRowBelow} disabled={!canEdit}>Inserir linha abaixo</button>
@@ -584,6 +662,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     });
     return count;
   }, [columns, rows]);
+
+  const formulaReferenceIds = useMemo(() => getFormulaReferences(formulaValue, rows, columns), [columns, formulaValue, rows]);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || null, [activeSheetId, sheets]);
   const activeColumn = useMemo(() => columns.find((column) => column.key === activeCell?.key) || null, [activeCell?.key, columns]);
@@ -833,7 +913,22 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         const sourceColumn = columns[sourceColumnIndex];
         if (!sourceRow || !sourceColumn) continue;
 
-        const value = sanitizeCellValue(sourceRow?.[sourceColumn.key] || '');
+        const fillingRight = targetColumnIndex > selectionBounds.endColumn;
+        const fillingLeft = targetColumnIndex < selectionBounds.startColumn;
+        const fillingDown = targetRowIndex > selectionBounds.endRow;
+        const fillingUp = targetRowIndex < selectionBounds.startRow;
+        const extendingRows = fillingDown || fillingUp;
+        const extendingColumns = fillingRight || fillingLeft;
+        const sourceValues = extendingColumns
+          ? Array.from({ length: sourceColumnCount }, (_, offset) => sanitizeCellValue(sourceRow?.[columns[selectionBounds.startColumn + offset]?.key] || ''))
+          : Array.from({ length: sourceRowCount }, (_, offset) => sanitizeCellValue(viewRows[selectionBounds.startRow + offset]?.[sourceColumn.key] || ''));
+        const directionalValues = fillingLeft || fillingUp ? [...sourceValues].reverse() : sourceValues;
+        const sequenceOffset = extendingColumns
+          ? (fillingLeft ? selectionBounds.startColumn - columnIndex : columnIndex - selectionBounds.endColumn)
+          : (fillingUp ? selectionBounds.startRow - visibleRowIndex : visibleRowIndex - selectionBounds.endRow);
+        const value = (extendingRows || extendingColumns)
+          ? buildSequenceValue(directionalValues, Math.max(1, sequenceOffset), extendingColumns ? 'column' : 'row')
+          : sanitizeCellValue(sourceRow?.[sourceColumn.key] || '');
         next[column.key] = value;
         patch[column.key] = value;
 
@@ -1222,6 +1317,33 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setBusy('');
     }
   }, [activeSheetId, canEdit, loadSheet, markSync, notifyError, rows, selectedCells]);
+
+
+  const sortActiveColumn = useCallback(async (direction = 'asc') => {
+    if (!canMutateSheet || !activeColumn) return;
+    setBusy(`sort-column-${direction}`);
+    markSync('saving', 'Ordenando coluna');
+    try {
+      const sorted = [...rows].sort((a, b) => {
+        const result = compareSheetValues(a?.[activeColumn.key] || '', b?.[activeColumn.key] || '');
+        return direction === 'asc' ? result : -result;
+      });
+      await persistRowOrder(sorted);
+      const firstRow = sorted[0];
+      if (firstRow) {
+        const nextCell = { rowId: firstRow.id, key: activeColumn.key };
+        setActiveCell(nextCell);
+        setSelectionAnchor(nextCell);
+        setSelectionFocus({ rowId: sorted[sorted.length - 1]?.id || firstRow.id, key: activeColumn.key });
+      }
+      markSync('saved', direction === 'asc' ? 'Coluna ordenada A-Z' : 'Coluna ordenada Z-A');
+    } catch (error) {
+      notifyError(error, 'Não foi possível ordenar a coluna.');
+      loadSheet(activeSheetId).catch(() => {});
+    } finally {
+      setBusy('');
+    }
+  }, [activeColumn, activeSheetId, canMutateSheet, loadSheet, markSync, notifyError, persistRowOrder, rows]);
 
   const changeColumnLabel = useCallback((key, label) => {
     setColumns((current) => current.map((column) => (column.key === key ? { ...column, label: sanitizeCellValue(label).slice(0, 80) } : column)));
@@ -1672,6 +1794,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             selectionBounds={selectionBounds}
             selectedCount={selectedCount}
             displayValueMap={displayValueMap}
+            formulaReferenceIds={formulaReferenceIds}
             savingCell={savingCell}
             savingColumn={savingColumn}
             resizeState={resizeState}
@@ -1734,6 +1857,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onAlignCenter={() => { closeContextMenu(); setTextAlign('center'); }}
         onAlignRight={() => { closeContextMenu(); setTextAlign('right'); }}
         onClearFormatting={() => { closeContextMenu(); clearSelectionFormatting(); }}
+        onSortColumnAscending={() => { closeContextMenu(); sortActiveColumn('asc').catch(() => {}); }}
+        onSortColumnDescending={() => { closeContextMenu(); sortActiveColumn('desc').catch(() => {}); }}
+        onSetTypeText={() => { closeContextMenu(); setNumberFormat('text'); }}
+        onSetTypeNumber={() => { closeContextMenu(); setNumberFormat('number'); }}
+        onSetTypeCurrency={() => { closeContextMenu(); setNumberFormat('currency'); }}
+        onSetTypePercent={() => { closeContextMenu(); setNumberFormat('percent'); }}
       />
 
       <ConfirmDeleteDialog
