@@ -573,11 +573,11 @@ export default function SpreadsheetGrid({
   }, [stopAutoScroll]);
 
   const startDragSelection = useCallback((event, rowId, key) => {
-    if (event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
     draggingSelectionRef.current = true;
     lastDragCellRef.current = `${rowId}:${key}`;
     selectionDraggedRef.current = false;
-    onSelectCell(rowId, key, event.currentTarget, false);
+    onSelectCell(rowId, key, event.currentTarget, event.shiftKey);
     const onMove = (moveEvent) => autoScrollWhileSelecting(moveEvent.clientX, moveEvent.clientY);
     const finish = () => {
       draggingSelectionRef.current = false;

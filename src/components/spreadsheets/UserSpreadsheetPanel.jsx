@@ -690,6 +690,42 @@ function serializeCellsToTsv(rows = [], columns = [], bounds) {
   return lines.join('\n');
 }
 
+
+function cloneStyleForClipboard(style = {}) {
+  if (!style || typeof style !== 'object' || Array.isArray(style)) return {};
+  return JSON.parse(JSON.stringify(style));
+}
+
+function serializeSelectionForClipboard(rows = [], columns = [], bounds) {
+  if (!bounds) return null;
+  const values = [];
+  const styles = [];
+  const lines = [];
+  for (let rowIndex = bounds.startRow; rowIndex <= bounds.endRow; rowIndex += 1) {
+    const row = rows[rowIndex];
+    const valueLine = [];
+    const styleLine = [];
+    const textLine = [];
+    for (let columnIndex = bounds.startColumn; columnIndex <= bounds.endColumn; columnIndex += 1) {
+      const column = columns[columnIndex];
+      const value = sanitizeCellValue(row?.[column?.key] || '');
+      valueLine.push(value);
+      styleLine.push(cloneStyleForClipboard(getCellStyle(row, column?.key)));
+      textLine.push(value);
+    }
+    values.push(valueLine);
+    styles.push(styleLine);
+    lines.push(textLine.join('\t'));
+  }
+  return {
+    text: lines.join('\n'),
+    values,
+    styles,
+    rowCount: values.length,
+    columnCount: values[0]?.length || 0,
+  };
+}
+
 function mergeCellStyle(currentStyle = {}, patch = {}) {
   const next = { ...currentStyle, ...patch };
   Object.keys(next).forEach((key) => {
@@ -1054,6 +1090,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const replaceInputRef = useRef(null);
   const formulaInputRef = useRef(null);
   const draftRef = useRef(new Map());
+  const internalClipboardRef = useRef(null);
   const formulaReferenceBaseRef = useRef('');
 
   const viewRows = useMemo(() => {
@@ -2072,11 +2109,21 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [viewRows]);
 
   const copySelection = useCallback(async () => {
-    const text = serializeCellsToTsv(viewRows, columns, selectionBounds) || activeCellText(activeCell, rows);
+    const clipboardPayload = selectionBounds
+      ? serializeSelectionForClipboard(viewRows, columns, selectionBounds)
+      : null;
+    const text = clipboardPayload?.text || activeCellText(activeCell, rows);
     if (!text) return;
+    internalClipboardRef.current = clipboardPayload || {
+      text,
+      values: [[text]],
+      styles: [[cloneStyleForClipboard(getCellStyle(rows.find((row) => row.id === activeCell?.rowId), activeCell?.key))]],
+      rowCount: 1,
+      columnCount: 1,
+    };
     try {
       await navigator.clipboard.writeText(text);
-      markSync('saved', selectedCount > 1 ? 'Intervalo copiado' : 'Célula copiada');
+      markSync('saved', selectedCount > 1 ? 'Intervalo copiado com formatação' : 'Célula copiada com formatação');
     } catch (error) {
       notifyError(error, 'Não foi possível copiar a seleção.');
     }
@@ -2370,10 +2417,15 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     return { nextRows, nextColumns };
   }, [activeSheetId, columns, createColumnSilently, createRowSilently, ownerUserId, rows]);
 
-  const pasteTable = useCallback(async (startRowId, startKey, text) => {
+  const pasteTable = useCallback(async (startRowId, startKey, text, options = {}) => {
     if (!canEdit || !activeSheetId) return;
     const table = parseClipboardTable(text).slice(0, MAX_IMPORT_ROWS);
     if (!table.length) return;
+    const clipboardStyles = Array.isArray(options.styles)
+      ? options.styles
+      : internalClipboardRef.current?.text === text
+        ? internalClipboardRef.current.styles
+        : null;
     const startRowIndex = rows.findIndex((row) => row.id === startRowId);
     const startColumnIndex = columns.findIndex((column) => column.key === startKey);
     if (startRowIndex < 0 || startColumnIndex < 0) return;
@@ -2388,13 +2440,18 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       const optimistic = nextRows.map((row, rowIndex) => {
         const sourceRow = table[rowIndex - startRowIndex];
         if (!sourceRow) return row;
-        const next = { ...row };
+        const next = { ...row, __styles: { ...(row.__styles || {}) } };
         sourceRow.forEach((cell, offset) => {
           const column = nextColumns[startColumnIndex + offset];
           if (!column) return;
           next[column.key] = cell;
           const patch = rowPatches.get(row.id) || {};
           patch[column.key] = cell;
+          const sourceStyle = clipboardStyles?.[rowIndex - startRowIndex]?.[offset];
+          if (sourceStyle && Object.keys(sourceStyle).length) {
+            next.__styles[column.key] = cloneStyleForClipboard(sourceStyle);
+            patch.styles = { ...(patch.styles || {}), [column.key]: cloneStyleForClipboard(sourceStyle) };
+          }
           rowPatches.set(row.id, patch);
         });
         return next;
@@ -2415,7 +2472,9 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     try {
       const text = await navigator.clipboard.readText();
       if (!text) return;
-      await pasteTable(activeCell.rowId, activeCell.key, text);
+      const internalClipboard = internalClipboardRef.current;
+      const styles = internalClipboard?.text === text ? internalClipboard.styles : null;
+      await pasteTable(activeCell.rowId, activeCell.key, text, { styles });
     } catch (error) {
       notifyError(error, 'Não foi possível ler a área de transferência.');
     }
