@@ -42,6 +42,55 @@ function resolveVerticalAlign(value = '') {
   return undefined;
 }
 
+function normalizeRichRuns(style = {}, textLength = 0) {
+  const runs = Array.isArray(style.richText) ? style.richText : [];
+  return runs
+    .map((run) => ({
+      ...run,
+      start: clamp(Number(run.start || 0), 0, textLength),
+      end: clamp(Number(run.end || 0), 0, textLength),
+    }))
+    .filter((run) => run.end > run.start);
+}
+
+function getRunStyle(runs = [], start = 0, end = 0) {
+  return runs.reduce((acc, run) => {
+    if (run.start < end && run.end > start) return { ...acc, ...run };
+    return acc;
+  }, {});
+}
+
+function renderRichText(text = '', style = {}) {
+  const value = String(text ?? '');
+  const runs = normalizeRichRuns(style, value.length);
+  if (!runs.length) return value;
+  const boundaries = new Set([0, value.length]);
+  runs.forEach((run) => {
+    boundaries.add(run.start);
+    boundaries.add(run.end);
+  });
+  const points = [...boundaries].sort((a, b) => a - b);
+  return points.slice(0, -1).map((start, index) => {
+    const end = points[index + 1];
+    const content = value.slice(start, end);
+    if (!content) return null;
+    const runStyle = getRunStyle(runs, start, end);
+    return (
+      <span
+        key={`${start}-${end}`}
+        style={{
+          color: runStyle.color || undefined,
+          fontWeight: runStyle.bold ? 700 : undefined,
+          fontStyle: runStyle.italic ? 'italic' : undefined,
+          textDecoration: [runStyle.underline ? 'underline' : '', runStyle.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined,
+        }}
+      >
+        {content}
+      </span>
+    );
+  });
+}
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -74,6 +123,7 @@ function Cell({
   onRowContextMenu,
   onColumnContextMenu,
   onPasteTable,
+  onEditorSelectionChange,
   onDragSelectionStart,
   onDragSelectionMove,
 }) {
@@ -93,13 +143,27 @@ function Cell({
     if (!editing || !editorRef.current) return;
     editorRef.current.focus({ preventScroll: true });
     editorRef.current.select();
-  }, [editing]);
+    onEditorSelectionChange?.({ rowId: row.id, key: column.key, start: 0, end: String(editValue || '').length, value: editValue || '' });
+  }, [column.key, editValue, editing, onEditorSelectionChange, row.id]);
+
+  const reportEditorSelection = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    onEditorSelectionChange?.({
+      rowId: row.id,
+      key: column.key,
+      start: Number(editor.selectionStart || 0),
+      end: Number(editor.selectionEnd || 0),
+      value: editor.value,
+    });
+  };
 
   const handleKeyDown = (event) => {
     if (editing) {
       if (event.key === 'Escape') {
         event.preventDefault();
         onCancel();
+        onEditorSelectionChange?.(null);
         ref.current?.focus({ preventScroll: true });
         return;
       }
@@ -210,7 +274,7 @@ function Cell({
         }
       }}
     >
-      {!editing ? <span className={styles.cellValue}>{displayValue}</span> : null}
+      {!editing ? <span className={styles.cellValue}>{renderRichText(displayValue, style)}</span> : null}
       {editing ? (
         <textarea
           ref={editorRef}
@@ -219,7 +283,10 @@ function Cell({
           rows={1}
           spellCheck={false}
           onChange={(event) => onEditChange(event.target.value)}
-          onBlur={() => onCommit(row.id, column.key, 0, 0, false)}
+          onBlur={() => {
+            onEditorSelectionChange?.(null);
+            onCommit(row.id, column.key, 0, 0, false);
+          }}
           onKeyDown={handleKeyDown}
           onPaste={(event) => {
             const text = event.clipboardData?.getData('text/plain') || '';
@@ -262,6 +329,7 @@ export default function SpreadsheetGrid({
   onCellChange,
   onCellCommit,
   onFormulaDraftChange,
+  onEditorSelectionChange,
   onNavigateCell,
   onJumpCell,
   onContextMenu,
@@ -734,6 +802,7 @@ export default function SpreadsheetGrid({
                   onJump={onJumpCell}
                   onContextMenu={onContextMenu}
                   onPasteTable={onPasteTable}
+                  onEditorSelectionChange={onEditorSelectionChange}
                   onDragSelectionStart={startDragSelection}
                   onDragSelectionMove={moveDragSelection}
                 />

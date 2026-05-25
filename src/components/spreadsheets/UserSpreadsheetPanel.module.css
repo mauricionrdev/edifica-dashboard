@@ -562,14 +562,16 @@
 .contextBackdrop {
   position: fixed;
   inset: 0;
-  z-index: var(--z-dropdown);
+  z-index: 10000;
   background: transparent;
 }
 
 .contextMenu {
   position: fixed;
   min-width: 216px;
-  overflow: hidden;
+  z-index: 10001;
+  max-height: min(680px, calc(100vh - 32px));
+  overflow: auto;
   padding: var(--space-1);
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-2);
@@ -689,7 +691,7 @@
   left: 42px;
   right: 0;
   top: calc(100% + var(--space-1));
-  z-index: var(--z-dropdown);
+  z-index: 10000;
   display: grid;
   gap: var(--space-1);
   max-height: 260px;
@@ -761,7 +763,7 @@
   position: absolute;
   right: var(--space-2);
   bottom: calc(-1 * var(--space-5));
-  z-index: var(--z-dropdown);
+  z-index: 10000;
   display: inline-flex;
   align-items: center;
   min-height: 20px;

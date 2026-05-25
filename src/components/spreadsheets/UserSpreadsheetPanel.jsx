@@ -18,6 +18,27 @@ import styles from './UserSpreadsheetPanel.module.css';
 
 const DEFAULT_COLUMN_WIDTH = 168;
 
+const TEXT_COLOR_OPTIONS = [
+  { value: '', label: 'Texto' },
+  { value: 'var(--text-primary)', label: 'Padrão' },
+  { value: 'var(--accent)', label: 'Amarelo' },
+  { value: 'var(--success-text)', label: 'Verde' },
+  { value: 'var(--danger-text)', label: 'Vermelho' },
+  { value: 'var(--warning-text)', label: 'Atenção' },
+  { value: 'var(--info-text)', label: 'Azul' },
+];
+
+const FILL_COLOR_OPTIONS = [
+  { value: '', label: 'Fundo' },
+  { value: 'var(--accent-soft)', label: 'Amarelo suave' },
+  { value: 'var(--success-soft)', label: 'Verde suave' },
+  { value: 'var(--danger-soft)', label: 'Vermelho suave' },
+  { value: 'var(--warning-soft)', label: 'Atenção suave' },
+  { value: 'var(--info-soft)', label: 'Azul suave' },
+];
+
+const INLINE_TEXT_STYLE_KEYS = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'color']);
+
 const FORMULA_LIBRARY = [
   { name: 'SOMA', aliases: ['SUM'], signature: 'SOMA(A1:A5)', description: 'Soma os valores de um intervalo.' },
   { name: 'MEDIA', aliases: ['AVERAGE'], signature: 'MEDIA(A1:A5)', description: 'Calcula a média de um intervalo.' },
@@ -626,8 +647,37 @@ function mergeCellStyle(currentStyle = {}, patch = {}) {
   const next = { ...currentStyle, ...patch };
   Object.keys(next).forEach((key) => {
     if (next[key] === false || next[key] === '' || next[key] === null || next[key] === undefined) delete next[key];
+    if (key === 'richText' && Array.isArray(next[key]) && !next[key].length) delete next[key];
   });
   return next;
+}
+
+function normalizeRichTextRuns(runs = [], textLength = 0) {
+  return (Array.isArray(runs) ? runs : [])
+    .map((run) => ({
+      ...run,
+      start: Math.max(0, Math.min(textLength, Number(run.start || 0))),
+      end: Math.max(0, Math.min(textLength, Number(run.end || 0))),
+    }))
+    .filter((run) => run.end > run.start);
+}
+
+function isInlinePatch(patch = {}) {
+  const keys = Object.keys(patch || {}).filter((key) => patch[key] !== false && patch[key] !== '' && patch[key] !== null && patch[key] !== undefined);
+  return keys.length > 0 && keys.every((key) => INLINE_TEXT_STYLE_KEYS.has(key));
+}
+
+function mergeRichTextRun(currentStyle = {}, selection = {}, patch = {}) {
+  const value = sanitizeCellValue(selection.value || '');
+  const start = Math.max(0, Math.min(value.length, Number(selection.start || 0)));
+  const end = Math.max(0, Math.min(value.length, Number(selection.end || 0)));
+  if (end <= start) return currentStyle;
+  const cleanPatch = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== false && value !== '' && value !== null && value !== undefined));
+  if (!Object.keys(cleanPatch).length) return currentStyle;
+  const richText = normalizeRichTextRuns(currentStyle.richText, value.length)
+    .filter((run) => !(run.start === start && run.end === end && Object.keys(cleanPatch).some((key) => run[key] !== undefined)));
+  richText.push({ start, end, ...cleanPatch });
+  return mergeCellStyle(currentStyle, { richText });
 }
 
 function sameStyleValue(cells = [], key, expectedValue) {
@@ -689,6 +739,7 @@ function SheetContextMenu({
   onItalic,
   onUnderline,
   onStrikeThrough,
+  onTextColor,
   onAlignLeft,
   onAlignCenter,
   onAlignRight,
@@ -756,6 +807,9 @@ function SheetContextMenu({
         <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico <kbd>Ctrl I</kbd></button>
         <button type="button" role="menuitem" onClick={onUnderline} disabled={!canEdit}>Sublinhado <kbd>Ctrl U</kbd></button>
         <button type="button" role="menuitem" onClick={onStrikeThrough} disabled={!canEdit}>Tachado</button>
+        <button type="button" role="menuitem" onClick={() => onTextColor('var(--text-primary)')} disabled={!canEdit}>Cor do texto: padrão</button>
+        <button type="button" role="menuitem" onClick={() => onTextColor('var(--success-text)')} disabled={!canEdit}>Cor do texto: verde</button>
+        <button type="button" role="menuitem" onClick={() => onTextColor('var(--danger-text)')} disabled={!canEdit}>Cor do texto: vermelho</button>
         <button type="button" role="menuitem" onClick={onAlignLeft} disabled={!canEdit}>Alinhar à esquerda</button>
         <button type="button" role="menuitem" onClick={onAlignCenter} disabled={!canEdit}>Centralizar</button>
         <button type="button" role="menuitem" onClick={onAlignRight} disabled={!canEdit}>Alinhar à direita</button>
@@ -827,6 +881,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [replaceScope, setReplaceScope] = useState('selection');
   const [replaceMatchCase, setReplaceMatchCase] = useState(false);
   const [advancedPanelOpen, setAdvancedPanelOpen] = useState(false);
+  const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const replaceInputRef = useRef(null);
@@ -902,6 +957,23 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.verticalAlign || 'middle';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.verticalAlign || 'middle') === first) ? first : 'mixed';
   }, [selectedCells]);
+
+  const selectedTextColor = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.color || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.color || '') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const selectedFillColor = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.backgroundColor || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.backgroundColor || '') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const hasActiveTextRange = !!activeTextSelection
+    && activeTextSelection.rowId === activeCell?.rowId
+    && activeTextSelection.key === activeCell?.key
+    && Number(activeTextSelection.end || 0) > Number(activeTextSelection.start || 0);
 
   const displayValueMap = useMemo(() => {
     const map = new Map();
@@ -1151,6 +1223,42 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setRows((current) => current.map((row) => (row.id === rowId ? { ...row, [key]: cleanValue } : row)));
   }, []);
 
+
+  const applyInlineStyleToActiveTextSelection = useCallback(async (patch) => {
+    if (!canEdit || !activeTextSelection?.rowId || !activeTextSelection?.key) return false;
+    const start = Number(activeTextSelection.start || 0);
+    const end = Number(activeTextSelection.end || 0);
+    if (end <= start || !isInlinePatch(patch)) return false;
+    const row = rows.find((entry) => entry.id === activeTextSelection.rowId);
+    if (!row) return false;
+    const currentStyle = getCellStyle(row, activeTextSelection.key);
+    const nextStyle = mergeRichTextRun(currentStyle, activeTextSelection, patch);
+    setCellDraft(activeTextSelection.rowId, activeTextSelection.key, activeTextSelection.value);
+    setRows((current) => current.map((entry) => (entry.id === activeTextSelection.rowId
+      ? {
+          ...entry,
+          [activeTextSelection.key]: sanitizeCellValue(activeTextSelection.value),
+          __styles: { ...(entry.__styles || {}), [activeTextSelection.key]: nextStyle },
+        }
+      : entry)));
+    markSync('saving', 'Salvando trecho formatado');
+    setBusy('format');
+    try {
+      await updateSupportDailyRow(activeTextSelection.rowId, {
+        [activeTextSelection.key]: sanitizeCellValue(activeTextSelection.value),
+        styles: { [activeTextSelection.key]: nextStyle },
+      });
+      markSync('saved', 'Trecho formatado');
+      return true;
+    } catch (error) {
+      notifyError(error, 'Não foi possível salvar a formatação do trecho.');
+      loadSheet(activeSheetId).catch(() => {});
+      return false;
+    } finally {
+      setBusy('');
+    }
+  }, [activeSheetId, activeTextSelection, canEdit, loadSheet, markSync, notifyError, rows, setCellDraft]);
+
   const applyStyleToSelection = useCallback(async (patchFactory) => {
     if (!canEdit || !selectedCells.length) return;
     const updatesByRow = new Map();
@@ -1183,8 +1291,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const toggleStyle = useCallback((styleKey) => {
     const enabled = !sameStyleValue(selectedCells, styleKey, true);
+    if (hasActiveTextRange && INLINE_TEXT_STYLE_KEYS.has(styleKey)) {
+      applyInlineStyleToActiveTextSelection({ [styleKey]: true }).catch(() => {});
+      return;
+    }
     applyStyleToSelection({ [styleKey]: enabled }).catch(() => {});
-  }, [applyStyleToSelection, selectedCells]);
+  }, [applyInlineStyleToActiveTextSelection, applyStyleToSelection, hasActiveTextRange, selectedCells]);
 
   const setTextAlign = useCallback((textAlign) => {
     const nextAlign = selectedAlign === textAlign ? '' : textAlign;
@@ -1205,6 +1317,18 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
   const setVerticalAlign = useCallback((verticalAlign) => {
     applyStyleToSelection({ verticalAlign }).catch(() => {});
+  }, [applyStyleToSelection]);
+
+  const setTextColor = useCallback((color) => {
+    if (hasActiveTextRange) {
+      applyInlineStyleToActiveTextSelection({ color }).catch(() => {});
+      return;
+    }
+    applyStyleToSelection({ color }).catch(() => {});
+  }, [applyInlineStyleToActiveTextSelection, applyStyleToSelection, hasActiveTextRange]);
+
+  const setFillColor = useCallback((backgroundColor) => {
+    applyStyleToSelection({ backgroundColor }).catch(() => {});
   }, [applyStyleToSelection]);
 
   const focusSearch = useCallback(() => {
@@ -1231,7 +1355,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, []);
 
   const clearSelectionFormatting = useCallback(() => {
-    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '' }).catch(() => {});
+    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
   }, [applyStyleToSelection]);
 
   const applyValueToSelection = useCallback(async () => {
@@ -2383,6 +2507,22 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <button type="button" data-active={selectedHasItalic || undefined} onClick={() => toggleStyle('italic')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Itálico"><em>I</em></button>
         <button type="button" onClick={() => applyStyleToSelection((style) => ({ strikeThrough: !style.strikeThrough }))} disabled={!selectedCount || !canEdit || !!busy} aria-label="Tachado"><s>S</s></button>
         <button type="button" data-active={selectedHasUnderline || undefined} onClick={() => toggleStyle('underline')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Sublinhado"><u>U</u></button>
+        <select
+          value={selectedTextColor === 'mixed' ? '' : selectedTextColor}
+          aria-label="Cor do texto"
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setTextColor(event.target.value)}
+        >
+          {TEXT_COLOR_OPTIONS.map((option) => <option key={option.label} value={option.value}>{option.label}</option>)}
+        </select>
+        <select
+          value={selectedFillColor === 'mixed' ? '' : selectedFillColor}
+          aria-label="Cor de preenchimento"
+          disabled={!selectedCount || !canEdit || !!busy}
+          onChange={(event) => setFillColor(event.target.value)}
+        >
+          {FILL_COLOR_OPTIONS.map((option) => <option key={option.label} value={option.value}>{option.label}</option>)}
+        </select>
         <span aria-hidden="true" />
         <button type="button" data-active={selectedAlign === 'left' || undefined} onClick={() => setTextAlign('left')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Alinhar à esquerda">≡</button>
         <button type="button" data-active={selectedAlign === 'center' || undefined} onClick={() => setTextAlign('center')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Centralizar">≣</button>
@@ -2542,6 +2682,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             onCellChange={setCellDraft}
             onCellCommit={commitCell}
             onFormulaDraftChange={setFormulaValue}
+            onEditorSelectionChange={setActiveTextSelection}
             onNavigateCell={navigateCell}
             onJumpCell={jumpCell}
             onContextMenu={openContextMenu}
