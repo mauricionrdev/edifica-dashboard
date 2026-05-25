@@ -37,22 +37,6 @@ const FILL_COLOR_OPTIONS = [
   { value: 'var(--info-soft)', label: 'Azul suave' },
 ];
 
-
-const FONT_FAMILY_OPTIONS = [
-  { value: '', label: 'Padrão' },
-  { value: 'sans', label: 'Sans' },
-  { value: 'mono', label: 'Mono' },
-];
-
-const ZOOM_OPTIONS = [
-  { value: '0.75', label: '75%' },
-  { value: '0.9', label: '90%' },
-  { value: '1', label: '100%' },
-  { value: '1.1', label: '110%' },
-  { value: '1.25', label: '125%' },
-  { value: '1.5', label: '150%' },
-];
-
 const INLINE_TEXT_STYLE_KEYS = new Set(['bold', 'italic', 'underline', 'strikeThrough', 'color']);
 
 const FORMULA_LIBRARY = [
@@ -706,42 +690,6 @@ function serializeCellsToTsv(rows = [], columns = [], bounds) {
   return lines.join('\n');
 }
 
-
-function cloneStyleForClipboard(style = {}) {
-  if (!style || typeof style !== 'object' || Array.isArray(style)) return {};
-  return JSON.parse(JSON.stringify(style));
-}
-
-function serializeSelectionForClipboard(rows = [], columns = [], bounds) {
-  if (!bounds) return null;
-  const values = [];
-  const styles = [];
-  const lines = [];
-  for (let rowIndex = bounds.startRow; rowIndex <= bounds.endRow; rowIndex += 1) {
-    const row = rows[rowIndex];
-    const valueLine = [];
-    const styleLine = [];
-    const textLine = [];
-    for (let columnIndex = bounds.startColumn; columnIndex <= bounds.endColumn; columnIndex += 1) {
-      const column = columns[columnIndex];
-      const value = sanitizeCellValue(row?.[column?.key] || '');
-      valueLine.push(value);
-      styleLine.push(cloneStyleForClipboard(getCellStyle(row, column?.key)));
-      textLine.push(value);
-    }
-    values.push(valueLine);
-    styles.push(styleLine);
-    lines.push(textLine.join('\t'));
-  }
-  return {
-    text: lines.join('\n'),
-    values,
-    styles,
-    rowCount: values.length,
-    columnCount: values[0]?.length || 0,
-  };
-}
-
 function mergeCellStyle(currentStyle = {}, patch = {}) {
   const next = { ...currentStyle, ...patch };
   Object.keys(next).forEach((key) => {
@@ -866,8 +814,6 @@ function SheetContextMenu({
   onCopy,
   onCut,
   onPaste,
-  onPasteValues,
-  onPasteFormatting,
   onSelectAll,
   onSelectUsedRange,
   onSelectRow,
@@ -962,8 +908,6 @@ function SheetContextMenu({
           <Item icon="✂" label="Recortar" shortcut="Ctrl X" onClick={onCut} disabled={!canEdit} />
           <Item icon="⧉" label="Copiar" shortcut="Ctrl C" onClick={onCopy} />
           <Item icon="▣" label="Colar" shortcut="Ctrl V" onClick={onPaste} disabled={!canEdit} />
-          <Item icon="123" label="Colar somente valores" onClick={onPasteValues} disabled={!canEdit} />
-          <Item icon="▧" label="Colar somente formatação" onClick={onPasteFormatting} disabled={!canEdit} />
         </Section>
 
         {isCell ? (
@@ -1104,14 +1048,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [replaceScope, setReplaceScope] = useState('selection');
   const [replaceMatchCase, setReplaceMatchCase] = useState(false);
   const [replaceBarOpen, setReplaceBarOpen] = useState(false);
-  const [sheetZoom, setSheetZoom] = useState('1');
   const [activeTextSelection, setActiveTextSelection] = useState(null);
   const fileInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const replaceInputRef = useRef(null);
   const formulaInputRef = useRef(null);
   const draftRef = useRef(new Map());
-  const internalClipboardRef = useRef(null);
   const formulaReferenceBaseRef = useRef('');
 
   const viewRows = useMemo(() => {
@@ -1175,12 +1117,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!selectedCells.length) return 'normal';
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontSize || 'normal';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontSize || 'normal') === first) ? first : 'mixed';
-  }, [selectedCells]);
-
-  const selectedFontFamily = useMemo(() => {
-    if (!selectedCells.length) return '';
-    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontFamily || '';
-    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontFamily || '') === first) ? first : 'mixed';
   }, [selectedCells]);
 
   const selectedVerticalAlign = useMemo(() => {
@@ -1554,10 +1490,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     applyStyleToSelection({ fontSize }).catch(() => {});
   }, [applyStyleToSelection]);
 
-  const setFontFamily = useCallback((fontFamily) => {
-    applyStyleToSelection({ fontFamily }).catch(() => {});
-  }, [applyStyleToSelection]);
-
   const setVerticalAlign = useCallback((verticalAlign) => {
     applyStyleToSelection({ verticalAlign }).catch(() => {});
   }, [applyStyleToSelection]);
@@ -1598,7 +1530,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, []);
 
   const clearSelectionFormatting = useCallback(() => {
-    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', fontFamily: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
+    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '', color: '', backgroundColor: '', richText: [] }).catch(() => {});
   }, [applyStyleToSelection]);
 
   const applyValueToSelection = useCallback(async () => {
@@ -2045,35 +1977,29 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeCell?.rowId, activeColumn, activeSheetId, canMutateSheet, columns, loadSheet, markSync, notifyError, ownerUserId, persistColumnOrder, rows]);
 
-  const clearSelectionValues = useCallback(async (options = {}) => {
+  const clearSelectionValues = useCallback(async () => {
     if (!canEdit || !selectedCells.length) return;
-    const clearStyles = Boolean(options.clearStyles);
     const updatesByRow = new Map();
     const optimistic = rows.map((row) => {
       const targetCells = selectedCells.filter((cell) => cell.row.id === row.id);
       if (!targetCells.length) return row;
-      const next = { ...row, __styles: { ...(row.__styles || {}) } };
+      const next = { ...row };
       const patch = {};
-      const stylePatch = {};
       targetCells.forEach(({ column }) => {
         next[column.key] = '';
         patch[column.key] = '';
-        if (clearStyles) {
-          next.__styles[column.key] = {};
-          stylePatch[column.key] = {};
-        }
       });
-      updatesByRow.set(row.id, Object.keys(stylePatch).length ? { ...patch, styles: stylePatch } : patch);
+      updatesByRow.set(row.id, patch);
       return next;
     });
     setRows(optimistic);
-    markSync('saving', clearStyles ? 'Recortando seleção' : 'Limpando conteúdo');
-    setBusy(clearStyles ? 'cut-values' : 'clear-values');
+    markSync('saving', 'Limpando conteúdo');
+    setBusy('clear-values');
     try {
       await Promise.all([...updatesByRow.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
-      markSync('saved', clearStyles ? 'Seleção recortada' : 'Conteúdo limpo');
+      markSync('saved', 'Conteúdo limpo');
     } catch (error) {
-      notifyError(error, clearStyles ? 'Não foi possível recortar a seleção.' : 'Não foi possível limpar o conteúdo.');
+      notifyError(error, 'Não foi possível limpar o conteúdo.');
       loadSheet(activeSheetId).catch(() => {});
     } finally {
       setBusy('');
@@ -2146,21 +2072,11 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   }, [viewRows]);
 
   const copySelection = useCallback(async () => {
-    const clipboardPayload = selectionBounds
-      ? serializeSelectionForClipboard(viewRows, columns, selectionBounds)
-      : null;
-    const text = clipboardPayload?.text || activeCellText(activeCell, rows);
+    const text = serializeCellsToTsv(viewRows, columns, selectionBounds) || activeCellText(activeCell, rows);
     if (!text) return;
-    internalClipboardRef.current = clipboardPayload || {
-      text,
-      values: [[text]],
-      styles: [[cloneStyleForClipboard(getCellStyle(rows.find((row) => row.id === activeCell?.rowId), activeCell?.key))]],
-      rowCount: 1,
-      columnCount: 1,
-    };
     try {
       await navigator.clipboard.writeText(text);
-      markSync('saved', selectedCount > 1 ? 'Intervalo copiado com formatação' : 'Célula copiada com formatação');
+      markSync('saved', selectedCount > 1 ? 'Intervalo copiado' : 'Célula copiada');
     } catch (error) {
       notifyError(error, 'Não foi possível copiar a seleção.');
     }
@@ -2169,7 +2085,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const cutSelection = useCallback(async () => {
     if (!canEdit || !selectedCells.length) return;
     await copySelection();
-    await clearSelectionValues({ clearStyles: true });
+    await clearSelectionValues();
   }, [canEdit, clearSelectionValues, copySelection, selectedCells.length]);
 
   const transformSelectionText = useCallback(async (mode) => {
@@ -2454,16 +2370,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     return { nextRows, nextColumns };
   }, [activeSheetId, columns, createColumnSilently, createRowSilently, ownerUserId, rows]);
 
-  const pasteTable = useCallback(async (startRowId, startKey, text, options = {}) => {
+  const pasteTable = useCallback(async (startRowId, startKey, text) => {
     if (!canEdit || !activeSheetId) return;
-    const pasteMode = options.mode || 'all';
     const table = parseClipboardTable(text).slice(0, MAX_IMPORT_ROWS);
     if (!table.length) return;
-    const clipboardStyles = Array.isArray(options.styles)
-      ? options.styles
-      : internalClipboardRef.current?.text === text
-        ? internalClipboardRef.current.styles
-        : null;
     const startRowIndex = rows.findIndex((row) => row.id === startRowId);
     const startColumnIndex = columns.findIndex((column) => column.key === startKey);
     if (startRowIndex < 0 || startColumnIndex < 0) return;
@@ -2478,31 +2388,20 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       const optimistic = nextRows.map((row, rowIndex) => {
         const sourceRow = table[rowIndex - startRowIndex];
         if (!sourceRow) return row;
-        const next = { ...row, __styles: { ...(row.__styles || {}) } };
+        const next = { ...row };
         sourceRow.forEach((cell, offset) => {
           const column = nextColumns[startColumnIndex + offset];
           if (!column) return;
+          next[column.key] = cell;
           const patch = rowPatches.get(row.id) || {};
-          const sourceStyle = clipboardStyles?.[rowIndex - startRowIndex]?.[offset];
-
-          if (pasteMode !== 'formats') {
-            next[column.key] = cell;
-            patch[column.key] = cell;
-          }
-
-          if (pasteMode !== 'values' && sourceStyle) {
-            const nextStyle = cloneStyleForClipboard(sourceStyle);
-            next.__styles[column.key] = nextStyle;
-            patch.styles = { ...(patch.styles || {}), [column.key]: nextStyle };
-          }
-
-          if (Object.keys(patch).length) rowPatches.set(row.id, patch);
+          patch[column.key] = cell;
+          rowPatches.set(row.id, patch);
         });
         return next;
       });
       setRows(normalizeRows(optimistic, nextColumns));
       await Promise.all([...rowPatches.entries()].map(([rowId, patch]) => updateSupportDailyRow(rowId, patch)));
-      markSync('saved', pasteMode === 'formats' ? 'Formatação colada' : pasteMode === 'values' ? 'Valores colados' : 'Dados colados com formatação');
+      markSync('saved', 'Dados colados');
     } catch (error) {
       notifyError(error, 'Não foi possível colar os dados.');
       loadSheet(activeSheetId).catch(() => {});
@@ -2511,23 +2410,16 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeSheetId, canEdit, columns, ensureGridSize, loadSheet, markSync, notifyError, rows]);
 
-  const pasteClipboardAtActive = useCallback(async (mode = 'all') => {
-    if (!canEdit || !activeCell?.rowId || !activeCell?.key) return;
+  const pasteClipboardAtActive = useCallback(async () => {
+    if (!canEdit || !activeCell?.rowId || !activeCell?.key || !navigator.clipboard?.readText) return;
     try {
-      const text = navigator.clipboard?.readText ? await navigator.clipboard.readText() : internalClipboardRef.current?.text || '';
-      const internalClipboard = internalClipboardRef.current;
-      const effectiveText = text || internalClipboard?.text || '';
-      if (!effectiveText) return;
-      const styles = internalClipboard?.text === effectiveText ? internalClipboard.styles : null;
-      if (mode === 'formats' && !styles) {
-        markSync('saved', 'Nenhuma formatação interna copiada');
-        return;
-      }
-      await pasteTable(activeCell.rowId, activeCell.key, effectiveText, { styles, mode });
+      const text = await navigator.clipboard.readText();
+      if (!text) return;
+      await pasteTable(activeCell.rowId, activeCell.key, text);
     } catch (error) {
       notifyError(error, 'Não foi possível ler a área de transferência.');
     }
-  }, [activeCell?.key, activeCell?.rowId, canEdit, markSync, notifyError, pasteTable]);
+  }, [activeCell?.key, activeCell?.rowId, canEdit, notifyError, pasteTable]);
 
   const exportCsv = useCallback(() => {
     if (!activeSheet) return;
@@ -2751,18 +2643,12 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <div className={styles.sheetsToolbar} aria-label="Barra de ferramentas da planilha">
         <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Pesquisar">⌕</button>
-        <button type="button" onClick={() => { setReplaceBarOpen(true); requestAnimationFrame(() => replaceInputRef.current?.focus({ preventScroll: true })); }} disabled={!activeSheetId} aria-label="Localizar e substituir">Substituir</button>
         <button type="button" onClick={copySelection} disabled={!activeCell} aria-label="Copiar">Copiar</button>
         <button type="button" onClick={cutSelection} disabled={!activeCell || !canEdit || !!busy} aria-label="Recortar">Recortar</button>
         <button type="button" onClick={pasteClipboardAtActive} disabled={!activeCell || !canEdit || !!busy} aria-label="Colar">Colar</button>
         <span aria-hidden="true" />
-        <select
-          aria-label="Zoom da planilha"
-          value={sheetZoom}
-          onChange={(event) => setSheetZoom(event.target.value)}
-          disabled={!activeSheetId || !!busy}
-        >
-          {ZOOM_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        <select aria-label="Zoom da planilha" value="100" disabled>
+          <option value="100">100%</option>
         </select>
         <select
           value={selectedNumberFormat === 'mixed' ? 'text' : selectedNumberFormat}
@@ -2776,13 +2662,8 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <option value="percent">% Percentual</option>
         </select>
         <span aria-hidden="true" />
-        <select
-          aria-label="Fonte"
-          value={selectedFontFamily === 'mixed' ? '' : selectedFontFamily}
-          disabled={!selectedCount || !canEdit || !!busy}
-          onChange={(event) => setFontFamily(event.target.value)}
-        >
-          {FONT_FAMILY_OPTIONS.map((option) => <option key={option.value || 'default'} value={option.value}>{option.label}</option>)}
+        <select aria-label="Fonte" value="Roboto" disabled>
+          <option value="Roboto">Roboto</option>
         </select>
         <button type="button" onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy} aria-label="Diminuir fonte">−</button>
         <select
@@ -2837,36 +2718,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         <button type="button" onClick={focusSearch} disabled={!activeSheetId} aria-label="Criar filtro">Filtro</button>
         <button type="button" onClick={() => insertFormulaTemplate('SOMA')} disabled={!activeCell || !canEdit || !!busy} aria-label="Inserir soma">Σ</button>
       </div>
-
-      {replaceBarOpen ? (
-        <div className={styles.replaceBar} aria-label="Localizar e substituir">
-          <span>Localizar e substituir</span>
-          <input
-            ref={replaceInputRef}
-            value={replaceQuery}
-            placeholder="Localizar"
-            aria-label="Localizar"
-            onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
-          />
-          <input
-            value={replaceValue}
-            placeholder="Substituir por"
-            aria-label="Substituir por"
-            onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
-          />
-          <select value={replaceScope} aria-label="Escopo da substituição" onChange={(event) => setReplaceScope(event.target.value)}>
-            <option value="selection">Seleção</option>
-            <option value="sheet">Planilha inteira</option>
-          </select>
-          <label>
-            <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
-            Diferenciar maiúsculas
-          </label>
-          <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
-          <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
-          <button type="button" onClick={() => setReplaceBarOpen(false)} aria-label="Fechar localizar e substituir">×</button>
-        </div>
-      ) : null}
 
       <div className={styles.filterBar}>
         <span>Filtro</span>
@@ -2996,7 +2847,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             creatingRow={busy === 'row'}
             creatingColumn={busy === 'column'}
             activeSheetId={activeSheetId}
-            zoomScale={Number(sheetZoom) || 1}
             onAddRow={addRow}
             onAddColumn={addColumn}
             onSelectCell={selectCell}
@@ -3028,6 +2878,51 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           </div>
         ) : null}
         </div>
+
+        {replaceBarOpen ? (
+          <div className={styles.replaceBar} role="search" aria-label="Localizar e substituir na planilha">
+            <div className={styles.replaceBarHeader}>
+              <strong>Localizar e substituir</strong>
+              <button type="button" onClick={() => setReplaceBarOpen(false)} aria-label="Fechar localizar e substituir">×</button>
+            </div>
+            <label>
+              <span>Localizar</span>
+              <input
+                ref={replaceInputRef}
+                value={replaceQuery}
+                placeholder="Texto ou valor"
+                onChange={(event) => setReplaceQuery(sanitizeCellValue(event.target.value))}
+              />
+            </label>
+            <label>
+              <span>Substituir por</span>
+              <input
+                value={replaceValue}
+                placeholder="Novo valor"
+                onChange={(event) => setReplaceValue(sanitizeCellValue(event.target.value))}
+              />
+            </label>
+            <label>
+              <span>Escopo</span>
+              <select
+                value={replaceScope}
+                aria-label="Escopo da substituição"
+                onChange={(event) => setReplaceScope(event.target.value)}
+              >
+                <option value="selection">Seleção</option>
+                <option value="sheet">Planilha inteira</option>
+              </select>
+            </label>
+            <label className={styles.replaceCheck}>
+              <input type="checkbox" checked={replaceMatchCase} onChange={(event) => setReplaceMatchCase(event.target.checked)} />
+              <span>Diferenciar maiúsculas</span>
+            </label>
+            <div className={styles.replaceActions}>
+              <button type="button" onClick={findReplaceMatch} disabled={!replaceQuery}>Encontrar</button>
+              <button type="button" onClick={() => replaceTextInScope().catch(() => {})} disabled={!replaceQuery || !canEdit || !!busy}>Substituir</button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <footer className={styles.footer}>
@@ -3041,9 +2936,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onClose={closeContextMenu}
         onCopy={() => { closeContextMenu(); copySelection().catch(() => {}); }}
         onCut={() => { closeContextMenu(); cutSelection().catch(() => {}); }}
-        onPaste={() => { closeContextMenu(); pasteClipboardAtActive('all').catch(() => {}); }}
-        onPasteValues={() => { closeContextMenu(); pasteClipboardAtActive('values').catch(() => {}); }}
-        onPasteFormatting={() => { closeContextMenu(); pasteClipboardAtActive('formats').catch(() => {}); }}
+        onPaste={() => { closeContextMenu(); pasteClipboardAtActive().catch(() => {}); }}
         onSelectAll={() => { closeContextMenu(); selectAllCells(); }}
         onSelectUsedRange={() => { closeContextMenu(); selectUsedRange(); }}
         onSelectRow={() => { closeContextMenu(); activeCell?.rowId && selectRow(activeCell.rowId); }}
