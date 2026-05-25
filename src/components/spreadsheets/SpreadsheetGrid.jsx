@@ -55,6 +55,8 @@ function Cell({
   onCancel,
   onNavigate,
   onContextMenu,
+  onRowContextMenu,
+  onColumnContextMenu,
   onPasteTable,
 }) {
   const ref = useRef(null);
@@ -209,10 +211,13 @@ export default function SpreadsheetGrid({
   onAddColumn,
   onSelectCell,
   onSelectRow,
+  onSelectColumn,
   onCellChange,
   onCellCommit,
   onNavigateCell,
   onContextMenu,
+  onRowContextMenu,
+  onColumnContextMenu,
   onPasteTable,
   onColumnLabelChange,
   onColumnLabelCommit,
@@ -364,6 +369,11 @@ export default function SpreadsheetGrid({
                 data-active={activeCell?.key === column.key || undefined}
                 data-saving={savingColumn === column.key || undefined}
                 style={{ left, width, height: HEADER_HEIGHT }}
+                onClick={(event) => {
+                  if (event.target?.tagName === 'INPUT' || event.target?.className?.includes?.('resizeHandle')) return;
+                  onSelectColumn?.(column.key);
+                }}
+                onContextMenu={(event) => onColumnContextMenu?.(event, column.key)}
               >
                 <input
                   value={column.label}
@@ -392,6 +402,7 @@ export default function SpreadsheetGrid({
               data-active={activeCell?.rowId === row.id || undefined}
               style={{ top, width: INDEX_WIDTH, height: ROW_HEIGHT }}
               onClick={() => onSelectRow(row.id)}
+              onContextMenu={(event) => onRowContextMenu?.(event, row.id)}
             >
               {index + 1}
             </button>

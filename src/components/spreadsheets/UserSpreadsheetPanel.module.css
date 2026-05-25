@@ -458,3 +458,163 @@
   border-top: 1px solid var(--line-subtle);
   background: var(--bg-raised);
 }
+
+.findGroup,
+.filterBar {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.findGroup {
+  justify-content: flex-end;
+  padding: var(--space-1);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-soft);
+}
+
+.findGroup input,
+.filterBar input,
+.filterBar select {
+  height: 28px;
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+  outline: 0;
+}
+
+.findGroup input {
+  width: 150px;
+  padding: 0 var(--space-2);
+}
+
+.findGroup button,
+.filterBar button {
+  height: 26px;
+  min-width: 26px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.findGroup button:hover:not(:disabled),
+.filterBar button:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.findGroup button:disabled,
+.filterBar button:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.findGroup span {
+  min-width: 24px;
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  text-align: center;
+  font-feature-settings: var(--font-features-tabular);
+}
+
+.filterBar {
+  min-height: 38px;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+}
+
+.filterBar > span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.filterBar select {
+  width: 168px;
+  padding: 0 var(--space-2);
+}
+
+.filterBar input {
+  width: min(260px, 100%);
+  padding: 0 var(--space-2);
+}
+
+.filterBar strong {
+  color: var(--text-quaternary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  font-feature-settings: var(--font-features-tabular);
+}
+
+.contextBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dropdown);
+  background: transparent;
+}
+
+.contextMenu {
+  position: fixed;
+  min-width: 216px;
+  overflow: hidden;
+  padding: var(--space-1);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-lg);
+}
+
+.contextMenu button {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.contextMenu button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.contextMenu button[data-danger="true"] {
+  color: var(--danger-text);
+}
+
+.contextMenu button[data-danger="true"]:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+
+.contextMenu button:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.contextMenu span {
+  display: block;
+  height: 1px;
+  margin: var(--space-1) 0;
+  background: var(--line-subtle);
+}

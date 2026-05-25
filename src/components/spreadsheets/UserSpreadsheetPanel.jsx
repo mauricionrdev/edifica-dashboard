@@ -275,6 +275,34 @@ function ConfirmDeleteDialog({ confirmation, busy, onCancel, onConfirm }) {
   );
 }
 
+
+function SheetContextMenu({ menu, canEdit, onClose, onCopy, onAddRow, onAddColumn, onDeleteRow, onDeleteColumn, onBold, onItalic, onClearFormatting }) {
+  if (!menu) return null;
+  return (
+    <div className={styles.contextBackdrop} role="presentation" onMouseDown={onClose} onContextMenu={(event) => event.preventDefault()}>
+      <section
+        className={styles.contextMenu}
+        role="menu"
+        aria-label="Ações da planilha"
+        style={{ left: menu.x, top: menu.y }}
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <button type="button" role="menuitem" onClick={onCopy}>Copiar seleção</button>
+        <span aria-hidden="true" />
+        <button type="button" role="menuitem" onClick={onBold} disabled={!canEdit}>Negrito</button>
+        <button type="button" role="menuitem" onClick={onItalic} disabled={!canEdit}>Itálico</button>
+        <button type="button" role="menuitem" onClick={onClearFormatting} disabled={!canEdit}>Limpar formatação</button>
+        <span aria-hidden="true" />
+        <button type="button" role="menuitem" onClick={onAddRow} disabled={!canEdit}>Inserir linha abaixo</button>
+        <button type="button" role="menuitem" onClick={onAddColumn} disabled={!canEdit}>Inserir coluna à direita</button>
+        <span aria-hidden="true" />
+        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteRow} disabled={!canEdit}>Excluir linha</button>
+        <button type="button" role="menuitem" data-danger="true" onClick={onDeleteColumn} disabled={!canEdit}>Excluir coluna</button>
+      </section>
+    </div>
+  );
+}
+
 export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, showToast }) {
   const [sheets, setSheets] = useState([]);
   const [activeSheetId, setActiveSheetId] = useState('');
@@ -292,11 +320,38 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
   const [scrollState, setScrollState] = useState({});
   const [syncState, setSyncState] = useState({ status: 'idle', detail: 'Pronto' });
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterColumnKey, setFilterColumnKey] = useState('all');
+  const [filterQuery, setFilterQuery] = useState('');
   const fileInputRef = useRef(null);
   const draftRef = useRef(new Map());
 
-  const selectionBounds = useMemo(() => normalizeSelectionRange(selectionAnchor || activeCell, selectionFocus || activeCell, rows, columns), [activeCell, columns, rows, selectionAnchor, selectionFocus]);
-  const selectedCells = useMemo(() => buildSelectedCells(rows, columns, selectionBounds), [columns, rows, selectionBounds]);
+  const viewRows = useMemo(() => {
+    const query = sanitizeCellValue(filterQuery).toLowerCase();
+    if (!query) return rows;
+    return rows.filter((row) => {
+      const keys = filterColumnKey === 'all' ? columns.map((column) => column.key) : [filterColumnKey];
+      return keys.some((key) => sanitizeCellValue(row?.[key] || '').toLowerCase().includes(query));
+    });
+  }, [columns, filterColumnKey, filterQuery, rows]);
+
+  const searchMatches = useMemo(() => {
+    const query = sanitizeCellValue(searchQuery).toLowerCase();
+    if (!query) return [];
+    const matches = [];
+    viewRows.forEach((row) => {
+      columns.forEach((column) => {
+        if (sanitizeCellValue(row?.[column.key] || '').toLowerCase().includes(query)) {
+          matches.push({ rowId: row.id, key: column.key });
+        }
+      });
+    });
+    return matches;
+  }, [columns, searchQuery, viewRows]);
+
+  const selectionBounds = useMemo(() => normalizeSelectionRange(selectionAnchor || activeCell, selectionFocus || activeCell, viewRows, columns), [activeCell, columns, viewRows, selectionAnchor, selectionFocus]);
+  const selectedCells = useMemo(() => buildSelectedCells(viewRows, columns, selectionBounds), [columns, viewRows, selectionBounds]);
   const selectedCellIds = useMemo(() => new Set(selectedCells.map((cell) => cell.id)), [selectedCells]);
   const selectedCount = selectedCells.length || (activeCell ? 1 : 0);
   const selectedHasBold = useMemo(() => sameStyleValue(selectedCells, 'bold', true), [selectedCells]);
@@ -342,6 +397,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     action();
   }, [deleteConfirmation]);
 
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
   const loadSheet = useCallback(async (sheetId) => {
     if (!ownerUserId) return;
     setLoading(true);
@@ -357,6 +416,10 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
       setSelectionAnchor(null);
       setSelectionFocus(null);
       setFormulaValue('');
+      setContextMenu(null);
+      setSearchQuery('');
+      setFilterQuery('');
+      setFilterColumnKey('all');
       markSync('saved', 'Planilha carregada');
     } catch (error) {
       notifyError(error, 'Não foi possível carregar as planilhas.');
@@ -388,6 +451,16 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setSelectionAnchor(nextCell);
     setSelectionFocus({ rowId, key: columns[columns.length - 1]?.key || firstColumn.key });
   }, [columns]);
+
+  const selectColumn = useCallback((key) => {
+    if (!viewRows.length) return;
+    const firstRow = viewRows[0];
+    const lastRow = viewRows[viewRows.length - 1];
+    const nextCell = { rowId: firstRow.id, key };
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus({ rowId: lastRow.id, key });
+  }, [viewRows]);
 
   const navigateCell = useCallback((rowId, key, rowDelta = 0, columnDelta = 0) => {
     const rowIndex = rows.findIndex((row) => row.id === rowId);
@@ -828,12 +901,25 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     event.preventDefault();
     const nextCell = { rowId, key };
     setActiveCell(nextCell);
-    setSelectionAnchor(nextCell);
-    setSelectionFocus(nextCell);
+    setSelectionAnchor((current) => current || nextCell);
+    setSelectionFocus((current) => current || nextCell);
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'cell' });
   }, []);
 
+  const openRowContextMenu = useCallback((event, rowId) => {
+    event.preventDefault();
+    selectRow(rowId);
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'row' });
+  }, [selectRow]);
+
+  const openColumnContextMenu = useCallback((event, key) => {
+    event.preventDefault();
+    selectColumn(key);
+    setContextMenu({ x: event.clientX, y: event.clientY, scope: 'column' });
+  }, [selectColumn]);
+
   const copySelection = useCallback(async () => {
-    const text = serializeCellsToTsv(rows, columns, selectionBounds) || activeCellText(activeCell, rows);
+    const text = serializeCellsToTsv(viewRows, columns, selectionBounds) || activeCellText(activeCell, rows);
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
@@ -841,7 +927,17 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     } catch (error) {
       notifyError(error, 'Não foi possível copiar a seleção.');
     }
-  }, [activeCell, columns, markSync, notifyError, rows, selectedCount, selectionBounds]);
+  }, [activeCell, columns, markSync, notifyError, rows, selectedCount, selectionBounds, viewRows]);
+
+  const goToSearchMatch = useCallback((direction = 1) => {
+    if (!searchMatches.length) return;
+    const currentIndex = searchMatches.findIndex((match) => match.rowId === activeCell?.rowId && match.key === activeCell?.key);
+    const nextIndex = currentIndex < 0 ? 0 : (currentIndex + direction + searchMatches.length) % searchMatches.length;
+    const nextCell = searchMatches[nextIndex];
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus(nextCell);
+  }, [activeCell?.key, activeCell?.rowId, searchMatches]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -940,10 +1036,43 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
           <button type="button" data-active={selectedAlign === 'right' || undefined} onClick={() => setTextAlign('right')} disabled={!selectedCount || !canEdit || !!busy}>D</button>
           <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar</button>
         </div>
+        <div className={styles.findGroup}>
+          <input
+            value={searchQuery}
+            aria-label="Buscar na planilha"
+            placeholder="Buscar"
+            onChange={(event) => setSearchQuery(sanitizeCellValue(event.target.value))}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                goToSearchMatch(event.shiftKey ? -1 : 1);
+              }
+            }}
+          />
+          <button type="button" onClick={() => goToSearchMatch(-1)} disabled={!searchMatches.length}>↑</button>
+          <button type="button" onClick={() => goToSearchMatch(1)} disabled={!searchMatches.length}>↓</button>
+          <span>{searchQuery ? `${searchMatches.length}` : '0'}</span>
+        </div>
         <div className={styles.toolbarGroup}>
           <Button size="xs" variant="ghost" onClick={deleteRow} disabled={!activeRow || !canEdit || !!busy}><TrashIcon size={13} /> Linha</Button>
           <Button size="xs" variant="ghost" onClick={deleteColumn} disabled={!activeColumn || !canEdit || !!busy}><TrashIcon size={13} /> Coluna</Button>
         </div>
+      </div>
+
+      <div className={styles.filterBar}>
+        <span>Filtro</span>
+        <select value={filterColumnKey} onChange={(event) => setFilterColumnKey(event.target.value)} aria-label="Coluna do filtro">
+          <option value="all">Todas as colunas</option>
+          {columns.map((column, index) => <option key={column.key} value={column.key}>{column.label || columnName(index)}</option>)}
+        </select>
+        <input
+          value={filterQuery}
+          aria-label="Texto do filtro"
+          placeholder="Filtrar linhas"
+          onChange={(event) => setFilterQuery(sanitizeCellValue(event.target.value))}
+        />
+        {filterQuery ? <button type="button" onClick={() => setFilterQuery('')}>Limpar</button> : null}
+        <strong>{filterQuery ? `${viewRows.length}/${rows.length}` : `${rows.length}`}</strong>
       </div>
 
       <div className={styles.controlBar}>
@@ -980,7 +1109,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         {!loading && activeSheetId ? (
           <SpreadsheetGrid
             columns={columns}
-            rows={rows}
+            rows={viewRows}
             rowsLoading={loading}
             activeCell={activeCell}
             selectedCellIds={selectedCellIds}
@@ -997,10 +1126,13 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             onAddColumn={addColumn}
             onSelectCell={selectCell}
             onSelectRow={selectRow}
+            onSelectColumn={selectColumn}
             onCellChange={setCellDraft}
             onCellCommit={commitCell}
             onNavigateCell={navigateCell}
             onContextMenu={openContextMenu}
+            onRowContextMenu={openRowContextMenu}
+            onColumnContextMenu={openColumnContextMenu}
             onPasteTable={pasteTable}
             onColumnLabelChange={changeColumnLabel}
             onColumnLabelCommit={commitColumnLabel}
@@ -1018,8 +1150,22 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
 
       <footer className={styles.footer}>
         <span data-status={syncState.status}><SaveIcon size={13} /> {syncState.detail}</span>
-        <span>{selectedCount > 1 ? `${selectedCount} células selecionadas · ` : ''}{rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
+        <span>{selectedCount > 1 ? `${selectedCount} células selecionadas · ` : ''}{filterQuery ? `${viewRows.length}/${rows.length}` : rows.length} linha{rows.length === 1 ? '' : 's'} · {columns.length} coluna{columns.length === 1 ? '' : 's'}</span>
       </footer>
+
+      <SheetContextMenu
+        menu={contextMenu}
+        canEdit={canEdit && !busy}
+        onClose={closeContextMenu}
+        onCopy={() => { closeContextMenu(); copySelection().catch(() => {}); }}
+        onAddRow={() => { closeContextMenu(); addRow().catch(() => {}); }}
+        onAddColumn={() => { closeContextMenu(); addColumn().catch(() => {}); }}
+        onDeleteRow={() => { closeContextMenu(); deleteRow(); }}
+        onDeleteColumn={() => { closeContextMenu(); deleteColumn(); }}
+        onBold={() => { closeContextMenu(); toggleStyle('bold'); }}
+        onItalic={() => { closeContextMenu(); toggleStyle('italic'); }}
+        onClearFormatting={() => { closeContextMenu(); clearSelectionFormatting(); }}
+      />
 
       <ConfirmDeleteDialog
         confirmation={deleteConfirmation}
