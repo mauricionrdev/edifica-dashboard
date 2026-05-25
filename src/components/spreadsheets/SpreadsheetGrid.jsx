@@ -42,53 +42,59 @@ function resolveVerticalAlign(value = '') {
   return undefined;
 }
 
-function normalizeRichRuns(style = {}, textLength = 0) {
-  const runs = Array.isArray(style.richText) ? style.richText : [];
+
+function resolveTextDecoration(style = {}) {
+  return [style.underline ? 'underline' : '', style.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined;
+}
+
+function normalizeRichTextRuns(runs = [], length = 0) {
+  if (!Array.isArray(runs) || length <= 0) return [];
   return runs
     .map((run) => ({
       ...run,
-      start: clamp(Number(run.start || 0), 0, textLength),
-      end: clamp(Number(run.end || 0), 0, textLength),
+      start: Math.max(0, Math.min(length, Number(run.start) || 0)),
+      end: Math.max(0, Math.min(length, Number(run.end) || 0)),
     }))
     .filter((run) => run.end > run.start);
 }
 
-function getRunStyle(runs = [], start = 0, end = 0) {
-  return runs.reduce((acc, run) => {
-    if (run.start < end && run.end > start) return { ...acc, ...run };
-    return acc;
-  }, {});
+function buildRichTextSegments(value = '', runs = []) {
+  const text = String(value ?? '');
+  const normalizedRuns = normalizeRichTextRuns(runs, text.length);
+  if (!normalizedRuns.length) return [{ text, style: {} }];
+  const points = new Set([0, text.length]);
+  normalizedRuns.forEach((run) => { points.add(run.start); points.add(run.end); });
+  const sorted = [...points].sort((a, b) => a - b);
+  return sorted.slice(0, -1).map((start, index) => {
+    const end = sorted[index + 1];
+    const style = normalizedRuns.reduce((acc, run) => {
+      if (run.start <= start && run.end >= end) {
+        ['bold', 'italic', 'underline', 'strikeThrough', 'color'].forEach((key) => {
+          if (run[key] !== undefined) acc[key] = run[key];
+        });
+      }
+      return acc;
+    }, {});
+    return { text: text.slice(start, end), style };
+  }).filter((segment) => segment.text);
 }
 
-function renderRichText(text = '', style = {}) {
-  const value = String(text ?? '');
-  const runs = normalizeRichRuns(style, value.length);
-  if (!runs.length) return value;
-  const boundaries = new Set([0, value.length]);
-  runs.forEach((run) => {
-    boundaries.add(run.start);
-    boundaries.add(run.end);
-  });
-  const points = [...boundaries].sort((a, b) => a - b);
-  return points.slice(0, -1).map((start, index) => {
-    const end = points[index + 1];
-    const content = value.slice(start, end);
-    if (!content) return null;
-    const runStyle = getRunStyle(runs, start, end);
-    return (
-      <span
-        key={`${start}-${end}`}
-        style={{
-          color: runStyle.color || undefined,
-          fontWeight: runStyle.bold ? 700 : undefined,
-          fontStyle: runStyle.italic ? 'italic' : undefined,
-          textDecoration: [runStyle.underline ? 'underline' : '', runStyle.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined,
-        }}
-      >
-        {content}
-      </span>
-    );
-  });
+function renderRichCellValue(value = '', style = {}) {
+  const segments = buildRichTextSegments(value, style.richText || []);
+  if (segments.length === 1 && !Object.keys(segments[0].style || {}).length) return value;
+  return segments.map((segment, index) => (
+    <span
+      key={`${index}-${segment.text}`}
+      style={{
+        color: segment.style.color || undefined,
+        fontWeight: segment.style.bold ? 700 : undefined,
+        fontStyle: segment.style.italic ? 'italic' : undefined,
+        textDecoration: resolveTextDecoration(segment.style),
+      }}
+    >
+      {segment.text}
+    </span>
+  ));
 }
 
 function clamp(value, min, max) {
@@ -123,9 +129,9 @@ function Cell({
   onRowContextMenu,
   onColumnContextMenu,
   onPasteTable,
-  onEditorSelectionChange,
   onDragSelectionStart,
   onDragSelectionMove,
+  onEditorSelectionChange,
 }) {
   const ref = useRef(null);
   const editorRef = useRef(null);
@@ -143,27 +149,13 @@ function Cell({
     if (!editing || !editorRef.current) return;
     editorRef.current.focus({ preventScroll: true });
     editorRef.current.select();
-    onEditorSelectionChange?.({ rowId: row.id, key: column.key, start: 0, end: String(editValue || '').length, value: editValue || '' });
-  }, [column.key, editValue, editing, onEditorSelectionChange, row.id]);
-
-  const reportEditorSelection = () => {
-    const editor = editorRef.current;
-    if (!editor) return;
-    onEditorSelectionChange?.({
-      rowId: row.id,
-      key: column.key,
-      start: Number(editor.selectionStart || 0),
-      end: Number(editor.selectionEnd || 0),
-      value: editor.value,
-    });
-  };
+  }, [editing]);
 
   const handleKeyDown = (event) => {
     if (editing) {
       if (event.key === 'Escape') {
         event.preventDefault();
         onCancel();
-        onEditorSelectionChange?.(null);
         ref.current?.focus({ preventScroll: true });
         return;
       }
@@ -251,7 +243,7 @@ function Cell({
         backgroundColor: style.backgroundColor || undefined,
         fontWeight: style.bold || style.fontWeight ? style.fontWeight || 700 : undefined,
         fontStyle: style.italic || style.fontStyle ? style.fontStyle || 'italic' : undefined,
-        textDecoration: style.textDecoration || [style.underline ? 'underline' : '', style.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined,
+        textDecoration: style.textDecoration || resolveTextDecoration(style),
         textAlign: style.textAlign || undefined,
         fontSize: resolveCellFontSize(style.fontSize),
         alignItems: resolveVerticalAlign(style.verticalAlign),
@@ -274,7 +266,7 @@ function Cell({
         }
       }}
     >
-      {!editing ? <span className={styles.cellValue}>{renderRichText(displayValue, style)}</span> : null}
+      {!editing ? <span className={styles.cellValue}>{renderRichCellValue(displayValue, displayValue === rawValue ? style : {})}</span> : null}
       {editing ? (
         <textarea
           ref={editorRef}
@@ -282,17 +274,11 @@ function Cell({
           value={editValue}
           rows={1}
           spellCheck={false}
-          onChange={(event) => {
-            onEditChange(event.target.value);
-            window.requestAnimationFrame(reportEditorSelection);
-          }}
-          onSelect={reportEditorSelection}
-          onMouseUp={reportEditorSelection}
-          onKeyUp={reportEditorSelection}
-          onBlur={() => {
-            onEditorSelectionChange?.(null);
-            onCommit(row.id, column.key, 0, 0, false);
-          }}
+          onChange={(event) => onEditChange(event.target.value)}
+          onSelect={(event) => onEditorSelectionChange?.({ rowId: row.id, key: column.key, start: event.currentTarget.selectionStart, end: event.currentTarget.selectionEnd })}
+          onMouseUp={(event) => onEditorSelectionChange?.({ rowId: row.id, key: column.key, start: event.currentTarget.selectionStart, end: event.currentTarget.selectionEnd })}
+          onKeyUp={(event) => onEditorSelectionChange?.({ rowId: row.id, key: column.key, start: event.currentTarget.selectionStart, end: event.currentTarget.selectionEnd })}
+          onBlur={() => onCommit(row.id, column.key, 0, 0, false)}
           onKeyDown={handleKeyDown}
           onPaste={(event) => {
             const text = event.clipboardData?.getData('text/plain') || '';
@@ -335,7 +321,6 @@ export default function SpreadsheetGrid({
   onCellChange,
   onCellCommit,
   onFormulaDraftChange,
-  onEditorSelectionChange,
   onNavigateCell,
   onJumpCell,
   onContextMenu,
@@ -347,6 +332,7 @@ export default function SpreadsheetGrid({
   onResizeStart,
   onScrollStateChange,
   onAutoFillSelection,
+  onEditorSelectionChange,
 }) {
   const scrollerRef = useRef(null);
   const frameRef = useRef(null);
@@ -515,17 +501,20 @@ export default function SpreadsheetGrid({
     setEditingCell({ rowId, key });
     setEditingValue(nextValue);
     onFormulaDraftChange?.(nextValue);
-  }, [canEdit, onFormulaDraftChange, rows]);
+    onEditorSelectionChange?.({ rowId, key, start: 0, end: nextValue.length });
+  }, [canEdit, onEditorSelectionChange, onFormulaDraftChange, rows]);
 
   const cancelEdit = useCallback(() => {
     setEditingCell(null);
     setEditingValue('');
-  }, []);
+    onEditorSelectionChange?.(null);
+  }, [onEditorSelectionChange]);
 
   const commitEdit = useCallback(async (rowId, key, rowDelta = 0, columnDelta = 0, navigateAfter = true) => {
     onCellChange(rowId, key, editingValue);
     setEditingCell(null);
     setEditingValue('');
+    onEditorSelectionChange?.(null);
     await onCellCommit(rowId, key);
     if (navigateAfter && (rowDelta || columnDelta)) onNavigateCell(rowId, key, rowDelta, columnDelta);
   }, [editingValue, onCellChange, onCellCommit, onNavigateCell]);
@@ -659,37 +648,9 @@ export default function SpreadsheetGrid({
     return { top, left: startMetric.left, width: endMetric.left + endMetric.width - startMetric.left, height };
   }, [columnMetrics, selectionBounds]);
 
-  const handleGridContextMenuCapture = useCallback((event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-
-    const rowHeader = target.closest('[data-row-header="true"]');
-    if (rowHeader?.dataset?.rowId) {
-      event.preventDefault();
-      event.stopPropagation();
-      onRowContextMenu?.(event, rowHeader.dataset.rowId);
-      return;
-    }
-
-    const columnHeader = target.closest('[data-column-header="true"]');
-    if (columnHeader?.dataset?.columnKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      onColumnContextMenu?.(event, columnHeader.dataset.columnKey);
-      return;
-    }
-
-    const cell = target.closest('[data-cell-id]');
-    if (cell?.dataset?.rowId && cell?.dataset?.columnKey) {
-      event.preventDefault();
-      event.stopPropagation();
-      onContextMenu?.(event, cell.dataset.rowId, cell.dataset.columnKey);
-    }
-  }, [onColumnContextMenu, onContextMenu, onRowContextMenu]);
-
   return (
     <div ref={frameRef} className={styles.frame}>
-      <div ref={scrollerRef} className={styles.scroller} data-scrolled-x={viewport.left > 2 || undefined} data-scrolled-y={viewport.top > 2 || undefined} onContextMenuCapture={handleGridContextMenuCapture}>
+      <div ref={scrollerRef} className={styles.scroller} data-scrolled-x={viewport.left > 2 || undefined} data-scrolled-y={viewport.top > 2 || undefined}>
         <div className={styles.canvas} style={{ width: totalWidth, height: Math.max(totalHeight, viewport.height) }}>
           <div className={styles.header} style={{ width: totalWidth, height: HEADER_HEIGHT }}>
             <div className={styles.corner} style={{ left: viewport.left, width: INDEX_WIDTH, height: HEADER_HEIGHT }} />
@@ -697,8 +658,6 @@ export default function SpreadsheetGrid({
               <div
                 key={column.key}
                 className={styles.headerCell}
-                data-column-header="true"
-                data-column-key={column.key}
                 data-active={activeCell?.key === column.key || undefined}
                 data-saving={savingColumn === column.key || undefined}
                 style={{ left, width, height: HEADER_HEIGHT }}
@@ -748,8 +707,6 @@ export default function SpreadsheetGrid({
               key={row.id}
               type="button"
               className={styles.rowIndex}
-              data-row-header="true"
-              data-row-id={row.id}
               data-active={activeCell?.rowId === row.id || undefined}
               style={{ left: viewport.left, top, width: INDEX_WIDTH, height: ROW_HEIGHT }}
               onClick={() => onSelectRow(row.id)}
@@ -808,7 +765,6 @@ export default function SpreadsheetGrid({
                   onJump={onJumpCell}
                   onContextMenu={onContextMenu}
                   onPasteTable={onPasteTable}
-                  onEditorSelectionChange={onEditorSelectionChange}
                   onDragSelectionStart={startDragSelection}
                   onDragSelectionMove={moveDragSelection}
                 />
