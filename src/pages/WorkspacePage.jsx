@@ -275,26 +275,104 @@ function ResourceAction({ icon: Icon, title, description, onClick }) {
 }
 
 
+function createDocumentBlock(type = 'text', value = '') {
+  return {
+    id: `block_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    type,
+    value,
+    checked: false,
+  };
+}
+
+function createBlocks(blocks = []) {
+  return blocks.map((block) => ({
+    id: block.id || `block_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    type: block.type || 'text',
+    value: block.value || '',
+    checked: Boolean(block.checked),
+  }));
+}
+
 const DOCUMENT_TEMPLATES = [
   {
     id: 'blank',
     title: 'Página em branco',
-    content: '',
+    blocks: createBlocks([{ type: 'text', value: '' }]),
   },
   {
     id: 'meeting',
     title: 'Reunião',
-    content: '- Decisões\n- Pendências\n- Próximos passos',
+    blocks: createBlocks([
+      { type: 'heading', value: 'Reunião' },
+      { type: 'text', value: 'Decisões' },
+      { type: 'checklist', value: 'Pendência' },
+      { type: 'checklist', value: 'Próximo passo' },
+    ]),
   },
   {
     id: 'process',
     title: 'Processo interno',
-    content: 'Objetivo\n\nEtapas\n- \n\nChecklist\n- [ ] ',
+    blocks: createBlocks([
+      { type: 'heading', value: 'Objetivo' },
+      { type: 'text', value: '' },
+      { type: 'divider', value: '' },
+      { type: 'heading', value: 'Etapas' },
+      { type: 'checklist', value: 'Primeira etapa' },
+      { type: 'checklist', value: 'Validação' },
+    ]),
   },
 ];
 
+function serializeDocumentBlocks(blocks = []) {
+  return JSON.stringify({
+    version: 1,
+    type: 'edifica_workspace_document',
+    blocks: createBlocks(blocks),
+  });
+}
+
+function parseDocumentBlocks(content = '') {
+  const raw = String(content || '').trim();
+  if (!raw) return [createDocumentBlock('text', '')];
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed?.type === 'edifica_workspace_document' && Array.isArray(parsed.blocks)) {
+      return createBlocks(parsed.blocks);
+    }
+  } catch {
+    // conteúdo legado em texto simples
+  }
+
+  const lines = raw.split(/\r?\n/);
+  const blocks = lines.map((line) => {
+    const text = line.trim();
+    if (!text) return createDocumentBlock('text', '');
+    if (/^- \[ \]/.test(text)) return createDocumentBlock('checklist', text.replace(/^- \[ \]\s*/, ''));
+    if (/^- \[x\]/i.test(text)) {
+      const block = createDocumentBlock('checklist', text.replace(/^- \[x\]\s*/i, ''));
+      block.checked = true;
+      return block;
+    }
+    if (/^#{1,3}\s/.test(text)) return createDocumentBlock('heading', text.replace(/^#{1,3}\s*/, ''));
+    if (/^---+$/.test(text)) return createDocumentBlock('divider', '');
+    return createDocumentBlock('text', line);
+  });
+
+  return blocks.length ? blocks : [createDocumentBlock('text', '')];
+}
+
+function documentPlainText(content = '') {
+  return parseDocumentBlocks(content)
+    .filter((block) => block.type !== 'divider')
+    .map((block) => block.value || '')
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function documentExcerpt(content = '') {
-  const text = String(content || '').replace(/\s+/g, ' ').trim();
+  const text = documentPlainText(content);
   return text ? text.slice(0, 120) : 'Sem conteúdo';
 }
 
@@ -400,7 +478,7 @@ export default function WorkspacePage() {
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsError, setDocumentsError] = useState('');
   const [selectedDocumentId, setSelectedDocumentId] = useState(null);
-  const [documentDraft, setDocumentDraft] = useState({ title: '', content: '' });
+  const [documentDraft, setDocumentDraft] = useState({ title: '', blocks: [createDocumentBlock('text', '')] });
   const [documentSaving, setDocumentSaving] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT_WIDTH);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -487,7 +565,7 @@ export default function WorkspacePage() {
     try {
       const response = await createWorkspaceDocument({
         title: template.title,
-        content: template.content,
+        content: serializeDocumentBlocks(template.blocks),
       });
       const document = response?.document;
       if (!document?.id) return;
@@ -503,11 +581,14 @@ export default function WorkspacePage() {
     if (!selectedDocumentId) return;
     setDocumentSaving(true);
     try {
-      const response = await updateWorkspaceDocument(selectedDocumentId, documentDraft);
+      const response = await updateWorkspaceDocument(selectedDocumentId, {
+        title: documentDraft.title,
+        content: serializeDocumentBlocks(documentDraft.blocks),
+      });
       const updated = response?.document;
       if (updated?.id) {
         setDocuments((current) => current.map((item) => (String(item.id) === String(updated.id) ? updated : item)));
-        setDocumentDraft({ title: updated.title || '', content: updated.content || '' });
+        setDocumentDraft({ title: updated.title || '', blocks: parseDocumentBlocks(updated.content) });
       }
       showToast?.('Documento salvo.', { variant: 'success' });
     } catch (err) {
@@ -533,6 +614,40 @@ export default function WorkspacePage() {
     } catch (err) {
       showToast?.(err?.message || 'Não foi possível excluir o documento.', { variant: 'error' });
     }
+  }
+
+  function handleAddDocumentBlock(type = 'text') {
+    setDocumentDraft((current) => ({
+      ...current,
+      blocks: [...(current.blocks || []), createDocumentBlock(type, type === 'heading' ? 'Título' : '')],
+    }));
+  }
+
+  function handleUpdateDocumentBlock(blockId, updates) {
+    setDocumentDraft((current) => ({
+      ...current,
+      blocks: (current.blocks || []).map((block) => (block.id === blockId ? { ...block, ...updates } : block)),
+    }));
+  }
+
+  function handleDeleteDocumentBlock(blockId) {
+    if (!confirmDestructiveAction('Excluir este bloco?')) return;
+    setDocumentDraft((current) => {
+      const nextBlocks = (current.blocks || []).filter((block) => block.id !== blockId);
+      return { ...current, blocks: nextBlocks.length ? nextBlocks : [createDocumentBlock('text', '')] };
+    });
+  }
+
+  function handleMoveDocumentBlock(blockId, direction) {
+    setDocumentDraft((current) => {
+      const blocks = [...(current.blocks || [])];
+      const index = blocks.findIndex((block) => block.id === blockId);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= blocks.length) return current;
+      const [block] = blocks.splice(index, 1);
+      blocks.splice(nextIndex, 0, block);
+      return { ...current, blocks };
+    });
   }
 
   useEffect(() => {
@@ -590,7 +705,7 @@ export default function WorkspacePage() {
   }
 
   useEffect(() => {
-    setDocumentDraft({ title: selectedDocument?.title || '', content: selectedDocument?.content || '' });
+    setDocumentDraft({ title: selectedDocument?.title || '', blocks: parseDocumentBlocks(selectedDocument?.content) });
   }, [selectedDocument]);
 
   const focusTasks = useMemo(() => (
@@ -1078,12 +1193,57 @@ export default function WorkspacePage() {
                       <SaveIcon size={14} /> {documentSaving ? 'Salvando' : 'Salvar'}
                     </Button>
                   </div>
-                  <textarea
-                    value={documentDraft.content}
-                    onChange={(event) => setDocumentDraft((current) => ({ ...current, content: event.target.value }))}
-                    className={styles.documentTextarea}
-                    placeholder="Escreva aqui..."
-                  />
+
+                  <div className={styles.documentBlockToolbar} aria-label="Adicionar bloco">
+                    <button type="button" onClick={() => handleAddDocumentBlock('text')}>Texto</button>
+                    <button type="button" onClick={() => handleAddDocumentBlock('heading')}>Título</button>
+                    <button type="button" onClick={() => handleAddDocumentBlock('checklist')}>Checklist</button>
+                    <button type="button" onClick={() => handleAddDocumentBlock('divider')}>Separador</button>
+                  </div>
+
+                  <div className={styles.documentBlocks}>
+                    {(documentDraft.blocks || []).map((block, index) => (
+                      <div key={block.id} className={`${styles.documentBlock} ${styles[`documentBlock_${block.type}`] || ''}`.trim()}>
+                        <div className={styles.documentBlockControls}>
+                          <button type="button" onClick={() => handleMoveDocumentBlock(block.id, -1)} disabled={index === 0}>↑</button>
+                          <button type="button" onClick={() => handleMoveDocumentBlock(block.id, 1)} disabled={index === (documentDraft.blocks || []).length - 1}>↓</button>
+                          <button type="button" onClick={() => handleDeleteDocumentBlock(block.id)} aria-label="Excluir bloco"><TrashIcon size={13} /></button>
+                        </div>
+
+                        {block.type === 'divider' ? (
+                          <hr />
+                        ) : block.type === 'checklist' ? (
+                          <label className={styles.documentChecklistBlock}>
+                            <input
+                              type="checkbox"
+                              checked={Boolean(block.checked)}
+                              onChange={(event) => handleUpdateDocumentBlock(block.id, { checked: event.target.checked })}
+                            />
+                            <input
+                              value={block.value || ''}
+                              onChange={(event) => handleUpdateDocumentBlock(block.id, { value: event.target.value })}
+                              placeholder="Item"
+                            />
+                          </label>
+                        ) : block.type === 'heading' ? (
+                          <input
+                            value={block.value || ''}
+                            onChange={(event) => handleUpdateDocumentBlock(block.id, { value: event.target.value })}
+                            className={styles.documentHeadingInput}
+                            placeholder="Título"
+                          />
+                        ) : (
+                          <textarea
+                            value={block.value || ''}
+                            onChange={(event) => handleUpdateDocumentBlock(block.id, { value: event.target.value })}
+                            className={styles.documentTextBlock}
+                            placeholder="Texto"
+                            rows={Math.max(2, Math.min(8, String(block.value || '').split('\n').length + 1))}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </>
               ) : (
                 <div className={styles.documentEmptyState}>
