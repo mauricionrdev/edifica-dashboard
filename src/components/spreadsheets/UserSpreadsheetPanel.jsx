@@ -1725,22 +1725,22 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setSelectionFocus({ rowId: lastRow.id, key: focusKey });
   }, [viewRows]);
 
+  const copySelection = useCallback(async () => {
+    const text = serializeCellsToTsv(viewRows, columns, selectionBounds) || activeCellText(activeCell, rows);
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      markSync('saved', selectedCount > 1 ? 'Intervalo copiado' : 'Célula copiada');
+    } catch (error) {
+      notifyError(error, 'Não foi possível copiar a seleção.');
+    }
+  }, [activeCell, columns, markSync, notifyError, rows, selectedCount, selectionBounds, viewRows]);
+
   const cutSelection = useCallback(async () => {
     if (!canEdit || !selectedCells.length) return;
     await copySelection();
     await clearSelectionValues();
   }, [canEdit, clearSelectionValues, copySelection, selectedCells.length]);
-
-  const pasteClipboardAtActive = useCallback(async () => {
-    if (!canEdit || !activeCell?.rowId || !activeCell?.key || !navigator.clipboard?.readText) return;
-    try {
-      const text = await navigator.clipboard.readText();
-      if (!text) return;
-      await pasteTable(activeCell.rowId, activeCell.key, text);
-    } catch (error) {
-      notifyError(error, 'Não foi possível ler a área de transferência.');
-    }
-  }, [activeCell?.key, activeCell?.rowId, canEdit, notifyError, pasteTable]);
 
   const transformSelectionText = useCallback(async (mode) => {
     if (!canEdit || !selectedCells.length) return;
@@ -1976,6 +1976,17 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     }
   }, [activeSheetId, canEdit, columns, ensureGridSize, loadSheet, markSync, notifyError, rows]);
 
+  const pasteClipboardAtActive = useCallback(async () => {
+    if (!canEdit || !activeCell?.rowId || !activeCell?.key || !navigator.clipboard?.readText) return;
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) return;
+      await pasteTable(activeCell.rowId, activeCell.key, text);
+    } catch (error) {
+      notifyError(error, 'Não foi possível ler a área de transferência.');
+    }
+  }, [activeCell?.key, activeCell?.rowId, canEdit, notifyError, pasteTable]);
+
   const exportCsv = useCallback(() => {
     if (!activeSheet) return;
     const filename = `${safeFileName(activeSheet.name)}.csv`;
@@ -2051,17 +2062,6 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     const columnIndex = columns.findIndex((column) => column.key === key);
     setContextMenu({ x: event.clientX, y: event.clientY, scope: 'column', label: columnIndex >= 0 ? `Coluna ${columns[columnIndex]?.label || columnName(columnIndex)}` : 'Coluna' });
   }, [columns, selectColumn]);
-
-  const copySelection = useCallback(async () => {
-    const text = serializeCellsToTsv(viewRows, columns, selectionBounds) || activeCellText(activeCell, rows);
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      markSync('saved', selectedCount > 1 ? 'Intervalo copiado' : 'Célula copiada');
-    } catch (error) {
-      notifyError(error, 'Não foi possível copiar a seleção.');
-    }
-  }, [activeCell, columns, markSync, notifyError, rows, selectedCount, selectionBounds, viewRows]);
 
   const goToSearchMatch = useCallback((direction = 1) => {
     if (!searchMatches.length) return;
