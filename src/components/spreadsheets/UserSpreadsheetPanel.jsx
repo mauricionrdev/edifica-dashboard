@@ -659,6 +659,7 @@ function SheetContextMenu({
   onCut,
   onPaste,
   onSelectAll,
+  onSelectUsedRange,
   onSelectRow,
   onSelectColumn,
   onFillSelection,
@@ -692,6 +693,14 @@ function SheetContextMenu({
   onSetTypeCurrency,
   onSetTypePercent,
   onNormalizeSelection,
+  onWrapText,
+  onClipText,
+  onFontSmall,
+  onFontNormal,
+  onFontLarge,
+  onVerticalTop,
+  onVerticalMiddle,
+  onVerticalBottom,
 }) {
   if (!menu) return null;
   const isRow = menu.scope === 'row';
@@ -713,6 +722,7 @@ function SheetContextMenu({
         <button type="button" role="menuitem" onClick={onCut} disabled={!canEdit}>Recortar seleção <kbd>Ctrl X</kbd></button>
         <button type="button" role="menuitem" onClick={onPaste} disabled={!canEdit}>Colar <kbd>Ctrl V</kbd></button>
         <button type="button" role="menuitem" onClick={onSelectAll}>Selecionar tudo <kbd>Ctrl A</kbd></button>
+        <button type="button" role="menuitem" onClick={onSelectUsedRange}>Selecionar área preenchida</button>
         <button type="button" role="menuitem" onClick={onSelectRow} disabled={isColumn}>Selecionar linha</button>
         <button type="button" role="menuitem" onClick={onSelectColumn} disabled={isRow}>Selecionar coluna</button>
         <span aria-hidden="true" />
@@ -731,6 +741,14 @@ function SheetContextMenu({
         <button type="button" role="menuitem" onClick={onAlignCenter} disabled={!canEdit}>Centralizar</button>
         <button type="button" role="menuitem" onClick={onAlignRight} disabled={!canEdit}>Alinhar à direita</button>
         <button type="button" role="menuitem" onClick={onClearFormatting} disabled={!canEdit}>Limpar formatação</button>
+        <button type="button" role="menuitem" onClick={onWrapText} disabled={!canEdit}>Quebrar texto</button>
+        <button type="button" role="menuitem" onClick={onClipText} disabled={!canEdit}>Cortar texto</button>
+        <button type="button" role="menuitem" onClick={onFontSmall} disabled={!canEdit}>Fonte pequena</button>
+        <button type="button" role="menuitem" onClick={onFontNormal} disabled={!canEdit}>Fonte normal</button>
+        <button type="button" role="menuitem" onClick={onFontLarge} disabled={!canEdit}>Fonte grande</button>
+        <button type="button" role="menuitem" onClick={onVerticalTop} disabled={!canEdit}>Alinhar no topo</button>
+        <button type="button" role="menuitem" onClick={onVerticalMiddle} disabled={!canEdit}>Alinhar ao meio</button>
+        <button type="button" role="menuitem" onClick={onVerticalBottom} disabled={!canEdit}>Alinhar abaixo</button>
         {isColumn ? (
           <>
             <span aria-hidden="true" />
@@ -841,6 +859,24 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     if (!selectedCells.length) return 'text';
     const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.numberFormat || 'text';
     return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.numberFormat || 'text') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const selectedWrapMode = useMemo(() => {
+    if (!selectedCells.length) return '';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.wrapText || '';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.wrapText || '') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const selectedFontSize = useMemo(() => {
+    if (!selectedCells.length) return 'normal';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.fontSize || 'normal';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.fontSize || 'normal') === first) ? first : 'mixed';
+  }, [selectedCells]);
+
+  const selectedVerticalAlign = useMemo(() => {
+    if (!selectedCells.length) return 'middle';
+    const first = getCellStyle(selectedCells[0].row, selectedCells[0].column.key)?.verticalAlign || 'middle';
+    return selectedCells.every(({ row, column }) => (getCellStyle(row, column.key)?.verticalAlign || 'middle') === first) ? first : 'mixed';
   }, [selectedCells]);
 
   const displayValueMap = useMemo(() => {
@@ -1135,8 +1171,20 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     applyStyleToSelection({ numberFormat }).catch(() => {});
   }, [applyStyleToSelection]);
 
+  const setWrapMode = useCallback((wrapText) => {
+    applyStyleToSelection({ wrapText }).catch(() => {});
+  }, [applyStyleToSelection]);
+
+  const setFontSize = useCallback((fontSize) => {
+    applyStyleToSelection({ fontSize }).catch(() => {});
+  }, [applyStyleToSelection]);
+
+  const setVerticalAlign = useCallback((verticalAlign) => {
+    applyStyleToSelection({ verticalAlign }).catch(() => {});
+  }, [applyStyleToSelection]);
+
   const clearSelectionFormatting = useCallback(() => {
-    applyStyleToSelection({ bold: false, italic: false, underline: false, textAlign: '' }).catch(() => {});
+    applyStyleToSelection({ bold: false, italic: false, underline: false, strikeThrough: false, textAlign: '', wrapText: '', fontSize: '', verticalAlign: '' }).catch(() => {});
   }, [applyStyleToSelection]);
 
   const applyValueToSelection = useCallback(async () => {
@@ -1626,6 +1674,36 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
     setSelectionAnchor(nextCell);
     setSelectionFocus({ rowId: lastRow.id, key: lastColumn.key });
   }, [columns, viewRows]);
+
+
+  const selectUsedRange = useCallback(() => {
+    if (!viewRows.length || !columns.length) return;
+    let startRow = -1;
+    let endRow = -1;
+    let startColumn = -1;
+    let endColumn = -1;
+    viewRows.forEach((row, rowIndex) => {
+      columns.forEach((column, columnIndex) => {
+        if (!sanitizeCellValue(row?.[column.key] || '')) return;
+        startRow = startRow < 0 ? rowIndex : Math.min(startRow, rowIndex);
+        endRow = Math.max(endRow, rowIndex);
+        startColumn = startColumn < 0 ? columnIndex : Math.min(startColumn, columnIndex);
+        endColumn = Math.max(endColumn, columnIndex);
+      });
+    });
+    if (startRow < 0 || startColumn < 0) {
+      selectAllCells();
+      return;
+    }
+    const firstRow = viewRows[startRow];
+    const lastRow = viewRows[endRow];
+    const firstColumn = columns[startColumn];
+    const lastColumn = columns[endColumn];
+    const nextCell = { rowId: firstRow.id, key: firstColumn.key };
+    setActiveCell(nextCell);
+    setSelectionAnchor(nextCell);
+    setSelectionFocus({ rowId: lastRow.id, key: lastColumn.key });
+  }, [columns, selectAllCells, viewRows]);
 
   const selectRowRange = useCallback((anchorRowId, focusRowId) => {
     if (!columns.length || !anchorRowId || !focusRowId) return;
@@ -2157,6 +2235,19 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
             <option value="percent">Percentual</option>
           </select>
         </label>
+        <label className={styles.typeGroup}>
+          <span>Texto</span>
+          <select
+            value={selectedWrapMode === 'mixed' ? '' : selectedWrapMode}
+            aria-label="Modo do texto"
+            disabled={!selectedCount || !canEdit || !!busy}
+            onChange={(event) => setWrapMode(event.target.value)}
+          >
+            <option value="">Transbordar</option>
+            <option value="wrap">Quebrar</option>
+            <option value="clip">Cortar</option>
+          </select>
+        </label>
         <div className={styles.findGroup}>
           <input
             ref={searchInputRef}
@@ -2350,6 +2441,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               <span>Seleção</span>
               <strong>{selectedSummary}</strong>
               <button type="button" onClick={selectAllCells} disabled={!activeSheetId}>Selecionar tudo</button>
+              <button type="button" onClick={selectUsedRange} disabled={!activeSheetId}>Selecionar área preenchida</button>
               <button type="button" onClick={() => activeCell?.rowId && selectRow(activeCell.rowId)} disabled={!activeCell}>Selecionar linha</button>
               <button type="button" onClick={() => activeCell?.key && selectColumn(activeCell.key)} disabled={!activeCell}>Selecionar coluna</button>
             </section>
@@ -2376,11 +2468,71 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
               </div>
             </section>
             <section>
+              <span>Filtros da coluna</span>
+              <strong>{activeColumn ? activeColumn.label : 'Nenhuma coluna ativa'}</strong>
+              <input
+                className={styles.panelInput}
+                value={activeColumn ? (columnFilters[activeColumn.key] || '') : ''}
+                placeholder="Valor do filtro"
+                disabled={!activeColumn}
+                onChange={(event) => activeColumn && setColumnFilters((current) => ({ ...current, [activeColumn.key]: sanitizeCellValue(event.target.value) }))}
+              />
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor ativo</button>
+                <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
+                <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar todos</button>
+                <button type="button" onClick={() => setFilterQuery('')} disabled={!filterQuery}>Limpar busca</button>
+              </div>
+            </section>
+            <section>
               <span>Planilha</span>
               <button type="button" onClick={fitActiveColumnWidth} disabled={!activeColumn || !canEdit || !!busy}>Ajustar largura da coluna</button>
               <button type="button" onClick={() => sortActiveColumn('asc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna A → Z</button>
               <button type="button" onClick={() => sortActiveColumn('desc').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Ordenar coluna Z → A</button>
               <button type="button" onClick={clearSelectionFormatting} disabled={!selectedCount || !canEdit || !!busy}>Limpar formatação</button>
+            </section>
+            <section>
+              <span>Texto avançado</span>
+              <strong>Quebra, tamanho e alinhamento vertical da seleção</strong>
+              <div className={styles.panelGrid}>
+                <button type="button" data-active={selectedWrapMode === 'wrap' || undefined} onClick={() => setWrapMode('wrap')} disabled={!selectedCount || !canEdit || !!busy}>Quebrar texto</button>
+                <button type="button" data-active={selectedWrapMode === 'clip' || undefined} onClick={() => setWrapMode('clip')} disabled={!selectedCount || !canEdit || !!busy}>Cortar texto</button>
+                <button type="button" data-active={selectedFontSize === 'small' || undefined} onClick={() => setFontSize('small')} disabled={!selectedCount || !canEdit || !!busy}>Fonte pequena</button>
+                <button type="button" data-active={selectedFontSize === 'normal' || undefined} onClick={() => setFontSize('')} disabled={!selectedCount || !canEdit || !!busy}>Fonte normal</button>
+                <button type="button" data-active={selectedFontSize === 'large' || undefined} onClick={() => setFontSize('large')} disabled={!selectedCount || !canEdit || !!busy}>Fonte grande</button>
+                <button type="button" data-active={selectedVerticalAlign === 'top' || undefined} onClick={() => setVerticalAlign('top')} disabled={!selectedCount || !canEdit || !!busy}>Topo</button>
+                <button type="button" data-active={selectedVerticalAlign === 'middle' || undefined} onClick={() => setVerticalAlign('')} disabled={!selectedCount || !canEdit || !!busy}>Meio</button>
+                <button type="button" data-active={selectedVerticalAlign === 'bottom' || undefined} onClick={() => setVerticalAlign('bottom')} disabled={!selectedCount || !canEdit || !!busy}>Abaixo</button>
+              </div>
+            </section>
+            <section>
+              <span>Filtros da coluna</span>
+              <strong>{activeColumn ? activeColumn.label : 'Nenhuma coluna ativa'}</strong>
+              <input
+                className={styles.panelInput}
+                value={activeColumn ? (columnFilters[activeColumn.key] || '') : ''}
+                placeholder="Valor do filtro"
+                disabled={!activeColumn}
+                onChange={(event) => activeColumn && setColumnFilters((current) => ({ ...current, [activeColumn.key]: sanitizeCellValue(event.target.value) }))}
+              />
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={filterActiveColumnBySelection} disabled={!activeColumn || !activeCell}>Filtrar valor ativo</button>
+                <button type="button" onClick={() => activeColumn && clearColumnFilter(activeColumn.key)} disabled={!activeColumn}>Limpar coluna</button>
+                <button type="button" onClick={clearAllColumnFilters} disabled={!activeColumnFilterCount}>Limpar todos</button>
+                <button type="button" onClick={() => setFilterQuery('')} disabled={!filterQuery}>Limpar busca</button>
+              </div>
+            </section>
+            <section>
+              <span>Planilha</span>
+              <strong>Comandos estruturais da linha e coluna ativa</strong>
+              <div className={styles.panelGrid}>
+                <button type="button" onClick={() => insertRowAtActive('above').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha acima</button>
+                <button type="button" onClick={() => insertRowAtActive('below').catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Linha abaixo</button>
+                <button type="button" onClick={() => insertColumnAtActive('left').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna à esquerda</button>
+                <button type="button" onClick={() => insertColumnAtActive('right').catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Coluna à direita</button>
+                <button type="button" onClick={() => duplicateActiveRow().catch(() => {})} disabled={!activeRow || !canEdit || !!busy}>Duplicar linha</button>
+                <button type="button" onClick={() => duplicateActiveColumn().catch(() => {})} disabled={!activeColumn || !canEdit || !!busy}>Duplicar coluna</button>
+              </div>
             </section>
           </aside>
         ) : null}
@@ -2399,6 +2551,7 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onCut={() => { closeContextMenu(); cutSelection().catch(() => {}); }}
         onPaste={() => { closeContextMenu(); pasteClipboardAtActive().catch(() => {}); }}
         onSelectAll={() => { closeContextMenu(); selectAllCells(); }}
+        onSelectUsedRange={() => { closeContextMenu(); selectUsedRange(); }}
         onSelectRow={() => { closeContextMenu(); activeCell?.rowId && selectRow(activeCell.rowId); }}
         onSelectColumn={() => { closeContextMenu(); activeCell?.key && selectColumn(activeCell.key); }}
         onFillSelection={() => { closeContextMenu(); applyValueToSelection().catch(() => {}); }}
@@ -2432,6 +2585,14 @@ export default function UserSpreadsheetPanel({ ownerUserId, canEdit = true, show
         onSetTypeCurrency={() => { closeContextMenu(); setNumberFormat('currency'); }}
         onSetTypePercent={() => { closeContextMenu(); setNumberFormat('percent'); }}
         onNormalizeSelection={() => { closeContextMenu(); normalizeSelectionValues().catch(() => {}); }}
+        onWrapText={() => { closeContextMenu(); setWrapMode('wrap'); }}
+        onClipText={() => { closeContextMenu(); setWrapMode('clip'); }}
+        onFontSmall={() => { closeContextMenu(); setFontSize('small'); }}
+        onFontNormal={() => { closeContextMenu(); setFontSize(''); }}
+        onFontLarge={() => { closeContextMenu(); setFontSize('large'); }}
+        onVerticalTop={() => { closeContextMenu(); setVerticalAlign('top'); }}
+        onVerticalMiddle={() => { closeContextMenu(); setVerticalAlign(''); }}
+        onVerticalBottom={() => { closeContextMenu(); setVerticalAlign('bottom'); }}
       />
 
       <ConfirmDeleteDialog

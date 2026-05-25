@@ -942,3 +942,26 @@
     border-top: 1px solid var(--line-subtle);
   }
 }
+
+.advancedPanel section button[data-active="true"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.panelInput {
+  min-height: 30px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  padding: 0 var(--space-2);
+  background: var(--bg-soft);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-label);
+  outline: 0;
+}
+
+.panelInput:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}

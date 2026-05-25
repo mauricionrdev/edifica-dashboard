@@ -30,6 +30,18 @@ function getStyle(row, key) {
   return row?.__styles?.[key] || {};
 }
 
+function resolveCellFontSize(value = '') {
+  if (value === 'small') return 'var(--fs-label)';
+  if (value === 'large') return 'var(--fs-title)';
+  return undefined;
+}
+
+function resolveVerticalAlign(value = '') {
+  if (value === 'top') return 'flex-start';
+  if (value === 'bottom') return 'flex-end';
+  return undefined;
+}
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -162,6 +174,7 @@ function Cell({
       data-validation-error={displayMeta?.hasValidationError || undefined}
       data-formula-reference={formulaReference || undefined}
       data-editing={editing || undefined}
+      data-wrap={style.wrapText || undefined}
       title={displayMeta?.validationMessage || undefined}
       role="gridcell"
       tabIndex={0}
@@ -176,6 +189,8 @@ function Cell({
         fontStyle: style.italic || style.fontStyle ? style.fontStyle || 'italic' : undefined,
         textDecoration: style.textDecoration || [style.underline ? 'underline' : '', style.strikeThrough ? 'line-through' : ''].filter(Boolean).join(' ') || undefined,
         textAlign: style.textAlign || undefined,
+        fontSize: resolveCellFontSize(style.fontSize),
+        alignItems: resolveVerticalAlign(style.verticalAlign),
       }}
       onFocus={(event) => onSelect(row.id, column.key, event.currentTarget, false)}
       onClick={(event) => onCellClick?.(event, row.id, column.key, event.currentTarget)}
