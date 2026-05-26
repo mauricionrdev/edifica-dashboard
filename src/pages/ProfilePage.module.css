@@ -1756,12 +1756,36 @@
 }
 
 .briefingMissing {
+  display: grid;
+  gap: 8px;
   padding: 12px 14px;
   background: var(--edf-amber-bg);
   border: 1px solid var(--edf-amber-border);
   border-radius: 10px;
   color: var(--edf-amber);
   font-size: 12.5px;
+}
+
+.briefingMissing > span {
+  font-weight: 650;
+}
+
+.briefingMissing > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.briefingMissing em {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--edf-amber-border);
+  border-radius: 10px;
+  color: var(--edf-amber);
+  font-style: normal;
+  line-height: 1;
 }
 
 .briefingDetailsGrid {
@@ -12772,7 +12796,7 @@ button:focus-visible {
 .operationSubline i {
   padding: 2px 7px;
   border: 1px solid var(--edf-border);
-  border-radius: 999px;
+  border-radius: 10px;
   color: var(--edf-amber);
   background: var(--edf-amber-bg);
   flex: 0 0 auto;

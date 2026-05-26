@@ -2392,11 +2392,13 @@ export default function ProfilePage() {
       return;
     }
 
-    const nextTitle = contentForm.title.trim();
-    if (!nextTitle) {
-      showToast('Título obrigatório.', { variant: 'error' });
+    const missingFields = validateContentForm(activeTask, contentForm);
+    if (missingFields.length) {
+      showToast(`Preencha: ${joinMissingFields(missingFields)}.`, { variant: 'error' });
       return;
     }
+
+    const nextTitle = contentForm.title.trim();
 
     try {
       setContentSaving(true);
@@ -3779,7 +3781,7 @@ export default function ProfilePage() {
                 </section>
               ) : null}
 
-              {(activeDescription || canEditActiveTask) ? (
+              {(activeDescription || descriptionEditing) ? (
                 <section className={`${styles.drawerSection} ${styles.descriptionSection}`.trim()}>
                   <div className={styles.sectionTitleRow}>
                     <h4>Descrição</h4>

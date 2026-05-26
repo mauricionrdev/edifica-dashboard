@@ -88,6 +88,43 @@ function recurrenceLabel(value) {
   return ROUTINE_RECURRENCES.find((item) => item.value === value)?.label || value || '';
 }
 
+function joinMissingFields(items = []) {
+  const list = items.filter(Boolean);
+  if (list.length <= 1) return list.join('');
+  if (list.length === 2) return `${list[0]} e ${list[1]}`;
+  return `${list.slice(0, -1).join(', ')} e ${list[list.length - 1]}`;
+}
+
+function validateForm(form = {}) {
+  const missing = [];
+  const requiredText = (key, label) => {
+    if (!cleanText(form[key])) missing.push(label);
+  };
+
+  requiredText('title', 'Título');
+  if (!cleanText(form.assigneeUserId)) missing.push('Responsável');
+
+  if (form.type === 'briefing') {
+    if (!cleanText(form.clientId)) missing.push('Cliente');
+    [
+      ['officeName', 'Escritório'],
+      ['objective', 'Objetivo'],
+      ['campaign', 'Nicho/campanha'],
+      ['channels', 'Canais'],
+      ['attendants', 'Atendentes'],
+      ['greeting', 'Saudação'],
+      ['location', 'Localização'],
+    ].forEach(([key, label]) => requiredText(key, label));
+  }
+
+  if (form.type === 'routine') {
+    requiredText('routineScope', 'Escopo');
+    requiredText('routineChecklist', 'Checklist');
+  }
+
+  return missing;
+}
+
 function buildDescription(form, clientName = '') {
   const lines = [`Tipo: ${demandTypeLabel(form.type)}`];
   if (clientName) lines.push(`Cliente: ${clientName}`);
@@ -397,11 +434,12 @@ export default function DemandModal({
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const nextTitle = cleanText(form.title);
-    if (!nextTitle) {
-      onError?.('Informe o título da demanda.');
+    const missingFields = validateForm(form);
+    if (missingFields.length) {
+      onError?.(`Preencha: ${joinMissingFields(missingFields)}.`);
       return;
     }
+    const nextTitle = cleanText(form.title);
     const description = buildDescription(form, selectedClient?.name || '');
     await onSubmit?.({ ...form, title: nextTitle, description });
   }
