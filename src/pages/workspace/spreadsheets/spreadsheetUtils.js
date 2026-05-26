@@ -43,7 +43,6 @@ export function nextCellPosition({ rowIndex, colIndex }, key, rowCount, columnCo
   return { rowIndex, colIndex };
 }
 
-
 export function normalizeRange(anchor, target) {
   if (!anchor || !target) return null;
   return {
@@ -54,9 +53,29 @@ export function normalizeRange(anchor, target) {
   };
 }
 
+export function rowRange(rowIndex, columnCount) {
+  if (rowIndex === undefined || columnCount <= 0) return null;
+  return normalizeRange({ rowIndex, colIndex: 0 }, { rowIndex, colIndex: columnCount - 1 });
+}
+
+export function columnRange(colIndex, rowCount) {
+  if (colIndex === undefined || rowCount <= 0) return null;
+  return normalizeRange({ rowIndex: 0, colIndex }, { rowIndex: rowCount - 1, colIndex });
+}
+
 export function isCellInRange(range, rowIndex, colIndex) {
   if (!range) return false;
   return rowIndex >= range.startRow && rowIndex <= range.endRow && colIndex >= range.startCol && colIndex <= range.endCol;
+}
+
+export function isRowSelected(range, rowIndex, columnCount) {
+  if (!range || columnCount <= 0) return false;
+  return range.startRow <= rowIndex && range.endRow >= rowIndex && range.startCol === 0 && range.endCol === columnCount - 1;
+}
+
+export function isColumnSelected(range, colIndex, rowCount) {
+  if (!range || rowCount <= 0) return false;
+  return range.startCol <= colIndex && range.endCol >= colIndex && range.startRow === 0 && range.endRow === rowCount - 1;
 }
 
 export function rangeLabel(range) {

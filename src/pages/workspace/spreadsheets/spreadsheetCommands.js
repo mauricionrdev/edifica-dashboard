@@ -23,7 +23,7 @@ export function buildSpreadsheetCommands({ activeSheetId, selectedCell, selected
     },
     {
       id: 'clear-cell',
-      label: 'Limpar célula',
+      label: 'Limpar',
       variant: 'secondary',
       canRun: Boolean(activeSheetId && selectedCell),
       run: onClearCell,
@@ -43,11 +43,25 @@ export function buildSpreadsheetContextCommands({
   onEditCell,
   onDeleteRow,
   onDeleteColumn,
+  onSelectRow,
+  onSelectColumn,
 }) {
   if (!activeSheetId || !context) return [];
 
   if (context.type === 'column') {
     return [
+      {
+        id: 'select-column',
+        label: 'Selecionar coluna',
+        canRun: Boolean(context.colIndex !== undefined),
+        run: () => onSelectColumn?.(context.colIndex),
+      },
+      {
+        id: 'copy-column',
+        label: 'Copiar coluna',
+        canRun: true,
+        run: onCopySelection,
+      },
       {
         id: 'add-column',
         label: 'Adicionar coluna',
@@ -66,6 +80,18 @@ export function buildSpreadsheetContextCommands({
 
   if (context.type === 'row') {
     return [
+      {
+        id: 'select-row',
+        label: 'Selecionar linha',
+        canRun: Boolean(context.rowIndex !== undefined),
+        run: () => onSelectRow?.(context.rowIndex),
+      },
+      {
+        id: 'copy-row',
+        label: 'Copiar linha',
+        canRun: true,
+        run: onCopySelection,
+      },
       {
         id: 'add-row',
         label: 'Adicionar linha',

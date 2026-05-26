@@ -538,7 +538,7 @@
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 24px 6px;
+  grid-template-columns: 34px minmax(0, 1fr) 24px 6px;
   align-items: center;
   gap: 2px;
   padding: 0 0 0 var(--space-1);
@@ -547,6 +547,48 @@
 .rowHeader {
   grid-template-columns: minmax(0, 1fr) 22px;
   padding: 0 var(--space-1);
+}
+
+.columnSelector,
+.rowSelector {
+  width: 100%;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.rowSelector {
+  font-size: var(--fs-label);
+}
+
+.columnSelector:hover,
+.columnSelector[data-active='true'],
+.rowSelector:hover,
+.rowSelector[data-active='true'] {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+
+.sheetGrid th[data-selected='true'],
+.sheetGrid td[data-selected='true'] {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+
+.sheetGrid tr[data-selected='true'] td:not(:first-child),
+.sheetGrid td[data-range='true'] {
+  background: color-mix(in srgb, var(--accent-soft) 32%, var(--bg-canvas));
 }
 
 .columnNameInput {
@@ -576,12 +618,6 @@
 
 .resizeHandle:hover {
   background: var(--bg-selected);
-}
-
-.rowNumber {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .headerAction {

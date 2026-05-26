@@ -20,7 +20,7 @@ import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import SpreadsheetStatusBar from './SpreadsheetStatusBar.jsx';
 import SpreadsheetToolbar from './SpreadsheetToolbar.jsx';
 import { buildSpreadsheetCommands, buildSpreadsheetContextCommands } from './spreadsheetCommands.js';
-import { buildRangeTsv, cellRef, cleanCellValue, nextCellPosition, normalizeRange, normalizeRows, parseClipboardMatrix } from './spreadsheetUtils.js';
+import { buildRangeTsv, cellRef, cleanCellValue, columnRange, nextCellPosition, normalizeRange, normalizeRows, parseClipboardMatrix, rangeLabel, rowRange } from './spreadsheetUtils.js';
 
 export default function SpreadsheetApp({ requestConfirm }) {
   const [sheets, setSheets] = useState([]);
@@ -40,8 +40,9 @@ export default function SpreadsheetApp({ requestConfirm }) {
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || sheets[0] || null, [sheets, activeSheetId]);
   const selectedColumn = selectedCell ? columns[selectedCell.colIndex] : null;
-  const selectedLabel = selectedCell ? cellRef(selectedCell.rowIndex, selectedCell.colIndex) : '—';
-  const selectedValue = selectedCell ? String(rows[selectedCell.rowIndex]?.[selectedColumn?.key] ?? '') : '';
+  const isSingleCellSelection = selectedRange && selectedRange.startRow === selectedRange.endRow && selectedRange.startCol === selectedRange.endCol;
+  const selectedLabel = selectedRange ? rangeLabel(selectedRange) : '—';
+  const selectedValue = selectedCell && isSingleCellSelection ? String(rows[selectedCell.rowIndex]?.[selectedColumn?.key] ?? '') : '';
 
   const loadSheet = useCallback(async (sheetId = '') => {
     setLoading(true);
@@ -198,6 +199,26 @@ export default function SpreadsheetApp({ requestConfirm }) {
     setContextMenu(null);
   }
 
+  function selectRow(rowIndex) {
+    const target = { rowIndex, colIndex: 0 };
+    setSelectedCell(target);
+    setSelectionAnchor(target);
+    setSelectedRange(rowRange(rowIndex, columns.length));
+    setDraft('');
+    setEditing(null);
+    setContextMenu(null);
+  }
+
+  function selectColumn(colIndex) {
+    const target = { rowIndex: 0, colIndex };
+    setSelectedCell(target);
+    setSelectionAnchor(target);
+    setSelectedRange(columnRange(colIndex, rows.length));
+    setDraft('');
+    setEditing(null);
+    setContextMenu(null);
+  }
+
   function startEditing(rowIndex, columnKey, colIndex) {
     const target = { rowIndex, colIndex };
     setSelectedCell(target);
@@ -224,7 +245,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
   }
 
   async function handleFormulaSave() {
-    if (!selectedCell || !selectedColumn) return;
+    if (!selectedCell || !selectedColumn || !isSingleCellSelection) return;
     await saveCellValue(selectedCell.rowIndex, selectedColumn.key, draft);
   }
 
@@ -341,6 +362,22 @@ export default function SpreadsheetApp({ requestConfirm }) {
       setSelectedRange(normalizeRange(target, target));
       setDraft(String(row?.[column.key] ?? ''));
     }
+    if (context.type === 'row' && context.rowIndex !== undefined) {
+      const target = { rowIndex: context.rowIndex, colIndex: 0 };
+      setSelectedCell(target);
+      setSelectionAnchor(target);
+      setSelectedRange(rowRange(context.rowIndex, columns.length));
+      setDraft('');
+      setEditing(null);
+    }
+    if (context.type === 'column' && context.colIndex !== undefined) {
+      const target = { rowIndex: 0, colIndex: context.colIndex };
+      setSelectedCell(target);
+      setSelectionAnchor(target);
+      setSelectedRange(columnRange(context.colIndex, rows.length));
+      setDraft('');
+      setEditing(null);
+    }
     setContextMenu({
       ...context,
       x,
@@ -370,6 +407,8 @@ export default function SpreadsheetApp({ requestConfirm }) {
       onEditCell: startEditing,
       onDeleteRow: requestDeleteRow,
       onDeleteColumn: requestDeleteColumn,
+      onSelectRow: selectRow,
+      onSelectColumn: selectColumn,
     }),
     [activeSheetId, contextMenu, rows, columns]
   );
@@ -417,7 +456,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
         value={selectedValue}
         draft={draft}
         editing={Boolean(editing)}
-        disabled={!selectedCell}
+        disabled={!selectedCell || !isSingleCellSelection}
         onChange={setDraft}
         onFocus={() => {
           if (selectedCell && !editing) {
@@ -442,6 +481,8 @@ export default function SpreadsheetApp({ requestConfirm }) {
           draft={draft}
           onDraftChange={setDraft}
           onSelectCell={selectCell}
+          onSelectRow={selectRow}
+          onSelectColumn={selectColumn}
           onStartEditing={startEditing}
           onSaveEditing={saveEditing}
           onCellKeyDown={handleCellKeyDown}
