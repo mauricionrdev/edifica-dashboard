@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '../../components/ui/Button.jsx';
-import { createWorkspaceDocument, deleteWorkspaceDocument, listSupportDailyRows, listSupportTasks, listWorkspaceDocuments, updateWorkspaceDocument } from '../../api/support.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { createWorkspaceDocument, deleteWorkspaceDocument, listSupportTasks, listWorkspaceDocuments, updateWorkspaceDocument } from '../../api/support.js';
+import { getUserAvatar } from '../../utils/avatarStorage.js';
+import WorkspaceShell from './WorkspaceShell.jsx';
 import WorkspaceSheets from './WorkspaceSheets.jsx';
 import styles from './WorkspaceApp.module.css';
-import { WORKSPACE_SECTIONS, formatDate, isDone, isOverdue, isToday, normalizeText, taskLabel, taskPriorityScore } from './workspaceUtils.js';
+import { WORKSPACE_AREAS, WORKSPACE_AREA_IDS } from './workspaceNavigation.js';
+import { formatDate, isDone, isOverdue, isToday, normalizeText, taskLabel, taskPriorityScore } from './workspaceUtils.js';
 
 
 function WorkspaceConfirm({ state, onCancel, onConfirm }) {
@@ -64,7 +67,7 @@ function HomeView({ tasks, documents, onNavigate }) {
         </div>
         <div className={styles.quickActions}>
           <Button type="button" size="sm" onClick={() => onNavigate('sheets')}>Abrir planilhas</Button>
-          <Button type="button" size="sm" variant="secondary" onClick={() => onNavigate('docs')}>Criar documento</Button>
+          <Button type="button" size="sm" variant="secondary" onClick={() => onNavigate('documents')}>Criar documento</Button>
         </div>
       </section>
 
@@ -94,7 +97,7 @@ function HomeView({ tasks, documents, onNavigate }) {
       <section className={styles.panelWide}>
         <div className={styles.panelHeader}>
           <div><span className={styles.eyebrow}>Recentes</span><h2>Documentos</h2></div>
-          <Button type="button" size="sm" variant="secondary" onClick={() => onNavigate('docs')}>Abrir documentos</Button>
+          <Button type="button" size="sm" variant="secondary" onClick={() => onNavigate('documents')}>Abrir documentos</Button>
         </div>
         {documents.slice(0, 4).map((doc) => (
           <article className={styles.documentLine} key={doc.id}>
@@ -111,7 +114,7 @@ function HomeView({ tasks, documents, onNavigate }) {
 function InboxView({ tasks, documents, onNavigate }) {
   const items = [
     ...tasks.filter((task) => !isDone(task) && (isOverdue(task) || !task.dueDate)).map((task) => ({ type: 'task', id: task.id, title: task.title, meta: taskLabel(task), action: 'tasks' })),
-    ...documents.filter((doc) => !String(doc.content || '').trim()).slice(0, 8).map((doc) => ({ type: 'doc', id: doc.id, title: doc.title || 'Documento sem conteúdo', meta: 'Documento vazio', action: 'docs' })),
+    ...documents.filter((doc) => !String(doc.content || '').trim()).slice(0, 8).map((doc) => ({ type: 'doc', id: doc.id, title: doc.title || 'Documento sem conteúdo', meta: 'Documento vazio', action: 'documents' })),
   ];
   return (
     <section className={styles.panelFull}>
@@ -217,12 +220,21 @@ function SettingsView() {
 }
 
 export default function WorkspaceApp() {
+  const { user } = useAuth();
+  const pageRef = useRef(null);
+  const resizeRef = useRef(null);
   const [active, setActive] = useState('home');
+  const [sidebarWidth, setSidebarWidth] = useState(244);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pendingDeleteDocument, setPendingDeleteDocument] = useState(null);
+
+  const displayName = user?.name || user?.email || 'Meu espaço';
+  const avatar = getUserAvatar(user);
+  const initials = useMemo(() => String(displayName || 'ED').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'ED', [displayName]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -241,11 +253,51 @@ export default function WorkspaceApp() {
 
   useEffect(() => { load(); }, [load]);
 
+  useEffect(() => {
+    function handlePointerMove(event) {
+      if (!resizeRef.current) return;
+      const nextWidth = Math.min(328, Math.max(204, event.clientX - resizeRef.current.left));
+      setSidebarWidth(nextWidth);
+    }
+
+    function handlePointerUp() {
+      resizeRef.current = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, []);
+
+  const navigateWorkspace = useCallback((nextArea) => {
+    if (!WORKSPACE_AREA_IDS.includes(nextArea)) return;
+    setActive(nextArea);
+  }, []);
+
+  function handleStartResize(mode) {
+    if (mode === 'toggle') {
+      setSidebarCollapsed((current) => !current);
+      return;
+    }
+    const left = pageRef.current?.getBoundingClientRect?.().left || 0;
+    resizeRef.current = { left };
+    setSidebarCollapsed(false);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }
+
   async function handleCreateDocument() {
     const response = await createWorkspaceDocument({ title: 'Novo documento', content: '' });
     if (response?.document) {
       setDocuments((current) => [response.document, ...current]);
-      setActive('docs');
+      setActive('documents');
     }
   }
 
@@ -266,51 +318,48 @@ export default function WorkspaceApp() {
     setPendingDeleteDocument(null);
   }
 
-  const subtitle = WORKSPACE_SECTIONS.find((section) => section.id === active)?.description || '';
+  const openTasks = tasks.filter((task) => !isDone(task));
+  const tabCounters = useMemo(() => ({
+    inbox: openTasks.filter((task) => isOverdue(task) || !task.dueDate).length,
+    tasks: openTasks.length,
+    documents: documents.length,
+  }), [documents.length, openTasks]);
+  const activeArea = WORKSPACE_AREAS.find((area) => area.id === active) || WORKSPACE_AREAS[0];
+  const primaryActionLabel = active === 'documents' ? 'Novo documento' : active === 'sheets' ? 'Abrir planilhas' : 'Nova planilha';
+  const primaryAction = active === 'documents' ? handleCreateDocument : () => setActive('sheets');
 
   return (
-    <div className={styles.workspaceRoot}>
-      <aside className={styles.sidebar}>
-        <Link to="/" className={styles.backLink}>← Central</Link>
-        <div className={styles.sidebarTitle}><span>Workspace</span><strong>Meu espaço</strong></div>
-        <nav className={styles.navList}>
-          {WORKSPACE_SECTIONS.map((section) => (
-            <button key={section.id} type="button" data-active={active === section.id} onClick={() => setActive(section.id)}>
-              <span className={styles.navIcon} aria-hidden="true">{section.icon}</span>
-              <span className={styles.navCopy}>
-                <strong>{section.label}</strong>
-                <small>{section.description}</small>
-              </span>
-            </button>
-          ))}
-        </nav>
-      </aside>
-      <main className={styles.mainArea}>
-        <header className={styles.topbar}>
-          <div className={styles.topbarCopy}>
-            <span className={styles.eyebrow}>Edifica Central</span>
-            <h1>{WORKSPACE_SECTIONS.find((section) => section.id === active)?.label || 'Workspace'}</h1>
-            <p>{subtitle}</p>
-          </div>
-          <div className={styles.topbarMeta}>
-            <span>Produção</span>
-            <span>{tasks.filter((task) => !isDone(task)).length} tarefas abertas</span>
-            <Button type="button" size="sm" variant="secondary" onClick={load}>Atualizar</Button>
-          </div>
-        </header>
-        {error && <div className={styles.errorBox}>{error}</div>}
-        {loading ? <div className={styles.loadingBox}>Carregando workspace...</div> : (
-          <>
-            {active === 'home' && <HomeView tasks={tasks} documents={documents} onNavigate={setActive} />}
-            {active === 'inbox' && <InboxView tasks={tasks} documents={documents} onNavigate={setActive} />}
-            {active === 'tasks' && <TasksView tasks={tasks} />}
-            {active === 'docs' && <DocumentsView documents={documents} onCreate={handleCreateDocument} onDelete={handleDeleteDocument} onSave={handleSaveDocument} />}
-            {active === 'sheets' && <WorkspaceSheets />}
-            {active === 'settings' && <SettingsView />}
-          </>
-        )}
-      </main>
+    <WorkspaceShell
+      pageRef={pageRef}
+      sidebarCollapsed={sidebarCollapsed}
+      sidebarWidth={sidebarWidth}
+      minSidebarWidth={72}
+      activeTab={active}
+      activeTabLabel={activeArea.label}
+      tabCounters={tabCounters}
+      displayName={displayName}
+      avatar={avatar}
+      initials={initials}
+      tasksLoading={loading}
+      onTabChange={navigateWorkspace}
+      onRefresh={load}
+      onOpenSettings={() => setActive('settings')}
+      onPrimaryAction={primaryAction}
+      primaryActionLabel={primaryActionLabel}
+      onStartResize={handleStartResize}
+    >
+      {error && <div className={styles.errorBox}>{error}</div>}
+      {loading ? <div className={styles.loadingBox}>Carregando workspace...</div> : (
+        <>
+          {active === 'home' && <HomeView tasks={tasks} documents={documents} onNavigate={navigateWorkspace} />}
+          {active === 'inbox' && <InboxView tasks={tasks} documents={documents} onNavigate={navigateWorkspace} />}
+          {active === 'tasks' && <TasksView tasks={tasks} />}
+          {active === 'documents' && <DocumentsView documents={documents} onCreate={handleCreateDocument} onDelete={handleDeleteDocument} onSave={handleSaveDocument} />}
+          {active === 'sheets' && <WorkspaceSheets />}
+          {active === 'settings' && <SettingsView />}
+        </>
+      )}
       <WorkspaceConfirm state={pendingDeleteDocument} onCancel={() => setPendingDeleteDocument(null)} onConfirm={confirmDeleteDocument} />
-    </div>
+    </WorkspaceShell>
   );
 }

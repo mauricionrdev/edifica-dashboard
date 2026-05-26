@@ -26,6 +26,7 @@ export default function WorkspaceShell({
   onRefresh,
   onOpenSettings,
   onPrimaryAction,
+  primaryActionLabel,
   onStartResize,
   children,
 }) {
@@ -100,7 +101,7 @@ export default function WorkspaceShell({
           <div className={styles.headerActions}>
             <Button size="sm" variant="secondary" onClick={onRefresh} disabled={tasksLoading}><RotateCcwIcon size={15} /> Atualizar</Button>
             <Button size="sm" variant="secondary" onClick={onOpenSettings}><SettingsIcon size={15} /> Configurações</Button>
-            <Button size="sm" variant="primary" onClick={onPrimaryAction}><PlusIcon size={15} /> {activeTab === 'documents' ? 'Novo documento' : 'Nova planilha'}</Button>
+            <Button size="sm" variant="primary" onClick={onPrimaryAction}><PlusIcon size={15} /> {primaryActionLabel || (activeTab === 'documents' ? 'Novo documento' : 'Nova planilha')}</Button>
           </div>
         </header>
 
