@@ -689,3 +689,166 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v150 — topo do modal reconstruído e sem focus visual */
+.identitySection {
+  padding: 16px 18px 18px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.identitySection .sectionTitle {
+  margin-bottom: 2px;
+}
+
+.identityShell {
+  display: grid;
+  grid-template-columns: 172px minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.avatarFrame {
+  position: relative;
+  width: 100%;
+  min-height: 164px;
+  padding: 18px 14px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.008));
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.018);
+}
+
+.avatarFrame .avatarPreview {
+  width: 74px;
+  height: 74px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: #08090a;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+  box-shadow: none;
+}
+
+.avatarFrame .avatarUploadButton {
+  position: static;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.identityContent {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.identityGrid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+
+.identitySection .field {
+  gap: 7px;
+}
+
+.identitySection .label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.identitySection .input,
+.identitySection .selectControl :global(button) {
+  min-height: 42px;
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.identitySection .input:hover:not(:disabled),
+.identitySection .selectControl :global(button):hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.identitySection .input:focus,
+.identitySection .input:focus-visible,
+.identitySection .selectControl :global(button):focus,
+.identitySection .selectControl :global(button):focus-visible,
+.close:focus,
+.close:focus-visible,
+.avatarUploadButton:focus,
+.avatarUploadButton:focus-visible,
+.btnPrimary:focus,
+.btnPrimary:focus-visible,
+.btnSecondary:focus,
+.btnSecondary:focus-visible,
+.btnDanger:focus,
+.btnDanger:focus-visible {
+  outline: none;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.btnPrimary:focus,
+.btnPrimary:focus-visible,
+.btnPrimary:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.close:focus,
+.close:focus-visible,
+.avatarUploadButton:focus,
+.avatarUploadButton:focus-visible,
+.btnSecondary:focus,
+.btnSecondary:focus-visible,
+.btnDanger:focus,
+.btnDanger:focus-visible {
+  color: inherit;
+}
+
+@media (max-width: 760px) {
+  .identityShell {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarFrame {
+    min-height: 96px;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    padding: 14px;
+  }
+
+  .avatarFrame .avatarPreview {
+    width: 58px;
+    height: 58px;
+    font-size: 15px;
+  }
+
+  .identityGrid {
+    grid-template-columns: 1fr;
+  }
+}

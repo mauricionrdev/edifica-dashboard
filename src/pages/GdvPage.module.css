@@ -1411,3 +1411,64 @@
   outline: none;
   box-shadow: none;
 }
+
+
+/* v150 — remove focus visual e mantém ativo sem sombra */
+.headerButton:focus,
+.headerButton:focus-visible,
+.actionButton:focus,
+.actionButton:focus-visible,
+.primaryButton:focus,
+.primaryButton:focus-visible,
+.secondaryButton:focus,
+.secondaryButton:focus-visible,
+.ghostButton:focus,
+.ghostButton:focus-visible,
+.inlineButton:focus,
+.inlineButton:focus-visible,
+.modalClose:focus,
+.modalClose:focus-visible,
+.modalAction:focus,
+.modalAction:focus-visible,
+.weekTab:focus,
+.weekTab:focus-visible,
+.navBtn:focus,
+.navBtn:focus-visible,
+.iconButton:focus,
+.iconButton:focus-visible,
+.gdvAvatarEditor:focus,
+.gdvAvatarEditor:focus-visible,
+.squadAvatarEditor:focus,
+.squadAvatarEditor:focus-visible,
+.portfolioFilter button:focus,
+.portfolioFilter button:focus-visible,
+.complementaryButton:focus,
+.complementaryButton:focus-visible,
+.input:focus,
+.input:focus-visible,
+.select:focus,
+.select:focus-visible,
+.textarea:focus,
+.textarea:focus-visible,
+.modalField input:focus,
+.modalField input:focus-visible,
+.slugField:focus-within,
+.searchBox:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilterActive,
+.portfolioFilterActive:hover,
+.portfolioFilterActive:focus,
+.portfolioFilterActive:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.searchBox:focus-within {
+  border-color: var(--line-subtle);
+  background: var(--field-bg);
+}
