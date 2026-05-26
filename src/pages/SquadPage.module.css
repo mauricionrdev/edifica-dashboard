@@ -254,17 +254,10 @@
   font-size: 13px;
   line-height: 1;
   font-weight: 600;
-  transition: color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+  transition: color 120ms ease, background-color 120ms ease;
   border-radius: 10px;
 }
 
-.weekTab:focus-visible,
-.navBtn:focus-visible,
-.iconButton:focus-visible {
-  outline: none;
-  color: var(--text-primary);
-  box-shadow: inset 0 -1px 0 var(--line);
-}
 
 .weekTabActive,
 .complementaryButtonActive {
@@ -401,10 +394,6 @@
   gap: 10px;
 }
 
-.searchBox:focus-within {
-  border-color: var(--squad-accent-line);
-  background: rgba(255, 255, 255, .032);
-}
 
 .searchBox svg {
   color: var(--text-tertiary);
@@ -456,7 +445,6 @@
 .portfolioFilterActive {
   background: var(--surface-elevated);
   color: var(--text-primary);
-  box-shadow: inset 0 0 0 1px var(--squad-accent-line);
 }
 
 .complementaryButton {
@@ -507,7 +495,7 @@
   height: 7px;
   border-radius: 999px;
   background: var(--text-tertiary);
-  box-shadow: 0 0 0 5px var(--field-bg);
+  
 }
 
 .portfolioEmpty strong {
@@ -1286,10 +1274,8 @@
   letter-spacing: -0.04em;
 }
 
-.squadAvatarEditor:hover,
-.squadAvatarEditor:focus-visible {
+.squadAvatarEditor:hover {
   border-color: var(--line);
-  outline: none;
 }
 
 .squadIdentityFields {
@@ -1331,11 +1317,6 @@
   padding: 0 12px;
 }
 
-.modalField input:focus,
-.slugField:focus-within {
-  border-color: var(--line);
-  background: var(--surface-raised);
-}
 
 .slugField {
   display: grid;
@@ -1584,21 +1565,6 @@
   color: var(--text-primary);
 }
 
-.headerButton:focus-visible,
-.actionButton:focus-visible,
-.primaryButton:focus-visible,
-.secondaryButton:focus-visible,
-.ghostButton:focus-visible,
-.inlineButton:focus-visible,
-.modalClose:focus-visible,
-.modalAction:focus-visible,
-.input:focus,
-.select:focus,
-.textarea:focus {
-  border-color: var(--line-strong);
-  box-shadow: var(--focus-ring);
-  outline: none;
-}
 
 .primaryButton {
   border-color: var(--accent-line);
@@ -1621,7 +1587,7 @@
 .modalCard {
   border-color: var(--workspace-panel-border);
   background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
+  box-shadow: none;
 }
 
 .modalHeader,
@@ -1709,7 +1675,7 @@
 .modalCard {
   border-color: var(--workspace-panel-border);
   background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
+  box-shadow: none;
 }
 
 /* ==========================================================================
