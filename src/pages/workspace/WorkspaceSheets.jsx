@@ -324,13 +324,16 @@ export default function WorkspaceSheets() {
   useEffect(() => {
     if (!menu) return undefined;
     function closeMenu() { setMenu(null); }
+    function handleKey(event) {
+      if (event.key === 'Escape') setMenu(null);
+    }
     window.addEventListener('click', closeMenu);
     window.addEventListener('resize', closeMenu);
-    window.addEventListener('scroll', closeMenu, true);
+    window.addEventListener('keydown', handleKey);
     return () => {
       window.removeEventListener('click', closeMenu);
       window.removeEventListener('resize', closeMenu);
-      window.removeEventListener('scroll', closeMenu, true);
+      window.removeEventListener('keydown', handleKey);
     };
   }, [menu]);
 
@@ -477,14 +480,24 @@ export default function WorkspaceSheets() {
 
   function beginDrag(rowIndex, colIndex, event) {
     if (event.button !== 0) return;
+    event.preventDefault();
+    gridRef.current?.focus?.({ preventScroll: true });
     const anchor = event.shiftKey && selection ? { row: selection.startRow, col: selection.startCol } : { row: rowIndex, col: colIndex };
     setDragAnchor(anchor);
-    setSelection({ startRow: anchor.row, startCol: anchor.col, endRow: rowIndex, endCol: colIndex });
+    setSelection((current) => {
+      const next = { startRow: anchor.row, startCol: anchor.col, endRow: rowIndex, endCol: colIndex };
+      if (current && current.startRow === next.startRow && current.startCol === next.startCol && current.endRow === next.endRow && current.endCol === next.endCol) return current;
+      return next;
+    });
   }
 
   function updateDrag(rowIndex, colIndex) {
     if (!dragAnchor) return;
-    setSelection({ startRow: dragAnchor.row, startCol: dragAnchor.col, endRow: rowIndex, endCol: colIndex });
+    setSelection((current) => {
+      const next = { startRow: dragAnchor.row, startCol: dragAnchor.col, endRow: rowIndex, endCol: colIndex };
+      if (current && current.startRow === next.startRow && current.startCol === next.startCol && current.endRow === next.endRow && current.endCol === next.endCol) return current;
+      return next;
+    });
   }
 
   async function applyStyle(patch) {
@@ -1143,7 +1156,7 @@ export default function WorkspaceSheets() {
                         style={{ minWidth: column.width || 160, width: column.width || 160, ...styleForCell(style) }}
                         onMouseDown={(event) => beginDrag(originalIndex, colIndex, event)}
                         onMouseEnter={() => updateDrag(originalIndex, colIndex)}
-                        onClick={(event) => selectCell(originalIndex, colIndex, event)}
+                        onClick={(event) => { if (!dragAnchor) selectCell(originalIndex, colIndex, event); }}
                         onDoubleClick={() => startEdit(originalIndex, colIndex)}
                         onContextMenu={(event) => openMenu(event, 'cell', originalIndex, colIndex)}
                       >

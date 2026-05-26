@@ -1,5 +1,7 @@
 .sheetApp {
-  min-height: 640px;
+  height: calc(100vh - 184px);
+  min-height: 560px;
+  max-height: 980px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-lg);
   background: var(--bg-surface);
@@ -166,7 +168,9 @@
 .filterHeader strong {
   color: var(--text-primary);
   font-size: var(--font-size-sm);
+  user-select: none;
 }
+
 .filterControls {
   flex-wrap: wrap;
 }
@@ -216,9 +220,12 @@
 }
 .gridFrame {
   min-height: 0;
+  height: 100%;
   overflow: auto;
   position: relative;
   background: var(--bg-page);
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges;
 }
 .loading {
   padding: var(--space-6);
@@ -232,7 +239,9 @@
   min-width: 100%;
   color: var(--text-primary);
   font-size: var(--font-size-sm);
+  user-select: none;
 }
+
 .sheetGrid th,
 .sheetGrid td {
   height: calc(34px * var(--sheet-zoom, 1));
@@ -247,6 +256,7 @@
   background: var(--bg-surface);
 }
 .corner {
+  position: sticky;
   left: 0;
   z-index: 4;
   width: 54px;
@@ -339,10 +349,12 @@
 }
 .contextMenu {
   position: fixed;
-  z-index: 120;
+  z-index: 1000;
   width: 320px;
   max-height: min(560px, calc(100vh - 32px));
   overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-lg);
   background: var(--bg-elevated);
@@ -476,4 +488,11 @@
   color: var(--text-tertiary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
+}
+
+@media (max-height: 760px) {
+  .sheetApp {
+    height: calc(100vh - 132px);
+    min-height: 500px;
+  }
 }
