@@ -50,8 +50,9 @@ export default function ClientDetailDrawer({
   onClose,
   onUpdated,
   onDeleted,
+  initialTab = 'overview',
 }) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(initialTab || 'overview');
   const [avatarUrl, setAvatarUrl] = useState(() => getClientAvatar(client));
   const avatarInputRef = useRef(null);
 
@@ -63,9 +64,9 @@ export default function ClientDetailDrawer({
   const canCreateProject = hasPermission(user, 'projects.create');
 
   useEffect(() => {
-    setActiveTab('overview');
+    setActiveTab(initialTab || 'overview');
     setAvatarUrl(getClientAvatar(client));
-  }, [client?.id]);
+  }, [client?.id, initialTab]);
 
   useEffect(() => subscribeAvatarChange(() => setAvatarUrl(getClientAvatar(client))), [client]);
 

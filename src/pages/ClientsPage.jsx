@@ -24,7 +24,8 @@ import { resolveClientFeeAtDate } from '../utils/feeSchedule.js';
 import ClientFormModal from '../components/clients/ClientFormModal.jsx';
 import ClientDetailDrawer from '../components/clients/ClientDetailDrawer.jsx';
 import Button from '../components/ui/Button.jsx';
-import { ChartColumnIcon, PlusIcon, SearchIcon, SparklesIcon, TargetIcon } from '../components/ui/Icons.jsx';
+import { PlusIcon, SearchIcon, TargetIcon, TrendingUpIcon } from '../components/ui/Icons.jsx';
+import { Route as RouteIcon } from 'lucide-react';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import Select from '../components/ui/Select.jsx';
 import { matchesAnySearch } from '../utils/search.js';
@@ -44,9 +45,9 @@ const SCOPES = [
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
 const ANALYSIS_ITEMS = [
-  { key: 'icp', label: 'Análise ICP', className: 'analysisIcp', icon: TargetIcon },
-  { key: 'gdv', label: 'Análise GDV', className: 'analysisGdv', icon: ChartColumnIcon },
-  { key: 'routes', label: 'Resumo de Rotas', className: 'analysisRoutes', icon: SparklesIcon },
+  { key: 'icp', tab: 'icp', label: 'Análise ICP', className: 'analysisIcp', icon: TargetIcon },
+  { key: 'gdv', tab: 'gdv', label: 'Análise GDV', className: 'analysisGdv', icon: TrendingUpIcon },
+  { key: 'routes', tab: 'routes', label: 'Resumo de Rotas', className: 'analysisRoutes', icon: RouteIcon },
 ];
 
 function analysisCount(client, key) {
@@ -78,6 +79,7 @@ export default function ClientsPage() {
   const [scope, setScope] = useState('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [detailId, setDetailId] = useState(null);
+  const [detailTab, setDetailTab] = useState('overview');
   const [avatarVersion, setAvatarVersion] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [page, setPage] = useState(1);
@@ -126,12 +128,25 @@ export default function ClientsPage() {
     });
   }, [clients, scope, query, today]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const orderedRows = useMemo(() => {
+    const getTime = (value) => {
+      const timestamp = Date.parse(value?.createdAt || value?.created_at || value?.updatedAt || value?.updated_at || '');
+      return Number.isFinite(timestamp) ? timestamp : 0;
+    };
+
+    return [...filtered].sort((a, b) => {
+      const byCreatedAt = getTime(b) - getTime(a);
+      if (byCreatedAt !== 0) return byCreatedAt;
+      return String(a?.name || '').localeCompare(String(b?.name || ''), 'pt-BR');
+    });
+  }, [filtered]);
+
+  const totalPages = Math.max(1, Math.ceil(orderedRows.length / pageSize));
   const visibleRows = useMemo(() => {
     const safePage = Math.min(page, totalPages);
     const start = (safePage - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page, pageSize, totalPages]);
+    return orderedRows.slice(start, start + pageSize);
+  }, [orderedRows, page, pageSize, totalPages]);
 
   useEffect(() => {
     setPage(1);
@@ -179,9 +194,13 @@ export default function ClientsPage() {
     setPanelHeader({ title, actions });
   }, [canCreate, canOpenTemplate, counts.all, counts.active, navigate, setPanelHeader]);
 
-  const openDetail = useCallback((id) => setDetailId(id), []);
+  const openDetail = useCallback((id, tab = 'overview') => {
+    setDetailTab(tab);
+    setDetailId(id);
+  }, []);
   const closeDetail = useCallback(() => {
     setDetailId(null);
+    setDetailTab('overview');
     const next = new URLSearchParams(searchParams);
     next.delete('client');
     setSearchParams(next, { replace: true });
@@ -204,7 +223,10 @@ export default function ClientsPage() {
   useEffect(() => {
     const clientId = searchParams.get('client');
     if (!clientId || !Array.isArray(clients) || clients.length === 0) return;
-    if (clients.some((c) => c.id === clientId)) setDetailId(clientId);
+    if (clients.some((c) => c.id === clientId)) {
+      setDetailTab('overview');
+      setDetailId(clientId);
+    }
   }, [clients, searchParams]);
 
   const handleQueryChange = useCallback(
@@ -382,15 +404,20 @@ export default function ClientsPage() {
                         const Icon = item.icon;
                         const count = analysisCount(c, item.key);
                         return (
-                          <span
+                          <button
                             key={item.key}
+                            type="button"
                             className={`${styles.analysisIcon} ${styles[item.className]}`.trim()}
                             title={item.label}
-                            aria-label={`${item.label}: ${count}`}
+                            aria-label={`Abrir ${item.label} de ${c.name}. Registros: ${count}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openDetail(c.id, item.tab);
+                            }}
                           >
                             <Icon size={13} strokeWidth={2} aria-hidden="true" />
                             {count > 0 ? <span className={styles.analysisBadge}>{count}</span> : null}
-                          </span>
+                          </button>
                         );
                       })}
                     </div>
@@ -450,6 +477,7 @@ export default function ClientsPage() {
           onClose={closeDetail}
           onUpdated={handleUpdated}
           onDeleted={handleDeleted}
+          initialTab={detailTab}
         />
       )}
     </>

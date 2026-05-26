@@ -1030,6 +1030,7 @@
   position: relative;
   width: 26px;
   height: 26px;
+  padding: 0;
   border: 1px solid var(--workspace-panel-border-soft);
   border-radius: 999px;
   background: var(--surface-panel);
@@ -1037,6 +1038,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transform: none;
+  transition: none;
+}
+
+.analysisIcon:hover,
+.analysisIcon:focus,
+.analysisIcon:focus-visible {
+  box-shadow: none;
+  outline: none;
+  transform: none;
 }
 
 .analysisIcp {
@@ -1067,7 +1079,7 @@
   border: 1px solid var(--workspace-panel-bg);
   border-radius: 999px;
   background: var(--accent);
-  color: var(--bg);
+  color: #08090a;
   display: inline-flex;
   align-items: center;
   justify-content: center;
