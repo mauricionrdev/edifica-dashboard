@@ -253,10 +253,17 @@
   font-size: 13px;
   line-height: 1;
   font-weight: 600;
-  transition: color 120ms ease, background-color 120ms ease;
+  transition: color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
   border-radius: 10px;
 }
 
+.weekTab:focus-visible,
+.navBtn:focus-visible,
+.iconButton:focus-visible {
+  outline: none;
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--line);
+}
 
 .weekTabActive,
 .complementaryButtonActive {
@@ -383,6 +390,10 @@
   gap: 10px;
 }
 
+.searchBox:focus-within {
+  border-color: var(--gdv-accent-line);
+  background: rgba(255, 255, 255, .032);
+}
 
 .searchBox svg {
   color: var(--text-tertiary);
@@ -420,7 +431,7 @@
 .portfolioFilter button {
   height: 30px;
   padding: 0 10px;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
   color: var(--text-tertiary);
@@ -430,10 +441,16 @@
   white-space: nowrap;
 }
 
-.portfolioFilter button:hover,
-.portfolioFilterActive {
+.portfolioFilter button:hover {
   background: var(--surface-elevated);
   color: var(--text-primary);
+}
+
+.portfolioFilterActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
 }
 
 .complementaryButton {
@@ -484,7 +501,7 @@
   height: 7px;
   border-radius: 999px;
   background: var(--text-tertiary);
-  
+  box-shadow: 0 0 0 5px var(--field-bg);
 }
 
 .portfolioEmpty strong {
@@ -869,8 +886,10 @@
   letter-spacing: -0.04em;
 }
 
-.gdvAvatarEditor:hover {
+.gdvAvatarEditor:hover,
+.gdvAvatarEditor:focus-visible {
   border-color: var(--line);
+  outline: none;
 }
 
 .gdvIdentityFields {
@@ -913,6 +932,11 @@
   padding: 0 12px;
 }
 
+.modalField input:focus,
+.slugField:focus-within {
+  border-color: var(--line);
+  background: var(--surface-raised);
+}
 
 .slugField {
   display: grid;
@@ -1214,6 +1238,21 @@
   color: var(--text-primary);
 }
 
+.headerButton:focus-visible,
+.actionButton:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.ghostButton:focus-visible,
+.inlineButton:focus-visible,
+.modalClose:focus-visible,
+.modalAction:focus-visible,
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
 
 .primaryButton {
   border-color: var(--accent-line);
@@ -1236,7 +1275,7 @@
 .modalCard {
   border-color: var(--workspace-panel-border);
   background: var(--workspace-panel-bg);
-  box-shadow: none;
+  box-shadow: var(--shadow-dialog);
 }
 
 .modalHeader,
@@ -1324,7 +1363,7 @@
 .modalCard {
   border-color: var(--workspace-panel-border);
   background: var(--workspace-panel-bg);
-  box-shadow: none;
+  box-shadow: var(--shadow-dialog);
 }
 
 /* ==========================================================================
@@ -1343,4 +1382,32 @@
   background: var(--chassis-modal-backdrop);
   backdrop-filter: var(--chassis-modal-blur);
   -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+/* v149 — filtro ativo com padrão amarelo e sem focus ring */
+.portfolioFilter button {
+  border: 1px solid transparent;
+}
+
+.portfolioFilter button:hover {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.portfolioFilterActive,
+.portfolioFilterActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.portfolioFilter button:focus,
+.portfolioFilter button:focus-visible,
+.complementaryButton:focus,
+.complementaryButton:focus-visible,
+.searchBox:focus-within {
+  outline: none;
+  box-shadow: none;
 }

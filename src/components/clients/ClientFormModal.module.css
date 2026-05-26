@@ -604,3 +604,88 @@
   outline: none;
   box-shadow: none;
 }
+
+/* v149 — topo do modal de cliente alinhado ao padrão do drawer de detalhes */
+.identitySection {
+  padding: 15px;
+}
+
+.identityShell {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.avatarFrame {
+  position: relative;
+  width: 88px;
+  min-height: 88px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--field-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarFrame .avatarPreview {
+  width: 52px;
+  height: 52px;
+  border-color: var(--workspace-panel-border-soft);
+  background: #08090a;
+  font-size: 14px;
+}
+
+.avatarFrame .avatarUploadButton {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  border-radius: var(--workspace-control-radius);
+  background: var(--surface-raised);
+}
+
+.identityContent {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.identityGrid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.identitySection .input,
+.identitySection .selectControl :global(button) {
+  min-height: 40px;
+}
+
+.identitySection .avatarUpload,
+.identitySection .avatarUploadText {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .identityShell {
+    grid-template-columns: 1fr;
+  }
+
+  .avatarFrame {
+    width: 100%;
+    min-height: 76px;
+    justify-content: flex-start;
+    padding-left: 14px;
+  }
+
+  .identityGrid {
+    grid-template-columns: 1fr;
+  }
+}

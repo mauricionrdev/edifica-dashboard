@@ -172,118 +172,116 @@ export default function ClientFormModal({
         </div>
 
         <div className={styles.body}>
-          <section className={styles.section}>
+          <section className={`${styles.section} ${styles.identitySection}`}>
             <div className={styles.sectionTitle}>Identificação</div>
-            <div className={styles.avatarUpload}>
-              <div
-                className={styles.avatarPreview}
-                aria-hidden="true"
-              >
-                {avatarPreview ? <img src={avatarPreview} alt="" /> : clientInitials(form.name)}
-              </div>
-              <div className={styles.avatarUploadText}>
-                <strong>Foto do cliente</strong>
-              </div>
-              <label
-                className={styles.avatarUploadButton}
-                aria-label="Escolher imagem"
-                title="Escolher imagem"
-              >
-                <CameraIcon size={14} />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarFile}
-                  disabled={saving}
-                />
-              </label>
-            </div>
-
-            <div className={styles.grid}>
-              <div className={`${styles.field} ${styles.full}`}>
-                <label className={styles.label} htmlFor="nc-name">
-                  Nome do cliente
+            <div className={styles.identityShell}>
+              <div className={styles.avatarFrame}>
+                <div className={styles.avatarPreview} aria-hidden="true">
+                  {avatarPreview ? <img src={avatarPreview} alt="" /> : clientInitials(form.name)}
+                </div>
+                <label
+                  className={styles.avatarUploadButton}
+                  aria-label="Escolher imagem"
+                  title="Escolher imagem"
+                >
+                  <CameraIcon size={14} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarFile}
+                    disabled={saving}
+                  />
                 </label>
-                <input
-                  id="nc-name"
-                  className={styles.input}
-                  type="text"
-                  maxLength={120}
-                  value={form.name}
-                  onChange={(event) => setField('name', event.target.value)}
-                  disabled={saving}
-                  autoFocus
-                  placeholder="Nome completo"
-                />
               </div>
 
-              <div className={styles.field}>
-                <span className={styles.label}>Squad</span>
-                <Select
-                  type="squad"
-                  className={styles.selectControl}
-                  value={form.squadId}
-                  onChange={(event) => setField('squadId', event.target.value)}
-                  disabled={saving}
-                  placeholder="Selecionar squad"
-                  aria-label="Squad"
-                >
-                  <option value="">Sem squad</option>
-                  {squads.map((squad) => (
-                    <option
-                      key={squad.id}
-                      value={squad.id}
-                      data-avatar={getSquadAvatar(squad) || squad.avatarUrl || squad.logoUrl || ''}
-                      data-name={squad.name}
+              <div className={styles.identityContent}>
+                <div className={`${styles.field} ${styles.full}`}>
+                  <label className={styles.label} htmlFor="nc-name">
+                    Nome do cliente
+                  </label>
+                  <input
+                    id="nc-name"
+                    className={styles.input}
+                    type="text"
+                    maxLength={120}
+                    value={form.name}
+                    onChange={(event) => setField('name', event.target.value)}
+                    disabled={saving}
+                    autoFocus
+                    placeholder="Nome completo"
+                  />
+                </div>
+
+                <div className={styles.identityGrid}>
+                  <div className={styles.field}>
+                    <span className={styles.label}>Squad</span>
+                    <Select
+                      type="squad"
+                      className={styles.selectControl}
+                      value={form.squadId}
+                      onChange={(event) => setField('squadId', event.target.value)}
+                      disabled={saving}
+                      placeholder="Selecionar squad"
+                      aria-label="Squad"
                     >
-                      {squad.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+                      <option value="">Sem squad</option>
+                      {squads.map((squad) => (
+                        <option
+                          key={squad.id}
+                          value={squad.id}
+                          data-avatar={getSquadAvatar(squad) || squad.avatarUrl || squad.logoUrl || ''}
+                          data-name={squad.name}
+                        >
+                          {squad.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
 
-              <div className={styles.field}>
-                <span className={styles.label}>Status</span>
-                <Select
-                  className={styles.selectControl}
-                  value={form.status}
-                  onChange={(event) => setField('status', event.target.value)}
-                  disabled={saving}
-                  placeholder="Selecionar status"
-                  aria-label="Status"
-                >
-                  {CLIENT_STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </Select>
-              </div>
+                  <div className={styles.field}>
+                    <span className={styles.label}>Status</span>
+                    <Select
+                      className={styles.selectControl}
+                      value={form.status}
+                      onChange={(event) => setField('status', event.target.value)}
+                      disabled={saving}
+                      placeholder="Selecionar status"
+                      aria-label="Status"
+                    >
+                      {CLIENT_STATUS_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </Select>
+                  </div>
 
-              <div className={styles.field}>
-                <span className={styles.label}>Gestor de tráfego</span>
-                <UserPicker
-                  className={styles.selectControl}
-                  users={gestorRows}
-                  value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
-                  onChange={(userId) => setField('gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
-                  disabled={saving}
-                  placeholder="Sem gestor"
-                  disableHover
-                  portal
-                />
-              </div>
+                  <div className={styles.field}>
+                    <span className={styles.label}>Gestor de tráfego</span>
+                    <UserPicker
+                      className={styles.selectControl}
+                      users={gestorRows}
+                      value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+                      onChange={(userId) => setField('gestor', gestorRows.find((entry) => entry.id === userId)?.name || '')}
+                      disabled={saving}
+                      placeholder="Sem gestor"
+                      disableHover
+                      portal
+                    />
+                  </div>
 
-              <div className={styles.field}>
-                <span className={styles.label}>GDV responsável</span>
-                <UserPicker
-                  className={styles.selectControl}
-                  users={gdvRows}
-                  value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
-                  onChange={(userId) => setField('gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
-                  disabled={saving}
-                  placeholder="Sem GDV"
-                  disableHover
-                  portal
-                />
+                  <div className={styles.field}>
+                    <span className={styles.label}>GDV responsável</span>
+                    <UserPicker
+                      className={styles.selectControl}
+                      users={gdvRows}
+                      value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+                      onChange={(userId) => setField('gdvName', gdvRows.find((entry) => entry.id === userId)?.name || '')}
+                      disabled={saving}
+                      placeholder="Sem GDV"
+                      disableHover
+                      portal
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </section>
