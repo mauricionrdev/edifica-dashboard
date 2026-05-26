@@ -13056,3 +13056,76 @@ button:focus-visible {
 .operationRow:hover .taskAvatar {
   box-shadow: none;
 }
+
+/* vPerfil tarefas — alinhamento da lista e badge de etapa */
+.operationListHeader,
+.operationRow {
+  grid-template-columns:
+    28px minmax(320px, 1.58fr) minmax(128px, 0.46fr) minmax(204px, 0.72fr) minmax(92px, 0.32fr) minmax(104px, 0.36fr);
+}
+
+.operationListHeader span:nth-child(3),
+.operationListHeader span:nth-child(4),
+.operationListHeader span:nth-child(5) {
+  text-align: center;
+}
+
+.operationMeta,
+.operationStageCell,
+.operationPeopleCell {
+  width: 100%;
+  justify-self: stretch;
+  justify-content: center;
+}
+
+.operationMeta>span {
+  max-width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.operationStageCell {
+  padding-inline: 2px;
+}
+
+.stageProgressPill {
+  width: min(196px, 100%);
+  min-width: 176px;
+  max-width: 196px;
+  height: 32px;
+  padding: 0 12px;
+  gap: 10px;
+  justify-content: center;
+}
+
+.stageProgressLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stageProgressValue {
+  flex: 0 0 auto;
+  min-width: 30px;
+  text-align: right;
+}
+
+@media (max-width: 1180px) {
+  .operationListHeader,
+  .operationRow {
+    grid-template-columns: 22px minmax(0, 1fr);
+  }
+
+  .operationMeta,
+  .operationStageCell,
+  .operationPeopleCell {
+    width: auto;
+    justify-self: start;
+    justify-content: flex-start;
+  }
+
+  .stageProgressPill {
+    width: min(196px, 100%);
+  }
+}
