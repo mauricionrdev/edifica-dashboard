@@ -17,6 +17,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { getClientAvatar, getUserAvatar } from '../utils/avatarStorage.js';
 import { roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
+import DemandModal from '../components/tasks/DemandModal.jsx';
 import Avatar from '../components/ui/Avatar.jsx';
 import Select from '../components/ui/Select.jsx';
 import DateField from '../components/ui/DateField.jsx';
@@ -866,48 +867,39 @@ export default function UserProfilePage() {
     }
   }
 
-  async function handleAssignTask(event) {
-    event.preventDefault();
-    const missingFields = validateDemandForm(newTask);
-    if (missingFields.length) {
-      showToast(`Preencha: ${joinMissingFields(missingFields)}.`, { variant: 'error' });
-      return;
-    }
-
-    const title = newTask.title.trim();
-    const assigneeUserId = newTask.assigneeUserId || profileUser?.id || currentUser?.id || '';
-    const selectedClient = selectedNewTaskClient;
-    const description = buildDemandDescription(newTask, selectedClient?.name || '');
+  async function handleAssignTask(form) {
+    const title = String(form?.title || '').trim();
+    const assigneeUserId = form?.assigneeUserId || profileUser?.id || currentUser?.id || '';
 
     try {
       setAssignSaving(true);
       const res = await createTask({
         title,
-        description,
+        description: form?.description || '',
         assigneeUserId,
-        clientId: newTask.clientId || undefined,
-        dueDate: newTask.dueDate || undefined,
-        priority: newTask.priority,
+        clientId: form?.clientId || undefined,
+        dueDate: form?.dueDate || undefined,
+        priority: form?.priority || 'normal',
         status: 'in_progress',
         source: 'profile',
         metadata: {
-          type: newTask.type,
-          recurrence: newTask.type === 'routine' ? newTask.recurrence : undefined,
-          routineScope: newTask.type === 'routine' ? newTask.routineScope : undefined,
-          routineChecklist: newTask.type === 'routine' ? newTask.routineChecklist : undefined,
+          type: form?.type || 'support',
+          recurrence: form?.type === 'routine' ? form?.recurrence : undefined,
+          routineScope: form?.type === 'routine' ? form?.routineScope : undefined,
+          routineChecklist: form?.type === 'routine' ? form?.routineChecklist : undefined,
         },
       });
       const createdTask = res?.task;
       const requesterId = currentUser?.id || '';
       const collaboratorIds = [...new Set([
-        ...(newTask.collaboratorUserIds || []),
+        ...(form?.collaboratorUserIds || []),
         requesterId && requesterId !== assigneeUserId ? requesterId : '',
       ].filter((id) => id && id !== assigneeUserId))];
       if (createdTask?.id && collaboratorIds.length) {
         await Promise.all(collaboratorIds.map((userId) => addTaskCollaborator(createdTask.id, { userId }).catch(() => null)));
       }
-      if (createdTask?.id && Array.isArray(newTask.attachments) && newTask.attachments.length) {
-        await Promise.all(newTask.attachments.map((item) => createTaskAttachment(createdTask.id, {
+      if (createdTask?.id && Array.isArray(form?.attachments) && form.attachments.length) {
+        await Promise.all(form.attachments.map((item) => createTaskAttachment(createdTask.id, {
           fileName: item.fileName,
           mimeType: item.mimeType,
           sizeBytes: item.sizeBytes,
@@ -915,8 +907,6 @@ export default function UserProfilePage() {
         }).catch(() => null)));
       }
       await reloadProfileTasks(profileUser);
-      setNewTask(emptyDemandForm(profileUser?.id || currentUser?.id || ''));
-      setClientQuery('');
       setAssignOpen(false);
       showToast('Demanda criada.', { variant: 'success' });
     } catch (err) {
@@ -1389,185 +1379,19 @@ export default function UserProfilePage() {
         </div>
       ) : null}
 
-{assignOpen ? (
-        <div className={styles.modalOverlay} onClick={() => setAssignOpen(false)}>
-          <form className={`${styles.taskModal} ${styles.demandModal} ${styles[`demandModal_${newTask.type}`] || ''}`.trim()} onSubmit={handleAssignTask} onClick={(event) => event.stopPropagation()}>
-            <header className={styles.modalHeader}>
-              <div>
-                <h2>Nova demanda</h2>
-                <span>{demandTypeLabel(newTask.type)}</span>
-              </div>
-              <button type="button" className={styles.iconButton} onClick={() => setAssignOpen(false)} aria-label="Fechar">
-                <CloseIcon size={16} />
-              </button>
-            </header>
-
-            <div className={styles.demandFormContent}>
-              <div className={styles.demandFormGrid}>
-                <div className={`${styles.labeledField} ${styles.fieldCompact}`.trim()}>
-                  <span>Tipo</span>
-                  <Select value={newTask.type} onChange={(event) => setNewTask((prev) => ({ ...prev, type: event.target.value }))} aria-label="Tipo" className={styles.formSelect}>
-                    {DEMAND_TYPES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
-                </div>
-                <div className={`${styles.labeledField} ${styles.fieldCompact}`.trim()}>
-                  <span>Prioridade</span>
-                  <Select value={newTask.priority} onChange={(event) => setNewTask((prev) => ({ ...prev, priority: event.target.value }))} aria-label="Prioridade" className={styles.formSelect}>
-                    {DEMAND_PRIORITIES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
-                </div>
-                <label className={`${styles.labeledField} ${styles.fieldTitle}`.trim()}>
-                  <span>Título</span>
-                  <input
-                    value={newTask.title}
-                    onChange={(event) => setNewTask((prev) => ({ ...prev, title: event.target.value }))}
-                    placeholder="Título"
-                    aria-label="Título"
-                  />
-                </label>
-                <div className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
-                  <span>Para quem é esta tarefa?</span>
-                  <Select
-                    type="user"
-                    value={newTask.assigneeUserId}
-                    onChange={(event) => setNewTask((prev) => ({
-                      ...prev,
-                      assigneeUserId: event.target.value,
-                      collaboratorUserIds: (prev.collaboratorUserIds || []).filter((id) => id !== event.target.value),
-                    }))}
-                    aria-label="Responsável"
-                    className={styles.formSelect}
-                  >
-                    {demandAssigneeOptions.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
-                  </Select>
-                </div>
-                <div className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
-                  <span>Cliente</span>
-                  <Select
-                    type="client"
-                    value={newTask.clientId}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      const client = filteredClientOptions.find((item) => String(item.id) === String(value));
-                      setNewTask((prev) => ({ ...prev, clientId: value }));
-                      setClientQuery(client?.name || '');
-                    }}
-                    aria-label="Cliente"
-                    className={styles.formSelect}
-                  >
-                    <option value="">Sem cliente</option>
-                    {filteredClientOptions.map((client) => <option key={client.id} value={client.id} data-avatar={getClientAvatar(client) || client.avatarUrl || ''} data-name={client.name}>{client.name}</option>)}
-                  </Select>
-                </div>
-                <label className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
-                  <span>Prazo</span>
-                  <DateField value={newTask.dueDate} onChange={(value) => setNewTask((prev) => ({ ...prev, dueDate: value }))} placeholder="Prazo" ariaLabel="Prazo" className={styles.dateField} />
-                </label>
-                <div className={`${styles.labeledField} ${styles.fieldDouble}`.trim()}>
-                  <span>Colaboradores adicionais</span>
-                  <Select
-                    type="user"
-                    value=""
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      if (!value) return;
-                      setNewTask((prev) => ({
-                        ...prev,
-                        collaboratorUserIds: [...new Set([...(prev.collaboratorUserIds || []), value])],
-                      }));
-                    }}
-                    aria-label="Colaboradores"
-                    className={styles.formSelect}
-                  >
-                    <option value="">Adicionar colaborador</option>
-                    {availableNewTaskCollaborators.map((item) => <option key={item.id} value={item.id} data-avatar={getUserAvatar(item) || item.avatarUrl || ''} data-name={item.name}>{item.name}</option>)}
-                  </Select>
-                </div>
-                {selectedNewTaskCollaborators.length ? (
-                  <div className={`${styles.selectedCollaborators} ${styles.fieldWide}`}>
-                    {selectedNewTaskCollaborators.map((item) => (
-                      <span key={item.id}>
-                        <Avatar src={getUserAvatar(item) || item.avatarUrl || undefined} name={item.name} size="xs" />
-                        {item.name}
-                        <button
-                          type="button"
-                          onClick={() => setNewTask((prev) => ({ ...prev, collaboratorUserIds: (prev.collaboratorUserIds || []).filter((id) => id !== item.id) }))}
-                          aria-label={`Remover ${item.name}`}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
-              {newTask.type === 'briefing' ? (
-                <div className={styles.briefingGrid}>
-                  <input value={newTask.officeName} onChange={(event) => setNewTask((prev) => ({ ...prev, officeName: event.target.value }))} placeholder="Escritório" />
-                  <input value={newTask.objective} onChange={(event) => setNewTask((prev) => ({ ...prev, objective: event.target.value }))} placeholder="Objetivo" />
-                  <input value={newTask.campaign} onChange={(event) => setNewTask((prev) => ({ ...prev, campaign: event.target.value }))} placeholder="Nicho/campanha" />
-                  <input value={newTask.channels} onChange={(event) => setNewTask((prev) => ({ ...prev, channels: event.target.value }))} placeholder="Canais" />
-                  <input value={newTask.attendants} onChange={(event) => setNewTask((prev) => ({ ...prev, attendants: event.target.value }))} placeholder="Atendentes" />
-                  <input value={newTask.greeting} onChange={(event) => setNewTask((prev) => ({ ...prev, greeting: event.target.value }))} placeholder="Saudação" />
-                  <input value={newTask.location} onChange={(event) => setNewTask((prev) => ({ ...prev, location: event.target.value }))} placeholder="Localização" />
-                  <textarea className={styles.fieldWide} value={newTask.notes} onChange={(event) => setNewTask((prev) => ({ ...prev, notes: event.target.value }))} placeholder="Observações" />
-                </div>
-              ) : null}
-
-              {newTask.type === 'routine' ? (
-                <div className={styles.routineFormGrid}>
-                  <Select value={newTask.recurrence} onChange={(event) => setNewTask((prev) => ({ ...prev, recurrence: event.target.value }))} aria-label="Recorrência" className={`${styles.formSelect} ${styles.fieldThird}`}>
-                    {ROUTINE_RECURRENCES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </Select>
-                  <input value={newTask.routineScope} onChange={(event) => setNewTask((prev) => ({ ...prev, routineScope: event.target.value }))} placeholder="Escopo" />
-                  <textarea className={styles.fieldWide} value={newTask.routineChecklist} onChange={(event) => setNewTask((prev) => ({ ...prev, routineChecklist: event.target.value }))} placeholder="Checklist" />
-                </div>
-              ) : null}
-
-              <textarea
-                value={newTask.description}
-                onChange={(event) => setNewTask((prev) => ({ ...prev, description: event.target.value }))}
-                placeholder="Descrição"
-                aria-label="Descrição"
-                rows={6}
-              />
-
-              <div className={styles.attachmentComposer}>
-                <div>
-                  <span>Anexos</span>
-                  <strong>{(newTask.attachments || []).length}</strong>
-                </div>
-                <input type="file" accept="image/*,application/pdf" multiple onChange={handleNewTaskAttachmentFiles} hidden id="public-profile-demand-attachments" />
-                <button type="button" onClick={() => document.getElementById('public-profile-demand-attachments')?.click()}>Anexar imagem ou PDF</button>
-                {(newTask.attachments || []).length ? (
-                  <div className={styles.attachmentPreviewGrid}>
-                    {(newTask.attachments || []).map((item) => (
-                      <figure key={item.id} className={styles.attachmentPreviewItem}>
-                        {item.mimeType === 'application/pdf' ? (
-                          <span className={styles.attachmentPdfPreview}>PDF</span>
-                        ) : (
-                          <img src={item.dataUrl} alt={item.fileName || 'Anexo'} loading="lazy" decoding="async" />
-                        )}
-                        <figcaption>{item.fileName || taskAttachmentKind(item)}</figcaption>
-                        <button type="button" onClick={() => handleRemoveNewTaskAttachment(item.id)} aria-label={`Remover ${item.fileName || 'anexo'}`}>×</button>
-                      </figure>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <footer className={styles.modalFooter}>
-              <button type="button" onClick={() => setAssignOpen(false)}>Cancelar</button>
-              <button type="submit" disabled={assignSaving || !newTask.title.trim()}>
-                <PlusIcon size={15} />
-                {assignSaving ? 'Criando' : 'Criar demanda'}
-              </button>
-            </footer>
-          </form>
-        </div>
-      ) : null}
+<DemandModal
+        open={assignOpen}
+        title="Nova demanda"
+        defaultType="support"
+        defaultAssigneeUserId={profileUser?.id || currentUser?.id || ''}
+        assigneeUsers={demandAssigneeOptions}
+        users={Array.isArray(userDirectory) ? userDirectory : []}
+        clients={Array.isArray(clients) ? clients : []}
+        creating={assignSaving}
+        onClose={() => setAssignOpen(false)}
+        onSubmit={handleAssignTask}
+        onError={(message) => showToast(message, { variant: 'error' })}
+      />
     </div>
   );
 }
