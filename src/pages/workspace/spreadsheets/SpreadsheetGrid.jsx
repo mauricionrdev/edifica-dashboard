@@ -17,6 +17,7 @@ export default function SpreadsheetGrid({
   onDeleteColumn,
   onDeleteRow,
   onColumnResizeStart,
+  onOpenContextMenu,
 }) {
   return (
     <div className={styles.sheetScroll}>
@@ -24,8 +25,12 @@ export default function SpreadsheetGrid({
         <thead>
           <tr>
             <th>#</th>
-            {columns.map((column) => (
-              <th key={column.key} style={columnWidth(column)}>
+            {columns.map((column, colIndex) => (
+              <th
+                key={column.key}
+                style={columnWidth(column)}
+                onContextMenu={(event) => onOpenContextMenu(event, { type: 'column', column, colIndex })}
+              >
                 <div className={styles.columnHeader}>
                   <input
                     className={styles.columnNameInput}
@@ -51,7 +56,7 @@ export default function SpreadsheetGrid({
         <tbody>
           {rows.map((row, rowIndex) => (
             <tr key={row.id || rowIndex}>
-              <td>
+              <td onContextMenu={(event) => onOpenContextMenu(event, { type: 'row', row, rowIndex })}>
                 <div className={styles.rowHeader}>
                   <span className={styles.rowNumber}>{row.position || rowIndex + 1}</span>
                   <button type="button" className={styles.headerAction} onClick={() => onDeleteRow(row)} aria-label={`Excluir linha ${row.position || rowIndex + 1}`}>×</button>
@@ -61,7 +66,11 @@ export default function SpreadsheetGrid({
                 const isEditing = editing?.rowIndex === rowIndex && editing?.columnKey === column.key;
                 const isSelected = selectedCell?.rowIndex === rowIndex && selectedCell?.colIndex === colIndex;
                 return (
-                  <td key={column.key} style={columnWidth(column)}>
+                  <td
+                    key={column.key}
+                    style={columnWidth(column)}
+                    onContextMenu={(event) => onOpenContextMenu(event, { type: 'cell', row, column, rowIndex, colIndex })}
+                  >
                     {isEditing ? (
                       <input
                         autoFocus

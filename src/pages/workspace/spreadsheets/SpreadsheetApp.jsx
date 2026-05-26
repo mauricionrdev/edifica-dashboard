@@ -14,10 +14,11 @@ import {
 } from '../../../api/support.js';
 import WorkspaceEmptyState from '../WorkspaceEmptyState.jsx';
 import styles from '../WorkspaceApp.module.css';
+import SpreadsheetContextMenu from './SpreadsheetContextMenu.jsx';
 import SpreadsheetFormulaBar from './SpreadsheetFormulaBar.jsx';
 import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import SpreadsheetToolbar from './SpreadsheetToolbar.jsx';
-import { buildSpreadsheetCommands } from './spreadsheetCommands.js';
+import { buildSpreadsheetCommands, buildSpreadsheetContextCommands } from './spreadsheetCommands.js';
 import { cellRef, cleanCellValue, nextCellPosition, normalizeRows, parseClipboardMatrix } from './spreadsheetUtils.js';
 
 export default function SpreadsheetApp({ requestConfirm }) {
@@ -32,6 +33,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [contextMenu, setContextMenu] = useState(null);
 
   const activeSheet = useMemo(() => sheets.find((sheet) => sheet.id === activeSheetId) || sheets[0] || null, [sheets, activeSheetId]);
   const selectedColumn = selectedCell ? columns[selectedCell.colIndex] : null;
@@ -52,6 +54,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
       setRows(nextRows);
       setSelectedCell(null);
       setEditing(null);
+      setContextMenu(null);
       setStatus(nextRows.length || nextColumns.length ? 'Planilha sincronizada' : 'Crie uma planilha para começar');
     } catch (err) {
       setError(err?.message || 'Não foi possível carregar as planilhas.');
@@ -67,6 +70,21 @@ export default function SpreadsheetApp({ requestConfirm }) {
   useEffect(() => {
     setSheetNameDraft(activeSheet?.name || '');
   }, [activeSheet?.id, activeSheet?.name]);
+
+  useEffect(() => {
+    if (!contextMenu) return undefined;
+    function handleClose() {
+      setContextMenu(null);
+    }
+    window.addEventListener('keydown', handleClose);
+    window.addEventListener('resize', handleClose);
+    window.addEventListener('scroll', handleClose, true);
+    return () => {
+      window.removeEventListener('keydown', handleClose);
+      window.removeEventListener('resize', handleClose);
+      window.removeEventListener('scroll', handleClose, true);
+    };
+  }, [contextMenu]);
 
   async function handleCreateSheet() {
     setLoading(true);
@@ -169,6 +187,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
     const column = columns[colIndex];
     setSelectedCell({ rowIndex, colIndex });
     setDraft(String(rows[rowIndex]?.[column?.key] ?? ''));
+    setContextMenu(null);
   }
 
   function startEditing(rowIndex, columnKey, colIndex) {
@@ -198,9 +217,31 @@ export default function SpreadsheetApp({ requestConfirm }) {
     await saveCellValue(selectedCell.rowIndex, selectedColumn.key, draft);
   }
 
-  async function clearSelectedCell() {
-    if (!selectedCell || !selectedColumn) return;
-    await saveCellValue(selectedCell.rowIndex, selectedColumn.key, '');
+  async function clearSelectedCell(context = null) {
+    const target = context || selectedCell;
+    const column = context?.column || selectedColumn;
+    if (!target || !column) return;
+    await saveCellValue(target.rowIndex, column.key, '');
+  }
+
+  async function copyCell(context) {
+    const column = context?.column || selectedColumn;
+    const row = rows[context?.rowIndex ?? selectedCell?.rowIndex];
+    if (!column || !row) return;
+    const value = String(row[column.key] ?? '');
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      setStatus('Célula copiada');
+    }
+  }
+
+  async function pasteCell(context) {
+    const column = context?.column || selectedColumn;
+    const rowIndex = context?.rowIndex ?? selectedCell?.rowIndex;
+    if (!column || rowIndex === undefined || typeof navigator === 'undefined' || !navigator.clipboard?.readText) return;
+    const text = await navigator.clipboard.readText();
+    await saveCellValue(rowIndex, column.key, cleanCellValue(text));
+    setStatus('Texto colado');
   }
 
   function handleCellKeyDown(event, rowIndex = selectedCell?.rowIndex, colIndex = selectedCell?.colIndex) {
@@ -269,9 +310,47 @@ export default function SpreadsheetApp({ requestConfirm }) {
     window.addEventListener('mouseup', handleUp);
   }
 
+  function openContextMenu(event, context) {
+    event.preventDefault();
+    const x = Math.min(event.clientX, Math.max(16, window.innerWidth - 244));
+    const y = Math.min(event.clientY, Math.max(16, window.innerHeight - 330));
+    const column = context.colIndex !== undefined ? columns[context.colIndex] : context.column;
+    const row = context.rowIndex !== undefined ? rows[context.rowIndex] : context.row;
+    if (context.type === 'cell' && column) {
+      setSelectedCell({ rowIndex: context.rowIndex, colIndex: context.colIndex });
+      setDraft(String(row?.[column.key] ?? ''));
+    }
+    setContextMenu({
+      ...context,
+      x,
+      y,
+      column,
+      row,
+      title: context.type === 'column' ? 'Coluna' : context.type === 'row' ? 'Linha' : 'Célula',
+      subtitle: context.type === 'column' ? (column?.label || 'Coluna') : context.type === 'row' ? `Linha ${row?.position || context.rowIndex + 1}` : cellRef(context.rowIndex, context.colIndex),
+      label: 'Ações da planilha',
+    });
+  }
+
   const commands = useMemo(
     () => buildSpreadsheetCommands({ activeSheetId, selectedCell, onAddRow: handleAddRow, onAddColumn: handleAddColumn, onClearCell: clearSelectedCell }),
     [activeSheetId, selectedCell, rows, columns]
+  );
+
+  const contextCommands = useMemo(
+    () => buildSpreadsheetContextCommands({
+      activeSheetId,
+      context: contextMenu,
+      onAddRow: handleAddRow,
+      onAddColumn: handleAddColumn,
+      onCopyCell: copyCell,
+      onPasteCell: pasteCell,
+      onClearCell: clearSelectedCell,
+      onEditCell: startEditing,
+      onDeleteRow: requestDeleteRow,
+      onDeleteColumn: requestDeleteColumn,
+    }),
+    [activeSheetId, contextMenu, rows, columns]
   );
 
   return (
@@ -350,8 +429,12 @@ export default function SpreadsheetApp({ requestConfirm }) {
           onDeleteColumn={requestDeleteColumn}
           onDeleteRow={requestDeleteRow}
           onColumnResizeStart={handleColumnResizeStart}
+          onOpenContextMenu={openContextMenu}
         />
       ) : null}
+
+      <SpreadsheetContextMenu menu={contextMenu} commands={contextCommands} onClose={() => setContextMenu(null)} />
+
     </section>
   );
 }

@@ -727,3 +727,98 @@
     border-bottom: 1px solid var(--line-subtle);
   }
 }
+
+.contextBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-popover);
+  background: transparent;
+}
+
+.contextMenu {
+  position: fixed;
+  width: 228px;
+  max-height: min(320px, calc(100vh - 32px));
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-popover);
+}
+
+.contextHeader {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-surface);
+}
+
+.contextHeader span {
+  color: var(--text-quaternary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.contextHeader strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contextList {
+  max-height: 246px;
+  overflow-y: auto;
+  padding: var(--space-1);
+}
+
+.contextItem {
+  width: 100%;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  line-height: var(--lh-ui);
+  padding: 0 var(--space-2);
+  text-align: left;
+  cursor: pointer;
+}
+
+.contextItem:hover:not(:disabled) {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+
+.contextItem[data-danger='true'] {
+  color: var(--danger-text);
+}
+
+.contextItem[data-danger='true']:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.contextItem:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.contextItem kbd {
+  color: var(--text-quaternary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-medium);
+}
