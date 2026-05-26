@@ -39,7 +39,6 @@ import {
 import DateField from '../components/ui/DateField.jsx';
 import Avatar from '../components/ui/Avatar.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
-import ProfileTaskBoard from '../components/profile/ProfileTaskBoard.jsx';
 import { BellIcon, BuildingIcon, CalendarIcon, ChecklistIcon, CloseIcon, SettingsIcon, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
 
@@ -3374,55 +3373,151 @@ export default function ProfilePage() {
           </div>
         </header>
 
-        <ProfileTaskBoard
-          tabs={OPERATION_TABS}
-          activeTab={operationTab}
-          counts={operationCounts}
-          onTabChange={(value) => { setOperationTab(value); setOperationPage(1); }}
-          loading={tasksLoading}
-          error={tasksError}
-          tasks={visibleTasks}
-          emptyLabel={emptyOperationLabel(operationTab)}
-          onOpenTask={(task) => setActiveTaskId(task.id)}
-          onToggleTask={handleToggleTask}
-          canToggleTask={() => true}
-          updatingTaskId={taskUpdatingId}
-          getTaskDone={isDone}
-          getTaskTitle={displayTaskTitle}
-          getTaskSubtitle={(task) => {
-            const clientName = extractTaskClientName(task);
-            const projectOrigin = isProjectOriginTask(task);
-            const projectName = taskProjectName(task);
-            return [
-              clientName,
-              projectOrigin ? (projectName ? `Projeto · ${projectName}` : 'Direto do projeto') : '',
-            ].filter(Boolean).join(' · ');
-          }}
-          getTaskTags={(task) => visibleOperationTags(task).slice(0, 1).map((tag) => ({
-            key: tag.key,
-            label: tag.label,
-            tone: getTaskKind(task),
-          }))}
-          getTaskStage={taskStageProgress}
-          getTaskPeople={(task) => buildTaskPeople(
-            { ...task, collaborators: taskPeopleMap[task.id] || task.collaborators || task.people || [] },
-            demandUsers
-          ).map((person) => ({
-            ...person,
-            avatarUrl: getUserAvatar(person),
-          }))}
-          getTaskDue={(task) => ({ label: formatDueLabel(task.dueDate), tone: statusKey(task) })}
-          pagination={tabTasks.length > OPERATION_PAGE_SIZE ? (
+        <div className={styles.operationBody}>
+          {tasksLoading ? (
+            <div className={styles.operationLoading} aria-label="Carregando tarefas">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className={styles.operationLoadingRow}>
+                  <span />
+                  <div>
+                    <i />
+                    <b />
+                  </div>
+                  <em />
+                  <em />
+                  <strong />
+                </div>
+              ))}
+            </div>
+          ) : tasksError ? (
+            <StateBlock variant="error" compact title="Erro" />
+          ) : visibleTasks.length === 0 ? (
+            <div className={styles.emptyOperation}>
+              <span>{emptyOperationLabel(operationTab)}</span>
+            </div>
+          ) : (
             <>
-              <span>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</span>
-              <span className={styles.operationPageIndicator}>Página {safeOperationPage} de {operationTotalPages}</span>
-              <div>
-                <button type="button" onClick={() => setOperationPage((page) => Math.max(1, page - 1))} disabled={safeOperationPage <= 1}>Anterior</button>
-                <button type="button" onClick={() => setOperationPage((page) => Math.min(operationTotalPages, page + 1))} disabled={safeOperationPage >= operationTotalPages}>Próxima</button>
+              <div className={styles.operationList}>
+                <div className={styles.operationListHeader} aria-hidden="true">
+                  <span />
+                  <span>Tarefa</span>
+                  <span>Propriedades</span>
+                  <span>Etapa</span>
+                  <span>Colab.</span>
+                  <span>Prazo</span>
+                </div>
+                {visibleTasks.map((task) => {
+                  const itemKind = getTaskKind(task);
+                  const itemStatus = statusKey(task);
+                  const stageProgress = taskStageProgress(task);
+                  const taskPeople = buildTaskPeople(
+                    { ...task, collaborators: taskPeopleMap[task.id] || task.collaborators || task.people || [] },
+                    demandUsers
+                  );
+                  const clientName = extractTaskClientName(task);
+                  const projectOrigin = isProjectOriginTask(task);
+                  const projectName = taskProjectName(task);
+                  return (
+                    <article
+                      key={task.id}
+                      role="button"
+                      tabIndex={0}
+                      className={`${styles.operationRow} ${isDone(task) ? styles.operationRowDone : ''}`.trim()}
+                      onClick={() => setActiveTaskId(task.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setActiveTaskId(task.id);
+                        }
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className={`${styles.statusCheck} ${isDone(task) ? styles.statusCheckDone : ''}`.trim()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleToggleTask(task);
+                        }}
+                        disabled={taskUpdatingId === task.id}
+                        aria-label={isDone(task) ? 'Reabrir' : 'Concluir'}
+                      >
+                        {isDone(task) ? '✓' : ''}
+                      </button>
+
+                      <div className={styles.operationMain}>
+                        <strong>{displayTaskTitle(task)}</strong>
+                        {(clientName || projectOrigin) ? (
+                          <span className={styles.operationSubline}>
+                            {clientName ? <em>{clientName}</em> : null}
+                            {projectOrigin ? <i>{projectName ? `Projeto · ${projectName}` : 'Direto do projeto'}</i> : null}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className={styles.operationMeta}>
+                        {visibleOperationTags(task).slice(0, 1).map((tag) => (
+                          <span
+                            key={tag.key}
+                            className={`${styles[tag.className] || ''} ${styles[tag.tone] || ''}`.trim()}
+                          >
+                            {tag.label}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className={styles.operationStageCell}>
+                        <span
+                          className={`${styles.stageProgressPill} ${styles[`stage_${stageProgress.tone}`] || ''}`.trim()}
+                          style={{ '--stage-progress': `${stageProgress.progress}%` }}
+                        >
+                          <span className={styles.stageProgressTrack} aria-hidden="true" />
+                          <span className={styles.stageProgressLabel}>{stageProgress.label}</span>
+                          <span className={styles.stageProgressValue}>{stageProgress.progress}%</span>
+                        </span>
+                      </div>
+
+                      <div className={styles.operationPeopleCell}>
+                        {taskPeople.length ? (
+                          <span className={styles.taskAvatarStack} aria-label={`Colaboradores: ${taskPeopleLabel(taskPeople)}`} title={taskPeopleLabel(taskPeople)}>
+                            {taskPeople.slice(0, 4).map((person) => {
+                              const avatar = getUserAvatar(person);
+                              return (
+                                <span
+                                  key={person.userId || person.userName}
+                                  className={`${styles.taskAvatar} ${styles[`taskAvatar_${avatarColorClassName(person.avatarColor)}`] || ''}`.trim()}
+                                >
+                                  {avatar ? <img src={avatar} alt="" /> : initials(person.userName)}
+                                </span>
+                              );
+                            })}
+                            {taskPeople.length > 4 ? <span className={`${styles.taskAvatar} ${styles.taskAvatarMore}`}>+{taskPeople.length - 4}</span> : null}
+                          </span>
+                        ) : (
+                          <span className={styles.taskAvatarEmpty}>—</span>
+                        )}
+                      </div>
+
+                      <div className={styles.operationDueCell}>
+                        <span className={`${styles.dueLabel} ${styles[`due_${itemStatus}`] || ''}`.trim()}>{formatDueLabel(task.dueDate)}</span>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
+
+              {tabTasks.length > OPERATION_PAGE_SIZE ? (
+                <div className={styles.operationPagination} aria-label="Paginação da operação">
+                  <span>{operationRangeStart}-{operationRangeEnd} de {tabTasks.length}</span>
+                  <span className={styles.operationPageIndicator}>Página {safeOperationPage} de {operationTotalPages}</span>
+                  <div>
+                    <button type="button" onClick={() => setOperationPage((page) => Math.max(1, page - 1))} disabled={safeOperationPage <= 1}>Anterior</button>
+                    <button type="button" onClick={() => setOperationPage((page) => Math.min(operationTotalPages, page + 1))} disabled={safeOperationPage >= operationTotalPages}>Próxima</button>
+                  </div>
+                </div>
+              ) : null}
             </>
-          ) : null}
-        />
+          )}
+        </div>
       </section>
 
       {activeTask ? (
