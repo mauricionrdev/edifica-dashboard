@@ -685,13 +685,13 @@ export default function WorkspaceSheets() {
     setConfirm(null);
   }
 
-  async function sortByColumn(direction = 'asc') {
-    const column = activeColumn;
+  async function sortByColumn(direction = 'asc', columnKey = activeColumn?.key) {
+    const column = columns.find((item) => item.key === columnKey) || activeColumn;
     if (!column) return;
     const next = [...rows].sort((a, b) => compareCellValues(a[column.key], b[column.key]) * (direction === 'desc' ? -1 : 1));
     setRows(next);
     await Promise.all(next.map((row, index) => updateSupportDailyRow(row.id, { position: index + 1 })));
-    setStatus(direction === 'desc' ? 'Ordenado Z → A' : 'Ordenado A → Z');
+    setStatus(direction === 'desc' ? `Coluna ${column.label || column.key} ordenada Z → A` : `Coluna ${column.label || column.key} ordenada A → Z`);
   }
 
   async function resizeColumnToContent(colIndex = selection?.endCol || 0) {
@@ -752,6 +752,25 @@ export default function WorkspaceSheets() {
     });
   }
 
+  function filterColumnByValue(columnKey, value) {
+    if (!columnKey) return;
+    setColumnFilters((current) => ({ ...current, [columnKey]: String(value ?? '') }));
+    setFilterPanel(null);
+    setStatus('Filtro aplicado');
+  }
+
+  function columnKeyFromMenu() {
+    const index = menu?.context === 'column' ? menu.colIndex : selection?.endCol || 0;
+    return columns[index]?.key || activeColumn?.key;
+  }
+
+  function valueFromMenuCell() {
+    const rowIndex = menu?.rowIndex ?? selection?.endRow ?? 0;
+    const colIndex = menu?.colIndex ?? selection?.endCol ?? 0;
+    const column = columns[colIndex];
+    return String(rows[rowIndex]?.[column?.key] ?? '');
+  }
+
   const activeFilterCount = Object.values(columnFilters).filter((value) => normalizeText(value)).length;
 
   const filterOptions = useMemo(() => {
@@ -789,8 +808,9 @@ export default function WorkspaceSheets() {
         { icon: '⧉', label: 'Copiar', shortcut: 'Ctrl C', action: copySelection },
         { icon: '✂', label: 'Recortar', shortcut: 'Ctrl X', action: cutSelection },
         { icon: '▣', label: 'Colar', shortcut: 'Ctrl V', action: () => pasteSelection('all'), disabled: !clipboard },
-        { icon: 'T', label: 'Colar somente valores', action: () => pasteSelection('values'), disabled: !clipboard },
-        { icon: '◐', label: 'Colar somente formatação', action: () => pasteSelection('format'), disabled: !clipboard },
+        { kind: 'subhead', label: 'Colar especial' },
+        { icon: 'T', label: 'Somente valores', action: () => pasteSelection('values'), disabled: !clipboard },
+        { icon: '◐', label: 'Somente formatação', action: () => pasteSelection('format'), disabled: !clipboard },
       ],
     });
 
@@ -834,10 +854,12 @@ export default function WorkspaceSheets() {
         id: 'data',
         label: 'Dados da coluna',
         items: [
-          { icon: 'A↓', label: 'Ordenar A → Z', action: () => sortByColumn('asc') },
-          { icon: 'Z↓', label: 'Ordenar Z → A', action: () => sortByColumn('desc') },
-          { icon: '⌕', label: 'Filtrar esta coluna...', action: () => openFilterForColumn(activeColumn?.key) },
-          activeFilterCount > 0 && { icon: '×', label: 'Limpar filtros ativos', action: () => setColumnFilters({}) },
+          { icon: 'A↓', label: 'Ordenar A → Z', action: () => sortByColumn('asc', columnKeyFromMenu()) },
+          { icon: 'Z↓', label: 'Ordenar Z → A', action: () => sortByColumn('desc', columnKeyFromMenu()) },
+          { icon: '⌕', label: 'Filtrar esta coluna...', action: () => openFilterForColumn(columnKeyFromMenu()) },
+          isCell && { icon: '≡', label: 'Filtrar por valor selecionado', action: () => filterColumnByValue(columnKeyFromMenu(), valueFromMenuCell()) },
+          columnFilters[columnKeyFromMenu()] && { icon: '×', label: 'Limpar filtro desta coluna', action: () => clearColumnFilter(columnKeyFromMenu()) },
+          activeFilterCount > 0 && { icon: '×', label: 'Limpar todos os filtros', action: () => setColumnFilters({}) },
         ].filter(Boolean),
       });
     }
@@ -850,6 +872,12 @@ export default function WorkspaceSheets() {
         { icon: 'I', label: 'Itálico', shortcut: 'Ctrl I', active: !!activeStyle.italic, action: () => applyStyle({ italic: !activeStyle.italic }) },
         { icon: 'U', label: 'Sublinhado', shortcut: 'Ctrl U', active: !!activeStyle.underline, action: () => applyStyle({ underline: !activeStyle.underline }) },
         { icon: 'S', label: 'Tachado', active: !!activeStyle.strike, action: () => applyStyle({ strike: !activeStyle.strike }) },
+        { kind: 'subhead', label: 'Formato da célula' },
+        ...FORMAT_OPTIONS.map((format) => ({ icon: '123', label: format.label, active: (activeStyle.numberFormat || '') === format.id, action: () => applyStyle({ numberFormat: format.id }) })),
+        { kind: 'subhead', label: 'Cor do texto' },
+        ...TEXT_COLORS.map((color) => ({ icon: 'A', label: color.label, active: (activeStyle.textColor || 'var(--text-primary)') === color.value, action: () => applyStyle({ textColor: color.value }) })),
+        { kind: 'subhead', label: 'Preenchimento' },
+        ...FILL_COLORS.map((color) => ({ icon: '▰', label: color.label, active: (activeStyle.fillColor || 'transparent') === color.value, action: () => applyStyle({ fillColor: color.value }) })),
         { icon: '⌫', label: 'Limpar conteúdo', shortcut: 'Del', action: clearSelectionContent },
         { icon: '◇', label: 'Limpar formatação', action: clearFormatting },
       ],
@@ -1085,19 +1113,23 @@ export default function WorkspaceSheets() {
             <div className={styles.menuSection} key={section.id} role="group" aria-label={section.label}>
               <span className={styles.menuSectionLabel}>{section.label}</span>
               {section.items.map((item) => (
-                <button
-                  key={`${section.id}-${item.label}`}
-                  type="button"
-                  role="menuitem"
-                  disabled={item.disabled}
-                  data-active={item.active || undefined}
-                  data-tone={item.tone || undefined}
-                  onClick={() => !item.disabled && runMenuAction(item.action)}
-                >
-                  <span className={styles.menuIcon} aria-hidden="true">{item.icon}</span>
-                  <span className={styles.menuText}>{item.label}</span>
-                  {item.shortcut && <kbd>{item.shortcut}</kbd>}
-                </button>
+                item.kind === 'subhead' ? (
+                  <span key={`${section.id}-${item.label}`} className={styles.menuSubhead}>{item.label}</span>
+                ) : (
+                  <button
+                    key={`${section.id}-${item.label}`}
+                    type="button"
+                    role="menuitem"
+                    disabled={item.disabled}
+                    data-active={item.active || undefined}
+                    data-tone={item.tone || undefined}
+                    onClick={() => !item.disabled && runMenuAction(item.action)}
+                  >
+                    <span className={styles.menuIcon} aria-hidden="true">{item.icon}</span>
+                    <span className={styles.menuText}>{item.label}</span>
+                    {item.shortcut && <kbd>{item.shortcut}</kbd>}
+                  </button>
+                )
               ))}
             </div>
           ))}

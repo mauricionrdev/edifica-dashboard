@@ -470,3 +470,10 @@
   .toolbarGroup[data-grow='true'] { width: 100%; min-width: 0; flex-wrap: wrap; }
   .searchBox { width: 100%; min-width: 0; }
 }
+.menuSubhead {
+  display: block;
+  padding: var(--space-2) var(--space-2) var(--space-1) 32px;
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
