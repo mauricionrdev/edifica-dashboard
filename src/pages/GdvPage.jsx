@@ -40,25 +40,6 @@ import styles from './GdvPage.module.css';
 const PAGE_SIZE = 10;
 const METRIC_BATCH_SIZE = 8;
 
-const OPERATIONAL_WEEKS_PER_MONTH = 4;
-
-function monthlyProfitGoal(client) {
-  return Number(client?.metaLucro) || 0;
-}
-
-function weeklyProfitGoal(client) {
-  const monthlyGoal = monthlyProfitGoal(client);
-  return monthlyGoal > 0 ? Math.ceil(monthlyGoal / OPERATIONAL_WEEKS_PER_MONTH) : 0;
-}
-
-function weeklyGoalSub(client) {
-  const monthlyGoal = monthlyProfitGoal(client);
-  return monthlyGoal > 0 ? `${displayInt(monthlyGoal)} mês · ${OPERATIONAL_WEEKS_PER_MONTH} semanas` : 'Sem meta configurada';
-}
-
-function aggregateMonthlyProfitGoal(rows = []) {
-  return rows.reduce((total, row) => total + monthlyProfitGoal(row?.client), 0);
-}
 
 function displayInt(value) {
   const numeric = Number(value) || 0;
@@ -957,9 +938,9 @@ export default function GdvPage() {
         {
           id: 'weeklyGoal',
           label: 'Meta semanal',
-          value: weeklyProfitGoal(selectedRow.client) > 0 ? displayInt(weeklyProfitGoal(selectedRow.client)) : '—',
-          sub: weeklyGoalSub(selectedRow.client),
-          tone: weeklyProfitGoal(selectedRow.client) > 0 ? 'neutral' : 'muted',
+          value: calc.mLuc > 0 ? displayInt(calc.mLuc) : '—',
+          sub: `Semana ${week}`,
+          tone: calc.mLuc > 0 ? 'neutral' : 'muted',
         },
         {
           id: 'predictedContracts',
@@ -993,8 +974,7 @@ export default function GdvPage() {
     // para bater meta e quantos já bateram, sem depender do clique em cliente.
     const totalClients = rows.length;
     const filledRows = rows.filter((row) => row.calc?.hasData);
-    const monthlyGoal = aggregateMonthlyProfitGoal(rows);
-    const weeklyGoal = monthlyGoal > 0 ? Math.ceil(monthlyGoal / OPERATIONAL_WEEKS_PER_MONTH) : 0;
+    const weeklyGoal = Number(agg.tLuc) || 0;
     const goalRows = rows.filter((row) => Number(row.calc?.mLuc) > 0);
     const hitRows = goalRows.filter((row) => {
       const target = Number(row.calc?.mLuc) || 0;
@@ -1038,7 +1018,7 @@ export default function GdvPage() {
         id: 'weeklyGoal',
         label: 'Meta semanal',
         value: weeklyGoal > 0 ? displayInt(weeklyGoal) : '—',
-        sub: monthlyGoal > 0 ? `${displayInt(monthlyGoal)} mês · ${OPERATIONAL_WEEKS_PER_MONTH} semanas` : 'Sem meta configurada',
+        sub: `Semana ${week}`,
         tone: weeklyGoal > 0 ? 'neutral' : 'muted',
       },
       {
