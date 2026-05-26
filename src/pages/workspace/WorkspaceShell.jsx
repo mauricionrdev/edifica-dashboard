@@ -6,7 +6,6 @@ import styles from './WorkspaceShell.module.css';
 
 export default function WorkspaceShell({
   pageRef,
-  activeArea,
   activeAreaId,
   avatar,
   displayName,
@@ -35,7 +34,6 @@ export default function WorkspaceShell({
           <span className={styles.brandMark}>edi</span>
           <div className={styles.sidebarTitle}>
             <strong>Workspace</strong>
-            <span>pessoal</span>
           </div>
           <button
             type="button"
@@ -58,7 +56,6 @@ export default function WorkspaceShell({
                 type="button"
                 className={area.id === activeAreaId ? styles.sideActive : ''}
                 onClick={() => onTabChange?.(area.id)}
-                title={area.description}
               >
                 <Icon size={15} />
                 <span>{area.label}</span>
@@ -112,10 +109,6 @@ export default function WorkspaceShell({
         </header>
 
         <div className={styles.topStrip}>
-          <div className={styles.workspaceTitle}>
-            <span>{activeArea?.label}</span>
-            <strong>{activeAreaId === 'home' ? 'Central pessoal' : activeArea?.label}</strong>
-          </div>
           <nav className={styles.tabRail} aria-label="Áreas do workspace">
             {WORKSPACE_AREAS.map((area) => {
               const count = tabCounters?.[area.id] || 0;
@@ -125,7 +118,6 @@ export default function WorkspaceShell({
                   type="button"
                   className={area.id === activeAreaId ? styles.tabActive : ''}
                   onClick={() => onTabChange?.(area.id)}
-                  title={area.description}
                 >
                   <span>{area.shortLabel || area.label}</span>
                   {count ? <em>{count}</em> : null}

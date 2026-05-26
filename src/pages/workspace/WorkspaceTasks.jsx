@@ -29,7 +29,7 @@ export default function WorkspaceTasks({ tasks }) {
     <section className={styles.panelFull}>
       <div className={styles.panelHeader}>
         <div><span className={styles.eyebrow}>Execução</span><h1>Tarefas</h1></div>
-        <input className={styles.searchInput} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar tarefa" />
+        <input className={styles.searchInput} value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Buscar tarefa" />
       </div>
       <div className={styles.segmented}>
         {FILTERS.map(([id, label]) => (
@@ -37,7 +37,7 @@ export default function WorkspaceTasks({ tasks }) {
         ))}
       </div>
       {visibleTasks.map((task) => <WorkspaceTaskRow key={task.id} task={task} />)}
-      {!visibleTasks.length ? <WorkspaceEmptyState title="Nenhuma tarefa encontrada" description="Ajuste o filtro ou a busca para visualizar outros itens." /> : null}
+      {!visibleTasks.length ? <WorkspaceEmptyState title="Nenhuma tarefa encontrada" /> : null}
     </section>
   );
 }

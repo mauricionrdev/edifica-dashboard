@@ -12,8 +12,7 @@ export default function SpreadsheetFormulaBar({ label, value, draft, editing, di
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         disabled={disabled}
-        aria-label="Valor da célula selecionada"
-        placeholder="Selecione uma célula"
+        aria-label="Valor da célula"
       />
     </div>
   );

@@ -13,7 +13,7 @@ export default function WorkspaceConfirmDialog({ state, onCancel }) {
       <div className={styles.modalCard} role="dialog" aria-modal="true" aria-label={state.title || 'Confirmar ação'}>
         <span>Confirmar ação</span>
         <h2>{state.title || 'Confirmar ação?'}</h2>
-        <p>{state.description || 'Esta ação não poderá ser desfeita.'}</p>
+        <p>{state.description || 'Confirme para continuar.'}</p>
         <div className={styles.dialogActions}>
           <Button type="button" size="sm" variant="secondary" onClick={onCancel}>Cancelar</Button>
           <Button type="button" size="sm" variant="danger" onClick={handleConfirm}>{state.confirmLabel || 'Confirmar'}</Button>

@@ -55,7 +55,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
       setSelectedCell(null);
       setEditing(null);
       setContextMenu(null);
-      setStatus(nextRows.length || nextColumns.length ? 'Planilha sincronizada' : 'Crie uma planilha para começar');
+      setStatus(nextRows.length || nextColumns.length ? 'Sincronizada' : '');
     } catch (err) {
       setError(err?.message || 'Não foi possível carregar as planilhas.');
     } finally {
@@ -120,7 +120,6 @@ export default function SpreadsheetApp({ requestConfirm }) {
     if (!activeSheet?.id) return;
     requestConfirm?.({
       title: 'Excluir planilha?',
-      description: `A planilha ${activeSheet.name || 'sem nome'} será removida com linhas, colunas e células.`,
       confirmLabel: 'Excluir',
       onConfirm: async () => {
         await deleteSupportDailySheet(activeSheet.id);
@@ -152,7 +151,6 @@ export default function SpreadsheetApp({ requestConfirm }) {
     if (!column?.key) return;
     requestConfirm?.({
       title: 'Excluir coluna?',
-      description: `A coluna ${column.label || column.key} será removida de forma permanente.`,
       confirmLabel: 'Excluir',
       onConfirm: async () => {
         await deleteSupportDailyColumn(column.key, { sheetId: activeSheetId });
@@ -173,7 +171,6 @@ export default function SpreadsheetApp({ requestConfirm }) {
     if (!row?.id) return;
     requestConfirm?.({
       title: 'Excluir linha?',
-      description: `A linha ${row.position || ''} será removida de forma permanente.`,
       confirmLabel: 'Excluir',
       onConfirm: async () => {
         await deleteSupportDailyRow(row.id, { sheetId: activeSheetId });
@@ -368,7 +365,6 @@ export default function SpreadsheetApp({ requestConfirm }) {
             }}
             disabled={!activeSheet}
             aria-label="Nome da planilha"
-            placeholder="Planilhas do workspace"
           />
           <span>{status}</span>
         </div>
@@ -410,7 +406,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
       />
 
       {loading ? <div className="workspace-state-box">Carregando planilha...</div> : null}
-      {!loading && !activeSheet ? <WorkspaceEmptyState title="Nenhuma planilha" description="Crie uma planilha para iniciar o grid operacional." /> : null}
+      {!loading && !activeSheet ? <WorkspaceEmptyState title="Sem planilhas" /> : null}
 
       {!loading && activeSheet ? (
         <SpreadsheetGrid

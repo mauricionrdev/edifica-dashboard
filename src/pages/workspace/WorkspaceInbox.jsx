@@ -11,15 +11,15 @@ export default function WorkspaceInbox({ tasks, documents, onNavigate }) {
   return (
     <section className={styles.panelFull}>
       <div className={styles.panelHeader}>
-        <div><span className={styles.eyebrow}>Triagem</span><h1>Caixa de entrada</h1></div>
+        <div><span className={styles.eyebrow}>Entrada</span><h1>Caixa de entrada</h1></div>
       </div>
       {items.map((item) => (
         <button type="button" key={`${item.type}-${item.id}`} className={styles.inboxItem} onClick={() => onNavigate(item.action)}>
           <div><strong>{item.title}</strong><span>{item.meta}</span></div>
-          <span>Resolver</span>
+          <span>Abrir</span>
         </button>
       ))}
-      {!items.length ? <WorkspaceEmptyState title="Caixa de entrada limpa" description="Não há itens sem triagem agora." /> : null}
+      {!items.length ? <WorkspaceEmptyState title="Entrada limpa" /> : null}
     </section>
   );
 }

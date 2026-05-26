@@ -64,6 +64,64 @@
   flex-wrap: wrap;
 }
 
+.workspaceHeaderRow {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.workspaceHeaderRow h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-snug);
+}
+
+.metricStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--line-subtle);
+  margin-top: var(--space-4);
+}
+
+.metricStrip button {
+  min-height: 72px;
+  display: grid;
+  align-content: center;
+  gap: var(--space-1);
+  border: 0;
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  text-align: left;
+  padding: var(--space-3);
+  cursor: pointer;
+}
+
+.metricStrip button:hover {
+  background: var(--bg-hover);
+}
+
+.metricStrip span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+}
+
+.metricStrip strong {
+  color: var(--text-primary);
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-crunch);
+  line-height: var(--lh-flat);
+}
+
 .kpiGrid {
   grid-column: 1 / -1;
   display: grid;
@@ -111,6 +169,7 @@
 }
 
 .panelFull {
+  grid-column: 1 / -1;
   min-width: 0;
   padding: var(--space-5);
 }
@@ -214,11 +273,9 @@
 }
 
 .emptyState {
-  min-height: 132px;
+  min-height: 96px;
   display: grid;
   place-items: center;
-  align-content: center;
-  gap: var(--space-1);
   border: 1px dashed var(--line);
   border-radius: var(--radius-2);
   color: var(--text-tertiary);
@@ -232,11 +289,6 @@
   font-weight: var(--weight-semibold);
 }
 
-.emptyState span {
-  max-width: 460px;
-  font-size: var(--fs-label);
-  line-height: var(--lh-normal);
-}
 
 .searchInput,
 .documentTitle,
@@ -821,4 +873,14 @@
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   font-weight: var(--weight-medium);
+}
+
+@media (max-width: 860px) {
+  .workspaceHeaderRow {
+    display: grid;
+  }
+
+  .metricStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

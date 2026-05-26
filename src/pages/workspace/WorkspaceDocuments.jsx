@@ -46,11 +46,11 @@ export default function WorkspaceDocuments({ documents, onCreate, onDelete, onSa
               <Button type="button" size="sm" onClick={handleSave} disabled={saving}>{saving ? 'Salvando' : 'Salvar'}</Button>
               <Button type="button" size="sm" variant="danger" onClick={() => onDelete(activeDocument.id)}>Excluir</Button>
             </div>
-            <input className={styles.documentTitle} value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Sem título" />
-            <textarea className={styles.documentBody} value={draft.content} onChange={(event) => setDraft((current) => ({ ...current, content: event.target.value }))} placeholder="Escreva o conteúdo operacional aqui." />
+            <input className={styles.documentTitle} value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} aria-label="Título do documento" />
+            <textarea className={styles.documentBody} value={draft.content} onChange={(event) => setDraft((current) => ({ ...current, content: event.target.value }))} aria-label="Conteúdo do documento" />
           </>
         ) : (
-          <WorkspaceEmptyState title="Nenhum documento" description="Crie o primeiro documento do workspace." />
+          <WorkspaceEmptyState title="Sem documentos" />
         )}
       </main>
     </section>

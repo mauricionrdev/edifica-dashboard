@@ -10,8 +10,7 @@ export default function WorkspaceSettings() {
         </div>
       </div>
       <div className={styles.emptyState}>
-        <strong>Nenhuma preferência ativa</strong>
-        <span>Esta área fica reservada para configurações reais do workspace.</span>
+        <strong>Sem configurações ativas</strong>
       </div>
     </section>
   );
