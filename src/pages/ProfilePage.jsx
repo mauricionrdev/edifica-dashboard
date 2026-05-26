@@ -73,6 +73,10 @@ const DEMAND_PRIORITIES = [
   { value: 'critical', label: 'Crítica' },
 ];
 
+function cleanText(value) {
+  return String(value || '').trim();
+}
+
 const BASE_STATUS_OPTIONS = [
   { value: 'todo', label: 'Aberta' },
   { value: 'in_progress', label: 'Em andamento' },
