@@ -17,9 +17,10 @@ import styles from '../WorkspaceApp.module.css';
 import SpreadsheetContextMenu from './SpreadsheetContextMenu.jsx';
 import SpreadsheetFormulaBar from './SpreadsheetFormulaBar.jsx';
 import SpreadsheetGrid from './SpreadsheetGrid.jsx';
+import SpreadsheetStatusBar from './SpreadsheetStatusBar.jsx';
 import SpreadsheetToolbar from './SpreadsheetToolbar.jsx';
 import { buildSpreadsheetCommands, buildSpreadsheetContextCommands } from './spreadsheetCommands.js';
-import { cellRef, cleanCellValue, nextCellPosition, normalizeRows, parseClipboardMatrix } from './spreadsheetUtils.js';
+import { buildRangeTsv, cellRef, cleanCellValue, nextCellPosition, normalizeRange, normalizeRows, parseClipboardMatrix } from './spreadsheetUtils.js';
 
 export default function SpreadsheetApp({ requestConfirm }) {
   const [sheets, setSheets] = useState([]);
@@ -28,6 +29,8 @@ export default function SpreadsheetApp({ requestConfirm }) {
   const [rows, setRows] = useState([]);
   const [editing, setEditing] = useState(null);
   const [selectedCell, setSelectedCell] = useState(null);
+  const [selectionAnchor, setSelectionAnchor] = useState(null);
+  const [selectedRange, setSelectedRange] = useState(null);
   const [draft, setDraft] = useState('');
   const [sheetNameDraft, setSheetNameDraft] = useState('');
   const [loading, setLoading] = useState(true);
@@ -53,6 +56,8 @@ export default function SpreadsheetApp({ requestConfirm }) {
       setColumns(nextColumns);
       setRows(nextRows);
       setSelectedCell(null);
+      setSelectionAnchor(null);
+      setSelectedRange(null);
       setEditing(null);
       setContextMenu(null);
       setStatus(nextRows.length || nextColumns.length ? 'Sincronizada' : '');
@@ -95,6 +100,8 @@ export default function SpreadsheetApp({ requestConfirm }) {
       setColumns(Array.isArray(response?.columns) ? response.columns : []);
       setRows(normalizeRows(response?.rows || [], response?.columns || []));
       setSelectedCell(null);
+      setSelectionAnchor(null);
+      setSelectedRange(null);
       setStatus('Planilha criada');
     } finally {
       setLoading(false);
@@ -180,15 +187,22 @@ export default function SpreadsheetApp({ requestConfirm }) {
     });
   }
 
-  function selectCell(rowIndex, colIndex) {
+  function selectCell(rowIndex, colIndex, extendSelection = false) {
     const column = columns[colIndex];
-    setSelectedCell({ rowIndex, colIndex });
+    const target = { rowIndex, colIndex };
+    const anchor = extendSelection && selectionAnchor ? selectionAnchor : target;
+    setSelectedCell(target);
+    setSelectionAnchor(anchor);
+    setSelectedRange(normalizeRange(anchor, target));
     setDraft(String(rows[rowIndex]?.[column?.key] ?? ''));
     setContextMenu(null);
   }
 
   function startEditing(rowIndex, columnKey, colIndex) {
-    setSelectedCell({ rowIndex, colIndex });
+    const target = { rowIndex, colIndex };
+    setSelectedCell(target);
+    setSelectionAnchor(target);
+    setSelectedRange(normalizeRange(target, target));
     setEditing({ rowIndex, columnKey });
     setDraft(String(rows[rowIndex]?.[columnKey] ?? ''));
   }
@@ -219,6 +233,13 @@ export default function SpreadsheetApp({ requestConfirm }) {
     const column = context?.column || selectedColumn;
     if (!target || !column) return;
     await saveCellValue(target.rowIndex, column.key, '');
+  }
+
+  async function copySelection() {
+    if (!selectedRange || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) return;
+    const value = buildRangeTsv(rows, columns, selectedRange);
+    await navigator.clipboard.writeText(value);
+    setStatus(selectedRange.startRow === selectedRange.endRow && selectedRange.startCol === selectedRange.endCol ? 'Célula copiada' : 'Seleção copiada');
   }
 
   async function copyCell(context) {
@@ -255,7 +276,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
     if (!editing && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(event.key)) {
       event.preventDefault();
       const next = nextCellPosition({ rowIndex, colIndex }, event.key, rows.length, columns.length);
-      selectCell(next.rowIndex, next.colIndex);
+      selectCell(next.rowIndex, next.colIndex, event.shiftKey);
     }
   }
 
@@ -314,7 +335,10 @@ export default function SpreadsheetApp({ requestConfirm }) {
     const column = context.colIndex !== undefined ? columns[context.colIndex] : context.column;
     const row = context.rowIndex !== undefined ? rows[context.rowIndex] : context.row;
     if (context.type === 'cell' && column) {
-      setSelectedCell({ rowIndex: context.rowIndex, colIndex: context.colIndex });
+      const target = { rowIndex: context.rowIndex, colIndex: context.colIndex };
+      setSelectedCell(target);
+      setSelectionAnchor(target);
+      setSelectedRange(normalizeRange(target, target));
       setDraft(String(row?.[column.key] ?? ''));
     }
     setContextMenu({
@@ -325,12 +349,11 @@ export default function SpreadsheetApp({ requestConfirm }) {
       row,
       title: context.type === 'column' ? 'Coluna' : context.type === 'row' ? 'Linha' : 'Célula',
       subtitle: context.type === 'column' ? (column?.label || 'Coluna') : context.type === 'row' ? `Linha ${row?.position || context.rowIndex + 1}` : cellRef(context.rowIndex, context.colIndex),
-      label: 'Ações da planilha',
     });
   }
 
   const commands = useMemo(
-    () => buildSpreadsheetCommands({ activeSheetId, selectedCell, onAddRow: handleAddRow, onAddColumn: handleAddColumn, onClearCell: clearSelectedCell }),
+    () => buildSpreadsheetCommands({ activeSheetId, selectedCell, selectedRange, onAddRow: handleAddRow, onAddColumn: handleAddColumn, onClearCell: clearSelectedCell, onCopySelection: copySelection }),
     [activeSheetId, selectedCell, rows, columns]
   );
 
@@ -341,6 +364,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
       onAddRow: handleAddRow,
       onAddColumn: handleAddColumn,
       onCopyCell: copyCell,
+      onCopySelection: copySelection,
       onPasteCell: pasteCell,
       onClearCell: clearSelectedCell,
       onEditCell: startEditing,
@@ -387,7 +411,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
         </div>
       ) : null}
 
-      <SpreadsheetToolbar commands={commands} rowCount={rows.length} columnCount={columns.length} />
+      <SpreadsheetToolbar commands={commands} />
       <SpreadsheetFormulaBar
         label={selectedLabel}
         value={selectedValue}
@@ -414,6 +438,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
           rows={rows}
           editing={editing}
           selectedCell={selectedCell}
+          selectedRange={selectedRange}
           draft={draft}
           onDraftChange={setDraft}
           onSelectCell={selectCell}
@@ -430,7 +455,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
       ) : null}
 
       <SpreadsheetContextMenu menu={contextMenu} commands={contextCommands} onClose={() => setContextMenu(null)} />
-
+      <SpreadsheetStatusBar status={status} selectedRange={selectedRange} rowCount={rows.length} columnCount={columns.length} />
     </section>
   );
 }

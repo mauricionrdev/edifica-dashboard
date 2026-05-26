@@ -1,4 +1,4 @@
-export function buildSpreadsheetCommands({ activeSheetId, selectedCell, onAddRow, onAddColumn, onClearCell }) {
+export function buildSpreadsheetCommands({ activeSheetId, selectedCell, selectedRange, onAddRow, onAddColumn, onClearCell, onCopySelection }) {
   return [
     {
       id: 'add-row',
@@ -13,6 +13,13 @@ export function buildSpreadsheetCommands({ activeSheetId, selectedCell, onAddRow
       variant: 'secondary',
       canRun: Boolean(activeSheetId),
       run: onAddColumn,
+    },
+    {
+      id: 'copy-selection',
+      label: 'Copiar seleção',
+      variant: 'secondary',
+      canRun: Boolean(activeSheetId && selectedRange),
+      run: onCopySelection,
     },
     {
       id: 'clear-cell',
@@ -30,6 +37,7 @@ export function buildSpreadsheetContextCommands({
   onAddRow,
   onAddColumn,
   onCopyCell,
+  onCopySelection,
   onPasteCell,
   onClearCell,
   onEditCell,
@@ -88,6 +96,12 @@ export function buildSpreadsheetContextCommands({
       shortcut: 'Ctrl C',
       canRun: Boolean(context.column),
       run: () => onCopyCell?.(context),
+    },
+    {
+      id: 'copy-selection',
+      label: 'Copiar seleção',
+      canRun: true,
+      run: onCopySelection,
     },
     {
       id: 'paste-cell',

@@ -42,3 +42,46 @@ export function nextCellPosition({ rowIndex, colIndex }, key, rowCount, columnCo
   if (key === 'ArrowRight' || key === 'Tab') return { rowIndex, colIndex: Math.min(columnCount - 1, colIndex + 1) };
   return { rowIndex, colIndex };
 }
+
+
+export function normalizeRange(anchor, target) {
+  if (!anchor || !target) return null;
+  return {
+    startRow: Math.min(anchor.rowIndex, target.rowIndex),
+    endRow: Math.max(anchor.rowIndex, target.rowIndex),
+    startCol: Math.min(anchor.colIndex, target.colIndex),
+    endCol: Math.max(anchor.colIndex, target.colIndex),
+  };
+}
+
+export function isCellInRange(range, rowIndex, colIndex) {
+  if (!range) return false;
+  return rowIndex >= range.startRow && rowIndex <= range.endRow && colIndex >= range.startCol && colIndex <= range.endCol;
+}
+
+export function rangeLabel(range) {
+  if (!range) return '';
+  const start = cellRef(range.startRow, range.startCol);
+  const end = cellRef(range.endRow, range.endCol);
+  return start === end ? start : `${start}:${end}`;
+}
+
+export function rangeSize(range) {
+  if (!range) return 0;
+  return (range.endRow - range.startRow + 1) * (range.endCol - range.startCol + 1);
+}
+
+export function buildRangeTsv(rows = [], columns = [], range) {
+  if (!range) return '';
+  const lines = [];
+  for (let rowIndex = range.startRow; rowIndex <= range.endRow; rowIndex += 1) {
+    const row = rows[rowIndex] || {};
+    const values = [];
+    for (let colIndex = range.startCol; colIndex <= range.endCol; colIndex += 1) {
+      const column = columns[colIndex];
+      values.push(cleanCellValue(row[column?.key] ?? ''));
+    }
+    lines.push(values.join('\t'));
+  }
+  return lines.join('\n');
+}

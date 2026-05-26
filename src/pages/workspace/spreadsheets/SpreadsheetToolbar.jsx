@@ -1,7 +1,7 @@
 import Button from '../../../components/ui/Button.jsx';
 import styles from '../WorkspaceApp.module.css';
 
-export default function SpreadsheetToolbar({ commands = [], rowCount = 0, columnCount = 0 }) {
+export default function SpreadsheetToolbar({ commands = [] }) {
   return (
     <div className={styles.sheetToolbar}>
       <div className={styles.sheetActions}>
@@ -18,7 +18,6 @@ export default function SpreadsheetToolbar({ commands = [], rowCount = 0, column
           </Button>
         ))}
       </div>
-      <span className={styles.sheetStatus}>{rowCount} linhas · {columnCount} colunas</span>
     </div>
   );
 }

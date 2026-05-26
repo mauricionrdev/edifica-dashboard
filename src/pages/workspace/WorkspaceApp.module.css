@@ -7,7 +7,6 @@
 .panel,
 .panelWide,
 .panelFull,
-.heroPanel,
 .documentsLayout,
 .sheetPanel,
 .workspaceStateBox,
@@ -18,17 +17,6 @@
   box-shadow: var(--shadow-soft);
 }
 
-.heroPanel {
-  grid-column: 1 / -1;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  gap: var(--space-5);
-  padding: var(--space-5);
-}
-
-.heroPanel h1,
 .panelHeader h1,
 .panelHeader h2,
 .sheetTitle h2 {
@@ -36,20 +24,6 @@
   color: var(--text-primary);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
-}
-
-.heroPanel h1 {
-  max-width: 760px;
-  font-size: var(--fs-2xl);
-  line-height: var(--lh-tight);
-}
-
-.heroPanel p {
-  max-width: 680px;
-  margin: var(--space-2) 0 0;
-  color: var(--text-secondary);
-  font-size: var(--fs-body);
-  line-height: var(--lh-normal);
 }
 
 .quickActions,
@@ -120,46 +94,6 @@
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-crunch);
   line-height: var(--lh-flat);
-}
-
-.kpiGrid {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-3);
-}
-
-.kpiCard {
-  min-height: 86px;
-  display: grid;
-  align-content: center;
-  gap: var(--space-1);
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-2);
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  text-align: left;
-  padding: var(--space-4);
-  cursor: pointer;
-}
-
-.kpiCard span {
-  color: var(--text-tertiary);
-  font-size: var(--fs-label);
-  font-weight: var(--weight-medium);
-}
-
-.kpiCard strong {
-  color: var(--text-primary);
-  font-size: var(--fs-kpi-lg);
-  font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-crunch);
-  line-height: var(--lh-flat);
-}
-
-.kpiCard:hover {
-  background: var(--bg-hover);
-  border-color: var(--line);
 }
 
 .panelWide {
@@ -544,12 +478,6 @@
   padding: 0 var(--space-2);
 }
 
-.sheetStatus {
-  color: var(--text-tertiary);
-  font-size: var(--fs-label);
-  white-space: nowrap;
-}
-
 .sheetScroll {
   max-height: calc(100vh - 410px);
   min-height: 390px;
@@ -698,6 +626,37 @@
   background: var(--bg-selected);
 }
 
+
+.cellButton[data-range='true'] {
+  background: color-mix(in srgb, var(--accent-soft) 48%, transparent);
+  box-shadow: inset 0 0 0 1px var(--accent-line);
+}
+
+.sheetStatusBar {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  overflow-x: auto;
+  border-top: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  white-space: nowrap;
+  padding: 0 var(--space-4);
+}
+
+.sheetStatusBar span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+}
+
+.sheetStatusBar span + span {
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--line-subtle);
+}
+
 .cellInput {
   height: 100%;
   border-radius: 0;
@@ -751,7 +710,6 @@
 }
 
 @media (max-width: 980px) {
-  .heroPanel,
   .panelHeader,
   .sheetHeader,
   .sheetToolbar,
@@ -760,8 +718,6 @@
     align-items: stretch;
   }
 
-  .heroPanel,
-  .kpiGrid,
   .viewGrid {
     grid-template-columns: 1fr;
   }

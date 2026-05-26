@@ -1,4 +1,4 @@
-import { columnWidth } from './spreadsheetUtils.js';
+import { columnWidth, isCellInRange } from './spreadsheetUtils.js';
 import styles from '../WorkspaceApp.module.css';
 
 export default function SpreadsheetGrid({
@@ -6,6 +6,7 @@ export default function SpreadsheetGrid({
   rows = [],
   editing,
   selectedCell,
+  selectedRange,
   draft,
   onDraftChange,
   onSelectCell,
@@ -65,6 +66,7 @@ export default function SpreadsheetGrid({
               {columns.map((column, colIndex) => {
                 const isEditing = editing?.rowIndex === rowIndex && editing?.columnKey === column.key;
                 const isSelected = selectedCell?.rowIndex === rowIndex && selectedCell?.colIndex === colIndex;
+                const isInRange = isCellInRange(selectedRange, rowIndex, colIndex);
                 return (
                   <td
                     key={column.key}
@@ -86,7 +88,8 @@ export default function SpreadsheetGrid({
                         type="button"
                         className={styles.cellButton}
                         data-active={isSelected}
-                        onClick={() => onSelectCell(rowIndex, colIndex)}
+                        data-range={isInRange && !isSelected ? 'true' : undefined}
+                        onClick={(event) => onSelectCell(rowIndex, colIndex, event.shiftKey)}
                         onDoubleClick={() => onStartEditing(rowIndex, column.key, colIndex)}
                         onKeyDown={(event) => onCellKeyDown(event, rowIndex, colIndex)}
                         onPaste={(event) => onPaste(event, rowIndex, colIndex)}
