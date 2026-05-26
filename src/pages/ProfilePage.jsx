@@ -2306,6 +2306,16 @@ export default function ProfilePage() {
       const res = await updateProjectTask(task.id, patch);
       const nextTask = res?.task || { ...task, ...patch };
       setTasks((prev) => prev.map((item) => (item.id === task.id ? { ...item, ...nextTask } : item)));
+      if (res?.nextRoutineTaskId) {
+        try {
+          const nextRoutineRes = await getTask(res.nextRoutineTaskId);
+          if (nextRoutineRes?.task) {
+            setTasks((prev) => (prev.some((item) => item.id === nextRoutineRes.task.id) ? prev : [nextRoutineRes.task, ...prev]));
+          }
+        } catch {
+          // A próxima rotina já foi criada no backend; a lista será atualizada no próximo carregamento.
+        }
+      }
       await refreshActiveTaskPanels(task.id, { events: true });
       showToast(successMessage, { variant: 'success' });
     } catch (err) {
@@ -2620,6 +2630,16 @@ export default function ProfilePage() {
       if (taskRes.status === 'rejected') throw taskRes.reason;
       const updated = taskRes.value?.task || { ...completionTarget, done: true, status: 'done' };
       setTasks((prev) => prev.map((item) => (item.id === completionTarget.id ? { ...item, ...updated, done: true, status: 'done' } : item)));
+      if (taskRes.value?.nextRoutineTaskId) {
+        try {
+          const nextRoutineRes = await getTask(taskRes.value.nextRoutineTaskId);
+          if (nextRoutineRes?.task) {
+            setTasks((prev) => (prev.some((item) => item.id === nextRoutineRes.task.id) ? prev : [nextRoutineRes.task, ...prev]));
+          }
+        } catch {
+          // A próxima rotina já foi criada no backend; a lista será atualizada no próximo carregamento.
+        }
+      }
       if (activeTaskId === completionTarget.id && commentRes.status === 'fulfilled' && commentRes.value?.comment) {
         setTaskComments((prev) => [...prev, commentRes.value.comment]);
       }
@@ -3161,11 +3181,18 @@ export default function ProfilePage() {
       const res = await createTask({
         title,
         description,
-        status: demandForm.type === 'briefing' ? 'in_progress' : undefined,
+        status: 'in_progress',
         assigneeUserId: demandForm.assigneeUserId,
         clientId: demandForm.clientId || undefined,
         dueDate: demandForm.dueDate || undefined,
         priority: demandForm.priority,
+        metadata: {
+          type: demandForm.type,
+          recurrence: demandForm.type === 'routine' ? demandForm.recurrence : undefined,
+          routineScope: demandForm.type === 'routine' ? cleanText(demandForm.routineScope) : undefined,
+          routineChecklist: demandForm.type === 'routine' ? cleanText(demandForm.routineChecklist) : undefined,
+          requestedByUserId: user?.id || undefined,
+        },
       });
       const createdTask = res?.task;
       if (createdTask?.id) {

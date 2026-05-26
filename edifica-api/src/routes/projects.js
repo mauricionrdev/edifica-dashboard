@@ -142,6 +142,130 @@ function backendDateLabel(value) {
   return clean(value) || 'Sem prazo';
 }
 
+function taskMetadata(task = {}) {
+  return parseJson(task.metadata_json, {}) || {};
+}
+
+function taskType(task = {}) {
+  const metadata = taskMetadata(task);
+  const haystack = [
+    metadata.type,
+    metadata.origin,
+    task.title,
+    task.description,
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  if (haystack.includes('routine') || haystack.includes('rotina') || haystack.includes('recorrente') || haystack.includes('diária') || haystack.includes('diario')) return 'routine';
+  if (haystack.includes('briefing')) return 'briefing';
+  return String(metadata.type || '').trim();
+}
+
+function routineRecurrence(task = {}) {
+  const metadata = taskMetadata(task);
+  const value = String(metadata.recurrence || '').trim().toLowerCase();
+  if (['daily', 'diaria', 'diária'].includes(value)) return 'daily';
+  if (['weekly', 'semanal'].includes(value)) return 'weekly';
+  if (['monthly', 'mensal'].includes(value)) return 'monthly';
+  if (['one_time', 'pontual'].includes(value)) return 'one_time';
+
+  const description = String(task.description || '').toLowerCase();
+  if (description.includes('recorrência: diária') || description.includes('recorrencia: diaria')) return 'daily';
+  if (description.includes('recorrência: semanal') || description.includes('recorrencia: semanal')) return 'weekly';
+  if (description.includes('recorrência: mensal') || description.includes('recorrencia: mensal')) return 'monthly';
+  if (description.includes('recorrência: pontual') || description.includes('recorrencia: pontual')) return 'one_time';
+
+  return '';
+}
+
+function addDaysToIso(value, days) {
+  const base = /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))
+    ? new Date(`${value}T00:00:00`)
+    : new Date();
+  base.setDate(base.getDate() + days);
+  return base.toISOString().slice(0, 10);
+}
+
+function nextRoutineDueDate(task = {}, recurrence = '') {
+  const current = task.due_date
+    ? (task.due_date instanceof Date ? task.due_date.toISOString().slice(0, 10) : String(task.due_date).slice(0, 10))
+    : new Date().toISOString().slice(0, 10);
+
+  if (recurrence === 'weekly') return addDaysToIso(current, 7);
+  if (recurrence === 'monthly') {
+    const base = /^\d{4}-\d{2}-\d{2}$/.test(current) ? new Date(`${current}T00:00:00`) : new Date();
+    base.setMonth(base.getMonth() + 1);
+    return base.toISOString().slice(0, 10);
+  }
+  return addDaysToIso(current, 1);
+}
+
+async function createNextRoutineTaskIfNeeded(task, actorUser) {
+  if (!task || task.status === 'done' || task.status === 'canceled') return null;
+  if (taskType(task) !== 'routine') return null;
+
+  const recurrence = routineRecurrence(task);
+  if (!recurrence || recurrence === 'one_time') return null;
+
+  const metadata = taskMetadata(task);
+  const seriesId = metadata.routineSeriesId || metadata.seriesId || task.source_id || task.id;
+  const nextDueDate = nextRoutineDueDate(task, recurrence);
+
+  const existing = await query(
+    `SELECT id
+       FROM tasks
+      WHERE source = 'routine_recurring'
+        AND source_id = ?
+        AND due_date = ?
+        AND status <> 'canceled'
+      LIMIT 1`,
+    [seriesId, nextDueDate]
+  );
+  if (existing[0]?.id) return existing[0].id;
+
+  const nextTaskId = await createTaskRecord(
+    {
+      projectId: task.project_id || null,
+      sectionId: task.section_id || null,
+      clientId: task.client_id || null,
+      parentTaskId: task.parent_task_id || null,
+      title: task.title,
+      description: task.description || '',
+      status: 'in_progress',
+      priority: task.priority || 'medium',
+      assigneeUserId: task.assignee_user_id || null,
+      dueDate: nextDueDate,
+      source: 'routine_recurring',
+      sourceId: seriesId,
+      metadata: {
+        ...metadata,
+        type: 'routine',
+        recurrence,
+        routineSeriesId: seriesId,
+        previousTaskId: task.id,
+      },
+      notifyAssignee: true,
+    },
+    actorUser
+  );
+
+  await addTaskCollaborators(
+    nextTaskId,
+    [task.created_by_user_id, actorUser?.id].filter(Boolean),
+    'follower'
+  );
+
+  await logTaskEvent({
+    taskId: nextTaskId,
+    projectId: task.project_id,
+    actorUserId: actorUser?.id || task.assignee_user_id || task.created_by_user_id,
+    eventType: 'task.routine_created',
+    summary: 'Próxima rotina criada',
+    metadata: { previousTaskId: task.id, recurrence, dueDate: nextDueDate },
+  });
+
+  return nextTaskId;
+}
+
 async function resolveUserName(userId) {
   const id = clean(userId);
   if (!id) return 'Sem responsável';
@@ -1139,9 +1263,11 @@ router.post('/tasks', requirePermission('tasks.create'), async (req, res, next) 
         assigneeUserId: req.body?.assigneeUserId,
         dueDate: req.body?.dueDate,
         source: projectId ? 'project_manual' : 'standalone',
+        metadata: req.body?.metadata && typeof req.body.metadata === 'object' ? req.body.metadata : null,
       },
       req.user
     );
+    await addTaskCollaborators(taskId, [req.user?.id].filter(Boolean), 'follower');
     const rows = await query(
       `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
               au.name AS assignee_name, cu.name AS created_by_name,
@@ -1611,6 +1737,12 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
 
     params.push(req.params.id);
     await query(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`, params);
+
+    let nextRoutineTaskId = null;
+    if (changingStatus && nextStatus === 'done' && task.status !== 'done') {
+      nextRoutineTaskId = await createNextRoutineTaskIfNeeded(task, req.user);
+    }
+
     if (req.body?.assigneeUserId !== undefined) {
       const nextAssigneeId = clean(req.body.assigneeUserId) || '';
       const actorShouldKeepFollowing =
@@ -1685,7 +1817,7 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
         WHERE t.id = ?`,
       [req.user.id, req.user.id, req.params.id]
     );
-    res.json({ task: serializeTask(rows[0]) });
+    res.json({ task: serializeTask(rows[0]), nextRoutineTaskId });
   } catch (err) {
     next(err);
   }
