@@ -43,6 +43,26 @@ import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
 
+const OPERATIONAL_WEEKS_PER_MONTH = 4;
+
+function monthlyProfitGoal(client) {
+  return Number(client?.metaLucro) || 0;
+}
+
+function weeklyProfitGoal(client) {
+  const monthlyGoal = monthlyProfitGoal(client);
+  return monthlyGoal > 0 ? Math.ceil(monthlyGoal / OPERATIONAL_WEEKS_PER_MONTH) : 0;
+}
+
+function weeklyGoalSub(client) {
+  const monthlyGoal = monthlyProfitGoal(client);
+  return monthlyGoal > 0 ? `${displayInt(monthlyGoal)} mês · ${OPERATIONAL_WEEKS_PER_MONTH} semanas` : 'Sem meta configurada';
+}
+
+function aggregateMonthlyProfitGoal(rows = []) {
+  return rows.reduce((total, row) => total + monthlyProfitGoal(row), 0);
+}
+
 function squadInitials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return 'SQ';
@@ -805,6 +825,13 @@ export default function SquadPage() {
           tone: selectedClient.calc.mLuc > 0 ? 'neutral' : 'muted',
         },
         {
+          id: 'weeklyGoal',
+          label: 'Meta semanal',
+          value: weeklyProfitGoal(selectedClient) > 0 ? displayInt(weeklyProfitGoal(selectedClient)) : '—',
+          sub: weeklyGoalSub(selectedClient),
+          tone: weeklyProfitGoal(selectedClient) > 0 ? 'neutral' : 'muted',
+        },
+        {
           id: 'predictedContracts',
           label: 'Contratos previstos',
           value: selectedClient.calc.cp > 0 ? displayInt(selectedClient.calc.cp) : '0',
@@ -842,6 +869,8 @@ export default function SquadPage() {
 
     const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
     const remainingContracts = Math.max((Number(agg.tLuc) || 0) - (Number(agg.tF) || 0), 0);
+    const monthlyGoal = aggregateMonthlyProfitGoal(clientRows);
+    const weeklyGoal = monthlyGoal > 0 ? Math.ceil(monthlyGoal / OPERATIONAL_WEEKS_PER_MONTH) : 0;
 
     return [
       {
@@ -859,6 +888,13 @@ export default function SquadPage() {
           ? `${displayInt(remainingContracts)} para bater`
           : 'Sem meta configurada',
         tone: agg.tLuc > 0 ? 'neutral' : 'muted',
+      },
+      {
+        id: 'weeklyGoal',
+        label: 'Meta semanal',
+        value: weeklyGoal > 0 ? displayInt(weeklyGoal) : '—',
+        sub: monthlyGoal > 0 ? `${displayInt(monthlyGoal)} mês · ${OPERATIONAL_WEEKS_PER_MONTH} semanas` : 'Sem meta configurada',
+        tone: weeklyGoal > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'predictedContracts',
@@ -894,7 +930,7 @@ export default function SquadPage() {
         tone: comparisonTone(agg.tLp, agg.tMV),
       },
     ];
-  }, [agg, selectedClient, week]);
+  }, [agg, clientRows, selectedClient, week]);
 
   if (shellLoading && !squad) {
     return (
