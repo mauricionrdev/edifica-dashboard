@@ -1,0 +1,249 @@
+.sheetApp {
+  min-height: 640px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+}
+.sheetTabs,
+.toolbar,
+.formulaBar,
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-surface);
+}
+.sheetTabs {
+  overflow-x: auto;
+}
+.sheetTab,
+.activeSheetTab {
+  height: 32px;
+  min-width: 140px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0 var(--space-3);
+}
+.activeSheetTab {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+.toolbar {
+  flex-wrap: wrap;
+}
+.toolbar button,
+.toolbar select,
+.searchBox,
+.formulaBar input {
+  height: 32px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-muted);
+  color: var(--text-primary);
+  padding: 0 var(--space-2);
+}
+.toolbar button {
+  cursor: pointer;
+  min-width: 32px;
+}
+.toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+.toolbar button[data-active='true'] {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+.searchBox {
+  width: 220px;
+}
+.divider {
+  width: 1px;
+  height: 24px;
+  background: var(--line-subtle);
+}
+.formulaBar span,
+.statusBar span {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+.formulaBar input {
+  flex: 1;
+  min-width: 160px;
+}
+.gridFrame {
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+  background: var(--bg-page);
+}
+.loading {
+  padding: var(--space-6);
+  color: var(--text-secondary);
+}
+.sheetGrid {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+.sheetGrid th,
+.sheetGrid td {
+  height: 34px;
+  border-right: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  padding: 0;
+}
+.sheetGrid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--bg-surface);
+}
+.corner {
+  left: 0;
+  z-index: 4;
+  width: 54px;
+  min-width: 54px;
+}
+.rowHeader {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 54px;
+  min-width: 54px;
+  background: var(--bg-surface);
+}
+.sheetGrid th button {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+.sheetGrid td {
+  position: relative;
+  background: var(--bg-surface);
+}
+.sheetGrid td[data-selected='true'] {
+  outline: 1px solid var(--accent-line);
+  outline-offset: -1px;
+  background: var(--bg-selected);
+}
+.sheetGrid td span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 8px var(--space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sheetGrid td input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--accent-line);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  padding: 0 var(--space-2);
+  font: inherit;
+  z-index: 5;
+}
+.statusBar {
+  border-bottom: 0;
+  border-top: 1px solid var(--line-subtle);
+  justify-content: space-between;
+  min-height: 34px;
+}
+.contextMenu {
+  position: fixed;
+  z-index: 90;
+  width: 260px;
+  max-height: min(460px, calc(100vh - 32px));
+  overflow: auto;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-dialog);
+  padding: var(--space-2);
+  display: grid;
+  gap: 1px;
+}
+.contextMenu strong {
+  padding: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.contextMenu button {
+  min-height: 34px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  padding: 0 var(--space-2);
+  cursor: pointer;
+}
+.contextMenu button:disabled {
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+.contextMenu span {
+  height: 1px;
+  background: var(--line-subtle);
+  margin: var(--space-1) 0;
+}
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: blur(var(--chassis-modal-blur));
+}
+.dialog {
+  width: min(420px, 100%);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-dialog);
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+}
+.dialog span,
+.dialog p {
+  color: var(--text-secondary);
+}
+.dialog h2,
+.dialog p {
+  margin: 0;
+}
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+@media (max-width: 860px) {
+  .toolbar { align-items: flex-start; }
+  .searchBox { width: 100%; }
+}
