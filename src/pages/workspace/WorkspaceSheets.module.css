@@ -5,10 +5,12 @@
   background: var(--bg-surface);
   overflow: hidden;
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto;
 }
 .sheetTabs,
 .toolbar,
+.filterBar,
+.filterPanel,
 .formulaBar,
 .statusBar {
   display: flex;
@@ -38,6 +40,45 @@
 .toolbar {
   flex-wrap: wrap;
 }
+.filterBar,
+.filterPanel {
+  min-height: 40px;
+  gap: var(--space-2);
+}
+.filterBar button,
+.filterPanel button,
+.filterPanel input {
+  height: 30px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-muted);
+  color: var(--text-primary);
+  padding: 0 var(--space-2);
+}
+.filterBar button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+.filterBar button span {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+}
+.filterPanel span {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+.filterPanel input {
+  flex: 1;
+  min-width: 180px;
+}
+
 .toolbar button,
 .toolbar select,
 .searchBox,
@@ -152,6 +193,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+}
+.resizeHandle::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 2px;
+  width: 1px;
+  background: var(--line-subtle);
+}
+
 .sheetGrid td input {
   position: absolute;
   inset: 0;
@@ -200,7 +261,18 @@
   text-align: left;
   padding: 0 var(--space-2);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
+
+.contextMenu kbd {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: var(--font-size-xs);
+}
+
 .contextMenu button:disabled {
   color: var(--text-tertiary);
   cursor: not-allowed;
