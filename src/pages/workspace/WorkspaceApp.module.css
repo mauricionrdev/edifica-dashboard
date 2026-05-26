@@ -21,10 +21,11 @@
 .heroPanel {
   grid-column: 1 / -1;
   min-width: 0;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: var(--space-5);
-  padding: var(--space-6);
+  padding: var(--space-5);
 }
 
 .heroPanel h1,
@@ -34,11 +35,13 @@
   margin: 0;
   color: var(--text-primary);
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: var(--tracking-snug);
 }
 
 .heroPanel h1 {
-  font-size: var(--fs-display);
+  max-width: 760px;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
 }
 
 .heroPanel p {
@@ -46,7 +49,7 @@
   margin: var(--space-2) 0 0;
   color: var(--text-secondary);
   font-size: var(--fs-body);
-  line-height: var(--lh-relaxed);
+  line-height: var(--lh-normal);
 }
 
 .quickActions,
@@ -69,7 +72,7 @@
 }
 
 .kpiCard {
-  min-height: 92px;
+  min-height: 86px;
   display: grid;
   align-content: center;
   gap: var(--space-1);
@@ -90,13 +93,15 @@
 
 .kpiCard strong {
   color: var(--text-primary);
-  font-size: var(--fs-display);
+  font-size: var(--fs-kpi-lg);
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: var(--tracking-crunch);
+  line-height: var(--lh-flat);
 }
 
 .kpiCard:hover {
   background: var(--bg-hover);
+  border-color: var(--line);
 }
 
 .panelWide {
@@ -120,7 +125,7 @@
 }
 
 .panelHeader h1 {
-  font-size: var(--fs-title);
+  font-size: var(--fs-xl);
 }
 
 .panelHeader h2 {
@@ -136,12 +141,18 @@
   border-bottom: 1px solid var(--line-subtle);
 }
 
+.panelHeaderCompact strong {
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
 .eyebrow,
 :global(.workspace-eyebrow) {
   color: var(--text-tertiary);
   font-size: var(--fs-micro);
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: var(--tracking-uppercase);
   text-transform: uppercase;
 }
 
@@ -170,6 +181,7 @@
 
 .inboxItem:hover {
   background: var(--bg-hover);
+  border-color: var(--line);
 }
 
 .taskRow strong,
@@ -223,15 +235,19 @@
 .emptyState span {
   max-width: 460px;
   font-size: var(--fs-label);
-  line-height: var(--lh-relaxed);
+  line-height: var(--lh-normal);
 }
 
 .searchInput,
 .documentTitle,
 .documentBody,
 .sheetInput,
-.cellInput {
+.cellInput,
+.sheetNameInput,
+.columnNameInput,
+.formulaInput {
   width: 100%;
+  min-width: 0;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1);
   background: var(--bg-canvas);
@@ -250,7 +266,10 @@
 .documentTitle:focus,
 .documentBody:focus,
 .sheetInput:focus,
-.cellInput:focus {
+.cellInput:focus,
+.sheetNameInput:focus,
+.columnNameInput:focus,
+.formulaInput:focus {
   border-color: var(--line-strong);
   background: var(--bg-elevated);
 }
@@ -288,7 +307,7 @@
 .documentsLayout {
   min-height: calc(100vh - 210px);
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: 286px minmax(0, 1fr);
   overflow: hidden;
 }
 
@@ -350,9 +369,9 @@
   border: 0;
   background: transparent;
   color: var(--text-primary);
-  font-size: var(--fs-display);
+  font-size: var(--fs-2xl);
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: var(--tracking-snug);
   padding: 0;
 }
 
@@ -365,7 +384,7 @@
   min-height: 360px;
   resize: vertical;
   padding: var(--space-4);
-  line-height: var(--lh-relaxed);
+  line-height: var(--lh-normal);
 }
 
 .sheetPanel {
@@ -384,7 +403,7 @@
 }
 
 .sheetTitle {
-  min-width: 0;
+  min-width: min(460px, 100%);
   display: grid;
   gap: var(--space-1);
 }
@@ -392,6 +411,22 @@
 .sheetTitle span {
   color: var(--text-tertiary);
   font-size: var(--fs-label);
+}
+
+.sheetNameInput {
+  height: 34px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--fs-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-snug);
+  padding: 0;
+}
+
+.sheetNameInput:focus {
+  border-color: var(--line-subtle);
+  padding: 0 var(--space-2);
 }
 
 .sheetTabs {
@@ -425,7 +460,8 @@
   color: var(--text-primary);
 }
 
-.sheetToolbar {
+.sheetToolbar,
+.formulaBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -434,15 +470,39 @@
   border-bottom: 1px solid var(--line-subtle);
 }
 
+.formulaBar {
+  justify-content: stretch;
+  background: var(--bg-canvas);
+}
+
+.formulaBadge {
+  flex: 0 0 auto;
+  min-width: 56px;
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.formulaInput {
+  height: 30px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  padding: 0 var(--space-2);
+}
+
 .sheetStatus {
   color: var(--text-tertiary);
   font-size: var(--fs-label);
+  white-space: nowrap;
 }
 
 .sheetScroll {
-  max-height: calc(100vh - 380px);
-  min-height: 360px;
+  max-height: calc(100vh - 410px);
+  min-height: 390px;
   overflow: auto;
+  overscroll-behavior: contain;
   background: var(--bg-canvas);
 }
 
@@ -456,7 +516,7 @@
 .sheetGrid th,
 .sheetGrid td {
   min-width: 144px;
-  max-width: 360px;
+  max-width: 420px;
   height: 36px;
   border-right: 1px solid var(--line-subtle);
   border-bottom: 1px solid var(--line-subtle);
@@ -481,9 +541,9 @@
   position: sticky;
   left: 0;
   z-index: 3;
-  min-width: 52px;
-  max-width: 52px;
-  width: 52px;
+  min-width: 62px;
+  max-width: 62px;
+  width: 62px;
   text-align: center;
   color: var(--text-tertiary);
   background: var(--bg-elevated);
@@ -491,6 +551,78 @@
 
 .sheetGrid th:first-child {
   z-index: 4;
+}
+
+.columnHeader,
+.rowHeader {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px 6px;
+  align-items: center;
+  gap: 2px;
+  padding: 0 0 0 var(--space-1);
+}
+
+.rowHeader {
+  grid-template-columns: minmax(0, 1fr) 22px;
+  padding: 0 var(--space-1);
+}
+
+.columnNameInput {
+  height: 28px;
+  min-width: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  padding: 0 var(--space-1);
+}
+
+.columnNameInput:focus {
+  border-color: var(--line-subtle);
+  background: var(--bg-canvas);
+}
+
+
+.resizeHandle {
+  width: 6px;
+  height: 100%;
+  display: block;
+  border-radius: var(--radius-1);
+  cursor: col-resize;
+}
+
+.resizeHandle:hover {
+  background: var(--bg-selected);
+}
+
+.rowNumber {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerAction {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-quaternary);
+  font: inherit;
+  font-size: var(--fs-md);
+  line-height: var(--lh-flat);
+  cursor: pointer;
+}
+
+.headerAction:hover {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
 }
 
 .cellButton {
@@ -541,21 +673,21 @@
   color: var(--text-tertiary);
   font-size: var(--fs-micro);
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: var(--tracking-uppercase);
   text-transform: uppercase;
 }
 
 .modalCard h2 {
   margin: var(--space-2) 0 0;
   color: var(--text-primary);
-  font-size: var(--fs-title);
-  letter-spacing: var(--tracking-tight);
+  font-size: var(--fs-xl);
+  letter-spacing: var(--tracking-snug);
 }
 
 .modalCard p {
   margin: var(--space-3) 0 var(--space-4);
   color: var(--text-secondary);
-  line-height: var(--lh-relaxed);
+  line-height: var(--lh-normal);
 }
 
 :global(.workspace-state-box) {
@@ -570,11 +702,13 @@
   .heroPanel,
   .panelHeader,
   .sheetHeader,
-  .sheetToolbar {
+  .sheetToolbar,
+  .formulaBar {
     flex-direction: column;
     align-items: stretch;
   }
 
+  .heroPanel,
   .kpiGrid,
   .viewGrid {
     grid-template-columns: 1fr;

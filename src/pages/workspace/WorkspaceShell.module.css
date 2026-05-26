@@ -263,7 +263,7 @@
 .headerIdentity h1 {
   margin: 3px 0 0;
   color: var(--text-primary);
-  font-size: var(--fs-title);
+  font-size: var(--fs-xl);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-tight);
   line-height: var(--lh-tight);
@@ -320,7 +320,7 @@
   color: var(--text-tertiary);
   font-size: var(--fs-micro);
   font-weight: var(--weight-semibold);
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: var(--tracking-uppercase);
   text-transform: uppercase;
 }
 

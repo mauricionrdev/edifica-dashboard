@@ -16,8 +16,8 @@ export default function WorkspaceHome({ tasks, documents, onNavigate }) {
       <section className={styles.heroPanel}>
         <div>
           <span className={styles.eyebrow}>Central pessoal</span>
-          <h1>Execução, documentos e planilhas em uma base limpa.</h1>
-          <p>Workspace reconstruído em arquivos novos para separar responsabilidades e reduzir regressões.</p>
+          <h1>Prioridades, documentos e planilhas em uma área operacional.</h1>
+          <p>Acompanhe pendências, registre decisões e acesse suas ferramentas de trabalho sem sair da Central.</p>
         </div>
         <div className={styles.quickActions}>
           <Button type="button" size="sm" onClick={() => onNavigate('sheets')}>Abrir planilhas</Button>
@@ -37,7 +37,7 @@ export default function WorkspaceHome({ tasks, documents, onNavigate }) {
           <div><span className={styles.eyebrow}>Fila sugerida</span><h2>Próximas ações</h2></div>
           <Button type="button" size="sm" variant="secondary" onClick={() => onNavigate('tasks')}>Ver tarefas</Button>
         </div>
-        {focusTasks.length ? focusTasks.map((task) => <WorkspaceTaskRow key={task.id} task={task} />) : <WorkspaceEmptyState title="Sem tarefas urgentes" description="Nada crítico ou atrasado neste momento." />}
+        {focusTasks.length ? focusTasks.map((task) => <WorkspaceTaskRow key={task.id} task={task} />) : <WorkspaceEmptyState title="Sem tarefas urgentes" description="Nenhuma demanda aberta exige atenção imediata." />}
       </section>
 
       <section className={styles.panelWide}>
@@ -51,7 +51,7 @@ export default function WorkspaceHome({ tasks, documents, onNavigate }) {
             <span>{document.updatedAt ? `Atualizado em ${formatDate(document.updatedAt)}` : 'Sem atualização'}</span>
           </article>
         ))}
-        {!documents.length ? <WorkspaceEmptyState title="Nenhum documento" description="Crie páginas operacionais para registrar decisões e processos." /> : null}
+        {!documents.length ? <WorkspaceEmptyState title="Nenhum documento" description="Documentos criados no workspace aparecerão aqui." /> : null}
       </section>
     </div>
   );
