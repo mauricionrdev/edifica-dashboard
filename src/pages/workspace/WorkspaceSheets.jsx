@@ -731,6 +731,20 @@ export default function WorkspaceSheets() {
 
   const activeFilterCount = Object.values(columnFilters).filter((value) => normalizeText(value)).length;
 
+  const filterOptions = useMemo(() => {
+    if (!filterPanel?.columnKey) return [];
+    const counts = new Map();
+    rows.forEach((row) => {
+      const value = String(row?.[filterPanel.columnKey] ?? '').trim();
+      const label = value || '(vazio)';
+      counts.set(label, (counts.get(label) || 0) + 1);
+    });
+    return [...counts.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0], 'pt-BR', { numeric: true, sensitivity: 'base' }))
+      .slice(0, 80)
+      .map(([value, count]) => ({ value: value === '(vazio)' ? '' : value, label: value, count }));
+  }, [filterPanel, rows]);
+
   return (
     <section className={styles.sheetApp} ref={gridRef} tabIndex={-1}>
       <div className={styles.sheetTabs}>
@@ -747,40 +761,57 @@ export default function WorkspaceSheets() {
         <Button type="button" size="sm" onClick={createSheet}>Nova planilha</Button>
       </div>
 
-      <div className={styles.toolbar}>
-        <input className={styles.searchBox} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar na planilha" />
-        <select value={zoom} onChange={(event) => setZoom(Number(event.target.value))} aria-label="Zoom da planilha">
-          {ZOOM_OPTIONS.map((option) => <option key={option} value={option}>{option}%</option>)}
-        </select>
-        <button type="button" onClick={() => openFilterForColumn()}>Filtro</button>
-        <span className={styles.divider} />
-        <button type="button" onClick={() => copySelection()}>Copiar</button>
-        <button type="button" onClick={cutSelection}>Recortar</button>
-        <button type="button" disabled={!clipboard} onClick={() => pasteSelection('all')}>Colar</button>
-        <span className={styles.divider} />
-        <button type="button" data-active={activeStyle.bold} onClick={() => applyStyle({ bold: !activeStyle.bold })}>B</button>
-        <button type="button" data-active={activeStyle.italic} onClick={() => applyStyle({ italic: !activeStyle.italic })}>I</button>
-        <button type="button" data-active={activeStyle.underline} onClick={() => applyStyle({ underline: !activeStyle.underline })}>U</button>
-        <button type="button" data-active={activeStyle.strike} onClick={() => applyStyle({ strike: !activeStyle.strike })}>S</button>
-        <select value={activeStyle.textColor || 'var(--text-primary)'} onChange={(event) => applyStyle({ textColor: event.target.value })} aria-label="Cor do texto">
-          {TEXT_COLORS.map((color) => <option key={color.id} value={color.value}>{color.label}</option>)}
-        </select>
-        <select value={activeStyle.fillColor || 'transparent'} onChange={(event) => applyStyle({ fillColor: event.target.value })} aria-label="Preenchimento">
-          {FILL_COLORS.map((color) => <option key={color.id} value={color.value}>{color.label}</option>)}
-        </select>
-        <select value={activeStyle.numberFormat || ''} onChange={(event) => applyStyle({ numberFormat: event.target.value })} aria-label="Formato">
-          {FORMAT_OPTIONS.map((format) => <option key={format.id} value={format.id}>{format.label}</option>)}
-        </select>
-        <select value={activeStyle.fontFamily || ''} onChange={(event) => applyStyle({ fontFamily: event.target.value })} aria-label="Fonte">
-          {FONT_OPTIONS.map((font) => <option key={font.id} value={font.id}>{font.label}</option>)}
-        </select>
-        <select value={activeStyle.align || 'left'} onChange={(event) => applyStyle({ align: event.target.value })} aria-label="Alinhamento">
-          {ALIGN_OPTIONS.map((align) => <option key={align.id} value={align.id}>{align.label}</option>)}
-        </select>
-        <button type="button" onClick={clearFormatting}>Limpar formato</button>
-        <span className={styles.divider} />
-        <button type="button" onClick={() => addRow(true)}>+ Linha</button>
-        <button type="button" onClick={() => addColumn(true)}>+ Coluna</button>
+      <div className={styles.toolbar} role="toolbar" aria-label="Ferramentas da planilha">
+        <div className={styles.toolbarGroup} data-grow="true">
+          <input className={styles.searchBox} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar na planilha" />
+          <select value={zoom} onChange={(event) => setZoom(Number(event.target.value))} aria-label="Zoom da planilha">
+            {ZOOM_OPTIONS.map((option) => <option key={option} value={option}>{option}%</option>)}
+          </select>
+          <button type="button" className={styles.toolButton} onClick={() => openFilterForColumn()}>Filtro</button>
+        </div>
+
+        <div className={styles.toolbarGroup} aria-label="Área de transferência">
+          <button type="button" className={styles.iconButton} title="Copiar" onClick={() => copySelection()}>⧉</button>
+          <button type="button" className={styles.iconButton} title="Recortar" onClick={cutSelection}>✂</button>
+          <button type="button" className={styles.toolButton} disabled={!clipboard} onClick={() => pasteSelection('all')}>Colar</button>
+        </div>
+
+        <div className={styles.toolbarGroup} aria-label="Texto">
+          <select value={activeStyle.fontFamily || ''} onChange={(event) => applyStyle({ fontFamily: event.target.value })} aria-label="Fonte">
+            {FONT_OPTIONS.map((font) => <option key={font.id} value={font.id}>{font.label}</option>)}
+          </select>
+          <select value={activeStyle.numberFormat || ''} onChange={(event) => applyStyle({ numberFormat: event.target.value })} aria-label="Formato">
+            {FORMAT_OPTIONS.map((format) => <option key={format.id} value={format.id}>{format.label}</option>)}
+          </select>
+          <button type="button" className={styles.iconButton} data-active={activeStyle.bold} title="Negrito" onClick={() => applyStyle({ bold: !activeStyle.bold })}>B</button>
+          <button type="button" className={styles.iconButton} data-active={activeStyle.italic} title="Itálico" onClick={() => applyStyle({ italic: !activeStyle.italic })}>I</button>
+          <button type="button" className={styles.iconButton} data-active={activeStyle.underline} title="Sublinhado" onClick={() => applyStyle({ underline: !activeStyle.underline })}>U</button>
+          <button type="button" className={styles.iconButton} data-active={activeStyle.strike} title="Tachado" onClick={() => applyStyle({ strike: !activeStyle.strike })}>S</button>
+        </div>
+
+        <div className={styles.toolbarGroup} aria-label="Cores e alinhamento">
+          <label className={styles.swatchControl}>
+            <span>A</span>
+            <select value={activeStyle.textColor || 'var(--text-primary)'} onChange={(event) => applyStyle({ textColor: event.target.value })} aria-label="Cor do texto">
+              {TEXT_COLORS.map((color) => <option key={color.id} value={color.value}>{color.label}</option>)}
+            </select>
+          </label>
+          <label className={styles.swatchControl}>
+            <span>▰</span>
+            <select value={activeStyle.fillColor || 'transparent'} onChange={(event) => applyStyle({ fillColor: event.target.value })} aria-label="Preenchimento">
+              {FILL_COLORS.map((color) => <option key={color.id} value={color.value}>{color.label}</option>)}
+            </select>
+          </label>
+          <select value={activeStyle.align || 'left'} onChange={(event) => applyStyle({ align: event.target.value })} aria-label="Alinhamento">
+            {ALIGN_OPTIONS.map((align) => <option key={align.id} value={align.id}>{align.label}</option>)}
+          </select>
+          <button type="button" className={styles.toolButton} onClick={clearFormatting}>Limpar formato</button>
+        </div>
+
+        <div className={styles.toolbarGroup} aria-label="Estrutura">
+          <button type="button" className={styles.toolButton} onClick={() => addRow(true)}>+ Linha</button>
+          <button type="button" className={styles.toolButton} onClick={() => addColumn(true)}>+ Coluna</button>
+        </div>
       </div>
 
       {(activeFilterCount > 0 || filterPanel) && (
@@ -800,15 +831,37 @@ export default function WorkspaceSheets() {
 
       {filterPanel && (
         <div className={styles.filterPanel}>
-          <span>Filtro · {filterPanel.label}</span>
-          <input
-            autoFocus
-            value={columnFilters[filterPanel.columnKey] || ''}
-            onChange={(event) => setColumnFilters((current) => ({ ...current, [filterPanel.columnKey]: event.target.value }))}
-            placeholder="Digite o valor para filtrar"
-          />
-          <Button type="button" size="sm" variant="secondary" onClick={() => clearColumnFilter(filterPanel.columnKey)}>Limpar</Button>
-          <Button type="button" size="sm" variant="secondary" onClick={() => setFilterPanel(null)}>Fechar</Button>
+          <div className={styles.filterHeader}>
+            <div>
+              <span>Filtro da coluna</span>
+              <strong>{filterPanel.label}</strong>
+            </div>
+            <Button type="button" size="sm" variant="secondary" onClick={() => setFilterPanel(null)}>Fechar</Button>
+          </div>
+          <div className={styles.filterControls}>
+            <input
+              autoFocus
+              value={columnFilters[filterPanel.columnKey] || ''}
+              onChange={(event) => setColumnFilters((current) => ({ ...current, [filterPanel.columnKey]: event.target.value }))}
+              placeholder="Digite para filtrar esta coluna"
+            />
+            <Button type="button" size="sm" variant="secondary" onClick={() => sortByColumn('asc')}>Ordenar A → Z</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={() => sortByColumn('desc')}>Ordenar Z → A</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={() => clearColumnFilter(filterPanel.columnKey)}>Limpar</Button>
+          </div>
+          <div className={styles.filterValues} aria-label="Valores encontrados na coluna">
+            {filterOptions.length ? filterOptions.map((option) => (
+              <button
+                key={`${option.label}-${option.count}`}
+                type="button"
+                data-active={normalizeText(columnFilters[filterPanel.columnKey]) === normalizeText(option.value) || undefined}
+                onClick={() => setColumnFilters((current) => ({ ...current, [filterPanel.columnKey]: option.value }))}
+              >
+                <span>{option.label}</span>
+                <small>{option.count}</small>
+              </button>
+            )) : <span className={styles.emptyFilter}>Nenhum valor disponível</span>}
+          </div>
         </div>
       )}
 

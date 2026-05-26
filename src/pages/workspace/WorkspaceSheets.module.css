@@ -39,6 +39,73 @@
 }
 .toolbar {
   flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+.toolbarGroup {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-muted);
+}
+.toolbarGroup[data-grow='true'] {
+  flex: 1;
+  min-width: 320px;
+}
+.toolButton:hover,
+.iconButton:hover,
+.swatchControl:hover,
+.toolbar select:hover {
+  background: var(--bg-selected);
+}
+.toolButton,
+.iconButton,
+.swatchControl,
+.toolbar select,
+.searchBox,
+.formulaBar input {
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  padding: 0 var(--space-2);
+}
+.iconButton {
+  min-width: 30px;
+  font-weight: 700;
+}
+.toolButton,
+.iconButton {
+  cursor: pointer;
+}
+.toolButton:disabled,
+.iconButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+.toolButton[data-active='true'],
+.iconButton[data-active='true'] {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+.swatchControl {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-right: 0;
+}
+.swatchControl span {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+.swatchControl select {
+  width: 88px;
 }
 .filterBar,
 .filterPanel {
@@ -78,32 +145,59 @@
   flex: 1;
   min-width: 180px;
 }
-
-.toolbar button,
-.toolbar select,
-.searchBox,
-.formulaBar input {
-  height: 32px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-muted);
-  color: var(--text-primary);
-  padding: 0 var(--space-2);
+.filterPanel {
+  align-items: stretch;
+  display: grid;
+  gap: var(--space-2);
 }
-.toolbar button {
+.filterHeader,
+.filterControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.filterHeader {
+  justify-content: space-between;
+}
+.filterHeader div {
+  display: grid;
+  gap: 2px;
+}
+.filterHeader strong {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+.filterControls {
+  flex-wrap: wrap;
+}
+.filterValues {
+  max-height: 150px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-1);
+}
+.filterValues button {
+  height: 30px;
+  justify-content: space-between;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   cursor: pointer;
-  min-width: 32px;
 }
-.toolbar button:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
-}
-.toolbar button[data-active='true'] {
+.filterValues button[data-active='true'] {
   background: var(--bg-selected);
-  color: var(--text-primary);
 }
+.filterValues small,
+.emptyFilter {
+  color: var(--text-tertiary);
+}
+
 .searchBox {
-  width: 220px;
+  flex: 1;
+  min-width: 220px;
+  border-color: var(--line-subtle);
+  background: var(--bg-surface);
 }
 .divider {
   width: 1px;
@@ -329,5 +423,7 @@
 }
 @media (max-width: 860px) {
   .toolbar { align-items: flex-start; }
-  .searchBox { width: 100%; }
+  .toolbarGroup,
+  .toolbarGroup[data-grow='true'] { width: 100%; min-width: 0; flex-wrap: wrap; }
+  .searchBox { width: 100%; min-width: 0; }
 }
