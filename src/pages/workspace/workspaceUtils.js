@@ -1,10 +1,10 @@
 export const WORKSPACE_SECTIONS = [
-  { id: 'home', label: 'Início', description: 'Visão operacional do dia.' },
-  { id: 'inbox', label: 'Caixa de entrada', description: 'Pendências sem triagem.' },
-  { id: 'tasks', label: 'Tarefas', description: 'Execução pessoal.' },
-  { id: 'docs', label: 'Documentos', description: 'Páginas e anotações.' },
-  { id: 'sheets', label: 'Planilhas', description: 'Dados em grade.' },
-  { id: 'settings', label: 'Configurações', description: 'Preferências do espaço.' },
+  { id: 'home', icon: '⌘', label: 'Início', description: 'Visão operacional do dia.' },
+  { id: 'inbox', icon: '↳', label: 'Caixa de entrada', description: 'Pendências sem triagem.' },
+  { id: 'tasks', icon: '✓', label: 'Tarefas', description: 'Execução pessoal.' },
+  { id: 'docs', icon: '¶', label: 'Documentos', description: 'Páginas e anotações.' },
+  { id: 'sheets', icon: '▦', label: 'Planilhas', description: 'Dados em grade.' },
+  { id: 'settings', icon: '⚙', label: 'Configurações', description: 'Preferências do espaço.' },
 ];
 
 export const TEXT_COLORS = [

@@ -276,15 +276,27 @@ export default function WorkspaceApp() {
         <nav className={styles.navList}>
           {WORKSPACE_SECTIONS.map((section) => (
             <button key={section.id} type="button" data-active={active === section.id} onClick={() => setActive(section.id)}>
-              <span>{section.label}</span>
+              <span className={styles.navIcon} aria-hidden="true">{section.icon}</span>
+              <span className={styles.navCopy}>
+                <strong>{section.label}</strong>
+                <small>{section.description}</small>
+              </span>
             </button>
           ))}
         </nav>
       </aside>
       <main className={styles.mainArea}>
         <header className={styles.topbar}>
-          <div><span className={styles.eyebrow}>Edifica Central</span><h1>{WORKSPACE_SECTIONS.find((section) => section.id === active)?.label || 'Workspace'}</h1><p>{subtitle}</p></div>
-          <Button type="button" size="sm" variant="secondary" onClick={load}>Atualizar</Button>
+          <div className={styles.topbarCopy}>
+            <span className={styles.eyebrow}>Edifica Central</span>
+            <h1>{WORKSPACE_SECTIONS.find((section) => section.id === active)?.label || 'Workspace'}</h1>
+            <p>{subtitle}</p>
+          </div>
+          <div className={styles.topbarMeta}>
+            <span>Produção</span>
+            <span>{tasks.filter((task) => !isDone(task)).length} tarefas abertas</span>
+            <Button type="button" size="sm" variant="secondary" onClick={load}>Atualizar</Button>
+          </div>
         </header>
         {error && <div className={styles.errorBox}>{error}</div>}
         {loading ? <div className={styles.loadingBox}>Carregando workspace...</div> : (
