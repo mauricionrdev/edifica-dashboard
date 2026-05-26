@@ -300,6 +300,20 @@ export default function WorkspaceSheets() {
     };
   }, [resizing]);
 
+
+  useEffect(() => {
+    if (!menu) return undefined;
+    function closeMenu() { setMenu(null); }
+    window.addEventListener('click', closeMenu);
+    window.addEventListener('resize', closeMenu);
+    window.addEventListener('scroll', closeMenu, true);
+    return () => {
+      window.removeEventListener('click', closeMenu);
+      window.removeEventListener('resize', closeMenu);
+      window.removeEventListener('scroll', closeMenu, true);
+    };
+  }, [menu]);
+
   function moveSelection(deltaRow, deltaCol, extend = false) {
     if (!rows.length || !columns.length) return;
     const baseRow = selection?.endRow ?? 0;
@@ -704,14 +718,23 @@ export default function WorkspaceSheets() {
 
   function openMenu(event, context, rowIndex = selection?.endRow || 0, colIndex = selection?.endCol || 0) {
     event.preventDefault();
-    const width = 300;
-    const height = 470;
+    event.stopPropagation();
+    const width = 320;
+    const height = 520;
     const x = Math.min(event.clientX, window.innerWidth - width - 16);
     const y = Math.min(event.clientY, window.innerHeight - height - 16);
     if (context === 'row') selectRow(rowIndex, event.shiftKey);
     if (context === 'column') selectColumn(colIndex, event.shiftKey);
     if (context === 'cell' && !isCellInRange(rowIndex, colIndex, selection)) setSelection({ startRow: rowIndex, endRow: rowIndex, startCol: colIndex, endCol: colIndex });
-    setMenu({ x: Math.max(16, x), y: Math.max(16, y), context });
+    const column = columns[colIndex] || activeColumn;
+    setMenu({
+      x: Math.max(16, x),
+      y: Math.max(16, y),
+      context,
+      rowIndex,
+      colIndex,
+      title: context === 'row' ? `Linha ${rowIndex + 1}` : context === 'column' ? `Coluna ${column?.label || columnName(colIndex)}` : `${columnName(colIndex)}${rowIndex + 1}`,
+    });
   }
 
   function openFilterForColumn(columnKey = activeColumn?.key) {
@@ -744,6 +767,98 @@ export default function WorkspaceSheets() {
       .slice(0, 80)
       .map(([value, count]) => ({ value: value === '(vazio)' ? '' : value, label: value, count }));
   }, [filterPanel, rows]);
+
+
+  function runMenuAction(action) {
+    setMenu(null);
+    const result = action?.();
+    if (result?.catch) result.catch(() => setStatus('Não foi possível executar a ação'));
+  }
+
+  function buildMenuSections() {
+    if (!menu) return [];
+    const isRow = menu.context === 'row';
+    const isColumn = menu.context === 'column';
+    const isCell = menu.context === 'cell';
+    const sections = [];
+
+    sections.push({
+      id: 'clipboard',
+      label: 'Área de transferência',
+      items: [
+        { icon: '⧉', label: 'Copiar', shortcut: 'Ctrl C', action: copySelection },
+        { icon: '✂', label: 'Recortar', shortcut: 'Ctrl X', action: cutSelection },
+        { icon: '▣', label: 'Colar', shortcut: 'Ctrl V', action: () => pasteSelection('all'), disabled: !clipboard },
+        { icon: 'T', label: 'Colar somente valores', action: () => pasteSelection('values'), disabled: !clipboard },
+        { icon: '◐', label: 'Colar somente formatação', action: () => pasteSelection('format'), disabled: !clipboard },
+      ],
+    });
+
+    sections.push({
+      id: 'selection',
+      label: 'Seleção',
+      items: [
+        { icon: '▦', label: 'Selecionar tudo', shortcut: 'Ctrl A', action: selectAll },
+        !isColumn && { icon: '━', label: isRow ? 'Selecionar linha' : 'Selecionar linha da célula', action: () => selectRow(menu.rowIndex || selection?.endRow || 0) },
+        !isRow && { icon: '┃', label: isColumn ? 'Selecionar coluna' : 'Selecionar coluna da célula', action: () => selectColumn(menu.colIndex || selection?.endCol || 0) },
+        isCell && { icon: '✎', label: 'Editar célula', shortcut: 'Enter', action: () => startEdit(menu.rowIndex || 0, menu.colIndex || 0) },
+      ].filter(Boolean),
+    });
+
+    if (!isColumn) {
+      sections.push({
+        id: 'rows',
+        label: 'Linha',
+        items: [
+          { icon: '↥', label: 'Inserir linha acima', action: () => addRow(false) },
+          { icon: '↧', label: 'Inserir linha abaixo', action: () => addRow(true) },
+          { icon: '⧉', label: 'Duplicar linha', action: duplicateRow },
+          { icon: '⌫', label: 'Excluir linha', tone: 'danger', action: () => askDelete('row') },
+        ],
+      });
+    }
+
+    if (!isRow) {
+      sections.push({
+        id: 'columns',
+        label: 'Coluna',
+        items: [
+          { icon: '↤', label: 'Inserir coluna à esquerda', action: () => addColumn(false) },
+          { icon: '↦', label: 'Inserir coluna à direita', action: () => addColumn(true) },
+          { icon: '⧉', label: 'Duplicar coluna', action: duplicateColumn },
+          { icon: '⇤', label: 'Ajustar largura ao conteúdo', action: () => resizeColumnToContent(menu.colIndex || selection?.endCol || 0) },
+          { icon: '⌫', label: 'Excluir coluna', tone: 'danger', action: () => askDelete('column') },
+        ],
+      });
+      sections.push({
+        id: 'data',
+        label: 'Dados da coluna',
+        items: [
+          { icon: 'A↓', label: 'Ordenar A → Z', action: () => sortByColumn('asc') },
+          { icon: 'Z↓', label: 'Ordenar Z → A', action: () => sortByColumn('desc') },
+          { icon: '⌕', label: 'Filtrar esta coluna...', action: () => openFilterForColumn(activeColumn?.key) },
+          activeFilterCount > 0 && { icon: '×', label: 'Limpar filtros ativos', action: () => setColumnFilters({}) },
+        ].filter(Boolean),
+      });
+    }
+
+    sections.push({
+      id: 'format',
+      label: 'Edição e formato',
+      items: [
+        { icon: 'B', label: 'Negrito', shortcut: 'Ctrl B', active: !!activeStyle.bold, action: () => applyStyle({ bold: !activeStyle.bold }) },
+        { icon: 'I', label: 'Itálico', shortcut: 'Ctrl I', active: !!activeStyle.italic, action: () => applyStyle({ italic: !activeStyle.italic }) },
+        { icon: 'U', label: 'Sublinhado', shortcut: 'Ctrl U', active: !!activeStyle.underline, action: () => applyStyle({ underline: !activeStyle.underline }) },
+        { icon: 'S', label: 'Tachado', active: !!activeStyle.strike, action: () => applyStyle({ strike: !activeStyle.strike }) },
+        { icon: '⌫', label: 'Limpar conteúdo', shortcut: 'Del', action: clearSelectionContent },
+        { icon: '◇', label: 'Limpar formatação', action: clearFormatting },
+      ],
+    });
+
+    return sections;
+  }
+
+  const menuSections = buildMenuSections();
 
   return (
     <section className={styles.sheetApp} ref={gridRef} tabIndex={-1}>
@@ -954,30 +1069,38 @@ export default function WorkspaceSheets() {
       </footer>
 
       {menu && (
-        <div className={styles.contextMenu} style={{ left: menu.x, top: menu.y }}>
-          <strong>{menu.context === 'row' ? 'Linha' : menu.context === 'column' ? 'Coluna' : 'Célula'}</strong>
-          <button type="button" onClick={() => { copySelection(); setMenu(null); }}>Copiar <kbd>Ctrl C</kbd></button>
-          <button type="button" onClick={() => { cutSelection(); setMenu(null); }}>Recortar <kbd>Ctrl X</kbd></button>
-          <button type="button" disabled={!clipboard} onClick={() => { pasteSelection('all'); setMenu(null); }}>Colar <kbd>Ctrl V</kbd></button>
-          <button type="button" disabled={!clipboard} onClick={() => { pasteSelection('values'); setMenu(null); }}>Colar somente valores</button>
-          <button type="button" disabled={!clipboard} onClick={() => { pasteSelection('format'); setMenu(null); }}>Colar somente formatação</button>
-          <span />
-          {menu.context !== 'column' && <button type="button" onClick={() => { addRow(false); setMenu(null); }}>Inserir linha acima</button>}
-          {menu.context !== 'column' && <button type="button" onClick={() => { addRow(true); setMenu(null); }}>Inserir linha abaixo</button>}
-          {menu.context === 'row' && <button type="button" onClick={() => { duplicateRow(); setMenu(null); }}>Duplicar linha</button>}
-          {menu.context !== 'row' && <button type="button" onClick={() => { addColumn(false); setMenu(null); }}>Inserir coluna à esquerda</button>}
-          {menu.context !== 'row' && <button type="button" onClick={() => { addColumn(true); setMenu(null); }}>Inserir coluna à direita</button>}
-          {menu.context === 'column' && <button type="button" onClick={() => { duplicateColumn(); setMenu(null); }}>Duplicar coluna</button>}
-          {menu.context !== 'column' && <button type="button" onClick={() => { askDelete('row'); setMenu(null); }}>Excluir linha</button>}
-          {menu.context !== 'row' && <button type="button" onClick={() => { askDelete('column'); setMenu(null); }}>Excluir coluna</button>}
-          <span />
-          {menu.context !== 'row' && <button type="button" onClick={() => { sortByColumn('asc'); setMenu(null); }}>Ordenar A → Z</button>}
-          {menu.context !== 'row' && <button type="button" onClick={() => { sortByColumn('desc'); setMenu(null); }}>Ordenar Z → A</button>}
-          {menu.context !== 'row' && <button type="button" onClick={() => openFilterForColumn(activeColumn?.key)}>Filtrar esta coluna...</button>}
-          {menu.context !== 'row' && <button type="button" onClick={() => { resizeColumnToContent(); setMenu(null); }}>Ajustar largura</button>}
-          <span />
-          <button type="button" onClick={() => { clearSelectionContent(); setMenu(null); }}>Limpar conteúdo <kbd>Del</kbd></button>
-          <button type="button" onClick={() => { clearFormatting(); setMenu(null); }}>Limpar formatação</button>
+        <div
+          className={styles.contextMenu}
+          style={{ left: menu.x, top: menu.y }}
+          role="menu"
+          aria-label={`Menu contextual de ${menu.title}`}
+          onClick={(event) => event.stopPropagation()}
+          onContextMenu={(event) => event.preventDefault()}
+        >
+          <header className={styles.menuHeader}>
+            <strong>{menu.context === 'row' ? 'Linha' : menu.context === 'column' ? 'Coluna' : 'Célula'}</strong>
+            <span>{menu.title}</span>
+          </header>
+          {menuSections.map((section) => (
+            <div className={styles.menuSection} key={section.id} role="group" aria-label={section.label}>
+              <span className={styles.menuSectionLabel}>{section.label}</span>
+              {section.items.map((item) => (
+                <button
+                  key={`${section.id}-${item.label}`}
+                  type="button"
+                  role="menuitem"
+                  disabled={item.disabled}
+                  data-active={item.active || undefined}
+                  data-tone={item.tone || undefined}
+                  onClick={() => !item.disabled && runMenuAction(item.action)}
+                >
+                  <span className={styles.menuIcon} aria-hidden="true">{item.icon}</span>
+                  <span className={styles.menuText}>{item.label}</span>
+                  {item.shortcut && <kbd>{item.shortcut}</kbd>}
+                </button>
+              ))}
+            </div>
+          ))}
         </div>
       )}
 

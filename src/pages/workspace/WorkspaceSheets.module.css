@@ -339,9 +339,9 @@
 }
 .contextMenu {
   position: fixed;
-  z-index: 90;
-  width: 260px;
-  max-height: min(460px, calc(100vh - 32px));
+  z-index: 120;
+  width: 320px;
+  max-height: min(560px, calc(100vh - 32px));
   overflow: auto;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-lg);
@@ -349,14 +349,41 @@
   box-shadow: var(--shadow-dialog);
   padding: var(--space-2);
   display: grid;
-  gap: 1px;
+  gap: var(--space-1);
 }
-.contextMenu strong {
+.menuHeader {
+  position: sticky;
+  top: calc(var(--space-2) * -1);
+  z-index: 1;
+  display: grid;
+  gap: 2px;
   padding: var(--space-2);
-  color: var(--text-secondary);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-elevated);
+}
+.menuHeader strong,
+.menuSectionLabel {
+  color: var(--text-tertiary);
   font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+.menuHeader span {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+.menuSection {
+  display: grid;
+  gap: 1px;
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--line-subtle);
+}
+.menuSection:last-child {
+  border-bottom: 0;
+}
+.menuSectionLabel {
+  padding: var(--space-1) var(--space-2);
 }
 .contextMenu button {
   min-height: 34px;
@@ -367,26 +394,42 @@
   text-align: left;
   padding: 0 var(--space-2);
   cursor: pointer;
-  display: flex;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-2);
 }
-
+.contextMenu button[data-active='true'] {
+  background: var(--bg-selected);
+}
+.contextMenu button[data-tone='danger'] {
+  color: var(--danger-text);
+}
+.contextMenu button:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
 .contextMenu kbd {
-  margin-left: auto;
   color: var(--text-tertiary);
   font: inherit;
   font-size: var(--font-size-xs);
 }
-
 .contextMenu button:disabled {
   color: var(--text-tertiary);
   cursor: not-allowed;
 }
-.contextMenu span {
-  height: 1px;
-  background: var(--line-subtle);
-  margin: var(--space-1) 0;
+.menuIcon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+.menuText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .dialogBackdrop {
   position: fixed;
