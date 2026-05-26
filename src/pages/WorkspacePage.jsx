@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
 import UserSpreadsheetPanel from '../components/spreadsheets/UserSpreadsheetPanel.jsx';
+import WorkspaceShell from './workspace/WorkspaceShell.jsx';
+import { WORKSPACE_AREAS } from './workspace/workspaceNavigation.js';
 import { listMyProjectTasks } from '../api/projects.js';
 import { createWorkspaceDocument, deleteWorkspaceDocument, listWorkspaceDocuments, updateWorkspaceDocument } from '../api/support.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -23,13 +24,7 @@ import {
 } from '../components/ui/Icons.jsx';
 import styles from './WorkspacePage.module.css';
 
-const TABS = [
-  { id: 'home', label: 'Início', icon: HomeIcon },
-  { id: 'tasks', label: 'Tarefas', icon: ChecklistIcon },
-  { id: 'sheets', label: 'Planilhas', icon: BuildingIcon },
-  { id: 'documents', label: 'Documentos', icon: SparklesIcon },
-  { id: 'settings', label: 'Configurações', icon: SettingsIcon },
-];
+const TABS = WORKSPACE_AREAS;
 
 const STATUS_LABELS = {
   todo: 'Aberta',
@@ -898,10 +893,11 @@ export default function WorkspacePage() {
   }, [selectedTaskId, tasks]);
 
   const tabCounters = useMemo(() => ({
+    inbox: taskBuckets.overdue.length + taskBuckets.noDue.length,
     tasks: taskStats.open,
     sheets: '',
     documents: documents.length || '',
-  }), [documents.length, taskStats.open]);
+  }), [documents.length, taskBuckets.noDue.length, taskBuckets.overdue.length, taskStats.open]);
 
   const routineSteps = useMemo(() => [
     {
@@ -962,93 +958,32 @@ export default function WorkspacePage() {
   }, [activeTasks]);
 
   return (
-    <main ref={pageRef} className={`${styles.page} ${sidebarCompact ? styles.pageCompact : ''}`.trim()} style={{ '--workspace-sidebar-width': sidebarCollapsed ? `${SIDEBAR_MIN_WIDTH}px` : `${sidebarWidth}px` }}>
-      <aside className={`${styles.sidebar} ${sidebarCompact ? styles.sidebarCompact : ''}`.trim()} aria-label="Meu espaço de trabalho">
-        <div className={styles.sidebarHeader}>
-          <span className={styles.brandMark}>edi</span>
-          <div className={styles.sidebarTitle}>
-            <strong>Workspace</strong>
-            <span>pessoal</span>
-          </div>
-          <button
-            type="button"
-            className={styles.sidebarToggle}
-            onClick={toggleSidebar}
-            aria-label={sidebarCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
-            title={sidebarCollapsed ? 'Expandir' : 'Recolher'}
-          >
-            {sidebarCollapsed ? '›' : '‹'}
-          </button>
-        </div>
-
-        <nav className={styles.sideNav} aria-label="Navegação do espaço">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                className={tab.id === activeTab ? styles.sideActive : ''}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                <Icon size={15} />
-                <span>{tab.label}</span>
-                {tabCounters[tab.id] ? <em>{tabCounters[tab.id]}</em> : null}
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className={styles.sidebarFooter}>
-          <Link to="/" className={styles.backButton}><HomeIcon size={15} /> <span>Voltar para a central</span></Link>
-        </div>
-        <button
-          type="button"
-          className={styles.sidebarResizeHandle}
-          aria-label="Ajustar largura da sidebar"
-          onPointerDown={(event) => {
-            event.preventDefault();
-            setSidebarResizing(true);
-          }}
-        />
-      </aside>
-
-      <section className={styles.workspace}>
-        <header className={styles.header}>
-          <div className={styles.headerIdentity}>
-            <span className={styles.avatar} title={displayName}>{avatarUrl ? <img src={avatarUrl} alt="" /> : initials(displayName)}</span>
-            <div>
-              <span className={styles.eyebrow}>Meu espaço de trabalho</span>
-              <h1>{displayName}</h1>
-            </div>
-          </div>
-
-          <div className={styles.headerActions}>
-            <Button size="sm" variant="secondary" onClick={loadTasks} disabled={tasksLoading}><RotateCcwIcon size={15} /> Atualizar</Button>
-            <Button size="sm" variant="secondary" onClick={() => setActiveTab('settings')}><SettingsIcon size={15} /> Configurações</Button>
-            <Button size="sm" variant="primary" onClick={() => activeTab === 'documents' ? handleCreateDocument('blank') : setActiveTab('sheets')}><PlusIcon size={15} /> {activeTab === 'documents' ? 'Novo documento' : 'Nova planilha'}</Button>
-          </div>
-        </header>
-
-        <div className={styles.topStrip}>
-          <div className={styles.workspaceTitle}>
-            <span>{activeTabLabel}</span>
-            <strong>{activeTab === 'home' ? 'Central pessoal' : activeTabLabel}</strong>
-          </div>
-          <nav className={styles.tabRail} aria-label="Áreas do workspace">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                className={tab.id === activeTab ? styles.tabActive : ''}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                <span>{tab.label}</span>
-                {tabCounters[tab.id] ? <em>{tabCounters[tab.id]}</em> : null}
-              </button>
-            ))}
-          </nav>
-        </div>
+    <>
+      <WorkspaceShell
+        pageRef={pageRef}
+        compact={sidebarCompact}
+        sidebarCollapsed={sidebarCollapsed}
+        sidebarWidth={sidebarWidth}
+        minSidebarWidth={SIDEBAR_MIN_WIDTH}
+        activeTab={activeTab}
+        activeTabLabel={activeTabLabel}
+        tabCounters={tabCounters}
+        displayName={displayName}
+        avatar={avatarUrl}
+        initials={initials(displayName)}
+        tasksLoading={tasksLoading}
+        onTabChange={setActiveTab}
+        onRefresh={loadTasks}
+        onOpenSettings={() => setActiveTab('settings')}
+        onPrimaryAction={() => activeTab === 'documents' ? handleCreateDocument('blank') : setActiveTab('sheets')}
+        onStartResize={(mode) => {
+          if (mode === 'toggle') {
+            toggleSidebar();
+            return;
+          }
+          setSidebarResizing(true);
+        }}
+      >
 
         {activeTab === 'home' ? (
           <>
@@ -1225,6 +1160,44 @@ export default function WorkspacePage() {
               </div>
             </section>
           </>
+        ) : null}
+
+        {activeTab === 'inbox' ? (
+          <section className={styles.inboxArea} aria-label="Caixa de entrada">
+            <div className={styles.inboxGrid}>
+              <section className={styles.inboxPanel}>
+                <div className={styles.sectionHeader}>
+                  <span>Triagem</span>
+                  <strong>Tarefas que precisam de decisão</strong>
+                </div>
+                <div className={styles.taskList}>
+                  {tasksLoading ? <span className={styles.inlineState}>Carregando itens...</span> : null}
+                  {!tasksLoading && !taskBuckets.overdue.length && !taskBuckets.noDue.length ? <span className={styles.inlineState}>Nenhuma tarefa pendente de triagem.</span> : null}
+                  {!tasksLoading ? [...taskBuckets.overdue, ...taskBuckets.noDue].slice(0, 12).map((task) => (
+                    <TaskRow key={task.id} task={task} active={String(task.id) === String(selectedTaskId)} onSelect={(selected) => { handleSelectTask(selected); setActiveTab('tasks'); }} />
+                  )) : null}
+                </div>
+              </section>
+
+              <section className={styles.inboxPanel}>
+                <div className={styles.sectionHeader}>
+                  <span>Documentos</span>
+                  <strong>Páginas recentes</strong>
+                </div>
+                <div className={styles.contextList}>
+                  {documentsLoading ? <span className={styles.inlineState}>Carregando documentos...</span> : null}
+                  {!documentsLoading && !documents.length ? <span className={styles.inlineState}>Nenhum documento recente.</span> : null}
+                  {!documentsLoading ? documents.slice(0, 8).map((document) => (
+                    <button key={document.id} type="button" className={styles.contextRow} onClick={() => { setSelectedDocumentId(document.id); setActiveTab('documents'); }}>
+                      <span>{document.title || 'Sem título'}</span>
+                      <strong>{formatDocumentDate(document.updatedAt || document.createdAt) || 'recente'}</strong>
+                      <em>{documentExcerpt(document.content)}</em>
+                    </button>
+                  )) : null}
+                </div>
+              </section>
+            </div>
+          </section>
         ) : null}
 
         {activeTab === 'tasks' ? (
@@ -1426,7 +1399,7 @@ export default function WorkspacePage() {
             </div>
           </section>
         ) : null}
-      </section>
+      </WorkspaceShell>
 
       <ConfirmDeleteDialog
         confirmation={deleteConfirmation}
@@ -1434,6 +1407,6 @@ export default function WorkspacePage() {
         onCancel={closeDeleteConfirmation}
         onConfirm={confirmDeleteAction}
       />
-    </main>
+    </>
   );
 }

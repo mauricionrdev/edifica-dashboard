@@ -2498,3 +2498,29 @@ button.taskRow:hover {
   border-top: 1px solid var(--line-subtle);
   background: var(--bg-raised);
 }
+
+.inboxArea {
+  min-width: 0;
+}
+
+.inboxGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.inboxPanel {
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
+}
+
+@media (max-width: 1120px) {
+  .inboxGrid {
+    grid-template-columns: 1fr;
+  }
+}
