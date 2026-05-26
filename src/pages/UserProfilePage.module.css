@@ -753,10 +753,6 @@
   z-index: 1;
 }
 
-.taskDrawerSectionWorkflow .workflowField:focus-within {
-  z-index: 20;
-}
-
 .sectionTitleRow {
   min-height: 38px;
   display: flex;
@@ -1438,4 +1434,86 @@
 .workflowStep,
 .drawerPersonChip {
   box-shadow: none;
+}
+
+
+/* Public profile sync — visual parity with validated internal profile without touching ProfilePage */
+.issueTable {
+  border: 1px solid color-mix(in srgb, var(--border-subtle) 78%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+}
+
+.issueHead,
+.issueRow {
+  grid-template-columns: minmax(280px, 1.55fr) 128px 154px 112px;
+  align-items: center;
+}
+
+.issueProperties,
+.issueStageCell,
+.issuePeopleCell {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.issueStage {
+  min-width: 138px;
+  max-width: 154px;
+  justify-self: center;
+}
+
+.stageLabel {
+  white-space: nowrap;
+}
+
+.taskDrawerPanel {
+  background: color-mix(in srgb, var(--surface-1) 88%, var(--surface-0));
+  border-left: 1px solid color-mix(in srgb, var(--border-subtle) 84%, transparent);
+  box-shadow: var(--shadow-dialog);
+}
+
+.taskDrawerTopbar,
+.taskDrawerHero,
+.taskDrawerSection {
+  border-color: color-mix(in srgb, var(--border-subtle) 78%, transparent);
+}
+
+.taskDescriptionBox {
+  min-height: auto;
+  white-space: pre-wrap;
+}
+
+.taskTitleInput,
+.taskDescriptionInput,
+.commentEditInput,
+.commentForm textarea,
+.demandFormContent input,
+.demandFormContent textarea {
+  outline: none;
+  box-shadow: none;
+}
+
+.taskTitleInput:focus,
+.taskTitleInput:focus-visible,
+.taskDescriptionInput:focus,
+.taskDescriptionInput:focus-visible,
+.commentEditInput:focus,
+.commentEditInput:focus-visible,
+.commentForm textarea:focus,
+.commentForm textarea:focus-visible,
+.demandFormContent input:focus,
+.demandFormContent input:focus-visible,
+.demandFormContent textarea:focus,
+.demandFormContent textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--border-strong) 58%, transparent);
+}
+
+@media (max-width: 1120px) {
+  .issueHead,
+  .issueRow {
+    grid-template-columns: minmax(240px, 1fr) 116px 148px 96px;
+  }
 }

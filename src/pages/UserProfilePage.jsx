@@ -888,11 +888,21 @@ export default function UserProfilePage() {
         clientId: newTask.clientId || undefined,
         dueDate: newTask.dueDate || undefined,
         priority: newTask.priority,
-        status: newTask.type === 'briefing' ? 'in_progress' : 'todo',
+        status: 'in_progress',
         source: 'profile',
+        metadata: {
+          type: newTask.type,
+          recurrence: newTask.type === 'routine' ? newTask.recurrence : undefined,
+          routineScope: newTask.type === 'routine' ? newTask.routineScope : undefined,
+          routineChecklist: newTask.type === 'routine' ? newTask.routineChecklist : undefined,
+        },
       });
       const createdTask = res?.task;
-      const collaboratorIds = [...new Set((newTask.collaboratorUserIds || []).filter((id) => id && id !== assigneeUserId))];
+      const requesterId = currentUser?.id || '';
+      const collaboratorIds = [...new Set([
+        ...(newTask.collaboratorUserIds || []),
+        requesterId && requesterId !== assigneeUserId ? requesterId : '',
+      ].filter((id) => id && id !== assigneeUserId))];
       if (createdTask?.id && collaboratorIds.length) {
         await Promise.all(collaboratorIds.map((userId) => addTaskCollaborator(createdTask.id, { userId }).catch(() => null)));
       }
@@ -1161,7 +1171,6 @@ export default function UserProfilePage() {
                         setEditingTitle(false);
                       }
                     }}
-                    autoFocus
                     disabled={taskSaving}
                   />
                 ) : (
@@ -1276,39 +1285,40 @@ export default function UserProfilePage() {
                 </div>
               </section>
 
-              <section className={styles.taskDrawerSection}>
-                <div className={styles.sectionTitleRow}>
-                  <h4>Descrição</h4>
-                  {!canEditProfileTask(activeTask, currentUser) ? <span>Somente visualização</span> : null}
-                </div>
-                {canEditProfileTask(activeTask, currentUser) && editingDescription ? (
-                  <textarea
-                    className={styles.taskDescriptionInput}
-                    value={descriptionDraft}
-                    onChange={(event) => setDescriptionDraft(event.target.value)}
-                    onBlur={handleDescriptionBlur}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Escape') {
+              {(activeTask.description?.trim() || (canEditProfileTask(activeTask, currentUser) && editingDescription)) ? (
+                <section className={styles.taskDrawerSection}>
+                  <div className={styles.sectionTitleRow}>
+                    <h4>Descrição</h4>
+                    {!canEditProfileTask(activeTask, currentUser) ? <span>Somente visualização</span> : null}
+                  </div>
+                  {canEditProfileTask(activeTask, currentUser) && editingDescription ? (
+                    <textarea
+                      className={styles.taskDescriptionInput}
+                      value={descriptionDraft}
+                      onChange={(event) => setDescriptionDraft(event.target.value)}
+                      onBlur={handleDescriptionBlur}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape') {
+                          setDescriptionDraft(activeTask.description || '');
+                          setEditingDescription(false);
+                        }
+                      }}
+                      disabled={taskSaving}
+                    />
+                  ) : (
+                    <p
+                      className={styles.taskDescriptionBox}
+                      onDoubleClick={() => {
+                        if (!canEditProfileTask(activeTask, currentUser)) return;
                         setDescriptionDraft(activeTask.description || '');
-                        setEditingDescription(false);
-                      }
-                    }}
-                    autoFocus
-                    disabled={taskSaving}
-                  />
-                ) : (
-                  <p
-                    className={styles.taskDescriptionBox}
-                    onDoubleClick={() => {
-                      if (!canEditProfileTask(activeTask, currentUser)) return;
-                      setDescriptionDraft(activeTask.description || '');
-                      setEditingDescription(true);
-                    }}
-                  >
-                    {activeTask.description || 'Sem descrição.'}
-                  </p>
-                )}
-              </section>
+                        setEditingDescription(true);
+                      }}
+                    >
+                      {activeTask.description}
+                    </p>
+                  )}
+                </section>
+              ) : null}
 
               <section className={styles.taskDrawerSection}>
                 <div className={styles.sectionTitleRow}>
@@ -1334,7 +1344,6 @@ export default function UserProfilePage() {
                                 value={commentDraft}
                                 onChange={(event) => setCommentDraft(event.target.value)}
                                 onBlur={() => handleCommentBlur(comment)}
-                                autoFocus
                                 disabled={commentSaving}
                               />
                             ) : (
