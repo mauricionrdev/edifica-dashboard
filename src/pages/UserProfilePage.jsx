@@ -17,7 +17,6 @@ import { useToast } from '../context/ToastContext.jsx';
 import { getClientAvatar, getUserAvatar } from '../utils/avatarStorage.js';
 import { roleLabel } from '../utils/roles.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
-import ProfileTaskBoard from '../components/profile/ProfileTaskBoard.jsx';
 import Avatar from '../components/ui/Avatar.jsx';
 import Select from '../components/ui/Select.jsx';
 import DateField from '../components/ui/DateField.jsx';
@@ -889,11 +888,11 @@ export default function UserProfilePage() {
         clientId: newTask.clientId || undefined,
         dueDate: newTask.dueDate || undefined,
         priority: newTask.priority,
-        status: 'in_progress',
+        status: newTask.type === 'briefing' ? 'in_progress' : 'todo',
         source: 'profile',
       });
       const createdTask = res?.task;
-      const collaboratorIds = [...new Set([currentUser?.id, ...(newTask.collaboratorUserIds || [])].filter((id) => id && id !== assigneeUserId))];
+      const collaboratorIds = [...new Set((newTask.collaboratorUserIds || []).filter((id) => id && id !== assigneeUserId))];
       if (createdTask?.id && collaboratorIds.length) {
         await Promise.all(collaboratorIds.map((userId) => addTaskCollaborator(createdTask.id, { userId }).catch(() => null)));
       }
@@ -995,36 +994,115 @@ export default function UserProfilePage() {
               </button>
             </header>
 
-            <ProfileTaskBoard
-              tabs={PUBLIC_TASK_TABS}
-              activeTab={taskTab}
-              counts={taskTabCounts}
-              onTabChange={setTaskTab}
-              loading={tasksLoading}
-              tasks={filteredTasks}
-              emptyLabel="Sem tarefas neste filtro"
-              onOpenTask={openTaskDetail}
-              getTaskDone={(task) => getTaskStatus(task) === 'done'}
-              getTaskTitle={(task) => compactText(task.title, 'Tarefa sem título')}
-              getTaskSubtitle={(task) => [task.clientName, task.projectName].filter(Boolean).join(' · ')}
-              getTaskTags={(task) => [
-                { key: 'kind', label: taskKindLabel(task), tone: publicTaskKind(task) },
-                task.priority === 'critical' ? { key: 'critical', label: 'Crítica', tone: 'critical' } : null,
-              ].filter(Boolean)}
-              getTaskStage={taskStageInfo}
-              getTaskPeople={(task) => buildPublicTaskPeople(
-                { ...task, collaborators: taskPeopleMap[task.id] || task.collaborators || task.people || [] },
-                profileUser,
-                userDirectory
-              ).map((person) => ({
-                ...person,
-                avatarUrl: getUserAvatar(person),
-              }))}
-              getTaskDue={(task) => ({
-                label: formatDateLabel(task.dueDate),
-                tone: getTaskStatus(task) === 'overdue' ? 'overdue' : getTaskStatus(task) === 'done' ? 'done' : isTodayTask(task) ? 'today' : 'open',
-              })}
-            />
+            <div className={styles.taskTabs} aria-label="Filtros de tarefas">
+              {PUBLIC_TASK_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  className={`${styles.taskTab} ${taskTab === tab.value ? styles.taskTabActive : ''}`.trim()}
+                  onClick={() => setTaskTab(tab.value)}
+                  aria-current={taskTab === tab.value ? 'page' : undefined}
+                >
+                  <span>{tab.label}</span>
+                  <strong>{taskTabCounts[tab.value] || 0}</strong>
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.issueTable}>
+              <div className={styles.issueHead} aria-hidden="true">
+                <span />
+                <span>Tarefa</span>
+                <span>Propriedades</span>
+                <span>Etapa</span>
+                <span>Colab.</span>
+                <span>Prazo</span>
+              </div>
+
+              <div className={styles.issueList}>
+                {tasksLoading ? (
+                  <StateBlock variant="loading" compact title="Carregando tarefas" />
+                ) : filteredTasks.length === 0 ? (
+                  <div className={styles.emptyState}>Sem tarefas neste filtro.</div>
+                ) : (
+                  filteredTasks.map((task) => {
+                    const status = getTaskStatus(task);
+                    const stage = taskStageInfo(task);
+                    const people = buildPublicTaskPeople(
+                      { ...task, collaborators: taskPeopleMap[task.id] || task.collaborators || task.people || [] },
+                      profileUser,
+                      userDirectory
+                    );
+                    return (
+                      <article
+                        key={task.id}
+                        className={`${styles.issueRow} ${status === 'done' ? styles.issueRowDone : ''}`.trim()}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => openTaskDetail(task)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            openTaskDetail(task);
+                          }
+                        }}
+                      >
+                        <span className={`${styles.checkCircle} ${status === 'done' ? styles.checkCircleDone : ''}`} aria-hidden="true">
+                          {status === 'done' ? '✓' : ''}
+                        </span>
+
+                        <div className={styles.issueTitle}>
+                          <strong>{compactText(task.title, 'Tarefa sem título')}</strong>
+                          {(task.clientName || task.projectName) ? (
+                            <span>{task.clientName || task.projectName}</span>
+                          ) : null}
+                        </div>
+
+                        <div className={styles.issueProperties}>
+                          <span className={`${styles.tag} ${styles.tagKind} ${styles[`kind_${publicTaskKind(task)}`] || ''}`.trim()}>{taskKindLabel(task)}</span>
+                          {task.priority === 'critical' ? <span className={`${styles.tag} ${styles.tag_overdue}`}>Crítica</span> : null}
+                        </div>
+
+                        <div className={styles.issueStageCell}>
+                          <span
+                            className={`${styles.stagePill} ${styles[`stage_${stage.tone}`] || ''}`.trim()}
+                            style={{ '--public-stage-progress': `${stage.progress}%` }}
+                          >
+                            <span className={styles.stageTrack} aria-hidden="true" />
+                            <span className={styles.stageLabel}>{stage.label}</span>
+                            <span className={styles.stageValue}>{stage.progress}%</span>
+                          </span>
+                        </div>
+
+                        <div className={styles.issuePeopleCell}>
+                          {people.length ? (
+                            <span className={styles.taskAvatarStack} aria-label={`Colaboradores: ${taskPeopleLabel(people)}`} title={taskPeopleLabel(people)}>
+                              {people.slice(0, 4).map((person) => {
+                                const avatar = getUserAvatar(person);
+                                return (
+                                  <span
+                                    key={person.userId || person.userName}
+                                    className={`${styles.taskAvatar} ${avatar ? styles.avatarWithPhoto : styles[`taskAvatar_${avatarColorClassName(person.avatarColor)}`] || ''}`.trim()}
+                                    title={person.userName || person.name}
+                                  >
+                                    {avatar ? <img src={avatar} alt="" /> : initials(person.userName || person.name)}
+                                  </span>
+                                );
+                              })}
+                              {people.length > 4 ? <span className={`${styles.taskAvatar} ${styles.taskAvatarMore}`}>+{people.length - 4}</span> : null}
+                            </span>
+                          ) : (
+                            <span className={styles.taskAvatarEmpty}>—</span>
+                          )}
+                        </div>
+
+                        <span className={`${styles.issueDue} ${isOverdue(task) ? styles.issueDueLate : ''}`.trim()}>{formatDateLabel(task.dueDate)}</span>
+                      </article>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </section>
 
         </main>
@@ -1083,6 +1161,7 @@ export default function UserProfilePage() {
                         setEditingTitle(false);
                       }
                     }}
+                    autoFocus
                     disabled={taskSaving}
                   />
                 ) : (
@@ -1197,40 +1276,39 @@ export default function UserProfilePage() {
                 </div>
               </section>
 
-              {(String(activeTask.description || '').trim() || editingDescription) ? (
-                <section className={styles.taskDrawerSection}>
-                  <div className={styles.sectionTitleRow}>
-                    <h4>Descrição</h4>
-                    {!canEditProfileTask(activeTask, currentUser) ? <span>Somente visualização</span> : null}
-                  </div>
-                  {canEditProfileTask(activeTask, currentUser) && editingDescription ? (
-                    <textarea
-                      className={styles.taskDescriptionInput}
-                      value={descriptionDraft}
-                      onChange={(event) => setDescriptionDraft(event.target.value)}
-                      onBlur={handleDescriptionBlur}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Escape') {
-                          setDescriptionDraft(activeTask.description || '');
-                          setEditingDescription(false);
-                        }
-                      }}
-                      disabled={taskSaving}
-                    />
-                  ) : (
-                    <p
-                      className={styles.taskDescriptionBox}
-                      onDoubleClick={() => {
-                        if (!canEditProfileTask(activeTask, currentUser)) return;
+              <section className={styles.taskDrawerSection}>
+                <div className={styles.sectionTitleRow}>
+                  <h4>Descrição</h4>
+                  {!canEditProfileTask(activeTask, currentUser) ? <span>Somente visualização</span> : null}
+                </div>
+                {canEditProfileTask(activeTask, currentUser) && editingDescription ? (
+                  <textarea
+                    className={styles.taskDescriptionInput}
+                    value={descriptionDraft}
+                    onChange={(event) => setDescriptionDraft(event.target.value)}
+                    onBlur={handleDescriptionBlur}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') {
                         setDescriptionDraft(activeTask.description || '');
-                        setEditingDescription(true);
-                      }}
-                    >
-                      {activeTask.description}
-                    </p>
-                  )}
-                </section>
-              ) : null}
+                        setEditingDescription(false);
+                      }
+                    }}
+                    autoFocus
+                    disabled={taskSaving}
+                  />
+                ) : (
+                  <p
+                    className={styles.taskDescriptionBox}
+                    onDoubleClick={() => {
+                      if (!canEditProfileTask(activeTask, currentUser)) return;
+                      setDescriptionDraft(activeTask.description || '');
+                      setEditingDescription(true);
+                    }}
+                  >
+                    {activeTask.description || 'Sem descrição.'}
+                  </p>
+                )}
+              </section>
 
               <section className={styles.taskDrawerSection}>
                 <div className={styles.sectionTitleRow}>
