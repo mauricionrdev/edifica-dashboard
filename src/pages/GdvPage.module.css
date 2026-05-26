@@ -1472,3 +1472,21 @@
   border-color: var(--line-subtle);
   background: var(--field-bg);
 }
+
+/* v151 — filtro de carteira sem efeito de hover */
+.portfolioFilter button:hover {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  box-shadow: none;
+}
+
+.portfolioFilterActive,
+.portfolioFilterActive:hover,
+.portfolioFilterActive:focus,
+.portfolioFilterActive:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+}

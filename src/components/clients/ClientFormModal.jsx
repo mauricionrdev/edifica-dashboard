@@ -181,10 +181,11 @@ export default function ClientFormModal({
                 </div>
                 <label
                   className={styles.avatarUploadButton}
-                  aria-label="Escolher imagem"
-                  title="Escolher imagem"
+                  aria-label="Adicionar foto"
+                  title="Adicionar foto"
                 >
                   <CameraIcon size={14} />
+                  <span>Adicionar foto</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -207,7 +208,6 @@ export default function ClientFormModal({
                     value={form.name}
                     onChange={(event) => setField('name', event.target.value)}
                     disabled={saving}
-                    autoFocus
                     placeholder="Nome completo"
                   />
                 </div>
