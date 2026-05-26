@@ -372,7 +372,7 @@
 .toolbarControls {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: minmax(0, 1fr) max-content 160px;
   align-items: center;
   gap: 10px;
 }
@@ -415,6 +415,37 @@
 .searchBox input::placeholder {
   color: var(--text-quaternary);
   opacity: 1;
+}
+
+.portfolioFilter {
+  height: 38px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.portfolioFilter button {
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.portfolioFilter button:hover,
+.portfolioFilterActive {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--gdv-accent-line);
 }
 
 .complementaryButton {

@@ -1,6 +1,7 @@
 export const CLIENT_STATUS = {
   ACTIVE: 'active',
   ONBOARDING: 'onboarding',
+  RAMPAGE: 'rampagem_comercial',
   PAUSED: 'paused',
   CHURN: 'churn',
 };
@@ -8,6 +9,7 @@ export const CLIENT_STATUS = {
 export const CLIENT_STATUS_OPTIONS = [
   { value: CLIENT_STATUS.ACTIVE, label: 'Ativo' },
   { value: CLIENT_STATUS.ONBOARDING, label: 'Onboard' },
+  { value: CLIENT_STATUS.RAMPAGE, label: 'Rampagem Comercial' },
   { value: CLIENT_STATUS.PAUSED, label: 'Pausado' },
   { value: CLIENT_STATUS.CHURN, label: 'Churn / Cancelado' },
 ];

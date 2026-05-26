@@ -107,6 +107,12 @@ export default function ClientDetailDrawer({
               background: 'rgba(90, 169, 255, 0.08)',
               border: 'rgba(90, 169, 255, 0.24)',
             }
+          : sc === 'cc-rampage'
+            ? {
+                color: 'var(--warning)',
+                background: 'var(--warning-soft)',
+                border: 'color-mix(in srgb, var(--warning) 26%, transparent)',
+              }
           : sc === 'cc-paused'
             ? {
                 color: 'var(--text-secondary)',

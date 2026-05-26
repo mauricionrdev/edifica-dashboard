@@ -86,6 +86,11 @@
   color: var(--warning);
 }
 
+.cc-rampage {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
 .cc-churn {
   background: var(--danger-soft);
   color: var(--danger);

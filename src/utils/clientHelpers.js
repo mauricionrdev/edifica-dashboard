@@ -73,6 +73,7 @@ export function statusClass(client, today = new Date()) {
   if (!client) return '';
   const status = normalizeClientStatus(client.status);
   if (status === CLIENT_STATUS.ONBOARDING) return 'cc-onboarding';
+  if (status === CLIENT_STATUS.RAMPAGE) return 'cc-rampage';
   if (status === CLIENT_STATUS.PAUSED) return 'cc-paused';
   if (status === CLIENT_STATUS.CHURN) return 'cc-churn';
   if (isExpired(client, today)) return 'cc-expired';
@@ -84,6 +85,7 @@ export function statusLabel(client, today = new Date()) {
   if (!client) return '';
   const status = normalizeClientStatus(client.status);
   if (status === CLIENT_STATUS.ONBOARDING) return 'Onboard';
+  if (status === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (status === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (status === CLIENT_STATUS.CHURN) return 'Churn';
   if (isExpired(client, today)) return 'Vencido';

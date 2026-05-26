@@ -3,4 +3,4 @@
 -- onboarding/paused/churn: visible in Clients, but do not count in operational metrics.
 
 ALTER TABLE clients
-  MODIFY COLUMN status ENUM('active','onboarding','paused','churn') NOT NULL DEFAULT 'active';
+  MODIFY COLUMN status ENUM('active','onboarding','rampagem_comercial','paused','churn') NOT NULL DEFAULT 'active';

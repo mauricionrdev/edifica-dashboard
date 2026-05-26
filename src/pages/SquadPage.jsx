@@ -70,6 +70,7 @@ function effectiveForecast(closed, predicted) {
 
 function statusTone(calc, status) {
   if (status === CLIENT_STATUS.CHURN) return 'red';
+  if (status === CLIENT_STATUS.RAMPAGE) return 'amber';
   if (!isActiveClientStatus(status)) return 'muted';
   if (!calc?.mLuc) return 'muted';
 
@@ -82,6 +83,7 @@ function statusTone(calc, status) {
 
 function statusLabel(calc, status) {
   if (status === CLIENT_STATUS.ONBOARDING) return 'Onboard';
+  if (status === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (status === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (status === CLIENT_STATUS.CHURN) return 'Churn';
   if (!calc?.mLuc) return 'Sem meta';
@@ -325,6 +327,7 @@ export default function SquadPage() {
   const [month0, setMonth0] = useState(now.getMonth());
   const [week, setWeek] = useState(() => currentWeek(now));
   const [query, setQuery] = useState('');
+  const [portfolioFilter, setPortfolioFilter] = useState('all');
   const [selectedClientId, setSelectedClientId] = useState(null);
   const [page, setPage] = useState(1);
   const [logoUrl, setLogoUrl] = useState(() => getSquadAvatar(squad));
@@ -519,6 +522,7 @@ export default function SquadPage() {
   const complementaryMetrics = useMemo(() => {
     const activeRows = clientRows.filter((row) => isActiveClientStatus(row.status));
     const onboardingRows = clientRows.filter((row) => row.status === CLIENT_STATUS.ONBOARDING);
+    const rampageRows = clientRows.filter((row) => row.status === CLIENT_STATUS.RAMPAGE);
     const pausedRows = clientRows.filter((row) => row.status === CLIENT_STATUS.PAUSED);
 
     const hitContracts = activeRows.filter((row) => {
@@ -551,6 +555,7 @@ export default function SquadPage() {
       { id: 'profit', label: 'Bateram meta lucro', value: `${displayInt(hitProfit.length)} de ${displayInt(activeTotal)}`, sub: 'meta lucro' },
       { id: 'below', label: 'Abaixo da meta', value: `${displayInt(belowGoal.length)} de ${displayInt(activeTotal)}`, sub: 'clientes ativos' },
       { id: 'onboarding', label: 'Onboarding', value: displayInt(onboardingRows.length), sub: 'fora da meta' },
+      { id: 'rampage', label: 'Rampagem Comercial', value: displayInt(rampageRows.length), sub: 'fora da meta' },
       { id: 'paused', label: 'Pausados', value: displayInt(pausedRows.length), sub: 'fora da meta' },
     ];
   }, [clientRows]);
@@ -613,11 +618,19 @@ export default function SquadPage() {
       return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
     });
 
-    if (!normalized) return base;
-    return base.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
-  }, [clientRows, query]);
+    const byStatus = portfolioFilter === 'rampage'
+      ? base.filter((row) => row.status === CLIENT_STATUS.RAMPAGE)
+      : base;
+
+    if (!normalized) return byStatus;
+    return byStatus.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
+  }, [clientRows, portfolioFilter, query]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [portfolioFilter]);
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
@@ -993,13 +1006,34 @@ export default function SquadPage() {
               />
             </label>
 
+            <div className={styles.portfolioFilter} role="tablist" aria-label="Filtro da carteira">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={portfolioFilter === 'all'}
+                className={portfolioFilter === 'all' ? styles.portfolioFilterActive : ''}
+                onClick={() => setPortfolioFilter('all')}
+              >
+                Carteira
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={portfolioFilter === 'rampage'}
+                className={portfolioFilter === 'rampage' ? styles.portfolioFilterActive : ''}
+                onClick={() => setPortfolioFilter('rampage')}
+              >
+                Rampagem Comercial
+              </button>
+            </div>
+
             <button
               type="button"
               className={`${styles.complementaryButton} ${showComplementaryMetrics ? styles.complementaryButtonActive : ''}`.trim()}
               onClick={() => setShowComplementaryMetrics((open) => !open)}
               aria-expanded={showComplementaryMetrics}
             >
-              <span>Indicadores da carteira</span>
+              <span>Indicadores</span>
             </button>
           </div>
         </section>

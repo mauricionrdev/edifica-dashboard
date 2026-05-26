@@ -27,7 +27,7 @@ import { hasPermission } from '../utils/permissions.js';
 const router = Router();
 router.use(requireAuth);
 
-const VALID_CLIENT_STATUSES = new Set(['active', 'onboarding', 'paused', 'churn']);
+const VALID_CLIENT_STATUSES = new Set(['active', 'onboarding', 'rampagem_comercial', 'paused', 'churn']);
 
 function normalizeClientStatus(status) {
   const value = String(status || '').trim();
@@ -184,8 +184,8 @@ async function ensureResponsibleSchema() {
         await query('ALTER TABLE clients ADD COLUMN avatar_data_url MEDIUMTEXT NULL AFTER name');
       }
       const statusColumn = clientCols.find((column) => column.Field === 'status');
-      if (statusColumn && !String(statusColumn.Type || '').includes('onboarding')) {
-        await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','paused','churn') NOT NULL DEFAULT 'active'");
+      if (statusColumn && !String(statusColumn.Type || '').includes('rampagem_comercial')) {
+        await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','rampagem_comercial','paused','churn') NOT NULL DEFAULT 'active'");
       }
     })().catch((err) => {
       responsibleSchemaPromise = null;
