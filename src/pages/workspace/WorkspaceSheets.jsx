@@ -33,6 +33,13 @@ const FORMAT_OPTIONS = [
   { id: 'percent', label: 'Percentual' },
 ];
 const ZOOM_OPTIONS = [75, 90, 100, 110, 125, 150];
+const FUNCTION_OPTIONS = [
+  { id: 'SOMA', label: 'SOMA' },
+  { id: 'MEDIA', label: 'MÉDIA' },
+  { id: 'MIN', label: 'MIN' },
+  { id: 'MAX', label: 'MAX' },
+  { id: 'CONT.NUM', label: 'CONT.NUM' },
+];
 
 function normalizeRows(rows = [], columns = []) {
   const keys = new Set(columns.map((column) => column.key));
@@ -73,6 +80,19 @@ function getRange(selection) {
     startCol: Math.min(selection.startCol, selection.endCol),
     endCol: Math.max(selection.startCol, selection.endCol),
   };
+}
+
+
+function rangeToA1(range, columns = []) {
+  if (!range || !columns.length) return '';
+  const start = `${columnName(range.startCol)}${range.startRow + 1}`;
+  const end = `${columnName(range.endCol)}${range.endRow + 1}`;
+  return start === end ? start : `${start}:${end}`;
+}
+
+function csvEscape(value) {
+  const text = String(value ?? '');
+  return /[";,\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
 function compareCellValues(a, b) {
@@ -759,6 +779,57 @@ export default function WorkspaceSheets() {
     setStatus('Filtro aplicado');
   }
 
+
+  async function insertFunction(functionName) {
+    if (!functionName || !activeCell) return;
+    const range = getRange(selection);
+    const formulaRange = rangeToA1(range, columns);
+    if (!formulaRange) return;
+    const nextValue = `=${functionName}(${formulaRange})`;
+    await persistCell(activeCell.rowIndex, activeCell.colIndex, nextValue);
+    setStatus(`Fórmula ${functionName} inserida`);
+  }
+
+  function selectFilledRegion() {
+    let startRow = rows.length;
+    let endRow = -1;
+    let startCol = columns.length;
+    let endCol = -1;
+    rows.forEach((row, rowIndex) => {
+      columns.forEach((column, colIndex) => {
+        if (String(row?.[column.key] ?? '').trim()) {
+          startRow = Math.min(startRow, rowIndex);
+          endRow = Math.max(endRow, rowIndex);
+          startCol = Math.min(startCol, colIndex);
+          endCol = Math.max(endCol, colIndex);
+        }
+      });
+    });
+    if (endRow < 0 || endCol < 0) {
+      setStatus('Nenhuma área preenchida encontrada');
+      return;
+    }
+    setSelection({ startRow, endRow, startCol, endCol });
+    setStatus(`Área preenchida selecionada: ${rangeToA1({ startRow, endRow, startCol, endCol }, columns)}`);
+  }
+
+  function exportVisibleCsv() {
+    const header = columns.map((column, index) => csvEscape(column.label || columnName(index))).join(';');
+    const body = visibleRows.map(({ row }) => columns.map((column) => csvEscape(row?.[column.key] ?? '')).join(';'));
+    const csv = [header, ...body].join('\n');
+    const blob = new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const sheetName = sheets.find((sheet) => sheet.id === activeSheetId)?.name || 'planilha';
+    link.href = url;
+    link.download = `${sheetName.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'planilha'}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setStatus('CSV exportado com as linhas visíveis');
+  }
+
   function columnKeyFromMenu() {
     const index = menu?.context === 'column' ? menu.colIndex : selection?.endCol || 0;
     return columns[index]?.key || activeColumn?.key;
@@ -819,6 +890,7 @@ export default function WorkspaceSheets() {
       label: 'Seleção',
       items: [
         { icon: '▦', label: 'Selecionar tudo', shortcut: 'Ctrl A', action: selectAll },
+        { icon: '▣', label: 'Selecionar área preenchida', action: selectFilledRegion },
         !isColumn && { icon: '━', label: isRow ? 'Selecionar linha' : 'Selecionar linha da célula', action: () => selectRow(menu.rowIndex || selection?.endRow || 0) },
         !isRow && { icon: '┃', label: isColumn ? 'Selecionar coluna' : 'Selecionar coluna da célula', action: () => selectColumn(menu.colIndex || selection?.endCol || 0) },
         isCell && { icon: '✎', label: 'Editar célula', shortcut: 'Enter', action: () => startEdit(menu.rowIndex || 0, menu.colIndex || 0) },
@@ -860,6 +932,7 @@ export default function WorkspaceSheets() {
           isCell && { icon: '≡', label: 'Filtrar por valor selecionado', action: () => filterColumnByValue(columnKeyFromMenu(), valueFromMenuCell()) },
           columnFilters[columnKeyFromMenu()] && { icon: '×', label: 'Limpar filtro desta coluna', action: () => clearColumnFilter(columnKeyFromMenu()) },
           activeFilterCount > 0 && { icon: '×', label: 'Limpar todos os filtros', action: () => setColumnFilters({}) },
+          { icon: '⇩', label: 'Exportar CSV visível', action: exportVisibleCsv },
         ].filter(Boolean),
       });
     }
@@ -930,6 +1003,15 @@ export default function WorkspaceSheets() {
           <button type="button" className={styles.iconButton} data-active={activeStyle.italic} title="Itálico" onClick={() => applyStyle({ italic: !activeStyle.italic })}>I</button>
           <button type="button" className={styles.iconButton} data-active={activeStyle.underline} title="Sublinhado" onClick={() => applyStyle({ underline: !activeStyle.underline })}>U</button>
           <button type="button" className={styles.iconButton} data-active={activeStyle.strike} title="Tachado" onClick={() => applyStyle({ strike: !activeStyle.strike })}>S</button>
+        </div>
+
+        <div className={styles.toolbarGroup} aria-label="Funções e seleção">
+          <select value="" onChange={(event) => { insertFunction(event.target.value); event.target.value = ''; }} aria-label="Inserir função">
+            <option value="">Σ Funções</option>
+            {FUNCTION_OPTIONS.map((fn) => <option key={fn.id} value={fn.id}>{fn.label}</option>)}
+          </select>
+          <button type="button" className={styles.toolButton} onClick={selectFilledRegion}>Área preenchida</button>
+          <button type="button" className={styles.toolButton} onClick={exportVisibleCsv}>Exportar CSV</button>
         </div>
 
         <div className={styles.toolbarGroup} aria-label="Cores e alinhamento">
