@@ -490,6 +490,33 @@
   flex-direction: column;
 }
 
+
+.portfolioEmpty {
+  flex: 1 1 auto;
+  min-height: 168px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  color: var(--text-secondary);
+}
+
+.portfolioEmptyMarker {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--text-tertiary);
+  box-shadow: 0 0 0 5px var(--field-bg);
+}
+
+.portfolioEmpty strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
 .clientList {
   flex: 1 1 auto;
   min-height: 0;

@@ -646,6 +646,12 @@ export default function SquadPage() {
     return byStatus.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
   }, [clientRows, portfolioFilter, query]);
 
+  const portfolioEmptyLabel = useMemo(() => {
+    if (query.trim()) return 'Busca sem resultados';
+    if (portfolioFilter === 'rampage') return 'Sem rampagem comercial';
+    return 'Carteira sem clientes';
+  }, [portfolioFilter, query]);
+
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
   useEffect(() => {
@@ -1105,7 +1111,10 @@ export default function SquadPage() {
         {metricsError ? (
           <StateBlock variant="warning" compact title="Métricas indisponíveis" />
         ) : filteredRows.length === 0 ? (
-          <StateBlock variant="empty" compact title="Nenhum cliente encontrado" />
+          <div className={styles.portfolioEmpty} role="status">
+            <span className={styles.portfolioEmptyMarker} aria-hidden="true" />
+            <strong>{portfolioEmptyLabel}</strong>
+          </div>
         ) : (
           <>
             <div className={styles.clientList}>

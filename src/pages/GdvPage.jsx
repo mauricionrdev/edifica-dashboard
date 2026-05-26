@@ -740,6 +740,12 @@ export default function GdvPage() {
     return base.filter(({ client }) => matchesAnySearch([client.name, client.squadName, client.gestor], query));
   }, [clientQuery, portfolioFilter, rows]);
 
+  const portfolioEmptyLabel = useMemo(() => {
+    if (hasActiveSearch) return 'Busca sem resultados';
+    if (portfolioFilter === 'rampage') return 'Sem rampagem comercial';
+    return 'Carteira sem clientes';
+  }, [hasActiveSearch, portfolioFilter]);
+
   const totalPages = Math.max(1, Math.ceil(visibleRows.length / PAGE_SIZE));
 
   useEffect(() => {
@@ -1331,7 +1337,10 @@ export default function GdvPage() {
         ) : !hasActiveSearch && visibleRows.length === 0 && loadingMetrics ? (
           <StateBlock variant="loading" compact title="Carregando métricas" />
         ) : visibleRows.length === 0 ? (
-          <StateBlock variant="empty" compact title="Nenhum cliente encontrado" />
+          <div className={styles.portfolioEmpty} role="status">
+            <span className={styles.portfolioEmptyMarker} aria-hidden="true" />
+            <strong>{portfolioEmptyLabel}</strong>
+          </div>
         ) : (
           <>
             <div className={styles.clientList}>
