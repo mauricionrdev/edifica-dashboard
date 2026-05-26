@@ -73,6 +73,13 @@ function formatDateBR(value) {
   return new Intl.DateTimeFormat('pt-BR').format(date);
 }
 
+
+function expandedTextRows(value) {
+  const text = String(value || '');
+  const lines = text.split('\n').reduce((total, line) => total + Math.max(1, Math.ceil(line.length / 92)), 0);
+  return Math.min(26, Math.max(8, lines || 8));
+}
+
 function analysisAuthor(entry) {
   return (
     entry?.updatedByName
@@ -481,13 +488,6 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 <span className={styles.entryAuthor}>{analysisAuthor(entry)}</span>
 
                 <div className={styles.entryActions}>
-                  <button
-                    type="button"
-                    className={styles.expandEntryBtn}
-                    onClick={() => setExpandedEntry(entry)}
-                  >
-                    Maximizar
-                  </button>
                   {canEdit ? (
                     <label className={styles.attachButton}>
                       <input
@@ -514,14 +514,14 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                   </button>
                 </div>
               </div>
-              <textarea
-                className={styles.textarea}
-                value={entry.text || ''}
-                disabled={!canEdit}
-                placeholder={meta.placeholder}
+              <button
+                type="button"
+                className={`${styles.analysisPreview} ${String(entry.text || '').trim() ? '' : styles.analysisPreviewEmpty}`.trim()}
+                onClick={() => setExpandedEntry(entry)}
                 onPaste={(event) => handleEntryPaste(entry.id, event)}
-                onChange={(event) => onTextChange(entry.id, event.target.value)}
-              />
+              >
+                <span>{String(entry.text || '').trim() || 'Sem registro'}</span>
+              </button>
 
               <div className={styles.attachmentsArea}>
                 <div className={styles.attachmentsHead}>
@@ -613,8 +613,10 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
             </header>
             <textarea
               className={styles.entryViewerText}
+              rows={expandedTextRows(expandedEntry.text)}
               value={expandedEntry.text || ''}
               disabled={!canEdit}
+              placeholder="Sem registro"
               onChange={(event) => {
                 const value = event.target.value;
                 setExpandedEntry((current) => (current ? { ...current, text: value } : current));

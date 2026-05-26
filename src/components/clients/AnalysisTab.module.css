@@ -1551,3 +1551,134 @@
     flex-basis: 100%;
   }
 }
+
+/* v2 — análise como leitura clicável e anexos compactos */
+.analysisPreview {
+  width: 100%;
+  min-height: 92px;
+  max-height: 176px;
+  padding: 16px 18px;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.006);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  display: block;
+  box-shadow: none;
+}
+
+.analysisPreview span {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.analysisPreviewEmpty {
+  min-height: 68px;
+  color: var(--text-tertiary);
+}
+
+.analysisPreview:focus,
+.analysisPreview:focus-visible,
+.analysisPreview:hover {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.045);
+  box-shadow: none;
+  transform: none;
+  background: rgba(255, 255, 255, 0.006);
+}
+
+.entryActions .expandEntryBtn {
+  display: none;
+}
+
+.attachmentCard {
+  width: 178px;
+  flex: 0 0 178px;
+}
+
+.attachmentPreview {
+  height: 58px;
+}
+
+.pdfMark {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.attachmentInfo {
+  padding: 8px 10px 0;
+}
+
+.attachmentInfo strong {
+  font-size: 12px;
+}
+
+.attachmentInfo span {
+  font-size: 10px;
+}
+
+.attachmentActions {
+  padding: 8px 10px 10px;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-height: 26px;
+  padding: 0 9px;
+  font-size: 10px;
+  flex: 0 0 auto;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+  padding: 0;
+}
+
+.entryViewer {
+  width: min(860px, calc(100vw - 44px));
+  height: auto;
+  min-height: 0;
+  max-height: calc(100vh - 44px);
+  grid-template-rows: auto auto;
+}
+
+.entryViewerText {
+  min-height: 180px;
+  max-height: calc(100vh - 168px);
+  overflow: auto;
+  resize: none;
+}
+
+.entryViewerText:focus,
+.entryViewerText:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+@media (max-width: 760px) {
+  .analysisPreview {
+    min-height: 84px;
+    max-height: 160px;
+  }
+
+  .attachmentCard {
+    width: 100%;
+    flex-basis: 100%;
+  }
+}
