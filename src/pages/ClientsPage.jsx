@@ -24,8 +24,7 @@ import { resolveClientFeeAtDate } from '../utils/feeSchedule.js';
 import ClientFormModal from '../components/clients/ClientFormModal.jsx';
 import ClientDetailDrawer from '../components/clients/ClientDetailDrawer.jsx';
 import Button from '../components/ui/Button.jsx';
-import { PlusIcon, SearchIcon, TargetIcon, TrendingUpIcon } from '../components/ui/Icons.jsx';
-import { Route as RouteIcon } from 'lucide-react';
+import { ClipboardListIcon, PlusIcon, SearchIcon, TrendingUpIcon } from '../components/ui/Icons.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import Select from '../components/ui/Select.jsx';
 import { matchesAnySearch } from '../utils/search.js';
@@ -45,9 +44,9 @@ const SCOPES = [
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
 const ANALYSIS_ITEMS = [
-  { key: 'icp', tab: 'icp', label: 'Análise ICP', className: 'analysisIcp', icon: TargetIcon },
+  { key: 'icp', tab: 'icp', label: 'Análise ICP', className: 'analysisIcp', icon: TrendingUpIcon },
   { key: 'gdv', tab: 'gdv', label: 'Análise GDV', className: 'analysisGdv', icon: TrendingUpIcon },
-  { key: 'routes', tab: 'routes', label: 'Resumo de Rotas', className: 'analysisRoutes', icon: RouteIcon },
+  { key: 'routes', tab: 'routes', label: 'Resumo de Rotas', className: 'analysisRoutes', icon: ClipboardListIcon },
 ];
 
 function analysisCount(client, key) {
