@@ -1344,3 +1344,210 @@
   box-shadow: none;
   transform: none;
 }
+
+/* v1 — registros de análise com leitura expandida e anexos compactos */
+.entry {
+  overflow: hidden;
+}
+
+.entryHdr {
+  min-height: 54px;
+  align-items: center;
+}
+
+.textarea {
+  min-height: 220px;
+  max-height: 420px;
+  padding: 16px 18px;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.65;
+  background: rgba(255, 255, 255, 0.006);
+  border-top: 1px solid rgba(255, 255, 255, 0.045);
+  resize: vertical;
+}
+
+.entryActions {
+  gap: 8px;
+}
+
+.expandEntryBtn {
+  min-height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.attachmentsArea {
+  padding: 12px 16px 16px;
+  gap: 10px;
+}
+
+.attachmentsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.attachmentCard {
+  width: 228px;
+  max-width: 100%;
+  flex: 0 0 228px;
+}
+
+.attachmentPreview {
+  height: 76px;
+}
+
+.attachmentInfo {
+  padding: 8px 10px 0;
+}
+
+.attachmentActions {
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-width: auto;
+  min-height: 28px;
+  padding: 0 10px;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+}
+
+.attachmentsEmpty {
+  min-height: 38px;
+  max-width: 320px;
+  border-style: solid;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.entryViewerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.entryViewer {
+  width: min(980px, calc(100vw - 44px));
+  height: min(760px, calc(100vh - 44px));
+  min-height: 420px;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.entryViewerHeader {
+  min-height: 58px;
+  padding: 12px 14px 12px 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.entryViewerHeader > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.entryViewerHeader strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.entryViewerHeader span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.entryViewerHeader button {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.entryViewerText {
+  width: 100%;
+  min-height: 0;
+  padding: 22px 24px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.textarea:focus,
+.input:focus,
+.addBtn:focus-visible,
+.delBtn:focus-visible,
+.expandEntryBtn:focus-visible,
+.attachButton:focus-visible,
+.attachmentActions button:focus-visible,
+.attachmentActions a:focus-visible,
+.entryViewerHeader button:focus-visible,
+.entryViewerText:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--line-subtle);
+}
+
+@media (max-width: 760px) {
+  .entryHdr {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .entryActions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .textarea {
+    min-height: 180px;
+  }
+
+  .attachmentCard {
+    width: 100%;
+    flex-basis: 100%;
+  }
+}

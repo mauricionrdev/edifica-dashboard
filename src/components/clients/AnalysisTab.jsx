@@ -163,6 +163,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const [pdfBlobUrl, setPdfBlobUrl] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [attachmentDeleteTarget, setAttachmentDeleteTarget] = useState(null);
+  const [expandedEntry, setExpandedEntry] = useState(null);
 
   const timersRef = useRef(new Map());
   const fetchIdRef = useRef(0);
@@ -480,6 +481,13 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 <span className={styles.entryAuthor}>{analysisAuthor(entry)}</span>
 
                 <div className={styles.entryActions}>
+                  <button
+                    type="button"
+                    className={styles.expandEntryBtn}
+                    onClick={() => setExpandedEntry(entry)}
+                  >
+                    Maximizar
+                  </button>
                   {canEdit ? (
                     <label className={styles.attachButton}>
                       <input
@@ -585,6 +593,36 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
             </div>
           );
         })
+      ) : null}
+
+      {expandedEntry ? (
+        <div className={styles.entryViewerOverlay} role="presentation" onClick={() => setExpandedEntry(null)}>
+          <section
+            className={styles.entryViewer}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${meta.title} maximizada`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className={styles.entryViewerHeader}>
+              <div>
+                <strong>{meta.title}</strong>
+                <span>{formatDateBR(expandedEntry.date)} · {analysisAuthor(expandedEntry)}</span>
+              </div>
+              <button type="button" onClick={() => setExpandedEntry(null)}>Fechar</button>
+            </header>
+            <textarea
+              className={styles.entryViewerText}
+              value={expandedEntry.text || ''}
+              disabled={!canEdit}
+              onChange={(event) => {
+                const value = event.target.value;
+                setExpandedEntry((current) => (current ? { ...current, text: value } : current));
+                onTextChange(expandedEntry.id, value);
+              }}
+            />
+          </section>
+        </div>
       ) : null}
 
       {previewAttachment ? (
