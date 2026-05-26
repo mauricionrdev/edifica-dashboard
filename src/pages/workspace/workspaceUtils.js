@@ -106,7 +106,7 @@ export function cleanStyle(style = {}) {
   ['bold', 'italic', 'underline', 'strike'].forEach((key) => {
     if (style[key]) next[key] = true;
   });
-  ['align', 'textColor', 'fillColor', 'fontFamily'].forEach((key) => {
+  ['align', 'textColor', 'fillColor', 'fontFamily', 'numberFormat'].forEach((key) => {
     if (style[key]) next[key] = style[key];
   });
   return next;

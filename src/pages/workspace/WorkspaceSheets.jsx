@@ -25,6 +25,14 @@ const ALIGN_OPTIONS = [
   { id: 'center', label: 'Centro' },
   { id: 'right', label: 'Direita' },
 ];
+const FORMAT_OPTIONS = [
+  { id: '', label: 'Automático' },
+  { id: 'text', label: 'Texto' },
+  { id: 'number', label: 'Número' },
+  { id: 'currency', label: 'Moeda' },
+  { id: 'percent', label: 'Percentual' },
+];
+const ZOOM_OPTIONS = [75, 90, 100, 110, 125, 150];
 
 function normalizeRows(rows = [], columns = []) {
   const keys = new Set(columns.map((column) => column.key));
@@ -84,6 +92,98 @@ function parseClipboardText(text = '') {
   return String(text || '').replace(/\r/g, '').split('\n').filter((line, index, list) => line !== '' || index < list.length - 1).map((line) => line.split('\t'));
 }
 
+function cellRefToIndex(ref = '') {
+  const match = String(ref).toUpperCase().match(/^([A-Z]+)(\d+)$/);
+  if (!match) return null;
+  const col = match[1].split('').reduce((acc, char) => acc * 26 + char.charCodeAt(0) - 64, 0) - 1;
+  const row = Number(match[2]) - 1;
+  if (!Number.isInteger(row) || row < 0 || col < 0) return null;
+  return { row, col };
+}
+
+function parseNumber(value) {
+  const text = String(value ?? '').replace(/\s/g, '').replace(/R\$/g, '').replace(/%/g, '').replace(/\./g, '').replace(',', '.');
+  const number = Number(text);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function formatDisplayValue(value, style = {}, rows = [], columns = []) {
+  const raw = String(value ?? '');
+  const formula = raw.startsWith('=') ? evaluateFormula(raw, rows, columns) : null;
+  if (formula?.ok) return formula.value;
+  if (formula && !formula.ok) return '#ERRO';
+  const numeric = parseNumber(raw);
+  if (style.numberFormat === 'currency' && raw !== '') return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(numeric);
+  if (style.numberFormat === 'percent' && raw !== '') return `${String(raw).includes('%') ? raw.replace(/%$/, '') : numeric}%`;
+  if (style.numberFormat === 'number' && raw !== '') return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 }).format(numeric);
+  return raw;
+}
+
+function evaluateFormula(value, rows = [], columns = []) {
+  const expression = String(value || '').trim();
+  if (!expression.startsWith('=')) return null;
+  const body = expression.slice(1).trim().toUpperCase();
+  if (!body) return { ok: false, value: '#ERRO' };
+  function cellValue(ref) {
+    const index = cellRefToIndex(ref);
+    const column = columns[index?.col];
+    const row = rows[index?.row];
+    if (!index || !column || !row) return 0;
+    return parseNumber(row[column.key]);
+  }
+  function rangeValues(start, end) {
+    const from = cellRefToIndex(start);
+    const to = cellRefToIndex(end);
+    if (!from || !to) return [];
+    const values = [];
+    for (let r = Math.min(from.row, to.row); r <= Math.max(from.row, to.row); r += 1) {
+      for (let c = Math.min(from.col, to.col); c <= Math.max(from.col, to.col); c += 1) values.push(cellValue(`${columnName(c)}${r + 1}`));
+    }
+    return values;
+  }
+  const fn = body.match(/^(SOMA|SUM|MEDIA|AVERAGE|MIN|MAX|CONT\.NUM|COUNT)\(([A-Z]+\d+):([A-Z]+\d+)\)$/);
+  if (fn) {
+    const values = rangeValues(fn[2], fn[3]);
+    if (!values.length) return { ok: false, value: '#ERRO' };
+    if (['SOMA', 'SUM'].includes(fn[1])) return { ok: true, value: String(values.reduce((acc, item) => acc + item, 0)) };
+    if (['MEDIA', 'AVERAGE'].includes(fn[1])) return { ok: true, value: String(values.reduce((acc, item) => acc + item, 0) / values.length) };
+    if (fn[1] === 'MIN') return { ok: true, value: String(Math.min(...values)) };
+    if (fn[1] === 'MAX') return { ok: true, value: String(Math.max(...values)) };
+    return { ok: true, value: String(values.filter((item) => Number.isFinite(item)).length) };
+  }
+  const binary = body.match(/^([A-Z]+\d+)\s*([+\-*/])\s*([A-Z]+\d+)$/);
+  if (binary) {
+    const left = cellValue(binary[1]);
+    const right = cellValue(binary[3]);
+    if (binary[2] === '+') return { ok: true, value: String(left + right) };
+    if (binary[2] === '-') return { ok: true, value: String(left - right) };
+    if (binary[2] === '*') return { ok: true, value: String(left * right) };
+    if (binary[2] === '/') return { ok: right === 0 ? false : true, value: right === 0 ? '#DIV/0!' : String(left / right) };
+  }
+  const single = body.match(/^([A-Z]+\d+)$/);
+  if (single) return { ok: true, value: String(cellValue(single[1])) };
+  return { ok: false, value: '#ERRO' };
+}
+
+function formulaReferences(value = '') {
+  const refs = new Set();
+  String(value || '').toUpperCase().replace(/([A-Z]+\d+):([A-Z]+\d+)/g, (_, start, end) => {
+    const from = cellRefToIndex(start);
+    const to = cellRefToIndex(end);
+    if (from && to) {
+      for (let r = Math.min(from.row, to.row); r <= Math.max(from.row, to.row); r += 1) {
+        for (let c = Math.min(from.col, to.col); c <= Math.max(from.col, to.col); c += 1) refs.add(`${r}:${c}`);
+      }
+    }
+    return '';
+  }).replace(/\b([A-Z]+\d+)\b/g, (_, ref) => {
+    const index = cellRefToIndex(ref);
+    if (index) refs.add(`${index.row}:${index.col}`);
+    return '';
+  });
+  return refs;
+}
+
 function ConfirmDialog({ state, onCancel, onConfirm }) {
   if (!state) return null;
   return (
@@ -110,6 +210,7 @@ export default function WorkspaceSheets() {
   const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
+  const [zoom, setZoom] = useState(100);
   const [columnFilters, setColumnFilters] = useState({});
   const [filterPanel, setFilterPanel] = useState(null);
   const [status, setStatus] = useState('');
@@ -128,6 +229,8 @@ export default function WorkspaceSheets() {
 
   const activeStyle = activeCell?.row?.__styles?.[activeCell?.column?.key] || DEFAULT_STYLE;
   const activeColumn = activeCell?.column || columns[selection?.endCol || 0];
+  const activeRawValue = activeCell ? String(activeCell.row?.[activeCell.column?.key] || '') : '';
+  const activeFormulaRefs = useMemo(() => formulaReferences(editing ? draft : activeRawValue), [editing, draft, activeRawValue]);
 
   const visibleRows = useMemo(() => {
     const term = normalizeText(query);
@@ -144,7 +247,11 @@ export default function WorkspaceSheets() {
   const selectionStats = useMemo(() => {
     const entries = selectedEntries();
     const filled = entries.filter(({ row, column }) => String(row?.[column?.key] ?? '').trim()).length;
-    return { total: entries.length, filled };
+    const numbers = entries.map(({ row, column }) => parseNumber(row?.[column?.key])).filter((value) => Number.isFinite(value) && value !== 0);
+    const formulas = rows.reduce((acc, row) => acc + columns.filter((column) => String(row?.[column.key] || '').startsWith('=')).length, 0);
+    const sum = numbers.reduce((acc, value) => acc + value, 0);
+    const average = numbers.length ? sum / numbers.length : 0;
+    return { total: entries.length, filled, formulas, sum, average, numbers: numbers.length };
   }, [selection, rows, columns]);
 
   const loadSheet = useCallback(async (sheetId = activeSheetId) => {
@@ -193,6 +300,16 @@ export default function WorkspaceSheets() {
     };
   }, [resizing]);
 
+  function moveSelection(deltaRow, deltaCol, extend = false) {
+    if (!rows.length || !columns.length) return;
+    const baseRow = selection?.endRow ?? 0;
+    const baseCol = selection?.endCol ?? 0;
+    const nextRow = Math.max(0, Math.min(rows.length - 1, baseRow + deltaRow));
+    const nextCol = Math.max(0, Math.min(columns.length - 1, baseCol + deltaCol));
+    if (extend && selection) setSelection((current) => ({ ...current, endRow: nextRow, endCol: nextCol }));
+    else setSelection({ startRow: nextRow, endRow: nextRow, startCol: nextCol, endCol: nextCol });
+  }
+
   useEffect(() => {
     function handleKeyDown(event) {
       const target = event.target;
@@ -210,18 +327,46 @@ export default function WorkspaceSheets() {
         event.preventDefault();
         cutSelection();
       }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'b' && !isField) {
+        event.preventDefault();
+        applyStyle({ bold: !activeStyle.bold });
+      }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'i' && !isField) {
+        event.preventDefault();
+        applyStyle({ italic: !activeStyle.italic });
+      }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'u' && !isField) {
+        event.preventDefault();
+        applyStyle({ underline: !activeStyle.underline });
+      }
       if ((event.key === 'Delete' || event.key === 'Backspace') && !isField) {
         event.preventDefault();
         clearSelectionContent();
       }
+      if (!isField && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        event.preventDefault();
+        const map = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+        moveSelection(map[event.key][0], map[event.key][1], event.shiftKey);
+      }
+      if (event.key === 'Tab' && !isField) {
+        event.preventDefault();
+        moveSelection(0, event.shiftKey ? -1 : 1, false);
+      }
       if (event.key === 'Enter' && !isField && activeCell) {
         event.preventDefault();
-        startEdit(activeCell.rowIndex, activeCell.colIndex);
+        if (event.shiftKey) moveSelection(-1, 0, false);
+        else startEdit(activeCell.rowIndex, activeCell.colIndex);
+      }
+      if (!isField && activeCell && event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault();
+        setSelection({ startRow: activeCell.rowIndex, endRow: activeCell.rowIndex, startCol: activeCell.colIndex, endCol: activeCell.colIndex });
+        setEditing({ rowIndex: activeCell.rowIndex, colIndex: activeCell.colIndex });
+        setDraft(event.key);
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selection, rows, columns, activeCell, clipboard]);
+  }, [selection, rows, columns, activeCell, clipboard, activeStyle]);
 
   async function saveRow(rowIndex, patch) {
     const row = rows[rowIndex];
@@ -604,6 +749,9 @@ export default function WorkspaceSheets() {
 
       <div className={styles.toolbar}>
         <input className={styles.searchBox} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar na planilha" />
+        <select value={zoom} onChange={(event) => setZoom(Number(event.target.value))} aria-label="Zoom da planilha">
+          {ZOOM_OPTIONS.map((option) => <option key={option} value={option}>{option}%</option>)}
+        </select>
         <button type="button" onClick={() => openFilterForColumn()}>Filtro</button>
         <span className={styles.divider} />
         <button type="button" onClick={() => copySelection()}>Copiar</button>
@@ -619,6 +767,9 @@ export default function WorkspaceSheets() {
         </select>
         <select value={activeStyle.fillColor || 'transparent'} onChange={(event) => applyStyle({ fillColor: event.target.value })} aria-label="Preenchimento">
           {FILL_COLORS.map((color) => <option key={color.id} value={color.value}>{color.label}</option>)}
+        </select>
+        <select value={activeStyle.numberFormat || ''} onChange={(event) => applyStyle({ numberFormat: event.target.value })} aria-label="Formato">
+          {FORMAT_OPTIONS.map((format) => <option key={format.id} value={format.id}>{format.label}</option>)}
         </select>
         <select value={activeStyle.fontFamily || ''} onChange={(event) => applyStyle({ fontFamily: event.target.value })} aria-label="Fonte">
           {FONT_OPTIONS.map((font) => <option key={font.id} value={font.id}>{font.label}</option>)}
@@ -671,7 +822,7 @@ export default function WorkspaceSheets() {
         />
       </div>
 
-      <div className={styles.gridFrame} onPaste={handleGridPaste} onContextMenu={(event) => openMenu(event, 'cell')}>
+      <div className={styles.gridFrame} style={{ '--sheet-zoom': zoom / 100 }} onPaste={handleGridPaste} onContextMenu={(event) => openMenu(event, 'cell')}>
         {loading ? <div className={styles.loading}>Carregando planilha...</div> : (
           <table className={styles.sheetGrid}>
             <thead>
@@ -708,6 +859,9 @@ export default function WorkspaceSheets() {
                       <td
                         key={column.key}
                         data-selected={selected || undefined}
+                        data-formula={String(row[column.key] || '').startsWith('=') || undefined}
+                        data-reference={activeFormulaRefs.has(`${originalIndex}:${colIndex}`) || undefined}
+                        data-error={String(row[column.key] || '').startsWith('=') && !evaluateFormula(row[column.key], rows, columns)?.ok || undefined}
                         style={{ minWidth: column.width || 160, width: column.width || 160, ...styleForCell(style) }}
                         onMouseDown={(event) => beginDrag(originalIndex, colIndex, event)}
                         onMouseEnter={() => updateDrag(originalIndex, colIndex)}
@@ -726,7 +880,7 @@ export default function WorkspaceSheets() {
                               if (event.key === 'Escape') setEditing(null);
                             }}
                           />
-                        ) : <span>{row[column.key]}</span>}
+                        ) : <span>{formatDisplayValue(row[column.key], style, rows, columns)}</span>}
                       </td>
                     );
                   })}
@@ -740,6 +894,8 @@ export default function WorkspaceSheets() {
       <footer className={styles.statusBar}>
         <span>{selectionLabel(selection, columns)}</span>
         <span>{selectionStats.total} selecionadas · {selectionStats.filled} preenchidas</span>
+        {selectionStats.numbers > 0 && <span>Soma {new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(selectionStats.sum)} · Média {new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(selectionStats.average)}</span>}
+        {selectionStats.formulas > 0 && <span>{selectionStats.formulas} fórmulas</span>}
         <span>{visibleRows.length} de {rows.length} linhas</span>
         <span>{status}</span>
       </footer>
