@@ -1,0 +1,419 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--workspace-sidebar-width, 248px) minmax(0, 1fr);
+  background: var(--bg-app);
+  color: var(--text-primary);
+}
+
+.sidebar {
+  position: relative;
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+  padding: var(--space-5) var(--space-3) var(--space-4);
+}
+
+.sidebarHeader {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 42px;
+  padding: 0 var(--space-2);
+}
+
+.brandMark {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.sidebarTitle {
+  min-width: 0;
+}
+
+.sidebarTitle strong,
+.sidebarTitle span {
+  display: block;
+}
+
+.sidebarTitle strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.sidebarTitle span {
+  margin-top: 2px;
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-tight);
+}
+
+.sidebarToggle {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  justify-self: end;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.sidebarToggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.sidebarResizeHandle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  z-index: 3;
+  width: 8px;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+}
+
+.sidebarResizeHandle::after {
+  content: '';
+  position: absolute;
+  top: var(--space-5);
+  bottom: var(--space-5);
+  left: 3px;
+  width: 1px;
+  background: transparent;
+}
+
+.sidebarResizeHandle:hover::after {
+  background: var(--line);
+}
+
+.sideNav {
+  margin-top: var(--space-6);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sideNav button {
+  min-height: 34px;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  text-align: left;
+  padding: 0 var(--space-2);
+  cursor: pointer;
+}
+
+.sideNav button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sideNav button > em,
+.tabRail button > em {
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-style: normal;
+  font-weight: var(--weight-semibold);
+  padding: 0 6px;
+}
+
+.sideNav button:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.sideNav .sideActive {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+
+.sidebarFooter {
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+.backButton {
+  min-height: 38px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.backButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebarCollapsed {
+  padding-inline: var(--space-3);
+}
+
+.sidebarCollapsed .sidebarHeader {
+  grid-template-columns: 34px;
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.sidebarCollapsed .sidebarTitle,
+.sidebarCollapsed .sideNav button > span,
+.sidebarCollapsed .sideNav button > em,
+.sidebarCollapsed .backButton span,
+.sidebarCollapsed .sidebarResizeHandle {
+  display: none;
+}
+
+.sidebarCollapsed .sidebarToggle {
+  position: absolute;
+  right: -14px;
+  top: var(--space-5);
+  z-index: 4;
+  background: var(--bg-canvas);
+}
+
+.sidebarCollapsed .sideNav button {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  padding-inline: 0;
+}
+
+.sidebarCollapsed .backButton {
+  width: 38px;
+  margin-inline: auto;
+  padding: 0;
+}
+
+.workspace {
+  min-width: 0;
+  max-height: 100vh;
+  overflow: auto;
+  padding: var(--space-6) var(--space-7) var(--space-8);
+}
+
+.header {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.headerIdentity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.headerIdentity h1 {
+  margin: 3px 0 0;
+  color: var(--text-primary);
+  font-size: var(--fs-title);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.topStrip {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.workspaceTitle {
+  min-width: 0;
+}
+
+.workspaceTitle span,
+.workspaceTitle strong {
+  display: block;
+}
+
+.workspaceTitle span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.workspaceTitle strong {
+  margin-top: 3px;
+  color: var(--text-primary);
+  font-size: var(--fs-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.tabRail {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  overflow-x: auto;
+  padding: 2px;
+}
+
+.tabRail button {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-1);
+  background: transparent;
+  color: var(--text-tertiary);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  padding: 0 var(--space-2);
+  cursor: pointer;
+}
+
+.tabRail button:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.tabRail .tabActive {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+}
+
+.content {
+  margin-top: var(--space-5);
+}
+
+@media (max-width: 960px) {
+  .page {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    padding-inline: var(--space-3);
+  }
+
+  .sidebarTitle,
+  .sideNav button > span,
+  .sideNav button > em,
+  .backButton span,
+  .sidebarResizeHandle {
+    display: none;
+  }
+
+  .sideNav button {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding-inline: 0;
+  }
+
+  .backButton {
+    width: 38px;
+    margin-inline: auto;
+    padding: 0;
+  }
+
+  .workspace {
+    padding: var(--space-5) var(--space-4) var(--space-7);
+  }
+
+  .header,
+  .topStrip {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tabRail {
+    justify-content: flex-start;
+  }
+}

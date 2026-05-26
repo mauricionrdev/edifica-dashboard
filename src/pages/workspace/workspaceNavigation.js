@@ -33,14 +33,14 @@ export const WORKSPACE_AREAS = [
     id: 'documents',
     label: 'Documentos',
     shortLabel: 'Docs',
-    description: 'Páginas e blocos para registros internos.',
+    description: 'Páginas persistentes para registros internos.',
     icon: SparklesIcon,
   },
   {
     id: 'sheets',
     label: 'Planilhas',
     shortLabel: 'Planilhas',
-    description: 'Grade operacional inspirada em Google Planilhas.',
+    description: 'Grade operacional persistente inspirada em Google Planilhas.',
     icon: BuildingIcon,
   },
   {

@@ -1,33 +1,27 @@
 import { Link } from 'react-router-dom';
 import Button from '../../components/ui/Button.jsx';
-import {
-  HomeIcon,
-  PlusIcon,
-  RotateCcwIcon,
-  SettingsIcon,
-} from '../../components/ui/Icons.jsx';
+import { HomeIcon, PlusIcon, RotateCcwIcon, SettingsIcon } from '../../components/ui/Icons.jsx';
 import { WORKSPACE_AREAS } from './workspaceNavigation.js';
-import styles from '../WorkspacePage.module.css';
+import styles from './WorkspaceShell.module.css';
 
 export default function WorkspaceShell({
   pageRef,
-  compact = false,
-  sidebarCollapsed = false,
-  sidebarWidth,
-  minSidebarWidth,
-  activeTab,
-  activeTabLabel,
-  tabCounters = {},
-  displayName,
+  activeArea,
+  activeAreaId,
   avatar,
+  displayName,
   initials,
-  tasksLoading = false,
-  onTabChange,
-  onRefresh,
+  loading,
+  minSidebarWidth,
+  primaryActionLabel,
+  sidebarCollapsed,
+  sidebarWidth,
+  tabCounters,
   onOpenSettings,
   onPrimaryAction,
-  primaryActionLabel,
+  onRefresh,
   onStartResize,
+  onTabChange,
   children,
 }) {
   const sidebarStyle = {
@@ -35,8 +29,8 @@ export default function WorkspaceShell({
   };
 
   return (
-    <main ref={pageRef} className={`${styles.page} ${compact ? styles.pageCompact : ''}`.trim()} style={sidebarStyle}>
-      <aside className={`${styles.sidebar} ${compact ? styles.sidebarCompact : ''}`.trim()} aria-label="Meu espaço de trabalho">
+    <main ref={pageRef} className={styles.page} style={sidebarStyle}>
+      <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`.trim()} aria-label="Meu espaço de trabalho">
         <div className={styles.sidebarHeader}>
           <span className={styles.brandMark}>edi</span>
           <div className={styles.sidebarTitle}>
@@ -54,15 +48,15 @@ export default function WorkspaceShell({
           </button>
         </div>
 
-        <nav className={styles.sideNav} aria-label="Navegação do espaço">
+        <nav className={styles.sideNav} aria-label="Navegação do workspace">
           {WORKSPACE_AREAS.map((area) => {
             const Icon = area.icon;
-            const count = tabCounters[area.id];
+            const count = tabCounters?.[area.id] || 0;
             return (
               <button
                 key={area.id}
                 type="button"
-                className={area.id === activeTab ? styles.sideActive : ''}
+                className={area.id === activeAreaId ? styles.sideActive : ''}
                 onClick={() => onTabChange?.(area.id)}
                 title={area.description}
               >
@@ -75,8 +69,12 @@ export default function WorkspaceShell({
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <Link to="/" className={styles.backButton}><HomeIcon size={15} /> <span>Voltar para a central</span></Link>
+          <Link to="/" className={styles.backButton}>
+            <HomeIcon size={15} />
+            <span>Voltar para a central</span>
+          </Link>
         </div>
+
         <button
           type="button"
           className={styles.sidebarResizeHandle}
@@ -91,33 +89,41 @@ export default function WorkspaceShell({
       <section className={styles.workspace}>
         <header className={styles.header}>
           <div className={styles.headerIdentity}>
-            <span className={styles.avatar} title={displayName}>{avatar ? <img src={avatar} alt="" /> : initials}</span>
+            <span className={styles.avatar} title={displayName}>
+              {avatar ? <img src={avatar} alt="" /> : initials}
+            </span>
             <div>
-              <span className={styles.eyebrow}>Meu espaço de trabalho</span>
+              <span className="workspace-eyebrow">Meu espaço de trabalho</span>
               <h1>{displayName}</h1>
             </div>
           </div>
 
           <div className={styles.headerActions}>
-            <Button size="sm" variant="secondary" onClick={onRefresh} disabled={tasksLoading}><RotateCcwIcon size={15} /> Atualizar</Button>
-            <Button size="sm" variant="secondary" onClick={onOpenSettings}><SettingsIcon size={15} /> Configurações</Button>
-            <Button size="sm" variant="primary" onClick={onPrimaryAction}><PlusIcon size={15} /> {primaryActionLabel || (activeTab === 'documents' ? 'Novo documento' : 'Nova planilha')}</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={onRefresh} disabled={loading}>
+              <RotateCcwIcon size={15} /> Atualizar
+            </Button>
+            <Button type="button" size="sm" variant="secondary" onClick={onOpenSettings}>
+              <SettingsIcon size={15} /> Configurações
+            </Button>
+            <Button type="button" size="sm" variant="primary" onClick={onPrimaryAction}>
+              <PlusIcon size={15} /> {primaryActionLabel}
+            </Button>
           </div>
         </header>
 
         <div className={styles.topStrip}>
           <div className={styles.workspaceTitle}>
-            <span>{activeTabLabel}</span>
-            <strong>{activeTab === 'home' ? 'Central pessoal' : activeTabLabel}</strong>
+            <span>{activeArea?.label}</span>
+            <strong>{activeAreaId === 'home' ? 'Central pessoal' : activeArea?.label}</strong>
           </div>
           <nav className={styles.tabRail} aria-label="Áreas do workspace">
             {WORKSPACE_AREAS.map((area) => {
-              const count = tabCounters[area.id];
+              const count = tabCounters?.[area.id] || 0;
               return (
                 <button
                   key={area.id}
                   type="button"
-                  className={area.id === activeTab ? styles.tabActive : ''}
+                  className={area.id === activeAreaId ? styles.tabActive : ''}
                   onClick={() => onTabChange?.(area.id)}
                   title={area.description}
                 >
@@ -129,7 +135,7 @@ export default function WorkspaceShell({
           </nav>
         </div>
 
-        {children}
+        <div className={styles.content}>{children}</div>
       </section>
     </main>
   );
