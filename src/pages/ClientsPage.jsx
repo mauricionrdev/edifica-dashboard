@@ -24,7 +24,7 @@ import { resolveClientFeeAtDate } from '../utils/feeSchedule.js';
 import ClientFormModal from '../components/clients/ClientFormModal.jsx';
 import ClientDetailDrawer from '../components/clients/ClientDetailDrawer.jsx';
 import Button from '../components/ui/Button.jsx';
-import { PlusIcon, SearchIcon } from '../components/ui/Icons.jsx';
+import { ChartColumnIcon, PlusIcon, SearchIcon, SparklesIcon, TargetIcon } from '../components/ui/Icons.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import Select from '../components/ui/Select.jsx';
 import { matchesAnySearch } from '../utils/search.js';
@@ -42,6 +42,27 @@ const SCOPES = [
 ];
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
+
+const ANALYSIS_ITEMS = [
+  { key: 'icp', label: 'Análise ICP', className: 'analysisIcp', icon: TargetIcon },
+  { key: 'gdv', label: 'Análise GDV', className: 'analysisGdv', icon: ChartColumnIcon },
+  { key: 'routes', label: 'Resumo de Rotas', className: 'analysisRoutes', icon: SparklesIcon },
+];
+
+function analysisCount(client, key) {
+  const counts = client?.analysisCounts || client?.analysesCount || client?.analysisSummary || {};
+  const aliases = {
+    icp: ['icp'],
+    gdv: ['gdv', 'gdvanalise'],
+    routes: ['routes', 'route_summary'],
+  }[key] || [key];
+
+  for (const alias of aliases) {
+    const value = Number(counts?.[alias]);
+    if (Number.isFinite(value) && value > 0) return value;
+  }
+  return 0;
+}
 
 export default function ClientsPage() {
   const { clients, squads, userDirectory, loading, error, refreshClients, setPanelHeader } = useOutletContext();
@@ -306,10 +327,10 @@ export default function ClientsPage() {
               <span />
               <span>Cliente</span>
               <span>Squad</span>
-              <span>Gestor</span>
               <span>Início</span>
               <span>Fim</span>
               <span>Mensalidade</span>
+              <span>Análises</span>
               <span>Status</span>
             </div>
 
@@ -353,12 +374,26 @@ export default function ClientsPage() {
                     <div className={styles.cellMuted} title={c.squadName || ''}>
                       {c.squadName || '—'}
                     </div>
-                    <div className={styles.cellMuted} title={c.gestor || ''}>
-                      {c.gestor || '—'}
-                    </div>
                     <div className={styles.cellDate}>{fmtDateBR(c.startDate)}</div>
                     <div className={`${styles.cellDate} ${ending ? styles.soon : ''}`.trim()}>{fmtDateBR(c.endDate)}</div>
                     <div className={styles.cellFee}>{fmtMoney(resolveClientFeeAtDate(c, today))}</div>
+                    <div className={styles.analysisCell} aria-label="Análises do cliente">
+                      {ANALYSIS_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        const count = analysisCount(c, item.key);
+                        return (
+                          <span
+                            key={item.key}
+                            className={`${styles.analysisIcon} ${styles[item.className]}`.trim()}
+                            title={item.label}
+                            aria-label={`${item.label}: ${count}`}
+                          >
+                            <Icon size={13} strokeWidth={2} aria-hidden="true" />
+                            {count > 0 ? <span className={styles.analysisBadge}>{count}</span> : null}
+                          </span>
+                        );
+                      })}
+                    </div>
                     <span className={`${styles.statusPill} ${styles[`status_${sc.replace('cc-', '')}`] || ''}`.trim()}>
                       {sl}
                     </span>

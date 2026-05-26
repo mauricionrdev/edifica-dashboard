@@ -218,6 +218,11 @@ function serializeClient(row) {
     churnDate: toDateString(row.churn_date),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    analysisCounts: {
+      icp: Number(row.icp_analysis_count) || 0,
+      gdv: Number(row.gdv_analysis_count) || 0,
+      routes: Number(row.route_summary_count) || 0,
+    },
   };
 }
 
@@ -335,9 +340,20 @@ router.get('/', requirePermission('clients.view'), async (req, res, next) => {
     await ensureResponsibleSchema();
     await ensureClientFeeStepsSchema();
     const rows = await query(
-      `SELECT c.*, s.name AS squad_name
+      `SELECT c.*, s.name AS squad_name,
+              COALESCE(ac.icp_count, 0) AS icp_analysis_count,
+              COALESCE(ac.gdv_count, 0) AS gdv_analysis_count,
+              COALESCE(ac.route_summary_count, 0) AS route_summary_count
          FROM clients c
          LEFT JOIN squads s ON s.id = c.squad_id
+         LEFT JOIN (
+              SELECT client_id,
+                     SUM(CASE WHEN type = 'icp' THEN 1 ELSE 0 END) AS icp_count,
+                     SUM(CASE WHEN type = 'gdvanalise' THEN 1 ELSE 0 END) AS gdv_count,
+                     SUM(CASE WHEN type = 'route_summary' THEN 1 ELSE 0 END) AS route_summary_count
+                FROM analyses
+               GROUP BY client_id
+         ) ac ON ac.client_id = c.id
         ORDER BY c.created_at DESC, c.name ASC`
     );
     const visible = filterRowsBySquadAccess(req.user, rows, 'clients.view.all');
@@ -355,9 +371,20 @@ router.get('/:id', requirePermission('clients.view'), async (req, res, next) => 
     await ensureResponsibleSchema();
     await ensureClientFeeStepsSchema();
     const rows = await query(
-      `SELECT c.*, s.name AS squad_name
+      `SELECT c.*, s.name AS squad_name,
+              COALESCE(ac.icp_count, 0) AS icp_analysis_count,
+              COALESCE(ac.gdv_count, 0) AS gdv_analysis_count,
+              COALESCE(ac.route_summary_count, 0) AS route_summary_count
          FROM clients c
          LEFT JOIN squads s ON s.id = c.squad_id
+         LEFT JOIN (
+              SELECT client_id,
+                     SUM(CASE WHEN type = 'icp' THEN 1 ELSE 0 END) AS icp_count,
+                     SUM(CASE WHEN type = 'gdvanalise' THEN 1 ELSE 0 END) AS gdv_count,
+                     SUM(CASE WHEN type = 'route_summary' THEN 1 ELSE 0 END) AS route_summary_count
+                FROM analyses
+               GROUP BY client_id
+         ) ac ON ac.client_id = c.id
         WHERE c.id = ?
         LIMIT 1`,
       [req.params.id]
@@ -417,9 +444,20 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
     });
 
     const rows = await query(
-      `SELECT c.*, s.name AS squad_name
+      `SELECT c.*, s.name AS squad_name,
+              COALESCE(ac.icp_count, 0) AS icp_analysis_count,
+              COALESCE(ac.gdv_count, 0) AS gdv_analysis_count,
+              COALESCE(ac.route_summary_count, 0) AS route_summary_count
          FROM clients c
          LEFT JOIN squads s ON s.id = c.squad_id
+         LEFT JOIN (
+              SELECT client_id,
+                     SUM(CASE WHEN type = 'icp' THEN 1 ELSE 0 END) AS icp_count,
+                     SUM(CASE WHEN type = 'gdvanalise' THEN 1 ELSE 0 END) AS gdv_count,
+                     SUM(CASE WHEN type = 'route_summary' THEN 1 ELSE 0 END) AS route_summary_count
+                FROM analyses
+               GROUP BY client_id
+         ) ac ON ac.client_id = c.id
         WHERE c.id = ? LIMIT 1`,
       [id]
     );
@@ -453,9 +491,20 @@ router.put('/:id/fee-steps', requirePermission('clients.fee_schedule.edit'), asy
     await query('UPDATE clients SET fee_steps_json = ? WHERE id = ?', [payload, req.params.id]);
 
     const rows = await query(
-      `SELECT c.*, s.name AS squad_name
+      `SELECT c.*, s.name AS squad_name,
+              COALESCE(ac.icp_count, 0) AS icp_analysis_count,
+              COALESCE(ac.gdv_count, 0) AS gdv_analysis_count,
+              COALESCE(ac.route_summary_count, 0) AS route_summary_count
          FROM clients c
          LEFT JOIN squads s ON s.id = c.squad_id
+         LEFT JOIN (
+              SELECT client_id,
+                     SUM(CASE WHEN type = 'icp' THEN 1 ELSE 0 END) AS icp_count,
+                     SUM(CASE WHEN type = 'gdvanalise' THEN 1 ELSE 0 END) AS gdv_count,
+                     SUM(CASE WHEN type = 'route_summary' THEN 1 ELSE 0 END) AS route_summary_count
+                FROM analyses
+               GROUP BY client_id
+         ) ac ON ac.client_id = c.id
         WHERE c.id = ? LIMIT 1`,
       [req.params.id]
     );
@@ -551,9 +600,20 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
     }
 
     const rows = await query(
-      `SELECT c.*, s.name AS squad_name
+      `SELECT c.*, s.name AS squad_name,
+              COALESCE(ac.icp_count, 0) AS icp_analysis_count,
+              COALESCE(ac.gdv_count, 0) AS gdv_analysis_count,
+              COALESCE(ac.route_summary_count, 0) AS route_summary_count
          FROM clients c
          LEFT JOIN squads s ON s.id = c.squad_id
+         LEFT JOIN (
+              SELECT client_id,
+                     SUM(CASE WHEN type = 'icp' THEN 1 ELSE 0 END) AS icp_count,
+                     SUM(CASE WHEN type = 'gdvanalise' THEN 1 ELSE 0 END) AS gdv_count,
+                     SUM(CASE WHEN type = 'route_summary' THEN 1 ELSE 0 END) AS route_summary_count
+                FROM analyses
+               GROUP BY client_id
+         ) ac ON ac.client_id = c.id
         WHERE c.id = ? LIMIT 1`,
       [id]
     );

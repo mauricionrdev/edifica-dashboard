@@ -1012,3 +1012,83 @@
     min-width: 126px;
   }
 }
+
+/* v1 · Lista de clientes com indicadores de análise */
+.clientHeader,
+.clientRow {
+  grid-template-columns: 36px minmax(260px, 2.05fr) minmax(132px, 0.8fr) 110px 110px 132px 118px 108px;
+}
+
+.analysisCell {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analysisIcon {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 999px;
+  background: var(--surface-panel);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.analysisIcp {
+  border-color: rgba(96, 165, 250, 0.24);
+  background: rgba(96, 165, 250, 0.08);
+  color: var(--info);
+}
+
+.analysisGdv {
+  border-color: rgba(45, 212, 191, 0.24);
+  background: rgba(45, 212, 191, 0.08);
+  color: #2dd4bf;
+}
+
+.analysisRoutes {
+  border-color: rgba(167, 139, 250, 0.24);
+  background: rgba(167, 139, 250, 0.08);
+  color: #a78bfa;
+}
+
+.analysisBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border: 1px solid var(--workspace-panel-bg);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1180px) {
+  .clientHeader,
+  .clientRow {
+    grid-template-columns: 36px minmax(220px, 2fr) minmax(118px, 0.8fr) 96px 96px 116px 108px 96px;
+  }
+
+  .analysisCell {
+    gap: 6px;
+  }
+
+  .analysisIcon {
+    width: 24px;
+    height: 24px;
+  }
+}
