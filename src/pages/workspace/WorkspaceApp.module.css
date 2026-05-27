@@ -248,18 +248,6 @@
   padding: 0 var(--space-3);
 }
 
-.searchInput:focus,
-.documentTitle:focus,
-.documentBody:focus,
-.sheetInput:focus,
-.cellInput:focus,
-.sheetNameInput:focus,
-.columnNameInput:focus,
-.formulaInput:focus {
-  border-color: var(--line-strong);
-  background: var(--bg-elevated);
-}
-
 .segmented {
   display: inline-flex;
   flex-wrap: wrap;
@@ -361,11 +349,6 @@
   padding: 0;
 }
 
-.documentTitle:focus {
-  background: transparent;
-  border-color: transparent;
-}
-
 .documentBody {
   min-height: 360px;
   resize: vertical;
@@ -408,11 +391,6 @@
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-snug);
   padding: 0;
-}
-
-.sheetNameInput:focus {
-  border-color: var(--line-subtle);
-  padding: 0 var(--space-2);
 }
 
 .sheetTabs {
@@ -601,12 +579,6 @@
   font-weight: var(--weight-semibold);
   padding: 0 var(--space-1);
 }
-
-.columnNameInput:focus {
-  border-color: var(--line-subtle);
-  background: var(--bg-canvas);
-}
-
 
 .resizeHandle {
   width: 6px;

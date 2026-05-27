@@ -1,4 +1,4 @@
-export function buildSpreadsheetCommands({ activeSheetId, selectedCell, selectedRange, onAddRow, onAddColumn, onClearCell, onCopySelection }) {
+export function buildSpreadsheetCommands({ activeSheetId, selectedCell, selectedRange, onAddRow, onAddColumn, onClearSelection, onCopySelection }) {
   return [
     {
       id: 'add-row',
@@ -22,11 +22,11 @@ export function buildSpreadsheetCommands({ activeSheetId, selectedCell, selected
       run: onCopySelection,
     },
     {
-      id: 'clear-cell',
-      label: 'Limpar',
+      id: 'clear-selection',
+      label: 'Limpar seleção',
       variant: 'secondary',
-      canRun: Boolean(activeSheetId && selectedCell),
-      run: onClearCell,
+      canRun: Boolean(activeSheetId && (selectedRange || selectedCell)),
+      run: onClearSelection,
     },
   ];
 }
@@ -39,7 +39,7 @@ export function buildSpreadsheetContextCommands({
   onCopyCell,
   onCopySelection,
   onPasteCell,
-  onClearCell,
+  onClearSelection,
   onEditCell,
   onDeleteRow,
   onDeleteColumn,
@@ -137,10 +137,10 @@ export function buildSpreadsheetContextCommands({
       run: () => onPasteCell?.(context),
     },
     {
-      id: 'clear-cell',
-      label: 'Limpar célula',
+      id: 'clear-selection',
+      label: 'Limpar seleção',
       canRun: Boolean(context.column),
-      run: () => onClearCell?.(context),
+      run: () => onClearSelection?.(context),
     },
     {
       id: 'delete-row',

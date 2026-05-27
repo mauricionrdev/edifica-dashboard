@@ -38,7 +38,7 @@ export function parseClipboardMatrix(text = '') {
 export function nextCellPosition({ rowIndex, colIndex }, key, rowCount, columnCount) {
   if (key === 'ArrowUp') return { rowIndex: Math.max(0, rowIndex - 1), colIndex };
   if (key === 'ArrowDown') return { rowIndex: Math.min(rowCount - 1, rowIndex + 1), colIndex };
-  if (key === 'ArrowLeft') return { rowIndex, colIndex: Math.max(0, colIndex - 1) };
+  if (key === 'ArrowLeft' || key === 'ShiftTab') return { rowIndex, colIndex: Math.max(0, colIndex - 1) };
   if (key === 'ArrowRight' || key === 'Tab') return { rowIndex, colIndex: Math.min(columnCount - 1, colIndex + 1) };
   return { rowIndex, colIndex };
 }
@@ -103,6 +103,30 @@ export function buildRangeTsv(rows = [], columns = [], range) {
     lines.push(values.join('\t'));
   }
   return lines.join('\n');
+}
+
+export function clearRangeValues(rows = [], columns = [], range) {
+  if (!range) return { rows, changed: [] };
+  const nextRows = rows.map((row) => ({ ...row }));
+  const changedMap = new Map();
+
+  for (let rowIndex = range.startRow; rowIndex <= range.endRow; rowIndex += 1) {
+    if (!nextRows[rowIndex]) continue;
+    for (let colIndex = range.startCol; colIndex <= range.endCol; colIndex += 1) {
+      const column = columns[colIndex];
+      if (!column?.key) continue;
+      if (nextRows[rowIndex][column.key] === '') continue;
+      nextRows[rowIndex][column.key] = '';
+      const patch = changedMap.get(rowIndex) || {};
+      patch[column.key] = '';
+      changedMap.set(rowIndex, patch);
+    }
+  }
+
+  return {
+    rows: nextRows,
+    changed: Array.from(changedMap.entries()).map(([rowIndex, patch]) => ({ rowIndex, patch })),
+  };
 }
 
 

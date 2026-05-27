@@ -20,7 +20,20 @@ import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import SpreadsheetStatusBar from './SpreadsheetStatusBar.jsx';
 import SpreadsheetToolbar from './SpreadsheetToolbar.jsx';
 import { buildSpreadsheetCommands, buildSpreadsheetContextCommands } from './spreadsheetCommands.js';
-import { buildRangeTsv, cellRef, cleanCellValue, columnRange, nextCellPosition, normalizeRange, normalizeRows, pasteRange, parseClipboardMatrix, rangeLabel, rowRange } from './spreadsheetUtils.js';
+import {
+  buildRangeTsv,
+  cellRef,
+  cleanCellValue,
+  clearRangeValues,
+  columnRange,
+  nextCellPosition,
+  normalizeRange,
+  normalizeRows,
+  pasteRange,
+  parseClipboardMatrix,
+  rangeLabel,
+  rowRange,
+} from './spreadsheetUtils.js';
 
 export default function SpreadsheetApp({ requestConfirm }) {
   const [sheets, setSheets] = useState([]);
@@ -275,11 +288,19 @@ export default function SpreadsheetApp({ requestConfirm }) {
     await saveCellValue(selectedCell.rowIndex, selectedColumn.key, draft);
   }
 
-  async function clearSelectedCell(context = null) {
-    const target = context || selectedCell;
-    const column = context?.column || selectedColumn;
-    if (!target || !column) return;
-    await saveCellValue(target.rowIndex, column.key, '');
+  async function clearSelectedRange(context = null) {
+    if (context?.rowIndex !== undefined && context?.column) {
+      await saveCellValue(context.rowIndex, context.column.key, '');
+      return;
+    }
+    if (!selectedRange) return;
+    const { rows: clearedRows, changed } = clearRangeValues(rows, columns, selectedRange);
+    if (!changed.length) return;
+    setRows(clearedRows);
+    await Promise.all(changed.map(({ rowIndex: targetRow, patch }) => updateSupportDailyRow(clearedRows[targetRow].id, patch)));
+    setEditing(null);
+    setDraft('');
+    setStatus(changed.length === 1 ? 'Célula limpa' : 'Seleção limpa');
   }
 
   async function copySelection() {
@@ -308,20 +329,69 @@ export default function SpreadsheetApp({ requestConfirm }) {
     await pasteTextAt(text, rowIndex, colIndex);
   }
 
-  function handleCellKeyDown(event, rowIndex = selectedCell?.rowIndex, colIndex = selectedCell?.colIndex) {
-    if (event.key === 'Enter') {
+  async function handleCellKeyDown(event, rowIndex = selectedCell?.rowIndex, colIndex = selectedCell?.colIndex) {
+    const hasPosition = rowIndex !== undefined && colIndex !== undefined;
+
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'a') {
       event.preventDefault();
-      saveEditing();
+      if (rows.length && columns.length) {
+        const anchor = { rowIndex: 0, colIndex: 0 };
+        const end = { rowIndex: rows.length - 1, colIndex: columns.length - 1 };
+        setSelectedCell(anchor);
+        setSelectionAnchor(anchor);
+        setSelectedRange(normalizeRange(anchor, end));
+        setEditing(null);
+        setDraft('');
+      }
       return;
     }
-    if (event.key === 'Escape') {
+
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'c') {
       event.preventDefault();
-      setEditing(null);
+      await copySelection();
       return;
     }
-    if (!editing && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(event.key)) {
+
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'v') {
       event.preventDefault();
-      const next = nextCellPosition({ rowIndex, colIndex }, event.key, rows.length, columns.length);
+      await pasteCell({ rowIndex, colIndex });
+      return;
+    }
+
+    if (editing) {
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        event.preventDefault();
+        await saveEditing();
+        if (hasPosition) {
+          const navKey = event.key === 'Tab' && event.shiftKey ? 'ShiftTab' : event.key;
+          const next = nextCellPosition({ rowIndex, colIndex }, navKey, rows.length, columns.length);
+          selectCell(next.rowIndex, next.colIndex, event.shiftKey);
+        }
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setEditing(null);
+      }
+      return;
+    }
+
+    if ((event.key === 'Enter' || event.key === 'F2') && hasPosition) {
+      event.preventDefault();
+      startEditing(rowIndex, columns[colIndex]?.key, colIndex);
+      return;
+    }
+
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      event.preventDefault();
+      await clearSelectedRange();
+      return;
+    }
+
+    if (hasPosition && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(event.key)) {
+      event.preventDefault();
+      const navKey = event.key === 'Tab' && event.shiftKey ? 'ShiftTab' : event.key;
+      const next = nextCellPosition({ rowIndex, colIndex }, navKey, rows.length, columns.length);
       selectCell(next.rowIndex, next.colIndex, event.shiftKey);
     }
   }
@@ -423,8 +493,8 @@ export default function SpreadsheetApp({ requestConfirm }) {
   }
 
   const commands = useMemo(
-    () => buildSpreadsheetCommands({ activeSheetId, selectedCell, selectedRange, onAddRow: handleAddRow, onAddColumn: handleAddColumn, onClearCell: clearSelectedCell, onCopySelection: copySelection }),
-    [activeSheetId, selectedCell, rows, columns]
+    () => buildSpreadsheetCommands({ activeSheetId, selectedCell, selectedRange, onAddRow: handleAddRow, onAddColumn: handleAddColumn, onClearSelection: clearSelectedRange, onCopySelection: copySelection }),
+    [activeSheetId, selectedCell, selectedRange, rows, columns]
   );
 
   const contextCommands = useMemo(
@@ -436,7 +506,7 @@ export default function SpreadsheetApp({ requestConfirm }) {
       onCopyCell: copyCell,
       onCopySelection: copySelection,
       onPasteCell: pasteCell,
-      onClearCell: clearSelectedCell,
+      onClearSelection: clearSelectedRange,
       onEditCell: startEditing,
       onDeleteRow: requestDeleteRow,
       onDeleteColumn: requestDeleteColumn,
