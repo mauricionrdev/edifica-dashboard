@@ -13910,3 +13910,243 @@ button:focus-visible {
   object-fit: cover;
   border-radius: inherit;
 }
+
+/* profile hero layout — cover + users card */
+.profileHeroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: stretch;
+  margin: 0 4px;
+}
+
+.profileHeroGrid .hero {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.profileCover {
+  height: 126px;
+  border-bottom: 1px solid var(--line-subtle);
+  background:
+    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.10), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.72)),
+    var(--bg-app);
+}
+
+.profileHeroGrid .heroTop {
+  min-height: 150px;
+  padding: 0 26px 22px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.profileHeroGrid .identityRow {
+  align-items: flex-start;
+  gap: 22px;
+  margin-top: -46px;
+}
+
+.profileHeroGrid .hero .avatar {
+  width: 108px;
+  height: 108px;
+  min-width: 108px;
+  border-radius: 999px;
+  border: 4px solid var(--profile-card-main);
+  background: var(--bg-app);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.profileHeroGrid .hero .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profileHeroGrid .identityCopy {
+  padding-top: 56px;
+  min-width: 0;
+}
+
+.profileHeroGrid .identityTitle {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.profileHeroGrid .identityTitle h1 {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.profileHeroGrid .heroTop .iconButton {
+  margin-top: 18px;
+  margin-left: auto;
+}
+
+.profileHeroGrid .profileStatRail {
+  margin-top: auto;
+  grid-template-columns: repeat(5, minmax(108px, 1fr));
+}
+
+.profilePeopleCard {
+  min-width: 0;
+  border: 1px solid var(--profile-card-line);
+  border-radius: var(--workspace-card-radius);
+  background: var(--profile-card-main);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.profilePeopleHeader {
+  min-height: 54px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--profile-card-line-soft);
+}
+
+.profilePeopleHeader span {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--edf-text-faint);
+}
+
+.profilePeopleHeader strong {
+  min-width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--edf-text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line-subtle);
+}
+
+.profilePeopleList {
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.profilePersonRow {
+  width: 100%;
+  min-height: 54px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.profilePersonRow:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.profilePersonRow:focus,
+.profilePersonRow:focus-visible,
+.profilePersonRow:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+.profilePersonAvatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--edf-text-primary);
+  background: #08090a;
+  border: 0;
+}
+
+.profilePersonAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.profilePersonCopy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.profilePersonCopy strong,
+.profilePersonCopy em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profilePersonCopy strong {
+  font-size: 13px;
+  color: var(--edf-text-primary);
+}
+
+.profilePersonCopy em {
+  font-size: 12px;
+  font-style: normal;
+  color: var(--edf-text-muted);
+}
+
+@media (max-width: 1180px) {
+  .profileHeroGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profilePeopleList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .profileCover {
+    height: 96px;
+  }
+
+  .profileHeroGrid .heroTop {
+    min-height: auto;
+    padding: 0 18px 20px;
+  }
+
+  .profileHeroGrid .identityRow {
+    gap: 14px;
+    margin-top: -34px;
+  }
+
+  .profileHeroGrid .hero .avatar {
+    width: 78px;
+    height: 78px;
+    min-width: 78px;
+  }
+
+  .profileHeroGrid .identityCopy {
+    padding-top: 42px;
+  }
+
+  .profileHeroGrid .profileStatRail,
+  .profilePeopleList {
+    grid-template-columns: 1fr;
+  }
+}

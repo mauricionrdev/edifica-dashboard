@@ -3591,6 +3591,12 @@ export default function ProfilePage() {
         : activeTask.description
     : '';
   const activeBriefingAction = activeTask ? briefingStageAction(activeTask, activeBriefing) : null;
+  const profileSideUsers = useMemo(() => {
+    const currentUserId = String(user?.id || '').trim();
+    return (Array.isArray(demandUsers) ? demandUsers : [])
+      .filter((item) => item?.id && String(item.id) !== currentUserId)
+      .slice(0, 5);
+  }, [demandUsers, user?.id]);
   const displayProfileName = profileForm.name || user?.name || 'Perfil';
   const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
   const todaySummary = operationCounts.today === 1
@@ -3601,54 +3607,86 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.hero}>
-        <div className={styles.heroTop}>
-          <div className={styles.identityRow}>
-            <span className={`${styles.avatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
-              {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileForm.name || user?.name)}
-            </span>
+      <section className={styles.profileHeroGrid}>
+        <article className={styles.hero}>
+          <div className={styles.profileCover} aria-hidden="true" />
+          <div className={styles.heroTop}>
+            <div className={styles.identityRow}>
+              <span className={`${styles.avatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
+                {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileForm.name || user?.name)}
+              </span>
 
-            <div className={styles.identityCopy}>
-              <div className={styles.identityTitle}>
-                <h1>{displayProfileName}</h1>
-                <span
-                  className={`${styles.roleBadge} ${roleLabel(user?.role) === 'Suporte de tecnologia (TI)' ? styles.roleBadgeBlackHole : ''}`.trim()}
-                >
-                  {roleLabel(user?.role)}
-                </span>
-              </div>
-              <span className={styles.identityGreeting}>{todaySummary}</span>
-              {user?.email ? (
-                <div className={styles.identityMeta}>
-                  <span>{user.email}</span>
+              <div className={styles.identityCopy}>
+                <div className={styles.identityTitle}>
+                  <h1>{displayProfileName}</h1>
+                  <span
+                    className={`${styles.roleBadge} ${roleLabel(user?.role) === 'Suporte de tecnologia (TI)' ? styles.roleBadgeBlackHole : ''}`.trim()}
+                  >
+                    {roleLabel(user?.role)}
+                  </span>
                 </div>
-              ) : null}
+                <span className={styles.identityGreeting}>{todaySummary}</span>
+                {user?.email ? (
+                  <div className={styles.identityMeta}>
+                    <span>{user.email}</span>
+                  </div>
+                ) : null}
+              </div>
             </div>
+
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={() => {
+                setSettingsTab('profile');
+                setSettingsOpen(true);
+              }}
+              aria-label="Configurações"
+              title="Configurações"
+            >
+              <SettingsIcon size={16} />
+            </button>
           </div>
 
-          <button
-            type="button"
-            className={styles.iconButton}
-            onClick={() => {
-              setSettingsTab('profile');
-              setSettingsOpen(true);
-            }}
-            aria-label="Configurações"
-            title="Configurações"
-          >
-            <SettingsIcon size={16} />
-          </button>
-        </div>
+          <div className={styles.profileStatRail}>
+            {profileStats.map(({ Icon, ...item }) => (
+              <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+                <em>{item.hint}</em>
+              </span>
+            ))}
+          </div>
+        </article>
 
-        <div className={styles.profileStatRail}>
-          {profileStats.map(({ Icon, ...item }) => (
-            <span key={item.label} className={`${styles.profileStat} ${styles[`profileStat_${item.tone}`] || ''}`.trim()}>
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-              <em>{item.hint}</em>
-            </span>
-          ))}
-        </div>
+        <aside className={styles.profilePeopleCard} aria-label="Outros usuários">
+          <div className={styles.profilePeopleHeader}>
+            <span>Usuários</span>
+            <strong>{Math.max(0, (demandUsers?.length || 0) - 1)}</strong>
+          </div>
+          <div className={styles.profilePeopleList}>
+            {profileSideUsers.map((item) => {
+              const itemAvatarUrl = getUserAvatar(item) || item.avatarUrl || '';
+              const itemColor = avatarColorClassName(item.avatarColor || item.avatar_color || 'amber');
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={styles.profilePersonRow}
+                  onClick={() => navigate(`/perfil/${encodeURIComponent(item.customSlug || item.slug || item.id)}`)}
+                >
+                  <span className={`${styles.profilePersonAvatar} ${styles[`avatar_${itemColor}`] || styles.avatar_amber} ${itemAvatarUrl ? styles.profilePersonAvatarPhoto : ''}`.trim()}>
+                    {itemAvatarUrl ? <img src={itemAvatarUrl} alt="" loading="lazy" decoding="async" /> : initials(item.name)}
+                  </span>
+                  <span className={styles.profilePersonCopy}>
+                    <strong>{item.name}</strong>
+                    <em>{roleLabel(item.role)}</em>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </aside>
       </section>
 
       <section className={styles.operationBoard}>
