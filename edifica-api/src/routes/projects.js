@@ -302,6 +302,8 @@ function buildHandoffEventMetadata({ task, body, nextStatus, previousAssigneeNam
     pendencias: handoffText(handoff.pending, 260),
     contexto: handoffText(handoff.note, 320),
     comentariosRecentes: handoffText(handoff.recentComments, 320),
+    previousStatus: clean(task?.status),
+    nextStatus: clean(nextStatus),
     previousAssigneeUserId,
     previousAssigneeName: previousAssigneeName || '',
     validationAssigneeUserId: isBriefingToGdvActivation ? previousAssigneeUserId : '',
@@ -370,6 +372,8 @@ function buildTaskUpdateEventDescriptor({ task, body, nextStatus, previousAssign
     const from = backendStatusLabel(task.status);
     const to = backendStatusLabel(nextStatus);
     metadata.status = from === to ? to : `${from} → ${to}`;
+    metadata.previousStatus = clean(task.status);
+    metadata.nextStatus = clean(nextStatus);
     if (nextStatus === 'done') {
       eventType = 'task.completed';
       summary = 'Demanda concluída';
@@ -1048,7 +1052,7 @@ router.post('/clients/:clientId/book/:taskId/confirm-access', requireAnyPermissi
         actorUserId: req.user.id,
         eventType: 'task.gdv_access_confirmed',
         summary: 'GDV confirmou ativação e acessos',
-        metadata: { status: 'final_validation', validationAssigneeUserId: validationAssigneeId || '' },
+        metadata: { previousStatus: task.status, nextStatus: 'final_validation', status: 'final_validation', validationAssigneeUserId: validationAssigneeId || '' },
       }, conn);
     });
 

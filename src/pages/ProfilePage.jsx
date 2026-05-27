@@ -737,8 +737,47 @@ function taskStageProgress(task) {
 }
 
 
+function normalizeWorkflowStatusToken(value = '') {
+  const text = String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  if (!text) return '';
+  if (['in_progress', 'implementation', 'implementacao'].includes(text)) return 'in_progress';
+  if (['activation_gdv', 'ativacao gdv', 'ativacao/acessos gdv', 'ativacao acessos gdv', 'access_delivery', 'acessos', 'traffic_activation', 'trafego'].includes(text)) return 'activation_gdv';
+  if (['final_validation', 'validacao', 'validacao final'].includes(text)) return 'final_validation';
+  if (['done', 'concluida', 'concluido', 'feita'].includes(text)) return 'done';
+  if (text.includes('ativacao') || text.includes('acessos') || text.includes('gdv')) return 'activation_gdv';
+  if (text.includes('implement')) return 'in_progress';
+  if (text.includes('validacao')) return 'final_validation';
+  if (text.includes('conclu')) return 'done';
+  return text;
+}
+
 function eventStatusValue(event = {}) {
   return String(event?.metadata?.status || event?.metadata?.nextStatus || '').trim();
+}
+
+function eventPreviousStatusValue(event = {}) {
+  const metadata = event?.metadata || {};
+  const explicit = normalizeWorkflowStatusToken(metadata.previousStatus || metadata.fromStatus || metadata.from || '');
+  if (explicit) return explicit;
+
+  const status = String(metadata.status || '').trim();
+  if (status.includes('→')) return normalizeWorkflowStatusToken(status.split('→')[0]);
+  return '';
+}
+
+function eventNextStatusValue(event = {}) {
+  const metadata = event?.metadata || {};
+  const explicit = normalizeWorkflowStatusToken(metadata.nextStatus || metadata.toStatus || metadata.status || '');
+  if (explicit) return explicit;
+
+  const status = String(metadata.status || '').trim();
+  if (status.includes('→')) return normalizeWorkflowStatusToken(status.split('→').pop());
+  return '';
 }
 
 function eventActorPayload(event = {}) {
@@ -759,36 +798,46 @@ function taskCompletedActorPayload(task = {}, taskEvents = []) {
 }
 
 function workflowStepActorPayload(task = {}, step = {}, taskEvents = []) {
-  if (!step || step.state === 'pending') return null;
+  if (!step) return null;
   const kind = getTaskKind(task);
   const events = Array.isArray(taskEvents) ? taskEvents : [];
+  const stepKey = normalizeWorkflowStatusToken(step.key);
 
-  if (kind === 'briefing') {
-    if (step.key === 'in_progress' && step.state === 'done') {
-      const handoffToGdv = events.find((event) => {
-        const type = String(event?.type || '');
-        const status = eventStatusValue(event);
-        const summary = String(event?.summary || '').toLowerCase();
+  const transitionActorForStep = () => {
+    const transition = events.find((event) => {
+      const type = String(event?.type || '');
+      const previousStatus = eventPreviousStatusValue(event);
+      const nextStatus = eventNextStatusValue(event);
+      const summary = String(event?.summary || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const metadataText = JSON.stringify(event?.metadata || {}).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+      if (previousStatus && previousStatus === stepKey && nextStatus && nextStatus !== stepKey) return true;
+      if (stepKey === 'in_progress') {
         return type === 'task.handoff_registered' && (
-          ['activation_gdv', 'access_delivery', 'traffic_activation'].includes(status)
+          nextStatus === 'activation_gdv'
           || summary.includes('gdv')
           || summary.includes('ativ')
+          || metadataText.includes('ativacao')
+          || metadataText.includes('acessos')
         );
-      });
-      return eventActorPayload(handoffToGdv);
-    }
+      }
+      if (stepKey === 'activation_gdv') return type === 'task.gdv_access_confirmed';
+      if (stepKey === 'final_validation') return type === 'task.completed' || summary.includes('conclu');
+      return false;
+    });
 
-    if (step.key === 'activation_gdv' && step.state === 'done') {
-      const gdvConfirmation = events.find((event) => String(event?.type || '') === 'task.gdv_access_confirmed');
-      return eventActorPayload(gdvConfirmation);
-    }
+    return eventActorPayload(transition);
+  };
 
-    if ((step.key === 'final_validation' && step.state === 'done') || step.key === 'done') {
-      return taskCompletedActorPayload(task, events);
+  if (kind === 'briefing') {
+    if (step.state === 'done') {
+      if (stepKey === 'done') return taskCompletedActorPayload(task, events);
+      return transitionActorForStep();
     }
+    if (step.state === 'current') return null;
   }
 
-  if (step.state === 'done') return taskCompletedActorPayload(task, events);
+  if (step.state === 'done') return transitionActorForStep() || taskCompletedActorPayload(task, events);
   return null;
 }
 
@@ -3935,8 +3984,13 @@ export default function ProfilePage() {
                       const workflowActor = completedActorPayload || currentActorPayload;
                       return (
                         <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''} ${styles[`workflowKey_${step.key}`] || ''}`.trim()}>
-                          {workflowActor ? taskPersonAvatar(workflowActor, styles.workflowStepAvatar) : <i>{index + 1}</i>}
+                          <i>{index + 1}</i>
                           <span>{step.label}</span>
+                          {workflowActor ? (
+                            <em className={styles.workflowStepActor}>
+                              {taskPersonAvatar(workflowActor, styles.workflowStepAvatar)}
+                            </em>
+                          ) : null}
                         </div>
                       );
                     })}
