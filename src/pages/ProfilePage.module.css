@@ -13421,3 +13421,221 @@ button:focus-visible {
   outline: none;
   box-shadow: none;
 }
+
+/* vTaskFlowAvatar — refinamento de colaboradores, fluxo e confirmação */
+.taskTextViewerConfirmButton,
+.taskTextViewerFooter .taskTextViewerConfirmButton {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(245, 181, 27, 0.58);
+  border-radius: 10px;
+  background: rgba(245, 181, 27, 0.10);
+  color: var(--edf-amber, #f5b51b);
+  font-size: 13px;
+  font-weight: 720;
+  box-shadow: inset 0 0 0 1px rgba(245, 181, 27, 0.08);
+}
+
+.taskTextViewerConfirmButton:hover:not(:disabled),
+.taskTextViewerConfirmButton:focus,
+.taskTextViewerConfirmButton:focus-visible {
+  border-color: rgba(245, 181, 27, 0.58);
+  background: rgba(245, 181, 27, 0.10);
+  color: var(--edf-amber, #f5b51b);
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(245, 181, 27, 0.08);
+}
+
+.workflowStepAvatar,
+.collaboratorChipAvatar,
+.taskTextViewerCollaboratorAvatar {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: #d7dce5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+
+.workflowStepAvatar img,
+.collaboratorChipAvatar img,
+.taskTextViewerCollaboratorAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  display: block;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.taskPersonAvatarPhoto {
+  background: transparent;
+  color: transparent;
+}
+
+.workflowStep {
+  gap: 8px;
+  max-width: 100%;
+}
+
+.workflowStep .workflowStepAvatar {
+  color: #d7dce5;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.workflowStep_done .workflowStepAvatar,
+.workflowKey_done .workflowStepAvatar {
+  background: rgba(75, 216, 100, 0.14);
+  color: #4BD864;
+}
+
+.workflowStep_current .workflowStepAvatar,
+.workflowStep_active .workflowStepAvatar {
+  background: rgba(224, 190, 98, 0.14);
+  color: #E0BE62;
+}
+
+.workflowStep em {
+  display: none;
+}
+
+.collaboratorComposer {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0;
+}
+
+.collaboratorAddToggle,
+.collaboratorComposer > .collaboratorAddToggle {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font-size: 18px;
+  font-weight: 760;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.collaboratorAddToggle:hover:not(:disabled),
+.collaboratorAddToggle:focus,
+.collaboratorAddToggle:focus-visible {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  outline: none;
+  box-shadow: none;
+}
+
+.collaboratorPickerPanel {
+  position: absolute;
+  top: 48px;
+  left: 0;
+  z-index: 20;
+  width: min(420px, calc(100vw - 64px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+}
+
+.collaboratorPickerPanel .profileSelect,
+.collaboratorPickerPanel .formSelect,
+.collaboratorPickerPanel .profileSelectButton {
+  width: 100%;
+  min-width: 0;
+}
+
+.collaboratorPickerPanel > button {
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid rgba(245, 181, 27, 0.42);
+  border-radius: var(--workspace-control-radius);
+  background: rgba(245, 181, 27, 0.08);
+  color: var(--edf-amber, #f5b51b);
+  font-size: 12.5px;
+  font-weight: 720;
+  box-shadow: none;
+}
+
+.collaboratorPickerPanel > button:hover:not(:disabled),
+.collaboratorPickerPanel > button:focus,
+.collaboratorPickerPanel > button:focus-visible {
+  border-color: rgba(245, 181, 27, 0.42);
+  background: rgba(245, 181, 27, 0.08);
+  color: var(--edf-amber, #f5b51b);
+  outline: none;
+  box-shadow: none;
+}
+
+.collaboratorChips > span {
+  gap: 8px;
+  padding: 3px 7px 3px 4px;
+  min-height: 30px;
+  height: 30px;
+}
+
+.collaboratorChips > span > b {
+  max-width: 150px;
+  overflow: hidden;
+  color: inherit;
+  font: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collaboratorChipAvatar {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.taskTextViewerCollaborators {
+  gap: 0;
+  padding-left: 8px;
+}
+
+.taskTextViewerCollaborators a,
+.taskTextViewerCollaborators > span {
+  margin-left: -7px;
+}
+
+.taskTextViewerCollaborators a:first-child,
+.taskTextViewerCollaborators > span:first-child {
+  margin-left: 0;
+}
+
+.taskTextViewerCollaboratorAvatar {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  border: 1px solid var(--bg-canvas);
+}

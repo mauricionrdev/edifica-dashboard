@@ -1644,6 +1644,7 @@ export default function ProfilePage() {
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
+  const [collaboratorPickerOpen, setCollaboratorPickerOpen] = useState(false);
   const [collaboratorSaving, setCollaboratorSaving] = useState(false);
   const [collaboratorRemovingId, setCollaboratorRemovingId] = useState('');
   const [contentForm, setContentForm] = useState({
@@ -2188,6 +2189,11 @@ export default function ProfilePage() {
   useEffect(() => {
     setActivityPage(1);
   }, [activeTaskId, activeActivityEvents.length]);
+
+  useEffect(() => {
+    setCollaboratorPickerOpen(false);
+    setCollaboratorUserId('');
+  }, [activeTaskId]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
   const profileDate = useMemo(() => new Date(), []);
   const profileStats = useMemo(() => ([
@@ -2553,6 +2559,31 @@ export default function ProfilePage() {
   function collaboratorProfileHref(person = {}) {
     const userId = String(person.userId || person.user_id || person.id || '').trim();
     return userId ? `/perfil/${encodeURIComponent(userId)}` : '';
+  }
+
+  function resolveTaskPerson(person = {}) {
+    const userId = String(person.userId || person.user_id || person.id || '').trim();
+    const directoryUser = userFromDirectory(userId, demandUsers) || null;
+    const name = person.userName || person.user_name || person.name || directoryUser?.name || 'Usuário';
+    return {
+      userId,
+      userName: name,
+      avatarUrl: getUserAvatar(person) || person.avatarUrl || directoryUser?.avatarUrl || '',
+      avatarColor: avatarColorClassName(person.avatarColor || person.avatar_color || directoryUser?.avatarColor || directoryUser?.avatar_color || 'amber'),
+    };
+  }
+
+  function taskPersonAvatar(person = {}, className = '') {
+    const resolved = resolveTaskPerson(person);
+    return (
+      <span
+        className={`${className} ${styles[`taskAvatar_${resolved.avatarColor}`] || ''} ${resolved.avatarUrl ? styles.taskPersonAvatarPhoto : ''}`.trim()}
+        title={resolved.userName}
+        aria-label={resolved.userName}
+      >
+        {resolved.avatarUrl ? <img src={resolved.avatarUrl} alt="" loading="lazy" decoding="async" /> : initials(resolved.userName)}
+      </span>
+    );
   }
 
   function viewerTextareaRows(value) {
@@ -3031,6 +3062,7 @@ export default function ProfilePage() {
         ];
       });
       setCollaboratorUserId('');
+      setCollaboratorPickerOpen(false);
       await refreshActiveTaskPanels(activeTask.id, { events: true, collaborators: true });
       showToast('Colaborador adicionado.', { variant: 'success' });
     } catch (err) {
@@ -3357,6 +3389,12 @@ export default function ProfilePage() {
   const activeStatus = activeTask ? statusKey(activeTask) : 'waiting';
   const activeStatusOptions = activeTask ? statusOptionsForKind(activeKind) : BASE_STATUS_OPTIONS;
   const activeWorkflowSteps = activeTask ? workflowStepsForTask(activeTask) : [];
+  const activeWorkflowAssignee = activeTask ? resolveTaskPerson({
+    userId: activeTask.assigneeUserId || activeTask.assignee_user_id,
+    userName: activeTask.assigneeName || activeTask.assignee_name,
+    avatarUrl: activeTask.assigneeAvatarUrl || activeTask.assignee_avatar_url || '',
+    avatarColor: activeTask.assigneeAvatarColor || activeTask.assignee_avatar_color || '',
+  }) : null;
   const activeAssignee = activeTask ? taskAssigneeName(activeTask, demandUsers) : '';
   const activeRequester = activeTask ? taskRequesterName(activeTask, '') : '';
   const activeNextAction = activeTask ? nextActionLabel(activeTask) : '';
@@ -3835,13 +3873,15 @@ export default function ProfilePage() {
                     <span>{kindLabel(activeKind)}</span>
                   </div>
                   <div className={styles.workflowTimeline}>
-                    {activeWorkflowSteps.map((step, index) => (
-                      <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''} ${styles[`workflowKey_${step.key}`] || ''}`.trim()}>
-                        <i>{index + 1}</i>
-                        <span>{step.label}</span>
-                        {step.state === 'current' ? <em>{activeAssignee || 'Responsável'}</em> : null}
-                      </div>
-                    ))}
+                    {activeWorkflowSteps.map((step, index) => {
+                      const showActor = activeWorkflowAssignee && ['done', 'current'].includes(step.state);
+                      return (
+                        <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''} ${styles[`workflowKey_${step.key}`] || ''}`.trim()}>
+                          {showActor ? taskPersonAvatar(activeWorkflowAssignee, styles.workflowStepAvatar) : <i>{index + 1}</i>}
+                          <span>{step.label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </section>
               ) : null}
@@ -4057,22 +4097,36 @@ export default function ProfilePage() {
                   <h4>Colaboradores</h4>
                   <span>{collaborators.length}</span>
                 </div>
-                <form className={styles.collaboratorComposer} onSubmit={handleAddCollaborator}>
-                  <Select
-                    type="user"
-                    value={collaboratorUserId}
-                    onChange={(event) => setCollaboratorUserId(event.target.value)}
-                    aria-label="Colaborador"
-                    className={styles.formSelect}
+                <div className={styles.collaboratorComposer}>
+                  <button
+                    type="button"
+                    className={styles.collaboratorAddToggle}
+                    onClick={() => setCollaboratorPickerOpen((open) => !open)}
                     disabled={!canManageActiveCollaborators}
+                    aria-label="Adicionar colaborador"
+                    aria-expanded={collaboratorPickerOpen}
                   >
-                    <option value="">Adicionar colaborador</option>
-                    {collaboratorOptions.map((option) => (
-                      <option key={option.id} value={option.id} data-avatar={getUserAvatar(option) || option.avatarUrl || ''} data-name={option.name}>{option.name}</option>
-                    ))}
-                  </Select>
-                  <button type="submit" disabled={collaboratorSaving || !collaboratorUserId || !canManageActiveCollaborators}>+</button>
-                </form>
+                    +
+                  </button>
+                  {collaboratorPickerOpen ? (
+                    <form className={styles.collaboratorPickerPanel} onSubmit={handleAddCollaborator}>
+                      <Select
+                        type="user"
+                        value={collaboratorUserId}
+                        onChange={(event) => setCollaboratorUserId(event.target.value)}
+                        aria-label="Colaborador"
+                        className={styles.formSelect}
+                        disabled={!canManageActiveCollaborators}
+                      >
+                        <option value="">Adicionar colaborador</option>
+                        {collaboratorOptions.map((option) => (
+                          <option key={option.id} value={option.id} data-avatar={getUserAvatar(option) || option.avatarUrl || ''} data-name={option.name}>{option.name}</option>
+                        ))}
+                      </Select>
+                      <button type="submit" disabled={collaboratorSaving || !collaboratorUserId || !canManageActiveCollaborators}>Adicionar</button>
+                    </form>
+                  ) : null}
+                </div>
                 {collaboratorsLoading ? (
                   <div className={styles.compactLoadingState} aria-label="Carregando">
                     <span />
@@ -4082,15 +4136,16 @@ export default function ProfilePage() {
                 ) : collaborators.length ? (
                   <div className={styles.collaboratorChips}>
                     {collaborators.map((collaborator) => {
-                      const collaboratorName = collaborator.userName || collaborator.name || 'Usuário';
+                      const resolved = resolveTaskPerson(collaborator);
                       return (
-                        <span key={collaborator.userId}>
-                          {collaboratorName}
+                        <span key={collaborator.userId || resolved.userName}>
+                          {taskPersonAvatar(resolved, styles.collaboratorChipAvatar)}
+                          <b>{resolved.userName}</b>
                           <button
                             type="button"
                             onClick={() => handleRemoveCollaborator(collaborator.userId)}
                             disabled={collaboratorRemovingId === collaborator.userId || !canManageActiveCollaborators}
-                            aria-label={`Remover ${collaboratorName}`}
+                            aria-label={`Remover ${resolved.userName}`}
                             title="Remover colaborador"
                           >
                             ×
@@ -4374,22 +4429,13 @@ export default function ProfilePage() {
                     {collaborators.length ? (
                       <div className={styles.taskTextViewerCollaborators} aria-label="Colaboradores">
                         {collaborators.map((collaborator) => {
-                          const collaboratorName = collaborator.userName || collaborator.name || 'Usuário';
+                          const resolved = resolveTaskPerson(collaborator);
                           const href = collaboratorProfileHref(collaborator);
-                          const collaboratorAvatar = getUserAvatar(collaborator) || collaborator.avatarUrl || '';
-                          const collaboratorColor = collaborator.avatarColor || collaborator.avatar_color || 'amber';
-                          const content = (
-                            <span
-                              className={`${styles.taskTextViewerCollaboratorAvatar} ${styles[`avatar_${collaboratorColor}`] || styles.avatar_amber} ${collaboratorAvatar ? styles.taskTextViewerCollaboratorAvatarPhoto : ''}`.trim()}
-                              title={collaboratorName}
-                            >
-                              {collaboratorAvatar ? <img src={collaboratorAvatar} alt="" loading="lazy" decoding="async" /> : initials(collaboratorName)}
-                            </span>
-                          );
+                          const content = taskPersonAvatar(resolved, styles.taskTextViewerCollaboratorAvatar);
                           return href ? (
-                            <a key={collaborator.userId || collaboratorName} href={href} aria-label={`Abrir perfil de ${collaboratorName}`}>{content}</a>
+                            <a key={collaborator.userId || resolved.userName} href={href} aria-label={`Abrir perfil de ${resolved.userName}`}>{content}</a>
                           ) : (
-                            <span key={collaborator.userId || collaboratorName}>{content}</span>
+                            <span key={collaborator.userId || resolved.userName}>{content}</span>
                           );
                         })}
                       </div>
