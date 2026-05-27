@@ -44,6 +44,9 @@ export function buildSpreadsheetContextCommands({
   onCopySelection,
   onPasteCell,
   onClearSelection,
+  onClearRow,
+  onClearColumn,
+  onSortColumn,
   onEditCell,
   onDeleteRow,
   onDeleteColumn,
@@ -66,6 +69,24 @@ export function buildSpreadsheetContextCommands({
         shortcut: 'Ctrl C',
         canRun: true,
         run: onCopySelection,
+      },
+      {
+        id: 'sort-column-asc',
+        label: 'Ordenar A-Z',
+        canRun: Boolean(context.column),
+        run: () => onSortColumn?.(context, 'asc'),
+      },
+      {
+        id: 'sort-column-desc',
+        label: 'Ordenar Z-A',
+        canRun: Boolean(context.column),
+        run: () => onSortColumn?.(context, 'desc'),
+      },
+      {
+        id: 'clear-column',
+        label: 'Limpar coluna',
+        canRun: Boolean(context.column),
+        run: () => onClearColumn?.(context),
       },
       {
         id: 'insert-column-before',
@@ -115,6 +136,12 @@ export function buildSpreadsheetContextCommands({
         shortcut: 'Ctrl C',
         canRun: true,
         run: onCopySelection,
+      },
+      {
+        id: 'clear-row',
+        label: 'Limpar linha',
+        canRun: Boolean(context.row),
+        run: () => onClearRow?.(context),
       },
       {
         id: 'insert-row-before',

@@ -381,6 +381,53 @@ export default function SpreadsheetApp({ requestConfirm }) {
     setStatus(changed.length === 1 ? 'Célula limpa' : 'Seleção limpa');
   }
 
+  async function clearRow(context) {
+    const rowIndex = context?.rowIndex;
+    if (rowIndex === undefined || !rows[rowIndex]?.id) return;
+    const nextRows = rows.map((row, index) => {
+      if (index !== rowIndex) return row;
+      return columns.reduce((next, column) => ({ ...next, [column.key]: '' }), { ...row });
+    });
+    const patch = columns.reduce((next, column) => ({ ...next, [column.key]: '' }), {});
+    setRows(nextRows);
+    await updateSupportDailyRow(rows[rowIndex].id, patch);
+    selectRow(rowIndex);
+    setStatus('Linha limpa');
+  }
+
+  async function clearColumn(context) {
+    const column = context?.column;
+    const colIndex = context?.colIndex;
+    if (!column?.key || colIndex === undefined) return;
+    const nextRows = rows.map((row) => ({ ...row, [column.key]: '' }));
+    setRows(nextRows);
+    await Promise.all(nextRows.map((row) => updateSupportDailyRow(row.id, { [column.key]: '' })));
+    selectColumn(colIndex);
+    setStatus('Coluna limpa');
+  }
+
+  async function sortColumn(context, direction = 'asc') {
+    const column = context?.column;
+    const colIndex = context?.colIndex;
+    if (!column?.key || colIndex === undefined || rows.length < 2) return;
+    const collator = new Intl.Collator('pt-BR', { numeric: true, sensitivity: 'base' });
+    const nextRows = [...rows]
+      .sort((first, second) => {
+        const firstValue = String(first[column.key] ?? '').trim();
+        const secondValue = String(second[column.key] ?? '').trim();
+        if (!firstValue && secondValue) return 1;
+        if (firstValue && !secondValue) return -1;
+        const result = collator.compare(firstValue, secondValue);
+        return direction === 'desc' ? result * -1 : result;
+      })
+      .map((row, index) => ({ ...row, position: index + 1 }));
+
+    setRows(nextRows);
+    await persistRowPositions(nextRows);
+    selectColumn(colIndex);
+    setStatus(direction === 'desc' ? 'Coluna ordenada Z-A' : 'Coluna ordenada A-Z');
+  }
+
   async function copySelection() {
     if (!selectedRange || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) return;
     const value = buildRangeTsv(rows, columns, selectedRange);
@@ -589,6 +636,9 @@ export default function SpreadsheetApp({ requestConfirm }) {
       onCopySelection: copySelection,
       onPasteCell: pasteCell,
       onClearSelection: clearSelectedRange,
+      onClearRow: clearRow,
+      onClearColumn: clearColumn,
+      onSortColumn: sortColumn,
       onEditCell: startEditing,
       onDeleteRow: requestDeleteRow,
       onDeleteColumn: requestDeleteColumn,
