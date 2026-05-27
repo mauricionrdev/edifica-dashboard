@@ -13155,3 +13155,147 @@ button:focus-visible {
   cursor: not-allowed;
   opacity: 0.55;
 }
+
+/* vTaskText — leitura ampliada de descrição e comentários */
+.taskTextPreview,
+.commentTextPreview {
+  width: 100%;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+  outline: none;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: pointer;
+}
+
+.taskTextPreview {
+  display: block;
+  max-height: 168px;
+  overflow: hidden;
+  padding: 14px 16px;
+  font: inherit;
+  line-height: 1.62;
+  mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
+}
+
+.commentTextPreview {
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  line-height: 1.55;
+}
+
+.taskTextPreview:focus,
+.taskTextPreview:focus-visible,
+.commentTextPreview:focus,
+.commentTextPreview:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.taskTextViewerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.taskTextViewerModal {
+  width: min(820px, calc(100vw - 48px));
+  max-height: min(78dvh, 760px);
+  display: grid;
+  grid-template-rows: auto minmax(0, auto);
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+  overflow: hidden;
+}
+
+.taskTextViewerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+}
+
+.taskTextViewerHeader > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.taskTextViewerHeader strong {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.taskTextViewerHeader span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.taskTextViewerHeader > div:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.taskTextViewerHeader button {
+  min-height: 36px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  box-shadow: none;
+  outline: none;
+}
+
+.taskTextViewerHeader button:focus,
+.taskTextViewerHeader button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.taskTextViewerBody {
+  min-height: 120px;
+  max-height: calc(min(78dvh, 760px) - 70px);
+  overflow: auto;
+  padding: 20px 22px;
+}
+
+.taskTextViewerBody pre {
+  margin: 0;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.72;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

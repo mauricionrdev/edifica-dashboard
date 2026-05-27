@@ -1628,6 +1628,7 @@ export default function ProfilePage() {
   const [commentEditSavingId, setCommentEditSavingId] = useState('');
   const [activityPage, setActivityPage] = useState(1);
   const [descriptionCopied, setDescriptionCopied] = useState(false);
+  const [taskTextViewer, setTaskTextViewer] = useState(null);
   const [taskAttachments, setTaskAttachments] = useState([]);
   const [taskAttachmentsLoading, setTaskAttachmentsLoading] = useState(false);
   const [taskAttachmentDeletingId, setTaskAttachmentDeletingId] = useState('');
@@ -2464,6 +2465,39 @@ export default function ProfilePage() {
       showToast(err?.message || 'Erro ao salvar descrição.', { variant: 'error' });
     } finally {
       setContentSaving(false);
+    }
+  }
+
+  function openTaskTextViewer(payload) {
+    const body = String(payload?.body || '').trim();
+    if (!body) return;
+    setTaskTextViewer({
+      kind: payload.kind || 'text',
+      id: payload.id || '',
+      title: payload.title || 'Texto',
+      meta: payload.meta || '',
+      body,
+      canEdit: Boolean(payload.canEdit),
+    });
+  }
+
+  function closeTaskTextViewer() {
+    setTaskTextViewer(null);
+  }
+
+  function editTaskTextViewer() {
+    if (!taskTextViewer?.canEdit) return;
+    if (taskTextViewer.kind === 'description') {
+      openDescriptionEditor();
+      closeTaskTextViewer();
+      return;
+    }
+    if (taskTextViewer.kind === 'comment') {
+      const target = taskComments.find((comment) => String(comment.id) === String(taskTextViewer.id));
+      if (target) {
+        openCommentEditor(target);
+        closeTaskTextViewer();
+      }
     }
   }
 
@@ -3851,15 +3885,6 @@ export default function ProfilePage() {
                 <section className={`${styles.drawerSection} ${styles.descriptionSection}`.trim()}>
                   <div className={styles.sectionTitleRow}>
                     <h4>Descrição</h4>
-                    {activeDescription ? (
-                      <button
-                        type="button"
-                        className={styles.sectionTinyButton}
-                        onClick={() => setDescriptionExpanded((value) => !value)}
-                      >
-                        {descriptionExpanded ? 'Minimizar' : 'Maximizar'}
-                      </button>
-                    ) : null}
                   </div>
                   {descriptionEditing ? (
                     <textarea
@@ -3867,15 +3892,21 @@ export default function ProfilePage() {
                       value={descriptionDraft}
                       onChange={(event) => setDescriptionDraft(event.target.value)}
                       onBlur={saveDescriptionDraft}
-                      autoFocus
                     />
                   ) : (
-                    <pre
-                      className={`${styles.descriptionBox} ${descriptionExpanded ? styles.descriptionBoxExpanded : styles.descriptionBoxCollapsed}`.trim()}
-                      onDoubleClick={openDescriptionEditor}
+                    <button
+                      type="button"
+                      className={`${styles.descriptionBox} ${styles.taskTextPreview}`.trim()}
+                      onClick={() => openTaskTextViewer({
+                        kind: 'description',
+                        title: 'Descrição',
+                        meta: activeTask?.title || '',
+                        body: activeDescription || '',
+                        canEdit: canEditActiveTask,
+                      })}
                     >
                       {activeDescription || ''}
-                    </pre>
+                    </button>
                   )}
                 </section>
               ) : null}
@@ -4126,10 +4157,22 @@ export default function ProfilePage() {
                                 onChange={(event) => setEditingCommentDraft(event.target.value)}
                                 onBlur={() => saveCommentEditor(comment)}
                                 disabled={commentEditSavingId === comment.id}
-                                autoFocus
                               />
                             ) : commentDisplayBody(comment) ? (
-                              <p onDoubleClick={() => openCommentEditor(comment)}>{commentDisplayBody(comment)}</p>
+                              <button
+                                type="button"
+                                className={styles.commentTextPreview}
+                                onClick={() => openTaskTextViewer({
+                                  kind: 'comment',
+                                  id: comment.id,
+                                  title: 'Comentário',
+                                  meta: `${commentAuthor} · ${formatDateTime(comment.createdAt)}`,
+                                  body: commentDisplayBody(comment),
+                                  canEdit: canDeleteProfileComment(user, comment),
+                                })}
+                              >
+                                {commentDisplayBody(comment)}
+                              </button>
                             ) : null}
                             {canConfirmActiveAccess && accessConfirmCommentId === comment.id ? (
                               <div className={styles.commentAccessConfirm}>
@@ -4199,6 +4242,37 @@ export default function ProfilePage() {
                 ) : null}
               </section>
             </div>
+            {taskTextViewer ? createPortal(
+              <div
+                className={styles.taskTextViewerOverlay}
+                role="dialog"
+                aria-modal="true"
+                aria-label={taskTextViewer.title}
+                onClick={closeTaskTextViewer}
+              >
+                <section className={styles.taskTextViewerModal} onClick={(event) => event.stopPropagation()}>
+                  <header className={styles.taskTextViewerHeader}>
+                    <div>
+                      <strong>{taskTextViewer.title}</strong>
+                      {taskTextViewer.meta ? <span>{taskTextViewer.meta}</span> : null}
+                    </div>
+                    <div>
+                      {taskTextViewer.canEdit ? (
+                        <button type="button" onClick={editTaskTextViewer}>Editar</button>
+                      ) : null}
+                      <button type="button" onClick={closeTaskTextViewer} aria-label="Fechar">
+                        <CloseIcon size={16} />
+                      </button>
+                    </div>
+                  </header>
+                  <div className={styles.taskTextViewerBody}>
+                    <pre>{taskTextViewer.body}</pre>
+                  </div>
+                </section>
+              </div>,
+              document.body
+            ) : null}
+
             {taskAttachmentsAlbumOpen ? createPortal(
               <div
                 className={styles.attachmentViewerOverlay}
