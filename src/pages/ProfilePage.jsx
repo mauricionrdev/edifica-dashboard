@@ -736,6 +736,62 @@ function taskStageProgress(task) {
   return { label: statusLabel(task), progress: 28, tone: 'yellow' };
 }
 
+
+function eventStatusValue(event = {}) {
+  return String(event?.metadata?.status || event?.metadata?.nextStatus || '').trim();
+}
+
+function eventActorPayload(event = {}) {
+  const userId = String(event?.actorUserId || event?.actor_user_id || '').trim();
+  const userName = event?.actorName || event?.actor_name || '';
+  if (!userId && !userName) return null;
+  return { userId, userName };
+}
+
+function taskCompletedActorPayload(task = {}, taskEvents = []) {
+  const completedEvent = taskEvents.find((event) => /task\.(completed|done)$/i.test(String(event?.type || '')) || /conclu/i.test(String(event?.summary || '')));
+  const eventActor = eventActorPayload(completedEvent);
+  if (eventActor) return eventActor;
+
+  const userId = task?.completedByUserId || task?.completed_by_user_id || '';
+  const userName = task?.completedByName || task?.completed_by_name || '';
+  return userId || userName ? { userId, userName } : null;
+}
+
+function workflowStepActorPayload(task = {}, step = {}, taskEvents = []) {
+  if (!step || step.state === 'pending') return null;
+  const kind = getTaskKind(task);
+  const events = Array.isArray(taskEvents) ? taskEvents : [];
+
+  if (kind === 'briefing') {
+    if (step.key === 'in_progress' && step.state === 'done') {
+      const handoffToGdv = events.find((event) => {
+        const type = String(event?.type || '');
+        const status = eventStatusValue(event);
+        const summary = String(event?.summary || '').toLowerCase();
+        return type === 'task.handoff_registered' && (
+          ['activation_gdv', 'access_delivery', 'traffic_activation'].includes(status)
+          || summary.includes('gdv')
+          || summary.includes('ativ')
+        );
+      });
+      return eventActorPayload(handoffToGdv);
+    }
+
+    if (step.key === 'activation_gdv' && step.state === 'done') {
+      const gdvConfirmation = events.find((event) => String(event?.type || '') === 'task.gdv_access_confirmed');
+      return eventActorPayload(gdvConfirmation);
+    }
+
+    if ((step.key === 'final_validation' && step.state === 'done') || step.key === 'done') {
+      return taskCompletedActorPayload(task, events);
+    }
+  }
+
+  if (step.state === 'done') return taskCompletedActorPayload(task, events);
+  return null;
+}
+
 function userFromDirectory(userId, users = []) {
   const id = String(userId || '').trim();
   if (!id) return null;
@@ -3874,10 +3930,12 @@ export default function ProfilePage() {
                   </div>
                   <div className={styles.workflowTimeline}>
                     {activeWorkflowSteps.map((step, index) => {
-                      const showActor = activeWorkflowAssignee && ['done', 'current'].includes(step.state);
+                      const completedActorPayload = workflowStepActorPayload(activeTask, step, taskEvents);
+                      const currentActorPayload = step.state === 'current' ? activeWorkflowAssignee : null;
+                      const workflowActor = completedActorPayload || currentActorPayload;
                       return (
                         <div key={step.key} className={`${styles.workflowStep} ${styles[`workflowStep_${step.state}`] || ''} ${styles[`workflowKey_${step.key}`] || ''}`.trim()}>
-                          {showActor ? taskPersonAvatar(activeWorkflowAssignee, styles.workflowStepAvatar) : <i>{index + 1}</i>}
+                          {workflowActor ? taskPersonAvatar(workflowActor, styles.workflowStepAvatar) : <i>{index + 1}</i>}
                           <span>{step.label}</span>
                         </div>
                       );
