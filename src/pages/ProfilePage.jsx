@@ -54,10 +54,10 @@ const AVATAR_OPTIONS = [
 
 const COVER_PRESETS = [
   { value: 'default', label: 'Padrão' },
-  { value: 'aurora', label: 'Aurora' },
-  { value: 'graphite', label: 'Grafite' },
-  { value: 'violet', label: 'Violeta' },
-  { value: 'teal', label: 'Teal' },
+  { value: 'amber', label: 'Âmbar' },
+  { value: 'midnight', label: 'Noite' },
+  { value: 'steel', label: 'Aço' },
+  { value: 'obsidian', label: 'Obsidiana' },
   { value: 'custom', label: 'Imagem' },
 ];
 
@@ -5376,12 +5376,12 @@ export default function ProfilePage() {
                     ) : null}
                   </section>
 
-                  <section className={styles.settingsSection}>
+                  <section className={`${styles.settingsSection} ${styles.settingsIdentitySection}`.trim()}>
                     <div className={styles.settingsSectionHeader}>
                       <span>Identidade</span>
                     </div>
-                    <div className={styles.identitySettingsGrid}>
-                      <div className={styles.photoRow}>
+                    <div className={styles.identitySettingsPanel}>
+                      <div className={styles.identityPhotoColumn}>
                         <button
                           type="button"
                           className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}
@@ -5399,13 +5399,24 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      <div className={styles.settingsProfileGrid}>
-                        <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                        <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                        <label className={styles.slugInputGroup}>
-                          <span>/perfil/</span>
-                          <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="link-personalizado" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                        </label>
+                      <div className={styles.identityFieldsColumn}>
+                        <div className={styles.settingsProfileGrid}>
+                          <label className={styles.settingsField}>
+                            <span>Nome</span>
+                            <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                          </label>
+                          <label className={styles.settingsField}>
+                            <span>Telefone</span>
+                            <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                          </label>
+                          <label className={`${styles.settingsField} ${styles.settingsFieldWide}`.trim()}>
+                            <span>Link público</span>
+                            <span className={styles.slugInputGroup}>
+                              <span>/perfil/</span>
+                              <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </section>

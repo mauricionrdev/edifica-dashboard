@@ -14377,3 +14377,211 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+/* Profile settings v2 — restore original cover base and rebuild identity layout */
+.profileCover {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.10), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.72)),
+    var(--bg-app);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.profileCover_default,
+.coverPresetSwatch.profileCover_default {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.10), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.72)),
+    var(--bg-app);
+}
+
+.profileCover_amber,
+.coverPresetSwatch.profileCover_amber {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 193, 7, 0.22), transparent 27%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.13), rgba(23, 26, 32, 0.22) 44%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
+}
+
+.profileCover_midnight,
+.coverPresetSwatch.profileCover_midnight {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(59, 130, 246, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.22), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.78)),
+    var(--bg-app);
+}
+
+.profileCover_steel,
+.coverPresetSwatch.profileCover_steel {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(148, 163, 184, 0.15), transparent 28%),
+    linear-gradient(135deg, rgba(148, 163, 184, 0.10), rgba(23, 26, 32, 0.22) 42%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
+}
+
+.profileCover_obsidian,
+.coverPresetSwatch.profileCover_obsidian {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.07), transparent 26%),
+    linear-gradient(135deg, rgba(18, 20, 24, 0.34), rgba(10, 12, 16, 0.22) 42%, rgba(3, 4, 6, 0.82)),
+    var(--bg-app);
+}
+
+.settingsSectionCover .coverPreview {
+  height: 132px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.coverPresetGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.coverPresetOption {
+  min-height: 54px;
+  grid-template-columns: 1fr;
+  align-content: center;
+  justify-items: stretch;
+  gap: 7px;
+  text-align: left;
+}
+
+.coverPresetSwatch {
+  height: 18px;
+  border-radius: 999px;
+}
+
+.coverControls {
+  padding-top: 2px;
+}
+
+.settingsIdentitySection {
+  padding: 0;
+  overflow: hidden;
+}
+
+.settingsIdentitySection .settingsSectionHeader {
+  margin: 0;
+  padding: 15px 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.identitySettingsPanel {
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  gap: 0;
+  min-height: 190px;
+}
+
+.identityPhotoColumn {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.settingsModal:not(.demandModal) .identityPhotoColumn .photoAvatar {
+  width: 84px;
+  height: 84px;
+  min-width: 84px;
+}
+
+.identityPhotoColumn .photoActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.identityPhotoColumn .photoActions button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+}
+
+.identityFieldsColumn {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  min-width: 0;
+}
+
+.identityFieldsColumn .settingsProfileGrid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.72fr);
+  gap: 14px;
+  margin: 0;
+}
+
+.settingsField {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.settingsField > span:first-child {
+  color: rgba(151, 163, 184, 0.92);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settingsFieldWide {
+  grid-column: 1 / -1;
+}
+
+.settingsField input,
+.settingsField .slugInputGroup {
+  width: 100%;
+  margin: 0;
+}
+
+.settingsField .slugInputGroup {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.settingsField .slugInputGroup > span {
+  padding: 0 14px;
+  border-right: 1px solid var(--workspace-panel-border-soft);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+}
+
+.settingsField .slugInputGroup input {
+  min-width: 0;
+}
+
+.settingsModal:not(.demandModal) .photoRow {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+@media (max-width: 820px) {
+  .identitySettingsPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .identityPhotoColumn {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  }
+
+  .identityFieldsColumn .settingsProfileGrid,
+  .coverPresetGrid {
+    grid-template-columns: 1fr;
+  }
+}
