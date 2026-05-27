@@ -13174,17 +13174,17 @@ button:focus-visible {
 
 .taskTextPreview {
   display: block;
-  max-height: 168px;
+  max-height: 188px;
   overflow: hidden;
   padding: 14px 16px;
   font: inherit;
   line-height: 1.62;
-  mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
+  mask-image: linear-gradient(180deg, var(--text-primary) 72%, transparent 100%);
 }
 
 .commentTextPreview {
   display: -webkit-box;
-  -webkit-line-clamp: 6;
+  -webkit-line-clamp: 7;
   -webkit-box-orient: vertical;
   overflow: hidden;
   padding: 0;
@@ -13203,6 +13203,29 @@ button:focus-visible {
   box-shadow: none;
 }
 
+.commentEditTextarea,
+.taskTextViewerTextarea {
+  width: 100%;
+  resize: none;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.62;
+  box-shadow: none;
+  outline: none;
+}
+
+.commentEditTextarea:focus,
+.commentEditTextarea:focus-visible,
+.taskTextViewerTextarea:focus,
+.taskTextViewerTextarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .taskTextViewerOverlay {
   position: fixed;
   inset: 0;
@@ -13216,10 +13239,10 @@ button:focus-visible {
 }
 
 .taskTextViewerModal {
-  width: min(820px, calc(100vw - 48px));
-  max-height: min(78dvh, 760px);
+  width: min(880px, calc(100vw - 48px));
+  max-height: min(84dvh, 820px);
   display: grid;
-  grid-template-rows: auto minmax(0, auto);
+  grid-template-rows: auto minmax(0, auto) auto;
   border: 1px solid var(--workspace-panel-border);
   border-radius: var(--workspace-card-radius);
   background: var(--workspace-panel-bg);
@@ -13236,10 +13259,58 @@ button:focus-visible {
   border-bottom: 1px solid var(--workspace-panel-border-soft);
 }
 
-.taskTextViewerHeader > div:first-child {
+.taskTextViewerAuthorBlock {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.taskTextViewerAuthorBlock > div {
   min-width: 0;
   display: grid;
   gap: 4px;
+}
+
+.taskTextViewerAvatar,
+.taskTextViewerCollaboratorAvatar {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.taskTextViewerAvatar {
+  width: 34px;
+  height: 34px;
+}
+
+.taskTextViewerCollaboratorAvatar {
+  width: 28px;
+  height: 28px;
+}
+
+.taskTextViewerAvatar img,
+.taskTextViewerCollaboratorAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.taskTextViewerAvatarPhoto,
+.taskTextViewerCollaboratorAvatarPhoto {
+  background: transparent;
+  color: transparent;
 }
 
 .taskTextViewerHeader strong {
@@ -13257,14 +13328,16 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-.taskTextViewerHeader > div:last-child {
+.taskTextViewerActions,
+.taskTextViewerFooterActions {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   flex: 0 0 auto;
 }
 
-.taskTextViewerHeader button {
+.taskTextViewerHeader button,
+.taskTextViewerFooter button {
   min-height: 36px;
   border: 1px solid var(--workspace-panel-border-soft);
   border-radius: var(--workspace-control-radius);
@@ -13278,14 +13351,16 @@ button:focus-visible {
 }
 
 .taskTextViewerHeader button:focus,
-.taskTextViewerHeader button:focus-visible {
+.taskTextViewerHeader button:focus-visible,
+.taskTextViewerFooter button:focus,
+.taskTextViewerFooter button:focus-visible {
   outline: none;
   box-shadow: none;
 }
 
 .taskTextViewerBody {
   min-height: 120px;
-  max-height: calc(min(78dvh, 760px) - 70px);
+  max-height: calc(min(84dvh, 820px) - 136px);
   overflow: auto;
   padding: 20px 22px;
 }
@@ -13298,4 +13373,51 @@ button:focus-visible {
   line-height: 1.72;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.taskTextViewerTextarea {
+  min-height: 180px;
+  max-height: calc(min(84dvh, 820px) - 220px);
+  padding: 14px 16px;
+  overflow: auto;
+}
+
+.taskTextViewerFooter {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+}
+
+.taskTextViewerConfirmButton {
+  border-color: var(--edf-amber-border-strong);
+  background: var(--edf-amber-bg);
+  color: var(--edf-amber, var(--accent));
+}
+
+.taskTextViewerCollaborators {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.taskTextViewerCollaborators a,
+.taskTextViewerCollaborators > span {
+  display: inline-flex;
+  border-radius: 999px;
+  text-decoration: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.taskTextViewerCollaborators a:focus,
+.taskTextViewerCollaborators a:focus-visible {
+  outline: none;
+  box-shadow: none;
 }

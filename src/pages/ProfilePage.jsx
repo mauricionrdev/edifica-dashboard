@@ -1629,6 +1629,9 @@ export default function ProfilePage() {
   const [activityPage, setActivityPage] = useState(1);
   const [descriptionCopied, setDescriptionCopied] = useState(false);
   const [taskTextViewer, setTaskTextViewer] = useState(null);
+  const [taskTextViewerEditing, setTaskTextViewerEditing] = useState(false);
+  const [taskTextViewerDraft, setTaskTextViewerDraft] = useState('');
+  const [taskTextViewerSaving, setTaskTextViewerSaving] = useState(false);
   const [taskAttachments, setTaskAttachments] = useState([]);
   const [taskAttachmentsLoading, setTaskAttachmentsLoading] = useState(false);
   const [taskAttachmentDeletingId, setTaskAttachmentDeletingId] = useState('');
@@ -2478,27 +2481,83 @@ export default function ProfilePage() {
       meta: payload.meta || '',
       body,
       canEdit: Boolean(payload.canEdit),
+      authorName: payload.authorName || '',
+      authorAvatarUrl: payload.authorAvatarUrl || '',
+      authorAvatarColor: payload.authorAvatarColor || 'amber',
+      canConfirmAccess: Boolean(payload.canConfirmAccess),
     });
+    setTaskTextViewerDraft(body);
+    setTaskTextViewerEditing(false);
   }
 
   function closeTaskTextViewer() {
     setTaskTextViewer(null);
+    setTaskTextViewerDraft('');
+    setTaskTextViewerEditing(false);
+    setTaskTextViewerSaving(false);
   }
 
   function editTaskTextViewer() {
     if (!taskTextViewer?.canEdit) return;
-    if (taskTextViewer.kind === 'description') {
-      openDescriptionEditor();
-      closeTaskTextViewer();
+    setTaskTextViewerDraft(String(taskTextViewer.body || ''));
+    setTaskTextViewerEditing(true);
+  }
+
+  function cancelTaskTextViewerEdit() {
+    if (!taskTextViewer) return;
+    setTaskTextViewerDraft(String(taskTextViewer.body || ''));
+    setTaskTextViewerEditing(false);
+  }
+
+  async function saveTaskTextViewerEdit() {
+    if (!taskTextViewer?.canEdit || !activeTask?.id || taskTextViewerSaving) return;
+    const nextBody = String(taskTextViewerDraft || '').trim();
+    const currentBody = String(taskTextViewer.body || '').trim();
+    if (!nextBody || nextBody === currentBody) {
+      setTaskTextViewerEditing(false);
+      setTaskTextViewerDraft(currentBody);
       return;
     }
-    if (taskTextViewer.kind === 'comment') {
-      const target = taskComments.find((comment) => String(comment.id) === String(taskTextViewer.id));
-      if (target) {
-        openCommentEditor(target);
-        closeTaskTextViewer();
+
+    try {
+      setTaskTextViewerSaving(true);
+      if (taskTextViewer.kind === 'description') {
+        const nextDescription = buildContentDescription(activeTask, { ...contentForm, description: nextBody });
+        const res = await updateProjectTask(activeTask.id, { description: nextDescription });
+        const nextTask = res?.task || { ...activeTask, description: nextDescription };
+        setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...nextTask } : item)));
+        await refreshActiveTaskPanels(activeTask.id, { events: true });
+      } else if (taskTextViewer.kind === 'comment') {
+        const target = taskComments.find((comment) => String(comment.id) === String(taskTextViewer.id));
+        if (!target) return;
+        const attachmentMarker = commentAttachmentIds(target).length
+          ? `${COMMENT_ATTACHMENT_MARKER}${commentAttachmentIds(target).join(',')}]]`
+          : '';
+        const res = await updateTaskComment(activeTask.id, target.id, {
+          body: `${nextBody}${attachmentMarker ? `\n${attachmentMarker}` : ''}`,
+        });
+        const nextComment = res?.comment || { ...target, body: nextBody };
+        setTaskComments((prev) => prev.map((item) => (item.id === target.id ? nextComment : item)));
+        await refreshActiveTaskPanels(activeTask.id, { events: true });
       }
+      setTaskTextViewer((prev) => (prev ? { ...prev, body: nextBody } : prev));
+      setTaskTextViewerDraft(nextBody);
+      setTaskTextViewerEditing(false);
+    } catch (err) {
+      showToast(err?.message || 'Erro ao salvar texto.', { variant: 'error' });
+    } finally {
+      setTaskTextViewerSaving(false);
     }
+  }
+
+  function collaboratorProfileHref(person = {}) {
+    const userId = String(person.userId || person.user_id || person.id || '').trim();
+    return userId ? `/perfil/${encodeURIComponent(userId)}` : '';
+  }
+
+  function viewerTextareaRows(value) {
+    const lines = String(value || '').split('\n').length;
+    return Math.max(5, Math.min(18, lines + 2));
   }
 
   function openCommentEditor(comment) {
@@ -4153,6 +4212,7 @@ export default function ProfilePage() {
                             {editingCommentId === comment.id ? (
                               <textarea
                                 className={styles.commentEditTextarea}
+                                rows={viewerTextareaRows(editingCommentDraft)}
                                 value={editingCommentDraft}
                                 onChange={(event) => setEditingCommentDraft(event.target.value)}
                                 onBlur={() => saveCommentEditor(comment)}
@@ -4166,9 +4226,13 @@ export default function ProfilePage() {
                                   kind: 'comment',
                                   id: comment.id,
                                   title: 'Comentário',
-                                  meta: `${commentAuthor} · ${formatDateTime(comment.createdAt)}`,
+                                  meta: formatDateTime(comment.createdAt),
                                   body: commentDisplayBody(comment),
                                   canEdit: canDeleteProfileComment(user, comment),
+                                  authorName: commentAuthor,
+                                  authorAvatarUrl: avatarUrl,
+                                  authorAvatarColor: avatarColor,
+                                  canConfirmAccess: canConfirmActiveAccess && accessConfirmCommentId === comment.id,
                                 })}
                               >
                                 {commentDisplayBody(comment)}
@@ -4252,12 +4316,22 @@ export default function ProfilePage() {
               >
                 <section className={styles.taskTextViewerModal} onClick={(event) => event.stopPropagation()}>
                   <header className={styles.taskTextViewerHeader}>
-                    <div>
-                      <strong>{taskTextViewer.title}</strong>
-                      {taskTextViewer.meta ? <span>{taskTextViewer.meta}</span> : null}
+                    <div className={styles.taskTextViewerAuthorBlock}>
+                      {taskTextViewer.kind === 'comment' ? (
+                        <span
+                          className={`${styles.taskTextViewerAvatar} ${styles[`avatar_${taskTextViewer.authorAvatarColor || 'amber'}`] || styles.avatar_amber} ${taskTextViewer.authorAvatarUrl ? styles.taskTextViewerAvatarPhoto : ''}`.trim()}
+                          aria-hidden="true"
+                        >
+                          {taskTextViewer.authorAvatarUrl ? <img src={taskTextViewer.authorAvatarUrl} alt="" loading="lazy" decoding="async" /> : initials(taskTextViewer.authorName)}
+                        </span>
+                      ) : null}
+                      <div>
+                        <strong>{taskTextViewer.kind === 'comment' ? (taskTextViewer.authorName || taskTextViewer.title) : taskTextViewer.title}</strong>
+                        {taskTextViewer.meta ? <span>{taskTextViewer.meta}</span> : null}
+                      </div>
                     </div>
-                    <div>
-                      {taskTextViewer.canEdit ? (
+                    <div className={styles.taskTextViewerActions}>
+                      {taskTextViewer.canEdit && !taskTextViewerEditing ? (
                         <button type="button" onClick={editTaskTextViewer}>Editar</button>
                       ) : null}
                       <button type="button" onClick={closeTaskTextViewer} aria-label="Fechar">
@@ -4266,8 +4340,61 @@ export default function ProfilePage() {
                     </div>
                   </header>
                   <div className={styles.taskTextViewerBody}>
-                    <pre>{taskTextViewer.body}</pre>
+                    {taskTextViewerEditing ? (
+                      <textarea
+                        className={styles.taskTextViewerTextarea}
+                        rows={viewerTextareaRows(taskTextViewerDraft)}
+                        value={taskTextViewerDraft}
+                        onChange={(event) => setTaskTextViewerDraft(event.target.value)}
+                        disabled={taskTextViewerSaving}
+                      />
+                    ) : (
+                      <pre>{taskTextViewer.body}</pre>
+                    )}
                   </div>
+                  <footer className={styles.taskTextViewerFooter}>
+                    <div className={styles.taskTextViewerFooterActions}>
+                      {taskTextViewer.canConfirmAccess ? (
+                        <button
+                          type="button"
+                          className={styles.taskTextViewerConfirmButton}
+                          onClick={handleConfirmActiveAccessFromComments}
+                          disabled={accessConfirming || taskUpdatingId === activeTask?.id}
+                        >
+                          {accessConfirming ? 'Confirmando' : 'Confirmar ativação/acessos'}
+                        </button>
+                      ) : null}
+                      {taskTextViewerEditing ? (
+                        <>
+                          <button type="button" onClick={cancelTaskTextViewerEdit} disabled={taskTextViewerSaving}>Cancelar</button>
+                          <button type="button" onClick={saveTaskTextViewerEdit} disabled={taskTextViewerSaving || !String(taskTextViewerDraft || '').trim()}>{taskTextViewerSaving ? 'Salvando' : 'Salvar'}</button>
+                        </>
+                      ) : null}
+                    </div>
+                    {collaborators.length ? (
+                      <div className={styles.taskTextViewerCollaborators} aria-label="Colaboradores">
+                        {collaborators.map((collaborator) => {
+                          const collaboratorName = collaborator.userName || collaborator.name || 'Usuário';
+                          const href = collaboratorProfileHref(collaborator);
+                          const collaboratorAvatar = getUserAvatar(collaborator) || collaborator.avatarUrl || '';
+                          const collaboratorColor = collaborator.avatarColor || collaborator.avatar_color || 'amber';
+                          const content = (
+                            <span
+                              className={`${styles.taskTextViewerCollaboratorAvatar} ${styles[`avatar_${collaboratorColor}`] || styles.avatar_amber} ${collaboratorAvatar ? styles.taskTextViewerCollaboratorAvatarPhoto : ''}`.trim()}
+                              title={collaboratorName}
+                            >
+                              {collaboratorAvatar ? <img src={collaboratorAvatar} alt="" loading="lazy" decoding="async" /> : initials(collaboratorName)}
+                            </span>
+                          );
+                          return href ? (
+                            <a key={collaborator.userId || collaboratorName} href={href} aria-label={`Abrir perfil de ${collaboratorName}`}>{content}</a>
+                          ) : (
+                            <span key={collaborator.userId || collaboratorName}>{content}</span>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </footer>
                 </section>
               </div>,
               document.body
