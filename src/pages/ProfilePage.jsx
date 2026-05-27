@@ -1704,6 +1704,8 @@ export default function ProfilePage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('profile');
+  const [peopleModalOpen, setPeopleModalOpen] = useState(false);
+  const [peopleSearch, setPeopleSearch] = useState('');
   const [operationTab, setOperationTab] = useState('all');
   const [operationPage, setOperationPage] = useState(1);
   const [tasks, setTasks] = useState([]);
@@ -2105,6 +2107,10 @@ export default function ProfilePage() {
       }
       if (demandModalOpen) {
         closeDemandModal();
+        return;
+      }
+      if (peopleModalOpen) {
+        setPeopleModalOpen(false);
         return;
       }
       if (settingsOpen) {
@@ -3656,6 +3662,17 @@ export default function ProfilePage() {
       .filter((item) => item?.id && String(item.id) !== currentUserId)
       .slice(0, 5);
   }, [demandUsers, user?.id]);
+
+  const filteredProfileUsers = useMemo(() => {
+    const currentUserId = String(user?.id || '').trim();
+    const query = normalizeText(peopleSearch);
+    return (Array.isArray(demandUsers) ? demandUsers : [])
+      .filter((item) => item?.id && String(item.id) !== currentUserId)
+      .filter((item) => {
+        if (!query) return true;
+        return normalizeText(`${item.name || ''} ${roleLabel(item.role) || ''} ${item.statusMessage || item.status_message || ''}`).includes(query);
+      });
+  }, [demandUsers, peopleSearch, user?.id]);
   const displayProfileName = profileForm.name || user?.name || 'Perfil';
   const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
   const defaultTodaySummary = operationCounts.today === 1
@@ -3730,8 +3747,13 @@ export default function ProfilePage() {
 
         <aside className={styles.profilePeopleCard} aria-label="Outros usuários">
           <div className={styles.profilePeopleHeader}>
-            <span>Usuários</span>
-            <strong>{Math.max(0, (demandUsers?.length || 0) - 1)}</strong>
+            <div>
+              <span>Usuários</span>
+              <strong>{Math.max(0, (demandUsers?.length || 0) - 1)}</strong>
+            </div>
+            <button type="button" className={styles.profilePeopleMore} onClick={() => setPeopleModalOpen(true)}>
+              Ver mais
+            </button>
           </div>
           <div className={styles.profilePeopleList}>
             {profileSideUsers.map((item) => {
@@ -5290,6 +5312,74 @@ export default function ProfilePage() {
               <CloseIcon size={16} />
             </button>
             <img src={avatarUrl} alt="" />
+          </section>
+        </div>
+      ) : null}
+
+
+      {peopleModalOpen ? (
+        <div className={styles.peopleOverlay} onClick={() => setPeopleModalOpen(false)}>
+          <section className={styles.peopleModal} role="dialog" aria-modal="true" aria-label="Usuários" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.peopleModalHeader}>
+              <div>
+                <h2>Usuários</h2>
+                <span>{filteredProfileUsers.length}</span>
+              </div>
+              <button type="button" className={styles.iconButton} onClick={() => setPeopleModalOpen(false)} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+
+            <div className={styles.peopleSearchBar}>
+              <input
+                type="search"
+                value={peopleSearch}
+                onChange={(event) => setPeopleSearch(event.target.value)}
+                placeholder="Buscar usuário"
+              />
+            </div>
+
+            <div className={styles.peopleGrid}>
+              {filteredProfileUsers.map((item) => {
+                const itemAvatarUrl = getUserAvatar(item) || item.avatarUrl || '';
+                const itemColor = avatarColorClassName(item.avatarColor || item.avatar_color || 'amber');
+                const itemCoverUrl = item.coverUrl || item.cover_url || '';
+                const itemCoverPreset = item.coverPreset || item.cover_preset || 'default';
+                const itemStatus = String(item.statusMessage || item.status_message || '').trim();
+                const itemCoverStyle = itemCoverUrl
+                  ? {
+                      backgroundImage: `url(${itemCoverUrl})`,
+                      backgroundPosition: `${Number(item.coverPositionX ?? item.cover_position_x ?? 50)}% ${Number(item.coverPositionY ?? item.cover_position_y ?? 50)}%`,
+                      backgroundSize: `${Math.max(100, Number(item.coverZoom ?? item.cover_zoom ?? 100))}% auto`,
+                    }
+                  : undefined;
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={styles.peopleMiniCard}
+                    onClick={() => navigate(`/perfil/${encodeURIComponent(item.customSlug || item.slug || item.id)}`)}
+                  >
+                    <span
+                      className={`${styles.peopleMiniCover} ${styles[`profileCover_${itemCoverPreset}`] || styles.profileCover_default}`.trim()}
+                      style={itemCoverStyle}
+                      aria-hidden="true"
+                    />
+                    <span className={styles.peopleMiniBody}>
+                      <span className={`${styles.peopleMiniAvatar} ${styles[`avatar_${itemColor}`] || styles.avatar_amber} ${itemAvatarUrl ? styles.peopleMiniAvatarPhoto : ''}`.trim()}>
+                        {itemAvatarUrl ? <img src={itemAvatarUrl} alt="" loading="lazy" decoding="async" /> : initials(item.name)}
+                      </span>
+                      <span className={styles.peopleMiniCopy}>
+                        <strong>{item.name}</strong>
+                        <em>{roleLabel(item.role)}</em>
+                        {itemStatus ? <small>{itemStatus}</small> : null}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </section>
         </div>
       ) : null}
