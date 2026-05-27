@@ -344,6 +344,46 @@ async function resolveValidationAssigneeAfterGdv(task, confirmingUserId) {
     }
   }
 
+  const accessCommentRows = await query(
+    `SELECT tc.user_id
+       FROM task_comments tc
+      WHERE tc.task_id = ?
+        AND tc.user_id <> ?
+        AND (
+          LOWER(tc.body) LIKE '%login%'
+          OR LOWER(tc.body) LIKE '%senha%'
+          OR LOWER(tc.body) LIKE '%acesso%'
+          OR LOWER(tc.body) LIKE '%credencia%'
+          OR LOWER(tc.body) LIKE '%url%'
+        )
+      ORDER BY tc.created_at DESC
+      LIMIT 1`,
+    [taskId, actorId || '']
+  );
+  const accessCommentUserId = clean(accessCommentRows[0]?.user_id);
+  if (accessCommentUserId) return accessCommentUserId;
+
+  const requestedRows = await query(
+    `SELECT tc.user_id
+       FROM task_collaborators tc
+       JOIN users u ON u.id = tc.user_id
+      WHERE tc.task_id = ?
+        AND tc.user_id <> ?
+        AND tc.user_id <> ?
+        AND COALESCE(u.active, 1) = 1
+      ORDER BY
+        CASE
+          WHEN tc.role = 'responsible' THEN 0
+          WHEN u.role IN ('suporte_tecnologia', 'admin', 'ceo') THEN 1
+          ELSE 2
+        END,
+        tc.created_at ASC
+      LIMIT 1`,
+    [taskId, actorId || '', clean(task?.created_by_user_id) || '']
+  );
+  const requestedUserId = clean(requestedRows[0]?.user_id);
+  if (requestedUserId) return requestedUserId;
+
   const supportRows = await query(
     `SELECT u.id
        FROM task_collaborators tc
@@ -2207,8 +2247,6 @@ router.patch('/tasks/:id/comments/:commentId', requirePermission('tasks.comment'
 
     const canEdit =
       isAdminUser(req.user) ||
-      hasPermission(req.user, 'tasks.comment.all') ||
-      hasPermission(req.user, 'tasks.edit.all') ||
       comment.user_id === req.user?.id;
 
     if (!canEdit) throw forbidden('Sem permissão para editar este comentário');

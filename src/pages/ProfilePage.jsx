@@ -1483,6 +1483,12 @@ function canDeleteProfileComment(user, comment) {
   return hasPermission(user, 'tasks.comment.all') || hasPermission(user, 'tasks.edit.all') || comment.userId === user?.id;
 }
 
+function canEditProfileComment(user, comment) {
+  if (!comment || !user?.id) return false;
+  if (hasPermission(user, 'settings.manage')) return true;
+  return String(comment.userId || '') === String(user.id || '');
+}
+
 
 function Select({ value, onChange, children, className = '', disabled = false, placeholder = 'Selecionar', type = 'default', ...props }) {
   const buttonRef = useRef(null);
@@ -2697,7 +2703,7 @@ export default function ProfilePage() {
   }
 
   function openCommentEditor(comment) {
-    if (!activeTask || !comment?.id || !canDeleteProfileComment(user, comment)) return;
+    if (!activeTask || !comment?.id || !canEditProfileComment(user, comment)) return;
     setEditingCommentId(comment.id);
     setEditingCommentDraft(commentDisplayBody(comment));
   }
@@ -4398,7 +4404,7 @@ export default function ProfilePage() {
                                   title: 'Comentário',
                                   meta: formatDateTime(comment.createdAt),
                                   body: commentDisplayBody(comment),
-                                  canEdit: canDeleteProfileComment(user, comment),
+                                  canEdit: canEditProfileComment(user, comment),
                                   authorName: commentAuthor,
                                   authorAvatarUrl: avatarUrl,
                                   authorAvatarColor: avatarColor,
