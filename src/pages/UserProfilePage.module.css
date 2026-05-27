@@ -1460,7 +1460,7 @@
   background-size: cover;
 }
 
-/* Public profile covers must mirror the validated internal profile cover language. */
+/* Public profile covers mirror the validated internal profile cover presets. */
 .profileCover_default,
 .usersMiniCover.profileCover_default {
   background:
@@ -1469,21 +1469,52 @@
     var(--bg-app);
 }
 
-.profileCover_aurora,
-.usersMiniCover.profileCover_aurora {
+.profileCover_amber,
+.usersMiniCover.profileCover_amber {
   background:
-    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.14), transparent 28%),
-    radial-gradient(circle at 76% 24%, rgba(20, 184, 166, 0.10), transparent 32%),
-    linear-gradient(135deg, rgba(10, 12, 14, 0.98), rgba(8, 9, 10, 0.97));
+    radial-gradient(circle at 18% 28%, rgba(255, 193, 7, 0.22), transparent 27%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.13), rgba(23, 26, 32, 0.22) 44%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
 }
 
-.profileCover_graphite,
-.usersMiniCover.profileCover_graphite,
+.profileCover_midnight,
+.usersMiniCover.profileCover_midnight {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(59, 130, 246, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.22), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.78)),
+    var(--bg-app);
+}
+
 .profileCover_steel,
 .usersMiniCover.profileCover_steel {
   background:
-    radial-gradient(circle at 18% 26%, rgba(148, 163, 184, 0.12), transparent 28%),
-    linear-gradient(135deg, rgba(23, 26, 32, 0.72), rgba(7, 8, 10, 0.98));
+    radial-gradient(circle at 16% 28%, rgba(148, 163, 184, 0.15), transparent 28%),
+    linear-gradient(135deg, rgba(148, 163, 184, 0.10), rgba(23, 26, 32, 0.22) 42%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
+}
+
+.profileCover_obsidian,
+.usersMiniCover.profileCover_obsidian {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.07), transparent 26%),
+    linear-gradient(135deg, rgba(18, 20, 24, 0.34), rgba(10, 12, 16, 0.22) 42%, rgba(3, 4, 6, 0.82)),
+    var(--bg-app);
+}
+
+.profileCover_aurora,
+.usersMiniCover.profileCover_aurora {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.10), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.72)),
+    var(--bg-app);
+}
+
+.profileCover_graphite,
+.usersMiniCover.profileCover_graphite {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(148, 163, 184, 0.15), transparent 28%),
+    linear-gradient(135deg, rgba(148, 163, 184, 0.10), rgba(23, 26, 32, 0.22) 42%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
 }
 
 .profileCover_violet,
@@ -1500,29 +1531,14 @@
     linear-gradient(135deg, rgba(7, 20, 20, 0.84), rgba(7, 8, 10, 0.98));
 }
 
-.profileCover_amber,
-.usersMiniCover.profileCover_amber {
-  background:
-    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.17), transparent 28%),
-    linear-gradient(135deg, rgba(255, 193, 7, 0.11), rgba(23, 26, 32, 0.18) 42%, rgba(3, 4, 6, 0.72)),
-    var(--bg-app);
-}
-
-.profileCover_obsidian,
-.usersMiniCover.profileCover_obsidian,
-.profileCover_midnight,
-.usersMiniCover.profileCover_midnight {
-  background:
-    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.13), transparent 28%),
-    linear-gradient(135deg, rgba(12, 13, 16, 0.92), rgba(3, 4, 6, 0.82)),
-    var(--bg-app);
-}
-
 .profileCover_custom,
 .profileCover_image,
 .usersMiniCover.profileCover_custom,
 .usersMiniCover.profileCover_image {
-  background: linear-gradient(135deg, rgba(19, 22, 27, 0.98), rgba(8, 9, 10, 0.98));
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.07), transparent 26%),
+    linear-gradient(135deg, rgba(18, 20, 24, 0.34), rgba(10, 12, 16, 0.22) 42%, rgba(3, 4, 6, 0.82)),
+    var(--bg-app);
 }
 
 .profileHeroGrid .heroIdentity {
