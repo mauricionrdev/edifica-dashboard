@@ -19,6 +19,7 @@ import {
   removeTaskCollaborator,
   listMyProjectTasks,
   listTaskComments,
+  confirmClientBookAccess,
   updateTask as updateProjectTask,
 } from '../api/projects.js';
 import { listUserDirectory } from '../api/users.js';
@@ -1595,6 +1596,7 @@ export default function ProfilePage() {
   const [commentDraft, setCommentDraft] = useState('');
   const [commentAttachments, setCommentAttachments] = useState([]);
   const [commentSaving, setCommentSaving] = useState(false);
+  const [accessConfirming, setAccessConfirming] = useState(false);
   const [commentDeleteTarget, setCommentDeleteTarget] = useState(null);
   const [commentDeleting, setCommentDeleting] = useState(false);
   const [subtaskDeleteTarget, setSubtaskDeleteTarget] = useState(null);
@@ -2694,6 +2696,23 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleConfirmActiveAccessFromComments() {
+    if (!activeTask?.id || !activeClientId || !canConfirmActiveAccess) return;
+    try {
+      setAccessConfirming(true);
+      const res = await confirmClientBookAccess(activeClientId, activeTask.id);
+      if (res?.task) {
+        setTasks((prev) => prev.map((item) => (item.id === activeTask.id ? { ...item, ...res.task } : item)));
+      }
+      await refreshActiveTaskPanels(activeTask.id, { comments: true, events: true, collaborators: true });
+      showToast('Ativação e acessos confirmados.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Erro ao confirmar ativação/acessos.', { variant: 'error' });
+    } finally {
+      setAccessConfirming(false);
+    }
+  }
+
   async function handleCreateComment(event) {
     event.preventDefault();
     if (!activeTask) return;
@@ -3262,6 +3281,13 @@ export default function ProfilePage() {
         ...(activeTask.sectionName ? [['Seção', activeTask.sectionName]] : []),
       ]
     : [];
+  const activeClientId = activeTask?.clientId || activeTask?.client_id || activeTask?.metadata?.clientId || activeTask?.metadata?.client_id || '';
+  const canConfirmActiveAccess = Boolean(
+    activeKind === 'briefing'
+      && activeClientId
+      && ['activation_gdv', 'access_delivery', 'traffic_activation'].includes(activeStatus)
+      && canCompleteActiveTask
+  );
   const assigneeOptions = useMemo(() => {
     const map = new Map();
     [...(demandUsers || []), user].filter(Boolean).forEach((item) => {
@@ -4038,6 +4064,17 @@ export default function ProfilePage() {
                   />
                   <button type="submit" disabled={commentSaving || (!commentDraft.trim() && !commentAttachments.length) || !canCommentActiveTask}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
                 </form>
+                {canConfirmActiveAccess ? (
+                  <div className={styles.commentAccessConfirm}>
+                    <button
+                      type="button"
+                      onClick={handleConfirmActiveAccessFromComments}
+                      disabled={accessConfirming || taskUpdatingId === activeTask.id}
+                    >
+                      {accessConfirming ? 'Confirmando' : 'Confirmar ativação/acessos'}
+                    </button>
+                  </div>
+                ) : null}
                 {commentAttachments.length ? (
                   <div className={styles.commentAttachmentDrafts}>
                     {commentAttachments.map((item) => (
