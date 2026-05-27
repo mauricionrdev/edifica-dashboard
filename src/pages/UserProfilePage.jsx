@@ -543,6 +543,7 @@ export default function UserProfilePage() {
     });
   }, [profileUser, setPanelHeader]);
 
+  const todayTasksCount = useMemo(() => profileTasks.filter(isTodayTask).length, [profileTasks]);
   const avatarUrl = getUserAvatar(profileUser);
   const coverPreset = profileUser?.coverPreset || profileUser?.cover_preset || 'default';
   const coverUrl = profileUser?.coverUrl || profileUser?.cover_url || '';
@@ -761,7 +762,6 @@ export default function UserProfilePage() {
   }, [filteredTasks, profileUser, taskPeopleMap, userDirectory]);
 
   const completionRate = profileTasks.length ? Math.round((completedTasksCount / profileTasks.length) * 100) : 0;
-  const todayTasksCount = useMemo(() => profileTasks.filter(isTodayTask).length, [profileTasks]);
   const portfolioCount = gdvClients.length + gestorClients.length;
   const profileContext = userSquads.length
     ? userSquads.map((squad) => squad.name).join(', ')
