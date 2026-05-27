@@ -259,7 +259,7 @@ router.patch('/profile', requireAuth, requirePermission('profile.edit'), async (
 
     if (coverPreset !== undefined) {
       const cleanPreset = String(coverPreset || 'default').trim().toLowerCase();
-      const validPresets = new Set(['default', 'aurora', 'graphite', 'violet', 'teal', 'custom']);
+      const validPresets = new Set(['default', 'amber', 'midnight', 'steel', 'obsidian', 'custom', 'aurora', 'graphite', 'violet', 'teal']);
       if (!validPresets.has(cleanPreset)) throw badRequest('Capa inválida');
       updates.push('profile_cover_preset = ?');
       params.push(cleanPreset);
