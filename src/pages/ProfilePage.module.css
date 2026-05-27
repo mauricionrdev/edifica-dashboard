@@ -13774,3 +13774,92 @@ button:focus-visible {
   top: 38px;
   width: min(360px, calc(100vw - 72px));
 }
+
+/* task-avatar-size-v3 — corrige contenção real dos avatares no fluxo e colaboradores */
+.workflowStepAvatar,
+.collaboratorChipAvatar,
+.taskTextViewerCollaboratorAvatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.workflowStep .workflowStepAvatar,
+.workflowStep_done .workflowStepAvatar,
+.workflowStep_current .workflowStepAvatar,
+.workflowStep_active .workflowStepAvatar,
+.workflowKey_done .workflowStepAvatar {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  flex: 0 0 18px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.collaboratorBar .collaboratorChipAvatar,
+.collaboratorChipAvatar {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  max-width: 24px;
+  max-height: 24px;
+  flex: 0 0 24px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.workflowStepAvatar img,
+.collaboratorChipAvatar img,
+.taskTextViewerCollaboratorAvatar img,
+.workflowStep .workflowStepAvatar img,
+.collaboratorBar .collaboratorChipAvatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  border: 0;
+  border-radius: inherit;
+}
+
+.workflowStep .workflowStepAvatar + span {
+  min-width: 0;
+  max-width: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collaboratorBar {
+  align-items: center;
+}
+
+.collaboratorBar .collaboratorChips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.collaboratorBar .collaboratorChips > span {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  max-width: 230px;
+  min-width: 0;
+  overflow: hidden;
+}
