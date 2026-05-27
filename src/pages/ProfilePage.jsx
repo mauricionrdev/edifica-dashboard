@@ -54,10 +54,10 @@ const AVATAR_OPTIONS = [
 
 const COVER_PRESETS = [
   { value: 'default', label: 'Padrão' },
-  { value: 'aurora', label: 'Aurora' },
-  { value: 'graphite', label: 'Grafite' },
-  { value: 'violet', label: 'Violeta' },
-  { value: 'teal', label: 'Teal' },
+  { value: 'amber', label: 'Âmbar' },
+  { value: 'midnight', label: 'Noite' },
+  { value: 'steel', label: 'Aço' },
+  { value: 'obsidian', label: 'Obsidiana' },
   { value: 'custom', label: 'Imagem' },
 ];
 
@@ -1704,8 +1704,6 @@ export default function ProfilePage() {
   const [savingPassword, setSavingPassword] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState('profile');
-  const [peopleModalOpen, setPeopleModalOpen] = useState(false);
-  const [peopleQuery, setPeopleQuery] = useState('');
   const [operationTab, setOperationTab] = useState('all');
   const [operationPage, setOperationPage] = useState(1);
   const [tasks, setTasks] = useState([]);
@@ -3652,19 +3650,12 @@ export default function ProfilePage() {
         : activeTask.description
     : '';
   const activeBriefingAction = activeTask ? briefingStageAction(activeTask, activeBriefing) : null;
-  const profilePeopleUsers = useMemo(() => {
+  const profileSideUsers = useMemo(() => {
     const currentUserId = String(user?.id || '').trim();
     return (Array.isArray(demandUsers) ? demandUsers : [])
-      .filter((item) => item?.id && String(item.id) !== currentUserId);
+      .filter((item) => item?.id && String(item.id) !== currentUserId)
+      .slice(0, 5);
   }, [demandUsers, user?.id]);
-  const profileSideUsers = useMemo(() => profilePeopleUsers.slice(0, 4), [profilePeopleUsers]);
-  const filteredProfilePeople = useMemo(() => {
-    const query = peopleQuery.trim().toLowerCase();
-    if (!query) return profilePeopleUsers;
-    return profilePeopleUsers.filter((item) => [item?.name, item?.email, item?.role, roleLabel(item?.role), item?.statusMessage, item?.status_message]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query)));
-  }, [peopleQuery, profilePeopleUsers]);
   const displayProfileName = profileForm.name || user?.name || 'Perfil';
   const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
   const defaultTodaySummary = operationCounts.today === 1
@@ -3740,7 +3731,7 @@ export default function ProfilePage() {
         <aside className={styles.profilePeopleCard} aria-label="Outros usuários">
           <div className={styles.profilePeopleHeader}>
             <span>Usuários</span>
-            <strong>{profilePeopleUsers.length}</strong>
+            <strong>{Math.max(0, (demandUsers?.length || 0) - 1)}</strong>
           </div>
           <div className={styles.profilePeopleList}>
             {profileSideUsers.map((item) => {
@@ -3764,11 +3755,6 @@ export default function ProfilePage() {
               );
             })}
           </div>
-          {profilePeopleUsers.length > 4 ? (
-            <button type="button" className={styles.profilePeopleMore} onClick={() => setPeopleModalOpen(true)}>
-              Ver mais
-            </button>
-          ) : null}
         </aside>
       </section>
 
@@ -5308,60 +5294,6 @@ export default function ProfilePage() {
         </div>
       ) : null}
 
-      {peopleModalOpen ? (
-        <div className={styles.settingsOverlay} onClick={() => setPeopleModalOpen(false)}>
-          <section className={styles.peopleDirectoryModal} role="dialog" aria-modal="true" aria-label="Usuários" onClick={(event) => event.stopPropagation()}>
-            <header className={styles.peopleDirectoryHeader}>
-              <div>
-                <h2>Usuários</h2>
-                <span>{profilePeopleUsers.length}</span>
-              </div>
-              <button type="button" className={styles.iconButton} onClick={() => setPeopleModalOpen(false)} aria-label="Fechar">
-                <CloseIcon size={16} />
-              </button>
-            </header>
-            <div className={styles.peopleDirectorySearch}>
-              <input value={peopleQuery} onChange={(event) => setPeopleQuery(event.target.value)} placeholder="Buscar usuário" />
-            </div>
-            <div className={styles.peopleDirectoryGrid}>
-              {filteredProfilePeople.map((item) => {
-                const itemAvatarUrl = getUserAvatar(item) || item.avatarUrl || '';
-                const itemColor = avatarColorClassName(item.avatarColor || item.avatar_color || 'amber');
-                const itemCoverUrl = item.coverUrl || item.cover_url || '';
-                const itemCoverPreset = item.coverPreset || item.cover_preset || 'default';
-                const itemCoverStyle = itemCoverUrl ? {
-                  backgroundImage: `url(${itemCoverUrl})`,
-                  backgroundPosition: `${Number(item.coverPositionX ?? item.cover_position_x ?? 50)}% ${Number(item.coverPositionY ?? item.cover_position_y ?? 50)}%`,
-                  backgroundSize: `${Math.max(100, Number(item.coverZoom ?? item.cover_zoom ?? 100))}% auto`,
-                } : undefined;
-                const itemStatus = String(item.statusMessage || item.status_message || '').trim();
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={styles.peopleDirectoryCard}
-                    onClick={() => {
-                      setPeopleModalOpen(false);
-                      navigate(`/perfil/${encodeURIComponent(item.customSlug || item.slug || item.id)}`);
-                    }}
-                  >
-                    <span className={`${styles.peopleDirectoryCover} ${styles[`profileCover_${itemCoverPreset}`] || styles.profileCover_default}`.trim()} style={itemCoverStyle} aria-hidden="true" />
-                    <span className={`${styles.peopleDirectoryAvatar} ${styles[`avatar_${itemColor}`] || styles.avatar_amber} ${itemAvatarUrl ? styles.profilePersonAvatarPhoto : ''}`.trim()}>
-                      {itemAvatarUrl ? <img src={itemAvatarUrl} alt="" loading="lazy" decoding="async" /> : initials(item.name)}
-                    </span>
-                    <span className={styles.peopleDirectoryCopy}>
-                      <strong>{item.name}</strong>
-                      <em>{roleLabel(item.role)}</em>
-                      {itemStatus ? <small>{itemStatus}</small> : null}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        </div>
-      ) : null}
-
       {settingsOpen ? (
         <div className={styles.settingsOverlay} onClick={closeSettingsModal}>
           <section className={styles.settingsModal} role="dialog" aria-modal="true" aria-label="Configurações" onClick={(event) => event.stopPropagation()}>
@@ -5444,12 +5376,12 @@ export default function ProfilePage() {
                     ) : null}
                   </section>
 
-                  <section className={styles.settingsSection}>
+                  <section className={`${styles.settingsSection} ${styles.settingsIdentitySection}`.trim()}>
                     <div className={styles.settingsSectionHeader}>
                       <span>Identidade</span>
                     </div>
-                    <div className={styles.identitySettingsGrid}>
-                      <div className={styles.photoRow}>
+                    <div className={styles.identitySettingsPanel}>
+                      <div className={styles.identityPhotoColumn}>
                         <button
                           type="button"
                           className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}
@@ -5467,13 +5399,24 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      <div className={styles.settingsProfileGrid}>
-                        <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                        <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                        <label className={styles.slugInputGroup}>
-                          <span>/perfil/</span>
-                          <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="link-personalizado" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                        </label>
+                      <div className={styles.identityFieldsColumn}>
+                        <div className={styles.settingsProfileGrid}>
+                          <label className={styles.settingsField}>
+                            <span>Nome</span>
+                            <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                          </label>
+                          <label className={styles.settingsField}>
+                            <span>Telefone</span>
+                            <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                          </label>
+                          <label className={`${styles.settingsField} ${styles.settingsFieldWide}`.trim()}>
+                            <span>Link público</span>
+                            <span className={styles.slugInputGroup}>
+                              <span>/perfil/</span>
+                              <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </section>
