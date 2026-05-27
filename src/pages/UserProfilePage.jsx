@@ -544,6 +544,27 @@ export default function UserProfilePage() {
   }, [profileUser, setPanelHeader]);
 
   const avatarUrl = getUserAvatar(profileUser);
+  const coverPreset = profileUser?.coverPreset || profileUser?.cover_preset || 'default';
+  const coverUrl = profileUser?.coverUrl || profileUser?.cover_url || '';
+  const coverPositionX = Number(profileUser?.coverPositionX ?? profileUser?.cover_position_x ?? 50);
+  const coverPositionY = Number(profileUser?.coverPositionY ?? profileUser?.cover_position_y ?? 50);
+  const coverZoom = Math.max(100, Number(profileUser?.coverZoom ?? profileUser?.cover_zoom ?? 100));
+  const coverStyle = coverUrl
+    ? {
+        backgroundImage: `url(${coverUrl})`,
+        backgroundPosition: `${coverPositionX}% ${coverPositionY}%`,
+        backgroundSize: `${coverZoom}% auto`,
+      }
+    : undefined;
+  const statusMessage = String(profileUser?.statusMessage || profileUser?.status_message || '').trim();
+  const firstName = String(profileUser?.name || '').trim().split(/\s+/)[0] || 'Usuário';
+  const profileStatusText = statusMessage || (
+    todayTasksCount === 1
+      ? `${firstName} possui 1 demanda agendada para hoje.`
+      : todayTasksCount > 1
+        ? `${firstName} possui ${todayTasksCount} demandas agendadas para hoje.`
+        : `${firstName} não possui demandas agendadas para hoje.`
+  );
 
   const demandAssigneeOptions = useMemo(() => {
     const users = Array.isArray(userDirectory) ? userDirectory : [];
@@ -746,22 +767,6 @@ export default function UserProfilePage() {
     ? userSquads.map((squad) => squad.name).join(', ')
     : roleLabel(profileUser?.role);
 
-  const defaultProfileSummary = todayTasksCount === 1
-    ? `${profileUser?.name?.split(' ')[0] || 'Usuário'} possui 1 demanda agendada para hoje.`
-    : todayTasksCount > 1
-      ? `${profileUser?.name?.split(' ')[0] || 'Usuário'} possui ${todayTasksCount} demandas agendadas para hoje.`
-      : `${profileUser?.name?.split(' ')[0] || 'Usuário'} não possui demandas agendadas para hoje.`;
-  const publicStatusMessage = String(profileUser?.statusMessage || '').trim() || defaultProfileSummary;
-  const publicCoverUrl = profileUser?.coverUrl || '';
-  const publicCoverPreset = profileUser?.coverPreset || 'default';
-  const publicCoverStyle = publicCoverUrl
-    ? {
-        backgroundImage: `url(${publicCoverUrl})`,
-        backgroundPosition: `${Number(profileUser?.coverPositionX ?? 50)}% ${Number(profileUser?.coverPositionY ?? 50)}%`,
-        backgroundSize: `${Math.max(100, Number(profileUser?.coverZoom ?? 100))}% auto`,
-      }
-    : undefined;
-
   async function openTaskDetail(task) {
     if (!task?.id) return;
     setActiveTaskOpen(true);
@@ -948,14 +953,15 @@ export default function UserProfilePage() {
     <div className={styles.page}>
       <section className={styles.profileHero}>
         <div
-          className={`${styles.profileCover} ${styles[`profileCover_${publicCoverPreset}`] || styles.profileCover_default}`.trim()}
-          style={publicCoverStyle}
+          className={`${styles.profileCover} ${styles[`profileCover_${coverPreset}`] || styles.profileCover_default}`.trim()}
+          style={coverStyle}
           aria-hidden="true"
         />
+
         <div className={styles.heroIdentity}>
           <button
             type="button"
-            className={`${styles.avatar} ${avatarUrl ? styles.avatarWithPhoto : ''}`.trim()}
+            className={`${styles.avatar} ${styles.heroAvatar} ${avatarUrl ? styles.avatarWithPhoto : ''}`.trim()}
             onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
             disabled={!avatarUrl}
             aria-label={avatarUrl ? 'Visualizar foto' : undefined}
@@ -969,7 +975,7 @@ export default function UserProfilePage() {
               <span className={`${styles.roleBadge} ${roleLabel(profileUser.role) === 'Suporte de tecnologia (TI)' ? styles.roleBadgeBlackHole : ''}`.trim()}>{roleLabel(profileUser.role)}</span>
             </div>
             <div className={styles.profileMeta}>
-              <span>{publicStatusMessage}</span>
+              <span>{profileStatusText}</span>
             </div>
           </div>
         </div>
