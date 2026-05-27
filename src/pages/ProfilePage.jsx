@@ -1013,6 +1013,11 @@ function isSystemActivityComment(comment) {
   return isSystemCommentBody(commentBody(comment));
 }
 
+function isAccessDeliveryComment(comment) {
+  const body = normalizeText(commentBody(comment));
+  return /credenciais|acesso|login|senha|url|plataforma|crm/.test(body);
+}
+
 function compactInlineText(value = '') {
   return String(value || '')
     .replace(/^[-•]\s*/gm, '')
@@ -3282,12 +3287,16 @@ export default function ProfilePage() {
       ]
     : [];
   const activeClientId = activeTask?.clientId || activeTask?.client_id || activeTask?.metadata?.clientId || activeTask?.metadata?.client_id || '';
+  const activeWorkflowStatus = activeTask?.status || activeTask?.metadata?.status || '';
   const canConfirmActiveAccess = Boolean(
     activeKind === 'briefing'
       && activeClientId
-      && ['activation_gdv', 'access_delivery', 'traffic_activation'].includes(activeStatus)
+      && ['activation_gdv', 'access_delivery', 'traffic_activation'].includes(activeWorkflowStatus)
       && canCompleteActiveTask
   );
+  const accessConfirmCommentId = canConfirmActiveAccess
+    ? (visibleTaskComments.find(isAccessDeliveryComment)?.id || visibleTaskComments[0]?.id || '')
+    : '';
   const assigneeOptions = useMemo(() => {
     const map = new Map();
     [...(demandUsers || []), user].filter(Boolean).forEach((item) => {
@@ -4064,17 +4073,6 @@ export default function ProfilePage() {
                   />
                   <button type="submit" disabled={commentSaving || (!commentDraft.trim() && !commentAttachments.length) || !canCommentActiveTask}>{commentSaving ? 'Enviando' : 'Comentar'}</button>
                 </form>
-                {canConfirmActiveAccess ? (
-                  <div className={styles.commentAccessConfirm}>
-                    <button
-                      type="button"
-                      onClick={handleConfirmActiveAccessFromComments}
-                      disabled={accessConfirming || taskUpdatingId === activeTask.id}
-                    >
-                      {accessConfirming ? 'Confirmando' : 'Confirmar ativação/acessos'}
-                    </button>
-                  </div>
-                ) : null}
                 {commentAttachments.length ? (
                   <div className={styles.commentAttachmentDrafts}>
                     {commentAttachments.map((item) => (
@@ -4132,6 +4130,17 @@ export default function ProfilePage() {
                               />
                             ) : commentDisplayBody(comment) ? (
                               <p onDoubleClick={() => openCommentEditor(comment)}>{commentDisplayBody(comment)}</p>
+                            ) : null}
+                            {canConfirmActiveAccess && accessConfirmCommentId === comment.id ? (
+                              <div className={styles.commentAccessConfirm}>
+                                <button
+                                  type="button"
+                                  onClick={handleConfirmActiveAccessFromComments}
+                                  disabled={accessConfirming || taskUpdatingId === activeTask.id}
+                                >
+                                  {accessConfirming ? 'Confirmando' : 'Confirmar ativação/acessos'}
+                                </button>
+                              </div>
                             ) : null}
                             {commentAttachmentItems(comment, taskAttachments).length ? (
                               <div className={styles.commentAttachmentList}>

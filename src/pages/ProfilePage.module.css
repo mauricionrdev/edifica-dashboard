@@ -13133,8 +13133,8 @@ button:focus-visible {
 
 .commentAccessConfirm {
   display: flex;
-  justify-content: flex-end;
-  margin-top: -2px;
+  justify-content: flex-start;
+  margin-top: 12px;
 }
 
 .commentAccessConfirm button {
