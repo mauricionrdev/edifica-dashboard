@@ -104,3 +104,28 @@ export function buildRangeTsv(rows = [], columns = [], range) {
   }
   return lines.join('\n');
 }
+
+
+export function pasteRange(rows = [], columns = [], matrix = [], startRow = 0, startCol = 0) {
+  const nextRows = rows.map((row) => ({ ...row }));
+  const changedMap = new Map();
+
+  matrix.forEach((line, lineIndex) => {
+    const targetRow = startRow + lineIndex;
+    if (!nextRows[targetRow]) return;
+    line.forEach((value, valueIndex) => {
+      const targetColumn = columns[startCol + valueIndex];
+      if (!targetColumn?.key) return;
+      const cleanValue = cleanCellValue(value);
+      nextRows[targetRow][targetColumn.key] = cleanValue;
+      const patch = changedMap.get(targetRow) || {};
+      patch[targetColumn.key] = cleanValue;
+      changedMap.set(targetRow, patch);
+    });
+  });
+
+  return {
+    rows: nextRows,
+    changed: Array.from(changedMap.entries()).map(([rowIndex, patch]) => ({ rowIndex, patch })),
+  };
+}

@@ -20,7 +20,7 @@ import SpreadsheetGrid from './SpreadsheetGrid.jsx';
 import SpreadsheetStatusBar from './SpreadsheetStatusBar.jsx';
 import SpreadsheetToolbar from './SpreadsheetToolbar.jsx';
 import { buildSpreadsheetCommands, buildSpreadsheetContextCommands } from './spreadsheetCommands.js';
-import { buildRangeTsv, cellRef, cleanCellValue, columnRange, nextCellPosition, normalizeRange, normalizeRows, parseClipboardMatrix, rangeLabel, rowRange } from './spreadsheetUtils.js';
+import { buildRangeTsv, cellRef, cleanCellValue, columnRange, nextCellPosition, normalizeRange, normalizeRows, pasteRange, parseClipboardMatrix, rangeLabel, rowRange } from './spreadsheetUtils.js';
 
 export default function SpreadsheetApp({ requestConfirm }) {
   const [sheets, setSheets] = useState([]);
@@ -138,12 +138,26 @@ export default function SpreadsheetApp({ requestConfirm }) {
   }
 
   async function handleAddColumn() {
-    if (!activeSheetId) return;
+    if (!activeSheetId) return null;
     const response = await createSupportDailyColumn({ sheetId: activeSheetId, label: `Coluna ${columns.length + 1}`, width: 168 });
     const nextColumns = Array.isArray(response?.columns) ? response.columns : columns;
     setColumns(nextColumns);
     setRows((current) => normalizeRows(current, nextColumns));
     setStatus('Coluna adicionada');
+    return nextColumns;
+  }
+
+  async function ensureColumnCapacity(requiredCount, currentColumns = columns) {
+    let nextColumns = currentColumns;
+    while (activeSheetId && nextColumns.length < requiredCount) {
+      const response = await createSupportDailyColumn({ sheetId: activeSheetId, label: `Coluna ${nextColumns.length + 1}`, width: 168 });
+      nextColumns = Array.isArray(response?.columns) ? response.columns : nextColumns;
+    }
+    if (nextColumns !== currentColumns) {
+      setColumns(nextColumns);
+      setRows((current) => normalizeRows(current, nextColumns));
+    }
+    return nextColumns;
   }
 
   async function handleRenameColumn(column, label) {
@@ -169,10 +183,22 @@ export default function SpreadsheetApp({ requestConfirm }) {
   }
 
   async function handleAddRow() {
-    if (!activeSheetId) return;
+    if (!activeSheetId) return null;
     const response = await createSupportDailyRow({ sheetId: activeSheetId });
     if (response?.row) setRows((current) => normalizeRows([...current, response.row], columns));
     setStatus('Linha adicionada');
+    return response?.row || null;
+  }
+
+  async function ensureRowCapacity(requiredCount, currentRows = rows, currentColumns = columns) {
+    let nextRows = currentRows;
+    while (activeSheetId && nextRows.length < requiredCount) {
+      const response = await createSupportDailyRow({ sheetId: activeSheetId });
+      if (!response?.row) break;
+      nextRows = normalizeRows([...nextRows, response.row], currentColumns);
+    }
+    if (nextRows !== currentRows) setRows(nextRows);
+    return nextRows;
   }
 
   function requestDeleteRow(row) {
@@ -275,12 +301,11 @@ export default function SpreadsheetApp({ requestConfirm }) {
   }
 
   async function pasteCell(context) {
-    const column = context?.column || selectedColumn;
+    const colIndex = context?.colIndex ?? selectedCell?.colIndex;
     const rowIndex = context?.rowIndex ?? selectedCell?.rowIndex;
-    if (!column || rowIndex === undefined || typeof navigator === 'undefined' || !navigator.clipboard?.readText) return;
+    if (rowIndex === undefined || colIndex === undefined || typeof navigator === 'undefined' || !navigator.clipboard?.readText) return;
     const text = await navigator.clipboard.readText();
-    await saveCellValue(rowIndex, column.key, cleanCellValue(text));
-    setStatus('Texto colado');
+    await pasteTextAt(text, rowIndex, colIndex);
   }
 
   function handleCellKeyDown(event, rowIndex = selectedCell?.rowIndex, colIndex = selectedCell?.colIndex) {
@@ -301,28 +326,36 @@ export default function SpreadsheetApp({ requestConfirm }) {
     }
   }
 
+  async function pasteTextAt(text, rowIndex, colIndex) {
+    const matrix = parseClipboardMatrix(text);
+    if (!matrix.length || rowIndex === undefined || colIndex === undefined) return;
+
+    const requiredRows = rowIndex + matrix.length;
+    const requiredColumns = colIndex + Math.max(...matrix.map((line) => line.length));
+    const nextColumns = await ensureColumnCapacity(requiredColumns, columns);
+    const nextRows = await ensureRowCapacity(requiredRows, rows, nextColumns);
+
+    const { rows: pastedRows, changed } = pasteRange(nextRows, nextColumns, matrix, rowIndex, colIndex);
+    if (!changed.length) return;
+
+    setRows(pastedRows);
+    await Promise.all(changed.map(({ rowIndex: targetRow, patch }) => updateSupportDailyRow(pastedRows[targetRow].id, patch)));
+
+    const target = { rowIndex, colIndex };
+    const end = { rowIndex: rowIndex + matrix.length - 1, colIndex: colIndex + Math.max(...matrix.map((line) => line.length)) - 1 };
+    setSelectedCell(target);
+    setSelectionAnchor(target);
+    setSelectedRange(normalizeRange(target, end));
+    setDraft(String(pastedRows[rowIndex]?.[nextColumns[colIndex]?.key] ?? ''));
+    setEditing(null);
+    setStatus(matrix.length === 1 && matrix[0]?.length === 1 ? 'Célula colada' : 'Bloco colado');
+  }
+
   async function handlePaste(event, rowIndex, colIndex) {
     const text = event.clipboardData?.getData('text/plain');
-    if (!text || (!text.includes('\t') && !text.includes('\n'))) return;
+    if (!text) return;
     event.preventDefault();
-    const matrix = parseClipboardMatrix(text);
-    const updatedRows = [...rows];
-    const changed = new Map();
-    matrix.forEach((line, lineIndex) => {
-      const targetRow = rowIndex + lineIndex;
-      if (!updatedRows[targetRow]) return;
-      line.forEach((value, valueIndex) => {
-        const targetColumn = columns[colIndex + valueIndex];
-        if (!targetColumn) return;
-        updatedRows[targetRow] = { ...updatedRows[targetRow], [targetColumn.key]: value };
-        const patch = changed.get(targetRow) || {};
-        patch[targetColumn.key] = value;
-        changed.set(targetRow, patch);
-      });
-    });
-    setRows(updatedRows);
-    await Promise.all(Array.from(changed.entries()).map(([targetRow, patch]) => updateSupportDailyRow(updatedRows[targetRow].id, patch)));
-    setStatus('Colagem salva');
+    await pasteTextAt(text, rowIndex, colIndex);
   }
 
   function handleColumnResizeStart(event, column) {
