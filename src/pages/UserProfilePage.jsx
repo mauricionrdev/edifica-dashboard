@@ -516,6 +516,8 @@ export default function UserProfilePage() {
   const [newTask, setNewTask] = useState(() => emptyDemandForm(''));
   const [clientQuery, setClientQuery] = useState('');
   const [taskTab, setTaskTab] = useState('all');
+  const [usersModalOpen, setUsersModalOpen] = useState(false);
+  const [usersSearch, setUsersSearch] = useState('');
 
   useEffect(() => {
     if (!Array.isArray(userDirectory) || userDirectory.length === 0) {
@@ -543,29 +545,7 @@ export default function UserProfilePage() {
     });
   }, [profileUser, setPanelHeader]);
 
-  const todayTasksCount = useMemo(() => profileTasks.filter(isTodayTask).length, [profileTasks]);
   const avatarUrl = getUserAvatar(profileUser);
-  const coverPreset = profileUser?.coverPreset || profileUser?.cover_preset || 'default';
-  const coverUrl = profileUser?.coverUrl || profileUser?.cover_url || '';
-  const coverPositionX = Number(profileUser?.coverPositionX ?? profileUser?.cover_position_x ?? 50);
-  const coverPositionY = Number(profileUser?.coverPositionY ?? profileUser?.cover_position_y ?? 50);
-  const coverZoom = Math.max(100, Number(profileUser?.coverZoom ?? profileUser?.cover_zoom ?? 100));
-  const coverStyle = coverUrl
-    ? {
-        backgroundImage: `url(${coverUrl})`,
-        backgroundPosition: `${coverPositionX}% ${coverPositionY}%`,
-        backgroundSize: `${coverZoom}% auto`,
-      }
-    : undefined;
-  const statusMessage = String(profileUser?.statusMessage || profileUser?.status_message || '').trim();
-  const firstName = String(profileUser?.name || '').trim().split(/\s+/)[0] || 'Usuário';
-  const profileStatusText = statusMessage || (
-    todayTasksCount === 1
-      ? `${firstName} possui 1 demanda agendada para hoje.`
-      : todayTasksCount > 1
-        ? `${firstName} possui ${todayTasksCount} demandas agendadas para hoje.`
-        : `${firstName} não possui demandas agendadas para hoje.`
-  );
 
   const demandAssigneeOptions = useMemo(() => {
     const users = Array.isArray(userDirectory) ? userDirectory : [];
@@ -762,6 +742,46 @@ export default function UserProfilePage() {
   }, [filteredTasks, profileUser, taskPeopleMap, userDirectory]);
 
   const completionRate = profileTasks.length ? Math.round((completedTasksCount / profileTasks.length) * 100) : 0;
+  const todayTasksCount = useMemo(() => profileTasks.filter(isTodayTask).length, [profileTasks]);
+
+  const publicSideUsers = useMemo(() => {
+    const currentProfileId = String(profileUser?.id || '').trim();
+    return (Array.isArray(userDirectory) ? userDirectory : [])
+      .filter((item) => item?.id && String(item.id) !== currentProfileId)
+      .slice(0, 5);
+  }, [profileUser?.id, userDirectory]);
+
+  const filteredPublicUsers = useMemo(() => {
+    const currentProfileId = String(profileUser?.id || '').trim();
+    const query = usersSearch.trim().toLowerCase();
+    return (Array.isArray(userDirectory) ? userDirectory : [])
+      .filter((item) => item?.id && String(item.id) !== currentProfileId)
+      .filter((item) => {
+        if (!query) return true;
+        return [item.name, roleLabel(item.role), item.statusMessage || item.status_message]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+          .includes(query);
+      });
+  }, [profileUser?.id, userDirectory, usersSearch]);
+
+  const publicFirstName = profileUser?.name?.split(' ')?.filter(Boolean)?.[0] || profileUser?.name || 'Usuário';
+  const defaultTodaySummary = todayTasksCount === 1
+    ? `${publicFirstName} possui 1 demanda agendada para hoje.`
+    : todayTasksCount > 1
+      ? `${publicFirstName} possui ${todayTasksCount} demandas agendadas para hoje.`
+      : `${publicFirstName} não possui demandas agendadas para hoje.`;
+  const profileStatusText = String(profileUser?.statusMessage || profileUser?.status_message || '').trim() || defaultTodaySummary;
+  const activeCoverPreset = profileUser?.coverPreset || profileUser?.cover_preset || 'default';
+  const activeCoverUrl = profileUser?.coverUrl || profileUser?.cover_url || '';
+  const profileCoverStyle = activeCoverUrl
+    ? {
+        backgroundImage: `url(${activeCoverUrl})`,
+        backgroundPosition: `${Number(profileUser?.coverPositionX ?? profileUser?.cover_position_x ?? 50)}% ${Number(profileUser?.coverPositionY ?? profileUser?.cover_position_y ?? 50)}%`,
+        backgroundSize: `${Math.max(100, Number(profileUser?.coverZoom ?? profileUser?.cover_zoom ?? 100))}% auto`,
+      }
+    : undefined;
   const portfolioCount = gdvClients.length + gestorClients.length;
   const profileContext = userSquads.length
     ? userSquads.map((squad) => squad.name).join(', ')
@@ -951,57 +971,88 @@ export default function UserProfilePage() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.profileHero}>
-        <div
-          className={`${styles.profileCover} ${styles[`profileCover_${coverPreset}`] || styles.profileCover_default}`.trim()}
-          style={coverStyle}
-          aria-hidden="true"
-        />
+      <section className={styles.profileHeroGrid}>
+        <article className={styles.profileHero}>
+          <div
+            className={`${styles.profileCover} ${styles[`profileCover_${activeCoverPreset}`] || styles.profileCover_default}`.trim()}
+            style={profileCoverStyle}
+            aria-hidden="true"
+          />
 
-        <div className={styles.heroIdentity}>
-          <button
-            type="button"
-            className={`${styles.avatar} ${styles.heroAvatar} ${avatarUrl ? styles.avatarWithPhoto : ''}`.trim()}
-            onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
-            disabled={!avatarUrl}
-            aria-label={avatarUrl ? 'Visualizar foto' : undefined}
-          >
-            {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileUser.name)}
-          </button>
+          <div className={styles.heroIdentity}>
+            <button
+              type="button"
+              className={`${styles.avatar} ${avatarUrl ? styles.avatarWithPhoto : ''}`.trim()}
+              onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
+              disabled={!avatarUrl}
+              aria-label={avatarUrl ? 'Visualizar foto' : undefined}
+            >
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : initials(profileUser.name)}
+            </button>
 
-          <div className={styles.heroCopy}>
-            <div className={styles.nameRow}>
-              <h1>{profileUser.name}</h1>
-              <span className={`${styles.roleBadge} ${roleLabel(profileUser.role) === 'Suporte de tecnologia (TI)' ? styles.roleBadgeBlackHole : ''}`.trim()}>{roleLabel(profileUser.role)}</span>
+            <div className={styles.heroCopy}>
+              <div className={styles.nameRow}>
+                <h1>{profileUser.name}</h1>
+                <span className={`${styles.roleBadge} ${roleLabel(profileUser.role) === 'Suporte de tecnologia (TI)' ? styles.roleBadgeBlackHole : ''}`.trim()}>{roleLabel(profileUser.role)}</span>
+              </div>
+              <div className={styles.profileMeta}>
+                <span>{profileStatusText}</span>
+              </div>
             </div>
-            <div className={styles.profileMeta}>
-              <span>{profileStatusText}</span>
+          </div>
+
+          <div className={styles.statRail}>
+            <div className={styles.statItem}>
+              <span>Total de tarefas</span>
+              <strong>{profileTasks.length}</strong>
+            </div>
+            <div className={styles.statItem}>
+              <span>Acompanhando</span>
+              <strong>{watchingTasksCount}</strong>
+            </div>
+            <div className={styles.statItem}>
+              <span>Em aberto</span>
+              <strong>{openTasksCount}</strong>
+            </div>
+            <div className={styles.statItem}>
+              <span>Risco operacional</span>
+              <strong className={overdueTasksCount ? styles.critical : ''}>{overdueTasksCount}</strong>
+            </div>
+            <div className={styles.statItem}>
+              <span>Taxa de conclusão</span>
+              <strong className={completionRate >= 50 ? styles.positive : ''}>{completionRate}%</strong>
             </div>
           </div>
-        </div>
+        </article>
 
-        <div className={styles.statRail}>
-          <div className={styles.statItem}>
-            <span>Total de tarefas</span>
-            <strong>{profileTasks.length}</strong>
+        <aside className={styles.profilePeopleCard} aria-label="Outros usuários">
+          <div className={styles.profilePeopleHeader}>
+            <span>Usuários</span>
+            <strong>{Math.max(0, (userDirectory?.length || 0) - 1)}</strong>
+            <button type="button" onClick={() => setUsersModalOpen(true)}>Ver mais</button>
           </div>
-          <div className={styles.statItem}>
-            <span>Acompanhando</span>
-            <strong>{watchingTasksCount}</strong>
+          <div className={styles.profilePeopleList}>
+            {publicSideUsers.map((item) => {
+              const itemAvatarUrl = getUserAvatar(item) || item.avatarUrl || item.avatar_url || '';
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={styles.profilePersonRow}
+                  onClick={() => navigate(buildProfilePath(item))}
+                >
+                  <span className={`${styles.profilePersonAvatar} ${itemAvatarUrl ? styles.profilePersonAvatarPhoto : ''}`.trim()}>
+                    {itemAvatarUrl ? <img src={itemAvatarUrl} alt="" loading="lazy" decoding="async" /> : initials(item.name)}
+                  </span>
+                  <span className={styles.profilePersonCopy}>
+                    <strong>{item.name}</strong>
+                    <em>{roleLabel(item.role)}</em>
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <div className={styles.statItem}>
-            <span>Em aberto</span>
-            <strong>{openTasksCount}</strong>
-          </div>
-          <div className={styles.statItem}>
-            <span>Risco operacional</span>
-            <strong className={overdueTasksCount ? styles.critical : ''}>{overdueTasksCount}</strong>
-          </div>
-          <div className={styles.statItem}>
-            <span>Taxa de conclusão</span>
-            <strong className={completionRate >= 50 ? styles.positive : ''}>{completionRate}%</strong>
-          </div>
-        </div>
+        </aside>
       </section>
 
       <div className={styles.profileGrid}>
@@ -1392,6 +1443,72 @@ export default function UserProfilePage() {
         </aside>
         );
       })() : null}
+
+      {usersModalOpen ? (
+        <div className={styles.usersModalOverlay} role="presentation" onClick={() => setUsersModalOpen(false)}>
+          <section className={styles.usersModal} role="dialog" aria-modal="true" aria-label="Usuários" onClick={(event) => event.stopPropagation()}>
+            <header className={styles.usersModalHeader}>
+              <div>
+                <h3>Usuários</h3>
+                <span>{filteredPublicUsers.length}</span>
+              </div>
+              <button type="button" onClick={() => setUsersModalOpen(false)} aria-label="Fechar">
+                <CloseIcon size={16} />
+              </button>
+            </header>
+            <div className={styles.usersSearchBar}>
+              <input
+                type="search"
+                value={usersSearch}
+                onChange={(event) => setUsersSearch(event.target.value)}
+                placeholder="Buscar usuário"
+              />
+            </div>
+            <div className={styles.usersCardGrid}>
+              {filteredPublicUsers.map((item) => {
+                const itemAvatarUrl = getUserAvatar(item) || item.avatarUrl || item.avatar_url || '';
+                const itemCoverPreset = item.coverPreset || item.cover_preset || 'default';
+                const itemCoverUrl = item.coverUrl || item.cover_url || '';
+                const itemCoverStyle = itemCoverUrl
+                  ? {
+                      backgroundImage: `url(${itemCoverUrl})`,
+                      backgroundPosition: `${Number(item.coverPositionX ?? item.cover_position_x ?? 50)}% ${Number(item.coverPositionY ?? item.cover_position_y ?? 50)}%`,
+                      backgroundSize: `${Math.max(100, Number(item.coverZoom ?? item.cover_zoom ?? 100))}% auto`,
+                    }
+                  : undefined;
+                const itemStatus = String(item.statusMessage || item.status_message || '').trim();
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={styles.usersMiniCard}
+                    onClick={() => {
+                      setUsersModalOpen(false);
+                      navigate(buildProfilePath(item));
+                    }}
+                  >
+                    <span
+                      className={`${styles.usersMiniCover} ${styles[`profileCover_${itemCoverPreset}`] || styles.profileCover_default}`.trim()}
+                      style={itemCoverStyle}
+                      aria-hidden="true"
+                    />
+                    <span className={styles.usersMiniBody}>
+                      <span className={`${styles.usersMiniAvatar} ${itemAvatarUrl ? styles.profilePersonAvatarPhoto : ''}`.trim()}>
+                        {itemAvatarUrl ? <img src={itemAvatarUrl} alt="" loading="lazy" decoding="async" /> : initials(item.name)}
+                      </span>
+                      <span className={styles.usersMiniCopy}>
+                        <strong>{item.name}</strong>
+                        <em>{roleLabel(item.role)}</em>
+                        {itemStatus ? <small>{itemStatus}</small> : null}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {avatarPreviewOpen && avatarUrl ? (
         <div className={styles.avatarPreviewOverlay} role="presentation" onClick={() => setAvatarPreviewOpen(false)}>
