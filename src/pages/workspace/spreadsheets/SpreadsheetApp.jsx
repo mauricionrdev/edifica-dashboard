@@ -150,6 +150,14 @@ export default function SpreadsheetApp({ requestConfirm }) {
     });
   }
 
+  async function persistColumnPositions(nextColumns) {
+    await Promise.all(nextColumns.map((column, index) => updateSupportDailyColumn(column.key, { position: index + 1 })));
+  }
+
+  async function persistRowPositions(nextRows) {
+    await Promise.all(nextRows.map((row, index) => updateSupportDailyRow(row.id, { position: index + 1 })));
+  }
+
   async function handleAddColumn() {
     if (!activeSheetId) return null;
     const response = await createSupportDailyColumn({ sheetId: activeSheetId, label: `Coluna ${columns.length + 1}`, width: 168 });
@@ -157,6 +165,39 @@ export default function SpreadsheetApp({ requestConfirm }) {
     setColumns(nextColumns);
     setRows((current) => normalizeRows(current, nextColumns));
     setStatus('Coluna adicionada');
+    return nextColumns;
+  }
+
+  async function insertColumnAt(targetIndex = columns.length, placement = 'after', sourceColumn = null) {
+    if (!activeSheetId) return null;
+    const insertIndex = Math.max(0, Math.min(columns.length, placement === 'before' ? targetIndex : targetIndex + 1));
+    const label = sourceColumn?.label ? `${sourceColumn.label} cópia` : `Coluna ${columns.length + 1}`;
+    const width = Number(sourceColumn?.width || 168);
+    const response = await createSupportDailyColumn({ sheetId: activeSheetId, label, width });
+    const createdColumn = response?.column;
+    if (!createdColumn?.key) return null;
+
+    const baseColumns = columns.filter((column) => column.key !== createdColumn.key);
+    const nextColumns = [
+      ...baseColumns.slice(0, insertIndex),
+      createdColumn,
+      ...baseColumns.slice(insertIndex),
+    ].map((column, index) => ({ ...column, position: index + 1 }));
+
+    setColumns(nextColumns);
+    setRows((current) => normalizeRows(current, nextColumns));
+    await persistColumnPositions(nextColumns);
+
+    if (sourceColumn?.key) {
+      const nextRows = normalizeRows(rows, nextColumns).map((row) => ({ ...row, [createdColumn.key]: cleanCellValue(row[sourceColumn.key] || '') }));
+      setRows(nextRows);
+      await Promise.all(nextRows.map((row) => updateSupportDailyRow(row.id, { [createdColumn.key]: row[createdColumn.key] || '' })));
+      setStatus('Coluna duplicada');
+    } else {
+      setStatus('Coluna inserida');
+    }
+
+    selectColumn(insertIndex);
     return nextColumns;
   }
 
@@ -201,6 +242,43 @@ export default function SpreadsheetApp({ requestConfirm }) {
     if (response?.row) setRows((current) => normalizeRows([...current, response.row], columns));
     setStatus('Linha adicionada');
     return response?.row || null;
+  }
+
+  async function insertRowAt(targetIndex = rows.length, placement = 'after', sourceRow = null) {
+    if (!activeSheetId) return null;
+    const insertIndex = Math.max(0, Math.min(rows.length, placement === 'before' ? targetIndex : targetIndex + 1));
+    const response = await createSupportDailyRow({ sheetId: activeSheetId });
+    const createdRow = response?.row;
+    if (!createdRow?.id) return null;
+
+    const baseRows = rows.filter((row) => row.id !== createdRow.id);
+    const cleanCreatedRow = columns.reduce((next, column) => {
+      next[column.key] = sourceRow ? cleanCellValue(sourceRow[column.key] || '') : '';
+      return next;
+    }, { ...createdRow });
+    const nextRows = [
+      ...baseRows.slice(0, insertIndex),
+      cleanCreatedRow,
+      ...baseRows.slice(insertIndex),
+    ].map((row, index) => ({ ...row, position: index + 1 }));
+
+    setRows(normalizeRows(nextRows, columns));
+    await persistRowPositions(nextRows);
+
+    if (sourceRow) {
+      const payload = columns.reduce((patch, column) => {
+        patch[column.key] = cleanCellValue(sourceRow[column.key] || '');
+        return patch;
+      }, { position: insertIndex + 1 });
+      await updateSupportDailyRow(createdRow.id, payload);
+      setStatus('Linha duplicada');
+    } else {
+      await updateSupportDailyRow(createdRow.id, { position: insertIndex + 1 });
+      setStatus('Linha inserida');
+    }
+
+    selectRow(insertIndex);
+    return cleanCreatedRow;
   }
 
   async function ensureRowCapacity(requiredCount, currentRows = rows, currentColumns = columns) {
@@ -503,6 +581,10 @@ export default function SpreadsheetApp({ requestConfirm }) {
       context: contextMenu,
       onAddRow: handleAddRow,
       onAddColumn: handleAddColumn,
+      onInsertRow: insertRowAt,
+      onInsertColumn: insertColumnAt,
+      onDuplicateRow: (context) => insertRowAt(context?.rowIndex, 'after', context?.row),
+      onDuplicateColumn: (context) => insertColumnAt(context?.colIndex, 'after', context?.column),
       onCopyCell: copyCell,
       onCopySelection: copySelection,
       onPasteCell: pasteCell,
