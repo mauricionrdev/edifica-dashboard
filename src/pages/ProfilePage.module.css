@@ -13639,3 +13639,138 @@ button:focus-visible {
   min-height: 28px;
   border: 1px solid var(--bg-canvas);
 }
+
+/* vTaskFlowAvatarFix — avatares compactos no fluxo e colaboradores */
+.workflowStep {
+  gap: 7px;
+  min-height: 34px;
+  padding: 7px 12px;
+  align-items: center;
+}
+
+.workflowStep i {
+  display: inline-flex;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+}
+
+.workflowStep .workflowStepAvatar {
+  display: inline-flex;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  margin: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.workflowStep .workflowStepAvatar + span {
+  min-width: 0;
+  max-width: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflowStep_done .workflowStepAvatar,
+.workflowKey_done .workflowStepAvatar,
+.workflowStep_current .workflowStepAvatar,
+.workflowStep_active .workflowStepAvatar {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: none;
+}
+
+.workflowStep_done .workflowStepAvatar img,
+.workflowKey_done .workflowStepAvatar img,
+.workflowStep_current .workflowStepAvatar img,
+.workflowStep_active .workflowStepAvatar img,
+.workflowStep .workflowStepAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  object-fit: cover;
+}
+
+.collaboratorBar {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.collaboratorBar .compactLoadingState {
+  margin-top: 0;
+}
+
+.collaboratorBar .collaboratorChips {
+  margin-top: 0;
+  gap: 8px;
+}
+
+.collaboratorBar .collaboratorChips > span {
+  height: 32px;
+  min-height: 32px;
+  max-width: 230px;
+  padding: 3px 8px 3px 4px;
+  gap: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.collaboratorBar .collaboratorChipAvatar {
+  display: inline-flex;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  max-width: 24px;
+  max-height: 24px;
+  margin: 0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.collaboratorBar .collaboratorChipAvatar img {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  object-fit: cover;
+}
+
+.collaboratorBar .collaboratorChips > span > b {
+  max-width: 148px;
+}
+
+.collaboratorBar .collaboratorComposer {
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+
+.collaboratorBar .collaboratorAddToggle,
+.collaboratorBar .collaboratorComposer > .collaboratorAddToggle {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.collaboratorBar .collaboratorPickerPanel {
+  top: 38px;
+  width: min(360px, calc(100vw - 72px));
+}

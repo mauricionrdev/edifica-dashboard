@@ -4097,64 +4097,67 @@ export default function ProfilePage() {
                   <h4>Colaboradores</h4>
                   <span>{collaborators.length}</span>
                 </div>
-                <div className={styles.collaboratorComposer}>
-                  <button
-                    type="button"
-                    className={styles.collaboratorAddToggle}
-                    onClick={() => setCollaboratorPickerOpen((open) => !open)}
-                    disabled={!canManageActiveCollaborators}
-                    aria-label="Adicionar colaborador"
-                    aria-expanded={collaboratorPickerOpen}
-                  >
-                    +
-                  </button>
-                  {collaboratorPickerOpen ? (
-                    <form className={styles.collaboratorPickerPanel} onSubmit={handleAddCollaborator}>
-                      <Select
-                        type="user"
-                        value={collaboratorUserId}
-                        onChange={(event) => setCollaboratorUserId(event.target.value)}
-                        aria-label="Colaborador"
-                        className={styles.formSelect}
-                        disabled={!canManageActiveCollaborators}
+                <div className={styles.collaboratorBar}>
+                  {collaboratorsLoading ? (
+                    <div className={styles.compactLoadingState} aria-label="Carregando">
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                  ) : collaborators.length ? (
+                    <div className={styles.collaboratorChips}>
+                      {collaborators.map((collaborator) => {
+                        const resolved = resolveTaskPerson(collaborator);
+                        return (
+                          <span key={collaborator.userId || resolved.userName}>
+                            {taskPersonAvatar(resolved, styles.collaboratorChipAvatar)}
+                            <b>{resolved.userName}</b>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCollaborator(collaborator.userId)}
+                              disabled={collaboratorRemovingId === collaborator.userId || !canManageActiveCollaborators}
+                              aria-label={`Remover ${resolved.userName}`}
+                              title="Remover colaborador"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+
+                  {canManageActiveCollaborators ? (
+                    <div className={styles.collaboratorComposer}>
+                      <button
+                        type="button"
+                        className={styles.collaboratorAddToggle}
+                        onClick={() => setCollaboratorPickerOpen((open) => !open)}
+                        aria-label="Adicionar colaborador"
+                        aria-expanded={collaboratorPickerOpen}
                       >
-                        <option value="">Adicionar colaborador</option>
-                        {collaboratorOptions.map((option) => (
-                          <option key={option.id} value={option.id} data-avatar={getUserAvatar(option) || option.avatarUrl || ''} data-name={option.name}>{option.name}</option>
-                        ))}
-                      </Select>
-                      <button type="submit" disabled={collaboratorSaving || !collaboratorUserId || !canManageActiveCollaborators}>Adicionar</button>
-                    </form>
+                        +
+                      </button>
+                      {collaboratorPickerOpen ? (
+                        <form className={styles.collaboratorPickerPanel} onSubmit={handleAddCollaborator}>
+                          <Select
+                            type="user"
+                            value={collaboratorUserId}
+                            onChange={(event) => setCollaboratorUserId(event.target.value)}
+                            aria-label="Colaborador"
+                            className={styles.formSelect}
+                          >
+                            <option value="">Adicionar colaborador</option>
+                            {collaboratorOptions.map((option) => (
+                              <option key={option.id} value={option.id} data-avatar={getUserAvatar(option) || option.avatarUrl || ''} data-name={option.name}>{option.name}</option>
+                            ))}
+                          </Select>
+                          <button type="submit" disabled={collaboratorSaving || !collaboratorUserId}>Adicionar</button>
+                        </form>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
-                {collaboratorsLoading ? (
-                  <div className={styles.compactLoadingState} aria-label="Carregando">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                ) : collaborators.length ? (
-                  <div className={styles.collaboratorChips}>
-                    {collaborators.map((collaborator) => {
-                      const resolved = resolveTaskPerson(collaborator);
-                      return (
-                        <span key={collaborator.userId || resolved.userName}>
-                          {taskPersonAvatar(resolved, styles.collaboratorChipAvatar)}
-                          <b>{resolved.userName}</b>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCollaborator(collaborator.userId)}
-                            disabled={collaboratorRemovingId === collaborator.userId || !canManageActiveCollaborators}
-                            aria-label={`Remover ${resolved.userName}`}
-                            title="Remover colaborador"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                ) : null}
               </section>
 
               <section className={styles.drawerSection}>
