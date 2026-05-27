@@ -52,6 +52,15 @@ const AVATAR_OPTIONS = [
   { value: 'slate', label: 'Escuro' },
 ];
 
+const COVER_PRESETS = [
+  { value: 'default', label: 'Padrão' },
+  { value: 'aurora', label: 'Aurora' },
+  { value: 'graphite', label: 'Grafite' },
+  { value: 'violet', label: 'Violeta' },
+  { value: 'teal', label: 'Teal' },
+  { value: 'custom', label: 'Imagem' },
+];
+
 const SETTINGS_TABS = [
   { value: 'profile', label: 'Perfil' },
   { value: 'account', label: 'Conta' },
@@ -1671,6 +1680,7 @@ export default function ProfilePage() {
   const { user, reloadUser } = useAuth();
   const { showToast } = useToast();
   const avatarInputRef = useRef(null);
+  const coverInputRef = useRef(null);
   const demandAttachmentInputRef = useRef(null);
   const taskAttachmentInputRef = useRef(null);
   const clientSearchRef = useRef(null);
@@ -1682,6 +1692,12 @@ export default function ProfilePage() {
     phone: user?.phone || '',
     avatarColor: user?.avatarColor || 'amber',
     customSlug: user?.customSlug || '',
+    statusMessage: user?.statusMessage || '',
+    coverPreset: user?.coverPreset || 'default',
+    coverUrl: user?.coverUrl || '',
+    coverPositionX: Number(user?.coverPositionX ?? 50),
+    coverPositionY: Number(user?.coverPositionY ?? 50),
+    coverZoom: Number(user?.coverZoom ?? 100),
   });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
   const [savingProfile, setSavingProfile] = useState(false);
@@ -1815,8 +1831,14 @@ export default function ProfilePage() {
       phone: user?.phone || '',
       avatarColor: user?.avatarColor || 'amber',
       customSlug: user?.customSlug || '',
+      statusMessage: user?.statusMessage || '',
+      coverPreset: user?.coverPreset || 'default',
+      coverUrl: user?.coverUrl || '',
+      coverPositionX: Number(user?.coverPositionX ?? 50),
+      coverPositionY: Number(user?.coverPositionY ?? 50),
+      coverZoom: Number(user?.coverZoom ?? 100),
     });
-  }, [user?.name, user?.phone, user?.avatarColor, user?.customSlug]);
+  }, [user?.name, user?.phone, user?.avatarColor, user?.customSlug, user?.statusMessage, user?.coverPreset, user?.coverUrl, user?.coverPositionX, user?.coverPositionY, user?.coverZoom]);
 
   useEffect(() => {
     setDemandForm((prev) => ({ ...prev, assigneeUserId: prev.assigneeUserId || user?.id || '' }));
@@ -1895,6 +1917,12 @@ export default function ProfilePage() {
       phone: user?.phone || '',
       avatarColor: user?.avatarColor || 'amber',
       customSlug: user?.customSlug || '',
+      statusMessage: user?.statusMessage || '',
+      coverPreset: user?.coverPreset || 'default',
+      coverUrl: user?.coverUrl || '',
+      coverPositionX: Number(user?.coverPositionX ?? 50),
+      coverPositionY: Number(user?.coverPositionY ?? 50),
+      coverZoom: Number(user?.coverZoom ?? 100),
     });
   }
 
@@ -2424,6 +2452,37 @@ export default function ProfilePage() {
     } catch (err) {
       showToast(err?.message || 'Erro ao remover foto.', { variant: 'error' });
     }
+  }
+
+  async function handleCoverFile(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    try {
+      const dataUrl = await readAvatarFile(file);
+      setProfileForm((prev) => ({
+        ...prev,
+        coverUrl: dataUrl,
+        coverPreset: 'custom',
+        coverPositionX: 50,
+        coverPositionY: 50,
+        coverZoom: 100,
+      }));
+    } catch (err) {
+      showToast(err?.message || 'Erro ao carregar capa.', { variant: 'error' });
+    }
+  }
+
+  function handleRemoveCover() {
+    setProfileForm((prev) => ({
+      ...prev,
+      coverUrl: '',
+      coverPreset: 'default',
+      coverPositionX: 50,
+      coverPositionY: 50,
+      coverZoom: 100,
+    }));
   }
 
   async function handleUpdateTaskFields(task, patch, successMessage = 'Demanda atualizada.') {
@@ -3599,17 +3658,27 @@ export default function ProfilePage() {
   }, [demandUsers, user?.id]);
   const displayProfileName = profileForm.name || user?.name || 'Perfil';
   const profileFirstName = displayProfileName.split(' ').filter(Boolean)[0] || displayProfileName;
-  const todaySummary = operationCounts.today === 1
+  const defaultTodaySummary = operationCounts.today === 1
     ? 'Você possui 1 demanda agendada para hoje.'
     : operationCounts.today > 1
       ? `Você possui ${operationCounts.today} demandas agendadas para hoje.`
       : 'Você não possui demandas agendadas para hoje.';
+  const todaySummary = String(profileForm.statusMessage || user?.statusMessage || '').trim() || defaultTodaySummary;
+  const activeCoverUrl = profileForm.coverUrl || user?.coverUrl || '';
+  const activeCoverPreset = profileForm.coverPreset || user?.coverPreset || 'default';
+  const coverStyle = activeCoverUrl
+    ? {
+        backgroundImage: `url(${activeCoverUrl})`,
+        backgroundPosition: `${Number(profileForm.coverPositionX ?? user?.coverPositionX ?? 50)}% ${Number(profileForm.coverPositionY ?? user?.coverPositionY ?? 50)}%`,
+        backgroundSize: `${Math.max(100, Number(profileForm.coverZoom ?? user?.coverZoom ?? 100))}% auto`,
+      }
+    : undefined;
 
   return (
     <div className={styles.page}>
       <section className={styles.profileHeroGrid}>
         <article className={styles.hero}>
-          <div className={styles.profileCover} aria-hidden="true" />
+          <div className={`${styles.profileCover} ${styles[`profileCover_${activeCoverPreset}`] || styles.profileCover_default}`.trim()} style={coverStyle} aria-hidden="true" />
           <div className={styles.heroTop}>
             <div className={styles.identityRow}>
               <span className={`${styles.avatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}>
@@ -5256,48 +5325,125 @@ export default function ProfilePage() {
                 className={`${styles.settingsPane} ${settingsTab !== 'profile' ? styles.settingsPaneHidden : ''}`.trim()}
                 aria-hidden={settingsTab !== 'profile'}
               >
-                <div className={styles.photoRow}>
-                  <button
-                    type="button"
-                    className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}
-                    onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
-                    disabled={!avatarUrl}
-                    aria-label={avatarUrl ? 'Visualizar foto' : undefined}
-                    tabIndex={settingsTab === 'profile' ? 0 : -1}
-                  >
-                    {avatarUrl ? <img src={avatarUrl} alt="" decoding="async" draggable="false" /> : initials(profileForm.name || user?.name)}
-                  </button>
-                  <div className={styles.photoActions}>
-                    <button type="button" onClick={() => avatarInputRef.current?.click()} tabIndex={settingsTab === 'profile' ? 0 : -1}>Alterar foto</button>
-                    {avatarUrl ? <button type="button" onClick={handleRemoveAvatar} tabIndex={settingsTab === 'profile' ? 0 : -1}>Remover</button> : null}
-                    <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFile} hidden tabIndex={-1} />
-                  </div>
-                </div>
+                <div className={styles.profileSettingsLayout}>
+                  <section className={`${styles.settingsSection} ${styles.settingsSectionCover}`.trim()}>
+                    <div className={styles.settingsSectionHeader}>
+                      <span>Capa</span>
+                      <div className={styles.settingsSectionActions}>
+                        <button type="button" onClick={() => coverInputRef.current?.click()} tabIndex={settingsTab === 'profile' ? 0 : -1}>Enviar capa</button>
+                        {(profileForm.coverUrl || profileForm.coverPreset === 'custom') ? <button type="button" onClick={handleRemoveCover} tabIndex={settingsTab === 'profile' ? 0 : -1}>Remover</button> : null}
+                      </div>
+                    </div>
+                    <div
+                      className={`${styles.coverPreview} ${styles[`profileCover_${profileForm.coverPreset || 'default'}`] || styles.profileCover_default}`.trim()}
+                      style={profileForm.coverUrl ? {
+                        backgroundImage: `url(${profileForm.coverUrl})`,
+                        backgroundPosition: `${Number(profileForm.coverPositionX ?? 50)}% ${Number(profileForm.coverPositionY ?? 50)}%`,
+                        backgroundSize: `${Math.max(100, Number(profileForm.coverZoom ?? 100))}% auto`,
+                      } : undefined}
+                      aria-hidden="true"
+                    />
+                    <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverFile} hidden tabIndex={-1} />
+                    <div className={styles.coverPresetGrid}>
+                      {COVER_PRESETS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`${styles.coverPresetOption} ${profileForm.coverPreset === option.value ? styles.coverPresetOptionActive : ''}`.trim()}
+                          onClick={() => setProfileForm((prev) => ({ ...prev, coverPreset: option.value, coverUrl: option.value === 'custom' ? prev.coverUrl : '' }))}
+                          tabIndex={settingsTab === 'profile' ? 0 : -1}
+                        >
+                          <span className={`${styles.coverPresetSwatch} ${styles[`profileCover_${option.value}`] || styles.profileCover_default}`} />
+                          <strong>{option.label}</strong>
+                        </button>
+                      ))}
+                    </div>
+                    {profileForm.coverUrl ? (
+                      <div className={styles.coverControls}>
+                        <label>
+                          <span>Horizontal</span>
+                          <input type="range" min="0" max="100" value={profileForm.coverPositionX} onChange={(event) => setProfileForm((prev) => ({ ...prev, coverPositionX: Number(event.target.value) }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                        </label>
+                        <label>
+                          <span>Vertical</span>
+                          <input type="range" min="0" max="100" value={profileForm.coverPositionY} onChange={(event) => setProfileForm((prev) => ({ ...prev, coverPositionY: Number(event.target.value) }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                        </label>
+                        <label>
+                          <span>Zoom</span>
+                          <input type="range" min="100" max="220" value={profileForm.coverZoom} onChange={(event) => setProfileForm((prev) => ({ ...prev, coverZoom: Number(event.target.value) }))} tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                        </label>
+                      </div>
+                    ) : null}
+                  </section>
 
-                <div className={styles.settingsColorGrid}>
-                  {AVATAR_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={`${styles.settingsColorOption} ${profileForm.avatarColor === option.value ? styles.settingsColorOptionActive : ''}`.trim()}
-                      onClick={() => setProfileForm((prev) => ({ ...prev, avatarColor: option.value }))}
+                  <section className={styles.settingsSection}>
+                    <div className={styles.settingsSectionHeader}>
+                      <span>Identidade</span>
+                    </div>
+                    <div className={styles.identitySettingsGrid}>
+                      <div className={styles.photoRow}>
+                        <button
+                          type="button"
+                          className={`${styles.photoAvatar} ${styles[`avatar_${profileForm.avatarColor || 'amber'}`]}`}
+                          onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
+                          disabled={!avatarUrl}
+                          aria-label={avatarUrl ? 'Visualizar foto' : undefined}
+                          tabIndex={settingsTab === 'profile' ? 0 : -1}
+                        >
+                          {avatarUrl ? <img src={avatarUrl} alt="" decoding="async" draggable="false" /> : initials(profileForm.name || user?.name)}
+                        </button>
+                        <div className={styles.photoActions}>
+                          <button type="button" onClick={() => avatarInputRef.current?.click()} tabIndex={settingsTab === 'profile' ? 0 : -1}>Alterar foto</button>
+                          {avatarUrl ? <button type="button" onClick={handleRemoveAvatar} tabIndex={settingsTab === 'profile' ? 0 : -1}>Remover</button> : null}
+                          <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFile} hidden tabIndex={-1} />
+                        </div>
+                      </div>
+
+                      <div className={styles.settingsProfileGrid}>
+                        <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                        <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                        <label className={styles.slugInputGroup}>
+                          <span>/perfil/</span>
+                          <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="link-personalizado" tabIndex={settingsTab === 'profile' ? 0 : -1} />
+                        </label>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className={styles.settingsSection}>
+                    <div className={styles.settingsSectionHeader}>
+                      <span>Status</span>
+                    </div>
+                    <textarea
+                      className={styles.statusMessageField}
+                      value={profileForm.statusMessage}
+                      onChange={(event) => setProfileForm((prev) => ({ ...prev, statusMessage: event.target.value.slice(0, 180) }))}
+                      rows={3}
                       tabIndex={settingsTab === 'profile' ? 0 : -1}
-                    >
-                      <span className={`${styles.settingsColorAvatar} ${styles[`avatar_${option.value}`] || styles.avatar_amber}`}>
-                        {initials(profileForm.name || user?.name)}
-                      </span>
-                      <strong>{option.label}</strong>
-                    </button>
-                  ))}
-                </div>
+                    />
+                  </section>
 
-                <div className={styles.settingsProfileGrid}>
-                  <input value={profileForm.name} onChange={(event) => setProfileForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Nome" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <input value={profileForm.phone} onChange={(event) => setProfileForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Telefone" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  <label className={styles.slugInputGroup}>
-                    <span>/perfil/</span>
-                    <input value={profileForm.customSlug} onChange={(event) => setProfileForm((prev) => ({ ...prev, customSlug: normalizeSlug(event.target.value) }))} placeholder="link-personalizado" tabIndex={settingsTab === 'profile' ? 0 : -1} />
-                  </label>
+                  <section className={styles.settingsSection}>
+                    <div className={styles.settingsSectionHeader}>
+                      <span>Cor do avatar</span>
+                    </div>
+                    <div className={styles.settingsColorGrid}>
+                      {AVATAR_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`${styles.settingsColorOption} ${profileForm.avatarColor === option.value ? styles.settingsColorOptionActive : ''}`.trim()}
+                          onClick={() => setProfileForm((prev) => ({ ...prev, avatarColor: option.value }))}
+                          tabIndex={settingsTab === 'profile' ? 0 : -1}
+                        >
+                          <span className={`${styles.settingsColorAvatar} ${styles[`avatar_${option.value}`] || styles.avatar_amber}`}>
+                            {initials(profileForm.name || user?.name)}
+                          </span>
+                          <strong>{option.label}</strong>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
                 </div>
               </div>
 

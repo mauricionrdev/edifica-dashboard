@@ -14150,3 +14150,230 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+/* Profile settings — cover/status refinements */
+.profileCover {
+  background: linear-gradient(135deg, rgba(245, 178, 38, 0.18), rgba(59, 130, 246, 0.16) 48%, rgba(8, 9, 10, 0.92));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.profileCover_default,
+.coverPresetSwatch.profileCover_default {
+  background: radial-gradient(circle at 22% 26%, rgba(255, 196, 0, 0.26), transparent 26%),
+    radial-gradient(circle at 78% 24%, rgba(59, 130, 246, 0.24), transparent 30%),
+    linear-gradient(135deg, rgba(18, 20, 24, 0.98), rgba(8, 9, 10, 0.96));
+}
+
+.profileCover_aurora,
+.coverPresetSwatch.profileCover_aurora {
+  background: radial-gradient(circle at 18% 28%, rgba(20, 184, 166, 0.34), transparent 28%),
+    radial-gradient(circle at 82% 24%, rgba(245, 158, 11, 0.28), transparent 30%),
+    linear-gradient(135deg, rgba(10, 12, 16, 0.98), rgba(7, 9, 12, 0.96));
+}
+
+.profileCover_graphite,
+.coverPresetSwatch.profileCover_graphite {
+  background: linear-gradient(135deg, rgba(38, 42, 48, 0.98), rgba(7, 8, 10, 0.98));
+}
+
+.profileCover_violet,
+.coverPresetSwatch.profileCover_violet {
+  background: radial-gradient(circle at 22% 25%, rgba(168, 85, 247, 0.34), transparent 28%),
+    linear-gradient(135deg, rgba(22, 15, 35, 0.98), rgba(7, 8, 10, 0.98));
+}
+
+.profileCover_teal,
+.coverPresetSwatch.profileCover_teal {
+  background: radial-gradient(circle at 24% 28%, rgba(20, 184, 166, 0.34), transparent 30%),
+    linear-gradient(135deg, rgba(7, 26, 25, 0.98), rgba(7, 8, 10, 0.98));
+}
+
+.profileCover_custom,
+.coverPresetSwatch.profileCover_custom {
+  background: linear-gradient(135deg, rgba(19, 22, 27, 0.98), rgba(8, 9, 10, 0.98));
+}
+
+.settingsModal:not(.demandModal) {
+  width: min(880px, calc(100vw - 48px));
+}
+
+.settingsModal:not(.demandModal) .settingsPaneStack {
+  max-height: min(72vh, 760px);
+  overflow: auto;
+}
+
+.profileSettingsLayout {
+  display: grid;
+  gap: 14px;
+}
+
+.settingsSection {
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  padding: 16px;
+}
+
+.settingsSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.settingsSectionHeader > span {
+  color: rgba(151, 163, 184, 0.96);
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.settingsSectionActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settingsSectionActions button,
+.photoActions button {
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(229, 231, 235, 0.96);
+  font-weight: 800;
+  padding: 0 14px;
+  box-shadow: none;
+}
+
+.settingsSectionActions button:last-child,
+.photoActions button:last-child:not(:first-child) {
+  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(127, 29, 29, 0.16);
+  color: rgb(252, 165, 165);
+}
+
+.coverPreview {
+  height: 150px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.coverPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.coverPresetOption {
+  min-height: 72px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.018);
+  color: rgba(229, 231, 235, 0.94);
+  display: grid;
+  gap: 8px;
+  align-content: center;
+  padding: 10px;
+  box-shadow: none;
+}
+
+.coverPresetOptionActive {
+  border-color: rgba(255, 194, 0, 0.55);
+  background: rgba(255, 194, 0, 0.08);
+  color: rgb(255, 194, 0);
+}
+
+.coverPresetSwatch {
+  width: 100%;
+  height: 22px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.coverPresetOption strong {
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.coverControls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.coverControls label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.coverControls span {
+  color: rgba(151, 163, 184, 0.92);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coverControls input[type='range'] {
+  width: 100%;
+  accent-color: rgb(255, 194, 0);
+}
+
+.identitySettingsGrid {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.settingsModal:not(.demandModal) .photoRow {
+  min-height: 100%;
+  margin: 0;
+  padding: 16px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.016);
+}
+
+.statusMessageField {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background: rgba(255, 255, 255, 0.028);
+  color: rgba(248, 250, 252, 0.96);
+  padding: 14px 15px;
+  font: inherit;
+  line-height: 1.45;
+  outline: none;
+  box-shadow: none;
+}
+
+.settingsModal:not(.demandModal) input:focus,
+.settingsModal:not(.demandModal) textarea:focus,
+.settingsModal:not(.demandModal) button:focus,
+.settingsModal:not(.demandModal) button:focus-visible,
+.settingsModal:not(.demandModal) input:focus-visible,
+.settingsModal:not(.demandModal) textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+@media (max-width: 820px) {
+  .coverPresetGrid,
+  .coverControls,
+  .identitySettingsGrid {
+    grid-template-columns: 1fr;
+  }
+}

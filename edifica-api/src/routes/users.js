@@ -29,6 +29,24 @@ async function ensureUserProfileColumns() {
       if (!names.has('custom_slug')) {
         await query('ALTER TABLE users ADD COLUMN custom_slug VARCHAR(96) NULL AFTER avatar_data_url');
       }
+      if (!names.has('profile_status_message')) {
+        await query('ALTER TABLE users ADD COLUMN profile_status_message VARCHAR(180) NULL AFTER custom_slug');
+      }
+      if (!names.has('profile_cover_preset')) {
+        await query("ALTER TABLE users ADD COLUMN profile_cover_preset VARCHAR(32) NOT NULL DEFAULT 'default' AFTER profile_status_message");
+      }
+      if (!names.has('profile_cover_data_url')) {
+        await query('ALTER TABLE users ADD COLUMN profile_cover_data_url MEDIUMTEXT NULL AFTER profile_cover_preset');
+      }
+      if (!names.has('profile_cover_position_x')) {
+        await query('ALTER TABLE users ADD COLUMN profile_cover_position_x TINYINT UNSIGNED NOT NULL DEFAULT 50 AFTER profile_cover_data_url');
+      }
+      if (!names.has('profile_cover_position_y')) {
+        await query('ALTER TABLE users ADD COLUMN profile_cover_position_y TINYINT UNSIGNED NOT NULL DEFAULT 50 AFTER profile_cover_position_x');
+      }
+      if (!names.has('profile_cover_zoom')) {
+        await query('ALTER TABLE users ADD COLUMN profile_cover_zoom SMALLINT UNSIGNED NOT NULL DEFAULT 100 AFTER profile_cover_position_y');
+      }
       if (!names.has('permissions_override')) {
         await query('ALTER TABLE users ADD COLUMN permissions_override JSON NULL AFTER squads');
       }
@@ -87,6 +105,12 @@ function serializeUser(row) {
     avatarColor: row.avatar_color || 'amber',
     avatarUrl: row.avatar_data_url || '',
     customSlug: row.custom_slug || '',
+    statusMessage: row.profile_status_message || '',
+    coverPreset: row.profile_cover_preset || 'default',
+    coverUrl: row.profile_cover_data_url || '',
+    coverPositionX: Number(row.profile_cover_position_x ?? 50),
+    coverPositionY: Number(row.profile_cover_position_y ?? 50),
+    coverZoom: Number(row.profile_cover_zoom ?? 100),
     role: row.role,
     secondaryRoles,
     isMaster: Boolean(row.is_master),
@@ -103,7 +127,7 @@ router.get('/directory', requireAuth, requirePermission('profile.view'), async (
   try {
     await ensureUserProfileColumns();
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
          FROM users
         WHERE active = 1
         ORDER BY name ASC`
@@ -120,7 +144,7 @@ router.get('/', requirePermission('team.view'), async (req, res, next) => {
   try {
     await ensureUserProfileColumns();
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active,
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom, role, secondary_roles, is_master, squads, permissions_override, active,
               created_at, updated_at
          FROM users
         ORDER BY is_master DESC, name ASC`
@@ -202,7 +226,7 @@ router.post('/', requirePermission('team.manage'), async (req, res, next) => {
     });
 
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
          FROM users WHERE id = ?`,
       [id]
     );
@@ -286,7 +310,7 @@ router.put('/:id', requirePermission('team.manage'), async (req, res, next) => {
     });
 
     const fresh = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at
          FROM users WHERE id = ?`,
       [id]
     );
@@ -314,7 +338,7 @@ router.patch('/:id/toggle', requirePermission('team.manage'), async (req, res, n
 
     await writeAuditLog({ actor: req.user, action: newActive ? 'user.reactivate' : 'user.deactivate', entityType: 'user', entityId: id, entityLabel: current.name || current.email || id, summary: newActive ? 'Usuário reativado' : 'Usuário desativado', metadata: { email: current.email || null, role: current.role || null } });
 
-    const fresh = await query(`SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ?`, [id]);
+    const fresh = await query(`SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ?`, [id]);
     res.json({ user: serializeUser(fresh[0]) });
   } catch (err) { next(err); }
 });
@@ -322,7 +346,7 @@ router.patch('/:id/toggle', requirePermission('team.manage'), async (req, res, n
 router.post('/:id/reset-password', requirePermission('team.manage'), async (req, res, next) => {
   try {
     const { id } = req.params;
-    const rows = await query('SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ? LIMIT 1', [id]);
+    const rows = await query('SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ? LIMIT 1', [id]);
     const current = rows[0];
     if (!current) throw notFound('Usuário não encontrado');
     if (current.is_master && req.user.id !== id) throw forbidden('Não é possível redefinir o Admin Master por esta operação');
@@ -334,7 +358,7 @@ router.post('/:id/reset-password', requirePermission('team.manage'), async (req,
 
     await writeAuditLog({ actor: req.user, action: 'user.reset_password', entityType: 'user', entityId: id, entityLabel: current.name || current.email || id, summary: 'Senha temporária administrativa gerada', metadata: { email: current.email || null, role: current.role || null } });
 
-    const fresh = await query(`SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ?`, [id]);
+    const fresh = await query(`SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom, role, secondary_roles, is_master, squads, permissions_override, active, created_at, updated_at FROM users WHERE id = ?`, [id]);
     res.json({ user: serializeUser(fresh[0]), temporaryPassword });
   } catch (err) { next(err); }
 });

@@ -79,6 +79,24 @@ async function ensureProfileColumns() {
       if (!names.has('custom_slug')) {
         await query('ALTER TABLE users ADD COLUMN custom_slug VARCHAR(96) NULL AFTER avatar_data_url');
       }
+      if (!names.has('profile_status_message')) {
+        await query('ALTER TABLE users ADD COLUMN profile_status_message VARCHAR(180) NULL AFTER custom_slug');
+      }
+      if (!names.has('profile_cover_preset')) {
+        await query("ALTER TABLE users ADD COLUMN profile_cover_preset VARCHAR(32) NOT NULL DEFAULT 'default' AFTER profile_status_message");
+      }
+      if (!names.has('profile_cover_data_url')) {
+        await query('ALTER TABLE users ADD COLUMN profile_cover_data_url MEDIUMTEXT NULL AFTER profile_cover_preset');
+      }
+      if (!names.has('profile_cover_position_x')) {
+        await query('ALTER TABLE users ADD COLUMN profile_cover_position_x TINYINT UNSIGNED NOT NULL DEFAULT 50 AFTER profile_cover_data_url');
+      }
+      if (!names.has('profile_cover_position_y')) {
+        await query('ALTER TABLE users ADD COLUMN profile_cover_position_y TINYINT UNSIGNED NOT NULL DEFAULT 50 AFTER profile_cover_position_x');
+      }
+      if (!names.has('profile_cover_zoom')) {
+        await query('ALTER TABLE users ADD COLUMN profile_cover_zoom SMALLINT UNSIGNED NOT NULL DEFAULT 100 AFTER profile_cover_position_y');
+      }
       if (!names.has('permissions_override')) {
         await query("ALTER TABLE users ADD COLUMN permissions_override JSON NULL AFTER squads");
       }
@@ -106,6 +124,12 @@ function serializeUser(row) {
     avatarColor: row.avatar_color || 'amber',
     avatarUrl: row.avatar_data_url || '',
     customSlug: row.custom_slug || '',
+    statusMessage: row.profile_status_message || '',
+    coverPreset: row.profile_cover_preset || 'default',
+    coverUrl: row.profile_cover_data_url || '',
+    coverPositionX: Number(row.profile_cover_position_x ?? 50),
+    coverPositionY: Number(row.profile_cover_position_y ?? 50),
+    coverZoom: Number(row.profile_cover_zoom ?? 100),
     role: row.role,
     isMaster: Boolean(row.is_master),
     squads: parseJson(row.squads, []),
@@ -121,7 +145,7 @@ async function getUserById(id) {
   await ensureProfileColumns();
   const rows = await query(
     `SELECT id, name, email, phone, avatar_color, password_hash, role, is_master, squads, permissions_override, active,
-            avatar_data_url, custom_slug,
+            avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom,
             created_at, updated_at
        FROM users
       WHERE id = ?
@@ -140,7 +164,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     const rows = await query(
-      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, password_hash, role, is_master, squads, permissions_override, active,
+      `SELECT id, name, email, phone, avatar_color, avatar_data_url, custom_slug, profile_status_message, profile_cover_preset, profile_cover_data_url, profile_cover_position_x, profile_cover_position_y, profile_cover_zoom, password_hash, role, is_master, squads, permissions_override, active,
               created_at, updated_at
          FROM users
         WHERE (LOWER(email) = LOWER(?) OR LOWER(name) = LOWER(?))
@@ -179,7 +203,7 @@ router.patch('/profile', requireAuth, requirePermission('profile.edit'), async (
     const current = await getUserById(req.user.id);
     if (!current) throw unauthorized('Usuário não encontrado');
 
-    const { name, phone, avatarColor, avatarUrl, customSlug } = req.body || {};
+    const { name, phone, avatarColor, avatarUrl, customSlug, statusMessage, coverPreset, coverUrl, coverPositionX, coverPositionY, coverZoom } = req.body || {};
     const updates = [];
     const params = [];
 
@@ -225,6 +249,45 @@ router.patch('/profile', requireAuth, requirePermission('profile.edit'), async (
       }
       updates.push('custom_slug = ?');
       params.push(cleanSlug || null);
+    }
+
+    if (statusMessage !== undefined) {
+      const cleanStatus = String(statusMessage || '').trim().slice(0, 180);
+      updates.push('profile_status_message = ?');
+      params.push(cleanStatus || null);
+    }
+
+    if (coverPreset !== undefined) {
+      const cleanPreset = String(coverPreset || 'default').trim().toLowerCase();
+      const validPresets = new Set(['default', 'aurora', 'graphite', 'violet', 'teal', 'custom']);
+      if (!validPresets.has(cleanPreset)) throw badRequest('Capa inválida');
+      updates.push('profile_cover_preset = ?');
+      params.push(cleanPreset);
+    }
+
+    if (coverUrl !== undefined) {
+      const cleanCover = String(coverUrl || '').trim();
+      if (cleanCover && !cleanCover.startsWith('data:image/')) throw badRequest('Imagem de capa inválida');
+      updates.push('profile_cover_data_url = ?');
+      params.push(cleanCover || null);
+    }
+
+    if (coverPositionX !== undefined) {
+      const value = Math.min(100, Math.max(0, Number(coverPositionX) || 50));
+      updates.push('profile_cover_position_x = ?');
+      params.push(value);
+    }
+
+    if (coverPositionY !== undefined) {
+      const value = Math.min(100, Math.max(0, Number(coverPositionY) || 50));
+      updates.push('profile_cover_position_y = ?');
+      params.push(value);
+    }
+
+    if (coverZoom !== undefined) {
+      const value = Math.min(220, Math.max(100, Number(coverZoom) || 100));
+      updates.push('profile_cover_zoom = ?');
+      params.push(value);
     }
 
     if (updates.length === 0) {
