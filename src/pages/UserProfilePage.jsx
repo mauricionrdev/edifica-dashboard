@@ -746,6 +746,22 @@ export default function UserProfilePage() {
     ? userSquads.map((squad) => squad.name).join(', ')
     : roleLabel(profileUser?.role);
 
+  const defaultProfileSummary = todayTasksCount === 1
+    ? `${profileUser?.name?.split(' ')[0] || 'Usuário'} possui 1 demanda agendada para hoje.`
+    : todayTasksCount > 1
+      ? `${profileUser?.name?.split(' ')[0] || 'Usuário'} possui ${todayTasksCount} demandas agendadas para hoje.`
+      : `${profileUser?.name?.split(' ')[0] || 'Usuário'} não possui demandas agendadas para hoje.`;
+  const publicStatusMessage = String(profileUser?.statusMessage || '').trim() || defaultProfileSummary;
+  const publicCoverUrl = profileUser?.coverUrl || '';
+  const publicCoverPreset = profileUser?.coverPreset || 'default';
+  const publicCoverStyle = publicCoverUrl
+    ? {
+        backgroundImage: `url(${publicCoverUrl})`,
+        backgroundPosition: `${Number(profileUser?.coverPositionX ?? 50)}% ${Number(profileUser?.coverPositionY ?? 50)}%`,
+        backgroundSize: `${Math.max(100, Number(profileUser?.coverZoom ?? 100))}% auto`,
+      }
+    : undefined;
+
   async function openTaskDetail(task) {
     if (!task?.id) return;
     setActiveTaskOpen(true);
@@ -931,6 +947,11 @@ export default function UserProfilePage() {
   return (
     <div className={styles.page}>
       <section className={styles.profileHero}>
+        <div
+          className={`${styles.profileCover} ${styles[`profileCover_${publicCoverPreset}`] || styles.profileCover_default}`.trim()}
+          style={publicCoverStyle}
+          aria-hidden="true"
+        />
         <div className={styles.heroIdentity}>
           <button
             type="button"
@@ -947,13 +968,11 @@ export default function UserProfilePage() {
               <h1>{profileUser.name}</h1>
               <span className={`${styles.roleBadge} ${roleLabel(profileUser.role) === 'Suporte de tecnologia (TI)' ? styles.roleBadgeBlackHole : ''}`.trim()}>{roleLabel(profileUser.role)}</span>
             </div>
-            {/* <p>{profileTasks.length ? `${profileUser.name.split(' ')[0]} possui ${openTasksCount} tarefas em aberto.` : `${profileUser.name.split(' ')[0]} não possui tarefas em aberto.`}</p> */}
             <div className={styles.profileMeta}>
-              <span>{todayTasksCount === 1 ? `${profileUser.name.split(' ')[0]} possui 1 demanda agendada para hoje.` : todayTasksCount > 1 ? `${profileUser.name.split(' ')[0]} possui ${todayTasksCount} demandas agendadas para hoje.` : `${profileUser.name.split(' ')[0]} não possui demandas agendadas para hoje.`}</span>
+              <span>{publicStatusMessage}</span>
             </div>
           </div>
         </div>
-
 
         <div className={styles.statRail}>
           <div className={styles.statItem}>
