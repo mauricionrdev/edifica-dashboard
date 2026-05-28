@@ -1674,7 +1674,7 @@ function Select({ value, onChange, children, className = '', disabled = false, p
 }
 
 export default function ProfilePage() {
-  const { setPanelHeader, squads = [], refreshUserDirectory } = useOutletContext();
+  const { setPanelHeader, squads = [] } = useOutletContext();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, reloadUser } = useAuth();
@@ -1686,6 +1686,7 @@ export default function ProfilePage() {
   const clientSearchRef = useRef(null);
   const clientSearchPanelRef = useRef(null);
   const taskDeepLinkHandledRef = useRef('');
+  const collaboratorComposerRef = useRef(null);
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -2333,6 +2334,18 @@ export default function ProfilePage() {
       return haystack.includes(query);
     });
   }, [collaboratorOptions, collaboratorSearch]);
+
+  useEffect(() => {
+    if (!collaboratorPickerOpen) return undefined;
+
+    function handleCollaboratorPickerPointerDown(event) {
+      if (collaboratorComposerRef.current?.contains(event.target)) return;
+      setCollaboratorPickerOpen(false);
+    }
+
+    document.addEventListener('pointerdown', handleCollaboratorPickerPointerDown, true);
+    return () => document.removeEventListener('pointerdown', handleCollaboratorPickerPointerDown, true);
+  }, [collaboratorPickerOpen]);
   const visibleTaskComments = useMemo(() => taskComments.filter((comment) => !isSystemActivityComment(comment)), [taskComments]);
   const activeActivityEvents = useMemo(() => buildActivityEvents(activeTask, taskComments, taskEvents), [activeTask, taskComments, taskEvents]);
   const ACTIVITY_PAGE_SIZE = 5;
@@ -2419,7 +2432,6 @@ export default function ProfilePage() {
       setSavingProfile(true);
       await updateProfile(profileForm);
       await reloadUser();
-      await refreshUserDirectory?.();
       showToast('Perfil atualizado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao salvar.', { variant: 'error' });
@@ -4362,7 +4374,7 @@ export default function ProfilePage() {
                   <div className={styles.sectionTitleActions}>
                     <span>{collaborators.length}</span>
                     {canManageActiveCollaborators ? (
-                      <div className={styles.collaboratorComposer}>
+                      <div className={styles.collaboratorComposer} ref={collaboratorComposerRef}>
                         <button
                           type="button"
                           className={styles.collaboratorAddToggle}
@@ -4389,7 +4401,6 @@ export default function ProfilePage() {
                             <div className={styles.collaboratorPickerList}>
                               {filteredCollaboratorOptions.length ? filteredCollaboratorOptions.map((option) => {
                                 const optionAvatar = getUserAvatar(option) || option.avatarUrl || '';
-                                const optionLabel = option.roleLabel || option.role || option.title || '';
                                 return (
                                   <button
                                     key={option.id}
@@ -4403,7 +4414,6 @@ export default function ProfilePage() {
                                     </span>
                                     <span className={styles.collaboratorPickerText}>
                                       <strong>{option.name}</strong>
-                                      {optionLabel ? <small>{optionLabel}</small> : null}
                                     </span>
                                   </button>
                                 );
