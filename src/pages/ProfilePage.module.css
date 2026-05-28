@@ -15326,7 +15326,13 @@ button:focus-visible {
   box-shadow: none;
 }
 
-.collaboratorPickerPanel button.collaboratorPickerOption:hover:not(:disabled),
+.collaboratorPickerPanel button.collaboratorPickerOption:hover:not(:disabled) {
+  border: 0;
+  background: var(--bg-hover);
+  outline: none;
+  box-shadow: none;
+}
+
 .collaboratorPickerPanel button.collaboratorPickerOption:focus,
 .collaboratorPickerPanel button.collaboratorPickerOption:focus-visible {
   border: 0;
