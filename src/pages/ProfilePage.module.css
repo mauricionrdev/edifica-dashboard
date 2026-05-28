@@ -14827,210 +14827,81 @@ button:focus-visible {
 }
 
 
-/* vTaskDrawerLayout — modal full-height e seletor de colaboradores contido */
-.drawerOverlay {
-  justify-content: center;
-  align-items: stretch;
-  padding: 0;
-}
-
-.drawerPanel {
-  width: min(980px, 100vw);
-  max-width: 980px;
-  height: 100vh;
-  max-height: 100vh;
-  border-right: 1px solid var(--edf-border-strong);
-  border-left: 1px solid var(--edf-border-strong);
-  border-radius: 0;
-  animation: edf-fade-in 160ms ease;
-}
-
+/* task-collaborator-popover-v3 — seletor de colaboradores em popover real */
 .drawerSection {
-  position: relative;
-}
-
-.collaboratorsSection {
-  z-index: 8;
   overflow: visible;
 }
 
-.sectionTitleActions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  min-width: 0;
+.collaboratorSection {
   position: relative;
+  z-index: 40;
+  overflow: visible;
 }
 
-.sectionTitleActions > span {
-  font-size: 11.5px;
-  font-weight: 650;
-  color: var(--edf-accent-soft);
-}
-
-.collaboratorsSection .sectionTitleRow {
-  align-items: center;
+.collaboratorSection .sectionTitleRow {
+  position: relative;
+  z-index: 2;
 }
 
 .collaboratorBar {
-  align-items: center;
-  gap: 10px;
-  margin-top: 0;
+  position: relative;
   overflow: visible;
+  padding-right: 48px;
 }
 
-.collaboratorComposer {
-  position: relative;
-  display: inline-flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin: 0;
-  z-index: 30;
-}
-
-.collaboratorAddToggle,
-.collaboratorComposer > .collaboratorAddToggle {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  min-height: 34px;
-  border-radius: 10px;
-  font-size: 17px;
-}
-
-.collaboratorPickerPanel {
+.collaboratorBar .collaboratorComposer {
   position: absolute;
-  top: calc(100% + 8px);
+  top: -44px;
   right: 0;
-  left: auto;
   z-index: 120;
-  width: min(360px, calc(100vw - 48px));
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid var(--workspace-panel-border-soft);
-  border-radius: 10px;
-  background: var(--edf-surface-solid);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.20);
-}
-
-.collaboratorPickerPanel .profileSelect,
-.collaboratorPickerPanel .formSelect,
-.collaboratorPickerPanel .profileSelectButton {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.collaboratorPickerPanel > button {
-  min-height: 38px;
-  height: 38px;
-  padding: 0 12px;
-  border-radius: 10px;
-}
-
-.collaboratorChipAvatar,
-.workflowStepAvatar,
-.taskTextViewerCollaboratorAvatar {
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.collaboratorChipAvatar img,
-.workflowStepAvatar img,
-.taskTextViewerCollaboratorAvatar img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
-  border-radius: inherit;
-}
-
-.collaboratorChips,
-.collaboratorBar .collaboratorChips {
-  margin-top: 0;
-  align-items: center;
-}
-
-/* Task collaborators composer — refined compact picker */
-.sectionTitleActions {
-  position: relative;
-}
-
-.collaboratorsSection .sectionTitleRow {
-  align-items: center;
-}
-
-.collaboratorsSection .sectionTitleActions {
-  gap: 10px;
-}
-
-.collaboratorComposer {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   margin: 0;
-  width: auto;
-  min-width: 0;
-  z-index: 36;
 }
 
-.collaboratorAddToggle,
-.collaboratorComposer > .collaboratorAddToggle {
+.collaboratorBar .collaboratorAddToggle,
+.collaboratorBar .collaboratorComposer > .collaboratorAddToggle {
   width: 36px;
   height: 36px;
   min-width: 36px;
   min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--text-primary);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.026);
+  color: rgba(226, 232, 240, 0.9);
   font-size: 18px;
-  font-weight: 760;
-  line-height: 1;
+  font-weight: 720;
   box-shadow: none;
 }
 
-.collaboratorAddToggle:hover:not(:disabled),
-.collaboratorAddToggle:focus,
-.collaboratorAddToggle:focus-visible,
-.collaboratorComposer > .collaboratorAddToggle:hover:not(:disabled),
-.collaboratorComposer > .collaboratorAddToggle:focus,
-.collaboratorComposer > .collaboratorAddToggle:focus-visible {
-  border-color: var(--border-subtle);
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--text-primary);
+.collaboratorBar .collaboratorAddToggle:hover:not(:disabled),
+.collaboratorBar .collaboratorAddToggle:focus,
+.collaboratorBar .collaboratorAddToggle:focus-visible,
+.collaboratorBar .collaboratorComposer > .collaboratorAddToggle:hover:not(:disabled),
+.collaboratorBar .collaboratorComposer > .collaboratorAddToggle:focus,
+.collaboratorBar .collaboratorComposer > .collaboratorAddToggle:focus-visible {
   outline: none;
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.026);
+  color: rgba(226, 232, 240, 0.9);
   box-shadow: none;
 }
 
-.collaboratorPickerPanel {
+.collaboratorBar .collaboratorPickerPanel {
   position: absolute;
-  top: calc(100% + 10px);
+  top: 44px;
   right: 0;
   left: auto;
-  z-index: 120;
-  width: min(336px, calc(100vw - 56px));
+  z-index: 140;
+  width: 292px;
+  max-width: min(292px, calc(100vw - 48px));
   max-height: min(420px, calc(100vh - 180px));
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  background: #08090a;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
-  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--workspace-card-radius);
+  background: #090a0c;
+  box-shadow: none;
 }
 
 .collaboratorPickerHeader {
@@ -15038,183 +14909,100 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 2px 2px 0;
+  min-height: 24px;
 }
 
 .collaboratorPickerHeader strong {
-  color: var(--text-primary);
+  color: var(--edf-text-primary);
   font-size: 13px;
-  font-weight: 760;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .collaboratorPickerHeader span {
-  min-width: 22px;
-  height: 22px;
+  min-width: 24px;
+  height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border-subtle);
   border-radius: 999px;
-  color: var(--text-secondary);
+  border: 1px solid var(--line);
+  color: var(--edf-text-muted);
+  background: rgba(255, 255, 255, 0.024);
   font-size: 11px;
-  font-weight: 760;
+  font-weight: 700;
 }
 
-.collaboratorSearch {
+.collaboratorPickerPanel input {
   width: 100%;
-  height: 38px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--text-primary);
-  padding: 0 12px;
-  font-size: 13px;
-  font-weight: 650;
+  height: 36px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 255, 255, 0.078);
+  border-radius: 9px;
+  background: #0b0b0d;
+  color: var(--edf-text-primary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
   outline: none;
   box-shadow: none;
 }
 
-.collaboratorSearch::placeholder {
-  color: var(--text-muted);
-}
-
-.collaboratorSearch:focus,
-.collaboratorSearch:focus-visible {
-  border-color: var(--border-subtle);
-  background: rgba(255, 255, 255, 0.035);
+.collaboratorPickerPanel input:focus,
+.collaboratorPickerPanel input:focus-visible {
   outline: none;
+  border-color: rgba(255, 255, 255, 0.078);
+  background: #0b0b0d;
   box-shadow: none;
 }
 
 .collaboratorPickerList {
-  display: flex;
-  flex-direction: column;
+  min-height: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  display: grid;
   gap: 2px;
-  overflow: auto;
-  overscroll-behavior: contain;
   padding-right: 2px;
-  scrollbar-width: none;
 }
 
 .collaboratorPickerList::-webkit-scrollbar {
-  display: none;
+  width: 0;
+  height: 0;
 }
 
 .collaboratorPickerOption {
   width: 100%;
-  min-height: 44px;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
+  min-height: 42px;
+  display: flex;
   align-items: center;
   gap: 10px;
   padding: 7px 8px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 9px;
   background: transparent;
-  color: var(--text-primary);
+  color: var(--edf-text-secondary);
   text-align: left;
+  font: inherit;
   box-shadow: none;
+  cursor: pointer;
 }
 
 .collaboratorPickerOption:hover:not(:disabled),
 .collaboratorPickerOption:focus,
 .collaboratorPickerOption:focus-visible {
-  background: transparent;
   outline: none;
+  background: rgba(255, 255, 255, 0.034);
+  color: var(--edf-text-primary);
   box-shadow: none;
+}
+
+.collaboratorPickerOption:disabled {
+  cursor: wait;
+  opacity: 0.58;
 }
 
 .collaboratorPickerAvatar {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border: 0;
-  border-radius: 999px;
-  background: #111315;
-  color: var(--text-primary);
-  font-size: 10px;
-  font-weight: 780;
-  line-height: 1;
-}
-
-.collaboratorPickerAvatar img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  border: 0;
-  border-radius: inherit;
-}
-
-.collaboratorPickerText {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.collaboratorPickerText strong {
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 720;
-  letter-spacing: -0.01em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.collaboratorPickerText small {
-  overflow: hidden;
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 620;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.collaboratorPickerEmpty {
-  padding: 14px 8px;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.collaboratorBar {
   position: relative;
-  z-index: 1;
-  overflow: visible;
-}
-
-.collaboratorChips {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  max-width: 100%;
-}
-
-.collaboratorChips > span {
-  max-width: 220px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  height: 34px;
-  padding: 4px 7px 4px 4px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.025);
-  color: var(--text-secondary);
-  box-shadow: none;
-}
-
-.collaboratorChipAvatar {
   width: 26px;
   height: 26px;
   min-width: 26px;
@@ -15223,58 +15011,58 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 0;
   border-radius: 999px;
-  background: #111315;
-  color: var(--text-primary);
-  font-size: 10px;
-  font-weight: 780;
+  background: #08090a;
+  color: var(--edf-text-primary);
+  font-size: 9px;
+  font-weight: 800;
   line-height: 1;
 }
 
-.collaboratorChipAvatar img,
-.collaboratorAvatar img {
+.collaboratorPickerAvatar img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
-  border: 0;
   border-radius: inherit;
 }
 
-.collaboratorChips > span > b {
+.collaboratorPickerOption > span:last-child {
   min-width: 0;
-  max-width: 150px;
+  display: grid;
+  gap: 3px;
+}
+
+.collaboratorPickerOption b,
+.collaboratorPickerOption em {
+  min-width: 0;
   overflow: hidden;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 720;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.collaboratorChips > span > button {
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
-  min-height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.055);
-  color: var(--text-muted);
-  font-size: 13px;
-  line-height: 1;
-  box-shadow: none;
+.collaboratorPickerOption b {
+  color: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.15;
 }
 
-.collaboratorChips > span > button:hover:not(:disabled),
-.collaboratorChips > span > button:focus,
-.collaboratorChips > span > button:focus-visible {
-  background: rgba(255, 255, 255, 0.055);
-  color: var(--text-muted);
-  outline: none;
-  box-shadow: none;
+.collaboratorPickerOption em {
+  color: var(--edf-text-faint);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.collaboratorPickerEmpty {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  color: var(--edf-text-faint);
+  font-size: 12px;
+  font-weight: 650;
 }
