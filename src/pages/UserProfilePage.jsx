@@ -51,6 +51,56 @@ function initials(name) {
   );
 }
 
+
+const COVER_PRESET_VALUES = new Set(['default', 'amber', 'midnight', 'steel', 'obsidian', 'aurora', 'graphite', 'violet', 'teal', 'custom', 'image']);
+
+function normalizeCoverPreset(value) {
+  const preset = String(value || '').trim().toLowerCase();
+  return COVER_PRESET_VALUES.has(preset) ? preset : 'default';
+}
+
+function getProfileCoverPreset(user) {
+  return normalizeCoverPreset(
+    user?.coverPreset
+    ?? user?.cover_preset
+    ?? user?.profileCoverPreset
+    ?? user?.profile_cover_preset
+  );
+}
+
+function getProfileCoverUrl(user) {
+  return String(
+    user?.coverUrl
+    ?? user?.cover_url
+    ?? user?.profileCoverUrl
+    ?? user?.profile_cover_data_url
+    ?? ''
+  ).trim();
+}
+
+function getProfileCoverPosition(user, axis) {
+  const camel = axis === 'x' ? user?.coverPositionX : user?.coverPositionY;
+  const snake = axis === 'x' ? user?.cover_position_x : user?.cover_position_y;
+  const raw = camel ?? snake ?? 50;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : 50;
+}
+
+function getProfileCoverZoom(user) {
+  const value = Number(user?.coverZoom ?? user?.cover_zoom ?? 100);
+  return Number.isFinite(value) ? Math.max(100, value) : 100;
+}
+
+function buildProfileCoverStyle(user) {
+  const coverUrl = getProfileCoverUrl(user);
+  if (!coverUrl) return undefined;
+  return {
+    backgroundImage: `url(${coverUrl})`,
+    backgroundPosition: `${getProfileCoverPosition(user, 'x')}% ${getProfileCoverPosition(user, 'y')}%`,
+    backgroundSize: `${getProfileCoverZoom(user)}% auto`,
+  };
+}
+
 function formatDateLabel(value) {
   if (!value) return 'Sem prazo';
   const parsed = new Date(`${value}T00:00:00`);
@@ -773,15 +823,8 @@ export default function UserProfilePage() {
       ? `${publicFirstName} possui ${todayTasksCount} demandas agendadas para hoje.`
       : `${publicFirstName} não possui demandas agendadas para hoje.`;
   const profileStatusText = String(profileUser?.statusMessage || profileUser?.status_message || '').trim() || defaultTodaySummary;
-  const activeCoverUrl = profileUser?.coverUrl || profileUser?.cover_url || '';
-  const hasProfileCover = Boolean(activeCoverUrl);
-  const profileCoverStyle = hasProfileCover
-    ? {
-        backgroundImage: `url(${activeCoverUrl})`,
-        backgroundPosition: `${Number(profileUser?.coverPositionX ?? profileUser?.cover_position_x ?? 50)}% ${Number(profileUser?.coverPositionY ?? profileUser?.cover_position_y ?? 50)}%`,
-        backgroundSize: `${Math.max(100, Number(profileUser?.coverZoom ?? profileUser?.cover_zoom ?? 100))}% auto`,
-      }
-    : undefined;
+  const activeCoverPreset = getProfileCoverPreset(profileUser);
+  const profileCoverStyle = buildProfileCoverStyle(profileUser);
   const portfolioCount = gdvClients.length + gestorClients.length;
   const profileContext = userSquads.length
     ? userSquads.map((squad) => squad.name).join(', ')
@@ -974,7 +1017,7 @@ export default function UserProfilePage() {
       <section className={styles.profileHeroGrid}>
         <article className={styles.profileHero}>
           <div
-            className={`${styles.profileCover} ${hasProfileCover ? styles.profileCover_image : styles.profileCoverEmpty}`.trim()}
+            className={`${styles.profileCover} ${styles[`profileCover_${activeCoverPreset}`] || styles.profileCover_default}`.trim()}
             style={profileCoverStyle}
             aria-hidden="true"
           />
@@ -1467,15 +1510,8 @@ export default function UserProfilePage() {
             <div className={styles.usersCardGrid}>
               {filteredPublicUsers.map((item) => {
                 const itemAvatarUrl = getUserAvatar(item) || item.avatarUrl || item.avatar_url || '';
-                const itemCoverUrl = item.coverUrl || item.cover_url || '';
-                const hasItemCover = Boolean(itemCoverUrl);
-                const itemCoverStyle = hasItemCover
-                  ? {
-                      backgroundImage: `url(${itemCoverUrl})`,
-                      backgroundPosition: `${Number(item.coverPositionX ?? item.cover_position_x ?? 50)}% ${Number(item.coverPositionY ?? item.cover_position_y ?? 50)}%`,
-                      backgroundSize: `${Math.max(100, Number(item.coverZoom ?? item.cover_zoom ?? 100))}% auto`,
-                    }
-                  : undefined;
+                const itemCoverPreset = getProfileCoverPreset(item);
+                const itemCoverStyle = buildProfileCoverStyle(item);
                 const itemStatus = String(item.statusMessage || item.status_message || '').trim();
                 return (
                   <button
@@ -1488,7 +1524,7 @@ export default function UserProfilePage() {
                     }}
                   >
                     <span
-                      className={`${styles.usersMiniCover} ${hasItemCover ? styles.profileCover_image : styles.profileCoverEmpty}`.trim()}
+                      className={`${styles.usersMiniCover} ${styles[`profileCover_${itemCoverPreset}`] || styles.profileCover_default}`.trim()}
                       style={itemCoverStyle}
                       aria-hidden="true"
                     />

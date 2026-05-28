@@ -1674,7 +1674,7 @@ function Select({ value, onChange, children, className = '', disabled = false, p
 }
 
 export default function ProfilePage() {
-  const { setPanelHeader, squads = [] } = useOutletContext();
+  const { setPanelHeader, squads = [], refreshUserDirectory } = useOutletContext();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, reloadUser } = useAuth();
@@ -2419,6 +2419,7 @@ export default function ProfilePage() {
       setSavingProfile(true);
       await updateProfile(profileForm);
       await reloadUser();
+      await refreshUserDirectory?.();
       showToast('Perfil atualizado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao salvar.', { variant: 'error' });

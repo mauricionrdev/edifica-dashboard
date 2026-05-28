@@ -2069,10 +2069,7 @@
 
 .profileCover_default,
 .usersMiniCover.profileCover_default {
-  background:
-    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.16), transparent 28%),
-    linear-gradient(135deg, rgba(255, 193, 7, 0.10), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.72)),
-    var(--bg-app);
+  background: var(--bg-app);
 }
 
 .profileCover_amber,
@@ -2146,12 +2143,4 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-}
-
-
-/* Public profile: never show generated/fake covers when the user has no real cover image. */
-.profileCoverEmpty,
-.usersMiniCover.profileCoverEmpty {
-  background: var(--bg-app);
-  background-image: none;
 }
