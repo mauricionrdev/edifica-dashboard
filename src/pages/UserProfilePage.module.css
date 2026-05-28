@@ -2147,3 +2147,11 @@
   background-position: center;
   background-size: cover;
 }
+
+
+/* Public profile: never show generated/fake covers when the user has no real cover image. */
+.profileCoverEmpty,
+.usersMiniCover.profileCoverEmpty {
+  background: var(--bg-app);
+  background-image: none;
+}

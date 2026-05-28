@@ -15278,3 +15278,23 @@ button:focus-visible {
   outline: none;
   box-shadow: none;
 }
+
+
+/* Task drawer collaborators picker: allow the floating list to escape the section paint containment. */
+.collaboratorsSection {
+  contain: layout style;
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+  overflow: visible;
+  z-index: 60;
+}
+
+.collaboratorsSection .sectionTitleRow,
+.collaboratorsSection .sectionTitleActions,
+.collaboratorComposer {
+  overflow: visible;
+}
+
+.collaboratorsSection .collaboratorPickerPanel {
+  z-index: 80;
+}

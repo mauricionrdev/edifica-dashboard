@@ -773,9 +773,9 @@ export default function UserProfilePage() {
       ? `${publicFirstName} possui ${todayTasksCount} demandas agendadas para hoje.`
       : `${publicFirstName} não possui demandas agendadas para hoje.`;
   const profileStatusText = String(profileUser?.statusMessage || profileUser?.status_message || '').trim() || defaultTodaySummary;
-  const activeCoverPreset = profileUser?.coverPreset || profileUser?.cover_preset || 'default';
   const activeCoverUrl = profileUser?.coverUrl || profileUser?.cover_url || '';
-  const profileCoverStyle = activeCoverUrl
+  const hasProfileCover = Boolean(activeCoverUrl);
+  const profileCoverStyle = hasProfileCover
     ? {
         backgroundImage: `url(${activeCoverUrl})`,
         backgroundPosition: `${Number(profileUser?.coverPositionX ?? profileUser?.cover_position_x ?? 50)}% ${Number(profileUser?.coverPositionY ?? profileUser?.cover_position_y ?? 50)}%`,
@@ -974,7 +974,7 @@ export default function UserProfilePage() {
       <section className={styles.profileHeroGrid}>
         <article className={styles.profileHero}>
           <div
-            className={`${styles.profileCover} ${styles[`profileCover_${activeCoverPreset}`] || styles.profileCover_default}`.trim()}
+            className={`${styles.profileCover} ${hasProfileCover ? styles.profileCover_image : styles.profileCoverEmpty}`.trim()}
             style={profileCoverStyle}
             aria-hidden="true"
           />
@@ -1467,9 +1467,9 @@ export default function UserProfilePage() {
             <div className={styles.usersCardGrid}>
               {filteredPublicUsers.map((item) => {
                 const itemAvatarUrl = getUserAvatar(item) || item.avatarUrl || item.avatar_url || '';
-                const itemCoverPreset = item.coverPreset || item.cover_preset || 'default';
                 const itemCoverUrl = item.coverUrl || item.cover_url || '';
-                const itemCoverStyle = itemCoverUrl
+                const hasItemCover = Boolean(itemCoverUrl);
+                const itemCoverStyle = hasItemCover
                   ? {
                       backgroundImage: `url(${itemCoverUrl})`,
                       backgroundPosition: `${Number(item.coverPositionX ?? item.cover_position_x ?? 50)}% ${Number(item.coverPositionY ?? item.cover_position_y ?? 50)}%`,
@@ -1488,7 +1488,7 @@ export default function UserProfilePage() {
                     }}
                   >
                     <span
-                      className={`${styles.usersMiniCover} ${styles[`profileCover_${itemCoverPreset}`] || styles.profileCover_default}`.trim()}
+                      className={`${styles.usersMiniCover} ${hasItemCover ? styles.profileCover_image : styles.profileCoverEmpty}`.trim()}
                       style={itemCoverStyle}
                       aria-hidden="true"
                     />
