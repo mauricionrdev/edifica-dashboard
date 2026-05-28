@@ -1766,11 +1766,11 @@
   font-size: 12.5px;
 }
 
-.briefingMissing > span {
+.briefingMissing>span {
   font-weight: 650;
 }
 
-.briefingMissing > div {
+.briefingMissing>div {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -12909,6 +12909,7 @@ button:focus-visible {
 .workflowKey_implementation.workflowStep_current {
   box-shadow: inset 0 0 0 1px var(--edf-amber-border);
 }
+
 .profileSelectAvatar {
   flex: 0 0 auto;
 }
@@ -12923,8 +12924,8 @@ button:focus-visible {
   gap: var(--space-2);
 }
 
-.profileSelectOption > span:last-child,
-.profileSelectButton > span:last-child {
+.profileSelectOption>span:last-child,
+.profileSelectButton>span:last-child {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -12939,8 +12940,8 @@ button:focus-visible {
   overflow: hidden;
 }
 
-.profileSelectButton .profileSelectAvatar > span,
-.profileSelectOption .profileSelectAvatar > span {
+.profileSelectButton .profileSelectAvatar>span,
+.profileSelectOption .profileSelectAvatar>span {
   display: inline-flex;
 }
 
@@ -13112,6 +13113,7 @@ button:focus-visible {
 }
 
 @media (max-width: 1180px) {
+
   .operationListHeader,
   .operationRow {
     grid-template-columns: 22px minmax(0, 1fr);
@@ -13266,7 +13268,7 @@ button:focus-visible {
   gap: 12px;
 }
 
-.taskTextViewerAuthorBlock > div {
+.taskTextViewerAuthorBlock>div {
   min-width: 0;
   display: grid;
   gap: 4px;
@@ -13408,7 +13410,7 @@ button:focus-visible {
 }
 
 .taskTextViewerCollaborators a,
-.taskTextViewerCollaborators > span {
+.taskTextViewerCollaborators>span {
   display: inline-flex;
   border-radius: 999px;
   text-decoration: none;
@@ -13523,7 +13525,7 @@ button:focus-visible {
 }
 
 .collaboratorAddToggle,
-.collaboratorComposer > .collaboratorAddToggle {
+.collaboratorComposer>.collaboratorAddToggle {
   width: 42px;
   height: 42px;
   min-width: 42px;
@@ -13561,7 +13563,7 @@ button:focus-visible {
   padding: 8px;
   border: 1px solid var(--workspace-panel-border-soft);
   border-radius: var(--workspace-card-radius);
-  background: var(--surface-panel);
+  /* background: var(--surface-panel); */
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
 }
 
@@ -13572,7 +13574,7 @@ button:focus-visible {
   min-width: 0;
 }
 
-.collaboratorPickerPanel > button {
+.collaboratorPickerPanel>button {
   min-height: 40px;
   padding: 0 13px;
   border: 1px solid rgba(245, 181, 27, 0.42);
@@ -13584,9 +13586,9 @@ button:focus-visible {
   box-shadow: none;
 }
 
-.collaboratorPickerPanel > button:hover:not(:disabled),
-.collaboratorPickerPanel > button:focus,
-.collaboratorPickerPanel > button:focus-visible {
+.collaboratorPickerPanel>button:hover:not(:disabled),
+.collaboratorPickerPanel>button:focus,
+.collaboratorPickerPanel>button:focus-visible {
   border-color: rgba(245, 181, 27, 0.42);
   background: rgba(245, 181, 27, 0.08);
   color: var(--edf-amber, #f5b51b);
@@ -13594,14 +13596,14 @@ button:focus-visible {
   box-shadow: none;
 }
 
-.collaboratorChips > span {
+.collaboratorChips>span {
   gap: 8px;
   padding: 3px 7px 3px 4px;
   min-height: 30px;
   height: 30px;
 }
 
-.collaboratorChips > span > b {
+.collaboratorChips>span>b {
   max-width: 150px;
   overflow: hidden;
   color: inherit;
@@ -13623,12 +13625,12 @@ button:focus-visible {
 }
 
 .taskTextViewerCollaborators a,
-.taskTextViewerCollaborators > span {
+.taskTextViewerCollaborators>span {
   margin-left: -7px;
 }
 
 .taskTextViewerCollaborators a:first-child,
-.taskTextViewerCollaborators > span:first-child {
+.taskTextViewerCollaborators>span:first-child {
   margin-left: 0;
 }
 
@@ -13672,7 +13674,7 @@ button:focus-visible {
   line-height: 1;
 }
 
-.workflowStep .workflowStepAvatar + span {
+.workflowStep .workflowStepAvatar+span {
   min-width: 0;
   max-width: 168px;
   overflow: hidden;
@@ -13718,7 +13720,7 @@ button:focus-visible {
   gap: 8px;
 }
 
-.collaboratorBar .collaboratorChips > span {
+.collaboratorBar .collaboratorChips>span {
   height: 32px;
   min-height: 32px;
   max-width: 230px;
@@ -13751,7 +13753,7 @@ button:focus-visible {
   object-fit: cover;
 }
 
-.collaboratorBar .collaboratorChips > span > b {
+.collaboratorBar .collaboratorChips>span>b {
   max-width: 148px;
 }
 
@@ -13761,7 +13763,7 @@ button:focus-visible {
 }
 
 .collaboratorBar .collaboratorAddToggle,
-.collaboratorBar .collaboratorComposer > .collaboratorAddToggle {
+.collaboratorBar .collaboratorComposer>.collaboratorAddToggle {
   width: 32px;
   height: 32px;
   min-width: 32px;
@@ -13837,7 +13839,7 @@ button:focus-visible {
   border-radius: inherit;
 }
 
-.workflowStep .workflowStepAvatar + span {
+.workflowStep .workflowStepAvatar+span {
   min-width: 0;
   max-width: 168px;
   overflow: hidden;
@@ -13855,7 +13857,7 @@ button:focus-visible {
   flex-wrap: wrap;
 }
 
-.collaboratorBar .collaboratorChips > span {
+.collaboratorBar .collaboratorChips>span {
   display: inline-flex;
   align-items: center;
   width: auto;
@@ -14224,7 +14226,7 @@ button:focus-visible {
   margin-bottom: 12px;
 }
 
-.settingsSectionHeader > span {
+.settingsSectionHeader>span {
   color: rgba(151, 163, 184, 0.96);
   font-size: 0.73rem;
   font-weight: 800;
@@ -14371,6 +14373,7 @@ button:focus-visible {
 }
 
 @media (max-width: 820px) {
+
   .coverPresetGrid,
   .coverControls,
   .identitySettingsGrid {
@@ -14527,7 +14530,7 @@ button:focus-visible {
   min-width: 0;
 }
 
-.settingsField > span:first-child {
+.settingsField>span:first-child {
   color: rgba(151, 163, 184, 0.92);
   font-size: 0.72rem;
   font-weight: 800;
@@ -14551,7 +14554,7 @@ button:focus-visible {
   align-items: stretch;
 }
 
-.settingsField .slugInputGroup > span {
+.settingsField .slugInputGroup>span {
   padding: 0 14px;
   border-right: 1px solid var(--workspace-panel-border-soft);
   color: var(--text-tertiary);
@@ -14587,7 +14590,7 @@ button:focus-visible {
 }
 
 
-.profilePeopleHeader > div {
+.profilePeopleHeader>div {
   min-width: 0;
   display: flex;
   align-items: center;
@@ -14650,7 +14653,7 @@ button:focus-visible {
   gap: 16px;
 }
 
-.peopleModalHeader > div {
+.peopleModalHeader>div {
   display: grid;
   gap: 4px;
 }
@@ -14863,7 +14866,7 @@ button:focus-visible {
   position: relative;
 }
 
-.sectionTitleActions > span {
+.sectionTitleActions>span {
   font-size: 11.5px;
   font-weight: 650;
   color: var(--edf-accent-soft);
@@ -14890,7 +14893,7 @@ button:focus-visible {
 }
 
 .collaboratorAddToggle,
-.collaboratorComposer > .collaboratorAddToggle {
+.collaboratorComposer>.collaboratorAddToggle {
   width: 34px;
   height: 34px;
   min-width: 34px;
@@ -14924,7 +14927,7 @@ button:focus-visible {
   max-width: 100%;
 }
 
-.collaboratorPickerPanel > button {
+.collaboratorPickerPanel>button {
   min-height: 38px;
   height: 38px;
   padding: 0 12px;
@@ -14982,7 +14985,7 @@ button:focus-visible {
 }
 
 .collaboratorAddToggle,
-.collaboratorComposer > .collaboratorAddToggle {
+.collaboratorComposer>.collaboratorAddToggle {
   width: 36px;
   height: 36px;
   min-width: 36px;
@@ -15004,9 +15007,9 @@ button:focus-visible {
 .collaboratorAddToggle:hover:not(:disabled),
 .collaboratorAddToggle:focus,
 .collaboratorAddToggle:focus-visible,
-.collaboratorComposer > .collaboratorAddToggle:hover:not(:disabled),
-.collaboratorComposer > .collaboratorAddToggle:focus,
-.collaboratorComposer > .collaboratorAddToggle:focus-visible {
+.collaboratorComposer>.collaboratorAddToggle:hover:not(:disabled),
+.collaboratorComposer>.collaboratorAddToggle:focus,
+.collaboratorComposer>.collaboratorAddToggle:focus-visible {
   border-color: var(--border-subtle);
   background: rgba(255, 255, 255, 0.035);
   color: var(--text-primary);
@@ -15189,7 +15192,7 @@ button:focus-visible {
   max-width: 100%;
 }
 
-.collaboratorChips > span {
+.collaboratorChips>span {
   max-width: 220px;
   display: inline-flex;
   align-items: center;
@@ -15232,7 +15235,7 @@ button:focus-visible {
   border-radius: inherit;
 }
 
-.collaboratorChips > span > b {
+.collaboratorChips>span>b {
   min-width: 0;
   max-width: 150px;
   overflow: hidden;
@@ -15243,7 +15246,7 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-.collaboratorChips > span > button {
+.collaboratorChips>span>button {
   width: 20px;
   height: 20px;
   min-width: 20px;
@@ -15260,9 +15263,9 @@ button:focus-visible {
   box-shadow: none;
 }
 
-.collaboratorChips > span > button:hover:not(:disabled),
-.collaboratorChips > span > button:focus,
-.collaboratorChips > span > button:focus-visible {
+.collaboratorChips>span>button:hover:not(:disabled),
+.collaboratorChips>span>button:focus,
+.collaboratorChips>span>button:focus-visible {
   background: rgba(255, 255, 255, 0.055);
   color: var(--text-muted);
   outline: none;
