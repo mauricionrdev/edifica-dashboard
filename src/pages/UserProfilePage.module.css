@@ -1983,3 +1983,145 @@
   background-position: center;
   background-size: cover;
 }
+
+/* v8 · Refinamento final do avatar e informações do perfil público */
+.profileHeroGrid .heroIdentity {
+  min-height: 150px;
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+  padding: 0 26px 22px;
+}
+
+.profileHeroGrid .avatar {
+  position: relative;
+  flex: 0 0 108px;
+  width: 108px;
+  height: 108px;
+  min-width: 108px;
+  max-width: 108px;
+  min-height: 108px;
+  max-height: 108px;
+  margin-top: -46px;
+  padding: 0;
+  border: 4px solid var(--surface-panel);
+  border-radius: 999px;
+  background: #08090a;
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: 0 0 0 1px var(--chassis-border);
+}
+
+.profileHeroGrid .avatar:not(.avatarWithPhoto) {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 255, 255, 0.05), transparent 30%),
+    linear-gradient(180deg, #111316, #070809);
+  color: var(--text-primary);
+}
+
+.profileHeroGrid .avatar:not(.avatarWithPhoto)::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.profileHeroGrid .avatarWithPhoto {
+  background: #08090a;
+  color: transparent;
+}
+
+.profileHeroGrid .avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  display: block;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.profileHeroGrid .heroCopy {
+  min-width: 0;
+  align-self: flex-start;
+  justify-content: start;
+  gap: 5px;
+  padding-top: 56px;
+}
+
+.profileHeroGrid .nameRow {
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.profileHeroGrid .nameRow h1 {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+
+.profileHeroGrid .profileMeta {
+  margin-top: 0;
+  color: var(--text-tertiary);
+}
+
+.profileHeroGrid .profileMeta span {
+  display: block;
+  max-width: 760px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profilePersonAvatar,
+.usersMiniAvatar {
+  background: #08090a;
+  color: var(--text-primary);
+}
+
+.profilePersonAvatar img,
+.usersMiniAvatar img {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  max-height: none;
+}
+
+.profilePersonAvatar,
+.usersMiniAvatar {
+  position: relative;
+  isolation: isolate;
+}
+
+@media (max-width: 720px) {
+  .profileHeroGrid .heroIdentity {
+    gap: 14px;
+    padding: 0 18px 20px;
+  }
+
+  .profileHeroGrid .avatar {
+    flex-basis: 78px;
+    width: 78px;
+    height: 78px;
+    min-width: 78px;
+    max-width: 78px;
+    min-height: 78px;
+    max-height: 78px;
+    margin-top: -34px;
+    font-size: 18px;
+  }
+
+  .profileHeroGrid .heroCopy {
+    padding-top: 44px;
+  }
+}
