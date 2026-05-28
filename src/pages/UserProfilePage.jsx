@@ -575,18 +575,18 @@ export default function UserProfilePage() {
     }
   }, [refreshUserDirectory, userDirectory]);
 
-  const hydratedUserDirectory = useMemo(() => {
-    const source = Array.isArray(userDirectory) ? userDirectory : [];
-    if (!currentUser?.id) return source;
-    return source.map((entry) =>
-      String(entry?.id || '') === String(currentUser.id) ? { ...entry, ...currentUser } : entry
-    );
-  }, [currentUser, userDirectory]);
-
   const profileUser = useMemo(
-    () => hydratedUserDirectory.find((entry) => matchesEntityRouteSegment(userId, entry)) || null,
-    [hydratedUserDirectory, userId]
+    () => (Array.isArray(userDirectory) ? userDirectory.find((entry) => matchesEntityRouteSegment(userId, entry)) : null),
+    [userDirectory, userId]
   );
+
+  const visibleProfileUser = useMemo(() => {
+    if (!profileUser) return null;
+    if (currentUser?.id && String(currentUser.id) === String(profileUser.id)) {
+      return { ...profileUser, ...currentUser };
+    }
+    return profileUser;
+  }, [currentUser, profileUser]);
 
   useEffect(() => {
     if (!profileUser?.id || !userId) return;
@@ -606,14 +606,14 @@ export default function UserProfilePage() {
   const avatarUrl = getUserAvatar(profileUser);
 
   const demandAssigneeOptions = useMemo(() => {
-    const users = Array.isArray(hydratedUserDirectory) ? hydratedUserDirectory : [];
+    const users = Array.isArray(userDirectory) ? userDirectory : [];
     const map = new Map();
     [profileUser, currentUser, ...users].filter(Boolean).forEach((item) => {
       if (!item?.id) return;
       map.set(String(item.id), item);
     });
     return Array.from(map.values()).sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
-  }, [currentUser, hydratedUserDirectory, profileUser]);
+  }, [currentUser, profileUser, userDirectory]);
 
   const selectedNewTaskClient = useMemo(
     () => (Array.isArray(clients) ? clients.find((client) => String(client.id) === String(newTask.clientId)) : null),
@@ -804,15 +804,15 @@ export default function UserProfilePage() {
 
   const publicSideUsers = useMemo(() => {
     const currentProfileId = String(profileUser?.id || '').trim();
-    return (Array.isArray(hydratedUserDirectory) ? hydratedUserDirectory : [])
+    return (Array.isArray(userDirectory) ? userDirectory : [])
       .filter((item) => item?.id && String(item.id) !== currentProfileId)
       .slice(0, 5);
-  }, [hydratedUserDirectory, profileUser?.id]);
+  }, [profileUser?.id, userDirectory]);
 
   const filteredPublicUsers = useMemo(() => {
     const currentProfileId = String(profileUser?.id || '').trim();
     const query = usersSearch.trim().toLowerCase();
-    return (Array.isArray(hydratedUserDirectory) ? hydratedUserDirectory : [])
+    return (Array.isArray(userDirectory) ? userDirectory : [])
       .filter((item) => item?.id && String(item.id) !== currentProfileId)
       .filter((item) => {
         if (!query) return true;
@@ -822,7 +822,7 @@ export default function UserProfilePage() {
           .toLowerCase()
           .includes(query);
       });
-  }, [hydratedUserDirectory, profileUser?.id, usersSearch]);
+  }, [profileUser?.id, userDirectory, usersSearch]);
 
   const publicFirstName = profileUser?.name?.split(' ')?.filter(Boolean)?.[0] || profileUser?.name || 'Usuário';
   const defaultTodaySummary = todayTasksCount === 1
@@ -830,9 +830,9 @@ export default function UserProfilePage() {
     : todayTasksCount > 1
       ? `${publicFirstName} possui ${todayTasksCount} demandas agendadas para hoje.`
       : `${publicFirstName} não possui demandas agendadas para hoje.`;
-  const profileStatusText = String(profileUser?.statusMessage || profileUser?.status_message || '').trim() || defaultTodaySummary;
-  const activeCoverPreset = getProfileCoverPreset(profileUser);
-  const profileCoverStyle = buildProfileCoverStyle(profileUser);
+  const profileStatusText = String(visibleProfileUser?.statusMessage || visibleProfileUser?.status_message || '').trim() || defaultTodaySummary;
+  const activeCoverPreset = getProfileCoverPreset(visibleProfileUser);
+  const profileCoverStyle = buildProfileCoverStyle(visibleProfileUser);
   const portfolioCount = gdvClients.length + gestorClients.length;
   const profileContext = userSquads.length
     ? userSquads.map((squad) => squad.name).join(', ')
