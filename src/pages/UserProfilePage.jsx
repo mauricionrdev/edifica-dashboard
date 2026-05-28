@@ -575,9 +575,17 @@ export default function UserProfilePage() {
     }
   }, [refreshUserDirectory, userDirectory]);
 
+  const hydratedUserDirectory = useMemo(() => {
+    const source = Array.isArray(userDirectory) ? userDirectory : [];
+    if (!currentUser?.id) return source;
+    return source.map((entry) =>
+      String(entry?.id || '') === String(currentUser.id) ? { ...entry, ...currentUser } : entry
+    );
+  }, [currentUser, userDirectory]);
+
   const profileUser = useMemo(
-    () => (Array.isArray(userDirectory) ? userDirectory.find((entry) => matchesEntityRouteSegment(userId, entry)) : null),
-    [userDirectory, userId]
+    () => hydratedUserDirectory.find((entry) => matchesEntityRouteSegment(userId, entry)) || null,
+    [hydratedUserDirectory, userId]
   );
 
   useEffect(() => {
@@ -598,14 +606,14 @@ export default function UserProfilePage() {
   const avatarUrl = getUserAvatar(profileUser);
 
   const demandAssigneeOptions = useMemo(() => {
-    const users = Array.isArray(userDirectory) ? userDirectory : [];
+    const users = Array.isArray(hydratedUserDirectory) ? hydratedUserDirectory : [];
     const map = new Map();
     [profileUser, currentUser, ...users].filter(Boolean).forEach((item) => {
       if (!item?.id) return;
       map.set(String(item.id), item);
     });
     return Array.from(map.values()).sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
-  }, [currentUser, profileUser, userDirectory]);
+  }, [currentUser, hydratedUserDirectory, profileUser]);
 
   const selectedNewTaskClient = useMemo(
     () => (Array.isArray(clients) ? clients.find((client) => String(client.id) === String(newTask.clientId)) : null),
@@ -796,15 +804,15 @@ export default function UserProfilePage() {
 
   const publicSideUsers = useMemo(() => {
     const currentProfileId = String(profileUser?.id || '').trim();
-    return (Array.isArray(userDirectory) ? userDirectory : [])
+    return (Array.isArray(hydratedUserDirectory) ? hydratedUserDirectory : [])
       .filter((item) => item?.id && String(item.id) !== currentProfileId)
       .slice(0, 5);
-  }, [profileUser?.id, userDirectory]);
+  }, [hydratedUserDirectory, profileUser?.id]);
 
   const filteredPublicUsers = useMemo(() => {
     const currentProfileId = String(profileUser?.id || '').trim();
     const query = usersSearch.trim().toLowerCase();
-    return (Array.isArray(userDirectory) ? userDirectory : [])
+    return (Array.isArray(hydratedUserDirectory) ? hydratedUserDirectory : [])
       .filter((item) => item?.id && String(item.id) !== currentProfileId)
       .filter((item) => {
         if (!query) return true;
@@ -814,7 +822,7 @@ export default function UserProfilePage() {
           .toLowerCase()
           .includes(query);
       });
-  }, [profileUser?.id, userDirectory, usersSearch]);
+  }, [hydratedUserDirectory, profileUser?.id, usersSearch]);
 
   const publicFirstName = profileUser?.name?.split(' ')?.filter(Boolean)?.[0] || profileUser?.name || 'Usuário';
   const defaultTodaySummary = todayTasksCount === 1

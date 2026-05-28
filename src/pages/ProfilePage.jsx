@@ -1674,7 +1674,7 @@ function Select({ value, onChange, children, className = '', disabled = false, p
 }
 
 export default function ProfilePage() {
-  const { setPanelHeader, squads = [] } = useOutletContext();
+  const { setPanelHeader, squads = [], refreshUserDirectory } = useOutletContext();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, reloadUser } = useAuth();
@@ -2461,8 +2461,16 @@ export default function ProfilePage() {
   async function handleSaveProfile() {
     try {
       setSavingProfile(true);
-      await updateProfile(profileForm);
-      await reloadUser();
+      const result = await updateProfile(profileForm);
+      const updatedUser = result?.user;
+      if (updatedUser?.id) {
+        setDemandUsers((prev) =>
+          (Array.isArray(prev) ? prev : []).map((item) =>
+            String(item?.id) === String(updatedUser.id) ? { ...item, ...updatedUser } : item
+          )
+        );
+      }
+      await Promise.allSettled([reloadUser(), refreshUserDirectory?.()]);
       showToast('Perfil atualizado.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Erro ao salvar.', { variant: 'error' });
