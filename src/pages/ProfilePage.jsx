@@ -1687,6 +1687,8 @@ export default function ProfilePage() {
   const clientSearchPanelRef = useRef(null);
   const taskDeepLinkHandledRef = useRef('');
   const collaboratorComposerRef = useRef(null);
+  const collaboratorToggleRef = useRef(null);
+  const collaboratorPickerPanelRef = useRef(null);
 
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
@@ -1775,6 +1777,7 @@ export default function ProfilePage() {
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
   const [collaboratorPickerOpen, setCollaboratorPickerOpen] = useState(false);
+  const [collaboratorPickerPosition, setCollaboratorPickerPosition] = useState(null);
   const [collaboratorSearch, setCollaboratorSearch] = useState('');
   const [collaboratorSaving, setCollaboratorSaving] = useState(false);
   const [collaboratorRemovingId, setCollaboratorRemovingId] = useState('');
@@ -2335,11 +2338,39 @@ export default function ProfilePage() {
     });
   }, [collaboratorOptions, collaboratorSearch]);
 
+  useLayoutEffect(() => {
+    if (!collaboratorPickerOpen) {
+      setCollaboratorPickerPosition(null);
+      return undefined;
+    }
+
+    function updateCollaboratorPickerPosition() {
+      const rect = collaboratorToggleRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const safeWidth = Math.min(336, Math.max(280, window.innerWidth - 56));
+      setCollaboratorPickerPosition({
+        top: Math.round(rect.bottom + 10),
+        right: Math.max(16, Math.round(window.innerWidth - rect.right)),
+        width: safeWidth,
+      });
+    }
+
+    updateCollaboratorPickerPosition();
+    window.addEventListener('resize', updateCollaboratorPickerPosition);
+    window.addEventListener('scroll', updateCollaboratorPickerPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateCollaboratorPickerPosition);
+      window.removeEventListener('scroll', updateCollaboratorPickerPosition, true);
+    };
+  }, [collaboratorPickerOpen, activeTaskId]);
+
   useEffect(() => {
     if (!collaboratorPickerOpen) return undefined;
 
     function handleCollaboratorPickerPointerDown(event) {
-      if (collaboratorComposerRef.current?.contains(event.target)) return;
+      const target = event.target;
+      if (collaboratorComposerRef.current?.contains(target)) return;
+      if (collaboratorPickerPanelRef.current?.contains(target)) return;
       setCollaboratorPickerOpen(false);
     }
 
@@ -4377,6 +4408,7 @@ export default function ProfilePage() {
                       <div className={styles.collaboratorComposer} ref={collaboratorComposerRef}>
                         <button
                           type="button"
+                          ref={collaboratorToggleRef}
                           className={styles.collaboratorAddToggle}
                           onClick={() => setCollaboratorPickerOpen((open) => !open)}
                           aria-label="Adicionar colaborador"
@@ -4384,8 +4416,16 @@ export default function ProfilePage() {
                         >
                           +
                         </button>
-                        {collaboratorPickerOpen ? (
-                          <div className={styles.collaboratorPickerPanel}>
+                        {collaboratorPickerOpen ? createPortal(
+                          <div
+                            ref={collaboratorPickerPanelRef}
+                            className={styles.collaboratorPickerPanel}
+                            style={collaboratorPickerPosition ? {
+                              top: collaboratorPickerPosition.top,
+                              right: collaboratorPickerPosition.right,
+                              width: collaboratorPickerPosition.width,
+                            } : undefined}
+                          >
                             <div className={styles.collaboratorPickerHeader}>
                               <strong>Adicionar colaborador</strong>
                               <span>{filteredCollaboratorOptions.length}</span>
@@ -4421,7 +4461,8 @@ export default function ProfilePage() {
                                 <span className={styles.collaboratorPickerEmpty}>Nenhum usuário</span>
                               )}
                             </div>
-                          </div>
+                          </div>,
+                          document.body
                         ) : null}
                       </div>
                     ) : null}

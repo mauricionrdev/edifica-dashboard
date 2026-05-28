@@ -15286,3 +15286,81 @@ button:focus-visible {
 .collaboratorPickerPanel {
   z-index: 240;
 }
+
+/* Task collaborator picker final override */
+.collaboratorPickerPanel {
+  position: fixed;
+  left: auto;
+  z-index: 9000;
+  max-width: calc(100vw - 32px);
+  max-height: min(420px, calc(100vh - 96px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--edf-surface-solid);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.collaboratorPickerPanel button.collaboratorPickerOption {
+  width: 100%;
+  min-height: 38px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 5px 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  box-shadow: none;
+}
+
+.collaboratorPickerPanel button.collaboratorPickerOption:hover:not(:disabled),
+.collaboratorPickerPanel button.collaboratorPickerOption:focus,
+.collaboratorPickerPanel button.collaboratorPickerOption:focus-visible {
+  border: 0;
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+}
+
+.collaboratorPickerPanel .collaboratorPickerAvatar {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  box-shadow: none;
+}
+
+.collaboratorPickerPanel .collaboratorPickerText {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+}
+
+.collaboratorPickerPanel .collaboratorPickerText strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collaboratorPickerPanel .collaboratorPickerText small {
+  display: none;
+}
