@@ -1773,8 +1773,8 @@ export default function ProfilePage() {
   const [collaborators, setCollaborators] = useState([]);
   const [collaboratorsLoading, setCollaboratorsLoading] = useState(false);
   const [collaboratorUserId, setCollaboratorUserId] = useState('');
-  const [collaboratorSearch, setCollaboratorSearch] = useState('');
   const [collaboratorPickerOpen, setCollaboratorPickerOpen] = useState(false);
+  const [collaboratorSearch, setCollaboratorSearch] = useState('');
   const [collaboratorSaving, setCollaboratorSaving] = useState(false);
   const [collaboratorRemovingId, setCollaboratorRemovingId] = useState('');
   const [contentForm, setContentForm] = useState({
@@ -2326,9 +2326,12 @@ export default function ProfilePage() {
       .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR'));
   }, [activeTask, collaborators, demandUsers]);
   const filteredCollaboratorOptions = useMemo(() => {
-    const query = normalizeText(collaboratorSearch);
+    const query = String(collaboratorSearch || '').trim().toLowerCase();
     if (!query) return collaboratorOptions;
-    return collaboratorOptions.filter((item) => normalizeText(`${item.name || ''} ${roleLabel(item.role) || ''} ${item.email || ''}`).includes(query));
+    return collaboratorOptions.filter((item) => {
+      const haystack = [item.name, item.email, item.roleLabel, item.role, item.title].filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(query);
+    });
   }, [collaboratorOptions, collaboratorSearch]);
   const visibleTaskComments = useMemo(() => taskComments.filter((comment) => !isSystemActivityComment(comment)), [taskComments]);
   const activeActivityEvents = useMemo(() => buildActivityEvents(activeTask, taskComments, taskEvents), [activeTask, taskComments, taskEvents]);
@@ -2344,6 +2347,7 @@ export default function ProfilePage() {
   useEffect(() => {
     setCollaboratorPickerOpen(false);
     setCollaboratorUserId('');
+    setCollaboratorSearch('');
   }, [activeTaskId]);
   const completionRate = tasks.length ? Math.round((operationCounts.done / tasks.length) * 100) : 0;
   const profileDate = useMemo(() => new Date(), []);
@@ -3217,10 +3221,8 @@ export default function ProfilePage() {
   }
 
 
-  async function handleAddCollaborator(eventOrUserId) {
-    if (eventOrUserId?.preventDefault) eventOrUserId.preventDefault();
-    const targetUserId = typeof eventOrUserId === 'string' ? eventOrUserId : collaboratorUserId;
-    if (!activeTask || !targetUserId) return;
+  async function addCollaboratorById(userId) {
+    if (!activeTask || !userId) return;
     if (!canManageActiveCollaborators) {
       showToast('Sem permissão para adicionar colaborador.', { variant: 'error' });
       return;
@@ -3228,15 +3230,15 @@ export default function ProfilePage() {
 
     try {
       setCollaboratorSaving(true);
-      await addTaskCollaborator(activeTask.id, { userId: targetUserId, role: 'follower' });
-      const selectedUser = demandUsers.find((item) => item.id === targetUserId);
+      await addTaskCollaborator(activeTask.id, { userId, role: 'follower' });
+      const selectedUser = demandUsers.find((item) => item.id === userId);
       setCollaborators((prev) => {
-        if (prev.some((item) => item.userId === targetUserId)) return prev;
+        if (prev.some((item) => item.userId === userId)) return prev;
         return [
           ...prev,
           {
             taskId: activeTask.id,
-            userId: targetUserId,
+            userId,
             role: 'follower',
             userName: selectedUser?.name || 'Usuário',
             userEmail: selectedUser?.email || '',
@@ -3255,6 +3257,11 @@ export default function ProfilePage() {
     } finally {
       setCollaboratorSaving(false);
     }
+  }
+
+  async function handleAddCollaborator(event) {
+    event.preventDefault();
+    await addCollaboratorById(collaboratorUserId);
   }
 
   async function handleRemoveCollaborator(userId) {
@@ -4348,10 +4355,66 @@ export default function ProfilePage() {
                 </section>
               ) : null}
 
-              <section className={`${styles.drawerSection} ${styles.collaboratorSection}`}>
+              <section className={`${styles.drawerSection} ${styles.collaboratorsSection}`}>
                 <div className={styles.sectionTitleRow}>
                   <h4>Colaboradores</h4>
-                  <span>{collaborators.length}</span>
+                  <div className={styles.sectionTitleActions}>
+                    <span>{collaborators.length}</span>
+                    {canManageActiveCollaborators ? (
+                      <div className={styles.collaboratorComposer}>
+                        <button
+                          type="button"
+                          className={styles.collaboratorAddToggle}
+                          onClick={() => setCollaboratorPickerOpen((open) => !open)}
+                          aria-label="Adicionar colaborador"
+                          aria-expanded={collaboratorPickerOpen}
+                        >
+                          +
+                        </button>
+                        {collaboratorPickerOpen ? (
+                          <div className={styles.collaboratorPickerPanel}>
+                            <div className={styles.collaboratorPickerHeader}>
+                              <strong>Adicionar colaborador</strong>
+                              <span>{filteredCollaboratorOptions.length}</span>
+                            </div>
+                            <input
+                              type="search"
+                              value={collaboratorSearch}
+                              onChange={(event) => setCollaboratorSearch(event.target.value)}
+                              placeholder="Buscar colaborador"
+                              aria-label="Buscar colaborador"
+                              className={styles.collaboratorSearch}
+                            />
+                            <div className={styles.collaboratorPickerList}>
+                              {filteredCollaboratorOptions.length ? filteredCollaboratorOptions.map((option) => {
+                                const optionAvatar = getUserAvatar(option) || option.avatarUrl || '';
+                                const optionLabel = option.roleLabel || option.role || option.title || '';
+                                return (
+                                  <button
+                                    key={option.id}
+                                    type="button"
+                                    className={styles.collaboratorPickerOption}
+                                    onClick={() => addCollaboratorById(option.id)}
+                                    disabled={collaboratorSaving}
+                                  >
+                                    <span className={styles.collaboratorPickerAvatar}>
+                                      {optionAvatar ? <img src={optionAvatar} alt="" /> : initials(option.name)}
+                                    </span>
+                                    <span className={styles.collaboratorPickerText}>
+                                      <strong>{option.name}</strong>
+                                      {optionLabel ? <small>{optionLabel}</small> : null}
+                                    </span>
+                                  </button>
+                                );
+                              }) : (
+                                <span className={styles.collaboratorPickerEmpty}>Nenhum usuário</span>
+                              )}
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
                 <div className={styles.collaboratorBar}>
                   {collaboratorsLoading ? (
@@ -4380,56 +4443,6 @@ export default function ProfilePage() {
                           </span>
                         );
                       })}
-                    </div>
-                  ) : null}
-
-                  {canManageActiveCollaborators ? (
-                    <div className={styles.collaboratorComposer}>
-                      <button
-                        type="button"
-                        className={styles.collaboratorAddToggle}
-                        onClick={() => setCollaboratorPickerOpen((open) => !open)}
-                        aria-label="Adicionar colaborador"
-                        aria-expanded={collaboratorPickerOpen}
-                      >
-                        +
-                      </button>
-                      {collaboratorPickerOpen ? (
-                        <div className={styles.collaboratorPickerPanel} role="dialog" aria-label="Adicionar colaborador">
-                          <div className={styles.collaboratorPickerHeader}>
-                            <strong>Adicionar colaborador</strong>
-                            <span>{filteredCollaboratorOptions.length}</span>
-                          </div>
-                          <input
-                            value={collaboratorSearch}
-                            onChange={(event) => setCollaboratorSearch(event.target.value)}
-                            placeholder="Buscar colaborador"
-                            aria-label="Buscar colaborador"
-                          />
-                          <div className={styles.collaboratorPickerList}>
-                            {filteredCollaboratorOptions.length ? filteredCollaboratorOptions.map((option) => {
-                              const optionAvatar = getUserAvatar(option) || option.avatarUrl || '';
-                              return (
-                                <button
-                                  key={option.id}
-                                  type="button"
-                                  className={styles.collaboratorPickerOption}
-                                  onClick={() => handleAddCollaborator(option.id)}
-                                  disabled={collaboratorSaving}
-                                >
-                                  {optionAvatar ? <span className={styles.collaboratorPickerAvatar}><img src={optionAvatar} alt="" /></span> : <span className={styles.collaboratorPickerAvatar}>{initials(option.name || option.email || 'U')}</span>}
-                                  <span>
-                                    <b>{option.name || option.email || 'Usuário'}</b>
-                                    <em>{roleLabel(option.role) || option.email || 'Colaborador'}</em>
-                                  </span>
-                                </button>
-                              );
-                            }) : (
-                              <div className={styles.collaboratorPickerEmpty}>Nenhum usuário</div>
-                            )}
-                          </div>
-                        </div>
-                      ) : null}
                     </div>
                   ) : null}
                 </div>
