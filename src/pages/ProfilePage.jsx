@@ -3595,11 +3595,21 @@ export default function ProfilePage() {
     : [];
   const activeClientId = activeTask?.clientId || activeTask?.client_id || activeTask?.metadata?.clientId || activeTask?.metadata?.client_id || '';
   const activeWorkflowStatus = activeTask?.status || activeTask?.metadata?.status || '';
+  const isCurrentUserActiveTaskParticipant = Boolean(
+    activeTask
+      && user?.id
+      && (
+        String(activeTask.assigneeUserId || activeTask.assignee_user_id || '') === String(user.id)
+        || String(activeTask.createdByUserId || activeTask.created_by_user_id || '') === String(user.id)
+        || ['responsible', 'collaborator'].includes(String(activeTask.profileRelation || ''))
+        || collaborators.some((item) => String(item?.userId || item?.id || '') === String(user.id))
+      )
+  );
   const canConfirmActiveAccess = Boolean(
     activeKind === 'briefing'
       && activeClientId
       && ['activation_gdv', 'access_delivery', 'traffic_activation'].includes(activeWorkflowStatus)
-      && canCompleteActiveTask
+      && (canCompleteActiveTask || isCurrentUserActiveTaskParticipant)
   );
   const accessConfirmCommentId = canConfirmActiveAccess
     ? (visibleTaskComments.find(isAccessDeliveryComment)?.id || visibleTaskComments[0]?.id || '')
