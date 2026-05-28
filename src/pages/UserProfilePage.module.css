@@ -2053,3 +2053,97 @@
     padding-top: 10px;
   }
 }
+
+/* v10 · Correção definitiva: perfil público usa a mesma base real de capas do perfil interno */
+.profileHeroGrid .profileCover,
+.profileCover,
+.usersMiniCover {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.10), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.72)),
+    var(--bg-app);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.profileCover_default,
+.usersMiniCover.profileCover_default {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.10), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.72)),
+    var(--bg-app);
+}
+
+.profileCover_amber,
+.usersMiniCover.profileCover_amber {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 193, 7, 0.22), transparent 27%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.13), rgba(23, 26, 32, 0.22) 44%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
+}
+
+.profileCover_midnight,
+.usersMiniCover.profileCover_midnight {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(59, 130, 246, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.22), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.78)),
+    var(--bg-app);
+}
+
+.profileCover_steel,
+.usersMiniCover.profileCover_steel {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(148, 163, 184, 0.15), transparent 28%),
+    linear-gradient(135deg, rgba(148, 163, 184, 0.10), rgba(23, 26, 32, 0.22) 42%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
+}
+
+.profileCover_obsidian,
+.usersMiniCover.profileCover_obsidian {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.07), transparent 26%),
+    linear-gradient(135deg, rgba(18, 20, 24, 0.34), rgba(10, 12, 16, 0.22) 42%, rgba(3, 4, 6, 0.82)),
+    var(--bg-app);
+}
+
+.profileCover_aurora,
+.usersMiniCover.profileCover_aurora {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(255, 193, 7, 0.15), transparent 28%),
+    linear-gradient(135deg, rgba(255, 193, 7, 0.09), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.74)),
+    var(--bg-app);
+}
+
+.profileCover_graphite,
+.usersMiniCover.profileCover_graphite {
+  background:
+    radial-gradient(circle at 16% 28%, rgba(148, 163, 184, 0.12), transparent 28%),
+    linear-gradient(135deg, rgba(148, 163, 184, 0.08), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
+}
+
+.profileCover_violet,
+.usersMiniCover.profileCover_violet {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(168, 85, 247, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
+}
+
+.profileCover_teal,
+.usersMiniCover.profileCover_teal {
+  background:
+    radial-gradient(circle at 18% 28%, rgba(20, 184, 166, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(20, 184, 166, 0.08), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.76)),
+    var(--bg-app);
+}
+
+.profileCover_custom,
+.profileCover_image,
+.usersMiniCover.profileCover_custom,
+.usersMiniCover.profileCover_image {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
