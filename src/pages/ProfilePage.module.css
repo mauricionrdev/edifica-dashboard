@@ -14243,7 +14243,7 @@ button:focus-visible {
   min-height: 38px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: var(--surface-panel);
+  background: rgba(255, 255, 255, 0.035);
   color: rgba(229, 231, 235, 0.96);
   font-weight: 800;
   padding: 0 14px;
@@ -14993,7 +14993,7 @@ button:focus-visible {
   padding: 0;
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  background: var(--surface-panel);
+  background: rgba(255, 255, 255, 0.035);
   color: var(--text-primary);
   font-size: 18px;
   font-weight: 760;
@@ -15008,7 +15008,7 @@ button:focus-visible {
 .collaboratorComposer > .collaboratorAddToggle:focus,
 .collaboratorComposer > .collaboratorAddToggle:focus-visible {
   border-color: var(--border-subtle);
-  background: var(--surface-panel);
+  background: rgba(255, 255, 255, 0.035);
   color: var(--text-primary);
   outline: none;
   box-shadow: none;
@@ -15066,7 +15066,7 @@ button:focus-visible {
   height: 38px;
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  background: var(--surface-panel);
+  background: rgba(255, 255, 255, 0.035);
   color: var(--text-primary);
   padding: 0 12px;
   font-size: 13px;
@@ -15082,7 +15082,7 @@ button:focus-visible {
 .collaboratorSearch:focus,
 .collaboratorSearch:focus-visible {
   border-color: var(--border-subtle);
-  background: var(--surface-panel);
+  background: rgba(255, 255, 255, 0.035);
   outline: none;
   box-shadow: none;
 }
@@ -15279,60 +15279,73 @@ button:focus-visible {
   box-shadow: none;
 }
 
-/* vTaskCollaboratorPicker — final override: keep picker visible and restore full-row option layout */
-.collaboratorsSection,
+/* Task collaborator picker — keep dropdown visible and preserve option layout */
+.collaboratorsSection {
+  z-index: 20;
+  overflow: visible;
+  contain: layout style;
+  content-visibility: visible;
+  isolation: isolate;
+}
+
 .collaboratorsSection .sectionTitleRow,
 .collaboratorsSection .sectionTitleActions,
-.collaboratorComposer,
-.collaboratorPickerPanel {
+.collaboratorsSection .collaboratorComposer {
   overflow: visible;
 }
 
-.collaboratorPickerPanel {
-  z-index: 320;
+.collaboratorsSection .collaboratorPickerPanel {
+  z-index: 240;
+  width: min(420px, calc(100vw - 56px));
+  background: var(--bg-canvas);
 }
 
-.collaboratorPickerPanel .collaboratorPickerList {
+.collaboratorsSection .collaboratorPickerList {
   width: 100%;
   min-width: 0;
-  max-height: 288px;
 }
 
-.collaboratorPickerPanel .collaboratorPickerList button.collaboratorPickerOption {
+.collaboratorsSection .collaboratorComposer button.collaboratorPickerOption {
   width: 100%;
+  min-width: 0;
   height: auto;
-  min-height: 42px;
+  min-height: 44px;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
   align-items: center;
-  justify-content: stretch;
+  justify-content: initial;
   gap: 10px;
   padding: 7px 8px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: var(--text-primary);
   text-align: left;
   box-shadow: none;
-  cursor: pointer;
+  flex-shrink: 1;
 }
 
-.collaboratorPickerPanel .collaboratorPickerList button.collaboratorPickerOption:hover:not(:disabled),
-.collaboratorPickerPanel .collaboratorPickerList button.collaboratorPickerOption:focus,
-.collaboratorPickerPanel .collaboratorPickerList button.collaboratorPickerOption:focus-visible {
-  background: var(--surface-panel);
+.collaboratorsSection .collaboratorComposer button.collaboratorPickerOption:hover:not(:disabled),
+.collaboratorsSection .collaboratorComposer button.collaboratorPickerOption:focus,
+.collaboratorsSection .collaboratorComposer button.collaboratorPickerOption:focus-visible {
+  background: var(--bg-hover);
+  border: 0;
   color: var(--text-primary);
   outline: none;
   box-shadow: none;
 }
 
-.collaboratorPickerPanel .collaboratorPickerOption .collaboratorPickerAvatar {
+.collaboratorsSection .collaboratorPickerOption .collaboratorPickerAvatar {
   grid-column: 1;
+  grid-row: 1;
 }
 
-.collaboratorPickerPanel .collaboratorPickerOption .collaboratorPickerText {
+.collaboratorsSection .collaboratorPickerOption .collaboratorPickerText {
   grid-column: 2;
-  display: flex;
+  grid-row: 1;
   min-width: 0;
-  overflow: hidden;
+  display: flex;
+  opacity: 1;
+  visibility: visible;
 }
+
