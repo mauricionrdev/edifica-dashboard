@@ -15303,7 +15303,8 @@ button:focus-visible {
   padding: 12px;
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  background: var(--edf-surface-solid);
+  /* background: var(--edf-surface-solid); */
+  background: #08090a;
   box-shadow: none;
   overflow: hidden;
 }
