@@ -15268,3 +15268,21 @@ button:focus-visible {
   outline: none;
   box-shadow: none;
 }
+
+/* Task collaborator picker — keep panel above drawer sections */
+.collaboratorsSection {
+  contain: none;
+  content-visibility: visible;
+  overflow: visible;
+  z-index: 80;
+}
+
+.collaboratorsSection .sectionTitleRow,
+.collaboratorsSection .sectionTitleActions,
+.collaboratorComposer {
+  overflow: visible;
+}
+
+.collaboratorPickerPanel {
+  z-index: 240;
+}
