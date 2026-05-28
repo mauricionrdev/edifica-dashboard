@@ -14826,3 +14826,133 @@ button:focus-visible {
   }
 }
 
+
+/* vTaskDrawerLayout — modal full-height e seletor de colaboradores contido */
+.drawerOverlay {
+  justify-content: center;
+  align-items: stretch;
+  padding: 0;
+}
+
+.drawerPanel {
+  width: min(980px, 100vw);
+  max-width: 980px;
+  height: 100vh;
+  max-height: 100vh;
+  border-right: 1px solid var(--edf-border-strong);
+  border-left: 1px solid var(--edf-border-strong);
+  border-radius: 0;
+  animation: edf-fade-in 160ms ease;
+}
+
+.drawerSection {
+  position: relative;
+}
+
+.collaboratorsSection {
+  z-index: 8;
+  overflow: visible;
+}
+
+.sectionTitleActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+  position: relative;
+}
+
+.sectionTitleActions > span {
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--edf-accent-soft);
+}
+
+.collaboratorsSection .sectionTitleRow {
+  align-items: center;
+}
+
+.collaboratorBar {
+  align-items: center;
+  gap: 10px;
+  margin-top: 0;
+  overflow: visible;
+}
+
+.collaboratorComposer {
+  position: relative;
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 0;
+  z-index: 30;
+}
+
+.collaboratorAddToggle,
+.collaboratorComposer > .collaboratorAddToggle {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 10px;
+  font-size: 17px;
+}
+
+.collaboratorPickerPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  z-index: 120;
+  width: min(360px, calc(100vw - 48px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: 10px;
+  background: var(--edf-surface-solid);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.20);
+}
+
+.collaboratorPickerPanel .profileSelect,
+.collaboratorPickerPanel .formSelect,
+.collaboratorPickerPanel .profileSelectButton {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.collaboratorPickerPanel > button {
+  min-height: 38px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+}
+
+.collaboratorChipAvatar,
+.workflowStepAvatar,
+.taskTextViewerCollaboratorAvatar {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.collaboratorChipAvatar img,
+.workflowStepAvatar img,
+.taskTextViewerCollaboratorAvatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.collaboratorChips,
+.collaboratorBar .collaboratorChips {
+  margin-top: 0;
+  align-items: center;
+}

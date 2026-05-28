@@ -3595,21 +3595,11 @@ export default function ProfilePage() {
     : [];
   const activeClientId = activeTask?.clientId || activeTask?.client_id || activeTask?.metadata?.clientId || activeTask?.metadata?.client_id || '';
   const activeWorkflowStatus = activeTask?.status || activeTask?.metadata?.status || '';
-  const isCurrentUserActiveTaskParticipant = Boolean(
-    activeTask
-      && user?.id
-      && (
-        String(activeTask.assigneeUserId || activeTask.assignee_user_id || '') === String(user.id)
-        || String(activeTask.createdByUserId || activeTask.created_by_user_id || '') === String(user.id)
-        || ['responsible', 'collaborator'].includes(String(activeTask.profileRelation || ''))
-        || collaborators.some((item) => String(item?.userId || item?.id || '') === String(user.id))
-      )
-  );
   const canConfirmActiveAccess = Boolean(
     activeKind === 'briefing'
       && activeClientId
       && ['activation_gdv', 'access_delivery', 'traffic_activation'].includes(activeWorkflowStatus)
-      && (canCompleteActiveTask || isCurrentUserActiveTaskParticipant)
+      && canCompleteActiveTask
   );
   const accessConfirmCommentId = canConfirmActiveAccess
     ? (visibleTaskComments.find(isAccessDeliveryComment)?.id || visibleTaskComments[0]?.id || '')
@@ -4349,10 +4339,42 @@ export default function ProfilePage() {
                 </section>
               ) : null}
 
-              <section className={styles.drawerSection}>
+              <section className={`${styles.drawerSection} ${styles.collaboratorsSection}`}>
                 <div className={styles.sectionTitleRow}>
                   <h4>Colaboradores</h4>
-                  <span>{collaborators.length}</span>
+                  <div className={styles.sectionTitleActions}>
+                    <span>{collaborators.length}</span>
+                    {canManageActiveCollaborators ? (
+                      <div className={styles.collaboratorComposer}>
+                        <button
+                          type="button"
+                          className={styles.collaboratorAddToggle}
+                          onClick={() => setCollaboratorPickerOpen((open) => !open)}
+                          aria-label="Adicionar colaborador"
+                          aria-expanded={collaboratorPickerOpen}
+                        >
+                          +
+                        </button>
+                        {collaboratorPickerOpen ? (
+                          <form className={styles.collaboratorPickerPanel} onSubmit={handleAddCollaborator}>
+                            <Select
+                              type="user"
+                              value={collaboratorUserId}
+                              onChange={(event) => setCollaboratorUserId(event.target.value)}
+                              aria-label="Colaborador"
+                              className={styles.formSelect}
+                            >
+                              <option value="">Adicionar colaborador</option>
+                              {collaboratorOptions.map((option) => (
+                                <option key={option.id} value={option.id} data-avatar={getUserAvatar(option) || option.avatarUrl || ''} data-name={option.name}>{option.name}</option>
+                              ))}
+                            </Select>
+                            <button type="submit" disabled={collaboratorSaving || !collaboratorUserId}>Adicionar</button>
+                          </form>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
                 <div className={styles.collaboratorBar}>
                   {collaboratorsLoading ? (
@@ -4381,37 +4403,6 @@ export default function ProfilePage() {
                           </span>
                         );
                       })}
-                    </div>
-                  ) : null}
-
-                  {canManageActiveCollaborators ? (
-                    <div className={styles.collaboratorComposer}>
-                      <button
-                        type="button"
-                        className={styles.collaboratorAddToggle}
-                        onClick={() => setCollaboratorPickerOpen((open) => !open)}
-                        aria-label="Adicionar colaborador"
-                        aria-expanded={collaboratorPickerOpen}
-                      >
-                        +
-                      </button>
-                      {collaboratorPickerOpen ? (
-                        <form className={styles.collaboratorPickerPanel} onSubmit={handleAddCollaborator}>
-                          <Select
-                            type="user"
-                            value={collaboratorUserId}
-                            onChange={(event) => setCollaboratorUserId(event.target.value)}
-                            aria-label="Colaborador"
-                            className={styles.formSelect}
-                          >
-                            <option value="">Adicionar colaborador</option>
-                            {collaboratorOptions.map((option) => (
-                              <option key={option.id} value={option.id} data-avatar={getUserAvatar(option) || option.avatarUrl || ''} data-name={option.name}>{option.name}</option>
-                            ))}
-                          </Select>
-                          <button type="submit" disabled={collaboratorSaving || !collaboratorUserId}>Adicionar</button>
-                        </form>
-                      ) : null}
                     </div>
                   ) : null}
                 </div>
