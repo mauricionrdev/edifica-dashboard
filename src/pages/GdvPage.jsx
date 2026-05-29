@@ -82,8 +82,6 @@ function goalSignals(calc = {}) {
   return {
     closed,
     projected,
-    profitGoal,
-    contractGoal,
     primaryGoal,
     hitProfit,
     hitContracts,
@@ -151,9 +149,7 @@ function statusTone(calc, clientStatus) {
   const signals = goalSignals(calc);
   if (!signals.primaryGoal) return 'muted';
 
-  const hitPrimaryGoal = signals.profitGoal > 0 ? signals.hitProfit : signals.hitContracts;
-
-  if (hitPrimaryGoal) return 'green';
+  if (signals.hitAny) return 'green';
   if (signals.projected >= signals.primaryGoal) return 'amber';
   if (signals.progress >= 55) return 'amber';
   return 'red';
@@ -169,6 +165,7 @@ function statusLabel(calc, clientStatus) {
   if (!signals.primaryGoal) return 'Sem meta';
 
   if (signals.hitProfit) return 'Meta lucro';
+  if (signals.hitContracts) return 'Meta contratos';
   if (signals.projected >= signals.primaryGoal) return 'Vai bater';
   if (signals.progress >= 55) return 'Em andamento';
   return 'Crítico';
@@ -225,11 +222,14 @@ function clientPriorityRank(row) {
   if (!isActiveClientStatus(clientStatus)) return 0;
 
   const signals = goalSignals(row.calc || {});
+  const hitPrimaryGoal = signals.profitGoal > 0 ? signals.hitProfit : signals.hitContracts;
 
   // Quanto maior o rank, mais alto o cliente aparece na lista.
   // A categoria é obrigatoriamente mais importante que qualquer pontuação numérica.
+  // Para GDV, meta de lucro é a prioridade. Bater contratos não reduz criticidade
+  // quando ainda existe meta de lucro pendente.
   if (signals.primaryGoal <= 0) return 3; // Sem meta
-  if (signals.hitAny) return 2; // Meta batida
+  if (hitPrimaryGoal) return 2; // Meta batida
   if (signals.projected >= signals.primaryGoal) return 4; // Vai bater
   if (signals.progress >= 55) return 5; // Em andamento
 
