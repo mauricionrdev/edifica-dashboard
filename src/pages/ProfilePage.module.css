@@ -13956,7 +13956,7 @@ button:focus-visible {
   height: 108px;
   min-width: 108px;
   border-radius: 999px;
-  border: 4px solid var(--profile-card-main);
+  /* border: 4px solid var(--profile-card-main); */
   background: var(--bg-app);
   box-shadow: 0 0 0 1px var(--line);
 }
