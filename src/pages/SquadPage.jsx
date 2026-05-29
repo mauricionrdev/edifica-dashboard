@@ -64,6 +64,13 @@ function toneClass(stylesMap, tone) {
   return tone && stylesMap[tone] ? stylesMap[tone] : '';
 }
 
+function statusVisualClass(statusText) {
+  if (statusText === 'Meta batida') return styles.profitGoal;
+  if (statusText === 'Meta lucro') return styles.profitGoal;
+  if (statusText === 'Vai bater') return styles.willHitGoal;
+  return '';
+}
+
 function effectiveForecast(closed, predicted) {
   return Math.max(Number(closed) || 0, Number(predicted) || 0);
 }
