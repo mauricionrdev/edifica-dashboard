@@ -15374,3 +15374,38 @@ button:focus-visible {
 .collaboratorPickerPanel .collaboratorPickerText small {
   display: none;
 }
+/* internal-profile-avatar-fallback — mantém a cor real do avatar no hero quando não há foto */
+.profileHeroGrid .hero .avatar.avatar_amber {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.profileHeroGrid .hero .avatar.avatar_blue {
+  background: var(--info);
+  color: var(--bg-app);
+}
+
+.profileHeroGrid .hero .avatar.avatar_violet {
+  background: #B784F0;
+  color: #1a0d2c;
+}
+
+.profileHeroGrid .hero .avatar.avatar_emerald {
+  background: var(--success-text);
+  color: var(--bg-app);
+}
+
+.profileHeroGrid .hero .avatar.avatar_rose {
+  background: #EF7AAE;
+  color: #2c0820;
+}
+
+.profileHeroGrid .hero .avatar.avatar_slate,
+.profileHeroGrid .hero .avatar.avatar_grafite {
+  background: var(--field-bg);
+  color: var(--text-secondary);
+}
+
+.profileHeroGrid .hero .avatar:has(img) {
+  background: var(--bg-app);
+}
