@@ -27,7 +27,6 @@ import {
   calcWeek,
   currentWeek,
 } from '../utils/gdvMetrics.js';
-import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import {
   getSquadAvatar,
   readAvatarFile,
@@ -67,6 +66,34 @@ function toneClass(stylesMap, tone) {
 
 function effectiveForecast(closed, predicted) {
   return Math.max(Number(closed) || 0, Number(predicted) || 0);
+}
+
+function parseClientPeriodDate(value) {
+  if (!value) return null;
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isClientAvailableForPeriod(client, year, month0) {
+  if (!client) return false;
+
+  const end = new Date(year, month0 + 1, 0, 23, 59, 59, 999);
+  const start = parseClientPeriodDate(
+    client.startDate || client.start_date || client.createdAt || client.created_at
+  );
+  const churn = parseClientPeriodDate(client.churnDate || client.churn_date);
+
+  if (start && start > end) return false;
+  if (churn && churn <= end) return false;
+  return true;
+}
+
+function isPortfolioStatus(status) {
+  return (
+    isActiveClientStatus(status) ||
+    status === CLIENT_STATUS.ONBOARDING ||
+    status === CLIENT_STATUS.RAMPAGE
+  );
 }
 
 function statusTone(calc, status) {
@@ -350,10 +377,18 @@ export default function SquadPage() {
 
   const squadClients = useMemo(
     () =>
-      filterOperationalClientsForPeriod(clients, year, month0).filter(
-        (client) => client?.squadId === resolvedSquadId
+      (Array.isArray(clients) ? clients : []).filter(
+        (client) =>
+          client?.squadId === resolvedSquadId &&
+          isClientAvailableForPeriod(client, year, month0) &&
+          isPortfolioStatus(client.status)
       ),
     [clients, month0, resolvedSquadId, year]
+  );
+
+  const activeSquadClients = useMemo(
+    () => squadClients.filter((client) => isActiveClientStatus(client.status)),
+    [squadClients]
   );
 
   useEffect(() => {
@@ -518,7 +553,12 @@ export default function SquadPage() {
   }, [metricRows, squadClients]);
 
 
-  const agg = useMemo(() => aggregateCarteira(clientRows), [clientRows]);
+  const activeClientRows = useMemo(
+    () => clientRows.filter((row) => isActiveClientStatus(row.status)),
+    [clientRows]
+  );
+
+  const agg = useMemo(() => aggregateCarteira(activeClientRows), [activeClientRows]);
 
   const complementaryMetrics = useMemo(() => {
     const activeRows = clientRows.filter((row) => isActiveClientStatus(row.status));
@@ -628,7 +668,7 @@ export default function SquadPage() {
         return base.filter((row) => row.status === CLIENT_STATUS.RAMPAGE);
       }
 
-      return base;
+      return base.filter((row) => isActiveClientStatus(row.status));
     })();
 
     if (!normalized) return byStatus;
@@ -709,7 +749,7 @@ export default function SquadPage() {
         <div className={styles.headerCluster}>
           <span className={styles.headerStat}>
             <UsersIcon size={15} aria-hidden="true" />
-            <strong>{displayInt(squadClients.length)}</strong>
+            <strong>{displayInt(activeSquadClients.length)}</strong>
           </span>
 
           <div className={styles.monthNav}>
@@ -787,7 +827,7 @@ export default function SquadPage() {
     refreshClients,
     setPanelHeader,
     squad,
-    squadClients.length,
+    activeSquadClients.length,
     squadOwnership.active,
     uploadingLogo,
     week,
