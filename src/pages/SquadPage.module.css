@@ -2345,3 +2345,103 @@
   border-color: rgba(146, 155, 176, .20);
   background: rgba(146, 155, 176, .06);
 }
+
+/* v-next — restaura troca de abas no padrão validado do Perfil interno */
+.portfolioFilter {
+  min-height: 40px;
+  height: auto;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  margin: 0;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-soft);
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: none;
+  transition: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: var(--edf-border);
+  background: var(--bg-soft);
+  color: var(--edf-text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(245, 184, 0, 0.34);
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--edf-amber-strong);
+  font-weight: 700;
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilterCount {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 650;
+  transform: none;
+  transition: none;
+}
+
+.portfolioFilterActive .portfolioFilterCount {
+  border-color: rgba(245, 184, 0, 0.26);
+  background: rgba(245, 184, 0, 0.12);
+  color: var(--edf-amber-strong);
+}
