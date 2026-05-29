@@ -809,7 +809,6 @@
 .profileCard .avatar {
   position: relative;
   border: 0;
-  background: var(--avatar-fallback-bg, #08090a);
   box-shadow: none;
   overflow: hidden;
   isolation: isolate;

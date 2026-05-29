@@ -890,15 +890,6 @@ function buildTaskPeople(task, users = []) {
   if (Array.isArray(task?.collaborators)) task.collaborators.forEach(addPerson);
   if (Array.isArray(task?.people)) task.people.forEach(addPerson);
 
-  addPerson({
-    userId: task?.createdByUserId || task?.created_by_user_id,
-    userName: task?.createdByName || task?.created_by_name,
-  });
-  addPerson({
-    userId: task?.assigneeUserId || task?.assignee_user_id,
-    userName: task?.assigneeName || task?.assignee_name,
-  });
-
   return people.filter((person) => person.userName || person.userId).slice(0, 8);
 }
 
