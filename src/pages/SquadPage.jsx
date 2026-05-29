@@ -1040,7 +1040,7 @@ export default function SquadPage() {
             <b>{selectedClient.calc.mLuc > 0 ? displayInt(selectedClient.weeklyGap) : '—'}</b>
           </div>
 
-          <span className={`${styles.badge} ${toneClass(styles, selectedClient.tone)}`.trim()}>
+          <span className={`${styles.badge} ${toneClass(styles, selectedClient.tone)} ${statusVisualClass(selectedClient.statusText)}`.trim()}>
             {selectedClient.statusText}
           </span>
 
@@ -1083,28 +1083,28 @@ export default function SquadPage() {
                 type="button"
                 role="tab"
                 aria-selected={portfolioFilter === 'all'}
-                className={portfolioFilter === 'all' ? styles.portfolioFilterActive : ''}
+                className={`${styles.portfolioFilterTab} ${portfolioFilter === 'all' ? styles.portfolioFilterActive : ''}`.trim()}
                 onClick={() => setPortfolioFilter('all')}
               >
-                Carteira
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={portfolioFilter === 'onboarding'}
-                className={portfolioFilter === 'onboarding' ? `${styles.portfolioFilterActive} ${styles.portfolioFilterOnboarding}` : ''}
-                onClick={() => setPortfolioFilter('onboarding')}
-              >
-                Onboarding
+                <span>Carteira</span>
               </button>
               <button
                 type="button"
                 role="tab"
                 aria-selected={portfolioFilter === 'rampage'}
-                className={portfolioFilter === 'rampage' ? `${styles.portfolioFilterActive} ${styles.portfolioFilterRampage}` : ''}
+                className={`${styles.portfolioFilterTab} ${portfolioFilter === 'rampage' ? `${styles.portfolioFilterActive} ${styles.portfolioFilterRampage}` : ''}`.trim()}
                 onClick={() => setPortfolioFilter('rampage')}
               >
-                Rampagem Comercial
+                <span>Rampagem</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={portfolioFilter === 'onboarding'}
+                className={`${styles.portfolioFilterTab} ${portfolioFilter === 'onboarding' ? `${styles.portfolioFilterActive} ${styles.portfolioFilterOnboarding}` : ''}`.trim()}
+                onClick={() => setPortfolioFilter('onboarding')}
+              >
+                <span>Onboard</span>
               </button>
             </div>
 
@@ -1187,7 +1187,7 @@ export default function SquadPage() {
                   </div>
 
                   <div className={styles.clientStatus}>
-                    <span className={`${styles.badge} ${toneClass(styles, row.tone)}`.trim()}>
+                    <span className={`${styles.badge} ${toneClass(styles, row.tone)} ${statusVisualClass(row.statusText)}`.trim()}>
                       {row.statusText}
                     </span>
                   </div>

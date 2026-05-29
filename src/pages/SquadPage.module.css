@@ -1887,3 +1887,149 @@
   color: var(--warning);
   box-shadow: none;
 }
+
+.portfolioFilter {
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  min-height: 34px;
+  height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(146, 155, 176, .16);
+  border-radius: 999px;
+  background: transparent;
+  color: #9AA6BA;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: rgba(146, 155, 176, .22);
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: rgba(245, 184, 0, .28);
+  background: rgba(245, 184, 0, .08);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: rgba(146, 155, 176, .24);
+  background: rgba(146, 155, 176, .08);
+  color: var(--text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(90, 169, 255, .26);
+  background: rgba(90, 169, 255, .08);
+  color: #8ab4ff;
+}
+
+.badge.rampage {
+  color: var(--text-secondary);
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .06);
+}
+
+.badge.willHitGoal {
+  color: color-mix(in srgb, var(--warning-text) 64%, var(--success-text));
+  border-color: color-mix(in srgb, var(--warning-line) 62%, var(--success-line));
+  background:
+    linear-gradient(
+      115deg,
+      color-mix(in srgb, var(--warning) 14%, transparent) 0%,
+      color-mix(in srgb, var(--warning) 10%, transparent) 46%,
+      color-mix(in srgb, var(--success) 12%, transparent) 100%
+    );
+}
+
+.badge.profitGoal {
+  position: relative;
+  overflow: hidden;
+  color: var(--success-text);
+  border-color: var(--success-line);
+  background:
+    radial-gradient(circle at 82% 28%, color-mix(in srgb, var(--success) 18%, transparent), transparent 32%),
+    var(--success-soft);
+  animation: squadProfitGlow 3.8s ease-in-out infinite;
+}
+
+.badge.profitGoal::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  inset: 4px 8px auto auto;
+  background: var(--success-text);
+  opacity: 0;
+  clip-path: polygon(50% 0, 58% 38%, 100% 50%, 58% 62%, 50% 100%, 42% 62%, 0 50%, 42% 38%);
+  transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
+  animation: squadProfitStar 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes squadProfitGlow {
+  0%, 68%, 100% {
+    border-color: var(--success-line);
+  }
+
+  76% {
+    border-color: color-mix(in srgb, var(--success-line) 62%, var(--success-text));
+  }
+}
+
+@keyframes squadProfitStar {
+  0%, 70%, 100% {
+    opacity: 0;
+    transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
+  }
+
+  76% {
+    opacity: .54;
+    transform: translate3d(0, 0, 0) scale(.82) rotate(45deg);
+  }
+
+  82% {
+    opacity: 0;
+    transform: translate3d(-2px, -1px, 0) scale(.52) rotate(72deg);
+  }
+}

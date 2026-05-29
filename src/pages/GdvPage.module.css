@@ -1554,3 +1554,106 @@
   color: var(--accent);
   box-shadow: none;
 }
+
+.portfolioFilter {
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  min-height: 34px;
+  height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(146, 155, 176, .16);
+  border-radius: 999px;
+  background: transparent;
+  color: #9AA6BA;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: rgba(146, 155, 176, .22);
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: rgba(245, 184, 0, .28);
+  background: rgba(245, 184, 0, .08);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: rgba(146, 155, 176, .24);
+  background: rgba(146, 155, 176, .08);
+  color: var(--text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(90, 169, 255, .26);
+  background: rgba(90, 169, 255, .08);
+  color: #8ab4ff;
+}
+
+.portfolioFilterCount {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(146, 155, 176, .10);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge.onboarding {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, .24);
+  background: rgba(90, 169, 255, .08);
+}
+
+.badge.rampage {
+  color: var(--text-secondary);
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .06);
+}

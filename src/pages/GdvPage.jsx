@@ -23,7 +23,6 @@ import {
   SettingsIcon,
   UsersIcon,
 } from '../components/ui/index.js';
-import { filterOperationalClientsForPeriod } from '../utils/operationalClients.js';
 import { matchesAnySearch } from '../utils/search.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import {
@@ -39,6 +38,34 @@ import styles from './GdvPage.module.css';
 
 const PAGE_SIZE = 10;
 const METRIC_BATCH_SIZE = 8;
+
+function parseClientPeriodDate(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function isClientAvailableForPeriod(client, year, month0) {
+  if (!client) return false;
+
+  const end = new Date(year, month0 + 1, 0, 23, 59, 59, 999);
+  const start = parseClientPeriodDate(
+    client.startDate || client.start_date || client.createdAt || client.created_at
+  );
+  const churn = parseClientPeriodDate(client.churnDate || client.churn_date);
+
+  if (start && start > end) return false;
+  if (churn && churn <= end) return false;
+  return true;
+}
+
+function isPortfolioStatus(status) {
+  return (
+    isActiveClientStatus(status) ||
+    status === CLIENT_STATUS.ONBOARDING ||
+    status === CLIENT_STATUS.RAMPAGE
+  );
+}
 
 
 function displayInt(value) {
@@ -122,7 +149,8 @@ function predictionCard(closed, predicted, goal) {
 
 function statusTone(calc, clientStatus) {
   if (clientStatus === CLIENT_STATUS.CHURN) return 'red';
-  if (clientStatus === CLIENT_STATUS.RAMPAGE) return 'amber';
+  if (clientStatus === CLIENT_STATUS.ONBOARDING) return 'onboarding';
+  if (clientStatus === CLIENT_STATUS.RAMPAGE) return 'rampage';
   if (!isActiveClientStatus(clientStatus)) return 'muted';
   if (!calc?.mLuc) return 'muted';
 
@@ -458,8 +486,13 @@ export default function GdvPage() {
   }, [cleanRouteSegment, navigate, routeGdvName, routeGdvRecord]);
 
   const gdvClients = useMemo(() => {
-    const base = filterOperationalClientsForPeriod(clients, year, month0).filter(
-      (client) => client && client.gdvName && String(client.gdvName).trim().length > 0
+    const base = (Array.isArray(clients) ? clients : []).filter(
+      (client) =>
+        client &&
+        client.gdvName &&
+        String(client.gdvName).trim().length > 0 &&
+        isClientAvailableForPeriod(client, year, month0) &&
+        isPortfolioStatus(client.status)
     );
 
     const routeName = String(routeGdvName || '').trim();
@@ -692,9 +725,17 @@ export default function GdvPage() {
 
   const visibleRows = useMemo(() => {
     const query = clientQuery.trim();
-    const sourceRows = portfolioFilter === 'rampage'
-      ? rows.filter((row) => row.client?.status === CLIENT_STATUS.RAMPAGE)
-      : rows;
+    const sourceRows = (() => {
+      if (portfolioFilter === 'rampage') {
+        return rows.filter((row) => row.client?.status === CLIENT_STATUS.RAMPAGE);
+      }
+
+      if (portfolioFilter === 'onboarding') {
+        return rows.filter((row) => row.client?.status === CLIENT_STATUS.ONBOARDING);
+      }
+
+      return rows.filter((row) => isActiveClientStatus(row.client?.status));
+    })();
 
     const base = [...sourceRows].sort((a, b) => {
       const rankDiff = b.priorityRank - a.priorityRank;
@@ -713,7 +754,8 @@ export default function GdvPage() {
 
   const portfolioEmptyLabel = useMemo(() => {
     if (hasActiveSearch) return 'Busca sem resultados';
-    if (portfolioFilter === 'rampage') return 'Sem rampagem comercial';
+    if (portfolioFilter === 'rampage') return 'Sem rampagem';
+    if (portfolioFilter === 'onboarding') return 'Sem clientes onboard';
     return 'Carteira sem clientes';
   }, [hasActiveSearch, portfolioFilter]);
 
@@ -902,6 +944,18 @@ export default function GdvPage() {
       { id: 'onboarding', label: 'Onboarding', value: displayInt(onboardingRows.length), sub: 'fora da meta' },
       { id: 'rampage', label: 'Rampagem Comercial', value: displayInt(rampageRows.length), sub: 'fora da meta' },
       { id: 'paused', label: 'Pausados', value: displayInt(pausedRows.length), sub: 'fora da meta' },
+    ];
+  }, [rows]);
+
+  const portfolioFilterItems = useMemo(() => {
+    const activeRows = rows.filter((row) => isActiveClientStatus(row.client?.status));
+    const rampageRows = rows.filter((row) => row.client?.status === CLIENT_STATUS.RAMPAGE);
+    const onboardingRows = rows.filter((row) => row.client?.status === CLIENT_STATUS.ONBOARDING);
+
+    return [
+      { id: 'all', label: 'Carteira', count: activeRows.length },
+      { id: 'rampage', label: 'Rampagem', count: rampageRows.length },
+      { id: 'onboarding', label: 'Onboard', count: onboardingRows.length },
     ];
   }, [rows]);
 
@@ -1270,24 +1324,24 @@ export default function GdvPage() {
           </label>
 
           <div className={styles.portfolioFilter} role="tablist" aria-label="Filtro da carteira">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={portfolioFilter === 'all'}
-              className={portfolioFilter === 'all' ? styles.portfolioFilterActive : ''}
-              onClick={() => setPortfolioFilter('all')}
-            >
-              Carteira
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={portfolioFilter === 'rampage'}
-              className={portfolioFilter === 'rampage' ? styles.portfolioFilterActive : ''}
-              onClick={() => setPortfolioFilter('rampage')}
-            >
-              Rampagem Comercial
-            </button>
+            {portfolioFilterItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={portfolioFilter === item.id}
+                className={[
+                  styles.portfolioFilterTab,
+                  portfolioFilter === item.id ? styles.portfolioFilterActive : '',
+                  item.id === 'rampage' ? styles.portfolioFilterRampage : '',
+                  item.id === 'onboarding' ? styles.portfolioFilterOnboarding : '',
+                ].filter(Boolean).join(' ')}
+                onClick={() => setPortfolioFilter(item.id)}
+              >
+                <span>{item.label}</span>
+                <span className={styles.portfolioFilterCount}>{displayInt(item.count)}</span>
+              </button>
+            ))}
           </div>
 
           <button
