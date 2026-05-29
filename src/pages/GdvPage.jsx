@@ -149,7 +149,9 @@ function statusTone(calc, clientStatus) {
   const signals = goalSignals(calc);
   if (!signals.primaryGoal) return 'muted';
 
-  if (signals.hitAny) return 'green';
+  const hitPrimaryGoal = signals.profitGoal > 0 ? signals.hitProfit : signals.hitContracts;
+
+  if (hitPrimaryGoal) return 'green';
   if (signals.projected >= signals.primaryGoal) return 'amber';
   if (signals.progress >= 55) return 'amber';
   return 'red';
@@ -165,7 +167,6 @@ function statusLabel(calc, clientStatus) {
   if (!signals.primaryGoal) return 'Sem meta';
 
   if (signals.hitProfit) return 'Meta lucro';
-  if (signals.hitContracts) return 'Meta contratos';
   if (signals.projected >= signals.primaryGoal) return 'Vai bater';
   if (signals.progress >= 55) return 'Em andamento';
   return 'Crítico';
@@ -909,7 +910,6 @@ export default function GdvPage() {
 
     return [
       { id: 'active', label: 'Clientes ativos', value: displayInt(activeTotal), sub: 'base da meta' },
-      { id: 'contracts', label: 'Bateram meta contratos', value: `${displayInt(hitContracts.length)} de ${displayInt(activeTotal)}`, sub: 'meta contratos' },
       { id: 'profit', label: 'Bateram meta lucro', value: `${displayInt(hitProfit.length)} de ${displayInt(activeTotal)}`, sub: 'meta lucro' },
       { id: 'below', label: 'Abaixo da meta', value: `${displayInt(belowGoal.length)} de ${displayInt(activeTotal)}`, sub: 'clientes ativos' },
       { id: 'onboarding', label: 'Onboarding', value: displayInt(onboardingRows.length), sub: 'fora da meta' },
