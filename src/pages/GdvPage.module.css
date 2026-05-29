@@ -1969,3 +1969,372 @@
   border-color: rgba(146, 155, 176, .20);
   background: rgba(146, 155, 176, .06);
 }
+
+/* v-next — refinamento superior GDV no padrão do Perfil interno */
+.page {
+  padding: 14px 16px 18px;
+  gap: 12px;
+}
+
+.headerIdentity {
+  min-height: 58px;
+  gap: 14px;
+}
+
+.headerLogo {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+  border-color: var(--line-subtle);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+}
+
+.headerTitleText {
+  gap: 4px;
+}
+
+.headerTitleText strong {
+  font-size: 19px;
+  line-height: 1.05;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.headerTitleText small {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.headerActions {
+  gap: 2px;
+}
+
+.headerCard {
+  min-height: 36px;
+  padding-left: 16px;
+  margin-left: 16px;
+}
+
+.headerCard::before {
+  height: 28px;
+  background: var(--line-subtle);
+}
+
+.headerStat {
+  min-height: 36px;
+  gap: 9px;
+}
+
+.headerStat strong {
+  font-size: 14.5px;
+  font-weight: 650;
+}
+
+.monthNav {
+  min-height: 36px;
+  gap: 6px;
+}
+
+.monthLabel {
+  min-width: 128px;
+  font-size: 13.5px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.navBtn,
+.iconButton {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-2, 8px);
+  color: var(--text-tertiary);
+}
+
+.navBtn:hover,
+.iconButton:hover,
+.weekTab:hover,
+.modalClose:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.weekTabs {
+  min-height: 36px;
+  gap: 6px;
+}
+
+.weekTab {
+  min-width: 32px;
+  height: 36px;
+  border-radius: var(--radius-2, 8px);
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.weekTabActive,
+.weekTabActive:hover,
+.weekTabActive:focus,
+.weekTabActive:focus-visible {
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--accent-line);
+}
+
+.metricGrid {
+  gap: 12px;
+}
+
+.metricCard {
+  min-height: 86px;
+  padding: 13px 15px 12px;
+  border-color: var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
+  gap: 8px;
+}
+
+.metricLabel {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 620;
+  letter-spacing: .085em;
+}
+
+.metricValue {
+  font-size: clamp(21px, 1.3vw, 25px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.metricSub {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 520;
+}
+
+.listToolbar {
+  min-height: 42px;
+}
+
+.toolbarControls {
+  grid-template-columns: minmax(0, 1fr) max-content 200px;
+  gap: 12px;
+}
+
+.searchBox {
+  height: 42px;
+  padding: 0 14px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  color: var(--text-tertiary);
+}
+
+.searchBox:hover {
+  border-color: var(--line);
+  background: var(--surface-panel);
+}
+
+.searchBox:focus-within {
+  border-color: var(--line-subtle);
+  background: var(--surface-panel);
+  box-shadow: none;
+}
+
+.searchBox input {
+  font-size: 13px;
+  font-weight: 520;
+}
+
+.searchBox input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.portfolioFilter {
+  min-height: 42px;
+  padding: 3px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  gap: 4px;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 13px;
+  border-color: transparent;
+  border-radius: var(--radius-2, 8px);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  font-weight: 620;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--accent-line);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--line-strong);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--info-line);
+}
+
+.portfolioFilterCount {
+  min-width: 23px;
+  height: 20px;
+  padding: 0 7px;
+  border-color: var(--line-subtle);
+  background: var(--surface-raised);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.complementaryButton {
+  height: 42px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive,
+.complementaryButtonActive:hover,
+.complementaryButtonActive:focus,
+.complementaryButtonActive:focus-visible {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--accent-line);
+}
+
+.complementaryButton span {
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.modalBackdrop {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.indicatorsModal {
+  width: min(820px, calc(100vw - 40px));
+  max-height: min(690px, calc(100vh - 40px));
+  border-color: var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-raised);
+  box-shadow: none;
+}
+
+.modalHead {
+  min-height: 58px;
+  padding: 0 16px 0 18px;
+  border-bottom-color: var(--line-subtle);
+  background: var(--surface-panel);
+}
+
+.modalHead span {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 620;
+  letter-spacing: .09em;
+}
+
+.modalHead h3 {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.modalClose {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-2, 8px);
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+}
+
+.indicatorsGrid {
+  padding: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.indicatorsCard {
+  min-height: 92px;
+  padding: 14px 15px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.indicatorsCard span {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 620;
+  letter-spacing: .085em;
+}
+
+.indicatorsCard strong {
+  color: var(--text-primary);
+  font-size: clamp(21px, 2vw, 26px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.indicatorsCard small {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.3;
+  font-weight: 520;
+}
+
+@media (max-width: 920px) {
+  .toolbarControls {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolioFilter,
+  .complementaryButton {
+    width: 100%;
+  }
+}
