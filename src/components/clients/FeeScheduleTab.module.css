@@ -751,3 +751,42 @@
   background: transparent;
   color: var(--text-tertiary);
 }
+
+/* Mensalidade única por competência */
+.rowTitle {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowTitle strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.typeBadge,
+.typeBadgeSingle {
+  flex: 0 0 auto;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.typeBadgeSingle {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}

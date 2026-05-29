@@ -20,6 +20,10 @@ function normalizedSteps(client) {
   return sortFeeSteps(steps);
 }
 
+function normalizeFeeType(value) {
+  return String(value || '').trim() === 'single' ? 'single' : 'recurring';
+}
+
 export function sortFeeSteps(steps = []) {
   return [...(Array.isArray(steps) ? steps : [])]
     .map((step) => {
@@ -27,6 +31,7 @@ export function sortFeeSteps(steps = []) {
       return {
         ...step,
         month,
+        type: normalizeFeeType(step?.type || step?.kind || step?.mode),
         fee: step?.fee ?? step?.amount ?? 0,
       };
     })
@@ -43,11 +48,15 @@ export function resolveClientFeeStepAtDate(client, referenceDate = new Date()) {
   if (!referenceMonth) return null;
 
   const steps = normalizedSteps(client);
-  const exact = steps.find((step) => step.month === referenceMonth);
-  if (exact) return exact;
+  const exactSingle = steps.find((step) => step.month === referenceMonth && step.type === 'single');
+  if (exactSingle) return exactSingle;
+
+  const exactRecurring = steps.find((step) => step.month === referenceMonth && step.type !== 'single');
+  if (exactRecurring) return exactRecurring;
 
   let latest = null;
   for (const step of steps) {
+    if (step.type === 'single') continue;
     if (step.month <= referenceMonth) latest = step;
     if (step.month > referenceMonth) break;
   }
@@ -69,7 +78,7 @@ export function summarizeFeeSchedule(client, referenceDate = new Date()) {
   const steps = normalizedSteps(client);
   const current = resolveClientFeeStepAtDate(client, referenceDate);
   const referenceMonth = monthKeyFromDate(referenceDate);
-  const next = steps.find((step) => step.month > referenceMonth) || null;
+  const next = steps.find((step) => step.type !== 'single' && step.month > referenceMonth) || null;
 
   return {
     hasSchedule: steps.length > 0,

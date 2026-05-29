@@ -49,12 +49,24 @@ function fmtDateLabel(value) {
   }).format(date);
 }
 
+function normalizeFeeType(value) {
+  return String(value || '').trim() === 'single' ? 'single' : 'recurring';
+}
+
+function feeTypeLabel(type) {
+  return normalizeFeeType(type) === 'single' ? 'Única' : 'Mensal';
+}
+
 function buildRows(client) {
-  return sortFeeSteps(client?.feeSteps || []).map((step) => ({
-    id: step.id || `month-${step.month || Math.random().toString(36).slice(2, 10)}`,
-    month: step.month || '',
-    fee: step.fee != null ? formatLocaleNumber(step.fee, '') : '',
-  }));
+  return sortFeeSteps(client?.feeSteps || []).map((step) => {
+    const type = normalizeFeeType(step.type);
+    return {
+      id: step.id || `month-${type}-${step.month || Math.random().toString(36).slice(2, 10)}`,
+      month: step.month || '',
+      type,
+      fee: step.fee != null ? formatLocaleNumber(step.fee, '') : '',
+    };
+  });
 }
 
 function validateRows(rows) {
@@ -64,6 +76,7 @@ function validateRows(rows) {
     .map((row, index) => ({
       ...row,
       month: String(row.month || '').slice(0, 7),
+      type: normalizeFeeType(row.type),
       fee: parseLocaleNumber(row.fee),
       index,
     }))
@@ -73,13 +86,14 @@ function validateRows(rows) {
     if (!/^\d{4}-\d{2}$/.test(row.month)) {
       return { ok: false, message: `Selecione a competência da mensalidade ${row.index + 1}.` };
     }
-    if (seen.has(row.month)) {
-      return { ok: false, message: `Já existe mensalidade cadastrada para ${monthLabel(row.month)}.` };
+    const key = `${row.type}:${row.month}`;
+    if (seen.has(key)) {
+      return { ok: false, message: `Já existe mensalidade ${feeTypeLabel(row.type).toLowerCase()} cadastrada para ${monthLabel(row.month)}.` };
     }
     if (!Number.isFinite(row.fee) || row.fee < 0) {
       return { ok: false, message: `Informe um valor válido para ${monthLabel(row.month)}.` };
     }
-    seen.add(row.month);
+    seen.add(key);
   }
 
   return {
@@ -88,6 +102,7 @@ function validateRows(rows) {
       .sort((a, b) => a.month.localeCompare(b.month))
       .map((row) => ({
         month: row.month,
+        type: row.type,
         fee: row.fee,
       })),
   };
@@ -138,9 +153,15 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
     );
   };
 
-  const handleAdd = () => {
+  const handleAdd = (type = 'recurring') => {
+    const normalizedType = normalizeFeeType(type);
     setRows((current) => {
-      const existing = new Set(current.map((row) => row.month).filter(Boolean));
+      const existing = new Set(
+        current
+          .filter((row) => normalizeFeeType(row.type) === normalizedType)
+          .map((row) => row.month)
+          .filter(Boolean)
+      );
       let month = currentMonth;
       if (existing.has(month)) {
         const date = new Date(`${month}-01T00:00:00`);
@@ -153,9 +174,10 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
       return [
         ...current,
         {
-          id: `month-${Date.now()}`,
+          id: `month-${normalizedType}-${Date.now()}`,
           month,
-          fee: current.length === 0 && baseFee != null ? formatLocaleNumber(baseFee, '') : '',
+          type: normalizedType,
+          fee: normalizedType === 'recurring' && current.length === 0 && baseFee != null ? formatLocaleNumber(baseFee, '') : '',
         },
       ];
     });
@@ -209,10 +231,18 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
               <button
                 type="button"
                 className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.actionButton}`.trim()}
-                onClick={handleAdd}
+                onClick={() => handleAdd('recurring')}
               >
                 <PlusIcon size={14} />
                 <span>Adicionar mês</span>
+              </button>
+              <button
+                type="button"
+                className={`${drawerStyles.btn} ${drawerStyles.btnGhost} ${styles.actionButton}`.trim()}
+                onClick={() => handleAdd('single')}
+              >
+                <PlusIcon size={14} />
+                <span>Mensalidade única</span>
               </button>
               <button
                 type="button"
@@ -231,7 +261,12 @@ export default function FeeScheduleTab({ client, canEdit = false, onUpdated }) {
           {rows.map((row) => (
             <div key={row.id} className={styles.rowCard}>
               <div className={styles.rowHeader}>
-                <strong>{row.month ? monthLabel(row.month) : 'Nova mensalidade'}</strong>
+                <div className={styles.rowTitle}>
+                  <strong>{row.month ? monthLabel(row.month) : 'Nova mensalidade'}</strong>
+                  <span className={normalizeFeeType(row.type) === 'single' ? styles.typeBadgeSingle : styles.typeBadge}>
+                    {feeTypeLabel(row.type)}
+                  </span>
+                </div>
                 {canEdit ? (
                   <button
                     type="button"

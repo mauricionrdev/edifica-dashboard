@@ -49,6 +49,10 @@ function normalizeMonthKey(value) {
   return '';
 }
 
+function normalizeFeeStepType(value) {
+  return String(value || '').trim() === 'single' ? 'single' : 'recurring';
+}
+
 function normalizeFeeSteps(value) {
   if (value == null || value === '') return [];
   let parsed = value;
@@ -72,9 +76,13 @@ function normalizeFeeSteps(value) {
     const fee = parseLocaleNumber(step?.fee ?? step?.amount, Number.NaN);
     if (!Number.isFinite(fee) || fee < 0) return;
 
-    byMonth.set(month, {
-      id: String(step?.id || `fee-${month}`).trim(),
+    const type = normalizeFeeStepType(step?.type || step?.kind || step?.mode);
+    const key = `${type}:${month}`;
+
+    byMonth.set(key, {
+      id: String(step?.id || `fee-${type}-${month}`).trim(),
       month,
+      type,
       fee,
     });
   });
@@ -93,11 +101,15 @@ function resolveMonthlyFeeForDate(client, referenceDate = new Date()) {
   const referenceMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
   const steps = normalizeFeeSteps(client?.fee_steps_json || client?.feeSteps || []);
 
-  const exact = steps.find((step) => step.month === referenceMonth);
-  if (exact) return Number(exact.fee) || 0;
+  const exactSingle = steps.find((step) => step.month === referenceMonth && step.type === 'single');
+  if (exactSingle) return Number(exactSingle.fee) || 0;
+
+  const exactRecurring = steps.find((step) => step.month === referenceMonth && step.type !== 'single');
+  if (exactRecurring) return Number(exactRecurring.fee) || 0;
 
   let latest = null;
   for (const step of steps) {
+    if (step.type === 'single') continue;
     if (step.month <= referenceMonth) latest = step;
     if (step.month > referenceMonth) break;
   }
