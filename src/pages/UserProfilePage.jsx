@@ -603,7 +603,13 @@ export default function UserProfilePage() {
     });
   }, [profileUser, setPanelHeader]);
 
-  const avatarUrl = getUserAvatar(profileUser);
+  const avatarUrl = getUserAvatar(visibleProfileUser || profileUser);
+  const avatarColor = avatarColorClassName(
+    visibleProfileUser?.avatarColor
+    || visibleProfileUser?.avatar_color
+    || profileUser?.avatarColor
+    || profileUser?.avatar_color
+  );
 
   const demandAssigneeOptions = useMemo(() => {
     const users = Array.isArray(userDirectory) ? userDirectory : [];
@@ -1033,7 +1039,7 @@ export default function UserProfilePage() {
           <div className={styles.heroIdentity}>
             <button
               type="button"
-              className={`${styles.avatar} ${avatarUrl ? styles.avatarWithPhoto : ''}`.trim()}
+              className={`${styles.avatar} ${avatarUrl ? styles.avatarWithPhoto : styles[`avatar_${avatarColor}`] || styles.avatar_slate}`.trim()}
               onClick={() => avatarUrl && setAvatarPreviewOpen(true)}
               disabled={!avatarUrl}
               aria-label={avatarUrl ? 'Visualizar foto' : undefined}

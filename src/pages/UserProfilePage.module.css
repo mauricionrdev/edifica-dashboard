@@ -2290,3 +2290,40 @@
     padding-top: 10px;
   }
 }
+
+
+/* Public profile · fallback avatar without photo */
+.profileHeroGrid .avatar_amber {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.profileHeroGrid .avatar_blue {
+  background: var(--info);
+  color: var(--bg-app);
+}
+
+.profileHeroGrid .avatar_violet {
+  background: color-mix(in srgb, var(--info) 68%, var(--accent) 32%);
+  color: var(--bg-app);
+}
+
+.profileHeroGrid .avatar_emerald {
+  background: var(--success-text);
+  color: var(--bg-app);
+}
+
+.profileHeroGrid .avatar_rose {
+  background: color-mix(in srgb, var(--accent) 42%, var(--danger-text) 58%);
+  color: var(--bg-app);
+}
+
+.profileHeroGrid .avatar_slate {
+  background: var(--text-tertiary);
+  color: var(--bg-app);
+}
+
+.profileHeroGrid .avatar:not(.avatarWithPhoto) {
+  border-color: var(--surface-panel);
+  box-shadow: 0 0 0 1px var(--chassis-border-subtle);
+}
