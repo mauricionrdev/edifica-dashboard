@@ -304,6 +304,13 @@ function joinMissingFields(items = []) {
   return `${list.slice(0, -1).join(', ')} e ${list[list.length - 1]}`;
 }
 
+
+function validateContentForm(task = {}, form = {}) {
+  const missing = [];
+  if (!String(form.title || '').trim()) missing.push('Título');
+  return missing;
+}
+
 function validateDemandForm(form = {}) {
   const missing = [];
   const requiredText = (key, label) => {
