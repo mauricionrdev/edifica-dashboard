@@ -4655,7 +4655,7 @@
   min-height: auto;
   padding: 18px 18px 16px;
   align-items: flex-start;
-  border-bottom: 1px solid var(--bg-hover);
+  /* border-bottom: 1px solid var(--bg-hover); */
 }
 
 .identityRow {
