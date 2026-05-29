@@ -2022,7 +2022,6 @@ router.get('/tasks/:id/comments', requirePermission('tasks.view'), async (req, r
          FROM task_comments tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.task_id = ?
-          AND tc.role <> 'creator'
         ORDER BY tc.created_at ASC`,
       [req.params.id]
     );
