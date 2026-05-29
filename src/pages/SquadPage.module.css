@@ -550,7 +550,7 @@
   color: inherit;
   text-align: left;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(235px, 310px) 112px;
+  grid-template-columns: minmax(260px, 1fr) minmax(235px, 310px) 164px;
   align-items: center;
   gap: 16px;
 }
@@ -698,6 +698,18 @@
   color: #f0a3a3;
   border-color: rgba(240, 163, 163, .24);
   background: rgba(240, 163, 163, .09);
+}
+
+.badge.onboarding {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, .24);
+  background: rgba(90, 169, 255, .08);
+}
+
+.badge.rampage {
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 26%, transparent);
+  background: var(--warning-soft);
 }
 
 .pagination {
@@ -1078,7 +1090,7 @@
   }
 
   .clientRow {
-    grid-template-columns: minmax(240px, 1fr) minmax(220px, 300px) 112px;
+    grid-template-columns: minmax(240px, 1fr) minmax(220px, 300px) 164px;
   }
 }
 

@@ -98,7 +98,8 @@ function isPortfolioStatus(status) {
 
 function statusTone(calc, status) {
   if (status === CLIENT_STATUS.CHURN) return 'red';
-  if (status === CLIENT_STATUS.RAMPAGE) return 'amber';
+  if (status === CLIENT_STATUS.ONBOARDING) return 'onboarding';
+  if (status === CLIENT_STATUS.RAMPAGE) return 'rampage';
   if (!isActiveClientStatus(status)) return 'muted';
   if (!calc?.mLuc) return 'muted';
 
