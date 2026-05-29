@@ -1104,3 +1104,61 @@
     height: 24px;
   }
 }
+
+
+/* v-next — status de clientes no mesmo padrão visual das tags do Perfil interno */
+.statusPill {
+  width: max-content;
+  height: 30px;
+  min-height: 30px;
+  max-width: 220px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(146, 155, 176, .16);
+  background: transparent;
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 560;
+  line-height: 1;
+  letter-spacing: .005em;
+  text-transform: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.status_active {
+  border-color: rgba(39, 166, 68, 0.24);
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status_onboarding {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, 0.24);
+  background: rgba(90, 169, 255, 0.08);
+}
+
+.status_rampage {
+  color: var(--edf-text-secondary);
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .06);
+}
+
+.status_ending,
+.status_paused {
+  border-color: var(--line-strong);
+  background: var(--line-subtle);
+  color: var(--text-secondary);
+}
+
+.status_churn,
+.status_expired {
+  border-color: rgba(239, 68, 68, 0.24);
+  background: var(--danger-soft);
+  color: var(--danger);
+}

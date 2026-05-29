@@ -2033,3 +2033,192 @@
     transform: translate3d(-2px, -1px, 0) scale(.52) rotate(72deg);
   }
 }
+
+
+/* v-next — tabs/status no padrão visual do Perfil interno */
+.portfolioFilter {
+  min-height: 40px;
+  height: auto;
+  padding-block: 2px;
+  padding-inline: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  margin: 0;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-canvas);
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: var(--edf-border);
+  background: var(--bg-canvas);
+  color: var(--edf-text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: var(--edf-amber-border-strong);
+  background: var(--edf-amber-bg);
+  color: var(--edf-amber-strong);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage,
+.portfolioFilter button.portfolioFilterRampage:hover {
+  color: var(--edf-text-muted);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: rgba(146, 155, 176, .24);
+  background: rgba(146, 155, 176, .08);
+  color: var(--edf-text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(90, 169, 255, .26);
+  background: rgba(90, 169, 255, .08);
+  color: #8ab4ff;
+}
+
+.portfolioFilterCount {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  min-width: 0;
+  width: max-content;
+  height: 30px;
+  min-height: 30px;
+  max-width: 220px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(146, 155, 176, .16);
+  background: transparent;
+  color: var(--edf-text-muted);
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 560;
+  line-height: 1;
+  letter-spacing: .005em;
+  text-transform: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.badge.green {
+  color: var(--success);
+  border-color: rgba(94, 234, 145, .22);
+  background: rgba(94, 234, 145, .08);
+}
+
+.badge.amber {
+  color: var(--accent);
+  border-color: rgba(245, 184, 0, .24);
+  background: rgba(245, 184, 0, .09);
+}
+
+.badge.red {
+  color: #f0a3a3;
+  border-color: rgba(240, 163, 163, .24);
+  background: rgba(240, 163, 163, .09);
+}
+
+.badge.onboarding {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, .24);
+  background: rgba(90, 169, 255, .08);
+}
+
+.badge.rampage {
+  color: var(--edf-text-secondary);
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .06);
+}
+
+.badge.willHitGoal {
+  color: color-mix(in srgb, var(--warning-text) 64%, var(--success-text));
+  border-color: color-mix(in srgb, var(--warning-line) 62%, var(--success-line));
+  background: linear-gradient(115deg, color-mix(in srgb, var(--warning) 14%, transparent) 0%, color-mix(in srgb, var(--warning) 10%, transparent) 48%, color-mix(in srgb, var(--success) 12%, transparent) 100%);
+}
+
+.badge.profitGoal {
+  position: relative;
+  overflow: hidden;
+  color: var(--success-text);
+  border-color: var(--success-line);
+  background: radial-gradient(circle at 82% 28%, color-mix(in srgb, var(--success) 15%, transparent), transparent 32%), var(--success-soft);
+  animation: squadProfitGlow 4.2s ease-in-out infinite;
+}
+
+.badge.profitGoal::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  inset: 5px 9px auto auto;
+  background: var(--success-text);
+  opacity: 0;
+  clip-path: polygon(50% 0, 58% 38%, 100% 50%, 58% 62%, 50% 100%, 42% 62%, 0 50%, 42% 38%);
+  transform: translate3d(3px, 1px, 0) scale(.38) rotate(18deg);
+  animation: squadProfitStar 4.2s ease-in-out infinite;
+  pointer-events: none;
+}

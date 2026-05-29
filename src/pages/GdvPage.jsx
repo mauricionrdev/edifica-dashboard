@@ -67,6 +67,30 @@ function isPortfolioStatus(status) {
   );
 }
 
+function normalizeGdvAssignmentName(value) {
+  return String(value || '')
+    .trim()
+    .replace(/^gdv\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
+function isSameGdvAssignment(left, right) {
+  const normalizedLeft = normalizeGdvAssignmentName(left);
+  const normalizedRight = normalizeGdvAssignmentName(right);
+
+  if (!normalizedLeft || !normalizedRight) return false;
+  if (normalizedLeft === normalizedRight) return true;
+
+  return slugifySegment(normalizedLeft) === slugifySegment(normalizedRight);
+}
+
+function clientMatchesGdvAssignment(client, names = []) {
+  const clientGdvName = String(client?.gdvName || '').trim();
+  if (!clientGdvName) return false;
+
+  return names.some((name) => isSameGdvAssignment(clientGdvName, name));
+}
 
 function displayInt(value) {
   const numeric = Number(value) || 0;
@@ -495,17 +519,22 @@ export default function GdvPage() {
         isPortfolioStatus(client.status)
     );
 
-    const routeName = String(routeGdvName || '').trim();
-    if (routeName) {
-      return base.filter((client) => String(client.gdvName || '').trim() === routeName);
+    const routeNames = [
+      routeGdvName,
+      routeGdvRecord?.name,
+      routeGdvRecord?.owner?.name,
+    ].filter((name) => String(name || '').trim());
+
+    if (routeNames.length) {
+      return base.filter((client) => clientMatchesGdvAssignment(client, routeNames));
     }
 
-    const userName = String(user?.name || '').trim().toLowerCase();
+    const userName = String(user?.name || '').trim();
     if (admin) return base;
     if (!userName) return base;
 
-    return base.filter((client) => String(client.gdvName || '').trim().toLowerCase() === userName);
-  }, [admin, clients, month0, routeGdvName, user, year]);
+    return base.filter((client) => clientMatchesGdvAssignment(client, [userName]));
+  }, [admin, clients, month0, routeGdvName, routeGdvRecord, user, year]);
 
   const gdvIdsKey = useMemo(
     () => gdvClients.map((client) => client.id).sort().join('|'),
