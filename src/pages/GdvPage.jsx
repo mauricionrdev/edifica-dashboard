@@ -1301,7 +1301,7 @@ export default function GdvPage() {
         </div>
       </section>
 
-      <section className={styles.listCard}>
+      <section className={styles.listCard} style={{ '--gdv-list-height': `${Math.max(pagedRows.length, 1) * 58 + 58}px` }}>
         {fetchError ? (
           <StateBlock variant="error" compact title="Métricas indisponíveis" />
         ) : !hasActiveSearch && visibleRows.length === 0 && loadingMetrics ? (

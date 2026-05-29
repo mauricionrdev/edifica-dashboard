@@ -474,8 +474,9 @@
 }
 
 .listCard {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
+  max-height: min(var(--gdv-list-height, 638px), 100%);
   border: 1px solid rgba(255, 255, 255, .055);
   border-radius: var(--workspace-card-radius);
   background: rgba(255, 255, 255, .012);
@@ -512,7 +513,7 @@
 }
 
 .clientList {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -690,13 +691,15 @@
 }
 
 .badge.willHitGoal {
-  color: color-mix(in srgb, var(--warning-text) 58%, var(--success-text));
-  border-color: color-mix(in srgb, var(--warning-line) 58%, var(--success-line));
-  background: linear-gradient(
-    100deg,
-    color-mix(in srgb, var(--warning) 12%, transparent),
-    color-mix(in srgb, var(--success) 10%, transparent)
-  );
+  color: color-mix(in srgb, var(--warning-text) 64%, var(--success-text));
+  border-color: color-mix(in srgb, var(--warning-line) 62%, var(--success-line));
+  background:
+    linear-gradient(
+      115deg,
+      color-mix(in srgb, var(--warning) 14%, transparent) 0%,
+      color-mix(in srgb, var(--warning) 10%, transparent) 46%,
+      color-mix(in srgb, var(--success) 12%, transparent) 100%
+    );
 }
 
 .badge.profitGoal {
@@ -704,37 +707,50 @@
   overflow: hidden;
   color: var(--success-text);
   border-color: var(--success-line);
-  background: var(--success-soft);
+  background:
+    radial-gradient(circle at 82% 28%, color-mix(in srgb, var(--success) 18%, transparent), transparent 32%),
+    var(--success-soft);
+  animation: gdvProfitGlow 3.8s ease-in-out infinite;
 }
 
 .badge.profitGoal::after {
   content: '';
   position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  inset: 4px 8px auto auto;
   background: var(--success-text);
   opacity: 0;
-  inset: 5px 12px auto auto;
-  transform: scale(.4) rotate(0deg);
-  animation: gdvProfitSpark 3.4s ease-in-out infinite;
+  clip-path: polygon(50% 0, 58% 38%, 100% 50%, 58% 62%, 50% 100%, 42% 62%, 0 50%, 42% 38%);
+  transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
+  animation: gdvProfitStar 3.8s ease-in-out infinite;
   pointer-events: none;
 }
 
-@keyframes gdvProfitSpark {
-  0%, 72%, 100% {
-    opacity: 0;
-    transform: scale(.4) rotate(0deg);
+@keyframes gdvProfitGlow {
+  0%, 68%, 100% {
+    border-color: var(--success-line);
   }
 
-  78% {
-    opacity: .72;
-    transform: scale(1) rotate(45deg);
+  76% {
+    border-color: color-mix(in srgb, var(--success-line) 62%, var(--success-text));
+  }
+}
+
+@keyframes gdvProfitStar {
+  0%, 70%, 100% {
+    opacity: 0;
+    transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
   }
 
-  84% {
+  76% {
+    opacity: .54;
+    transform: translate3d(0, 0, 0) scale(.82) rotate(45deg);
+  }
+
+  82% {
     opacity: 0;
-    transform: scale(.5) rotate(90deg);
+    transform: translate3d(-2px, -1px, 0) scale(.52) rotate(72deg);
   }
 }
 
