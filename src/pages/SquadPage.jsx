@@ -1091,7 +1091,7 @@ export default function SquadPage() {
                 type="button"
                 role="tab"
                 aria-selected={portfolioFilter === 'onboarding'}
-                className={portfolioFilter === 'onboarding' ? styles.portfolioFilterActive : ''}
+                className={portfolioFilter === 'onboarding' ? `${styles.portfolioFilterActive} ${styles.portfolioFilterOnboarding}` : ''}
                 onClick={() => setPortfolioFilter('onboarding')}
               >
                 Onboarding
@@ -1100,7 +1100,7 @@ export default function SquadPage() {
                 type="button"
                 role="tab"
                 aria-selected={portfolioFilter === 'rampage'}
-                className={portfolioFilter === 'rampage' ? styles.portfolioFilterActive : ''}
+                className={portfolioFilter === 'rampage' ? `${styles.portfolioFilterActive} ${styles.portfolioFilterRampage}` : ''}
                 onClick={() => setPortfolioFilter('rampage')}
               >
                 Rampagem Comercial

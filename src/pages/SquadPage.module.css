@@ -1853,3 +1853,25 @@
   color: var(--accent);
   box-shadow: none;
 }
+
+
+/* CAP/Squad portfolio filters: status colors aligned with Clients status pills */
+.portfolioFilter button.portfolioFilterOnboarding,
+.portfolioFilter button.portfolioFilterOnboarding:hover,
+.portfolioFilter button.portfolioFilterOnboarding:focus,
+.portfolioFilter button.portfolioFilterOnboarding:focus-visible {
+  border-color: rgba(90, 169, 255, 0.24);
+  background: rgba(90, 169, 255, 0.08);
+  color: #8ab4ff;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage,
+.portfolioFilter button.portfolioFilterRampage:hover,
+.portfolioFilter button.portfolioFilterRampage:focus,
+.portfolioFilter button.portfolioFilterRampage:focus-visible {
+  border-color: color-mix(in srgb, var(--warning) 26%, transparent);
+  background: var(--warning-soft);
+  color: var(--warning);
+  box-shadow: none;
+}
