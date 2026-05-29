@@ -12385,7 +12385,7 @@ button:focus-visible {
 .userAvatar img,
 .personAvatar img {
   position: absolute;
-  inset: -1px;
+  /* inset: -1px; */
   width: calc(100% + 2px);
   height: calc(100% + 2px);
   max-width: none;
@@ -13021,7 +13021,7 @@ button:focus-visible {
 .settingsPreviewAvatar img,
 .settingsColorAvatar img {
   position: absolute;
-  inset: -1px;
+  /* inset: -1px; */
   width: calc(100% + 2px);
   height: calc(100% + 2px);
   max-width: none;
