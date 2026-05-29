@@ -236,6 +236,12 @@ function toneClass(tone) {
   return tone && styles[tone] ? styles[tone] : '';
 }
 
+function statusVisualClass(statusText) {
+  if (statusText === 'Meta lucro') return styles.profitGoal;
+  if (statusText === 'Vai bater') return styles.willHitGoal;
+  return '';
+}
+
 function GdvSettingsModal({ gdv, users = [], busy = false, onClose, onSubmit }) {
   const fileInputRef = useRef(null);
   const [name, setName] = useState(gdv?.name || '');
@@ -1235,7 +1241,7 @@ export default function GdvPage() {
           <div className={styles.stickyMetric}><span>Meta</span><b>{selectedRow.calc.mLuc > 0 ? displayInt(selectedRow.calc.mLuc) : '—'}</b></div>
           <div className={styles.stickyMetric}><span>Gap</span><b>{selectedRow.calc.mLuc > 0 ? displayInt(selectedRow.weeklyGap) : '—'}</b></div>
 
-          <span className={`${styles.badge} ${toneClass(selectedRow.tone)}`.trim()}>{selectedRow.statusText}</span>
+          <span className={`${styles.badge} ${toneClass(selectedRow.tone)} ${statusVisualClass(selectedRow.statusText)}`.trim()}>{selectedRow.statusText}</span>
           <button type="button" className={styles.clearSelectionMini} onClick={() => setSelectedClientId(null)}>Limpar</button>
         </section>
       ) : null}
@@ -1341,7 +1347,7 @@ export default function GdvPage() {
                     </div>
 
                     <div className={styles.clientStatus}>
-                      <span className={`${styles.badge} ${toneClass(row.tone)}`.trim()}>{row.statusText}</span>
+                      <span className={`${styles.badge} ${toneClass(row.tone)} ${statusVisualClass(row.statusText)}`.trim()}>{row.statusText}</span>
                     </div>
                   </button>
                 );
