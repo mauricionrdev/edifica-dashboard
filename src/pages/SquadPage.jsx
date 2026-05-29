@@ -619,9 +619,17 @@ export default function SquadPage() {
       return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
     });
 
-    const byStatus = portfolioFilter === 'rampage'
-      ? base.filter((row) => row.status === CLIENT_STATUS.RAMPAGE)
-      : base;
+    const byStatus = (() => {
+      if (portfolioFilter === 'onboarding') {
+        return base.filter((row) => row.status === CLIENT_STATUS.ONBOARDING);
+      }
+
+      if (portfolioFilter === 'rampage') {
+        return base.filter((row) => row.status === CLIENT_STATUS.RAMPAGE);
+      }
+
+      return base;
+    })();
 
     if (!normalized) return byStatus;
     return byStatus.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
@@ -629,6 +637,7 @@ export default function SquadPage() {
 
   const portfolioEmptyLabel = useMemo(() => {
     if (query.trim()) return 'Busca sem resultados';
+    if (portfolioFilter === 'onboarding') return 'Sem clientes em onboarding';
     if (portfolioFilter === 'rampage') return 'Sem rampagem comercial';
     return 'Carteira sem clientes';
   }, [portfolioFilter, query]);
@@ -1037,6 +1046,15 @@ export default function SquadPage() {
                 onClick={() => setPortfolioFilter('all')}
               >
                 Carteira
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={portfolioFilter === 'onboarding'}
+                className={portfolioFilter === 'onboarding' ? styles.portfolioFilterActive : ''}
+                onClick={() => setPortfolioFilter('onboarding')}
+              >
+                Onboarding
               </button>
               <button
                 type="button"

@@ -1841,3 +1841,15 @@
   color: var(--accent);
   box-shadow: none;
 }
+
+
+/* CAP/Squad portfolio filters: persistent active state */
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+}
