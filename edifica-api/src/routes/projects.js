@@ -550,6 +550,7 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
             sourceId: `${sectionIndex}:${taskIndex}`,
             metadata: { templateTaskId: task?.id || null, templateAssignee: task?.assignee || '' },
             notifyAssignee: false,
+            includeCreatorCollaborator: false,
           },
           actorUser,
           db
@@ -574,6 +575,7 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
               source: 'modelo_oficial_subtask',
               sourceId: `${sectionIndex}:${taskIndex}:${subIndex}`,
               notifyAssignee: false,
+              includeCreatorCollaborator: false,
             },
             actorUser,
             db
@@ -980,7 +982,7 @@ router.get('/clients/:clientId/tasks', requirePermission('tasks.view'), async (r
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ? AND tc_profile.role <> 'creator'
         WHERE t.client_id = ?
         ORDER BY t.status = 'done', COALESCE(t.due_date, '9999-12-31') ASC, t.created_at DESC
         LIMIT 200`,
@@ -997,6 +999,7 @@ router.get('/clients/:clientId/tasks', requirePermission('tasks.view'), async (r
          FROM task_collaborators tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.task_id IN (${placeholders})
+          AND tc.role <> 'creator'
         ORDER BY u.name ASC`,
       taskIds
     );
@@ -1110,7 +1113,7 @@ router.post('/clients/:clientId/book/:taskId/confirm-access', requireAnyPermissi
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ? AND tc_profile.role <> 'creator'
         WHERE t.id = ?
         LIMIT 1`,
       [req.user.id, req.user.id, taskId]
@@ -1139,7 +1142,7 @@ router.get('/tasks/my/list', requirePermission('tasks.view'), async (req, res, n
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ? AND tc_profile.role <> 'creator'
         WHERE (t.assignee_user_id = ? OR tc_profile.user_id IS NOT NULL)
         ORDER BY t.status = 'done', COALESCE(t.due_date, '9999-12-31') ASC, t.created_at DESC
         LIMIT 300`,
@@ -1228,7 +1231,7 @@ router.get('/users/:userId/tasks', requirePermission('profile.view'), async (req
           OR p.created_by_user_id = ?
           OR t.created_by_user_id = ?
           OR EXISTS (SELECT 1 FROM project_members pm WHERE pm.project_id = p.id AND pm.user_id = ?)
-          OR EXISTS (SELECT 1 FROM task_collaborators tc WHERE tc.task_id = t.id AND tc.user_id = ?)
+          OR EXISTS (SELECT 1 FROM task_collaborators tc WHERE tc.task_id = t.id AND tc.user_id = ? AND tc.role <> 'creator')
         )`;
     }
 
@@ -1246,7 +1249,7 @@ router.get('/users/:userId/tasks', requirePermission('profile.view'), async (req
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ? AND tc_profile.role <> 'creator'
         WHERE (t.assignee_user_id = ? OR tc_profile.user_id IS NOT NULL)
           ${visibilityWhere}
         ORDER BY t.status = 'done', COALESCE(t.due_date, '9999-12-31') ASC, t.created_at DESC
@@ -1277,7 +1280,7 @@ router.get('/tasks/:id([0-9a-fA-F-]{36})', requirePermission('tasks.view'), asyn
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ? AND tc_profile.role <> 'creator'
         WHERE t.id = ?
         LIMIT 1`,
       [req.user.id, req.user.id, req.params.id]
@@ -1326,7 +1329,7 @@ router.post('/tasks', requirePermission('tasks.create'), async (req, res, next) 
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ? AND tc_profile.role <> 'creator'
         WHERE t.id = ?`,
       [req.user?.id || null, req.user?.id || null, taskId]
     );
@@ -1857,7 +1860,7 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
          LEFT JOIN clients c ON c.id = t.client_id
          LEFT JOIN users au ON au.id = t.assignee_user_id
          LEFT JOIN users cu ON cu.id = t.created_by_user_id
-         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ?
+         LEFT JOIN task_collaborators tc_profile ON tc_profile.task_id = t.id AND tc_profile.user_id = ? AND tc_profile.role <> 'creator'
         WHERE t.id = ?`,
       [req.user.id, req.user.id, req.params.id]
     );
@@ -2019,6 +2022,7 @@ router.get('/tasks/:id/comments', requirePermission('tasks.view'), async (req, r
          FROM task_comments tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.task_id = ?
+          AND tc.role <> 'creator'
         ORDER BY tc.created_at ASC`,
       [req.params.id]
     );
@@ -2047,6 +2051,7 @@ router.get('/tasks/:id/collaborators', requirePermission('tasks.view'), async (r
          FROM task_collaborators tc
          JOIN users u ON u.id = tc.user_id
         WHERE tc.task_id = ?
+          AND tc.role <> 'creator'
         ORDER BY
           CASE
             WHEN tc.user_id = ? THEN 0

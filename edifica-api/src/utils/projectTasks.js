@@ -324,7 +324,9 @@ export async function createTaskRecord(input, actorUser = null, db = null) {
     ]
   );
 
-  await addTaskCollaborators(id, [createdByUserId].filter(Boolean), 'creator', db);
+  if (input.includeCreatorCollaborator !== false) {
+    await addTaskCollaborators(id, [createdByUserId].filter(Boolean), 'creator', db);
+  }
   await addTaskCollaborators(id, [assigneeUserId].filter(Boolean), 'follower', db);
   await logTaskEvent(
     {
