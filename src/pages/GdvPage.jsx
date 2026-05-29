@@ -82,6 +82,8 @@ function goalSignals(calc = {}) {
   return {
     closed,
     projected,
+    profitGoal,
+    contractGoal,
     primaryGoal,
     hitProfit,
     hitContracts,
@@ -149,7 +151,9 @@ function statusTone(calc, clientStatus) {
   const signals = goalSignals(calc);
   if (!signals.primaryGoal) return 'muted';
 
-  if (signals.hitAny) return 'green';
+  const hitPrimaryGoal = signals.profitGoal > 0 ? signals.hitProfit : signals.hitContracts;
+
+  if (hitPrimaryGoal) return 'green';
   if (signals.projected >= signals.primaryGoal) return 'amber';
   if (signals.progress >= 55) return 'amber';
   return 'red';
@@ -165,7 +169,6 @@ function statusLabel(calc, clientStatus) {
   if (!signals.primaryGoal) return 'Sem meta';
 
   if (signals.hitProfit) return 'Meta lucro';
-  if (signals.hitContracts) return 'Meta contratos';
   if (signals.projected >= signals.primaryGoal) return 'Vai bater';
   if (signals.progress >= 55) return 'Em andamento';
   return 'Crítico';
