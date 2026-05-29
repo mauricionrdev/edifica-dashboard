@@ -690,6 +690,19 @@ export default function SquadPage() {
     return 'Carteira sem clientes';
   }, [portfolioFilter, query]);
 
+
+  const portfolioFilterItems = useMemo(() => {
+    const activeRows = clientRows.filter((row) => isActiveClientStatus(row.status));
+    const rampageRows = clientRows.filter((row) => row.status === CLIENT_STATUS.RAMPAGE);
+    const onboardingRows = clientRows.filter((row) => row.status === CLIENT_STATUS.ONBOARDING);
+
+    return [
+      { id: 'all', label: 'Carteira', count: activeRows.length },
+      { id: 'rampage', label: 'Rampagem', count: rampageRows.length },
+      { id: 'onboarding', label: 'Onboard', count: onboardingRows.length },
+    ];
+  }, [clientRows]);
+
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
   useEffect(() => {
@@ -1086,33 +1099,24 @@ export default function SquadPage() {
             </label>
 
             <div className={styles.portfolioFilter} role="tablist" aria-label="Filtro da carteira">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={portfolioFilter === 'all'}
-                className={`${styles.portfolioFilterTab} ${portfolioFilter === 'all' ? styles.portfolioFilterActive : ''}`.trim()}
-                onClick={() => setPortfolioFilter('all')}
-              >
-                <span>Carteira</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={portfolioFilter === 'rampage'}
-                className={`${styles.portfolioFilterTab} ${portfolioFilter === 'rampage' ? `${styles.portfolioFilterActive} ${styles.portfolioFilterRampage}` : ''}`.trim()}
-                onClick={() => setPortfolioFilter('rampage')}
-              >
-                <span>Rampagem</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={portfolioFilter === 'onboarding'}
-                className={`${styles.portfolioFilterTab} ${portfolioFilter === 'onboarding' ? `${styles.portfolioFilterActive} ${styles.portfolioFilterOnboarding}` : ''}`.trim()}
-                onClick={() => setPortfolioFilter('onboarding')}
-              >
-                <span>Onboard</span>
-              </button>
+              {portfolioFilterItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={portfolioFilter === item.id}
+                  className={[
+                    styles.portfolioFilterTab,
+                    portfolioFilter === item.id ? styles.portfolioFilterActive : '',
+                    item.id === 'rampage' ? styles.portfolioFilterRampage : '',
+                    item.id === 'onboarding' ? styles.portfolioFilterOnboarding : '',
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => setPortfolioFilter(item.id)}
+                >
+                  <span>{item.label}</span>
+                  <span className={styles.portfolioFilterCount}>{displayInt(item.count)}</span>
+                </button>
+              ))}
             </div>
 
             <button

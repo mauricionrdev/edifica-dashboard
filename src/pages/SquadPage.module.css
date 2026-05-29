@@ -2222,3 +2222,126 @@
   animation: squadProfitStar 4.2s ease-in-out infinite;
   pointer-events: none;
 }
+
+
+/* final: carteira tabs and long status pills */
+.portfolioFilter {
+  min-height: 40px;
+  height: auto;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  margin: 0;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-canvas);
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: var(--edf-border);
+  background: var(--bg-canvas);
+  color: var(--edf-text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: var(--edf-amber-border-strong);
+  background: var(--edf-amber-bg);
+  color: var(--edf-amber-strong);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage,
+.portfolioFilter button.portfolioFilterRampage:hover {
+  color: var(--edf-text-muted);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: rgba(146, 155, 176, .24);
+  background: rgba(146, 155, 176, .08);
+  color: var(--edf-text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(90, 169, 255, .26);
+  background: rgba(90, 169, 255, .08);
+  color: #8ab4ff;
+}
+
+.portfolioFilterCount {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.clientRow {
+  grid-template-columns: minmax(260px, 1fr) minmax(235px, 310px) minmax(150px, max-content);
+}
+
+.clientStatus {
+  min-width: 150px;
+}
+
+.badge.rampage {
+  min-width: max-content;
+  max-width: none;
+  color: var(--edf-text-secondary);
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .06);
+}
