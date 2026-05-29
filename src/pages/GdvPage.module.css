@@ -677,11 +677,64 @@
   background: rgba(94, 234, 145, .08);
 }
 
+
 .badge.amber {
   color: var(--accent);
   border-color: rgba(245, 184, 0, .24);
   background: rgba(245, 184, 0, .09);
 }
+
+.badgeMetaProfit {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.badgeMetaProfit::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -18%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0;
+  transform: translateY(-50%) rotate(45deg) scale(.6);
+  box-shadow:
+    8px 0 0 -3px currentColor,
+    -8px 0 0 -3px currentColor,
+    0 8px 0 -3px currentColor,
+    0 -8px 0 -3px currentColor;
+  animation: metaProfitSpark 3.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.badgeWillHit {
+  color: var(--accent);
+  border-color: rgba(94, 234, 145, .20);
+  background: linear-gradient(90deg, rgba(245, 184, 0, .14), rgba(94, 234, 145, .10));
+}
+
+@keyframes metaProfitSpark {
+  0%, 76%, 100% {
+    left: -18%;
+    opacity: 0;
+    transform: translateY(-50%) rotate(45deg) scale(.55);
+  }
+
+  82% {
+    opacity: .34;
+  }
+
+  90% {
+    left: 118%;
+    opacity: 0;
+    transform: translateY(-50%) rotate(45deg) scale(1);
+  }
+}
+
 
 .badge.red {
   color: #f0a3a3;

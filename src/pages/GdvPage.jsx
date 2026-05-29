@@ -83,8 +83,6 @@ function goalSignals(calc = {}) {
     closed,
     projected,
     primaryGoal,
-    profitGoal,
-    contractGoal,
     hitProfit,
     hitContracts,
     hitAny: hitProfit || hitContracts,
@@ -151,7 +149,9 @@ function statusTone(calc, clientStatus) {
   const signals = goalSignals(calc);
   if (!signals.primaryGoal) return 'muted';
 
-  if (signals.hitProfit) return 'green';
+  const hitPrimaryGoal = signals.profitGoal > 0 ? signals.hitProfit : signals.hitContracts;
+
+  if (hitPrimaryGoal) return 'green';
   if (signals.projected >= signals.primaryGoal) return 'amber';
   if (signals.progress >= 55) return 'amber';
   return 'red';
@@ -222,18 +222,19 @@ function clientPriorityRank(row) {
   const clientStatus = row.client?.status ?? row.status;
   if (!isActiveClientStatus(clientStatus)) return 0;
 
-  const label = statusLabel(row.calc || {}, clientStatus);
+  const signals = goalSignals(row.calc || {});
+  const hitPrimaryGoal = signals.profitGoal > 0 ? signals.hitProfit : signals.hitContracts;
 
   // Quanto maior o rank, mais alto o cliente aparece na lista.
-  // Esta função deve ordenar a lista por criticidade, sem alterar a regra real
-  // de status/cor exibida nos chips.
-  if (label === 'Crítico') return 6;
-  if (label === 'Em andamento') return 5;
-  if (label === 'Vai bater') return 4;
-  if (label === 'Sem meta') return 3;
-  if (label === 'Meta lucro') return 2;
+  // A categoria é obrigatoriamente mais importante que qualquer pontuação numérica.
+  // Para GDV, meta de lucro é a prioridade. Bater contratos não reduz criticidade
+  // quando ainda existe meta de lucro pendente.
+  if (signals.primaryGoal <= 0) return 3; // Sem meta
+  if (hitPrimaryGoal) return 2; // Meta batida
+  if (signals.projected >= signals.primaryGoal) return 4; // Vai bater
+  if (signals.progress >= 55) return 5; // Em andamento
 
-  return 1;
+  return 6; // Crítico
 }
 
 function clientPriorityScore(row) {
@@ -253,6 +254,17 @@ function clientPriorityScore(row) {
 
 function toneClass(tone) {
   return tone && styles[tone] ? styles[tone] : '';
+}
+
+function statusBadgeClass(row) {
+  if (!row) return styles.badge;
+
+  const classes = [styles.badge, toneClass(row.tone)];
+
+  if (row.statusText === 'Meta lucro') classes.push(styles.badgeMetaProfit);
+  if (row.statusText === 'Vai bater') classes.push(styles.badgeWillHit);
+
+  return classes.filter(Boolean).join(' ');
 }
 
 function GdvSettingsModal({ gdv, users = [], busy = false, onClose, onSubmit }) {
@@ -1253,7 +1265,7 @@ export default function GdvPage() {
           <div className={styles.stickyMetric}><span>Meta</span><b>{selectedRow.calc.mLuc > 0 ? displayInt(selectedRow.calc.mLuc) : '—'}</b></div>
           <div className={styles.stickyMetric}><span>Gap</span><b>{selectedRow.calc.mLuc > 0 ? displayInt(selectedRow.weeklyGap) : '—'}</b></div>
 
-          <span className={`${styles.badge} ${toneClass(selectedRow.tone)}`.trim()}>{selectedRow.statusText}</span>
+          <span className={statusBadgeClass(selectedRow)}>{selectedRow.statusText}</span>
           <button type="button" className={styles.clearSelectionMini} onClick={() => setSelectedClientId(null)}>Limpar</button>
         </section>
       ) : null}
@@ -1359,7 +1371,7 @@ export default function GdvPage() {
                     </div>
 
                     <div className={styles.clientStatus}>
-                      <span className={`${styles.badge} ${toneClass(row.tone)}`.trim()}>{row.statusText}</span>
+                      <span className={statusBadgeClass(row)}>{row.statusText}</span>
                     </div>
                   </button>
                 );
