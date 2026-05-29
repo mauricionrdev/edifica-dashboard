@@ -83,6 +83,8 @@ function goalSignals(calc = {}) {
     closed,
     projected,
     primaryGoal,
+    profitGoal,
+    contractGoal,
     hitProfit,
     hitContracts,
     hitAny: hitProfit || hitContracts,
@@ -149,9 +151,7 @@ function statusTone(calc, clientStatus) {
   const signals = goalSignals(calc);
   if (!signals.primaryGoal) return 'muted';
 
-  const hitPrimaryGoal = signals.profitGoal > 0 ? signals.hitProfit : signals.hitContracts;
-
-  if (hitPrimaryGoal) return 'green';
+  if (signals.hitProfit) return 'green';
   if (signals.projected >= signals.primaryGoal) return 'amber';
   if (signals.progress >= 55) return 'amber';
   return 'red';
@@ -222,19 +222,18 @@ function clientPriorityRank(row) {
   const clientStatus = row.client?.status ?? row.status;
   if (!isActiveClientStatus(clientStatus)) return 0;
 
-  const signals = goalSignals(row.calc || {});
-  const hitPrimaryGoal = signals.profitGoal > 0 ? signals.hitProfit : signals.hitContracts;
+  const label = statusLabel(row.calc || {}, clientStatus);
 
   // Quanto maior o rank, mais alto o cliente aparece na lista.
-  // A categoria é obrigatoriamente mais importante que qualquer pontuação numérica.
-  // Para GDV, meta de lucro é a prioridade. Bater contratos não reduz criticidade
-  // quando ainda existe meta de lucro pendente.
-  if (signals.primaryGoal <= 0) return 3; // Sem meta
-  if (hitPrimaryGoal) return 2; // Meta batida
-  if (signals.projected >= signals.primaryGoal) return 4; // Vai bater
-  if (signals.progress >= 55) return 5; // Em andamento
+  // Esta função deve ordenar a lista por criticidade, sem alterar a regra real
+  // de status/cor exibida nos chips.
+  if (label === 'Crítico') return 6;
+  if (label === 'Em andamento') return 5;
+  if (label === 'Vai bater') return 4;
+  if (label === 'Sem meta') return 3;
+  if (label === 'Meta lucro') return 2;
 
-  return 6; // Crítico
+  return 1;
 }
 
 function clientPriorityScore(row) {
