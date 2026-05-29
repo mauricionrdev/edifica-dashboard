@@ -69,27 +69,6 @@ function effectiveForecast(closed, predicted) {
   return Math.max(Number(closed) || 0, Number(predicted) || 0);
 }
 
-function goalSignals(calc = {}) {
-  const closed = Number(calc.fec) || 0;
-  const profitGoal = Number(calc.mLuc) || 0;
-  const contractGoal = Number(calc.mEmp) || 0;
-  const projected = effectiveForecast(closed, calc.cp);
-  const primaryGoal = profitGoal > 0 ? profitGoal : contractGoal;
-  const hitProfit = profitGoal > 0 && closed >= profitGoal;
-  const hitContracts = contractGoal > 0 && closed >= contractGoal;
-  const progress = primaryGoal > 0 ? (closed / primaryGoal) * 100 : 0;
-
-  return {
-    closed,
-    projected,
-    primaryGoal,
-    hitProfit,
-    hitContracts,
-    hitAny: hitProfit || hitContracts,
-    progress,
-  };
-}
-
 function periodReferenceDate(year, month0, week) {
   const dayByWeek = { 1: 1, 2: 8, 3: 15, 4: 22 };
   const month = String(Number(month0) + 1).padStart(2, '0');
@@ -145,13 +124,12 @@ function statusTone(calc, clientStatus) {
   if (clientStatus === CLIENT_STATUS.CHURN) return 'red';
   if (clientStatus === CLIENT_STATUS.RAMPAGE) return 'amber';
   if (!isActiveClientStatus(clientStatus)) return 'muted';
+  if (!calc?.mLuc) return 'muted';
 
-  const signals = goalSignals(calc);
-  if (!signals.primaryGoal) return 'muted';
-
-  if (signals.hitAny) return 'green';
-  if (signals.projected >= signals.primaryGoal) return 'amber';
-  if (signals.progress >= 55) return 'amber';
+  const progress = (calc.fec / calc.mLuc) * 100;
+  if (calc.fec >= calc.mLuc) return 'green';
+  if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'amber';
+  if (progress >= 55) return 'amber';
   return 'red';
 }
 
@@ -160,14 +138,10 @@ function statusLabel(calc, clientStatus) {
   if (clientStatus === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (clientStatus === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (clientStatus === CLIENT_STATUS.CHURN) return 'Churn';
-
-  const signals = goalSignals(calc);
-  if (!signals.primaryGoal) return 'Sem meta';
-
-  if (signals.hitProfit) return 'Meta lucro';
-  if (signals.hitContracts) return 'Meta contratos';
-  if (signals.projected >= signals.primaryGoal) return 'Vai bater';
-  if (signals.progress >= 55) return 'Em andamento';
+  if (!calc?.mLuc) return 'Sem meta';
+  if (calc.fec >= calc.mLuc) return 'Meta lucro';
+  if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'Vai bater';
+  if ((calc.fec / calc.mLuc) * 100 >= 55) return 'Em andamento';
   return 'Crítico';
 }
 
@@ -221,14 +195,19 @@ function clientPriorityRank(row) {
   const clientStatus = row.client?.status ?? row.status;
   if (!isActiveClientStatus(clientStatus)) return 0;
 
-  const signals = goalSignals(row.calc || {});
+  const calc = row.calc || {};
+  const goal = Number(calc.mLuc) || 0;
+  const closed = Number(calc.fec) || 0;
+  const predicted = Number(calc.cp) || 0;
+  const projected = effectiveForecast(closed, predicted);
+  const progress = goal > 0 ? (closed / goal) * 100 : 0;
 
   // Quanto maior o rank, mais alto o cliente aparece na lista.
   // A categoria é obrigatoriamente mais importante que qualquer pontuação numérica.
-  if (signals.primaryGoal <= 0) return 3; // Sem meta
-  if (signals.hitAny) return 2; // Meta batida
-  if (signals.projected >= signals.primaryGoal) return 4; // Vai bater
-  if (signals.progress >= 55) return 5; // Em andamento
+  if (goal <= 0) return 3; // Sem meta
+  if (closed >= goal) return 2; // Meta batida
+  if (projected >= goal) return 4; // Vai bater
+  if (progress >= 55) return 5; // Em andamento
 
   return 6; // Crítico
 }
@@ -239,13 +218,18 @@ function clientPriorityScore(row) {
   const clientStatus = row.client?.status ?? row.status;
   if (!isActiveClientStatus(clientStatus)) return -100000;
 
-  const signals = goalSignals(row.calc || {});
-  const gap = signals.primaryGoal > 0 ? Math.max(signals.primaryGoal - signals.closed, 0) : 0;
-  const forecastGap = signals.primaryGoal > 0 ? Math.max(signals.primaryGoal - signals.projected, 0) : 0;
+  const calc = row.calc || {};
+  const goal = Number(calc.mLuc) || 0;
+  const closed = Number(calc.fec) || 0;
+  const predicted = Number(calc.cp) || 0;
+  const projected = effectiveForecast(closed, predicted);
+  const gap = goal > 0 ? Math.max(goal - closed, 0) : 0;
+  const forecastGap = goal > 0 ? Math.max(goal - projected, 0) : 0;
+  const progress = goal > 0 ? (closed / goal) * 100 : 0;
 
   // Usado apenas como desempate dentro da mesma categoria.
   // Prioriza menor progresso, maior distância da projeção e maior distância da meta.
-  return forecastGap * 10000 + gap * 100 + Math.max(0, 100 - signals.progress);
+  return forecastGap * 10000 + gap * 100 + Math.max(0, 100 - progress);
 }
 
 function toneClass(tone) {
