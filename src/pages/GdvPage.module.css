@@ -2989,34 +2989,38 @@
   letter-spacing: -0.015em;
 }
 
-/* v-next — GDV alinhada ao padrão real do Perfil interno */
+/* gdv-header-cards-profile-only — refinamento cirúrgico baseado no Perfil interno
+   Escopo: somente header/top-bar e cards superiores. Não altera abas, busca, modal ou lógica. */
 .headerIdentity {
   min-height: 50px;
-  gap: 11px;
+  gap: 10px;
 }
 
 .headerLogo {
-  width: 40px;
-  height: 40px;
-  flex-basis: 40px;
-  border-color: var(--edf-border);
-  background: var(--edf-surface-solid-2);
-  box-shadow: none;
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  border-color: var(--line-subtle);
+  background: var(--bg-app);
+  box-shadow: 0 0 0 1px var(--line-subtle);
+}
+
+.headerTitleText {
+  gap: 2px;
 }
 
 .headerTitleText strong {
-  font-size: 18px;
-  line-height: 1.2;
-  font-weight: 700;
-  color: var(--edf-text);
-  letter-spacing: -0.02em;
+  font-size: 17px;
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.04em;
 }
 
 .headerTitleText small {
+  color: var(--text-secondary);
   font-size: 12px;
-  line-height: 1.25;
-  font-weight: 500;
-  color: var(--edf-text-faint);
+  line-height: 1.18;
+  font-weight: 520;
 }
 
 .headerActions {
@@ -3025,79 +3029,65 @@
 
 .headerCard {
   min-height: 34px;
-  padding-left: 14px;
-  margin-left: 14px;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+  padding-left: 13px;
+  margin-left: 13px;
 }
 
 .headerCard::before {
-  background: var(--edf-border);
+  height: 22px;
+  background: var(--line-subtle);
 }
 
-.headerStat strong,
-.monthLabel {
+.headerStat {
+  min-height: 32px;
+  gap: 7px;
+}
+
+.headerStat strong {
   font-size: 13px;
   line-height: 1;
-  font-weight: 600;
-  color: var(--edf-text);
-  letter-spacing: -0.01em;
+  font-weight: 650;
 }
 
 .headerStat svg,
 .navBtn svg,
-.iconButton svg,
-.searchBox svg {
+.iconButton svg {
   width: 15px;
   height: 15px;
-  stroke-width: 1.85;
+  stroke-width: 1.9;
+}
+
+.monthNav,
+.weekTabs,
+.headerUtilityRow {
+  min-height: 32px;
+}
+
+.monthLabel {
+  min-width: 112px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
 .navBtn,
-.iconButton,
-.weekTab {
-  box-shadow: none;
-}
-
-.navBtn:hover,
-.iconButton:hover,
-.weekTab:hover {
-  background: var(--edf-surface-1);
-  color: var(--edf-text-secondary);
-  box-shadow: none;
-}
-
-.navBtn:focus,
-.navBtn:focus-visible,
-.iconButton:focus,
-.iconButton:focus-visible,
-.weekTab:focus,
-.weekTab:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
-
-.weekTabs {
-  gap: 4px;
+.iconButton {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-1, 6px);
 }
 
 .weekTab {
   height: 32px;
   min-width: 30px;
-  border-radius: 8px;
-  color: var(--edf-text-muted);
+  border-radius: 9px;
   font-size: 12.5px;
   font-weight: 600;
-  transition: color 120ms ease, background-color 120ms ease;
 }
 
-.weekTabActive,
-.weekTabActive:hover,
-.weekTabActive:focus,
-.weekTabActive:focus-visible {
-  background: var(--edf-amber-bg);
-  color: var(--edf-amber-strong);
+.weekTabActive {
+  background: var(--surface-raised);
+  color: var(--text-primary);
   box-shadow: none;
 }
 
@@ -3107,305 +3097,37 @@
 
 .metricCard {
   min-height: 78px;
-  padding: 11px 13px;
-  border-color: var(--edf-border);
+  padding: 11px 13px 10px;
+  border-color: var(--line-subtle);
   border-radius: var(--workspace-card-radius);
-  background: var(--edf-surface-solid-2);
+  background: var(--workspace-panel-bg);
   box-shadow: none;
+}
+
+.metricCard:hover {
+  border-color: var(--line-subtle);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
 }
 
 .metricLabel {
-  color: var(--edf-text-faint);
   font-size: 10px;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: 0.085em;
 }
 
 .metricValue {
-  color: var(--edf-text);
-  font-size: clamp(19px, 1.15vw, 23px);
+  font-size: clamp(19px, 1.2vw, 23px);
   line-height: 1;
   font-weight: 650;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
 }
 
 .metricSub {
-  color: var(--edf-text-muted);
+  min-height: 14px;
   font-size: 11px;
   line-height: 1.25;
-  font-weight: 500;
-}
-
-.toolbarControls {
-  grid-template-columns: minmax(0, 1fr) max-content 150px;
-  gap: 12px;
-  align-items: end;
-}
-
-.searchBox,
-.complementaryButton {
-  height: 40px;
-  min-height: 40px;
-  border: 0;
-  border-bottom: 1px solid var(--edf-border);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.searchBox {
-  padding: 0 2px;
-  gap: 9px;
-  color: var(--edf-text-muted);
-}
-
-.searchBox:hover,
-.searchBox:focus-within {
-  border-color: var(--edf-text);
-  background: transparent;
-  box-shadow: none;
-}
-
-.searchBox input {
-  color: var(--edf-text);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-}
-
-.searchBox input::placeholder {
-  color: var(--edf-text-faint);
-}
-
-.portfolioFilter {
-  height: 40px;
-  min-height: 40px;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--edf-border);
-  border-radius: 0;
-  background: transparent;
-  display: inline-flex;
-  align-items: stretch;
-  gap: 4px;
-  overflow: visible;
-  box-shadow: none;
-}
-
-.portfolioFilter button.portfolioFilterTab {
-  height: 40px;
-  min-height: 40px;
-  padding: 0 12px;
-  margin-bottom: -1px;
-  border: 0;
-  border-bottom: 1.5px solid transparent;
-  border-radius: 0;
-  background: transparent;
-  color: var(--edf-text-muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  font-size: 13px;
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  box-shadow: none;
-  transform: none;
-  transition: color 120ms ease, border-color 120ms ease;
-}
-
-.portfolioFilter button.portfolioFilterTab:hover:not(.portfolioFilterActive) {
-  background: transparent;
-  color: var(--edf-text-secondary);
-  border-bottom-color: transparent;
-  box-shadow: none;
-  transform: none;
-}
-
-.portfolioFilter button.portfolioFilterTab:focus,
-.portfolioFilter button.portfolioFilterTab:focus-visible {
-  outline: none;
-  background: transparent;
-  box-shadow: none;
-}
-
-.portfolioFilter button.portfolioFilterActive,
-.portfolioFilter button.portfolioFilterActive:hover,
-.portfolioFilter button.portfolioFilterActive:focus,
-.portfolioFilter button.portfolioFilterActive:focus-visible {
-  background: transparent;
-  border-bottom-color: var(--edf-amber-strong);
-  color: var(--edf-amber-strong);
-  font-weight: 600;
-  box-shadow: none;
-  transform: none;
-}
-
-.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
-.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
-.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
-.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
-  border-bottom-color: var(--info-text);
-  color: var(--info-text);
-}
-
-.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
-.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
-.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
-.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
-  border-bottom-color: var(--edf-text-secondary);
-  color: var(--edf-text-secondary);
-}
-
-.portfolioFilterCount {
-  min-width: auto;
-  height: auto;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--edf-text-faint);
-  font-size: 11px;
-  line-height: 1;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  box-shadow: none;
-}
-
-.portfolioFilterActive .portfolioFilterCount,
-.portfolioFilter button.portfolioFilterActive .portfolioFilterCount,
-.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive .portfolioFilterCount,
-.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive .portfolioFilterCount {
-  background: transparent;
-  border: 0;
-  color: currentColor;
-}
-
-.complementaryButton {
-  padding: 0 4px;
-  justify-content: center;
-  color: var(--edf-text-muted);
-  transition: color 120ms ease, border-color 120ms ease;
-}
-
-.complementaryButton span {
-  font-size: 13px;
-  line-height: 1;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-}
-
-.complementaryButton:hover,
-.complementaryButtonActive,
-.complementaryButtonActive:hover,
-.complementaryButtonActive:focus,
-.complementaryButtonActive:focus-visible {
-  border-color: var(--edf-text);
-  background: transparent;
-  color: var(--edf-text);
-  box-shadow: none;
-  outline: none;
-  transform: none;
-}
-
-.modalBackdrop {
-  background: var(--chassis-modal-backdrop);
-  backdrop-filter: var(--chassis-modal-blur);
-  -webkit-backdrop-filter: var(--chassis-modal-blur);
-}
-
-.indicatorsModal,
-.modalCard {
-  border: 1px solid var(--edf-border-strong);
-  border-radius: var(--workspace-card-radius);
-  background: var(--edf-surface-solid);
-  box-shadow: none;
-}
-
-.indicatorsModal {
-  width: min(760px, calc(100vw - 48px));
-  max-height: min(640px, calc(100vh - 48px));
-}
-
-.modalHead {
-  min-height: 58px;
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--edf-border);
-  background: var(--edf-surface-solid);
-}
-
-.modalHead span {
-  color: var(--edf-text-muted);
-  font-size: 11px;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-}
-
-.modalHead h3 {
-  color: var(--edf-text);
-  font-size: 16px;
-  line-height: 1.25;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-}
-
-.modalClose {
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--edf-text-muted);
-  box-shadow: none;
-}
-
-.modalClose:hover,
-.modalClose:focus,
-.modalClose:focus-visible {
-  background: var(--edf-surface-1);
-  color: var(--edf-text-secondary);
-  outline: none;
-  box-shadow: none;
-}
-
-.indicatorsGrid {
-  padding: 18px 22px 22px;
-  gap: 10px;
-}
-
-.indicatorsCard {
-  min-height: 86px;
-  padding: 14px 16px;
-  border: 1px solid var(--edf-border);
-  border-radius: var(--workspace-card-radius);
-  background: var(--edf-surface-1);
-  box-shadow: none;
-}
-
-.indicatorsCard span {
-  color: var(--edf-text-faint);
-  font-size: 11px;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-}
-
-.indicatorsCard strong {
-  color: var(--edf-text);
-  font-size: clamp(20px, 1.6vw, 24px);
-  line-height: 1;
-  font-weight: 650;
-  letter-spacing: -0.035em;
-}
-
-.indicatorsCard small {
-  color: var(--edf-text-muted);
-  font-size: 11.5px;
-  line-height: 1.3;
-  font-weight: 500;
+  font-weight: 520;
 }
