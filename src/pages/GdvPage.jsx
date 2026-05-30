@@ -26,6 +26,7 @@ import {
 import { matchesAnySearch } from '../utils/search.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import {
+  getClientAvatar,
   getGdvAvatar,
   readAvatarFile,
   removeGdvAvatar,
@@ -1317,7 +1318,13 @@ export default function GdvPage() {
 
       {selectedRow && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
-          <span className={styles.clientAvatarMini}>{clientInitials(selectedRow.client.name)}</span>
+          <span className={styles.clientAvatarMini}>
+            {getClientAvatar(selectedRow.client) ? (
+              <img src={getClientAvatar(selectedRow.client)} alt="" loading="lazy" decoding="async" />
+            ) : (
+              clientInitials(selectedRow.client.name)
+            )}
+          </span>
           <strong>{selectedRow.client.name}</strong>
 
           <div className={styles.stickyMetric}><span>Fechados</span><b>{displayInt(selectedRow.calc.fec)}</b></div>
@@ -1402,6 +1409,7 @@ export default function GdvPage() {
                 const squadName =
                   (squads || []).find((squad) => squad.id === client.squadId)?.name || client.squadName || 'Sem squad';
                 const active = selectedClientId === client.id;
+                const clientAvatarUrl = getClientAvatar(client);
 
                 return (
                   <button
@@ -1411,7 +1419,13 @@ export default function GdvPage() {
                     onClick={() => setSelectedClientId(client.id)}
                   >
                     <div className={styles.clientMain}>
-                      <span className={styles.clientAvatarSmall}>{clientInitials(client.name)}</span>
+                      <span className={styles.clientAvatarSmall}>
+                        {clientAvatarUrl ? (
+                          <img src={clientAvatarUrl} alt="" loading="lazy" decoding="async" />
+                        ) : (
+                          clientInitials(client.name)
+                        )}
+                      </span>
                       <div>
                         <strong>{client.name}</strong>
                         <span>{squadName}{client.gestor ? ` · ${client.gestor}` : ''}</span>
