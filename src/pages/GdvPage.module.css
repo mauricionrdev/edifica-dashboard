@@ -3350,3 +3350,149 @@
   line-height: 1.3;
   font-weight: 520;
 }
+
+/* gdv-header-actions-refine — refinamento cirúrgico do conteúdo superior da GDV */
+.headerIdentity {
+  min-height: 46px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+  border-color: var(--line-subtle);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.headerLogo>span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.headerTitleText {
+  gap: 2px;
+}
+
+.headerTitleText strong {
+  font-size: 16px;
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.headerTitleText small {
+  font-size: 11.5px;
+  line-height: 1.18;
+  color: var(--text-secondary);
+}
+
+.headerActions {
+  gap: 2px;
+}
+
+.headerCard {
+  min-height: 32px;
+  padding-left: 14px;
+  margin-left: 12px;
+}
+
+.headerCard::before {
+  height: 22px;
+  background: var(--line-subtle);
+  opacity: .72;
+}
+
+.headerStat,
+.monthNav,
+.weekTabs,
+.headerUtilityRow {
+  min-height: 32px;
+}
+
+.headerStat {
+  gap: 7px;
+}
+
+.headerStat svg,
+.navBtn svg,
+.iconButton svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.85;
+}
+
+.headerStat strong {
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 650;
+}
+
+.monthNav {
+  gap: 6px;
+}
+
+.monthLabel {
+  min-width: 108px;
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.navBtn,
+.iconButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  background: transparent;
+  box-shadow: none;
+}
+
+.navBtn:hover,
+.navBtn:focus,
+.navBtn:focus-visible,
+.iconButton:hover,
+.iconButton:focus,
+.iconButton:focus-visible {
+  background: rgba(255, 255, 255, .026);
+  color: var(--text-secondary);
+  outline: none;
+  box-shadow: none;
+}
+
+.weekTabs {
+  gap: 5px;
+}
+
+.weekTab {
+  min-width: 28px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 620;
+  box-shadow: none;
+}
+
+.weekTab:hover,
+.weekTab:focus,
+.weekTab:focus-visible {
+  background: rgba(255, 255, 255, .026);
+  color: var(--text-secondary);
+  outline: none;
+  box-shadow: none;
+}
+
+.weekTabActive,
+.weekTabActive:hover,
+.weekTabActive:focus,
+.weekTabActive:focus-visible {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: none;
+}
