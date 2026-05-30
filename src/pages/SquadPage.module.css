@@ -3588,3 +3588,3507 @@
   background: rgba(245, 184, 0, .12);
   color: var(--accent);
 }
+
+/* --------------------------------------------------------------------------
+   Squad visual sync — source of truth copied from validated GDV screen styles.
+   This block intentionally stays at the end to neutralize older scattered Squad
+   overrides without changing JSX, filters, calculations or backend behavior.
+   -------------------------------------------------------------------------- */
+.page {
+  --squad-accent: var(--accent);
+  --squad-accent-line: var(--accent-line);
+  height: 100%;
+  min-height: 0;
+  padding: 12px 16px 16px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.headerIdentity {
+  min-width: 0;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerLogo {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--workspace-bg);
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.headerLogo:disabled {
+  cursor: default;
+}
+
+.headerLogo img,
+.clientAvatarSmall img,
+.clientAvatarMini img,
+.squadAvatarEditor img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.headerLogo>span {
+  font-size: 12px;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+}
+
+.headerLogo em {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 9, 10, 0.72);
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 590;
+  opacity: 0;
+}
+
+.headerLogo:hover em {
+  opacity: 1;
+}
+
+.headerTitleText {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.headerTitleText strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.08;
+  font-weight: 620;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.headerTitleText small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.headerActions {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  flex-wrap: nowrap;
+}
+
+.headerCluster {
+  position: relative;
+  min-height: 34px;
+  padding-left: 14px;
+  margin-left: 14px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerCluster:first-child {
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.headerCluster::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 24px;
+  background: var(--line-subtle);
+  transform: translateY(-50%);
+}
+
+.headerCluster:first-child::before {
+  display: none;
+}
+
+.headerClusterLabel {
+  display: none;
+}
+
+.headerStat,
+.monthNav,
+.weekTabs,
+.headerUtilityRow,
+.iconButton {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.headerStat {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerStat svg {
+  color: var(--text-tertiary);
+}
+
+.headerStat strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 620;
+}
+
+.monthNav {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navBtn,
+.weekTab,
+.iconButton,
+.clientRow,
+.paginationButton,
+.complementaryButton,
+.modalGhostBtn,
+.modalPrimaryBtn,
+.modalClose,
+.squadAvatarEditor,
+.clearSelectionMini {
+  font: inherit;
+  cursor: pointer;
+}
+
+.navBtn,
+.iconButton {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-1, 6px);
+  background: transparent;
+  color: var(--text-tertiary);
+  display: inline-grid;
+  place-items: center;
+}
+
+.navBtn:hover,
+.weekTab:hover,
+.iconButton:hover,
+.complementaryButton:hover,
+.modalClose:hover,
+.modalGhostBtn:hover {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+.monthLabel {
+  min-width: 116px;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 620;
+  white-space: nowrap;
+}
+
+.weekTabs {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.weekTab {
+  min-width: 30px;
+  height: 34px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 600;
+  transition: color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+  border-radius: 10px;
+}
+
+.weekTab:focus-visible,
+.navBtn:focus-visible,
+.iconButton:focus-visible {
+  outline: none;
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--line);
+}
+
+.weekTabActive,
+.complementaryButtonActive {
+  background: #0a0c0da6;
+  color: var(--squad-accent);
+  box-shadow: inset 0 -1px 0 var(--squad-accent);
+}
+
+.headerUtilityRow {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metricGrid {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metricCard {
+  min-width: 0;
+  min-height: 82px;
+  padding: 12px 14px 11px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .028), rgba(255, 255, 255, .01)), var(--workspace-panel-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 7px;
+}
+
+.metricLabel {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 620;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.metricValue {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: clamp(20px, 1.25vw, 24px);
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.metricSub {
+  min-height: 14px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.green {
+  color: var(--success);
+}
+
+.amber {
+  color: var(--accent);
+}
+
+.red {
+  color: #f0a3a3;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.neutral {
+  color: var(--text-primary);
+}
+
+.stickyResultBar,
+.stickyVisible,
+.stickyLeaving,
+.stickyMetric,
+.clientAvatarMini,
+.clearSelectionMini {
+  display: none;
+}
+
+.listToolbar {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0;
+}
+
+.toolbarControls {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content 160px;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchBox {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .018);
+  color: var(--text-quaternary);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchBox:focus-within {
+  border-color: var(--squad-accent-line);
+  background: rgba(255, 255, 255, .032);
+}
+
+.searchBox svg {
+  color: var(--text-tertiary);
+}
+
+.searchBox input {
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.searchBox input::placeholder {
+  color: var(--text-quaternary);
+  opacity: 1;
+}
+
+.portfolioFilter {
+  height: 38px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.portfolioFilter button {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.portfolioFilter button:hover {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+}
+
+.portfolioFilterActive {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.complementaryButton {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .018);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.complementaryButton span {
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 620;
+}
+
+.listCard {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid rgba(255, 255, 255, .055);
+  border-radius: var(--workspace-card-radius);
+  background: rgba(255, 255, 255, .012);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.portfolioEmpty {
+  flex: 1 1 auto;
+  min-height: 168px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  color: var(--text-secondary);
+}
+
+.portfolioEmptyMarker {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--text-tertiary);
+  box-shadow: 0 0 0 5px var(--field-bg);
+}
+
+.portfolioEmpty strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.clientList {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.clientList::-webkit-scrollbar,
+.modalBody::-webkit-scrollbar,
+.indicatorsGrid::-webkit-scrollbar {
+  display: none;
+}
+
+.clientRow {
+  width: 100%;
+  min-height: 58px;
+  padding: 9px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(235px, 310px) 112px;
+  align-items: center;
+  gap: 16px;
+}
+
+.clientRow:last-child {
+  border-bottom: 0;
+}
+
+.clientRow:hover {
+  background: rgba(255, 255, 255, .024);
+}
+
+.clientRowActive {
+  background: rgba(245, 184, 0, .05);
+}
+
+.clientMain {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.clientMain>div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.clientMain strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.18;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.clientMain span:last-child {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.28;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.clientAvatarSmall {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 620;
+  letter-spacing: -0.035em;
+  overflow: hidden;
+}
+
+.clientStats {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(124px, 1fr) 84px;
+  align-items: center;
+  justify-content: end;
+  column-gap: 22px;
+}
+
+.clientStats div {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+}
+
+.clientStats span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 9px;
+  line-height: 1.15;
+  font-weight: 620;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.clientStats strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 620;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.clientStatus {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.badge {
+  min-width: 92px;
+  min-height: 26px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.badge.green {
+  color: var(--success);
+  border-color: rgba(94, 234, 145, .22);
+  background: rgba(94, 234, 145, .08);
+}
+
+.badge.amber {
+  color: var(--accent);
+  border-color: rgba(245, 184, 0, .24);
+  background: rgba(245, 184, 0, .09);
+}
+
+.badge.red {
+  color: #f0a3a3;
+  border-color: rgba(240, 163, 163, .24);
+  background: rgba(240, 163, 163, .09);
+}
+
+.badge.willHitGoal {
+  color: color-mix(in srgb, var(--warning-text) 64%, var(--success-text));
+  border-color: color-mix(in srgb, var(--warning-line) 62%, var(--success-line));
+  background:
+    linear-gradient(
+      115deg,
+      color-mix(in srgb, var(--warning) 14%, transparent) 0%,
+      color-mix(in srgb, var(--warning) 10%, transparent) 46%,
+      color-mix(in srgb, var(--success) 12%, transparent) 100%
+    );
+}
+
+.badge.profitGoal {
+  position: relative;
+  overflow: hidden;
+  color: var(--success-text);
+  border-color: var(--success-line);
+  background:
+    radial-gradient(circle at 82% 28%, color-mix(in srgb, var(--success) 18%, transparent), transparent 32%),
+    var(--success-soft);
+  animation: squadProfitGlow 3.8s ease-in-out infinite;
+}
+
+.badge.profitGoal::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  inset: 4px 8px auto auto;
+  background: var(--success-text);
+  opacity: 0;
+  clip-path: polygon(50% 0, 58% 38%, 100% 50%, 58% 62%, 50% 100%, 42% 62%, 0 50%, 42% 38%);
+  transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
+  animation: squadProfitStar 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes squadProfitGlow {
+  0%, 68%, 100% {
+    border-color: var(--success-line);
+  }
+
+  76% {
+    border-color: color-mix(in srgb, var(--success-line) 62%, var(--success-text));
+  }
+}
+
+@keyframes squadProfitStar {
+  0%, 70%, 100% {
+    opacity: 0;
+    transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
+  }
+
+  76% {
+    opacity: .54;
+    transform: translate3d(0, 0, 0) scale(.82) rotate(45deg);
+  }
+
+  82% {
+    opacity: 0;
+    transform: translate3d(-2px, -1px, 0) scale(.52) rotate(72deg);
+  }
+}
+
+.pagination {
+  flex: 0 0 auto;
+  padding: 12px 14px;
+  border-top: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.paginationInfo {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.paginationControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paginationCurrent {
+  min-width: 100px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.paginationButton {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.paginationButton:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.paginationButton:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, .04);
+  color: var(--text-primary);
+}
+
+
+/* v15 — Squad modals rebuilt to match Equipe & Acessos */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalCard,
+.indicatorsModal {
+  width: min(720px, calc(100vw - 40px));
+  max-height: min(740px, calc(100vh - 40px));
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: var(--surface-raised);
+  box-shadow: inset 0 1px 0 var(--surface-panel);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.indicatorsModal {
+  width: min(860px, calc(100vw - 40px));
+}
+
+.modalHead {
+  min-height: 54px;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--surface-panel);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.modalHead>div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.modalHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.10em;
+  font-weight: 520;
+  text-transform: uppercase;
+}
+
+.modalHead h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.modalClose {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 6px);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalClose:hover {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.modalBody {
+  min-height: 0;
+  padding: 16px;
+  overflow: auto;
+  display: grid;
+  gap: 14px;
+  background: transparent;
+  scrollbar-width: none;
+}
+
+.modalBody::-webkit-scrollbar,
+.indicatorsGrid::-webkit-scrollbar,
+.clientList::-webkit-scrollbar {
+  display: none;
+}
+
+.squadIdentityPanel {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+}
+
+.squadAvatarEditor {
+  width: 68px;
+  height: 68px;
+  min-width: 68px;
+  min-height: 68px;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--workspace-bg);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.squadAvatarEditor img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.squadAvatarEditor span {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 620;
+  letter-spacing: -0.04em;
+}
+
+.squadAvatarEditor:hover,
+.squadAvatarEditor:focus-visible {
+  border-color: var(--line);
+  outline: none;
+}
+
+.squadIdentityFields {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.modalField {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.modalField>span {
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.modalField input,
+.slugField {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 6px);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 520;
+  outline: none;
+}
+
+.modalField input {
+  padding: 0 12px;
+}
+
+.modalField input:focus,
+.slugField:focus-within {
+  border-color: var(--line);
+  background: var(--surface-raised);
+}
+
+.slugField {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+}
+
+.slugField small {
+  height: 100%;
+  padding: 0 12px;
+  border-right: 1px solid var(--line-subtle);
+  color: var(--text-tertiary);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.slugField input {
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.modalActionsInline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modalActions {
+  min-height: 56px;
+  padding: 11px 16px;
+  border-top: 1px solid var(--line-subtle);
+  background: var(--surface-panel);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modalGhostBtn,
+.modalPrimaryBtn {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1, 6px);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 520;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalPrimaryBtn {
+  color: var(--text-primary);
+}
+
+.modalGhostBtn:hover:not(:disabled),
+.modalPrimaryBtn:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.modalGhostBtn:disabled,
+.modalPrimaryBtn:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.indicatorsGrid {
+  min-height: 0;
+  padding: 16px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  scrollbar-width: none;
+}
+
+.indicatorsCard {
+  min-height: 96px;
+  padding: 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+}
+
+.indicatorsCard span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 620;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.indicatorsCard strong {
+  color: var(--text-primary);
+  font-size: clamp(22px, 2.4vw, 28px);
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.05em;
+}
+
+.indicatorsCard small {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+@media (max-width: 1260px) {
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .clientRow {
+    grid-template-columns: minmax(240px, 1fr) minmax(220px, 300px) 112px;
+  }
+}
+
+@media (max-width: 920px) {
+  .toolbarControls {
+    grid-template-columns: 1fr;
+  }
+
+  .clientRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 10px;
+  }
+
+  .clientStats {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .clientStatus {
+    justify-content: flex-start;
+  }
+
+  .metricGrid,
+  .indicatorsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 12px;
+    overflow: auto;
+  }
+
+  .headerActions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .metricGrid,
+  .indicatorsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .modalBackdrop {
+    padding: 10px;
+  }
+
+  .modalCard,
+  .indicatorsModal {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+  }
+
+  .squadIdentityPanel {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .squadIdentityFields {
+    width: 100%;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+  }
+
+  .modalGhostBtn,
+  .modalPrimaryBtn {
+    width: 100%;
+  }
+}
+
+/* Fase 67 — workspace foundation */
+.page {
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  gap: var(--workspace-gap);
+}
+
+.board,
+.panel,
+.clientList,
+.detailsPanel,
+.card,
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.headerLogo {
+  background: var(--workspace-panel-bg);
+}
+
+
+/* ==========================================================================
+   v75 · SquadPage cleanup real
+   Consolida Squads no workspace.
+   ========================================================================== */
+.page {
+  height: 100%;
+  min-height: 0;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+  gap: var(--workspace-gap);
+}
+
+.headerLogo,
+.board,
+.panel,
+.clientList,
+.detailsPanel,
+.card,
+.modalCard,
+.emptyState,
+.loadingState,
+.errorState,
+.squadCard,
+.clientCard,
+.infoCard,
+.listCard {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.headerLogo,
+.clientAvatarSmall,
+.clientAvatarMini,
+.squadAvatarEditor {
+  border-radius: 999px;
+  background: var(--workspace-bg);
+}
+
+.headerButton,
+.actionButton,
+.primaryButton,
+.secondaryButton,
+.ghostButton,
+.dangerButton,
+.inlineButton,
+.modalClose,
+.modalAction,
+.input,
+.select,
+.textarea {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.headerButton:hover:not(:disabled),
+.actionButton:hover:not(:disabled),
+.primaryButton:hover:not(:disabled),
+.secondaryButton:hover:not(:disabled),
+.ghostButton:hover:not(:disabled),
+.inlineButton:hover:not(:disabled),
+.modalClose:hover:not(:disabled),
+.modalAction:hover:not(:disabled) {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.headerButton:focus-visible,
+.actionButton:focus-visible,
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.ghostButton:focus-visible,
+.inlineButton:focus-visible,
+.modalClose:focus-visible,
+.modalAction:focus-visible,
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.primaryButton {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.dangerButton {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.modalOverlay {
+  z-index: var(--chassis-z-dialog);
+  background: rgba(8, 9, 10, 0.72);
+  backdrop-filter: none;
+}
+
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+.modalHeader,
+.modalFooter {
+  min-height: 54px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.headerTitleText small,
+.muted,
+.helperText,
+.cardLabel,
+.tableHeader,
+.clientMeta,
+.squadMeta {
+  color: #878c95;
+}
+
+/* ==========================================================================
+   v93 · QA visual Squads
+   Hovers escuros, sem movimento e modais acima da sidebar.
+   ========================================================================== */
+.page {
+  background: var(--workspace-bg);
+}
+
+.headerButton,
+.actionButton,
+.primaryButton,
+.secondaryButton,
+.ghostButton,
+.dangerButton,
+.inlineButton,
+.modalClose,
+.modalAction,
+.squadCard,
+.clientCard,
+.infoCard,
+.listCard,
+.panel,
+.card {
+  transform: none;
+}
+
+.headerButton:hover:not(:disabled),
+.actionButton:hover:not(:disabled),
+.primaryButton:hover:not(:disabled),
+.secondaryButton:hover:not(:disabled),
+.ghostButton:hover:not(:disabled),
+.inlineButton:hover:not(:disabled),
+.modalClose:hover:not(:disabled),
+.modalAction:hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.squadCard:hover,
+.clientCard:hover,
+.infoCard:hover,
+.listCard:hover,
+.panel:hover,
+.card:hover {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.primaryButton,
+.primaryButton:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.modalOverlay {
+  z-index: 25000;
+  background: var(--overlay-bg, rgba(8, 9, 10, 0.82));
+  backdrop-filter: none;
+}
+
+.modalCard {
+  border-color: var(--workspace-panel-border);
+  background: var(--workspace-panel-bg);
+  box-shadow: var(--shadow-dialog);
+}
+
+/* ==========================================================================
+   v95 · Backdrop blur restaurado
+   Todo modal/drawer deve desfocar o fundo da plataforma.
+   ========================================================================== */
+.overlay,
+.modalOverlay,
+.campaignModalOverlay,
+.drawerOverlay,
+.attachmentViewerOverlay,
+.viewerOverlay,
+.confirmOverlay,
+.deleteOverlay,
+.taskModalOverlay {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+/* v149 — filtro ativo com padrão amarelo e sem focus ring */
+.portfolioFilter button {
+  border: 1px solid transparent;
+}
+
+.portfolioFilter button:hover {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.portfolioFilterActive,
+.portfolioFilterActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.portfolioFilter button:focus,
+.portfolioFilter button:focus-visible,
+.complementaryButton:focus,
+.complementaryButton:focus-visible,
+.searchBox:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+
+/* v150 — remove focus visual e mantém ativo sem sombra */
+.headerButton:focus,
+.headerButton:focus-visible,
+.actionButton:focus,
+.actionButton:focus-visible,
+.primaryButton:focus,
+.primaryButton:focus-visible,
+.secondaryButton:focus,
+.secondaryButton:focus-visible,
+.ghostButton:focus,
+.ghostButton:focus-visible,
+.inlineButton:focus,
+.inlineButton:focus-visible,
+.modalClose:focus,
+.modalClose:focus-visible,
+.modalAction:focus,
+.modalAction:focus-visible,
+.weekTab:focus,
+.weekTab:focus-visible,
+.navBtn:focus,
+.navBtn:focus-visible,
+.iconButton:focus,
+.iconButton:focus-visible,
+.squadAvatarEditor:focus,
+.squadAvatarEditor:focus-visible,
+.squadAvatarEditor:focus,
+.squadAvatarEditor:focus-visible,
+.portfolioFilter button:focus,
+.portfolioFilter button:focus-visible,
+.complementaryButton:focus,
+.complementaryButton:focus-visible,
+.input:focus,
+.input:focus-visible,
+.select:focus,
+.select:focus-visible,
+.textarea:focus,
+.textarea:focus-visible,
+.modalField input:focus,
+.modalField input:focus-visible,
+.slugField:focus-within,
+.searchBox:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilterActive,
+.portfolioFilterActive:hover,
+.portfolioFilterActive:focus,
+.portfolioFilterActive:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.searchBox:focus-within {
+  border-color: var(--line-subtle);
+  background: var(--field-bg);
+}
+
+/* v151 — filtro de carteira sem efeito de hover */
+.portfolioFilter button:hover {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  box-shadow: none;
+}
+
+.portfolioFilterActive,
+.portfolioFilterActive:hover,
+.portfolioFilterActive:focus,
+.portfolioFilterActive:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.portfolioFilter {
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  min-height: 34px;
+  height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(146, 155, 176, .16);
+  border-radius: 999px;
+  background: transparent;
+  color: #9AA6BA;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: rgba(146, 155, 176, .22);
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: rgba(245, 184, 0, .28);
+  background: rgba(245, 184, 0, .08);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: rgba(146, 155, 176, .24);
+  background: rgba(146, 155, 176, .08);
+  color: var(--text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(90, 169, 255, .26);
+  background: rgba(90, 169, 255, .08);
+  color: #8ab4ff;
+}
+
+.portfolioFilterCount {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(146, 155, 176, .10);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge.onboarding {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, .24);
+  background: rgba(90, 169, 255, .08);
+}
+
+.badge.rampage {
+  color: var(--text-secondary);
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .06);
+}
+
+
+/* v-next — tabs/status no padrão visual do Perfil interno */
+.portfolioFilter {
+  min-height: 40px;
+  height: auto;
+  padding-block: 2px;
+  padding-inline: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  margin: 0;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-canvas);
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: var(--edf-border);
+  background: var(--bg-canvas);
+  color: var(--edf-text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: var(--edf-amber-border-strong);
+  background: var(--edf-amber-bg);
+  color: var(--edf-amber-strong);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage,
+.portfolioFilter button.portfolioFilterRampage:hover {
+  color: var(--edf-text-muted);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: rgba(146, 155, 176, .24);
+  background: rgba(146, 155, 176, .08);
+  color: var(--edf-text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(90, 169, 255, .26);
+  background: rgba(90, 169, 255, .08);
+  color: #8ab4ff;
+}
+
+.portfolioFilterCount {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  min-width: 0;
+  width: max-content;
+  height: 30px;
+  min-height: 30px;
+  max-width: 220px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(146, 155, 176, .16);
+  background: transparent;
+  color: var(--edf-text-muted);
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 560;
+  line-height: 1;
+  letter-spacing: .005em;
+  text-transform: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.badge.green {
+  color: var(--success);
+  border-color: rgba(94, 234, 145, .22);
+  background: rgba(94, 234, 145, .08);
+}
+
+.badge.amber {
+  color: var(--accent);
+  border-color: rgba(245, 184, 0, .24);
+  background: rgba(245, 184, 0, .09);
+}
+
+.badge.red {
+  color: #f0a3a3;
+  border-color: rgba(240, 163, 163, .24);
+  background: rgba(240, 163, 163, .09);
+}
+
+.badge.onboarding {
+  color: #8ab4ff;
+  border-color: rgba(90, 169, 255, .24);
+  background: rgba(90, 169, 255, .08);
+}
+
+.badge.rampage {
+  color: var(--edf-text-secondary);
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .06);
+}
+
+.badge.willHitGoal {
+  color: color-mix(in srgb, var(--warning-text) 64%, var(--success-text));
+  border-color: color-mix(in srgb, var(--warning-line) 62%, var(--success-line));
+  background: linear-gradient(115deg, color-mix(in srgb, var(--warning) 14%, transparent) 0%, color-mix(in srgb, var(--warning) 10%, transparent) 48%, color-mix(in srgb, var(--success) 12%, transparent) 100%);
+}
+
+.badge.profitGoal {
+  position: relative;
+  overflow: hidden;
+  color: var(--success-text);
+  border-color: var(--success-line);
+  background: radial-gradient(circle at 82% 28%, color-mix(in srgb, var(--success) 15%, transparent), transparent 32%), var(--success-soft);
+  animation: squadProfitGlow 4.2s ease-in-out infinite;
+}
+
+.badge.profitGoal::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  inset: 5px 9px auto auto;
+  background: var(--success-text);
+  opacity: 0;
+  clip-path: polygon(50% 0, 58% 38%, 100% 50%, 58% 62%, 50% 100%, 42% 62%, 0 50%, 42% 38%);
+  transform: translate3d(3px, 1px, 0) scale(.38) rotate(18deg);
+  animation: squadProfitStar 4.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+
+/* final: carteira tabs and long status pills */
+.portfolioFilter {
+  min-height: 40px;
+  height: auto;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  margin: 0;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-canvas);
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: var(--edf-border);
+  background: var(--bg-canvas);
+  color: var(--edf-text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: var(--edf-amber-border-strong);
+  background: var(--edf-amber-bg);
+  color: var(--edf-amber-strong);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage,
+.portfolioFilter button.portfolioFilterRampage:hover {
+  color: var(--edf-text-muted);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: rgba(146, 155, 176, .24);
+  background: rgba(146, 155, 176, .08);
+  color: var(--edf-text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(90, 169, 255, .26);
+  background: rgba(90, 169, 255, .08);
+  color: #8ab4ff;
+}
+
+.portfolioFilterCount {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.clientRow {
+  grid-template-columns: minmax(260px, 1fr) minmax(235px, 310px) minmax(150px, max-content);
+}
+
+.clientStatus {
+  min-width: 150px;
+}
+
+.badge.rampage {
+  min-width: max-content;
+  max-width: none;
+  color: var(--edf-text-secondary);
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .06);
+}
+
+/* v-next — refinamento superior Squad no padrão do Perfil interno */
+.page {
+  padding: 14px 16px 18px;
+  gap: 12px;
+}
+
+.headerIdentity {
+  min-height: 58px;
+  gap: 14px;
+}
+
+.headerLogo {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+  border-color: var(--line-subtle);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+}
+
+.headerTitleText {
+  gap: 4px;
+}
+
+.headerTitleText strong {
+  font-size: 19px;
+  line-height: 1.05;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.headerTitleText small {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.headerActions {
+  gap: 2px;
+}
+
+.headerCluster {
+  min-height: 36px;
+  padding-left: 16px;
+  margin-left: 16px;
+}
+
+.headerCluster::before {
+  height: 28px;
+  background: var(--line-subtle);
+}
+
+.headerStat {
+  min-height: 36px;
+  gap: 9px;
+}
+
+.headerStat strong {
+  font-size: 14.5px;
+  font-weight: 650;
+}
+
+.monthNav {
+  min-height: 36px;
+  gap: 6px;
+}
+
+.monthLabel {
+  min-width: 128px;
+  font-size: 13.5px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.navBtn,
+.iconButton {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-2, 8px);
+  color: var(--text-tertiary);
+}
+
+.navBtn:hover,
+.iconButton:hover,
+.weekTab:hover,
+.modalClose:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.weekTabs {
+  min-height: 36px;
+  gap: 6px;
+}
+
+.weekTab {
+  min-width: 32px;
+  height: 36px;
+  border-radius: var(--radius-2, 8px);
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.weekTabActive,
+.weekTabActive:hover,
+.weekTabActive:focus,
+.weekTabActive:focus-visible {
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--accent-line);
+}
+
+.metricGrid {
+  gap: 12px;
+}
+
+.metricCard {
+  min-height: 86px;
+  padding: 13px 15px 12px;
+  border-color: var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
+  gap: 8px;
+}
+
+.metricLabel {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 620;
+  letter-spacing: .085em;
+}
+
+.metricValue {
+  font-size: clamp(21px, 1.3vw, 25px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.metricSub {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-weight: 520;
+}
+
+.listToolbar {
+  min-height: 42px;
+}
+
+.toolbarControls {
+  grid-template-columns: minmax(0, 1fr) max-content 200px;
+  gap: 12px;
+}
+
+.searchBox {
+  height: 42px;
+  padding: 0 14px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  color: var(--text-tertiary);
+}
+
+.searchBox:hover {
+  border-color: var(--line);
+  background: var(--surface-panel);
+}
+
+.searchBox:focus-within {
+  border-color: var(--line-subtle);
+  background: var(--surface-panel);
+  box-shadow: none;
+}
+
+.searchBox input {
+  font-size: 13px;
+  font-weight: 520;
+}
+
+.searchBox input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.portfolioFilter {
+  min-height: 42px;
+  padding: 3px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  gap: 4px;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 13px;
+  border-color: transparent;
+  border-radius: var(--radius-2, 8px);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+  font-weight: 620;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--accent-line);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--line-strong);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--info-line);
+}
+
+.portfolioFilterCount {
+  min-width: 23px;
+  height: 20px;
+  padding: 0 7px;
+  border-color: var(--line-subtle);
+  background: var(--surface-raised);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.complementaryButton {
+  height: 42px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive,
+.complementaryButtonActive:hover,
+.complementaryButtonActive:focus,
+.complementaryButtonActive:focus-visible {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: inset 0 -1px 0 var(--accent-line);
+}
+
+.complementaryButton span {
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.modalBackdrop {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.indicatorsModal {
+  width: min(820px, calc(100vw - 40px));
+  max-height: min(690px, calc(100vh - 40px));
+  border-color: var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-raised);
+  box-shadow: none;
+}
+
+.modalHead {
+  min-height: 58px;
+  padding: 0 16px 0 18px;
+  border-bottom-color: var(--line-subtle);
+  background: var(--surface-panel);
+}
+
+.modalHead span {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 620;
+  letter-spacing: .09em;
+}
+
+.modalHead h3 {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.modalClose {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-2, 8px);
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+}
+
+.indicatorsGrid {
+  padding: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.indicatorsCard {
+  min-height: 92px;
+  padding: 14px 15px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-panel);
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.indicatorsCard span {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 620;
+  letter-spacing: .085em;
+}
+
+.indicatorsCard strong {
+  color: var(--text-primary);
+  font-size: clamp(21px, 2vw, 26px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.indicatorsCard small {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.3;
+  font-weight: 520;
+}
+
+@media (max-width: 920px) {
+  .toolbarControls {
+    grid-template-columns: 1fr;
+  }
+
+  .portfolioFilter,
+  .complementaryButton {
+    width: 100%;
+  }
+}
+
+/* v-next — restaura troca de abas no padrão validado do Perfil interno */
+.portfolioFilter {
+  min-height: 40px;
+  height: auto;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  margin: 0;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-soft);
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: none;
+  transition: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: var(--edf-border);
+  background: var(--bg-soft);
+  color: var(--edf-text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(245, 184, 0, 0.34);
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--edf-amber-strong);
+  font-weight: 700;
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilterCount {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 650;
+  transform: none;
+  transition: none;
+}
+
+.portfolioFilterActive .portfolioFilterCount {
+  border-color: rgba(245, 184, 0, 0.26);
+  background: rgba(245, 184, 0, 0.12);
+  color: var(--edf-amber-strong);
+}
+
+/* v-next — Squad topo alinhado ao padrão do Perfil interno, sem alterar lógica */
+.headerIdentity {
+  min-height: 48px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+  border-color: var(--edf-border);
+  background: var(--bg-soft);
+}
+
+.headerTitleText {
+  gap: 2px;
+}
+
+.headerTitleText strong {
+  font-size: 17px;
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.headerTitleText small {
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.headerActions {
+  gap: 0;
+}
+
+.headerCluster {
+  min-height: 34px;
+  padding-left: 13px;
+  margin-left: 13px;
+}
+
+.headerStat strong {
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+.headerStat svg,
+.navBtn svg,
+.iconButton svg,
+.searchBox svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.9;
+}
+
+.monthLabel {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.weekTab {
+  height: 32px;
+  min-width: 30px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.weekTabActive {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.metricGrid {
+  gap: 10px;
+}
+
+.metricCard {
+  min-height: 78px;
+  padding: 11px 13px 10px;
+  border-color: var(--edf-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--bg-soft);
+}
+
+.metricLabel {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .085em;
+}
+
+.metricValue {
+  font-size: clamp(19px, 1.2vw, 23px);
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.metricSub {
+  font-size: 11px;
+  font-weight: 520;
+}
+
+.toolbarControls {
+  grid-template-columns: minmax(0, 1fr) max-content 154px;
+  gap: 12px;
+}
+
+.searchBox {
+  height: 38px;
+  padding: 0 13px;
+  border-color: var(--edf-border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+}
+
+.searchBox:hover,
+.searchBox:focus-within {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-soft);
+  box-shadow: none;
+}
+
+.searchBox input {
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.searchBox input::placeholder {
+  color: var(--edf-text-muted);
+}
+
+.portfolioFilter {
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-soft);
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: none;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-elevated);
+  color: var(--edf-text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--edf-amber-strong);
+  font-weight: 700;
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: var(--info-line);
+  background: var(--info-soft);
+  color: var(--info-text);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-selected);
+  color: var(--edf-text-secondary);
+}
+
+.portfolioFilterCount {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  transform: none;
+  transition: none;
+}
+
+.portfolioFilterActive .portfolioFilterCount {
+  border-color: currentColor;
+  background: var(--surface-raised);
+  color: inherit;
+}
+
+.complementaryButton {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--edf-border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive,
+.complementaryButtonActive:hover,
+.complementaryButtonActive:focus,
+.complementaryButtonActive:focus-visible {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.complementaryButton span {
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 650;
+}
+
+.modalBackdrop {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.indicatorsModal {
+  width: min(800px, calc(100vw - 40px));
+  max-height: min(670px, calc(100vh - 40px));
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.modalHead {
+  min-height: 56px;
+  padding: 0 16px 0 18px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.modalHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: .09em;
+}
+
+.modalHead h3 {
+  font-size: 17px;
+  line-height: 1.1;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.modalClose {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  border-color: var(--edf-border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.modalClose:hover,
+.modalClose:focus,
+.modalClose:focus-visible {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.indicatorsGrid {
+  padding: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.indicatorsCard {
+  min-height: 88px;
+  padding: 13px 14px;
+  border-color: var(--edf-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--bg-soft);
+  justify-content: space-between;
+  gap: 7px;
+  box-shadow: none;
+}
+
+.indicatorsCard span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: .085em;
+}
+
+.indicatorsCard strong {
+  color: var(--text-primary);
+  font-size: clamp(20px, 1.8vw, 24px);
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.indicatorsCard small {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.3;
+  font-weight: 520;
+}
+
+/* ajuste final — Squad controles no padrão das tabs do Perfil interno */
+.toolbarControls {
+  grid-template-columns: minmax(0, 1fr) max-content 158px;
+  gap: 12px;
+  align-items: center;
+}
+
+.searchBox,
+.complementaryButton,
+.portfolioFilter button.portfolioFilterTab {
+  min-height: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--bg-app);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+  transform: none;
+}
+
+.searchBox {
+  padding: 0 16px;
+  color: #9fb0c6;
+  gap: 10px;
+}
+
+.searchBox:hover,
+.searchBox:focus-within {
+  background: #050607;
+  border-color: rgba(255, 255, 255, 0.095);
+  box-shadow: none;
+}
+
+.searchBox svg {
+  width: 16px;
+  height: 16px;
+  color: #9fb0c6;
+}
+
+.searchBox input {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 520;
+  letter-spacing: -0.01em;
+}
+
+.searchBox input::placeholder {
+  color: #7f8da3;
+}
+
+.portfolioFilter {
+  min-height: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  overflow: visible;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  padding: 0 16px;
+  color: #9fb0c6;
+  font-size: 13px;
+  font-weight: 620;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  white-space: nowrap;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover:not(.portfolioFilterActive) {
+  color: #c2d2e9;
+  background: #050607;
+  border-color: rgba(255, 255, 255, 0.095);
+  box-shadow: none;
+  transform: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible,
+.complementaryButton:focus,
+.complementaryButton:focus-visible,
+.searchBox:focus-within {
+  outline: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  background: var(--bg-app);
+  border-color: rgba(227, 184, 40, 0.44);
+  color: #ffd429;
+  box-shadow: none;
+  transform: none;
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  background: var(--bg-app);
+  border-color: rgba(92, 164, 255, 0.42);
+  color: #9bc8ff;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  background: var(--bg-app);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #c2d2e9;
+  box-shadow: none;
+}
+
+.portfolioFilterCount {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: inherit;
+  display: inline-grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 620;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive .portfolioFilterCount {
+  background: rgba(227, 184, 40, 0.10);
+  border-color: rgba(227, 184, 40, 0.18);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive .portfolioFilterCount {
+  background: rgba(92, 164, 255, 0.10);
+  border-color: rgba(92, 164, 255, 0.18);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive .portfolioFilterCount {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.075);
+}
+
+.complementaryButton {
+  width: 100%;
+  padding: 0 16px;
+  color: #d7e2f2;
+  justify-content: center;
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive,
+.complementaryButtonActive:hover,
+.complementaryButtonActive:focus,
+.complementaryButtonActive:focus-visible {
+  background: #050607;
+  border-color: rgba(255, 255, 255, 0.095);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.complementaryButton span {
+  font-size: 13px;
+  font-weight: 620;
+  letter-spacing: -0.015em;
+}
+
+/* squad-header-cards-profile-only — refinamento cirúrgico baseado no Perfil interno
+   Escopo: somente header/top-bar e cards superiores. Não altera abas, busca, modal ou lógica. */
+.headerIdentity {
+  min-height: 50px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  border-color: var(--line-subtle);
+  background: var(--bg-app);
+  box-shadow: 0 0 0 1px var(--line-subtle);
+}
+
+.headerTitleText {
+  gap: 2px;
+}
+
+.headerTitleText strong {
+  font-size: 17px;
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.headerTitleText small {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.18;
+  font-weight: 520;
+}
+
+.headerActions {
+  gap: 0;
+}
+
+.headerCluster {
+  min-height: 34px;
+  padding-left: 13px;
+  margin-left: 13px;
+}
+
+.headerCluster::before {
+  height: 22px;
+  background: var(--line-subtle);
+}
+
+.headerStat {
+  min-height: 32px;
+  gap: 7px;
+}
+
+.headerStat strong {
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 650;
+}
+
+.headerStat svg,
+.navBtn svg,
+.iconButton svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.9;
+}
+
+.monthNav,
+.weekTabs,
+.headerUtilityRow {
+  min-height: 32px;
+}
+
+.monthLabel {
+  min-width: 112px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.navBtn,
+.iconButton {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-1, 6px);
+}
+
+.weekTab {
+  height: 32px;
+  min-width: 30px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.weekTabActive {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.metricGrid {
+  gap: 10px;
+}
+
+.metricCard {
+  min-height: 78px;
+  padding: 11px 13px 10px;
+  border-color: var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.metricCard:hover {
+  border-color: var(--line-subtle);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.metricLabel {
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: 0.085em;
+}
+
+.metricValue {
+  font-size: clamp(19px, 1.2vw, 23px);
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.metricSub {
+  min-height: 14px;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 520;
+}
+
+/* squad-modal-profile-refine — escopo restrito: modais de Indicadores e Configurações da Squad */
+.modalBackdrop {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.modalCard,
+.indicatorsModal {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.modalCard {
+  width: min(560px, calc(100vw - 40px));
+}
+
+.indicatorsModal {
+  width: min(760px, calc(100vw - 40px));
+}
+
+.modalHead {
+  min-height: 54px;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--workspace-panel-bg);
+}
+
+.modalHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: .085em;
+}
+
+.modalHead h3 {
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.12;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.modalClose {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.modalClose:hover,
+.modalClose:focus,
+.modalClose:focus-visible {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, .028);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.modalBody {
+  padding: 14px;
+  gap: 12px;
+  background: transparent;
+}
+
+.squadIdentityPanel {
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: rgba(255, 255, 255, .014);
+}
+
+.squadAvatarEditor {
+  width: 62px;
+  height: 62px;
+  min-width: 62px;
+  min-height: 62px;
+  border: 1px solid var(--line-subtle);
+  background: var(--workspace-bg);
+  box-shadow: none;
+}
+
+.squadAvatarEditor:hover,
+.squadAvatarEditor:focus,
+.squadAvatarEditor:focus-visible {
+  border-color: var(--line);
+  outline: none;
+  box-shadow: none;
+}
+
+.modalField>span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+
+.modalField input,
+.slugField {
+  min-height: 38px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .018);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 520;
+  box-shadow: none;
+}
+
+.modalField input:focus,
+.modalField input:focus-visible,
+.slugField:focus-within {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, .028);
+  outline: none;
+  box-shadow: none;
+}
+
+.slugField small {
+  border-right: 1px solid var(--line-subtle);
+  color: var(--text-tertiary);
+  font-size: 11.5px;
+}
+
+.modalActions {
+  min-height: 54px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line-subtle);
+  background: var(--workspace-panel-bg);
+}
+
+.modalGhostBtn,
+.modalPrimaryBtn {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .018);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 620;
+  box-shadow: none;
+}
+
+.modalPrimaryBtn {
+  border-color: rgba(245, 184, 0, .22);
+  background: rgba(245, 184, 0, .095);
+  color: var(--accent);
+}
+
+.modalGhostBtn:hover:not(:disabled),
+.modalGhostBtn:focus:not(:disabled),
+.modalGhostBtn:focus-visible:not(:disabled),
+.modalPrimaryBtn:hover:not(:disabled),
+.modalPrimaryBtn:focus:not(:disabled),
+.modalPrimaryBtn:focus-visible:not(:disabled) {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, .032);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.modalPrimaryBtn:hover:not(:disabled),
+.modalPrimaryBtn:focus:not(:disabled),
+.modalPrimaryBtn:focus-visible:not(:disabled) {
+  border-color: rgba(245, 184, 0, .28);
+  background: rgba(245, 184, 0, .12);
+  color: var(--accent);
+}
+
+.indicatorsGrid {
+  padding: 14px;
+  gap: 10px;
+}
+
+.indicatorsCard {
+  min-height: 86px;
+  padding: 12px 13px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: rgba(255, 255, 255, .014);
+  justify-content: space-between;
+  box-shadow: none;
+}
+
+.indicatorsCard span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: .075em;
+}
+
+.indicatorsCard strong {
+  color: var(--text-primary);
+  font-size: clamp(20px, 1.7vw, 24px);
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.indicatorsCard small {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.3;
+  font-weight: 520;
+}
+
+/* squad-header-actions-refine — refinamento cirúrgico do conteúdo superior da Squad */
+.headerIdentity {
+  min-height: 46px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+  border-color: var(--line-subtle);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.headerLogo>span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.headerTitleText {
+  gap: 2px;
+}
+
+.headerTitleText strong {
+  font-size: 16px;
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.headerTitleText small {
+  font-size: 11.5px;
+  line-height: 1.18;
+  color: var(--text-secondary);
+}
+
+.headerActions {
+  gap: 2px;
+}
+
+.headerCluster {
+  min-height: 32px;
+  padding-left: 14px;
+  margin-left: 12px;
+}
+
+.headerCluster::before {
+  height: 22px;
+  background: var(--line-subtle);
+  opacity: .72;
+}
+
+.headerStat,
+.monthNav,
+.weekTabs,
+.headerUtilityRow {
+  min-height: 32px;
+}
+
+.headerStat {
+  gap: 7px;
+}
+
+.headerStat svg,
+.navBtn svg,
+.iconButton svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.85;
+}
+
+.headerStat strong {
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 650;
+}
+
+.monthNav {
+  gap: 6px;
+}
+
+.monthLabel {
+  min-width: 108px;
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.navBtn,
+.iconButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  background: transparent;
+  box-shadow: none;
+}
+
+.navBtn:hover,
+.navBtn:focus,
+.navBtn:focus-visible,
+.iconButton:hover,
+.iconButton:focus,
+.iconButton:focus-visible {
+  background: rgba(255, 255, 255, .026);
+  color: var(--text-secondary);
+  outline: none;
+  box-shadow: none;
+}
+
+.weekTabs {
+  gap: 5px;
+}
+
+.weekTab {
+  min-width: 28px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 620;
+  box-shadow: none;
+}
+
+.weekTab:hover,
+.weekTab:focus,
+.weekTab:focus-visible {
+  background: rgba(255, 255, 255, .026);
+  color: var(--text-secondary);
+  outline: none;
+  box-shadow: none;
+}
+
+.weekTabActive,
+.weekTabActive:hover,
+.weekTabActive:focus,
+.weekTabActive:focus-visible {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: none;
+}
