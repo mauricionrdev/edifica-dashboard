@@ -2810,308 +2810,181 @@
   font-weight: 520;
 }
 
-/* GDV — ajuste minimalista alinhado ao Perfil interno.
-   Escopo: busca, abas, botão Indicadores e modal de Indicadores. */
-.page .metricGrid {
-  gap: 10px;
-}
-
-.page .metricCard {
-  min-height: 78px;
-  padding: 11px 13px 10px;
-  border-color: var(--line-subtle);
-  border-radius: 10px;
-  background: var(--bg-soft);
-  box-shadow: none;
-}
-
-.page .metricLabel {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1.2;
-  font-weight: 620;
-  letter-spacing: .08em;
-}
-
-.page .metricValue {
-  font-size: clamp(19px, 1.2vw, 23px);
-  line-height: 1;
-  font-weight: 650;
-  letter-spacing: -0.04em;
-}
-
-.page .metricSub {
-  color: var(--text-secondary);
-  font-size: 11px;
-  line-height: 1.25;
-  font-weight: 520;
-}
-
-.page .toolbarControls {
-  grid-template-columns: minmax(0, 1fr) max-content 148px;
-  gap: 10px;
+/* ajuste final — GDV controles no padrão das tabs do Perfil interno */
+.toolbarControls {
+  grid-template-columns: minmax(0, 1fr) max-content 158px;
+  gap: 12px;
   align-items: center;
 }
 
-.page .searchBox {
-  height: 36px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--bg-soft);
-  color: var(--text-tertiary);
+.searchBox,
+.complementaryButton,
+.portfolioFilter button.portfolioFilterTab {
+  min-height: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: var(--bg-app);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+  transform: none;
+}
+
+.searchBox {
+  padding: 0 16px;
+  color: #9fb0c6;
+  gap: 10px;
+}
+
+.searchBox:hover,
+.searchBox:focus-within {
+  background: #050607;
+  border-color: rgba(255, 255, 255, 0.095);
   box-shadow: none;
 }
 
-.page .searchBox:hover,
-.page .searchBox:focus-within {
-  border-color: var(--line);
-  background: var(--bg-soft);
-  box-shadow: none;
+.searchBox svg {
+  width: 16px;
+  height: 16px;
+  color: #9fb0c6;
 }
 
-.page .searchBox svg {
-  width: 14px;
-  height: 14px;
-  color: var(--text-tertiary);
-}
-
-.page .searchBox input {
-  font-size: 12.5px;
-  line-height: 1;
-  font-weight: 520;
+.searchBox input {
   color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 520;
+  letter-spacing: -0.01em;
 }
 
-.page .searchBox input::placeholder {
-  color: var(--text-quaternary);
+.searchBox input::placeholder {
+  color: #7f8da3;
 }
 
-.page .portfolioFilter {
-  height: 36px;
-  min-height: 36px;
+.portfolioFilter {
+  min-height: 42px;
+  height: 42px;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
+  gap: 12px;
+  overflow: visible;
 }
 
-.page .portfolioFilter::-webkit-scrollbar {
-  display: none;
-}
-
-.page .portfolioFilter button.portfolioFilterTab {
-  height: 34px;
-  min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg-soft);
-  color: var(--text-secondary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 12.5px;
-  line-height: 1;
+.portfolioFilter button.portfolioFilterTab {
+  padding: 0 16px;
+  color: #9fb0c6;
+  font-size: 13px;
   font-weight: 620;
-  white-space: nowrap;
-  transform: none;
-  box-shadow: none;
-  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
-}
-
-.page .portfolioFilter button.portfolioFilterTab:hover {
-  border-color: var(--line-strong);
-  background: var(--bg-soft);
-  color: var(--text-primary);
-  transform: none;
-  box-shadow: none;
-}
-
-.page .portfolioFilter button.portfolioFilterTab:focus,
-.page .portfolioFilter button.portfolioFilterTab:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
-
-.page .portfolioFilter button.portfolioFilterActive,
-.page .portfolioFilter button.portfolioFilterActive:hover,
-.page .portfolioFilter button.portfolioFilterActive:focus,
-.page .portfolioFilter button.portfolioFilterActive:focus-visible {
-  border-color: var(--accent-line);
-  background: var(--bg-selected);
-  color: var(--accent);
-  transform: none;
-  box-shadow: none;
-}
-
-.page .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
-.page .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
-.page .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
-.page .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
-  border-color: var(--info-line);
-  background: var(--bg-selected);
-  color: var(--info-text);
-}
-
-.page .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
-.page .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
-.page .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
-.page .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
-  border-color: var(--line-strong);
-  background: var(--bg-selected);
-  color: var(--text-secondary);
-}
-
-.page .portfolioFilterCount {
-  min-width: 22px;
-  height: 20px;
-  padding: 0 7px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg-app);
-  color: inherit;
+  line-height: 1;
+  letter-spacing: -0.015em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  line-height: 1;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
+  gap: 9px;
+  white-space: nowrap;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover:not(.portfolioFilterActive) {
+  color: #c2d2e9;
+  background: #050607;
+  border-color: rgba(255, 255, 255, 0.095);
+  box-shadow: none;
+  transform: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible,
+.complementaryButton:focus,
+.complementaryButton:focus-visible,
+.searchBox:focus-within {
+  outline: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  background: var(--bg-app);
+  border-color: rgba(227, 184, 40, 0.44);
+  color: #ffd429;
+  box-shadow: none;
+  transform: none;
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  background: var(--bg-app);
+  border-color: rgba(92, 164, 255, 0.42);
+  color: #9bc8ff;
   box-shadow: none;
 }
 
-.page .portfolioFilterActive .portfolioFilterCount {
-  border-color: currentColor;
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
   background: var(--bg-app);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #c2d2e9;
+  box-shadow: none;
+}
+
+.portfolioFilterCount {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   color: inherit;
-}
-
-.page .complementaryButton {
-  height: 36px;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--bg-soft);
-  color: var(--text-primary);
-  box-shadow: none;
-}
-
-.page .complementaryButton:hover,
-.page .complementaryButtonActive,
-.page .complementaryButtonActive:hover,
-.page .complementaryButtonActive:focus,
-.page .complementaryButtonActive:focus-visible {
-  border-color: var(--line-strong);
-  background: var(--bg-soft);
-  color: var(--text-primary);
-  outline: none;
-  box-shadow: none;
-}
-
-.page .complementaryButton span {
-  font-size: 12.5px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 620;
   line-height: 1;
-  font-weight: 650;
-}
-
-.page .indicatorsModal {
-  width: min(760px, calc(100vw - 40px));
-  max-height: min(640px, calc(100vh - 40px));
-  border: 1px solid var(--line-subtle);
-  border-radius: 10px;
-  background: var(--bg-app);
   box-shadow: none;
 }
 
-.page .modalHead {
-  min-height: 54px;
-  padding: 0 16px 0 18px;
-  border-bottom: 1px solid var(--line-subtle);
-  background: var(--bg-app);
+.portfolioFilter button.portfolioFilterActive .portfolioFilterCount {
+  background: rgba(227, 184, 40, 0.10);
+  border-color: rgba(227, 184, 40, 0.18);
 }
 
-.page .modalHead span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 650;
-  letter-spacing: .08em;
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive .portfolioFilterCount {
+  background: rgba(92, 164, 255, 0.10);
+  border-color: rgba(92, 164, 255, 0.18);
 }
 
-.page .modalHead h3 {
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive .portfolioFilterCount {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.075);
+}
+
+.complementaryButton {
+  width: 100%;
+  padding: 0 16px;
+  color: #d7e2f2;
+  justify-content: center;
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive,
+.complementaryButtonActive:hover,
+.complementaryButtonActive:focus,
+.complementaryButtonActive:focus-visible {
+  background: #050607;
+  border-color: rgba(255, 255, 255, 0.095);
   color: var(--text-primary);
-  font-size: 17px;
-  line-height: 1.1;
-  font-weight: 650;
-  letter-spacing: -0.035em;
-}
-
-.page .modalClose {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--bg-soft);
-  color: var(--text-secondary);
   box-shadow: none;
+  transform: none;
 }
 
-.page .modalClose:hover,
-.page .modalClose:focus,
-.page .modalClose:focus-visible {
-  border-color: var(--line-strong);
-  background: var(--bg-soft);
-  color: var(--text-primary);
-  outline: none;
-  box-shadow: none;
-}
-
-.page .indicatorsGrid {
-  padding: 16px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.page .indicatorsCard {
-  min-height: 86px;
-  padding: 13px 14px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 10px;
-  background: var(--bg-soft);
-  justify-content: space-between;
-  gap: 7px;
-  box-shadow: none;
-}
-
-.page .indicatorsCard span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1.15;
-  font-weight: 650;
-  letter-spacing: .08em;
-}
-
-.page .indicatorsCard strong {
-  color: var(--text-primary);
-  font-size: clamp(19px, 1.7vw, 23px);
-  line-height: 1;
-  font-weight: 650;
-  letter-spacing: -0.04em;
-}
-
-.page .indicatorsCard small {
-  color: var(--text-secondary);
-  font-size: 11.5px;
-  line-height: 1.3;
-  font-weight: 520;
+.complementaryButton span {
+  font-size: 13px;
+  font-weight: 620;
+  letter-spacing: -0.015em;
 }
