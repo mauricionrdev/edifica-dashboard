@@ -2438,3 +2438,374 @@
   background: rgba(245, 184, 0, 0.12);
   color: var(--edf-amber-strong);
 }
+
+/* v-next — GDV topo alinhado ao padrão do Perfil interno, sem alterar lógica */
+.headerIdentity {
+  min-height: 48px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+  border-color: var(--edf-border);
+  background: var(--bg-soft);
+}
+
+.headerTitleText {
+  gap: 2px;
+}
+
+.headerTitleText strong {
+  font-size: 17px;
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.headerTitleText small {
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.headerActions {
+  gap: 0;
+}
+
+.headerCard {
+  min-height: 34px;
+  padding-left: 13px;
+  margin-left: 13px;
+}
+
+.headerStat strong {
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+.headerStat svg,
+.navBtn svg,
+.iconButton svg,
+.searchBox svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.9;
+}
+
+.monthLabel {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.weekTab {
+  height: 32px;
+  min-width: 30px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.weekTabActive {
+  background: var(--bg-selected);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.metricGrid {
+  gap: 10px;
+}
+
+.metricCard {
+  min-height: 78px;
+  padding: 11px 13px 10px;
+  border-color: var(--edf-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--bg-soft);
+}
+
+.metricLabel {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .085em;
+}
+
+.metricValue {
+  font-size: clamp(19px, 1.2vw, 23px);
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.metricSub {
+  font-size: 11px;
+  font-weight: 520;
+}
+
+.toolbarControls {
+  grid-template-columns: minmax(0, 1fr) max-content 154px;
+  gap: 12px;
+}
+
+.searchBox {
+  height: 38px;
+  padding: 0 13px;
+  border-color: var(--edf-border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+}
+
+.searchBox:hover,
+.searchBox:focus-within {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-soft);
+  box-shadow: none;
+}
+
+.searchBox input {
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.searchBox input::placeholder {
+  color: var(--edf-text-muted);
+}
+
+.portfolioFilter {
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.portfolioFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  height: 34px;
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 14px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-soft);
+  color: var(--edf-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transform: none;
+  box-shadow: none;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-elevated);
+  color: var(--edf-text-secondary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--edf-amber-strong);
+  font-weight: 700;
+  transform: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: var(--info-line);
+  background: var(--info-soft);
+  color: var(--info-text);
+}
+
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-selected);
+  color: var(--edf-text-secondary);
+}
+
+.portfolioFilterCount {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border: 1px solid var(--edf-border);
+  border-radius: 999px;
+  background: var(--bg-selected);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  transform: none;
+  transition: none;
+}
+
+.portfolioFilterActive .portfolioFilterCount {
+  border-color: currentColor;
+  background: var(--surface-raised);
+  color: inherit;
+}
+
+.complementaryButton {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--edf-border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.complementaryButton:hover,
+.complementaryButtonActive,
+.complementaryButtonActive:hover,
+.complementaryButtonActive:focus,
+.complementaryButtonActive:focus-visible {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.complementaryButton span {
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 650;
+}
+
+.modalBackdrop {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.indicatorsModal {
+  width: min(800px, calc(100vw - 40px));
+  max-height: min(670px, calc(100vh - 40px));
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.modalHead {
+  min-height: 56px;
+  padding: 0 16px 0 18px;
+  border-bottom-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.modalHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: .09em;
+}
+
+.modalHead h3 {
+  font-size: 17px;
+  line-height: 1.1;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.modalClose {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  border-color: var(--edf-border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.modalClose:hover,
+.modalClose:focus,
+.modalClose:focus-visible {
+  border-color: var(--edf-border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.indicatorsGrid {
+  padding: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.indicatorsCard {
+  min-height: 88px;
+  padding: 13px 14px;
+  border-color: var(--edf-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--bg-soft);
+  justify-content: space-between;
+  gap: 7px;
+  box-shadow: none;
+}
+
+.indicatorsCard span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: .085em;
+}
+
+.indicatorsCard strong {
+  color: var(--text-primary);
+  font-size: clamp(20px, 1.8vw, 24px);
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.indicatorsCard small {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.3;
+  font-weight: 520;
+}

@@ -983,8 +983,8 @@ export default function GdvPage() {
 
     return [
       { id: 'all', label: 'Carteira', count: activeRows.length },
-      { id: 'rampage', label: 'Rampagem', count: rampageRows.length },
       { id: 'onboarding', label: 'Onboard', count: onboardingRows.length },
+      { id: 'rampage', label: 'Rampagem', count: rampageRows.length },
     ];
   }, [rows]);
 
