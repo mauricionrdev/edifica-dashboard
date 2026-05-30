@@ -3059,3 +3059,532 @@
   font-weight: 620;
   box-shadow: none;
 }
+
+/* squad-gdv-visual-parity — leva para Squad o padrão visual já validado na GDV.
+   Escopo: visual de header, cards, controles, lista e modais. Não altera lógica. */
+.headerIdentity {
+  min-height: 46px;
+  gap: 10px;
+}
+
+.headerLogo {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+  border-color: var(--line-subtle);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.headerLogo > span {
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.headerTitleText {
+  gap: 2px;
+}
+
+.headerTitleText strong {
+  font-size: 16px;
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.headerTitleText small {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.18;
+  font-weight: 520;
+}
+
+.headerActions {
+  gap: 2px;
+}
+
+.headerCard {
+  min-height: 32px;
+  padding-left: 14px;
+  margin-left: 12px;
+}
+
+.headerCard::before {
+  height: 22px;
+  background: var(--line-subtle);
+  opacity: .72;
+}
+
+.headerStat,
+.monthNav,
+.weekTabs,
+.headerUtilityRow {
+  min-height: 32px;
+}
+
+.headerStat {
+  gap: 7px;
+}
+
+.headerStat svg,
+.navBtn svg,
+.iconButton svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.85;
+}
+
+.headerStat strong {
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 650;
+}
+
+.monthNav {
+  gap: 6px;
+}
+
+.monthLabel {
+  min-width: 108px;
+  color: var(--text-primary);
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.navBtn,
+.iconButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  box-shadow: none;
+}
+
+.navBtn:hover,
+.navBtn:focus,
+.navBtn:focus-visible,
+.iconButton:hover,
+.iconButton:focus,
+.iconButton:focus-visible {
+  background: rgba(255, 255, 255, .026);
+  color: var(--text-secondary);
+  outline: none;
+  box-shadow: none;
+}
+
+.weekTabs {
+  gap: 5px;
+}
+
+.weekTab {
+  min-width: 28px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 620;
+  box-shadow: none;
+}
+
+.weekTab:hover,
+.weekTab:focus,
+.weekTab:focus-visible {
+  background: rgba(255, 255, 255, .026);
+  color: var(--text-secondary);
+  outline: none;
+  box-shadow: none;
+}
+
+.weekTabActive,
+.weekTabActive:hover,
+.weekTabActive:focus,
+.weekTabActive:focus-visible {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.metricGrid {
+  gap: 10px;
+}
+
+.metricCard {
+  min-height: 78px;
+  padding: 11px 13px 10px;
+  border-color: var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.metricCard:hover {
+  border-color: var(--line-subtle);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.metricLabel {
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: 0.085em;
+}
+
+.metricValue {
+  font-size: clamp(19px, 1.2vw, 23px);
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.metricSub {
+  min-height: 14px;
+  font-size: 11px;
+  line-height: 1.25;
+  font-weight: 520;
+}
+
+.toolbarControls {
+  gap: 10px;
+  align-items: stretch;
+}
+
+.searchBox {
+  min-height: 38px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.searchBox:focus-within {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  outline: none;
+  box-shadow: none;
+}
+
+.searchBox svg {
+  width: 15px;
+  height: 15px;
+  color: var(--text-tertiary);
+}
+
+.searchBox input {
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 520;
+}
+
+.portfolioFilter {
+  min-height: 38px;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterTab:hover,
+.portfolioFilter button.portfolioFilterTab:focus,
+.portfolioFilter button.portfolioFilterTab:focus-visible {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.portfolioFilter button.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterActive:focus-visible {
+  border-color: rgba(245, 184, 0, .28);
+  background: rgba(245, 184, 0, .105);
+  color: var(--accent);
+}
+
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
+  border-color: rgba(96, 165, 250, .24);
+  background: rgba(96, 165, 250, .085);
+  color: #a8c7fa;
+}
+
+.portfolioFilter button.portfolioFilterRampage,
+.portfolioFilter button.portfolioFilterRampage:hover,
+.portfolioFilter button.portfolioFilterRampage:focus,
+.portfolioFilter button.portfolioFilterRampage:focus-visible,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
+  border-color: rgba(146, 155, 176, .18);
+  background: rgba(146, 155, 176, .055);
+  color: var(--text-secondary);
+}
+
+.portfolioFilterCount {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .035);
+  color: inherit;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.portfolioFilterActive .portfolioFilterCount {
+  border-color: rgba(245, 184, 0, .22);
+  background: rgba(245, 184, 0, .12);
+}
+
+.portfolioFilterOnboarding.portfolioFilterActive .portfolioFilterCount {
+  border-color: rgba(96, 165, 250, .22);
+  background: rgba(96, 165, 250, .12);
+}
+
+.portfolioFilterRampage.portfolioFilterActive .portfolioFilterCount {
+  border-color: rgba(146, 155, 176, .20);
+  background: rgba(146, 155, 176, .08);
+}
+
+.complementaryButton {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.complementaryButton:hover,
+.complementaryButton:focus,
+.complementaryButton:focus-visible,
+.complementaryButtonActive {
+  border-color: var(--line);
+  background: var(--workspace-panel-bg);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.complementaryButton span {
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.listCard {
+  border-color: var(--line-subtle);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.clientRow {
+  min-height: 58px;
+  padding: 9px 14px;
+  border-bottom-color: var(--line-subtle);
+}
+
+.clientRow:hover {
+  background: rgba(255, 255, 255, .024);
+}
+
+.modalBackdrop {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.modalCard,
+.indicatorsModal {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.modalHead {
+  min-height: 54px;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--workspace-panel-bg);
+}
+
+.modalHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: .085em;
+}
+
+.modalHead h3 {
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.12;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.modalClose {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.modalClose:hover,
+.modalClose:focus,
+.modalClose:focus-visible {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, .028);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.modalBody {
+  padding: 14px;
+  gap: 12px;
+  background: transparent;
+}
+
+.squadIdentityPanel,
+.indicatorsCard {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: rgba(255, 255, 255, .014);
+  box-shadow: none;
+}
+
+.indicatorsGrid {
+  padding: 14px;
+  gap: 10px;
+}
+
+.indicatorsCard {
+  min-height: 86px;
+  padding: 12px 13px;
+  justify-content: space-between;
+}
+
+.indicatorsCard span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: .075em;
+}
+
+.indicatorsCard strong {
+  color: var(--text-primary);
+  font-size: clamp(20px, 1.7vw, 24px);
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.indicatorsCard small {
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.3;
+  font-weight: 520;
+}
+
+.modalField > span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+
+.modalField input,
+.slugField {
+  min-height: 38px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .018);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 520;
+  box-shadow: none;
+}
+
+.modalField input:focus,
+.modalField input:focus-visible,
+.slugField:focus-within {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, .028);
+  outline: none;
+  box-shadow: none;
+}
+
+.modalGhostBtn,
+.modalPrimaryBtn {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .018);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 620;
+  box-shadow: none;
+}
+
+.modalPrimaryBtn {
+  border-color: rgba(245, 184, 0, .22);
+  background: rgba(245, 184, 0, .095);
+  color: var(--accent);
+}
+
+.modalGhostBtn:hover:not(:disabled),
+.modalGhostBtn:focus:not(:disabled),
+.modalGhostBtn:focus-visible:not(:disabled),
+.modalPrimaryBtn:hover:not(:disabled),
+.modalPrimaryBtn:focus:not(:disabled),
+.modalPrimaryBtn:focus-visible:not(:disabled) {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, .032);
+  color: var(--text-primary);
+  outline: none;
+  box-shadow: none;
+}
+
+.modalPrimaryBtn:hover:not(:disabled),
+.modalPrimaryBtn:focus:not(:disabled),
+.modalPrimaryBtn:focus-visible:not(:disabled) {
+  border-color: rgba(245, 184, 0, .28);
+  background: rgba(245, 184, 0, .12);
+  color: var(--accent);
+}
