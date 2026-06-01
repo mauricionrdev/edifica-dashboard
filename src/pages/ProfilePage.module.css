@@ -12385,7 +12385,7 @@ button:focus-visible {
 .userAvatar img,
 .personAvatar img {
   position: absolute;
-  /* inset: -1px; */
+  inset: -1px;
   width: calc(100% + 2px);
   height: calc(100% + 2px);
   max-width: none;
@@ -15374,6 +15374,7 @@ button:focus-visible {
 .collaboratorPickerPanel .collaboratorPickerText small {
   display: none;
 }
+
 /* internal-profile-avatar-fallback — mantém a cor real do avatar no hero quando não há foto */
 .profileHeroGrid .hero .avatar.avatar_amber {
   background: var(--accent);
