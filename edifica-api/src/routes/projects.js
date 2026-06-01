@@ -233,6 +233,7 @@ async function createNextRoutineTaskIfNeeded(task, actorUser) {
       status: 'in_progress',
       priority: task.priority || 'medium',
       assigneeUserId: task.assignee_user_id || null,
+      createdByUserId: task.created_by_user_id || null,
       dueDate: nextDueDate,
       source: 'routine_recurring',
       sourceId: seriesId,
