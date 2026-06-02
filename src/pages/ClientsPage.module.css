@@ -1514,3 +1514,149 @@
   color: var(--text-primary);
   box-shadow: none;
 }
+
+/* vClients layout containment — busca compacta e lista sem corte lateral */
+.toolbar {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.searchBox {
+  width: 42px;
+  min-width: 42px;
+  max-width: 320px;
+  height: 34px;
+  padding: 0 11px;
+  border-color: var(--line-subtle);
+  background: var(--field-bg);
+  overflow: hidden;
+  transition: width 160ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+.searchBox:focus-within,
+.searchBox:has(input:not(:placeholder-shown)) {
+  width: min(320px, 32vw);
+  border-color: var(--line);
+  background: var(--surface-raised);
+  box-shadow: none;
+}
+
+.searchBox input {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.searchBox:focus-within input,
+.searchBox:has(input:not(:placeholder-shown)) input {
+  width: auto;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scopeTabs {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0;
+  gap: 6px;
+}
+
+.scopeTab {
+  height: 34px;
+  padding: 0 12px;
+  border-color: var(--line-subtle);
+  border-radius: 999px;
+  background: var(--field-bg);
+  flex: 0 0 auto;
+}
+
+.scopeTabActive {
+  border-color: rgba(234, 179, 8, 0.36);
+  background: rgba(234, 179, 8, 0.1);
+  color: var(--accent-strong);
+}
+
+.scopeTabActive .scopeCount {
+  background: rgba(234, 179, 8, 0.14);
+  color: var(--accent-strong);
+}
+
+.paginationControl {
+  flex: 0 0 auto;
+  min-width: 118px;
+  padding-left: 10px;
+}
+
+.pageSizeSelect,
+.pageSizeSelect > button {
+  min-width: 118px;
+}
+
+.clientTable {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.clientHeader,
+.clientRow {
+  width: 100%;
+  min-width: 0;
+  grid-template-columns:
+    32px
+    minmax(180px, 2fr)
+    minmax(108px, 0.72fr)
+    88px
+    88px
+    minmax(104px, 0.72fr)
+    112px
+    minmax(154px, 0.86fr);
+  gap: 10px;
+}
+
+.clientHeader {
+  padding: 0 16px;
+}
+
+.clientRow {
+  padding: 0 16px;
+}
+
+.statusPill {
+  max-width: 100%;
+  justify-self: start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analysisCell {
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  .toolbar {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .paginationControl {
+    grid-column: 2;
+    justify-self: end;
+    width: auto;
+    padding-left: 0;
+  }
+
+  .clientTable {
+    overflow-x: auto;
+  }
+
+  .clientHeader,
+  .clientRow {
+    min-width: 920px;
+  }
+}
