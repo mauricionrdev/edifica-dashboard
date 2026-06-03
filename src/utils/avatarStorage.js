@@ -124,27 +124,16 @@ export async function readCoverFile(file) {
     const image = await loadImage(objectUrl);
     const naturalWidth = image.naturalWidth || image.width;
     const naturalHeight = image.naturalHeight || image.height;
-    const targetRatio = COVER_WIDTH / COVER_HEIGHT;
-    const sourceRatio = naturalWidth / naturalHeight;
-
-    let sourceWidth = naturalWidth;
-    let sourceHeight = naturalHeight;
-    let sourceX = 0;
-    let sourceY = 0;
-
-    if (sourceRatio > targetRatio) {
-      sourceWidth = naturalHeight * targetRatio;
-      sourceX = Math.max((naturalWidth - sourceWidth) / 2, 0);
-    } else {
-      sourceHeight = naturalWidth / targetRatio;
-      sourceY = Math.max((naturalHeight - sourceHeight) / 2, 0);
-    }
+    const maxSide = COVER_WIDTH;
+    const scale = Math.min(1, maxSide / Math.max(naturalWidth, naturalHeight));
+    const outputWidth = Math.max(1, Math.round(naturalWidth * scale));
+    const outputHeight = Math.max(1, Math.round(naturalHeight * scale));
 
     const canvas = document.createElement('canvas');
-    canvas.width = COVER_WIDTH;
-    canvas.height = COVER_HEIGHT;
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, COVER_WIDTH, COVER_HEIGHT);
+    ctx.drawImage(image, 0, 0, naturalWidth, naturalHeight, 0, 0, outputWidth, outputHeight);
     return canvas.toDataURL('image/jpeg', QUALITY);
   } finally {
     URL.revokeObjectURL(objectUrl);
