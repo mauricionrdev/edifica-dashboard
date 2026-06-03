@@ -239,15 +239,24 @@ function getSquadCoverPosition(squad) {
   };
 }
 
+function clampNumber(value, fallback, min, max) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+}
+
 function squadCoverStyle(coverUrl, coverPosition = {}) {
   if (!coverUrl) return {};
-  const x = Math.min(100, Math.max(0, Number(coverPosition.x ?? 50) || 50));
-  const y = Math.min(100, Math.max(0, Number(coverPosition.y ?? 50) || 50));
-  const zoom = Math.min(220, Math.max(100, Number(coverPosition.zoom ?? 100) || 100));
+  const x = clampNumber(coverPosition.x ?? 50, 50, 0, 100);
+  const y = clampNumber(coverPosition.y ?? 50, 50, 0, 100);
+  const zoom = clampNumber(coverPosition.zoom ?? 100, 100, 100, 220);
   return {
     backgroundImage: `url(${coverUrl})`,
     backgroundPosition: `${x}% ${y}%`,
     backgroundSize: `${zoom}% auto`,
+    '--squad-cover-x': `${x}%`,
+    '--squad-cover-y': `${y}%`,
+    '--squad-cover-zoom': `${zoom}%`,
   };
 }
 

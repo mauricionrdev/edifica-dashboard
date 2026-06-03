@@ -7467,3 +7467,45 @@
     justify-self: start;
   }
 }
+
+/* v25 — correção da rolagem sob o bloco fixo e dos controles de capa. */
+.topArea {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  isolation: isolate;
+  background: var(--bg-canvas);
+  overflow: visible;
+}
+
+.topArea::before {
+  content: '';
+  position: absolute;
+  inset: -10px -14px 0;
+  z-index: -1;
+  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--line-subtle);
+  pointer-events: none;
+}
+
+.listCard {
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+}
+
+.clientList {
+  position: relative;
+  z-index: 1;
+}
+
+.squadFlagStrip,
+.squadCoverEditor {
+  background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
+  background-size: var(--squad-cover-zoom, 100%) auto;
+  background-repeat: no-repeat;
+}
+
+.coverRangeField input[type='range'] {
+  cursor: pointer;
+}
