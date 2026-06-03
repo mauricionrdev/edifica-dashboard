@@ -7546,3 +7546,56 @@
   z-index: 0;
   background: var(--bg-canvas);
 }
+
+/* v27 — plano sticky contínuo e rolagem mais suave da lista do Squad. */
+.page {
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+.topArea {
+  top: 0;
+  z-index: 40;
+  padding: 12px 0 13px;
+  background: var(--bg-canvas);
+  border-top: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  box-shadow: none;
+}
+
+.topArea::before {
+  inset: -48px -16px -1px;
+  background: linear-gradient(180deg, var(--bg-canvas) 0%, var(--bg-canvas) 76%, rgba(8, 9, 10, .98) 100%);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.topArea::after {
+  content: '';
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  bottom: -18px;
+  height: 18px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(8, 9, 10, .96), rgba(8, 9, 10, 0));
+  pointer-events: none;
+}
+
+.metricGrid,
+.listToolbar {
+  position: relative;
+  z-index: 2;
+}
+
+.listCard {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  background: var(--bg-canvas);
+  border-top: 1px solid var(--line-subtle);
+}
+
+.clientList {
+  background: var(--bg-canvas);
+  scroll-behavior: smooth;
+}
