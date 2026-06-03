@@ -1974,12 +1974,10 @@
   color: color-mix(in srgb, var(--warning-text) 64%, var(--success-text));
   border-color: color-mix(in srgb, var(--warning-line) 62%, var(--success-line));
   background:
-    linear-gradient(
-      115deg,
+    linear-gradient(115deg,
       color-mix(in srgb, var(--warning) 14%, transparent) 0%,
       color-mix(in srgb, var(--warning) 10%, transparent) 46%,
-      color-mix(in srgb, var(--success) 12%, transparent) 100%
-    );
+      color-mix(in srgb, var(--success) 12%, transparent) 100%);
 }
 
 .badge.profitGoal {
@@ -2008,7 +2006,10 @@
 }
 
 @keyframes squadProfitGlow {
-  0%, 68%, 100% {
+
+  0%,
+  68%,
+  100% {
     border-color: var(--success-line);
   }
 
@@ -2018,7 +2019,10 @@
 }
 
 @keyframes squadProfitStar {
-  0%, 70%, 100% {
+
+  0%,
+  70%,
+  100% {
     opacity: 0;
     transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
   }
@@ -2905,7 +2909,10 @@
 }
 
 @keyframes squadProfitGlow {
-  0%, 68%, 100% {
+
+  0%,
+  68%,
+  100% {
     border-color: var(--success-line);
   }
 
@@ -2915,7 +2922,10 @@
 }
 
 @keyframes squadProfitStar {
-  0%, 70%, 100% {
+
+  0%,
+  70%,
+  100% {
     opacity: 0;
     transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
   }
@@ -3076,7 +3086,7 @@
   box-shadow: none;
 }
 
-.headerLogo > span {
+.headerLogo>span {
   color: var(--text-primary);
   font-size: 11px;
   font-weight: 700;
@@ -3519,7 +3529,7 @@
   font-weight: 520;
 }
 
-.modalField > span {
+.modalField>span {
   color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1.15;
@@ -4289,12 +4299,10 @@
   color: color-mix(in srgb, var(--warning-text) 64%, var(--success-text));
   border-color: color-mix(in srgb, var(--warning-line) 62%, var(--success-line));
   background:
-    linear-gradient(
-      115deg,
+    linear-gradient(115deg,
       color-mix(in srgb, var(--warning) 14%, transparent) 0%,
       color-mix(in srgb, var(--warning) 10%, transparent) 46%,
-      color-mix(in srgb, var(--success) 12%, transparent) 100%
-    );
+      color-mix(in srgb, var(--success) 12%, transparent) 100%);
 }
 
 .badge.profitGoal {
@@ -4323,7 +4331,10 @@
 }
 
 @keyframes squadProfitGlow {
-  0%, 68%, 100% {
+
+  0%,
+  68%,
+  100% {
     border-color: var(--success-line);
   }
 
@@ -4333,7 +4344,10 @@
 }
 
 @keyframes squadProfitStar {
-  0%, 70%, 100% {
+
+  0%,
+  70%,
+  100% {
     opacity: 0;
     transform: translate3d(3px, 1px, 0) scale(.42) rotate(18deg);
   }
@@ -7703,7 +7717,7 @@
   inset: -1px -18px 0;
   z-index: -1;
   display: block;
-  background: var(--bg-canvas);
+  background: #010102;
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -7733,7 +7747,7 @@
   overflow-x: hidden;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
-  background: var(--surface-card);
+  background: #050506;
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, .18) transparent;
 }
