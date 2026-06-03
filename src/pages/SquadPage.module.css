@@ -7510,92 +7510,72 @@
   cursor: pointer;
 }
 
-/* v26 — refinamento do bloco operacional sticky do Squad.
-   Mantém a capa dentro da rolagem e impede que lista apareça por trás dos cards. */
-.topArea {
-  margin-top: 0;
-  padding: 10px 0 12px;
-  background: var(--bg-canvas);
-  border-bottom: 1px solid var(--line-subtle);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.015);
-}
 
-.topArea::before {
-  inset: 0 -16px -1px;
-  background: var(--bg-canvas);
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.squadFlagStrip {
-  margin-bottom: 0;
-}
-
-.metricsGrid,
-.controlsBar {
-  position: relative;
-  z-index: 2;
-}
-
-.listCard {
-  z-index: 0;
-  margin-top: 12px;
-  background: var(--bg-canvas);
-}
-
-.clientList {
-  z-index: 0;
-  background: var(--bg-canvas);
-}
-
-/* v27 — plano sticky contínuo e rolagem mais suave da lista do Squad. */
+/* v28 — ajuste final do bloco fixo e da capa do Squad. */
 .page {
   scroll-behavior: smooth;
   overscroll-behavior: contain;
 }
 
+.squadFlagStrip {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 0;
+  background-color: var(--bg-canvas);
+  background-repeat: no-repeat;
+  background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
+  background-size: var(--squad-cover-zoom, cover);
+}
+
+.squadFlagStrip::after {
+  background:
+    linear-gradient(180deg, rgba(8, 9, 10, .04), rgba(8, 9, 10, .18)),
+    linear-gradient(90deg, var(--bg-canvas) 0%, transparent 15%, transparent 85%, var(--bg-canvas) 100%);
+  opacity: .72;
+}
+
 .topArea {
+  position: sticky;
   top: 0;
   z-index: 40;
-  padding: 12px 0 13px;
+  margin-top: 0;
+  padding-top: 14px;
   background: var(--bg-canvas);
-  border-top: 1px solid var(--line-subtle);
-  border-bottom: 1px solid var(--line-subtle);
   box-shadow: none;
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .topArea::before {
-  inset: -48px -16px -1px;
-  background: linear-gradient(180deg, var(--bg-canvas) 0%, var(--bg-canvas) 76%, rgba(8, 9, 10, .98) 100%);
-  border-bottom: 1px solid var(--line-subtle);
-}
-
-.topArea::after {
   content: '';
   position: absolute;
-  left: -16px;
-  right: -16px;
-  bottom: -18px;
-  height: 18px;
+  inset: 0 -18px;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(8, 9, 10, .96), rgba(8, 9, 10, 0));
+  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--line-subtle);
+  box-shadow: none;
   pointer-events: none;
 }
 
-.metricGrid,
-.listToolbar {
-  position: relative;
-  z-index: 2;
+.topArea::after {
+  display: none;
 }
 
 .listCard {
   position: relative;
   z-index: 1;
-  margin-top: 16px;
-  background: var(--bg-canvas);
-  border-top: 1px solid var(--line-subtle);
+  margin-top: 12px;
+  background: var(--surface-card);
 }
 
 .clientList {
-  background: var(--bg-canvas);
-  scroll-behavior: smooth;
+  position: relative;
+  z-index: 1;
+  background: var(--surface-card);
+}
+
+.squadCoverEditor {
+  background-color: var(--bg-canvas);
+  background-repeat: no-repeat;
+  background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
+  background-size: var(--squad-cover-zoom, cover);
 }

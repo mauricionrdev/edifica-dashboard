@@ -250,14 +250,13 @@ function squadCoverStyle(coverUrl, coverPosition = {}) {
   const x = clampNumber(coverPosition.x ?? 50, 50, 0, 100);
   const y = clampNumber(coverPosition.y ?? 50, 50, 0, 100);
   const zoom = clampNumber(coverPosition.zoom ?? 100, 100, 100, 220);
-  const coverY = clampNumber(50 + (y - 50) * 3, 50, -100, 200);
   return {
     backgroundImage: `url(${coverUrl})`,
-    backgroundPosition: `${x}% ${coverY}%`,
-    backgroundSize: `${zoom}% auto`,
+    backgroundPosition: `${x}% ${y}%`,
+    backgroundSize: zoom > 100 ? `${zoom}% auto` : 'cover',
     '--squad-cover-x': `${x}%`,
-    '--squad-cover-y': `${coverY}%`,
-    '--squad-cover-zoom': `${zoom}%`,
+    '--squad-cover-y': `${y}%`,
+    '--squad-cover-zoom': zoom > 100 ? `${zoom}% auto` : 'cover',
   };
 }
 
