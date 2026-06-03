@@ -7391,3 +7391,79 @@
     top: auto;
   }
 }
+
+/* v24 — controles avançados da bandeira do Squad. */
+.squadFlagStrip,
+.squadCoverEditor {
+  background-repeat: no-repeat;
+  filter: saturate(.86) brightness(.68);
+}
+
+.squadFlagStrip img,
+.squadCoverEditor img {
+  display: none;
+}
+
+.squadCoverEditor {
+  height: 132px;
+  background-color: var(--surface-panel);
+}
+
+.coverControlsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+  padding-top: 2px;
+}
+
+.coverRangeField {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.coverRangeField span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.coverRangeField input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.coverRangeField input[type='range']:focus,
+.coverResetBtn:focus {
+  outline: none;
+}
+
+.coverResetBtn {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.coverResetBtn:hover {
+  color: var(--text-primary);
+  background: var(--surface-panel);
+}
+
+@media (max-width: 720px) {
+  .coverControlsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .coverResetBtn {
+    justify-self: start;
+  }
+}
