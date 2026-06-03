@@ -7154,3 +7154,115 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+/* v22 — ajuste cirúrgico da bandeira e lista do Squad.
+   Mantém a página como tela operacional, sem aparência de perfil. */
+.headerIdentity {
+  min-height: 48px;
+  gap: 11px;
+}
+
+.headerLogo {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+}
+
+.headerTitleText strong {
+  font-size: 17px;
+  line-height: 1.08;
+  font-weight: 640;
+}
+
+.headerTitleText small {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.headerActions {
+  gap: 0;
+}
+
+.headerCluster {
+  min-height: 32px;
+  padding-left: 12px;
+  margin-left: 12px;
+  gap: 7px;
+}
+
+.headerCluster::before {
+  height: 22px;
+}
+
+.headerStat,
+.monthNav,
+.weekTabs,
+.headerUtilityRow {
+  min-height: 32px;
+}
+
+.navBtn,
+.iconButton {
+  width: 32px;
+  height: 32px;
+}
+
+.monthLabel {
+  min-width: 108px;
+  font-size: 13px;
+}
+
+.weekTab {
+  min-width: 28px;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.topArea {
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
+.squadFlagStrip {
+  height: 72px;
+  min-height: 72px;
+  max-height: 72px;
+  border-color: var(--line-subtle);
+  border-radius: 10px;
+  background: var(--surface-panel);
+  overflow: hidden;
+}
+
+.squadFlagStrip img {
+  width: 100%;
+  height: 72px;
+  min-height: 0;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(.82) brightness(.64);
+}
+
+.squadFlagStrip::after {
+  background: linear-gradient(90deg, var(--bg-canvas) 0%, transparent 24%, transparent 76%, var(--bg-canvas) 100%);
+  opacity: .68;
+}
+
+.listCard {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+
+.clientList {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+.pagination {
+  position: static;
+  flex: 0 0 auto;
+}
