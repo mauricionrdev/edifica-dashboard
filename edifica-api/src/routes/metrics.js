@@ -235,6 +235,11 @@ function isActiveClientStatus(client) {
   return normalizedClientStatus(client?.status) === 'active';
 }
 
+function isRevenueClientStatus(client) {
+  const status = normalizedClientStatus(client?.status);
+  return status === 'active' || status === 'onboarding' || status === 'rampagem_comercial';
+}
+
 function rankingWeeklyGoal(data = {}) {
   // Ranking de Meta Lucro: usa somente a meta informada no preenchimento semanal.
   // Não usa meta_lucro do cadastro, progresso mensal, projeção, weekStatus ou status legado.
@@ -772,8 +777,9 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const squadClients = clientsBySquad.get(squad.id) || [];
       const portfolioClients = squadClients;
       const activeClients = squadClients.filter(isActiveClientStatus);
+      const revenueClients = squadClients.filter(isRevenueClientStatus);
       const churnedInPeriod = squadClients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
-      const mrr = activeClients.reduce((sum, client) => sum + (Number(client.fee) || 0), 0);
+      const mrr = revenueClients.reduce((sum, client) => sum + (Number(client.fee) || 0), 0);
       const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
 
       const clientSummaries = activeClients.map((client) => {

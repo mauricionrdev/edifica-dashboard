@@ -25,7 +25,11 @@ export function isActiveClientStatus(status) {
 
 export function isRevenueClientStatus(status) {
   const normalized = normalizeClientStatus(status);
-  return normalized === CLIENT_STATUS.ACTIVE || normalized === CLIENT_STATUS.ONBOARDING;
+  return (
+    normalized === CLIENT_STATUS.ACTIVE ||
+    normalized === CLIENT_STATUS.ONBOARDING ||
+    normalized === CLIENT_STATUS.RAMPAGE
+  );
 }
 
 export function isVisibleClientStatus() {

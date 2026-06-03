@@ -244,7 +244,7 @@ export function buildClientGoalReport(marketingData, limit = 6) {
  *
  * Regras (iguais ao protótipo):
  *  - active/total: estado atual (não depende do período).
- *  - mrr: soma de fee dos ativos (estado atual).
+ *  - mrr: soma de fee dos clientes com receita (Ativo, Onboard e Rampagem Comercial).
  *  - revenueNew/newCnt: clientes ativos cuja startDate cai no período.
  *  - revLost/churnedPeriodCnt: clientes churn cuja churnDate cai no período.
  *  - churnRate: churned / total (estado global).
