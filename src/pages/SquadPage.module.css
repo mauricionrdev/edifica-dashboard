@@ -7509,3 +7509,40 @@
 .coverRangeField input[type='range'] {
   cursor: pointer;
 }
+
+/* v26 — refinamento do bloco operacional sticky do Squad.
+   Mantém a capa dentro da rolagem e impede que lista apareça por trás dos cards. */
+.topArea {
+  margin-top: 0;
+  padding: 10px 0 12px;
+  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--line-subtle);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.015);
+}
+
+.topArea::before {
+  inset: 0 -16px -1px;
+  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.squadFlagStrip {
+  margin-bottom: 0;
+}
+
+.metricsGrid,
+.controlsBar {
+  position: relative;
+  z-index: 2;
+}
+
+.listCard {
+  z-index: 0;
+  margin-top: 12px;
+  background: var(--bg-canvas);
+}
+
+.clientList {
+  z-index: 0;
+  background: var(--bg-canvas);
+}
