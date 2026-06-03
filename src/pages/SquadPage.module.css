@@ -7579,3 +7579,82 @@
   background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
   background-size: var(--squad-cover-zoom, cover);
 }
+
+
+/* v31 — remove plano escuro solto e sincroniza capa salva com preview. */
+.squadFlagStrip,
+.squadCoverEditor {
+  background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
+  background-size: var(--squad-cover-zoom, 100% auto);
+  background-repeat: no-repeat;
+}
+
+.squadFlagStrip {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 12px;
+  background-color: var(--bg-canvas);
+  overflow: hidden;
+}
+
+.squadFlagStrip::after {
+  background:
+    linear-gradient(180deg, rgba(8, 9, 10, .06), rgba(8, 9, 10, .22)),
+    linear-gradient(90deg, var(--bg-canvas) 0%, transparent 12%, transparent 88%, var(--bg-canvas) 100%);
+  opacity: .78;
+}
+
+.topArea {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  margin-top: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: var(--bg-canvas);
+  border-bottom: 1px solid var(--line-subtle);
+  box-shadow: none;
+  isolation: isolate;
+}
+
+.topArea::before,
+.topArea::after {
+  display: none;
+  content: none;
+}
+
+.listCard {
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+  overflow: hidden;
+  background: var(--surface-card);
+}
+
+.clientList {
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--surface-card);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, .18) transparent;
+}
+
+.clientList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.clientList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.clientList::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, .18);
+  border-radius: 999px;
+}
+
+.squadCoverEditor {
+  background-color: var(--surface-card);
+  overflow: hidden;
+}
