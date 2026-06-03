@@ -3,7 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { getRankingSettings, getSquadRanking, updateRankingSettings } from '../api/metrics.js';
 import { Button, CalculatorIcon, CloseIcon, RotateCcwIcon, StateBlock } from '../components/ui/index.js';
 import { MONTHS_FULL, fmtMoney, fmtPct } from '../utils/format.js';
-import { getSquadAvatar, getUserAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
+import { getSquadAvatar, getSquadCover, getUserAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import { resolveSquadOwner } from '../utils/ownershipStorage.js';
 import styles from './SquadRankingPage.module.css';
 
@@ -51,6 +51,7 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
       className={`${styles.podiumCard} ${styles[`podiumCard_${variant}`] || ''}`.trim()}
       onClick={() => onOpen(row.squad.id)}
     >
+      {row.squad.coverUrl ? <span className={styles.podiumFlag}><img src={row.squad.coverUrl} alt="" /></span> : null}
       <span className={styles.podiumGhostRank}>{row.position}</span>
       <span className={styles.podiumRank}>{rankLabel(row.position)}</span>
       {row.position === 1 ? <span className={styles.podiumTag}>Destaque</span> : null}
@@ -190,6 +191,7 @@ export default function SquadRankingPage() {
     const safeRows = Array.isArray(rows) ? rows : [];
     return safeRows.map((row, index) => {
       const squad = row.squad || { id: row.squadId, name: row.squadName || 'Squad' };
+      squad.coverUrl = squad.coverUrl || getSquadCover(squad) || '';
       const ownership = resolveSquadOwner(squad, userDirectory);
       const owner = squad.owner || ownership.owner || null;
       const ownerName = row.ownerName || owner?.name || 'Sem responsável';
@@ -231,6 +233,7 @@ export default function SquadRankingPage() {
         rankingScore,
         performanceScore: Number(row.performanceScore) || 0,
         displayAvatar,
+        coverUrl: getSquadCover(squad),
         position: Number(row.position) || index + 1,
         metaDisplay: metaIndex > 0 ? fmtPct(metaIndex) : '0,00%',
         metaActiveDisplay: metaActiveProgress > 0 ? fmtPct(metaActiveProgress) : '0,00%',
@@ -385,6 +388,7 @@ export default function SquadRankingPage() {
                     </div>
 
                     <div className={styles.squadCell}>
+                      {row.squad.coverUrl ? <span className={styles.listFlag}><img src={row.squad.coverUrl} alt="" /></span> : null}
                       <strong>{row.squad.name}</strong>
                       <span>{fmtMoney(row.mrr)} MRR</span>
                     </div>

@@ -702,7 +702,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     const squadScope = getAllowedSquads(req.user, 'ranking.view.all');
     const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
 
-    let squadSql = `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url,
+    let squadSql = `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.cover_data_url,
                            u.name AS owner_name, u.email AS owner_email, u.role AS owner_role
                       FROM squads s
                       LEFT JOIN users u ON u.id = s.owner_user_id
@@ -819,6 +819,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
           } : null,
           active: Boolean(squad.active),
           logoUrl: squad.logo_data_url || '',
+          coverUrl: squad.cover_data_url || '',
         },
         ownerName: squad.owner_name || 'Sem responsável',
         ownerRole: squad.owner_role || '',

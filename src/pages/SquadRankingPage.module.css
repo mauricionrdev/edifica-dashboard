@@ -963,3 +963,49 @@
   backdrop-filter: var(--chassis-modal-blur);
   -webkit-backdrop-filter: var(--chassis-modal-blur);
 }
+
+
+/* Bandeira do squad no ranking — identidade de equipe sem aparência de perfil */
+.podiumFlag {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 52px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line-subtle);
+  opacity: .72;
+  pointer-events: none;
+}
+
+.podiumFlag img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: saturate(.86) brightness(.72);
+}
+
+.podiumFlag::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, var(--bg-canvas));
+}
+
+.listFlag {
+  width: 54px;
+  height: 18px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-panel);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.listFlag img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: saturate(.86) brightness(.78);
+}

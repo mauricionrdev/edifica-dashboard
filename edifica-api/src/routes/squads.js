@@ -37,8 +37,11 @@ async function ensureSquadSchema() {
       if (!names.has('logo_data_url')) {
         await query('ALTER TABLE squads ADD COLUMN logo_data_url MEDIUMTEXT NULL AFTER active');
       }
+      if (!names.has('cover_data_url')) {
+        await query('ALTER TABLE squads ADD COLUMN cover_data_url MEDIUMTEXT NULL AFTER logo_data_url');
+      }
       if (!names.has('custom_slug')) {
-        await query('ALTER TABLE squads ADD COLUMN custom_slug VARCHAR(180) NULL AFTER logo_data_url');
+        await query('ALTER TABLE squads ADD COLUMN custom_slug VARCHAR(180) NULL AFTER cover_data_url');
       }
 
       const indexes = await query('SHOW INDEX FROM squads');
@@ -91,6 +94,7 @@ function serialize(row) {
       : null,
     active: Boolean(row.active),
     logoUrl: row.logo_data_url || '',
+    coverUrl: row.cover_data_url || '',
     customSlug: row.custom_slug || '',
     slug: row.custom_slug || slugifySegment(row.name) || row.id,
     clientsCount: Number(row.clients_count) || 0,
@@ -116,14 +120,14 @@ async function ensureUniqueCustomSlug(customSlug, excludeId = null) {
 async function listRows() {
   await ensureSquadSchema();
   return query(
-    `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.custom_slug, s.created_at, s.updated_at,
+    `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.cover_data_url, s.custom_slug, s.created_at, s.updated_at,
             u.name AS owner_name, u.email AS owner_email, u.role AS owner_role, u.active AS owner_active,
             SUM(CASE WHEN c.status <> 'churn' THEN 1 ELSE 0 END) AS clients_count,
             SUM(CASE WHEN c.status = 'active' THEN 1 ELSE 0 END) AS active_clients
        FROM squads s
        LEFT JOIN users u ON u.id = s.owner_user_id
        LEFT JOIN clients c ON c.squad_id = s.id
-      GROUP BY s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.custom_slug, s.created_at, s.updated_at,
+      GROUP BY s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.cover_data_url, s.custom_slug, s.created_at, s.updated_at,
                u.name, u.email, u.role, u.active
       ORDER BY s.name ASC`
   );
@@ -148,8 +152,10 @@ router.post('/', requireAuth, requirePermission('squads.manage'), async (req, re
     await ensureSquadSchema();
     const clean = String(req.body?.name || '').trim();
     const cleanLogo = String(req.body?.logoUrl || '').trim();
+    const cleanCover = String(req.body?.coverUrl || '').trim();
     const customSlug = normalizeCustomSlug(req.body?.customSlug);
     if (cleanLogo && !cleanLogo.startsWith('data:image/')) throw badRequest('Imagem do squad inválida');
+    if (cleanCover && !cleanCover.startsWith('data:image/')) throw badRequest('Capa do squad inválida');
     if (!clean) throw badRequest('Informe o nome do squad');
 
     const owner = await validateOwner(req.body?.ownerUserId);
@@ -159,8 +165,8 @@ router.post('/', requireAuth, requirePermission('squads.manage'), async (req, re
 
     const id = uuid();
     await query(
-      'INSERT INTO squads (id, name, owner_user_id, active, logo_data_url, custom_slug) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, clean, owner?.id || null, owner ? 1 : 0, cleanLogo || null, customSlug || null]
+      'INSERT INTO squads (id, name, owner_user_id, active, logo_data_url, cover_data_url, custom_slug) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, clean, owner?.id || null, owner ? 1 : 0, cleanLogo || null, cleanCover || null, customSlug || null]
     );
 
     await writeAuditLog({
@@ -180,7 +186,7 @@ router.post('/', requireAuth, requirePermission('squads.manage'), async (req, re
   }
 });
 
-router.put('/:id', requireAuth, requirePermission('squads.manage'), async (req, res, next) => {
+router.put('/:id', requireAuth, async (req, res, next) => {
   try {
     await ensureSquadSchema();
     const { id } = req.params;
@@ -188,16 +194,21 @@ router.put('/:id', requireAuth, requirePermission('squads.manage'), async (req, 
     const current = currentRows[0];
     if (!current) throw notFound('Squad não encontrado');
 
+    const canManage = hasPermission(req.user, 'squads.manage');
+    const isOwner = current.owner_user_id && String(current.owner_user_id) === String(req.user?.id || '');
+    if (!canManage && !isOwner) throw notFound('Squad não encontrado');
+
     const nextName = req.body?.name != null ? String(req.body.name).trim() : current.name;
     if (!nextName) throw badRequest('Informe o nome do squad');
     const nextLogo = req.body?.logoUrl !== undefined ? String(req.body.logoUrl || '').trim() : current.logo_data_url || '';
+    const nextCover = req.body?.coverUrl !== undefined ? String(req.body.coverUrl || '').trim() : current.cover_data_url || '';
     const nextCustomSlug = req.body?.customSlug !== undefined ? normalizeCustomSlug(req.body.customSlug) : current.custom_slug || '';
     if (nextLogo && !nextLogo.startsWith('data:image/')) throw badRequest('Imagem do squad inválida');
+    if (nextCover && !nextCover.startsWith('data:image/')) throw badRequest('Capa do squad inválida');
 
-    const owner = req.body?.ownerUserId !== undefined
-      ? await validateOwner(req.body.ownerUserId)
-      : null;
-    const ownerUserId = req.body?.ownerUserId !== undefined
+    const canUpdateOwner = canManage && req.body?.ownerUserId !== undefined;
+    const owner = canUpdateOwner ? await validateOwner(req.body.ownerUserId) : null;
+    const ownerUserId = canUpdateOwner
       ? owner?.id || null
       : current.owner_user_id || null;
     const active = ownerUserId ? 1 : 0;
@@ -207,8 +218,8 @@ router.put('/:id', requireAuth, requirePermission('squads.manage'), async (req, 
     await ensureUniqueCustomSlug(nextCustomSlug, id);
 
     await query(
-      'UPDATE squads SET name = ?, owner_user_id = ?, active = ?, logo_data_url = ?, custom_slug = ? WHERE id = ?',
-      [nextName, ownerUserId, active, nextLogo || null, nextCustomSlug || null, id]
+      'UPDATE squads SET name = ?, owner_user_id = ?, active = ?, logo_data_url = ?, cover_data_url = ?, custom_slug = ? WHERE id = ?',
+      [nextName, ownerUserId, active, nextLogo || null, nextCover || null, nextCustomSlug || null, id]
     );
 
     await writeAuditLog({
@@ -218,7 +229,7 @@ router.put('/:id', requireAuth, requirePermission('squads.manage'), async (req, 
       entityId: id,
       entityLabel: nextName,
       summary: `Squad ${nextName} atualizado`,
-      metadata: { ownerUserId, customSlug: nextCustomSlug || null },
+      metadata: { ownerUserId, customSlug: nextCustomSlug || null, coverUpdated: req.body?.coverUrl !== undefined },
     });
 
     const rows = await listRows();

@@ -29,7 +29,9 @@ import {
 } from '../utils/gdvMetrics.js';
 import {
   getSquadAvatar,
+  getSquadCover,
   readAvatarFile,
+  readCoverFile,
   removeSquadAvatar,
   saveSquadAvatar,
   subscribeAvatarChange,
@@ -230,17 +232,20 @@ function initialsFromClient(name) {
 }
 
 
-function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit }) {
+function SquadSettingsModal({ squad, users = [], busy = false, canManageOwner = false, onClose, onSubmit }) {
   const fileInputRef = useRef(null);
+  const coverInputRef = useRef(null);
   const [name, setName] = useState(squad?.name || '');
   const [ownerUserId, setOwnerUserId] = useState(squad?.ownerUserId || squad?.owner?.id || '');
   const [logoUrl, setLogoUrl] = useState(getSquadAvatar(squad));
+  const [coverUrl, setCoverUrl] = useState(getSquadCover(squad));
   const [customSlug, setCustomSlug] = useState(squad?.customSlug || squad?.slug || slugifySegment(squad?.name || ''));
 
   useEffect(() => {
     setName(squad?.name || '');
     setOwnerUserId(squad?.ownerUserId || squad?.owner?.id || '');
     setLogoUrl(getSquadAvatar(squad));
+    setCoverUrl(getSquadCover(squad));
     setCustomSlug(squad?.customSlug || squad?.slug || slugifySegment(squad?.name || ''));
   }, [squad]);
 
@@ -250,6 +255,14 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
     if (!file) return;
     const dataUrl = await readAvatarFile(file);
     setLogoUrl(dataUrl);
+  }
+
+  async function handleCoverFile(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    const dataUrl = await readCoverFile(file);
+    setCoverUrl(dataUrl);
   }
 
   if (!squad) return null;
@@ -268,6 +281,17 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
         </div>
 
         <div className={styles.modalBody}>
+          <section className={styles.squadCoverPanel}>
+            <input ref={coverInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleCoverFile} />
+            <button type="button" className={styles.squadCoverEditor} onClick={() => coverInputRef.current?.click()}>
+              {coverUrl ? <img src={coverUrl} alt="" /> : <span>Bandeira do squad</span>}
+            </button>
+            <div className={styles.modalActionsInline}>
+              <button type="button" className={styles.modalGhostBtn} onClick={() => coverInputRef.current?.click()}>Alterar capa</button>
+              {coverUrl ? <button type="button" className={styles.modalGhostBtn} onClick={() => setCoverUrl('')}>Remover capa</button> : null}
+            </div>
+          </section>
+
           <section className={styles.squadIdentityPanel}>
             <input ref={fileInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleLogoFile} />
             <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()}>
@@ -285,18 +309,20 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
             </div>
           </section>
 
-          <label className={styles.modalField}>
-            <span>Proprietário do squad</span>
-            <UserPicker
-              users={users}
-              value={ownerUserId}
-              onChange={setOwnerUserId}
-              placeholder="Sem proprietário"
-              showRole
-              portal
-              disableHover
-            />
-          </label>
+          {canManageOwner ? (
+            <label className={styles.modalField}>
+              <span>Proprietário do squad</span>
+              <UserPicker
+                users={users}
+                value={ownerUserId}
+                onChange={setOwnerUserId}
+                placeholder="Sem proprietário"
+                showRole
+                portal
+                disableHover
+              />
+            </label>
+          ) : null}
 
           <label className={styles.modalField}>
             <span>Link personalizado</span>
@@ -316,7 +342,7 @@ function SquadSettingsModal({ squad, users = [], busy = false, onClose, onSubmit
           <button
             type="button"
             className={styles.modalPrimaryBtn}
-            onClick={() => onSubmit({ name, ownerUserId, logoUrl, customSlug })}
+            onClick={() => onSubmit({ name, ownerUserId, logoUrl, coverUrl, customSlug })}
             disabled={busy || !name.trim()}
           >
             {busy ? 'Salvando...' : 'Salvar alterações'}
@@ -350,6 +376,7 @@ export default function SquadPage() {
 
   const resolvedSquadId = squad?.id || squadId;
   const hasSquadAccess = useMemo(() => canAccessSquad(user, resolvedSquadId), [user, resolvedSquadId]);
+  const canEditSquad = Boolean(squad?.ownerUserId && String(squad.ownerUserId) === String(user?.id || '')) || canManageSquads;
 
   useEffect(() => {
     if (!squad?.id || !squadId) return;
@@ -367,6 +394,7 @@ export default function SquadPage() {
   const [selectedClientId, setSelectedClientId] = useState(null);
   const [page, setPage] = useState(1);
   const [logoUrl, setLogoUrl] = useState(() => getSquadAvatar(squad));
+  const [coverUrl, setCoverUrl] = useState(() => getSquadCover(squad));
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [ownershipTick, setOwnershipTick] = useState(0);
   const [metricsByKey, setMetricsByKey] = useState({});
@@ -401,7 +429,11 @@ export default function SquadPage() {
 
   useEffect(() => {
     setLogoUrl(getSquadAvatar(squad));
-    return subscribeAvatarChange(() => setLogoUrl(getSquadAvatar(squad)));
+    setCoverUrl(getSquadCover(squad));
+    return subscribeAvatarChange(() => {
+      setLogoUrl(getSquadAvatar(squad));
+      setCoverUrl(getSquadCover(squad));
+    });
   }, [squad]);
 
   useEffect(() => subscribeOwnershipChange(() => setOwnershipTick((current) => current + 1)), []);
@@ -476,6 +508,7 @@ export default function SquadPage() {
         name: squad.name,
         ownerUserId: squad.ownerUserId || squad.owner?.id || '',
         logoUrl: dataUrl,
+        coverUrl: getSquadCover(squad),
         customSlug: squad.customSlug || squad.slug || '',
       });
       await refreshSquads?.();
@@ -491,8 +524,8 @@ export default function SquadPage() {
 
 
   const handleSaveSquadSettings = useCallback(
-    async ({ name, ownerUserId, logoUrl: nextLogoUrl, customSlug }) => {
-      if (!squad || !canManageSquads) return;
+    async ({ name, ownerUserId, logoUrl: nextLogoUrl, coverUrl: nextCoverUrl, customSlug }) => {
+      if (!squad || !canEditSquad) return;
       setSettingsSaving(true);
       try {
         const nextName = String(name || '').trim();
@@ -500,10 +533,11 @@ export default function SquadPage() {
           name: nextName,
           ownerUserId: ownerUserId || '',
           logoUrl: nextLogoUrl || '',
+          coverUrl: nextCoverUrl || '',
           customSlug: customSlug || '',
         });
         await refreshSquads?.();
-        const savedSquad = response?.squad || { ...squad, name: nextName, customSlug };
+        const savedSquad = response?.squad || { ...squad, name: nextName, coverUrl: nextCoverUrl || '', customSlug };
         navigate(buildSquadPath(savedSquad, nextName), { replace: true });
         if (nextLogoUrl) {
           saveSquadAvatar(squad, nextLogoUrl);
@@ -511,6 +545,7 @@ export default function SquadPage() {
           removeSquadAvatar(squad);
         }
         setLogoUrl(nextLogoUrl || '');
+        setCoverUrl(nextCoverUrl || '');
         setSettingsOpen(false);
         setOwnershipTick((current) => current + 1);
         showToast('Squad atualizado.', { variant: 'success' });
@@ -520,7 +555,7 @@ export default function SquadPage() {
         setSettingsSaving(false);
       }
     },
-    [canManageSquads, navigate, refreshSquads, showToast, squad]
+    [canEditSquad, navigate, refreshSquads, showToast, squad]
   );
 
 
@@ -749,18 +784,18 @@ export default function SquadPage() {
         <button
           type="button"
           className={styles.headerLogo}
-          onClick={() => canManageSquads && logoInputRef.current?.click()}
-          disabled={!canManageSquads || uploadingLogo}
-          aria-label={canManageSquads ? 'Enviar logotipo do squad' : undefined}
-          title={canManageSquads ? 'Clique para trocar o logotipo' : squad.name}
+          onClick={() => canEditSquad && logoInputRef.current?.click()}
+          disabled={!canEditSquad || uploadingLogo}
+          aria-label={canEditSquad ? 'Enviar logotipo do squad' : undefined}
+          title={canEditSquad ? 'Clique para trocar o logotipo' : squad.name}
         >
           {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(squad.name)}</span>}
-          {canManageSquads ? <em>Configurar</em> : null}
+          {canEditSquad ? <em>Configurar</em> : null}
         </button>
 
         <div className={styles.headerTitleText}>
           <strong>{squad.name}</strong>
-          <small>{squadOwnership.active ? 'Ativo' : 'Desativado'}</small>
+          <small>{squadOwnership.owner?.name ? `${squadOwnership.owner.name} · ${squadOwnership.active ? 'Ativo' : 'Desativado'}` : squadOwnership.active ? 'Ativo' : 'Desativado'}</small>
         </div>
       </div>
     );
@@ -803,7 +838,7 @@ export default function SquadPage() {
 
 
         <div className={styles.headerCluster}>
-          {canManageSquads ? (
+          {canEditSquad ? (
             <button
               type="button"
               className={`${styles.headerGhostBtn} ${styles.iconButton}`.trim()}
@@ -840,7 +875,7 @@ export default function SquadPage() {
 
     setPanelHeader({ title, actions });
   }, [
-    canManageSquads,
+    canEditSquad,
     logoUrl,
     month0,
     nextMonth,
@@ -850,6 +885,7 @@ export default function SquadPage() {
     squad,
     activeSquadClients.length,
     squadOwnership.active,
+    squadOwnership.owner?.name,
     uploadingLogo,
     week,
     year,
@@ -1035,6 +1071,7 @@ export default function SquadPage() {
           squad={squad}
           users={Array.isArray(userDirectory) ? userDirectory : []}
           busy={settingsSaving}
+          canManageOwner={canManageSquads}
           onClose={() => setSettingsOpen(false)}
           onSubmit={handleSaveSquadSettings}
         />
@@ -1071,6 +1108,12 @@ export default function SquadPage() {
       ) : null}
 
       <section className={styles.topArea}>
+        {coverUrl ? (
+          <section className={styles.squadFlagStrip} aria-label="Bandeira do squad">
+            <img src={coverUrl} alt="" />
+          </section>
+        ) : null}
+
         <section ref={cardsRef} className={styles.metricGrid}>
           {topCards.map((card) => (
             <article key={card.id} className={styles.metricCard}>
