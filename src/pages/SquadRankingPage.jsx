@@ -368,9 +368,14 @@ export default function SquadRankingPage() {
                   <button
                     key={row.squad.id}
                     type="button"
-                    className={styles.rankRow}
+                    className={`${styles.rankRow} ${row.squad.coverUrl ? styles.rankRowWithCover : ''}`.trim()}
                     onClick={() => openSquad(row.squad.id)}
                   >
+                    {row.squad.coverUrl ? (
+                      <span className={styles.rankCoverBackdrop} aria-hidden="true">
+                        <img src={row.squad.coverUrl} alt="" />
+                      </span>
+                    ) : null}
                     <strong className={styles.rankNumber}>{rankLabel(row.position)}</strong>
 
                     <div className={styles.leaderCell}>
@@ -388,7 +393,6 @@ export default function SquadRankingPage() {
                     </div>
 
                     <div className={styles.squadCell}>
-                      {row.squad.coverUrl ? <span className={styles.listFlag}><img src={row.squad.coverUrl} alt="" /></span> : null}
                       <strong>{row.squad.name}</strong>
                       <span>{fmtMoney(row.mrr)} MRR</span>
                     </div>
