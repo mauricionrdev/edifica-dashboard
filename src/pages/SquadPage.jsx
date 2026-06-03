@@ -250,7 +250,10 @@ function squadCoverStyle(coverUrl, coverPosition = {}) {
   const x = clampNumber(coverPosition.x ?? 50, 50, 0, 100);
   const y = clampNumber(coverPosition.y ?? 50, 50, 0, 100);
   const zoom = clampNumber(coverPosition.zoom ?? 100, 100, 100, 220);
-  const backgroundSize = `${zoom}% auto`;
+  // O render da capa não pode depender da largura da tela; caso contrário,
+  // o preview do modal e a capa real ficam com enquadramentos diferentes.
+  const renderWidth = Math.round(720 * (zoom / 100));
+  const backgroundSize = `${renderWidth}px auto`;
 
   return {
     backgroundImage: `url(${coverUrl})`,

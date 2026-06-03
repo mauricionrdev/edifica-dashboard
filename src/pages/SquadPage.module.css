@@ -7658,3 +7658,100 @@
   background-color: var(--surface-card);
   overflow: hidden;
 }
+
+/* v32 — ajuste real do sticky, preview da capa e limite da lista.
+   Mantém a capa na rolagem, mas impede a lista de aparecer por trás do conteúdo fixo. */
+.squadFlagStrip,
+.squadCoverEditor {
+  background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
+  background-size: var(--squad-cover-zoom, 720px auto);
+  background-repeat: no-repeat;
+}
+
+.squadFlagStrip {
+  margin-bottom: 0;
+  background-color: var(--bg-canvas);
+  border-color: var(--line-subtle);
+  overflow: hidden;
+}
+
+.squadFlagStrip::after {
+  background:
+    linear-gradient(180deg, rgba(8, 9, 10, .08), rgba(8, 9, 10, .18)),
+    linear-gradient(90deg, var(--bg-canvas) 0%, transparent 10%, transparent 90%, var(--bg-canvas) 100%);
+  opacity: .72;
+}
+
+.topArea {
+  position: sticky;
+  top: 0;
+  z-index: 70;
+  margin-top: 0;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background: var(--bg-canvas);
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
+  border-radius: 0;
+  box-shadow: none;
+  isolation: isolate;
+}
+
+.topArea::before {
+  content: '';
+  position: absolute;
+  inset: -1px -18px 0;
+  z-index: -1;
+  display: block;
+  background: var(--bg-canvas);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.topArea::after {
+  display: none;
+  content: none;
+}
+
+.listCard {
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+  max-height: calc(100dvh - 330px);
+  min-height: 260px;
+  overflow: hidden;
+  background: var(--surface-card);
+}
+
+.clientList {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  background: var(--surface-card);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, .18) transparent;
+}
+
+.clientList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.clientList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.clientList::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, .18);
+  border-radius: 999px;
+}
+
+.squadCoverEditor {
+  background-color: var(--surface-card);
+  overflow: hidden;
+}
