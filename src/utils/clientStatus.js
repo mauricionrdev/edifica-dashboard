@@ -15,8 +15,20 @@ export const CLIENT_STATUS_OPTIONS = [
 ];
 
 export function normalizeClientStatus(status) {
-  const value = String(status || '').trim();
-  return Object.values(CLIENT_STATUS).includes(value) ? value : CLIENT_STATUS.ACTIVE;
+  const raw = String(status || '').trim().toLowerCase();
+  const slug = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  if (slug === 'ativo' || slug === CLIENT_STATUS.ACTIVE) return CLIENT_STATUS.ACTIVE;
+  if (slug === 'onboard' || slug === CLIENT_STATUS.ONBOARDING) return CLIENT_STATUS.ONBOARDING;
+  if (slug === 'rampagem' || slug === CLIENT_STATUS.RAMPAGE || slug === 'rampage') return CLIENT_STATUS.RAMPAGE;
+  if (slug === 'pausado' || slug === CLIENT_STATUS.PAUSED) return CLIENT_STATUS.PAUSED;
+  if (slug === 'cancelado' || slug === 'encerrado' || slug === CLIENT_STATUS.CHURN) return CLIENT_STATUS.CHURN;
+
+  return Object.values(CLIENT_STATUS).includes(slug) ? slug : CLIENT_STATUS.ACTIVE;
 }
 
 export function isActiveClientStatus(status) {
@@ -25,11 +37,9 @@ export function isActiveClientStatus(status) {
 
 export function isRevenueClientStatus(status) {
   const normalized = normalizeClientStatus(status);
-  return (
-    normalized === CLIENT_STATUS.ACTIVE ||
-    normalized === CLIENT_STATUS.ONBOARDING ||
-    normalized === CLIENT_STATUS.RAMPAGE
-  );
+  return normalized === CLIENT_STATUS.ACTIVE
+    || normalized === CLIENT_STATUS.ONBOARDING
+    || normalized === CLIENT_STATUS.RAMPAGE;
 }
 
 export function isVisibleClientStatus() {

@@ -228,7 +228,19 @@ function metricData(row) {
 }
 
 function normalizedClientStatus(status) {
-  return String(status || '').trim().toLowerCase();
+  const raw = String(status || '').trim().toLowerCase();
+  const slug = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  if (slug === 'ativo' || slug === 'active') return 'active';
+  if (slug === 'onboard' || slug === 'onboarding') return 'onboarding';
+  if (slug === 'rampagem' || slug === 'rampagem_comercial' || slug === 'rampage') return 'rampagem_comercial';
+  if (slug === 'pausado' || slug === 'paused') return 'paused';
+  if (slug === 'churn' || slug === 'cancelado' || slug === 'encerrado') return 'churn';
+  return slug || 'active';
 }
 
 function isActiveClientStatus(client) {
