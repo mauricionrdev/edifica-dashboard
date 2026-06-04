@@ -7961,11 +7961,11 @@
   border-radius: 999px;
 }
 
-/* v35 — bandeira apenas no header do Squad, após logo/proprietário. */
+/* v36 — bandeira visível no header, começando depois do logo/proprietário. */
 .headerIdentity {
   position: relative;
-  width: min(620px, 44vw);
-  padding-right: clamp(120px, 18vw, 260px);
+  width: 100%;
+  min-width: 0;
   isolation: isolate;
   overflow: hidden;
 }
@@ -7978,28 +7978,28 @@
 
 .headerCoverBackground {
   position: absolute;
-  top: 4px;
+  top: -8px;
   right: 0;
-  bottom: 4px;
-  left: clamp(210px, 20vw, 280px);
+  bottom: -8px;
+  left: clamp(235px, 24vw, 320px);
   z-index: 0;
   border-radius: 0;
   background-color: transparent;
   background-repeat: no-repeat;
   background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
   background-size: var(--squad-cover-zoom, 520px auto);
-  opacity: .18;
-  filter: saturate(.82) brightness(.66);
+  opacity: .36;
+  filter: saturate(.9) brightness(.76);
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, .92) 0%, rgba(0, 0, 0, .58) 44%, transparent 100%);
-  mask-image: linear-gradient(90deg, rgba(0, 0, 0, .92) 0%, rgba(0, 0, 0, .58) 44%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .82) 14%, rgba(0, 0, 0, .58) 52%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .82) 14%, rgba(0, 0, 0, .58) 52%, transparent 100%);
 }
 
 .headerCoverBackground::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(8, 9, 10, .18), rgba(8, 9, 10, .72));
+  background: linear-gradient(90deg, rgba(8, 9, 10, .08), rgba(8, 9, 10, .44) 72%, rgba(8, 9, 10, .86));
 }
 
 .topAreaCover,
