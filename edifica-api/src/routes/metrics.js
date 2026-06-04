@@ -240,6 +240,70 @@ function isRevenueClientStatus(client) {
   return status === 'active' || status === 'onboarding' || status === 'rampagem_comercial';
 }
 
+function normalizeMonthKey(value) {
+  const raw = String(value || '').trim();
+  if (/^\d{4}-(0[1-9]|1[0-2])$/.test(raw)) return raw;
+  if (/^\d{4}-(0[1-9]|1[0-2])-\d{2}/.test(raw)) return raw.slice(0, 7);
+  return '';
+}
+
+function normalizeFeeStepType(value) {
+  return String(value || '').trim() === 'single' ? 'single' : 'recurring';
+}
+
+function normalizeFeeSteps(value) {
+  if (value == null || value === '') return [];
+  let parsed = value;
+  if (typeof value === 'string') {
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      parsed = [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+
+  return parsed
+    .map((step) => {
+      const month = normalizeMonthKey(
+        step?.month || step?.referenceMonth || step?.competence || step?.startDate
+      );
+      if (!month) return null;
+
+      const fee = parseLocaleNumber(step?.fee ?? step?.amount, Number.NaN);
+      if (!Number.isFinite(fee) || fee < 0) return null;
+
+      return {
+        month,
+        type: normalizeFeeStepType(step?.type || step?.kind || step?.mode),
+        fee,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.month.localeCompare(b.month));
+}
+
+function resolveClientFeeAtMonth(client, referenceMonth) {
+  const month = normalizeMonthKey(referenceMonth);
+  if (!month) return Number(client?.fee) || 0;
+
+  const steps = normalizeFeeSteps(client?.fee_steps_json || client?.feeSteps || []);
+  const exactSingle = steps.find((step) => step.month === month && step.type === 'single');
+  if (exactSingle) return Number(exactSingle.fee) || 0;
+
+  const exactRecurring = steps.find((step) => step.month === month && step.type !== 'single');
+  if (exactRecurring) return Number(exactRecurring.fee) || 0;
+
+  let latestRecurring = null;
+  for (const step of steps) {
+    if (step.type === 'single') continue;
+    if (step.month <= month) latestRecurring = step;
+    if (step.month > month) break;
+  }
+
+  return latestRecurring ? Number(latestRecurring.fee) || 0 : Number(client?.fee) || 0;
+}
+
 function rankingWeeklyGoal(data = {}) {
   // Ranking de Meta Lucro: usa somente a meta informada no preenchimento semanal.
   // Não usa meta_lucro do cadastro, progresso mensal, projeção, weekStatus ou status legado.
@@ -733,7 +797,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     const squadPlaceholders = squadIds.map(() => '?').join(',');
 
     const clients = await query(
-      `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.meta_lucro,
+      `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.fee_steps_json, c.meta_lucro,
               c.start_date, c.churn_date, c.created_at
          FROM clients c
         WHERE c.squad_id IN (${squadPlaceholders})
@@ -779,7 +843,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const activeClients = squadClients.filter(isActiveClientStatus);
       const revenueClients = squadClients.filter(isRevenueClientStatus);
       const churnedInPeriod = squadClients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
-      const mrr = revenueClients.reduce((sum, client) => sum + (Number(client.fee) || 0), 0);
+      const mrr = revenueClients.reduce((sum, client) => sum + resolveClientFeeAtMonth(client, monthPrefix), 0);
       const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
 
       const clientSummaries = activeClients.map((client) => {
