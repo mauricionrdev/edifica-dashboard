@@ -275,36 +275,49 @@ function normalizeFeeSteps(value) {
   }
   if (!Array.isArray(parsed)) return [];
 
-  return parsed
-    .map((step) => {
-      const month = normalizeMonthKey(
-        step?.month || step?.referenceMonth || step?.competence || step?.startDate
-      );
-      if (!month) return null;
+  const byMonth = new Map();
 
-      const fee = parseLocaleNumber(step?.fee ?? step?.amount, Number.NaN);
-      if (!Number.isFinite(fee) || fee < 0) return null;
+  parsed.forEach((step) => {
+    const month = normalizeMonthKey(
+      step?.month || step?.referenceMonth || step?.competence || step?.startDate
+    );
+    if (!month) return;
 
-      return {
-        month,
-        type: normalizeFeeStepType(step?.type || step?.kind || step?.mode),
-        fee,
-      };
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.month.localeCompare(b.month));
+    const fee = parseLocaleNumber(step?.fee ?? step?.amount, Number.NaN);
+    if (!Number.isFinite(fee) || fee < 0) return;
+
+    const type = normalizeFeeStepType(step?.type || step?.kind || step?.mode);
+    byMonth.set(`${type}:${month}`, {
+      id: String(step?.id || `fee-${type}-${month}`).trim(),
+      month,
+      type,
+      fee,
+    });
+  });
+
+  return [...byMonth.values()]
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .slice(0, 120);
 }
 
-function resolveClientFeeAtMonth(client, referenceMonth) {
+function resolveMonthlyFeeInfo(client, referenceMonth) {
   const month = normalizeMonthKey(referenceMonth);
-  if (!month) return Number(client?.fee) || 0;
+  const baseFee = Number(client?.fee) || 0;
+  if (!month) {
+    return { value: baseFee, source: 'base', stepType: '', stepMonth: '' };
+  }
 
   const steps = normalizeFeeSteps(client?.fee_steps_json || client?.feeSteps || []);
+
   const exactSingle = steps.find((step) => step.month === month && step.type === 'single');
-  if (exactSingle) return Number(exactSingle.fee) || 0;
+  if (exactSingle) {
+    return { value: Number(exactSingle.fee) || 0, source: 'fee_steps_json', stepType: 'single', stepMonth: exactSingle.month };
+  }
 
   const exactRecurring = steps.find((step) => step.month === month && step.type !== 'single');
-  if (exactRecurring) return Number(exactRecurring.fee) || 0;
+  if (exactRecurring) {
+    return { value: Number(exactRecurring.fee) || 0, source: 'fee_steps_json', stepType: 'recurring', stepMonth: exactRecurring.month };
+  }
 
   let latestRecurring = null;
   for (const step of steps) {
@@ -313,7 +326,11 @@ function resolveClientFeeAtMonth(client, referenceMonth) {
     if (step.month > month) break;
   }
 
-  return latestRecurring ? Number(latestRecurring.fee) || 0 : Number(client?.fee) || 0;
+  if (latestRecurring) {
+    return { value: Number(latestRecurring.fee) || 0, source: 'fee_steps_json', stepType: 'recurring_previous', stepMonth: latestRecurring.month };
+  }
+
+  return { value: baseFee, source: 'base', stepType: '', stepMonth: '' };
 }
 
 function rankingWeeklyGoal(data = {}) {
@@ -855,7 +872,27 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const activeClients = squadClients.filter(isActiveClientStatus);
       const revenueClients = squadClients.filter(isRevenueClientStatus);
       const churnedInPeriod = squadClients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
-      const mrr = revenueClients.reduce((sum, client) => sum + resolveClientFeeAtMonth(client, monthPrefix), 0);
+      const mrrBreakdownByStatus = {};
+      const mrrClients = revenueClients.map((client) => {
+        const feeInfo = resolveMonthlyFeeInfo(client, monthPrefix);
+        const status = normalizedClientStatus(client.status);
+        if (!mrrBreakdownByStatus[status]) {
+          mrrBreakdownByStatus[status] = { count: 0, total: 0 };
+        }
+        mrrBreakdownByStatus[status].count += 1;
+        mrrBreakdownByStatus[status].total += feeInfo.value;
+        return {
+          id: client.id,
+          name: client.name,
+          status,
+          fee: feeInfo.value,
+          baseFee: Number(client.fee) || 0,
+          feeSource: feeInfo.source,
+          feeStepType: feeInfo.stepType,
+          feeStepMonth: feeInfo.stepMonth,
+        };
+      });
+      const mrr = mrrClients.reduce((sum, client) => sum + client.fee, 0);
       const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
 
       const clientSummaries = activeClients.map((client) => {
@@ -913,6 +950,11 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         rankingGoalClients,
         rankingGoalBaseClients,
         mrr,
+        mrrBreakdown: {
+          month: monthPrefix,
+          clients: mrrClients,
+          byStatus: mrrBreakdownByStatus,
+        },
         metaIndex,
         hitRate,
         metaActiveProgress,
