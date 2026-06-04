@@ -7861,3 +7861,102 @@
   background: rgba(148, 163, 184, .16);
   border-radius: 999px;
 }
+
+/* v34 — estabiliza a tela de Squad: capa como fundo sutil, sem overlay sticky sobre a lista. */
+.page {
+  overflow: hidden;
+}
+
+.topArea {
+  position: relative;
+  top: auto;
+  z-index: 1;
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding: 12px 0 10px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--bg-canvas);
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.topArea::before,
+.topArea::after {
+  display: none;
+  content: none;
+}
+
+.topAreaCover {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  width: min(420px, 34%);
+  min-width: 260px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
+  background-size: var(--squad-cover-zoom, 720px auto);
+  opacity: .14;
+  filter: saturate(.78) brightness(.62);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, .72) 38%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, .72) 38%, transparent 100%);
+}
+
+.topAreaCover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(8, 9, 10, .28), rgba(8, 9, 10, .84));
+}
+
+.metricGrid,
+.listToolbar {
+  position: relative;
+  z-index: 1;
+}
+
+.listCard {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  margin-top: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border-color: var(--line-subtle);
+}
+
+.clientList {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  background: var(--surface-card);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, .16) transparent;
+}
+
+.clientList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.clientList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.clientList::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, .16);
+  border-radius: 999px;
+}
