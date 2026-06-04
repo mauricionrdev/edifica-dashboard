@@ -889,6 +889,10 @@ export default function SquadPage() {
           <strong>{squad.name}</strong>
           <small>{squadOwnership.owner?.name ? `${squadOwnership.owner.name} · ${squadOwnership.active ? 'Ativo' : 'Desativado'}` : squadOwnership.active ? 'Ativo' : 'Desativado'}</small>
         </div>
+
+        {coverUrl ? (
+          <span className={styles.headerCoverBackground} style={squadCoverStyle(coverUrl, coverPosition)} aria-hidden="true" />
+        ) : null}
       </div>
     );
 
@@ -1200,10 +1204,6 @@ export default function SquadPage() {
       ) : null}
 
       <section className={styles.topArea}>
-        {coverUrl ? (
-          <span className={styles.topAreaCover} style={squadCoverStyle(coverUrl, coverPosition)} aria-hidden="true" />
-        ) : null}
-
         <section ref={cardsRef} className={styles.metricGrid}>
           {topCards.map((card) => (
             <article key={card.id} className={styles.metricCard}>
