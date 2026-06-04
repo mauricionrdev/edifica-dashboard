@@ -1199,11 +1199,11 @@ export default function SquadPage() {
         </section>
       ) : null}
 
-      {coverUrl ? (
-        <section className={styles.squadFlagStrip} style={squadCoverStyle(coverUrl, coverPosition)} aria-label="Bandeira do squad" />
-      ) : null}
-
       <section className={styles.topArea}>
+        {coverUrl ? (
+          <span className={styles.topAreaCover} style={squadCoverStyle(coverUrl, coverPosition)} aria-hidden="true" />
+        ) : null}
+
         <section ref={cardsRef} className={styles.metricGrid}>
           {topCards.map((card) => (
             <article key={card.id} className={styles.metricCard}>
