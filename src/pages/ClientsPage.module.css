@@ -59,7 +59,7 @@
   background: var(--workspace-panel-bg);
   box-shadow:
     inset 0 1px 0 var(--surface-panel),
-    0 18px 54px rgba(0, 0, 0, 0.08);
+    0 18px 54px color-mix(in srgb, black 8%, transparent);
   overflow: visible;
   display: flex;
   flex-direction: column;
@@ -160,13 +160,13 @@
 }
 
 .scopeTab:hover {
-  background: rgba(255, 255, 255, 0.026);
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
 .scopeTabActive {
-  border-color: rgba(255, 255, 255, 0.072);
-  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--line);
+  background: var(--line-subtle);
   color: var(--text-primary);
 }
 
@@ -175,7 +175,7 @@
   height: 18px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--line-subtle);
   color: var(--text-tertiary);
   display: inline-flex;
   align-items: center;
@@ -186,7 +186,7 @@
 }
 
 .scopeTabActive .scopeCount {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--line);
   color: var(--text-primary);
 }
 
@@ -265,7 +265,7 @@
   position: relative;
   min-height: 56px;
   padding: 0 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.046);
+  border-bottom: 1px solid var(--line-subtle);
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -276,8 +276,8 @@
 .clientRow:hover {
   background: var(--surface-panel);
   box-shadow:
-    inset 1px 0 0 rgba(255, 255, 255, 0.05),
-    inset -1px 0 0 rgba(255, 255, 255, 0.03);
+    inset 1px 0 0 var(--line-subtle),
+    inset -1px 0 0 var(--line-subtle);
 }
 
 .clientRow:last-child {
@@ -292,10 +292,10 @@
 .avatar {
   width: 32px;
   height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
   border-radius: 999px;
   overflow: hidden;
-  background: #0b0c0e;
+  background: var(--avatar-fallback-bg, var(--workspace-bg));
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -375,7 +375,7 @@
 }
 
 .status_active {
-  border-color: rgba(39, 166, 68, 0.24);
+  border-color: var(--success-line);
   background: var(--success-soft);
   color: var(--success);
 }
@@ -389,15 +389,15 @@
 
 .status_churn,
 .status_expired {
-  border-color: rgba(239, 68, 68, 0.24);
+  border-color: var(--danger-line);
   background: var(--danger-soft);
   color: var(--danger);
 }
 
 .status_onboarding {
-  color: #8ab4ff;
-  border-color: rgba(90, 169, 255, 0.24);
-  background: rgba(90, 169, 255, 0.08);
+  color: var(--info);
+  border-color: var(--info-line);
+  background: var(--info-soft);
 }
 
 .empty {
@@ -451,7 +451,7 @@
 
 .pageButton:hover,
 .pageButtonActive {
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--line-subtle);
   color: var(--text-primary);
 }
 
@@ -927,8 +927,8 @@
   overflow-y: hidden;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 20px), transparent 100%);
-  mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, black 0%, black calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(90deg, black 0%, black calc(100% - 20px), transparent 100%);
 }
 
 .scopeTabs::-webkit-scrollbar {
@@ -1052,21 +1052,21 @@
 }
 
 .analysisIcp {
-  border-color: rgba(96, 165, 250, 0.24);
-  background: rgba(96, 165, 250, 0.08);
+  border-color: var(--info-line);
+  background: var(--info-soft);
   color: var(--info);
 }
 
 .analysisGdv {
-  border-color: rgba(45, 212, 191, 0.24);
-  background: rgba(45, 212, 191, 0.08);
-  color: #2dd4bf;
+  border-color: color-mix(in srgb, var(--success) 24%, transparent);
+  background: color-mix(in srgb, var(--success) 8%, transparent);
+  color: var(--success);
 }
 
 .analysisRoutes {
-  border-color: rgba(167, 139, 250, 0.24);
-  background: rgba(167, 139, 250, 0.08);
-  color: #a78bfa;
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
 }
 
 .analysisBadge {
@@ -1079,7 +1079,7 @@
   border: 1px solid var(--workspace-panel-bg);
   border-radius: 999px;
   background: var(--accent);
-  color: #08090a;
+  color: var(--bg-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1114,7 +1114,7 @@
   max-width: 220px;
   padding: 0 15px;
   border-radius: 999px;
-  border: 1px solid rgba(146, 155, 176, .16);
+  border: 1px solid var(--line-subtle);
   background: transparent;
   color: var(--edf-text-muted);
   display: inline-flex;
@@ -1132,21 +1132,21 @@
 }
 
 .status_active {
-  border-color: rgba(39, 166, 68, 0.24);
+  border-color: var(--success-line);
   background: var(--success-soft);
   color: var(--success);
 }
 
 .status_onboarding {
-  color: #8ab4ff;
-  border-color: rgba(90, 169, 255, 0.24);
-  background: rgba(90, 169, 255, 0.08);
+  color: var(--info);
+  border-color: var(--info-line);
+  background: var(--info-soft);
 }
 
 .status_rampage {
   color: var(--edf-text-secondary);
-  border-color: rgba(146, 155, 176, .20);
-  background: rgba(146, 155, 176, .06);
+  border-color: var(--line);
+  background: var(--surface-panel);
 }
 
 .status_ending,
@@ -1158,7 +1158,7 @@
 
 .status_churn,
 .status_expired {
-  border-color: rgba(239, 68, 68, 0.24);
+  border-color: var(--danger-line);
   background: var(--danger-soft);
   color: var(--danger);
 }
@@ -1228,8 +1228,8 @@
 .scopeTabActive:hover,
 .scopeTabActive:focus,
 .scopeTabActive:focus-visible {
-  border-color: rgba(245, 184, 0, 0.34);
-  background: rgba(245, 184, 0, 0.08);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
   color: var(--edf-amber-strong);
   font-weight: 700;
   transform: none;
@@ -1254,8 +1254,8 @@
 }
 
 .scopeTabActive .scopeCount {
-  border-color: rgba(245, 184, 0, 0.26);
-  background: rgba(245, 184, 0, 0.12);
+  border-color: var(--accent-line);
+  background: var(--warning-soft);
   color: var(--edf-amber-strong);
 }
 
@@ -1286,7 +1286,7 @@
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
   color: var(--text-tertiary);
   box-shadow: none;
 }
@@ -1294,7 +1294,7 @@
 .searchBox:hover,
 .searchBox:focus-within {
   border-color: var(--line);
-  background: rgba(255, 255, 255, 0.020);
+  background: var(--bg-hover);
   color: var(--text-secondary);
   box-shadow: none;
 }
@@ -1326,9 +1326,9 @@
   min-height: 34px;
   height: 34px;
   padding: 0 10px;
-  border: 1px solid rgba(255, 255, 255, 0.060);
+  border: 1px solid var(--line-subtle);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.010);
+  background: var(--field-bg);
   color: var(--edf-text-muted);
   gap: 8px;
   font-size: 12.5px;
@@ -1339,7 +1339,7 @@
 
 .scopeTab:hover {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, 0.020);
+  background: var(--bg-hover);
   color: var(--edf-text-secondary);
   box-shadow: none;
 }
@@ -1354,8 +1354,8 @@
 .scopeTabActive:hover,
 .scopeTabActive:focus,
 .scopeTabActive:focus-visible {
-  border-color: rgba(245, 184, 0, 0.26);
-  background: rgba(245, 184, 0, 0.075);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
   color: var(--edf-amber-strong);
   font-weight: 650;
   box-shadow: none;
@@ -1374,7 +1374,7 @@
 }
 
 .scopeTabActive .scopeCount {
-  background: rgba(245, 184, 0, 0.12);
+  background: var(--warning-soft);
   color: var(--edf-amber-strong);
 }
 
@@ -1387,7 +1387,7 @@
   min-height: 34px;
   border-radius: 8px;
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.010);
+  background: var(--field-bg);
   box-shadow: none;
 }
 
@@ -1407,14 +1407,14 @@
 
 .clientRow {
   min-height: 58px;
-  border-bottom-color: rgba(255, 255, 255, 0.045);
+  border-bottom-color: var(--line-subtle);
   background: transparent;
   box-shadow: none;
   transition: none;
 }
 
 .clientRow:hover {
-  background: rgba(255, 255, 255, 0.012);
+  background: var(--surface-panel);
   box-shadow: none;
 }
 
@@ -1450,7 +1450,7 @@
   padding: 0 11px;
   border-radius: 999px;
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.010);
+  background: var(--field-bg);
   color: var(--text-secondary);
   font-size: 11.5px;
   font-weight: 620;
@@ -1458,29 +1458,29 @@
 }
 
 .status_active {
-  border-color: rgba(39, 166, 68, 0.24);
-  background: rgba(39, 166, 68, 0.10);
+  border-color: var(--success-line);
+  background: var(--success-soft);
   color: var(--success);
 }
 
 .status_onboarding {
-  border-color: rgba(90, 169, 255, 0.24);
-  background: rgba(90, 169, 255, 0.09);
-  color: #8ab4ff;
+  border-color: var(--info-line);
+  background: var(--info-soft);
+  color: var(--info);
 }
 
 .status_rampage,
 .status_ending,
 .status_paused {
-  border-color: rgba(146, 155, 176, 0.20);
-  background: rgba(146, 155, 176, 0.055);
+  border-color: var(--line);
+  background: var(--surface-panel);
   color: var(--text-secondary);
 }
 
 .status_churn,
 .status_expired {
-  border-color: rgba(239, 68, 68, 0.24);
-  background: rgba(239, 68, 68, 0.10);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
   color: var(--danger);
 }
 
@@ -1510,7 +1510,7 @@
 .pageButton:hover,
 .pageButtonActive {
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--bg-hover);
   color: var(--text-primary);
   box-shadow: none;
 }
@@ -1578,13 +1578,13 @@
 }
 
 .scopeTabActive {
-  border-color: rgba(234, 179, 8, 0.36);
-  background: rgba(234, 179, 8, 0.1);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
   color: var(--accent-strong);
 }
 
 .scopeTabActive .scopeCount {
-  background: rgba(234, 179, 8, 0.14);
+  background: var(--warning-soft);
   color: var(--accent-strong);
 }
 
