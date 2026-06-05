@@ -1,34 +1,45 @@
+/* ==========================================================================
+   TeamAccessPage · v12
+   Ajuste rigoroso: remove camadas antigas, consolida a tela em um padrão
+   dark profundo, preservando cores semânticas de cargos, permissões e status.
+   ========================================================================== */
+
 .page {
   min-height: 100%;
   min-width: 0;
-  padding: 16px 16px 24px;
-  background: transparent;
+  padding: var(--workspace-padding-y) var(--workspace-padding-x) 22px;
+  background: var(--workspace-bg);
   color: var(--text-secondary);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  align-content: start;
   gap: 12px;
 }
 
-.tabBar {
-  width: fit-content;
-  max-width: 100%;
-  padding: 4px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-3);
-  background: var(--surface-panel);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.tabContent {
+.tabContent,
+.gdvAdminPane,
+.rolesAdminPane {
   min-width: 0;
   display: grid;
   gap: 12px;
 }
 
+/* Navegação interna */
+.tabBar {
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--radius-2);
+  background: var(--bg-canvas);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+
 .tabButton,
 .headerBtn,
+.headerIconButton,
 .primaryButton,
 .ghostButton,
 .dangerButton,
@@ -36,21 +47,24 @@
 .dashboardLink,
 .modalClose {
   min-height: 34px;
-  padding: 0 12px;
+  padding: 0 11px;
   border: 1px solid transparent;
   border-radius: var(--radius-1);
   background: transparent;
   color: var(--text-secondary);
   font: inherit;
-  font-size: 12px;
-  font-weight: 590;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-snug);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+  box-shadow: none;
+  transform: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .tabButton {
@@ -58,16 +72,36 @@
   white-space: nowrap;
 }
 
+.tabButton svg,
+.headerBtn svg,
+.headerIconButton svg,
+.modalClose svg {
+  width: 15px;
+  height: 15px;
+  color: currentColor;
+  stroke-width: 1.75;
+}
+
 .tabButton:hover,
+.headerBtn:hover,
+.headerIconButton:hover,
+.primaryButton:hover,
 .ghostButton:hover,
 .inlineRetry:hover,
 .dashboardLink:hover,
 .modalClose:hover {
+  border-color: var(--line);
   background: var(--bg-hover);
   color: var(--text-primary);
 }
 
 .tabButtonActive,
+.tabButtonActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .headerBtn,
 .primaryButton {
   border-color: var(--accent-line);
@@ -75,10 +109,19 @@
   color: var(--text-primary);
 }
 
-.headerBtn:hover,
-.primaryButton:hover {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
+.headerIconButton,
+.ghostButton,
+.inlineRetry,
+.dashboardLink {
+  border-color: var(--line-subtle);
+  background: var(--bg-elevated);
+}
+
+.headerIconButton,
+.modalClose {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
 }
 
 .dangerButton {
@@ -87,13 +130,41 @@
   color: var(--danger-text);
 }
 
+.dangerButton:hover {
+  border-color: var(--danger-line);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger-text);
+}
+
 button:disabled,
-.ghostButton:disabled,
+.headerBtn:disabled,
 .primaryButton:disabled,
+.ghostButton:disabled,
 .dangerButton:disabled,
+.inlineRetry:disabled,
 .dashboardLink:disabled {
   opacity: 0.48;
   cursor: not-allowed;
+}
+
+.tabButton:focus-visible,
+.headerBtn:focus-visible,
+.headerIconButton:focus-visible,
+.primaryButton:focus-visible,
+.ghostButton:focus-visible,
+.dangerButton:focus-visible,
+.inlineRetry:focus-visible,
+.dashboardLink:focus-visible,
+.modalClose:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
+.filterField input:focus-visible,
+.filterField select:focus-visible,
+.checkboxCard:focus-within,
+.squadAvatarEditor:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .headerActions,
@@ -110,6 +181,19 @@ button:disabled,
   gap: 8px;
 }
 
+.headerActions,
+.paginationActions {
+  justify-content: flex-end;
+}
+
+.rowActions .ghostButton,
+.rowActions .dashboardLink,
+.rowActions .dangerButton {
+  min-height: 30px;
+  padding-inline: 10px;
+}
+
+/* KPIs */
 .metricGrid,
 .gdvAdminMetricGrid {
   min-width: 0;
@@ -121,29 +205,23 @@ button:disabled,
 .metricCard,
 .gdvAdminMetricCard {
   min-width: 0;
-  height: 96px;
+  min-height: 84px;
   padding: 13px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-3);
-  background: var(--workspace-panel-bg);
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
   box-shadow: none;
   display: grid;
-  grid-template-rows: 16px 1fr 18px;
-  align-items: center;
-  gap: 4px;
+  grid-template-rows: auto 1fr;
+  align-items: end;
+  gap: 8px;
   overflow: hidden;
 }
 
-.metricCard span,
-.metricCard strong,
-.metricCard small,
-.gdvAdminMetricCard span,
-.gdvAdminMetricCard strong,
-.gdvAdminMetricCard small {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.metricCard:hover,
+.gdvAdminMetricCard:hover {
+  border-color: var(--line);
+  background: var(--bg-elevated);
 }
 
 .metricCard span,
@@ -153,71 +231,79 @@ button:disabled,
 .selectorHead span,
 .requestSummaryCard span,
 .resultCreds span,
-.filterField span {
+.filterField span,
+.field > span {
+  min-width: 0;
+  overflow: hidden;
   color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 590;
-  letter-spacing: 0.075em;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-uppercase);
   text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .metricCard strong,
 .gdvAdminMetricCard strong {
+  min-width: 0;
+  overflow: hidden;
   color: var(--text-primary);
-  font-size: 26px;
-  line-height: 1;
-  font-weight: 620;
-  letter-spacing: -0.035em;
+  font-size: var(--fs-kpi);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-flat);
+  letter-spacing: var(--tracking-crunch);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .metricCard small,
-.gdvAdminMetricCard small,
-.dimText,
-.tableEmpty,
-.selectorEmpty,
-.primaryCell small,
-.textStack small,
-.requestSummaryCard small,
-.resultBanner p {
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.2;
+.gdvAdminMetricCard small {
+  display: none;
 }
 
+/* Superfícies */
 .tableCard,
+.gdvAdminTable,
+.rolesMatrixCard,
 .selectorBlock,
 .requestSummaryCard,
 .resultBanner,
 .resultCreds,
 .modalCard {
   min-width: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-3);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 2.4%, transparent), var(--surface-panel)),
-    var(--bg-canvas);
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
   box-shadow: none;
 }
 
-.tableCard {
+.tableCard,
+.gdvAdminTable,
+.rolesMatrixCard {
   overflow: hidden;
 }
 
-.sectionHead {
-  min-height: 58px;
-  padding: 15px 18px;
-  border-bottom: 1px solid var(--line-subtle);
-  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
+.sectionHead,
+.gdvAdminTable .sectionHead,
+.rolesMatrixCard .sectionHead {
+  min-height: 56px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--bg-canvas);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
-.sectionHead>div {
+.sectionHead > div,
+.modalHead > div,
+.textStack,
+.primaryCell > div {
   min-width: 0;
 }
 
@@ -225,30 +311,154 @@ button:disabled,
 .modalHead h3,
 .resultBanner h3 {
   margin: 3px 0 0;
+  overflow: hidden;
   color: var(--text-primary);
-  font-size: 16px;
-  line-height: 1.15;
-  font-weight: 620;
-  letter-spacing: -0.03em;
+  font-size: var(--fs-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-snug);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
+/* Filtros e campos */
+.filterBar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--bg-canvas);
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 210px) minmax(150px, 210px);
+  align-items: end;
+  gap: 10px;
+}
+
+.filterField,
+.field {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.field input,
+.field select,
+.field textarea,
+.filterField input,
+.filterField select {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--fs-body);
+  line-height: var(--lh-snug);
+  outline: none;
+  box-shadow: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.field textarea {
+  min-height: 92px;
+  padding-block: 10px;
+  resize: vertical;
+}
+
+.field input::placeholder,
+.field textarea::placeholder,
+.filterField input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.filterField input:focus,
+.filterField select:focus {
+  border-color: var(--line);
+  background: var(--bg-raised);
+}
+
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+  color: var(--text-tertiary);
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.slugField {
+  min-height: 38px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--field-bg);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  overflow: hidden;
+}
+
+.slugField small {
+  height: 100%;
+  padding: 0 11px;
+  border-right: 1px solid var(--line-subtle);
+  color: var(--text-tertiary);
+  display: grid;
+  place-items: center;
+  font-size: var(--fs-label);
+  white-space: nowrap;
+}
+
+.slugField input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+}
+
+/* Tabelas */
 .tableWrap {
   min-width: 0;
   max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto;
   background: transparent;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 
-.tableWrap::-webkit-scrollbar {
-  display: none;
+.tableWrap::-webkit-scrollbar,
+.userModalBody::-webkit-scrollbar,
+.modalCard::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  display: block;
+}
+
+.tableWrap::-webkit-scrollbar-thumb,
+.userModalBody::-webkit-scrollbar-thumb,
+.modalCard::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.tableWrap::-webkit-scrollbar-track,
+.userModalBody::-webkit-scrollbar-track,
+.modalCard::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .table {
   width: 100%;
   min-width: 780px;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: transparent;
   color: var(--text-secondary);
   table-layout: auto;
@@ -256,8 +466,8 @@ button:disabled,
 
 .table th,
 .table td {
-  padding: 12px 18px;
-  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 5.5%, transparent);
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
   background: transparent;
   text-align: left;
   vertical-align: middle;
@@ -265,21 +475,46 @@ button:disabled,
 
 .table th {
   color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 590;
-  letter-spacing: 0.075em;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-uppercase);
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .table td {
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: var(--fs-body);
+  line-height: var(--lh-snug);
 }
 
-.table tbody tr:hover td {
-  background: color-mix(in srgb, var(--text-primary) 2.2%, transparent);
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tbody tr:hover td,
+.rolesMatrixCard .table tbody tr:hover td {
+  background: var(--bg-canvas);
+}
+
+.tableEmpty,
+.selectorEmpty,
+.dimText,
+.primaryCell small,
+.textStack small,
+.requestSummaryCard small,
+.resultBanner p,
+.permissionText small {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
+}
+
+.tableEmpty,
+.selectorEmpty {
+  padding: 18px;
+  text-align: center;
 }
 
 .primaryCell {
@@ -293,17 +528,34 @@ button:disabled,
 .primaryCell strong,
 .textStack strong,
 .requestSummaryCard strong,
-.resultCreds strong {
+.resultCreds strong,
+.selectorHead strong,
+.selectorGroupTitle {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
   color: var(--text-primary);
-  font-size: 13px;
-  line-height: 1.25;
-  font-weight: 620;
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .primaryCell small,
-.textStack small,
-.dimText {
-  overflow-wrap: anywhere;
+.textStack small {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.textStack {
+  display: grid;
+  gap: 3px;
 }
 
 .squareIcon,
@@ -312,8 +564,10 @@ button:disabled,
 .squadAvatarEditor span {
   width: 32px;
   height: 32px;
-  border-radius: 999px;
-  background: var(--workspace-bg);
+  min-width: 32px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 50%;
+  background: var(--bg-canvas);
   color: var(--text-tertiary);
   display: inline-grid;
   place-items: center;
@@ -328,21 +582,23 @@ button:disabled,
   display: block;
 }
 
+/* Badges — preservar significado operacional */
 .rolePill,
 .secondaryRolePill,
 .squadPill,
 .statusPill,
 .permissionScopeBadge,
 .matrixPill {
-  min-height: 23px;
+  min-width: 0;
+  min-height: 22px;
   padding: 0 8px;
-  border: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
+  border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: var(--surface-raised);
+  background: var(--bg-canvas);
   color: var(--text-secondary);
-  font-size: 11px;
-  line-height: 1;
-  font-weight: 590;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-flat);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -350,115 +606,62 @@ button:disabled,
 }
 
 .rolePill,
-.permissionScopeBadge_own,
+.secondaryRolePill,
 .permissionScopeBadge_all,
+.permissionScopeBadge_own,
+.permissionScopeBadge_admin,
 .permissionScopeBadge_manage,
 .matrixPillOn {
-  border-color: rgba(255, 215, 0, 0.22);
-  background: rgba(255, 215, 0, 0.08);
-  color: var(--accent);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
+  color: var(--warning-text);
 }
 
-.statusPillActive,
-.permissionScopeBadge_create {
-  border-color: rgba(39, 166, 68, 0.24);
-  background: rgba(39, 166, 68, 0.1);
+.permissionScopeBadge_create,
+.statusPillActive {
+  border-color: var(--success-line);
+  background: var(--success-soft);
   color: var(--success-text);
 }
 
+.permissionScopeBadge_neutral,
 .statusPillMuted,
 .matrixPillOff {
-  border-color: color-mix(in srgb, var(--text-primary) 5.5%, transparent);
-  background: var(--surface-panel);
+  border-color: var(--line-subtle);
+  background: var(--bg-canvas);
   color: var(--text-tertiary);
 }
 
-.filterBar {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--line-subtle);
-  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
-  display: grid;
-  grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(160px, 220px));
-  align-items: end;
-  gap: 10px;
+.matrixPillOff {
+  width: 24px;
+  min-width: 24px;
+  padding: 0;
 }
 
-.filterField,
-.field,
-.textStack,
-.rowActions,
 .squadPills,
 .roleStack {
-  min-width: 0;
+  gap: 6px;
 }
 
-.filterField,
-.field {
-  display: grid;
-  gap: 7px;
-}
-
-.field span {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 590;
-}
-
-.field input,
-.field select,
-.field textarea,
-.filterField input,
-.filterField select {
-  width: 100%;
-  min-height: 38px;
-  padding: 0 12px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--surface-raised);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 13px;
-  outline: 0;
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus,
-.filterField input:focus,
-.filterField select:focus {
-  border-color: rgba(255, 215, 0, 0.28);
-  background: var(--bg-hover);
-}
-
-.formGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
+/* Seletores e blocos internos */
 .selectorBlock {
-  padding: 14px;
+  padding: 13px;
   display: grid;
-  gap: 12px;
+  gap: 11px;
 }
 
 .selectorHead {
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.selectorHead strong,
-.selectorGroupTitle {
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 620;
-}
-
 .checkboxGrid,
 .squadSelectGrid,
 .permissionSelectGrid {
+  min-width: 0;
   display: grid;
   gap: 8px;
 }
@@ -478,57 +681,69 @@ button:disabled,
   min-width: 0;
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: 9px;
+}
+
+.checkboxCard,
+.permissionOptionCard {
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .checkboxCard {
-  min-width: 0;
-  min-height: 38px;
-  padding: 9px 10px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: var(--surface-panel);
-  color: var(--text-secondary);
+  min-height: 36px;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
   gap: 9px;
-  cursor: pointer;
 }
 
-.checkboxCard input {
+.permissionOptionCard {
+  min-height: 62px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 9px;
+}
+
+.checkboxCard:hover,
+.permissionOptionCard:hover {
+  border-color: var(--line);
+  background: var(--bg-raised);
+}
+
+.checkboxCard input,
+.permissionOptionCard input {
   width: 14px;
   height: 14px;
+  margin: 0;
   flex: 0 0 auto;
   accent-color: var(--accent);
 }
 
 .checkboxCardActive {
-  border-color: rgba(255, 215, 0, 0.26);
-  background: rgba(255, 215, 0, 0.08);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
   color: var(--text-primary);
-}
-
-.permissionOptionCard {
-  display: grid;
-  grid-template-columns: 14px minmax(0, 1fr) auto;
-  align-items: start;
-  gap: 9px;
-  min-height: 64px;
 }
 
 .permissionText strong {
   display: block;
   color: var(--text-primary);
-  font-size: 12px;
-  line-height: 1.22;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
 }
 
 .permissionText small {
   display: block;
-  margin-top: 2px;
-  color: var(--text-tertiary);
-  font-size: 11px;
-  line-height: 1.3;
+  margin-top: 3px;
 }
 
 .requestSummary {
@@ -539,17 +754,21 @@ button:disabled,
 
 .requestSummaryCard,
 .resultCreds {
-  padding: 14px;
+  padding: 13px;
   display: grid;
   gap: 6px;
 }
 
 .resultBanner {
-  padding: 16px 18px;
+  padding: 15px 16px;
   display: flex;
   justify-content: space-between;
   gap: 16px;
   align-items: center;
+}
+
+.resultCreds {
+  align-content: center;
 }
 
 .ownerInlineSelect,
@@ -558,1473 +777,10 @@ button:disabled,
   max-width: 280px;
 }
 
-.gdvAdminPane,
-.rolesAdminPane {
-  min-width: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.gdvAdminMetricGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.gdvAdminMetricCard {
-  height: 96px;
-}
-
-.gdvAdminTable .sectionHead {
-  min-height: 58px;
-}
-
+/* Administração GDV */
 .gdvAdminTable .table {
-  min-width: 860px;
+  min-width: 900px;
   table-layout: fixed;
-}
-
-.gdvAdminTable .table th:nth-child(1),
-.gdvAdminTable .table td:nth-child(1) {
-  width: 32%;
-}
-
-.gdvAdminTable .table th:nth-child(2),
-.gdvAdminTable .table td:nth-child(2) {
-  width: 11%;
-}
-
-.gdvAdminTable .table th:nth-child(3),
-.gdvAdminTable .table td:nth-child(3) {
-  width: 30%;
-}
-
-.gdvAdminTable .table th:nth-child(4),
-.gdvAdminTable .table td:nth-child(4) {
-  width: 14%;
-}
-
-.gdvAdminTable .table th:nth-child(5),
-.gdvAdminTable .table td:nth-child(5) {
-  width: 13%;
-}
-
-.rolesMatrixCard {
-  overflow: hidden;
-}
-
-.rolesMatrixCard .sectionHead {
-  min-height: 60px;
-  padding: 16px 18px;
-}
-
-.rolesMatrixCard .sectionHead h3 {
-  font-size: 17px;
-}
-
-.rolesMatrixCard .table {
-  min-width: 1180px;
-  table-layout: fixed;
-}
-
-.rolesMatrixCard .table th,
-.rolesMatrixCard .table td {
-  padding: 10px 14px;
-}
-
-.rolesMatrixCard .table th:first-child,
-.rolesMatrixCard .table td:first-child {
-  width: 300px;
-}
-
-.rolesMatrixCard .table th:nth-child(2),
-.rolesMatrixCard .table td:nth-child(2) {
-  width: 132px;
-}
-
-.rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
-.rolesMatrixCard .table td:not(:first-child):not(:nth-child(2)) {
-  text-align: center;
-}
-
-.rolesMatrixCard .primaryCell {
-  grid-template-columns: 22px minmax(0, 1fr);
-}
-
-.rolesMatrixCard .primaryCell strong {
-  font-size: 12px;
-}
-
-.rolesMatrixCard .primaryCell small {
-  font-size: 11px;
-}
-
-.rolesMatrixCard .matrixPill,
-.rolesMatrixCard .permissionScopeBadge {
-  min-height: 22px;
-  padding: 0 8px;
-  font-size: 10px;
-}
-
-.modalBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1020;
-  padding: 28px;
-  background: var(--chassis-modal-backdrop);
-  backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modalCard {
-  width: min(720px, calc(100vw - 56px));
-  max-height: min(860px, calc(100vh - 56px));
-  overflow: auto;
-  scrollbar-width: none;
-}
-
-.modalCard::-webkit-scrollbar,
-.userModalBody::-webkit-scrollbar {
-  display: none;
-}
-
-.userModalCard {
-  width: min(980px, calc(100vw - 48px));
-  max-height: min(860px, calc(100vh - 48px));
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  overflow: hidden;
-}
-
-.modalHead {
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--line-subtle);
-  background: var(--surface-panel);
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.modalClose {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
-  padding: 0;
-  font-size: 22px;
-  line-height: 1;
-}
-
-.userModalBody {
-  min-height: 0;
-  overflow: auto;
-  padding: 20px 22px 22px;
-  background: var(--bg-canvas);
-  display: grid;
-  gap: 14px;
-}
-
-.modalSection {
-  margin: 0;
-}
-
-.modalText {
-  display: none;
-}
-
-.modalActions {
-  justify-content: flex-end;
-  padding: 14px 22px;
-  border-top: 1px solid var(--line-subtle);
-  background: var(--surface-panel);
-}
-
-.hiddenInput {
-  display: none;
-}
-
-.squadIdentityPanel {
-  display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
-  gap: 14px;
-  align-items: center;
-}
-
-.squadAvatarEditor {
-  width: 74px;
-  height: 74px;
-  min-width: 74px;
-  padding: 0;
-  border: 1px solid var(--line-subtle);
-  border-radius: 999px;
-  background: var(--workspace-bg);
-  color: var(--text-primary);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.squadIdentityFields {
-  min-width: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.inlineProfileLink {
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
-.inlineProfileLink:hover {
-  color: var(--accent);
-}
-
-@media (max-width: 1180px) {
-
-  .metricGrid,
-  .gdvAdminMetricGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .permissionSelectGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 860px) {
-
-  .filterBar,
-  .formGrid,
-  .requestSummary,
-  .squadIdentityPanel,
-  .permissionSelectGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .tabBar {
-    width: 100%;
-  }
-
-  .tabButton {
-    flex: 1 1 auto;
-  }
-}
-
-@media (max-width: 680px) {
-  .page {
-    padding: 14px 14px 22px;
-  }
-
-  .metricGrid,
-  .gdvAdminMetricGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.metricGrid,
-.gdvAdminMetricGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  align-items: stretch;
-}
-
-.metricCard,
-.gdvAdminMetricCard {
-  height: 78px;
-  min-height: 78px;
-  max-height: 78px;
-  padding: 13px 14px;
-  grid-template-rows: 16px 1fr;
-  align-content: center;
-  gap: 8px;
-}
-
-.metricCard small,
-.gdvAdminMetricCard small {
-  display: none;
-}
-
-.metricCard strong,
-.gdvAdminMetricCard strong {
-  align-self: end;
-  font-size: 24px;
-  line-height: 1;
-}
-
-.metricCard span,
-.gdvAdminMetricCard span {
-  align-self: start;
-}
-
-.tableCard {
-  border-radius: var(--radius-3);
-  overflow: hidden;
-}
-
-.sectionHead {
-  min-height: 58px;
-  padding: 15px 18px;
-}
-
-.table th,
-.table td {
-  padding: 13px 18px;
-}
-
-.table th {
-  vertical-align: middle;
-}
-
-.primaryCell>div,
-.textStack {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
-}
-
-.primaryCell strong,
-.textStack strong {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 13px;
-  line-height: 1.25;
-  font-weight: 620;
-  white-space: normal;
-  text-overflow: ellipsis;
-}
-
-.primaryCell small,
-.textStack small {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
-  margin: 0;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  line-height: 1.25;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.rowActions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-}
-
-.rowActions .ghostButton,
-.rowActions .dashboardLink,
-.rowActions .dangerButton {
-  min-height: 30px;
-  padding: 0 10px;
-}
-
-.gdvAdminPane {
-  gap: 12px;
-}
-
-.gdvAdminMetricGrid {
-  margin: 0;
-}
-
-.gdvAdminMetricCard {
-  border-radius: var(--radius-3);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 2.4%, transparent), var(--surface-panel)),
-    var(--bg-canvas);
-}
-
-.gdvAdminTable .sectionHead {
-  min-height: 58px;
-}
-
-.gdvAdminTable .table {
-  min-width: 920px;
-  table-layout: fixed;
-}
-
-.gdvAdminTable .table th:nth-child(1),
-.gdvAdminTable .table td:nth-child(1) {
-  width: 30%;
-}
-
-.gdvAdminTable .table th:nth-child(2),
-.gdvAdminTable .table td:nth-child(2) {
-  width: 12%;
-}
-
-.gdvAdminTable .table th:nth-child(3),
-.gdvAdminTable .table td:nth-child(3) {
-  width: 30%;
-}
-
-.gdvAdminTable .table th:nth-child(4),
-.gdvAdminTable .table td:nth-child(4) {
-  width: 13%;
-}
-
-.gdvAdminTable .table th:nth-child(5),
-.gdvAdminTable .table td:nth-child(5) {
-  width: 15%;
-}
-
-.gdvAdminTable .primaryCell strong,
-.gdvAdminTable .primaryCell small {
-  white-space: nowrap;
-}
-
-.rolesAdminPane {
-  gap: 12px;
-}
-
-.rolesMatrixCard {
-  border-radius: var(--radius-3);
-  overflow: hidden;
-}
-
-.rolesMatrixCard .sectionHead {
-  min-height: 58px;
-  padding: 15px 18px;
-}
-
-.rolesMatrixCard .tableWrap {
-  overflow: auto;
-  max-height: calc(100vh - 250px);
-}
-
-.rolesMatrixCard .table {
-  min-width: 1180px;
-  table-layout: fixed;
-}
-
-.rolesMatrixCard .table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--surface-panel);
-}
-
-.rolesMatrixCard .table th,
-.rolesMatrixCard .table td {
-  padding: 11px 14px;
-  vertical-align: middle;
-}
-
-.rolesMatrixCard .table th:first-child,
-.rolesMatrixCard .table td:first-child {
-  width: 310px;
-}
-
-.rolesMatrixCard .table th:nth-child(2),
-.rolesMatrixCard .table td:nth-child(2) {
-  width: 150px;
-}
-
-.rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
-.rolesMatrixCard .table td:not(:first-child):not(:nth-child(2)) {
-  width: 128px;
-  text-align: center;
-}
-
-.rolesMatrixCard .primaryCell {
-  grid-template-columns: 22px minmax(0, 1fr);
-  gap: 12px;
-}
-
-.rolesMatrixCard .primaryCell svg {
-  color: var(--text-tertiary);
-}
-
-.rolesMatrixCard .primaryCell strong {
-  white-space: normal;
-  line-height: 1.22;
-}
-
-.rolesMatrixCard .primaryCell small {
-  margin-top: 2px;
-  white-space: nowrap;
-}
-
-.rolesMatrixCard .permissionScopeBadge,
-.rolesMatrixCard .matrixPill {
-  min-width: 0;
-  min-height: 22px;
-  padding: 0 8px;
-  font-size: 10px;
-  line-height: 1;
-}
-
-.rolesMatrixCard .matrixPillOff {
-  width: 24px;
-  padding: 0;
-  color: var(--text-tertiary);
-}
-
-.filterBar {
-  grid-template-columns: minmax(220px, 1fr) minmax(150px, 220px) minmax(150px, 220px);
-}
-
-@media (max-width: 1180px) {
-
-  .metricGrid,
-  .gdvAdminMetricGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 680px) {
-
-  .metricGrid,
-  .gdvAdminMetricGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Patch v32 — paginação da auditoria */
-.paginationBar {
-  min-height: 52px;
-  padding: 12px 18px;
-  border-top: 1px solid var(--line);
-  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
-  color: var(--text-tertiary);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.paginationBar>span {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 560;
-  white-space: nowrap;
-}
-
-.paginationActions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.paginationActions strong {
-  min-width: 48px;
-  color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 620;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.paginationActions .ghostButton {
-  min-height: 30px;
-  padding-inline: 10px;
-}
-
-@media (max-width: 640px) {
-  .paginationBar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
-/* v33 — refinamento real da matriz de permissões e padrão final dos cards das abas */
-.metricGrid,
-.gdvAdminMetricGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  align-items: stretch;
-}
-
-.metricCard,
-.gdvAdminMetricCard {
-  min-height: 92px;
-  height: 92px;
-  padding: 14px 16px;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  align-content: stretch;
-  gap: 8px;
-}
-
-.metricCard span,
-.gdvAdminMetricCard span {
-  align-self: start;
-  line-height: 1.15;
-}
-
-.metricCard strong,
-.gdvAdminMetricCard strong {
-  align-self: end;
-  font-size: 25px;
-  line-height: 1;
-}
-
-.metricCard small,
-.gdvAdminMetricCard small {
-  display: none;
-}
-
-.tableCard {
-  border-radius: var(--radius-3);
-  overflow: hidden;
-}
-
-.tableWrap {
-  min-width: 0;
-  overflow: auto;
-  scrollbar-width: none;
-}
-
-.tableWrap::-webkit-scrollbar {
-  display: none;
-}
-
-.table th,
-.table td {
-  padding-block: 13px;
-  vertical-align: middle;
-}
-
-.primaryCell {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-}
-
-.primaryCell>div,
-.textStack {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-
-.primaryCell strong,
-.textStack strong {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--text-primary);
-  line-height: 1.22;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.primaryCell small,
-.textStack small {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
-  margin: 0;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  line-height: 1.25;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.rolesAdminPane {
-  gap: 14px;
-}
-
-.rolesMatrixCard {
-  border-radius: var(--radius-3);
-  background: var(--bg-canvas);
-  overflow: hidden;
-}
-
-.rolesMatrixCard .sectionHead {
-  min-height: 68px;
-  padding: 18px 20px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-panel);
-}
-
-.rolesMatrixCard .sectionEyebrow {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  letter-spacing: 0.11em;
-}
-
-.rolesMatrixCard .sectionHead h3 {
-  margin-top: 4px;
-  font-size: 18px;
-  line-height: 1.12;
-  font-weight: 650;
-  letter-spacing: -0.032em;
-}
-
-.rolesMatrixCard .tableWrap {
-  max-height: calc(100vh - 270px);
-  overflow: auto;
-}
-
-.rolesMatrixCard .table {
-  min-width: 1320px;
-  table-layout: fixed;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.rolesMatrixCard .table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-  height: 42px;
-  padding: 0 16px;
-  background: var(--surface-panel);
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 0.105em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.rolesMatrixCard .table th:first-child,
-.rolesMatrixCard .table td:first-child {
-  width: 330px;
-}
-
-.rolesMatrixCard .table th:nth-child(2),
-.rolesMatrixCard .table td:nth-child(2) {
-  width: 150px;
-}
-
-.rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
-.rolesMatrixCard .table td:not(:first-child):not(:nth-child(2)) {
-  width: 140px;
-  text-align: center;
-}
-
-.rolesMatrixCard .table td {
-  height: 58px;
-  padding: 10px 16px;
-  background: transparent;
-}
-
-.rolesMatrixCard .table tbody tr:hover td {
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-}
-
-.rolesMatrixCard .primaryCell {
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 14px;
-}
-
-.rolesMatrixCard .primaryCell svg {
-  color: var(--text-tertiary);
-  opacity: 0.9;
-}
-
-.rolesMatrixCard .primaryCell strong {
-  font-size: 13px;
-  font-weight: 650;
-  line-height: 1.2;
-  white-space: normal;
-}
-
-.rolesMatrixCard .primaryCell small,
-.permissionAreaLabel {
-  margin-top: 0;
-  color: var(--text-tertiary);
-  font-size: 11px;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-.roleHeaderLabel {
-  display: inline-flex;
-  justify-content: center;
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rolesMatrixCard .permissionScopeBadge,
-.rolesMatrixCard .matrixPill {
-  min-height: 22px;
-  height: 22px;
-  padding: 0 9px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 650;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-}
-
-.rolesMatrixCard .matrixPillOn {
-  min-width: 64px;
-}
-
-.rolesMatrixCard .matrixPillOff {
-  width: 26px;
-  min-width: 26px;
-  padding: 0;
-  border-color: color-mix(in srgb, var(--text-primary) 7%, transparent);
-  background: var(--bg-hover);
-  color: var(--text-tertiary);
-}
-
-.gdvAdminTable .primaryCell strong,
-.gdvAdminTable .primaryCell small,
-.tableCard .primaryCell strong,
-.tableCard .primaryCell small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 1180px) {
-
-  .metricGrid,
-  .gdvAdminMetricGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 680px) {
-
-  .metricGrid,
-  .gdvAdminMetricGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Patch v34 — Matriz de permissões: largura, espaçamento e ícones alinhados */
-.rolesMatrixCard {
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.rolesMatrixCard .tableWrap {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.rolesMatrixCard .table {
-  width: 100%;
-  min-width: 0;
-  table-layout: fixed;
-}
-
-.rolesMatrixCard .table th,
-.rolesMatrixCard .table td {
-  padding-inline: 10px;
-  box-sizing: border-box;
-}
-
-.rolesMatrixCard .table th:first-child,
-.rolesMatrixCard .table td:first-child {
-  width: 25%;
-  min-width: 0;
-}
-
-.rolesMatrixCard .table th:nth-child(2),
-.rolesMatrixCard .table td:nth-child(2) {
-  width: 13%;
-  min-width: 0;
-}
-
-.rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
-.rolesMatrixCard .table td:not(:first-child):not(:nth-child(2)) {
-  width: 10.333%;
-  min-width: 0;
-  text-align: center;
-}
-
-.rolesMatrixCard .table thead th {
-  height: 40px;
-  padding-block: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rolesMatrixCard .table td {
-  height: 52px;
-  padding-block: 8px;
-  vertical-align: middle;
-}
-
-.rolesMatrixCard .primaryCell {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-}
-
-.rolesMatrixCard .primaryCell .squareIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: var(--workspace-bg);
-  color: var(--text-tertiary);
-  display: inline-grid;
-  place-items: center;
-}
-
-.rolesMatrixCard .primaryCell strong {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  font-size: 12px;
-  line-height: 1.22;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.rolesMatrixCard .primaryCell small,
-.rolesMatrixCard .permissionAreaLabel {
-  display: block;
-  max-width: 100%;
-  margin-top: 2px;
-  overflow: hidden;
-  font-size: 10px;
-  line-height: 1.2;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.roleHeaderLabel {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font-size: 9px;
-  line-height: 1.2;
-  font-weight: 650;
-  text-align: center;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.rolesMatrixCard .permissionScopeBadge,
-.rolesMatrixCard .matrixPill {
-  min-width: 0;
-  max-width: 100%;
-  min-height: 21px;
-  height: 21px;
-  padding: 0 8px;
-  font-size: 9px;
-  font-weight: 650;
-}
-
-.rolesMatrixCard .matrixPillOn {
-  min-width: 54px;
-}
-
-.rolesMatrixCard .matrixPillOff {
-  width: 24px;
-  min-width: 24px;
-}
-
-.rolesMatrixCard .permissionScopeBadge {
-  max-width: 108px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 1180px) {
-  .rolesMatrixCard .tableWrap {
-    overflow-x: auto;
-  }
-
-  .rolesMatrixCard .table {
-    min-width: 980px;
-  }
-}
-
-/* v43 — Padronização pelo Perfil: modais e ações neutras */
-.headerIconButton,
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dashboardLink,
-.inlineRetry,
-.modalClose {
-  min-height: 34px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-1);
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 520;
-}
-
-.headerIconButton {
-  width: 34px;
-  min-width: 34px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font: inherit;
-  cursor: pointer;
-}
-
-.headerIconButton:hover,
-.headerBtn:hover,
-.primaryButton:hover,
-.ghostButton:hover,
-.dashboardLink:hover,
-.inlineRetry:hover,
-.modalClose:hover {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.headerBtn,
-.primaryButton {
-  border-color: var(--line-subtle);
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-  color: var(--text-secondary);
-}
-
-.headerBtn svg,
-.headerIconButton svg,
-.modalClose svg {
-  color: currentColor;
-  stroke-width: 1.75;
-}
-
-.tabButtonActive {
-  border-color: rgba(255, 215, 0, 0.26);
-  background: rgba(255, 215, 0, 0.10);
-  color: var(--text-primary);
-}
-
-.checkboxCardActive {
-  border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-  background: var(--bg-selected);
-  color: var(--text-primary);
-}
-
-.modalBackdrop {
-  z-index: 1020;
-  padding: 20px;
-  background: var(--chassis-modal-backdrop);
-  backdrop-filter: blur(12px);
-}
-
-.modalCard {
-  width: min(720px, calc(100vw - 40px));
-  max-height: min(740px, calc(100vh - 40px));
-  border-color: var(--line-subtle);
-  border-radius: var(--radius-4);
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-  box-shadow: inset 0 1px 0 var(--surface-panel);
-}
-
-.userModalCard {
-  width: min(900px, calc(100vw - 40px));
-  max-height: min(740px, calc(100vh - 40px));
-}
-
-.modalHead {
-  min-height: 54px;
-  padding: 0 14px 0 16px;
-  border-bottom: 1px solid var(--line-subtle);
-  background: var(--surface-panel);
-  align-items: center;
-}
-
-.modalHead h3 {
-  margin: 2px 0 0;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.modalEyebrow {
-  font-size: 10px;
-  letter-spacing: 0.10em;
-  font-weight: 520;
-}
-
-.modalClose {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0;
-}
-
-.userModalBody {
-  padding: 16px;
-  gap: 14px;
-  background: transparent;
-}
-
-.modalActions {
-  min-height: 56px;
-  padding: 11px 16px;
-  border-top: 1px solid var(--line-subtle);
-  background: var(--surface-panel);
-}
-
-.formGrid {
-  gap: 12px;
-}
-
-.field {
-  gap: 6px;
-}
-
-.field>span,
-.filterField>span {
-  color: var(--text-tertiary);
-  font-size: 11px;
-  line-height: 1.2;
-  font-weight: 520;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.field input,
-.field select,
-.field textarea,
-.filterField input,
-.filterField select {
-  min-height: 34px;
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus,
-.filterField input:focus,
-.filterField select:focus {
-  border-color: var(--line);
-  background: var(--bg-hover);
-}
-
-.selectorBlock,
-.requestSummaryCard,
-.resultCreds {
-  border-radius: var(--radius-2);
-  background: color-mix(in srgb, var(--text-primary) 1.4%, transparent);
-}
-
-.selectorBlock {
-  padding: 12px;
-  gap: 10px;
-}
-
-.checkboxCard {
-  min-height: 34px;
-  padding: 8px 9px;
-}
-
-.permissionOptionCard {
-  min-height: 58px;
-}
-
-.squadIdentityPanel {
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 12px;
-}
-
-.squadAvatarEditor {
-  width: 72px;
-  height: 72px;
-  min-width: 72px;
-}
-
-.rowActions {
-  gap: 6px;
-}
-
-.dangerButton {
-  min-height: 34px;
-  border-color: var(--danger-line);
-  background: rgba(248, 113, 113, 0.075);
-  color: var(--danger-text);
-}
-
-.dangerButton:hover {
-  border-color: rgba(248, 113, 113, 0.32);
-  background: rgba(248, 113, 113, 0.11);
-  color: var(--danger-text);
-}
-
-@media (max-width: 860px) {
-  .modalBackdrop {
-    padding: 10px;
-  }
-
-  .modalCard,
-  .userModalCard {
-    width: calc(100vw - 20px);
-    max-height: calc(100vh - 20px);
-  }
-}
-
-/* v44 — Equipe & Acessos alinhado ao padrão validado do Perfil */
-.page {
-  padding: 12px 14px 20px;
-  gap: 10px;
-}
-
-.tabBar {
-  padding: 3px;
-  border-radius: var(--radius-3);
-  background: color-mix(in srgb, var(--text-primary) 1.4%, transparent);
-  gap: 3px;
-}
-
-.tabButton {
-  min-height: 32px;
-  padding: 0 10px;
-  border-color: transparent;
-  border-radius: var(--radius-1);
-  background: transparent;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 520;
-}
-
-.tabButton:hover,
-.tabButtonActive {
-  border-color: var(--line);
-  background: var(--bg-selected);
-  color: var(--text-primary);
-}
-
-.tabButtonActive {
-  box-shadow: none;
-}
-
-.tabButton svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 1.75;
-}
-
-.tabContent {
-  gap: 10px;
-}
-
-.metricGrid,
-.gdvAdminMetricGrid {
-  gap: 8px;
-}
-
-.metricCard,
-.gdvAdminMetricCard {
-  height: 76px;
-  min-height: 76px;
-  max-height: 76px;
-  padding: 12px 13px;
-  border-color: var(--line-subtle);
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-  grid-template-rows: 15px 1fr;
-  gap: 6px;
-  box-shadow: inset 0 1px 0 var(--surface-panel);
-}
-
-.metricCard span,
-.gdvAdminMetricCard span {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  line-height: 1;
-  font-weight: 520;
-  letter-spacing: 0.1em;
-}
-
-.metricCard strong,
-.gdvAdminMetricCard strong {
-  align-self: end;
-  font-size: 23px;
-  font-weight: 600;
-  letter-spacing: -0.035em;
-}
-
-.metricCard small,
-.gdvAdminMetricCard small {
-  display: none;
-}
-
-.tableCard,
-.gdvAdminTable,
-.rolesMatrixCard {
-  border-color: var(--line-subtle);
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-  border-radius: var(--radius-4);
-  box-shadow: inset 0 1px 0 var(--surface-panel);
-}
-
-.sectionHead,
-.gdvAdminTable .sectionHead,
-.rolesMatrixCard .sectionHead {
-  min-height: 54px;
-  padding: 12px 14px;
-  background: var(--surface-panel);
-}
-
-.sectionEyebrow,
-.rolesMatrixCard .sectionEyebrow {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 520;
-  letter-spacing: 0.1em;
-}
-
-.sectionHead h3,
-.rolesMatrixCard .sectionHead h3 {
-  margin-top: 3px;
-  font-size: 15px;
-  line-height: 1.15;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.filterBar {
-  padding: 12px 14px;
-  grid-template-columns: minmax(220px, 1fr) minmax(150px, 210px) minmax(150px, 210px);
-  gap: 8px;
-}
-
-.table {
-  font-size: 13px;
-}
-
-.table th,
-.table td {
-  padding: 10px 14px;
-}
-
-.table th {
-  color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 520;
-  letter-spacing: 0.1em;
-}
-
-.table tbody tr:hover td {
-  background: var(--surface-panel);
-}
-
-.primaryCell {
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 9px;
-}
-
-.squareIcon,
-.avatar,
-.roleChip,
-.squadAvatarEditor span,
-.rolesMatrixCard .primaryCell .squareIcon {
-  width: 30px;
-  height: 30px;
-  background: var(--workspace-bg);
-  color: var(--text-tertiary);
-}
-
-.primaryCell>div,
-.textStack {
-  gap: 2px;
-}
-
-.primaryCell strong,
-.textStack strong {
-  font-size: 13px;
-  line-height: 1.24;
-  font-weight: 600;
-}
-
-.primaryCell small,
-.textStack small {
-  font-size: 12px;
-  line-height: 1.24;
-}
-
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dashboardLink,
-.inlineRetry,
-.headerIconButton {
-  min-height: 34px;
-  border-color: var(--line-subtle);
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
-  color: var(--text-secondary);
-  font-weight: 520;
-}
-
-.headerBtn:hover,
-.primaryButton:hover,
-.ghostButton:hover,
-.dashboardLink:hover,
-.inlineRetry:hover,
-.headerIconButton:hover {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.rowActions {
-  gap: 6px;
-}
-
-.rowActions .ghostButton,
-.rowActions .dashboardLink,
-.rowActions .dangerButton {
-  min-height: 30px;
-  padding: 0 9px;
-}
-
-.rolePill,
-.secondaryRolePill,
-.squadPill,
-.statusPill,
-.permissionScopeBadge,
-.matrixPill {
-  min-height: 22px;
-  padding: 0 8px;
-  font-size: 10px;
-  font-weight: 560;
-}
-
-.rolePill,
-.permissionScopeBadge_own,
-.permissionScopeBadge_all,
-.permissionScopeBadge_manage,
-.matrixPillOn {
-  border-color: rgba(255, 215, 0, 0.18);
-  background: rgba(255, 215, 0, 0.065);
-}
-
-.statusPillActive,
-.permissionScopeBadge_create {
-  border-color: rgba(39, 166, 68, 0.22);
-  background: rgba(39, 166, 68, 0.09);
-}
-
-.gdvAdminPane,
-.rolesAdminPane {
-  gap: 10px;
-}
-
-.gdvAdminTable .table {
-  min-width: 860px;
 }
 
 .gdvAdminTable .table th:nth-child(1),
@@ -2052,46 +808,56 @@ button:disabled,
   width: 15%;
 }
 
+/* Matriz de permissões */
 .rolesMatrixCard .tableWrap {
-  max-height: calc(100vh - 245px);
-  overflow-x: auto;
-  overflow-y: auto;
+  max-height: calc(100vh - 250px);
+  overflow: auto;
 }
 
 .rolesMatrixCard .table {
   width: 100%;
-  min-width: 0;
+  min-width: 1040px;
   table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .rolesMatrixCard .table thead th {
-  height: 36px;
-  padding: 0 8px;
-  background: var(--surface-panel);
-  font-size: 9px;
-  font-weight: 560;
-  letter-spacing: 0.095em;
-}
-
-.rolesMatrixCard .table td {
-  height: 48px;
-  padding: 8px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  height: 38px;
+  padding: 0 9px;
+  background: var(--bg-canvas);
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-uppercase);
+  text-align: center;
+  white-space: nowrap;
 }
 
 .rolesMatrixCard .table th:first-child,
 .rolesMatrixCard .table td:first-child {
-  width: 27%;
+  width: 280px;
+  text-align: left;
 }
 
 .rolesMatrixCard .table th:nth-child(2),
 .rolesMatrixCard .table td:nth-child(2) {
-  width: 12%;
+  width: 130px;
+  text-align: left;
 }
 
 .rolesMatrixCard .table th:not(:first-child):not(:nth-child(2)),
 .rolesMatrixCard .table td:not(:first-child):not(:nth-child(2)) {
-  width: 10.16%;
+  width: 112px;
   text-align: center;
+}
+
+.rolesMatrixCard .table td {
+  height: 50px;
+  padding: 8px 9px;
 }
 
 .rolesMatrixCard .primaryCell {
@@ -2099,32 +865,54 @@ button:disabled,
   gap: 9px;
 }
 
+.rolesMatrixCard .primaryCell .squareIcon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+}
+
+.rolesMatrixCard .primaryCell svg {
+  color: var(--text-tertiary);
+}
+
 .rolesMatrixCard .primaryCell strong {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: var(--fs-label);
+  line-height: var(--lh-tight);
 }
 
 .rolesMatrixCard .primaryCell small,
-.rolesMatrixCard .permissionAreaLabel {
-  font-size: 10px;
-  line-height: 1.2;
+.permissionAreaLabel {
+  display: block;
+  max-width: 100%;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .roleHeaderLabel {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
   color: var(--text-tertiary);
-  font-size: 9px;
-  font-weight: 560;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-uppercase);
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .rolesMatrixCard .permissionScopeBadge,
 .rolesMatrixCard .matrixPill {
+  max-width: 100%;
   min-height: 20px;
   height: 20px;
   padding: 0 7px;
-  font-size: 9px;
-  font-weight: 560;
+  font-size: var(--fs-tiny);
 }
 
 .rolesMatrixCard .matrixPillOn {
@@ -2134,19 +922,177 @@ button:disabled,
 .rolesMatrixCard .matrixPillOff {
   width: 22px;
   min-width: 22px;
-  padding: 0;
 }
 
 .rolesMatrixCard .permissionScopeBadge {
-  max-width: 100px;
+  max-width: 102px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* Modais */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 25000;
+  padding: 20px;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalCard {
+  width: min(720px, calc(100vw - 40px));
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+  display: grid;
+}
+
+.userModalCard {
+  width: min(920px, calc(100vw - 40px));
+  max-height: min(760px, calc(100vh - 40px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+
+.modalHead {
+  min-height: 56px;
+  padding: 0 14px 0 16px;
+  border-bottom: 1px solid var(--workspace-panel-border-soft);
+  background: var(--bg-canvas);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.modalClose {
+  font-size: 0;
+}
+
+.userModalBody {
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+  background: transparent;
+  display: grid;
+  gap: 14px;
+}
+
+.modalSection {
+  margin: 0;
+}
+
+.modalText {
+  display: none;
+}
+
+.modalActions {
+  justify-content: flex-end;
+  min-height: 56px;
+  padding: 11px 16px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  background: var(--bg-canvas);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.squadIdentityPanel {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.squadAvatarEditor {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  padding: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: 50%;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.squadIdentityFields {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.inlineProfileLink {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.inlineProfileLink:hover {
+  color: var(--accent);
+}
+
+/* Paginação */
 .paginationBar {
-  min-height: 46px;
-  padding: 10px 14px;
+  min-height: 48px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--workspace-panel-border-soft);
+  background: var(--bg-canvas);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
 }
 
+.paginationBar > span {
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.paginationActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paginationActions strong {
+  min-width: 48px;
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.paginationActions .ghostButton {
+  min-height: 30px;
+  padding-inline: 10px;
+}
+
+/* Responsivo */
 @media (max-width: 1180px) {
+  .metricGrid,
+  .gdvAdminMetricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .permissionSelectGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
   .rolesMatrixCard .table {
     min-width: 980px;
   }
@@ -2157,362 +1103,43 @@ button:disabled,
     padding: 12px;
   }
 
-  .filterBar {
+  .tabBar {
+    width: 100%;
+  }
+
+  .tabButton {
+    flex: 1 1 auto;
+  }
+
+  .filterBar,
+  .formGrid,
+  .requestSummary,
+  .squadIdentityPanel,
+  .permissionSelectGrid {
     grid-template-columns: 1fr;
+  }
+
+  .modalBackdrop {
+    padding: 10px;
+  }
+
+  .modalCard,
+  .userModalCard {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
   }
 }
 
-/* v2 — configurações avançadas de GDV/Squad */
-.slugField {
-  min-height: 42px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--workspace-card-radius);
-  background: var(--surface-raised);
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  overflow: hidden;
-}
+@media (max-width: 680px) {
+  .metricGrid,
+  .gdvAdminMetricGrid {
+    grid-template-columns: 1fr;
+  }
 
-.slugField small {
-  height: 100%;
-  padding: 0 12px;
-  border-right: 1px solid var(--line-subtle);
-  color: var(--text-tertiary);
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-}
-
-.slugField input {
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-}
-
-.squadAvatarEditor img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Fase 67 — workspace foundation */
-.page {
-  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
-  background: var(--workspace-bg);
-}
-
-.surface,
-.panel,
-.card,
-.tableShell,
-.modalCard {
-  border-color: var(--workspace-panel-border);
-  border-radius: var(--workspace-card-radius);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-}
-
-
-/* ==========================================================================
-   v74 · TeamAccessPage cleanup real
-   Consolida permissões/equipe no workspace.
-   ========================================================================== */
-.page {
-  min-height: 100%;
-  padding: var(--workspace-padding-y) var(--workspace-padding-x) 18px;
-  background: var(--workspace-bg);
-  color: var(--text-secondary);
-}
-
-.tabBar,
-.metricCard,
-.gdvAdminMetricCard,
-.panel,
-.card,
-.tableShell,
-.modalCard,
-.emptyState,
-.loadingState,
-.errorState,
-.roleCard,
-.squadCard,
-.userCard {
-  border-color: var(--workspace-panel-border-soft);
-  border-radius: var(--workspace-card-radius);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-}
-
-.tabButton,
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dangerButton,
-.inlineRetry,
-.dashboardLink,
-.modalClose,
-.rowAction,
-.roleAction,
-.squadAction {
-  min-height: var(--workspace-control-height);
-  border-radius: var(--workspace-control-radius);
-  box-shadow: none;
-}
-
-.tabButton:hover,
-.ghostButton:hover,
-.inlineRetry:hover,
-.dashboardLink:hover,
-.modalClose:hover,
-.rowAction:hover,
-.roleAction:hover,
-.squadAction:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.tabButton:focus-visible,
-.headerBtn:focus-visible,
-.primaryButton:focus-visible,
-.ghostButton:focus-visible,
-.dangerButton:focus-visible,
-.inlineRetry:focus-visible,
-.dashboardLink:focus-visible,
-.modalClose:focus-visible,
-.rowAction:focus-visible {
-  border-color: var(--line-strong);
-  box-shadow: none;
-  outline: none;
-}
-
-.tabButtonActive,
-.headerBtn,
-.primaryButton {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--text-primary);
-}
-
-.dangerButton {
-  border-color: var(--danger-line);
-  background: var(--danger-soft);
-  color: var(--danger-text);
-}
-
-.metricCard,
-.gdvAdminMetricCard {
-  min-height: 96px;
-}
-
-.metricCard span,
-.gdvAdminMetricCard span,
-.muted,
-.helperText,
-.cardLabel,
-.tableHeader {
-  color: var(--text-tertiary);
-}
-
-.modalOverlay {
-  z-index: var(--chassis-z-dialog);
-  background: var(--chassis-modal-backdrop);
-  backdrop-filter: none;
-}
-
-.modalCard {
-  border-color: var(--workspace-panel-border);
-  background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
-}
-
-.modalHeader,
-.modalFooter {
-  min-height: 54px;
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-}
-
-/* ==========================================================================
-   v93 · QA visual Equipe
-   Refinamento final: hovers escuros, modais acima da sidebar e sem movimento.
-   ========================================================================== */
-.page {
-  background: var(--workspace-bg);
-}
-
-.tabButton,
-.headerBtn,
-.primaryButton,
-.ghostButton,
-.dangerButton,
-.inlineRetry,
-.dashboardLink,
-.modalClose,
-.rowAction,
-.roleAction,
-.squadAction,
-.userCard,
-.roleCard,
-.squadCard,
-.metricCard,
-.gdvAdminMetricCard {
-  transform: none;
-}
-
-.tabButton:hover,
-.headerBtn:hover,
-.primaryButton:hover,
-.ghostButton:hover,
-.inlineRetry:hover,
-.dashboardLink:hover,
-.modalClose:hover,
-.rowAction:hover,
-.roleAction:hover,
-.squadAction:hover {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  box-shadow: none;
-  transform: none;
-}
-
-.userCard:hover,
-.roleCard:hover,
-.squadCard:hover,
-.metricCard:hover,
-.gdvAdminMetricCard:hover {
-  border-color: var(--line);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.tabButtonActive,
-.tabButtonActive:hover {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.modalOverlay {
-  z-index: 25000;
-  background: var(--overlay-bg, var(--chassis-modal-backdrop));
-  backdrop-filter: none;
-}
-
-.modalCard {
-  border-color: var(--workspace-panel-border);
-  background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
-}
-
-.modalHeader,
-.modalFooter {
-  border-color: var(--workspace-panel-border-soft);
-}
-
-/* ==========================================================================
-   v95 · Backdrop blur restaurado
-   Todo modal/drawer deve desfocar o fundo da plataforma.
-   ========================================================================== */
-.overlay,
-.modalOverlay,
-.campaignModalOverlay,
-.drawerOverlay,
-.attachmentViewerOverlay,
-.viewerOverlay,
-.confirmOverlay,
-.deleteOverlay,
-.taskModalOverlay {
-  background: var(--chassis-modal-backdrop);
-  backdrop-filter: var(--chassis-modal-blur);
-  -webkit-backdrop-filter: var(--chassis-modal-blur);
-}
-
-
-/* ==========================================================================
-   v11 · Equipe e Acessos — refinamento visual profundo
-   Mantém cores semânticas de cargos/permissões/status e ajusta apenas a base neutra.
-   ========================================================================== */
-.page {
-  background: var(--workspace-bg);
-}
-
-.tabBar,
-.metricCard,
-.gdvAdminMetricCard,
-.tableCard,
-.gdvAdminTable,
-.rolesMatrixCard,
-.selectorBlock,
-.requestSummaryCard,
-.resultBanner,
-.resultCreds,
-.modalCard {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-panel-bg);
-  box-shadow: none;
-}
-
-.sectionHead,
-.gdvAdminTable .sectionHead,
-.rolesMatrixCard .sectionHead,
-.modalHead,
-.modalActions {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--surface-panel);
-}
-
-.field input,
-.field select,
-.field textarea,
-.filterField input,
-.filterField select,
-.slugField {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--workspace-input-bg);
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus,
-.filterField input:focus,
-.filterField select:focus {
-  border-color: var(--line);
-  background: var(--bg-hover);
-  box-shadow: none;
-}
-
-.tableWrap {
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
-}
-
-.tableWrap::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  display: block;
-}
-
-.tableWrap::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: var(--line);
-}
-
-.tableWrap::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.table tbody tr:hover td,
-.rolesMatrixCard .table tbody tr:hover td {
-  background: var(--surface-panel);
-}
-
-.modalBackdrop,
-.modalOverlay {
-  background: var(--chassis-modal-backdrop);
-  backdrop-filter: var(--chassis-modal-blur);
-  -webkit-backdrop-filter: var(--chassis-modal-blur);
+  .sectionHead,
+  .resultBanner,
+  .paginationBar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
