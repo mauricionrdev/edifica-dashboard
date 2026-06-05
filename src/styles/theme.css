@@ -18,14 +18,14 @@
  * ========================================================================== */
 
 :root {
-  /* Superfícies legadas (sem equivalente direto em tokens.css ainda). */
-  --surface:           #070708;
-  --surface-subtle:    #0a0b0c;
-  --surface-panel:     rgba(255, 255, 255, 0.024);
-  --surface-raised:    rgba(255, 255, 255, 0.038);
-  --surface-card:      #0b0c0e;
-  --surface-card-soft: #070708;
-  --surface-strong:    #121317;
+  /* Superfícies legadas mapeadas para a base canônica Google dark. */
+  --surface:           var(--bg-canvas);
+  --surface-subtle:    var(--bg-soft);
+  --surface-panel:     var(--field-bg);
+  --surface-raised:    var(--field-bg-hover);
+  --surface-card:      var(--bg-elevated);
+  --surface-card-soft: var(--bg-canvas);
+  --surface-strong:    var(--bg-raised);
 
   /* Bordas — aliases para os tokens canônicos --line-*. */
   --border-subtle: var(--line-subtle);
@@ -36,15 +36,15 @@
   --accent-amber-border: var(--accent-amber-line);
 
   /* Auxiliares de gráfico/progresso. */
-  --chart-bar: rgba(255, 255, 255, 0.055);
-  --progress-track: rgba(255, 255, 255, 0.07);
+  --chart-bar: color-mix(in srgb, var(--text-primary) 5.5%, transparent);
+  --progress-track: color-mix(in srgb, var(--text-primary) 7%, transparent);
 
-  /* Card system legado (Linear/Edifica). */
-  --card-surface:        #090a0b;
-  --card-surface-raised: #0d0e10;
-  --card-surface-soft:   #070708;
-  --card-inner:          rgba(255, 255, 255, 0.018);
-  --card-border:         rgba(255, 255, 255, 0.068);
-  --card-border-strong:  rgba(255, 255, 255, 0.105);
-  --card-highlight:      rgba(255, 255, 255, 0.032);
+  /* Card system legado (Linear/Edifica) apontando para tokens canônicos. */
+  --card-surface:        var(--bg-elevated);
+  --card-surface-raised: var(--bg-raised);
+  --card-surface-soft:   var(--bg-canvas);
+  --card-inner:          color-mix(in srgb, var(--text-primary) 1.8%, transparent);
+  --card-border:         var(--line);
+  --card-border-strong:  var(--line-strong);
+  --card-highlight:      color-mix(in srgb, var(--text-primary) 3.2%, transparent);
 }

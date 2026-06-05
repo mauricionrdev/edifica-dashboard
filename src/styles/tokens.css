@@ -134,13 +134,20 @@
    * separada (alteraria o hover em toda a aplicação).
    * ──────────────────────────────────────────────────────────────────── */
 
-  --bg-app:      #010102;
-  --bg-canvas:   #050506;
-  --bg-elevated: #0b0c0d;
-  --bg-raised:   #101113;
-  --bg-hover:    #0f1011;
-  --bg-selected: #111216;
-  --bg-soft:     #090a0b;
+  --bg-app:      #08090a;
+  --bg-canvas:   #0d0f12;
+  --bg-elevated: #111317;
+  --bg-raised:   #171a1f;
+  --bg-hover:    #1b1f25;
+  --bg-selected: #20242b;
+  --bg-soft:     #0b0d10;
+
+  /* Aliases semânticos para a direção Google dark minimalista. */
+  --bg-primary: var(--bg-app);
+  --bg-secondary: var(--bg-canvas);
+  --surface-primary: var(--bg-elevated);
+  --surface-secondary: var(--bg-raised);
+  --surface-elevated: var(--bg-selected);
 
 
   /* ────────────────────────────────────────────────────────────────────
@@ -150,10 +157,10 @@
    * 100% dos casos: título → corpo → meta → muted/placeholder.
    * ──────────────────────────────────────────────────────────────────── */
 
-  --text-primary:    #F7F8F8;
-  --text-secondary:  #D0D6E0;
-  --text-tertiary:   #8A8F98;
-  --text-quaternary: #62666D;
+  --text-primary:    #F1F3F4;
+  --text-secondary:  #C7CBD1;
+  --text-tertiary:   #9AA0A6;
+  --text-quaternary: #6F757D;
 
 
   /* ────────────────────────────────────────────────────────────────────
@@ -163,9 +170,13 @@
    * de opacidade — bordas mais claras = look "infantil".
    * ──────────────────────────────────────────────────────────────────── */
 
-  --line-subtle: rgba(255, 255, 255, 0.052);
-  --line:        rgba(255, 255, 255, 0.078);
-  --line-strong: rgba(255, 255, 255, 0.11);
+  --line-subtle: rgba(255, 255, 255, 0.060);
+  --line:        rgba(255, 255, 255, 0.088);
+  --line-strong: rgba(255, 255, 255, 0.125);
+
+  --border-subtle: var(--line-subtle);
+  --border-default: var(--line);
+  --border-strong: var(--line-strong);
 
 
   /* ────────────────────────────────────────────────────────────────────
@@ -225,9 +236,13 @@
    * CAMPOS / FORMULÁRIO
    * ──────────────────────────────────────────────────────────────────── */
 
-  --field-bg:       rgba(255, 255, 255, 0.022);
-  --field-bg-hover: rgba(255, 255, 255, 0.022);
+  --field-bg:       color-mix(in srgb, var(--text-primary) 2.8%, transparent);
+  --field-bg-hover: color-mix(in srgb, var(--text-primary) 4.2%, transparent);
   --field-line:     var(--line);
+  --field-line-hover: var(--line-strong);
+  --selection-bg: var(--accent-line);
+  --scrollbar-thumb: color-mix(in srgb, var(--text-primary) 14%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-primary) 24%, transparent);
 
 
   /* ────────────────────────────────────────────────────────────────────
@@ -268,10 +283,10 @@
    * Sombras ativas só em modal/drawer/dropdown (overlays).
    * ──────────────────────────────────────────────────────────────────── */
 
-  --shadow-soft:   0 18px 48px rgba(0, 0, 0, 0.18);
-  --shadow-panel:  0 24px 80px rgba(0, 0, 0, 0.24);
-  --shadow-dialog: 0 24px 64px rgba(0, 0, 0, 0.40),
-                   0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-soft:   0 12px 32px rgba(0, 0, 0, 0.16);
+  --shadow-panel:  0 18px 56px rgba(0, 0, 0, 0.20);
+  --shadow-dialog: 0 22px 64px rgba(0, 0, 0, 0.36),
+                   0 0 0 1px var(--line-subtle);
 
   /* Anel de foco — acessibilidade. Usar via box-shadow nos primitivos. */
   --focus-ring: none;
