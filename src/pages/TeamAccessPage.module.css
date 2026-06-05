@@ -196,7 +196,7 @@ button:disabled,
   border: 1px solid var(--line);
   border-radius: var(--radius-3);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.024), var(--surface-panel)),
+    linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 2.4%, transparent), var(--surface-panel)),
     var(--bg-canvas);
   box-shadow: none;
 }
@@ -209,7 +209,7 @@ button:disabled,
   min-height: 58px;
   padding: 15px 18px;
   border-bottom: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.01);
+  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -257,7 +257,7 @@ button:disabled,
 .table th,
 .table td {
   padding: 12px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 5.5%, transparent);
   background: transparent;
   text-align: left;
   vertical-align: middle;
@@ -279,7 +279,7 @@ button:disabled,
 }
 
 .table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.022);
+  background: color-mix(in srgb, var(--text-primary) 2.2%, transparent);
 }
 
 .primaryCell {
@@ -336,7 +336,7 @@ button:disabled,
 .matrixPill {
   min-height: 23px;
   padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
   border-radius: 999px;
   background: var(--surface-raised);
   color: var(--text-secondary);
@@ -363,12 +363,12 @@ button:disabled,
 .permissionScopeBadge_create {
   border-color: rgba(39, 166, 68, 0.24);
   background: rgba(39, 166, 68, 0.1);
-  color: #86efac;
+  color: var(--success-text);
 }
 
 .statusPillMuted,
 .matrixPillOff {
-  border-color: rgba(255, 255, 255, 0.055);
+  border-color: color-mix(in srgb, var(--text-primary) 5.5%, transparent);
   background: var(--surface-panel);
   color: var(--text-tertiary);
 }
@@ -376,7 +376,7 @@ button:disabled,
 .filterBar {
   padding: 14px 18px;
   border-bottom: 1px solid var(--line-subtle);
-  background: rgba(255, 255, 255, 0.01);
+  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
   display: grid;
   grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(160px, 220px));
   align-items: end;
@@ -669,7 +669,7 @@ button:disabled,
   inset: 0;
   z-index: 1020;
   padding: 28px;
-  background: rgba(8, 9, 10, 0.78);
+  background: var(--chassis-modal-backdrop);
   backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
@@ -936,7 +936,7 @@ button:disabled,
 .gdvAdminMetricCard {
   border-radius: var(--radius-3);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.024), var(--surface-panel)),
+    linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 2.4%, transparent), var(--surface-panel)),
     var(--bg-canvas);
 }
 
@@ -1007,7 +1007,7 @@ button:disabled,
   position: sticky;
   top: 0;
   z-index: 2;
-  background: #111214;
+  background: var(--surface-panel);
 }
 
 .rolesMatrixCard .table th,
@@ -1091,7 +1091,7 @@ button:disabled,
   min-height: 52px;
   padding: 12px 18px;
   border-top: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.01);
+  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
   color: var(--text-tertiary);
   display: flex;
   align-items: center;
@@ -1281,7 +1281,7 @@ button:disabled,
   z-index: 4;
   height: 42px;
   padding: 0 16px;
-  background: #111214;
+  background: var(--surface-panel);
   color: var(--text-tertiary);
   font-size: 10px;
   font-weight: 650;
@@ -1313,7 +1313,7 @@ button:disabled,
 }
 
 .rolesMatrixCard .table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
 }
 
 .rolesMatrixCard .primaryCell {
@@ -1374,7 +1374,7 @@ button:disabled,
   width: 26px;
   min-width: 26px;
   padding: 0;
-  border-color: rgba(255, 255, 255, 0.07);
+  border-color: color-mix(in srgb, var(--text-primary) 7%, transparent);
   background: var(--bg-hover);
   color: var(--text-tertiary);
 }
@@ -1559,7 +1559,7 @@ button:disabled,
   min-height: 34px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-1);
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 520;
@@ -1591,7 +1591,7 @@ button:disabled,
 .headerBtn,
 .primaryButton {
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
   color: var(--text-secondary);
 }
 
@@ -1609,7 +1609,7 @@ button:disabled,
 }
 
 .checkboxCardActive {
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
   background: var(--bg-selected);
   color: var(--text-primary);
 }
@@ -1617,7 +1617,7 @@ button:disabled,
 .modalBackdrop {
   z-index: 1020;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.72);
+  background: var(--chassis-modal-backdrop);
   backdrop-filter: blur(12px);
 }
 
@@ -1626,7 +1626,7 @@ button:disabled,
   max-height: min(740px, calc(100vh - 40px));
   border-color: var(--line-subtle);
   border-radius: var(--radius-4);
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
   box-shadow: inset 0 1px 0 var(--surface-panel);
 }
 
@@ -1704,7 +1704,7 @@ button:disabled,
 .filterField input,
 .filterField select {
   min-height: 34px;
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
 }
 
 .field input:focus,
@@ -1720,7 +1720,7 @@ button:disabled,
 .requestSummaryCard,
 .resultCreds {
   border-radius: var(--radius-2);
-  background: rgba(255, 255, 255, 0.014);
+  background: color-mix(in srgb, var(--text-primary) 1.4%, transparent);
 }
 
 .selectorBlock {
@@ -1762,7 +1762,7 @@ button:disabled,
 .dangerButton:hover {
   border-color: rgba(248, 113, 113, 0.32);
   background: rgba(248, 113, 113, 0.11);
-  color: #fecaca;
+  color: var(--danger-text);
 }
 
 @media (max-width: 860px) {
@@ -1786,7 +1786,7 @@ button:disabled,
 .tabBar {
   padding: 3px;
   border-radius: var(--radius-3);
-  background: rgba(255, 255, 255, 0.014);
+  background: color-mix(in srgb, var(--text-primary) 1.4%, transparent);
   gap: 3px;
 }
 
@@ -1834,7 +1834,7 @@ button:disabled,
   max-height: 76px;
   padding: 12px 13px;
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
   grid-template-rows: 15px 1fr;
   gap: 6px;
   box-shadow: inset 0 1px 0 var(--surface-panel);
@@ -1866,7 +1866,7 @@ button:disabled,
 .gdvAdminTable,
 .rolesMatrixCard {
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
   border-radius: var(--radius-4);
   box-shadow: inset 0 1px 0 var(--surface-panel);
 }
@@ -1964,7 +1964,7 @@ button:disabled,
 .headerIconButton {
   min-height: 34px;
   border-color: var(--line-subtle);
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
   color: var(--text-secondary);
   font-weight: 520;
 }
@@ -2067,7 +2067,7 @@ button:disabled,
 .rolesMatrixCard .table thead th {
   height: 36px;
   padding: 0 8px;
-  background: #111214;
+  background: var(--surface-panel);
   font-size: 9px;
   font-weight: 560;
   letter-spacing: 0.095em;
@@ -2284,7 +2284,7 @@ button:disabled,
 .modalClose:focus-visible,
 .rowAction:focus-visible {
   border-color: var(--line-strong);
-  box-shadow: var(--focus-ring);
+  box-shadow: none;
   outline: none;
 }
 
@@ -2313,12 +2313,12 @@ button:disabled,
 .helperText,
 .cardLabel,
 .tableHeader {
-  color: #878c95;
+  color: var(--text-tertiary);
 }
 
 .modalOverlay {
   z-index: var(--chassis-z-dialog);
-  background: rgba(8, 9, 10, 0.72);
+  background: var(--chassis-modal-backdrop);
   backdrop-filter: none;
 }
 
@@ -2398,7 +2398,7 @@ button:disabled,
 
 .modalOverlay {
   z-index: 25000;
-  background: var(--overlay-bg, rgba(8, 9, 10, 0.82));
+  background: var(--overlay-bg, var(--chassis-modal-backdrop));
   backdrop-filter: none;
 }
 
@@ -2426,6 +2426,92 @@ button:disabled,
 .confirmOverlay,
 .deleteOverlay,
 .taskModalOverlay {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+
+/* ==========================================================================
+   v11 · Equipe e Acessos — refinamento visual profundo
+   Mantém cores semânticas de cargos/permissões/status e ajusta apenas a base neutra.
+   ========================================================================== */
+.page {
+  background: var(--workspace-bg);
+}
+
+.tabBar,
+.metricCard,
+.gdvAdminMetricCard,
+.tableCard,
+.gdvAdminTable,
+.rolesMatrixCard,
+.selectorBlock,
+.requestSummaryCard,
+.resultBanner,
+.resultCreds,
+.modalCard {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.sectionHead,
+.gdvAdminTable .sectionHead,
+.rolesMatrixCard .sectionHead,
+.modalHead,
+.modalActions {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--surface-panel);
+}
+
+.field input,
+.field select,
+.field textarea,
+.filterField input,
+.filterField select,
+.slugField {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-input-bg);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.filterField input:focus,
+.filterField select:focus {
+  border-color: var(--line);
+  background: var(--bg-hover);
+  box-shadow: none;
+}
+
+.tableWrap {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.tableWrap::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  display: block;
+}
+
+.tableWrap::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.tableWrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table tbody tr:hover td,
+.rolesMatrixCard .table tbody tr:hover td {
+  background: var(--surface-panel);
+}
+
+.modalBackdrop,
+.modalOverlay {
   background: var(--chassis-modal-backdrop);
   backdrop-filter: var(--chassis-modal-blur);
   -webkit-backdrop-filter: var(--chassis-modal-blur);
