@@ -693,6 +693,12 @@ export default function SquadPage() {
     [clientRows]
   );
 
+  const squadHeaderMrr = useMemo(() => {
+    return clientRows
+      .filter((row) => isPortfolioStatus(row.status))
+      .reduce((total, row) => total + resolveClientFeeAtMonthEnd(row, year, month0), 0);
+  }, [clientRows, month0, year]);
+
   const agg = useMemo(() => aggregateCarteira(activeClientRows), [activeClientRows]);
 
   const complementaryMetrics = useMemo(() => {
@@ -887,8 +893,10 @@ export default function SquadPage() {
 
         <div className={styles.headerTitleText}>
           <strong>{squad.name}</strong>
-          <small>{squadOwnership.owner?.name ? `${squadOwnership.owner.name} · ${squadOwnership.active ? 'Ativo' : 'Desativado'}` : squadOwnership.active ? 'Ativo' : 'Desativado'}</small>
+          <small>{squadOwnership.owner?.name || (squadOwnership.active ? 'Squad ativo' : 'Squad desativado')}</small>
         </div>
+
+        <span className={styles.headerMrr}>{fmtMoney(squadHeaderMrr)}</span>
 
         {coverUrl ? (
           <span className={styles.headerCoverBackground} style={squadCoverStyle(coverUrl, coverPosition)} aria-hidden="true" />
@@ -980,6 +988,7 @@ export default function SquadPage() {
     setPanelHeader,
     squad,
     activeSquadClients.length,
+    squadHeaderMrr,
     squadOwnership.active,
     squadOwnership.owner?.name,
     uploadingLogo,

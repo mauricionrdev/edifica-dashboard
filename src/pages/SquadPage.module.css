@@ -8043,3 +8043,66 @@
     display: none;
   }
 }
+
+/* v37 — header do Squad: bandeira em altura total, MRR e proprietário sem status. */
+.headerIdentity {
+  position: relative;
+  min-height: 48px;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.headerLogo,
+.headerTitleText,
+.headerMrr {
+  position: relative;
+  z-index: 2;
+}
+
+.headerTitleText small {
+  max-width: 260px;
+}
+
+.headerMrr {
+  align-self: center;
+  margin-left: 10px;
+  padding-left: 12px;
+  border-left: 1px solid var(--line-subtle);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.headerCoverBackground {
+  top: 0;
+  bottom: 0;
+  left: clamp(310px, 27vw, 390px);
+  height: 100%;
+  min-height: 100%;
+  opacity: .42;
+  background-size: var(--squad-cover-zoom, 520px auto);
+  background-position: var(--squad-cover-x, 50%) var(--squad-cover-y, 50%);
+  filter: saturate(.92) brightness(.82);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .78) 11%, rgba(0, 0, 0, .52) 48%, transparent 88%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .78) 11%, rgba(0, 0, 0, .52) 48%, transparent 88%);
+}
+
+.headerCoverBackground::after {
+  background: linear-gradient(90deg, rgba(8, 9, 10, .06), rgba(8, 9, 10, .34) 62%, rgba(8, 9, 10, .9));
+}
+
+@media (max-width: 980px) {
+  .headerMrr {
+    display: none;
+  }
+
+  .headerCoverBackground {
+    left: clamp(240px, 38vw, 320px);
+  }
+}
