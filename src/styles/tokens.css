@@ -114,8 +114,8 @@
   /* ────────────────────────────────────────────────────────────────────
    * SUPERFÍCIES (CAMADAS DE PROFUNDIDADE)
    *
-   * Profundidade por opacidade, não por sombra. Cada camada é ~1–2%
-   * mais clara que a anterior. Nunca usar #000 absoluto.
+   * Profundidade por opacidade, não por sombra. Cada camada é sutilmente
+   * mais clara que a anterior, mantendo base preto profundo. Evitar cinza claro.
    *
    *   app      viewport (canvas global)
    *   canvas   sidebar, topbar
@@ -134,15 +134,15 @@
    * separada (alteraria o hover em toda a aplicação).
    * ──────────────────────────────────────────────────────────────────── */
 
-  --bg-app:      #08090a;
-  --bg-canvas:   #0d0f12;
-  --bg-elevated: #111317;
-  --bg-raised:   #171a1f;
-  --bg-hover:    #1b1f25;
-  --bg-selected: #20242b;
-  --bg-soft:     #0b0d10;
+  --bg-app:      #030405;
+  --bg-canvas:   #060708;
+  --bg-elevated: #090b0d;
+  --bg-raised:   #0d1013;
+  --bg-hover:    #11151a;
+  --bg-selected: #151a20;
+  --bg-soft:     #050607;
 
-  /* Aliases semânticos para a direção Google dark minimalista. */
+  /* Aliases semânticos para a direção dark profundo minimalista. */
   --bg-primary: var(--bg-app);
   --bg-secondary: var(--bg-canvas);
   --surface-primary: var(--bg-elevated);
@@ -170,9 +170,9 @@
    * de opacidade — bordas mais claras = look "infantil".
    * ──────────────────────────────────────────────────────────────────── */
 
-  --line-subtle: rgba(255, 255, 255, 0.060);
-  --line:        rgba(255, 255, 255, 0.088);
-  --line-strong: rgba(255, 255, 255, 0.125);
+  --line-subtle: rgba(255, 255, 255, 0.052);
+  --line:        rgba(255, 255, 255, 0.078);
+  --line-strong: rgba(255, 255, 255, 0.112);
 
   --border-subtle: var(--line-subtle);
   --border-default: var(--line);
@@ -236,13 +236,13 @@
    * CAMPOS / FORMULÁRIO
    * ──────────────────────────────────────────────────────────────────── */
 
-  --field-bg:       color-mix(in srgb, var(--text-primary) 2.8%, transparent);
-  --field-bg-hover: color-mix(in srgb, var(--text-primary) 4.2%, transparent);
+  --field-bg:       color-mix(in srgb, var(--text-primary) 2.4%, transparent);
+  --field-bg-hover: color-mix(in srgb, var(--text-primary) 3.6%, transparent);
   --field-line:     var(--line);
   --field-line-hover: var(--line-strong);
   --selection-bg: var(--accent-line);
-  --scrollbar-thumb: color-mix(in srgb, var(--text-primary) 14%, transparent);
-  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-primary) 24%, transparent);
+  --scrollbar-thumb: color-mix(in srgb, var(--text-primary) 12%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-primary) 20%, transparent);
 
 
   /* ────────────────────────────────────────────────────────────────────

@@ -18,7 +18,7 @@
  * ========================================================================== */
 
 :root {
-  /* Superfícies legadas mapeadas para a base canônica Google dark. */
+  /* Superfícies legadas mapeadas para a base canônica dark profundo minimalista. */
   --surface:           var(--bg-canvas);
   --surface-subtle:    var(--bg-soft);
   --surface-panel:     var(--field-bg);
