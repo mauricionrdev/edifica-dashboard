@@ -1,6 +1,19 @@
 .page {
   --gdv-accent: var(--accent);
   --gdv-accent-line: var(--accent-line);
+  --gdv-surface-glass-low: color-mix(in srgb, var(--text-primary) 1.4%, transparent);
+  --gdv-surface-glass: color-mix(in srgb, var(--text-primary) 2.6%, transparent);
+  --gdv-surface-glass-hover: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  --gdv-line-soft: var(--line-subtle);
+  --gdv-line: var(--line);
+  --gdv-line-strong: var(--line-strong);
+  --gdv-neutral-soft: color-mix(in srgb, var(--text-tertiary) 8%, transparent);
+  --gdv-neutral-line: color-mix(in srgb, var(--text-tertiary) 22%, transparent);
+  --gdv-scrim: color-mix(in srgb, var(--bg-app) 72%, transparent);
+  --gdv-scrim-strong: color-mix(in srgb, var(--bg-app) 82%, transparent);
+  --gdv-info-soft: var(--info-soft);
+  --gdv-info-line: var(--info-line);
+  --gdv-info-text: var(--info-text);
   height: 100%;
   min-height: 0;
   padding: 12px 16px 16px;
@@ -62,7 +75,7 @@
 .headerLogo em {
   position: absolute;
   inset: 0;
-  background: rgba(8, 9, 10, 0.72);
+  background: var(--gdv-scrim);
   color: var(--text-primary);
   display: grid;
   place-items: center;
@@ -267,7 +280,7 @@
 
 .weekTabActive,
 .complementaryButtonActive {
-  background: #0a0c0da6;
+  background: var(--bg-soft);
   color: var(--gdv-accent);
   box-shadow: inset 0 -1px 0 var(--gdv-accent);
 }
@@ -292,7 +305,7 @@
   padding: 12px 14px 11px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--workspace-card-radius);
-  background: linear-gradient(180deg, rgba(255, 255, 255, .028), rgba(255, 255, 255, .01)), var(--workspace-panel-bg);
+  background: linear-gradient(180deg, var(--gdv-surface-glass), var(--gdv-surface-glass-low)), var(--workspace-panel-bg);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -343,7 +356,7 @@
 }
 
 .red {
-  color: #f0a3a3;
+  color: var(--danger-text);
 }
 
 .muted {
@@ -383,7 +396,7 @@
   padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, .018);
+  background: var(--gdv-surface-glass-low);
   color: var(--text-quaternary);
   display: inline-flex;
   align-items: center;
@@ -392,7 +405,7 @@
 
 .searchBox:focus-within {
   border-color: var(--gdv-accent-line);
-  background: rgba(255, 255, 255, .032);
+  background: var(--gdv-surface-glass-hover);
 }
 
 .searchBox svg {
@@ -460,7 +473,7 @@
   padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, .018);
+  background: var(--gdv-surface-glass-low);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -476,9 +489,9 @@
 .listCard {
   flex: 1 1 auto;
   min-height: 0;
-  border: 1px solid rgba(255, 255, 255, .055);
+  border: 1px solid var(--gdv-line-soft);
   border-radius: var(--workspace-card-radius);
-  background: rgba(255, 255, 255, .012);
+  background: var(--gdv-surface-glass-low);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -549,11 +562,11 @@
 }
 
 .clientRow:hover {
-  background: rgba(255, 255, 255, .024);
+  background: var(--gdv-surface-glass);
 }
 
 .clientRowActive {
-  background: rgba(245, 184, 0, .05);
+  background: var(--warning-soft);
 }
 
 .clientMain {
@@ -673,20 +686,20 @@
 
 .badge.green {
   color: var(--success);
-  border-color: rgba(94, 234, 145, .22);
-  background: rgba(94, 234, 145, .08);
+  border-color: var(--success-line);
+  background: var(--success-soft);
 }
 
 .badge.amber {
   color: var(--accent);
-  border-color: rgba(245, 184, 0, .24);
-  background: rgba(245, 184, 0, .09);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
 }
 
 .badge.red {
-  color: #f0a3a3;
-  border-color: rgba(240, 163, 163, .24);
-  background: rgba(240, 163, 163, .09);
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
 }
 
 .badge.willHitGoal {
@@ -802,7 +815,7 @@
 
 .paginationButton:hover:not(:disabled) {
   border-color: var(--line-strong);
-  background: rgba(255, 255, 255, .04);
+  background: var(--gdv-surface-glass-hover);
   color: var(--text-primary);
 }
 
@@ -813,7 +826,7 @@
   inset: 0;
   z-index: 9000;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.72);
+  background: var(--gdv-scrim);
   backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
@@ -1332,7 +1345,7 @@
 
 .modalOverlay {
   z-index: var(--chassis-z-dialog);
-  background: rgba(8, 9, 10, 0.72);
+  background: var(--gdv-scrim);
   backdrop-filter: none;
 }
 
@@ -1356,7 +1369,7 @@
 .tableHeader,
 .clientMeta,
 .gdvMeta {
-  color: #878c95;
+  color: var(--text-tertiary);
 }
 
 /* ==========================================================================
@@ -1420,7 +1433,7 @@
 
 .modalOverlay {
   z-index: 25000;
-  background: var(--overlay-bg, rgba(8, 9, 10, 0.82));
+  background: var(--overlay-bg, var(--gdv-scrim-strong));
   backdrop-filter: none;
 }
 
@@ -1575,10 +1588,10 @@
   min-height: 34px;
   height: 34px;
   padding: 0 13px;
-  border: 1px solid rgba(146, 155, 176, .16);
+  border: 1px solid var(--gdv-line-soft);
   border-radius: 999px;
   background: transparent;
-  color: #9AA6BA;
+  color: var(--text-tertiary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1591,7 +1604,7 @@
 }
 
 .portfolioFilter button.portfolioFilterTab:hover {
-  border-color: rgba(146, 155, 176, .22);
+  border-color: var(--gdv-neutral-line);
   background: transparent;
   color: var(--text-secondary);
   box-shadow: none;
@@ -1607,8 +1620,8 @@
 .portfolioFilter button.portfolioFilterActive:hover,
 .portfolioFilter button.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterActive:focus-visible {
-  border-color: rgba(245, 184, 0, .28);
-  background: rgba(245, 184, 0, .08);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
   color: var(--accent);
   box-shadow: none;
 }
@@ -1617,8 +1630,8 @@
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
-  border-color: rgba(146, 155, 176, .24);
-  background: rgba(146, 155, 176, .08);
+  border-color: var(--gdv-neutral-line);
+  background: var(--gdv-neutral-soft);
   color: var(--text-secondary);
 }
 
@@ -1626,9 +1639,9 @@
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
-  border-color: rgba(90, 169, 255, .26);
-  background: rgba(90, 169, 255, .08);
-  color: #8ab4ff;
+  border-color: var(--gdv-info-line);
+  background: var(--gdv-info-soft);
+  color: var(--gdv-info-text);
 }
 
 .portfolioFilterCount {
@@ -1636,7 +1649,7 @@
   height: 18px;
   padding: 0 6px;
   border-radius: 999px;
-  background: rgba(146, 155, 176, .10);
+  background: var(--gdv-neutral-soft);
   color: inherit;
   display: inline-flex;
   align-items: center;
@@ -1647,15 +1660,15 @@
 }
 
 .badge.onboarding {
-  color: #8ab4ff;
-  border-color: rgba(90, 169, 255, .24);
-  background: rgba(90, 169, 255, .08);
+  color: var(--gdv-info-text);
+  border-color: var(--gdv-info-line);
+  background: var(--gdv-info-soft);
 }
 
 .badge.rampage {
   color: var(--text-secondary);
-  border-color: rgba(146, 155, 176, .20);
-  background: rgba(146, 155, 176, .06);
+  border-color: var(--gdv-neutral-line);
+  background: var(--gdv-neutral-soft);
 }
 
 
@@ -1736,8 +1749,8 @@
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
-  border-color: rgba(146, 155, 176, .24);
-  background: rgba(146, 155, 176, .08);
+  border-color: var(--gdv-neutral-line);
+  background: var(--gdv-neutral-soft);
   color: var(--edf-text-secondary);
 }
 
@@ -1745,9 +1758,9 @@
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
-  border-color: rgba(90, 169, 255, .26);
-  background: rgba(90, 169, 255, .08);
-  color: #8ab4ff;
+  border-color: var(--gdv-info-line);
+  background: var(--gdv-info-soft);
+  color: var(--gdv-info-text);
 }
 
 .portfolioFilterCount {
@@ -1774,7 +1787,7 @@
   max-width: 220px;
   padding: 0 15px;
   border-radius: 999px;
-  border: 1px solid rgba(146, 155, 176, .16);
+  border: 1px solid var(--gdv-line-soft);
   background: transparent;
   color: var(--edf-text-muted);
   box-shadow: none;
@@ -1790,32 +1803,32 @@
 
 .badge.green {
   color: var(--success);
-  border-color: rgba(94, 234, 145, .22);
-  background: rgba(94, 234, 145, .08);
+  border-color: var(--success-line);
+  background: var(--success-soft);
 }
 
 .badge.amber {
   color: var(--accent);
-  border-color: rgba(245, 184, 0, .24);
-  background: rgba(245, 184, 0, .09);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
 }
 
 .badge.red {
-  color: #f0a3a3;
-  border-color: rgba(240, 163, 163, .24);
-  background: rgba(240, 163, 163, .09);
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
 }
 
 .badge.onboarding {
-  color: #8ab4ff;
-  border-color: rgba(90, 169, 255, .24);
-  background: rgba(90, 169, 255, .08);
+  color: var(--gdv-info-text);
+  border-color: var(--gdv-info-line);
+  background: var(--gdv-info-soft);
 }
 
 .badge.rampage {
   color: var(--edf-text-secondary);
-  border-color: rgba(146, 155, 176, .20);
-  background: rgba(146, 155, 176, .06);
+  border-color: var(--gdv-neutral-line);
+  background: var(--gdv-neutral-soft);
 }
 
 .badge.willHitGoal {
@@ -1924,8 +1937,8 @@
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:hover,
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
-  border-color: rgba(146, 155, 176, .24);
-  background: rgba(146, 155, 176, .08);
+  border-color: var(--gdv-neutral-line);
+  background: var(--gdv-neutral-soft);
   color: var(--edf-text-secondary);
 }
 
@@ -1933,9 +1946,9 @@
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
-  border-color: rgba(90, 169, 255, .26);
-  background: rgba(90, 169, 255, .08);
-  color: #8ab4ff;
+  border-color: var(--gdv-info-line);
+  background: var(--gdv-info-soft);
+  color: var(--gdv-info-text);
 }
 
 .portfolioFilterCount {
@@ -1966,8 +1979,8 @@
   min-width: max-content;
   max-width: none;
   color: var(--edf-text-secondary);
-  border-color: rgba(146, 155, 176, .20);
-  background: rgba(146, 155, 176, .06);
+  border-color: var(--gdv-neutral-line);
+  background: var(--gdv-neutral-soft);
 }
 
 /* v-next — refinamento superior GDV no padrão do Perfil interno */
@@ -2408,8 +2421,8 @@
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:hover,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
-  border-color: rgba(245, 184, 0, 0.34);
-  background: rgba(245, 184, 0, 0.08);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
   color: var(--edf-amber-strong);
   font-weight: 700;
   transform: none;
@@ -2434,8 +2447,8 @@
 }
 
 .portfolioFilterActive .portfolioFilterCount {
-  border-color: rgba(245, 184, 0, 0.26);
-  background: rgba(245, 184, 0, 0.12);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
   color: var(--edf-amber-strong);
 }
 
@@ -2824,28 +2837,28 @@
   height: 42px;
   border-radius: 999px;
   background: var(--bg-app);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--gdv-line-soft);
   box-shadow: none;
   transform: none;
 }
 
 .searchBox {
   padding: 0 16px;
-  color: #9fb0c6;
+  color: var(--text-tertiary);
   gap: 10px;
 }
 
 .searchBox:hover,
 .searchBox:focus-within {
-  background: #050607;
-  border-color: rgba(255, 255, 255, 0.095);
+  background: var(--bg-app);
+  border-color: var(--gdv-line);
   box-shadow: none;
 }
 
 .searchBox svg {
   width: 16px;
   height: 16px;
-  color: #9fb0c6;
+  color: var(--text-tertiary);
 }
 
 .searchBox input {
@@ -2856,7 +2869,7 @@
 }
 
 .searchBox input::placeholder {
-  color: #7f8da3;
+  color: var(--text-quaternary);
 }
 
 .portfolioFilter {
@@ -2874,7 +2887,7 @@
 
 .portfolioFilter button.portfolioFilterTab {
   padding: 0 16px;
-  color: #9fb0c6;
+  color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 620;
   line-height: 1;
@@ -2887,9 +2900,9 @@
 }
 
 .portfolioFilter button.portfolioFilterTab:hover:not(.portfolioFilterActive) {
-  color: #c2d2e9;
-  background: #050607;
-  border-color: rgba(255, 255, 255, 0.095);
+  color: var(--text-secondary);
+  background: var(--bg-app);
+  border-color: var(--gdv-line);
   box-shadow: none;
   transform: none;
 }
@@ -2907,8 +2920,8 @@
 .portfolioFilter button.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterActive:focus-visible {
   background: var(--bg-app);
-  border-color: rgba(227, 184, 40, 0.44);
-  color: #ffd429;
+  border-color: var(--warning-line);
+  color: var(--warning-text);
   box-shadow: none;
   transform: none;
 }
@@ -2918,8 +2931,8 @@
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive:focus-visible {
   background: var(--bg-app);
-  border-color: rgba(92, 164, 255, 0.42);
-  color: #9bc8ff;
+  border-color: var(--gdv-info-line);
+  color: var(--gdv-info-text);
   box-shadow: none;
 }
 
@@ -2928,8 +2941,8 @@
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus,
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive:focus-visible {
   background: var(--bg-app);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: #c2d2e9;
+  border-color: var(--gdv-line-strong);
+  color: var(--text-secondary);
   box-shadow: none;
 }
 
@@ -2938,8 +2951,8 @@
   height: 24px;
   padding: 0 7px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--gdv-surface-glass-hover);
+  border: 1px solid var(--gdv-line-soft);
   color: inherit;
   display: inline-grid;
   place-items: center;
@@ -2950,24 +2963,24 @@
 }
 
 .portfolioFilter button.portfolioFilterActive .portfolioFilterCount {
-  background: rgba(227, 184, 40, 0.10);
-  border-color: rgba(227, 184, 40, 0.18);
+  background: var(--warning-soft);
+  border-color: var(--warning-line);
 }
 
 .portfolioFilter button.portfolioFilterOnboarding.portfolioFilterActive .portfolioFilterCount {
-  background: rgba(92, 164, 255, 0.10);
-  border-color: rgba(92, 164, 255, 0.18);
+  background: var(--gdv-info-soft);
+  border-color: var(--gdv-info-line);
 }
 
 .portfolioFilter button.portfolioFilterRampage.portfolioFilterActive .portfolioFilterCount {
-  background: rgba(255, 255, 255, 0.045);
-  border-color: rgba(255, 255, 255, 0.075);
+  background: var(--gdv-surface-glass-hover);
+  border-color: var(--gdv-line);
 }
 
 .complementaryButton {
   width: 100%;
   padding: 0 16px;
-  color: #d7e2f2;
+  color: var(--text-secondary);
   justify-content: center;
 }
 
@@ -2976,8 +2989,8 @@
 .complementaryButtonActive:hover,
 .complementaryButtonActive:focus,
 .complementaryButtonActive:focus-visible {
-  background: #050607;
-  border-color: rgba(255, 255, 255, 0.095);
+  background: var(--bg-app);
+  border-color: var(--gdv-line);
   color: var(--text-primary);
   box-shadow: none;
   transform: none;
@@ -3193,7 +3206,7 @@
 .modalClose:focus,
 .modalClose:focus-visible {
   border-color: var(--line);
-  background: rgba(255, 255, 255, .028);
+  background: var(--gdv-surface-glass);
   color: var(--text-primary);
   outline: none;
   box-shadow: none;
@@ -3209,7 +3222,7 @@
   padding: 12px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--workspace-card-radius);
-  background: rgba(255, 255, 255, .014);
+  background: var(--gdv-surface-glass-low);
 }
 
 .gdvAvatarEditor {
@@ -3244,7 +3257,7 @@
   min-height: 38px;
   border: 1px solid var(--line-subtle);
   border-radius: 9px;
-  background: rgba(255, 255, 255, .018);
+  background: var(--gdv-surface-glass-low);
   color: var(--text-primary);
   font-size: 12.5px;
   font-weight: 520;
@@ -3255,7 +3268,7 @@
 .modalField input:focus-visible,
 .slugField:focus-within {
   border-color: var(--line);
-  background: rgba(255, 255, 255, .028);
+  background: var(--gdv-surface-glass);
   outline: none;
   box-shadow: none;
 }
@@ -3279,7 +3292,7 @@
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: rgba(255, 255, 255, .018);
+  background: var(--gdv-surface-glass-low);
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 620;
@@ -3287,8 +3300,8 @@
 }
 
 .modalPrimaryBtn {
-  border-color: rgba(245, 184, 0, .22);
-  background: rgba(245, 184, 0, .095);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
   color: var(--accent);
 }
 
@@ -3299,7 +3312,7 @@
 .modalPrimaryBtn:focus:not(:disabled),
 .modalPrimaryBtn:focus-visible:not(:disabled) {
   border-color: var(--line);
-  background: rgba(255, 255, 255, .032);
+  background: var(--gdv-surface-glass-hover);
   color: var(--text-primary);
   outline: none;
   box-shadow: none;
@@ -3308,8 +3321,8 @@
 .modalPrimaryBtn:hover:not(:disabled),
 .modalPrimaryBtn:focus:not(:disabled),
 .modalPrimaryBtn:focus-visible:not(:disabled) {
-  border-color: rgba(245, 184, 0, .28);
-  background: rgba(245, 184, 0, .12);
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
   color: var(--accent);
 }
 
@@ -3323,7 +3336,7 @@
   padding: 12px 13px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--workspace-card-radius);
-  background: rgba(255, 255, 255, .014);
+  background: var(--gdv-surface-glass-low);
   justify-content: space-between;
   box-shadow: none;
 }
@@ -3458,7 +3471,7 @@
 .iconButton:hover,
 .iconButton:focus,
 .iconButton:focus-visible {
-  background: rgba(255, 255, 255, .026);
+  background: var(--gdv-surface-glass);
   color: var(--text-secondary);
   outline: none;
   box-shadow: none;
@@ -3482,7 +3495,7 @@
 .weekTab:hover,
 .weekTab:focus,
 .weekTab:focus-visible {
-  background: rgba(255, 255, 255, .026);
+  background: var(--gdv-surface-glass);
   color: var(--text-secondary);
   outline: none;
   box-shadow: none;
