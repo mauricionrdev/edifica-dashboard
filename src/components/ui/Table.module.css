@@ -5,6 +5,7 @@
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-3);
   background: var(--card-surface-soft, var(--bg-canvas));
+  box-shadow: none;
 }
 
 .table {
@@ -47,13 +48,14 @@
   background: var(--bg-hover);
 }
 
-.alignRight {
-  text-align: right !important;
+.table th.alignRight,
+.table td.alignRight {
+  text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-.empty {
-  height: 96px !important;
-  color: var(--text-tertiary) !important;
-  text-align: center !important;
+.table td.empty {
+  height: 96px;
+  color: var(--text-tertiary);
+  text-align: center;
 }

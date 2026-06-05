@@ -115,8 +115,9 @@
 }
 
 .variant_danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.14);
-  border-color: rgba(239, 68, 68, 0.28);
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  color: var(--danger-text);
 }
 
 .button:focus-visible {

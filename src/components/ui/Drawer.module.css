@@ -1,8 +1,10 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 19000;
-  background: rgba(0, 0, 0, 0.54);
+  z-index: var(--chassis-z-dialog, 25000);
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
   display: flex;
   justify-content: flex-end;
 }
@@ -10,8 +12,8 @@
 .drawer {
   width: min(560px, 100vw);
   height: 100%;
-  border-left: 1px solid var(--line-strong);
-  background: var(--bg-canvas);
+  border-left: 1px solid var(--workspace-panel-border, var(--line-strong));
+  background: var(--workspace-panel-bg, var(--bg-canvas));
   box-shadow: var(--shadow-dialog);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
@@ -46,47 +48,4 @@
   border-top: 1px solid var(--line-subtle);
   border-bottom: 0;
   justify-content: flex-end;
-}
-
-/* ==========================================================================
-   v94 · QA visual final Drawer base
-   ========================================================================== */
-.overlay {
-  z-index: 25000;
-  background: var(--overlay-bg);
-  backdrop-filter: none;
-}
-
-.drawer {
-  border-color: var(--workspace-panel-border);
-  background: var(--workspace-panel-bg);
-  box-shadow: var(--shadow-dialog);
-}
-
-.body {
-  scrollbar-width: none;
-}
-
-.body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-/* ==========================================================================
-   v95 · Backdrop blur restaurado
-   Todo modal/drawer deve desfocar o fundo da plataforma.
-   ========================================================================== */
-.overlay,
-.modalOverlay,
-.campaignModalOverlay,
-.drawerOverlay,
-.attachmentViewerOverlay,
-.viewerOverlay,
-.confirmOverlay,
-.deleteOverlay,
-.taskModalOverlay {
-  background: var(--chassis-modal-backdrop);
-  backdrop-filter: var(--chassis-modal-blur);
-  -webkit-backdrop-filter: var(--chassis-modal-blur);
 }
