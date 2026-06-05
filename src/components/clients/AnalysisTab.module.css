@@ -190,9 +190,9 @@
 .delBtn {
   min-height: 28px;
   padding: 0 10px;
-  border: 1px solid rgba(255, 91, 115, 0.22);
+  border: 1px solid var(--danger-line);
   border-radius: 10px;
-  background: rgba(255, 91, 115, 0.06);
+  background: var(--danger-soft);
   color: var(--danger-text);
   font-family: inherit;
   font-size: 12px;
@@ -239,7 +239,7 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--chassis-modal-backdrop);
   backdrop-filter: blur(8px);
 }
 
@@ -310,8 +310,8 @@
 }
 
 .confirmDeleteBtn {
-  border: 1px solid rgba(255, 91, 115, 0.24);
-  background: rgba(255, 91, 115, 0.07);
+  border: 1px solid var(--danger-line);
+  background: var(--danger-soft);
   color: var(--danger-text);
 }
 
@@ -392,7 +392,7 @@
   padding: 0 7px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: rgba(255,255,255,.018);
+  background: var(--field-bg);
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
@@ -412,7 +412,7 @@
   min-width: 0;
   border: 1px solid var(--line-subtle);
   border-radius: var(--workspace-card-radius);
-  background: rgba(255,255,255,.014);
+  background: color-mix(in srgb, var(--text-primary) 1.4%, transparent);
   overflow: hidden;
 }
 
@@ -422,7 +422,7 @@
   padding: 0;
   border: 0;
   border-bottom: 1px solid var(--line-subtle);
-  background: #070708;
+  background: var(--bg-canvas);
   color: var(--text-secondary);
   display: grid;
   place-items: center;
@@ -442,7 +442,7 @@
 .pdfMark {
   min-width: 54px;
   height: 32px;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--text-primary);
   display: inline-flex;
@@ -491,7 +491,7 @@
   padding: 0 10px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: rgba(255,255,255,.018);
+  background: var(--field-bg);
   color: var(--text-secondary);
   font: inherit;
   font-size: 11px;
@@ -505,7 +505,7 @@
 
 .attachmentActions .attachmentRemove {
   color: var(--danger-text);
-  border-color: rgba(255, 91, 115, 0.22);
+  border-color: var(--danger-line);
 }
 
 .attachButton {
@@ -533,7 +533,7 @@
   inset: 0;
   z-index: 20;
   padding: 18px;
-  background: rgba(0,0,0,.72);
+  background: var(--chassis-modal-backdrop);
   backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
@@ -544,7 +544,7 @@
   height: min(640px, 100%);
   border: 1px solid var(--line-subtle);
   border-radius: var(--workspace-card-radius);
-  background: #09090a;
+  background: var(--bg-elevated);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
@@ -592,7 +592,7 @@
   padding: 0 12px;
   border: 1px solid var(--line-subtle);
   border-radius: 10px;
-  background: rgba(255,255,255,.018);
+  background: var(--field-bg);
   color: var(--text-secondary);
   font: inherit;
   font-size: 12px;
@@ -618,7 +618,7 @@
   width: 100%;
   height: 100%;
   border: 0;
-  background: #111;
+  background: var(--bg-selected);
 }
 
 
@@ -653,7 +653,7 @@
 .loadingRows span {
   height: 12px;
   border-radius: 999px;
-  background: rgba(255,255,255,.035);
+  background: color-mix(in srgb, var(--text-primary) 3.5%, transparent);
 }
 
 .loadingHeader span:first-child { height: 16px; max-width: 260px; }
@@ -674,7 +674,7 @@
 }
 
 .attachmentCard {
-  background: rgba(255,255,255,.012);
+  background: color-mix(in srgb, var(--text-primary) 1.2%, transparent);
 }
 
 .attachmentActions {
@@ -701,7 +701,7 @@
   padding: 0;
   border-radius: 999px;
   color: var(--danger-text);
-  border-color: rgba(255, 91, 115, 0.22);
+  border-color: var(--danger-line);
   background: transparent;
 }
 
@@ -725,7 +725,7 @@
   min-height: 34px;
   padding: 0 14px;
   border-radius: 10px;
-  background: rgba(255,255,255,.02);
+  background: var(--field-bg-hover);
   color: var(--text-secondary);
   font-weight: 560;
   display: inline-flex;
@@ -773,10 +773,10 @@
   padding: 16px 18px;
   border-color: var(--analysis-accent-line);
   background:
-    linear-gradient(180deg, var(--analysis-accent-soft), rgba(255, 255, 255, 0.01) 70%),
+    linear-gradient(180deg, var(--analysis-accent-soft), color-mix(in srgb, var(--text-primary) 1%, transparent) 70%),
     var(--surface-panel);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.026),
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 2.6%, transparent),
     0 12px 34px rgba(0, 0, 0, 0.12);
 }
 
@@ -940,8 +940,8 @@
 .attachmentCard {
   border-radius: var(--workspace-card-radius);
   background:
-    linear-gradient(180deg, rgba(255,255,255,.012), rgba(255,255,255,.004)),
-    rgba(255,255,255,.008);
+    linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 1.2%, transparent), color-mix(in srgb, var(--text-primary) 0.4%, transparent)),
+    color-mix(in srgb, var(--text-primary) 0.8%, transparent);
 }
 
 .attachmentPreview {
@@ -978,8 +978,8 @@
   min-height: 260px;
   border-color: var(--analysis-accent-line);
   background:
-    linear-gradient(180deg, var(--analysis-accent-soft), rgba(255,255,255,.006) 68%),
-    rgba(255,255,255,.01);
+    linear-gradient(180deg, var(--analysis-accent-soft), color-mix(in srgb, var(--text-primary) 0.6%, transparent) 68%),
+    color-mix(in srgb, var(--text-primary) 1%, transparent);
 }
 
 .analysisLoading {
@@ -998,9 +998,9 @@
 }
 
 .viewer header button[title='Excluir anexo'] {
-  color: #ff8a92;
-  border-color: rgba(255, 107, 107, 0.24);
-  background: rgba(255, 107, 107, 0.065);
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
 }
 
 /* v46 — paste capture and wheel zoom stability */
@@ -1032,9 +1032,9 @@
 }
 
 .viewer header button[title='Excluir anexo'] {
-  color: #ff8a92;
-  border-color: rgba(255, 107, 107, 0.24);
-  background: rgba(255, 107, 107, 0.065);
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
 }
 
 /* v47 — focal image zoom */
@@ -1164,7 +1164,7 @@
 .viewerOverlay,
 .confirmOverlay {
   z-index: var(--chassis-z-dialog);
-  background: rgba(8, 9, 10, 0.72);
+  background: var(--chassis-modal-backdrop);
   backdrop-filter: none;
 }
 
@@ -1184,7 +1184,7 @@
 .recordMeta,
 .attachmentMeta,
 .formLabel {
-  color: #878c95;
+  color: var(--text-tertiary);
 }
 
 /* ==========================================================================
@@ -1362,8 +1362,8 @@
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.65;
-  background: rgba(255, 255, 255, 0.006);
-  border-top: 1px solid rgba(255, 255, 255, 0.045);
+  background: color-mix(in srgb, var(--text-primary) 0.6%, transparent);
+  border-top: 1px solid var(--line-subtle);
   resize: vertical;
 }
 
@@ -1376,7 +1376,7 @@
   padding: 0 11px;
   border: 1px solid var(--line-subtle);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.018);
+  background: var(--field-bg);
   color: var(--text-secondary);
   font: inherit;
   font-size: 11px;
@@ -1434,7 +1434,7 @@
   min-height: 38px;
   max-width: 320px;
   border-style: solid;
-  background: rgba(255, 255, 255, 0.01);
+  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
 }
 
 .entryViewerOverlay {
@@ -1559,8 +1559,8 @@
   max-height: 176px;
   padding: 16px 18px;
   border: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.045);
-  background: rgba(255, 255, 255, 0.006);
+  border-top: 1px solid var(--line-subtle);
+  background: color-mix(in srgb, var(--text-primary) 0.6%, transparent);
   color: var(--text-primary);
   font: inherit;
   font-size: 14px;
@@ -1589,10 +1589,10 @@
 .analysisPreview:focus-visible,
 .analysisPreview:hover {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.045);
+  border-color: var(--line-subtle);
   box-shadow: none;
   transform: none;
-  background: rgba(255, 255, 255, 0.006);
+  background: color-mix(in srgb, var(--text-primary) 0.6%, transparent);
 }
 
 .entryActions .expandEntryBtn {
@@ -1681,4 +1681,72 @@
     width: 100%;
     flex-basis: 100%;
   }
+}
+
+
+/* ==========================================================================
+   v9 · Ajuste visual seguro das análises de cliente
+   Preserva cores semânticas de ICP/GDV/Rotas e refina apenas superfícies neutras.
+   ========================================================================== */
+.panel {
+  background: var(--workspace-bg);
+}
+
+.header,
+.entry,
+.attachmentCard,
+.entryViewer,
+.confirmModal,
+.viewer {
+  background: var(--workspace-panel-bg);
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.analysisPreview,
+.textarea,
+.attachmentsEmpty,
+.attachmentPreview,
+.viewerBody,
+.entryViewerText {
+  background: color-mix(in srgb, var(--bg-app) 84%, var(--workspace-panel-bg));
+}
+
+.addBtn,
+.dateControl,
+.expandEntryBtn,
+.entryActions .attachButton,
+.attachmentActions button,
+.attachmentActions a,
+.attachButton,
+.viewer header a,
+.viewer header button,
+.entryViewerHeader button,
+.cancelBtn {
+  background: var(--field-bg);
+  border-color: var(--line-subtle);
+  color: var(--text-secondary);
+}
+
+.addBtn:hover,
+.dateControl:hover,
+.expandEntryBtn:hover,
+.entryActions .attachButton:hover,
+.attachmentActions button:hover,
+.attachmentActions a:hover,
+.attachButton:hover,
+.viewer header a:hover,
+.viewer header button:hover,
+.entryViewerHeader button:hover,
+.cancelBtn:hover {
+  background: var(--field-bg-hover);
+  border-color: var(--line);
+}
+
+.icp .header,
+.gdv .header,
+.routes .header,
+.eyebrow,
+.entryActions .attachButton,
+.headerSide .addBtn {
+  /* Cores de identificação preservadas: não converter para tokens neutros. */
 }
