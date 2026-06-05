@@ -1024,3 +1024,203 @@
 .rankRowWithCover {
   background: transparent;
 }
+
+/* ========================================================================== 
+   v5 · Squad ranking visual refinement — Google dark minimalista
+   CSS-only: preserva JSX, navegação, cálculo de metas e dados reais.
+   ========================================================================== */
+.page {
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+.surface,
+.listSection,
+.settingsModal,
+.podiumCard {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.surface {
+  background: var(--workspace-panel-bg);
+}
+
+.hero {
+  min-height: 96px;
+  padding: 18px 16px 14px;
+}
+
+.heroCopy h1 {
+  color: var(--text-primary);
+  font-weight: 640;
+  letter-spacing: -0.045em;
+}
+
+.heroCopy p {
+  color: var(--text-secondary);
+}
+
+.podiumGrid {
+  gap: 12px;
+}
+
+.podiumCard {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.podiumCard:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--surface-secondary);
+  box-shadow: none;
+  transform: none;
+}
+
+.podiumCard_champion,
+.podiumCard_champion:hover {
+  border-color: var(--accent-line);
+  background:
+    radial-gradient(circle at 50% 0%, var(--accent-soft), transparent 44%),
+    linear-gradient(180deg, var(--accent-soft), transparent 52%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.podiumFlag {
+  height: 56px;
+  border-bottom-color: var(--line-subtle);
+  opacity: .7;
+}
+
+.podiumFlag img {
+  filter: saturate(.86) brightness(.74);
+}
+
+.podiumFlag::after {
+  background: linear-gradient(180deg, transparent, var(--workspace-panel-bg));
+}
+
+.podiumGhostRank {
+  color: var(--line-subtle);
+}
+
+.podiumCard_champion .podiumGhostRank {
+  color: var(--accent-soft);
+}
+
+.podiumTag,
+.podiumRank,
+.podiumScore,
+.podiumCard_champion .podiumScore,
+.podiumCard_champion .rankNumber,
+.podiumCard_champion .podiumBadge {
+  color: var(--accent);
+}
+
+.podiumTag {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.podiumAvatar,
+.listAvatar {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-bg);
+  box-shadow: none;
+}
+
+.podiumBar,
+.scoreBar {
+  background: var(--line-subtle);
+  box-shadow: none;
+}
+
+.podiumBar span,
+.scoreBar span {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.columns {
+  border-bottom-color: var(--line-subtle);
+  color: var(--text-tertiary);
+}
+
+.rankRow {
+  border-bottom-color: var(--line-subtle);
+  background: transparent;
+  box-shadow: none;
+}
+
+.rankRow:hover,
+.rankingRow:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.rankCoverBackdrop {
+  opacity: .16;
+  -webkit-mask-image: linear-gradient(90deg, var(--text-primary) 0%, var(--text-primary) 46%, transparent 100%);
+  mask-image: linear-gradient(90deg, var(--text-primary) 0%, var(--text-primary) 46%, transparent 100%);
+}
+
+.rankCoverBackdrop img {
+  filter: saturate(.82) brightness(.72);
+}
+
+.headerAction,
+.inlineButton,
+.settingsClose {
+  border-radius: var(--workspace-control-radius);
+  box-shadow: none;
+}
+
+.headerAction:hover,
+.inlineButton:hover,
+.settingsClose:hover {
+  border-color: var(--workspace-panel-border);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.settingsOverlay {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.settingsGrid input {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.settingsGrid input:focus {
+  border-color: var(--workspace-panel-border);
+  box-shadow: none;
+  outline: none;
+}
+
+.settingsError {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.settingsSubmit,
+.settingsSubmit:hover:not(:disabled) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  box-shadow: none;
+}
