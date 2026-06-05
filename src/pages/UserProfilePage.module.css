@@ -126,14 +126,14 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-color: rgba(245, 184, 0, 0.22);
+  border-color: var(--accent-line);
   background:
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.42) 0 21%, var(--accent-soft) 22% 38%, var(--surface-panel) 39% 100%),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--bg-app) 42%, transparent) 0 21%, var(--accent-soft) 22% 38%, var(--surface-panel) 39% 100%),
     var(--bg-canvas);
   color: var(--text-primary);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.02),
-    0 0 0 1px rgba(0, 0, 0, 0.34);
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 2%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--bg-app) 34%, transparent);
   animation: publicRoleBlackHolePulse 3.8s ease-in-out infinite;
 }
 
@@ -146,9 +146,9 @@
   background:
     conic-gradient(from 0deg,
       transparent 0deg,
-      rgba(245, 184, 0, 0.16) 54deg,
+      color-mix(in srgb, var(--accent) 16%, transparent) 54deg,
       transparent 116deg,
-      rgba(104, 125, 255, 0.10) 176deg,
+      var(--info-soft) 176deg,
       transparent 246deg,
       var(--accent-soft) 304deg,
       transparent 360deg);
@@ -163,7 +163,7 @@
   inset: 3px;
   display: block;
   border-radius: inherit;
-  background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.88) 0 34%, rgba(0, 0, 0, 0.20) 35% 57%, transparent 58%);
+  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--bg-app) 88%, transparent) 0 34%, color-mix(in srgb, var(--bg-app) 20%, transparent) 35% 57%, transparent 58%);
   opacity: 0.9;
 }
 
@@ -172,8 +172,8 @@
 }
 
 @keyframes publicRoleBlackHolePulse {
-  0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.34); }
-  50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 0 18px rgba(245, 184, 0, 0.07); }
+  0%, 100% { box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 2%, transparent), 0 0 0 1px color-mix(in srgb, var(--bg-app) 34%, transparent); }
+  50% { box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 3%, transparent), 0 0 18px color-mix(in srgb, var(--accent) 7%, transparent); }
 }
 
 .profileMeta {
@@ -194,7 +194,7 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   border-top: 1px solid var(--chassis-border-subtle);
-  background: rgba(255, 255, 255, 0.006);
+  background: color-mix(in srgb, var(--text-primary) 0.6%, transparent);
 }
 
 .statItem {
@@ -316,7 +316,7 @@
 
 .taskTabActive strong {
   border-color: var(--accent-line);
-  background: rgba(245, 184, 0, 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--warning-text);
 }
 
@@ -412,7 +412,7 @@
 .issueRowDone .issueTitle strong {
   color: var(--text-tertiary);
   text-decoration: line-through;
-  text-decoration-color: rgba(255, 255, 255, 0.28);
+  text-decoration-color: color-mix(in srgb, var(--text-primary) 28%, transparent);
 }
 
 .issueProperties {
@@ -521,7 +521,7 @@
 .stage_yellow,
 .stage_amber,
 .stage_teal {
-  --public-stage-fill: rgba(245, 184, 0, 0.14);
+  --public-stage-fill: color-mix(in srgb, var(--accent) 14%, transparent);
   --public-stage-color: var(--warning-text);
   --public-stage-border: var(--accent-line);
 }
@@ -557,32 +557,32 @@
 
 .taskAvatar_amber {
   background: var(--accent);
-  color: #1a1300;
+  color: var(--accent-text);
 }
 
 .taskAvatar_blue {
   background: var(--info);
-  color: #001426;
+  color: var(--bg-app);
 }
 
 .taskAvatar_violet {
-  background: #B784F0;
-  color: #160921;
+  background: color-mix(in srgb, var(--info) 46%, var(--danger-text));
+  color: var(--bg-app);
 }
 
 .taskAvatar_emerald {
-  background: #34D399;
-  color: #031b10;
+  background: var(--success-text);
+  color: var(--bg-app);
 }
 
 .taskAvatar_rose {
-  background: #FB7185;
-  color: #23040a;
+  background: var(--danger-text);
+  color: var(--bg-app);
 }
 
 .taskAvatar_slate {
   background: var(--text-tertiary);
-  color: #071018;
+  color: var(--bg-app);
 }
 
 .issueDue {
@@ -607,7 +607,7 @@
   z-index: 120;
   display: flex;
   justify-content: flex-end;
-  background: rgba(0, 0, 0, 0.55);
+  background: color-mix(in srgb, var(--bg-app) 55%, transparent);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
@@ -1007,7 +1007,7 @@
   display: grid;
   place-items: center;
   padding: 18px;
-  background: rgba(0, 0, 0, 0.62);
+  background: color-mix(in srgb, var(--bg-app) 62%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -1463,17 +1463,17 @@
 .profileCover_default,
 .usersMiniCover.profileCover_default {
   background:
-    radial-gradient(circle at 16% 28%, rgba(245, 184, 0, 0.14), transparent 29%),
-    radial-gradient(circle at 82% 22%, rgba(59, 130, 246, 0.12), transparent 34%),
-    linear-gradient(135deg, rgba(16, 18, 22, 0.98), rgba(8, 9, 10, 0.96) 58%, rgba(5, 6, 8, 0.98));
+    radial-gradient(circle at 16% 28%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 29%),
+    radial-gradient(circle at 82% 22%, var(--info-soft), transparent 34%),
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-elevated) 98%, transparent), color-mix(in srgb, var(--bg-app) 96%, transparent) 58%, color-mix(in srgb, var(--bg-app) 98%, transparent));
 }
 
 .profileCover_aurora,
 .usersMiniCover.profileCover_aurora {
   background:
-    radial-gradient(circle at 18% 28%, rgba(20, 184, 166, 0.22), transparent 30%),
-    radial-gradient(circle at 80% 25%, rgba(245, 184, 0, 0.14), transparent 32%),
-    linear-gradient(135deg, rgba(10, 12, 16, 0.98), rgba(7, 9, 12, 0.98));
+    radial-gradient(circle at 18% 28%, var(--success-line), transparent 30%),
+    radial-gradient(circle at 80% 25%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 32%),
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-canvas) 98%, transparent), color-mix(in srgb, var(--bg-app) 98%, transparent));
 }
 
 .profileCover_graphite,
@@ -1481,22 +1481,22 @@
 .profileCover_steel,
 .usersMiniCover.profileCover_steel {
   background:
-    radial-gradient(circle at 22% 22%, rgba(148, 163, 184, 0.12), transparent 30%),
-    linear-gradient(135deg, rgba(26, 29, 34, 0.98), rgba(7, 8, 10, 0.98));
+    radial-gradient(circle at 22% 22%, color-mix(in srgb, var(--text-tertiary) 12%, transparent), transparent 30%),
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-hover) 98%, transparent), color-mix(in srgb, var(--bg-app) 98%, transparent));
 }
 
 .profileCover_violet,
 .usersMiniCover.profileCover_violet {
   background:
-    radial-gradient(circle at 22% 25%, rgba(168, 85, 247, 0.22), transparent 30%),
-    linear-gradient(135deg, rgba(18, 14, 28, 0.98), rgba(7, 8, 10, 0.98));
+    radial-gradient(circle at 22% 25%, color-mix(in srgb, var(--info) 18%, var(--danger-soft)), transparent 30%),
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-elevated) 88%, var(--info-soft)), color-mix(in srgb, var(--bg-app) 98%, transparent));
 }
 
 .profileCover_teal,
 .usersMiniCover.profileCover_teal {
   background:
-    radial-gradient(circle at 24% 28%, rgba(20, 184, 166, 0.22), transparent 32%),
-    linear-gradient(135deg, rgba(7, 22, 22, 0.98), rgba(7, 8, 10, 0.98));
+    radial-gradient(circle at 24% 28%, var(--success-line), transparent 32%),
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-elevated) 84%, var(--success-soft)), color-mix(in srgb, var(--bg-app) 98%, transparent));
 }
 
 .profileCover_amber,
@@ -1506,16 +1506,16 @@
 .profileCover_midnight,
 .usersMiniCover.profileCover_midnight {
   background:
-    radial-gradient(circle at 16% 28%, rgba(245, 184, 0, 0.16), transparent 30%),
-    radial-gradient(circle at 82% 24%, rgba(59, 130, 246, 0.10), transparent 34%),
-    linear-gradient(135deg, rgba(12, 13, 16, 0.98), rgba(8, 9, 10, 0.97));
+    radial-gradient(circle at 16% 28%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 30%),
+    radial-gradient(circle at 82% 24%, var(--info-soft), transparent 34%),
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-canvas) 98%, transparent), color-mix(in srgb, var(--bg-app) 97%, transparent));
 }
 
 .profileCover_custom,
 .profileCover_image,
 .usersMiniCover.profileCover_custom,
 .usersMiniCover.profileCover_image {
-  background: linear-gradient(135deg, rgba(19, 22, 27, 0.98), rgba(8, 9, 10, 0.98));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bg-raised) 98%, transparent), color-mix(in srgb, var(--bg-app) 98%, transparent));
 }
 
 .profileHeroGrid .heroIdentity {
@@ -1710,7 +1710,7 @@
   display: grid;
   place-items: center;
   padding: 28px;
-  background: rgba(0, 0, 0, 0.62);
+  background: color-mix(in srgb, var(--bg-app) 62%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -1963,9 +1963,9 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 4px solid #08090a;
+  border: 4px solid var(--bg-app);
   border-radius: 999px;
-  background: #08090a;
+  background: var(--bg-app);
   color: var(--text-tertiary);
   font-size: 22px;
   font-weight: var(--weight-semibold);
@@ -1974,7 +1974,7 @@
 }
 
 .profileHeroGrid .avatarWithPhoto {
-  background: #08090a;
+  background: var(--bg-app);
   color: transparent;
 }
 
@@ -1989,7 +1989,7 @@
   object-fit: cover;
   object-position: center;
   border-radius: inherit;
-  background: #08090a;
+  background: var(--bg-app);
 }
 
 .profileHeroGrid .heroCopy {
@@ -2059,8 +2059,8 @@
 .profileCover,
 .usersMiniCover {
   background:
-    radial-gradient(circle at 16% 28%, rgba(255, 193, 7, 0.16), transparent 28%),
-    linear-gradient(135deg, rgba(255, 193, 7, 0.10), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.72)),
+    radial-gradient(circle at 16% 28%, color-mix(in srgb, var(--warning) 16%, transparent), transparent 28%),
+    linear-gradient(135deg, var(--warning-soft), color-mix(in srgb, var(--bg-raised) 20%, transparent) 42%, color-mix(in srgb, var(--bg-app) 72%, transparent)),
     var(--bg-app);
   background-repeat: no-repeat;
   background-position: center;
@@ -2075,64 +2075,64 @@
 .profileCover_amber,
 .usersMiniCover.profileCover_amber {
   background:
-    radial-gradient(circle at 18% 28%, rgba(255, 193, 7, 0.22), transparent 27%),
-    linear-gradient(135deg, rgba(255, 193, 7, 0.13), rgba(23, 26, 32, 0.22) 44%, rgba(3, 4, 6, 0.76)),
+    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--warning) 22%, transparent), transparent 27%),
+    linear-gradient(135deg, color-mix(in srgb, var(--warning) 13%, transparent), color-mix(in srgb, var(--bg-raised) 22%, transparent) 44%, color-mix(in srgb, var(--bg-app) 76%, transparent)),
     var(--bg-app);
 }
 
 .profileCover_midnight,
 .usersMiniCover.profileCover_midnight {
   background:
-    radial-gradient(circle at 18% 28%, rgba(59, 130, 246, 0.14), transparent 28%),
-    linear-gradient(135deg, rgba(15, 23, 42, 0.22), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.78)),
+    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--info) 14%, transparent), transparent 28%),
+    linear-gradient(135deg, color-mix(in srgb, var(--info) 10%, var(--bg-app)), color-mix(in srgb, var(--bg-raised) 20%, transparent) 42%, color-mix(in srgb, var(--bg-app) 78%, transparent)),
     var(--bg-app);
 }
 
 .profileCover_steel,
 .usersMiniCover.profileCover_steel {
   background:
-    radial-gradient(circle at 16% 28%, rgba(148, 163, 184, 0.15), transparent 28%),
-    linear-gradient(135deg, rgba(148, 163, 184, 0.10), rgba(23, 26, 32, 0.22) 42%, rgba(3, 4, 6, 0.76)),
+    radial-gradient(circle at 16% 28%, color-mix(in srgb, var(--text-tertiary) 15%, transparent), transparent 28%),
+    linear-gradient(135deg, color-mix(in srgb, var(--text-tertiary) 10%, transparent), color-mix(in srgb, var(--bg-raised) 22%, transparent) 42%, color-mix(in srgb, var(--bg-app) 76%, transparent)),
     var(--bg-app);
 }
 
 .profileCover_obsidian,
 .usersMiniCover.profileCover_obsidian {
   background:
-    radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.07), transparent 26%),
-    linear-gradient(135deg, rgba(18, 20, 24, 0.34), rgba(10, 12, 16, 0.22) 42%, rgba(3, 4, 6, 0.82)),
+    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--text-primary) 7%, transparent), transparent 26%),
+    linear-gradient(135deg, color-mix(in srgb, var(--bg-elevated) 34%, transparent), color-mix(in srgb, var(--bg-canvas) 22%, transparent) 42%, color-mix(in srgb, var(--bg-app) 82%, transparent)),
     var(--bg-app);
 }
 
 .profileCover_aurora,
 .usersMiniCover.profileCover_aurora {
   background:
-    radial-gradient(circle at 18% 28%, rgba(255, 193, 7, 0.15), transparent 28%),
-    linear-gradient(135deg, rgba(255, 193, 7, 0.09), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.74)),
+    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--warning) 15%, transparent), transparent 28%),
+    linear-gradient(135deg, color-mix(in srgb, var(--warning) 9%, transparent), color-mix(in srgb, var(--bg-raised) 20%, transparent) 42%, color-mix(in srgb, var(--bg-app) 74%, transparent)),
     var(--bg-app);
 }
 
 .profileCover_graphite,
 .usersMiniCover.profileCover_graphite {
   background:
-    radial-gradient(circle at 16% 28%, rgba(148, 163, 184, 0.12), transparent 28%),
-    linear-gradient(135deg, rgba(148, 163, 184, 0.08), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.76)),
+    radial-gradient(circle at 16% 28%, color-mix(in srgb, var(--text-tertiary) 12%, transparent), transparent 28%),
+    linear-gradient(135deg, color-mix(in srgb, var(--text-tertiary) 8%, transparent), color-mix(in srgb, var(--bg-raised) 20%, transparent) 42%, color-mix(in srgb, var(--bg-app) 76%, transparent)),
     var(--bg-app);
 }
 
 .profileCover_violet,
 .usersMiniCover.profileCover_violet {
   background:
-    radial-gradient(circle at 18% 28%, rgba(168, 85, 247, 0.16), transparent 28%),
-    linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.76)),
+    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--info) 14%, var(--danger-soft)), transparent 28%),
+    linear-gradient(135deg, color-mix(in srgb, var(--info) 7%, var(--danger-soft)), color-mix(in srgb, var(--bg-raised) 20%, transparent) 42%, color-mix(in srgb, var(--bg-app) 76%, transparent)),
     var(--bg-app);
 }
 
 .profileCover_teal,
 .usersMiniCover.profileCover_teal {
   background:
-    radial-gradient(circle at 18% 28%, rgba(20, 184, 166, 0.16), transparent 28%),
-    linear-gradient(135deg, rgba(20, 184, 166, 0.08), rgba(23, 26, 32, 0.20) 42%, rgba(3, 4, 6, 0.76)),
+    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--success) 16%, transparent), transparent 28%),
+    linear-gradient(135deg, color-mix(in srgb, var(--success) 8%, transparent), color-mix(in srgb, var(--bg-raised) 20%, transparent) 42%, color-mix(in srgb, var(--bg-app) 76%, transparent)),
     var(--bg-app);
 }
 
