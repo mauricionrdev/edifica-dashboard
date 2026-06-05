@@ -273,7 +273,7 @@
   height: 16px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: #0d0e0f;
+  background: var(--bg-elevated);
   color: var(--text-secondary);
   font-size: 11px;
   display: inline-flex;
@@ -288,7 +288,7 @@
   margin-left: 4px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font-size: 10px;
   font-weight: 760;
@@ -446,7 +446,7 @@
   min-height: 54px;
   padding: 10px 28px;
   border-bottom: 1px solid var(--line);
-  background: #0c0d0e;
+  background: var(--bg-soft);
   display: grid;
   grid-template-columns: minmax(300px, 1fr) minmax(190px, 230px) minmax(190px, 230px) 116px 68px;
   gap: 8px;
@@ -495,13 +495,13 @@
 .toolbarSelect:hover,
 .toolbarSelect:focus {
   border-color: var(--line-strong);
-  background: #121314;
+  background: var(--bg-raised);
 }
 
 .createTask button,
 .sectionCreateForm button {
   padding: 0 12px;
-  background: rgba(255, 255, 255, 0.022);
+  background: var(--surface-panel);
   color: var(--text-primary);
   font-weight: 700;
   cursor: pointer;
@@ -529,7 +529,7 @@
   min-height: 58px;
   padding: 10px 28px;
   border-bottom: 1px solid var(--line);
-  background: #0c0d0e;
+  background: var(--bg-soft);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -579,7 +579,7 @@
   min-height: 36px;
   padding: 0 28px;
   border-bottom: 1px solid var(--line);
-  background: rgba(11, 12, 13, 0.96);
+  background: color-mix(in srgb, var(--bg-elevated) 96%, transparent);
   backdrop-filter: blur(10px);
   display: grid;
   grid-template-columns: 28px minmax(420px, 1fr) minmax(210px, 260px) minmax(110px, 138px) 74px;
@@ -621,7 +621,7 @@
   min-height: 42px;
   padding: 0 28px;
   border-bottom: 1px solid var(--line-subtle);
-  background: rgba(13, 14, 15, 0.97);
+  background: color-mix(in srgb, var(--bg-elevated) 97%, transparent);
   backdrop-filter: blur(10px);
   display: grid;
   grid-template-columns: 24px 28px minmax(0, 1fr) auto auto auto;
@@ -773,7 +773,7 @@
 }
 
 .task:hover {
-  background: rgba(255, 255, 255, 0.028);
+  background: var(--surface-raised);
 }
 
 .task:hover::before {
@@ -781,7 +781,7 @@
 }
 
 .task:focus-within {
-  background: rgba(255, 255, 255, 0.038);
+  background: var(--surface-raised);
 }
 
 .task:focus-within::before {
@@ -963,7 +963,7 @@
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
-  color: #97a9c9;
+  color: var(--text-secondary);
   font-family: inherit;
   font-size: 10px;
   font-weight: 770;
@@ -999,8 +999,8 @@
   padding: 12px;
   border: 1px solid var(--line-strong);
   border-radius: var(--workspace-card-radius);
-  background: #151617;
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.48);
+  background: var(--bg-selected);
+  box-shadow: var(--shadow-dialog);
 }
 
 .duePickerTop,
@@ -1091,7 +1091,7 @@
   align-items: stretch;
   justify-content: flex-end;
   padding: 0;
-  background: rgba(5, 5, 6, 0.62);
+  background: color-mix(in srgb, var(--bg-app) 62%, transparent);
   backdrop-filter: blur(8px);
   overflow: hidden;
 }
@@ -1153,7 +1153,7 @@
   padding: 0 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-panel);
   color: var(--text-secondary);
   font-size: 11px;
   display: inline-flex;
@@ -1281,7 +1281,7 @@
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #0d0e0f;
+  background: var(--bg-elevated);
   color: var(--text-primary);
   font-family: inherit;
   box-shadow: none;
@@ -1358,7 +1358,7 @@
 
 .taskDateField .inlineDate {
   border: 1px solid var(--line);
-  background: #0d0e0f;
+  background: var(--bg-elevated);
 }
 
 .subtaskList,
@@ -1445,7 +1445,7 @@
   padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-panel);
   color: var(--text-primary);
   font-family: inherit;
   font-weight: 700;
@@ -1564,7 +1564,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(5, 5, 6, 0.64);
+  background: color-mix(in srgb, var(--bg-app) 64%, transparent);
   backdrop-filter: blur(8px);
 }
 
@@ -1573,7 +1573,7 @@
   border: 1px solid var(--line);
   border-radius: var(--workspace-card-radius);
   background: var(--bg-raised);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-dialog);
   overflow: hidden;
 }
 
@@ -1648,7 +1648,7 @@
 .emptyInline {
   border: 1px solid var(--line);
   border-radius: var(--workspace-card-radius);
-  background: rgba(255,255,255,0.018);
+  background: var(--card-inner);
 }
 
 /* Estados de foco */
@@ -1849,7 +1849,7 @@ textarea:focus-visible {
 .taskToolbar .toolbarField [role="combobox"]:hover,
 .taskToolbar .toolbarField select:hover {
   border-color: var(--line-strong);
-  background: #121314;
+  background: var(--bg-raised);
 }
 
 .taskToolbar .toolbarField button:focus-visible,
@@ -1990,14 +1990,14 @@ textarea:focus-visible {
 
 .collaboratorForm [data-variant='drawer'] .popover {
   border-color: var(--line);
-  background: #121314;
+  background: var(--bg-raised);
 }
 
 
 /* PATCH v35 — refinamento rigoroso do drawer da tarefa */
 .taskModal {
   width: min(900px, calc(100vw - 20px));
-  background: #101112;
+  background: var(--bg-hover);
 }
 
 .taskModalHeader {
@@ -2005,7 +2005,7 @@ textarea:focus-visible {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 18px;
-  background: #101112;
+  background: var(--bg-hover);
 }
 
 .taskModalHeader > div:first-child {
@@ -2046,7 +2046,7 @@ textarea:focus-visible {
 .taskModalHeader input:focus {
   padding: 0 8px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--surface-panel);
 }
 
 .taskModalMeta {
@@ -2095,18 +2095,18 @@ textarea:focus-visible {
 
 .taskModalGrid {
   grid-template-columns: minmax(0, 1fr) 316px;
-  background: #101112;
+  background: var(--bg-hover);
 }
 
 .taskModalMain {
   padding: 22px 26px 32px;
   gap: 28px;
-  background: #101112;
+  background: var(--bg-hover);
 }
 
 .taskAside {
   padding: 20px 22px 34px;
-  background: #101112;
+  background: var(--bg-hover);
 }
 
 .taskSectionHeader {
@@ -2183,7 +2183,7 @@ textarea:focus-visible {
 .subtaskMeta small,
 .subtaskContent small {
   min-width: 0;
-  color: #9fb0cc;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 650;
   overflow: hidden;
@@ -2216,7 +2216,7 @@ textarea:focus-visible {
   height: 42px;
   padding: 0 14px;
   border-radius: var(--workspace-card-radius);
-  background: #0d0e0f;
+  background: var(--bg-elevated);
   font-size: 13.5px;
 }
 
@@ -2265,7 +2265,7 @@ textarea:focus-visible {
 
 .commentHeader time {
   padding-top: 3px;
-  color: #9fb0cc;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 600;
 }
@@ -2288,7 +2288,7 @@ textarea:focus-visible {
   min-height: 78px;
   padding: 12px 14px;
   border-radius: var(--workspace-card-radius);
-  background: #0d0e0f;
+  background: var(--bg-elevated);
   font-size: 13.5px;
   line-height: 1.45;
 }
@@ -2572,7 +2572,7 @@ textarea:focus-visible {
   height: 34px;
   min-height: 34px;
   border-radius: 8px;
-  background: #101112;
+  background: var(--bg-hover);
   font-size: 11.8px;
   font-weight: 720;
 }
@@ -2596,7 +2596,7 @@ textarea:focus-visible {
 .taskToolbar .toolbarField select:hover,
 .taskToolbar .toolbarField select:focus-visible {
   border-color: var(--line-strong);
-  background: #121314;
+  background: var(--bg-raised);
   outline: none;
   box-shadow: none;
 }
@@ -3002,7 +3002,7 @@ textarea:focus-visible {
   min-height: 44px;
   padding: 8px 24px 6px;
   border-bottom: 0;
-  background: #0a0b0c;
+  background: var(--bg-soft);
   grid-template-columns: minmax(360px, 1fr) minmax(190px, 230px) minmax(210px, 260px) 126px 64px;
   gap: 8px;
 }
@@ -3021,7 +3021,7 @@ textarea:focus-visible {
   padding: 4px 24px 8px;
   border-top: 0;
   border-bottom: 1px solid var(--line);
-  background: #0a0b0c;
+  background: var(--bg-soft);
   display: grid;
   grid-template-columns: minmax(0, auto) minmax(300px, auto);
   align-items: end;
@@ -3150,7 +3150,7 @@ textarea:focus-visible {
 .commandBar {
   padding: 10px 24px 10px;
   border-bottom: 1px solid var(--line);
-  background: #0a0b0c;
+  background: var(--bg-soft);
   display: grid;
   gap: 8px;
 }
@@ -3296,7 +3296,7 @@ textarea:focus-visible {
   padding: 8px 24px;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  background: #0a0b0c;
+  background: var(--bg-soft);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas: "primary secondary";
@@ -3370,7 +3370,7 @@ textarea:focus-visible {
   gap: 0;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: #101112;
+  background: var(--bg-hover);
   overflow: hidden;
 }
 
@@ -3407,7 +3407,7 @@ textarea:focus-visible {
 
 .toolbarField:hover {
   border-color: var(--line-strong);
-  background: #121314;
+  background: var(--bg-raised);
 }
 
 .toolbarField:focus-within {
@@ -3712,7 +3712,7 @@ textarea:focus-visible {
 .taskToolbarGroup .toolbarField button:hover,
 .taskToolbarGroup .toolbarField [role="combobox"]:hover {
   border-color: var(--line-strong);
-  background: #121314;
+  background: var(--bg-raised);
 }
 
 .toolbarField .toolbarSelect button:focus,
@@ -3899,7 +3899,7 @@ textarea:focus-visible {
 
 .taskModalOverlay {
   z-index: var(--chassis-z-dialog);
-  background: rgba(8, 9, 10, 0.72);
+  background: color-mix(in srgb, var(--bg-soft) 72%, transparent);
   backdrop-filter: none;
 }
 
