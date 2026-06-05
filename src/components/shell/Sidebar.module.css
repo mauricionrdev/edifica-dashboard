@@ -1,7 +1,12 @@
+/* ============================================================================
+ * Sidebar · visual shell v3
+ * Navegação compacta, minimalista e alinhada ao dark system global.
+ * ========================================================================== */
+
 .sidebar {
   --sidebar-bg: var(--chassis-canvas-bg);
   --sidebar-bg-deep: var(--chassis-app-bg);
-  --sidebar-surface: var(--surface-panel);
+  --sidebar-surface: var(--field-bg);
   --sidebar-surface-hover: var(--bg-hover);
   --sidebar-surface-active: var(--bg-selected);
   --sidebar-line: var(--chassis-border);
@@ -12,7 +17,7 @@
   --sidebar-text-soft: var(--text-quaternary);
 
   position: relative;
-  z-index: 2;
+  z-index: 0;
   width: var(--sidebar-width);
   flex: 0 0 var(--sidebar-width);
   height: calc(100vh - (var(--app-frame-padding) * 2));
@@ -21,11 +26,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--sidebar-bg);
   border: 1px solid var(--sidebar-line);
   border-right-color: var(--sidebar-line-subtle);
   border-radius: var(--app-frame-radius) 0 0 var(--app-frame-radius);
-  transition: width var(--transition-base), flex-basis var(--transition-base);
+  background: var(--sidebar-bg);
+  box-shadow: none;
+  transition: width var(--transition-base), flex-basis var(--transition-base), transform var(--transition-base);
 }
 
 .collapsed {
@@ -34,14 +40,14 @@
 }
 
 .header {
-  flex: 0 0 49px;
-  height: 49px;
-  padding: 0 13px;
+  flex: 0 0 var(--chassis-header-height);
+  height: var(--chassis-header-height);
+  padding: 0 var(--space-3);
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--sidebar-bg);
+  gap: var(--space-2);
   border-bottom: 1px solid var(--sidebar-line-subtle);
+  background: var(--sidebar-bg);
 }
 
 .brand {
@@ -73,31 +79,44 @@
 
 .collapseButton,
 .closeButton,
-.groupAction,
-.groupLabel button,
 .logoutButton {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   flex: 0 0 auto;
   padding: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--radius-1);
   background: transparent;
   color: var(--sidebar-text-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  transition: color 0.12s ease, opacity 0.12s ease;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .collapseButton:hover,
 .closeButton:hover,
-.groupAction:hover,
-.groupLabel button:hover,
 .logoutButton:hover {
-  background: transparent;
+  background: var(--sidebar-surface-hover);
   color: var(--sidebar-text);
+}
+
+.logoutButton:hover {
+  color: var(--danger-text);
+}
+
+.collapseButton:focus,
+.collapseButton:focus-visible,
+.closeButton:focus,
+.closeButton:focus-visible,
+.logoutButton:focus,
+.logoutButton:focus-visible,
+.renameInput:focus,
+.renameInput:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .collapseButton svg,
@@ -118,20 +137,26 @@
 
 .search {
   flex: 0 0 auto;
-  padding: 10px 10px 6px;
+  padding: var(--space-3) var(--space-3) var(--space-2);
   background: var(--sidebar-bg);
 }
 
 .searchBox {
-  height: 31px;
-  padding: 0 10px;
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
   display: flex;
   align-items: center;
-  gap: 8px;
-  border: 1px solid var(--sidebar-line);
-  border-radius: 8px;
+  gap: var(--space-2);
+  border: 1px solid var(--sidebar-line-subtle);
+  border-radius: var(--radius-2);
   background: var(--sidebar-surface);
   color: var(--sidebar-text-soft);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.searchBox:focus-within {
+  border-color: var(--sidebar-line);
+  background: var(--field-bg-hover);
 }
 
 .searchBox input {
@@ -141,7 +166,8 @@
   outline: 0;
   background: transparent;
   color: var(--sidebar-text-secondary);
-  font-size: 12px;
+  font: inherit;
+  font-size: var(--fs-label);
 }
 
 .searchBox input::placeholder {
@@ -153,74 +179,73 @@
   flex: 1;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 7px 8px 8px;
+  padding: var(--space-2);
   display: flex;
   flex-direction: column;
   background: var(--sidebar-bg);
+  scrollbar-width: thin;
 }
 
 .collapsed .nav {
-  padding-inline: 8px;
+  padding-inline: var(--space-2);
 }
 
 .group {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin: 0 0 9px;
-  padding: 0 0 10px;
+  margin: 0 0 var(--space-2);
+  padding: 0 0 var(--space-2);
   border-bottom: 1px solid var(--sidebar-line-subtle);
 }
 
-.group:last-child {
+.group:last-child,
+.group:last-of-type {
   margin-bottom: 0;
   border-bottom: 0;
 }
 
-.group:last-of-type {
-  border-bottom: 0;
-}
-
 .groupLabel {
-  height: 24px;
-  padding: 0 9px;
+  height: 26px;
+  padding: 0 var(--space-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
   color: var(--sidebar-text-soft);
-  font-size: 9.5px;
-  font-weight: 590;
-  letter-spacing: 0.14em;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-uppercase);
   text-transform: uppercase;
+}
+
+.groupLabel button {
+  display: none;
 }
 
 .collapsed .groupLabel {
   justify-content: center;
 }
 
-.collapsed .groupLabel span,
-.collapsed .groupAction,
-.groupAction,
-.groupLabel button {
+.collapsed .groupLabel span {
   display: none;
 }
 
 .item {
   position: relative;
-  height: 31px;
-  padding: 0 7px 0 10px;
-  border-radius: 7px;
+  min-height: 32px;
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border-radius: var(--radius-2);
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--space-2);
   color: var(--sidebar-text-secondary);
   background: transparent;
   text-decoration: none;
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 510;
-  letter-spacing: -0.01em;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  font-size: var(--fs-label);
+  line-height: var(--lh-flat);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-tight);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .item::before {
@@ -229,7 +254,7 @@
   left: 0;
   top: 7px;
   width: 2px;
-  height: 17px;
+  height: 18px;
   border-radius: 999px;
   background: transparent;
 }
@@ -243,16 +268,20 @@
 .itemActive:hover {
   background: var(--sidebar-surface-active);
   color: var(--sidebar-text);
-  font-weight: 560;
+  font-weight: var(--weight-semibold);
 }
 
 .itemActive::before {
-  background: var(--accent-amber);
+  background: var(--accent);
 }
 
 .itemCollapsed {
   justify-content: center;
   padding-inline: 0;
+}
+
+.itemCollapsed::before {
+  display: none;
 }
 
 .itemIcon,
@@ -270,9 +299,10 @@
 }
 
 .itemIcon svg,
-.item svg {
-  width: 15.5px;
-  height: 15.5px;
+.item svg,
+.groupLabel svg {
+  width: 15px;
+  height: 15px;
   stroke-width: 1.75;
 }
 
@@ -281,48 +311,44 @@
 }
 
 .itemActive .itemIcon {
-  color: var(--accent-amber);
+  color: var(--accent);
 }
 
-.projectSwatch {
-  display: none;
+.squadLogo,
+.personAvatar,
+.avatar {
+  border: 0;
+  border-radius: 999px;
+  box-shadow: none;
+  overflow: hidden;
+  background-clip: padding-box;
 }
 
 .squadLogo {
-  overflow: hidden;
-  border: 0;
-  border-radius: 999px;
   background: transparent;
-  color: var(--accent-amber);
+  color: var(--accent);
   font-family: var(--font-mono);
   font-size: 8.5px;
-  font-weight: 590;
+  font-weight: var(--weight-semibold);
   line-height: 1;
   letter-spacing: -0.06em;
 }
 
-.squadLogo[data-tone="1"] {
-  color: var(--accent-cyan);
-}
+.squadLogo[data-tone="1"] { color: var(--info); }
+.squadLogo[data-tone="2"] { color: var(--vivid-purple, var(--info-text)); }
+.squadLogo[data-tone="3"] { color: var(--success); }
+.squadLogo[data-tone="4"] { color: var(--vivid-pink, var(--danger-text)); }
 
-.squadLogo[data-tone="2"] {
-  color: var(--vivid-purple);
-}
-
-.squadLogo[data-tone="3"] {
-  color: var(--success);
-}
-
-.squadLogo[data-tone="4"] {
-  color: var(--vivid-pink);
-}
-
-.squadLogo img {
+.squadLogo img,
+.personAvatar img,
+.avatar img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
+  border: 0;
   border-radius: inherit;
+  background: transparent;
 }
 
 .itemLabel {
@@ -330,7 +356,7 @@
   flex: 1;
   overflow: hidden;
   color: inherit;
-  font-size: 12px;
+  font-size: var(--fs-label);
   font-weight: inherit;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -340,83 +366,77 @@
   margin-left: auto;
   min-width: 20px;
   height: 18px;
-  padding: 0 6px;
+  padding: 0 var(--space-2);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.035);
+  background: var(--field-bg);
   color: var(--sidebar-text-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 510;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
 }
 
 .itemActive .itemMeta {
+  background: var(--field-bg-hover);
   color: var(--sidebar-text-secondary);
-  background: rgba(255, 255, 255, 0.058);
 }
 
 .personItem {
-  padding-left: 7px;
+  padding-left: var(--space-2);
 }
 
 .personAvatar {
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
-  border-radius: 999px;
-  display: inline-grid;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid var(--sidebar-line);
-  background: rgba(255, 255, 255, 0.045);
-  color: var(--sidebar-text-secondary);
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--avatar-fallback-bg, var(--bg-app));
+  color: var(--text-primary);
   font-size: 8px;
-  font-weight: 680;
-  letter-spacing: -0.02em;
-}
-
-.personAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1;
 }
 
 .renameInput {
   min-width: 0;
   flex: 1;
-  height: 23px;
-  padding: 0 7px;
-  border: 1px solid var(--accent-amber-border);
-  border-radius: 6px;
-  background: var(--sidebar-surface);
+  height: 26px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-1);
+  background: var(--field-bg);
   color: var(--sidebar-text);
   outline: none;
   font: inherit;
-  font-size: 12px;
-  font-weight: 560;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
 }
 
 .empty {
   margin: 0;
-  padding: 4px 10px 0;
+  padding: var(--space-1) var(--space-3) 0;
   color: var(--sidebar-text-soft);
-  font-size: 12px;
+  font-size: var(--fs-label);
 }
 
 .footer {
-  flex: 0 0 60px;
-  height: 60px;
-  padding: 10px 14px;
+  flex: 0 0 62px;
+  min-height: 62px;
+  padding: var(--space-3);
   border-top: 1px solid var(--sidebar-line-subtle);
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--space-2);
   background: var(--sidebar-bg-deep);
 }
 
 .collapsed .footer {
-  padding: 10px;
+  padding: var(--space-3) var(--space-2);
   flex-direction: column;
   height: auto;
 }
@@ -426,7 +446,7 @@
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--space-2);
   color: var(--sidebar-text-secondary);
   text-decoration: none;
 }
@@ -440,26 +460,31 @@
 }
 
 .avatar {
+  position: relative;
   width: 31px;
   height: 31px;
   flex: 0 0 31px;
-  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  background: #191a1b;
+  background: var(--avatar-fallback-bg, var(--bg-app));
   color: var(--sidebar-text);
   font-size: 9px;
-  font-weight: 590;
+  font-weight: var(--weight-semibold);
+  isolation: isolate;
+}
+
+.avatar:has(img) {
+  background: transparent;
 }
 
 .avatar img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  border-radius: inherit;
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  max-width: none;
+  object-position: center;
 }
 
 .profileText {
@@ -472,49 +497,37 @@
 .profileText strong {
   overflow: hidden;
   color: var(--sidebar-text);
-  font-size: 12px;
-  font-weight: 590;
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .profileText span {
   color: var(--sidebar-text-soft);
-  font-size: 10px;
-  font-weight: 510;
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
 }
 
-.logoutButton {
-  width: 22px;
-  height: 22px;
-  color: var(--sidebar-text-muted);
-}
-
-.logoutButton:hover {
-  color: var(--danger);
-}
+.avatar_amber { background: var(--accent); color: var(--accent-text); }
+.avatar_blue { background: var(--info); color: var(--bg-app); }
+.avatar_violet { background: var(--info-text); color: var(--bg-app); }
+.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
+.avatar_rose { background: var(--danger-text); color: var(--bg-app); }
+.avatar_slate { background: var(--field-bg); color: var(--text-secondary); }
 
 @media (max-height: 820px) and (min-width: 1024px) {
-  .sidebar {
-    height: calc(100vh - (var(--app-frame-padding) * 2));
-    height: calc(100dvh - (var(--app-frame-padding) * 2));
-  }
-
   .nav {
-    padding-top: 6px;
+    padding-top: var(--space-2);
   }
 
   .group {
-    margin-bottom: 7px;
-    padding-bottom: 7px;
-  }
-
-  .item {
-    height: 30px;
+    margin-bottom: var(--space-2);
+    padding-bottom: var(--space-2);
   }
 
   .footer {
-    padding: 8px 10px;
+    padding: var(--space-2) var(--space-3);
   }
 }
 
@@ -522,14 +535,13 @@
   .sidebar {
     position: fixed;
     inset: 0 auto 0 0;
-    z-index: 100;
+    z-index: var(--chassis-z-sidebar);
     height: 100vh;
     height: 100dvh;
-    border-radius: 0;
     border-top: 0;
     border-bottom: 0;
+    border-radius: 0;
     transform: translateX(-105%);
-    transition: transform 0.18s ease;
   }
 
   .collapsed {
@@ -548,288 +560,4 @@
   .closeButton {
     display: inline-flex;
   }
-}
-
-
-/* Patch 58 — camadas da sidebar abaixo dos modais */
-.sidebar {
-  z-index: 1;
-}
-
-@media (max-width: 1100px) {
-  .sidebar {
-    z-index: 60;
-  }
-}
-
-
-/* v41 — sidebar final */
-.sidebar {
-  box-shadow: none;
-}
-
-.item svg,
-.groupLabel svg,
-.collapseButton svg,
-.closeButton svg,
-.logoutButton svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 1.75;
-}
-
-.item {
-  height: 32px;
-  font-weight: 520;
-}
-
-.itemActive,
-.itemActive:hover {
-  background: rgba(255, 255, 255, 0.055);
-  color: var(--sidebar-text);
-}
-
-.badge,
-.count,
-.itemCount {
-  background: rgba(255, 255, 255, 0.055);
-  color: var(--sidebar-text-muted);
-}
-
-.userAvatar,
-.avatar,
-.memberAvatar {
-  background: var(--avatar-fallback-bg, #08090a);
-}
-
-/* Fase C — chassis da sidebar */
-.sidebar {
-  z-index: var(--chassis-z-sidebar);
-  border-color: var(--chassis-border);
-  border-right-color: var(--chassis-border-subtle);
-  box-shadow: none;
-}
-
-.header {
-  height: var(--chassis-header-height);
-  flex-basis: var(--chassis-header-height);
-}
-
-.item,
-.searchBox,
-.renameInput {
-  border-radius: 8px;
-}
-
-.itemMeta {
-  background: var(--surface-panel);
-}
-
-@media (max-width: 1100px) {
-  .sidebar {
-    z-index: var(--chassis-z-sidebar);
-  }
-}
-
-/* ==========================================================================
-   v95 · Sidebar abaixo de modais
-   A sidebar não pode ficar acima de overlays/modais globais.
-   ========================================================================== */
-.sidebar {
-  z-index: 0;
-}
-
-@media (max-width: 1100px) {
-  .sidebar {
-    z-index: var(--chassis-z-sidebar);
-  }
-}
-
-/* ==========================================================================
-   v120 · Avatares reais na sidebar
-   ========================================================================== */
-.avatar,
-.personAvatar,
-.footerAvatar,
-.squadAvatar,
-.gdvAvatar {
-  border: 0;
-  box-shadow: none;
-  overflow: hidden;
-}
-
-.avatar img,
-.personAvatar img,
-.footerAvatar img,
-.squadAvatar img,
-.gdvAvatar img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-}
-
-/* ==========================================================================
-   v122 · Sidebar avatar global sem borda
-   ========================================================================== */
-.avatar,
-.personAvatar,
-.footerAvatar,
-.squadAvatar,
-.gdvAvatar {
-  border: 0;
-  box-shadow: none;
-  overflow: hidden;
-}
-
-.avatar img,
-.personAvatar img,
-.footerAvatar img,
-.squadAvatar img,
-.gdvAvatar img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-}
-
-.avatar_amber { background: var(--accent); color: var(--accent-text); }
-.avatar_blue { background: var(--info); color: var(--bg-app); }
-.avatar_violet { background: #B784F0; color: #1a0d2c; }
-.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
-.avatar_rose { background: #EF7AAE; color: #2c0820; }
-.avatar_slate { background: var(--text-tertiary); color: var(--bg-app); }
-
-/* ==========================================================================
-   v123 · Sidebar busca com avatar real sem borda
-   ========================================================================== */
-.personAvatar,
-.avatar,
-.footerAvatar,
-.squadAvatar,
-.gdvAvatar,
-.squadLogo {
-  border: 0;
-  box-shadow: none;
-  overflow: hidden;
-  background-clip: padding-box;
-}
-
-.personAvatar {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--sidebar-bg);
-  line-height: 1;
-}
-
-.avatar {
-  width: 31px;
-  height: 31px;
-  padding: 0;
-  background: transparent;
-}
-
-.personAvatar img,
-.avatar img,
-.footerAvatar img,
-.squadAvatar img,
-.gdvAvatar img,
-.squadLogo img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-}
-
-.personAvatar img + *,
-.avatar img + * {
-  display: none;
-}
-
-.avatar_amber { background: var(--accent); color: var(--accent-text); }
-.avatar_blue { background: var(--info); color: var(--bg-app); }
-.avatar_violet { background: #B784F0; color: #1a0d2c; }
-.avatar_emerald { background: var(--success-text); color: var(--bg-app); }
-.avatar_rose { background: #EF7AAE; color: #2c0820; }
-.avatar_slate,
-.avatar_grafite { background: var(--text-tertiary); color: var(--bg-app); }
-
-/* ==========================================================================
-   v124 · Avatar escuro / fallback na sidebar
-   ========================================================================== */
-.avatar_slate,
-.avatar_grafite {
-  background: var(--field-bg);
-  color: var(--text-secondary);
-}
-
-.personAvatar,
-.avatar,
-.footerAvatar,
-.squadAvatar,
-.gdvAvatar,
-.squadLogo {
-  border: 0;
-  box-shadow: none;
-  overflow: hidden;
-  background-clip: padding-box;
-}
-
-.personAvatar img,
-.avatar img,
-.footerAvatar img,
-.squadAvatar img,
-.gdvAvatar img,
-.squadLogo img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
-}
-
-/* v10 · avatar do footer sem fresta de background */
-.footer .avatar,
-.profileCard .avatar {
-  position: relative;
-  border: 0;
-  box-shadow: none;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.footer .avatar:has(img),
-.profileCard .avatar:has(img) {
-  background: transparent;
-}
-
-.footer .avatar img,
-.profileCard .avatar img {
-  position: absolute;
-  inset: -1px;
-  width: calc(100% + 2px);
-  height: calc(100% + 2px);
-  max-width: none;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-  border: 0;
-  border-radius: inherit;
-  background: transparent;
 }

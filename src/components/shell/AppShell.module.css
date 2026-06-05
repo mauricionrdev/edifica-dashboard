@@ -1,16 +1,18 @@
-/* ==========================================================================
- * AppShell · Fase C / Chassis
- * Estrutura principal da aplicação. Mantém sidebar + topbar + page rail
- * com uma única lógica de camadas, bordas e scroll.
+/* ============================================================================
+ * AppShell · visual shell v3
+ * Refinamento do esqueleto global sem alterar lógica, rotas ou estrutura JSX.
  * ========================================================================== */
 
 .shell {
+  min-height: 100vh;
+  min-height: 100dvh;
   height: 100vh;
   height: 100dvh;
   padding: var(--app-frame-padding);
   display: flex;
   overflow: hidden;
   background: var(--chassis-app-bg);
+  color: var(--text-secondary);
 }
 
 .main {
@@ -18,16 +20,16 @@
   z-index: var(--chassis-z-shell);
   flex: 1;
   min-width: 0;
+  min-height: 0;
   height: calc(100vh - (var(--app-frame-padding) * 2));
   height: calc(100dvh - (var(--app-frame-padding) * 2));
-  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--chassis-panel-bg);
   border: 1px solid var(--chassis-border);
   border-left: 0;
   border-radius: 0 var(--chassis-radius-frame) var(--chassis-radius-frame) 0;
+  background: var(--chassis-panel-bg);
   box-shadow: none;
 }
 
@@ -40,8 +42,8 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+  border-left: 1px solid var(--chassis-border-subtle);
   background: var(--chassis-page-bg);
-  border-left: 1px solid var(--chassis-border);
 }
 
 .pageHeader {
@@ -49,14 +51,14 @@
   z-index: var(--chassis-z-page-header);
   flex: 0 0 var(--chassis-page-header-height);
   min-height: var(--chassis-page-header-height);
-  padding: 0 18px;
+  padding: 0 var(--space-5);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: var(--space-4);
   overflow: visible;
-  background: var(--chassis-panel-bg);
   border-bottom: 1px solid var(--chassis-border-subtle);
+  background: var(--chassis-panel-bg);
 }
 
 .pageTitleBlock {
@@ -64,25 +66,25 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-1);
 }
 
 .pageTitleRow {
   min-width: 0;
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--space-2);
   flex-wrap: wrap;
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: var(--weight-semibold);
-  line-height: var(--lh-flat);
+  line-height: var(--lh-tight);
   letter-spacing: var(--tracking-snug);
 }
 
 .pageTitleRow strong {
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: var(--weight-semibold);
 }
 
@@ -105,7 +107,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: nowrap;
   overflow: visible;
 }
@@ -123,7 +125,9 @@
   position: fixed;
   inset: 0;
   z-index: var(--chassis-z-overlay);
-  background: rgba(8, 9, 10, 0.72);
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--transition-base);
@@ -136,8 +140,14 @@
 
 @media (max-height: 820px) and (min-width: 1024px) {
   .pageHeader {
-    flex-basis: 56px;
-    min-height: 56px;
+    flex-basis: 54px;
+    min-height: 54px;
+  }
+}
+
+@media (min-width: 1101px) {
+  .overlay {
+    display: none;
   }
 }
 
@@ -160,10 +170,10 @@
   .pageHeader {
     min-height: auto;
     height: auto;
-    padding: 12px 14px;
+    padding: var(--space-3) var(--space-4);
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: var(--space-3);
   }
 
   .pageActions {
@@ -171,104 +181,6 @@
     min-width: 0;
     justify-content: flex-start;
     overflow-x: auto;
-  }
-}
-
-@media (min-width: 1101px) {
-  .overlay {
-    display: none;
-  }
-}
-
-/* ==========================================================================
-   v95 · Overlay do shell com blur
-   Mantém o mesmo padrão visual quando o menu mobile abre.
-   ========================================================================== */
-.overlay {
-  background: var(--chassis-modal-backdrop);
-  backdrop-filter: var(--chassis-modal-blur);
-  -webkit-backdrop-filter: var(--chassis-modal-blur);
-}
-
-/* ==========================================================================
-   v125 · Alerta global de solicitações de acesso
-   Visível logo após login, antes do conteúdo da página.
-   ========================================================================== */
-.accessAttention {
-  flex: 0 0 auto;
-  min-height: 54px;
-  margin: 12px 18px 0;
-  padding: 10px 12px;
-  border: 1px solid var(--accent-line);
-  border-radius: var(--workspace-card-radius);
-  background:
-    linear-gradient(180deg, var(--accent-soft), transparent 82%),
-    var(--workspace-panel-bg);
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  box-shadow: none;
-}
-
-.accessAttentionIcon {
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--accent-line);
-  border-radius: var(--workspace-control-radius);
-  background: var(--accent-soft);
-  color: var(--accent);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.accessAttentionCopy {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.accessAttentionCopy strong {
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 720;
-  letter-spacing: -0.02em;
-}
-
-.accessAttentionCopy span {
-  min-width: 0;
-  color: var(--text-tertiary);
-  font-size: 11.5px;
-  font-weight: 560;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.accessAttentionLink {
-  min-height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--accent-line);
-  border-radius: var(--workspace-control-radius);
-  background: var(--accent-soft);
-  color: var(--accent);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 720;
-}
-
-@media (max-width: 720px) {
-  .accessAttention {
-    margin: 10px 12px 0;
-    grid-template-columns: 32px minmax(0, 1fr);
-  }
-
-  .accessAttentionLink {
-    grid-column: 1 / -1;
-    width: 100%;
+    scrollbar-width: thin;
   }
 }
