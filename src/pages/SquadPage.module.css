@@ -8327,3 +8327,27 @@
     display: none;
   }
 }
+
+/* v15 — remove container/background behind portfolio tabs on Squad */
+.portfolioFilter,
+.portfolioFilter:hover,
+.portfolioFilter:focus,
+.portfolioFilter:focus-within {
+  min-height: 42px;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-color: transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.portfolioFilter button.portfolioFilterTab {
+  background: var(--bg-app);
+}
+
+.portfolioFilter button.portfolioFilterTab:hover {
+  background: var(--bg-app);
+}
