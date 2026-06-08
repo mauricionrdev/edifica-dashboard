@@ -145,14 +145,23 @@ export function instantiateOnboarding(template, { gestor = '', gestorId = '', gd
 //  O teste do bug 1 foi: resolveWeekGoal({}, 8) deve retornar 2 (ceil(8/4)),
 //  mas a versão anterior ignorava o 3º parâmetro. Aqui está correto.
 // ==============================================================
-export function resolveWeekGoal(data = {}, clientMetaLucro = 0) {
+export function resolveMonthlyProfitGoal(data = {}, clientMetaLucro = 0) {
   const s = Number(data && data.metaSemanal) || 0;
   if (s > 0) return s;
   const l = Number(data && data.metaLucro) || 0;
   if (l > 0) return l;
   const cml = Number(clientMetaLucro) || 0;
-  if (cml > 0) return Math.ceil(cml / 4);
+  if (cml > 0) return cml;
   return 0;
+}
+
+export function resolveBaseWeekGoal(data = {}, clientMetaLucro = 0) {
+  const monthlyGoal = resolveMonthlyProfitGoal(data, clientMetaLucro);
+  return monthlyGoal > 0 ? Math.ceil(monthlyGoal / 4) : 0;
+}
+
+export function resolveWeekGoal(data = {}, clientMetaLucro = 0) {
+  return resolveBaseWeekGoal(data, clientMetaLucro);
 }
 
 /**
@@ -295,6 +304,8 @@ export function aggregateClientSummary(rows, weekKey, monthPrefix, opts = {}) {
   let weekClosedPrev  = 0;
   let monthClosedPrev = 0;
   let monthGoalSumPrev = 0;
+  let monthlyGoalCandidate = clientMetaLucro;
+  const weekStats = new Map();
 
   const prefixCurr = `${monthPrefix}-S`;
   const prefixPrev = prevMonthPrefix ? `${prevMonthPrefix}-S` : null;
@@ -318,36 +329,47 @@ export function aggregateClientSummary(rows, weekKey, monthPrefix, opts = {}) {
     // Soma do mês atual
     if (pk.startsWith(prefixCurr)) {
       monthClosed += fec;
-      // meta explícita da semana (sem fallback do cliente — queremos
-      // saber se o time preencheu meta real)
-      const explicit = resolveWeekGoal(data, 0);
-      if (explicit > 0) {
-        monthGoalSum += explicit;
+      const weekMatch = /-S([1-4])$/.exec(pk);
+      const weekNumber = weekMatch ? Number(weekMatch[1]) : null;
+      if (weekNumber) weekStats.set(weekNumber, { closed: fec });
+
+      // metaLucro/metaSemanal representam meta mensal de lucro em contratos.
+      // A meta semanal é derivada por mês÷4, com déficit das semanas anteriores
+      // carregado para a semana atual.
+      const explicitMonthly = resolveMonthlyProfitGoal(data, 0);
+      if (explicitMonthly > 0) {
+        monthlyGoalCandidate = Math.max(monthlyGoalCandidate, explicitMonthly);
         monthGoalSeen = true;
       }
+      const explicitBaseWeek = explicitMonthly > 0 ? Math.ceil(explicitMonthly / 4) : 0;
+      if (explicitBaseWeek > 0) monthGoalSum += explicitBaseWeek;
     }
 
     // Soma do mês anterior (para delta)
     if (prefixPrev && pk.startsWith(prefixPrev)) {
       monthClosedPrev += fec;
-      const explicitPrev = resolveWeekGoal(data, 0);
+      const explicitPrevMonthly = resolveMonthlyProfitGoal(data, 0);
+      const explicitPrev = explicitPrevMonthly > 0 ? Math.ceil(explicitPrevMonthly / 4) : 0;
       if (explicitPrev > 0) monthGoalSumPrev += explicitPrev;
     }
   }
 
-  // Meta mensal final = max(soma_semanal_explícita, clientMetaLucro).
-  // Bug 4 do teste: antes a variável era reatribuída errado. Agora é
-  // uma nova variável que SÓ aplica o floor:
-  let monthGoal = monthGoalSum;
-  if (clientMetaLucro > monthGoal) {
-    monthGoal = clientMetaLucro;
-    if (clientMetaLucro > 0) monthGoalSeen = true;
+  // Meta mensal final = maior meta mensal encontrada no cadastro ou nas métricas.
+  // A meta semanal efetiva é sempre mês÷4 + déficit acumulado das semanas anteriores.
+  let monthGoal = monthlyGoalCandidate;
+  if (monthGoal > 0) monthGoalSeen = true;
+
+  const baseWeekGoal = monthGoal > 0 ? Math.ceil(monthGoal / 4) : 0;
+  const selectedWeekMatch = /-S([1-4])$/.exec(String(weekKey || ''));
+  const selectedWeek = selectedWeekMatch ? Number(selectedWeekMatch[1]) : 1;
+  let carryover = 0;
+
+  for (let weekIndex = 1; weekIndex < selectedWeek; weekIndex += 1) {
+    const previousClosed = Number(weekStats.get(weekIndex)?.closed) || 0;
+    carryover += Math.max(baseWeekGoal - previousClosed, 0);
   }
 
-  // Fallback final: se a semana atual não tem meta e o mês tem, usa mês÷4.
-  if (weekGoal === 0 && monthGoal > 0) {
-    weekGoal = Math.ceil(monthGoal / 4);
-  }
+  weekGoal = baseWeekGoal > 0 ? baseWeekGoal + carryover : weekGoal;
 
   // Mesmo tratamento para o mês anterior (usado no delta de meta)
   let monthGoalPrev = monthGoalSumPrev;
@@ -366,6 +388,8 @@ export function aggregateClientSummary(rows, weekKey, monthPrefix, opts = {}) {
   return {
     weekClosed:       weekClosed,
     weekGoal:         weekGoal,
+    baseWeekGoal:     baseWeekGoal,
+    weekCarryover:    carryover,
     weekProgress:     weekProgress,
     monthClosed:      monthClosed,
     monthGoal:        monthGoal,

@@ -134,7 +134,9 @@ function normalizeSummaryCalc(summary, baseCalc = {}) {
   const weekClosed = Number(summary.weekClosed) || 0;
   const weekGoal = Number(summary.weekGoal) || 0;
   const monthGoal = Number(summary.monthGoal) || 0;
-  const resolvedGoal = weekGoal > 0 ? weekGoal : monthGoal > 0 ? Math.ceil(monthGoal / 4) : 0;
+  const baseWeekGoal = Number(summary.baseWeekGoal) || (monthGoal > 0 ? Math.ceil(monthGoal / 4) : 0);
+  const weekCarryover = Number(summary.weekCarryover) || 0;
+  const resolvedGoal = weekGoal > 0 ? weekGoal : baseWeekGoal;
 
   return {
     ...baseCalc,
@@ -144,6 +146,10 @@ function normalizeSummaryCalc(summary, baseCalc = {}) {
     // não quebrar o comportamento detalhado do clique no cliente.
     fec: weekClosed > 0 || !baseCalc.fec ? weekClosed : baseCalc.fec,
     mLuc: resolvedGoal > 0 || !baseCalc.mLuc ? resolvedGoal : baseCalc.mLuc,
+    monthlyGoal: monthGoal > 0 ? monthGoal : (Number(baseCalc.monthlyGoal) || 0),
+    baseWeeklyGoal: baseWeekGoal > 0 ? baseWeekGoal : (Number(baseCalc.baseWeeklyGoal) || 0),
+    weeklyGoal: resolvedGoal > 0 ? resolvedGoal : (Number(baseCalc.weeklyGoal) || 0),
+    weeklyCarryover: weekCarryover > 0 ? weekCarryover : (Number(baseCalc.weeklyCarryover) || 0),
     hasData: Boolean(baseCalc.hasData || weekClosed > 0 || resolvedGoal > 0),
     isHit: (weekClosed > 0 || resolvedGoal > 0)
       ? weekClosed > 0 && resolvedGoal > 0 && weekClosed >= resolvedGoal
@@ -1005,15 +1011,15 @@ export default function GdvPage() {
         {
           id: 'profitGoal',
           label: 'Meta de lucro',
-          value: calc.mLuc > 0 ? displayInt(calc.mLuc) : '—',
-          sub: calc.mLuc > 0 ? `${displayInt(selectedRow.weeklyGap)} para bater` : 'Sem meta configurada',
-          tone: calc.mLuc > 0 ? 'neutral' : 'muted',
+          value: calc.monthlyGoal > 0 ? displayInt(calc.monthlyGoal) : '—',
+          sub: calc.monthlyGoal > 0 ? 'meta mensal' : 'Sem meta configurada',
+          tone: calc.monthlyGoal > 0 ? 'neutral' : 'muted',
         },
         {
           id: 'weeklyGoal',
           label: 'Meta semanal',
           value: calc.mLuc > 0 ? displayInt(calc.mLuc) : '—',
-          sub: `Semana ${week}`,
+          sub: calc.weeklyCarryover > 0 ? `Semana ${week} · inclui ${displayInt(calc.weeklyCarryover)} acumulado` : `Semana ${week}`,
           tone: calc.mLuc > 0 ? 'neutral' : 'muted',
         },
         {
@@ -1049,6 +1055,7 @@ export default function GdvPage() {
     const totalClients = rows.length;
     const filledRows = rows.filter((row) => row.calc?.hasData);
     const weeklyGoal = Number(agg.tLuc) || 0;
+    const monthlyGoal = Number(agg.tMonthLuc) || 0;
     const goalRows = rows.filter((row) => Number(row.calc?.mLuc) > 0);
     const hitRows = goalRows.filter((row) => {
       const target = Number(row.calc?.mLuc) || 0;
@@ -1082,11 +1089,11 @@ export default function GdvPage() {
       {
         id: 'profitGoal',
         label: 'Meta de lucro',
-        value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
+        value: monthlyGoal > 0 ? displayInt(monthlyGoal) : '—',
         sub: goalRows.length > 0
           ? `${displayInt(goalRows.length)} de ${displayInt(totalClients)} com meta`
           : 'Sem meta configurada',
-        tone: agg.tLuc > 0 ? 'neutral' : 'muted',
+        tone: monthlyGoal > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'weeklyGoal',

@@ -23,9 +23,11 @@ import { MONTHS, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
 import { resolveSquadOwner, subscribeOwnershipChange } from '../utils/ownershipStorage.js';
 import {
   aggregateCarteira,
+  applyWeeklyGoal,
   buildPeriodKey,
   calcWeek,
   currentWeek,
+  effectiveWeeklyGoal,
 } from '../utils/gdvMetrics.js';
 import {
   getSquadAvatar,
@@ -43,6 +45,7 @@ import { buildSquadPath, matchesEntityRouteSegment, slugifySegment } from '../ut
 import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
+const WEEKS_IN_MONTH = [1, 2, 3, 4];
 
 
 function squadInitials(name) {
@@ -481,6 +484,10 @@ export default function SquadPage() {
   const [renderStickyResult, setRenderStickyResult] = useState(false);
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
+  const monthPeriodKeys = useMemo(
+    () => WEEKS_IN_MONTH.slice(0, week).map((weekNumber) => buildPeriodKey(year, month0, weekNumber)),
+    [month0, week, year]
+  );
 
   const squadClients = useMemo(
     () =>
@@ -518,51 +525,66 @@ export default function SquadPage() {
 
   useEffect(() => {
     if (!squadClients.length) {
-      setMetricsByKey((prev) => ({ ...prev, [periodKey]: [] }));
+      setMetricsByKey((prev) => {
+        const next = { ...prev };
+        monthPeriodKeys.forEach((key) => { next[key] = []; });
+        return next;
+      });
       return;
     }
 
     const clientIds = squadClients.map((client) => client.id).sort().join('|');
-    const cached = metricsByKey[periodKey];
-
-    if (Array.isArray(cached)) {
+    const keysToLoad = monthPeriodKeys.filter((key) => {
+      const cached = metricsByKey[key];
+      if (!Array.isArray(cached)) return true;
       const cachedIds = cached.map((entry) => entry.clientId).sort().join('|');
-      if (cachedIds === clientIds) return;
-    }
+      return cachedIds !== clientIds;
+    });
+
+    if (!keysToLoad.length) return;
 
     const gen = ++metricsFetchRef.current;
     setMetricsLoading(true);
     setMetricsError(null);
 
     Promise.all(
-      squadClients.map((client) =>
-        getMetric(client.id, periodKey)
-          .then((response) => ({ clientId: client.id, metric: response?.metric || null, err: null }))
-          .catch((err) => ({ clientId: client.id, metric: null, err }))
+      keysToLoad.map((key) =>
+        Promise.all(
+          squadClients.map((client) =>
+            getMetric(client.id, key)
+              .then((response) => ({ clientId: client.id, metric: response?.metric ? { ...response.metric, periodKey: key } : null, err: null }))
+              .catch((err) => ({ clientId: client.id, metric: null, err }))
+          )
+        ).then((results) => ({ key, results }))
       )
     )
-      .then((results) => {
+      .then((periodResults) => {
         if (metricsFetchRef.current !== gen) return;
 
-        const anyAuthError = results.find(
+        const flatResults = periodResults.flatMap((entry) => entry.results);
+        const anyAuthError = flatResults.find(
           (result) => result.err instanceof ApiError && result.err.status === 401
         );
         if (anyAuthError) return;
 
-        setMetricsByKey((prev) => ({ ...prev, [periodKey]: results }));
+        setMetricsByKey((prev) => {
+          const next = { ...prev };
+          periodResults.forEach(({ key, results }) => { next[key] = results; });
+          return next;
+        });
 
-        const failures = results.filter(
+        const failures = flatResults.filter(
           (result) => result.err && !(result.err instanceof ApiError && result.err.status === 404)
         );
 
-        if (failures.length > 0 && failures.length === results.length) {
+        if (failures.length > 0 && failures.length === flatResults.length) {
           setMetricsError(new Error('Falha ao carregar métricas operacionais do squad.'));
         }
       })
       .finally(() => {
         if (metricsFetchRef.current === gen) setMetricsLoading(false);
       });
-  }, [metricsByKey, periodKey, squadClients]);
+  }, [metricsByKey, monthPeriodKeys, squadClients]);
 
   useEffect(() => {
     setPage(1);
@@ -656,8 +678,13 @@ export default function SquadPage() {
   const clientRows = useMemo(() => {
     return squadClients.map((client) => {
       const metricEntry = metricRows.find((row) => row.clientId === client.id);
-      const metric = metricEntry?.metric || { data: {}, computed: {} };
-      const calc = calcWeek(metric);
+      const metric = metricEntry?.metric || { data: {}, computed: {}, periodKey };
+      const monthMetrics = monthPeriodKeys
+        .flatMap((key) => metricsByKey[key] || [])
+        .filter((row) => row.clientId === client.id && row.metric)
+        .map((row) => ({ ...row.metric, periodKey: row.metric?.periodKey || key }));
+      const goal = effectiveWeeklyGoal({ currentMetric: metric, monthMetrics, week, client });
+      const calc = applyWeeklyGoal(calcWeek(metric, { client }), goal);
       const weeklyHasGoal = calc.mLuc > 0;
       const weeklyProgress = weeklyHasGoal ? (calc.fec / calc.mLuc) * 100 : 0;
       const weeklyGap = weeklyHasGoal ? Math.max(calc.mLuc - calc.fec, 0) : 0;
@@ -685,7 +712,7 @@ export default function SquadPage() {
         priorityScore: clientPriorityScore(row),
       };
     });
-  }, [metricRows, squadClients]);
+  }, [metricRows, metricsByKey, monthPeriodKeys, periodKey, squadClients, week]);
 
 
   const activeClientRows = useMemo(
@@ -1015,18 +1042,15 @@ export default function SquadPage() {
         {
           id: 'profitGoal',
           label: 'Meta de lucro',
-          value: selectedClient.calc.mLuc > 0 ? displayInt(selectedClient.calc.mLuc) : '—',
-          sub:
-            selectedClient.calc.mLuc > 0
-              ? `${displayInt(selectedClient.weeklyGap)} para bater`
-              : 'Sem meta configurada',
-          tone: selectedClient.calc.mLuc > 0 ? 'neutral' : 'muted',
+          value: selectedClient.calc.monthlyGoal > 0 ? displayInt(selectedClient.calc.monthlyGoal) : '—',
+          sub: selectedClient.calc.monthlyGoal > 0 ? 'meta mensal' : 'Sem meta configurada',
+          tone: selectedClient.calc.monthlyGoal > 0 ? 'neutral' : 'muted',
         },
         {
           id: 'weeklyGoal',
           label: 'Meta semanal',
           value: selectedClient.calc.mLuc > 0 ? displayInt(selectedClient.calc.mLuc) : '—',
-          sub: `Semana ${week}`,
+          sub: selectedClient.calc.weeklyCarryover > 0 ? `Semana ${week} · inclui ${displayInt(selectedClient.calc.weeklyCarryover)} acumulado` : `Semana ${week}`,
           tone: selectedClient.calc.mLuc > 0 ? 'neutral' : 'muted',
         },
         {
@@ -1068,6 +1092,7 @@ export default function SquadPage() {
     const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
     const remainingContracts = Math.max((Number(agg.tLuc) || 0) - (Number(agg.tF) || 0), 0);
     const weeklyGoal = Number(agg.tLuc) || 0;
+    const monthlyGoal = Number(agg.tMonthLuc) || 0;
 
     return [
       {
@@ -1080,11 +1105,11 @@ export default function SquadPage() {
       {
         id: 'profitGoal',
         label: 'Meta de lucro',
-        value: agg.tLuc > 0 ? displayInt(agg.tLuc) : '—',
-        sub: agg.tLuc > 0
+        value: monthlyGoal > 0 ? displayInt(monthlyGoal) : '—',
+        sub: monthlyGoal > 0
           ? `${displayInt(remainingContracts)} para bater`
           : 'Sem meta configurada',
-        tone: agg.tLuc > 0 ? 'neutral' : 'muted',
+        tone: monthlyGoal > 0 ? 'neutral' : 'muted',
       },
       {
         id: 'weeklyGoal',

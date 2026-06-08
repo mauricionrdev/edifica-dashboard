@@ -6,8 +6,11 @@
 //
 //  CONVENÇÕES:
 //  - periodKey = 'YYYY-MM-Sw' (w = 1..4).
-//  - metric.data contém os 8 inputs: investimento, cpl, volume, fechados,
-//    metaLucro, metaEmpate, metaVolume, metaCpl.
+//  - metric.data contém os inputs: investimento, cpl, volume, fechados,
+//    metaLucro/metaSemanal, metaEmpate, metaVolume, metaCpl.
+//  - metaLucro/metaSemanal representam a meta mensal de lucro em contratos.
+//    A meta semanal efetiva é ceil(meta_mensal / 4) + déficit acumulado
+//    das semanas anteriores do mês.
 //  - metric.computed contém agregados já calculados pelo backend:
 //    leadsPrevistos, taxaConversao, contratosPrevistos, isHit, weekStatus.
 //
@@ -25,16 +28,42 @@ export const GDV_TARGET = 70; // % mínima de clientes batendo meta
  * um objeto com todos os derivados usados pela tela, mesmo que computed
  * esteja vazio (ex: período sem preenchimento).
  */
-export function calcWeek(metric) {
+export function monthlyProfitGoalFromMetric(metric, client = {}) {
+  const data = metric?.data || {};
+  const computed = metric?.computed || {};
+
+  const candidates = [
+    computed.monthGoal,
+    computed.metaLucroMensal,
+    data.metaSemanal,
+    data.metaLucro,
+    client.metaLucro,
+    client.meta_lucro,
+  ];
+
+  for (const candidate of candidates) {
+    const value = Number(candidate) || 0;
+    if (value > 0) return value;
+  }
+
+  return 0;
+}
+
+export function baseWeeklyGoalFromMonthly(monthlyGoal) {
+  const goal = Number(monthlyGoal) || 0;
+  return goal > 0 ? Math.ceil(goal / 4) : 0;
+}
+
+export function calcWeek(metric, options = {}) {
   const data = metric?.data || {};
 
   const inv = Number(data.investimento) || 0;
   const cpl = Number(data.cpl) || 0;
   const vol = Number(data.volume) || 0;
   const fec = Number(data.fechados) || 0;
-  const mLucLegacy = Number(data.metaLucro) || 0;
-  const mSem = Number(data.metaSemanal) || 0;
-  const mLuc = mSem > 0 ? mSem : mLucLegacy;
+  const monthlyGoal = monthlyProfitGoalFromMetric(metric, options.client);
+  const baseWeeklyGoal = baseWeeklyGoalFromMonthly(monthlyGoal);
+  const mLuc = Number(options.weeklyGoal) > 0 ? Number(options.weeklyGoal) : baseWeeklyGoal;
   const mEmp = Number(data.metaEmpate) || 0;
   const mVol = Number(data.metaVolume) || 0;
   const mCpl = Number(data.metaCpl) || 0;
@@ -50,6 +79,10 @@ export function calcWeek(metric) {
     vol,
     fec,
     mLuc,
+    monthlyGoal,
+    baseWeeklyGoal,
+    weeklyGoal: mLuc,
+    weeklyCarryover: Math.max(mLuc - baseWeeklyGoal, 0),
     mEmp,
     mVol,
     mCpl,
@@ -63,7 +96,61 @@ export function calcWeek(metric) {
     volOk: lp > 0 && mVol > 0 && lp >= mVol,
     // presença de dados (útil pra saber se o cliente já preencheu a semana)
     hasData:
-      inv > 0 || cpl > 0 || vol > 0 || fec > 0 || mLuc > 0 || mEmp > 0,
+      inv > 0 || cpl > 0 || vol > 0 || fec > 0 || monthlyGoal > 0 || mLuc > 0 || mEmp > 0,
+  };
+}
+
+function weekNumberFromPeriodKey(periodKey) {
+  const match = /-S([1-4])$/.exec(String(periodKey || ''));
+  return match ? Number(match[1]) : null;
+}
+
+function closedFromMetric(metric) {
+  const data = metric?.data || {};
+  const computed = metric?.computed || {};
+  return Number(computed.fec ?? computed.weekClosed ?? data.fechados) || 0;
+}
+
+export function effectiveWeeklyGoal({ currentMetric, monthMetrics = [], week = 1, client = {} } = {}) {
+  const safeWeek = Math.min(Math.max(Number(week) || 1, 1), 4);
+  const monthlyGoal = [currentMetric, ...monthMetrics]
+    .map((metric) => monthlyProfitGoalFromMetric(metric, client))
+    .find((goal) => goal > 0) || monthlyProfitGoalFromMetric(null, client);
+  const baseWeeklyGoal = baseWeeklyGoalFromMonthly(monthlyGoal);
+
+  if (!baseWeeklyGoal) {
+    return { monthlyGoal: 0, baseWeeklyGoal: 0, weeklyGoal: 0, carryover: 0 };
+  }
+
+  let carryover = 0;
+  for (const metric of monthMetrics) {
+    const metricWeek = weekNumberFromPeriodKey(metric?.periodKey || metric?.period_key);
+    if (!metricWeek || metricWeek >= safeWeek) continue;
+    carryover += Math.max(baseWeeklyGoal - closedFromMetric(metric), 0);
+  }
+
+  return {
+    monthlyGoal,
+    baseWeeklyGoal,
+    weeklyGoal: baseWeeklyGoal + carryover,
+    carryover,
+  };
+}
+
+export function applyWeeklyGoal(calc, goal) {
+  const weeklyGoal = Number(goal?.weeklyGoal) || 0;
+  const monthlyGoal = Number(goal?.monthlyGoal) || 0;
+  const baseWeeklyGoal = Number(goal?.baseWeeklyGoal) || 0;
+
+  return {
+    ...calc,
+    mLuc: weeklyGoal,
+    monthlyGoal,
+    baseWeeklyGoal,
+    weeklyGoal,
+    weeklyCarryover: Math.max(Number(goal?.carryover) || 0, 0),
+    isHit: calc.fec > 0 && weeklyGoal > 0 && calc.fec >= weeklyGoal,
+    hasData: Boolean(calc.hasData || monthlyGoal > 0 || weeklyGoal > 0),
   };
 }
 
@@ -81,6 +168,7 @@ export function aggregateCarteira(clientMetrics) {
     tCp = 0,
     tEmp = 0,
     tLuc = 0,
+    tMonthLuc = 0,
     tMV = 0,
     sMC = 0,
     cMC = 0,
@@ -96,6 +184,7 @@ export function aggregateCarteira(clientMetrics) {
     tCp += m.cp;
     tEmp += m.mEmp;
     tLuc += m.mLuc;
+    tMonthLuc += Number(m.monthlyGoal) || 0;
     if (m.mVol) tMV += m.mVol;
     if (m.mCpl) {
       sMC += m.mCpl;
@@ -116,6 +205,7 @@ export function aggregateCarteira(clientMetrics) {
     tCp,
     tEmp,
     tLuc,
+    tMonthLuc,
     tMV,
     taxa,
     cpl,
