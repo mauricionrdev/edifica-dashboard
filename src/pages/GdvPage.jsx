@@ -121,6 +121,10 @@ function effectiveForecast(closed, predicted) {
   return Math.max(Number(closed) || 0, Number(predicted) || 0);
 }
 
+function monthlyGoalTarget(calc = {}) {
+  return Number(calc?.monthlyGoal) || 0;
+}
+
 function periodReferenceDate(year, month0, week) {
   const dayByWeek = { 1: 1, 2: 8, 3: 15, 4: 22 };
   const month = String(Number(month0) + 1).padStart(2, '0');
@@ -183,11 +187,16 @@ function statusTone(calc, clientStatus) {
   if (clientStatus === CLIENT_STATUS.ONBOARDING) return 'onboarding';
   if (clientStatus === CLIENT_STATUS.RAMPAGE) return 'rampage';
   if (!isActiveClientStatus(clientStatus)) return 'muted';
-  if (!calc?.mLuc) return 'muted';
 
-  const progress = (calc.fec / calc.mLuc) * 100;
-  if (calc.fec >= calc.mLuc) return 'green';
-  if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'amber';
+  const goal = monthlyGoalTarget(calc);
+  if (!goal) return 'muted';
+
+  const closed = Number(calc?.fec) || 0;
+  const projected = effectiveForecast(closed, calc?.cp);
+  const progress = (closed / goal) * 100;
+
+  if (closed >= goal) return 'green';
+  if (projected >= goal) return 'amber';
   if (progress >= 55) return 'amber';
   return 'red';
 }
@@ -197,15 +206,21 @@ function statusLabel(calc, clientStatus) {
   if (clientStatus === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (clientStatus === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (clientStatus === CLIENT_STATUS.CHURN) return 'Churn';
-  if (!calc?.mLuc) return 'Sem meta';
-  if (calc.fec >= calc.mLuc) return 'Meta lucro';
-  if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'Vai bater';
-  if ((calc.fec / calc.mLuc) * 100 >= 55) return 'Em andamento';
+
+  const goal = monthlyGoalTarget(calc);
+  if (!goal) return 'Sem meta';
+
+  const closed = Number(calc?.fec) || 0;
+  const projected = effectiveForecast(closed, calc?.cp);
+
+  if (closed >= goal) return 'Meta lucro batida';
+  if (projected >= goal) return 'Vai bater meta lucro';
+  if ((closed / goal) * 100 >= 55) return 'Em andamento';
   return 'Crítico';
 }
 
 function goalState(calc = {}) {
-  const goal = Number(calc.mLuc) || 0;
+  const goal = monthlyGoalTarget(calc);
   const closed = Number(calc.fec) || 0;
   const projected = effectiveForecast(calc.fec, calc.cp);
 
@@ -297,7 +312,9 @@ function toneClass(tone) {
 
 function statusVisualClass(statusText) {
   if (statusText === 'Meta lucro') return styles.profitGoal;
+  if (statusText === 'Meta lucro batida') return styles.profitGoal;
   if (statusText === 'Vai bater') return styles.willHitGoal;
+  if (statusText === 'Vai bater meta lucro') return styles.willHitGoal;
   return '';
 }
 
@@ -1012,7 +1029,9 @@ export default function GdvPage() {
           id: 'profitGoal',
           label: 'Meta de lucro',
           value: calc.monthlyGoal > 0 ? displayInt(calc.monthlyGoal) : '—',
-          sub: calc.monthlyGoal > 0 ? 'meta mensal' : 'Sem meta configurada',
+          sub: calc.monthlyGoal > 0
+            ? `${displayInt(Math.max(calc.monthlyGoal - calc.fec, 0))} para bater no mês`
+            : 'Sem meta configurada',
           tone: calc.monthlyGoal > 0 ? 'neutral' : 'muted',
         },
         {
@@ -1056,24 +1075,24 @@ export default function GdvPage() {
     const filledRows = rows.filter((row) => row.calc?.hasData);
     const weeklyGoal = Number(agg.tLuc) || 0;
     const monthlyGoal = Number(agg.tMonthLuc) || 0;
-    const goalRows = rows.filter((row) => Number(row.calc?.mLuc) > 0);
+    const goalRows = rows.filter((row) => monthlyGoalTarget(row.calc) > 0);
     const hitRows = goalRows.filter((row) => {
-      const target = Number(row.calc?.mLuc) || 0;
+      const target = monthlyGoalTarget(row.calc);
       const closed = Number(row.calc?.fec) || 0;
       return target > 0 && closed >= target;
     });
     const inProgressRows = goalRows.filter((row) => {
-      const target = Number(row.calc?.mLuc) || 0;
+      const target = monthlyGoalTarget(row.calc);
       const closed = Number(row.calc?.fec) || 0;
       const progress = target > 0 ? (closed / target) * 100 : 0;
 
       // Para o GDV, "Previsto bater meta" no consolidado não deve contar
-      // quem já bateu a meta. Esse card representa os clientes em andamento:
-      // ativos, com meta, ainda abaixo da meta e próximos de bater.
+      // quem já bateu a meta mensal. Esse card representa os clientes em andamento:
+      // ativos, com meta, ainda abaixo da meta mensal e próximos de bater.
       return target > 0 && closed < target && progress >= 55;
     });
     const inProgressGap = inProgressRows.reduce((total, row) => {
-      const target = Number(row.calc?.mLuc) || 0;
+      const target = monthlyGoalTarget(row.calc);
       const closed = Number(row.calc?.fec) || 0;
       return total + Math.max(target - closed, 0);
     }, 0);

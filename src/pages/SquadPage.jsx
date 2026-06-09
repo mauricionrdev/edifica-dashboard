@@ -72,12 +72,18 @@ function toneClass(stylesMap, tone) {
 function statusVisualClass(statusText) {
   if (statusText === 'Meta batida') return styles.profitGoal;
   if (statusText === 'Meta lucro') return styles.profitGoal;
+  if (statusText === 'Meta lucro batida') return styles.profitGoal;
   if (statusText === 'Vai bater') return styles.willHitGoal;
+  if (statusText === 'Vai bater meta lucro') return styles.willHitGoal;
   return '';
 }
 
 function effectiveForecast(closed, predicted) {
   return Math.max(Number(closed) || 0, Number(predicted) || 0);
+}
+
+function monthlyGoalTarget(calc = {}) {
+  return Number(calc?.monthlyGoal) || 0;
 }
 
 function parseClientPeriodDate(value) {
@@ -113,11 +119,16 @@ function statusTone(calc, status) {
   if (status === CLIENT_STATUS.ONBOARDING) return 'onboarding';
   if (status === CLIENT_STATUS.RAMPAGE) return 'rampage';
   if (!isActiveClientStatus(status)) return 'muted';
-  if (!calc?.mLuc) return 'muted';
 
-  const progress = (calc.fec / calc.mLuc) * 100;
-  if (calc.fec >= calc.mLuc) return 'green';
-  if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'amber';
+  const goal = monthlyGoalTarget(calc);
+  if (!goal) return 'muted';
+
+  const closed = Number(calc?.fec) || 0;
+  const projected = effectiveForecast(closed, calc?.cp);
+  const progress = (closed / goal) * 100;
+
+  if (closed >= goal) return 'green';
+  if (projected >= goal) return 'amber';
   if (progress >= 55) return 'amber';
   return 'red';
 }
@@ -127,10 +138,16 @@ function statusLabel(calc, status) {
   if (status === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (status === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (status === CLIENT_STATUS.CHURN) return 'Churn';
-  if (!calc?.mLuc) return 'Sem meta';
-  if (calc.fec >= calc.mLuc) return 'Meta batida';
-  if (effectiveForecast(calc.fec, calc.cp) >= calc.mLuc) return 'Vai bater';
-  if ((calc.fec / calc.mLuc) * 100 >= 55) return 'Em andamento';
+
+  const goal = monthlyGoalTarget(calc);
+  if (!goal) return 'Sem meta';
+
+  const closed = Number(calc?.fec) || 0;
+  const projected = effectiveForecast(closed, calc?.cp);
+
+  if (closed >= goal) return 'Meta lucro batida';
+  if (projected >= goal) return 'Vai bater meta lucro';
+  if ((closed / goal) * 100 >= 55) return 'Em andamento';
   return 'Crítico';
 }
 
@@ -742,14 +759,14 @@ export default function SquadPage() {
 
     const hitProfit = activeRows.filter((row) => {
       const closed = Number(row.calc?.fec) || 0;
-      const target = Number(row.calc?.mLuc) || 0;
+      const target = monthlyGoalTarget(row.calc);
       return target > 0 && closed >= target;
     });
 
     const belowGoal = activeRows.filter((row) => {
       const closed = Number(row.calc?.fec) || 0;
       const contractTarget = Number(row.calc?.mEmp) || 0;
-      const profitTarget = Number(row.calc?.mLuc) || 0;
+      const profitTarget = monthlyGoalTarget(row.calc);
 
       if (contractTarget > 0 && closed < contractTarget) return true;
       if (profitTarget > 0 && closed < profitTarget) return true;
@@ -1043,7 +1060,9 @@ export default function SquadPage() {
           id: 'profitGoal',
           label: 'Meta de lucro',
           value: selectedClient.calc.monthlyGoal > 0 ? displayInt(selectedClient.calc.monthlyGoal) : '—',
-          sub: selectedClient.calc.monthlyGoal > 0 ? 'meta mensal' : 'Sem meta configurada',
+          sub: selectedClient.calc.monthlyGoal > 0
+            ? `${displayInt(Math.max(selectedClient.calc.monthlyGoal - selectedClient.calc.fec, 0))} para bater no mês`
+            : 'Sem meta configurada',
           tone: selectedClient.calc.monthlyGoal > 0 ? 'neutral' : 'muted',
         },
         {
@@ -1090,9 +1109,9 @@ export default function SquadPage() {
     }
 
     const prediction = predictionCard(agg.tF, agg.tCp, agg.tLuc);
-    const remainingContracts = Math.max((Number(agg.tLuc) || 0) - (Number(agg.tF) || 0), 0);
     const weeklyGoal = Number(agg.tLuc) || 0;
     const monthlyGoal = Number(agg.tMonthLuc) || 0;
+    const remainingContracts = Math.max(monthlyGoal - (Number(agg.tF) || 0), 0);
 
     return [
       {
