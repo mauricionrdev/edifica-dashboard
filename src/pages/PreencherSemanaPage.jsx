@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
-import { createMetricCampaign, deleteMetricCampaign, getMetric, listMetricCampaigns, upsertMetric } from '../api/metrics.js';
+import { createMetricCampaign, deleteMetricCampaign, getContractsSummary, getMetric, listMetricCampaigns, upsertMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
 import { ChartColumnIcon, PlusIcon, SearchIcon, Select, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/index.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
@@ -144,6 +144,12 @@ function previousMonthWeek4PeriodKey(periodKey) {
   return `${year}-${String(month).padStart(2, '0')}-S4${campaignSuffix}`;
 }
 
+function weekReferenceDate(year, month0, week) {
+  const safeWeek = Math.min(Math.max(Number(week) || 1, 1), 4);
+  const day = [1, 8, 15, 22][safeWeek - 1];
+  return `${year}-${String(month0 + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 function mergeMissingFixedFields(currentForm = {}, candidate = {}) {
   const inherited = {};
 
@@ -230,9 +236,12 @@ function fieldValue(form, localCalc, key) {
   return raw === '' ? '' : raw;
 }
 
-function buildCardSummary({ loaded, goal, fechados, localCalc, form }) {
+function buildCardSummary({ loaded, monthlyGoal, monthlyClosed, weeklyGoal, fechados, localCalc, form }) {
   const hasManualData = ['cpl', 'volume', 'investimento', 'fechados', 'metaSemanal', 'metaEmpate', 'metaVolume', 'metaCpl']
     .some((key) => String(form[key] || '').trim() !== '');
+  const monthGoalValue = Number(monthlyGoal) || 0;
+  const monthClosedValue = Number(monthlyClosed) || 0;
+  const weekGoalValue = Number(weeklyGoal) || 0;
 
   if (!loaded) {
     return { tone: 'neutral', label: 'Carregando' };
@@ -242,16 +251,20 @@ function buildCardSummary({ loaded, goal, fechados, localCalc, form }) {
     return { tone: 'neutral', label: 'Sem dados' };
   }
 
-  if (goal <= 0) {
+  if (monthGoalValue <= 0 && weekGoalValue <= 0) {
     return { tone: 'warning', label: 'Sem meta' };
   }
 
-  if (fechados >= goal) {
+  if (monthGoalValue > 0 && monthClosedValue >= monthGoalValue) {
     return { tone: 'good', label: 'Meta batida' };
   }
 
-  if (localCalc.cp >= goal) {
-    return { tone: 'good', label: 'Vai bater meta' };
+  if (weekGoalValue > 0 && fechados >= weekGoalValue) {
+    return { tone: 'good', label: 'Semana batida' };
+  }
+
+  if (weekGoalValue > 0 && localCalc.cp >= weekGoalValue) {
+    return { tone: 'good', label: 'Semana no ritmo' };
   }
 
   if (fechados > 0 || localCalc.cp > 0 || localCalc.lp > 0) {
@@ -326,7 +339,7 @@ function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canE
   );
 }
 
-function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCount = 0, canEdit, onSaved, onRequestCampaign, onRequestCampaigns }) {
+function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCount = 0, monthlySummary = null, canEdit, onSaved, onRequestCampaign, onRequestCampaigns }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(EMPTY_DATA);
   const [loaded, setLoaded] = useState(false);
@@ -471,9 +484,15 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
     });
   }
 
-  const goal = localCalc.mLuc > 0 ? localCalc.mLuc : parseLocaleNumber(form.metaSemanal, 0);
+  const weeklyGoal = localCalc.mLuc > 0 ? localCalc.mLuc : parseLocaleNumber(form.metaSemanal, 0);
   const fechados = parseLocaleNumber(form.fechados, 0);
-  const summary = buildCardSummary({ loaded, goal, fechados, localCalc, form });
+  const monthlyGoal = Number(monthlySummary?.monthGoal) || Number(client.metaLucro) || 0;
+  const savedMonthClosed = Number(monthlySummary?.monthClosed) || 0;
+  const savedWeekClosed = Number(monthlySummary?.weekClosed) || 0;
+  const monthlyClosed = (savedMonthClosed > 0 || savedWeekClosed > 0)
+    ? Math.max(savedMonthClosed - savedWeekClosed + fechados, 0)
+    : fechados;
+  const summary = buildCardSummary({ loaded, monthlyGoal, monthlyClosed, weeklyGoal, fechados, localCalc, form });
   const avatarUrl = getClientAvatar(client);
   const ownerLabel = [client.squadName, client.gdvName || client.gestor].filter(Boolean).join(' · ');
 
@@ -564,6 +583,7 @@ const WeekCard = memo(WeekCardBase, (prevProps, nextProps) => {
     prevProps.week === nextProps.week &&
     prevProps.campaignLabel === nextProps.campaignLabel &&
     prevProps.campaignCount === nextProps.campaignCount &&
+    prevProps.monthlySummary === nextProps.monthlySummary &&
     prevProps.canEdit === nextProps.canEdit &&
     prevProps.onSaved === nextProps.onSaved &&
     prevProps.onRequestCampaign === nextProps.onRequestCampaign &&
@@ -591,8 +611,15 @@ export default function PreencherSemanaPage() {
   const [campaignListClient, setCampaignListClient] = useState(null);
   const [campaignDraft, setCampaignDraft] = useState('');
   const [pendingDeleteCampaign, setPendingDeleteCampaign] = useState(null);
+  const [summaryReloadKey, setSummaryReloadKey] = useState(0);
+  const [monthlySummaryByClient, setMonthlySummaryByClient] = useState({});
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
+  const summaryDate = useMemo(() => weekReferenceDate(year, month0, week), [month0, week, year]);
+
+  const handleMetricSaved = useCallback(() => {
+    setSummaryReloadKey((value) => value + 1);
+  }, []);
 
   const handleOpenCampaignModal = useCallback((client) => {
     setCampaignModalClient(client || null);
@@ -686,6 +713,34 @@ export default function PreencherSemanaPage() {
       showToast('Erro ao excluir campanha', 'error');
     }
   }, [campaignListClient?.id, pendingDeleteCampaign, showToast]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMonthlySummary() {
+      try {
+        const res = await getContractsSummary({
+          date: summaryDate,
+          squadId: squadFilter || undefined,
+          clientId: clientFilter || undefined,
+        });
+        if (cancelled) return;
+        const next = {};
+        (Array.isArray(res?.clients) ? res.clients : []).forEach((item) => {
+          if (item?.clientId) next[item.clientId] = item;
+        });
+        setMonthlySummaryByClient(next);
+      } catch {
+        if (!cancelled) setMonthlySummaryByClient({});
+      }
+    }
+
+    void loadMonthlySummary();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clientFilter, squadFilter, summaryDate, summaryReloadKey]);
 
   const activeClients = useMemo(
     () => (Array.isArray(clients) ? clients.filter((client) => client && isActiveClientStatus(client.status)) : []),
@@ -994,8 +1049,9 @@ export default function PreencherSemanaPage() {
                           periodKey={periodKey}
                           week={week}
                           campaignCount={clientCampaigns.length}
+                          monthlySummary={monthlySummaryByClient?.[client.id] || null}
                           canEdit={canEditMetrics}
-                          onSaved={() => {}}
+                          onSaved={handleMetricSaved}
                           onRequestCampaign={handleOpenCampaignModal}
                           onRequestCampaigns={handleOpenCampaignsModal}
                         />
@@ -1078,8 +1134,9 @@ export default function PreencherSemanaPage() {
                         periodKey={campaignMetricPeriodKey(periodKey, campaign)}
                         week={week}
                         campaignLabel={campaign.name}
+                        monthlySummary={monthlySummaryByClient?.[campaignListClient.id] || null}
                         canEdit={canEditMetrics}
-                        onSaved={() => {}}
+                        onSaved={handleMetricSaved}
                         onRequestCampaign={handleOpenCampaignModal}
                       />
                     </section>
