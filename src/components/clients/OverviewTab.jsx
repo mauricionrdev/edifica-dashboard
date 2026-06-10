@@ -16,6 +16,7 @@ import FeeScheduleTab from './FeeScheduleTab.jsx';
 import styles from './OverviewTab.module.css';
 
 const DEBOUNCE_MS = 400;
+const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
 
 function withCurrentResponsible(options, selectedName) {
   const currentName = String(selectedName || '').trim();
@@ -45,6 +46,8 @@ function buildForm(client) {
       metaLucro: '',
       startDate: '',
       endDate: '',
+      internalCommercial: 'no',
+      internalSeller: '',
     };
   }
 
@@ -58,6 +61,8 @@ function buildForm(client) {
     metaLucro: client.metaLucro != null ? formatLocaleNumber(client.metaLucro, '') : '',
     startDate: client.startDate || '',
     endDate: client.endDate || '',
+    internalCommercial: client.internalCommercial || client.internal_commercial_enabled ? 'yes' : 'no',
+    internalSeller: client.internalSeller || client.internal_seller || '',
   };
 }
 
@@ -144,6 +149,27 @@ export default function OverviewTab({
   function onSelectChange(fieldKey, apiKey, rawValue) {
     setForm((current) => ({ ...current, [fieldKey]: rawValue }));
     commit(fieldKey, { [apiKey]: rawValue || (apiKey === 'squadId' ? null : '') });
+  }
+
+  function onInternalCommercialChange(rawValue) {
+    const enabled = rawValue === 'yes';
+    setForm((current) => ({
+      ...current,
+      internalCommercial: enabled ? 'yes' : 'no',
+      internalSeller: enabled ? current.internalSeller : '',
+    }));
+    commit('internalCommercial', {
+      internalCommercial: enabled,
+      internalSeller: enabled ? form.internalSeller.trim() : '',
+    });
+  }
+
+  function onInternalSellerChange(rawValue) {
+    setForm((current) => ({ ...current, internalSeller: rawValue }));
+    commitDebounced('internalSeller', {
+      internalCommercial: true,
+      internalSeller: String(rawValue || '').trim(),
+    });
   }
 
   function onDateChange(fieldKey, apiKey, rawValue) {
@@ -304,6 +330,43 @@ export default function OverviewTab({
                 ))}
               </Select>
             </div>
+
+            <div className={drawerStyles.field}>
+              <label className={drawerStyles.label} htmlFor="cd-internal-commercial">Comercial Interno</label>
+              <Select
+                id="cd-internal-commercial"
+                className={drawerStyles.selectControl}
+                value={form.internalCommercial}
+                onChange={(event) => onInternalCommercialChange(event.target.value)}
+                disabled={deleting || !canEdit || Boolean(saving.internalCommercial)}
+                aria-label="Comercial Interno"
+              >
+                <option value="no">Não possui comercial interno</option>
+                <option value="yes">Possui comercial interno</option>
+              </Select>
+            </div>
+
+            {form.internalCommercial === 'yes' ? (
+              <div className={drawerStyles.field}>
+                <label className={drawerStyles.label} htmlFor="cd-internal-seller">Vendedor Interno</label>
+                <input
+                  id="cd-internal-seller"
+                  className={drawerStyles.input}
+                  type="text"
+                  list="cd-internal-seller-options"
+                  maxLength={80}
+                  value={form.internalSeller}
+                  onChange={(event) => onInternalSellerChange(event.target.value)}
+                  disabled={deleting || !canEdit || Boolean(saving.internalSeller)}
+                  placeholder="Michael, Camila ou novo vendedor"
+                />
+                <datalist id="cd-internal-seller-options">
+                  {INTERNAL_SELLER_OPTIONS.map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
