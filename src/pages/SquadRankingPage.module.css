@@ -1595,3 +1595,155 @@
     min-width: 0;
   }
 }
+
+
+/* v22 · Refinamento do histórico oficial + aura com camadas */
+.podiumCard_champion {
+  overflow: hidden;
+}
+
+.podiumCard_champion .podiumBar span {
+  box-shadow: 0 0 18px rgba(245, 184, 0, 0.28);
+}
+
+.podiumCard_champion::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(closest-side at 50% 60%, rgba(245, 184, 0, 0.15), transparent 70%),
+    linear-gradient(105deg, transparent 0%, transparent 28%, rgba(245, 184, 0, 0.18) 29%, transparent 31%, transparent 68%, rgba(245, 184, 0, 0.12) 69%, transparent 71%),
+    linear-gradient(76deg, transparent 0%, transparent 18%, rgba(245, 184, 0, 0.10) 19%, transparent 21%, transparent 82%, rgba(245, 184, 0, 0.10) 83%, transparent 85%);
+  opacity: .66;
+  transform: translateY(10px) scale(1.02);
+  animation: championKiRise 1.65s ease-in-out infinite;
+}
+
+.podiumCard_champion::after {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 50% 74%, rgba(245, 184, 0, 0.16), transparent 58%),
+    conic-gradient(from 20deg at 50% 64%, transparent 0 18%, rgba(245, 184, 0, 0.18) 20%, transparent 23% 48%, rgba(245, 184, 0, 0.16) 51%, transparent 54% 75%, rgba(245, 184, 0, 0.12) 78%, transparent 82% 100%);
+  filter: blur(10px);
+  opacity: .82;
+  animation: championKiFlicker 1.1s steps(2, end) infinite;
+}
+
+.podiumCard_champion > * {
+  position: relative;
+  z-index: 2;
+}
+
+.podiumCrown {
+  font-family: inherit;
+}
+
+.podiumMeta div {
+  min-width: 0;
+}
+
+.podiumMeta div:last-child {
+  justify-self: end;
+  text-align: right;
+}
+
+.championsSection {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 60%),
+    var(--bg-canvas);
+}
+
+.championsHeader {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+}
+
+.championsEmpty {
+  min-height: 66px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--line-subtle);
+}
+
+.championsEmpty span {
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--surface-panel);
+  color: var(--accent-amber, #f5b800);
+}
+
+.championsEmpty strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.championRow {
+  background: transparent;
+  transition: background 150ms ease;
+}
+
+.championRow:hover {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.championTrophies {
+  min-width: 0;
+}
+
+.championTrophy {
+  border-radius: 999px;
+  background: rgba(245, 184, 0, 0.055);
+}
+
+@keyframes championKiRise {
+  0% {
+    opacity: .46;
+    transform: translateY(16px) scaleX(1);
+    filter: blur(0);
+  }
+  50% {
+    opacity: .82;
+    transform: translateY(-6px) scaleX(1.025);
+    filter: blur(.5px);
+  }
+  100% {
+    opacity: .46;
+    transform: translateY(-20px) scaleX(.985);
+    filter: blur(0);
+  }
+}
+
+@keyframes championKiFlicker {
+  0% {
+    opacity: .55;
+    transform: scale(1) skewX(-1deg);
+  }
+  35% {
+    opacity: .95;
+    transform: scale(1.018) skewX(1.2deg);
+  }
+  70% {
+    opacity: .68;
+    transform: scale(1.006) skewX(-.6deg);
+  }
+  100% {
+    opacity: .88;
+    transform: scale(1.022) skewX(.8deg);
+  }
+}

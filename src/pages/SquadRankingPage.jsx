@@ -502,9 +502,15 @@ export default function SquadRankingPage() {
           </header>
 
           {championsLoading && !visibleChampions.length ? (
-            <StateBlock compact variant="loading" title="Carregando campeões" />
+            <div className={styles.championsEmpty}>
+              <span aria-hidden="true">•</span>
+              <strong>Carregando campeões oficiais</strong>
+            </div>
           ) : visibleChampions.length === 0 ? (
-            <StateBlock compact variant="empty" title="Nenhum campeão fechado ainda" />
+            <div className={styles.championsEmpty}>
+              <span aria-hidden="true">🏆</span>
+              <strong>Nenhum campeão oficial registrado no banco</strong>
+            </div>
           ) : (
             <div className={styles.championsList}>
               {visibleChampions.map((item) => (
