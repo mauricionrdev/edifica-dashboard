@@ -562,6 +562,13 @@ export default function SquadRankingPage() {
             </div>
           ) : (
             <div className={styles.championHistoryList}>
+              <div className={styles.championHistoryColumns}>
+                <span>Competência</span>
+                <span>Campeão</span>
+                <span>Resultado fechado</span>
+                <span>Títulos</span>
+              </div>
+
               {visibleChampions.map((item) => {
                 const trophyCount = Math.max(1, Number(item.trophyNumber) || 1);
                 return (
@@ -572,11 +579,8 @@ export default function SquadRankingPage() {
                     </div>
 
                     <div className={styles.championWinner}>
-                      <div className={styles.championTrophyBadge} aria-hidden="true">🏆</div>
-                      <div>
-                        <strong>{item.squadName || 'Squad'}</strong>
-                        <span>{item.ownerName || 'Sem responsável'}</span>
-                      </div>
+                      <strong>{item.squadName || 'Squad'}</strong>
+                      <span>{item.ownerName || 'Sem responsável'}</span>
                     </div>
 
                     <div className={styles.championHistoryMetrics}>
@@ -587,7 +591,7 @@ export default function SquadRankingPage() {
                     </div>
 
                     <div className={styles.championTitles}>
-                      <div className={styles.championTitleIcons} aria-label={`${trophyCount} troféus acumulados até esse mês`}>
+                      <div className={styles.championTitleIcons} aria-label={`${trophyCount} títulos acumulados até esse mês`}>
                         {Array.from({ length: trophyCount }).map((_, index) => (
                           <span key={`${item.periodMonth}-${index}`} aria-hidden="true">🏆</span>
                         ))}
