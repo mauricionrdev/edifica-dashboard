@@ -73,6 +73,7 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
       <span className={styles.podiumGhostRank}>{row.position}</span>
       <span className={styles.podiumRank}>{rankLabel(row.position)}</span>
       {row.position === 1 ? <span className={styles.podiumTag}>Destaque</span> : null}
+      {row.position === 1 ? <span className={styles.podiumCrown} aria-hidden="true">👑</span> : null}
 
       <div className={styles.podiumAvatarWrap}>
         <div className={styles.podiumAvatar}>
@@ -99,10 +100,6 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
         <div>
           <span>Meta Lucro</span>
           <strong>{row.metaActiveDisplay}</strong>
-        </div>
-        <div>
-          <span>Previsto</span>
-          <strong>{row.predictedGoalDisplay}</strong>
         </div>
         <div>
           <span>Churn</span>
@@ -137,6 +134,8 @@ export default function SquadRankingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [assetVersion, setAssetVersion] = useState(0);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyChampions, setHistoryChampions] = useState([]);
 
   const syncSettings = useCallback((settings) => {
     const next = {
@@ -164,6 +163,7 @@ export default function SquadRankingPage() {
     }
   }, [period.m, period.y, syncSettings]);
 
+
   const fetchSettings = useCallback(async () => {
     try {
       const response = await getRankingSettings();
@@ -172,6 +172,41 @@ export default function SquadRankingPage() {
       // O ranking também devolve as configurações. Falha isolada aqui não deve quebrar a tela validada.
     }
   }, [syncSettings]);
+
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const results = await Promise.all(
+        periodOptions.map(async (option) => {
+          try {
+            const response = await getSquadRanking({ date: buildReferenceDate(option.y, option.m) });
+            const winner = Array.isArray(response?.rows) && response.rows.length ? response.rows[0] : null;
+            return { option, winner };
+          } catch {
+            return { option, winner: null };
+          }
+        })
+      );
+
+      const winners = results.filter((entry) => entry.winner && (entry.winner.squad?.id || entry.winner.squadId));
+      const titlesBySquad = winners.reduce((map, entry) => {
+        const squadId = entry.winner.squad?.id || entry.winner.squadId;
+        map.set(squadId, (map.get(squadId) || 0) + 1);
+        return map;
+      }, new Map());
+
+      setHistoryChampions(winners.map((entry) => {
+        const squadId = entry.winner.squad?.id || entry.winner.squadId;
+        return {
+          period: entry.option,
+          winner: entry.winner,
+          titles: titlesBySquad.get(squadId) || 1,
+        };
+      }));
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [periodOptions]);
 
   const handlePeriodChange = useCallback((event) => {
     const [year, month] = String(event.target.value || '').split('-').map(Number);
@@ -182,7 +217,8 @@ export default function SquadRankingPage() {
   useEffect(() => {
     fetchRanking();
     fetchSettings();
-  }, [fetchRanking, fetchSettings]);
+    fetchHistory();
+  }, [fetchHistory, fetchRanking, fetchSettings]);
 
   useEffect(() => subscribeAvatarChange(() => setAssetVersion((current) => current + 1)), []);
 
@@ -201,6 +237,14 @@ export default function SquadRankingPage() {
       description: null,
       actions: (
         <div className={styles.headerActions}>
+          <label className={styles.topbarPeriodFilter}>
+            <span>Competência</span>
+            <select value={periodKey(period.y, period.m)} onChange={handlePeriodChange} aria-label="Competência do ranking">
+              {periodOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
           <Button
             variant="ghost"
             size="sm"
@@ -218,7 +262,7 @@ export default function SquadRankingPage() {
         </div>
       ),
     });
-  }, [fetchRanking, setPanelHeader]);
+  }, [fetchRanking, handlePeriodChange, period.m, period.y, periodOptions, setPanelHeader]);
 
   const rankingRows = useMemo(() => {
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -380,14 +424,6 @@ export default function SquadRankingPage() {
             <h1>Ranking Squads</h1>
             <p>Resultado realizado e previsão dos squads em {MONTHS_FULL[period.m]} de {period.y}.</p>
           </div>
-          <label className={styles.periodFilter}>
-            <span>Competência</span>
-            <select value={periodKey(period.y, period.m)} onChange={handlePeriodChange}>
-              {periodOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </label>
         </header>
 
         <section className={styles.podiumSection}>
@@ -400,6 +436,49 @@ export default function SquadRankingPage() {
               <PodiumCard row={podiumRows[1]} variant="runnerUp" onOpen={openSquad} />
               <PodiumCard row={podiumRows[0]} variant="champion" onOpen={openSquad} />
               <PodiumCard row={podiumRows[2]} variant="third" onOpen={openSquad} />
+            </div>
+          )}
+        </section>
+
+        <section className={styles.historySection}>
+          <div className={styles.historyHeader}>
+            <div>
+              <h2>Campeões por mês</h2>
+              <p>Histórico dos vencedores mensais e taças acumuladas por squad.</p>
+            </div>
+          </div>
+
+          {historyLoading && !historyChampions.length ? (
+            <StateBlock compact variant="loading" title="Carregando campeões" />
+          ) : historyChampions.length === 0 ? (
+            <StateBlock compact variant="empty" title="Nenhum campeão histórico encontrado" />
+          ) : (
+            <div className={styles.historyList}>
+              {historyChampions.map((entry) => {
+                const winner = entry.winner || {};
+                const squad = winner.squad || {};
+                const ownerName = winner.ownerName || squad.owner?.name || 'Sem responsável';
+                const titleCount = Math.max(1, Number(entry.titles) || 1);
+                return (
+                  <div key={entry.period.value} className={styles.historyRow}>
+                    <div className={styles.historyMonth}>
+                      <strong>{entry.period.label}</strong>
+                      <span>Campeão do mês</span>
+                    </div>
+
+                    <div className={styles.historyChampion}>
+                      <strong>{squad.name || 'Squad'}</strong>
+                      <span>{ownerName}</span>
+                    </div>
+
+                    <div className={styles.historyTrophies} aria-label={`${titleCount} troféus`}>
+                      {Array.from({ length: titleCount }).map((_, index) => (
+                        <span key={`${entry.period.value}-${index}`} className={styles.historyTrophy} aria-hidden="true">🏆</span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
