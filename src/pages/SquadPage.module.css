@@ -8399,9 +8399,13 @@
 .portfolioFilterInternal,
 .portfolioFilter button.portfolioFilterInternal:hover,
 .portfolioFilter button.portfolioFilterInternal:focus,
-.portfolioFilter button.portfolioFilterInternal:focus-visible {
-  border-color: rgba(245, 184, 0, 0.24);
-  background: rgba(245, 184, 0, 0.08);
-  color: var(--accent, #f5b800);
+.portfolioFilter button.portfolioFilterInternal:focus-visible,
+.portfolioFilter button.portfolioFilterInternal.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterInternal.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterInternal.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterInternal.portfolioFilterActive:focus-visible {
+  border-color: rgba(168, 85, 247, 0.28);
+  background: rgba(168, 85, 247, 0.09);
+  color: #c084fc;
   box-shadow: none;
 }

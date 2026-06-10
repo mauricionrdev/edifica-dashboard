@@ -69,6 +69,10 @@ function isPortfolioStatus(status) {
   );
 }
 
+function hasInternalCommercial(client) {
+  return Boolean(client?.internalCommercial) && Boolean(String(client?.internalSeller || '').trim());
+}
+
 function normalizeGdvAssignmentName(value) {
   return String(value || '')
     .trim()
@@ -798,6 +802,10 @@ export default function GdvPage() {
         return rows.filter((row) => row.client?.status === CLIENT_STATUS.ONBOARDING);
       }
 
+      if (portfolioFilter === 'internalCommercial') {
+        return rows.filter((row) => hasInternalCommercial(row.client));
+      }
+
       return rows.filter((row) => isActiveClientStatus(row.client?.status));
     })();
 
@@ -813,13 +821,14 @@ export default function GdvPage() {
 
     if (!query) return base;
 
-    return base.filter(({ client }) => matchesAnySearch([client.name, client.squadName, client.gestor], query));
+    return base.filter(({ client }) => matchesAnySearch([client.name, client.squadName, client.gestor, client.internalSeller], query));
   }, [clientQuery, portfolioFilter, rows]);
 
   const portfolioEmptyLabel = useMemo(() => {
     if (hasActiveSearch) return 'Busca sem resultados';
     if (portfolioFilter === 'rampage') return 'Sem rampagem';
     if (portfolioFilter === 'onboarding') return 'Sem clientes onboard';
+    if (portfolioFilter === 'internalCommercial') return 'Sem clientes com comercial interno';
     return 'Carteira sem clientes';
   }, [hasActiveSearch, portfolioFilter]);
 
@@ -1015,11 +1024,13 @@ export default function GdvPage() {
     const activeRows = rows.filter((row) => isActiveClientStatus(row.client?.status));
     const rampageRows = rows.filter((row) => row.client?.status === CLIENT_STATUS.RAMPAGE);
     const onboardingRows = rows.filter((row) => row.client?.status === CLIENT_STATUS.ONBOARDING);
+    const internalCommercialRows = rows.filter((row) => hasInternalCommercial(row.client));
 
     return [
       { id: 'all', label: 'Carteira', count: activeRows.length },
       { id: 'onboarding', label: 'Onboard', count: onboardingRows.length },
       { id: 'rampage', label: 'Rampagem', count: rampageRows.length },
+      { id: 'internalCommercial', label: 'Comercial Interno', count: internalCommercialRows.length },
     ];
   }, [rows]);
 
@@ -1408,6 +1419,7 @@ export default function GdvPage() {
                   portfolioFilter === item.id ? styles.portfolioFilterActive : '',
                   item.id === 'rampage' ? styles.portfolioFilterRampage : '',
                   item.id === 'onboarding' ? styles.portfolioFilterOnboarding : '',
+                  item.id === 'internalCommercial' ? styles.portfolioFilterInternal : '',
                 ].filter(Boolean).join(' ')}
                 onClick={() => setPortfolioFilter(item.id)}
               >

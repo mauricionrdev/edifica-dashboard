@@ -3551,3 +3551,19 @@
   background: var(--danger-soft);
   color: var(--danger-text);
 }
+
+
+/* v33 · Segmentação Comercial Interno */
+.portfolioFilterInternal,
+.portfolioFilter button.portfolioFilterInternal:hover,
+.portfolioFilter button.portfolioFilterInternal:focus,
+.portfolioFilter button.portfolioFilterInternal:focus-visible,
+.portfolioFilter button.portfolioFilterInternal.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterInternal.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterInternal.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterInternal.portfolioFilterActive:focus-visible {
+  border-color: rgba(168, 85, 247, 0.28);
+  background: rgba(168, 85, 247, 0.09);
+  color: #c084fc;
+  box-shadow: none;
+}
