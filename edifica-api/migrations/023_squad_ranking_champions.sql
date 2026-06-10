@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS squad_ranking_champions (
   realized_percent DECIMAL(8,2) NOT NULL DEFAULT 0,
   predicted_percent DECIMAL(8,2) NOT NULL DEFAULT 0,
   churn_percent DECIMAL(8,2) NOT NULL DEFAULT 0,
+  mrr DECIMAL(12,2) NOT NULL DEFAULT 0,
   position INT NOT NULL DEFAULT 1,
   trophy_number INT NOT NULL DEFAULT 1,
   closed_at DATE NOT NULL,

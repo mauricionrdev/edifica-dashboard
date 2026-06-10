@@ -946,7 +946,7 @@ async function ensureRankingChampionSnapshots(req) {
   if (!months.length || req.emptyWorkspaceView) return [];
 
   const existingRows = await query(
-    `SELECT period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, position, trophy_number, closed_at, snapshot_json
+    `SELECT period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, mrr, position, trophy_number, closed_at, snapshot_json
        FROM squad_ranking_champions
       WHERE period_month >= ?
       ORDER BY period_month ASC`,
@@ -971,7 +971,7 @@ async function ensureRankingChampionSnapshots(req) {
 
     await query(
       `INSERT INTO squad_ranking_champions
-        (period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, position, trophy_number, closed_at, snapshot_json)
+        (period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, mrr, position, trophy_number, closed_at, snapshot_json)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, LAST_DAY(?), ?)
        ON DUPLICATE KEY UPDATE
         squad_name = VALUES(squad_name),
@@ -979,6 +979,7 @@ async function ensureRankingChampionSnapshots(req) {
         realized_percent = VALUES(realized_percent),
         predicted_percent = VALUES(predicted_percent),
         churn_percent = VALUES(churn_percent),
+        mrr = VALUES(mrr),
         position = VALUES(position),
         snapshot_json = VALUES(snapshot_json),
         updated_at = CURRENT_TIMESTAMP`,
@@ -990,6 +991,7 @@ async function ensureRankingChampionSnapshots(req) {
         Number(winner.metaActiveProgress) || 0,
         Number(winner.predictedGoalProgress) || 0,
         Number(winner.churnRate) || 0,
+        Number(winner.mrr) || 0,
         Number(winner.position) || 1,
         nextTrophyNumber,
         monthPrefix + '-01',
@@ -999,7 +1001,7 @@ async function ensureRankingChampionSnapshots(req) {
   }
 
   return query(
-    `SELECT period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, position, trophy_number, closed_at, snapshot_json
+    `SELECT period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, mrr, position, trophy_number, closed_at, snapshot_json
        FROM squad_ranking_champions
       WHERE period_month >= ?
       ORDER BY period_month DESC`,
@@ -1333,6 +1335,7 @@ router.get('/ranking/champions', requirePermission('ranking.view'), async (req, 
         realizedPercent: Number(row.realized_percent) || 0,
         predictedPercent: Number(row.predicted_percent) || 0,
         churnPercent: Number(row.churn_percent) || 0,
+        mrr: Number(row.mrr) || 0,
         position: Number(row.position) || 1,
         trophyNumber: Number(row.trophy_number) || 1,
         closedAt: row.closed_at,
