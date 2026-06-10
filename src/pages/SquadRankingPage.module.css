@@ -1342,22 +1342,24 @@
     grid-template-columns: 1fr;
   }
 }
+
 /* ========================================================================== 
-   v20 · Ajustes visuais do ranking
-   - competência na topbar
-   - campeão com aura + coroa
+   v21 · Correções do ranking oficial
+   - competência no top-bar
    - previsto sem duplicação
-   - histórico de campeões com troféus
+   - destaque do campeão sem quebrar o card
+   - histórico oficial abaixo da lista do mês atual
    ========================================================================== */
 .headerActions {
   gap: 8px;
 }
 
 .topbarPeriodFilter {
-  min-width: 188px;
+  min-width: 186px;
   display: grid;
   gap: 5px;
   margin-right: 4px;
+  text-align: left;
 }
 
 .topbarPeriodFilter span {
@@ -1396,62 +1398,35 @@
 }
 
 .podiumCard_champion {
-  isolation: isolate;
-}
-
-.podiumCard_champion::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(from 0deg, rgba(245,184,0,0.1), rgba(245,184,0,0.8), rgba(245,184,0,0.15), rgba(245,184,0,0.9), rgba(245,184,0,0.12));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
-  z-index: 0;
-  animation: rankingAuraSpin 6s linear infinite;
-}
-
-.podiumCard_champion::after {
-  content: '';
-  position: absolute;
-  inset: -8px;
-  border-radius: inherit;
-  background: radial-gradient(circle at 50% 20%, rgba(245,184,0,0.18), transparent 60%);
-  filter: blur(14px);
-  opacity: .9;
-  pointer-events: none;
-  z-index: 0;
-  animation: rankingAuraPulse 2.8s ease-in-out infinite;
-}
-
-.podiumCard_champion > * {
-  position: relative;
-  z-index: 1;
+  box-shadow: 0 0 0 1px rgba(245, 184, 0, 0.06), 0 0 22px rgba(245, 184, 0, 0.08);
+  animation: championKiPulse 2.8s ease-in-out infinite;
 }
 
 .podiumCrown {
   position: absolute;
   top: 10px;
   right: 12px;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245, 184, 0, 0.28);
+  border-radius: 999px;
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--accent-amber, #f5b800);
   font-size: 20px;
   line-height: 1;
-  filter: drop-shadow(0 0 8px rgba(245,184,0,0.22));
-  z-index: 2;
-}
-
-.podiumForecast {
-  margin-top: 10px;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(245, 184, 0, 0.12);
+  pointer-events: none;
 }
 
 .podiumMeta {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.historySection {
+.championsSection {
   margin-top: 14px;
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-3);
@@ -1459,13 +1434,13 @@
   overflow: hidden;
 }
 
-.historyHeader {
+.championsHeader {
   padding: 14px 16px;
   border-bottom: 1px solid var(--line-subtle);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent);
 }
 
-.historyHeader h2 {
+.championsHeader h2 {
   margin: 0;
   color: var(--text-primary);
   font-size: 14px;
@@ -1473,81 +1448,124 @@
   font-weight: 620;
 }
 
-.historyHeader p {
+.championsHeader p {
   margin: 4px 0 0;
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 1.4;
+  font-weight: 500;
 }
 
-.historyList {
+.championsList {
   display: flex;
   flex-direction: column;
 }
 
-.historyRow {
-  min-height: 64px;
+.championRow {
+  min-height: 68px;
   padding: 12px 16px;
   display: grid;
-  grid-template-columns: minmax(170px, 0.9fr) minmax(160px, 1fr) minmax(170px, 1.2fr);
-  gap: 12px;
+  grid-template-columns: minmax(170px, 0.8fr) minmax(160px, 0.8fr) minmax(240px, 1fr) minmax(130px, 0.7fr);
+  gap: 14px;
   align-items: center;
   border-bottom: 1px solid var(--line-subtle);
 }
 
-.historyRow:last-child {
+.championRow:last-child {
   border-bottom: 0;
 }
 
-.historyMonth,
-.historyChampion {
+.championPeriod,
+.championIdentity {
   min-width: 0;
   display: grid;
   gap: 4px;
 }
 
-.historyMonth strong,
-.historyChampion strong {
+.championPeriod strong,
+.championIdentity strong {
+  overflow: hidden;
   color: var(--text-primary);
   font-size: 13px;
+  line-height: 1.2;
   font-weight: 620;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.historyMonth span,
-.historyChampion span {
+.championPeriod span,
+.championIdentity span {
+  overflow: hidden;
   color: var(--text-secondary);
   font-size: 11px;
+  line-height: 1.2;
   font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.historyTrophies {
+.championMetrics {
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  justify-content: flex-end;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.historyTrophy {
+.championMetrics span {
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.championTrophies {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.championTrophy {
   display: inline-grid;
   place-items: center;
   width: 24px;
   height: 24px;
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1;
-  filter: drop-shadow(0 0 6px rgba(245,184,0,0.18));
+  filter: drop-shadow(0 0 5px rgba(245, 184, 0, 0.14));
 }
 
-@keyframes rankingAuraSpin {
-  to { transform: rotate(360deg); }
+.championsPager {
+  min-height: 48px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
-@keyframes rankingAuraPulse {
-  0%, 100% { opacity: 0.66; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.02); }
+.championsPager span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@keyframes championKiPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(245, 184, 0, 0.06), 0 0 18px rgba(245, 184, 0, 0.06);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(245, 184, 0, 0.20), 0 0 28px rgba(245, 184, 0, 0.14);
+  }
 }
 
 @media (max-width: 1120px) {
@@ -1555,12 +1573,12 @@
     min-width: 160px;
   }
 
-  .historyRow {
+  .championRow {
     grid-template-columns: 1fr;
     justify-items: start;
   }
 
-  .historyTrophies {
+  .championTrophies {
     justify-content: flex-start;
   }
 }

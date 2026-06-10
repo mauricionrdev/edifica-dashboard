@@ -739,6 +739,275 @@ router.get('/presence', requirePermission('metrics.view'), async (req, res, next
   }
 });
 
+
+const RANKING_COMPETITION_START_MONTH = '2026-04';
+
+function monthPrefixFromParts(year, month0) {
+  return `${year}-${String(month0 + 1).padStart(2, '0')}`;
+}
+
+function monthPrefixToDate(monthPrefix) {
+  const [year, month] = String(monthPrefix || '').split('-').map(Number);
+  if (!year || !month) return null;
+  return new Date(Date.UTC(year, month - 1, 1));
+}
+
+function addMonthsToPrefix(monthPrefix, amount) {
+  const date = monthPrefixToDate(monthPrefix);
+  if (!date) return '';
+  date.setUTCMonth(date.getUTCMonth() + amount);
+  return monthPrefixFromParts(date.getUTCFullYear(), date.getUTCMonth());
+}
+
+function compareMonthPrefix(a, b) {
+  return String(a || '').localeCompare(String(b || ''));
+}
+
+function lastClosedRankingMonth(now = new Date()) {
+  const date = new Date(now);
+  const year = date.getUTCFullYear();
+  const month0 = date.getUTCMonth();
+  const lastDay = new Date(Date.UTC(year, month0 + 1, 0)).getUTCDate();
+  if (date.getUTCDate() >= lastDay) return monthPrefixFromParts(year, month0);
+  return addMonthsToPrefix(monthPrefixFromParts(year, month0), -1);
+}
+
+function closedCompetitionMonths(now = new Date()) {
+  const lastClosed = lastClosedRankingMonth(now);
+  if (!lastClosed || compareMonthPrefix(lastClosed, RANKING_COMPETITION_START_MONTH) < 0) return [];
+  const months = [];
+  let cursor = RANKING_COMPETITION_START_MONTH;
+  while (compareMonthPrefix(cursor, lastClosed) <= 0) {
+    months.push(cursor);
+    cursor = addMonthsToPrefix(cursor, 1);
+  }
+  return months;
+}
+
+async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
+  if (req.emptyWorkspaceView) return [];
+
+  const referenceDateSql = monthPrefix + '-01';
+  const ref = new Date(monthPrefix + '-15T00:00:00Z');
+  const weekKey = currentPeriodKey(ref);
+  const prevWeekKey = previousPeriodKey(weekKey);
+  const prevMonthPrefix = previousMonthPrefix(monthPrefix);
+  const rankingMaxWeek = rankingMaxWeekForMonth(monthPrefix);
+  const squadScope = getAllowedSquads(req.user, 'ranking.view.all');
+  const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
+
+  let squadSql = `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.cover_data_url, s.cover_position_x, s.cover_position_y, s.cover_zoom,
+                         u.name AS owner_name, u.email AS owner_email, u.role AS owner_role
+                    FROM squads s
+                    LEFT JOIN users u ON u.id = s.owner_user_id
+                   WHERE 1 = 1`;
+  const squadParams = [];
+
+  if (squadId) {
+    squadSql += ' AND s.id = ?';
+    squadParams.push(squadId);
+  }
+  if (allowedSquads) {
+    if (allowedSquads.length === 0) return [];
+    squadSql += ` AND s.id IN (${allowedSquads.map(() => '?').join(',')})`;
+    squadParams.push(...allowedSquads);
+  }
+  squadSql += ' ORDER BY s.name ASC';
+
+  const squads = await query(squadSql, squadParams);
+  if (squads.length === 0) return [];
+
+  const squadIds = squads.map((squad) => squad.id);
+  const { global: rankingSettings, map: rankingSettingsMap } = await getRankingSettingsMap(squadIds);
+  const squadPlaceholders = squadIds.map(() => '?').join(',');
+
+  const clients = await query(
+    `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.fee_steps_json, c.meta_lucro,
+            c.start_date, c.churn_date, c.created_at
+       FROM clients c
+      WHERE c.squad_id IN (${squadPlaceholders})
+        AND COALESCE(c.start_date, DATE(c.created_at)) <= LAST_DAY(?)`,
+    [...squadIds, referenceDateSql]
+  );
+
+  const clientIds = clients.map((client) => client.id);
+  let metricRows = [];
+  if (clientIds.length > 0) {
+    const clientPlaceholders = clientIds.map(() => '?').join(',');
+    metricRows = await query(
+      `SELECT client_id, period_key, data
+         FROM weekly_metrics
+        WHERE client_id IN (${clientPlaceholders})
+          AND (period_key LIKE ? OR period_key LIKE ?)
+        ORDER BY client_id, period_key`,
+      [...clientIds, monthPrefix + '-S%', prevMonthPrefix + '-S%']
+    );
+  }
+
+  const metricsByClient = new Map();
+  for (const row of metricRows) {
+    if (!metricsByClient.has(row.client_id)) metricsByClient.set(row.client_id, []);
+    metricsByClient.get(row.client_id).push({
+      period_key: row.period_key,
+      data: typeof row.data === 'object' ? row.data : JSON.parse(row.data || '{}'),
+    });
+  }
+
+  const clientsBySquad = new Map();
+  for (const client of clients) {
+    if (!clientsBySquad.has(client.squad_id)) clientsBySquad.set(client.squad_id, []);
+    clientsBySquad.get(client.squad_id).push(client);
+  }
+
+  const rows = squads.map((squad) => {
+    const squadSettings = rankingSettingsMap.get(squadRankingSettingKey(squad.id)) || rankingSettings;
+    const squadGoalPercent = squadSettings.goalPercent;
+    const squadChurnTarget = squadSettings.churnTarget;
+    const squadClients = clientsBySquad.get(squad.id) || [];
+    const portfolioClients = squadClients;
+    const activeClients = squadClients.filter((client) => activeAtMonthEnd(client, monthPrefix));
+    const revenueClients = squadClients.filter(isRevenueClientStatus);
+    const churnedInPeriod = squadClients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
+    const mrrClients = revenueClients.map((client) => {
+      const feeInfo = resolveMonthlyFeeInfo(client, monthPrefix);
+      return { id: client.id, name: client.name, fee: feeInfo.value };
+    });
+    const mrr = mrrClients.reduce((sum, client) => sum + client.fee, 0);
+    const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
+
+    const clientSummaries = activeClients.map((client) => {
+      const clientMetricRows = metricsByClient.get(client.id) || [];
+      const clientMetaLucro = Number(client.meta_lucro) || 0;
+      const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek);
+      const projected = clientProjectedToHitGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
+      return {
+        clientId: client.id,
+        clientMetaLucro,
+        predicted: projected.predicted,
+        hit,
+      };
+    });
+
+    const rankingGoalClients = clientSummaries.filter((client) => client.hit).length;
+    const rankingGoalBaseClients = activeClients.length;
+    const predictedGoalClients = clientSummaries.filter((client) => client.predicted).length;
+    const predictedGoalBaseClients = activeClients.length;
+    const metaActiveProgress = rankingGoalBaseClients > 0 ? (rankingGoalClients / rankingGoalBaseClients) * 100 : 0;
+    const predictedGoalProgress = predictedGoalBaseClients > 0 ? (predictedGoalClients / predictedGoalBaseClients) * 100 : 0;
+
+    return {
+      squad: {
+        id: squad.id,
+        name: squad.name,
+        ownerUserId: squad.owner_user_id || '',
+        owner: squad.owner_user_id ? {
+          id: squad.owner_user_id,
+          name: squad.owner_name || '',
+          email: squad.owner_email || '',
+          role: squad.owner_role || '',
+        } : null,
+        active: Boolean(squad.active),
+        logoUrl: squad.logo_data_url || '',
+        coverUrl: squad.cover_data_url || '',
+      },
+      ownerName: squad.owner_name || 'Sem responsável',
+      ownerRole: squad.owner_role || '',
+      activeClients: activeClients.length,
+      clientsWithGoal: rankingGoalClients,
+      rankingGoalClients,
+      rankingGoalBaseClients,
+      predictedGoalClients,
+      predictedGoalBaseClients,
+      projectedGoalClients: predictedGoalClients,
+      projectedGoalBaseClients: predictedGoalBaseClients,
+      mrr,
+      metaIndex: metaActiveProgress,
+      hitRate: metaActiveProgress,
+      metaActiveProgress,
+      predictedGoalProgress,
+      projectedGoalProgress: predictedGoalProgress,
+      goalPercent: squadGoalPercent,
+      churnRate,
+      churnedClients: churnedInPeriod.length,
+      churnBaseClients: portfolioClients.length,
+      churnTarget: squadChurnTarget,
+      goalOnTarget: metaActiveProgress >= squadGoalPercent,
+      churnOnTarget: churnRate <= squadChurnTarget,
+      rankingScore: metaTargetRankScore(metaActiveProgress, squadGoalPercent),
+      predictedRankingScore: metaTargetRankScore(predictedGoalProgress, squadGoalPercent),
+    };
+  }).sort(compareRankingRows).map((row, index) => ({ ...row, position: index + 1 }));
+
+  return rows;
+}
+
+async function ensureRankingChampionSnapshots(req) {
+  const months = closedCompetitionMonths();
+  if (!months.length || req.emptyWorkspaceView) return [];
+
+  const existingRows = await query(
+    `SELECT period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, position, trophy_number, closed_at, snapshot_json
+       FROM squad_ranking_champions
+      WHERE period_month >= ?
+      ORDER BY period_month ASC`,
+    [RANKING_COMPETITION_START_MONTH]
+  );
+
+  const existingMonths = new Set(existingRows.map((row) => row.period_month));
+  const trophyCounts = new Map();
+  for (const row of existingRows) {
+    trophyCounts.set(row.squad_id, Math.max(Number(row.trophy_number) || 0, trophyCounts.get(row.squad_id) || 0));
+  }
+
+  for (const monthPrefix of months) {
+    if (existingMonths.has(monthPrefix)) continue;
+
+    const rows = await buildSquadRankingSnapshotRows(req, monthPrefix);
+    const winner = rows[0];
+    if (!winner?.squad?.id) continue;
+
+    const nextTrophyNumber = (trophyCounts.get(winner.squad.id) || 0) + 1;
+    trophyCounts.set(winner.squad.id, nextTrophyNumber);
+
+    await query(
+      `INSERT INTO squad_ranking_champions
+        (period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, position, trophy_number, closed_at, snapshot_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, LAST_DAY(?), ?)
+       ON DUPLICATE KEY UPDATE
+        squad_name = VALUES(squad_name),
+        owner_name = VALUES(owner_name),
+        realized_percent = VALUES(realized_percent),
+        predicted_percent = VALUES(predicted_percent),
+        churn_percent = VALUES(churn_percent),
+        position = VALUES(position),
+        snapshot_json = VALUES(snapshot_json),
+        updated_at = CURRENT_TIMESTAMP`,
+      [
+        monthPrefix,
+        winner.squad.id,
+        winner.squad.name || '',
+        winner.ownerName || '',
+        Number(winner.metaActiveProgress) || 0,
+        Number(winner.predictedGoalProgress) || 0,
+        Number(winner.churnRate) || 0,
+        Number(winner.position) || 1,
+        nextTrophyNumber,
+        monthPrefix + '-01',
+        JSON.stringify(winner),
+      ]
+    );
+  }
+
+  return query(
+    `SELECT period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, position, trophy_number, closed_at, snapshot_json
+       FROM squad_ranking_champions
+      WHERE period_month >= ?
+      ORDER BY period_month DESC`,
+    [RANKING_COMPETITION_START_MONTH]
+  );
+}
+
+
 // --------------------------------------------------------------
 //  GET/PUT /api/metrics/ranking/settings
 //  Configuração persistida usada pelo cálculo do ranking.
@@ -1039,6 +1308,48 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     next(err);
   }
 });
+
+
+// --------------------------------------------------------------
+//  GET /api/metrics/ranking/champions
+//  Histórico persistente dos campeões mensais.
+//  A competição passa a valer a partir de 2026-04.
+//  O mês atual só gera troféu quando o mês estiver encerrado.
+// --------------------------------------------------------------
+router.get('/ranking/champions', requirePermission('ranking.view'), async (req, res, next) => {
+  try {
+    if (req.emptyWorkspaceView) {
+      return res.json({ startMonth: RANKING_COMPETITION_START_MONTH, rows: [] });
+    }
+
+    const rows = await ensureRankingChampionSnapshots(req);
+    const payload = rows.map((row) => {
+      const snapshot = parseJson(row.snapshot_json, {});
+      return {
+        periodMonth: row.period_month,
+        squadId: row.squad_id,
+        squadName: row.squad_name,
+        ownerName: row.owner_name,
+        realizedPercent: Number(row.realized_percent) || 0,
+        predictedPercent: Number(row.predicted_percent) || 0,
+        churnPercent: Number(row.churn_percent) || 0,
+        position: Number(row.position) || 1,
+        trophyNumber: Number(row.trophy_number) || 1,
+        closedAt: row.closed_at,
+        snapshot,
+      };
+    });
+
+    res.json({
+      startMonth: RANKING_COMPETITION_START_MONTH,
+      lastClosedMonth: lastClosedRankingMonth(),
+      rows: payload,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 // --------------------------------------------------------------
 //  GET /api/metrics/summary

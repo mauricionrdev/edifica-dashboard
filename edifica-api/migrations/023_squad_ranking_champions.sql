@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS squad_ranking_champions (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  period_month CHAR(7) NOT NULL,
+  squad_id VARCHAR(64) NOT NULL,
+  squad_name VARCHAR(160) NOT NULL,
+  owner_name VARCHAR(160) NULL,
+  realized_percent DECIMAL(8,2) NOT NULL DEFAULT 0,
+  predicted_percent DECIMAL(8,2) NOT NULL DEFAULT 0,
+  churn_percent DECIMAL(8,2) NOT NULL DEFAULT 0,
+  position INT NOT NULL DEFAULT 1,
+  trophy_number INT NOT NULL DEFAULT 1,
+  closed_at DATE NOT NULL,
+  snapshot_json JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uniq_squad_ranking_champions_period (period_month),
+  KEY idx_squad_ranking_champions_squad (squad_id),
+  KEY idx_squad_ranking_champions_closed_at (closed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

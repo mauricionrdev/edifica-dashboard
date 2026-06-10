@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { getRankingSettings, getSquadRanking, updateRankingSettings } from '../api/metrics.js';
+import { getRankingSettings, getSquadRanking, getSquadRankingChampions, updateRankingSettings } from '../api/metrics.js';
 import { Button, CalculatorIcon, CloseIcon, RotateCcwIcon, StateBlock } from '../components/ui/index.js';
 import { MONTHS_FULL, fmtMoney, fmtPct } from '../utils/format.js';
 import { getSquadAvatar, getSquadCover, getUserAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
@@ -73,7 +73,7 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
       <span className={styles.podiumGhostRank}>{row.position}</span>
       <span className={styles.podiumRank}>{rankLabel(row.position)}</span>
       {row.position === 1 ? <span className={styles.podiumTag}>Destaque</span> : null}
-      {row.position === 1 ? <span className={styles.podiumCrown} aria-hidden="true">👑</span> : null}
+      {row.position === 1 ? <span className={styles.podiumCrown} aria-hidden="true">♛</span> : null}
 
       <div className={styles.podiumAvatarWrap}>
         <div className={styles.podiumAvatar}>
@@ -134,8 +134,9 @@ export default function SquadRankingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [assetVersion, setAssetVersion] = useState(0);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyChampions, setHistoryChampions] = useState([]);
+  const [champions, setChampions] = useState([]);
+  const [championsLoading, setChampionsLoading] = useState(false);
+  const [championsPage, setChampionsPage] = useState(1);
 
   const syncSettings = useCallback((settings) => {
     const next = {
@@ -163,7 +164,6 @@ export default function SquadRankingPage() {
     }
   }, [period.m, period.y, syncSettings]);
 
-
   const fetchSettings = useCallback(async () => {
     try {
       const response = await getRankingSettings();
@@ -173,40 +173,18 @@ export default function SquadRankingPage() {
     }
   }, [syncSettings]);
 
-  const fetchHistory = useCallback(async () => {
-    setHistoryLoading(true);
+  const fetchChampions = useCallback(async () => {
+    setChampionsLoading(true);
     try {
-      const results = await Promise.all(
-        periodOptions.map(async (option) => {
-          try {
-            const response = await getSquadRanking({ date: buildReferenceDate(option.y, option.m) });
-            const winner = Array.isArray(response?.rows) && response.rows.length ? response.rows[0] : null;
-            return { option, winner };
-          } catch {
-            return { option, winner: null };
-          }
-        })
-      );
-
-      const winners = results.filter((entry) => entry.winner && (entry.winner.squad?.id || entry.winner.squadId));
-      const titlesBySquad = winners.reduce((map, entry) => {
-        const squadId = entry.winner.squad?.id || entry.winner.squadId;
-        map.set(squadId, (map.get(squadId) || 0) + 1);
-        return map;
-      }, new Map());
-
-      setHistoryChampions(winners.map((entry) => {
-        const squadId = entry.winner.squad?.id || entry.winner.squadId;
-        return {
-          period: entry.option,
-          winner: entry.winner,
-          titles: titlesBySquad.get(squadId) || 1,
-        };
-      }));
+      const response = await getSquadRankingChampions();
+      setChampions(Array.isArray(response?.rows) ? response.rows : []);
+      setChampionsPage(1);
+    } catch {
+      setChampions([]);
     } finally {
-      setHistoryLoading(false);
+      setChampionsLoading(false);
     }
-  }, [periodOptions]);
+  }, []);
 
   const handlePeriodChange = useCallback((event) => {
     const [year, month] = String(event.target.value || '').split('-').map(Number);
@@ -217,8 +195,8 @@ export default function SquadRankingPage() {
   useEffect(() => {
     fetchRanking();
     fetchSettings();
-    fetchHistory();
-  }, [fetchHistory, fetchRanking, fetchSettings]);
+    fetchChampions();
+  }, [fetchChampions, fetchRanking, fetchSettings]);
 
   useEffect(() => subscribeAvatarChange(() => setAssetVersion((current) => current + 1)), []);
 
@@ -357,6 +335,14 @@ export default function SquadRankingPage() {
     [filteredRows]
   );
 
+  const championsPageSize = 5;
+  const championsTotalPages = Math.max(1, Math.ceil(champions.length / championsPageSize));
+  const safeChampionsPage = Math.min(championsPage, championsTotalPages);
+  const visibleChampions = champions.slice(
+    (safeChampionsPage - 1) * championsPageSize,
+    safeChampionsPage * championsPageSize
+  );
+
   const openSquad = useCallback(
     (squadId) => navigate(`/squads/${encodeURIComponent(squadId)}`),
     [navigate]
@@ -440,49 +426,6 @@ export default function SquadRankingPage() {
           )}
         </section>
 
-        <section className={styles.historySection}>
-          <div className={styles.historyHeader}>
-            <div>
-              <h2>Campeões por mês</h2>
-              <p>Histórico dos vencedores mensais e taças acumuladas por squad.</p>
-            </div>
-          </div>
-
-          {historyLoading && !historyChampions.length ? (
-            <StateBlock compact variant="loading" title="Carregando campeões" />
-          ) : historyChampions.length === 0 ? (
-            <StateBlock compact variant="empty" title="Nenhum campeão histórico encontrado" />
-          ) : (
-            <div className={styles.historyList}>
-              {historyChampions.map((entry) => {
-                const winner = entry.winner || {};
-                const squad = winner.squad || {};
-                const ownerName = winner.ownerName || squad.owner?.name || 'Sem responsável';
-                const titleCount = Math.max(1, Number(entry.titles) || 1);
-                return (
-                  <div key={entry.period.value} className={styles.historyRow}>
-                    <div className={styles.historyMonth}>
-                      <strong>{entry.period.label}</strong>
-                      <span>Campeão do mês</span>
-                    </div>
-
-                    <div className={styles.historyChampion}>
-                      <strong>{squad.name || 'Squad'}</strong>
-                      <span>{ownerName}</span>
-                    </div>
-
-                    <div className={styles.historyTrophies} aria-label={`${titleCount} troféus`}>
-                      {Array.from({ length: titleCount }).map((_, index) => (
-                        <span key={`${entry.period.value}-${index}`} className={styles.historyTrophy} aria-hidden="true">🏆</span>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
         <section className={styles.listSection}>
           <div className={styles.columns}>
             <span>Rank</span>
@@ -548,6 +491,73 @@ export default function SquadRankingPage() {
               })}
             </div>
           )}
+        </section>
+
+        <section className={styles.championsSection}>
+          <header className={styles.championsHeader}>
+            <div>
+              <h2>Campeões por mês</h2>
+              <p>Histórico oficial a partir de Abril/2026. O troféu só é registrado após o fechamento do mês.</p>
+            </div>
+          </header>
+
+          {championsLoading && !visibleChampions.length ? (
+            <StateBlock compact variant="loading" title="Carregando campeões" />
+          ) : visibleChampions.length === 0 ? (
+            <StateBlock compact variant="empty" title="Nenhum campeão fechado ainda" />
+          ) : (
+            <div className={styles.championsList}>
+              {visibleChampions.map((item) => (
+                <article key={item.periodMonth} className={styles.championRow}>
+                  <div className={styles.championPeriod}>
+                    <strong>{MONTHS_FULL[Number(item.periodMonth.slice(5, 7)) - 1]} de {item.periodMonth.slice(0, 4)}</strong>
+                    <span>Campeão oficial</span>
+                  </div>
+
+                  <div className={styles.championIdentity}>
+                    <strong>{item.squadName || 'Squad'}</strong>
+                    <span>{item.ownerName || 'Sem responsável'}</span>
+                  </div>
+
+                  <div className={styles.championMetrics}>
+                    <span>Meta {fmtPct(Number(item.realizedPercent) || 0)}</span>
+                    <span>Previsto {fmtPct(Number(item.predictedPercent) || 0)}</span>
+                    <span>Churn {fmtPct(Number(item.churnPercent) || 0)}</span>
+                  </div>
+
+                  <div className={styles.championTrophies} aria-label={`${item.trophyNumber} troféus acumulados até esse mês`}>
+                    {Array.from({ length: Math.max(1, Number(item.trophyNumber) || 1) }).map((_, index) => (
+                      <span key={`${item.periodMonth}-${index}`} className={styles.championTrophy} aria-hidden="true">🏆</span>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {champions.length > championsPageSize ? (
+            <div className={styles.championsPager}>
+              <Button
+                variant="secondary"
+                size="sm"
+                className={styles.inlineButton}
+                disabled={safeChampionsPage <= 1}
+                onClick={() => setChampionsPage((current) => Math.max(1, current - 1))}
+              >
+                Anterior
+              </Button>
+              <span>{safeChampionsPage} / {championsTotalPages}</span>
+              <Button
+                variant="secondary"
+                size="sm"
+                className={styles.inlineButton}
+                disabled={safeChampionsPage >= championsTotalPages}
+                onClick={() => setChampionsPage((current) => Math.min(championsTotalPages, current + 1))}
+              >
+                Próxima
+              </Button>
+            </div>
+          ) : null}
         </section>
       </section>
 

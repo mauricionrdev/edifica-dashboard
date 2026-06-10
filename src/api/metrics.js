@@ -57,6 +57,10 @@ export function getRankingSettings() {
   return api.get('/metrics/ranking/settings');
 }
 
+export function getSquadRankingChampions() {
+  return api.get('/metrics/ranking/champions');
+}
+
 export function updateRankingSettings(data) {
   return api.put('/metrics/ranking/settings', data);
 }
