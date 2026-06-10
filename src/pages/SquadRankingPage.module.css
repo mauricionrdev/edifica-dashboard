@@ -1747,3 +1747,69 @@
     transform: scale(1.022) skewX(.8deg);
   }
 }
+
+
+/* v23 · Correção do card campeão e header */
+.topbarPeriodFilter {
+  min-width: 168px;
+  gap: 0;
+}
+
+.topbarPeriodFilter select {
+  height: 34px;
+}
+
+.podiumCard_champion {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(245, 184, 0, 0.12), transparent 48%),
+    linear-gradient(180deg, rgba(245, 184, 0, 0.045), rgba(255, 255, 255, 0.012)),
+    var(--bg-canvas);
+  animation: championKiSoftPulse 2.7s ease-in-out infinite;
+}
+
+.podiumCard_champion::before,
+.podiumCard_champion::after {
+  content: none;
+  display: none;
+}
+
+.podiumCard_champion > * {
+  position: relative;
+  z-index: 1;
+}
+
+.podiumCrown {
+  top: 14px;
+  right: 14px;
+  left: auto;
+  transform: none;
+  z-index: 5;
+}
+
+.podiumTag {
+  width: max-content;
+  max-width: calc(100% - 120px);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+
+.podiumCard_champion .podiumTag {
+  top: 16px;
+}
+
+@keyframes championKiSoftPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(245, 184, 0, 0.08),
+      0 0 14px rgba(245, 184, 0, 0.08),
+      inset 0 0 28px rgba(245, 184, 0, 0.045);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(245, 184, 0, 0.22),
+      0 0 26px rgba(245, 184, 0, 0.16),
+      inset 0 0 42px rgba(245, 184, 0, 0.075);
+  }
+}

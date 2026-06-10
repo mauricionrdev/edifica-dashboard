@@ -216,7 +216,6 @@ export default function SquadRankingPage() {
       actions: (
         <div className={styles.headerActions}>
           <label className={styles.topbarPeriodFilter}>
-            <span>Competência</span>
             <select value={periodKey(period.y, period.m)} onChange={handlePeriodChange} aria-label="Competência do ranking">
               {periodOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
