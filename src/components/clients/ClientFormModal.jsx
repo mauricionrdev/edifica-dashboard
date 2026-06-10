@@ -17,6 +17,8 @@ import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/client
 import { gdvOptions, gestorOptions, userLabel } from '../../utils/responsibleUsers.js';
 import styles from './ClientFormModal.module.css';
 
+const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
+
 const EMPTY = {
   name: '',
   avatarUrl: '',
@@ -28,6 +30,8 @@ const EMPTY = {
   metaLucro: '',
   startDate: '',
   endDate: '',
+  internalCommercial: 'no',
+  internalSeller: '',
 };
 
 function toPayload(form) {
@@ -42,6 +46,8 @@ function toPayload(form) {
     metaLucro: parseLocaleNumber(form.metaLucro, 0),
     startDate: form.startDate || null,
     endDate: form.endDate || null,
+    internalCommercial: form.internalCommercial === 'yes',
+    internalSeller: form.internalCommercial === 'yes' ? form.internalSeller.trim() : '',
   };
 }
 
@@ -58,6 +64,8 @@ function fromClient(client) {
     metaLucro: client.metaLucro != null ? formatLocaleNumber(client.metaLucro, '') : '',
     startDate: client.startDate || '',
     endDate: client.endDate || '',
+    internalCommercial: client.internalCommercial || client.internalSeller ? 'yes' : 'no',
+    internalSeller: client.internalSeller || '',
   };
 }
 
@@ -95,7 +103,13 @@ export default function ClientFormModal({
   const gdvRows = useMemo(() => gdvOptions(users, form.gdvName), [users, form.gdvName]);
 
   function setField(key, value) {
-    setForm((previous) => ({ ...previous, [key]: value }));
+    setForm((previous) => {
+      const next = { ...previous, [key]: value };
+      if (key === 'internalCommercial' && value !== 'yes') {
+        next.internalSeller = '';
+      }
+      return next;
+    });
   }
 
   function normalizeNumberField(key) {
@@ -283,6 +297,50 @@ export default function ClientFormModal({
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+
+          <section className={styles.section}>
+            <div className={styles.sectionTitle}>Operação comercial</div>
+            <div className={styles.grid}>
+              <div className={styles.field}>
+                <span className={styles.label}>Comercial Interno</span>
+                <Select
+                  className={styles.selectControl}
+                  value={form.internalCommercial}
+                  onChange={(event) => setField('internalCommercial', event.target.value)}
+                  disabled={saving}
+                  placeholder="Comercial interno"
+                  aria-label="Comercial interno"
+                >
+                  <option value="no">Não possui comercial interno</option>
+                  <option value="yes">Possui comercial interno</option>
+                </Select>
+              </div>
+
+              {form.internalCommercial === 'yes' ? (
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="nc-internal-seller">
+                    Vendedor Interno
+                  </label>
+                  <input
+                    id="nc-internal-seller"
+                    className={styles.input}
+                    type="text"
+                    list="internal-seller-options"
+                    maxLength={80}
+                    value={form.internalSeller}
+                    onChange={(event) => setField('internalSeller', event.target.value)}
+                    disabled={saving}
+                    placeholder="Michael, Camila ou novo vendedor"
+                  />
+                  <datalist id="internal-seller-options">
+                    {INTERNAL_SELLER_OPTIONS.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
+                </div>
+              ) : null}
             </div>
           </section>
 

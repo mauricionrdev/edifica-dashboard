@@ -8393,3 +8393,15 @@
   background: var(--danger-soft);
   color: var(--danger-text);
 }
+
+
+/* v31 · Segmentação Comercial Interno */
+.portfolioFilterInternal,
+.portfolioFilter button.portfolioFilterInternal:hover,
+.portfolioFilter button.portfolioFilterInternal:focus,
+.portfolioFilter button.portfolioFilterInternal:focus-visible {
+  border-color: rgba(245, 184, 0, 0.24);
+  background: rgba(245, 184, 0, 0.08);
+  color: var(--accent, #f5b800);
+  box-shadow: none;
+}

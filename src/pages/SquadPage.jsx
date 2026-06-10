@@ -115,6 +115,10 @@ function isPortfolioStatus(status) {
   );
 }
 
+function hasInternalCommercial(client) {
+  return Boolean(client?.internalCommercial) && Boolean(String(client?.internalSeller || '').trim());
+}
+
 function statusTone(calc, status) {
   if (status === CLIENT_STATUS.CHURN) return 'red';
   if (status === CLIENT_STATUS.ONBOARDING) return 'onboarding';
@@ -865,17 +869,22 @@ export default function SquadPage() {
         return base.filter((row) => row.status === CLIENT_STATUS.RAMPAGE);
       }
 
+      if (portfolioFilter === 'internalCommercial') {
+        return base.filter((row) => hasInternalCommercial(row));
+      }
+
       return base.filter((row) => isActiveClientStatus(row.status));
     })();
 
     if (!normalized) return byStatus;
-    return byStatus.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName], normalized));
+    return byStatus.filter((row) => matchesAnySearch([row.name, row.gestor, row.gdvName, row.internalSeller], normalized));
   }, [clientRows, portfolioFilter, query]);
 
   const portfolioEmptyLabel = useMemo(() => {
     if (query.trim()) return 'Busca sem resultados';
     if (portfolioFilter === 'onboarding') return 'Sem clientes em onboarding';
     if (portfolioFilter === 'rampage') return 'Sem rampagem comercial';
+    if (portfolioFilter === 'internalCommercial') return 'Sem clientes com comercial interno';
     return 'Carteira sem clientes';
   }, [portfolioFilter, query]);
 
@@ -884,11 +893,13 @@ export default function SquadPage() {
     const activeRows = clientRows.filter((row) => isActiveClientStatus(row.status));
     const rampageRows = clientRows.filter((row) => row.status === CLIENT_STATUS.RAMPAGE);
     const onboardingRows = clientRows.filter((row) => row.status === CLIENT_STATUS.ONBOARDING);
+    const internalCommercialRows = clientRows.filter(hasInternalCommercial);
 
     return [
       { id: 'all', label: 'Carteira', count: activeRows.length },
       { id: 'rampage', label: 'Rampagem', count: rampageRows.length },
       { id: 'onboarding', label: 'Onboard', count: onboardingRows.length },
+      { id: 'internalCommercial', label: 'Comercial Interno', count: internalCommercialRows.length },
     ];
   }, [clientRows]);
 
@@ -1308,6 +1319,7 @@ export default function SquadPage() {
                     portfolioFilter === item.id ? styles.portfolioFilterActive : '',
                     item.id === 'rampage' ? styles.portfolioFilterRampage : '',
                     item.id === 'onboarding' ? styles.portfolioFilterOnboarding : '',
+                    item.id === 'internalCommercial' ? styles.portfolioFilterInternal : '',
                   ].filter(Boolean).join(' ')}
                   onClick={() => setPortfolioFilter(item.id)}
                 >
@@ -1380,6 +1392,7 @@ export default function SquadPage() {
                       <span>
                         {row.gestor || 'Sem gestor'}
                         {row.gdvName ? ` · ${row.gdvName}` : ''}
+                        {hasInternalCommercial(row) ? ` · Comercial interno: ${row.internalSeller}` : ''}
                       </span>
                     </div>
                   </div>

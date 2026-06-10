@@ -195,6 +195,12 @@ async function ensureResponsibleSchema() {
       if (!clientNames.has('avatar_data_url')) {
         await query('ALTER TABLE clients ADD COLUMN avatar_data_url MEDIUMTEXT NULL AFTER name');
       }
+      if (!clientNames.has('internal_commercial_enabled')) {
+        await query('ALTER TABLE clients ADD COLUMN internal_commercial_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER gestor');
+      }
+      if (!clientNames.has('internal_seller')) {
+        await query('ALTER TABLE clients ADD COLUMN internal_seller VARCHAR(120) NULL AFTER internal_commercial_enabled');
+      }
       const statusColumn = clientCols.find((column) => column.Field === 'status');
       if (statusColumn && !String(statusColumn.Type || '').includes('rampagem_comercial')) {
         await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','rampagem_comercial','paused','churn') NOT NULL DEFAULT 'active'");
@@ -219,6 +225,8 @@ function serializeClient(row) {
     squadName: row.squad_name ?? null, // vem do JOIN quando disponível
     gdvName: row.gdv_name || '',
     gestor: row.gestor || '',
+    internalCommercial: Boolean(row.internal_commercial_enabled) || Boolean(row.internal_seller),
+    internalSeller: row.internal_seller || '',
     status: row.status,
     goalStatus: row.goal_status || '',
     fee: resolveMonthlyFeeForDate(row),
@@ -244,6 +252,8 @@ function pickUpdatableFields(body) {
     'squadId',
     'gdvName',
     'gestor',
+    'internalCommercial',
+    'internalSeller',
     'status',
     'avatarUrl',
     'fee',
@@ -290,8 +300,31 @@ async function validateResponsibleName(field, value) {
   return user.name;
 }
 
-async function normalizeResponsibleFields(fields) {
+function normalizeInternalCommercialFields(fields) {
   const next = { ...fields };
+  const hasInternal = next.internalCommercial === true || next.internalCommercial === 'true' || next.internalCommercial === 'yes' || next.internalCommercial === 1 || next.internalCommercial === '1';
+
+  if (next.internalCommercial !== undefined) {
+    next.internalCommercial = hasInternal;
+  }
+
+  if (next.internalSeller !== undefined) {
+    next.internalSeller = String(next.internalSeller || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+  }
+
+  if (next.internalCommercial === false) {
+    next.internalSeller = '';
+  }
+
+  if (next.internalCommercial === true && next.internalSeller === undefined) {
+    next.internalSeller = '';
+  }
+
+  return next;
+}
+
+async function normalizeResponsibleFields(fields) {
+  const next = normalizeInternalCommercialFields(fields);
   if (fields.gestor !== undefined) {
     next.gestor = await validateResponsibleName('gestor', fields.gestor);
   }
@@ -434,9 +467,9 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
     await withTransaction(async (conn) => {
       await conn.query(
         `INSERT INTO clients (
-           id, name, avatar_data_url, squad_id, gdv_name, gestor, status, goal_status,
+           id, name, avatar_data_url, squad_id, gdv_name, gestor, internal_commercial_enabled, internal_seller, status, goal_status,
            fee, meta_lucro, start_date, end_date, churn_date
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           name,
@@ -444,6 +477,8 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
           fields.squadId || null,
           String(fields.gdvName || ''),
           String(fields.gestor || ''),
+          fields.internalCommercial ? 1 : 0,
+          fields.internalCommercial ? String(fields.internalSeller || '') : '',
           status,
           '',
           parseLocaleNumber(fields.fee, 0),
@@ -574,6 +609,18 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
     if (fields.gestor !== undefined) {
       updates.push('gestor = ?');
       params.push(String(fields.gestor || ''));
+    }
+    if (fields.internalCommercial !== undefined) {
+      updates.push('internal_commercial_enabled = ?');
+      params.push(fields.internalCommercial ? 1 : 0);
+      if (fields.internalCommercial === false && fields.internalSeller === undefined) {
+        updates.push('internal_seller = ?');
+        params.push('');
+      }
+    }
+    if (fields.internalSeller !== undefined) {
+      updates.push('internal_seller = ?');
+      params.push(fields.internalCommercial === false ? '' : String(fields.internalSeller || ''));
     }
     if (fields.status !== undefined) {
       const nextStatus = normalizeClientStatus(fields.status);
