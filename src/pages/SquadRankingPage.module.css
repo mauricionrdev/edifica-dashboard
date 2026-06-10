@@ -1124,3 +1124,158 @@
   background: rgba(245, 184, 0, 0.075);
   box-shadow: inset 0 0 0 1px rgba(245, 184, 0, 0.12);
 }
+
+
+/* v28 · Correção sem inventar novo padrão: seletor nativo compacto e histórico igual à lista do ranking */
+.topbarPeriodFilter {
+  position: relative;
+  min-width: 168px;
+  display: block;
+  margin-right: 2px;
+}
+
+.topbarPeriodFilter select {
+  width: 100%;
+  height: 34px;
+  padding: 0 30px 0 11px;
+  border: 1px solid var(--workspace-panel-border-soft, var(--line-subtle));
+  border-radius: var(--workspace-control-radius, var(--radius-2));
+  outline: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent),
+    var(--surface-primary, var(--surface-panel));
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.topbarPeriodFilter select:focus {
+  border-color: var(--workspace-panel-border, var(--line));
+  box-shadow: none;
+}
+
+.periodTrigger,
+.periodMenu,
+.periodOption {
+  display: none;
+}
+
+.championsSection {
+  margin-top: 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-canvas);
+  overflow: hidden;
+}
+
+.championsHeader {
+  min-height: 50px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  background: transparent;
+}
+
+.championsHeader h2 {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.championsHeader p {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.35;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.championRankRow {
+  position: relative;
+  isolation: isolate;
+  min-height: 76px;
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns: 58px minmax(170px, 0.9fr) minmax(190px, 1fr) 90px 96px 96px 150px;
+  gap: 14px;
+  align-items: center;
+  border-bottom: 1px solid var(--line-subtle);
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  overflow: hidden;
+}
+
+.championRankRow:last-child {
+  border-bottom: 0;
+}
+
+.championRankRow:hover {
+  background: var(--surface-raised);
+}
+
+.championTrophyBadge {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245, 184, 0, 0.16);
+  background: rgba(245, 184, 0, 0.055);
+  color: var(--accent-amber, #f5b800);
+  font-size: 18px;
+  filter: drop-shadow(0 0 5px rgba(245, 184, 0, 0.10));
+}
+
+.championRankRow .scoreCell span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.championsPager {
+  min-height: 48px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  background: transparent;
+}
+
+.championsPager span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 1120px) {
+  .championRankRow {
+    grid-template-columns: 50px minmax(150px, 1fr) minmax(160px, 1fr) 76px 84px 84px 128px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 820px) {
+  .championRankRow {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 10px;
+  }
+}

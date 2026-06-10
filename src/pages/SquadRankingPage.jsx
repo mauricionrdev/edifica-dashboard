@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { getRankingSettings, getSquadRanking, getSquadRankingChampions, updateRankingSettings } from '../api/metrics.js';
 import { Button, CalculatorIcon, CloseIcon, RotateCcwIcon, StateBlock } from '../components/ui/index.js';
@@ -125,8 +125,6 @@ export default function SquadRankingPage() {
   const now = useMemo(() => new Date(), []);
   const periodOptions = useMemo(() => buildPeriodOptions(now, 12), [now]);
   const [period, setPeriod] = useState(() => ({ y: now.getFullYear(), m: now.getMonth() }));
-  const [periodOpen, setPeriodOpen] = useState(false);
-  const periodFilterRef = useRef(null);
   const [rows, setRows] = useState([]);
   const [rankingSettings, setRankingSettings] = useState({ goalPercent: 80, churnTarget: 8 });
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -188,15 +186,10 @@ export default function SquadRankingPage() {
     }
   }, []);
 
-  const selectedPeriodLabel = useMemo(() => {
-    const currentKey = periodKey(period.y, period.m);
-    return periodOptions.find((option) => option.value === currentKey)?.label || `${MONTHS_FULL[period.m]} de ${period.y}`;
-  }, [period.m, period.y, periodOptions]);
-
-  const handlePeriodSelect = useCallback((option) => {
-    if (!option) return;
-    setPeriod({ y: option.y, m: option.m });
-    setPeriodOpen(false);
+  const handlePeriodChange = useCallback((event) => {
+    const [year, month] = String(event.target.value || '').split('-').map(Number);
+    if (!year || !month) return;
+    setPeriod({ y: year, m: month - 1 });
   }, []);
 
   useEffect(() => {
@@ -206,25 +199,6 @@ export default function SquadRankingPage() {
   }, [fetchChampions, fetchRanking, fetchSettings]);
 
   useEffect(() => subscribeAvatarChange(() => setAssetVersion((current) => current + 1)), []);
-
-  useEffect(() => {
-    if (!periodOpen) return undefined;
-
-    const onPointerDown = (event) => {
-      if (!periodFilterRef.current || periodFilterRef.current.contains(event.target)) return;
-      setPeriodOpen(false);
-    };
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') setPeriodOpen(false);
-    };
-
-    window.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [periodOpen]);
 
   useEffect(() => {
     if (!settingsOpen) return undefined;
@@ -241,39 +215,13 @@ export default function SquadRankingPage() {
       description: null,
       actions: (
         <div className={styles.headerActions}>
-          <div className={styles.topbarPeriodFilter} ref={periodFilterRef}>
-            <button
-              type="button"
-              className={styles.periodTrigger}
-              onClick={() => setPeriodOpen((current) => !current)}
-              aria-label="Selecionar competência do ranking"
-              aria-expanded={periodOpen}
-            >
-              <span>{selectedPeriodLabel}</span>
-              <strong aria-hidden="true">⌄</strong>
-            </button>
-
-            {periodOpen ? (
-              <div className={styles.periodMenu} role="listbox" aria-label="Competências do ranking">
-                {periodOptions.map((option) => {
-                  const active = option.value === periodKey(period.y, period.m);
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={`${styles.periodOption} ${active ? styles.periodOptionActive : ''}`.trim()}
-                      onClick={() => handlePeriodSelect(option)}
-                      role="option"
-                      aria-selected={active}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
-          <Button
+          <label className={styles.topbarPeriodFilter}>
+            <select value={periodKey(period.y, period.m)} onChange={handlePeriodChange} aria-label="Competência do ranking">
+              {periodOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>          <Button
             variant="ghost"
             size="sm"
             iconOnly
@@ -290,7 +238,7 @@ export default function SquadRankingPage() {
         </div>
       ),
     });
-  }, [fetchRanking, handlePeriodSelect, period.m, period.y, periodOpen, periodOptions, selectedPeriodLabel, setPanelHeader]);
+  }, [fetchRanking, handlePeriodChange, period.m, period.y, periodOptions, setPanelHeader]);
 
   const rankingRows = useMemo(() => {
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -552,40 +500,51 @@ export default function SquadRankingPage() {
           </header>
 
           {championsLoading && !visibleChampions.length ? (
-            <div className={styles.championsEmpty}>
-              <span aria-hidden="true">•</span>
-              <strong>Carregando campeões oficiais</strong>
+            <div className={styles.rankList}>
+              <div className={styles.championRankRow}>
+                <strong className={styles.rankNumber}>...</strong>
+                <div className={styles.squadCell}>
+                  <strong>Carregando campeões oficiais</strong>
+                  <span>Histórico mensal</span>
+                </div>
+              </div>
             </div>
           ) : visibleChampions.length === 0 ? (
-            <div className={styles.championsEmpty}>
-              <span aria-hidden="true">🏆</span>
-              <strong>Nenhum campeão oficial registrado no banco</strong>
+            <div className={styles.rankList}>
+              <div className={styles.championRankRow}>
+                <strong className={styles.rankNumber}>--</strong>
+                <div className={styles.squadCell}>
+                  <strong>Nenhum campeão oficial registrado no banco</strong>
+                  <span>O troféu só é criado após o fechamento do mês</span>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className={styles.championsList}>
+            <div className={styles.rankList}>
               {visibleChampions.map((item) => (
-                <article key={item.periodMonth} className={styles.championRow}>
-                  <div className={styles.championPeriod}>
+                <article key={item.periodMonth} className={styles.championRankRow}>
+                  <strong className={styles.rankNumber}>{item.periodMonth.slice(5, 7)}</strong>
+
+                  <div className={styles.leaderCell}>
+                    <div className={styles.championTrophyBadge} aria-hidden="true">🏆</div>
+                    <div className={styles.leaderInfo}>
+                      <strong>{item.squadName || 'Squad'}</strong>
+                      <span>{item.ownerName || 'Sem responsável'}</span>
+                    </div>
+                  </div>
+
+                  <div className={styles.squadCell}>
                     <strong>{MONTHS_FULL[Number(item.periodMonth.slice(5, 7)) - 1]} de {item.periodMonth.slice(0, 4)}</strong>
                     <span>Campeão oficial</span>
                   </div>
 
-                  <div className={styles.championIdentity}>
-                    <strong>{item.squadName || 'Squad'}</strong>
-                    <span>{item.ownerName || 'Sem responsável'}</span>
-                  </div>
+                  <strong className={styles.metricCell}>{fmtPct(Number(item.churnPercent) || 0)}</strong>
+                  <strong className={styles.metricCell}>{fmtPct(Number(item.realizedPercent) || 0)}</strong>
+                  <strong className={`${styles.metricCell} ${styles.predictedMetric}`.trim()}>{fmtPct(Number(item.predictedPercent) || 0)}</strong>
 
-                  <div className={styles.championMetrics}>
-                    <span>Meta {fmtPct(Number(item.realizedPercent) || 0)}</span>
-                    <span>Previsto {fmtPct(Number(item.predictedPercent) || 0)}</span>
-                    <span>Churn {fmtPct(Number(item.churnPercent) || 0)}</span>
-                    <span>MRR {fmtMoney(Number(item.mrr) || Number(item.snapshot?.mrr) || 0)}</span>
-                  </div>
-
-                  <div className={styles.championTrophies} aria-label={`${item.trophyNumber} troféus acumulados até esse mês`}>
-                    {Array.from({ length: Math.max(1, Number(item.trophyNumber) || 1) }).map((_, index) => (
-                      <span key={`${item.periodMonth}-${index}`} className={styles.championTrophy} aria-hidden="true">🏆</span>
-                    ))}
+                  <div className={styles.scoreCell}>
+                    <strong>{fmtMoney(Number(item.mrr) || Number(item.snapshot?.mrr) || 0)}</strong>
+                    <span>{Math.max(1, Number(item.trophyNumber) || 1)} troféu{(Number(item.trophyNumber) || 1) > 1 ? 's' : ''} até esse mês</span>
                   </div>
                 </article>
               ))}
