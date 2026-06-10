@@ -545,8 +545,8 @@ export default function SquadRankingPage() {
         <section className={styles.championsSection}>
           <header className={styles.championsHeader}>
             <div>
-              <h2>Campeões por mês</h2>
-              <p>Histórico oficial a partir de Abril/2026. O troféu só é registrado após o fechamento do mês.</p>
+              <h2>Lista de Campeões</h2>
+              <p>O troféu só é registrado após o fechamento do mês.</p>
             </div>
           </header>
 
@@ -564,8 +564,8 @@ export default function SquadRankingPage() {
             <div className={styles.championHistoryList}>
               <div className={styles.championHistoryColumns}>
                 <span>Competência</span>
-                <span>Campeão</span>
-                <span>Resultado fechado</span>
+                <span>Squad Campeão</span>
+                <span>Resultados</span>
                 <span>Títulos</span>
               </div>
 
