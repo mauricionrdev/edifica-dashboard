@@ -1279,3 +1279,340 @@
     gap: 10px;
   }
 }
+
+
+/* v29 · Lista de campeões como histórico real + seletor alinhado ao top-bar */
+.topbarPeriodFilter {
+  position: relative;
+  min-width: 168px;
+  display: block;
+  margin-right: 2px;
+}
+
+.topbarPeriodFilter select,
+.periodTrigger,
+.periodMenu,
+.periodOption {
+  display: none !important;
+}
+
+.periodButton {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px 0 12px;
+  border: 1px solid var(--workspace-panel-border-soft, var(--line-subtle));
+  border-radius: var(--workspace-control-radius, var(--radius-2));
+  outline: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent),
+    var(--surface-primary, var(--surface-panel));
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.periodButton:hover,
+.periodButton[aria-expanded="true"] {
+  border-color: var(--workspace-panel-border, var(--line));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent),
+    var(--surface-primary, var(--surface-panel));
+}
+
+.periodButton strong {
+  color: var(--text-tertiary);
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 650;
+}
+
+.periodPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 120;
+  width: 188px;
+  max-height: 292px;
+  padding: 6px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.022), transparent 46%),
+    var(--bg-canvas);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  overflow: auto;
+}
+
+.periodItem {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-2);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.periodItem:hover {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+.periodItemActive {
+  background: rgba(245, 184, 0, 0.10);
+  color: var(--accent-amber, #f5b800);
+}
+
+.championsSection {
+  margin-top: 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3);
+  background: var(--bg-canvas);
+  overflow: hidden;
+}
+
+.championsHeader {
+  min-height: 58px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  background: transparent;
+}
+
+.championsHeader h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  text-transform: none;
+}
+
+.championsHeader p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.championRankRow,
+.championRow,
+.championsList {
+  display: none !important;
+}
+
+.championHistoryList {
+  display: flex;
+  flex-direction: column;
+}
+
+.championHistoryRow {
+  min-height: 92px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: minmax(170px, 0.82fr) minmax(190px, 0.9fr) minmax(360px, 1.42fr) minmax(150px, 0.72fr);
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+  transition: background 150ms ease;
+}
+
+.championHistoryRow:last-child {
+  border-bottom: 0;
+}
+
+.championHistoryRow:hover {
+  background: var(--surface-raised);
+}
+
+.championMonth,
+.championWinner,
+.championTitles {
+  min-width: 0;
+}
+
+.championMonth,
+.championTitles {
+  display: grid;
+  gap: 4px;
+}
+
+.championMonth strong,
+.championWinner strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 650;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.championMonth span,
+.championWinner span,
+.championTitles small {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.championWinner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.championWinner > div:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.championTrophyBadge {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245, 184, 0, 0.16);
+  background: rgba(245, 184, 0, 0.055);
+  color: var(--accent-amber, #f5b800);
+  font-size: 18px;
+  filter: drop-shadow(0 0 5px rgba(245, 184, 0, 0.10));
+}
+
+.championHistoryMetrics {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  align-items: center;
+}
+
+.championHistoryMetrics span {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.championHistoryMetrics strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.championHistoryMetrics span:nth-child(2) strong {
+  color: var(--accent-amber, #f5b800);
+}
+
+.championTitles {
+  justify-items: end;
+  text-align: right;
+}
+
+.championTitleIcons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.championTitleIcons span {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(245, 184, 0, 0.055);
+  box-shadow: inset 0 0 0 1px rgba(245, 184, 0, 0.12);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.championHistoryEmpty {
+  min-height: 76px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 4px;
+  align-content: center;
+}
+
+.championHistoryEmpty strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.championHistoryEmpty span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+@media (max-width: 1120px) {
+  .championHistoryRow {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .championHistoryMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .championTitles {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .championTitleIcons {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 820px) {
+  .championHistoryRow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .championHistoryMetrics {
+    grid-template-columns: 1fr 1fr;
+  }
+}

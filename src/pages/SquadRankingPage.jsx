@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { getRankingSettings, getSquadRanking, getSquadRankingChampions, updateRankingSettings } from '../api/metrics.js';
 import { Button, CalculatorIcon, CloseIcon, RotateCcwIcon, StateBlock } from '../components/ui/index.js';
@@ -125,6 +125,8 @@ export default function SquadRankingPage() {
   const now = useMemo(() => new Date(), []);
   const periodOptions = useMemo(() => buildPeriodOptions(now, 12), [now]);
   const [period, setPeriod] = useState(() => ({ y: now.getFullYear(), m: now.getMonth() }));
+  const [periodOpen, setPeriodOpen] = useState(false);
+  const periodFilterRef = useRef(null);
   const [rows, setRows] = useState([]);
   const [rankingSettings, setRankingSettings] = useState({ goalPercent: 80, churnTarget: 8 });
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -186,10 +188,15 @@ export default function SquadRankingPage() {
     }
   }, []);
 
-  const handlePeriodChange = useCallback((event) => {
-    const [year, month] = String(event.target.value || '').split('-').map(Number);
-    if (!year || !month) return;
-    setPeriod({ y: year, m: month - 1 });
+  const selectedPeriodLabel = useMemo(() => {
+    const currentKey = periodKey(period.y, period.m);
+    return periodOptions.find((option) => option.value === currentKey)?.label || `${MONTHS_FULL[period.m]} de ${period.y}`;
+  }, [period.m, period.y, periodOptions]);
+
+  const handlePeriodSelect = useCallback((option) => {
+    if (!option) return;
+    setPeriod({ y: option.y, m: option.m });
+    setPeriodOpen(false);
   }, []);
 
   useEffect(() => {
@@ -199,6 +206,25 @@ export default function SquadRankingPage() {
   }, [fetchChampions, fetchRanking, fetchSettings]);
 
   useEffect(() => subscribeAvatarChange(() => setAssetVersion((current) => current + 1)), []);
+
+  useEffect(() => {
+    if (!periodOpen) return undefined;
+
+    const onPointerDown = (event) => {
+      if (!periodFilterRef.current || periodFilterRef.current.contains(event.target)) return;
+      setPeriodOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setPeriodOpen(false);
+    };
+
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [periodOpen]);
 
   useEffect(() => {
     if (!settingsOpen) return undefined;
@@ -215,13 +241,38 @@ export default function SquadRankingPage() {
       description: null,
       actions: (
         <div className={styles.headerActions}>
-          <label className={styles.topbarPeriodFilter}>
-            <select value={periodKey(period.y, period.m)} onChange={handlePeriodChange} aria-label="Competência do ranking">
-              {periodOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </label>          <Button
+          <div className={styles.topbarPeriodFilter} ref={periodFilterRef}>
+            <button
+              type="button"
+              className={styles.periodButton}
+              onClick={() => setPeriodOpen((current) => !current)}
+              aria-label="Selecionar mês do ranking"
+              aria-expanded={periodOpen}
+            >
+              <span>{selectedPeriodLabel}</span>
+              <strong aria-hidden="true">⌄</strong>
+            </button>
+
+            {periodOpen ? (
+              <div className={styles.periodPanel} role="listbox" aria-label="Meses do ranking">
+                {periodOptions.map((option) => {
+                  const active = option.value === periodKey(period.y, period.m);
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`${styles.periodItem} ${active ? styles.periodItemActive : ''}`.trim()}
+                      onClick={() => handlePeriodSelect(option)}
+                      role="option"
+                      aria-selected={active}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>          <Button
             variant="ghost"
             size="sm"
             iconOnly
@@ -238,7 +289,7 @@ export default function SquadRankingPage() {
         </div>
       ),
     });
-  }, [fetchRanking, handlePeriodChange, period.m, period.y, periodOptions, setPanelHeader]);
+  }, [fetchRanking, handlePeriodSelect, period.m, period.y, periodOpen, periodOptions, selectedPeriodLabel, setPanelHeader]);
 
   const rankingRows = useMemo(() => {
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -500,54 +551,52 @@ export default function SquadRankingPage() {
           </header>
 
           {championsLoading && !visibleChampions.length ? (
-            <div className={styles.rankList}>
-              <div className={styles.championRankRow}>
-                <strong className={styles.rankNumber}>...</strong>
-                <div className={styles.squadCell}>
-                  <strong>Carregando campeões oficiais</strong>
-                  <span>Histórico mensal</span>
-                </div>
-              </div>
+            <div className={styles.championHistoryEmpty}>
+              <strong>Carregando campeões oficiais</strong>
+              <span>Histórico mensal</span>
             </div>
           ) : visibleChampions.length === 0 ? (
-            <div className={styles.rankList}>
-              <div className={styles.championRankRow}>
-                <strong className={styles.rankNumber}>--</strong>
-                <div className={styles.squadCell}>
-                  <strong>Nenhum campeão oficial registrado no banco</strong>
-                  <span>O troféu só é criado após o fechamento do mês</span>
-                </div>
-              </div>
+            <div className={styles.championHistoryEmpty}>
+              <strong>Nenhum campeão oficial registrado no banco</strong>
+              <span>O troféu só é criado após o fechamento do mês</span>
             </div>
           ) : (
-            <div className={styles.rankList}>
-              {visibleChampions.map((item) => (
-                <article key={item.periodMonth} className={styles.championRankRow}>
-                  <strong className={styles.rankNumber}>{item.periodMonth.slice(5, 7)}</strong>
-
-                  <div className={styles.leaderCell}>
-                    <div className={styles.championTrophyBadge} aria-hidden="true">🏆</div>
-                    <div className={styles.leaderInfo}>
-                      <strong>{item.squadName || 'Squad'}</strong>
-                      <span>{item.ownerName || 'Sem responsável'}</span>
+            <div className={styles.championHistoryList}>
+              {visibleChampions.map((item) => {
+                const trophyCount = Math.max(1, Number(item.trophyNumber) || 1);
+                return (
+                  <article key={item.periodMonth} className={styles.championHistoryRow}>
+                    <div className={styles.championMonth}>
+                      <strong>{MONTHS_FULL[Number(item.periodMonth.slice(5, 7)) - 1]} de {item.periodMonth.slice(0, 4)}</strong>
+                      <span>Campeão oficial</span>
                     </div>
-                  </div>
 
-                  <div className={styles.squadCell}>
-                    <strong>{MONTHS_FULL[Number(item.periodMonth.slice(5, 7)) - 1]} de {item.periodMonth.slice(0, 4)}</strong>
-                    <span>Campeão oficial</span>
-                  </div>
+                    <div className={styles.championWinner}>
+                      <div className={styles.championTrophyBadge} aria-hidden="true">🏆</div>
+                      <div>
+                        <strong>{item.squadName || 'Squad'}</strong>
+                        <span>{item.ownerName || 'Sem responsável'}</span>
+                      </div>
+                    </div>
 
-                  <strong className={styles.metricCell}>{fmtPct(Number(item.churnPercent) || 0)}</strong>
-                  <strong className={styles.metricCell}>{fmtPct(Number(item.realizedPercent) || 0)}</strong>
-                  <strong className={`${styles.metricCell} ${styles.predictedMetric}`.trim()}>{fmtPct(Number(item.predictedPercent) || 0)}</strong>
+                    <div className={styles.championHistoryMetrics}>
+                      <span>Meta <strong>{fmtPct(Number(item.realizedPercent) || 0)}</strong></span>
+                      <span>Previsto <strong>{fmtPct(Number(item.predictedPercent) || 0)}</strong></span>
+                      <span>Churn <strong>{fmtPct(Number(item.churnPercent) || 0)}</strong></span>
+                      <span>MRR <strong>{fmtMoney(Number(item.mrr) || Number(item.snapshot?.mrr) || 0)}</strong></span>
+                    </div>
 
-                  <div className={styles.scoreCell}>
-                    <strong>{fmtMoney(Number(item.mrr) || Number(item.snapshot?.mrr) || 0)}</strong>
-                    <span>{Math.max(1, Number(item.trophyNumber) || 1)} troféu{(Number(item.trophyNumber) || 1) > 1 ? 's' : ''} até esse mês</span>
-                  </div>
-                </article>
-              ))}
+                    <div className={styles.championTitles}>
+                      <div className={styles.championTitleIcons} aria-label={`${trophyCount} troféus acumulados até esse mês`}>
+                        {Array.from({ length: trophyCount }).map((_, index) => (
+                          <span key={`${item.periodMonth}-${index}`} aria-hidden="true">🏆</span>
+                        ))}
+                      </div>
+                      <small>{trophyCount} título{trophyCount > 1 ? 's' : ''} até esse mês</small>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
 
