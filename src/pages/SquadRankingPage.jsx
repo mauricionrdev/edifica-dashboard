@@ -73,7 +73,6 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
       <span className={styles.podiumGhostRank}>{row.position}</span>
       <span className={styles.podiumRank}>{rankLabel(row.position)}</span>
       {row.position === 1 ? <span className={styles.podiumTag}>Destaque</span> : null}
-      {row.position === 1 ? <span className={styles.podiumCrown} aria-hidden="true">♛</span> : null}
 
       <div className={styles.podiumAvatarWrap}>
         <div className={styles.podiumAvatar}>

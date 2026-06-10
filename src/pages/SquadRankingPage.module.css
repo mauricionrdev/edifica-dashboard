@@ -1813,3 +1813,83 @@
       inset 0 0 42px rgba(245, 184, 0, 0.075);
   }
 }
+
+
+/* v24 · Estabilização definitiva do card central do ranking */
+.podiumCard_champion {
+  min-height: 420px;
+  overflow: hidden;
+  border-color: rgba(245, 184, 0, 0.28);
+  background:
+    radial-gradient(circle at 50% 28%, rgba(245, 184, 0, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(245, 184, 0, 0.035), rgba(255, 255, 255, 0.01)),
+    var(--bg-canvas);
+  animation: championCardGlow 3.2s ease-in-out infinite;
+}
+
+.podiumCard_champion::before,
+.podiumCard_champion::after {
+  content: none !important;
+  display: none !important;
+}
+
+.podiumCard_champion > * {
+  position: relative;
+  z-index: 1;
+}
+
+.podiumCard_champion .podiumTag,
+.podiumCrown {
+  display: none !important;
+}
+
+.podiumCard_champion .podiumRank {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  margin: 0;
+}
+
+.podiumCard_champion .podiumGhostRank {
+  top: 88px;
+  right: 24px;
+  color: rgba(245, 184, 0, 0.075);
+}
+
+.podiumCard_champion .podiumAvatarWrap {
+  margin-top: 76px;
+}
+
+.podiumCard_champion .podiumIdentity {
+  margin-top: 22px;
+}
+
+.podiumCard_champion .podiumScore {
+  margin-top: 26px;
+}
+
+.podiumCard_champion .podiumMeta {
+  margin-top: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.podiumCard_champion .podiumMeta div:last-child {
+  justify-self: end;
+  text-align: right;
+}
+
+@keyframes championCardGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(245, 184, 0, 0.06),
+      0 0 16px rgba(245, 184, 0, 0.07),
+      inset 0 0 24px rgba(245, 184, 0, 0.035);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(245, 184, 0, 0.18),
+      0 0 28px rgba(245, 184, 0, 0.13),
+      inset 0 0 34px rgba(245, 184, 0, 0.055);
+  }
+}
