@@ -26,6 +26,7 @@ import {
   previousMonthPrefix,
   aggregateClientSummary,
   aggregatePortfolioSummary,
+  resolveMonthlyProfitGoal,
   weekOfMonth,
 } from '../utils/domain.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
@@ -371,6 +372,37 @@ function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '', maxWe
   });
 }
 
+function clientProjectedToHitGoalInMonth(clientMetrics = [], monthPrefix = '', maxWeek = 4, clientMetaLucro = 0) {
+  let monthClosed = 0;
+  let monthProjected = 0;
+  let monthGoal = Number(clientMetaLucro) || 0;
+
+  for (const row of clientMetrics) {
+    const week = rankingMetricWeek(row?.period_key, monthPrefix);
+    if (!week || week > maxWeek) continue;
+
+    const data = metricData(row);
+    const computed = computeWeeklyMetrics(data, { clientMetaLucro });
+    const closed = metricNumber(data?.fechados);
+    const predicted = metricNumber(computed?.contratosPrevistos);
+    const explicitMonthly = resolveMonthlyProfitGoal(data, 0);
+
+    if (explicitMonthly > 0) monthGoal = Math.max(monthGoal, explicitMonthly);
+
+    monthClosed += closed;
+    monthProjected += Math.max(closed, predicted);
+  }
+
+  const effectiveProjected = Math.max(monthClosed, monthProjected);
+
+  return {
+    predicted: monthGoal > 0 && effectiveProjected >= monthGoal,
+    monthClosed,
+    monthProjected: effectiveProjected,
+    monthGoal,
+  };
+}
+
 function monthEndFromPrefix(prefix) {
   const bounds = monthBoundsFromPrefix(prefix);
   return bounds?.end || null;
@@ -595,6 +627,11 @@ function compareRankingRows(a, b) {
   // A meta configurada define o alvo mínimo esperado; ultrapassar o alvo nunca penaliza.
   if (aReached !== bReached) return aReached ? -1 : 1;
   if (bProgress !== aProgress) return bProgress - aProgress;
+
+  const aPredicted = Math.max(0, Number(a.predictedGoalProgress) || 0);
+  const bPredicted = Math.max(0, Number(b.predictedGoalProgress) || 0);
+  if (bPredicted !== aPredicted) return bPredicted - aPredicted;
+
   if (aChurn !== bChurn) return aChurn - bChurn;
 
   const aMrr = Number(a.mrr) || 0;
@@ -869,7 +906,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const squadChurnTarget = squadSettings.churnTarget;
       const squadClients = clientsBySquad.get(squad.id) || [];
       const portfolioClients = squadClients;
-      const activeClients = squadClients.filter(isActiveClientStatus);
+      const activeClients = squadClients.filter((client) => activeAtMonthEnd(client, monthPrefix));
       const revenueClients = squadClients.filter(isRevenueClientStatus);
       const churnedInPeriod = squadClients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
       const mrrBreakdownByStatus = {};
@@ -897,33 +934,44 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
 
       const clientSummaries = activeClients.map((client) => {
         const clientMetricRows = metricsByClient.get(client.id) || [];
+        const clientMetaLucro = Number(client.meta_lucro) || 0;
         const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek);
+        const projected = clientProjectedToHitGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
         const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
           prevWeekKey,
           prevMonthPrefix,
-          clientMetaLucro: Number(client.meta_lucro) || 0,
+          clientMetaLucro,
         });
         return {
           clientId: client.id,
           name: client.name,
           squadId: client.squad_id,
-          clientMetaLucro: Number(client.meta_lucro) || 0,
+          clientMetaLucro,
           ...summary,
+          predicted: projected.predicted,
+          monthProjected: projected.monthProjected,
+          projectedMonthGoal: projected.monthGoal,
           hit,
-          hasGoal: hit,
+          hasGoal: hit || projected.predicted,
         };
       });
 
       const totals = aggregatePortfolioSummary(clientSummaries);
       const rankingGoalClients = clientSummaries.filter((client) => client.hit).length;
       const rankingGoalBaseClients = activeClients.length;
+      const predictedGoalClients = clientSummaries.filter((client) => client.predicted).length;
+      const predictedGoalBaseClients = activeClients.length;
       const metaIndex = rankingGoalBaseClients > 0 ? (rankingGoalClients / rankingGoalBaseClients) * 100 : 0;
+      const predictedGoalProgress = predictedGoalBaseClients > 0 ? (predictedGoalClients / predictedGoalBaseClients) * 100 : 0;
       const metaActiveProgress = metaIndex;
       const metaActiveTargetProgress = squadGoalPercent > 0 ? (metaActiveProgress / squadGoalPercent) * 100 : metaActiveProgress;
       const metaActiveDistance = goalDistance(metaActiveProgress, squadGoalPercent);
+      const predictedActiveTargetProgress = squadGoalPercent > 0 ? (predictedGoalProgress / squadGoalPercent) * 100 : predictedGoalProgress;
+      const predictedActiveDistance = goalDistance(predictedGoalProgress, squadGoalPercent);
       const hitRate = metaActiveProgress;
       const legacyPerformanceScore = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
       const rankingScore = metaTargetRankScore(metaActiveProgress, squadGoalPercent);
+      const predictedRankingScore = metaTargetRankScore(predictedGoalProgress, squadGoalPercent);
 
       return {
         squad: {
@@ -949,6 +997,10 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         clientsWithGoal: rankingGoalClients,
         rankingGoalClients,
         rankingGoalBaseClients,
+        predictedGoalClients,
+        predictedGoalBaseClients,
+        projectedGoalClients: predictedGoalClients,
+        projectedGoalBaseClients: predictedGoalBaseClients,
         mrr,
         mrrBreakdown: {
           month: monthPrefix,
@@ -958,8 +1010,14 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         metaIndex,
         hitRate,
         metaActiveProgress,
+        predictedGoalProgress,
+        projectedGoalProgress: predictedGoalProgress,
+        predictedActiveTargetProgress,
+        predictedActiveDistance,
         metaActiveClosed: rankingGoalClients,
         metaActiveGoal: rankingGoalBaseClients,
+        predictedActiveClosed: predictedGoalClients,
+        predictedActiveGoal: predictedGoalBaseClients,
         goalPercent: squadGoalPercent,
         churnRate,
         churnedClients: churnedInPeriod.length,
@@ -970,6 +1028,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         metaActiveTargetProgress,
         metaActiveDistance,
         rankingScore,
+        predictedRankingScore,
         performanceScore: legacyPerformanceScore,
         totals,
       };

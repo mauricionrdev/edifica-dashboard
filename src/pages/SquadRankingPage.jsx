@@ -11,6 +11,24 @@ function buildReferenceDate(year, month0) {
   return `${year}-${String(month0 + 1).padStart(2, '0')}-15`;
 }
 
+function periodKey(year, month0) {
+  return `${year}-${String(month0 + 1).padStart(2, '0')}`;
+}
+
+function buildPeriodOptions(baseDate = new Date(), count = 12) {
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(Date.UTC(baseDate.getFullYear(), baseDate.getMonth() - index, 1));
+    const y = date.getUTCFullYear();
+    const m = date.getUTCMonth();
+    return {
+      value: periodKey(y, m),
+      y,
+      m,
+      label: `${MONTHS_FULL[m]} de ${y}`,
+    };
+  });
+}
+
 function leaderInitials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return 'LD';
@@ -72,11 +90,19 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
       </div>
 
       <div className={styles.podiumScore}>{row.metaActiveDisplay}</div>
+      <div className={styles.podiumForecast}>
+        <span>Previsto</span>
+        <strong>{row.predictedGoalDisplay}</strong>
+      </div>
 
       <div className={styles.podiumMeta}>
         <div>
           <span>Meta Lucro</span>
           <strong>{row.metaActiveDisplay}</strong>
+        </div>
+        <div>
+          <span>Previsto</span>
+          <strong>{row.predictedGoalDisplay}</strong>
         </div>
         <div>
           <span>Churn</span>
@@ -100,7 +126,8 @@ export default function SquadRankingPage() {
   } = useOutletContext();
 
   const now = useMemo(() => new Date(), []);
-  const [period] = useState(() => ({ y: now.getFullYear(), m: now.getMonth() }));
+  const periodOptions = useMemo(() => buildPeriodOptions(now, 12), [now]);
+  const [period, setPeriod] = useState(() => ({ y: now.getFullYear(), m: now.getMonth() }));
   const [rows, setRows] = useState([]);
   const [rankingSettings, setRankingSettings] = useState({ goalPercent: 80, churnTarget: 8 });
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -145,6 +172,12 @@ export default function SquadRankingPage() {
       // O ranking também devolve as configurações. Falha isolada aqui não deve quebrar a tela validada.
     }
   }, [syncSettings]);
+
+  const handlePeriodChange = useCallback((event) => {
+    const [year, month] = String(event.target.value || '').split('-').map(Number);
+    if (!year || !month) return;
+    setPeriod({ y: year, m: month - 1 });
+  }, []);
 
   useEffect(() => {
     fetchRanking();
@@ -198,10 +231,16 @@ export default function SquadRankingPage() {
       const metaIndex = Number(row.metaIndex) || 0;
       const rankingGoalClients = Number(row.rankingGoalClients ?? row.clientsWithGoal) || 0;
       const rankingGoalBaseClients = Number(row.rankingGoalBaseClients ?? row.activeClients) || 0;
+      const predictedGoalClients = Number(row.predictedGoalClients ?? row.projectedGoalClients) || 0;
+      const predictedGoalBaseClients = Number(row.predictedGoalBaseClients ?? row.projectedGoalBaseClients ?? rankingGoalBaseClients) || 0;
       const directMetaActiveProgress = rankingGoalBaseClients > 0 ? (rankingGoalClients / rankingGoalBaseClients) * 100 : 0;
       const metaActiveProgress = rankingGoalBaseClients > 0
         ? directMetaActiveProgress
         : (Number(row.metaActiveProgress ?? row.metaIndex) || 0);
+      const directPredictedGoalProgress = predictedGoalBaseClients > 0 ? (predictedGoalClients / predictedGoalBaseClients) * 100 : 0;
+      const predictedGoalProgress = predictedGoalBaseClients > 0
+        ? directPredictedGoalProgress
+        : (Number(row.predictedGoalProgress ?? row.projectedGoalProgress) || 0);
       const churnRate = Number(row.churnRate) || 0;
       const hitRate = Number(row.hitRate) || 0;
       const rankingScore = Number(row.rankingScore) || 0;
@@ -217,11 +256,19 @@ export default function SquadRankingPage() {
         clientsWithGoal: rankingGoalClients,
         rankingGoalClients,
         rankingGoalBaseClients,
+        predictedGoalClients,
+        predictedGoalBaseClients,
+        projectedGoalClients: predictedGoalClients,
+        projectedGoalBaseClients: predictedGoalBaseClients,
         mrr: Number(row.mrr) || 0,
         metaIndex,
         metaActiveProgress,
+        predictedGoalProgress,
+        projectedGoalProgress: predictedGoalProgress,
         metaActiveTargetProgress: Number(row.metaActiveTargetProgress) || 0,
+        predictedActiveTargetProgress: Number(row.predictedActiveTargetProgress) || 0,
         metaActiveDistance: Number(row.metaActiveDistance) || 0,
+        predictedActiveDistance: Number(row.predictedActiveDistance) || 0,
         metaActiveClosed: Number(row.metaActiveClosed) || 0,
         metaActiveGoal: Number(row.metaActiveGoal) || 0,
         goalPercent,
@@ -237,6 +284,7 @@ export default function SquadRankingPage() {
         position: Number(row.position) || index + 1,
         metaDisplay: metaIndex > 0 ? fmtPct(metaIndex) : '0,00%',
         metaActiveDisplay: metaActiveProgress > 0 ? fmtPct(metaActiveProgress) : '0,00%',
+        predictedGoalDisplay: predictedGoalProgress > 0 ? fmtPct(predictedGoalProgress) : '0,00%',
         hitRateDisplay: hitRate > 0 ? fmtPct(hitRate) : '0,00%',
         churnDisplay: churnRate > 0 ? fmtPct(churnRate) : '0,00%',
       };
@@ -330,8 +378,16 @@ export default function SquadRankingPage() {
         <header className={styles.hero}>
           <div className={styles.heroCopy}>
             <h1>Ranking Squads</h1>
-            <p>Performance real dos squads em {MONTHS_FULL[period.m]} de {period.y}.</p>
+            <p>Resultado realizado e previsão dos squads em {MONTHS_FULL[period.m]} de {period.y}.</p>
           </div>
+          <label className={styles.periodFilter}>
+            <span>Competência</span>
+            <select value={periodKey(period.y, period.m)} onChange={handlePeriodChange}>
+              {periodOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
         </header>
 
         <section className={styles.podiumSection}>
@@ -355,6 +411,7 @@ export default function SquadRankingPage() {
             <span>Squad</span>
             <span>Churn</span>
             <span>Meta Lucro</span>
+            <span>Previsto</span>
             <span>MRR</span>
           </div>
 
@@ -399,6 +456,7 @@ export default function SquadRankingPage() {
 
                     <strong className={styles.metricCell}>{row.churnDisplay}</strong>
                     <strong className={styles.metricCell}>{row.metaActiveDisplay}</strong>
+                    <strong className={`${styles.metricCell} ${styles.predictedMetric}`.trim()}>{row.predictedGoalDisplay}</strong>
 
                     <div className={styles.scoreCell}>
                       <strong>{fmtMoney(row.mrr)}</strong>
