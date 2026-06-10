@@ -25,6 +25,7 @@ import {
 } from '../components/ui/index.js';
 import { matchesAnySearch } from '../utils/search.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
+import { getClientOnboardingDays, onboardingDaysLabel, onboardingDaysTone } from '../utils/clientHelpers.js';
 import {
   getClientAvatar,
   getGdvAvatar,
@@ -479,6 +480,15 @@ export default function GdvPage() {
   const [renderStickyResult, setRenderStickyResult] = useState(false);
 
   const now = useMemo(() => new Date(), []);
+  const [today, setToday] = useState(() => new Date());
+  useEffect(() => {
+    const dayKey = (date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    const interval = window.setInterval(() => {
+      const next = new Date();
+      setToday((current) => (dayKey(current) === dayKey(next) ? current : next));
+    }, 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
   const [year, setYear] = useState(now.getFullYear());
   const [month0, setMonth0] = useState(now.getMonth());
   const [week, setWeek] = useState(() => currentWeek(now));
@@ -718,6 +728,7 @@ export default function GdvPage() {
         weeklyProgress,
         weeklyGap,
         forecastGap,
+        onboardingDays: getClientOnboardingDays(client, today),
         tone: statusTone(calc, client.status),
         statusText: statusLabel(calc, client.status),
       };
@@ -728,7 +739,7 @@ export default function GdvPage() {
         priorityScore: clientPriorityScore(row),
       };
     });
-  }, [currentResults, currentSummaries, gdvClients]);
+  }, [currentResults, currentSummaries, gdvClients, today]);
 
   useEffect(() => {
     if (!selectedClientId) return;
@@ -1470,6 +1481,11 @@ export default function GdvPage() {
                     </div>
 
                     <div className={styles.clientStatus}>
+                      {Number.isFinite(row.onboardingDays) ? (
+                        <span className={`${styles.onboardingDays} ${styles[`onboardingDays_${onboardingDaysTone(row.onboardingDays)}`] || ''}`.trim()}>
+                          {onboardingDaysLabel(row.onboardingDays)}
+                        </span>
+                      ) : null}
                       <span className={`${styles.badge} ${toneClass(row.tone)} ${statusVisualClass(row.statusText)}`.trim()}>{row.statusText}</span>
                     </div>
                   </button>

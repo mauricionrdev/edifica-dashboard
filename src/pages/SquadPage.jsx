@@ -40,6 +40,7 @@ import {
 } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
 import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
+import { getClientOnboardingDays, onboardingDaysLabel, onboardingDaysTone } from '../utils/clientHelpers.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import { buildSquadPath, matchesEntityRouteSegment, slugifySegment } from '../utils/entityPaths.js';
 import styles from './SquadPage.module.css';
@@ -476,6 +477,15 @@ export default function SquadPage() {
   }, [navigate, squad, squadId]);
 
   const now = useMemo(() => new Date(), []);
+  const [today, setToday] = useState(() => new Date());
+  useEffect(() => {
+    const dayKey = (date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    const interval = window.setInterval(() => {
+      const next = new Date();
+      setToday((current) => (dayKey(current) === dayKey(next) ? current : next));
+    }, 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
   const [year, setYear] = useState(now.getFullYear());
   const [month0, setMonth0] = useState(now.getMonth());
   const [week, setWeek] = useState(() => currentWeek(now));
@@ -710,6 +720,7 @@ export default function SquadPage() {
         : 0;
       const tone = statusTone(calc, client.status);
       const statusText = statusLabel(calc, client.status);
+      const onboardingDays = getClientOnboardingDays(client, today);
 
       const row = {
         ...client,
@@ -721,6 +732,7 @@ export default function SquadPage() {
         weeklyHasGoal,
         tone,
         statusText,
+        onboardingDays,
       };
 
       return {
@@ -729,7 +741,7 @@ export default function SquadPage() {
         priorityScore: clientPriorityScore(row),
       };
     });
-  }, [metricRows, metricsByKey, monthPeriodKeys, periodKey, squadClients, week]);
+  }, [metricRows, metricsByKey, monthPeriodKeys, periodKey, squadClients, today, week]);
 
 
   const activeClientRows = useMemo(
@@ -1384,6 +1396,11 @@ export default function SquadPage() {
                   </div>
 
                   <div className={styles.clientStatus}>
+                    {Number.isFinite(row.onboardingDays) ? (
+                      <span className={`${styles.onboardingDays} ${styles[`onboardingDays_${onboardingDaysTone(row.onboardingDays)}`] || ''}`.trim()}>
+                        {onboardingDaysLabel(row.onboardingDays)}
+                      </span>
+                    ) : null}
                     <span className={`${styles.badge} ${toneClass(styles, row.tone)} ${statusVisualClass(row.statusText)}`.trim()}>
                       {row.statusText}
                     </span>

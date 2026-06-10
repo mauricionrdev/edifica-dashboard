@@ -13,6 +13,9 @@ import {
 import {
   clientInitials,
   fmtDateBR,
+  getClientOnboardingDays,
+  onboardingDaysLabel,
+  onboardingDaysTone,
   isEndingSoon,
   isExpired,
   statusClass,
@@ -367,6 +370,9 @@ export default function ClientsPage() {
                 const sl = statusLabel(c, today);
                 const ending = isEndingSoon(c, 30, today);
                 const avatarUrl = getClientAvatar(c);
+                const onboardingDays = getClientOnboardingDays(c, today);
+                const showOnboardingDays = Number.isFinite(onboardingDays);
+                const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
 
                 return (
                   <div
@@ -420,9 +426,16 @@ export default function ClientsPage() {
                         );
                       })}
                     </div>
-                    <span className={`${styles.statusPill} ${styles[`status_${sc.replace('cc-', '')}`] || ''}`.trim()}>
-                      {sl}
-                    </span>
+                    <div className={styles.statusStack}>
+                      {showOnboardingDays ? (
+                        <span className={`${styles.onboardingDays} ${styles[`onboardingDays_${onboardingTone}`] || ''}`.trim()}>
+                          {onboardingDaysLabel(onboardingDays)}
+                        </span>
+                      ) : null}
+                      <span className={`${styles.statusPill} ${styles[`status_${sc.replace('cc-', '')}`] || ''}`.trim()}>
+                        {sl}
+                      </span>
+                    </div>
                   </div>
                 );
               })

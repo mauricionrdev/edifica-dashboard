@@ -65,6 +65,36 @@ export function isExpired(client, today = new Date()) {
   return end < startOfDay(today);
 }
 
+
+export function getClientOnboardingDays(client, today = new Date()) {
+  if (!client || normalizeClientStatus(client.status) !== CLIENT_STATUS.ONBOARDING) return null;
+
+  const entryDate = parseDateOnly(
+    client.createdAt || client.created_at || client.startDate || client.start_date
+  );
+  if (Number.isNaN(entryDate.getTime())) return null;
+
+  const base = startOfDay(today);
+  const diffMs = base.getTime() - entryDate.getTime();
+  const dayMs = 1000 * 60 * 60 * 24;
+  return Math.max(0, Math.floor(diffMs / dayMs));
+}
+
+export function onboardingDaysLabel(days) {
+  const numeric = Number(days);
+  if (!Number.isFinite(numeric)) return '';
+  const safeDays = Math.max(0, Math.floor(numeric));
+  return `${safeDays} ${safeDays === 1 ? 'dia' : 'dias'}`;
+}
+
+export function onboardingDaysTone(days) {
+  const numeric = Number(days);
+  if (!Number.isFinite(numeric)) return 'neutral';
+  if (numeric >= 7) return 'overdue';
+  if (numeric >= 5) return 'warning';
+  return 'ok';
+}
+
 /**
  * Classe CSS do badge de status - casa com .cc-active / .cc-ending /
  * .cc-churn já existentes no base.css.
