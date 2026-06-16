@@ -305,7 +305,7 @@ export default function DesignLabClientsPage() {
 
   return (
     <div className={`btScope ${styles.page}`}>
-      <section className={styles.commandBar}>
+      <section className={styles.commandLayer}>
         <label className={styles.searchBox}>
           <SearchIcon size={15} aria-hidden="true" />
           <input
@@ -349,10 +349,8 @@ export default function DesignLabClientsPage() {
             </div>
           ) : null}
         </div>
-      </section>
 
-      <section className={styles.workspace}>
-        <aside className={styles.segmentRail} aria-label="Filtros de clientes">
+        <nav className={styles.segmentCloud} aria-label="Filtros de clientes">
           {SCOPES.map((item) => {
             const active = scope === item.key;
             return (
@@ -360,7 +358,7 @@ export default function DesignLabClientsPage() {
                 key={item.key}
                 type="button"
                 aria-current={active ? 'true' : undefined}
-                className={`${styles.segmentButton} ${active ? styles.segmentButtonActive : ''} ${item.tone === 'purple' ? styles.segmentButtonPurple : ''}`.trim()}
+                className={`${styles.segmentChip} ${active ? styles.segmentChipActive : ''} ${item.tone === 'purple' ? styles.segmentChipPurple : ''}`.trim()}
                 onClick={() => setScope(item.key)}
               >
                 <span>{item.label}</span>
@@ -368,60 +366,73 @@ export default function DesignLabClientsPage() {
               </button>
             );
           })}
-        </aside>
+        </nav>
+      </section>
 
-        <main className={styles.clientStage} aria-label="Clientes">
-          {loading ? (
-            <div className={styles.stateWrap}>
-              <StateBlock variant="loading" compact title="Carregando clientes" />
-            </div>
-          ) : error ? (
-            <div className={styles.stateWrap}>
-              <StateBlock variant="error" compact title="Não foi possível carregar clientes" />
-            </div>
-          ) : pagedRows.length === 0 ? (
-            <div className={styles.emptyState}>
-              <strong>Nenhum cliente encontrado</strong>
-              <span>Ajuste a busca ou selecione outro filtro.</span>
-            </div>
-          ) : (
-            <div className={styles.clientStream}>
-              {pagedRows.map((client) => {
-                const avatar = getClientAvatar(client);
-                const due = contractEndInfo(client, today);
-                const dueProgress = dueProgressValue(due);
-                const tcv = isTcvClient(client);
-                const internalSeller = getInternalSeller(client);
-                const onboardingDays = getClientOnboardingDays(client, today);
-                const showOnboardingDays = Number.isFinite(onboardingDays);
-                const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
-                const status = statusLabel(client, today);
+      <section className={styles.board} aria-label="Clientes">
+        {loading ? (
+          <div className={styles.stateWrap}>
+            <StateBlock variant="loading" compact title="Carregando clientes" />
+          </div>
+        ) : error ? (
+          <div className={styles.stateWrap}>
+            <StateBlock variant="error" compact title="Não foi possível carregar clientes" />
+          </div>
+        ) : pagedRows.length === 0 ? (
+          <div className={styles.emptyState}>
+            <strong>Nenhum cliente encontrado</strong>
+            <span>Ajuste a busca ou selecione outro filtro.</span>
+          </div>
+        ) : (
+          <div className={styles.clientGrid}>
+            {pagedRows.map((client) => {
+              const avatar = getClientAvatar(client);
+              const due = contractEndInfo(client, today);
+              const dueProgress = dueProgressValue(due);
+              const tcv = isTcvClient(client);
+              const internalSeller = getInternalSeller(client);
+              const onboardingDays = getClientOnboardingDays(client, today);
+              const showOnboardingDays = Number.isFinite(onboardingDays);
+              const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
+              const status = statusLabel(client, today);
 
-                return (
-                  <article
-                    key={client.id}
-                    className={`${styles.clientCard} ${styles[`clientCard_${due.tone}`] || ''}`.trim()}
-                    onClick={() => openDetail(client.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        openDetail(client.id);
-                      }
-                    }}
-                  >
-                    <div className={styles.identityBlock}>
-                      <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
-                        {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
-                      </span>
-                      <span className={styles.identityText}>
-                        <strong>{client.name}</strong>
-                        <small>{client.gestor || 'Sem gestor'}</small>
-                      </span>
-                    </div>
+              return (
+                <article
+                  key={client.id}
+                  className={`${styles.clientTile} ${styles[`clientTile_${due.tone}`] || ''}`.trim()}
+                  onClick={() => openDetail(client.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openDetail(client.id);
+                    }
+                  }}
+                  style={{ '--due-progress': `${dueProgress}%` }}
+                >
+                  <header className={styles.tileHeader}>
+                    <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
+                      {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
+                    </span>
 
-                    <div className={styles.relationshipBlock}>
+                    <span className={styles.identityText}>
+                      <strong>{client.name}</strong>
+                      <small>{internalSeller ? `Comercial interno · ${internalSeller}` : (client.gestor || 'Sem gestor')}</small>
+                    </span>
+
+                    <span className={styles.statusStack}>
+                      {showOnboardingDays ? (
+                        <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
+                          {onboardingDaysLabel(onboardingDays)}
+                        </BareBadge>
+                      ) : null}
+                      <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
+                    </span>
+                  </header>
+
+                  <div className={styles.tileBody}>
+                    <section className={styles.relationPanel} aria-label="Relacionamento">
                       <span>
                         <small>Squad</small>
                         <strong>{client.squadName || 'Sem squad'}</strong>
@@ -430,27 +441,28 @@ export default function DesignLabClientsPage() {
                         <small>GDV</small>
                         <strong>{client.gdvName || 'Sem GDV'}</strong>
                       </span>
-                    </div>
+                    </section>
 
-                    <div className={styles.contractBlock}>
-                      <div className={styles.contractTopline}>
+                    <section className={styles.contractPanel} aria-label="Contrato">
+                      <div className={styles.contractHeader}>
                         <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
-                        {internalSeller ? <BareBadge tone="purple">{internalSeller}</BareBadge> : null}
                       </div>
                       <strong>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
-                    </div>
+                    </section>
 
-                    <div className={styles.dueBlock} style={{ '--due-progress': `${dueProgress}%` }}>
-                      <div className={styles.dueTopline}>
+                    <section className={styles.duePanel} aria-label="Vencimento">
+                      <div className={styles.dueHeader}>
                         <BareBadge tone={due.tone}>{due.label}</BareBadge>
-                        {client.endDate ? <span>{fmtDateBR(client.endDate)}</span> : null}
+                        {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
                       </div>
                       <span className={styles.dueTrack} aria-hidden="true">
                         <span />
                       </span>
-                    </div>
+                    </section>
+                  </div>
 
-                    <div className={styles.analysisBlock} aria-label="Análises do cliente">
+                  <footer className={styles.tileFooter}>
+                    <div className={styles.analysisGroup} aria-label="Análises do cliente">
                       {ANALYSIS_ITEMS.map((item) => {
                         const Icon = item.icon;
                         const count = analysisCount(client, item.key);
@@ -473,36 +485,29 @@ export default function DesignLabClientsPage() {
                       })}
                     </div>
 
-                    <div className={styles.statusBlock}>
-                      {showOnboardingDays ? (
-                        <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
-                          {onboardingDaysLabel(onboardingDays)}
-                        </BareBadge>
-                      ) : null}
-                      <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
+                    <span className={styles.tileAction}>Abrir cliente</span>
+                  </footer>
+                </article>
+              );
+            })}
+          </div>
+        )}
 
-          <footer className={styles.pagination}>
-            <span>Exibindo {pageStart}-{pageEnd} de {filteredRows.length}</span>
-            <div className={styles.pageButtons}>
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={`${styles.pageButton} ${safePage === value ? styles.pageButtonActive : ''}`.trim()}
-                  onClick={() => setPage(value)}
-                >
-                  {value}
-                </button>
-              ))}
-            </div>
-          </footer>
-        </main>
+        <footer className={styles.pagination}>
+          <span>Exibindo {pageStart}-{pageEnd} de {filteredRows.length}</span>
+          <div className={styles.pageButtons}>
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={`${styles.pageButton} ${safePage === value ? styles.pageButtonActive : ''}`.trim()}
+                onClick={() => setPage(value)}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+        </footer>
       </section>
 
       {modalOpen && canCreate ? (

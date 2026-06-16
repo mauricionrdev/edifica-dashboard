@@ -6,20 +6,21 @@
   grid-template-rows: auto minmax(0, 1fr);
   gap: 12px;
   background:
-    radial-gradient(circle at 24% -10%, rgba(255, 255, 255, 0.026), transparent 34%),
+    radial-gradient(circle at 26% -12%, rgba(255, 255, 255, 0.026), transparent 34%),
     var(--bt-bg, #0d0d0c);
 }
 
-.commandBar {
-  min-height: 48px;
+.commandLayer {
+  min-height: 46px;
   display: grid;
-  grid-template-columns: minmax(280px, 440px) auto;
+  grid-template-columns: minmax(260px, 420px) minmax(0, 1fr) auto;
+  grid-template-areas: "search filters page";
   gap: 12px;
   align-items: center;
-  justify-content: space-between;
 }
 
 .searchBox {
+  grid-area: search;
   min-width: 0;
   height: 38px;
   padding: 0 13px;
@@ -52,7 +53,74 @@
   color: var(--bt-text-muted);
 }
 
+.segmentCloud {
+  grid-area: filters;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segmentCloud::-webkit-scrollbar {
+  display: none;
+}
+
+.segmentChip {
+  min-width: max-content;
+  height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--bt-line-soft);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bt-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.segmentChip:hover {
+  border-color: var(--bt-line);
+  color: var(--bt-text-secondary);
+}
+
+.segmentChip strong {
+  min-width: 19px;
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+.segmentChipActive {
+  border-color: var(--bt-amber-line);
+  background: var(--bt-amber-soft);
+  color: var(--bt-amber);
+}
+
+.segmentChipPurple.segmentChipActive,
+.segmentChipPurple:hover {
+  border-color: var(--bt-purple-line);
+  background: var(--bt-purple-soft);
+  color: var(--bt-purple);
+}
+
 .pageSizeDropdown {
+  grid-area: page;
   position: relative;
   justify-self: end;
 }
@@ -120,170 +188,91 @@
   color: var(--bt-amber);
 }
 
-.workspace {
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 212px minmax(0, 1fr);
-  gap: 14px;
-}
-
-.segmentRail {
-  min-width: 0;
-  align-self: start;
-  max-height: 100%;
-  padding: 8px;
-  border: 1px solid var(--bt-line-soft);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.014);
-  display: grid;
-  gap: 4px;
-  overflow: auto;
-}
-
-.segmentButton {
-  width: 100%;
-  min-height: 36px;
-  padding: 0 8px 0 11px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--bt-text-tertiary);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 9px;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.segmentButton span {
-  min-width: 0;
-  overflow: hidden;
-  font-size: 12px;
-  line-height: 1;
-  font-weight: 640;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.segmentButton strong {
-  min-width: 22px;
-  height: 21px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  color: inherit;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  line-height: 1;
-  font-weight: 720;
-  font-variant-numeric: tabular-nums;
-}
-
-.segmentButton:hover {
-  background: rgba(255, 255, 255, 0.032);
-  color: var(--bt-text-secondary);
-}
-
-.segmentButtonActive {
-  border-color: var(--bt-amber-line);
-  background: var(--bt-amber-soft);
-  color: var(--bt-amber);
-}
-
-.segmentButtonPurple.segmentButtonActive,
-.segmentButtonPurple:hover {
-  border-color: var(--bt-purple-line);
-  background: var(--bt-purple-soft);
-  color: var(--bt-purple);
-}
-
-.clientStage {
+.board {
   min-width: 0;
   min-height: 0;
   border: 1px solid var(--bt-line-soft);
   border-radius: 18px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.014), transparent 90px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 118px),
     rgba(255, 255, 255, 0.008);
-  overflow: hidden;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
 }
 
-.clientStream {
+.clientGrid {
   min-width: 0;
   min-height: 0;
+  padding: 14px;
   overflow: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.clientCard {
-  --due-progress: 0%;
-  position: relative;
-  width: 100%;
-  min-height: 74px;
-  padding: 12px 14px;
-  border: 0;
-  border-bottom: 1px solid var(--bt-line-soft);
-  background: transparent;
-  color: inherit;
   display: grid;
-  grid-template-columns:
-    minmax(220px, 1.28fr)
-    minmax(150px, 0.82fr)
-    minmax(150px, 0.82fr)
-    minmax(200px, 1fr)
-    112px
-    minmax(174px, 0.95fr);
-  gap: 14px;
-  align-items: center;
-  text-align: left;
-  cursor: pointer;
-}
-
-.clientCard::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 14px;
-  bottom: 14px;
-  width: 2px;
-  border-radius: 999px;
-  background: transparent;
-}
-
-.clientCard:hover {
-  background: rgba(255, 255, 255, 0.028);
-}
-
-.clientCard_info::before {
-  background: var(--bt-info, #7ab7ff);
-}
-
-.clientCard_warning::before {
-  background: var(--bt-amber, #f5b800);
-}
-
-.clientCard_danger::before {
-  background: var(--bt-danger, #ff5f5f);
-}
-
-.identityBlock {
-  min-width: 0;
-  display: flex;
-  align-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  align-content: start;
   gap: 12px;
 }
 
+.clientTile {
+  --due-progress: 0%;
+  position: relative;
+  min-width: 0;
+  min-height: 236px;
+  padding: 15px;
+  border: 1px solid var(--bt-line-soft);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.028), transparent 34%),
+    rgba(255, 255, 255, 0.014);
+  color: inherit;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.clientTile::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.clientTile:hover {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.042), transparent 34%),
+    rgba(255, 255, 255, 0.024);
+}
+
+.clientTile_info::before {
+  background: var(--bt-info, #7ab7ff);
+}
+
+.clientTile_warning::before {
+  background: var(--bt-amber, #f5b800);
+}
+
+.clientTile_danger::before {
+  background: var(--bt-danger, #ff5f5f);
+}
+
+.tileHeader {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "avatar identity"
+    "status status";
+  gap: 10px 12px;
+  align-items: center;
+}
+
 .avatar {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
+  grid-area: avatar;
+  width: 42px;
+  height: 42px;
   border: 1px solid var(--bt-line-soft);
   border-radius: 999px;
   overflow: hidden;
@@ -304,98 +293,150 @@
   object-fit: cover;
 }
 
-.identityText,
-.relationshipBlock span,
-.contractBlock,
-.dueBlock {
-  min-width: 0;
-}
-
 .identityText {
+  grid-area: identity;
+  min-width: 0;
   display: grid;
   gap: 4px;
 }
 
-.identityText strong,
-.relationshipBlock strong,
-.contractBlock > strong {
+.identityText strong {
   min-width: 0;
   overflow: hidden;
   color: var(--bt-text);
-  font-size: 13.5px;
+  font-size: 15px;
+  line-height: 1.18;
+  font-weight: 720;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.identityText small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--bt-text-tertiary);
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 520;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.statusStack {
+  grid-area: status;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.tileBody {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(126px, 0.62fr);
+  grid-template-areas:
+    "relation contract"
+    "due due";
+  gap: 12px;
+  align-content: start;
+}
+
+.relationPanel,
+.contractPanel,
+.duePanel {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.relationPanel {
+  grid-area: relation;
+  padding: 11px 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.relationPanel span {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.relationPanel small {
+  overflow: hidden;
+  color: var(--bt-text-muted);
+  font-size: 9.5px;
+  line-height: 1;
+  font-weight: 760;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.relationPanel strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--bt-text);
+  font-size: 12.8px;
   line-height: 1.18;
   font-weight: 680;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.identityText small,
-.relationshipBlock small,
-.dueTopline span {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--bt-text-tertiary);
-  font-size: 11.5px;
-  line-height: 1.2;
-  font-weight: 500;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.relationshipBlock {
-  min-width: 0;
+.contractPanel {
+  grid-area: contract;
+  padding: 11px 12px;
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 7px;
-}
-
-.relationshipBlock span {
-  display: grid;
-  gap: 3px;
-}
-
-.relationshipBlock small {
-  color: var(--bt-text-muted);
-  font-size: 9.5px;
-  font-weight: 720;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-.contractBlock {
-  display: grid;
-  gap: 8px;
+  gap: 9px;
   justify-items: start;
+  align-content: start;
 }
 
-.contractTopline {
-  min-width: 0;
+.contractHeader {
   display: flex;
   align-items: center;
   gap: 7px;
   flex-wrap: wrap;
 }
 
-.contractBlock > strong {
+.contractPanel > strong {
+  color: var(--bt-text);
+  font-size: 15px;
+  line-height: 1.15;
+  font-weight: 760;
   font-variant-numeric: tabular-nums;
 }
 
-.dueBlock {
+.duePanel {
+  grid-area: due;
+  padding: 11px 12px 12px;
   display: grid;
-  gap: 8px;
+  gap: 9px;
 }
 
-.dueTopline {
+.dueHeader {
   min-width: 0;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
+}
+
+.dueHeader small {
+  color: var(--bt-text-tertiary);
+  font-size: 11.5px;
+  font-weight: 560;
+  white-space: nowrap;
 }
 
 .dueTrack {
   width: 100%;
-  height: 3px;
+  height: 4px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.055);
   overflow: hidden;
@@ -407,35 +448,43 @@
   border-radius: inherit;
   background: currentColor;
   display: block;
-  opacity: .72;
+  opacity: .76;
 }
 
-.clientCard_info .dueTrack {
+.clientTile_info .dueTrack {
   color: var(--bt-info, #7ab7ff);
 }
 
-.clientCard_warning .dueTrack {
+.clientTile_warning .dueTrack {
   color: var(--bt-amber, #f5b800);
 }
 
-.clientCard_danger .dueTrack {
+.clientTile_danger .dueTrack {
   color: var(--bt-danger, #ff5f5f);
 }
 
-.analysisBlock {
+.tileFooter {
+  min-width: 0;
+  padding-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.analysisGroup {
   min-width: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 7px;
   flex-wrap: nowrap;
 }
 
 .analysisButton {
   position: relative;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 29px;
   padding: 0;
   border: 1px solid var(--bt-line-soft);
   border-radius: 999px;
@@ -487,13 +536,15 @@
   color: var(--bt-purple, #c084fc);
 }
 
-.statusBlock {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 7px;
-  flex-wrap: wrap;
+.tileAction {
+  min-width: max-content;
+  color: var(--bt-text-tertiary);
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.clientTile:hover .tileAction {
+  color: var(--bt-text-secondary);
 }
 
 .stateWrap,
@@ -563,111 +614,92 @@
   color: var(--bt-text);
 }
 
-@media (max-width: 1380px) {
-  .workspace {
-    grid-template-columns: 1fr;
+@media (max-width: 1340px) {
+  .commandLayer {
+    grid-template-columns: minmax(250px, 1fr) auto;
+    grid-template-areas:
+      "search page"
+      "filters filters";
   }
 
-  .segmentRail {
-    display: flex;
-    align-items: center;
-    gap: 7px;
+  .segmentCloud {
     overflow-x: auto;
-    border-radius: 16px;
   }
 
-  .segmentRail::-webkit-scrollbar {
-    display: none;
-  }
-
-  .segmentButton {
-    width: auto;
-    min-width: max-content;
-    grid-template-columns: auto auto;
-  }
-
-  .clientCard {
-    grid-template-columns:
-      minmax(210px, 1.22fr)
-      minmax(138px, 0.78fr)
-      minmax(138px, 0.78fr)
-      minmax(178px, 0.92fr)
-      104px
-      minmax(164px, 0.88fr);
-    gap: 12px;
+  .clientGrid {
+    grid-template-columns: repeat(auto-fit, minmax(390px, 1fr));
   }
 }
 
-@media (max-width: 1120px) {
-  .commandBar {
-    grid-template-columns: 1fr auto;
-  }
-
-  .clientStage {
-    border-radius: 16px;
-  }
-
-  .clientStream {
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .clientCard {
-    min-height: 0;
-    padding: 14px;
-    border: 1px solid var(--bt-line-soft);
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.014);
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
-    gap: 14px;
-  }
-
-  .clientCard::before {
-    top: 12px;
-    bottom: 12px;
-  }
-
-  .identityBlock,
-  .dueBlock {
-    grid-column: 1 / -1;
-  }
-
-  .relationshipBlock {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .pagination {
-    border-top-color: var(--bt-line-soft);
-  }
-}
-
-@media (max-width: 760px) {
+@media (max-width: 920px) {
   .page {
-    padding: 10px;
+    padding: 12px;
   }
 
-  .commandBar {
+  .commandLayer {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "search"
+      "filters"
+      "page";
   }
 
   .pageSizeDropdown {
     justify-self: start;
   }
 
-  .segmentRail {
-    padding: 7px;
-  }
-
-  .clientCard {
+  .clientGrid {
+    padding: 10px;
     grid-template-columns: 1fr;
   }
 
-  .relationshipBlock {
+  .tileBody {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "relation"
+      "contract"
+      "due";
+  }
+
+  .contractPanel {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 620px) {
+  .page {
+    padding: 10px;
+  }
+
+  .segmentChip {
+    height: 31px;
+    padding-inline: 10px;
+  }
+
+  .clientTile {
+    min-height: 0;
+    padding: 13px;
+    border-radius: 16px;
+  }
+
+  .tileHeader {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .relationPanel {
     grid-template-columns: 1fr;
   }
 
-  .statusBlock {
-    justify-content: flex-start;
+  .dueHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tileFooter {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .pagination {
