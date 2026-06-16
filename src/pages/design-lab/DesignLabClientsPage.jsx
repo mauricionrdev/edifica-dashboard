@@ -89,6 +89,14 @@ function contractEndInfo(client, today = new Date()) {
   return { label: `Vence em ${diff} dias`, tone: 'muted', days: diff };
 }
 
+function dueProgressValue(due) {
+  if (!Number.isFinite(Number(due?.days))) return 0;
+  const days = Number(due.days);
+  if (days <= 0) return 100;
+  if (days >= 120) return 12;
+  return Math.max(12, Math.min(100, Math.round(((120 - days) / 120) * 100)));
+}
+
 function statusTone(client, today) {
   if (isExpired(client, today)) return 'danger';
   if (client?.status === CLIENT_STATUS.CHURN) return 'danger';
@@ -297,83 +305,72 @@ export default function DesignLabClientsPage() {
 
   return (
     <div className={`btScope ${styles.page}`}>
-      <section className={styles.listPanel}>
-        <div className={styles.toolbar}>
-          <label className={styles.searchBox}>
-            <SearchIcon size={15} aria-hidden="true" />
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar cliente, squad, GDV ou vendedor"
-              aria-label="Buscar cliente"
-            />
-          </label>
+      <section className={styles.commandBar}>
+        <label className={styles.searchBox}>
+          <SearchIcon size={15} aria-hidden="true" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar cliente, squad, GDV ou vendedor"
+            aria-label="Buscar cliente"
+          />
+        </label>
 
-          <div className={styles.scopeTabs} role="tablist" aria-label="Filtros de clientes">
-            {SCOPES.map((item) => {
-              const active = scope === item.key;
-              return (
+        <div className={styles.pageSizeDropdown} ref={pageSizeRef}>
+          <button
+            type="button"
+            className={styles.pageSizeButton}
+            onClick={() => setPageSizeOpen((current) => !current)}
+            aria-expanded={pageSizeOpen}
+            aria-label="Quantidade por página"
+          >
+            <span>{pageSize} por página</span>
+            <ChevronDownIcon size={14} aria-hidden="true" />
+          </button>
+
+          {pageSizeOpen ? (
+            <div className={styles.pageSizeMenu} role="listbox" aria-label="Quantidade de clientes por página">
+              {PAGE_SIZE_OPTIONS.map((option) => (
                 <button
-                  key={item.key}
+                  key={option}
                   type="button"
-                  role="tab"
-                  aria-selected={active}
-                  className={`${styles.scopeTab} ${active ? styles.scopeTabActive : ''} ${item.tone === 'purple' ? styles.scopeTabPurple : ''}`.trim()}
-                  onClick={() => setScope(item.key)}
+                  className={`${styles.pageSizeOption} ${pageSize === option ? styles.pageSizeOptionActive : ''}`.trim()}
+                  onClick={() => {
+                    setPageSize(option);
+                    setPageSizeOpen(false);
+                  }}
+                  role="option"
+                  aria-selected={pageSize === option}
                 >
-                  <span>{item.label}</span>
-                  <strong>{counts[item.key] ?? 0}</strong>
+                  {option} por página
                 </button>
-              );
-            })}
-          </div>
-
-          <div className={styles.pageSizeDropdown} ref={pageSizeRef}>
-            <button
-              type="button"
-              className={styles.pageSizeButton}
-              onClick={() => setPageSizeOpen((current) => !current)}
-              aria-expanded={pageSizeOpen}
-              aria-label="Quantidade por página"
-            >
-              <span>{pageSize} por página</span>
-              <ChevronDownIcon size={14} aria-hidden="true" />
-            </button>
-
-            {pageSizeOpen ? (
-              <div className={styles.pageSizeMenu} role="listbox" aria-label="Quantidade de clientes por página">
-                {PAGE_SIZE_OPTIONS.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    className={`${styles.pageSizeOption} ${pageSize === option ? styles.pageSizeOptionActive : ''}`.trim()}
-                    onClick={() => {
-                      setPageSize(option);
-                      setPageSizeOpen(false);
-                    }}
-                    role="option"
-                    aria-selected={pageSize === option}
-                  >
-                    {option} por página
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
+              ))}
+            </div>
+          ) : null}
         </div>
+      </section>
 
-        <div className={styles.table}>
-          <div className={styles.headerRow}>
-            <span>Cliente</span>
-            <span>Squad</span>
-            <span>Tipo</span>
-            <span>Valor</span>
-            <span>Vencimento</span>
-            <span>Análises</span>
-            <span>Status</span>
-          </div>
+      <section className={styles.workspace}>
+        <aside className={styles.segmentRail} aria-label="Filtros de clientes">
+          {SCOPES.map((item) => {
+            const active = scope === item.key;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                aria-current={active ? 'true' : undefined}
+                className={`${styles.segmentButton} ${active ? styles.segmentButtonActive : ''} ${item.tone === 'purple' ? styles.segmentButtonPurple : ''}`.trim()}
+                onClick={() => setScope(item.key)}
+              >
+                <span>{item.label}</span>
+                <strong>{counts[item.key] ?? 0}</strong>
+              </button>
+            );
+          })}
+        </aside>
 
+        <main className={styles.clientStage} aria-label="Clientes">
           {loading ? (
             <div className={styles.stateWrap}>
               <StateBlock variant="loading" compact title="Carregando clientes" />
@@ -388,10 +385,11 @@ export default function DesignLabClientsPage() {
               <span>Ajuste a busca ou selecione outro filtro.</span>
             </div>
           ) : (
-            <div className={styles.bodyRows}>
+            <div className={styles.clientStream}>
               {pagedRows.map((client) => {
                 const avatar = getClientAvatar(client);
                 const due = contractEndInfo(client, today);
+                const dueProgress = dueProgressValue(due);
                 const tcv = isTcvClient(client);
                 const internalSeller = getInternalSeller(client);
                 const onboardingDays = getClientOnboardingDays(client, today);
@@ -402,7 +400,7 @@ export default function DesignLabClientsPage() {
                 return (
                   <article
                     key={client.id}
-                    className={styles.clientRow}
+                    className={`${styles.clientCard} ${styles[`clientCard_${due.tone}`] || ''}`.trim()}
                     onClick={() => openDetail(client.id)}
                     role="button"
                     tabIndex={0}
@@ -413,33 +411,46 @@ export default function DesignLabClientsPage() {
                       }
                     }}
                   >
-                    <div className={styles.clientCell} data-label="Cliente">
+                    <div className={styles.identityBlock}>
                       <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
                         {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
                       </span>
-                      <span className={styles.clientText}>
+                      <span className={styles.identityText}>
                         <strong>{client.name}</strong>
-                        <small>{internalSeller ? `Comercial interno · ${internalSeller}` : (client.gestor || 'Sem gestor')}</small>
+                        <small>{client.gestor || 'Sem gestor'}</small>
                       </span>
                     </div>
 
-                    <div className={styles.squadCell} data-label="Squad">
-                      <strong>{client.squadName || 'Sem squad'}</strong>
-                      <small>{client.gdvName || 'Sem GDV'}</small>
+                    <div className={styles.relationshipBlock}>
+                      <span>
+                        <small>Squad</small>
+                        <strong>{client.squadName || 'Sem squad'}</strong>
+                      </span>
+                      <span>
+                        <small>GDV</small>
+                        <strong>{client.gdvName || 'Sem GDV'}</strong>
+                      </span>
                     </div>
 
-                    <div className={styles.typeCell} data-label="Tipo">
-                      <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
+                    <div className={styles.contractBlock}>
+                      <div className={styles.contractTopline}>
+                        <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
+                        {internalSeller ? <BareBadge tone="purple">{internalSeller}</BareBadge> : null}
+                      </div>
+                      <strong>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
                     </div>
 
-                    <strong className={styles.valueCell} data-label="Valor">{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
-
-                    <div className={styles.dueCell} data-label="Vencimento">
-                      <BareBadge tone={due.tone}>{due.label}</BareBadge>
-                      {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
+                    <div className={styles.dueBlock} style={{ '--due-progress': `${dueProgress}%` }}>
+                      <div className={styles.dueTopline}>
+                        <BareBadge tone={due.tone}>{due.label}</BareBadge>
+                        {client.endDate ? <span>{fmtDateBR(client.endDate)}</span> : null}
+                      </div>
+                      <span className={styles.dueTrack} aria-hidden="true">
+                        <span />
+                      </span>
                     </div>
 
-                    <div className={styles.analysisCell} data-label="Análises" aria-label="Análises do cliente">
+                    <div className={styles.analysisBlock} aria-label="Análises do cliente">
                       {ANALYSIS_ITEMS.map((item) => {
                         const Icon = item.icon;
                         const count = analysisCount(client, item.key);
@@ -462,7 +473,7 @@ export default function DesignLabClientsPage() {
                       })}
                     </div>
 
-                    <div className={styles.statusCell} data-label="Status">
+                    <div className={styles.statusBlock}>
                       {showOnboardingDays ? (
                         <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
                           {onboardingDaysLabel(onboardingDays)}
@@ -475,23 +486,23 @@ export default function DesignLabClientsPage() {
               })}
             </div>
           )}
-        </div>
 
-        <footer className={styles.pagination}>
-          <span>Exibindo {pageStart}-{pageEnd} de {filteredRows.length}</span>
-          <div className={styles.pageButtons}>
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`${styles.pageButton} ${safePage === value ? styles.pageButtonActive : ''}`.trim()}
-                onClick={() => setPage(value)}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-        </footer>
+          <footer className={styles.pagination}>
+            <span>Exibindo {pageStart}-{pageEnd} de {filteredRows.length}</span>
+            <div className={styles.pageButtons}>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`${styles.pageButton} ${safePage === value ? styles.pageButtonActive : ''}`.trim()}
+                  onClick={() => setPage(value)}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </footer>
+        </main>
       </section>
 
       {modalOpen && canCreate ? (
@@ -521,4 +532,3 @@ export default function DesignLabClientsPage() {
       ) : null}
     </div>
   );
-}
