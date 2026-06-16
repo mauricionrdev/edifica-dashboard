@@ -1,0 +1,157 @@
+/* ============================================================================
+ * Design Lab · Barely There UI foundation
+ * Regras globais somente para .btScope.
+ * ========================================================================== */
+
+.btScope,
+.btScope * {
+  box-sizing: border-box;
+}
+
+.btScope {
+  color: var(--bt-text-secondary);
+  font-family: var(--font-sans, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+}
+
+.btScope button,
+.btScope input,
+.btScope select,
+.btScope textarea {
+  font: inherit;
+}
+
+.btScope button:focus,
+.btScope button:focus-visible,
+.btScope input:focus,
+.btScope input:focus-visible,
+.btScope textarea:focus,
+.btScope textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.btSurface {
+  border: 1px solid var(--bt-line-soft);
+  border-radius: var(--bt-radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.014), transparent 140px),
+    var(--bt-bg-soft);
+  box-shadow: none;
+}
+
+.btSurface[data-depth="flat"] {
+  border-color: transparent;
+  background: transparent;
+}
+
+.btButton {
+  height: var(--bt-control-height);
+  padding: 0 14px;
+  border: 1px solid var(--bt-line-soft);
+  border-radius: 999px;
+  background: var(--bt-bg-soft);
+  color: var(--bt-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background var(--bt-transition), border-color var(--bt-transition), color var(--bt-transition);
+}
+
+.btButton:hover {
+  border-color: var(--bt-line);
+  background: var(--bt-bg-hover);
+  color: var(--bt-text-primary);
+}
+
+.btButton[data-variant="primary"] {
+  border-color: rgba(243, 240, 234, 0.72);
+  background: #e7e1d7;
+  color: #11110f;
+}
+
+.btButton[data-variant="ghost"] {
+  border-color: transparent;
+  background: transparent;
+}
+
+.btBadge {
+  min-height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--bt-line-soft);
+  border-radius: 999px;
+  background: var(--bt-bg-soft);
+  color: var(--bt-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.btBadge[data-tone="success"] {
+  border-color: var(--bt-success-line);
+  background: var(--bt-success-soft);
+  color: var(--bt-success);
+}
+
+.btBadge[data-tone="warning"] {
+  border-color: var(--bt-warning-line);
+  background: var(--bt-warning-soft);
+  color: var(--bt-warning);
+}
+
+.btBadge[data-tone="danger"] {
+  border-color: var(--bt-danger-line);
+  background: var(--bt-danger-soft);
+  color: var(--bt-danger);
+}
+
+.btBadge[data-tone="info"] {
+  border-color: var(--bt-info-line);
+  background: var(--bt-info-soft);
+  color: var(--bt-info);
+}
+
+.btBadge[data-tone="purple"] {
+  border-color: var(--bt-purple-line);
+  background: var(--bt-purple-soft);
+  color: var(--bt-purple);
+}
+
+.btField {
+  height: 38px;
+  min-width: 0;
+  padding: 0 13px;
+  border: 1px solid var(--bt-line);
+  border-radius: var(--bt-radius-sm);
+  background: rgba(255, 255, 255, 0.024);
+  color: var(--bt-text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.btField:focus-within {
+  border-color: var(--bt-line-strong);
+}
+
+.btField input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+}
+
+.btField input::placeholder {
+  color: var(--bt-text-muted);
+}

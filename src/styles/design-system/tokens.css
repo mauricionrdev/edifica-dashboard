@@ -1,0 +1,43 @@
+/* ============================================================================
+ * Design Lab · Barely There UI tokens
+ * Escopo isolado: aplica somente em árvores com .btScope.
+ * ========================================================================== */
+
+.btScope {
+  --bt-bg-app: #0d0d0c;
+  --bt-bg-canvas: #11110f;
+  --bt-bg-elevated: #171614;
+  --bt-bg-soft: rgba(255, 255, 255, 0.026);
+  --bt-bg-hover: rgba(255, 255, 255, 0.046);
+  --bt-bg-selected: rgba(255, 255, 255, 0.064);
+  --bt-line-soft: rgba(255, 255, 255, 0.055);
+  --bt-line: rgba(255, 255, 255, 0.086);
+  --bt-line-strong: rgba(255, 255, 255, 0.14);
+  --bt-text-primary: #f3f0ea;
+  --bt-text-secondary: #c8c1b7;
+  --bt-text-tertiary: #928b83;
+  --bt-text-muted: #6f6962;
+  --bt-success: #48d597;
+  --bt-success-soft: rgba(72, 213, 151, 0.09);
+  --bt-success-line: rgba(72, 213, 151, 0.22);
+  --bt-warning: #f5b800;
+  --bt-warning-soft: rgba(245, 184, 0, 0.09);
+  --bt-warning-line: rgba(245, 184, 0, 0.24);
+  --bt-danger: #ff5f5f;
+  --bt-danger-soft: rgba(255, 95, 95, 0.10);
+  --bt-danger-line: rgba(255, 95, 95, 0.24);
+  --bt-info: #7ab7ff;
+  --bt-info-soft: rgba(122, 183, 255, 0.09);
+  --bt-info-line: rgba(122, 183, 255, 0.24);
+  --bt-purple: #c084fc;
+  --bt-purple-soft: rgba(168, 85, 247, 0.09);
+  --bt-purple-line: rgba(168, 85, 247, 0.28);
+  --bt-radius-xs: 8px;
+  --bt-radius-sm: 11px;
+  --bt-radius-md: 16px;
+  --bt-radius-lg: 22px;
+  --bt-control-height: 36px;
+  --bt-shadow-popover: 0 18px 44px rgba(0, 0, 0, 0.38);
+  --bt-shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.42);
+  --bt-transition: 150ms ease;
+}

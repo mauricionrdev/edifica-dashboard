@@ -23,6 +23,7 @@ import ForbiddenPage from './pages/ForbiddenPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
 import WorkspacePage from './pages/WorkspacePage.jsx';
+import DesignLabPage from './pages/design-lab/DesignLabPage.jsx';
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
 
 export default function App() {
@@ -73,6 +74,7 @@ export default function App() {
               <Route path="squads/:squadId" element={<RequirePermissionRoute permission="squads.view"><SquadPage /></RequirePermissionRoute>} />
               <Route path="ranking-squads" element={<RequirePermissionRoute permission="ranking.view"><SquadRankingPage /></RequirePermissionRoute>} />
               <Route path="suporte-tecnologia" element={<RequirePermissionRoute permission="support.view"><SupportTechnologyPage /></RequirePermissionRoute>} />
+              <Route path="design-lab/*" element={<RequirePermissionRoute permission="support.board.edit"><DesignLabPage /></RequirePermissionRoute>} />
               <Route path="equipe" element={<RequirePermissionRoute permission="team.view"><TeamAccessPage /></RequirePermissionRoute>} />
               <Route path="acesso-negado" element={<ForbiddenPage />} />
               <Route

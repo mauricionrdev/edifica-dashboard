@@ -1,0 +1,318 @@
+.page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  padding: 18px;
+  color: var(--bt-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+}
+
+.hero {
+  min-height: 310px;
+  padding: 32px clamp(18px, 4vw, 56px);
+  border: 1px solid var(--bt-line-soft);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(192, 132, 252, 0.11), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 62%),
+    var(--bt-bg-canvas);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.78fr);
+  align-items: center;
+  gap: 34px;
+}
+
+.heroContent {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 22px;
+}
+
+.heroBadge {
+  width: max-content;
+}
+
+.heroTitleBlock {
+  max-width: 720px;
+  display: grid;
+  gap: 12px;
+}
+
+.heroTitleBlock h1 {
+  margin: 0;
+  color: var(--bt-text-primary);
+  font-size: clamp(32px, 5vw, 58px);
+  line-height: 0.98;
+  font-weight: 590;
+  letter-spacing: -0.065em;
+}
+
+.heroTitleBlock p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--bt-text-tertiary);
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 480;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.commandBox {
+  min-height: 132px;
+  padding: 16px;
+  display: grid;
+  align-content: space-between;
+  gap: 18px;
+}
+
+.commandInput {
+  min-height: 54px;
+  padding: 0 14px;
+  border: 1px solid var(--bt-line);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.026);
+  color: var(--bt-text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 14px;
+  font-weight: 560;
+}
+
+.commandFooter,
+.buttonRow,
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+:global(.btMetric) {
+  min-height: 96px;
+  padding: 16px;
+  display: grid;
+  align-content: center;
+  gap: 7px;
+}
+
+:global(.btMetric) span {
+  color: var(--bt-text-tertiary);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+:global(.btMetric) strong {
+  color: var(--bt-text-primary);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 620;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+
+:global(.btMetric) small {
+  color: var(--bt-text-muted);
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+:global(.btMetric[data-tone="purple"]) {
+  border-color: var(--bt-purple-line);
+  background: linear-gradient(180deg, var(--bt-purple-soft), rgba(255, 255, 255, 0.018));
+}
+
+.gridTwo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  gap: 14px;
+}
+
+.sectionCard {
+  padding: 18px;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.sectionHead {
+  display: grid;
+  gap: 6px;
+}
+
+.sectionHead span,
+.tableHead span {
+  color: var(--bt-text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sectionHead h2,
+.tableHead strong {
+  margin: 0;
+  color: var(--bt-text-primary);
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+}
+
+.roadmapList {
+  display: grid;
+}
+
+.roadmapItem {
+  min-height: 78px;
+  padding: 14px 0;
+  border-top: 1px solid var(--bt-line-soft);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.roadmapItem:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.roadmapItem:last-child {
+  padding-bottom: 0;
+}
+
+.roadmapItem strong {
+  display: block;
+  color: var(--bt-text-primary);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.roadmapItem p {
+  margin: 6px 0 0;
+  color: var(--bt-text-tertiary);
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.componentPreview {
+  display: grid;
+  gap: 16px;
+}
+
+.sampleTable {
+  overflow: hidden;
+}
+
+.tableHead {
+  min-height: 58px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--bt-line-soft);
+  display: grid;
+  align-content: center;
+  gap: 6px;
+}
+
+.tableGrid {
+  display: grid;
+}
+
+.tableHeader,
+.tableRow {
+  min-height: 52px;
+  padding: 0 18px;
+  display: grid;
+  grid-template-columns: minmax(170px, 0.75fr) minmax(280px, 1.4fr) minmax(130px, 0.42fr);
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--bt-line-soft);
+}
+
+.tableHeader {
+  min-height: 40px;
+  color: var(--bt-text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.tableRow:last-child {
+  border-bottom: 0;
+}
+
+.tableRow > span:first-child {
+  color: var(--bt-text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.tableRow > span:nth-child(2) {
+  color: var(--bt-text-tertiary);
+  font-size: 12.5px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+@media (max-width: 1160px) {
+  .hero,
+  .gridTwo {
+    grid-template-columns: 1fr;
+  }
+
+  .metricsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 12px;
+  }
+
+  .hero {
+    padding: 22px;
+  }
+
+  .metricsGrid,
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 1fr;
+  }
+
+  .tableHeader {
+    display: none;
+  }
+
+  .tableRow {
+    padding-block: 14px;
+    gap: 8px;
+  }
+}

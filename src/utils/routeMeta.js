@@ -15,6 +15,11 @@ const ROUTE_META = [
     crumb: 'Suporte TI',
   },
   {
+    match: (pathname) => pathname.startsWith('/design-lab'),
+    title: 'Design Lab',
+    crumb: 'Design Lab',
+  },
+  {
     match: (pathname) => pathname.startsWith('/preencher-semana'),
     title: 'Preencher Semana',
     crumb: 'Preencher Semana',
