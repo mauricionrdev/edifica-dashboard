@@ -194,85 +194,83 @@
   border: 1px solid var(--bt-line-soft);
   border-radius: 18px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 118px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), transparent 118px),
     rgba(255, 255, 255, 0.008);
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   overflow: hidden;
 }
 
-.clientGrid {
+.clientList {
   min-width: 0;
   min-height: 0;
-  padding: 14px;
   overflow: auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  align-content: start;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
 }
 
-.clientTile {
+.clientItem {
   --due-progress: 0%;
   position: relative;
-  min-width: 0;
-  min-height: 236px;
-  padding: 15px;
-  border: 1px solid var(--bt-line-soft);
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.028), transparent 34%),
-    rgba(255, 255, 255, 0.014);
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 15px;
+  border: 0;
+  border-bottom: 1px solid var(--bt-line-soft);
+  background: transparent;
   color: inherit;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns:
+    minmax(230px, 1.38fr)
+    minmax(124px, 0.66fr)
+    minmax(160px, 0.86fr)
+    minmax(188px, 1fr)
+    106px
+    minmax(166px, 0.9fr);
   gap: 14px;
+  align-items: center;
   text-align: left;
   cursor: pointer;
-  overflow: hidden;
 }
 
-.clientTile::before {
+.clientItem::before {
   content: "";
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: rgba(255, 255, 255, 0.05);
+  left: 0;
+  top: 13px;
+  bottom: 13px;
+  width: 2px;
+  border-radius: 999px;
+  background: transparent;
 }
 
-.clientTile:hover {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.042), transparent 34%),
-    rgba(255, 255, 255, 0.024);
-}
-
-.clientTile_info::before {
+.clientItem_info::before {
   background: var(--bt-info, #7ab7ff);
 }
 
-.clientTile_warning::before {
+.clientItem_warning::before {
   background: var(--bt-amber, #f5b800);
 }
 
-.clientTile_danger::before {
+.clientItem_danger::before {
   background: var(--bt-danger, #ff5f5f);
 }
 
-.tileHeader {
+.clientItem:hover {
+  background: rgba(255, 255, 255, 0.026);
+}
+
+.identityBlock {
   min-width: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas:
-    "avatar identity"
-    "status status";
-  gap: 10px 12px;
+  display: flex;
   align-items: center;
+  gap: 12px;
 }
 
 .avatar {
-  grid-area: avatar;
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
   border: 1px solid var(--bt-line-soft);
   border-radius: 999px;
   overflow: hidden;
@@ -293,150 +291,86 @@
   object-fit: cover;
 }
 
-.identityText {
-  grid-area: identity;
+.identityText,
+.squadBlock,
+.contractBlock,
+.dueBlock {
   min-width: 0;
-  display: grid;
-  gap: 4px;
 }
 
-.identityText strong {
+.identityText {
+  display: grid;
+}
+
+.identityText strong,
+.squadBlock strong,
+.contractBlock > strong {
   min-width: 0;
   overflow: hidden;
   color: var(--bt-text);
-  font-size: 15px;
+  font-size: 13.5px;
   line-height: 1.18;
-  font-weight: 720;
+  font-weight: 690;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.identityText small {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--bt-text-tertiary);
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 520;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.statusStack {
-  grid-area: status;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
-.tileBody {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(126px, 0.62fr);
-  grid-template-areas:
-    "relation contract"
-    "due due";
-  gap: 12px;
-  align-content: start;
-}
-
-.relationPanel,
-.contractPanel,
-.duePanel {
-  min-width: 0;
-  border: 1px solid rgba(255, 255, 255, 0.045);
-  border-radius: 15px;
-  background: rgba(0, 0, 0, 0.12);
-}
-
-.relationPanel {
-  grid-area: relation;
-  padding: 11px 12px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.relationPanel span {
-  min-width: 0;
+.squadBlock {
   display: grid;
   gap: 4px;
 }
 
-.relationPanel small {
-  overflow: hidden;
+.squadBlock small {
   color: var(--bt-text-muted);
   font-size: 9.5px;
   line-height: 1;
   font-weight: 760;
   letter-spacing: .08em;
   text-transform: uppercase;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
-.relationPanel strong {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--bt-text);
-  font-size: 12.8px;
-  line-height: 1.18;
-  font-weight: 680;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.contractPanel {
-  grid-area: contract;
-  padding: 11px 12px;
+.contractBlock {
   display: grid;
-  gap: 9px;
+  gap: 7px;
   justify-items: start;
-  align-content: start;
 }
 
-.contractHeader {
+.contractTags {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 7px;
   flex-wrap: wrap;
 }
 
-.contractPanel > strong {
-  color: var(--bt-text);
-  font-size: 15px;
-  line-height: 1.15;
-  font-weight: 760;
+.contractBlock > strong {
   font-variant-numeric: tabular-nums;
 }
 
-.duePanel {
-  grid-area: due;
-  padding: 11px 12px 12px;
+.dueBlock {
   display: grid;
-  gap: 9px;
+  gap: 7px;
 }
 
 .dueHeader {
   min-width: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .dueHeader small {
   color: var(--bt-text-tertiary);
   font-size: 11.5px;
+  line-height: 1;
   font-weight: 560;
   white-space: nowrap;
 }
 
 .dueTrack {
   width: 100%;
-  height: 4px;
+  height: 3px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.055);
   overflow: hidden;
@@ -451,40 +385,32 @@
   opacity: .76;
 }
 
-.clientTile_info .dueTrack {
+.clientItem_info .dueTrack {
   color: var(--bt-info, #7ab7ff);
 }
 
-.clientTile_warning .dueTrack {
+.clientItem_warning .dueTrack {
   color: var(--bt-amber, #f5b800);
 }
 
-.clientTile_danger .dueTrack {
+.clientItem_danger .dueTrack {
   color: var(--bt-danger, #ff5f5f);
-}
-
-.tileFooter {
-  min-width: 0;
-  padding-top: 1px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
 }
 
 .analysisGroup {
   min-width: 0;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 7px;
   flex-wrap: nowrap;
 }
 
 .analysisButton {
   position: relative;
-  width: 29px;
-  height: 29px;
-  flex: 0 0 29px;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
   padding: 0;
   border: 1px solid var(--bt-line-soft);
   border-radius: 999px;
@@ -536,15 +462,59 @@
   color: var(--bt-purple, #c084fc);
 }
 
-.tileAction {
-  min-width: max-content;
-  color: var(--bt-text-tertiary);
-  font-size: 11.5px;
-  font-weight: 650;
+.statusStack {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  flex-wrap: wrap;
 }
 
-.clientTile:hover .tileAction {
-  color: var(--bt-text-secondary);
+.clientItem :global(.bareBadge) {
+  min-height: 24px;
+  padding-inline: 10px;
+  border-width: 1px;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.024), transparent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.clientItem :global(.bareBadge_muted) {
+  border-color: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.018);
+  color: var(--bt-text-tertiary);
+}
+
+.clientItem :global(.bareBadge_info) {
+  border-color: rgba(122, 183, 255, 0.26);
+  background-color: rgba(122, 183, 255, 0.085);
+  color: var(--bt-info, #7ab7ff);
+}
+
+.clientItem :global(.bareBadge_warning) {
+  border-color: rgba(245, 184, 0, 0.28);
+  background-color: rgba(245, 184, 0, 0.09);
+  color: var(--bt-amber, #f5b800);
+}
+
+.clientItem :global(.bareBadge_danger) {
+  border-color: rgba(255, 95, 95, 0.28);
+  background-color: rgba(255, 95, 95, 0.10);
+  color: var(--bt-danger, #ff5f5f);
+}
+
+.clientItem :global(.bareBadge_purple) {
+  border-color: rgba(192, 132, 252, 0.30);
+  background-color: rgba(192, 132, 252, 0.09);
+  color: var(--bt-purple, #c084fc);
+}
+
+.clientItem :global(.bareBadge_success) {
+  border-color: rgba(72, 213, 151, 0.24);
+  background-color: rgba(72, 213, 151, 0.085);
+  color: var(--bt-green, #48d597);
 }
 
 .stateWrap,
@@ -614,7 +584,7 @@
   color: var(--bt-text);
 }
 
-@media (max-width: 1340px) {
+@media (max-width: 1360px) {
   .commandLayer {
     grid-template-columns: minmax(250px, 1fr) auto;
     grid-template-areas:
@@ -622,18 +592,48 @@
       "filters filters";
   }
 
-  .segmentCloud {
-    overflow-x: auto;
-  }
-
-  .clientGrid {
-    grid-template-columns: repeat(auto-fit, minmax(390px, 1fr));
+  .clientItem {
+    grid-template-columns:
+      minmax(220px, 1.22fr)
+      minmax(116px, 0.6fr)
+      minmax(150px, 0.82fr)
+      minmax(172px, 0.94fr)
+      102px
+      minmax(158px, 0.86fr);
+    gap: 12px;
   }
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1040px) {
+  .clientList {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .clientItem {
+    min-height: 0;
+    padding: 14px;
+    border: 1px solid var(--bt-line-soft);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.014);
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 13px;
+  }
+
+  .identityBlock,
+  .dueBlock,
+  .statusStack {
+    grid-column: 1 / -1;
+  }
+
+  .statusStack {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
   .page {
-    padding: 12px;
+    padding: 10px;
   }
 
   .commandLayer {
@@ -648,58 +648,14 @@
     justify-self: start;
   }
 
-  .clientGrid {
-    padding: 10px;
+  .clientItem {
     grid-template-columns: 1fr;
   }
 
-  .tileBody {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "relation"
-      "contract"
-      "due";
-  }
-
-  .contractPanel {
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-@media (max-width: 620px) {
-  .page {
-    padding: 10px;
-  }
-
-  .segmentChip {
-    height: 31px;
-    padding-inline: 10px;
-  }
-
-  .clientTile {
-    min-height: 0;
-    padding: 13px;
-    border-radius: 16px;
-  }
-
-  .tileHeader {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .relationPanel {
-    grid-template-columns: 1fr;
-  }
-
-  .dueHeader {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .tileFooter {
-    align-items: flex-start;
-    flex-direction: column;
+  .identityBlock,
+  .dueBlock,
+  .statusStack {
+    grid-column: auto;
   }
 
   .pagination {

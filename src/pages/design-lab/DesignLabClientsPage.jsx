@@ -312,10 +312,28 @@ export default function DesignLabClientsPage() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar cliente, squad, GDV ou vendedor"
+            placeholder="Buscar cliente, squad ou vendedor"
             aria-label="Buscar cliente"
           />
         </label>
+
+        <nav className={styles.segmentCloud} aria-label="Filtros de clientes">
+          {SCOPES.map((item) => {
+            const active = scope === item.key;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                aria-current={active ? 'true' : undefined}
+                className={`${styles.segmentChip} ${active ? styles.segmentChipActive : ''} ${item.tone === 'purple' ? styles.segmentChipPurple : ''}`.trim()}
+                onClick={() => setScope(item.key)}
+              >
+                <span>{item.label}</span>
+                <strong>{counts[item.key] ?? 0}</strong>
+              </button>
+            );
+          })}
+        </nav>
 
         <div className={styles.pageSizeDropdown} ref={pageSizeRef}>
           <button
@@ -349,24 +367,6 @@ export default function DesignLabClientsPage() {
             </div>
           ) : null}
         </div>
-
-        <nav className={styles.segmentCloud} aria-label="Filtros de clientes">
-          {SCOPES.map((item) => {
-            const active = scope === item.key;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                aria-current={active ? 'true' : undefined}
-                className={`${styles.segmentChip} ${active ? styles.segmentChipActive : ''} ${item.tone === 'purple' ? styles.segmentChipPurple : ''}`.trim()}
-                onClick={() => setScope(item.key)}
-              >
-                <span>{item.label}</span>
-                <strong>{counts[item.key] ?? 0}</strong>
-              </button>
-            );
-          })}
-        </nav>
       </section>
 
       <section className={styles.board} aria-label="Clientes">
@@ -384,7 +384,7 @@ export default function DesignLabClientsPage() {
             <span>Ajuste a busca ou selecione outro filtro.</span>
           </div>
         ) : (
-          <div className={styles.clientGrid}>
+          <div className={styles.clientList}>
             {pagedRows.map((client) => {
               const avatar = getClientAvatar(client);
               const due = contractEndInfo(client, today);
@@ -399,7 +399,7 @@ export default function DesignLabClientsPage() {
               return (
                 <article
                   key={client.id}
-                  className={`${styles.clientTile} ${styles[`clientTile_${due.tone}`] || ''}`.trim()}
+                  className={`${styles.clientItem} ${styles[`clientItem_${due.tone}`] || ''}`.trim()}
                   onClick={() => openDetail(client.id)}
                   role="button"
                   tabIndex={0}
@@ -411,82 +411,69 @@ export default function DesignLabClientsPage() {
                   }}
                   style={{ '--due-progress': `${dueProgress}%` }}
                 >
-                  <header className={styles.tileHeader}>
+                  <div className={styles.identityBlock}>
                     <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
                       {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
                     </span>
-
                     <span className={styles.identityText}>
                       <strong>{client.name}</strong>
-                      <small>{internalSeller ? `Comercial interno · ${internalSeller}` : (client.gestor || 'Sem gestor')}</small>
                     </span>
-
-                    <span className={styles.statusStack}>
-                      {showOnboardingDays ? (
-                        <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
-                          {onboardingDaysLabel(onboardingDays)}
-                        </BareBadge>
-                      ) : null}
-                      <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
-                    </span>
-                  </header>
-
-                  <div className={styles.tileBody}>
-                    <section className={styles.relationPanel} aria-label="Relacionamento">
-                      <span>
-                        <small>Squad</small>
-                        <strong>{client.squadName || 'Sem squad'}</strong>
-                      </span>
-                      <span>
-                        <small>GDV</small>
-                        <strong>{client.gdvName || 'Sem GDV'}</strong>
-                      </span>
-                    </section>
-
-                    <section className={styles.contractPanel} aria-label="Contrato">
-                      <div className={styles.contractHeader}>
-                        <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
-                      </div>
-                      <strong>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
-                    </section>
-
-                    <section className={styles.duePanel} aria-label="Vencimento">
-                      <div className={styles.dueHeader}>
-                        <BareBadge tone={due.tone}>{due.label}</BareBadge>
-                        {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
-                      </div>
-                      <span className={styles.dueTrack} aria-hidden="true">
-                        <span />
-                      </span>
-                    </section>
                   </div>
 
-                  <footer className={styles.tileFooter}>
-                    <div className={styles.analysisGroup} aria-label="Análises do cliente">
-                      {ANALYSIS_ITEMS.map((item) => {
-                        const Icon = item.icon;
-                        const count = analysisCount(client, item.key);
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            className={`${styles.analysisButton} ${styles[item.className]}`.trim()}
-                            title={item.label}
-                            aria-label={`Abrir ${item.label} de ${client.name}. Registros: ${count}`}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openDetail(client.id, item.tab);
-                            }}
-                          >
-                            <Icon size={13} strokeWidth={2} aria-hidden="true" />
-                            {count > 0 ? <span>{count}</span> : null}
-                          </button>
-                        );
-                      })}
-                    </div>
+                  <div className={styles.squadBlock}>
+                    <small>Squad</small>
+                    <strong>{client.squadName || 'Sem squad'}</strong>
+                  </div>
 
-                    <span className={styles.tileAction}>Abrir cliente</span>
-                  </footer>
+                  <div className={styles.contractBlock}>
+                    <div className={styles.contractTags}>
+                      <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
+                      {internalSeller ? <BareBadge tone="purple">{internalSeller}</BareBadge> : null}
+                    </div>
+                    <strong>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
+                  </div>
+
+                  <div className={styles.dueBlock}>
+                    <div className={styles.dueHeader}>
+                      <BareBadge tone={due.tone}>{due.label}</BareBadge>
+                      {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
+                    </div>
+                    <span className={styles.dueTrack} aria-hidden="true">
+                      <span />
+                    </span>
+                  </div>
+
+                  <div className={styles.analysisGroup} aria-label="Análises do cliente">
+                    {ANALYSIS_ITEMS.map((item) => {
+                      const Icon = item.icon;
+                      const count = analysisCount(client, item.key);
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          className={`${styles.analysisButton} ${styles[item.className]}`.trim()}
+                          title={item.label}
+                          aria-label={`Abrir ${item.label} de ${client.name}. Registros: ${count}`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openDetail(client.id, item.tab);
+                          }}
+                        >
+                          <Icon size={13} strokeWidth={2} aria-hidden="true" />
+                          {count > 0 ? <span>{count}</span> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className={styles.statusStack}>
+                    {showOnboardingDays ? (
+                      <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
+                        {onboardingDaysLabel(onboardingDays)}
+                      </BareBadge>
+                    ) : null}
+                    <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
+                  </div>
                 </article>
               );
             })}
