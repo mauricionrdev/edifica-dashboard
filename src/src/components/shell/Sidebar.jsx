@@ -27,7 +27,6 @@ import {
   HomeIcon,
   LogOutIcon,
   SearchIcon,
-  SparklesIcon,
   TrophyIcon,
   UsersIcon,
   BotIcon,
@@ -183,13 +182,6 @@ export default function Sidebar({
             to: '/suporte-tecnologia',
             icon: <BotIcon size={16} />,
             label: 'Suporte TI',
-          }
-        : null,
-      hasPermission(user, 'support.board.edit')
-        ? {
-            to: '/design-lab',
-            icon: <SparklesIcon size={16} />,
-            label: 'Design Lab',
           }
         : null,
     ].filter(Boolean),
