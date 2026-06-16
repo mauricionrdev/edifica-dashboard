@@ -42,6 +42,7 @@ const SCOPES = [
   { key: 'churn', label: 'Churn' },
   { key: 'expired', label: 'Vencidos' },
   { key: 'ending', label: 'Vencendo' },
+  { key: 'tcv', label: 'TCV' },
 ];
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
@@ -51,6 +52,32 @@ const ANALYSIS_ITEMS = [
   { key: 'gdv', tab: 'gdv', label: 'Análise GDV', className: 'analysisGdv', icon: ChartColumnIcon },
   { key: 'routes', tab: 'routes', label: 'Resumo de Rotas', className: 'analysisRoutes', icon: ClipboardListIcon },
 ];
+
+
+function isTcvClient(client) {
+  return client?.contractType === 'tcv' || client?.isTcv === true;
+}
+
+function contractEndInfo(client, today = new Date()) {
+  if (!client?.endDate) return { label: 'Sem término', tone: 'muted' };
+
+  const end = new Date(`${String(client.endDate).slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(end.getTime())) return { label: 'Sem término', tone: 'muted' };
+
+  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const target = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  const diff = Math.round((target.getTime() - base.getTime()) / 86400000);
+
+  if (diff < 0) {
+    const days = Math.abs(diff);
+    return { label: `Vencido há ${days} ${days === 1 ? 'dia' : 'dias'}`, tone: 'danger' };
+  }
+  if (diff === 0) return { label: 'Vence hoje', tone: 'danger' };
+  if (diff <= 7) return { label: `Vence em ${diff} ${diff === 1 ? 'dia' : 'dias'}`, tone: 'danger' };
+  if (diff <= 30) return { label: `Vence em ${diff} dias`, tone: 'warning' };
+  if (diff <= 60) return { label: `Vence em ${diff} dias`, tone: 'info' };
+  return { label: `Vence em ${diff} dias`, tone: 'muted' };
+}
 
 function analysisCount(client, key) {
   const counts = client?.analysisCounts || client?.analysesCount || client?.analysisSummary || {};
@@ -110,6 +137,7 @@ export default function ClientsPage() {
       churn: all.filter((c) => c.status === CLIENT_STATUS.CHURN).length,
       expired: all.filter((c) => isExpired(c, today)).length,
       ending: all.filter((c) => isEndingSoon(c, 30, today)).length,
+      tcv: all.filter(isTcvClient).length,
       squad: all.filter((c) => c.squadId).length,
     };
   }, [clients, today]);
@@ -125,8 +153,9 @@ export default function ClientsPage() {
       if (scope === 'churn' && c.status !== CLIENT_STATUS.CHURN) return false;
       if (scope === 'expired' && !isExpired(c, today)) return false;
       if (scope === 'ending' && !isEndingSoon(c, 30, today)) return false;
+      if (scope === 'tcv' && !isTcvClient(c)) return false;
       if (!q) return true;
-      return matchesAnySearch([c.name, c.squadName, c.gestor, c.gdvName], q);
+      return matchesAnySearch([c.name, c.squadName, c.gestor, c.gdvName, c.contractType], q);
     });
   }, [clients, scope, query, today]);
 
@@ -137,11 +166,16 @@ export default function ClientsPage() {
     };
 
     return [...filtered].sort((a, b) => {
+      if (scope === 'tcv') {
+        const aEnd = Date.parse(a?.endDate || '') || Number.MAX_SAFE_INTEGER;
+        const bEnd = Date.parse(b?.endDate || '') || Number.MAX_SAFE_INTEGER;
+        if (aEnd !== bEnd) return aEnd - bEnd;
+      }
       const byCreatedAt = getTime(b) - getTime(a);
       if (byCreatedAt !== 0) return byCreatedAt;
       return String(a?.name || '').localeCompare(String(b?.name || ''), 'pt-BR');
     });
-  }, [filtered]);
+  }, [filtered, scope]);
 
   const totalPages = Math.max(1, Math.ceil(orderedRows.length / pageSize));
   const visibleRows = useMemo(() => {
@@ -321,7 +355,7 @@ export default function ClientsPage() {
                   type="button"
                   role="tab"
                   aria-selected={scope === s.key}
-                  className={`${styles.scopeTab} ${scope === s.key ? styles.scopeTabActive : ''}`.trim()}
+                  className={`${styles.scopeTab} ${scope === s.key ? styles.scopeTabActive : ''} ${s.key === 'tcv' ? styles.scopeTabTcv : ''}`.trim()}
                   onClick={() => setScope(s.key)}
                 >
                   <span>{s.label}</span>
@@ -353,7 +387,9 @@ export default function ClientsPage() {
               <span>Squad</span>
               <span>Início</span>
               <span>Fim</span>
-              <span>Mensalidade</span>
+              <span>Tipo</span>
+              <span>Valor</span>
+              <span>Vencimento</span>
               <span>Análises</span>
               <span>Status</span>
             </div>
@@ -373,6 +409,8 @@ export default function ClientsPage() {
                 const onboardingDays = getClientOnboardingDays(c, today);
                 const showOnboardingDays = Number.isFinite(onboardingDays);
                 const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
+                const tcv = isTcvClient(c);
+                const due = contractEndInfo(c, today);
 
                 return (
                   <div
@@ -403,7 +441,9 @@ export default function ClientsPage() {
                     </div>
                     <div className={styles.cellDate}>{fmtDateBR(c.startDate)}</div>
                     <div className={`${styles.cellDate} ${ending ? styles.soon : ''}`.trim()}>{fmtDateBR(c.endDate)}</div>
+                    <div className={`${styles.cellContractType} ${tcv ? styles.cellContractTypeTcv : ''}`.trim()}>{tcv ? 'TCV' : 'Recorrente'}</div>
                     <div className={styles.cellFee}>{fmtMoney(resolveClientFeeAtDate(c, today))}</div>
+                    <div className={`${styles.duePill} ${styles[`due_${due.tone}`] || ''}`.trim()}>{tcv ? due.label : '—'}</div>
                     <div className={styles.analysisCell} aria-label="Análises do cliente">
                       {ANALYSIS_ITEMS.map((item) => {
                         const Icon = item.icon;

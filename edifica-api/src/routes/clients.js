@@ -29,6 +29,14 @@ router.use(requireAuth);
 
 const VALID_CLIENT_STATUSES = new Set(['active', 'onboarding', 'rampagem_comercial', 'paused', 'churn']);
 
+const VALID_CONTRACT_TYPES = new Set(['recurring', 'tcv']);
+
+function normalizeContractType(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (raw === 'tcv' || raw === 'single' || raw === 'one_time' || raw === 'valor_total') return 'tcv';
+  return 'recurring';
+}
+
 function normalizeClientStatus(status) {
   const value = String(status || '').trim();
   return VALID_CLIENT_STATUSES.has(value) ? value : 'active';
@@ -201,6 +209,9 @@ async function ensureResponsibleSchema() {
       if (!clientNames.has('internal_seller')) {
         await query('ALTER TABLE clients ADD COLUMN internal_seller VARCHAR(120) NULL AFTER internal_commercial_enabled');
       }
+      if (!clientNames.has('contract_type')) {
+        await query("ALTER TABLE clients ADD COLUMN contract_type ENUM('recurring','tcv') NOT NULL DEFAULT 'recurring' AFTER end_date");
+      }
       const statusColumn = clientCols.find((column) => column.Field === 'status');
       if (statusColumn && !String(statusColumn.Type || '').includes('rampagem_comercial')) {
         await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','rampagem_comercial','paused','churn') NOT NULL DEFAULT 'active'");
@@ -227,6 +238,8 @@ function serializeClient(row) {
     gestor: row.gestor || '',
     internalCommercial: Boolean(row.internal_commercial_enabled) || Boolean(row.internal_seller),
     internalSeller: row.internal_seller || '',
+    contractType: normalizeContractType(row.contract_type),
+    isTcv: normalizeContractType(row.contract_type) === 'tcv',
     status: row.status,
     goalStatus: row.goal_status || '',
     fee: resolveMonthlyFeeForDate(row),
@@ -254,6 +267,7 @@ function pickUpdatableFields(body) {
     'gestor',
     'internalCommercial',
     'internalSeller',
+    'contractType',
     'status',
     'avatarUrl',
     'fee',
@@ -325,6 +339,9 @@ function normalizeInternalCommercialFields(fields) {
 
 async function normalizeResponsibleFields(fields) {
   const next = normalizeInternalCommercialFields(fields);
+  if (fields.contractType !== undefined) {
+    next.contractType = normalizeContractType(fields.contractType);
+  }
   if (fields.gestor !== undefined) {
     next.gestor = await validateResponsibleName('gestor', fields.gestor);
   }
@@ -468,8 +485,8 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
       await conn.query(
         `INSERT INTO clients (
            id, name, avatar_data_url, squad_id, gdv_name, gestor, internal_commercial_enabled, internal_seller, status, goal_status,
-           fee, meta_lucro, start_date, end_date, churn_date
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           contract_type, fee, meta_lucro, start_date, end_date, churn_date
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           name,
@@ -481,6 +498,7 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
           fields.internalCommercial ? String(fields.internalSeller || '') : '',
           status,
           '',
+          normalizeContractType(fields.contractType),
           parseLocaleNumber(fields.fee, 0),
           parseLocaleNumber(fields.metaLucro, 0),
           fromClientDate(fields.startDate),
@@ -621,6 +639,10 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
     if (fields.internalSeller !== undefined) {
       updates.push('internal_seller = ?');
       params.push(fields.internalCommercial === false ? '' : String(fields.internalSeller || ''));
+    }
+    if (fields.contractType !== undefined) {
+      updates.push('contract_type = ?');
+      params.push(normalizeContractType(fields.contractType));
     }
     if (fields.status !== undefined) {
       const nextStatus = normalizeClientStatus(fields.status);

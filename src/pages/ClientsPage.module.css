@@ -233,7 +233,7 @@
 .clientHeader,
 .clientRow {
   display: grid;
-  grid-template-columns: 36px minmax(220px, 2fr) minmax(120px, 0.86fr) minmax(120px, 0.86fr) 100px 100px 122px 108px;
+  grid-template-columns: 36px minmax(220px, 2fr) minmax(120px, 0.82fr) minmax(108px, 0.72fr) 98px 98px 100px 132px 122px 108px;
   gap: 12px;
   align-items: center;
 }
@@ -356,6 +356,52 @@
   font-size: 12.5px;
   font-weight: 620;
   letter-spacing: -0.02em;
+}
+
+.cellContractType,
+.duePill {
+  width: max-content;
+  min-width: 0;
+  min-height: 22px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-panel);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 590;
+  white-space: nowrap;
+}
+
+.cellContractTypeTcv {
+  border-color: rgba(168, 85, 247, 0.28);
+  background: rgba(168, 85, 247, 0.09);
+  color: #c084fc;
+}
+
+.due_warning {
+  border-color: var(--warning-line, rgba(245, 184, 0, 0.24));
+  background: var(--warning-soft, rgba(245, 184, 0, 0.08));
+  color: var(--warning, #f5b800);
+}
+
+.due_danger {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.due_info {
+  border-color: rgba(90, 169, 255, 0.24);
+  background: rgba(90, 169, 255, 0.08);
+  color: #8ab4ff;
+}
+
+.due_muted {
+  color: var(--text-tertiary);
 }
 
 .statusPill {
@@ -486,7 +532,7 @@
 
   .clientHeader,
   .clientRow {
-    min-width: 960px;
+    min-width: 1240px;
   }
 }
 
@@ -1704,4 +1750,17 @@
   border-color: var(--danger-line);
   background: var(--danger-soft);
   color: var(--danger-text);
+}
+
+.scopeTabTcv,
+.scopeTabTcv:hover,
+.scopeTabTcv.scopeTabActive {
+  border-color: rgba(168, 85, 247, 0.28);
+  background: rgba(168, 85, 247, 0.09);
+  color: #c084fc;
+}
+
+.scopeTabTcv .scopeCount {
+  background: rgba(168, 85, 247, 0.12);
+  color: #c084fc;
 }

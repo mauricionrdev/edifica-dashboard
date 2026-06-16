@@ -30,6 +30,7 @@ const EMPTY = {
   metaLucro: '',
   startDate: '',
   endDate: '',
+  contractType: 'recurring',
   internalCommercial: 'no',
   internalSeller: '',
 };
@@ -46,6 +47,7 @@ function toPayload(form) {
     metaLucro: parseLocaleNumber(form.metaLucro, 0),
     startDate: form.startDate || null,
     endDate: form.endDate || null,
+    contractType: form.contractType === 'tcv' ? 'tcv' : 'recurring',
     internalCommercial: form.internalCommercial === 'yes',
     internalSeller: form.internalCommercial === 'yes' ? form.internalSeller.trim() : '',
   };
@@ -64,6 +66,7 @@ function fromClient(client) {
     metaLucro: client.metaLucro != null ? formatLocaleNumber(client.metaLucro, '') : '',
     startDate: client.startDate || '',
     endDate: client.endDate || '',
+    contractType: client.contractType === 'tcv' || client.isTcv ? 'tcv' : 'recurring',
     internalCommercial: client.internalCommercial || client.internalSeller ? 'yes' : 'no',
     internalSeller: client.internalSeller || '',
   };
@@ -348,6 +351,21 @@ export default function ClientFormModal({
             <div className={styles.sectionTitle}>Contrato</div>
             <div className={styles.grid}>
               <div className={styles.field}>
+                <span className={styles.label}>Tipo de contrato</span>
+                <Select
+                  className={styles.selectControl}
+                  value={form.contractType}
+                  onChange={(event) => setField('contractType', event.target.value)}
+                  disabled={saving}
+                  placeholder="Tipo de contrato"
+                  aria-label="Tipo de contrato"
+                >
+                  <option value="recurring">Recorrente</option>
+                  <option value="tcv">TCV (Valor Total / Venda Única)</option>
+                </Select>
+              </div>
+
+              <div className={styles.field}>
                 <label className={styles.label} htmlFor="nc-start">
                   Início
                 </label>
@@ -375,7 +393,7 @@ export default function ClientFormModal({
 
               <div className={styles.field}>
                 <label className={styles.label} htmlFor="nc-fee">
-                  Mensalidade base (R$)
+                  {form.contractType === 'tcv' ? 'Valor total do contrato (R$)' : 'Mensalidade base (R$)'}
                 </label>
                 <input
                   id="nc-fee"
@@ -386,7 +404,7 @@ export default function ClientFormModal({
                   onChange={(event) => setField('fee', event.target.value)}
                   onBlur={() => normalizeNumberField('fee')}
                   disabled={saving}
-                  placeholder="R$ 0,00"
+                  placeholder={form.contractType === 'tcv' ? 'Valor total' : 'R$ 0,00'}
                 />
               </div>
 

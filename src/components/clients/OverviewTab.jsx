@@ -46,6 +46,7 @@ function buildForm(client) {
       metaLucro: '',
       startDate: '',
       endDate: '',
+      contractType: 'recurring',
       internalCommercial: 'no',
       internalSeller: '',
     };
@@ -61,6 +62,7 @@ function buildForm(client) {
     metaLucro: client.metaLucro != null ? formatLocaleNumber(client.metaLucro, '') : '',
     startDate: client.startDate || '',
     endDate: client.endDate || '',
+    contractType: client.contractType === 'tcv' || client.isTcv ? 'tcv' : 'recurring',
     internalCommercial: client.internalCommercial || client.internal_commercial_enabled ? 'yes' : 'no',
     internalSeller: client.internalSeller || client.internal_seller || '',
   };
@@ -375,6 +377,21 @@ export default function OverviewTab({
         <div className={drawerStyles.sectionTitle}>Contrato</div>
         <div className={`${styles.formGrid} ${styles.contractGrid}`}>
           <div className={`${drawerStyles.field} ${styles.fieldQuarter}`}>
+            <label className={drawerStyles.label} htmlFor="cd-contract-type">Tipo de contrato</label>
+            <Select
+              id="cd-contract-type"
+              className={drawerStyles.selectControl}
+              value={form.contractType}
+              onChange={(event) => onSelectChange('contractType', 'contractType', event.target.value)}
+              disabled={deleting || !canEdit}
+              aria-label="Tipo de contrato"
+            >
+              <option value="recurring">Recorrente</option>
+              <option value="tcv">TCV (Valor Total / Venda Única)</option>
+            </Select>
+          </div>
+
+          <div className={`${drawerStyles.field} ${styles.fieldQuarter}`}>
             <label className={drawerStyles.label} htmlFor="cd-start">Início</label>
             <DateField
               id="cd-start"
@@ -397,7 +414,7 @@ export default function OverviewTab({
           </div>
 
           <div className={`${drawerStyles.field} ${styles.fieldQuarter}`}>
-            <label className={drawerStyles.label} htmlFor="cd-fee">Mensalidade (R$)</label>
+            <label className={drawerStyles.label} htmlFor="cd-fee">{form.contractType === 'tcv' ? 'Valor total (R$)' : 'Mensalidade (R$)'}</label>
             <input
               id="cd-fee"
               className={drawerStyles.input}
