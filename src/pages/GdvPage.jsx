@@ -606,6 +606,7 @@ export default function GdvPage() {
 
     const gen = ++fetchGenRef.current;
     const clientsSnapshot = [...gdvClients];
+    const controller = new AbortController();
     let cancelled = false;
 
     inFlightMetricsKeyRef.current = requestKey;
@@ -618,25 +619,25 @@ export default function GdvPage() {
       const results = [];
 
       for (let index = 0; index < clientsSnapshot.length; index += METRIC_BATCH_SIZE) {
-        if (cancelled || fetchGenRef.current !== gen) return;
+        if (cancelled || controller.signal.aborted || fetchGenRef.current !== gen) return;
 
         const batch = clientsSnapshot.slice(index, index + METRIC_BATCH_SIZE);
         const batchResults = await Promise.all(
           batch.map((client) =>
-            getMetric(client.id, periodKey)
+            getMetric(client.id, periodKey, { signal: controller.signal })
               .then((response) => ({ clientId: client.id, metric: response?.metric || null, err: null }))
-              .catch((err) => ({ clientId: client.id, metric: null, err }))
+              .catch((err) => (controller.signal.aborted ? { clientId: client.id, metric: null, err: null, aborted: true } : { clientId: client.id, metric: null, err }))
           )
         );
 
-        if (cancelled || fetchGenRef.current !== gen) return;
+        if (cancelled || controller.signal.aborted || fetchGenRef.current !== gen) return;
 
         results.push(...batchResults);
         setMetricsByKey((prev) => ({ ...prev, [periodKey]: [...results] }));
         await new Promise((resolve) => window.setTimeout(resolve, 0));
       }
 
-      if (cancelled || fetchGenRef.current !== gen) return;
+      if (cancelled || controller.signal.aborted || fetchGenRef.current !== gen) return;
 
       const anyAuthErr = results.find(
         (result) => result.err instanceof ApiError && result.err.status === 401
@@ -660,7 +661,7 @@ export default function GdvPage() {
     }
 
     loadMetricsInBatches().catch((err) => {
-      if (cancelled || fetchGenRef.current !== gen) return;
+      if (cancelled || controller.signal.aborted || fetchGenRef.current !== gen) return;
       inFlightMetricsKeyRef.current = '';
       setFetchError(err);
       setFetchingKey(null);
@@ -668,6 +669,7 @@ export default function GdvPage() {
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [gdvClients, gdvIdsKey, periodKey]);
 
@@ -681,9 +683,10 @@ export default function GdvPage() {
     if (Array.isArray(cached)) return;
 
     let cancelled = false;
+    const controller = new AbortController();
     const date = periodReferenceDate(year, month0, week);
 
-    getContractsSummary({ date })
+    getContractsSummary({ date }, { signal: controller.signal })
       .then((response) => {
         if (cancelled) return;
         const visibleClientIds = new Set(gdvClients.map((client) => client.id));
@@ -693,13 +696,14 @@ export default function GdvPage() {
         setSummaryByKey((prev) => ({ ...prev, [summaryCacheKey]: summaries }));
       })
       .catch(() => {
-        if (cancelled) return;
+        if (cancelled || controller.signal.aborted) return;
         // Fallback silencioso: a tela continua usando getMetric por cliente.
         setSummaryByKey((prev) => ({ ...prev, [summaryCacheKey]: [] }));
       });
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [gdvClients, month0, summaryByKey, summaryCacheKey, week, year]);
 

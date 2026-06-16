@@ -4,8 +4,8 @@ export function listUsers() {
   return api.get('/users');
 }
 
-export function listUserDirectory() {
-  return api.get('/users/directory');
+export function listUserDirectory(opts) {
+  return api.get('/users/directory', opts);
 }
 
 export function createUser(body) {

@@ -1988,9 +1988,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
 
-    Promise.allSettled([listUserDirectory(), listClients()]).then(([usersRes, clientsRes]) => {
-      if (cancelled) return;
+    Promise.allSettled([
+      listUserDirectory({ signal: controller.signal }),
+      listClients({ signal: controller.signal }),
+    ]).then(([usersRes, clientsRes]) => {
+      if (cancelled || controller.signal.aborted) return;
       if (usersRes.status === 'fulfilled') {
         setDemandUsers(Array.isArray(usersRes.value?.users) ? usersRes.value.users : []);
       }
@@ -2001,27 +2005,30 @@ export default function ProfilePage() {
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, []);
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
     setTasksLoading(true);
     setTasksError('');
 
-    listMyProjectTasks()
+    listMyProjectTasks({ signal: controller.signal })
       .then((res) => {
-        if (!cancelled) setTasks(Array.isArray(res?.tasks) ? res.tasks : []);
+        if (!cancelled && !controller.signal.aborted) setTasks(Array.isArray(res?.tasks) ? res.tasks : []);
       })
       .catch((err) => {
-        if (!cancelled) setTasksError(err?.message || 'Erro');
+        if (!cancelled && !controller.signal.aborted) setTasksError(err?.message || 'Erro');
       })
       .finally(() => {
-        if (!cancelled) setTasksLoading(false);
+        if (!cancelled && !controller.signal.aborted) setTasksLoading(false);
       });
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, []);
 
@@ -2245,11 +2252,12 @@ export default function ProfilePage() {
     if (!pendingTasks.length) return undefined;
 
     let cancelled = false;
+    const controller = new AbortController();
 
     Promise.allSettled(
-      pendingTasks.map((task) => listTaskCollaborators(task.id))
+      pendingTasks.map((task) => listTaskCollaborators(task.id, { signal: controller.signal }))
     ).then((results) => {
-      if (cancelled) return;
+      if (cancelled || controller.signal.aborted) return;
       setTaskPeopleMap((prev) => {
         const next = { ...prev };
         results.forEach((result, index) => {
@@ -2265,6 +2273,7 @@ export default function ProfilePage() {
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [demandUsers, taskPeopleMap, visibleTasks]);
 

@@ -17,13 +17,13 @@ import { api } from './client.js';
  * @param {string} [opts.squadId]  - filtra por squad
  * @param {string} [opts.clientId] - filtra por um único cliente (Fase 1.1)
  */
-export function getContractsSummary({ date, squadId, clientId } = {}) {
+export function getContractsSummary({ date, squadId, clientId } = {}, opts) {
   const params = new URLSearchParams();
   if (date)     params.set('date',     date);
   if (squadId)  params.set('squadId',  squadId);
   if (clientId) params.set('clientId', clientId);
   const qs = params.toString();
-  return api.get(`/metrics/summary${qs ? `?${qs}` : ''}`);
+  return api.get(`/metrics/summary${qs ? `?${qs}` : ''}`, opts);
 }
 
 /**
@@ -69,9 +69,10 @@ export function listClientMetrics(clientId) {
   return api.get(`/metrics/${encodeURIComponent(clientId)}`);
 }
 
-export function getMetric(clientId, periodKey) {
+export function getMetric(clientId, periodKey, opts) {
   return api.get(
-    `/metrics/${encodeURIComponent(clientId)}/${encodeURIComponent(periodKey)}`
+    `/metrics/${encodeURIComponent(clientId)}/${encodeURIComponent(periodKey)}`,
+    opts
   );
 }
 

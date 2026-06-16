@@ -53,8 +53,8 @@ export function createTask(body) {
   return api.post('/projects/tasks', body);
 }
 
-export function getTask(id) {
-  return api.get(`/projects/tasks/${encodeURIComponent(id)}`);
+export function getTask(id, opts) {
+  return api.get(`/projects/tasks/${encodeURIComponent(id)}`, opts);
 }
 
 export function updateTask(id, body) {
@@ -101,8 +101,8 @@ export function deleteTaskComment(taskId, commentId) {
   return api.del(`/projects/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(commentId)}`);
 }
 
-export function listTaskCollaborators(id) {
-  return api.get(`/projects/tasks/${encodeURIComponent(id)}/collaborators`);
+export function listTaskCollaborators(id, opts) {
+  return api.get(`/projects/tasks/${encodeURIComponent(id)}/collaborators`, opts);
 }
 
 export function addTaskCollaborator(id, body) {
@@ -113,8 +113,8 @@ export function removeTaskCollaborator(id, userId) {
   return api.del(`/projects/tasks/${encodeURIComponent(id)}/collaborators/${encodeURIComponent(userId)}`);
 }
 
-export function listMyProjectTasks() {
-  return api.get('/projects/tasks/my/list');
+export function listMyProjectTasks(opts) {
+  return api.get('/projects/tasks/my/list', opts);
 }
 
 export function listUserProjectTasks(userId) {

@@ -561,7 +561,7 @@ export default function SquadPage() {
         monthPeriodKeys.forEach((key) => { next[key] = []; });
         return next;
       });
-      return;
+      return undefined;
     }
 
     const clientIds = squadClients.map((client) => client.id).sort().join('|');
@@ -572,49 +572,74 @@ export default function SquadPage() {
       return cachedIds !== clientIds;
     });
 
-    if (!keysToLoad.length) return;
+    if (!keysToLoad.length) return undefined;
 
     const gen = ++metricsFetchRef.current;
+    const controller = new AbortController();
+    let cancelled = false;
+    const clientsSnapshot = [...squadClients];
+    const METRIC_BATCH_SIZE = 8;
+
     setMetricsLoading(true);
     setMetricsError(null);
 
-    Promise.all(
-      keysToLoad.map((key) =>
-        Promise.all(
-          squadClients.map((client) =>
-            getMetric(client.id, key)
-              .then((response) => ({ clientId: client.id, metric: response?.metric ? { ...response.metric, periodKey: key } : null, err: null }))
-              .catch((err) => ({ clientId: client.id, metric: null, err }))
-          )
-        ).then((results) => ({ key, results }))
-      )
-    )
-      .then((periodResults) => {
-        if (metricsFetchRef.current !== gen) return;
+    async function loadSquadMetrics() {
+      const periodResults = [];
 
-        const flatResults = periodResults.flatMap((entry) => entry.results);
-        const anyAuthError = flatResults.find(
-          (result) => result.err instanceof ApiError && result.err.status === 401
-        );
-        if (anyAuthError) return;
+      for (const key of keysToLoad) {
+        if (cancelled || controller.signal.aborted || metricsFetchRef.current !== gen) return;
+        const results = [];
 
-        setMetricsByKey((prev) => {
-          const next = { ...prev };
-          periodResults.forEach(({ key, results }) => { next[key] = results; });
-          return next;
-        });
+        for (let index = 0; index < clientsSnapshot.length; index += METRIC_BATCH_SIZE) {
+          if (cancelled || controller.signal.aborted || metricsFetchRef.current !== gen) return;
+          const batch = clientsSnapshot.slice(index, index + METRIC_BATCH_SIZE);
+          const batchResults = await Promise.all(
+            batch.map((client) =>
+              getMetric(client.id, key, { signal: controller.signal })
+                .then((response) => ({ clientId: client.id, metric: response?.metric ? { ...response.metric, periodKey: key } : null, err: null }))
+                .catch((err) => (controller.signal.aborted ? { clientId: client.id, metric: null, err: null, aborted: true } : { clientId: client.id, metric: null, err }))
+            )
+          );
 
-        const failures = flatResults.filter(
-          (result) => result.err && !(result.err instanceof ApiError && result.err.status === 404)
-        );
-
-        if (failures.length > 0 && failures.length === flatResults.length) {
-          setMetricsError(new Error('Falha ao carregar métricas operacionais do squad.'));
+          if (cancelled || controller.signal.aborted || metricsFetchRef.current !== gen) return;
+          results.push(...batchResults);
+          await new Promise((resolve) => window.setTimeout(resolve, 0));
         }
+
+        periodResults.push({ key, results });
+        setMetricsByKey((prev) => ({ ...prev, [key]: results }));
+      }
+
+      if (cancelled || controller.signal.aborted || metricsFetchRef.current !== gen) return;
+
+      const flatResults = periodResults.flatMap((entry) => entry.results);
+      const anyAuthError = flatResults.find(
+        (result) => result.err instanceof ApiError && result.err.status === 401
+      );
+      if (anyAuthError) return;
+
+      const failures = flatResults.filter(
+        (result) => result.err && !(result.err instanceof ApiError && result.err.status === 404)
+      );
+
+      if (failures.length > 0 && failures.length === flatResults.length) {
+        setMetricsError(new Error('Falha ao carregar métricas operacionais do squad.'));
+      }
+    }
+
+    loadSquadMetrics()
+      .catch((err) => {
+        if (cancelled || controller.signal.aborted || metricsFetchRef.current !== gen) return;
+        setMetricsError(err);
       })
       .finally(() => {
-        if (metricsFetchRef.current === gen) setMetricsLoading(false);
+        if (!cancelled && !controller.signal.aborted && metricsFetchRef.current === gen) setMetricsLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [metricsByKey, monthPeriodKeys, squadClients]);
 
   useEffect(() => {

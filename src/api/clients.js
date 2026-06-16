@@ -12,8 +12,8 @@
 // ================================================================
 import { api } from './client.js';
 
-export function listClients() {
-  return api.get('/clients');
+export function listClients(opts) {
+  return api.get('/clients', opts);
 }
 
 export function getClient(id) {

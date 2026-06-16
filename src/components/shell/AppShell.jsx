@@ -271,8 +271,10 @@ export default function AppShell() {
       setLoading(true);
       setError(null);
       try {
-        await Promise.all([refreshClients(), refreshSquads(), refreshGdvs(), refreshUserDirectory(), refreshAccessRequests()]);
-        await refreshNotifications();
+        // Carregamento crítico da navegação: não deve depender de notificações
+        // ou solicitações secundárias. Isso evita tela vazia ao trocar de rota
+        // quando algum endpoint auxiliar demora ou falha na hospedagem.
+        await Promise.all([refreshClients(), refreshSquads(), refreshGdvs(), refreshUserDirectory()]);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err : new Error(String(err)));
@@ -281,6 +283,11 @@ export default function AppShell() {
         if (!cancelled && mountedRef.current) {
           setLoading(false);
         }
+      }
+
+      if (!cancelled && mountedRef.current) {
+        refreshAccessRequests().catch(() => {});
+        refreshNotifications().catch(() => {});
       }
     })();
 
