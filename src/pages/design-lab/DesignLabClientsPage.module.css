@@ -434,3 +434,184 @@
     flex-direction: column;
   }
 }
+
+
+/* v41 · Clientes Design Lab: menos redundância e filtros sempre visíveis */
+.page {
+  padding: 14px 16px 16px;
+  gap: 12px;
+}
+
+.metricsGrid {
+  display: none;
+}
+
+.tableSurface {
+  min-height: 0;
+}
+
+.toolbar {
+  min-height: auto;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: minmax(260px, 420px) minmax(0, 1fr) auto;
+  grid-template-areas:
+    "search spacer pageSize"
+    "filters filters filters";
+  gap: 10px 12px;
+  align-items: center;
+}
+
+.searchBox {
+  grid-area: search;
+  width: 100%;
+  max-width: 420px;
+}
+
+.scopeTabs {
+  grid-area: filters;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.scopeTab {
+  height: 32px;
+  padding: 0 11px;
+  font-size: 11.5px;
+}
+
+.scopeTab strong {
+  min-width: 19px;
+  height: 19px;
+  font-size: 10.5px;
+}
+
+.pageSizeSelect {
+  grid-area: pageSize;
+  width: max-content;
+  max-width: 176px;
+  justify-self: end;
+}
+
+.headerRow,
+.clientRow {
+  grid-template-columns:
+    minmax(220px, 1.52fr)
+    minmax(132px, .8fr)
+    minmax(108px, .58fr)
+    minmax(116px, .68fr)
+    minmax(154px, .86fr)
+    minmax(170px, .92fr);
+  gap: 12px;
+}
+
+.headerRow {
+  min-height: 38px;
+  padding-inline: 16px;
+}
+
+.clientRow {
+  min-height: 64px;
+  padding-inline: 16px;
+}
+
+.clientText small {
+  max-width: 100%;
+}
+
+.contractCell {
+  flex-wrap: nowrap;
+}
+
+.statusCell {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.statusCell :global(.btBadge) {
+  min-width: max-content;
+}
+
+@media (max-width: 1320px) {
+  .toolbar {
+    grid-template-columns: minmax(240px, 1fr) auto;
+    grid-template-areas:
+      "search pageSize"
+      "filters filters";
+  }
+
+  .searchBox {
+    max-width: none;
+  }
+
+  .headerRow,
+  .clientRow {
+    grid-template-columns:
+      minmax(210px, 1.45fr)
+      minmax(126px, .78fr)
+      minmax(104px, .56fr)
+      minmax(108px, .64fr)
+      minmax(148px, .82fr)
+      minmax(160px, .88fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .page {
+    padding: 12px;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "search"
+      "filters"
+      "pageSize";
+  }
+
+  .pageSizeSelect {
+    justify-self: start;
+  }
+
+  .scopeTabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .scopeTabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .clientRow {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .statusCell {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 620px) {
+  .page {
+    padding: 10px;
+  }
+
+  .toolbar {
+    padding: 10px;
+  }
+
+  .scopeTab {
+    height: 31px;
+    padding-inline: 10px;
+  }
+
+  .clientRow {
+    grid-template-columns: 1fr;
+  }
+}

@@ -28,7 +28,7 @@ import ClientFormModal from '../../components/clients/ClientFormModal.jsx';
 import ClientDetailDrawer from '../../components/clients/ClientDetailDrawer.jsx';
 import StateBlock from '../../components/ui/StateBlock.jsx';
 import { PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
-import { BareBadge, BareButton, BareMetric, BareSurface } from '../../components/design-system/index.js';
+import { BareBadge, BareButton, BareSurface } from '../../components/design-system/index.js';
 import '../../styles/design-system/barely-there.css';
 import styles from './DesignLabClientsPage.module.css';
 
@@ -257,14 +257,6 @@ export default function DesignLabClientsPage() {
 
   return (
     <div className={`btScope ${styles.page}`}>
-      <section className={styles.metricsGrid} aria-label="Resumo de clientes">
-        <BareMetric label="Clientes" value={counts.all} hint="base visível" />
-        <BareMetric label="Ativos" value={counts.active} hint="carteira recorrente" tone="success" />
-        <BareMetric label="Vencendo" value={counts.ending} hint="próximos 30 dias" tone="warning" />
-        <BareMetric label="TCV" value={counts.tcv} hint="venda única" tone="purple" />
-        <BareMetric label="Comercial interno" value={counts.internalCommercial} hint="segmentação ativa" tone="purple" />
-      </section>
-
       <BareSurface className={styles.tableSurface}>
         <div className={styles.toolbar}>
           <label className={styles.searchBox}>
@@ -273,7 +265,7 @@ export default function DesignLabClientsPage() {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar cliente, squad, GDV ou vendedor interno"
+              placeholder="Buscar cliente, squad, GDV ou vendedor"
               aria-label="Buscar cliente"
             />
           </label>
@@ -352,7 +344,7 @@ export default function DesignLabClientsPage() {
                       </span>
                       <span className={styles.clientText}>
                         <strong>{client.name}</strong>
-                        <small>{client.gestor || 'Sem gestor'}</small>
+                        <small>{internalSeller ? `Comercial interno · ${internalSeller}` : (client.gestor || 'Sem gestor')}</small>
                       </span>
                     </div>
 
@@ -363,7 +355,6 @@ export default function DesignLabClientsPage() {
 
                     <div className={styles.contractCell} data-label="Contrato">
                       <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
-                      {internalSeller ? <BareBadge tone="purple">{internalSeller}</BareBadge> : null}
                     </div>
 
                     <strong className={styles.valueCell} data-label="Valor">{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
