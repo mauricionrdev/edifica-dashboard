@@ -5,6 +5,11 @@ const ROUTE_META = [
     crumb: 'Dashboard',
   },
   {
+    match: (pathname) => pathname.startsWith('/design-lab/clientes'),
+    title: 'Clientes',
+    crumb: 'Clientes',
+  },
+  {
     match: (pathname) => pathname.startsWith('/clientes'),
     title: 'Clientes',
     crumb: 'Clientes',

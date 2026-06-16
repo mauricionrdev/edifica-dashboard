@@ -1,0 +1,435 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
+import {
+  canCreateClients,
+  canDeleteClientRecord,
+  canEditClientFeeScheduleRecord,
+  canEditClientRecord,
+  canViewClientFeeScheduleRecord,
+} from '../../utils/permissions.js';
+import {
+  clientInitials,
+  fmtDateBR,
+  getClientOnboardingDays,
+  onboardingDaysLabel,
+  onboardingDaysTone,
+  isEndingSoon,
+  isExpired,
+  statusLabel,
+} from '../../utils/clientHelpers.js';
+import { CLIENT_STATUS, isActiveClientStatus, isVisibleClientStatus } from '../../utils/clientStatus.js';
+import { fmtMoney } from '../../utils/format.js';
+import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
+import { getClientAvatar, subscribeAvatarChange } from '../../utils/avatarStorage.js';
+import { matchesAnySearch } from '../../utils/search.js';
+import ClientFormModal from '../../components/clients/ClientFormModal.jsx';
+import ClientDetailDrawer from '../../components/clients/ClientDetailDrawer.jsx';
+import StateBlock from '../../components/ui/StateBlock.jsx';
+import { PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
+import { BareBadge, BareButton, BareMetric, BareSurface } from '../../components/design-system/index.js';
+import '../../styles/design-system/barely-there.css';
+import styles from './DesignLabClientsPage.module.css';
+
+const SCOPES = [
+  { key: 'all', label: 'Todos' },
+  { key: 'active', label: 'Ativos' },
+  { key: 'onboarding', label: 'Onboard' },
+  { key: 'paused', label: 'Pausados' },
+  { key: 'churn', label: 'Churn' },
+  { key: 'expired', label: 'Vencidos' },
+  { key: 'ending', label: 'Vencendo' },
+  { key: 'tcv', label: 'TCV', tone: 'purple' },
+  { key: 'internalCommercial', label: 'Comercial Interno', tone: 'purple' },
+];
+
+const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
+
+function isTcvClient(client) {
+  return client?.contractType === 'tcv' || client?.contract_type === 'tcv' || client?.isTcv === true;
+}
+
+function hasInternalCommercial(client) {
+  return Boolean(client?.internalCommercial || client?.internal_commercial_enabled) && Boolean(String(client?.internalSeller || client?.internal_seller || '').trim());
+}
+
+function getInternalSeller(client) {
+  return String(client?.internalSeller || client?.internal_seller || '').trim();
+}
+
+function parseDateOnly(value) {
+  if (!value) return null;
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function contractEndInfo(client, today = new Date()) {
+  const end = parseDateOnly(client?.endDate || client?.end_date);
+  if (!end) return { label: 'Sem término', tone: 'muted', days: null };
+
+  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const target = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  const diff = Math.round((target.getTime() - base.getTime()) / 86400000);
+
+  if (diff < 0) {
+    const days = Math.abs(diff);
+    return { label: `Vencido há ${days} ${days === 1 ? 'dia' : 'dias'}`, tone: 'danger', days: diff };
+  }
+  if (diff === 0) return { label: 'Vence hoje', tone: 'danger', days: diff };
+  if (diff <= 7) return { label: `Vence em ${diff} ${diff === 1 ? 'dia' : 'dias'}`, tone: 'danger', days: diff };
+  if (diff <= 30) return { label: `Vence em ${diff} dias`, tone: 'warning', days: diff };
+  if (diff <= 60) return { label: `Vence em ${diff} dias`, tone: 'info', days: diff };
+  return { label: `Vence em ${diff} dias`, tone: 'muted', days: diff };
+}
+
+function statusTone(client, today) {
+  if (isExpired(client, today)) return 'danger';
+  if (client?.status === CLIENT_STATUS.CHURN) return 'danger';
+  if (client?.status === CLIENT_STATUS.ONBOARDING) return 'info';
+  if (client?.status === CLIENT_STATUS.RAMPAGE) return 'warning';
+  if (client?.status === CLIENT_STATUS.PAUSED) return 'muted';
+  if (isActiveClientStatus(client?.status)) return 'success';
+  return 'muted';
+}
+
+function dueSortValue(client) {
+  const end = parseDateOnly(client?.endDate || client?.end_date);
+  return end ? end.getTime() : Number.MAX_SAFE_INTEGER;
+}
+
+function createdSortValue(client) {
+  const timestamp = Date.parse(client?.createdAt || client?.created_at || client?.updatedAt || client?.updated_at || '');
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+export default function DesignLabClientsPage() {
+  const { clients, squads, userDirectory, loading, error, refreshClients, setPanelHeader } = useOutletContext();
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const canCreate = canCreateClients(user);
+  const [query, setQuery] = useState(() => searchParams.get('search') || '');
+  const [scope, setScope] = useState('all');
+  const [pageSize, setPageSize] = useState(20);
+  const [page, setPage] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [detailId, setDetailId] = useState(null);
+  const [detailTab, setDetailTab] = useState('overview');
+  const [avatarVersion, setAvatarVersion] = useState(0);
+  const [today, setToday] = useState(() => new Date());
+
+  useEffect(() => {
+    const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const interval = setInterval(() => {
+      const now = new Date();
+      setToday((current) => (dayKey(current) === dayKey(now) ? current : now));
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => subscribeAvatarChange(() => setAvatarVersion((current) => current + 1)), []);
+
+  const visibleBase = useMemo(
+    () => (Array.isArray(clients) ? clients : []).filter((client) => isVisibleClientStatus(client.status)),
+    [clients]
+  );
+
+  const counts = useMemo(() => ({
+    all: visibleBase.length,
+    active: visibleBase.filter((client) => isActiveClientStatus(client.status) && !isExpired(client, today)).length,
+    onboarding: visibleBase.filter((client) => client.status === CLIENT_STATUS.ONBOARDING).length,
+    paused: visibleBase.filter((client) => client.status === CLIENT_STATUS.PAUSED).length,
+    churn: visibleBase.filter((client) => client.status === CLIENT_STATUS.CHURN).length,
+    expired: visibleBase.filter((client) => isExpired(client, today)).length,
+    ending: visibleBase.filter((client) => isEndingSoon(client, 30, today)).length,
+    tcv: visibleBase.filter(isTcvClient).length,
+    internalCommercial: visibleBase.filter(hasInternalCommercial).length,
+  }), [today, visibleBase]);
+
+  const filteredRows = useMemo(() => {
+    const normalized = query.trim();
+    const scoped = visibleBase.filter((client) => {
+      if (scope === 'active') return isActiveClientStatus(client.status) && !isExpired(client, today);
+      if (scope === 'onboarding') return client.status === CLIENT_STATUS.ONBOARDING;
+      if (scope === 'paused') return client.status === CLIENT_STATUS.PAUSED;
+      if (scope === 'churn') return client.status === CLIENT_STATUS.CHURN;
+      if (scope === 'expired') return isExpired(client, today);
+      if (scope === 'ending') return isEndingSoon(client, 30, today);
+      if (scope === 'tcv') return isTcvClient(client);
+      if (scope === 'internalCommercial') return hasInternalCommercial(client);
+      return true;
+    });
+
+    const searched = !normalized
+      ? scoped
+      : scoped.filter((client) => matchesAnySearch([
+          client.name,
+          client.squadName,
+          client.gestor,
+          client.gdvName,
+          getInternalSeller(client),
+          client.contractType,
+        ], normalized));
+
+    return [...searched].sort((a, b) => {
+      if (scope === 'tcv' || scope === 'ending' || scope === 'expired') {
+        const byDue = dueSortValue(a) - dueSortValue(b);
+        if (byDue !== 0) return byDue;
+      }
+      const byCreated = createdSortValue(b) - createdSortValue(a);
+      if (byCreated !== 0) return byCreated;
+      return String(a?.name || '').localeCompare(String(b?.name || ''), 'pt-BR');
+    });
+  }, [query, scope, today, visibleBase]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pagedRows = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredRows.slice(start, start + pageSize);
+  }, [filteredRows, pageSize, safePage]);
+
+  const selectedClient = useMemo(
+    () => (Array.isArray(clients) ? clients : []).find((client) => client.id === detailId) || null,
+    [clients, detailId]
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, scope, pageSize]);
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (query.trim()) next.set('search', query.trim());
+    setSearchParams(next, { replace: true });
+  }, [query, setSearchParams]);
+
+  useEffect(() => {
+    const title = (
+      <>
+        <strong>Clientes</strong>
+        <span>·</span>
+        <span>{counts.all} cadastrados · {counts.active} ativos</span>
+      </>
+    );
+
+    const actions = canCreate ? (
+      <BareButton type="button" variant="primary" size="sm" onClick={() => setModalOpen(true)}>
+        <PlusIcon size={14} aria-hidden="true" />
+        Novo cliente
+      </BareButton>
+    ) : null;
+
+    setPanelHeader({ title, actions });
+  }, [canCreate, counts.active, counts.all, setPanelHeader]);
+
+  const openDetail = useCallback((id, tab = 'overview') => {
+    setDetailId(id);
+    setDetailTab(tab);
+  }, []);
+
+  const closeDetail = useCallback(() => {
+    setDetailId(null);
+    setDetailTab('overview');
+  }, []);
+
+  async function handleCreated(client) {
+    setModalOpen(false);
+    showToast('Cliente cadastrado.', { variant: 'success' });
+    await refreshClients?.();
+    if (client?.id) openDetail(client.id);
+  }
+
+  async function handleUpdated(nextClient) {
+    await refreshClients?.();
+    if (nextClient?.id) setDetailId(nextClient.id);
+  }
+
+  async function handleDeleted() {
+    closeDetail();
+    await refreshClients?.();
+  }
+
+  const pageStart = filteredRows.length ? (safePage - 1) * pageSize + 1 : 0;
+  const pageEnd = filteredRows.length ? Math.min(safePage * pageSize, filteredRows.length) : 0;
+
+  return (
+    <div className={`btScope ${styles.page}`}>
+      <section className={styles.metricsGrid} aria-label="Resumo de clientes">
+        <BareMetric label="Clientes" value={counts.all} hint="base visível" />
+        <BareMetric label="Ativos" value={counts.active} hint="carteira recorrente" tone="success" />
+        <BareMetric label="Vencendo" value={counts.ending} hint="próximos 30 dias" tone="warning" />
+        <BareMetric label="TCV" value={counts.tcv} hint="venda única" tone="purple" />
+        <BareMetric label="Comercial interno" value={counts.internalCommercial} hint="segmentação ativa" tone="purple" />
+      </section>
+
+      <BareSurface className={styles.tableSurface}>
+        <div className={styles.toolbar}>
+          <label className={styles.searchBox}>
+            <SearchIcon size={16} aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar cliente, squad, GDV ou vendedor interno"
+              aria-label="Buscar cliente"
+            />
+          </label>
+
+          <div className={styles.scopeTabs} role="tablist" aria-label="Filtros de clientes">
+            {SCOPES.map((item) => {
+              const active = scope === item.key;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  className={`${styles.scopeTab} ${active ? styles.scopeTabActive : ''} ${item.tone === 'purple' ? styles.scopeTabPurple : ''}`.trim()}
+                  onClick={() => setScope(item.key)}
+                >
+                  <span>{item.label}</span>
+                  <strong>{counts[item.key] ?? 0}</strong>
+                </button>
+              );
+            })}
+          </div>
+
+          <select
+            className={styles.pageSizeSelect}
+            value={pageSize}
+            onChange={(event) => setPageSize(Number(event.target.value) || 20)}
+            aria-label="Quantidade por página"
+          >
+            {PAGE_SIZE_OPTIONS.map((option) => (
+              <option key={option} value={option}>{option} por página</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.table}>
+          <div className={styles.headerRow}>
+            <span>Cliente</span>
+            <span>Squad/GDV</span>
+            <span>Contrato</span>
+            <span>Valor</span>
+            <span>Vencimento</span>
+            <span>Status</span>
+          </div>
+
+          {loading ? (
+            <div className={styles.stateWrap}>
+              <StateBlock variant="loading" compact title="Carregando clientes" />
+            </div>
+          ) : error ? (
+            <div className={styles.stateWrap}>
+              <StateBlock variant="error" compact title="Não foi possível carregar clientes" />
+            </div>
+          ) : pagedRows.length === 0 ? (
+            <div className={styles.emptyState}>
+              <strong>Nenhum cliente encontrado</strong>
+              <span>Ajuste a busca ou selecione outro filtro.</span>
+            </div>
+          ) : (
+            <div className={styles.bodyRows}>
+              {pagedRows.map((client) => {
+                const avatar = getClientAvatar(client);
+                const due = contractEndInfo(client, today);
+                const tcv = isTcvClient(client);
+                const internalSeller = getInternalSeller(client);
+                const onboardingDays = getClientOnboardingDays(client, today);
+                const showOnboardingDays = Number.isFinite(onboardingDays);
+                const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
+                const status = statusLabel(client, today);
+
+                return (
+                  <button key={client.id} type="button" className={styles.clientRow} onClick={() => openDetail(client.id)}>
+                    <div className={styles.clientCell}>
+                      <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
+                        {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
+                      </span>
+                      <span className={styles.clientText}>
+                        <strong>{client.name}</strong>
+                        <small>{client.gestor || 'Sem gestor'}</small>
+                      </span>
+                    </div>
+
+                    <div className={styles.stackCell} data-label="Squad/GDV">
+                      <strong>{client.squadName || 'Sem squad'}</strong>
+                      <small>{client.gdvName || 'Sem GDV'}</small>
+                    </div>
+
+                    <div className={styles.contractCell} data-label="Contrato">
+                      <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
+                      {internalSeller ? <BareBadge tone="purple">{internalSeller}</BareBadge> : null}
+                    </div>
+
+                    <strong className={styles.valueCell} data-label="Valor">{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
+
+                    <div className={styles.dueCell} data-label="Vencimento">
+                      <BareBadge tone={due.tone}>{due.label}</BareBadge>
+                      {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
+                    </div>
+
+                    <div className={styles.statusCell} data-label="Status">
+                      {showOnboardingDays ? (
+                        <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
+                          {onboardingDaysLabel(onboardingDays)}
+                        </BareBadge>
+                      ) : null}
+                      <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <footer className={styles.pagination}>
+          <span>Exibindo {pageStart}-{pageEnd} de {filteredRows.length}</span>
+          <div className={styles.pageButtons}>
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={`${styles.pageButton} ${safePage === value ? styles.pageButtonActive : ''}`.trim()}
+                onClick={() => setPage(value)}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+        </footer>
+      </BareSurface>
+
+      {modalOpen && canCreate ? (
+        <ClientFormModal
+          mode="create"
+          squads={squads || []}
+          users={userDirectory || []}
+          onClose={() => setModalOpen(false)}
+          onSaved={handleCreated}
+        />
+      ) : null}
+
+      {selectedClient ? (
+        <ClientDetailDrawer
+          client={selectedClient}
+          squads={squads || []}
+          users={userDirectory || []}
+          canEditClient={canEditClientRecord(user, selectedClient)}
+          canViewFeeSchedule={canViewClientFeeScheduleRecord(user, selectedClient)}
+          canEditFeeSchedule={canEditClientFeeScheduleRecord(user, selectedClient)}
+          canDelete={canDeleteClientRecord(user, selectedClient)}
+          onClose={closeDetail}
+          onUpdated={handleUpdated}
+          onDeleted={handleDeleted}
+          initialTab={detailTab}
+        />
+      ) : null}
+    </div>
+  );
+}

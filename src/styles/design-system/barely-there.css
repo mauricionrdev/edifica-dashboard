@@ -1,0 +1,56 @@
+.btScope {
+  --bt-bg: #0c0c0b;
+  --bt-canvas: #10100f;
+  --bt-surface: rgba(255, 255, 255, 0.024);
+  --bt-surface-raised: rgba(255, 255, 255, 0.04);
+  --bt-surface-hover: rgba(255, 255, 255, 0.048);
+  --bt-line-soft: rgba(255, 255, 255, 0.055);
+  --bt-line: rgba(255, 255, 255, 0.085);
+  --bt-line-strong: rgba(255, 255, 255, 0.14);
+  --bt-text: #f3f0ea;
+  --bt-text-secondary: #c8c1b7;
+  --bt-text-tertiary: #928b83;
+  --bt-text-muted: #6f6962;
+  --bt-amber: #f5b800;
+  --bt-amber-soft: rgba(245, 184, 0, 0.09);
+  --bt-amber-line: rgba(245, 184, 0, 0.24);
+  --bt-green: #48d597;
+  --bt-green-soft: rgba(72, 213, 151, 0.09);
+  --bt-green-line: rgba(72, 213, 151, 0.22);
+  --bt-red: #ff6b6b;
+  --bt-red-soft: rgba(255, 95, 95, 0.1);
+  --bt-red-line: rgba(255, 95, 95, 0.24);
+  --bt-blue: #8ab4ff;
+  --bt-blue-soft: rgba(90, 169, 255, 0.08);
+  --bt-blue-line: rgba(90, 169, 255, 0.24);
+  --bt-purple: #c084fc;
+  --bt-purple-soft: rgba(168, 85, 247, 0.09);
+  --bt-purple-line: rgba(168, 85, 247, 0.28);
+  --bt-radius-xl: 24px;
+  --bt-radius-lg: 18px;
+  --bt-radius-md: 14px;
+  --bt-radius-sm: 10px;
+  color: var(--bt-text-secondary);
+}
+
+.btScope *,
+.btScope *::before,
+.btScope *::after {
+  box-sizing: border-box;
+}
+
+.btScope button,
+.btScope input,
+.btScope select {
+  font: inherit;
+}
+
+.btScope button:focus,
+.btScope button:focus-visible,
+.btScope input:focus,
+.btScope input:focus-visible,
+.btScope select:focus,
+.btScope select:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

@@ -1,0 +1,118 @@
+.bareSurface {
+  border: 1px solid var(--bt-line-soft, rgba(255,255,255,.055));
+  border-radius: var(--bt-radius-lg, 18px);
+  background: var(--bt-surface, rgba(255,255,255,.024));
+  box-shadow: none;
+}
+
+.bareButton {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--bt-line, rgba(255,255,255,.085));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bt-text-secondary, #c8c1b7);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.bareButton:hover {
+  border-color: var(--bt-line-strong, rgba(255,255,255,.14));
+  background: var(--bt-surface-hover, rgba(255,255,255,.048));
+  color: var(--bt-text, #f3f0ea);
+}
+
+.bareButton_primary {
+  border-color: rgba(243, 240, 234, .74);
+  background: #e8e2d7;
+  color: #171512;
+}
+
+.bareButton_primary:hover {
+  border-color: #f3f0ea;
+  background: #f3f0ea;
+  color: #111;
+}
+
+.bareButton_ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.bareButton_sm {
+  min-height: 30px;
+  padding-inline: 12px;
+  font-size: 12px;
+}
+
+.bareBadge {
+  min-height: 24px;
+  max-width: 100%;
+  padding: 0 10px;
+  border: 1px solid var(--bt-line-soft, rgba(255,255,255,.055));
+  border-radius: 999px;
+  background: rgba(255,255,255,.025);
+  color: var(--bt-text-secondary, #c8c1b7);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.bareBadge_success { border-color: var(--bt-green-line); background: var(--bt-green-soft); color: var(--bt-green); }
+.bareBadge_warning { border-color: var(--bt-amber-line); background: var(--bt-amber-soft); color: var(--bt-amber); }
+.bareBadge_danger { border-color: var(--bt-red-line); background: var(--bt-red-soft); color: var(--bt-red); }
+.bareBadge_info { border-color: var(--bt-blue-line); background: var(--bt-blue-soft); color: var(--bt-blue); }
+.bareBadge_purple { border-color: var(--bt-purple-line); background: var(--bt-purple-soft); color: var(--bt-purple); }
+.bareBadge_muted { color: var(--bt-text-tertiary); }
+
+.bareMetric {
+  min-width: 0;
+  min-height: 104px;
+  padding: 18px;
+  border: 1px solid var(--bt-line-soft, rgba(255,255,255,.055));
+  border-radius: var(--bt-radius-lg, 18px);
+  background: var(--bt-surface, rgba(255,255,255,.024));
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.bareMetric span {
+  color: var(--bt-text-tertiary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .085em;
+  text-transform: uppercase;
+}
+
+.bareMetric strong {
+  color: var(--bt-text);
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: .95;
+  font-weight: 720;
+  letter-spacing: -.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.bareMetric small {
+  color: var(--bt-text-tertiary);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.bareMetric_success { border-color: var(--bt-green-line); }
+.bareMetric_warning { border-color: var(--bt-amber-line); }
+.bareMetric_danger { border-color: var(--bt-red-line); }
+.bareMetric_purple { border-color: var(--bt-purple-line); }
