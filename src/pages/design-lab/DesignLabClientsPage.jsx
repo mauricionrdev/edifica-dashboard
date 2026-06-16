@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -27,8 +27,8 @@ import { matchesAnySearch } from '../../utils/search.js';
 import ClientFormModal from '../../components/clients/ClientFormModal.jsx';
 import ClientDetailDrawer from '../../components/clients/ClientDetailDrawer.jsx';
 import StateBlock from '../../components/ui/StateBlock.jsx';
-import { PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
-import { BareBadge, BareButton, BareSurface } from '../../components/design-system/index.js';
+import { ChartColumnIcon, ChevronDownIcon, ClipboardListIcon, PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
+import { BareBadge, BareButton } from '../../components/design-system/index.js';
 import '../../styles/design-system/barely-there.css';
 import styles from './DesignLabClientsPage.module.css';
 
@@ -45,6 +45,12 @@ const SCOPES = [
 ];
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
+
+const ANALYSIS_ITEMS = [
+  { key: 'icp', tab: 'icp', label: 'Análise ICP', className: 'analysisIcp', icon: ChartColumnIcon },
+  { key: 'gdv', tab: 'gdv', label: 'Análise GDV', className: 'analysisGdv', icon: ChartColumnIcon },
+  { key: 'routes', tab: 'routes', label: 'Resumo de Rotas', className: 'analysisRoutes', icon: ClipboardListIcon },
+];
 
 function isTcvClient(client) {
   return client?.contractType === 'tcv' || client?.contract_type === 'tcv' || client?.isTcv === true;
@@ -93,6 +99,21 @@ function statusTone(client, today) {
   return 'muted';
 }
 
+function analysisCount(client, key) {
+  const counts = client?.analysisCounts || client?.analysesCount || client?.analysisSummary || {};
+  const aliases = {
+    icp: ['icp'],
+    gdv: ['gdv', 'gdvanalise'],
+    routes: ['routes', 'route_summary'],
+  }[key] || [key];
+
+  for (const alias of aliases) {
+    const value = Number(counts?.[alias]);
+    if (Number.isFinite(value) && value > 0) return value;
+  }
+  return 0;
+}
+
 function dueSortValue(client) {
   const end = parseDateOnly(client?.endDate || client?.end_date);
   return end ? end.getTime() : Number.MAX_SAFE_INTEGER;
@@ -113,12 +134,14 @@ export default function DesignLabClientsPage() {
   const [query, setQuery] = useState(() => searchParams.get('search') || '');
   const [scope, setScope] = useState('all');
   const [pageSize, setPageSize] = useState(20);
+  const [pageSizeOpen, setPageSizeOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [detailId, setDetailId] = useState(null);
   const [detailTab, setDetailTab] = useState('overview');
   const [avatarVersion, setAvatarVersion] = useState(0);
   const [today, setToday] = useState(() => new Date());
+  const pageSizeRef = useRef(null);
 
   useEffect(() => {
     const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -130,6 +153,23 @@ export default function DesignLabClientsPage() {
   }, []);
 
   useEffect(() => subscribeAvatarChange(() => setAvatarVersion((current) => current + 1)), []);
+
+  useEffect(() => {
+    if (!pageSizeOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!pageSizeRef.current || pageSizeRef.current.contains(event.target)) return;
+      setPageSizeOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setPageSizeOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [pageSizeOpen]);
 
   const visibleBase = useMemo(
     () => (Array.isArray(clients) ? clients : []).filter((client) => isVisibleClientStatus(client.status)),
@@ -257,10 +297,10 @@ export default function DesignLabClientsPage() {
 
   return (
     <div className={`btScope ${styles.page}`}>
-      <BareSurface className={styles.tableSurface}>
+      <section className={styles.listPanel}>
         <div className={styles.toolbar}>
           <label className={styles.searchBox}>
-            <SearchIcon size={16} aria-hidden="true" />
+            <SearchIcon size={15} aria-hidden="true" />
             <input
               type="search"
               value={query}
@@ -289,25 +329,48 @@ export default function DesignLabClientsPage() {
             })}
           </div>
 
-          <select
-            className={styles.pageSizeSelect}
-            value={pageSize}
-            onChange={(event) => setPageSize(Number(event.target.value) || 20)}
-            aria-label="Quantidade por página"
-          >
-            {PAGE_SIZE_OPTIONS.map((option) => (
-              <option key={option} value={option}>{option} por página</option>
-            ))}
-          </select>
+          <div className={styles.pageSizeDropdown} ref={pageSizeRef}>
+            <button
+              type="button"
+              className={styles.pageSizeButton}
+              onClick={() => setPageSizeOpen((current) => !current)}
+              aria-expanded={pageSizeOpen}
+              aria-label="Quantidade por página"
+            >
+              <span>{pageSize} por página</span>
+              <ChevronDownIcon size={14} aria-hidden="true" />
+            </button>
+
+            {pageSizeOpen ? (
+              <div className={styles.pageSizeMenu} role="listbox" aria-label="Quantidade de clientes por página">
+                {PAGE_SIZE_OPTIONS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`${styles.pageSizeOption} ${pageSize === option ? styles.pageSizeOptionActive : ''}`.trim()}
+                    onClick={() => {
+                      setPageSize(option);
+                      setPageSizeOpen(false);
+                    }}
+                    role="option"
+                    aria-selected={pageSize === option}
+                  >
+                    {option} por página
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <div className={styles.table}>
           <div className={styles.headerRow}>
             <span>Cliente</span>
-            <span>Squad/GDV</span>
-            <span>Contrato</span>
+            <span>Squad</span>
+            <span>Tipo</span>
             <span>Valor</span>
             <span>Vencimento</span>
+            <span>Análises</span>
             <span>Status</span>
           </div>
 
@@ -337,8 +400,20 @@ export default function DesignLabClientsPage() {
                 const status = statusLabel(client, today);
 
                 return (
-                  <button key={client.id} type="button" className={styles.clientRow} onClick={() => openDetail(client.id)}>
-                    <div className={styles.clientCell}>
+                  <article
+                    key={client.id}
+                    className={styles.clientRow}
+                    onClick={() => openDetail(client.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openDetail(client.id);
+                      }
+                    }}
+                  >
+                    <div className={styles.clientCell} data-label="Cliente">
                       <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
                         {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
                       </span>
@@ -348,12 +423,12 @@ export default function DesignLabClientsPage() {
                       </span>
                     </div>
 
-                    <div className={styles.stackCell} data-label="Squad/GDV">
+                    <div className={styles.squadCell} data-label="Squad">
                       <strong>{client.squadName || 'Sem squad'}</strong>
                       <small>{client.gdvName || 'Sem GDV'}</small>
                     </div>
 
-                    <div className={styles.contractCell} data-label="Contrato">
+                    <div className={styles.typeCell} data-label="Tipo">
                       <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
                     </div>
 
@@ -364,6 +439,29 @@ export default function DesignLabClientsPage() {
                       {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
                     </div>
 
+                    <div className={styles.analysisCell} data-label="Análises" aria-label="Análises do cliente">
+                      {ANALYSIS_ITEMS.map((item) => {
+                        const Icon = item.icon;
+                        const count = analysisCount(client, item.key);
+                        return (
+                          <button
+                            key={item.key}
+                            type="button"
+                            className={`${styles.analysisButton} ${styles[item.className]}`.trim()}
+                            title={item.label}
+                            aria-label={`Abrir ${item.label} de ${client.name}. Registros: ${count}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openDetail(client.id, item.tab);
+                            }}
+                          >
+                            <Icon size={13} strokeWidth={2} aria-hidden="true" />
+                            {count > 0 ? <span>{count}</span> : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+
                     <div className={styles.statusCell} data-label="Status">
                       {showOnboardingDays ? (
                         <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
@@ -372,7 +470,7 @@ export default function DesignLabClientsPage() {
                       ) : null}
                       <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
                     </div>
-                  </button>
+                  </article>
                 );
               })}
             </div>
@@ -394,7 +492,7 @@ export default function DesignLabClientsPage() {
             ))}
           </div>
         </footer>
-      </BareSurface>
+      </section>
 
       {modalOpen && canCreate ? (
         <ClientFormModal
