@@ -141,6 +141,8 @@ export default function DesignLabClientsPage() {
   const canCreate = canCreateClients(user);
   const [query, setQuery] = useState(() => searchParams.get('search') || '');
   const [scope, setScope] = useState('all');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [pageSizeOpen, setPageSizeOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -149,6 +151,8 @@ export default function DesignLabClientsPage() {
   const [detailTab, setDetailTab] = useState('overview');
   const [avatarVersion, setAvatarVersion] = useState(0);
   const [today, setToday] = useState(() => new Date());
+  const searchRef = useRef(null);
+  const filterRef = useRef(null);
   const pageSizeRef = useRef(null);
 
   useEffect(() => {
@@ -178,6 +182,40 @@ export default function DesignLabClientsPage() {
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [pageSizeOpen]);
+
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!searchRef.current || searchRef.current.contains(event.target)) return;
+      setSearchOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setSearchOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!filterOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!filterRef.current || filterRef.current.contains(event.target)) return;
+      setFilterOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setFilterOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [filterOpen]);
 
   const visibleBase = useMemo(
     () => (Array.isArray(clients) ? clients : []).filter((client) => isVisibleClientStatus(client.status)),
@@ -244,6 +282,11 @@ export default function DesignLabClientsPage() {
     [clients, detailId]
   );
 
+  const selectedScope = useMemo(
+    () => SCOPES.find((item) => item.key === scope) || SCOPES[0],
+    [scope]
+  );
+
   useEffect(() => {
     setPage(1);
   }, [query, scope, pageSize]);
@@ -306,34 +349,69 @@ export default function DesignLabClientsPage() {
   return (
     <div className={`btScope ${styles.page}`}>
       <section className={styles.commandLayer}>
-        <label className={styles.searchBox}>
-          <SearchIcon size={15} aria-hidden="true" />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar cliente, squad ou vendedor"
-            aria-label="Buscar cliente"
-          />
-        </label>
+        <div className={`${styles.searchWrap} ${searchOpen ? styles.searchWrapOpen : ''}`.trim()} ref={searchRef}>
+          {searchOpen ? (
+            <label className={styles.searchBox}>
+              <SearchIcon size={15} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                autoFocus
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Buscar cliente ou squad"
+                aria-label="Buscar cliente"
+              />
+            </label>
+          ) : (
+            <button
+              type="button"
+              className={`${styles.searchToggle} ${query.trim() ? styles.searchToggleActive : ''}`.trim()}
+              onClick={() => setSearchOpen(true)}
+              aria-label="Abrir busca de clientes"
+            >
+              <SearchIcon size={15} aria-hidden="true" />
+              <span>{query.trim() ? 'Busca ativa' : 'Buscar'}</span>
+            </button>
+          )}
+        </div>
 
-        <nav className={styles.segmentCloud} aria-label="Filtros de clientes">
-          {SCOPES.map((item) => {
-            const active = scope === item.key;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                aria-current={active ? 'true' : undefined}
-                className={`${styles.segmentChip} ${active ? styles.segmentChipActive : ''} ${item.tone === 'purple' ? styles.segmentChipPurple : ''}`.trim()}
-                onClick={() => setScope(item.key)}
-              >
-                <span>{item.label}</span>
-                <strong>{counts[item.key] ?? 0}</strong>
-              </button>
-            );
-          })}
-        </nav>
+        <div className={styles.filterDropdown} ref={filterRef}>
+          <button
+            type="button"
+            className={styles.filterButton}
+            onClick={() => setFilterOpen((current) => !current)}
+            aria-expanded={filterOpen}
+            aria-label="Filtrar clientes"
+          >
+            <span>{selectedScope.label}</span>
+            <strong>{counts[selectedScope.key] ?? 0}</strong>
+            <ChevronDownIcon size={14} aria-hidden="true" />
+          </button>
+
+          {filterOpen ? (
+            <div className={styles.filterMenu} role="listbox" aria-label="Filtros de clientes">
+              {SCOPES.map((item) => {
+                const active = scope === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`${styles.filterOption} ${active ? styles.filterOptionActive : ''} ${item.tone === 'purple' ? styles.filterOptionPurple : ''}`.trim()}
+                    onClick={() => {
+                      setScope(item.key);
+                      setFilterOpen(false);
+                    }}
+                  >
+                    <span>{item.label}</span>
+                    <strong>{counts[item.key] ?? 0}</strong>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
 
         <div className={styles.pageSizeDropdown} ref={pageSizeRef}>
           <button
@@ -428,7 +506,6 @@ export default function DesignLabClientsPage() {
                   <div className={styles.contractBlock}>
                     <div className={styles.contractTags}>
                       <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
-                      {internalSeller ? <BareBadge tone="purple">{internalSeller}</BareBadge> : null}
                     </div>
                     <strong>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
                   </div>
