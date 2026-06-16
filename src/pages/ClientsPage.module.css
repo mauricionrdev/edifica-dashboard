@@ -1888,3 +1888,73 @@
     min-width: 1280px;
   }
 }
+
+
+/* v36 · Clientes TCV: remove Início/Fim e compacta a grade para sidebar aberta */
+.clientHeader,
+.clientRow {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    32px
+    minmax(190px, 1.7fr)
+    minmax(116px, 0.82fr)
+    112px
+    124px
+    minmax(150px, 1fr)
+    104px
+    minmax(150px, 0.95fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.clientHeader {
+  min-height: 40px;
+  padding: 0 18px;
+}
+
+.clientRow {
+  min-height: 58px;
+  padding: 0 18px;
+}
+
+.cellDate {
+  display: none;
+}
+
+.duePill {
+  max-width: 100%;
+  justify-self: start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analysisCell {
+  justify-self: start;
+}
+
+.statusStack {
+  min-width: 0;
+  max-width: 100%;
+  justify-self: start;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.statusStack .statusPill,
+.statusStack .onboardingDays {
+  min-width: max-content;
+  max-width: 100%;
+}
+
+@media (max-width: 1180px) {
+  .clientTable {
+    overflow-x: auto;
+  }
+
+  .clientHeader,
+  .clientRow {
+    min-width: 1080px;
+  }
+}

@@ -385,8 +385,6 @@ export default function ClientsPage() {
               <span />
               <span>Cliente</span>
               <span>Squad</span>
-              <span>Início</span>
-              <span>Fim</span>
               <span>Tipo</span>
               <span>Valor</span>
               <span>Vencimento</span>
@@ -439,11 +437,9 @@ export default function ClientsPage() {
                     <div className={styles.cellMuted} title={c.squadName || ''}>
                       {c.squadName || '—'}
                     </div>
-                    <div className={styles.cellDate}>{fmtDateBR(c.startDate)}</div>
-                    <div className={`${styles.cellDate} ${ending ? styles.soon : ''}`.trim()}>{fmtDateBR(c.endDate)}</div>
                     <div className={`${styles.cellContractType} ${tcv ? styles.cellContractTypeTcv : ''}`.trim()}>{tcv ? 'TCV' : 'Recorrente'}</div>
                     <div className={styles.cellFee}>{fmtMoney(resolveClientFeeAtDate(c, today))}</div>
-                    <div className={`${styles.duePill} ${styles[`due_${due.tone}`] || ''}`.trim()}>{tcv ? due.label : '—'}</div>
+                    <div className={`${styles.duePill} ${styles[`due_${due.tone}`] || ''}`.trim()}>{due.label}</div>
                     <div className={styles.analysisCell} aria-label="Análises do cliente">
                       {ANALYSIS_ITEMS.map((item) => {
                         const Icon = item.icon;
