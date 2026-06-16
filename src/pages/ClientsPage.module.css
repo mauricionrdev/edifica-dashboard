@@ -1764,3 +1764,127 @@
   background: rgba(168, 85, 247, 0.12);
   color: #c084fc;
 }
+
+
+/* v35 · Correção da grade da listagem após inclusão de TCV
+   A tela voltou a ter 10 células por linha: avatar, cliente, squad, início,
+   fim, tipo, valor, vencimento, análises e status. */
+.clientHeader,
+.clientRow {
+  width: 100%;
+  min-width: 1280px;
+  display: grid;
+  grid-template-columns:
+    32px
+    minmax(220px, 1.55fr)
+    minmax(128px, 0.8fr)
+    96px
+    96px
+    112px
+    124px
+    minmax(150px, 0.86fr)
+    104px
+    minmax(168px, 0.9fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.clientHeader {
+  min-height: 40px;
+  padding: 0 18px;
+}
+
+.clientRow {
+  min-height: 58px;
+  padding: 0 18px;
+}
+
+.clientHeader span {
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.avatar,
+.cellName,
+.cellMuted,
+.cellDate,
+.cellContractType,
+.cellFee,
+.duePill,
+.analysisCell,
+.statusStack {
+  grid-row: 1;
+  min-width: 0;
+}
+
+.cellName,
+.cellMuted,
+.cellDate,
+.cellFee {
+  align-self: center;
+}
+
+.cellContractType,
+.duePill,
+.statusPill,
+.onboardingDays {
+  align-self: center;
+  height: 26px;
+  min-height: 26px;
+}
+
+.cellContractType,
+.duePill {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analysisCell {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+
+.analysisIcon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+}
+
+.statusStack {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.statusStack .statusPill,
+.statusStack .onboardingDays {
+  max-width: 100%;
+  white-space: nowrap;
+  flex: 0 1 auto;
+}
+
+.statusStack .statusPill {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1180px) {
+  .clientTable {
+    overflow-x: auto;
+  }
+
+  .clientHeader,
+  .clientRow {
+    min-width: 1280px;
+  }
+}
