@@ -82,7 +82,6 @@ export default function OverviewTab({
   onRemoveAvatar,
   onUpdated,
   onDeleted,
-  variant = 'default',
 }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(() => buildForm(client));
@@ -205,10 +204,9 @@ export default function OverviewTab({
 
   const gestorRows = withCurrentResponsible(gestorOptions(users, form.gestor), form.gestor);
   const gdvRows = withCurrentResponsible(gdvOptions(users, form.gdvName), form.gdvName);
-  const isBare = variant === 'bare';
 
   return (
-    <div className={`${styles.overviewShell} ${isBare ? styles.overviewShellBare : ''}`.trim()}>
+    <div className={styles.overviewShell}>
       <div className={`${drawerStyles.section} ${styles.mainSection}`}>
         <div className={drawerStyles.sectionTitle}>Dados principais</div>
         <div className={styles.profileGrid}>
@@ -225,26 +223,19 @@ export default function OverviewTab({
 
             {canManageAvatar ? (
               <div className={styles.avatarControls}>
-                <button
-                  type="button"
-                  className={styles.avatarIconButton}
-                  onClick={onPickAvatar}
-                  disabled={deleting}
-                  title={avatarUrl ? 'Trocar imagem' : 'Adicionar imagem'}
-                  aria-label={avatarUrl ? 'Trocar imagem' : 'Adicionar imagem'}
-                >
-                  <CameraIcon size={15} />
+                <button type="button" onClick={onPickAvatar} disabled={deleting} title="Alterar imagem" aria-label="Alterar imagem">
+                  {avatarUrl ? 'Trocar imagem' : 'Alterar imagem'}
                 </button>
                 {avatarUrl ? (
                   <button
                     type="button"
-                    className={`${styles.avatarIconButton} ${styles.avatarRemoveButton}`.trim()}
+                    className={styles.avatarRemoveButton}
                     onClick={onRemoveAvatar}
                     disabled={deleting}
                     title="Remover imagem"
                     aria-label="Remover imagem"
                   >
-                    <TrashIcon size={15} />
+                    Remover
                   </button>
                 ) : null}
               </div>

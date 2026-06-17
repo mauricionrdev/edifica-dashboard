@@ -41,7 +41,6 @@ const ANALYSIS_TABS = [
 
 export default function ClientDetailDrawer({
   client,
-  variant = 'default',
   squads = [],
   users = [],
   canEditClient = false,
@@ -63,7 +62,6 @@ export default function ClientDetailDrawer({
   const canManageAvatar = canEditClient;
   const canViewProject = hasPermission(user, 'projects.view');
   const canCreateProject = hasPermission(user, 'projects.create');
-  const isBare = variant === 'bare';
 
   useEffect(() => {
     setActiveTab(initialTab || 'overview');
@@ -176,16 +174,16 @@ export default function ClientDetailDrawer({
   if (!client) return null;
 
   const node = (
-    <div className={`${drawerStyles.overlay} ${isBare ? drawerStyles.overlayBare : ''}`.trim()} role="presentation" onClick={onClose}>
+    <div className={drawerStyles.overlay} role="presentation" onClick={onClose}>
       <section
-        className={`${drawerStyles.modalCard} ${isBare ? drawerStyles.modalCardBare : ''}`.trim()}
+        className={drawerStyles.modalCard}
         data-active-tab={activeTab}
         role="dialog"
         aria-modal="true"
         aria-labelledby="client-drawer-name"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className={`${drawerStyles.modalHead} ${isBare ? drawerStyles.modalHeadBare : ''}`.trim()}>
+        <header className={drawerStyles.modalHead}>
           <div className={drawerStyles.identity}>
             <div
               className={drawerStyles.avatar}
@@ -252,7 +250,7 @@ export default function ClientDetailDrawer({
           />
         </header>
 
-        <div className={`${drawerStyles.modalBody} ${isBare ? drawerStyles.modalBodyBare : ''}`.trim()}>
+        <div className={drawerStyles.modalBody}>
           <aside className={tabStyles.tabsBar} role="tablist" aria-label="Detalhes do cliente">
             <div className={tabStyles.primaryTabs}>
               {visibleTabs.map((tab) => {
@@ -309,7 +307,6 @@ export default function ClientDetailDrawer({
                 canEditFeeSchedule={canEditFeeSchedule}
                 onUpdated={onUpdated}
                 onDeleted={onDeleted}
-                variant={variant}
               />
             )}
 

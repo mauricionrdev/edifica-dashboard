@@ -587,7 +587,6 @@ export default function DesignLabClientsPage() {
       {selectedClient ? (
         <ClientDetailDrawer
           client={selectedClient}
-          variant="bare"
           squads={squads || []}
           users={userDirectory || []}
           canEditClient={canEditClientRecord(user, selectedClient)}

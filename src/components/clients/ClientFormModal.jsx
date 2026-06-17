@@ -79,7 +79,6 @@ export default function ClientFormModal({
   users = [],
   onClose,
   onSaved,
-  variant = 'default',
 }) {
   const [form, setForm] = useState(() => (mode === 'edit' ? fromClient(client) : EMPTY));
   const [saving, setSaving] = useState(false);
@@ -103,7 +102,6 @@ export default function ClientFormModal({
   }, [onClose]);
 
   const title = useMemo(() => (mode === 'edit' ? 'Editar cliente' : 'Novo cliente'), [mode]);
-  const isBare = variant === 'bare';
   const gestorRows = useMemo(() => gestorOptions(users, form.gestor), [users, form.gestor]);
   const gdvRows = useMemo(() => gdvOptions(users, form.gdvName), [users, form.gdvName]);
 
@@ -172,16 +170,16 @@ export default function ClientFormModal({
   }
 
   return (
-    <div className={`${styles.overlay} ${isBare ? styles.overlayBare : ''}`.trim()} role="presentation" onClick={onClose}>
+    <div className={styles.overlay} role="presentation" onClick={onClose}>
       <form
-        className={`${styles.card} ${isBare ? styles.cardBare : ''}`.trim()}
+        className={styles.card}
         role="dialog"
         aria-modal="true"
         aria-labelledby="client-form-title"
         onClick={(event) => event.stopPropagation()}
         onSubmit={handleSubmit}
       >
-        <div className={`${styles.header} ${isBare ? styles.headerBare : ''}`.trim()}>
+        <div className={styles.header}>
           <h2 id="client-form-title" className={styles.title}>
             {title}
           </h2>
@@ -190,7 +188,7 @@ export default function ClientFormModal({
           </button>
         </div>
 
-        <div className={`${styles.body} ${isBare ? styles.bodyBare : ''}`.trim()}>
+        <div className={styles.body}>
           <section className={`${styles.section} ${styles.identitySection}`}>
             <div className={styles.sectionTitle}>Identificação</div>
             <div className={styles.identityShell}>
@@ -432,7 +430,7 @@ export default function ClientFormModal({
           </section>
         </div>
 
-        <div className={`${styles.footer} ${isBare ? styles.footerBare : ''}`.trim()}>
+        <div className={styles.footer}>
           <button
             type="button"
             className={styles.btnSecondary}
