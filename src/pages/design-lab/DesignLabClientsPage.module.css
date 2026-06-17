@@ -947,3 +947,150 @@
     justify-self: start;
   }
 }
+
+/* v48 · React Aria + TanStack Virtual + Anchor/Container/View transitions */
+.commandLayer,
+.board,
+.clientList,
+.clientItem {
+  view-transition-name: none;
+}
+
+.board {
+  container: clients-board / inline-size;
+  view-transition-name: clients-board;
+}
+
+.searchWrap {
+  anchor-name: --clients-search-anchor;
+}
+
+.filterButton {
+  anchor-name: --clients-filter-anchor;
+}
+
+.pageSizeButton {
+  anchor-name: --clients-page-size-anchor;
+}
+
+.ariaPopover {
+  z-index: 42;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  outline: none;
+}
+
+@supports (position-anchor: --clients-filter-anchor) {
+  .filterPopover {
+    position-anchor: --clients-filter-anchor;
+    inset-area: bottom center;
+    margin-top: 7px;
+  }
+
+  .pageSizePopover {
+    position-anchor: --clients-page-size-anchor;
+    inset-area: bottom end;
+    margin-top: 7px;
+  }
+}
+
+.filterButton[data-pressed],
+.pageSizeButton[data-pressed] {
+  border-color: var(--bt-line);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.filterMenu,
+.pageSizeMenu {
+  outline: none;
+}
+
+.filterOption,
+.pageSizeOption {
+  user-select: none;
+}
+
+.filterOption[data-focused],
+.pageSizeOption[data-focused] {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--bt-text);
+}
+
+.filterOption[data-selected] {
+  background: rgba(245, 184, 0, 0.10);
+  color: var(--bt-amber);
+}
+
+.filterOptionPurple[data-selected] {
+  background: rgba(192, 132, 252, 0.10);
+  color: var(--bt-purple);
+}
+
+.pageSizeOption[data-selected] {
+  background: rgba(245, 184, 0, 0.10);
+  color: var(--bt-amber);
+}
+
+.clientList {
+  contain: strict;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.clientVirtualizer {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.clientItem {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  will-change: transform;
+}
+
+.clientItem:focus-visible,
+.analysisButton:focus-visible,
+.searchToggle:focus-visible,
+.filterButton:focus-visible,
+.pageSizeButton:focus-visible,
+.pageButton:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+@container clients-board (max-width: 920px) {
+  .clientList {
+    padding: 10px;
+  }
+
+  .clientItem {
+    left: 10px;
+    right: 10px;
+  }
+}
+
+@container clients-board (max-width: 760px) {
+  .clientItem {
+    grid-template-columns: 1fr;
+    min-height: 162px;
+  }
+
+  .identityBlock,
+  .dueBlock,
+  .statusStack {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(clients-board),
+  ::view-transition-new(clients-board) {
+    animation-duration: 140ms;
+    animation-timing-function: ease;
+  }
+}
