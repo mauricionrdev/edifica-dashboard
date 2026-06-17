@@ -1751,3 +1751,57 @@
     max-height: calc(100dvh - 22px);
   }
 }
+
+
+/* v60 · Botões do modal no novo padrão */
+.modalCardBare .projectBtn,
+.modalCardBare .headerAction,
+.modalCardBare .headerIconAction,
+.modalCardBare .iconBtn,
+.modalCardBare .btn,
+.modalCardBare .btnGhost,
+.modalCardBare .btnDanger {
+  min-height: 34px;
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 12.4px;
+  font-weight: 650;
+}
+
+.modalCardBare .btnGhost,
+.modalCardBare .btn {
+  border-color: rgba(245, 184, 0, 0.30);
+  color: #f5b800;
+}
+
+.modalCardBare .btnDanger {
+  border-color: rgba(255, 95, 95, 0.34);
+  background: transparent;
+  color: #ff8a8a;
+}
+
+.modalCardBare .projectBtn,
+.modalCardBare .headerAction,
+.modalCardBare .headerIconAction,
+.modalCardBare .iconBtn {
+  border-color: rgba(255, 255, 255, 0.09);
+  color: rgba(243, 240, 234, 0.74);
+}
+
+.modalCardBare .projectBtn:hover,
+.modalCardBare .headerAction:hover,
+.modalCardBare .headerIconAction:hover,
+.modalCardBare .iconBtn:hover,
+.modalCardBare .btn:hover,
+.modalCardBare .btnGhost:hover {
+  border-color: rgba(245, 184, 0, 0.42);
+  background: rgba(245, 184, 0, 0.055);
+  color: #f5b800;
+}
+
+.modalCardBare .btnDanger:hover {
+  border-color: rgba(255, 95, 95, 0.42);
+  background: rgba(255, 95, 95, 0.06);
+  color: #ff9a9a;
+}

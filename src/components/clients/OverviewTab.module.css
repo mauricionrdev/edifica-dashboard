@@ -2479,3 +2479,77 @@
     grid-column: auto !important;
   }
 }
+
+
+/* v60 · Corpo do modal usando a largura real sem ficar esmagado à esquerda */
+.overviewShellBare .mainSection {
+  padding: 16px 24px 18px;
+}
+
+.overviewShellBare .profileGrid {
+  max-width: none;
+  width: 100%;
+  grid-template-columns: 150px minmax(0, 1fr);
+  column-gap: 22px;
+}
+
+.overviewShellBare .profileFields {
+  max-width: none;
+  width: 100%;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.overviewShellBare .contractGrid {
+  max-width: none;
+  width: 100%;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.overviewShellBare .contractGrid > * {
+  grid-column: span 3 !important;
+}
+
+.overviewShellBare .inlineFeeSchedule,
+.overviewShellBare .dangerSection {
+  max-width: none;
+  width: 100%;
+}
+
+.overviewShellBare .dangerSection {
+  padding-inline: 0;
+}
+
+.overviewShellBare .deleteClientButton,
+.overviewShellBare .dangerSection button,
+.overviewShellBare .avatarControls button {
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.overviewShellBare .avatarControls button:not(.avatarRemoveButton) {
+  border-color: rgba(255, 255, 255, 0.10);
+  color: rgba(243, 240, 234, 0.78);
+}
+
+.overviewShellBare .avatarControls .avatarRemoveButton {
+  border-color: rgba(255, 95, 95, 0.34);
+  background: transparent;
+  color: #ff8a8a;
+}
+
+@media (max-width: 980px) {
+  .overviewShellBare .mainSection {
+    padding-inline: 18px;
+  }
+
+  .overviewShellBare .profileGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .overviewShellBare .mainSection {
+    padding-inline: 14px;
+  }
+}

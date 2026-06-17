@@ -645,3 +645,42 @@
 .tabBody {
   max-height: calc(min(720px, 100dvh - 40px) - 112px);
 }
+
+
+/* v60 · Tabs com padrão pill mais estável */
+.tab,
+.analysisTab {
+  min-height: 34px;
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+  font-weight: 650;
+}
+
+.tabActive {
+  color: #f5b800;
+  border-color: rgba(245, 184, 0, 0.36);
+  background: rgba(245, 184, 0, 0.055);
+}
+
+.tabActive::after {
+  display: none;
+}
+
+.analysisTab_icp {
+  color: #7ab7ff;
+  border-color: rgba(122, 183, 255, 0.34);
+  background: transparent;
+}
+
+.analysisTab_gdv {
+  color: #48d597;
+  border-color: rgba(72, 213, 151, 0.32);
+  background: transparent;
+}
+
+.analysisTab_routes {
+  color: #c084fc;
+  border-color: rgba(192, 132, 252, 0.34);
+  background: transparent;
+}
