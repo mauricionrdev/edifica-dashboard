@@ -792,29 +792,14 @@
 }
 
 
-
-
-
-
-/* v62 · Mensalidades consolidadas para o modal de cliente */
+/* v60 · Mensalidades com botões no novo padrão e cards menos pesados */
 .panel {
-  padding: 10px 0 0;
-  gap: 12px;
+  padding: 12px 24px 18px;
   background: transparent;
 }
 
-.sectionHead,
-.rows {
-  width: min(100%, 780px);
-  margin-inline: auto;
-}
-
 .sectionHead {
-  min-height: 42px;
   align-items: center;
-  padding-bottom: 12px;
-  margin-bottom: 12px;
-  border-bottom-color: rgba(255, 255, 255, 0.055);
 }
 
 .sectionActions {
@@ -843,11 +828,89 @@
 }
 
 .rowCard {
-  padding: 16px 18px;
+  padding: 13px 14px;
   border-color: rgba(255, 255, 255, 0.06);
-  border-radius: 22px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.012);
   box-shadow: none;
+}
+
+.rowGrid {
+  grid-template-columns: minmax(180px, 0.9fr) minmax(180px, 0.9fr);
+  gap: 12px;
+  max-width: 560px;
+}
+
+.removeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 99px;
+  border-color: rgba(255, 95, 95, 0.34);
+  background: transparent;
+  color: #ff8a8a;
+  box-shadow: none;
+}
+
+.removeBtn:hover {
+  background: rgba(255, 95, 95, 0.06);
+}
+
+.typeBadge,
+.typeBadgeSingle {
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 980px) {
+  .panel {
+    padding-inline: 18px;
+  }
+}
+
+@media (max-width: 680px) {
+  .sectionHead {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sectionActions {
+    justify-content: flex-start;
+  }
+
+  .rowGrid {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+}
+
+/* v61 · mensalidades mais compactas e melhor centralizadas */
+.panel {
+  padding: 10px 0 0;
+  gap: 12px;
+  background: transparent;
+}
+
+.sectionHead,
+.rows {
+  width: 100%;
+  max-width: 860px;
+  margin-inline: auto;
+}
+
+.sectionHead {
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.sectionActions {
+  gap: 8px;
+}
+
+.rowCard {
+  padding: 16px 18px;
+  border-radius: 22px;
 }
 
 .rowHeader {
@@ -863,9 +926,8 @@
 }
 
 .rowGrid {
-  width: min(100%, 600px);
+  width: min(100%, 640px);
   margin-inline: auto;
-  display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px 16px;
   justify-content: center;
@@ -888,36 +950,12 @@
   height: 36px;
   border-radius: 99px;
   align-self: flex-start;
-  border-color: rgba(255, 95, 95, 0.34);
-  background: transparent;
-  color: #ff8a8a;
-  box-shadow: none;
-}
-
-.removeBtn:hover {
-  background: rgba(255, 95, 95, 0.06);
-}
-
-.typeBadge,
-.typeBadgeSingle {
-  border-radius: 99px;
-  background: transparent;
-  box-shadow: none;
 }
 
 @media (max-width: 720px) {
   .sectionHead,
   .rows {
-    width: 100%;
-  }
-
-  .sectionHead {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .sectionActions {
-    justify-content: flex-start;
+    max-width: none;
   }
 
   .rowGrid {
