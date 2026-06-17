@@ -1641,3 +1641,60 @@
     padding-inline: 16px;
   }
 }
+
+
+/* v56 · Modal de detalhes mais compacto, sem sombras e com ações pill */
+.modalCardBare {
+  width: min(940px, calc(100vw - 40px));
+  max-height: min(740px, calc(100dvh - 40px));
+  border-radius: 22px;
+  box-shadow: none;
+}
+
+.modalHeadBare {
+  min-height: 64px;
+  padding: 10px 16px 10px 18px;
+}
+
+.modalCardBare .avatar {
+  width: 42px;
+  height: 42px;
+}
+
+.modalCardBare .identity {
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.modalCardBare .name {
+  font-size: clamp(18px, 1.25vw, 21px);
+}
+
+.modalCardBare .projectBtn,
+.modalCardBare .headerAction,
+.modalCardBare .headerIconAction,
+.modalCardBare .iconBtn,
+.modalCardBare .btn,
+.modalCardBare .btnGhost,
+.modalCardBare .btnDanger {
+  border-radius: 99px;
+  min-height: 34px;
+}
+
+.modalCardBare .iconBtn,
+.modalCardBare .headerIconAction {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+}
+
+.modalCardBare .status {
+  border-radius: 99px;
+}
+
+@media (max-width: 820px) {
+  .modalCardBare {
+    width: calc(100vw - 18px);
+    max-height: calc(100dvh - 18px);
+  }
+}

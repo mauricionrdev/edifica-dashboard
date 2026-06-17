@@ -82,6 +82,7 @@ export default function OverviewTab({
   onRemoveAvatar,
   onUpdated,
   onDeleted,
+  variant = 'default',
 }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(() => buildForm(client));
@@ -204,9 +205,10 @@ export default function OverviewTab({
 
   const gestorRows = withCurrentResponsible(gestorOptions(users, form.gestor), form.gestor);
   const gdvRows = withCurrentResponsible(gdvOptions(users, form.gdvName), form.gdvName);
+  const isBare = variant === 'bare';
 
   return (
-    <div className={styles.overviewShell}>
+    <div className={`${styles.overviewShell} ${isBare ? styles.overviewShellBare : ''}`.trim()}>
       <div className={`${drawerStyles.section} ${styles.mainSection}`}>
         <div className={drawerStyles.sectionTitle}>Dados principais</div>
         <div className={styles.profileGrid}>

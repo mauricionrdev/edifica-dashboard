@@ -2159,3 +2159,129 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v56 · Conteúdo do detalhe no Design Lab: menos largura exagerada e melhor distribuição */
+.overviewShellBare {
+  background: transparent;
+}
+
+.overviewShellBare .mainSection {
+  padding: 16px 18px 18px;
+  background: transparent;
+}
+
+.overviewShellBare .profileGrid {
+  max-width: 860px;
+  grid-template-columns: 118px minmax(0, 1fr);
+  column-gap: 18px;
+  align-items: start;
+}
+
+.overviewShellBare .avatarCard {
+  min-height: 206px;
+  padding: 14px 12px;
+  border-color: rgba(255, 255, 255, 0.055);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.01);
+  box-shadow: none;
+  align-content: center;
+}
+
+.overviewShellBare .avatarPrimary {
+  width: 76px;
+  height: 76px;
+  box-shadow: none;
+}
+
+.overviewShellBare .avatarControls {
+  width: 96px;
+  gap: 7px;
+}
+
+.overviewShellBare .avatarControls button {
+  min-height: 29px;
+  border-radius: 99px;
+  background: transparent;
+}
+
+.overviewShellBare .profileFields {
+  max-width: 640px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 12px;
+}
+
+.overviewShellBare .profileFieldName {
+  grid-column: span 6;
+}
+
+.overviewShellBare .fieldSquad,
+.overviewShellBare .fieldStatus,
+.overviewShellBare .fieldGestor,
+.overviewShellBare .fieldGdv {
+  grid-column: span 3;
+}
+
+.overviewShellBare .fieldQuarter {
+  grid-column: span 3;
+}
+
+.overviewShellBare .contractGrid {
+  max-width: 760px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.overviewShellBare .input,
+.overviewShellBare .selectControl :global(button),
+.overviewShellBare .selectControl :global(input),
+.overviewShellBare .selectControl :global(select) {
+  min-height: 36px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.overviewShellBare button {
+  border-radius: 99px;
+}
+
+@media (max-width: 980px) {
+  .overviewShellBare .profileGrid {
+    grid-template-columns: 1fr;
+    row-gap: 14px;
+  }
+
+  .overviewShellBare .avatarCard {
+    min-height: 92px;
+    grid-template-columns: 76px minmax(0, 1fr);
+    justify-items: start;
+  }
+
+  .overviewShellBare .profileFields,
+  .overviewShellBare .contractGrid {
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overviewShellBare .profileFieldName,
+  .overviewShellBare .fieldSquad,
+  .overviewShellBare .fieldStatus,
+  .overviewShellBare .fieldGestor,
+  .overviewShellBare .fieldGdv,
+  .overviewShellBare .fieldQuarter {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .overviewShellBare .profileFields,
+  .overviewShellBare .contractGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .overviewShellBare .avatarCard {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}

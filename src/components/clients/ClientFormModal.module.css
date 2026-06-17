@@ -1096,3 +1096,123 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v56 · Modal de criação mais compacto e organizado */
+.cardBare {
+  width: min(740px, calc(100vw - 36px));
+  max-height: min(720px, calc(100dvh - 36px));
+  border-radius: 22px;
+  box-shadow: none;
+}
+
+.headerBare,
+.footerBare {
+  min-height: 58px;
+  padding-inline: 20px;
+}
+
+.bodyBare {
+  padding: 16px 20px 18px;
+  gap: 13px;
+}
+
+.cardBare .identityShell {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.cardBare .avatarFrame {
+  width: 92px;
+  min-height: 92px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.cardBare .avatarFrame .avatarPreview {
+  width: 48px;
+  height: 48px;
+}
+
+.cardBare .avatarFrame .avatarUploadButton,
+.cardBare .avatarUploadButton,
+.cardBare .close,
+.cardBare .btnSecondary,
+.cardBare .btnPrimary {
+  border-radius: 99px;
+}
+
+.cardBare .identityContent {
+  gap: 11px;
+}
+
+.cardBare .identityGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.cardBare .grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  align-items: end;
+}
+
+.cardBare .field {
+  gap: 5px;
+}
+
+.cardBare .label {
+  font-size: 10.8px;
+  line-height: 1.1;
+}
+
+.cardBare .input,
+.cardBare .select,
+.cardBare .selectControl,
+.cardBare .selectControl :global(button),
+.cardBare .selectControl :global(input),
+.cardBare .selectControl :global(select) {
+  min-height: 36px;
+  height: 36px;
+  border-radius: 13px;
+  font-size: 12.8px;
+}
+
+.cardBare .section + .section {
+  padding-top: 14px;
+}
+
+.cardBare .full {
+  grid-column: 1 / -1;
+}
+
+.cardBare .btnSecondary,
+.cardBare .btnPrimary {
+  min-height: 36px;
+  padding-inline: 17px;
+}
+
+@media (max-width: 760px) {
+  .cardBare {
+    width: calc(100vw - 18px);
+    max-height: calc(100dvh - 18px);
+  }
+
+  .cardBare .identityShell {
+    grid-template-columns: 1fr;
+  }
+
+  .cardBare .avatarFrame {
+    width: 100%;
+    min-height: 86px;
+  }
+
+  .cardBare .identityGrid,
+  .cardBare .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -309,6 +309,7 @@ export default function ClientDetailDrawer({
                 canEditFeeSchedule={canEditFeeSchedule}
                 onUpdated={onUpdated}
                 onDeleted={onDeleted}
+                variant={variant}
               />
             )}
 
