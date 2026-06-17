@@ -1584,3 +1584,73 @@
     width: 100%;
   }
 }
+
+
+/* v53 · Capa do Squad como composição de linha, não como badge */
+.clientItem {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.clientItem::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 0;
+  width: min(46%, 560px);
+  background:
+    linear-gradient(90deg, rgba(13, 13, 12, 0.98) 0%, rgba(13, 13, 12, 0.72) 28%, rgba(13, 13, 12, 0.18) 68%, rgba(13, 13, 12, 0.02) 100%),
+    var(--squad-cover, none);
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  opacity: 0.42;
+  filter: saturate(0.82) brightness(0.66);
+  pointer-events: none;
+}
+
+.clientItem > * {
+  position: relative;
+  z-index: 1;
+}
+
+.squadBlock {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  display: grid;
+  align-items: center;
+}
+
+.squadBlock::after {
+  content: none;
+  display: none;
+}
+
+.squadBlock strong {
+  color: var(--bt-text);
+  font-size: 13.5px;
+  font-weight: 690;
+  text-shadow: none;
+}
+
+.clientItem:hover::after {
+  opacity: 0.50;
+}
+
+@media (max-width: 1040px) {
+  .clientItem::after {
+    width: 62%;
+    opacity: 0.32;
+  }
+}
+
+@media (max-width: 720px) {
+  .clientItem::after {
+    width: 100%;
+    opacity: 0.22;
+  }
+}

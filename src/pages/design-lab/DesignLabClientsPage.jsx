@@ -497,6 +497,7 @@ export default function DesignLabClientsPage() {
                 <article
                   key={client.id}
                   className={`${styles.clientItem} ${styles[`clientItem_${due.tone}`] || ''}`.trim()}
+                  style={squadStyle}
                   onClick={() => openDetail(client.id)}
                   role="button"
                   tabIndex={0}
@@ -516,7 +517,7 @@ export default function DesignLabClientsPage() {
                     </span>
                   </div>
 
-                  <div className={styles.squadBlock} style={squadStyle}>
+                  <div className={styles.squadBlock}>
                     <strong>{squadVisual.name}</strong>
                   </div>
 
