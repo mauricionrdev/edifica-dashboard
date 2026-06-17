@@ -1654,3 +1654,45 @@
     opacity: 0.22;
   }
 }
+
+
+/* v54 · Capa do squad mais etérea, com fade lateral e bordas dissolvidas */
+.clientItem::after {
+  right: -2%;
+  inset: 0 -2% 0 auto;
+  width: min(43%, 520px);
+  background:
+    linear-gradient(90deg, rgba(13, 13, 12, 0) 0%, rgba(13, 13, 12, 0.10) 12%, rgba(13, 13, 12, 0.22) 22%, rgba(13, 13, 12, 0.10) 44%, rgba(13, 13, 12, 0.02) 68%, rgba(13, 13, 12, 0) 100%),
+    var(--squad-cover, none);
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  opacity: 0.23;
+  filter: saturate(0.72) brightness(0.56);
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.44) 18%, rgba(0, 0, 0, 0.94) 40%, rgba(0, 0, 0, 0.94) 78%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.96) 10%, rgba(0, 0, 0, 0.96) 90%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.44) 18%, rgba(0, 0, 0, 0.94) 40%, rgba(0, 0, 0, 0.94) 78%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.96) 10%, rgba(0, 0, 0, 0.96) 90%, transparent 100%);
+  mask-composite: intersect;
+}
+
+.clientItem:hover::after {
+  opacity: 0.28;
+}
+
+@media (max-width: 1040px) {
+  .clientItem::after {
+    width: 56%;
+    opacity: 0.20;
+  }
+}
+
+@media (max-width: 720px) {
+  .clientItem::after {
+    width: 84%;
+    opacity: 0.16;
+  }
+}
