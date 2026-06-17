@@ -28,7 +28,7 @@ import StateBlock from '../../components/ui/StateBlock.jsx';
 import { ChartColumnIcon, ChevronDownIcon, ClipboardListIcon, PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
 import { BareBadge, BareButton } from '../../components/design-system/index.js';
 import DesignLabClientCreateModal from './DesignLabClientCreateModal.jsx';
-import ClientDetailDrawer from '../../components/clients/ClientDetailDrawer.jsx';
+import DesignLabClientDetailModal from './DesignLabClientDetailModal.jsx';
 import '../../styles/design-system/barely-there.css';
 import styles from './DesignLabClientsPage.module.css';
 
@@ -585,7 +585,7 @@ export default function DesignLabClientsPage() {
       ) : null}
 
       {selectedClient ? (
-        <ClientDetailDrawer
+        <DesignLabClientDetailModal
           client={selectedClient}
           squads={squads || []}
           users={userDirectory || []}
