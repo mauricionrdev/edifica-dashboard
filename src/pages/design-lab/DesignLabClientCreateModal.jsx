@@ -168,29 +168,33 @@ export default function DesignLabClientCreateModal({
 
         <main className={styles.body}>
           <section className={styles.identitySection} aria-label="Identificação">
-            <label className={styles.avatarButton}>
-              <span className={styles.avatarPreview}>
+            <div className={styles.avatarUploadRow}>
+              <span className={styles.avatarPreview} aria-hidden="true">
                 {avatarPreview ? <img src={avatarPreview} alt="" /> : clientInitials(form.name)}
               </span>
-              <span className={styles.avatarAction}>
-                <CameraIcon size={13} />
-                Foto
-              </span>
-              <input type="file" accept="image/*" onChange={handleAvatarFile} disabled={saving} />
-            </label>
 
-            <div className={styles.nameGroup}>
-              <label className={styles.fieldFull}>
-                <span>Nome do cliente</span>
-                <input
-                  value={form.name}
-                  onChange={(event) => setField('name', event.target.value)}
-                  placeholder="Nome do cliente"
-                  maxLength={120}
-                  disabled={saving}
-                />
+              <div className={styles.avatarMeta}>
+                <strong>Logo do cliente</strong>
+                <span>{avatarPreview ? 'Imagem selecionada' : 'PNG ou JPG'}</span>
+              </div>
+
+              <label className={styles.avatarUploadAction}>
+                <CameraIcon size={13} />
+                Selecionar
+                <input type="file" accept="image/*" onChange={handleAvatarFile} disabled={saving} />
               </label>
             </div>
+
+            <label className={styles.fieldFull}>
+              <span>Nome do cliente</span>
+              <input
+                value={form.name}
+                onChange={(event) => setField('name', event.target.value)}
+                placeholder="Nome do cliente"
+                maxLength={120}
+                disabled={saving}
+              />
+            </label>
           </section>
 
           <section className={styles.formSection} aria-label="Operação">

@@ -343,3 +343,107 @@
     min-height: 84px;
   }
 }
+
+
+/* v58 · Avatar upload reconstruído e modal de criação mais limpo */
+.identitySection {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.avatarButton,
+.nameGroup {
+  display: none;
+}
+
+.avatarUploadRow {
+  min-width: 0;
+  min-height: 64px;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.012);
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+}
+
+.avatarUploadRow .avatarPreview {
+  width: 44px;
+  height: 44px;
+  font-size: 12px;
+}
+
+.avatarMeta {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.avatarMeta strong {
+  overflow: hidden;
+  color: #f3f0ea;
+  font-size: 12.5px;
+  line-height: 1.15;
+  font-weight: 690;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatarMeta span {
+  color: rgba(200, 193, 183, 0.68);
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 560;
+}
+
+.avatarUploadAction {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 99px;
+  background: transparent;
+  color: rgba(243, 240, 234, 0.78);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.avatarUploadAction:hover {
+  border-color: rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.avatarUploadAction input {
+  display: none;
+}
+
+.modal {
+  width: min(660px, calc(100vw - 36px));
+}
+
+.body {
+  gap: 13px;
+}
+
+.grid,
+.inlineGrid,
+.contractGrid {
+  gap: 10px 11px;
+}
+
+@media (max-width: 560px) {
+  .avatarUploadRow {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .avatarUploadAction {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
