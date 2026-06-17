@@ -8,6 +8,7 @@ import {
   canEditClientFeeScheduleRecord,
   canEditClientRecord,
   canViewClientFeeScheduleRecord,
+  hasPermission,
 } from '../../utils/permissions.js';
 import {
   clientInitials,
@@ -592,6 +593,9 @@ export default function DesignLabClientsPage() {
           canEditClient={canEditClientRecord(user, selectedClient)}
           canViewFeeSchedule={canViewClientFeeScheduleRecord(user, selectedClient)}
           canEditFeeSchedule={canEditClientFeeScheduleRecord(user, selectedClient)}
+          canViewTasks={hasPermission(user, 'tasks.view')}
+          canViewProject={hasPermission(user, 'projects.view')}
+          canCreateProject={hasPermission(user, 'projects.create')}
           canDelete={canDeleteClientRecord(user, selectedClient)}
           onClose={closeDetail}
           onUpdated={handleUpdated}

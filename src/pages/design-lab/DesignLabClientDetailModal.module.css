@@ -684,3 +684,105 @@
     flex-direction: column;
   }
 }
+
+
+/* v67 · posições das ações iguais ao modal oficial de clientes */
+.tabs {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.primaryTabs,
+.analysisTabs {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.primaryTabs {
+  flex: 1 1 auto;
+}
+
+.analysisTabs {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.analysisTab {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 99px;
+  background: transparent;
+  color: rgba(243, 240, 234, 0.72);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.analysisTab:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.analysisTab_icp {
+  color: #7ab7ff;
+  border-color: rgba(122, 183, 255, 0.28);
+}
+
+.analysisTab_gdv {
+  color: #48d597;
+  border-color: rgba(72, 213, 151, 0.28);
+}
+
+.analysisTab_routes {
+  color: #c084fc;
+  border-color: rgba(192, 132, 252, 0.30);
+}
+
+.analysisTabActive.analysisTab_icp {
+  border-color: rgba(122, 183, 255, 0.44);
+  background: rgba(122, 183, 255, 0.060);
+}
+
+.analysisTabActive.analysisTab_gdv {
+  border-color: rgba(72, 213, 151, 0.42);
+  background: rgba(72, 213, 151, 0.060);
+}
+
+.analysisTabActive.analysisTab_routes {
+  border-color: rgba(192, 132, 252, 0.46);
+  background: rgba(192, 132, 252, 0.060);
+}
+
+.headerActionActive {
+  border-color: rgba(245, 184, 0, 0.36);
+  background: rgba(245, 184, 0, 0.055);
+  color: #f5b800;
+}
+
+@media (max-width: 900px) {
+  .tabs {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .primaryTabs,
+  .analysisTabs {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .primaryTabs::-webkit-scrollbar,
+  .analysisTabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .analysisTabs {
+    margin-left: 0;
+  }
+}

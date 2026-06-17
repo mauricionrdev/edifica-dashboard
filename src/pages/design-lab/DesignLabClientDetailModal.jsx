@@ -19,15 +19,20 @@ import {
 import AnalysisTab from '../../components/clients/AnalysisTab.jsx';
 import ClientBookTab from '../../components/clients/ClientBookTab.jsx';
 import ClientFilesTab from '../../components/clients/ClientFilesTab.jsx';
+import ClientProjectTab from '../../components/clients/ClientProjectTab.jsx';
+import ClientTasksTab from '../../components/clients/ClientTasksTab.jsx';
 import styles from './DesignLabClientDetailModal.module.css';
 
 const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
 
-const TABS = [
+const PRIMARY_TABS = [
   { key: 'overview', label: 'Visão geral' },
   { key: 'fees', label: 'Mensalidades' },
   { key: 'book', label: 'Book do cliente' },
   { key: 'drive', label: 'Drive' },
+];
+
+const ANALYSIS_TABS = [
   { key: 'icp', label: 'Análise ICP', tone: 'info' },
   { key: 'gdv', label: 'Análise GDV', tone: 'success' },
   { key: 'routes', label: 'Resumo de Rotas', tone: 'purple' },
@@ -298,13 +303,16 @@ export default function DesignLabClientDetailModal({
   canEditClient = false,
   canViewFeeSchedule = false,
   canEditFeeSchedule = false,
+  canViewTasks = false,
+  canViewProject = false,
+  canCreateProject = false,
   canDelete = false,
   onClose,
   onUpdated,
   onDeleted,
   initialTab = 'overview',
 }) {
-  const [activeTab, setActiveTab] = useState(['icp', 'gdv', 'routes'].includes(initialTab) ? initialTab : 'overview');
+  const [activeTab, setActiveTab] = useState(['fees', 'book', 'drive', 'tasks', 'project', 'icp', 'gdv', 'routes'].includes(initialTab) ? initialTab : 'overview');
   const [form, setForm] = useState(() => buildForm(client));
   const [avatarUrl, setAvatarUrl] = useState(() => getClientAvatar(client));
   const [saving, setSaving] = useState(false);
@@ -321,7 +329,7 @@ export default function DesignLabClientDetailModal({
     setForm(buildForm(client));
     setAvatarUrl(getClientAvatar(client));
     setError('');
-    setActiveTab(['icp', 'gdv', 'routes'].includes(initialTab) ? initialTab : 'overview');
+    setActiveTab(['fees', 'book', 'drive', 'tasks', 'project', 'icp', 'gdv', 'routes'].includes(initialTab) ? initialTab : 'overview');
   }, [client?.id, initialTab]);
 
   useEffect(() => {
@@ -420,7 +428,26 @@ export default function DesignLabClientDetailModal({
           </div>
 
           <div className={styles.headerActions}>
-            <button type="button" className={styles.headerPill}>Projeto</button>
+            {canViewTasks ? (
+              <button
+                type="button"
+                className={`${styles.iconButton} ${activeTab === 'tasks' ? styles.headerActionActive : ''}`.trim()}
+                onClick={() => setActiveTab('tasks')}
+                aria-label="Tasks do cliente"
+                title="Tasks"
+              >
+                <ClipboardListIcon size={15} />
+              </button>
+            ) : null}
+            {canViewProject ? (
+              <button
+                type="button"
+                className={`${styles.headerPill} ${activeTab === 'project' ? styles.headerActionActive : ''}`.trim()}
+                onClick={() => setActiveTab('project')}
+              >
+                Projeto
+              </button>
+            ) : null}
             <button type="button" className={styles.iconButton} onClick={onClose} aria-label="Fechar">
               <CloseIcon size={16} />
             </button>
@@ -428,16 +455,31 @@ export default function DesignLabClientDetailModal({
         </header>
 
         <nav className={styles.tabs} aria-label="Áreas do cliente">
-          {TABS.filter((tab) => (tab.key === 'fees' ? canViewFeeSchedule : true)).map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''} ${tab.tone ? styles[`tab_${tab.tone}`] : ''}`.trim()}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
+          <div className={styles.primaryTabs}>
+            {PRIMARY_TABS.filter((tab) => (tab.key === 'fees' ? canViewFeeSchedule : true)).map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ''}`.trim()}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.analysisTabs}>
+            {ANALYSIS_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`${styles.analysisTab} ${styles[`analysisTab_${tab.key}`] || ''} ${activeTab === tab.key ? styles.analysisTabActive : ''}`.trim()}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </nav>
 
         <main className={styles.body}>
@@ -584,6 +626,12 @@ export default function DesignLabClientDetailModal({
             <FeesPanel client={client} canEdit={canEditFeeSchedule} onUpdated={onUpdated} />
           ) : null}
 
+          {activeTab === 'project' && canViewProject ? (
+            <div className={styles.embeddedPanel}>
+              <ClientProjectTab client={client} users={users} canCreateProject={canCreateProject} />
+            </div>
+          ) : null}
+          {activeTab === 'tasks' && canViewTasks ? <div className={styles.embeddedPanel}><ClientTasksTab client={client} /></div> : null}
           {activeTab === 'book' ? <div className={styles.embeddedPanel}><ClientBookTab client={client} /></div> : null}
           {activeTab === 'drive' ? <div className={styles.embeddedPanel}><ClientFilesTab client={client} canEdit={canEditClient} /></div> : null}
           {activeAnalysisType ? <div className={styles.embeddedPanel}><AnalysisTab clientId={client.id} type={activeAnalysisType} canEdit={canEditClient} /></div> : null}
