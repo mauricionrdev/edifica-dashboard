@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ApiError } from '../../api/client.js';
 import { deleteClient, updateClient, updateClientFeeSteps } from '../../api/clients.js';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -152,6 +152,49 @@ function validateFeeRows(rows) {
     payload: normalized
       .sort((a, b) => a.month.localeCompare(b.month))
       .map((row) => ({ month: row.month, type: row.type, fee: row.fee })),
+  };
+}
+
+function destructiveActionFromButton(button) {
+  if (!button || button.disabled) return null;
+
+  const label = [
+    button.getAttribute('aria-label'),
+    button.getAttribute('title'),
+    button.textContent,
+  ].filter(Boolean).join(' ').trim();
+
+  const normalized = label.toLowerCase();
+  if (!/(excluir|remover|apagar|deletar|delete|remove)/i.test(normalized)) return null;
+
+  if (/cliente/.test(normalized)) {
+    return {
+      title: 'Excluir cliente?',
+      description: 'Essa ação remove o cliente e pode afetar dados vinculados a ele. Confirme apenas se tiver certeza.',
+      confirmLabel: 'Excluir cliente',
+    };
+  }
+
+  if (/(imagem|foto|avatar|logo)/.test(normalized)) {
+    return {
+      title: 'Remover imagem?',
+      description: 'A imagem atual do cliente será removida deste cadastro.',
+      confirmLabel: 'Remover imagem',
+    };
+  }
+
+  if (/(mensalidade|mês|mes|fee)/.test(normalized)) {
+    return {
+      title: 'Remover mensalidade?',
+      description: 'Essa mensalidade será removida da lista. Salve as alterações para persistir a mudança.',
+      confirmLabel: 'Remover mensalidade',
+    };
+  }
+
+  return {
+    title: 'Confirmar remoção?',
+    description: 'Essa ação remove informações do cliente. Confirme apenas se tiver certeza.',
+    confirmLabel: 'Confirmar remoção',
   };
 }
 
@@ -317,6 +360,8 @@ export default function DesignLabClientDetailModal({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
+  const confirmedDestructiveButtons = useRef(new WeakSet());
+  const [pendingConfirm, setPendingConfirm] = useState(null);
 
   const gestorRows = useMemo(() => roleSelectOptions(gestorOptions(users, form.gestor), form.gestor), [users, form.gestor]);
   const gdvRows = useMemo(() => roleSelectOptions(gdvOptions(users, form.gdvName), form.gdvName), [users, form.gdvName]);
@@ -333,11 +378,39 @@ export default function DesignLabClientDetailModal({
 
   useEffect(() => {
     const onKey = (event) => {
-      if (event.key === 'Escape') onClose?.();
+      if (event.key !== 'Escape') return;
+      if (pendingConfirm) {
+        setPendingConfirm(null);
+        return;
+      }
+      onClose?.();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [onClose, pendingConfirm]);
+
+  function handleDestructiveClickCapture(event) {
+    const button = event.target?.closest?.('button');
+    if (!button || confirmedDestructiveButtons.current.has(button)) return;
+
+    const action = destructiveActionFromButton(button);
+    if (!action) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    setPendingConfirm({
+      ...action,
+      onConfirm: () => {
+        confirmedDestructiveButtons.current.add(button);
+        setPendingConfirm(null);
+        button.click();
+        window.setTimeout(() => {
+          confirmedDestructiveButtons.current.delete(button);
+        }, 0);
+      },
+    });
+  }
 
   if (!client) return null;
 
@@ -402,7 +475,6 @@ export default function DesignLabClientDetailModal({
 
   async function handleDelete() {
     if (!canDelete || deleting) return;
-    if (!window.confirm(`Excluir ${client.name}?`)) return;
     setDeleting(true);
     setError('');
     try {
@@ -416,7 +488,7 @@ export default function DesignLabClientDetailModal({
 
   return (
     <div className={styles.overlay} role="presentation" onClick={onClose}>
-      <section className={styles.modal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+      <section className={styles.modal} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()} onClickCapture={handleDestructiveClickCapture}>
         <header className={styles.header}>
           <div className={styles.identity}>
             <span className={styles.avatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(form.name)}</span>
@@ -634,6 +706,35 @@ export default function DesignLabClientDetailModal({
           {activeTab === 'drive' ? <div className={styles.embeddedPanel}><ClientFilesTab client={client} canEdit={canEditClient} /></div> : null}
           {activeAnalysisType ? <div className={styles.embeddedPanel}><AnalysisTab clientId={client.id} type={activeAnalysisType} canEdit={canEditClient} /></div> : null}
         </main>
+
+        {pendingConfirm ? (
+          <div className={styles.confirmOverlay} role="presentation" onClick={() => setPendingConfirm(null)}>
+            <div
+              className={styles.confirmDialog}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="design-lab-confirm-title"
+              aria-describedby="design-lab-confirm-description"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div>
+                <span className={styles.confirmKicker}>Confirmação necessária</span>
+                <h3 id="design-lab-confirm-title">{pendingConfirm.title}</h3>
+                <p id="design-lab-confirm-description">{pendingConfirm.description}</p>
+              </div>
+
+              <div className={styles.confirmActions}>
+                <button type="button" className={styles.secondaryButton} onClick={() => setPendingConfirm(null)}>
+                  Cancelar
+                </button>
+                <button type="button" className={styles.dangerButton} onClick={pendingConfirm.onConfirm}>
+                  <TrashIcon size={14} />
+                  {pendingConfirm.confirmLabel}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
     </div>
   );

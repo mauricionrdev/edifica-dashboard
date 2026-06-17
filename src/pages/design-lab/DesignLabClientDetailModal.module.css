@@ -1221,3 +1221,65 @@
     min-height: 0;
   }
 }
+
+
+/* v71 · confirmação obrigatória para ações destrutivas */
+.confirmOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  padding: 18px;
+  background: rgba(5, 5, 4, 0.70);
+  backdrop-filter: blur(10px);
+  display: grid;
+  place-items: center;
+}
+
+.confirmDialog {
+  width: min(420px, calc(100vw - 44px));
+  border: 1px solid rgba(255, 95, 95, 0.22);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(255, 95, 95, 0.08), transparent 34%),
+    #10100e;
+  box-shadow: none;
+  padding: 18px;
+  color: #f3f0ea;
+  display: grid;
+  gap: 18px;
+}
+
+.confirmKicker {
+  color: #ff8a8a;
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.confirmDialog h3 {
+  margin: 7px 0 0;
+  font-size: 19px;
+  line-height: 1.12;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+}
+
+.confirmDialog p {
+  margin: 8px 0 0;
+  color: rgba(243, 240, 234, 0.68);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.confirmActions .secondaryButton,
+.confirmActions .dangerButton {
+  min-height: 36px;
+}
