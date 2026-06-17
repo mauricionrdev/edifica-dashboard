@@ -818,3 +818,250 @@
     margin-left: 0;
   }
 }
+
+/* v69 · refinamento de conteúdo interno do modal isolado */
+.modal {
+  height: min(740px, calc(100dvh - 36px));
+  max-height: min(740px, calc(100dvh - 36px));
+}
+
+.body {
+  min-height: 0;
+}
+
+/* Mensalidades: largura contida e cards horizontais menos pesados */
+.feesPanel {
+  width: 100%;
+  padding: 14px 18px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
+  gap: 12px;
+}
+
+.sectionHeaderRow,
+.feeRows {
+  width: min(100%, 680px);
+  margin-inline: auto;
+}
+
+.sectionHeaderRow {
+  min-height: 36px;
+  padding-bottom: 10px;
+  margin-bottom: 2px;
+}
+
+.feeActions {
+  gap: 7px;
+}
+
+.feeActions button {
+  min-height: 32px;
+  padding-inline: 12px;
+  font-size: 12px;
+}
+
+.feeRows {
+  gap: 8px;
+}
+
+.feeCard {
+  min-height: 82px;
+  padding: 13px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.008);
+  display: grid;
+  grid-template-columns: minmax(132px, 0.68fr) minmax(260px, 1fr) 36px;
+  align-items: center;
+  gap: 14px;
+}
+
+.feeCardHeader {
+  display: contents;
+}
+
+.feeCardHeader > div {
+  grid-column: 1;
+  min-width: 0;
+  align-content: center;
+  display: grid;
+  gap: 6px;
+}
+
+.feeCardHeader strong {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feeCardHeader span {
+  width: max-content;
+  min-height: 20px;
+  padding-inline: 8px;
+  font-size: 9.5px;
+  background: transparent;
+}
+
+.feeGrid {
+  grid-column: 2;
+  width: 100%;
+  margin: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 12px;
+}
+
+.feeGrid .field {
+  gap: 5px;
+}
+
+.feeGrid .field span {
+  font-size: 10.5px;
+  letter-spacing: 0.035em;
+}
+
+.feeGrid .field input {
+  height: 36px;
+  min-height: 36px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.012);
+  font-size: 12.8px;
+}
+
+.deleteIconButton {
+  grid-column: 3;
+  width: 34px;
+  height: 34px;
+  justify-self: end;
+}
+
+.emptyState {
+  min-height: 86px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.008);
+}
+
+/* Painéis internos: mesma altura mínima e menos aparência de card pesado */
+.embeddedPanel {
+  min-height: 520px;
+  padding: 18px 22px 22px;
+  display: grid;
+  align-content: start;
+}
+
+.embeddedPanel > * {
+  width: min(100%, 760px);
+  margin-inline: auto;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.embeddedPanel :global([class*="header"]) {
+  border-color: rgba(255, 255, 255, 0.055) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.embeddedPanel :global([class*="header"] h3),
+.embeddedPanel :global([class*="header"] h2) {
+  font-size: 17px !important;
+  letter-spacing: -0.035em;
+}
+
+.embeddedPanel :global([class*="header"] p),
+.embeddedPanel :global([class*="header"] span:not([class*="badge"]):not([class*="eyebrow"])) {
+  color: rgba(243, 240, 234, 0.58) !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+.embeddedPanel :global([class*="empty"]),
+.embeddedPanel :global([class*="dropZone"]),
+.embeddedPanel :global([class*="bookItem"]),
+.embeddedPanel :global([class*="fileItem"]),
+.embeddedPanel :global([class*="entry"]),
+.embeddedPanel :global([class*="headerMeta"]),
+.embeddedPanel :global([class*="heroMetric"]) {
+  border-color: rgba(255, 255, 255, 0.055) !important;
+  background: rgba(255, 255, 255, 0.008) !important;
+  box-shadow: none !important;
+}
+
+.embeddedPanel :global(button),
+.embeddedPanel :global(a[role="button"]),
+.embeddedPanel :global([class*="primaryAction"]),
+.embeddedPanel :global([class*="addBtn"]) {
+  border-radius: 99px !important;
+  box-shadow: none !important;
+}
+
+.embeddedPanel :global([class*="dropZone"]) {
+  min-height: 108px !important;
+  border-style: solid !important;
+  border-radius: 18px !important;
+}
+
+.embeddedPanel :global([class*="empty"]) {
+  min-height: 86px !important;
+  border-radius: 18px !important;
+}
+
+/* Análises: reduzir o peso do hero sem alterar o componente compartilhado */
+.embeddedPanel :global([class*="AnalysisTab"]),
+.embeddedPanel :global([class*="analysis"]) {
+  box-shadow: none !important;
+}
+
+.embeddedPanel :global([class*="heroMetric"]) {
+  min-height: 32px !important;
+  padding-inline: 10px !important;
+}
+
+.embeddedPanel :global([class*="heroMetric"] strong) {
+  font-size: 14px !important;
+}
+
+@media (max-width: 900px) {
+  .modal {
+    height: calc(100dvh - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+
+  .feeCard {
+    grid-template-columns: 1fr 34px;
+    align-items: start;
+  }
+
+  .feeCardHeader > div,
+  .feeGrid {
+    grid-column: 1;
+  }
+
+  .deleteIconButton {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .feeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .embeddedPanel {
+    min-height: 420px;
+    padding-inline: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .feesPanel {
+    padding-inline: 14px;
+  }
+
+  .sectionHeaderRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .feeActions {
+    justify-content: flex-start;
+  }
+}
