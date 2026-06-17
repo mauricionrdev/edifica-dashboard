@@ -947,3 +947,211 @@
     justify-self: start;
   }
 }
+
+
+/* v50 · Organização da lista e tags apenas com borda/texto */
+.clientItem {
+  min-height: 66px;
+  padding: 10px 15px;
+  grid-template-columns:
+    minmax(230px, 1.42fr)
+    minmax(130px, 0.72fr)
+    minmax(104px, 0.52fr)
+    minmax(118px, 0.58fr)
+    minmax(186px, 0.98fr)
+    106px
+    minmax(176px, 0.92fr);
+  gap: 14px;
+}
+
+.identityText strong,
+.squadBlock strong,
+.valueBlock {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--bt-text);
+  font-size: 13.5px;
+  line-height: 1.18;
+  font-weight: 690;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.squadBlock {
+  gap: 0;
+}
+
+.squadBlock small {
+  display: none;
+}
+
+.typeBlock {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.valueBlock {
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
+.contractBlock,
+.contractTags {
+  display: contents;
+}
+
+.dueBlock {
+  max-width: 100%;
+}
+
+.dueHeader {
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.dueHeader small {
+  color: var(--bt-text-tertiary);
+  opacity: 0.9;
+}
+
+.statusStack {
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.statusStack :global(.bareBadge) {
+  min-width: max-content;
+}
+
+/* Tags: sem preenchimento pesado, preservando cor de borda e texto */
+.clientItem :global(.bareBadge) {
+  min-height: 23px;
+  height: 23px;
+  padding-inline: 9px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  font-size: 10.8px;
+  line-height: 1;
+  font-weight: 660;
+  letter-spacing: -0.01em;
+}
+
+.clientItem :global(.bareBadge_muted) {
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: transparent;
+  color: var(--bt-text-tertiary);
+}
+
+.clientItem :global(.bareBadge_info) {
+  border-color: rgba(122, 183, 255, 0.42);
+  background-color: transparent;
+  color: #7ab7ff;
+}
+
+.clientItem :global(.bareBadge_warning) {
+  border-color: rgba(245, 184, 0, 0.42);
+  background-color: transparent;
+  color: #f5b800;
+}
+
+.clientItem :global(.bareBadge_danger) {
+  border-color: rgba(255, 95, 95, 0.44);
+  background-color: transparent;
+  color: #ff6b6b;
+}
+
+.clientItem :global(.bareBadge_purple) {
+  border-color: rgba(192, 132, 252, 0.44);
+  background-color: transparent;
+  color: #c084fc;
+}
+
+.clientItem :global(.bareBadge_success) {
+  border-color: rgba(72, 213, 151, 0.38);
+  background-color: transparent;
+  color: #48d597;
+}
+
+/* Rampagem Comercial fica neutra nesta lista por regra de tela */
+.statusStack :global(.bareBadge_muted) {
+  border-color: rgba(255, 255, 255, 0.15);
+  background-color: transparent;
+  color: var(--bt-text-secondary);
+}
+
+.analysisButton {
+  background: transparent;
+}
+
+.analysisIcp {
+  border-color: rgba(122, 183, 255, 0.34);
+  background: transparent;
+  color: #7ab7ff;
+}
+
+.analysisGdv {
+  border-color: rgba(45, 212, 191, 0.32);
+  background: transparent;
+  color: #2dd4bf;
+}
+
+.analysisRoutes {
+  border-color: rgba(192, 132, 252, 0.34);
+  background: transparent;
+  color: #c084fc;
+}
+
+@media (max-width: 1360px) {
+  .clientItem {
+    grid-template-columns:
+      minmax(220px, 1.28fr)
+      minmax(120px, 0.66fr)
+      minmax(96px, 0.5fr)
+      minmax(112px, 0.56fr)
+      minmax(174px, 0.9fr)
+      102px
+      minmax(166px, 0.86fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 1040px) {
+  .clientItem {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  }
+
+  .identityBlock,
+  .dueBlock,
+  .statusStack {
+    grid-column: 1 / -1;
+  }
+
+  .typeBlock,
+  .valueBlock {
+    align-self: center;
+  }
+
+  .statusStack {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 720px) {
+  .clientItem {
+    grid-template-columns: 1fr;
+  }
+
+  .identityBlock,
+  .dueBlock,
+  .statusStack {
+    grid-column: auto;
+  }
+}

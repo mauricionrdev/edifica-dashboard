@@ -107,6 +107,11 @@ function statusTone(client, today) {
   return 'muted';
 }
 
+function listStatusTone(client, today) {
+  if (client?.status === CLIENT_STATUS.RAMPAGE) return 'muted';
+  return statusTone(client, today);
+}
+
 function analysisCount(client, key) {
   const counts = client?.analysisCounts || client?.analysesCount || client?.analysisSummary || {};
   const aliases = {
@@ -503,12 +508,11 @@ export default function DesignLabClientsPage() {
                     <strong>{client.squadName || 'Sem squad'}</strong>
                   </div>
 
-                  <div className={styles.contractBlock}>
-                    <div className={styles.contractTags}>
-                      <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
-                    </div>
-                    <strong>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
+                  <div className={styles.typeBlock}>
+                    <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
                   </div>
+
+                  <strong className={styles.valueBlock}>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
 
                   <div className={styles.dueBlock}>
                     <div className={styles.dueHeader}>
@@ -549,7 +553,7 @@ export default function DesignLabClientsPage() {
                         {onboardingDaysLabel(onboardingDays)}
                       </BareBadge>
                     ) : null}
-                    <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
+                    <BareBadge tone={listStatusTone(client, today)}>{status}</BareBadge>
                   </div>
                 </article>
               );
