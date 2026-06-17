@@ -1065,3 +1065,159 @@
     justify-content: flex-start;
   }
 }
+
+/* v70 · topo 40/60 e mensalidades em duas colunas */
+.mainCard {
+  padding: 18px 20px 18px;
+}
+
+.overviewGrid {
+  grid-template-columns: minmax(240px, 4fr) minmax(0, 6fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.mediaPanel {
+  width: 100%;
+  min-height: 250px;
+  padding: 18px;
+  border-radius: 24px;
+  align-content: center;
+  justify-items: center;
+  gap: 16px;
+}
+
+.largeAvatar {
+  width: clamp(124px, 15vw, 156px);
+  height: clamp(124px, 15vw, 156px);
+}
+
+.avatarActions {
+  grid-template-columns: repeat(2, 42px);
+  gap: 9px;
+}
+
+.roundButton {
+  width: 42px;
+  height: 42px;
+}
+
+.formPanel {
+  align-content: center;
+  gap: 14px;
+}
+
+.mainFieldsGrid {
+  gap: 13px 14px;
+}
+
+.mainFieldsGrid > :nth-child(1),
+.mainFieldsGrid > :nth-child(2),
+.mainFieldsGrid > :nth-child(3) {
+  grid-column: span 4;
+}
+
+.mainFieldsGrid > :nth-child(4),
+.mainFieldsGrid > :nth-child(5) {
+  grid-column: span 6;
+}
+
+.feesPanel {
+  padding: 16px 20px 18px;
+}
+
+.sectionHeaderRow,
+.feeRows {
+  width: 100%;
+  max-width: none;
+}
+
+.feeRows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.feeCard {
+  min-height: 132px;
+  padding: 14px 16px;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-rows: auto auto;
+  align-items: start;
+  gap: 12px 12px;
+}
+
+.feeCardHeader {
+  display: contents;
+}
+
+.feeCardHeader > div {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.feeCardHeader strong {
+  font-size: 13.5px;
+}
+
+.feeCardHeader span {
+  min-height: 21px;
+}
+
+.feeGrid {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.deleteIconButton {
+  grid-column: 2;
+  grid-row: 1;
+  width: 36px;
+  height: 36px;
+  justify-self: end;
+}
+
+@media (max-width: 900px) {
+  .overviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mediaPanel {
+    min-height: 168px;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: start;
+  }
+
+  .largeAvatar {
+    width: 104px;
+    height: 104px;
+  }
+
+  .feeRows {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .mainCard,
+  .feesPanel {
+    padding-inline: 14px;
+  }
+
+  .mediaPanel,
+  .mainFieldsGrid,
+  .feeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .feeCard {
+    min-height: 0;
+  }
+}

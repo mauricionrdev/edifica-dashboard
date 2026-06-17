@@ -485,7 +485,6 @@ export default function DesignLabClientDetailModal({
           {activeTab === 'overview' ? (
             <form className={styles.overview} onSubmit={handleSave}>
               <section className={styles.mainCard}>
-                <div className={styles.sectionKicker}>Dados principais</div>
                 <div className={styles.overviewGrid}>
                   <aside className={styles.mediaPanel}>
                     <span className={styles.largeAvatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(form.name)}</span>
