@@ -27,7 +27,6 @@ const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
 
 const PRIMARY_TABS = [
   { key: 'overview', label: 'Visão geral' },
-  { key: 'fees', label: 'Mensalidades' },
   { key: 'book', label: 'Book do cliente' },
   { key: 'drive', label: 'Drive' },
 ];
@@ -312,7 +311,7 @@ export default function DesignLabClientDetailModal({
   onDeleted,
   initialTab = 'overview',
 }) {
-  const [activeTab, setActiveTab] = useState(['fees', 'book', 'drive', 'tasks', 'project', 'icp', 'gdv', 'routes'].includes(initialTab) ? initialTab : 'overview');
+  const [activeTab, setActiveTab] = useState(['book', 'drive', 'tasks', 'project', 'icp', 'gdv', 'routes'].includes(initialTab) ? initialTab : 'overview');
   const [form, setForm] = useState(() => buildForm(client));
   const [avatarUrl, setAvatarUrl] = useState(() => getClientAvatar(client));
   const [saving, setSaving] = useState(false);
@@ -329,7 +328,7 @@ export default function DesignLabClientDetailModal({
     setForm(buildForm(client));
     setAvatarUrl(getClientAvatar(client));
     setError('');
-    setActiveTab(['fees', 'book', 'drive', 'tasks', 'project', 'icp', 'gdv', 'routes'].includes(initialTab) ? initialTab : 'overview');
+    setActiveTab(['book', 'drive', 'tasks', 'project', 'icp', 'gdv', 'routes'].includes(initialTab) ? initialTab : 'overview');
   }, [client?.id, initialTab]);
 
   useEffect(() => {
@@ -456,7 +455,7 @@ export default function DesignLabClientDetailModal({
 
         <nav className={styles.tabs} aria-label="Áreas do cliente">
           <div className={styles.primaryTabs}>
-            {PRIMARY_TABS.filter((tab) => (tab.key === 'fees' ? canViewFeeSchedule : true)).map((tab) => (
+            {PRIMARY_TABS.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
@@ -604,6 +603,10 @@ export default function DesignLabClientDetailModal({
 
               {error ? <div className={styles.errorLine}>{error}</div> : null}
 
+              {canViewFeeSchedule ? (
+                <FeesPanel client={client} canEdit={canEditFeeSchedule} onUpdated={onUpdated} />
+              ) : null}
+
               <footer className={styles.footerActions}>
                 <div className={styles.footerLeft}>
                   <span>Zona perigosa</span>
@@ -620,10 +623,6 @@ export default function DesignLabClientDetailModal({
                 </div>
               </footer>
             </form>
-          ) : null}
-
-          {activeTab === 'fees' && canViewFeeSchedule ? (
-            <FeesPanel client={client} canEdit={canEditFeeSchedule} onUpdated={onUpdated} />
           ) : null}
 
           {activeTab === 'project' && canViewProject ? (

@@ -786,3 +786,35 @@
     margin-left: 0;
   }
 }
+
+
+/* v68 · abas/ações no mesmo lugar do modal oficial */
+.primaryTabs {
+  flex: 1 1 auto;
+}
+
+.analysisTabs {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.overview .feesPanel {
+  border-top: 1px solid rgba(255, 255, 255, 0.052);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
+}
+
+@media (max-width: 900px) {
+  .tabs {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .primaryTabs,
+  .analysisTabs {
+    width: 100%;
+  }
+
+  .analysisTabs {
+    margin-left: 0;
+  }
+}
