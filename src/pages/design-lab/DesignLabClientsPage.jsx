@@ -24,11 +24,11 @@ import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
 import { getClientAvatar, subscribeAvatarChange } from '../../utils/avatarStorage.js';
 import { matchesAnySearch } from '../../utils/search.js';
-import ClientFormModal from '../../components/clients/ClientFormModal.jsx';
-import ClientDetailDrawer from '../../components/clients/ClientDetailDrawer.jsx';
 import StateBlock from '../../components/ui/StateBlock.jsx';
 import { ChartColumnIcon, ChevronDownIcon, ClipboardListIcon, PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
 import { BareBadge, BareButton } from '../../components/design-system/index.js';
+import DesignLabClientCreateModal from './DesignLabClientCreateModal.jsx';
+import DesignLabClientDetailModal from './DesignLabClientDetailModal.jsx';
 import '../../styles/design-system/barely-there.css';
 import styles from './DesignLabClientsPage.module.css';
 
@@ -576,9 +576,7 @@ export default function DesignLabClientsPage() {
       </section>
 
       {modalOpen && canCreate ? (
-        <ClientFormModal
-          mode="create"
-          variant="bare"
+        <DesignLabClientCreateModal
           squads={squads || []}
           users={userDirectory || []}
           onClose={() => setModalOpen(false)}
@@ -587,9 +585,8 @@ export default function DesignLabClientsPage() {
       ) : null}
 
       {selectedClient ? (
-        <ClientDetailDrawer
+        <DesignLabClientDetailModal
           client={selectedClient}
-          variant="bare"
           squads={squads || []}
           users={userDirectory || []}
           canEditClient={canEditClientRecord(user, selectedClient)}
