@@ -2161,416 +2161,40 @@
 }
 
 
-/* v56 · Conteúdo do detalhe no Design Lab: menos largura exagerada e melhor distribuição */
+
+
+
+
+
+
+/* v62 · Design Lab consolidado: detalhe do cliente sem remendos */
 .overviewShellBare {
+  min-height: 100%;
   background: transparent;
 }
 
-.overviewShellBare .mainSection {
-  padding: 16px 18px 18px;
-  background: transparent;
-}
-
-.overviewShellBare .profileGrid {
-  max-width: 860px;
-  grid-template-columns: 118px minmax(0, 1fr);
-  column-gap: 18px;
-  align-items: start;
-}
-
-.overviewShellBare .avatarCard {
-  min-height: 206px;
-  padding: 14px 12px;
-  border-color: rgba(255, 255, 255, 0.055);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.01);
-  box-shadow: none;
-  align-content: center;
-}
-
-.overviewShellBare .avatarPrimary {
-  width: 76px;
-  height: 76px;
-  box-shadow: none;
-}
-
-.overviewShellBare .avatarControls {
-  width: 96px;
-  gap: 7px;
-}
-
-.overviewShellBare .avatarControls button {
-  min-height: 29px;
-  border-radius: 99px;
-  background: transparent;
-}
-
-.overviewShellBare .profileFields {
-  max-width: 640px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  column-gap: 12px;
-  row-gap: 12px;
-}
-
-.overviewShellBare .profileFieldName {
-  grid-column: span 6;
-}
-
-.overviewShellBare .fieldSquad,
-.overviewShellBare .fieldStatus,
-.overviewShellBare .fieldGestor,
-.overviewShellBare .fieldGdv {
-  grid-column: span 3;
-}
-
-.overviewShellBare .fieldQuarter {
-  grid-column: span 3;
-}
-
-.overviewShellBare .contractGrid {
-  max-width: 760px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.overviewShellBare .input,
-.overviewShellBare .selectControl :global(button),
-.overviewShellBare .selectControl :global(input),
-.overviewShellBare .selectControl :global(select) {
-  min-height: 36px;
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.014);
-}
-
-.overviewShellBare button {
-  border-radius: 99px;
-}
-
-@media (max-width: 980px) {
-  .overviewShellBare .profileGrid {
-    grid-template-columns: 1fr;
-    row-gap: 14px;
-  }
-
-  .overviewShellBare .avatarCard {
-    min-height: 92px;
-    grid-template-columns: 76px minmax(0, 1fr);
-    justify-items: start;
-  }
-
-  .overviewShellBare .profileFields,
-  .overviewShellBare .contractGrid {
-    max-width: none;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .overviewShellBare .profileFieldName,
-  .overviewShellBare .fieldSquad,
-  .overviewShellBare .fieldStatus,
-  .overviewShellBare .fieldGestor,
-  .overviewShellBare .fieldGdv,
-  .overviewShellBare .fieldQuarter {
-    grid-column: auto;
-  }
-}
-
-@media (max-width: 640px) {
-  .overviewShellBare .profileFields,
-  .overviewShellBare .contractGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .overviewShellBare .avatarCard {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-}
-
-
-/* v59 · Design Lab: visão geral reorganizada e sem campos gigantes */
-.overviewShellBare {
-  background: transparent;
-}
-
-.overviewShellBare .mainSection {
-  padding: 15px 18px 17px;
-  background: transparent;
-}
-
-.overviewShellBare .profileGrid {
-  width: 100%;
-  max-width: 820px;
-  grid-template-columns: 128px minmax(0, 1fr);
-  column-gap: 18px;
-  align-items: start;
-}
-
-.overviewShellBare .avatarCard {
-  min-height: 212px;
-  padding: 13px 11px;
-  border-color: rgba(255, 255, 255, 0.055);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.01);
-  box-shadow: none;
-  align-content: center;
-  gap: 11px;
-}
-
-.overviewShellBare .avatarPrimary {
-  width: 76px;
-  height: 76px;
-  box-shadow: none;
-}
-
-.overviewShellBare .avatarControls {
-  width: 100%;
-  max-width: 104px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 7px;
-}
-
-.overviewShellBare .avatarControls button {
-  width: 100%;
-  min-width: 0;
-  min-height: 29px;
-  padding-inline: 9px;
-  border-radius: 99px;
-  background: transparent;
-  overflow: hidden;
-  font-size: 10.8px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.overviewShellBare .profileFields {
-  width: 100%;
-  max-width: 660px;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 12px;
-  row-gap: 12px;
-  align-items: end;
-}
-
-.overviewShellBare .profileFields > * {
-  min-width: 0;
-}
-
-.overviewShellBare .profileFieldName {
-  grid-column: 1 / -1;
-}
-
-.overviewShellBare .profileFields > :nth-child(2),
-.overviewShellBare .profileFields > :nth-child(3),
-.overviewShellBare .profileFields > :nth-child(4),
-.overviewShellBare .profileFields > :nth-child(5) {
-  grid-column: span 3;
-}
-
-.overviewShellBare .profileFields > :nth-child(6),
-.overviewShellBare .profileFields > :nth-child(7) {
-  grid-column: span 4;
-}
-
-.overviewShellBare .profileFields :global(input),
-.overviewShellBare .profileFields :global(button),
-.overviewShellBare .profileFields :global(select),
-.overviewShellBare .contractGrid :global(input),
-.overviewShellBare .contractGrid :global(button),
-.overviewShellBare .contractGrid :global(select) {
-  min-height: 36px;
-  height: 36px;
-  border-radius: 13px;
-  background: rgba(255, 255, 255, 0.014);
-}
-
-.overviewShellBare .profileFields :global(button),
-.overviewShellBare .profileFields :global(input),
-.overviewShellBare .contractGrid :global(button),
-.overviewShellBare .contractGrid :global(input) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.overviewShellBare .contractGrid {
-  width: 100%;
-  max-width: 760px;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 12px;
-  align-items: end;
-}
-
-.overviewShellBare .contractGrid > * {
-  grid-column: span 3 !important;
-  min-width: 0;
-}
-
-.overviewShellBare .contractGrid > :last-child {
-  grid-column: span 3 !important;
-}
-
-.overviewShellBare .inlineFeeSchedule {
-  max-width: 760px;
-}
-
-.overviewShellBare .dangerSection {
-  max-width: 820px;
-  border-top-color: rgba(255, 255, 255, 0.055);
-  background: transparent;
-}
-
-.overviewShellBare .deleteClientButton,
-.overviewShellBare .dangerSection button {
-  border-radius: 99px;
-}
-
-@media (max-width: 980px) {
-  .overviewShellBare .profileGrid {
-    max-width: none;
-    grid-template-columns: 1fr;
-    row-gap: 14px;
-  }
-
-  .overviewShellBare .avatarCard {
-    min-height: 92px;
-    grid-template-columns: 76px minmax(0, 1fr);
-    justify-items: start;
-  }
-
-  .overviewShellBare .avatarControls {
-    max-width: 220px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .overviewShellBare .profileFields,
-  .overviewShellBare .contractGrid {
-    max-width: none;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .overviewShellBare .profileFields > *,
-  .overviewShellBare .contractGrid > * {
-    grid-column: auto !important;
-  }
-
-  .overviewShellBare .profileFieldName {
-    grid-column: 1 / -1 !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .overviewShellBare .profileFields,
-  .overviewShellBare .contractGrid,
-  .overviewShellBare .avatarCard {
-    grid-template-columns: 1fr;
-  }
-
-  .overviewShellBare .avatarCard {
-    justify-items: center;
-  }
-
-  .overviewShellBare .avatarControls {
-    grid-template-columns: 1fr;
-  }
-
-  .overviewShellBare .profileFieldName {
-    grid-column: auto !important;
-  }
-}
-
-
-/* v60 · Corpo do modal usando a largura real sem ficar esmagado à esquerda */
-.overviewShellBare .mainSection {
-  padding: 16px 24px 18px;
-}
-
-.overviewShellBare .profileGrid {
-  max-width: none;
-  width: 100%;
-  grid-template-columns: 150px minmax(0, 1fr);
-  column-gap: 22px;
-}
-
-.overviewShellBare .profileFields {
-  max-width: none;
-  width: 100%;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-}
-
-.overviewShellBare .contractGrid {
-  max-width: none;
-  width: 100%;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-}
-
-.overviewShellBare .contractGrid > * {
-  grid-column: span 3 !important;
-}
-
-.overviewShellBare .inlineFeeSchedule,
-.overviewShellBare .dangerSection {
-  max-width: none;
-  width: 100%;
-}
-
-.overviewShellBare .dangerSection {
-  padding-inline: 0;
-}
-
-.overviewShellBare .deleteClientButton,
-.overviewShellBare .dangerSection button,
-.overviewShellBare .avatarControls button {
-  border-radius: 99px;
-  background: transparent;
-  box-shadow: none;
-}
-
-.overviewShellBare .avatarControls button:not(.avatarRemoveButton) {
-  border-color: rgba(255, 255, 255, 0.10);
-  color: rgba(243, 240, 234, 0.78);
-}
-
-.overviewShellBare .avatarControls .avatarRemoveButton {
-  border-color: rgba(255, 95, 95, 0.34);
-  background: transparent;
-  color: #ff8a8a;
-}
-
-@media (max-width: 980px) {
-  .overviewShellBare .mainSection {
-    padding-inline: 18px;
-  }
-
-  .overviewShellBare .profileGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .overviewShellBare .mainSection {
-    padding-inline: 14px;
-  }
-}
-
-/* v61 · ajuste fino modal detalhe cliente */
 .overviewShellBare .mainSection {
   padding: 16px 20px 18px;
+  background: transparent;
 }
 
 .overviewShellBare .profileGrid {
+  width: 100%;
+  display: grid;
   grid-template-columns: 132px minmax(0, 1fr);
   column-gap: 18px;
   align-items: start;
 }
 
 .overviewShellBare .avatarCard {
-  width: 100%;
-  max-width: 132px;
+  width: 132px;
   min-height: 0;
   padding: 14px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
   border-radius: 22px;
+  background: rgba(255, 255, 255, 0.01);
+  box-shadow: none;
+  display: grid;
   align-content: start;
   justify-items: center;
   gap: 12px;
@@ -2579,6 +2203,8 @@
 .overviewShellBare .avatarPrimary {
   width: 94px;
   height: 94px;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 .overviewShellBare .avatarControls {
@@ -2598,15 +2224,41 @@
   min-height: 40px;
   padding: 0;
   border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+  font-size: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
+.overviewShellBare .avatarIconButton:not(.avatarRemoveButton),
+.overviewShellBare .avatarControls button:not(.avatarRemoveButton) {
+  border-color: rgba(255, 255, 255, 0.10);
+  color: rgba(243, 240, 234, 0.78);
+}
+
+.overviewShellBare .avatarRemoveButton {
+  border-color: rgba(255, 95, 95, 0.34);
+  color: #ff8a8a;
+}
+
 .overviewShellBare .profileFields {
+  width: 100%;
+  min-width: 0;
+  display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 14px;
-  row-gap: 13px;
+  gap: 13px 14px;
+  align-items: end;
+}
+
+.overviewShellBare .profileFields > * {
+  min-width: 0;
+}
+
+.overviewShellBare .profileFieldName {
+  grid-column: 1 / -1;
 }
 
 .overviewShellBare .profileFields > :nth-child(2),
@@ -2624,8 +2276,38 @@
   grid-column: 1 / -1;
 }
 
+.overviewShellBare .profileFields :global(input),
+.overviewShellBare .profileFields :global(button),
+.overviewShellBare .profileFields :global(select),
+.overviewShellBare .contractGrid :global(input),
+.overviewShellBare .contractGrid :global(button),
+.overviewShellBare .contractGrid :global(select) {
+  min-height: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.014);
+  box-shadow: none;
+}
+
+.overviewShellBare .profileFields :global(input),
+.overviewShellBare .profileFields :global(button),
+.overviewShellBare .contractGrid :global(input),
+.overviewShellBare .contractGrid :global(button) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .overviewShellBare .contractGrid {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 13px 14px;
+  align-items: end;
+}
+
+.overviewShellBare .contractGrid > * {
+  min-width: 0;
 }
 
 .overviewShellBare .contractGrid > :nth-child(1),
@@ -2640,8 +2322,7 @@
 }
 
 .overviewShellBare .inlineFeeSchedule {
-  width: 100%;
-  max-width: 860px;
+  width: min(100%, 780px);
   margin: 2px auto 0;
 }
 
@@ -2652,9 +2333,12 @@
   margin: 0;
   padding: 16px 20px 18px;
   box-sizing: border-box;
+  border-top-color: rgba(255, 255, 255, 0.055);
+  background: transparent;
 }
 
 .overviewShellBare .dangerSection {
+  display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
 }
@@ -2666,6 +2350,14 @@
 .overviewShellBare .dangerFooter .deleteClientButton,
 .overviewShellBare .dangerSection .deleteClientButton {
   margin-left: auto;
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.overviewShellBare .deleteClientButton,
+.overviewShellBare .dangerSection button {
+  border-radius: 99px;
 }
 
 @media (max-width: 980px) {
@@ -2675,7 +2367,7 @@
   }
 
   .overviewShellBare .avatarCard {
-    max-width: none;
+    width: 100%;
     grid-template-columns: 94px minmax(0, 1fr);
     justify-items: start;
     align-items: center;
@@ -2685,18 +2377,18 @@
     justify-content: flex-start;
   }
 
-  .overviewShellBare .profileFields > :nth-child(2),
-  .overviewShellBare .profileFields > :nth-child(3),
-  .overviewShellBare .profileFields > :nth-child(4),
-  .overviewShellBare .profileFields > :nth-child(5),
-  .overviewShellBare .profileFields > :nth-child(6),
-  .overviewShellBare .profileFields > :nth-child(7),
-  .overviewShellBare .contractGrid > :nth-child(1),
-  .overviewShellBare .contractGrid > :nth-child(2),
-  .overviewShellBare .contractGrid > :nth-child(3),
-  .overviewShellBare .contractGrid > :nth-child(4),
-  .overviewShellBare .contractGrid > :nth-child(5) {
-    grid-column: span 1 !important;
+  .overviewShellBare .profileFields,
+  .overviewShellBare .contractGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overviewShellBare .profileFields > *,
+  .overviewShellBare .contractGrid > * {
+    grid-column: auto !important;
+  }
+
+  .overviewShellBare .profileFieldName {
+    grid-column: 1 / -1 !important;
   }
 }
 
@@ -2707,8 +2399,13 @@
     padding-inline: 14px;
   }
 
+  .overviewShellBare .profileFields,
+  .overviewShellBare .contractGrid,
   .overviewShellBare .avatarCard {
     grid-template-columns: 1fr;
+  }
+
+  .overviewShellBare .avatarCard {
     justify-items: center;
   }
 }
