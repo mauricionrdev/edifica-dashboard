@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 9200;
-  padding: 20px;
+  padding: 18px;
   background: rgba(7, 7, 6, 0.80);
   backdrop-filter: blur(18px);
   display: grid;
@@ -10,12 +10,12 @@
 }
 
 .modal {
-  width: min(920px, calc(100vw - 40px));
-  max-height: min(840px, calc(100dvh - 40px));
+  width: min(840px, calc(100vw - 36px));
+  max-height: min(810px, calc(100dvh - 36px));
   border: 1px solid rgba(255, 255, 255, 0.075);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.03), transparent 34%),
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.030), transparent 31%),
     #0f0f0d;
   color: #f3f0ea;
   display: grid;
@@ -25,10 +25,10 @@
 }
 
 .header {
-  min-height: 64px;
-  padding: 10px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.012);
+  min-height: 62px;
+  padding: 10px 16px 10px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.010);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -38,7 +38,7 @@
 .identity {
   min-width: 0;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
 }
@@ -58,14 +58,14 @@
 }
 
 .avatar {
-  width: 42px;
-  height: 42px;
-  font-size: 12px;
+  width: 40px;
+  height: 40px;
+  font-size: 11px;
 }
 
 .largeAvatar {
-  width: 100px;
-  height: 100px;
+  width: 104px;
+  height: 104px;
   font-size: 20px;
 }
 
@@ -86,10 +86,10 @@
 
 .titleBlock h2 {
   margin: 0;
-  max-width: 420px;
+  max-width: 360px;
   overflow: hidden;
   color: #f3f0ea;
-  font-size: clamp(18px, 1.25vw, 22px);
+  font-size: clamp(18px, 1.2vw, 21px);
   line-height: 1.1;
   font-weight: 720;
   letter-spacing: -0.045em;
@@ -149,7 +149,7 @@
 
 .headerPill {
   min-height: 36px;
-  padding: 0 14px;
+  padding: 0 15px;
   border: 1px solid rgba(255, 255, 255, 0.075);
   background: transparent;
   color: rgba(243, 240, 234, 0.78);
@@ -168,7 +168,7 @@
   min-height: 50px;
   padding: 8px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.055);
-  background: rgba(255, 255, 255, 0.008);
+  background: rgba(255, 255, 255, 0.006);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -176,7 +176,9 @@
   scrollbar-width: none;
 }
 
-.tabs::-webkit-scrollbar { display: none; }
+.tabs::-webkit-scrollbar {
+  display: none;
+}
 
 .tab {
   min-height: 34px;
@@ -189,7 +191,9 @@
   white-space: nowrap;
 }
 
-.tab:hover { background: rgba(255, 255, 255, 0.04); }
+.tab:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
 
 .tabActive {
   color: #f5b800;
@@ -197,9 +201,20 @@
   background: rgba(245, 184, 0, 0.055);
 }
 
-.tab_info { color: #7ab7ff; border-color: rgba(122, 183, 255, 0.28); }
-.tab_success { color: #48d597; border-color: rgba(72, 213, 151, 0.28); }
-.tab_purple { color: #c084fc; border-color: rgba(192, 132, 252, 0.30); }
+.tab_info {
+  color: #7ab7ff;
+  border-color: rgba(122, 183, 255, 0.28);
+}
+
+.tab_success {
+  color: #48d597;
+  border-color: rgba(72, 213, 151, 0.28);
+}
+
+.tab_purple {
+  color: #c084fc;
+  border-color: rgba(192, 132, 252, 0.30);
+}
 
 .body {
   min-height: 0;
@@ -207,7 +222,9 @@
   scrollbar-width: none;
 }
 
-.body::-webkit-scrollbar { display: none; }
+.body::-webkit-scrollbar {
+  display: none;
+}
 
 .overview {
   min-height: 100%;
@@ -218,8 +235,8 @@
 .mainCard,
 .contractCard,
 .feesPanel {
-  padding: 16px 20px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  padding: 16px 18px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
 }
 
 .sectionKicker {
@@ -233,17 +250,17 @@
 
 .overviewGrid {
   display: grid;
-  grid-template-columns: 136px minmax(0, 1fr);
+  grid-template-columns: 132px minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
 
 .mediaPanel {
-  width: 136px;
-  padding: 14px 12px;
+  width: 132px;
+  padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.055);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.01);
+  background: rgba(255, 255, 255, 0.010);
   display: grid;
   justify-items: center;
   gap: 12px;
@@ -266,11 +283,22 @@
   justify-content: center;
 }
 
-.roundButton input { display: none; }
+.roundButton input {
+  display: none;
+}
 
-.roundButton:hover { background: rgba(255, 255, 255, 0.04); }
-.roundButtonDanger { color: #ff8a8a; border-color: rgba(255, 95, 95, 0.34); }
-.roundButtonDanger:hover { background: rgba(255, 95, 95, 0.06); }
+.roundButton:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.roundButtonDanger {
+  color: #ff8a8a;
+  border-color: rgba(255, 95, 95, 0.34);
+}
+
+.roundButtonDanger:hover {
+  background: rgba(255, 95, 95, 0.06);
+}
 
 .formPanel {
   min-width: 0;
@@ -288,16 +316,29 @@
 
 .mainFieldsGrid > :nth-child(1),
 .mainFieldsGrid > :nth-child(2),
-.mainFieldsGrid > :nth-child(3) { grid-column: span 4; }
+.mainFieldsGrid > :nth-child(3) {
+  grid-column: span 4;
+}
+
 .mainFieldsGrid > :nth-child(4),
-.mainFieldsGrid > :nth-child(5) { grid-column: span 6; }
-.mainFieldsGrid > :nth-child(6) { grid-column: 1 / -1; }
+.mainFieldsGrid > :nth-child(5) {
+  grid-column: span 6;
+}
+
+.mainFieldsGrid > :nth-child(6) {
+  grid-column: 1 / -1;
+}
 
 .contractGrid > :nth-child(1),
 .contractGrid > :nth-child(2),
-.contractGrid > :nth-child(3) { grid-column: span 4; }
+.contractGrid > :nth-child(3) {
+  grid-column: span 4;
+}
+
 .contractGrid > :nth-child(4),
-.contractGrid > :nth-child(5) { grid-column: span 6; }
+.contractGrid > :nth-child(5) {
+  grid-column: span 6;
+}
 
 .field,
 .fieldFull {
@@ -306,7 +347,9 @@
   gap: 6px;
 }
 
-.fieldFull { grid-column: 1 / -1; }
+.fieldFull {
+  grid-column: 1 / -1;
+}
 
 .field span,
 .fieldFull span {
@@ -344,15 +387,27 @@
   padding-right: 32px;
 }
 
+.field input:hover,
+.field select:hover,
+.fieldFull input:hover {
+  border-color: rgba(255, 255, 255, 0.11);
+}
+
 .field input:focus,
 .field select:focus,
-.fieldFull input:focus { border-color: rgba(255, 255, 255, 0.16); }
+.fieldFull input:focus {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
 .field input:disabled,
 .field select:disabled,
-.fieldFull input:disabled { opacity: 0.74; cursor: not-allowed; }
+.fieldFull input:disabled {
+  opacity: 0.74;
+  cursor: not-allowed;
+}
 
 .errorLine {
-  margin: 14px 20px 0;
+  margin: 14px 18px 0;
   min-height: 34px;
   padding: 9px 12px;
   border: 1px solid rgba(255, 95, 95, 0.28);
@@ -364,10 +419,10 @@
 }
 
 .footerActions {
-  padding: 16px 20px 18px;
-  display: flex;
+  padding: 16px 18px 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
 }
 
@@ -378,12 +433,17 @@
   gap: 8px;
 }
 
+.footerLeft {
+  min-width: 0;
+}
+
 .footerLeft > span {
   color: rgba(170, 205, 224, 0.82);
   font-size: 10px;
   font-weight: 720;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .primaryButton,
@@ -405,6 +465,10 @@
   color: #11110f;
 }
 
+.secondaryButton:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .dangerButton,
 .deleteIconButton {
   color: #ff8a8a;
@@ -417,13 +481,18 @@
   gap: 7px;
 }
 
+.dangerButton:hover,
+.deleteIconButton:hover {
+  background: rgba(255, 95, 95, 0.06);
+}
+
 .feesPanel {
   display: grid;
   gap: 12px;
 }
 
 .sectionHeaderRow {
-  width: min(100%, 780px);
+  width: min(100%, 700px);
   margin: 0 auto;
   min-height: 42px;
   padding-bottom: 12px;
@@ -449,20 +518,22 @@
   gap: 7px;
 }
 
-.feeActions button:hover { background: rgba(245, 184, 0, 0.055); }
+.feeActions button:hover {
+  background: rgba(245, 184, 0, 0.055);
+}
 
 .feeRows {
-  width: min(100%, 780px);
+  width: min(100%, 700px);
   margin: 0 auto;
   display: grid;
   gap: 10px;
 }
 
 .feeCard {
-  padding: 16px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 15px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.060);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.012);
+  background: rgba(255, 255, 255, 0.010);
   display: grid;
   gap: 14px;
 }
@@ -482,7 +553,11 @@
   flex-wrap: wrap;
 }
 
-.feeCardHeader strong { color: #f3f0ea; font-size: 13.5px; }
+.feeCardHeader strong {
+  color: #f3f0ea;
+  font-size: 13.5px;
+}
+
 .feeCardHeader span {
   min-height: 22px;
   padding: 2px 9px;
@@ -504,10 +579,8 @@
   justify-content: center;
 }
 
-.deleteIconButton:hover { background: rgba(255, 95, 95, 0.06); }
-
 .feeGrid {
-  width: min(100%, 600px);
+  width: min(100%, 540px);
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -532,30 +605,82 @@
 }
 
 @media (max-width: 900px) {
-  .modal { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); }
-  .overviewGrid { grid-template-columns: 1fr; }
-  .mediaPanel { width: 100%; grid-template-columns: 100px minmax(0, 1fr); justify-items: start; align-items: center; }
-  .avatarActions { justify-content: start; }
+  .modal {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+
+  .overviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mediaPanel {
+    width: 100%;
+    grid-template-columns: 104px minmax(0, 1fr);
+    justify-items: start;
+    align-items: center;
+  }
+
+  .avatarActions {
+    justify-content: start;
+  }
+
   .mainFieldsGrid,
-  .contractGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contractGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .mainFieldsGrid > *,
-  .contractGrid > * { grid-column: auto !important; }
-  .fieldFull { grid-column: 1 / -1 !important; }
+  .contractGrid > * {
+    grid-column: auto !important;
+  }
+
+  .fieldFull {
+    grid-column: 1 / -1 !important;
+  }
 }
 
 @media (max-width: 640px) {
-  .overlay { padding: 10px; }
-  .header { align-items: flex-start; }
-  .headerActions { flex-wrap: wrap; justify-content: flex-end; }
+  .overlay {
+    padding: 10px;
+  }
+
+  .header {
+    align-items: flex-start;
+  }
+
+  .headerActions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   .mainCard,
   .contractCard,
   .feesPanel,
-  .footerActions { padding-inline: 14px; }
+  .footerActions {
+    padding-inline: 14px;
+  }
+
   .mediaPanel,
   .mainFieldsGrid,
   .contractGrid,
-  .feeGrid { grid-template-columns: 1fr; }
-  .footerActions,
-  .sectionHeaderRow { align-items: flex-start; flex-direction: column; }
-  .actionGroup { width: 100%; justify-content: flex-end; }
+  .feeGrid,
+  .footerActions {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeaderRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .actionGroup {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .footerLeft {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

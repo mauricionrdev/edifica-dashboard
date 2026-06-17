@@ -420,9 +420,6 @@ export default function DesignLabClientDetailModal({
           </div>
 
           <div className={styles.headerActions}>
-            <button type="button" className={styles.iconButton} aria-label="Projeto" title="Projeto">
-              <ClipboardListIcon size={15} />
-            </button>
             <button type="button" className={styles.headerPill}>Projeto</button>
             <button type="button" className={styles.iconButton} onClick={onClose} aria-label="Fechar">
               <CloseIcon size={16} />
