@@ -18,8 +18,8 @@ import {
 } from '../../components/ui/Icons.jsx';
 import AnalysisTab from '../../components/clients/AnalysisTab.jsx';
 import ClientBookTab from '../../components/clients/ClientBookTab.jsx';
-import ClientFilesTab from '../../components/clients/ClientFilesTab.jsx';
 import ClientProjectTab from '../../components/clients/ClientProjectTab.jsx';
+import DesignLabClientDrivePanel from './DesignLabClientDrivePanel.jsx';
 import ClientTasksTab from '../../components/clients/ClientTasksTab.jsx';
 import styles from './DesignLabClientDetailModal.module.css';
 
@@ -703,8 +703,8 @@ export default function DesignLabClientDetailModal({
           ) : null}
           {activeTab === 'tasks' && canViewTasks ? <div className={styles.embeddedPanel}><ClientTasksTab client={client} /></div> : null}
           {activeTab === 'book' ? <div className={styles.embeddedPanel}><ClientBookTab client={client} /></div> : null}
-          {activeTab === 'drive' ? <div className={styles.embeddedPanel}><ClientFilesTab client={client} canEdit={canEditClient} /></div> : null}
-          {activeAnalysisType ? <div className={styles.embeddedPanel}><AnalysisTab clientId={client.id} type={activeAnalysisType} canEdit={canEditClient} /></div> : null}
+          {activeTab === 'drive' ? <div className={styles.embeddedPanel}><DesignLabClientDrivePanel client={client} canEdit={canEditClient} /></div> : null}
+          {activeAnalysisType ? <div className={`${styles.embeddedPanel} ${styles.analysisHost}`.trim()}><AnalysisTab clientId={client.id} type={activeAnalysisType} canEdit={canEditClient} /></div> : null}
         </main>
 
         {pendingConfirm ? (

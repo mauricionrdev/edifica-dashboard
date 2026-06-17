@@ -166,7 +166,7 @@ function normalizeClientFilePayload(body = {}) {
   const sizeBytes = Math.max(0, Number(body.sizeBytes) || 0);
 
   if (!dataUrl || !dataUrl.startsWith('data:')) throw badRequest('Arquivo inválido.');
-  if (sizeBytes > 10 * 1024 * 1024) throw badRequest('Arquivo acima do limite de 10 MB.');
+  if (sizeBytes > 100 * 1024 * 1024) throw badRequest('Arquivo acima do limite de 100 MB.');
 
   return { fileName, mimeType, dataUrl, sizeBytes };
 }

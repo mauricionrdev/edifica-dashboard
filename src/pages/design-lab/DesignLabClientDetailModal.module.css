@@ -1283,3 +1283,77 @@
 .confirmActions .dangerButton {
   min-height: 36px;
 }
+
+
+/* v72 · refinamento Drive + últimas abas */
+.embeddedPanel {
+  min-height: 390px;
+}
+
+.analysisHost {
+  padding: 18px 20px 22px;
+  display: grid;
+  align-content: start;
+}
+
+.analysisHost > :global(div) {
+  padding: 0 !important;
+  background: transparent !important;
+  display: grid;
+  gap: 14px;
+}
+
+.analysisHost :global(button),
+.analysisHost :global(a) {
+  border-radius: 99px !important;
+  box-shadow: none !important;
+}
+
+.analysisHost :global(textarea),
+.analysisHost :global(input),
+.analysisHost :global(select) {
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.014) !important;
+  box-shadow: none !important;
+}
+
+.analysisHost > :global(div > div:first-child) {
+  min-height: 112px !important;
+  padding: 16px 18px !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.010) !important;
+  box-shadow: none !important;
+}
+
+.analysisHost > :global(div > div:first-child > div:first-child) {
+  min-width: 0;
+}
+
+.analysisHost > :global(div > div:first-child > div:last-child) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 18px !important;
+  flex-wrap: wrap !important;
+}
+
+.analysisHost :global(article),
+.analysisHost > :global(div > div:not(:first-child)) {
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.010) !important;
+  box-shadow: none !important;
+}
+
+.analysisHost :global([role="dialog"]) {
+  box-shadow: none !important;
+}
+
+@media (max-width: 720px) {
+  .analysisHost {
+    padding-inline: 14px;
+  }
+
+  .analysisHost > :global(div > div:first-child > div:last-child) {
+    justify-content: flex-start !important;
+  }
+}
