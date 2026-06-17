@@ -4,13 +4,12 @@ import { ApiError } from '../../api/client.js';
 import { clientInitials } from '../../utils/clientHelpers.js';
 import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
 import {
-  getSquadAvatar,
   readAvatarFile,
   saveClientAvatar,
 } from '../../utils/avatarStorage.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
-import { CameraIcon, CloseIcon } from '../../components/ui/Icons.jsx';
+import { CameraIcon, CloseIcon, TrashIcon } from '../../components/ui/Icons.jsx';
 import styles from './DesignLabClientCreateModal.module.css';
 
 const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
@@ -49,6 +48,10 @@ function toPayload(form) {
   };
 }
 
+function hasFormChanges(form) {
+  return Object.entries(EMPTY).some(([key, value]) => String(form[key] || '') !== String(value || ''));
+}
+
 function roleSelectOptions(rows, current) {
   const list = Array.isArray(rows) ? rows : [];
   const currentName = String(current || '').trim();
@@ -66,6 +69,7 @@ export default function DesignLabClientCreateModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [avatarPreview, setAvatarPreview] = useState('');
+  const [confirmClose, setConfirmClose] = useState(false);
 
   const gestorRows = useMemo(
     () => roleSelectOptions(gestorOptions(users, form.gestor), form.gestor),
@@ -76,13 +80,33 @@ export default function DesignLabClientCreateModal({
     [users, form.gdvName]
   );
 
+  const isDirty = hasFormChanges(form);
+
   useEffect(() => {
     const onKey = (event) => {
-      if (event.key === 'Escape') onClose?.();
+      if (event.key !== 'Escape') return;
+
+      if (confirmClose) {
+        setConfirmClose(false);
+        return;
+      }
+
+      requestClose();
     };
+
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confirmClose, isDirty, saving]);
+
+  function requestClose() {
+    if (saving) return;
+    if (isDirty) {
+      setConfirmClose(true);
+      return;
+    }
+    onClose?.();
+  }
 
   function setField(key, value) {
     setForm((previous) => {
@@ -105,6 +129,7 @@ export default function DesignLabClientCreateModal({
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+
     try {
       const nextAvatar = await readAvatarFile(file);
       setAvatarPreview(nextAvatar);
@@ -112,6 +137,11 @@ export default function DesignLabClientCreateModal({
     } catch (nextError) {
       setError(nextError?.message || 'Não foi possível usar esta imagem.');
     }
+  }
+
+  function removeAvatar() {
+    setAvatarPreview('');
+    setForm((previous) => ({ ...previous, avatarUrl: '' }));
   }
 
   async function handleSubmit(event) {
@@ -147,7 +177,7 @@ export default function DesignLabClientCreateModal({
   }
 
   return (
-    <div className={styles.overlay} role="presentation" onClick={onClose}>
+    <div className={styles.overlay} role="presentation" onClick={requestClose}>
       <form
         className={styles.modal}
         role="dialog"
@@ -157,125 +187,123 @@ export default function DesignLabClientCreateModal({
         onSubmit={handleSubmit}
       >
         <header className={styles.header}>
-          <div>
+          <div className={styles.titleBlock}>
             <span className={styles.kicker}>Clientes</span>
             <h2 id="design-lab-create-client-title">Novo cliente</h2>
           </div>
-          <button type="button" className={styles.iconButton} onClick={onClose} aria-label="Fechar">
+          <button type="button" className={styles.iconButton} onClick={requestClose} aria-label="Fechar">
             <CloseIcon size={16} />
           </button>
         </header>
 
         <main className={styles.body}>
-          <section className={styles.identitySection} aria-label="Identificação">
-            <div className={styles.avatarUploadRow}>
+          <section className={styles.mainCard} aria-label="Dados principais">
+            <aside className={styles.mediaPanel}>
               <span className={styles.avatarPreview} aria-hidden="true">
                 {avatarPreview ? <img src={avatarPreview} alt="" /> : clientInitials(form.name)}
               </span>
 
-              <div className={styles.avatarMeta}>
-                <strong>Logo do cliente</strong>
-                <span>{avatarPreview ? 'Imagem selecionada' : 'PNG ou JPG'}</span>
+              <div className={styles.avatarActions}>
+                <label className={styles.roundButton} title="Selecionar logo" aria-label="Selecionar logo">
+                  <CameraIcon size={15} />
+                  <input type="file" accept="image/*" onChange={handleAvatarFile} disabled={saving} />
+                </label>
+
+                {avatarPreview ? (
+                  <button type="button" className={`${styles.roundButton} ${styles.roundButtonDanger}`.trim()} onClick={removeAvatar} aria-label="Remover logo" title="Remover logo" disabled={saving}>
+                    <TrashIcon size={15} />
+                  </button>
+                ) : null}
               </div>
+            </aside>
 
-              <label className={styles.avatarUploadAction}>
-                <CameraIcon size={13} />
-                Selecionar
-                <input type="file" accept="image/*" onChange={handleAvatarFile} disabled={saving} />
-              </label>
-            </div>
-
-            <label className={styles.fieldFull}>
-              <span>Nome do cliente</span>
-              <input
-                value={form.name}
-                onChange={(event) => setField('name', event.target.value)}
-                placeholder="Nome do cliente"
-                maxLength={120}
-                disabled={saving}
-              />
-            </label>
-          </section>
-
-          <section className={styles.formSection} aria-label="Operação">
-            <div className={styles.sectionHeader}>
-              <span>Operação</span>
-            </div>
-
-            <div className={styles.grid}>
-              <label className={styles.field}>
-                <span>Squad</span>
-                <select
-                  value={form.squadId}
-                  onChange={(event) => setField('squadId', event.target.value)}
+            <div className={styles.formPanel}>
+              <label className={styles.fieldFull}>
+                <span>Nome do cliente</span>
+                <input
+                  value={form.name}
+                  onChange={(event) => setField('name', event.target.value)}
+                  placeholder="Nome do cliente"
+                  maxLength={120}
                   disabled={saving}
-                >
-                  <option value="">Sem squad</option>
-                  {squads.map((squad) => (
-                    <option key={squad.id} value={squad.id}>
-                      {squad.name}
-                    </option>
-                  ))}
-                </select>
+                />
               </label>
 
-              <label className={styles.field}>
-                <span>Status</span>
-                <select
-                  value={form.status}
-                  onChange={(event) => setField('status', event.target.value)}
-                  disabled={saving}
-                >
-                  {CLIENT_STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
+              <div className={styles.mainFieldsGrid}>
+                <label className={styles.field}>
+                  <span>Squad</span>
+                  <select
+                    value={form.squadId}
+                    onChange={(event) => setField('squadId', event.target.value)}
+                    disabled={saving}
+                  >
+                    <option value="">Sem squad</option>
+                    {squads.map((squad) => (
+                      <option key={squad.id} value={squad.id}>
+                        {squad.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-              <label className={styles.field}>
-                <span>Gestor</span>
-                <select
-                  value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
-                  onChange={(event) => {
-                    const selected = gestorRows.find((entry) => entry.id === event.target.value);
-                    setField('gestor', selected?.name || '');
-                  }}
-                  disabled={saving}
-                >
-                  <option value="">Sem gestor</option>
-                  {gestorRows.map((entry) => (
-                    <option key={entry.id} value={entry.id}>{entry.name}</option>
-                  ))}
-                </select>
-              </label>
+                <label className={styles.field}>
+                  <span>Status</span>
+                  <select
+                    value={form.status}
+                    onChange={(event) => setField('status', event.target.value)}
+                    disabled={saving}
+                  >
+                    {CLIENT_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
 
-              <label className={styles.field}>
-                <span>GDV</span>
-                <select
-                  value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
-                  onChange={(event) => {
-                    const selected = gdvRows.find((entry) => entry.id === event.target.value);
-                    setField('gdvName', selected?.name || '');
-                  }}
-                  disabled={saving}
-                >
-                  <option value="">Sem GDV</option>
-                  {gdvRows.map((entry) => (
-                    <option key={entry.id} value={entry.id}>{entry.name}</option>
-                  ))}
-                </select>
-              </label>
+                <label className={styles.field}>
+                  <span>Gestor</span>
+                  <select
+                    value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+                    onChange={(event) => {
+                      const selected = gestorRows.find((entry) => entry.id === event.target.value);
+                      setField('gestor', selected?.name || '');
+                    }}
+                    disabled={saving}
+                  >
+                    <option value="">Sem gestor</option>
+                    {gestorRows.map((entry) => (
+                      <option key={entry.id} value={entry.id}>{entry.name}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className={styles.field}>
+                  <span>GDV</span>
+                  <select
+                    value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+                    onChange={(event) => {
+                      const selected = gdvRows.find((entry) => entry.id === event.target.value);
+                      setField('gdvName', selected?.name || '');
+                    }}
+                    disabled={saving}
+                  >
+                    <option value="">Sem GDV</option>
+                    {gdvRows.map((entry) => (
+                      <option key={entry.id} value={entry.id}>{entry.name}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
             </div>
           </section>
 
-          <section className={styles.formSection} aria-label="Comercial interno">
+          <section className={styles.formCard} aria-label="Comercial e contrato">
             <div className={styles.sectionHeader}>
-              <span>Comercial interno</span>
+              <span>Comercial e contrato</span>
             </div>
 
-            <div className={styles.inlineGrid}>
+            <div className={styles.contractGrid}>
               <label className={styles.field}>
-                <span>Categoria</span>
+                <span>Comercial interno</span>
                 <select
                   value={form.internalCommercial}
                   onChange={(event) => setField('internalCommercial', event.target.value)}
@@ -304,18 +332,12 @@ export default function DesignLabClientCreateModal({
                     ))}
                   </datalist>
                 </label>
-              ) : null}
-            </div>
-          </section>
+              ) : (
+                <span aria-hidden="true" />
+              )}
 
-          <section className={styles.formSection} aria-label="Contrato">
-            <div className={styles.sectionHeader}>
-              <span>Contrato</span>
-            </div>
-
-            <div className={styles.contractGrid}>
               <label className={styles.field}>
-                <span>Tipo</span>
+                <span>Tipo de contrato</span>
                 <select
                   value={form.contractType}
                   onChange={(event) => setField('contractType', event.target.value)}
@@ -324,18 +346,6 @@ export default function DesignLabClientCreateModal({
                   <option value="recurring">Recorrente</option>
                   <option value="tcv">TCV</option>
                 </select>
-              </label>
-
-              <label className={styles.field}>
-                <span>Valor</span>
-                <input
-                  value={form.fee}
-                  onChange={(event) => setField('fee', event.target.value)}
-                  onBlur={() => normalizeNumberField('fee')}
-                  placeholder="R$ 0,00"
-                  inputMode="decimal"
-                  disabled={saving}
-                />
               </label>
 
               <label className={styles.field}>
@@ -358,13 +368,25 @@ export default function DesignLabClientCreateModal({
                 />
               </label>
 
-              <label className={styles.fieldSmall}>
+              <label className={styles.field}>
+                <span>Mensalidade (R$)</span>
+                <input
+                  value={form.fee}
+                  onChange={(event) => setField('fee', event.target.value)}
+                  onBlur={() => normalizeNumberField('fee')}
+                  placeholder="0,00"
+                  inputMode="decimal"
+                  disabled={saving}
+                />
+              </label>
+
+              <label className={styles.field}>
                 <span>Meta base</span>
                 <input
                   value={form.metaLucro}
                   onChange={(event) => setField('metaLucro', event.target.value)}
                   onBlur={() => normalizeNumberField('metaLucro')}
-                  placeholder="0"
+                  placeholder="0,00"
                   inputMode="decimal"
                   disabled={saving}
                 />
@@ -376,13 +398,43 @@ export default function DesignLabClientCreateModal({
         </main>
 
         <footer className={styles.footer}>
-          <button type="button" className={styles.secondaryButton} onClick={onClose} disabled={saving}>
+          <button type="button" className={styles.secondaryButton} onClick={requestClose} disabled={saving}>
             Cancelar
           </button>
           <button type="submit" className={styles.primaryButton} disabled={saving}>
             {saving ? 'Salvando...' : 'Criar cliente'}
           </button>
         </footer>
+
+        {confirmClose ? (
+          <div className={styles.confirmOverlay} role="presentation" onClick={() => setConfirmClose(false)}>
+            <div
+              className={styles.confirmDialog}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="design-lab-create-confirm-title"
+              aria-describedby="design-lab-create-confirm-description"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div>
+                <span className={styles.confirmKicker}>Confirmação necessária</span>
+                <h3 id="design-lab-create-confirm-title">Descartar cadastro?</h3>
+                <p id="design-lab-create-confirm-description">
+                  Existem informações preenchidas. Ao sair agora, o cadastro em andamento será perdido.
+                </p>
+              </div>
+
+              <div className={styles.confirmActions}>
+                <button type="button" className={styles.secondaryButton} onClick={() => setConfirmClose(false)}>
+                  Continuar editando
+                </button>
+                <button type="button" className={styles.dangerButton} onClick={onClose}>
+                  Descartar
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </form>
     </div>
   );
