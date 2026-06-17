@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
-import { Button as AriaButton, Menu, MenuItem, MenuTrigger, Popover } from 'react-aria-components';
-import { useVirtualizer } from '@tanstack/react-virtual';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import {
@@ -134,16 +132,6 @@ function createdSortValue(client) {
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
-function runViewTransition(update) {
-  if (typeof document !== 'undefined' && typeof document.startViewTransition === 'function') {
-    document.startViewTransition(() => {
-      update();
-    });
-    return;
-  }
-  update();
-}
-
 export default function DesignLabClientsPage() {
   const { clients, squads, userDirectory, loading, error, refreshClients, setPanelHeader } = useOutletContext();
   const { user } = useAuth();
@@ -153,8 +141,10 @@ export default function DesignLabClientsPage() {
   const canCreate = canCreateClients(user);
   const [query, setQuery] = useState(() => searchParams.get('search') || '');
   const [scope, setScope] = useState('all');
+  const [filterOpen, setFilterOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [pageSize, setPageSize] = useState(20);
+  const [pageSizeOpen, setPageSizeOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [detailId, setDetailId] = useState(null);
@@ -162,7 +152,8 @@ export default function DesignLabClientsPage() {
   const [avatarVersion, setAvatarVersion] = useState(0);
   const [today, setToday] = useState(() => new Date());
   const searchRef = useRef(null);
-  const listRef = useRef(null);
+  const filterRef = useRef(null);
+  const pageSizeRef = useRef(null);
 
   useEffect(() => {
     const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -174,6 +165,23 @@ export default function DesignLabClientsPage() {
   }, []);
 
   useEffect(() => subscribeAvatarChange(() => setAvatarVersion((current) => current + 1)), []);
+
+  useEffect(() => {
+    if (!pageSizeOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!pageSizeRef.current || pageSizeRef.current.contains(event.target)) return;
+      setPageSizeOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setPageSizeOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [pageSizeOpen]);
 
   useEffect(() => {
     if (!searchOpen) return undefined;
@@ -191,6 +199,23 @@ export default function DesignLabClientsPage() {
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [searchOpen]);
+
+  useEffect(() => {
+    if (!filterOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!filterRef.current || filterRef.current.contains(event.target)) return;
+      setFilterOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setFilterOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [filterOpen]);
 
   const visibleBase = useMemo(
     () => (Array.isArray(clients) ? clients : []).filter((client) => isVisibleClientStatus(client.status)),
@@ -251,17 +276,6 @@ export default function DesignLabClientsPage() {
     const start = (safePage - 1) * pageSize;
     return filteredRows.slice(start, start + pageSize);
   }, [filteredRows, pageSize, safePage]);
-
-  const rowVirtualizer = useVirtualizer({
-    count: pagedRows.length,
-    getScrollElement: () => listRef.current,
-    estimateSize: () => 74,
-    overscan: 8,
-  });
-
-  useEffect(() => {
-    listRef.current?.scrollTo({ top: 0 });
-  }, [page, pageSize, query, scope]);
 
   const selectedClient = useMemo(
     () => (Array.isArray(clients) ? clients : []).find((client) => client.id === detailId) || null,
@@ -361,73 +375,76 @@ export default function DesignLabClientsPage() {
           )}
         </div>
 
-        <MenuTrigger>
-          <AriaButton className={styles.filterButton} aria-label="Filtrar clientes">
+        <div className={styles.filterDropdown} ref={filterRef}>
+          <button
+            type="button"
+            className={styles.filterButton}
+            onClick={() => setFilterOpen((current) => !current)}
+            aria-expanded={filterOpen}
+            aria-label="Filtrar clientes"
+          >
             <span>{selectedScope.label}</span>
             <strong>{counts[selectedScope.key] ?? 0}</strong>
             <ChevronDownIcon size={14} aria-hidden="true" />
-          </AriaButton>
-          <Popover className={`${styles.ariaPopover} ${styles.filterPopover}`}>
-            <Menu
-              className={styles.filterMenu}
-              aria-label="Filtros de clientes"
-              selectionMode="single"
-              selectedKeys={new Set([scope])}
-              onAction={(key) => {
-                runViewTransition(() => {
-                  setScope(String(key));
-                  setPage(1);
-                });
-              }}
-            >
-              {SCOPES.map((item) => (
-                <MenuItem
-                  key={item.key}
-                  id={item.key}
-                  textValue={item.label}
-                  className={`${styles.filterOption} ${item.tone === 'purple' ? styles.filterOptionPurple : ''}`.trim()}
-                >
-                  <span>{item.label}</span>
-                  <strong>{counts[item.key] ?? 0}</strong>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Popover>
-        </MenuTrigger>
+          </button>
 
-        <MenuTrigger>
-          <AriaButton className={styles.pageSizeButton} aria-label="Quantidade por página">
+          {filterOpen ? (
+            <div className={styles.filterMenu} role="listbox" aria-label="Filtros de clientes">
+              {SCOPES.map((item) => {
+                const active = scope === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`${styles.filterOption} ${active ? styles.filterOptionActive : ''} ${item.tone === 'purple' ? styles.filterOptionPurple : ''}`.trim()}
+                    onClick={() => {
+                      setScope(item.key);
+                      setFilterOpen(false);
+                    }}
+                  >
+                    <span>{item.label}</span>
+                    <strong>{counts[item.key] ?? 0}</strong>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+
+        <div className={styles.pageSizeDropdown} ref={pageSizeRef}>
+          <button
+            type="button"
+            className={styles.pageSizeButton}
+            onClick={() => setPageSizeOpen((current) => !current)}
+            aria-expanded={pageSizeOpen}
+            aria-label="Quantidade por página"
+          >
             <span>{pageSize} por página</span>
             <ChevronDownIcon size={14} aria-hidden="true" />
-          </AriaButton>
-          <Popover className={`${styles.ariaPopover} ${styles.pageSizePopover}`}>
-            <Menu
-              className={styles.pageSizeMenu}
-              aria-label="Quantidade de clientes por página"
-              selectionMode="single"
-              selectedKeys={new Set([String(pageSize)])}
-              onAction={(key) => {
-                const nextSize = Number(key);
-                if (!Number.isFinite(nextSize)) return;
-                runViewTransition(() => {
-                  setPageSize(nextSize);
-                  setPage(1);
-                });
-              }}
-            >
+          </button>
+
+          {pageSizeOpen ? (
+            <div className={styles.pageSizeMenu} role="listbox" aria-label="Quantidade de clientes por página">
               {PAGE_SIZE_OPTIONS.map((option) => (
-                <MenuItem
+                <button
                   key={option}
-                  id={String(option)}
-                  textValue={`${option} por página`}
-                  className={styles.pageSizeOption}
+                  type="button"
+                  className={`${styles.pageSizeOption} ${pageSize === option ? styles.pageSizeOptionActive : ''}`.trim()}
+                  onClick={() => {
+                    setPageSize(option);
+                    setPageSizeOpen(false);
+                  }}
+                  role="option"
+                  aria-selected={pageSize === option}
                 >
                   {option} por página
-                </MenuItem>
+                </button>
               ))}
-            </Menu>
-          </Popover>
-        </MenuTrigger>
+            </div>
+          ) : null}
+        </div>
       </section>
 
       <section className={styles.board} aria-label="Clientes">
@@ -445,104 +462,98 @@ export default function DesignLabClientsPage() {
             <span>Ajuste a busca ou selecione outro filtro.</span>
           </div>
         ) : (
-          <div className={styles.clientList} ref={listRef}>
-            <div className={styles.clientVirtualizer} style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const client = pagedRows[virtualRow.index];
-                if (!client) return null;
+          <div className={styles.clientList}>
+            {pagedRows.map((client) => {
+              const avatar = getClientAvatar(client);
+              const due = contractEndInfo(client, today);
+              const dueProgress = dueProgressValue(due);
+              const tcv = isTcvClient(client);
+              const internalSeller = getInternalSeller(client);
+              const onboardingDays = getClientOnboardingDays(client, today);
+              const showOnboardingDays = Number.isFinite(onboardingDays);
+              const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
+              const status = statusLabel(client, today);
 
-                const avatar = getClientAvatar(client);
-                const due = contractEndInfo(client, today);
-                const dueProgress = dueProgressValue(due);
-                const tcv = isTcvClient(client);
-                const onboardingDays = getClientOnboardingDays(client, today);
-                const showOnboardingDays = Number.isFinite(onboardingDays);
-                const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
-                const status = statusLabel(client, today);
+              return (
+                <article
+                  key={client.id}
+                  className={`${styles.clientItem} ${styles[`clientItem_${due.tone}`] || ''}`.trim()}
+                  onClick={() => openDetail(client.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openDetail(client.id);
+                    }
+                  }}
+                  style={{ '--due-progress': `${dueProgress}%` }}
+                >
+                  <div className={styles.identityBlock}>
+                    <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
+                      {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
+                    </span>
+                    <span className={styles.identityText}>
+                      <strong>{client.name}</strong>
+                    </span>
+                  </div>
 
-                return (
-                  <article
-                    key={client.id}
-                    ref={rowVirtualizer.measureElement}
-                    data-index={virtualRow.index}
-                    className={`${styles.clientItem} ${styles[`clientItem_${due.tone}`] || ''}`.trim()}
-                    onClick={() => openDetail(client.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        openDetail(client.id);
-                      }
-                    }}
-                    style={{ '--due-progress': `${dueProgress}%`, transform: `translateY(${virtualRow.start}px)` }}
-                  >
-                    <div className={styles.identityBlock}>
-                      <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
-                        {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
-                      </span>
-                      <span className={styles.identityText}>
-                        <strong>{client.name}</strong>
-                      </span>
+                  <div className={styles.squadBlock}>
+                    <small>Squad</small>
+                    <strong>{client.squadName || 'Sem squad'}</strong>
+                  </div>
+
+                  <div className={styles.contractBlock}>
+                    <div className={styles.contractTags}>
+                      <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
                     </div>
+                    <strong>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
+                  </div>
 
-                    <div className={styles.squadBlock}>
-                      <small>Squad</small>
-                      <strong>{client.squadName || 'Sem squad'}</strong>
+                  <div className={styles.dueBlock}>
+                    <div className={styles.dueHeader}>
+                      <BareBadge tone={due.tone}>{due.label}</BareBadge>
+                      {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
                     </div>
+                    <span className={styles.dueTrack} aria-hidden="true">
+                      <span />
+                    </span>
+                  </div>
 
-                    <div className={styles.contractBlock}>
-                      <div className={styles.contractTags}>
-                        <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
-                      </div>
-                      <strong>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
-                    </div>
+                  <div className={styles.analysisGroup} aria-label="Análises do cliente">
+                    {ANALYSIS_ITEMS.map((item) => {
+                      const Icon = item.icon;
+                      const count = analysisCount(client, item.key);
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          className={`${styles.analysisButton} ${styles[item.className]}`.trim()}
+                          title={item.label}
+                          aria-label={`Abrir ${item.label} de ${client.name}. Registros: ${count}`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openDetail(client.id, item.tab);
+                          }}
+                        >
+                          <Icon size={13} strokeWidth={2} aria-hidden="true" />
+                          {count > 0 ? <span>{count}</span> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                    <div className={styles.dueBlock}>
-                      <div className={styles.dueHeader}>
-                        <BareBadge tone={due.tone}>{due.label}</BareBadge>
-                        {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
-                      </div>
-                      <span className={styles.dueTrack} aria-hidden="true">
-                        <span />
-                      </span>
-                    </div>
-
-                    <div className={styles.analysisGroup} aria-label="Análises do cliente">
-                      {ANALYSIS_ITEMS.map((item) => {
-                        const Icon = item.icon;
-                        const count = analysisCount(client, item.key);
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            className={`${styles.analysisButton} ${styles[item.className]}`.trim()}
-                            title={item.label}
-                            aria-label={`Abrir ${item.label} de ${client.name}. Registros: ${count}`}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openDetail(client.id, item.tab);
-                            }}
-                          >
-                            <Icon size={13} strokeWidth={2} aria-hidden="true" />
-                            {count > 0 ? <span>{count}</span> : null}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className={styles.statusStack}>
-                      {showOnboardingDays ? (
-                        <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
-                          {onboardingDaysLabel(onboardingDays)}
-                        </BareBadge>
-                      ) : null}
-                      <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+                  <div className={styles.statusStack}>
+                    {showOnboardingDays ? (
+                      <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
+                        {onboardingDaysLabel(onboardingDays)}
+                      </BareBadge>
+                    ) : null}
+                    <BareBadge tone={statusTone(client, today)}>{status}</BareBadge>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
 
@@ -554,7 +565,7 @@ export default function DesignLabClientsPage() {
                 key={value}
                 type="button"
                 className={`${styles.pageButton} ${safePage === value ? styles.pageButtonActive : ''}`.trim()}
-                onClick={() => runViewTransition(() => setPage(value))}
+                onClick={() => setPage(value)}
               >
                 {value}
               </button>
