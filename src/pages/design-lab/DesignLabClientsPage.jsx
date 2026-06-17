@@ -137,6 +137,20 @@ function createdSortValue(client) {
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
+function clientSquadVisual(squads, client) {
+  const squadId = client?.squadId || client?.squad_id;
+  const squadName = client?.squadName || client?.squad_name || '';
+  const match = (Array.isArray(squads) ? squads : []).find((squad) => (
+    String(squad?.id) === String(squadId || '') ||
+    String(squad?.name || '').toLowerCase() === String(squadName || '').toLowerCase()
+  ));
+  const coverUrl = match?.coverUrl || match?.cover_url || match?.bannerUrl || match?.banner_url || '';
+  return {
+    name: squadName || match?.name || 'Sem squad',
+    coverUrl,
+  };
+}
+
 export default function DesignLabClientsPage() {
   const { clients, squads, userDirectory, loading, error, refreshClients, setPanelHeader } = useOutletContext();
   const { user } = useAuth();
@@ -375,7 +389,6 @@ export default function DesignLabClientsPage() {
               aria-label="Abrir busca de clientes"
             >
               <SearchIcon size={15} aria-hidden="true" />
-              <span>{query.trim() ? 'Busca ativa' : 'Buscar'}</span>
             </button>
           )}
         </div>
@@ -472,6 +485,8 @@ export default function DesignLabClientsPage() {
               const avatar = getClientAvatar(client);
               const due = contractEndInfo(client, today);
               const tcv = isTcvClient(client);
+              const squadVisual = clientSquadVisual(squads, client);
+              const squadStyle = squadVisual.coverUrl ? { '--squad-cover': `url("${squadVisual.coverUrl}")` } : undefined;
               const internalSeller = getInternalSeller(client);
               const onboardingDays = getClientOnboardingDays(client, today);
               const showOnboardingDays = Number.isFinite(onboardingDays);
@@ -501,9 +516,8 @@ export default function DesignLabClientsPage() {
                     </span>
                   </div>
 
-                  <div className={styles.squadBlock}>
-                    <small>Squad</small>
-                    <strong>{client.squadName || 'Sem squad'}</strong>
+                  <div className={styles.squadBlock} style={squadStyle}>
+                    <strong>{squadVisual.name}</strong>
                   </div>
 
                   <div className={styles.typeBlock}>
@@ -515,7 +529,6 @@ export default function DesignLabClientsPage() {
                   <div className={styles.dueBlock}>
                     <div className={styles.dueHeader}>
                       <BareBadge tone={due.tone}>{due.label}</BareBadge>
-                      {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
                     </div>
                   </div>
 

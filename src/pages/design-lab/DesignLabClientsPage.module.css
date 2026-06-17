@@ -1320,3 +1320,267 @@
     justify-self: stretch;
   }
 }
+
+
+/* v52 · toolbar compacta, filtro à direita, squad com capa e badges no padrão Perfil */
+.commandLayer {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "search . filters page";
+  gap: 8px;
+  align-items: center;
+}
+
+.searchWrap {
+  width: 42px;
+}
+
+.searchToggle {
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+}
+
+.searchToggle span {
+  display: none;
+}
+
+.searchWrapOpen {
+  width: min(286px, 30vw);
+}
+
+.filterDropdown {
+  justify-self: end;
+}
+
+.filterButton {
+  min-width: 128px;
+  max-width: 154px;
+  height: 38px;
+  padding: 0 10px 0 13px;
+  gap: 7px;
+}
+
+.filterButton > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filterButton strong {
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  font-size: 10.5px;
+}
+
+.filterMenu {
+  left: auto;
+  right: 0;
+  width: 192px;
+  max-height: 310px;
+  transform: none;
+}
+
+.filterOption {
+  min-height: 32px;
+  padding: 0 9px;
+  font-size: 12px;
+}
+
+.filterOption strong {
+  min-width: 20px;
+  height: 19px;
+  padding: 0 5px;
+  font-size: 10.5px;
+}
+
+.clientItem {
+  grid-template-columns:
+    minmax(230px, 1.45fr)
+    minmax(140px, 0.74fr)
+    minmax(104px, 0.50fr)
+    minmax(118px, 0.58fr)
+    minmax(146px, 0.78fr)
+    106px
+    minmax(176px, 0.92fr);
+}
+
+.squadBlock {
+  position: relative;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.44)),
+    var(--squad-cover, none);
+  background-size: cover;
+  background-position: center;
+}
+
+.squadBlock::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.30)),
+    radial-gradient(circle at 0% 50%, rgba(245, 184, 0, 0.10), transparent 52%);
+  pointer-events: none;
+}
+
+.squadBlock strong {
+  position: relative;
+  z-index: 1;
+  color: var(--bt-text);
+  font-size: 13px;
+  font-weight: 700;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.55);
+}
+
+.dueHeader {
+  gap: 0;
+}
+
+.dueHeader small {
+  display: none;
+}
+
+/* Badge refinado com referência no roleBadge do Perfil: limpo, fino e sem preenchimento pesado */
+.clientItem :global(.bareBadge) {
+  min-height: 23px;
+  height: 23px;
+  padding: 2px 9px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  font-size: 10.5px;
+  line-height: 1.35;
+  font-weight: 560;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
+}
+
+.clientItem :global(.bareBadge_muted) {
+  border-color: rgba(255, 255, 255, 0.13);
+  background-color: transparent;
+  color: rgba(243, 240, 234, 0.68);
+}
+
+.clientItem :global(.bareBadge_info) {
+  border-color: rgba(122, 183, 255, 0.40);
+  background-color: transparent;
+  color: #7ab7ff;
+}
+
+.clientItem :global(.bareBadge_warning) {
+  border-color: rgba(245, 184, 0, 0.40);
+  background-color: transparent;
+  color: #f5b800;
+}
+
+.clientItem :global(.bareBadge_danger) {
+  border-color: rgba(255, 95, 95, 0.42);
+  background-color: transparent;
+  color: #ff6b6b;
+}
+
+.clientItem :global(.bareBadge_purple) {
+  border-color: rgba(192, 132, 252, 0.42);
+  background-color: transparent;
+  color: #c084fc;
+}
+
+.clientItem :global(.bareBadge_success) {
+  border-color: rgba(72, 213, 151, 0.36);
+  background-color: transparent;
+  color: #48d597;
+}
+
+.statusStack :global(.bareBadge_muted) {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(243, 240, 234, 0.72);
+}
+
+@media (max-width: 1360px) {
+  .commandLayer {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "search . filters page";
+  }
+
+  .searchWrapOpen {
+    width: min(286px, 30vw);
+  }
+
+  .filterDropdown {
+    justify-self: end;
+  }
+
+  .clientItem {
+    grid-template-columns:
+      minmax(220px, 1.28fr)
+      minmax(132px, 0.72fr)
+      minmax(96px, 0.48fr)
+      minmax(112px, 0.54fr)
+      minmax(140px, 0.72fr)
+      102px
+      minmax(166px, 0.86fr);
+  }
+}
+
+@media (max-width: 840px) {
+  .commandLayer {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "search filters page";
+  }
+
+  .searchWrapOpen {
+    width: min(100%, 300px);
+  }
+
+  .filterMenu {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .commandLayer {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "search"
+      "filters"
+      "page";
+  }
+
+  .searchWrap,
+  .searchToggle,
+  .filterButton,
+  .pageSizeButton {
+    width: 100%;
+    max-width: none;
+  }
+
+  .searchWrapOpen,
+  .searchBox {
+    width: 100%;
+    max-width: none;
+  }
+
+  .filterDropdown,
+  .pageSizeDropdown {
+    justify-self: stretch;
+  }
+
+  .filterMenu {
+    width: 100%;
+  }
+}
