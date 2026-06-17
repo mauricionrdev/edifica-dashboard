@@ -471,7 +471,6 @@ export default function DesignLabClientsPage() {
             {pagedRows.map((client) => {
               const avatar = getClientAvatar(client);
               const due = contractEndInfo(client, today);
-              const dueProgress = dueProgressValue(due);
               const tcv = isTcvClient(client);
               const internalSeller = getInternalSeller(client);
               const onboardingDays = getClientOnboardingDays(client, today);
@@ -492,7 +491,6 @@ export default function DesignLabClientsPage() {
                       openDetail(client.id);
                     }
                   }}
-                  style={{ '--due-progress': `${dueProgress}%` }}
                 >
                   <div className={styles.identityBlock}>
                     <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
@@ -519,9 +517,6 @@ export default function DesignLabClientsPage() {
                       <BareBadge tone={due.tone}>{due.label}</BareBadge>
                       {client.endDate ? <small>{fmtDateBR(client.endDate)}</small> : null}
                     </div>
-                    <span className={styles.dueTrack} aria-hidden="true">
-                      <span />
-                    </span>
                   </div>
 
                   <div className={styles.analysisGroup} aria-label="Análises do cliente">

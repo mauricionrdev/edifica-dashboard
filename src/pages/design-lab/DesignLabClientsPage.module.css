@@ -1155,3 +1155,168 @@
     grid-column: auto;
   }
 }
+
+
+/* v51 · Ajustes finos: filtro à direita, sem barra de vencimento, tags no padrão Perfil */
+.commandLayer {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "search spacer filters page";
+  justify-content: stretch;
+  column-gap: 8px;
+}
+
+.filterDropdown {
+  justify-self: end;
+}
+
+.pageSizeDropdown {
+  justify-self: end;
+}
+
+.filterButton,
+.pageSizeButton,
+.searchToggle,
+.searchBox {
+  height: 36px;
+}
+
+.filterButton {
+  min-width: 168px;
+}
+
+.searchWrapOpen {
+  width: min(276px, 28vw);
+}
+
+.dueTrack {
+  display: none !important;
+}
+
+.dueBlock {
+  gap: 0;
+}
+
+.dueHeader {
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.dueHeader small {
+  color: var(--bt-text-tertiary);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+/* Referência da tela Perfil: badge compacto, sem preenchimento pesado, só borda/texto */
+.clientItem :global(.bareBadge) {
+  min-height: 24px;
+  height: 24px;
+  max-width: 100%;
+  padding: 0 10px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--bt-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 640;
+  letter-spacing: -0.012em;
+  white-space: nowrap;
+}
+
+.clientItem :global(.bareBadge_muted) {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--bt-text-secondary);
+}
+
+.clientItem :global(.bareBadge_info) {
+  border-color: rgba(122, 183, 255, 0.44);
+  color: #7ab7ff;
+}
+
+.clientItem :global(.bareBadge_warning) {
+  border-color: rgba(245, 184, 0, 0.44);
+  color: #f5b800;
+}
+
+.clientItem :global(.bareBadge_danger) {
+  border-color: rgba(255, 95, 95, 0.46);
+  color: #ff6b6b;
+}
+
+.clientItem :global(.bareBadge_purple) {
+  border-color: rgba(192, 132, 252, 0.46);
+  color: #c084fc;
+}
+
+.clientItem :global(.bareBadge_success) {
+  border-color: rgba(72, 213, 151, 0.42);
+  color: #48d597;
+}
+
+.statusStack :global(.bareBadge_muted) {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--bt-text-secondary);
+}
+
+.typeBlock :global(.bareBadge) {
+  color: var(--bt-text-tertiary);
+}
+
+.statusStack {
+  justify-content: flex-start;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.analysisButton {
+  background: transparent !important;
+  box-shadow: none;
+}
+
+@media (max-width: 920px) {
+  .commandLayer {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "search spacer page"
+      "filters filters filters";
+  }
+
+  .filterDropdown {
+    justify-self: start;
+  }
+
+  .searchWrapOpen {
+    width: min(100%, 320px);
+  }
+}
+
+@media (max-width: 560px) {
+  .commandLayer {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "search"
+      "filters"
+      "page";
+  }
+
+  .searchWrap,
+  .searchWrapOpen,
+  .searchToggle,
+  .searchBox,
+  .filterButton,
+  .pageSizeButton {
+    width: 100%;
+  }
+
+  .filterDropdown,
+  .pageSizeDropdown {
+    justify-self: stretch;
+  }
+}
