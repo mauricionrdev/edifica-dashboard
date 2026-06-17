@@ -1698,3 +1698,56 @@
     max-height: calc(100dvh - 18px);
   }
 }
+
+
+/* v59 · Design Lab: detalhe completo, porém organizado e sem heranças problemáticas */
+.modalCardBare {
+  width: min(900px, calc(100vw - 40px));
+  max-height: min(720px, calc(100dvh - 40px));
+  border-radius: 22px;
+  box-shadow: none;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.026), transparent 32%),
+    #0f0f0d;
+}
+
+.modalHeadBare {
+  min-height: 62px;
+  padding: 10px 16px 10px 18px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.modalCardBare .name {
+  max-width: 420px;
+  overflow: hidden;
+  font-size: clamp(18px, 1.2vw, 21px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modalCardBare .status {
+  background: transparent !important;
+  border-radius: 99px;
+}
+
+.modalCardBare .iconBtn,
+.modalCardBare .headerIconAction,
+.modalCardBare .headerAction,
+.modalCardBare .projectBtn,
+.modalCardBare .btn,
+.modalCardBare .btnGhost,
+.modalCardBare .btnDanger {
+  border-radius: 99px;
+  box-shadow: none;
+}
+
+.modalBodyBare {
+  overflow: hidden;
+}
+
+@media (max-width: 920px) {
+  .modalCardBare {
+    width: calc(100vw - 22px);
+    max-height: calc(100dvh - 22px);
+  }
+}

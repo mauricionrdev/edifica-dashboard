@@ -226,7 +226,7 @@ export default function OverviewTab({
             {canManageAvatar ? (
               <div className={styles.avatarControls}>
                 <button type="button" onClick={onPickAvatar} disabled={deleting} title="Alterar imagem" aria-label="Alterar imagem">
-                  {avatarUrl ? 'Trocar imagem' : 'Alterar imagem'}
+                  {isBare ? (avatarUrl ? 'Trocar' : 'Foto') : (avatarUrl ? 'Trocar imagem' : 'Alterar imagem')}
                 </button>
                 {avatarUrl ? (
                   <button

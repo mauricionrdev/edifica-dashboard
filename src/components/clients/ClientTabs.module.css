@@ -628,3 +628,20 @@
     display: none;
   }
 }
+
+
+/* v59 · Design Lab: tabs do detalhe mais limpas */
+.tabsBar {
+  min-height: 48px;
+  padding: 8px 18px;
+  background: rgba(255, 255, 255, 0.008);
+}
+
+.tab,
+.analysisTab {
+  border-radius: 99px;
+}
+
+.tabBody {
+  max-height: calc(min(720px, 100dvh - 40px) - 112px);
+}
