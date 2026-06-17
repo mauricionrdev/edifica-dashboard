@@ -1805,3 +1805,16 @@
   background: rgba(255, 95, 95, 0.06);
   color: #ff9a9a;
 }
+
+/* v61 · largura do modal mais coerente para o conteúdo atual */
+.modalCardBare {
+  width: min(940px, calc(100vw - 48px));
+  max-height: min(860px, calc(100dvh - 40px));
+}
+
+@media (max-width: 720px) {
+  .modalCardBare {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+}

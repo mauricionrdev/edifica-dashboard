@@ -883,3 +883,83 @@
     max-width: none;
   }
 }
+
+/* v61 · mensalidades mais compactas e melhor centralizadas */
+.panel {
+  padding: 10px 0 0;
+  gap: 12px;
+  background: transparent;
+}
+
+.sectionHead,
+.rows {
+  width: 100%;
+  max-width: 860px;
+  margin-inline: auto;
+}
+
+.sectionHead {
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.sectionActions {
+  gap: 8px;
+}
+
+.rowCard {
+  padding: 16px 18px;
+  border-radius: 22px;
+}
+
+.rowHeader {
+  align-items: center;
+}
+
+.rowTitle {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rowGrid {
+  width: min(100%, 640px);
+  margin-inline: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px 16px;
+  justify-content: center;
+}
+
+.rowGrid > * {
+  min-width: 0;
+}
+
+.rowGrid input,
+.rowGrid :global(input),
+.rowGrid :global(button) {
+  min-height: 42px;
+  height: 42px;
+  border-radius: 14px;
+}
+
+.removeBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 99px;
+  align-self: flex-start;
+}
+
+@media (max-width: 720px) {
+  .sectionHead,
+  .rows {
+    max-width: none;
+  }
+
+  .rowGrid {
+    width: 100%;
+    grid-template-columns: 1fr;
+  }
+}

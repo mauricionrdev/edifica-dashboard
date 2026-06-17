@@ -225,19 +225,26 @@ export default function OverviewTab({
 
             {canManageAvatar ? (
               <div className={styles.avatarControls}>
-                <button type="button" onClick={onPickAvatar} disabled={deleting} title="Alterar imagem" aria-label="Alterar imagem">
-                  {isBare ? (avatarUrl ? 'Trocar' : 'Foto') : (avatarUrl ? 'Trocar imagem' : 'Alterar imagem')}
+                <button
+                  type="button"
+                  className={styles.avatarIconButton}
+                  onClick={onPickAvatar}
+                  disabled={deleting}
+                  title={avatarUrl ? 'Trocar imagem' : 'Adicionar imagem'}
+                  aria-label={avatarUrl ? 'Trocar imagem' : 'Adicionar imagem'}
+                >
+                  <CameraIcon size={15} />
                 </button>
                 {avatarUrl ? (
                   <button
                     type="button"
-                    className={styles.avatarRemoveButton}
+                    className={`${styles.avatarIconButton} ${styles.avatarRemoveButton}`.trim()}
                     onClick={onRemoveAvatar}
                     disabled={deleting}
                     title="Remover imagem"
                     aria-label="Remover imagem"
                   >
-                    Remover
+                    <TrashIcon size={15} />
                   </button>
                 ) : null}
               </div>
