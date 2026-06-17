@@ -368,29 +368,17 @@ export default function DesignLabClientsPage() {
   return (
     <div className={`btScope ${styles.page}`}>
       <section className={styles.commandLayer}>
-        <div className={`${styles.searchWrap} ${searchOpen ? styles.searchWrapOpen : ''}`.trim()} ref={searchRef}>
-          {searchOpen ? (
-            <label className={styles.searchBox}>
-              <SearchIcon size={15} aria-hidden="true" />
-              <input
-                type="search"
-                value={query}
-                autoFocus
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Buscar cliente ou squad"
-                aria-label="Buscar cliente"
-              />
-            </label>
-          ) : (
-            <button
-              type="button"
-              className={`${styles.searchToggle} ${query.trim() ? styles.searchToggleActive : ''}`.trim()}
-              onClick={() => setSearchOpen(true)}
-              aria-label="Abrir busca de clientes"
-            >
-              <SearchIcon size={15} aria-hidden="true" />
-            </button>
-          )}
+        <div className={`${styles.searchWrap} ${styles.searchWrapOpen}`.trim()} ref={searchRef}>
+          <label className={styles.searchBox}>
+            <SearchIcon size={15} aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar cliente ou squad"
+              aria-label="Buscar cliente"
+            />
+          </label>
         </div>
 
         <div className={styles.filterDropdown} ref={filterRef}>
@@ -590,6 +578,7 @@ export default function DesignLabClientsPage() {
       {modalOpen && canCreate ? (
         <ClientFormModal
           mode="create"
+          variant="bare"
           squads={squads || []}
           users={userDirectory || []}
           onClose={() => setModalOpen(false)}
@@ -600,6 +589,7 @@ export default function DesignLabClientsPage() {
       {selectedClient ? (
         <ClientDetailDrawer
           client={selectedClient}
+          variant="bare"
           squads={squads || []}
           users={userDirectory || []}
           canEditClient={canEditClientRecord(user, selectedClient)}

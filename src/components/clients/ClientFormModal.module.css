@@ -915,3 +915,184 @@
   outline: none;
   box-shadow: none;
 }
+
+/* v55 · Design Lab · criação de cliente Barely There */
+.overlayBare {
+  background: rgba(6, 6, 5, 0.78);
+  backdrop-filter: blur(18px);
+}
+
+.cardBare {
+  width: min(820px, calc(100vw - 36px));
+  max-height: min(760px, calc(100dvh - 36px));
+  border-color: rgba(255, 255, 255, 0.075);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.035), transparent 32%),
+    #0f0f0d;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
+}
+
+.headerBare,
+.footerBare {
+  min-height: 62px;
+  padding-inline: 22px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.headerBare {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.footerBare {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.cardBare .title {
+  font-size: 19px;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+}
+
+.cardBare .close {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-color: rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  background: transparent;
+}
+
+.cardBare .close:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.bodyBare {
+  padding: 18px 22px 20px;
+  gap: 14px;
+}
+
+.cardBare .section {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  gap: 14px;
+}
+
+.cardBare .section + .section {
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.cardBare .sectionTitle {
+  color: rgba(200, 193, 183, 0.74);
+  font-size: 10px;
+  font-weight: 690;
+  letter-spacing: 0.11em;
+}
+
+.cardBare .identityShell {
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 80%),
+    rgba(255, 255, 255, 0.01);
+}
+
+.cardBare .avatarPreview {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.cardBare .avatarUploadButton {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.cardBare .grid,
+.cardBare .identityGrid {
+  gap: 12px;
+}
+
+.cardBare .label {
+  color: rgba(200, 193, 183, 0.78);
+  font-size: 11px;
+  font-weight: 640;
+}
+
+.cardBare .input,
+.cardBare .select,
+.cardBare .selectControl {
+  height: 38px;
+  border-color: rgba(255, 255, 255, 0.075);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+}
+
+.cardBare .input:hover,
+.cardBare .select:hover,
+.cardBare .selectControl:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.cardBare .input:focus,
+.cardBare .select:focus,
+.cardBare .selectControl:focus,
+.cardBare .input:focus-visible,
+.cardBare .select:focus-visible,
+.cardBare .selectControl:focus-visible {
+  border-color: rgba(255, 255, 255, 0.16);
+  outline: none;
+  box-shadow: none;
+}
+
+.cardBare .btnSecondary,
+.cardBare .btnPrimary {
+  min-height: 36px;
+  border-radius: 999px;
+  padding-inline: 16px;
+  font-weight: 650;
+}
+
+.cardBare .btnSecondary {
+  border-color: rgba(255, 255, 255, 0.075);
+  background: transparent;
+}
+
+.cardBare .btnPrimary {
+  border-color: rgba(245, 235, 220, 0.88);
+  background: #eee8dc;
+  color: #11110f;
+}
+
+.cardBare .errorLine {
+  border-radius: 14px;
+}
+
+@media (max-width: 720px) {
+  .cardBare {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 20px;
+  }
+
+  .bodyBare {
+    padding-inline: 16px;
+  }
+
+  .headerBare,
+  .footerBare {
+    padding-inline: 16px;
+  }
+
+  .cardBare .identityShell {
+    grid-template-columns: 1fr;
+  }
+}
