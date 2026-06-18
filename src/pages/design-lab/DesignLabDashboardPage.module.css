@@ -1,139 +1,108 @@
-.page {
-  min-height: 100%;
-  padding: 18px;
-  background: #050605;
+.headerTitleMain {
   color: #f3f0ea;
-  display: grid;
+  font-size: 18px;
+  line-height: 1.08;
+  font-weight: 620;
+  letter-spacing: -0.035em;
+}
+
+.headerTitleSep {
+  color: rgba(243, 240, 234, 0.32);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.headerTitlePeriod {
+  color: rgba(243, 240, 234, 0.62);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.page {
+  height: 100%;
+  min-height: 0;
+  padding: 14px 18px 18px;
+  background: #050605;
+  color: rgba(243, 240, 234, 0.72);
+  display: flex;
+  flex-direction: column;
   gap: 14px;
-  align-content: start;
-  overflow: auto;
+  overflow: hidden;
   scrollbar-width: none;
 }
 
-.page::-webkit-scrollbar {
+.page * {
+  scrollbar-width: none;
+}
+
+.page *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
   display: none;
 }
 
-.headerLink {
-  min-height: 34px;
-  padding: 0 13px;
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  border-radius: 99px;
-  background: transparent;
-  color: rgba(243, 240, 234, 0.78);
+.toolbar {
+  min-width: 0;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
-  font-weight: 650;
-  text-decoration: none;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: visible;
 }
 
-.headerLink:hover {
-  border-color: rgba(245, 184, 0, 0.32);
-  color: #f5b800;
-  background: rgba(245, 184, 0, 0.045);
-}
-
-.hero,
-.metric,
-.panel,
-.panelLarge {
-  border: 1px solid rgba(255, 255, 255, 0.060);
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 14% 0%, rgba(255, 255, 255, 0.028), transparent 34%),
-    rgba(255, 255, 255, 0.010);
+.toolbar :global(select),
+.toolbar :global(button) {
+  min-height: 32px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  color: rgba(243, 240, 234, 0.76);
   box-shadow: none;
 }
 
-.hero {
-  min-height: 176px;
-  padding: 22px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
-  gap: 18px;
-  align-items: end;
-}
-
-.heroMain {
-  min-width: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.kicker {
-  color: rgba(170, 205, 224, 0.82);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.heroMain h2 {
-  margin: 0;
-  color: #f3f0ea;
-  font-size: clamp(38px, 6vw, 72px);
-  line-height: 0.92;
-  font-weight: 735;
-  letter-spacing: -0.075em;
-}
-
-.heroMain p,
-.heroAside small,
-.panelHeader small {
-  margin: 0;
-  color: rgba(243, 240, 234, 0.58);
-  font-size: 13px;
-  line-height: 1.4;
-  font-weight: 560;
-}
-
-.heroAside {
-  min-height: 116px;
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.012);
-  display: grid;
-  align-content: end;
-  gap: 7px;
-}
-
-.heroAside span,
-.metricTop span {
-  color: rgba(170, 205, 224, 0.82);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-}
-
-.heroAside strong {
-  color: #f3f0ea;
-  font-size: 36px;
-  line-height: 1;
-  font-weight: 735;
-  letter-spacing: -0.055em;
+.toolbar :global(select):hover,
+.toolbar :global(button):hover {
+  background: rgba(255, 255, 255, 0.038);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .metricsGrid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
-.metric {
+.metricCard,
+.columnsPanel,
+.detailsPanel,
+.activityPanel,
+.stateBlock {
+  border: 1px solid rgba(255, 255, 255, 0.060);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255, 255, 255, 0.026), transparent 34%),
+    rgba(255, 255, 255, 0.010);
+  box-shadow: none;
+}
+
+.metricCard {
   min-width: 0;
-  min-height: 114px;
+  min-height: 108px;
   padding: 14px;
-  border-radius: 20px;
   display: grid;
   align-content: space-between;
-  gap: 10px;
+  gap: 9px;
+  cursor: grab;
 }
 
-.metricTop {
+.metricCardDragging {
+  opacity: 0.65;
+}
+
+.metricCardTop {
   min-width: 0;
   display: flex;
   align-items: center;
@@ -141,22 +110,40 @@
   gap: 8px;
 }
 
-.metricTop svg {
-  color: rgba(243, 240, 234, 0.46);
+.metricLabel {
+  color: rgba(170, 205, 224, 0.82);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
 }
 
-.metric strong {
+.metricIcon {
+  color: rgba(243, 240, 234, 0.42);
+  display: inline-flex;
+}
+
+.metricValue {
   overflow: hidden;
   color: #f3f0ea;
-  font-size: clamp(19px, 1.4vw, 24px);
+  font-size: clamp(20px, 1.5vw, 26px);
   line-height: 1;
-  font-weight: 720;
-  letter-spacing: -0.05em;
+  font-weight: 730;
+  letter-spacing: -0.055em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.metric small {
+.metricFooter {
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+}
+
+.metricHelper {
   overflow: hidden;
   color: rgba(243, 240, 234, 0.54);
   font-size: 11.5px;
@@ -165,34 +152,81 @@
   white-space: nowrap;
 }
 
-.metric_success { border-color: rgba(72, 213, 151, 0.16); }
-.metric_warning { border-color: rgba(245, 184, 0, 0.18); }
-.metric_danger { border-color: rgba(255, 95, 95, 0.17); }
-.metric_info { border-color: rgba(122, 183, 255, 0.17); }
-.metric_purple { border-color: rgba(192, 132, 252, 0.18); }
+.metricDelta {
+  min-height: 20px;
+  padding: 2px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.070);
+  border-radius: 99px;
+  color: rgba(243, 240, 234, 0.64);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
 
-.contentGrid {
+.metricDelta_up {
+  color: #48d597;
+  border-color: rgba(72, 213, 151, 0.28);
+}
+
+.metricDelta_down {
+  color: #ff8a8a;
+  border-color: rgba(255, 95, 95, 0.28);
+}
+
+.metricDelta_flat {
+  color: rgba(243, 240, 234, 0.52);
+}
+
+.metricCard_good { border-color: rgba(72, 213, 151, 0.16); }
+.metricCard_warning { border-color: rgba(245, 184, 0, 0.18); }
+.metricCard_risk { border-color: rgba(255, 95, 95, 0.17); }
+.metricCard_neutral { border-color: rgba(255, 255, 255, 0.060); }
+
+.metricProgress {
+  width: 100%;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.055);
+  overflow: hidden;
+}
+
+.metricProgressBar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(245, 184, 0, 0.82);
+}
+
+.metricProgressBar_risk {
+  background: #ff6b6b;
+}
+
+.dashboardPanels {
+  min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  grid-template-columns: minmax(0, 1.48fr) minmax(280px, 0.52fr);
   gap: 14px;
 }
 
-.bottomGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(260px, 0.55fr) minmax(0, 1fr);
-  gap: 14px;
-}
-
-.panel,
-.panelLarge {
+.boardSection {
   min-width: 0;
+  min-height: 0;
+}
+
+.columnsPanel,
+.detailsPanel,
+.activityPanel {
+  min-width: 0;
+  min-height: 0;
   padding: 16px;
   display: grid;
   align-content: start;
   gap: 14px;
 }
 
-.panelHeader {
+.columnsPanelHeader,
+.compareHeader,
+.activityHeader {
   min-width: 0;
   display: flex;
   align-items: flex-start;
@@ -200,8 +234,10 @@
   gap: 12px;
 }
 
-.panelHeader h3 {
-  margin: 4px 0 0;
+.columnsPanelTitle,
+.compareHeader h3,
+.activityHeader h3 {
+  margin: 0;
   color: #f3f0ea;
   font-size: 18px;
   line-height: 1.08;
@@ -209,108 +245,153 @@
   letter-spacing: -0.045em;
 }
 
-.squadList,
-.alertList,
-.compactRows,
-.recentList {
+.compareHeaderHint,
+.activityHeaderBadge {
+  min-height: 22px;
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 99px;
+  color: rgba(170, 205, 224, 0.76);
+  font-size: 10.5px;
+  font-weight: 680;
+  white-space: nowrap;
+}
+
+.columnsCanvas {
+  min-height: 300px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.006);
+  overflow: hidden;
+}
+
+.columnsSvg {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  display: block;
+}
+
+.columnsAxisText,
+.columnsYear {
+  fill: rgba(243, 240, 234, 0.40);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.columnsValue {
+  fill: rgba(243, 240, 234, 0.74);
+  font-size: 13px;
+  font-weight: 730;
+}
+
+.columnsValueCurrent {
+  fill: #f5b800;
+}
+
+.columnsMonth {
+  fill: rgba(243, 240, 234, 0.48);
+  font-size: 11px;
+  font-weight: 680;
+  letter-spacing: 0.08em;
+}
+
+.columnsMonthCurrent {
+  fill: #f5b800;
+}
+
+.compareBody,
+.compareGrid {
+  min-width: 0;
+}
+
+.compareGrid {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.compareItem {
+  min-height: 60px;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.008);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.compareLeft {
+  display: grid;
+  gap: 5px;
+}
+
+.compareLabel {
+  color: rgba(170, 205, 224, 0.82);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.compareDelta {
+  width: fit-content;
+  min-height: 20px;
+  padding: 2px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.070);
+  border-radius: 99px;
+  color: rgba(243, 240, 234, 0.64);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.compareDelta_good { color: #48d597; border-color: rgba(72, 213, 151, 0.28); }
+.compareDelta_risk { color: #ff8a8a; border-color: rgba(255, 95, 95, 0.28); }
+.compareDelta_flat { color: rgba(243, 240, 234, 0.52); }
+
+.compareValue {
+  margin: 0;
+  color: #f3f0ea;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+
+.dashboardLastCard {
+  min-height: 0;
+}
+
+.activityList {
   min-width: 0;
   display: grid;
   gap: 8px;
 }
 
-.squadRow {
+.activityItem {
   min-width: 0;
-  min-height: 60px;
-  padding: 10px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.050);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.008);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.36fr);
-  align-items: center;
-  gap: 14px;
-}
-
-.squadInfo,
-.squadMetric,
-.clientLineText {
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-}
-
-.squadInfo strong,
-.clientLineText strong,
-.compactRow strong {
-  overflow: hidden;
-  color: #f3f0ea;
-  font-size: 13.5px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.squadInfo span,
-.clientLineText small,
-.compactRow span,
-.compactRow em {
-  overflow: hidden;
-  color: rgba(243, 240, 234, 0.56);
-  font-size: 11.5px;
-  font-style: normal;
-  font-weight: 560;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.squadMetric {
-  justify-items: end;
-}
-
-.squadMetric strong {
-  color: #f3f0ea;
-  font-size: 13.5px;
-  font-weight: 710;
-  white-space: nowrap;
-}
-
-.progressTrack {
-  width: 100%;
-  max-width: 170px;
-  height: 3px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.055);
-  overflow: hidden;
-}
-
-.progressTrack i {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: rgba(245, 184, 0, 0.82);
-}
-
-.clientLine {
-  min-width: 0;
-  min-height: 52px;
+  min-height: 54px;
   padding: 8px;
   border: 1px solid rgba(255, 255, 255, 0.045);
   border-radius: 17px;
   background: rgba(255, 255, 255, 0.008);
   color: inherit;
-  text-decoration: none;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 36px minmax(0, 1.2fr) minmax(110px, 0.55fr) minmax(120px, 0.55fr) auto;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
 }
 
-.clientLine:hover {
+.activityItem:hover {
   border-color: rgba(255, 255, 255, 0.085);
   background: rgba(255, 255, 255, 0.018);
 }
 
-.avatar {
+.activityAvatar {
   width: 36px;
   height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.075);
@@ -325,14 +406,44 @@
   font-weight: 720;
 }
 
-.avatar img {
+.activityAvatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.emptyLine {
-  min-height: 72px;
+.activityName,
+.activityDate,
+.activitySquad,
+.activityFee {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityName {
+  color: #f3f0ea;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.activityDate,
+.activitySquad {
+  color: rgba(170, 205, 224, 0.66);
+  font-size: 12px;
+  font-weight: 590;
+}
+
+.activityFee {
+  color: #f3f0ea;
+  font-size: 12px;
+  font-weight: 690;
+  justify-self: end;
+}
+
+.emptyState {
+  min-height: 86px;
+  margin: 0;
   border: 1px solid rgba(255, 255, 255, 0.050);
   border-radius: 18px;
   color: rgba(243, 240, 234, 0.52);
@@ -342,85 +453,71 @@
   font-weight: 560;
 }
 
-.compactRow {
-  min-width: 0;
-  min-height: 44px;
-  padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.045);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.008);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 10px;
-}
-
-.statusGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.statusGrid span {
-  min-height: 70px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.045);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.008);
-  display: grid;
-  align-content: end;
-  gap: 6px;
-}
-
-.statusGrid strong {
+.stateBlock {
+  min-height: 180px;
+  padding: 20px;
   color: #f3f0ea;
-  font-size: 24px;
-  line-height: 1;
-  font-weight: 730;
-  letter-spacing: -0.05em;
+  display: grid;
+  place-items: center;
+  gap: 12px;
 }
 
-.statusGrid small {
-  color: rgba(243, 240, 234, 0.56);
-  font-size: 11.5px;
-  font-weight: 590;
+.retryButton {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(245, 184, 0, 0.32);
+  border-radius: 99px;
+  background: transparent;
+  color: #f5b800;
+  font-weight: 680;
 }
 
-@media (max-width: 1280px) {
+.skeletonBlock,
+.skeletonTall {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.skeletonTall {
+  min-height: 320px;
+  border-radius: 22px;
+}
+
+@media (max-width: 1320px) {
   .metricsGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .bottomGrid,
-  .contentGrid {
+  .dashboardPanels {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 780px) {
   .page {
     padding: 12px;
+    overflow: auto;
   }
 
-  .hero {
-    grid-template-columns: 1fr;
-    padding: 18px;
+  .toolbar {
+    flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
-  .metricsGrid,
-  .statusGrid {
+  .metricsGrid {
     grid-template-columns: 1fr;
   }
 
-  .squadRow,
-  .clientLine,
-  .compactRow {
-    grid-template-columns: 1fr;
+  .activityItem {
+    grid-template-columns: 36px minmax(0, 1fr);
     justify-items: start;
   }
 
-  .squadMetric {
-    width: 100%;
-    justify-items: start;
+  .activityDate,
+  .activitySquad,
+  .activityFee {
+    grid-column: 2;
+    justify-self: start;
   }
 }
