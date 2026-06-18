@@ -364,13 +364,6 @@ function ActivityPanel({ activities = [], onOpenClient }) {
 
       {rows.length > 0 ? (
         <div className={styles.activityList}>
-          <div className={styles.activityHeadRow} aria-hidden="true">
-            <span>Cliente</span>
-            <span>Vencimento</span>
-            <span>Squad</span>
-            <span>Valor</span>
-          </div>
-
           {rows.map((activity) => {
             const client = activity.client || {};
             const initials = getInitials(client.name);

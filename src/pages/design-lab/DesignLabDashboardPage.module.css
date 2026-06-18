@@ -2446,3 +2446,219 @@
     justify-items: start;
   }
 }
+
+
+/* v84 · gráfico menos esmagado + contratos vencendo no padrão da nova lista */
+.columnsPanel {
+  min-height: clamp(500px, 32vw, 610px);
+  padding: 18px 20px 20px;
+}
+
+.columnsCanvas {
+  min-height: clamp(390px, 26vw, 500px);
+  height: clamp(390px, 26vw, 500px);
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.columnsSvg {
+  min-height: clamp(390px, 26vw, 500px);
+}
+
+.columnsPanelHeader {
+  margin-bottom: 4px;
+}
+
+.chartCurrentBadge {
+  border: 0;
+  background: transparent;
+  color: rgba(122, 183, 255, 0.88);
+  padding: 0;
+}
+
+.detailsPanel {
+  min-height: clamp(500px, 32vw, 610px);
+  border-radius: 24px;
+}
+
+.compareItem {
+  min-height: 70px;
+  padding: 12px 2px;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.048) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+.compareItem:last-child {
+  border-bottom: 0 !important;
+}
+
+.compareDelta {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.dashboardLastCard {
+  border-radius: 24px;
+}
+
+.dashboardLastCard .activityHeader {
+  min-height: 62px;
+  padding: 0 22px;
+}
+
+.dashboardLastCard .activityHeadRow {
+  display: none !important;
+}
+
+.dashboardLastCard .activityList {
+  overflow: hidden;
+  gap: 0;
+}
+
+.dashboardLastCard .activityItem {
+  --expiring-accent: transparent;
+  min-height: 78px;
+  padding: 0 22px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.046);
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(280px, 1.35fr) minmax(150px, 0.62fr) minmax(170px, 0.66fr) minmax(118px, 0.42fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.dashboardLastCard .activityItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 15px;
+  bottom: 15px;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--expiring-accent);
+  opacity: 0.95;
+}
+
+.dashboardLastCard .activityIdentity {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboardLastCard .activityAvatar {
+  width: 42px;
+  height: 42px;
+}
+
+.dashboardLastCard .activityIdentityText {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.dashboardLastCard .activityIdentityText strong,
+.dashboardLastCard .activityName {
+  color: #f3f0ea;
+  font-size: 13.5px;
+  line-height: 1.15;
+  font-weight: 720;
+}
+
+.dashboardLastCard .activityIdentityText small {
+  color: rgba(243, 240, 234, 0.54);
+  font-size: 11.5px;
+  line-height: 1.15;
+  font-weight: 560;
+}
+
+.dashboardLastCard .activitySquad {
+  justify-self: start;
+  color: rgba(170, 205, 224, 0.78);
+  font-size: 12px;
+  font-weight: 680;
+  text-align: left;
+}
+
+.dashboardLastCard .activityDueBlock {
+  min-width: 0;
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+}
+
+.dashboardLastCard .activityDueBadge {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(170, 205, 224, 0.86);
+  font-size: 12px;
+  line-height: 1.15;
+  font-weight: 760;
+}
+
+.dashboardLastCard .activityDueBadge_info {
+  color: #7ab7ff;
+}
+
+.dashboardLastCard .activityDueBadge_warning {
+  color: #f5b800;
+}
+
+.dashboardLastCard .activityDueBadge_danger {
+  color: #ff6b6b;
+}
+
+.dashboardLastCard .activityDueBlock small {
+  color: rgba(170, 205, 224, 0.70);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.dashboardLastCard .activityFee {
+  justify-self: end;
+  color: #f3f0ea;
+  font-size: 12.5px;
+  font-weight: 720;
+  text-align: right;
+}
+
+@media (max-width: 1320px) {
+  .columnsPanel,
+  .detailsPanel {
+    min-height: auto;
+  }
+
+  .columnsCanvas,
+  .columnsSvg {
+    min-height: 360px;
+    height: 360px;
+  }
+}
+
+@media (max-width: 920px) {
+  .dashboardLastCard .activityItem {
+    min-height: 92px;
+    padding: 12px 18px;
+    grid-template-columns: 1fr;
+    gap: 7px;
+    align-items: start;
+  }
+
+  .dashboardLastCard .activitySquad,
+  .dashboardLastCard .activityFee {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .dashboardLastCard .activityDueBlock {
+    justify-items: start;
+  }
+}
