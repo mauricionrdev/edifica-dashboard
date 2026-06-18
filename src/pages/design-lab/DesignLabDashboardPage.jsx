@@ -646,11 +646,12 @@ export default function DesignLabDashboardPage() {
           <EntryColumnsChart rows={entryColumns} />
         </section>
 
-        <aside className={styles.sideColumn}>
-          <ComparisonPanel current={executiveMetrics} previous={previousMetrics} currentLabel={periodLabel} />
-          <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
-        </aside>
+        <ComparisonPanel current={executiveMetrics} previous={previousMetrics} currentLabel={periodLabel} />
       </div>
+
+      <section className={styles.dashboardLastCard}>
+        <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
+      </section>
 
       {selectedClient ? (
         <DesignLabClientDetailModal

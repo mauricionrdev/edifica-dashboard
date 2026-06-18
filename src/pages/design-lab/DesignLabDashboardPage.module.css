@@ -1190,3 +1190,290 @@
     grid-row: 4;
   }
 }
+
+
+/* v79 · KPIs refinados + Contratos vencendo como card inferior completo */
+.metricsGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metricCard {
+  min-height: 112px;
+  padding: 15px 16px 14px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.030), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.013), rgba(255, 255, 255, 0.004));
+  position: relative;
+  overflow: hidden;
+}
+
+.metricCard::before {
+  content: "";
+  position: absolute;
+  inset: auto 16px 0 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.metricCard:hover {
+  border-color: rgba(255, 255, 255, 0.095);
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.038), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.017), rgba(255, 255, 255, 0.006));
+}
+
+.metricCard_good {
+  border-color: rgba(72, 213, 151, 0.18);
+}
+
+.metricCard_warning {
+  border-color: rgba(245, 184, 0, 0.20);
+}
+
+.metricCard_risk {
+  border-color: rgba(255, 95, 95, 0.18);
+}
+
+.metricLabel {
+  color: rgba(170, 205, 224, 0.78);
+  font-size: 9.8px;
+  letter-spacing: 0.115em;
+}
+
+.metricIcon {
+  color: rgba(243, 240, 234, 0.34);
+}
+
+.metricValue {
+  font-size: clamp(22px, 1.72vw, 30px);
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+}
+
+.metricFooter {
+  gap: 8px;
+}
+
+.metricDelta {
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10.8px;
+}
+
+.metricHelper {
+  font-size: 11.8px;
+}
+
+.dashboardPanels {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  align-items: stretch;
+}
+
+.sideColumn {
+  display: none;
+}
+
+.detailsPanel {
+  min-height: 440px;
+  padding: 18px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: start;
+}
+
+.compareHeader {
+  align-items: center;
+  padding-bottom: 0;
+}
+
+.compareGrid {
+  height: 100%;
+  align-content: stretch;
+  gap: 10px;
+}
+
+.compareItem {
+  min-height: 74px;
+  padding: 13px 14px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.020), transparent 38%),
+    rgba(255, 255, 255, 0.007);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.compareValue {
+  font-size: clamp(17px, 1.15vw, 21px);
+}
+
+.dashboardLastCard {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(255, 255, 255, 0.060);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255, 255, 255, 0.026), transparent 34%),
+    rgba(255, 255, 255, 0.010);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.dashboardLastCard .activityPanel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.activityPanel {
+  min-height: 0;
+  max-height: none;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.activityHeader {
+  min-height: 58px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
+  align-items: center;
+}
+
+.activityList {
+  max-height: none;
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+  gap: 0;
+  padding: 0;
+}
+
+.activityItem {
+  width: 100%;
+  min-height: 72px;
+  padding: 0 20px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.046);
+  border-radius: 0;
+  background: transparent;
+  grid-template-columns: 46px minmax(0, 1fr) minmax(132px, auto) minmax(120px, auto) minmax(112px, auto);
+  grid-template-rows: auto;
+  grid-template-areas: none;
+  align-items: center;
+  gap: 16px;
+}
+
+.activityItem:last-child {
+  border-bottom: 0;
+}
+
+.activityItem:hover {
+  border-color: rgba(255, 255, 255, 0.046);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.activityAvatar {
+  width: 38px;
+  height: 38px;
+  grid-column: auto;
+  grid-row: auto;
+}
+
+.activityName {
+  grid-column: auto;
+  grid-row: auto;
+  align-self: center;
+  font-size: 13.5px;
+  line-height: 1.15;
+}
+
+.activityDate {
+  grid-column: auto;
+  grid-row: auto;
+  justify-self: end;
+  align-self: center;
+  font-size: 12px;
+  line-height: 1;
+  text-align: right;
+}
+
+.activitySquad {
+  grid-column: auto;
+  grid-row: auto;
+  justify-self: end;
+  align-self: center;
+  max-width: 150px;
+  font-size: 12px;
+  line-height: 1;
+  text-align: right;
+}
+
+.activityFee {
+  grid-column: auto;
+  grid-row: auto;
+  justify-self: end;
+  align-self: center;
+  color: #f3f0ea;
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 700;
+  text-align: right;
+}
+
+@media (max-width: 1320px) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboardPanels {
+    grid-template-columns: 1fr;
+  }
+
+  .detailsPanel {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 860px) {
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .activityItem {
+    min-height: 88px;
+    padding: 12px 16px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 4px 12px;
+  }
+
+  .activityAvatar {
+    width: 42px;
+    height: 42px;
+    grid-column: 1;
+    grid-row: 1 / span 4;
+  }
+
+  .activityName,
+  .activityDate,
+  .activitySquad,
+  .activityFee {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .activityName { grid-row: 1; }
+  .activityDate { grid-row: 2; }
+  .activitySquad { grid-row: 3; }
+  .activityFee { grid-row: 4; }
+}
