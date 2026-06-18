@@ -235,76 +235,57 @@ function EntryColumnsChart({ rows = [] }) {
 
   const VB_W = 760;
   const VB_H = 300;
-  const padding = { top: 34, right: 26, bottom: 44, left: 48 };
+  const padding = { top: 30, right: 44, bottom: 42, left: 28 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
-  const slot = plotW / Math.max(safeRows.length - 1, 1);
+  const slot = plotW / Math.max(safeRows.length, 1);
+  const barWidth = Math.max(18, Math.min(38, slot * 0.34));
+  const baseline = padding.top + plotH;
 
-  const points = safeRows.map((row, index) => {
+  const bars = safeRows.map((row, index) => {
     const value = Number(row.cnt) || 0;
     const year = Number(row.y) || new Date().getFullYear();
     const month = Number(row.m) || 0;
-    const x = padding.left + slot * index;
-    const yCoord = padding.top + plotH - (value / scaleMax) * plotH;
-
-    return {
-      ...row,
-      year,
-      month,
-      value,
-      x,
-      yCoord,
-    };
+    const height = value > 0 ? Math.max(8, (value / scaleMax) * plotH) : 0;
+    const x = padding.left + slot * index + (slot - barWidth) / 2;
+    const yCoord = baseline - height;
+    return { ...row, value, year, month, height, x, yCoord };
   });
 
-  const trendPath = buildSmoothPath(points.map((point) => ({ x: point.x, y: point.yCoord })));
-  const areaPath = `${trendPath} L ${points[points.length - 1].x} ${padding.top + plotH} L ${points[0].x} ${padding.top + plotH} Z`;
-  const currentPoint = points.find((point) => point.isNow) || points[points.length - 1];
-  const currentLabel = `${MONTHS_FULL[currentPoint.month]} ${currentPoint.year}`;
+  const currentBar = bars.find((bar) => bar.isNow) || bars[bars.length - 1];
+  const currentLabel = `${MONTHS_FULL[currentBar.month]} ${currentBar.year}`;
 
   return (
     <div className={styles.columnsPanel}>
       <div className={styles.columnsPanelHeader}>
-        <div>
-          <span className={styles.chartKicker}>últimos 6 meses</span>
-          <h3 className={styles.columnsPanelTitle}>Entradas</h3>
-        </div>
+        <h3 className={styles.columnsPanelTitle}>Entradas</h3>
         <span className={styles.chartCurrentBadge}>{currentLabel}</span>
       </div>
 
       <div className={styles.columnsCanvas}>
         <svg className={styles.columnsSvg} viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="none" aria-label="Entradas por mês">
-          <defs>
-            <linearGradient id="designLabLinearArea" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(245,184,0,0.18)" />
-              <stop offset="55%" stopColor="rgba(245,184,0,0.045)" />
-              <stop offset="100%" stopColor="rgba(245,184,0,0)" />
-            </linearGradient>
-            <linearGradient id="designLabLinearStroke" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopColor="rgba(232,234,238,0.28)" />
-              <stop offset="72%" stopColor="rgba(232,234,238,0.38)" />
-              <stop offset="100%" stopColor="rgba(245,184,0,0.92)" />
-            </linearGradient>
-          </defs>
-
           {ticks.filter((tick) => tick !== 0).map((tick) => {
-            const yCoord = padding.top + plotH - (tick / scaleMax) * plotH;
+            const yCoord = baseline - (tick / scaleMax) * plotH;
             return (
               <g key={`grid-${tick}`}>
                 <line x1={padding.left} x2={VB_W - padding.right} y1={yCoord} y2={yCoord} className={styles.chartGridLine} vectorEffect="non-scaling-stroke" />
-                <text x={padding.left - 16} y={yCoord + 4} textAnchor="end" className={styles.columnsAxisText}>{tick}</text>
+                <text x={VB_W - 18} y={yCoord + 4} textAnchor="end" className={styles.columnsAxisText}>{tick}</text>
               </g>
             );
           })}
 
-          <path d={areaPath} className={styles.linearChartArea} />
-          <path d={trendPath} className={styles.linearChartLine} />
-
-          {points.map((point) => (
-            <g key={`${point.year}-${point.month}`} className={point.isNow ? styles.chartCurrentGroup : ''}>
-              <circle cx={point.x} cy={point.yCoord} r={point.isNow ? 5 : 3.6} className={point.isNow ? styles.linearDotCurrent : styles.linearDot} />
-              <text x={point.x} y={point.yCoord - 12} textAnchor="middle" className={`${styles.columnsValue} ${point.isNow ? styles.columnsValueCurrent : ''}`.trim()}>{fmtInt(point.value)}</text>
-              <text x={point.x} y={VB_H - 18} textAnchor="middle" className={`${styles.columnsMonth} ${point.isNow ? styles.columnsMonthCurrent : ''}`.trim()}>{MONTHS_FULL[point.month].slice(0, 3).toUpperCase()}</text>
+          {bars.map((bar) => (
+            <g key={`${bar.year}-${bar.month}`} className={bar.isNow ? styles.chartCurrentGroup : ''}>
+              <rect
+                x={bar.x}
+                y={bar.yCoord}
+                width={barWidth}
+                height={bar.height}
+                rx="7"
+                className={bar.isNow ? styles.barColumnCurrent : styles.barColumn}
+              />
+              <text x={bar.x + barWidth / 2} y={bar.yCoord - 9} textAnchor="middle" className={`${styles.columnsValue} ${bar.isNow ? styles.columnsValueCurrent : ''}`.trim()}>{fmtInt(bar.value)}</text>
+              <text x={bar.x + barWidth / 2} y={VB_H - 18} textAnchor="middle" className={`${styles.columnsMonth} ${bar.isNow ? styles.columnsMonthCurrent : ''}`.trim()}>{MONTHS_FULL[bar.month].slice(0, 3).toUpperCase()}</text>
             </g>
           ))}
         </svg>
@@ -312,7 +293,6 @@ function EntryColumnsChart({ rows = [] }) {
     </div>
   );
 }
-
 
 function ComparisonPanel({ current, previous, currentLabel }) {
   const buildRow = (label, currentVal, previousVal, formatter, options = {}) => {
@@ -378,10 +358,7 @@ function ActivityPanel({ activities = [], onOpenClient }) {
   return (
     <section className={styles.activityPanel}>
       <div className={styles.activityHeader}>
-        <div>
-          <span className={styles.activityKicker}>próximos vencimentos</span>
-          <h3>Contratos vencendo</h3>
-        </div>
+        <h3>Contratos vencendo</h3>
         <span className={styles.activityHeaderBadge}>{rows.length}</span>
       </div>
 

@@ -2030,3 +2030,419 @@
     justify-self: start;
   }
 }
+
+/* v83 · gráfico em colunas + menos card dentro de card */
+.page {
+  overflow: auto;
+}
+
+.dashboardPanels {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  align-items: stretch;
+  gap: 14px;
+}
+
+.metricCard,
+.columnsPanel,
+.detailsPanel,
+.dashboardLastCard {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.020), transparent 32%),
+    rgba(255, 255, 255, 0.008);
+}
+
+.columnsPanel {
+  min-height: 420px;
+  padding: 18px 20px 20px;
+}
+
+.columnsPanelHeader,
+.compareHeader,
+.activityHeader {
+  align-items: center;
+}
+
+.chartKicker,
+.activityKicker {
+  display: none !important;
+}
+
+.columnsCanvas {
+  height: 330px;
+  min-height: 330px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.columnsSvg {
+  width: 100%;
+  height: 100%;
+  min-height: 330px;
+  display: block;
+}
+
+.chartGridLine {
+  stroke: rgba(255, 255, 255, 0.075);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+
+.barColumn,
+.barColumnCurrent {
+  vector-effect: non-scaling-stroke;
+  transition: opacity 140ms ease;
+}
+
+.barColumn {
+  fill: rgba(232, 234, 238, 0.34);
+  stroke: rgba(255, 255, 255, 0.045);
+  stroke-width: 1;
+}
+
+.barColumnCurrent {
+  fill: rgba(245, 184, 0, 0.82);
+  stroke: rgba(245, 184, 0, 0.24);
+  stroke-width: 1;
+}
+
+.columnsValue {
+  fill: rgba(243, 240, 234, 0.78);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.columnsValueCurrent,
+.columnsMonthCurrent {
+  fill: #f5b800;
+}
+
+.columnsAxisText,
+.columnsMonth {
+  fill: rgba(243, 240, 234, 0.38);
+  font-size: 10.5px;
+  font-weight: 640;
+}
+
+.columnsMonth {
+  letter-spacing: 0.10em;
+}
+
+.chartCurrentBadge,
+.compareHeaderHint,
+.activityHeaderBadge {
+  border: 0;
+  background: transparent;
+  color: rgba(170, 205, 224, 0.72);
+  padding: 0;
+}
+
+.detailsPanel {
+  min-height: 420px;
+  padding: 18px 20px 20px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.compareBody {
+  min-width: 0;
+  align-self: stretch;
+  display: grid;
+}
+
+.compareGrid {
+  margin: 0;
+  display: grid;
+  align-content: stretch;
+  gap: 0;
+}
+
+.compareItem {
+  min-height: 72px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+
+.compareItem:last-child {
+  border-bottom: 0;
+}
+
+.compareLabel {
+  color: rgba(170, 205, 224, 0.82);
+}
+
+.compareDelta {
+  width: auto;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 11.5px;
+}
+
+.compareValue {
+  font-size: 19px;
+}
+
+.dashboardLastCard {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 0 !important;
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  transform: none !important;
+}
+
+.dashboardLastCard .activityPanel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: none;
+  min-height: 0;
+}
+
+.dashboardLastCard .activityHeader {
+  min-height: 58px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
+}
+
+.dashboardLastCard .activityHeader > div {
+  display: contents;
+}
+
+.dashboardLastCard .activityList {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  max-height: none;
+  overflow: hidden;
+}
+
+.activityHeadRow,
+.dashboardLastCard .activityItem {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.35fr) minmax(190px, 0.9fr) minmax(150px, 0.65fr) minmax(120px, 0.55fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.activityHeadRow {
+  min-height: 38px;
+  padding: 0 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.040);
+}
+
+.activityHeadRow span {
+  color: rgba(170, 205, 224, 0.66);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.activityHeadRow span:nth-child(3),
+.activityHeadRow span:nth-child(4) {
+  text-align: right;
+}
+
+.dashboardLastCard .activityItem {
+  position: relative;
+  width: 100%;
+  min-height: 72px;
+  padding: 0 22px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.046);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dashboardLastCard .activityItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--expiring-accent, rgba(122, 183, 255, 0.75));
+}
+
+.dashboardLastCard .activityItem_info { --expiring-accent: #7ab7ff; }
+.dashboardLastCard .activityItem_warning { --expiring-accent: #f5b800; }
+.dashboardLastCard .activityItem_danger { --expiring-accent: #ff5f5f; }
+
+.dashboardLastCard .activityItem:last-child {
+  border-bottom: 0;
+}
+
+.dashboardLastCard .activityItem:hover {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.activityIdentity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboardLastCard .activityAvatar {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.060);
+  border-radius: 999px;
+  background: #090909;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboardLastCard .activityAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.activityIdentityText {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.activityIdentityText strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #f3f0ea;
+  font-size: 13.5px;
+  line-height: 1.18;
+  font-weight: 690;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityIdentityText small {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(243, 240, 234, 0.56);
+  font-size: 11.3px;
+  line-height: 1.1;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityDueBlock {
+  min-width: 0;
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+}
+
+.activityDueBadge {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(243, 240, 234, 0.72);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 690;
+  white-space: nowrap;
+}
+
+.activityDueBadge_info { color: #7ab7ff; }
+.activityDueBadge_warning { color: #f5b800; }
+.activityDueBadge_danger { color: #ff6b6b; }
+
+.activityDueBlock small {
+  color: rgba(170, 205, 224, 0.62);
+  font-size: 11.2px;
+  line-height: 1;
+  font-weight: 560;
+  white-space: nowrap;
+}
+
+.dashboardLastCard .activitySquad,
+.dashboardLastCard .activityFee {
+  min-width: 0;
+  overflow: hidden;
+  justify-self: end;
+  line-height: 1.1;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboardLastCard .activitySquad {
+  max-width: 170px;
+  color: rgba(170, 205, 224, 0.72);
+  font-size: 12.2px;
+  font-weight: 610;
+}
+
+.dashboardLastCard .activityFee {
+  color: #f3f0ea;
+  font-size: 12.8px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1320px) {
+  .dashboardPanels {
+    grid-template-columns: 1fr;
+  }
+
+  .columnsPanel,
+  .detailsPanel {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 920px) {
+  .activityHeadRow {
+    display: none;
+  }
+
+  .dashboardLastCard .activityItem {
+    min-height: 90px;
+    padding: 12px 16px;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .activityIdentity,
+  .activityDueBlock,
+  .dashboardLastCard .activitySquad,
+  .dashboardLastCard .activityFee {
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .activityDueBlock {
+    justify-items: start;
+  }
+}
