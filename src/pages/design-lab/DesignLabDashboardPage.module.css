@@ -1,0 +1,426 @@
+.page {
+  min-height: 100%;
+  padding: 18px;
+  background: #050605;
+  color: #f3f0ea;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.page::-webkit-scrollbar {
+  display: none;
+}
+
+.headerLink {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 99px;
+  background: transparent;
+  color: rgba(243, 240, 234, 0.78);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.headerLink:hover {
+  border-color: rgba(245, 184, 0, 0.32);
+  color: #f5b800;
+  background: rgba(245, 184, 0, 0.045);
+}
+
+.hero,
+.metric,
+.panel,
+.panelLarge {
+  border: 1px solid rgba(255, 255, 255, 0.060);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255, 255, 255, 0.028), transparent 34%),
+    rgba(255, 255, 255, 0.010);
+  box-shadow: none;
+}
+
+.hero {
+  min-height: 176px;
+  padding: 22px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
+  gap: 18px;
+  align-items: end;
+}
+
+.heroMain {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.kicker {
+  color: rgba(170, 205, 224, 0.82);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.heroMain h2 {
+  margin: 0;
+  color: #f3f0ea;
+  font-size: clamp(38px, 6vw, 72px);
+  line-height: 0.92;
+  font-weight: 735;
+  letter-spacing: -0.075em;
+}
+
+.heroMain p,
+.heroAside small,
+.panelHeader small {
+  margin: 0;
+  color: rgba(243, 240, 234, 0.58);
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 560;
+}
+
+.heroAside {
+  min-height: 116px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.012);
+  display: grid;
+  align-content: end;
+  gap: 7px;
+}
+
+.heroAside span,
+.metricTop span {
+  color: rgba(170, 205, 224, 0.82);
+  font-size: 10px;
+  font-weight: 760;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.heroAside strong {
+  color: #f3f0ea;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 735;
+  letter-spacing: -0.055em;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric {
+  min-width: 0;
+  min-height: 114px;
+  padding: 14px;
+  border-radius: 20px;
+  display: grid;
+  align-content: space-between;
+  gap: 10px;
+}
+
+.metricTop {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metricTop svg {
+  color: rgba(243, 240, 234, 0.46);
+}
+
+.metric strong {
+  overflow: hidden;
+  color: #f3f0ea;
+  font-size: clamp(19px, 1.4vw, 24px);
+  line-height: 1;
+  font-weight: 720;
+  letter-spacing: -0.05em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric small {
+  overflow: hidden;
+  color: rgba(243, 240, 234, 0.54);
+  font-size: 11.5px;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric_success { border-color: rgba(72, 213, 151, 0.16); }
+.metric_warning { border-color: rgba(245, 184, 0, 0.18); }
+.metric_danger { border-color: rgba(255, 95, 95, 0.17); }
+.metric_info { border-color: rgba(122, 183, 255, 0.17); }
+.metric_purple { border-color: rgba(192, 132, 252, 0.18); }
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  gap: 14px;
+}
+
+.bottomGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(260px, 0.55fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.panel,
+.panelLarge {
+  min-width: 0;
+  padding: 16px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.panelHeader {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelHeader h3 {
+  margin: 4px 0 0;
+  color: #f3f0ea;
+  font-size: 18px;
+  line-height: 1.08;
+  font-weight: 720;
+  letter-spacing: -0.045em;
+}
+
+.squadList,
+.alertList,
+.compactRows,
+.recentList {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.squadRow {
+  min-width: 0;
+  min-height: 60px;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.050);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.008);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.36fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.squadInfo,
+.squadMetric,
+.clientLineText {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.squadInfo strong,
+.clientLineText strong,
+.compactRow strong {
+  overflow: hidden;
+  color: #f3f0ea;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.squadInfo span,
+.clientLineText small,
+.compactRow span,
+.compactRow em {
+  overflow: hidden;
+  color: rgba(243, 240, 234, 0.56);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.squadMetric {
+  justify-items: end;
+}
+
+.squadMetric strong {
+  color: #f3f0ea;
+  font-size: 13.5px;
+  font-weight: 710;
+  white-space: nowrap;
+}
+
+.progressTrack {
+  width: 100%;
+  max-width: 170px;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.055);
+  overflow: hidden;
+}
+
+.progressTrack i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(245, 184, 0, 0.82);
+}
+
+.clientLine {
+  min-width: 0;
+  min-height: 52px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.008);
+  color: inherit;
+  text-decoration: none;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.clientLine:hover {
+  border-color: rgba(255, 255, 255, 0.085);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 999px;
+  background: #08090a;
+  color: #f3f0ea;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 720;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.emptyLine {
+  min-height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.050);
+  border-radius: 18px;
+  color: rgba(243, 240, 234, 0.52);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 560;
+}
+
+.compactRow {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.008);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.statusGrid span {
+  min-height: 70px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.008);
+  display: grid;
+  align-content: end;
+  gap: 6px;
+}
+
+.statusGrid strong {
+  color: #f3f0ea;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 730;
+  letter-spacing: -0.05em;
+}
+
+.statusGrid small {
+  color: rgba(243, 240, 234, 0.56);
+  font-size: 11.5px;
+  font-weight: 590;
+}
+
+@media (max-width: 1280px) {
+  .metricsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bottomGrid,
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 12px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .metricsGrid,
+  .statusGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .squadRow,
+  .clientLine,
+  .compactRow {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .squadMetric {
+    width: 100%;
+    justify-items: start;
+  }
+}
