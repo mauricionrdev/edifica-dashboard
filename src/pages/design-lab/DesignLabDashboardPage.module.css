@@ -1003,3 +1003,190 @@
     grid-row: 4;
   }
 }
+
+
+/* v78 · ajuste estrutural da lateral: Comparativo e Contratos vencendo */
+.dashboardPanels {
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
+  align-items: start;
+}
+
+.sideColumn {
+  align-content: start;
+  grid-template-rows: auto auto;
+}
+
+.detailsPanel,
+.activityPanel {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: start;
+  padding: 18px;
+}
+
+.detailsPanel {
+  min-height: 308px;
+}
+
+.compareHeader,
+.activityHeader {
+  align-items: center;
+}
+
+.compareBody {
+  min-width: 0;
+}
+
+.compareGrid {
+  gap: 10px;
+}
+
+.compareItem {
+  min-height: 64px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.compareLeft {
+  min-width: 0;
+}
+
+.compareLabel {
+  font-size: 10.5px;
+}
+
+.compareDelta {
+  min-height: 21px;
+}
+
+.compareValue {
+  justify-self: end;
+  font-size: 17px;
+  text-align: right;
+}
+
+.activityPanel {
+  min-height: 396px;
+  max-height: none;
+}
+
+.activityList {
+  min-height: 0;
+  max-height: 318px;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+  padding-right: 0;
+}
+
+.activityItem {
+  min-height: 82px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.activityAvatar {
+  width: 44px;
+  height: 44px;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+.activityName {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  font-size: 13.5px;
+  line-height: 1.15;
+}
+
+.activityDate {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  color: rgba(170, 205, 224, 0.68);
+  font-size: 11.5px;
+  line-height: 1.15;
+}
+
+.activityFee {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: end;
+  color: #f3f0ea;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: right;
+  line-height: 1.15;
+}
+
+.activitySquad {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
+  align-self: start;
+  max-width: none;
+  color: rgba(170, 205, 224, 0.62);
+  font-size: 11px;
+  text-align: right;
+  line-height: 1.15;
+}
+
+@media (max-width: 1320px) {
+  .dashboardPanels {
+    grid-template-columns: 1fr;
+  }
+
+  .sideColumn {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    grid-template-rows: auto;
+  }
+
+  .activityPanel {
+    min-height: 308px;
+  }
+
+  .activityList {
+    max-height: 228px;
+  }
+}
+
+@media (max-width: 860px) {
+  .sideColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .activityList {
+    max-height: none;
+  }
+
+  .activityItem {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .activityFee,
+  .activitySquad {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .activityFee {
+    grid-row: 3;
+  }
+
+  .activitySquad {
+    grid-row: 4;
+  }
+}
