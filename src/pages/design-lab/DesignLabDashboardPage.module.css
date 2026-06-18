@@ -1685,3 +1685,348 @@
   .dashboardLastCard .activitySquad { grid-row: 3; }
   .dashboardLastCard .activityFee { grid-row: 4; }
 }
+
+
+/* v81 · Contratos vencendo no padrão visual da lista nova de clientes */
+.dashboardLastCard {
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.060);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), transparent 118px),
+    rgba(255, 255, 255, 0.008);
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.dashboardLastCard .activityPanel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  min-height: 0;
+  max-height: none;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.dashboardLastCard .activityHeader {
+  min-height: 60px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.activityHeader > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.activityKicker {
+  color: rgba(170, 205, 224, 0.78);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dashboardLastCard .activityHeader h3 {
+  margin: 0;
+  color: #f3f0ea;
+  font-size: 20px;
+  line-height: 1.05;
+  font-weight: 720;
+  letter-spacing: -0.045em;
+}
+
+.dashboardLastCard .activityHeaderBadge {
+  min-width: 25px;
+  height: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+  color: rgba(170, 205, 224, 0.74);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dashboardLastCard .activityList {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 0;
+  padding: 0;
+}
+
+.activityHeadRow {
+  min-height: 38px;
+  padding: 0 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.052);
+  display: grid;
+  grid-template-columns: minmax(250px, 1.45fr) minmax(190px, 0.86fr) minmax(150px, 0.58fr) minmax(120px, 0.42fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.activityHeadRow span {
+  overflow: hidden;
+  color: rgba(170, 205, 224, 0.74);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityHeadRow span:nth-child(3),
+.activityHeadRow span:nth-child(4) {
+  text-align: right;
+}
+
+.dashboardLastCard .activityItem {
+  --expiring-accent: transparent;
+  position: relative;
+  width: 100%;
+  min-height: 72px;
+  padding: 11px 22px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.046);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  display: grid;
+  grid-template-columns: minmax(250px, 1.45fr) minmax(190px, 0.86fr) minmax(150px, 0.58fr) minmax(120px, 0.42fr);
+  gap: 16px;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dashboardLastCard .activityItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 13px;
+  bottom: 13px;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--expiring-accent);
+}
+
+.dashboardLastCard .activityItem_info {
+  --expiring-accent: #7ab7ff;
+}
+
+.dashboardLastCard .activityItem_warning {
+  --expiring-accent: #f5b800;
+}
+
+.dashboardLastCard .activityItem_danger {
+  --expiring-accent: #ff5f5f;
+}
+
+.dashboardLastCard .activityItem:last-child {
+  border-bottom: 0;
+}
+
+.dashboardLastCard .activityItem:hover {
+  background: rgba(255, 255, 255, 0.026);
+}
+
+.activityIdentity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dashboardLastCard .activityAvatar {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  grid-column: auto;
+  grid-row: auto;
+  border: 1px solid rgba(255, 255, 255, 0.060);
+  border-radius: 999px;
+  background: #090909;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboardLastCard .activityAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.dashboardLastCard .activityAvatarInitials {
+  color: #f3f0ea;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 720;
+  letter-spacing: -0.03em;
+}
+
+.activityIdentityText {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.activityIdentityText strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #f3f0ea;
+  font-size: 13.5px;
+  line-height: 1.18;
+  font-weight: 690;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityIdentityText small {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(243, 240, 234, 0.56);
+  font-size: 11.3px;
+  line-height: 1.1;
+  font-weight: 560;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityDueBlock {
+  min-width: 0;
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+}
+
+.activityDueBadge {
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(243, 240, 234, 0.72);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 690;
+  white-space: nowrap;
+}
+
+.activityDueBadge_info {
+  border-color: rgba(122, 183, 255, 0.42);
+  color: #7ab7ff;
+}
+
+.activityDueBadge_warning {
+  border-color: rgba(245, 184, 0, 0.42);
+  color: #f5b800;
+}
+
+.activityDueBadge_danger {
+  border-color: rgba(255, 95, 95, 0.44);
+  color: #ff6b6b;
+}
+
+.activityDueBlock small {
+  color: rgba(170, 205, 224, 0.62);
+  font-size: 11.2px;
+  line-height: 1;
+  font-weight: 560;
+  white-space: nowrap;
+}
+
+.dashboardLastCard .activitySquad,
+.dashboardLastCard .activityFee {
+  grid-column: auto;
+  grid-row: auto;
+  align-self: center;
+  justify-self: end;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.1;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboardLastCard .activitySquad {
+  max-width: 170px;
+  color: rgba(170, 205, 224, 0.72);
+  font-size: 12.2px;
+  font-weight: 610;
+}
+
+.dashboardLastCard .activityFee {
+  color: #f3f0ea;
+  font-size: 12.8px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboardLastCard .emptyState {
+  margin: 0;
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+}
+
+@media (max-width: 1120px) {
+  .activityHeadRow,
+  .dashboardLastCard .activityItem {
+    grid-template-columns: minmax(230px, 1.2fr) minmax(180px, 0.9fr) minmax(140px, 0.7fr) minmax(110px, 0.55fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 820px) {
+  .activityHeadRow {
+    display: none;
+  }
+
+  .dashboardLastCard .activityItem {
+    min-height: 90px;
+    padding: 12px 16px;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .activityIdentity,
+  .activityDueBlock,
+  .dashboardLastCard .activitySquad,
+  .dashboardLastCard .activityFee {
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .activityDueBlock {
+    justify-items: start;
+  }
+
+  .dashboardLastCard .activitySquad,
+  .dashboardLastCard .activityFee {
+    justify-self: start;
+  }
+}

@@ -359,31 +359,57 @@ function getInitials(name) {
 }
 
 function ActivityPanel({ activities = [], onOpenClient }) {
-  const rows = Array.isArray(activities) ? activities.slice(0, 5) : [];
+  const rows = Array.isArray(activities) ? activities.slice(0, 8) : [];
 
   return (
     <section className={styles.activityPanel}>
       <div className={styles.activityHeader}>
-        <h3>Contratos vencendo</h3>
+        <div>
+          <span className={styles.activityKicker}>próximos vencimentos</span>
+          <h3>Contratos vencendo</h3>
+        </div>
         <span className={styles.activityHeaderBadge}>{rows.length}</span>
       </div>
 
       {rows.length > 0 ? (
         <div className={styles.activityList}>
+          <div className={styles.activityHeadRow} aria-hidden="true">
+            <span>Cliente</span>
+            <span>Vencimento</span>
+            <span>Squad</span>
+            <span>Valor</span>
+          </div>
+
           {rows.map((activity) => {
             const client = activity.client || {};
             const initials = getInitials(client.name);
             const avatarUrl = getClientAvatar(client) || client.avatarUrl || '';
             const fee = Number(client.fee) > 0 ? fmtMoney(client.fee) : '';
             const squad = client.squadName || client.squad || 'Sem squad';
+            const dueTone = activity.diffDays <= 7 ? 'danger' : activity.diffDays <= 30 ? 'warning' : 'info';
 
             return (
-              <button key={activity.key} type="button" className={styles.activityItem} onClick={() => onOpenClient(client.id)}>
-                <span className={styles.activityAvatar} aria-hidden="true">
-                  {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className={styles.activityAvatarInitials}>{initials}</span>}
+              <button
+                key={activity.key}
+                type="button"
+                className={`${styles.activityItem} ${styles[`activityItem_${dueTone}`] || ''}`.trim()}
+                onClick={() => onOpenClient(client.id)}
+              >
+                <span className={styles.activityIdentity}>
+                  <span className={styles.activityAvatar} aria-hidden="true">
+                    {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className={styles.activityAvatarInitials}>{initials}</span>}
+                  </span>
+                  <span className={styles.activityIdentityText}>
+                    <strong>{client.name || 'Cliente'}</strong>
+                    <small>{client.gestor || client.gdvName || 'Sem gestor'}</small>
+                  </span>
                 </span>
-                <span className={styles.activityName}>{client.name || 'Cliente'}</span>
-                <span className={styles.activityDate}>{formatShortDate(activity.date)}</span>
+
+                <span className={styles.activityDueBlock}>
+                  <strong className={`${styles.activityDueBadge} ${styles[`activityDueBadge_${dueTone}`] || ''}`.trim()}>{formatDueDistance(activity.diffDays)}</strong>
+                  <small>{formatShortDate(activity.date)}</small>
+                </span>
+
                 <span className={styles.activitySquad}>{squad}</span>
                 <span className={styles.activityFee}>{fee || 'Sem mensalidade'}</span>
               </button>
