@@ -198,7 +198,8 @@ function buildSmoothPath(points) {
 }
 
 function EntryColumnsChart({ rows = [] }) {
-  const hasData = rows.some((row) => row.cnt > 0);
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const hasData = safeRows.some((row) => Number(row.cnt) > 0);
 
   if (!hasData) {
     return (
@@ -211,7 +212,7 @@ function EntryColumnsChart({ rows = [] }) {
     );
   }
 
-  const maxClients = Math.max(...rows.map((row) => row.cnt || 0), 0);
+  const maxClients = Math.max(...safeRows.map((row) => Number(row.cnt) || 0), 0);
   const tickStep = getChartTickStep(maxClients);
   const scaleMax = Math.max(6, Math.ceil(maxClients / tickStep) * tickStep);
   const ticks = [];
@@ -219,32 +220,33 @@ function EntryColumnsChart({ rows = [] }) {
   if (ticks[ticks.length - 1] !== scaleMax) ticks.push(scaleMax);
 
   const VB_W = 760;
-  const VB_H = 320;
-  const padding = { top: 34, right: 28, bottom: 58, left: 54 };
+  const VB_H = 300;
+  const padding = { top: 34, right: 26, bottom: 44, left: 48 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
-  const slot = plotW / Math.max(rows.length, 1);
-  const barW = Math.min(46, Math.max(30, slot * 0.38));
+  const slot = plotW / Math.max(safeRows.length - 1, 1);
 
-  const points = rows.map((row, index) => {
-    const value = row.cnt || 0;
-    const centerX = padding.left + slot * index + slot / 2;
-    const barH = Math.max(value > 0 ? 10 : 0, (value / scaleMax) * plotH);
-    const y = padding.top + plotH - barH;
+  const points = safeRows.map((row, index) => {
+    const value = Number(row.cnt) || 0;
+    const year = Number(row.y) || new Date().getFullYear();
+    const month = Number(row.m) || 0;
+    const x = padding.left + slot * index;
+    const yCoord = padding.top + plotH - (value / scaleMax) * plotH;
+
     return {
       ...row,
+      year,
+      month,
       value,
-      x: centerX,
-      y,
-      barX: centerX - barW / 2,
-      barY: y,
-      barW,
-      barH,
+      x,
+      yCoord,
     };
   });
 
-  const trendPath = buildSmoothPath(points.map((point) => ({ x: point.x, y: point.y })));
+  const trendPath = buildSmoothPath(points.map((point) => ({ x: point.x, y: point.yCoord })));
+  const areaPath = `${trendPath} L ${points[points.length - 1].x} ${padding.top + plotH} L ${points[0].x} ${padding.top + plotH} Z`;
   const currentPoint = points.find((point) => point.isNow) || points[points.length - 1];
+  const currentLabel = `${MONTHS_FULL[currentPoint.month]} ${currentPoint.year}`;
 
   return (
     <div className={styles.columnsPanel}>
@@ -253,69 +255,43 @@ function EntryColumnsChart({ rows = [] }) {
           <span className={styles.chartKicker}>últimos 6 meses</span>
           <h3 className={styles.columnsPanelTitle}>Entradas</h3>
         </div>
-        <span className={styles.chartCurrentBadge}>{MONTHS_FULL[currentPoint.m]} {currentPoint.y}</span>
+        <span className={styles.chartCurrentBadge}>{currentLabel}</span>
       </div>
 
       <div className={styles.columnsCanvas}>
         <svg className={styles.columnsSvg} viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="none" aria-label="Entradas por mês">
           <defs>
-            <linearGradient id="designLabModernBar" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(245,184,0,0.72)" />
-              <stop offset="100%" stopColor="rgba(245,184,0,0.10)" />
+            <linearGradient id="designLabLinearArea" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="rgba(245,184,0,0.18)" />
+              <stop offset="55%" stopColor="rgba(245,184,0,0.045)" />
+              <stop offset="100%" stopColor="rgba(245,184,0,0)" />
             </linearGradient>
-            <linearGradient id="designLabModernBarMuted" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(232,234,238,0.34)" />
-              <stop offset="100%" stopColor="rgba(232,234,238,0.045)" />
-            </linearGradient>
-            <linearGradient id="designLabModernTrend" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopColor="rgba(232,234,238,0.22)" />
-              <stop offset="78%" stopColor="rgba(232,234,238,0.34)" />
+            <linearGradient id="designLabLinearStroke" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="rgba(232,234,238,0.28)" />
+              <stop offset="72%" stopColor="rgba(232,234,238,0.38)" />
               <stop offset="100%" stopColor="rgba(245,184,0,0.92)" />
             </linearGradient>
-            <filter id="designLabChartGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
           </defs>
 
           {ticks.filter((tick) => tick !== 0).map((tick) => {
-            const y = padding.top + plotH - (tick / scaleMax) * plotH;
+            const yCoord = padding.top + plotH - (tick / scaleMax) * plotH;
             return (
               <g key={`grid-${tick}`}>
-                <line x1={padding.left} x2={VB_W - padding.right} y1={y} y2={y} stroke="rgba(255,255,255,0.032)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                <text x={padding.left - 18} y={y + 4} textAnchor="end" className={styles.columnsAxisText}>{tick}</text>
+                <line x1={padding.left} x2={VB_W - padding.right} y1={yCoord} y2={yCoord} className={styles.chartGridLine} vectorEffect="non-scaling-stroke" />
+                <text x={padding.left - 16} y={yCoord + 4} textAnchor="end" className={styles.columnsAxisText}>{tick}</text>
               </g>
             );
           })}
 
-          <line x1={padding.left} x2={VB_W - padding.right} y1={padding.top + plotH} y2={padding.top + plotH} stroke="rgba(255,255,255,0.055)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          <path d={areaPath} className={styles.linearChartArea} />
+          <path d={trendPath} className={styles.linearChartLine} />
 
-          {points.map((point) => {
-            const isCurrent = Boolean(point.isNow);
-            return (
-              <g key={`${point.y}-${point.m}`} className={isCurrent ? styles.chartCurrentGroup : ''}>
-                <rect
-                  x={point.barX}
-                  y={point.barY}
-                  width={point.barW}
-                  height={point.barH}
-                  rx="18"
-                  fill={isCurrent ? 'url(#designLabModernBar)' : 'url(#designLabModernBarMuted)'}
-                  filter={isCurrent ? 'url(#designLabChartGlow)' : undefined}
-                />
-                <text x={point.x} y={point.barY - 12} textAnchor="middle" className={`${styles.columnsValue} ${isCurrent ? styles.columnsValueCurrent : ''}`.trim()}>{fmtInt(point.cnt)}</text>
-                <text x={point.x} y={VB_H - 28} textAnchor="middle" className={`${styles.columnsMonth} ${isCurrent ? styles.columnsMonthCurrent : ''}`.trim()}>{MONTHS_FULL[point.m].slice(0, 3).toUpperCase()}</text>
-                <text x={point.x} y={VB_H - 12} textAnchor="middle" className={styles.columnsYear}>{String(point.y)}</text>
-              </g>
-            );
-          })}
-
-          <path d={trendPath} fill="none" stroke="url(#designLabModernTrend)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.72" />
           {points.map((point) => (
-            <circle key={`dot-${point.y}-${point.m}`} cx={point.x} cy={point.y} r={point.isNow ? '4.8' : '3.4'} fill={point.isNow ? '#f5b800' : 'rgba(232,234,238,0.72)'} />
+            <g key={`${point.year}-${point.month}`} className={point.isNow ? styles.chartCurrentGroup : ''}>
+              <circle cx={point.x} cy={point.yCoord} r={point.isNow ? 5 : 3.6} className={point.isNow ? styles.linearDotCurrent : styles.linearDot} />
+              <text x={point.x} y={point.yCoord - 12} textAnchor="middle" className={`${styles.columnsValue} ${point.isNow ? styles.columnsValueCurrent : ''}`.trim()}>{fmtInt(point.value)}</text>
+              <text x={point.x} y={VB_H - 18} textAnchor="middle" className={`${styles.columnsMonth} ${point.isNow ? styles.columnsMonthCurrent : ''}`.trim()}>{MONTHS_FULL[point.month].slice(0, 3).toUpperCase()}</text>
+            </g>
           ))}
         </svg>
       </div>

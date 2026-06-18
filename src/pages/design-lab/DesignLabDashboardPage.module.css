@@ -752,3 +752,254 @@
     overflow: auto;
   }
 }
+
+
+/* v77 · refinamento rigoroso do dashboard: gráfico Linear-like e painéis inferiores estáveis */
+.dashboardPanels {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.boardSection {
+  min-width: 0;
+}
+
+.sideColumn {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px;
+}
+
+.columnsPanel {
+  min-height: 440px;
+  padding: 18px;
+  overflow: hidden;
+}
+
+.columnsCanvas {
+  height: 336px;
+  min-height: 336px;
+  border-color: rgba(255, 255, 255, 0.042);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(245, 184, 0, 0.055), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.012), rgba(255, 255, 255, 0.004));
+  overflow: hidden;
+}
+
+.columnsSvg {
+  width: 100%;
+  height: 100%;
+  min-height: 336px;
+  display: block;
+}
+
+.chartGridLine {
+  stroke: rgba(255, 255, 255, 0.035);
+  stroke-width: 1;
+}
+
+.linearChartArea {
+  fill: url(#designLabLinearArea);
+}
+
+.linearChartLine {
+  fill: none;
+  stroke: url(#designLabLinearStroke);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.96;
+  filter: none;
+}
+
+.linearDot,
+.linearDotCurrent {
+  stroke-width: 1.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.linearDot {
+  fill: #10100e;
+  stroke: rgba(232, 234, 238, 0.72);
+}
+
+.linearDotCurrent {
+  fill: #f5b800;
+  stroke: rgba(245, 184, 0, 0.48);
+}
+
+.columnsAxisText {
+  fill: rgba(243, 240, 234, 0.32);
+  font-size: 10px;
+  font-weight: 560;
+}
+
+.columnsValue {
+  fill: rgba(243, 240, 234, 0.78);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.columnsValueCurrent {
+  fill: #f5b800;
+}
+
+.columnsMonth {
+  fill: rgba(243, 240, 234, 0.44);
+  font-size: 10.5px;
+  font-weight: 680;
+  letter-spacing: 0.10em;
+}
+
+.columnsMonthCurrent {
+  fill: #f5b800;
+}
+
+.chartCurrentBadge {
+  min-height: 26px;
+  padding: 3px 10px;
+  border-color: rgba(245, 184, 0, 0.24);
+  background: rgba(245, 184, 0, 0.038);
+}
+
+.detailsPanel {
+  min-height: 0;
+  padding: 16px;
+}
+
+.compareGrid {
+  gap: 9px;
+}
+
+.compareItem {
+  min-height: 58px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.activityPanel {
+  min-height: 0;
+  max-height: 390px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.activityList {
+  min-height: 0;
+  max-height: 310px;
+  overflow: auto;
+  padding-right: 2px;
+  display: grid;
+  gap: 8px;
+}
+
+.activityItem {
+  min-width: 0;
+  min-height: 62px;
+  padding: 10px;
+  border-radius: 18px;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.activityAvatar {
+  width: 40px;
+  height: 40px;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+.activityName {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.activityDate {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  font-size: 11.5px;
+  line-height: 1.15;
+}
+
+.activitySquad {
+  grid-column: 3;
+  grid-row: 2;
+  align-self: start;
+  justify-self: end;
+  max-width: 92px;
+  color: rgba(170, 205, 224, 0.62);
+  font-size: 11px;
+  line-height: 1.15;
+  text-align: right;
+}
+
+.activityFee {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: end;
+  justify-self: end;
+  color: #f3f0ea;
+  font-size: 12px;
+  line-height: 1.15;
+  text-align: right;
+}
+
+@media (max-width: 1280px) {
+  .dashboardPanels {
+    grid-template-columns: 1fr;
+  }
+
+  .sideColumn {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
+  .activityPanel {
+    max-height: 360px;
+  }
+}
+
+@media (max-width: 860px) {
+  .sideColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .columnsPanel {
+    min-height: 390px;
+  }
+
+  .columnsCanvas {
+    height: 300px;
+    min-height: 300px;
+  }
+
+  .activityItem {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .activityFee,
+  .activitySquad {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .activityFee {
+    grid-row: 3;
+  }
+
+  .activitySquad {
+    grid-row: 4;
+  }
+}
