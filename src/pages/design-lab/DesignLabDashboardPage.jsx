@@ -185,6 +185,18 @@ function getChartTickStep(scaleMax) {
   return 20;
 }
 
+function buildSmoothPath(points) {
+  if (!points.length) return '';
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+
+  return points.reduce((path, point, index) => {
+    if (index === 0) return `M ${point.x} ${point.y}`;
+    const previous = points[index - 1];
+    const midX = (previous.x + point.x) / 2;
+    return `${path} C ${midX} ${previous.y}, ${midX} ${point.y}, ${point.x} ${point.y}`;
+  }, '');
+}
+
 function EntryColumnsChart({ rows = [] }) {
   const hasData = rows.some((row) => row.cnt > 0);
 
@@ -208,75 +220,109 @@ function EntryColumnsChart({ rows = [] }) {
 
   const VB_W = 760;
   const VB_H = 320;
-  const padding = { top: 26, right: 24, bottom: 56, left: 82 };
+  const padding = { top: 34, right: 28, bottom: 58, left: 54 };
   const plotW = VB_W - padding.left - padding.right;
   const plotH = VB_H - padding.top - padding.bottom;
-  const stepX = rows.length > 1 ? plotW / (rows.length - 1) : plotW;
+  const slot = plotW / Math.max(rows.length, 1);
+  const barW = Math.min(46, Math.max(30, slot * 0.38));
 
   const points = rows.map((row, index) => {
-    const px = padding.left + stepX * index;
-    const py = padding.top + plotH - ((row.cnt || 0) / scaleMax) * plotH;
-    return { ...row, px, py };
+    const value = row.cnt || 0;
+    const centerX = padding.left + slot * index + slot / 2;
+    const barH = Math.max(value > 0 ? 10 : 0, (value / scaleMax) * plotH);
+    const y = padding.top + plotH - barH;
+    return {
+      ...row,
+      value,
+      x: centerX,
+      y,
+      barX: centerX - barW / 2,
+      barY: y,
+      barW,
+      barH,
+    };
   });
 
-  const linePath = points
-    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.px} ${point.py}`)
-    .join(' ');
-  const areaPath = `${linePath} L ${points[points.length - 1].px} ${padding.top + plotH} L ${points[0].px} ${padding.top + plotH} Z`;
+  const trendPath = buildSmoothPath(points.map((point) => ({ x: point.x, y: point.y })));
   const currentPoint = points.find((point) => point.isNow) || points[points.length - 1];
 
   return (
     <div className={styles.columnsPanel}>
       <div className={styles.columnsPanelHeader}>
-        <h3 className={styles.columnsPanelTitle}>Entradas</h3>
+        <div>
+          <span className={styles.chartKicker}>últimos 6 meses</span>
+          <h3 className={styles.columnsPanelTitle}>Entradas</h3>
+        </div>
+        <span className={styles.chartCurrentBadge}>{MONTHS_FULL[currentPoint.m]} {currentPoint.y}</span>
       </div>
 
       <div className={styles.columnsCanvas}>
         <svg className={styles.columnsSvg} viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="none" aria-label="Entradas por mês">
           <defs>
-            <linearGradient id="designLabEntriesAreaFade" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.055)" />
-              <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+            <linearGradient id="designLabModernBar" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="rgba(245,184,0,0.72)" />
+              <stop offset="100%" stopColor="rgba(245,184,0,0.10)" />
             </linearGradient>
-            <linearGradient id="designLabEntriesLineFade" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.22)" />
-              <stop offset="78%" stopColor="rgba(255,255,255,0.30)" />
-              <stop offset="100%" stopColor="rgba(245,184,0,0.95)" />
+            <linearGradient id="designLabModernBarMuted" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="rgba(232,234,238,0.34)" />
+              <stop offset="100%" stopColor="rgba(232,234,238,0.045)" />
             </linearGradient>
+            <linearGradient id="designLabModernTrend" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="rgba(232,234,238,0.22)" />
+              <stop offset="78%" stopColor="rgba(232,234,238,0.34)" />
+              <stop offset="100%" stopColor="rgba(245,184,0,0.92)" />
+            </linearGradient>
+            <filter id="designLabChartGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {ticks.map((tick) => {
+          {ticks.filter((tick) => tick !== 0).map((tick) => {
             const y = padding.top + plotH - (tick / scaleMax) * plotH;
             return (
               <g key={`grid-${tick}`}>
                 <line x1={padding.left} x2={VB_W - padding.right} y1={y} y2={y} stroke="rgba(255,255,255,0.032)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-                <text x={padding.left - 42} y={y + 4} textAnchor="end" className={styles.columnsAxisText}>{tick}</text>
+                <text x={padding.left - 18} y={y + 4} textAnchor="end" className={styles.columnsAxisText}>{tick}</text>
               </g>
             );
           })}
 
-          <path d={areaPath} fill="url(#designLabEntriesAreaFade)" />
-          <path d={linePath} fill="none" stroke="url(#designLabEntriesLineFade)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-
-          <line x1={currentPoint.px} x2={currentPoint.px} y1={padding.top} y2={padding.top + plotH} stroke="rgba(245,184,0,0.12)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          <line x1={padding.left} x2={VB_W - padding.right} y1={padding.top + plotH} y2={padding.top + plotH} stroke="rgba(255,255,255,0.055)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
 
           {points.map((point) => {
             const isCurrent = Boolean(point.isNow);
             return (
-              <g key={`${point.y}-${point.m}`}>
-                <circle cx={point.px} cy={point.py} r={isCurrent ? '12' : '8'} fill={isCurrent ? 'rgba(245,184,0,0.08)' : 'rgba(255,255,255,0.035)'} />
-                <circle cx={point.px} cy={point.py} r={isCurrent ? '6' : '4'} fill={isCurrent ? 'rgba(245,184,0,0.92)' : 'rgba(232,234,238,0.82)'} />
-                <text x={point.px} y={point.py - 16} textAnchor="middle" className={`${styles.columnsValue} ${isCurrent ? styles.columnsValueCurrent : ''}`.trim()}>{fmtInt(point.cnt)}</text>
-                <text x={point.px} y={VB_H - 28} textAnchor="middle" className={`${styles.columnsMonth} ${isCurrent ? styles.columnsMonthCurrent : ''}`.trim()}>{MONTHS_FULL[point.m].slice(0, 3).toUpperCase()}</text>
-                <text x={point.px} y={VB_H - 12} textAnchor="middle" className={styles.columnsYear}>{String(point.y)}</text>
+              <g key={`${point.y}-${point.m}`} className={isCurrent ? styles.chartCurrentGroup : ''}>
+                <rect
+                  x={point.barX}
+                  y={point.barY}
+                  width={point.barW}
+                  height={point.barH}
+                  rx="18"
+                  fill={isCurrent ? 'url(#designLabModernBar)' : 'url(#designLabModernBarMuted)'}
+                  filter={isCurrent ? 'url(#designLabChartGlow)' : undefined}
+                />
+                <text x={point.x} y={point.barY - 12} textAnchor="middle" className={`${styles.columnsValue} ${isCurrent ? styles.columnsValueCurrent : ''}`.trim()}>{fmtInt(point.cnt)}</text>
+                <text x={point.x} y={VB_H - 28} textAnchor="middle" className={`${styles.columnsMonth} ${isCurrent ? styles.columnsMonthCurrent : ''}`.trim()}>{MONTHS_FULL[point.m].slice(0, 3).toUpperCase()}</text>
+                <text x={point.x} y={VB_H - 12} textAnchor="middle" className={styles.columnsYear}>{String(point.y)}</text>
               </g>
             );
           })}
+
+          <path d={trendPath} fill="none" stroke="url(#designLabModernTrend)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.72" />
+          {points.map((point) => (
+            <circle key={`dot-${point.y}-${point.m}`} cx={point.x} cy={point.y} r={point.isNow ? '4.8' : '3.4'} fill={point.isNow ? '#f5b800' : 'rgba(232,234,238,0.72)'} />
+          ))}
         </svg>
       </div>
     </div>
   );
 }
+
 
 function ComparisonPanel({ current, previous, currentLabel }) {
   const buildRow = (label, currentVal, previousVal, formatter, options = {}) => {
@@ -624,12 +670,11 @@ export default function DesignLabDashboardPage() {
           <EntryColumnsChart rows={entryColumns} />
         </section>
 
-        <ComparisonPanel current={executiveMetrics} previous={previousMetrics} currentLabel={periodLabel} />
+        <aside className={styles.sideColumn}>
+          <ComparisonPanel current={executiveMetrics} previous={previousMetrics} currentLabel={periodLabel} />
+          <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
+        </aside>
       </div>
-
-      <section className={styles.dashboardLastCard}>
-        <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
-      </section>
 
       {selectedClient ? (
         <DesignLabClientDetailModal
