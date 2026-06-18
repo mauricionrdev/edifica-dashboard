@@ -61,6 +61,20 @@ function formatShortDate(value) {
   }).format(date);
 }
 
+function formatDueDistance(diffDays) {
+  const days = Number(diffDays);
+  if (!Number.isFinite(days)) return 'Sem data';
+  if (days < 0) {
+    const overdue = Math.abs(Math.round(days));
+    if (overdue === 0) return 'Vence hoje';
+    return overdue === 1 ? 'Vencido há 1 dia' : `Vencido há ${overdue} dias`;
+  }
+  const rounded = Math.round(days);
+  if (rounded === 0) return 'Vence hoje';
+  if (rounded === 1) return 'Vence amanhã';
+  return `Vence em ${rounded} dias`;
+}
+
 function fmtInt(value) {
   return Number.isFinite(Number(value)) ? Math.round(Number(value)) : 0;
 }
