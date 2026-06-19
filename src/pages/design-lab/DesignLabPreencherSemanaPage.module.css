@@ -1008,12 +1008,7 @@
   color: var(--accent);
   box-shadow: none;
   transform: none;
-}.cardsPanel:hover {
-  background-color: var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
 }
-
 .modalOverlay,
 .drawerOverlay {
   backdrop-filter: none;
@@ -2462,4 +2457,17 @@
 .fieldCard_auto:focus-within {
   animation: none !important;
   box-shadow: none !important;
+}
+
+
+/* v91 · remover hover do workspace/cardsPanel */
+.cardsPanel,
+.cardsPanel:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), transparent 118px),
+    rgba(255, 255, 255, 0.008) !important;
+  border-color: rgba(255, 255, 255, 0.060) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
 }
