@@ -314,9 +314,13 @@ function ComparisonPanel({ current, previous, currentLabel }) {
     };
   };
 
+  const currentTicket = Number(current.active) > 0 ? (Number(current.mrr) || 0) / Number(current.active) : 0;
+  const previousTicket = Number(previous.active) > 0 ? (Number(previous.mrr) || 0) / Number(previous.active) : 0;
+
   const rows = [
     buildRow('Ativos', current.active, previous.active),
     buildRow('MRR', current.mrr, previous.mrr, fmtMoney),
+    buildRow('Ticket médio', currentTicket, previousTicket, fmtMoney),
     buildRow('Receita nova', current.revenueNew, previous.revenueNew, fmtMoney),
     buildRow('Churn', current.churnRate, previous.churnRate, fmtPct, { invert: true }),
   ];
