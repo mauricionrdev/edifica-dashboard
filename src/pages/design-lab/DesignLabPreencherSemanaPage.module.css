@@ -2533,3 +2533,300 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v87 · Preencher Semana: menos card-in-card, mais lista operacional */
+.cardsPanel {
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.020), transparent 36%),
+    rgba(255, 255, 255, 0.008);
+  box-shadow: none;
+}
+
+.commandBar {
+  min-height: 58px;
+  padding: 10px 18px;
+  background: transparent;
+}
+
+.searchField {
+  width: min(420px, 100%);
+  height: 38px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.014);
+  box-shadow: none;
+}
+
+.resultCount,
+.pageSizeSelect {
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.groupsWrap {
+  gap: 0;
+}
+
+.squadGroup {
+  gap: 0;
+}
+
+.squadGroupHeader {
+  min-height: 48px;
+  padding: 0 22px;
+  border-top: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.squadGroupHeader strong {
+  color: rgba(170, 205, 224, 0.82);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+}
+
+.squadGroupHeader span {
+  color: rgba(243, 240, 234, 0.54);
+}
+
+.cardsStack {
+  gap: 0;
+}
+
+.clientCard {
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.clientCard:hover {
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: none;
+  border-color: var(--line-subtle);
+}
+
+.clientTopbar {
+  min-height: 54px;
+  padding: 12px 22px 7px;
+  border-bottom: 0;
+}
+
+.clientAvatar {
+  width: 38px;
+  height: 38px;
+  border-color: rgba(255, 255, 255, 0.075);
+}
+
+.clientText {
+  gap: 3px;
+}
+
+.clientText strong {
+  max-width: 680px;
+  color: #f3f0ea;
+  font-size: 14px;
+  font-weight: 720;
+  letter-spacing: -0.035em;
+}
+
+.clientText span {
+  color: rgba(243, 240, 234, 0.56);
+  font-size: 12px;
+}
+
+.clientTopbarRight {
+  gap: 7px;
+}
+
+.progressPill,
+.statusChip,
+.campaignBadge,
+.campaignsButton {
+  min-height: 26px;
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.addCampaignButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.clientSegments {
+  padding: 2px 22px 18px 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.segmentBlock {
+  min-width: 0;
+  padding: 0;
+  border: 0 !important;
+}
+
+.segmentBlock + .segmentBlock {
+  border-left: 0 !important;
+}
+
+.segmentHeader {
+  height: 24px;
+  margin: 0 0 8px;
+  gap: 7px;
+}
+
+.segmentIcon {
+  width: 19px;
+  height: 19px;
+  border-radius: 99px;
+  background: transparent !important;
+  box-shadow: none;
+}
+
+.segmentHeader strong {
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  color: rgba(170, 205, 224, 0.82);
+}
+
+.segmentBlock:first-child .segmentHeader strong {
+  color: #f5b800;
+}
+
+.segmentBlock:last-child .segmentHeader strong {
+  color: #48d597;
+}
+
+.segmentGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px 12px;
+}
+
+.fieldCard,
+.fieldCard_weekly,
+.fieldCard_once,
+.fieldCard_auto {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.fieldCard:hover,
+.fieldCard_weekly:hover,
+.fieldCard_once:hover,
+.fieldCard_auto:hover {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.fieldHeader {
+  min-height: 17px;
+  margin-bottom: 5px;
+}
+
+.fieldHeader span {
+  color: rgba(170, 205, 224, 0.72);
+  font-size: 10px;
+  font-weight: 680;
+  letter-spacing: 0.015em;
+}
+
+.fieldCard_weekly .fieldHeader span {
+  color: #f5b800;
+}
+
+.fieldCard_auto .fieldHeader span {
+  color: #48d597;
+}
+
+.fieldInput,
+.fieldValue {
+  height: 34px;
+  min-height: 34px;
+  border-radius: 12px;
+  border-color: rgba(255, 255, 255, 0.068);
+  background: rgba(255, 255, 255, 0.012);
+  box-shadow: none;
+  color: #f3f0ea;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.fieldInput:hover,
+.fieldInput:focus {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.018);
+  box-shadow: none;
+}
+
+.fieldCard_weekly .fieldInput,
+.fieldCard_weekly .fieldValue {
+  border-color: rgba(245, 184, 0, 0.13);
+}
+
+.fieldCard_auto .fieldValue_readonly {
+  color: #48d597;
+  border-color: rgba(72, 213, 151, 0.13);
+  background: rgba(72, 213, 151, 0.035);
+}
+
+.fieldValue_readonly {
+  background: rgba(255, 255, 255, 0.010);
+}
+
+.pagination {
+  background: transparent;
+}
+
+@media (max-width: 1320px) {
+  .clientSegments {
+    grid-template-columns: 1fr;
+    padding-left: 72px;
+  }
+
+  .segmentGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 840px) {
+  .commandBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .searchField {
+    width: 100%;
+  }
+
+  .clientTopbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .clientSegments {
+    padding: 4px 18px 18px;
+  }
+
+  .segmentGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .segmentGrid {
+    grid-template-columns: 1fr;
+  }
+}
