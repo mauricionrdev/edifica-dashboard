@@ -2599,3 +2599,116 @@
     padding: 12px;
   }
 }
+
+
+/* v89 · remover hovers dos cards + corrigir largura de Tráfego/Comercial */
+.clientCard,
+.fieldCard,
+.fieldCard_weekly,
+.fieldCard_once,
+.fieldCard_auto,
+.segmentBlock {
+  transition: none !important;
+}
+
+.clientCard:hover {
+  border-color: var(--line) !important;
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent 56%),
+    var(--field-bg) !important;
+  box-shadow: inset 0 1px 0 var(--surface-panel) !important;
+}
+
+.fieldCard:hover,
+.fieldCard_weekly:hover,
+.fieldCard_once:hover,
+.fieldCard_auto:hover {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.fieldCard:hover {
+  border-color: var(--line) !important;
+  background: var(--field-bg) !important;
+}
+
+.fieldCard_weekly:hover {
+  border-color: var(--accent-line) !important;
+  background:
+    linear-gradient(180deg, var(--accent-soft), transparent 72%),
+    var(--field-bg) !important;
+}
+
+.fieldCard_once:hover {
+  border-color: var(--line) !important;
+  background: var(--field-bg) !important;
+}
+
+.fieldCard_auto:hover {
+  border-color: rgba(72, 213, 151, 0.12) !important;
+  background: rgba(72, 213, 151, 0.022) !important;
+}
+
+.fieldCard:focus-within,
+.fieldCard_weekly:focus-within,
+.fieldCard_once:focus-within,
+.fieldCard_auto:focus-within {
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+.clientSegments {
+  width: 100%;
+  max-width: none;
+  padding: 0 22px 20px !important;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.segmentBlock {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.segmentGrid {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.fieldCard,
+.fieldCard_weekly,
+.fieldCard_once,
+.fieldCard_auto {
+  width: 100%;
+  max-width: none;
+}
+
+.fieldCard_auto {
+  overflow: hidden;
+  border-radius: 16px !important;
+}
+
+@media (max-width: 1180px) {
+  .clientSegments {
+    padding: 0 18px 18px !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .segmentGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .clientSegments {
+    padding: 0 12px 14px !important;
+  }
+
+  .segmentGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
