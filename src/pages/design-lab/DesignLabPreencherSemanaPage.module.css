@@ -2533,3 +2533,69 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v88 · ajuste cirúrgico: ocupar workspace como /design-lab/clientes + corrigir cards verdes */
+.page {
+  min-height: 100%;
+  padding: 14px 16px 16px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 26% -12%, rgba(255, 255, 255, 0.026), transparent 34%),
+    var(--bt-bg, #0d0d0c);
+}
+
+.workspace {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 0 !important;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.cardsPanel {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.016), transparent 118px),
+    rgba(255, 255, 255, 0.008);
+}
+
+.groupsWrap {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.fieldCard_auto {
+  overflow: hidden;
+  border-radius: 16px !important;
+  border-color: rgba(72, 213, 151, 0.12) !important;
+  background: rgba(72, 213, 151, 0.022) !important;
+}
+
+.fieldCard_auto .fieldValue_readonly {
+  min-height: 31px;
+  padding: 0 10px;
+  border: 1px solid rgba(72, 213, 151, 0.12) !important;
+  border-radius: 12px !important;
+  background: rgba(72, 213, 151, 0.045) !important;
+  color: #48d597 !important;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 12px;
+  }
+}
