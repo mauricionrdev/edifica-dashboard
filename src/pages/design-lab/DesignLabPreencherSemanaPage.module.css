@@ -271,18 +271,7 @@
     linear-gradient(180deg, var(--surface-panel), transparent 56%),
     var(--field-bg);
   box-shadow: inset 0 1px 0 var(--surface-panel);
-  transition:
-    border-color 140ms ease,
-    background-color 140ms ease,
-    box-shadow 140ms ease;
-}
-
-.clientCard:hover {
-  border-color: var(--line-strong);
-  background:
-    linear-gradient(180deg, var(--surface-raised), transparent 56%),
-    var(--bg-hover);
-  box-shadow: inset 0 1px 0 var(--surface-raised);
+  transition: none;
 }
 
 .clientTopbar {
@@ -485,16 +474,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--field-bg);
-  transition:
-    border-color 140ms ease,
-    background 140ms ease,
-    box-shadow 140ms ease;
-}
-
-.fieldCard:hover {
-  border-color: var(--line-strong);
-  background: var(--bg-hover);
-  box-shadow: inset 0 1px 0 var(--surface-panel);
+  transition: none;
 }
 
 .fieldCard_weekly {
@@ -502,13 +482,6 @@
   background:
     linear-gradient(180deg, var(--accent-soft), transparent 72%),
     var(--field-bg);
-}
-
-.fieldCard_weekly:hover {
-  border-color: var(--accent-line);
-  background:
-    linear-gradient(180deg, var(--accent-soft), var(--surface-panel) 72%),
-    var(--bg-hover);
 }
 
 .fieldCard_once {
@@ -521,13 +494,6 @@
   background:
     linear-gradient(180deg, var(--success-soft), transparent 72%),
     var(--field-bg);
-}
-
-.fieldCard_auto:hover {
-  border-color: var(--success-line);
-  background:
-    linear-gradient(180deg, var(--success-soft), var(--surface-panel) 72%),
-    var(--bg-hover);
 }
 
 .fieldHeader {
@@ -928,16 +894,7 @@
 
 .cardsPanel {
   overflow: hidden;
-}
-
-.clientCard:hover,
-.dayCard:hover,
-.metricCard:hover {
-  border-color: var(--workspace-panel-border);
-  background-color: var(--bg-hover);
-}
-
-.modalOverlay,
+}.modalOverlay,
 .drawerOverlay {
   z-index: var(--chassis-z-dialog);
   background: var(--overlay-bg, rgba(8, 9, 10, 0.72));
@@ -988,30 +945,7 @@
   border-color: var(--accent-line);
   background: var(--accent-soft);
   color: var(--accent);
-}
-
-.clientCard:hover,
-.dayCard:hover,
-.metricCard:hover {
-  border-color: var(--line);
-  background:
-    linear-gradient(180deg, var(--surface-panel), transparent 56%),
-    var(--workspace-panel-bg);
-  box-shadow: none;
-}
-
-.clientCard:hover .clientTopbar {
-  background: transparent;
-}
-
-.inputCard:hover,
-.fieldCard:hover,
-.kpiCard:hover,
-.cardsPanel:hover {
-  background-color: var(--workspace-panel-bg);
-}
-
-/* ==========================================================================
+}/* ==========================================================================
    v82 · QA visual Preencher Semana
    Corrige hovers claros e remove sensação de movimento.
    ========================================================================== */
@@ -1074,27 +1008,7 @@
   color: var(--accent);
   box-shadow: none;
   transform: none;
-}
-
-.clientCard:hover,
-.dayCard:hover,
-.metricCard:hover,
-.inputCard:hover,
-.fieldCard:hover,
-.kpiCard:hover {
-  border-color: var(--line);
-  background:
-    linear-gradient(180deg, var(--surface-panel), transparent),
-    var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.clientCard:hover .clientTopbar {
-  background: transparent;
-}
-
-.cardsPanel:hover {
+}.cardsPanel:hover {
   background-color: var(--workspace-panel-bg);
   box-shadow: none;
   transform: none;
@@ -1173,15 +1087,6 @@
 }
 
 .clientCard {
-  border-color: var(--workspace-panel-border-soft);
-  background:
-    linear-gradient(180deg, var(--surface-panel), transparent),
-    var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.clientCard:hover {
   border-color: var(--workspace-panel-border-soft);
   background:
     linear-gradient(180deg, var(--surface-panel), transparent),
@@ -1275,17 +1180,7 @@
   background: var(--field-bg);
   box-shadow: none;
   transform: none;
-  transition:
-    border-color var(--transition-fast),
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.fieldCard:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background: var(--field-bg);
-  box-shadow: none;
-  transform: none;
+  transition: none;
 }
 
 .fieldCard:focus-within {
@@ -1485,23 +1380,8 @@
   }
 }
 
-.clientCard:hover {
-  border-color: var(--workspace-panel-border-soft);
-  background:
-    linear-gradient(180deg, var(--surface-panel), transparent 56%),
-    var(--workspace-panel-bg);
-  box-shadow: none;
-  transform: none;
-}
-
 .fieldCard {
   background: var(--field-bg);
-}
-
-.fieldCard:hover {
-  border-color: var(--line-strong);
-  background: var(--bg-hover);
-  box-shadow: inset 0 1px 0 var(--surface-panel);
 }
 
 .fieldCard_weekly {
@@ -1511,25 +1391,11 @@
     var(--field-bg);
 }
 
-.fieldCard_weekly:hover {
-  border-color: var(--accent-line);
-  background:
-    linear-gradient(180deg, var(--accent-soft), var(--surface-panel) 72%),
-    var(--bg-hover);
-}
-
 .fieldCard_auto {
   border-color: var(--success-line);
   background:
     linear-gradient(180deg, var(--success-soft), transparent 72%),
     var(--field-bg);
-}
-
-.fieldCard_auto:hover {
-  border-color: var(--success-line);
-  background:
-    linear-gradient(180deg, var(--success-soft), var(--surface-panel) 72%),
-    var(--bg-hover);
 }
 
 .segmentIcon {
@@ -1677,11 +1543,7 @@
   border-radius: 0;
 }
 
-.campaignCardShell .clientCard:hover {
-  border: 0;
-}
-
-/* ==========================================================================
+.campaignCardShell /* ==========================================================================
    v86 · Produção: campanhas via API + sem hover nos cards pequenos
    ========================================================================== */
 .campaignModalOverlay {
@@ -1703,35 +1565,7 @@
 .fieldCard_once,
 .fieldCard_auto {
   transition: none;
-}
-
-.fieldCard:hover,
-.fieldCard_weekly:hover,
-.fieldCard_once:hover,
-.fieldCard_auto:hover,
-.inputCard:hover,
-.kpiCard:hover {
-  border-color: var(--line);
-  background: var(--field-bg);
-  box-shadow: none;
-  transform: none;
-}
-
-.fieldCard_weekly:hover {
-  border-color: var(--accent-line);
-  background:
-    linear-gradient(180deg, var(--accent-soft), transparent 72%),
-    var(--field-bg);
-}
-
-.fieldCard_auto:hover {
-  border-color: var(--success-line);
-  background:
-    linear-gradient(180deg, var(--success-soft), transparent 72%),
-    var(--field-bg);
-}
-
-.fieldInput:hover {
+}.fieldInput:hover {
   border-color: var(--line);
   background: var(--field-bg);
 }
@@ -1753,45 +1587,7 @@
 .campaignCardShell .clientCard {
   border: 0;
   border-radius: 0;
-}
-
-/* ==========================================================================
-   v87 · Correção TDZ + remoção definitiva de hover nos cards pequenos
-   ========================================================================== */
-.fieldCard,
-.fieldCard_weekly,
-.fieldCard_once,
-.fieldCard_auto,
-.fieldCard:hover,
-.fieldCard_weekly:hover,
-.fieldCard_once:hover,
-.fieldCard_auto:hover,
-.inputCard:hover,
-.kpiCard:hover {
-  box-shadow: none;
-  transform: none;
-}
-
-.fieldCard:hover {
-  border-color: var(--line);
-  background: var(--field-bg);
-}
-
-.fieldCard_weekly:hover {
-  border-color: var(--accent-line);
-  background:
-    linear-gradient(180deg, var(--accent-soft), transparent 72%),
-    var(--field-bg);
-}
-
-.fieldCard_auto:hover {
-  border-color: var(--success-line);
-  background:
-    linear-gradient(180deg, var(--success-soft), transparent 72%),
-    var(--field-bg);
-}
-
-.fieldInput:hover {
+}.fieldInput:hover {
   border-color: var(--line);
   background: var(--field-bg);
   box-shadow: none;
@@ -1834,38 +1630,7 @@
 .campaignField input:focus-visible {
   border-color: var(--line);
   background: var(--field-bg);
-}
-
-.fieldCard:hover,
-.fieldCard_weekly:hover,
-.fieldCard_once:hover,
-.fieldCard_auto:hover,
-.inputCard:hover,
-.kpiCard:hover {
-  box-shadow: none;
-  transform: none;
-}
-
-.fieldCard:hover {
-  border-color: var(--line);
-  background: var(--field-bg);
-}
-
-.fieldCard_weekly:hover {
-  border-color: var(--accent-line);
-  background:
-    linear-gradient(180deg, var(--accent-soft), transparent 72%),
-    var(--field-bg);
-}
-
-.fieldCard_auto:hover {
-  border-color: var(--success-line);
-  background:
-    linear-gradient(180deg, var(--success-soft), transparent 72%),
-    var(--field-bg);
-}
-
-.fieldInput:hover,
+}.fieldInput:hover,
 .fieldInput:focus,
 .fieldInput:focus-visible {
   border-color: var(--line);
@@ -2233,12 +1998,6 @@
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-}
-
-.clientCard:hover {
-  background:
-    radial-gradient(circle at 88% 50%, rgba(245, 184, 0, 0.026), transparent 26%),
-    rgba(255, 255, 255, 0.014);
 }
 
 .clientTopbar {
@@ -2611,44 +2370,6 @@
   transition: none !important;
 }
 
-.clientCard:hover {
-  border-color: var(--line) !important;
-  background:
-    linear-gradient(180deg, var(--surface-panel), transparent 56%),
-    var(--field-bg) !important;
-  box-shadow: inset 0 1px 0 var(--surface-panel) !important;
-}
-
-.fieldCard:hover,
-.fieldCard_weekly:hover,
-.fieldCard_once:hover,
-.fieldCard_auto:hover {
-  box-shadow: none !important;
-  transform: none !important;
-}
-
-.fieldCard:hover {
-  border-color: var(--line) !important;
-  background: var(--field-bg) !important;
-}
-
-.fieldCard_weekly:hover {
-  border-color: var(--accent-line) !important;
-  background:
-    linear-gradient(180deg, var(--accent-soft), transparent 72%),
-    var(--field-bg) !important;
-}
-
-.fieldCard_once:hover {
-  border-color: var(--line) !important;
-  background: var(--field-bg) !important;
-}
-
-.fieldCard_auto:hover {
-  border-color: rgba(72, 213, 151, 0.12) !important;
-  background: rgba(72, 213, 151, 0.022) !important;
-}
-
 .fieldCard:focus-within,
 .fieldCard_weekly:focus-within,
 .fieldCard_once:focus-within,
@@ -2711,4 +2432,34 @@
   .segmentGrid {
     grid-template-columns: 1fr !important;
   }
+}
+
+
+/* v90 · hover removido de cards grandes e pequenos */
+.clientCard,
+.fieldCard,
+.fieldCard_weekly,
+.fieldCard_once,
+.fieldCard_auto {
+  transition: none !important;
+}
+
+.clientCard {
+  border-color: var(--line) !important;
+  box-shadow: inset 0 1px 0 var(--surface-panel) !important;
+}
+
+.fieldCard,
+.fieldCard_weekly,
+.fieldCard_once,
+.fieldCard_auto {
+  transform: none !important;
+}
+
+.fieldCard:focus-within,
+.fieldCard_weekly:focus-within,
+.fieldCard_once:focus-within,
+.fieldCard_auto:focus-within {
+  animation: none !important;
+  box-shadow: none !important;
 }
