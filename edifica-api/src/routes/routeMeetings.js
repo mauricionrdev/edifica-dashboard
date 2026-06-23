@@ -235,4 +235,20 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
   }
 });
 
+
+router.delete('/:id', requirePermission('clients.edit'), async (req, res, next) => {
+  try {
+    await ensureRouteMeetingSchema();
+    const currentRows = await getRouteRows({});
+    const current = currentRows.find((row) => String(row.id) === String(req.params.id));
+    if (!current) throw notFound('Rota não encontrada.');
+    await getAccessibleClientRow(current.client_id, req.user, 'id, squad_id', 'clients.edit.all');
+
+    await query('DELETE FROM route_meetings WHERE id = ?', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

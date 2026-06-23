@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { updateSquad } from '../api/squads.js';
-import { createRouteMeeting, listRouteMeetings, updateRouteMeeting } from '../api/routeMeetings.js';
+import { createRouteMeeting, deleteRouteMeeting, listRouteMeetings, updateRouteMeeting } from '../api/routeMeetings.js';
 import { getMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -46,6 +46,7 @@ import { CLIENT_STATUS, isActiveClientStatus } from '../utils/clientStatus.js';
 import { getClientOnboardingDays, onboardingDaysLabel, onboardingDaysTone } from '../utils/clientHelpers.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import { buildSquadPath, matchesEntityRouteSegment, slugifySegment } from '../utils/entityPaths.js';
+import { TrashIcon } from '../components/ui/Icons.jsx';
 import styles from './SquadPage.module.css';
 
 const PAGE_SIZE = 10;
@@ -547,6 +548,21 @@ function SquadSettingsModal({ squad, users = [], busy = false, canManageOwner = 
 }
 
 
+
+function monthYearLabel(year, month0) {
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(new Date(year, month0, 1));
+}
+
+function displayDateForField(value) {
+  const date = parseLocalDate(value);
+  if (!date) return 'Selecionar data';
+  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }).format(date);
+}
+
+function isSameDateKey(a, b) {
+  return String(a || '').slice(0, 10) === String(b || '').slice(0, 10);
+}
+
 function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = false, onClose, onSubmit }) {
   const [form, setForm] = useState(() => ({
     clientId: initial.clientId || clients[0]?.id || '',
@@ -556,11 +572,56 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
     notes: initial.notes || '',
   }));
   const [clientMenuOpen, setClientMenuOpen] = useState(false);
+  const [clientQuery, setClientQuery] = useState('');
+  const [dateMenuOpen, setDateMenuOpen] = useState(false);
+  const [dateView, setDateView] = useState(() => {
+    const date = parseLocalDate(initial.meetingDate || new Date()) || new Date();
+    return { year: date.getFullYear(), month0: date.getMonth() };
+  });
+  const clientMenuRef = useRef(null);
+  const dateMenuRef = useRef(null);
 
   const selectedClient = useMemo(
     () => clients.find((client) => String(client.id) === String(form.clientId)) || clients[0] || null,
     [clients, form.clientId]
   );
+
+  const filteredClients = useMemo(() => {
+    const normalized = String(clientQuery || '').trim().toLowerCase();
+    if (!normalized) return clients;
+    return clients.filter((client) => matchesAnySearch([
+      client.name,
+      client.gestor,
+      client.gdvName,
+    ], normalized));
+  }, [clients, clientQuery]);
+
+  const dateCells = useMemo(() => monthCalendarCells(dateView.year, dateView.month0), [dateView.month0, dateView.year]);
+  const todayKey = dateInputValue(new Date());
+
+  useEffect(() => {
+    const handlePointer = (event) => {
+      if (clientMenuRef.current && !clientMenuRef.current.contains(event.target)) {
+        setClientMenuOpen(false);
+      }
+      if (dateMenuRef.current && !dateMenuRef.current.contains(event.target)) {
+        setDateMenuOpen(false);
+      }
+    };
+    const handleKey = (event) => {
+      if (event.key === 'Escape') {
+        setClientMenuOpen(false);
+        setDateMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, []);
 
   function setField(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -569,6 +630,19 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
   function chooseClient(clientId) {
     setField('clientId', clientId);
     setClientMenuOpen(false);
+    setClientQuery('');
+  }
+
+  function chooseDate(key) {
+    setField('meetingDate', key);
+    setDateMenuOpen(false);
+  }
+
+  function moveDateView(delta) {
+    setDateView((current) => {
+      const next = new Date(current.year, current.month0 + delta, 1);
+      return { year: next.getFullYear(), month0: next.getMonth() };
+    });
   }
 
   return (
@@ -585,7 +659,7 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
         </div>
 
         <div className={styles.routeModalBody}>
-          <label className={`${styles.routeField} ${styles.routeClientField}`.trim()}>
+          <label className={`${styles.routeField} ${styles.routeClientField}`.trim()} ref={clientMenuRef}>
             <span>Cliente</span>
             <div className={styles.routeCombobox}>
               <button
@@ -602,28 +676,98 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
 
               {clientMenuOpen ? (
                 <div className={styles.routeComboboxMenu} role="listbox">
-                  {clients.map((client) => (
-                    <button
-                      key={client.id}
-                      type="button"
-                      className={`${styles.routeComboboxOption} ${String(client.id) === String(form.clientId) ? styles.routeComboboxOptionActive : ''}`.trim()}
-                      onClick={() => chooseClient(client.id)}
-                      role="option"
-                      aria-selected={String(client.id) === String(form.clientId)}
-                    >
-                      <span>{client.name}</span>
-                      <small>{client.gestor || client.gdvName || 'Sem responsável'}</small>
-                    </button>
-                  ))}
+                  <label className={styles.routeComboboxSearch}>
+                    <SearchIcon size={14} aria-hidden="true" />
+                    <input
+                      type="search"
+                      value={clientQuery}
+                      onChange={(event) => setClientQuery(event.target.value)}
+                      placeholder="Buscar cliente"
+                      autoFocus
+                    />
+                  </label>
+
+                  <div className={styles.routeComboboxList}>
+                    {filteredClients.map((client) => (
+                      <button
+                        key={client.id}
+                        type="button"
+                        className={`${styles.routeComboboxOption} ${String(client.id) === String(form.clientId) ? styles.routeComboboxOptionActive : ''}`.trim()}
+                        onClick={() => chooseClient(client.id)}
+                        role="option"
+                        aria-selected={String(client.id) === String(form.clientId)}
+                      >
+                        <span>{client.name}</span>
+                        <small>{client.gestor || client.gdvName || 'Sem responsável'}</small>
+                      </button>
+                    ))}
+                    {!filteredClients.length ? <div className={styles.routeComboboxEmpty}>Nenhum cliente encontrado.</div> : null}
+                  </div>
                 </div>
               ) : null}
             </div>
           </label>
 
-          <label className={styles.routeField}>
+          <div className={styles.routeField} ref={dateMenuRef}>
             <span>Data da reunião</span>
-            <input type="date" value={form.meetingDate} onChange={(event) => setField('meetingDate', event.target.value)} disabled={busy} />
-          </label>
+            <div className={styles.routeDatePicker}>
+              <button
+                type="button"
+                className={styles.routeDateButton}
+                onClick={() => setDateMenuOpen((open) => !open)}
+                disabled={busy}
+                aria-haspopup="dialog"
+                aria-expanded={dateMenuOpen}
+              >
+                <strong>{displayDateForField(form.meetingDate)}</strong>
+                <CalendarIcon size={15} aria-hidden="true" />
+              </button>
+
+              {dateMenuOpen ? (
+                <div className={styles.routeDateMenu} role="dialog" aria-label="Selecionar data da reunião">
+                  <div className={styles.routeDateMenuHeader}>
+                    <strong>{monthYearLabel(dateView.year, dateView.month0)}</strong>
+                    <div>
+                      <button type="button" onClick={() => moveDateView(-1)} aria-label="Mês anterior"><ChevronLeftIcon size={14} /></button>
+                      <button type="button" onClick={() => moveDateView(1)} aria-label="Próximo mês"><ChevronRightIcon size={14} /></button>
+                    </div>
+                  </div>
+
+                  <div className={styles.routeDateWeekdays} aria-hidden="true">
+                    {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, index) => <span key={`${day}-${index}`}>{day}</span>)}
+                  </div>
+
+                  <div className={styles.routeDateGrid}>
+                    {dateCells.map((cell) => (
+                      <button
+                        key={cell.key}
+                        type="button"
+                        className={[
+                          styles.routeDateCell,
+                          !cell.inMonth ? styles.routeDateCellMuted : '',
+                          isSameDateKey(cell.key, todayKey) ? styles.routeDateCellToday : '',
+                          isSameDateKey(cell.key, form.meetingDate) ? styles.routeDateCellSelected : '',
+                        ].filter(Boolean).join(' ')}
+                        onClick={() => chooseDate(cell.key)}
+                      >
+                        {cell.day}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className={styles.routeDateMenuFooter}>
+                    <button type="button" onClick={() => {
+                      const today = new Date();
+                      const key = dateInputValue(today);
+                      setDateView({ year: today.getFullYear(), month0: today.getMonth() });
+                      chooseDate(key);
+                    }}>Hoje</button>
+                    <button type="button" onClick={() => setDateMenuOpen(false)}>Fechar</button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
 
           <label className={styles.routeField}>
             <span>CAP responsável</span>
@@ -679,8 +823,9 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
   );
 }
 
-function RouteCalendarPanel({ year, month0, meetings = [], onNewMeeting, onMarkCompleted }) {
+function RouteCalendarPanel({ year, month0, meetings = [], onNewMeeting, onMarkCompleted, onDeleteMeeting }) {
   const cells = useMemo(() => monthCalendarCells(year, month0), [month0, year]);
+  const todayKey = dateInputValue(new Date());
   const monthMeetings = useMemo(() => meetings.filter((meeting) => {
     const date = parseLocalDate(meeting.meetingDate);
     return date && date.getFullYear() === year && date.getMonth() === month0;
@@ -704,11 +849,15 @@ function RouteCalendarPanel({ year, month0, meetings = [], onNewMeeting, onMarkC
     <section className={styles.routesPanel} aria-label="Calendário de rotas">
       <div className={styles.routesHeader}>
         <div>
-          <span className={styles.routesKicker}>Rotas</span>
           <h2>Calendário de rotas</h2>
         </div>
 
         <div className={styles.routesActions}>
+          <div className={styles.routesSummary} aria-label="Resumo das rotas no período">
+            <span><b>{displayInt(monthMeetings.length)}</b> rotas no período</span>
+            <span><b>{displayInt(scheduledCount)}</b> agendadas</span>
+            <span><b>{displayInt(completedCount)}</b> realizadas</span>
+          </div>
           <button type="button" onClick={onNewMeeting}>
             <PlusIcon size={15} />
             Agendar rota
@@ -716,27 +865,29 @@ function RouteCalendarPanel({ year, month0, meetings = [], onNewMeeting, onMarkC
         </div>
       </div>
 
-      <div className={styles.routesSummary}>
-        <span><b>{displayInt(monthMeetings.length)}</b> rotas no período</span>
-        <span><b>{displayInt(scheduledCount)}</b> agendadas</span>
-        <span><b>{displayInt(completedCount)}</b> realizadas</span>
-      </div>
-
       <div className={styles.routesCalendar}>
         {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => <span key={day} className={styles.routesWeekday}>{day}</span>)}
         {cells.map((cell) => {
           const dayMeetings = meetingsByDate.get(cell.key) || [];
+          const isToday = isSameDateKey(cell.key, todayKey);
           return (
-            <div key={cell.key} className={`${styles.routesDayCell} ${cell.inMonth ? '' : styles.routesDayMuted}`.trim()}>
+            <div key={cell.key} className={`${styles.routesDayCell} ${cell.inMonth ? '' : styles.routesDayMuted} ${isToday ? styles.routesDayToday : ''}`.trim()}>
               <span className={styles.routesDayNumber}>{cell.day}</span>
               <div className={styles.routesDayEvents}>
                 {dayMeetings.slice(0, 3).map((meeting) => (
                   <div key={meeting.id} className={`${styles.routesEvent} ${meeting.status === 'completed' ? styles.routesEventDone : ''}`.trim()}>
-                    <strong>{meeting.clientName}</strong>
-                    <span>{meeting.status === 'completed' ? 'Realizada' : 'Agendada'}{meeting.capName ? ` · ${meeting.capName}` : ''}</span>
-                    {meeting.status === 'scheduled' ? (
-                      <button type="button" onClick={() => onMarkCompleted(meeting)}>Marcar realizada</button>
-                    ) : null}
+                    <div className={styles.routesEventMain}>
+                      <strong>{meeting.clientName}</strong>
+                      <span>{meeting.status === 'completed' ? 'Realizada' : 'Agendada'}{meeting.capName ? ` · ${meeting.capName}` : ''}</span>
+                    </div>
+                    <div className={styles.routesEventActions}>
+                      {meeting.status === 'scheduled' ? (
+                        <button type="button" onClick={() => onMarkCompleted(meeting)}>Realizada</button>
+                      ) : null}
+                      <button type="button" className={styles.routesEventDelete} onClick={() => onDeleteMeeting(meeting)} aria-label="Excluir rota">
+                        <TrashIcon size={12} />
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {dayMeetings.length > 3 ? <small>+{dayMeetings.length - 3} rota(s)</small> : null}
@@ -1629,6 +1780,24 @@ export default function SquadPage() {
     }
   }, [reloadRouteMeetings, showToast, squadOwnership.owner?.name, user?.name]);
 
+
+  const handleDeleteRouteMeeting = useCallback(async (meeting) => {
+    if (!meeting?.id) return;
+    const confirmed = window.confirm(`Excluir rota de ${meeting.clientName || 'cliente'} em ${formatShortDate(meeting.meetingDate)}?`);
+    if (!confirmed) return;
+
+    setRouteSaving(true);
+    try {
+      await deleteRouteMeeting(meeting.id);
+      await reloadRouteMeetings();
+      showToast('Rota excluída.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível excluir a rota.', { variant: 'error' });
+    } finally {
+      setRouteSaving(false);
+    }
+  }, [reloadRouteMeetings, showToast]);
+
   if (shellLoading && !squad) {
     return (
       <div className={styles.page}>
@@ -1795,6 +1964,7 @@ export default function SquadPage() {
             meetings={routeMeetings}
             onNewMeeting={() => handleOpenRouteModal()}
             onMarkCompleted={handleMarkRouteCompleted}
+            onDeleteMeeting={handleDeleteRouteMeeting}
           />
 
           {routeMeetingsLoading ? <div className={styles.routesInlineState}>Carregando calendário de rotas...</div> : null}

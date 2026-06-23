@@ -22,3 +22,7 @@ export function createRouteMeeting(body) {
 export function updateRouteMeeting(id, patch) {
   return api.put(`/route-meetings/${encodeURIComponent(id)}`, patch);
 }
+
+export function deleteRouteMeeting(id) {
+  return api.del(`/route-meetings/${encodeURIComponent(id)}`);
+}
