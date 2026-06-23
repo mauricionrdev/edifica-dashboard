@@ -547,17 +547,28 @@ function SquadSettingsModal({ squad, users = [], busy = false, canManageOwner = 
 }
 
 
-function RouteScheduleModal({ clients = [], capOptions = [], initial = {}, busy = false, onClose, onSubmit }) {
+function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = false, onClose, onSubmit }) {
   const [form, setForm] = useState(() => ({
     clientId: initial.clientId || clients[0]?.id || '',
     meetingDate: initial.meetingDate || dateInputValue(new Date()),
-    capName: initial.capName || '',
+    capName: initial.capName || capName || '',
     status: initial.status || 'scheduled',
     notes: initial.notes || '',
   }));
+  const [clientMenuOpen, setClientMenuOpen] = useState(false);
+
+  const selectedClient = useMemo(
+    () => clients.find((client) => String(client.id) === String(form.clientId)) || clients[0] || null,
+    [clients, form.clientId]
+  );
 
   function setField(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function chooseClient(clientId) {
+    setField('clientId', clientId);
+    setClientMenuOpen(false);
   }
 
   return (
@@ -574,13 +585,39 @@ function RouteScheduleModal({ clients = [], capOptions = [], initial = {}, busy 
         </div>
 
         <div className={styles.routeModalBody}>
-          <label className={styles.routeField}>
+          <label className={`${styles.routeField} ${styles.routeClientField}`.trim()}>
             <span>Cliente</span>
-            <select value={form.clientId} onChange={(event) => setField('clientId', event.target.value)} disabled={busy}>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>{client.name}</option>
-              ))}
-            </select>
+            <div className={styles.routeCombobox}>
+              <button
+                type="button"
+                className={styles.routeComboboxButton}
+                onClick={() => setClientMenuOpen((open) => !open)}
+                disabled={busy || clients.length === 0}
+                aria-haspopup="listbox"
+                aria-expanded={clientMenuOpen}
+              >
+                <strong>{selectedClient?.name || 'Selecionar cliente'}</strong>
+                <ChevronRightIcon size={14} aria-hidden="true" />
+              </button>
+
+              {clientMenuOpen ? (
+                <div className={styles.routeComboboxMenu} role="listbox">
+                  {clients.map((client) => (
+                    <button
+                      key={client.id}
+                      type="button"
+                      className={`${styles.routeComboboxOption} ${String(client.id) === String(form.clientId) ? styles.routeComboboxOptionActive : ''}`.trim()}
+                      onClick={() => chooseClient(client.id)}
+                      role="option"
+                      aria-selected={String(client.id) === String(form.clientId)}
+                    >
+                      <span>{client.name}</span>
+                      <small>{client.gestor || client.gdvName || 'Sem responsável'}</small>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </label>
 
           <label className={styles.routeField}>
@@ -592,24 +629,38 @@ function RouteScheduleModal({ clients = [], capOptions = [], initial = {}, busy 
             <span>CAP responsável</span>
             <input
               type="text"
-              list="route-cap-options"
-              value={form.capName}
-              onChange={(event) => setField('capName', event.target.value)}
-              placeholder="Nome do CAP"
-              disabled={busy}
+              value={form.capName || capName || ''}
+              readOnly
+              disabled
+              aria-readonly="true"
             />
-            <datalist id="route-cap-options">
-              {capOptions.map((name) => <option key={name} value={name} />)}
-            </datalist>
           </label>
 
-          <label className={styles.routeField}>
+          <div className={styles.routeField}>
             <span>Status</span>
-            <select value={form.status} onChange={(event) => setField('status', event.target.value)} disabled={busy}>
-              <option value="scheduled">Agendada</option>
-              <option value="completed">Realizada</option>
-            </select>
-          </label>
+            <div className={styles.routeStatusSwitch} role="radiogroup" aria-label="Status da rota">
+              <button
+                type="button"
+                className={form.status === 'scheduled' ? styles.routeStatusSwitchActive : ''}
+                onClick={() => setField('status', 'scheduled')}
+                disabled={busy}
+                role="radio"
+                aria-checked={form.status === 'scheduled'}
+              >
+                Agendada
+              </button>
+              <button
+                type="button"
+                className={form.status === 'completed' ? styles.routeStatusSwitchActive : ''}
+                onClick={() => setField('status', 'completed')}
+                disabled={busy}
+                role="radio"
+                aria-checked={form.status === 'completed'}
+              >
+                Realizada
+              </button>
+            </div>
+          </div>
 
           <label className={`${styles.routeField} ${styles.routeFieldWide}`.trim()}>
             <span>Observações</span>
@@ -619,7 +670,7 @@ function RouteScheduleModal({ clients = [], capOptions = [], initial = {}, busy 
 
         <div className={styles.routeModalActions}>
           <button type="button" className={styles.routeGhostButton} onClick={onClose} disabled={busy}>Cancelar</button>
-          <button type="button" className={styles.routePrimaryButton} onClick={() => onSubmit(form)} disabled={busy || !form.clientId || !form.meetingDate}>
+          <button type="button" className={styles.routePrimaryButton} onClick={() => onSubmit({ ...form, capName: form.capName || capName || '' })} disabled={busy || !form.clientId || !form.meetingDate || !(form.capName || capName)}>
             {busy ? 'Salvando...' : 'Salvar rota'}
           </button>
         </div>
@@ -628,7 +679,7 @@ function RouteScheduleModal({ clients = [], capOptions = [], initial = {}, busy 
   );
 }
 
-function RouteCalendarPanel({ year, month0, meetings = [], capOptions = [], capFilter, onCapFilter, onNewMeeting, onMarkCompleted }) {
+function RouteCalendarPanel({ year, month0, meetings = [], onNewMeeting, onMarkCompleted }) {
   const cells = useMemo(() => monthCalendarCells(year, month0), [month0, year]);
   const monthMeetings = useMemo(() => meetings.filter((meeting) => {
     const date = parseLocalDate(meeting.meetingDate);
@@ -658,10 +709,6 @@ function RouteCalendarPanel({ year, month0, meetings = [], capOptions = [], capF
         </div>
 
         <div className={styles.routesActions}>
-          <select value={capFilter} onChange={(event) => onCapFilter(event.target.value)} aria-label="Filtrar por CAP">
-            <option value="">Todos os CAPs</option>
-            {capOptions.map((name) => <option key={name} value={name}>{name}</option>)}
-          </select>
           <button type="button" onClick={onNewMeeting}>
             <PlusIcon size={15} />
             Agendar rota
@@ -762,7 +809,6 @@ export default function SquadPage() {
   const [routeMeetings, setRouteMeetings] = useState([]);
   const [routeMeetingsLoading, setRouteMeetingsLoading] = useState(false);
   const [routeMeetingsError, setRouteMeetingsError] = useState(null);
-  const [routeCapFilter, setRouteCapFilter] = useState('');
   const [routeModal, setRouteModal] = useState(null);
   const [routeSaving, setRouteSaving] = useState(false);
   const metricsFetchRef = useRef(0);
@@ -821,25 +867,6 @@ export default function SquadPage() {
     return () => controller.abort();
   }, [reloadRouteMeetings]);
 
-  const routeCapOptions = useMemo(() => {
-    const values = new Set();
-    squadClients.forEach((client) => {
-      if (client?.gestor) values.add(client.gestor);
-      if (client?.gdvName) values.add(client.gdvName);
-    });
-    routeMeetings.forEach((meeting) => {
-      if (meeting?.capName) values.add(meeting.capName);
-    });
-    (Array.isArray(userDirectory) ? userDirectory : []).forEach((entry) => {
-      if (entry?.name) values.add(entry.name);
-    });
-    return [...values].filter(Boolean).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-  }, [routeMeetings, squadClients, userDirectory]);
-
-  const visibleRouteMeetings = useMemo(() => {
-    if (!routeCapFilter) return routeMeetings;
-    return routeMeetings.filter((meeting) => String(meeting.capName || '').trim() === routeCapFilter);
-  }, [routeCapFilter, routeMeetings]);
 
   const routeInfoByClient = useMemo(() => {
     const grouped = new Map();
@@ -1241,14 +1268,19 @@ export default function SquadPage() {
     const rampageRows = clientRows.filter((row) => row.status === CLIENT_STATUS.RAMPAGE);
     const onboardingRows = clientRows.filter((row) => row.status === CLIENT_STATUS.ONBOARDING);
     const internalCommercialRows = clientRows.filter(hasInternalCommercial);
+    const routeRows = routeMeetings.filter((meeting) => {
+      const date = parseLocalDate(meeting?.meetingDate);
+      return date && date.getFullYear() === year && date.getMonth() === month0;
+    });
 
     return [
       { id: 'all', label: 'Carteira', count: activeRows.length },
       { id: 'rampage', label: 'Rampagem', count: rampageRows.length },
       { id: 'onboarding', label: 'Onboard', count: onboardingRows.length },
       { id: 'internalCommercial', label: 'Comercial Interno', count: internalCommercialRows.length },
+      { id: 'routes', label: 'Rotas', count: routeRows.length },
     ];
-  }, [clientRows]);
+  }, [clientRows, month0, routeMeetings, year]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
@@ -1548,12 +1580,12 @@ export default function SquadPage() {
     setRouteModal({
       clientId: initial.clientId || selectedClientId || activeSquadClients[0]?.id || squadClients[0]?.id || '',
       meetingDate: initial.meetingDate || dateInputValue(new Date()),
-      capName: initial.capName || user?.name || '',
+      capName: initial.capName || squadOwnership.owner?.name || user?.name || '',
       status: initial.status || 'scheduled',
       notes: initial.notes || '',
       title: initial.title || 'Agendar rota',
     });
-  }, [activeSquadClients, selectedClientId, squadClients, user?.name]);
+  }, [activeSquadClients, selectedClientId, squadClients, squadOwnership.owner?.name, user?.name]);
 
   const handleSaveRouteMeeting = useCallback(async (form) => {
     setRouteSaving(true);
@@ -1585,7 +1617,7 @@ export default function SquadPage() {
       setRouteModal({
         clientId: meeting.clientId,
         meetingDate: addDays(meeting.meetingDate || new Date(), 15),
-        capName: meeting.capName || user?.name || '',
+        capName: meeting.capName || squadOwnership.owner?.name || user?.name || '',
         status: 'scheduled',
         notes: '',
         title: 'Agendar próxima rota',
@@ -1595,7 +1627,7 @@ export default function SquadPage() {
     } finally {
       setRouteSaving(false);
     }
-  }, [reloadRouteMeetings, showToast, user?.name]);
+  }, [reloadRouteMeetings, showToast, squadOwnership.owner?.name, user?.name]);
 
   if (shellLoading && !squad) {
     return (
@@ -1654,7 +1686,7 @@ export default function SquadPage() {
       {routeModal ? (
         <RouteScheduleModal
           clients={squadClients}
-          capOptions={routeCapOptions}
+          capName={squadOwnership.owner?.name || user?.name || ''}
           initial={routeModal}
           busy={routeSaving}
           onClose={() => setRouteModal(null)}
@@ -1733,6 +1765,7 @@ export default function SquadPage() {
                     item.id === 'rampage' ? styles.portfolioFilterRampage : '',
                     item.id === 'onboarding' ? styles.portfolioFilterOnboarding : '',
                     item.id === 'internalCommercial' ? styles.portfolioFilterInternal : '',
+                    item.id === 'routes' ? styles.portfolioFilterRoutes : '',
                   ].filter(Boolean).join(' ')}
                   onClick={() => setPortfolioFilter(item.id)}
                 >
@@ -1754,19 +1787,20 @@ export default function SquadPage() {
         </section>
       </section>
 
-      <RouteCalendarPanel
-        year={year}
-        month0={month0}
-        meetings={visibleRouteMeetings}
-        capOptions={routeCapOptions}
-        capFilter={routeCapFilter}
-        onCapFilter={setRouteCapFilter}
-        onNewMeeting={() => handleOpenRouteModal()}
-        onMarkCompleted={handleMarkRouteCompleted}
-      />
+      {portfolioFilter === 'routes' ? (
+        <>
+          <RouteCalendarPanel
+            year={year}
+            month0={month0}
+            meetings={routeMeetings}
+            onNewMeeting={() => handleOpenRouteModal()}
+            onMarkCompleted={handleMarkRouteCompleted}
+          />
 
-      {routeMeetingsLoading ? <div className={styles.routesInlineState}>Carregando calendário de rotas...</div> : null}
-      {routeMeetingsError ? <div className={styles.routesInlineState}>Não foi possível carregar o calendário de rotas.</div> : null}
+          {routeMeetingsLoading ? <div className={styles.routesInlineState}>Carregando calendário de rotas...</div> : null}
+          {routeMeetingsError ? <div className={styles.routesInlineState}>Não foi possível carregar o calendário de rotas.</div> : null}
+        </>
+      ) : null}
 
       {showComplementaryMetrics ? (
         <div className={styles.modalBackdrop} role="presentation" onClick={() => setShowComplementaryMetrics(false)}>
@@ -1794,8 +1828,9 @@ export default function SquadPage() {
         </div>
       ) : null}
 
-      <section className={styles.listCard}>
-        {metricsError ? (
+      {portfolioFilter !== 'routes' ? (
+        <section className={styles.listCard}>
+          {metricsError ? (
           <StateBlock variant="warning" compact title="Métricas indisponíveis" />
         ) : filteredRows.length === 0 ? (
           <div className={styles.portfolioEmpty} role="status">
@@ -1889,7 +1924,8 @@ export default function SquadPage() {
             </div>
           </>
         )}
-      </section>
+        </section>
+      ) : null}
     </div>
   );
 }

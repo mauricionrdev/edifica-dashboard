@@ -8856,3 +8856,221 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v93 · Rotas como aba real do Squad + modal sem select cru */
+.page {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+.portfolioFilterRoutes,
+.portfolioFilter button.portfolioFilterRoutes:hover,
+.portfolioFilter button.portfolioFilterRoutes:focus,
+.portfolioFilter button.portfolioFilterRoutes:focus-visible,
+.portfolioFilter button.portfolioFilterRoutes.portfolioFilterActive,
+.portfolioFilter button.portfolioFilterRoutes.portfolioFilterActive:hover,
+.portfolioFilter button.portfolioFilterRoutes.portfolioFilterActive:focus,
+.portfolioFilter button.portfolioFilterRoutes.portfolioFilterActive:focus-visible {
+  border-color: rgba(122, 183, 255, 0.24);
+  background: rgba(122, 183, 255, 0.075);
+  color: #7ab7ff;
+  box-shadow: none;
+}
+
+.routesPanel {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: min(680px, calc(100dvh - 300px));
+  max-height: none;
+  margin-top: 14px;
+  overflow: visible;
+}
+
+.routesActions {
+  min-width: 0;
+}
+
+.routesActions button {
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 99px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.routesCalendar {
+  min-height: 0;
+}
+
+.routesDayCell {
+  min-height: 114px;
+}
+
+.routeModal {
+  width: min(760px, calc(100vw - 48px));
+}
+
+.routeModalBody {
+  overflow: visible;
+}
+
+.routeClientField {
+  position: relative;
+  z-index: 4;
+}
+
+.routeCombobox {
+  position: relative;
+  min-width: 0;
+}
+
+.routeComboboxButton {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .014);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font: inherit;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.routeComboboxButton strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routeComboboxButton svg {
+  flex: 0 0 auto;
+  transform: rotate(90deg);
+  color: rgba(243, 240, 234, .62);
+}
+
+.routeComboboxMenu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 7px);
+  left: 0;
+  right: 0;
+  max-height: min(320px, calc(100dvh - 320px));
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, .075);
+  border-radius: 16px;
+  background: #090a0a;
+  display: grid;
+  gap: 2px;
+  overflow: auto;
+  box-shadow: none;
+}
+
+.routeComboboxOption {
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-primary);
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.routeComboboxOption span,
+.routeComboboxOption small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routeComboboxOption span {
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.routeComboboxOption small {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 560;
+}
+
+.routeComboboxOption:hover,
+.routeComboboxOptionActive {
+  background: rgba(245, 184, 0, .070);
+  color: #f5b800;
+}
+
+.routeField input[disabled] {
+  color: rgba(243, 240, 234, .74);
+  background: rgba(255, 255, 255, .010);
+  cursor: default;
+  opacity: 1;
+}
+
+.routeStatusSwitch {
+  min-height: 42px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .014);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.routeStatusSwitch button {
+  min-width: 0;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.routeStatusSwitchActive,
+.routeStatusSwitch button[aria-checked='true'] {
+  color: #f5b800 !important;
+  background: rgba(245, 184, 0, .085) !important;
+}
+
+@media (max-width: 980px) {
+  .routesPanel {
+    min-height: 560px;
+    overflow-x: auto;
+  }
+
+  .routesCalendar {
+    min-width: 880px;
+  }
+}
+
+@media (max-width: 720px) {
+  .routeModal {
+    width: calc(100vw - 24px);
+  }
+
+  .routeComboboxMenu {
+    max-height: 260px;
+  }
+}
