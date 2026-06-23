@@ -8409,3 +8409,450 @@
   color: #c084fc;
   box-shadow: none;
 }
+
+/* v92 · Calendário de Rotas e controle de prazo */
+.routesPanel {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .014), transparent 118px),
+    rgba(255, 255, 255, .008);
+  display: grid;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.routesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.routesKicker {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.routesHeader h2 {
+  margin: 3px 0 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.08;
+  font-weight: 650;
+  letter-spacing: -.04em;
+}
+
+.routesActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.routesActions select,
+.routesActions button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .012);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 620;
+  outline: none;
+  box-shadow: none;
+}
+
+.routesActions select {
+  min-width: 170px;
+  padding: 0 12px;
+}
+
+.routesActions button {
+  padding: 0 13px;
+  color: #f5b800;
+  border-color: rgba(245, 184, 0, .28);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.routesSummary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.routesSummary span {
+  min-height: 25px;
+  padding: 0 9px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, .008);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.routesSummary b {
+  color: var(--text-primary);
+  font-weight: 680;
+}
+
+.routesCalendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.routesWeekday {
+  min-height: 32px;
+  padding: 9px 10px;
+  border-right: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  color: rgba(170, 205, 224, .76);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.routesWeekday:nth-child(7) {
+  border-right: 0;
+}
+
+.routesDayCell {
+  position: relative;
+  min-height: 96px;
+  padding: 9px;
+  border-right: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, .004);
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.routesDayCell:nth-child(7n) {
+  border-right: 0;
+}
+
+.routesDayMuted {
+  opacity: .44;
+  background: rgba(255, 255, 255, .002);
+}
+
+.routesDayNumber {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.routesDayEvents {
+  display: grid;
+  gap: 5px;
+}
+
+.routesEvent {
+  min-width: 0;
+  padding: 6px 7px;
+  border: 1px solid rgba(245, 184, 0, .18);
+  border-radius: 10px;
+  background: rgba(245, 184, 0, .035);
+  display: grid;
+  gap: 3px;
+}
+
+.routesEventDone {
+  border-color: rgba(72, 213, 151, .18);
+  background: rgba(72, 213, 151, .035);
+}
+
+.routesEvent strong,
+.routesEvent span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routesEvent strong {
+  color: var(--text-primary);
+  font-size: 10.5px;
+  line-height: 1.1;
+  font-weight: 650;
+}
+
+.routesEvent span,
+.routesDayEvents small {
+  color: var(--text-tertiary);
+  font-size: 9.5px;
+  line-height: 1.1;
+  font-weight: 560;
+}
+
+.routesEvent button {
+  width: fit-content;
+  min-height: 20px;
+  padding: 0 7px;
+  border: 1px solid rgba(72, 213, 151, .20);
+  border-radius: 999px;
+  background: transparent;
+  color: #48d597;
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 650;
+}
+
+.routesInlineState {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  font-size: 11px;
+}
+
+.routeStatusBadge,
+.routeAlertBadge,
+.routeNextLabel {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.routeStatusBadge_muted {
+  color: var(--text-tertiary);
+  border-color: var(--line-subtle);
+}
+
+.routeStatusBadge_green {
+  color: #48d597;
+  border-color: rgba(72, 213, 151, .22);
+}
+
+.routeStatusBadge_amber {
+  color: #f5b800;
+  border-color: rgba(245, 184, 0, .24);
+}
+
+.routeStatusBadge_red {
+  color: #ff8a8a;
+  border-color: rgba(255, 95, 95, .26);
+}
+
+.routeAlertBadge {
+  color: #f5b800;
+  border-color: rgba(245, 184, 0, .32);
+  background: rgba(245, 184, 0, .045);
+}
+
+.routeAlertBadge_red {
+  color: #ff8a8a;
+  border-color: rgba(255, 95, 95, .34);
+  background: rgba(255, 95, 95, .055);
+}
+
+.routeNextLabel {
+  color: rgba(122, 183, 255, .90);
+  border-color: rgba(122, 183, 255, .20);
+}
+
+.routeModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9300;
+  padding: 24px;
+  background: rgba(3, 4, 5, .78);
+  backdrop-filter: blur(16px);
+  display: grid;
+  place-items: center;
+}
+
+.routeModal {
+  width: min(620px, calc(100vw - 48px));
+  max-height: min(720px, calc(100vh - 48px));
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, .030), transparent 31%),
+    #0f0f0d;
+  color: var(--text-primary);
+  box-shadow: none;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.routeModalHead,
+.routeModalActions {
+  min-height: 62px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.routeModalHead,
+.routeModalActions {
+  border-bottom: 1px solid var(--line-subtle);
+  background: rgba(255, 255, 255, .008);
+}
+
+.routeModalActions {
+  border-top: 1px solid var(--line-subtle);
+  border-bottom: 0;
+  justify-content: flex-end;
+}
+
+.routeModalHead span {
+  color: rgba(170, 205, 224, .80);
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.routeModalHead h3 {
+  margin: 3px 0 0;
+  color: var(--text-primary);
+  font-size: 20px;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+
+.routeModalClose,
+.routeGhostButton,
+.routePrimaryButton {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.routeModalClose {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.routeModalBody {
+  min-height: 0;
+  padding: 18px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.routeField {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.routeFieldWide {
+  grid-column: 1 / -1;
+}
+
+.routeField span {
+  color: rgba(170, 205, 224, .80);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.routeField input,
+.routeField select,
+.routeField textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .014);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 620;
+  outline: none;
+  box-shadow: none;
+}
+
+.routeField textarea {
+  min-height: 84px;
+  padding-top: 10px;
+  resize: vertical;
+}
+
+.routeGhostButton,
+.routePrimaryButton {
+  min-height: 38px;
+  padding: 0 16px;
+}
+
+.routePrimaryButton {
+  border-color: rgba(245, 235, 220, .88);
+  background: #eee8dc;
+  color: #11110f;
+}
+
+@media (max-width: 980px) {
+  .routesHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .routesActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .routesCalendar {
+    min-width: 880px;
+  }
+
+  .routesPanel {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .routeModalBody {
+    grid-template-columns: 1fr;
+  }
+}

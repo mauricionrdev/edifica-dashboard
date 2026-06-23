@@ -21,6 +21,7 @@ import auditLogsRoutes from './src/routes/auditLogs.js';
 import notificationsRoutes from './src/routes/notifications.js';
 import projectsRoutes from './src/routes/projects.js';
 import supportRoutes from './src/routes/support.js';
+import routeMeetingsRoutes from './src/routes/routeMeetings.js';
 
 const app = express();
 
@@ -103,6 +104,7 @@ app.use('/api/audit-logs', auditLogsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/route-meetings', routeMeetingsRoutes);
 
 // --------------------------------------------------------------
 //  404 + error handler

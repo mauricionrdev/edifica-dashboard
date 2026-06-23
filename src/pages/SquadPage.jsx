@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { updateSquad } from '../api/squads.js';
+import { createRouteMeeting, listRouteMeetings, updateRouteMeeting } from '../api/routeMeetings.js';
 import { getMetric } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import {
+  CalendarIcon,
   CloseIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  PlusIcon,
   RotateCcwIcon,
   SearchIcon,
   Select,
@@ -256,6 +259,101 @@ function initialsFromClient(name) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
+function dateInputValue(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(`${String(value || '').slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function parseLocalDate(value) {
+  if (!value) return null;
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function addDays(value, days) {
+  const date = parseLocalDate(value) || new Date();
+  date.setDate(date.getDate() + Number(days || 0));
+  return dateInputValue(date);
+}
+
+function formatShortDate(value) {
+  const date = parseLocalDate(value);
+  if (!date) return 'Sem data';
+  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+}
+
+function daysBetweenDates(fromValue, toValue = new Date()) {
+  const from = parseLocalDate(fromValue);
+  const to = toValue instanceof Date ? toValue : parseLocalDate(toValue);
+  if (!from || !to || Number.isNaN(to.getTime())) return null;
+  const oneDay = 24 * 60 * 60 * 1000;
+  return Math.floor((Date.UTC(to.getFullYear(), to.getMonth(), to.getDate()) - Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) / oneDay);
+}
+
+function routeStatusLabel(daysWithoutRoute) {
+  if (!Number.isFinite(daysWithoutRoute)) return { label: 'Sem rota', tone: 'muted' };
+  if (daysWithoutRoute < 1) return { label: 'Última rota hoje', tone: 'green' };
+  if (daysWithoutRoute < 10) return { label: `Última rota há ${daysWithoutRoute} dias`, tone: 'green' };
+  if (daysWithoutRoute <= 15) return { label: `Última rota há ${daysWithoutRoute} dias`, tone: 'amber' };
+  return { label: `Última rota há ${daysWithoutRoute} dias`, tone: 'red' };
+}
+
+function buildRouteInfoForClient(meetings = [], today = new Date()) {
+  const todayKey = dateInputValue(today);
+  const completed = meetings
+    .filter((meeting) => meeting.status === 'completed' && meeting.meetingDate)
+    .sort((a, b) => String(b.meetingDate).localeCompare(String(a.meetingDate)));
+  const scheduled = meetings
+    .filter((meeting) => meeting.status === 'scheduled' && meeting.meetingDate)
+    .sort((a, b) => String(a.meetingDate).localeCompare(String(b.meetingDate)));
+
+  const lastCompleted = completed[0] || null;
+  const nextScheduled = scheduled.find((meeting) => String(meeting.meetingDate) >= todayKey) || null;
+  const pendingScheduled = scheduled.find((meeting) => String(meeting.meetingDate) < todayKey) || null;
+  const daysWithoutRoute = lastCompleted ? daysBetweenDates(lastCompleted.meetingDate, today) : null;
+  const status = routeStatusLabel(daysWithoutRoute);
+
+  let alert = null;
+  if (pendingScheduled) {
+    alert = { label: 'Confirmar se a rota aconteceu', tone: 'amber' };
+  } else if (!nextScheduled && Number.isFinite(daysWithoutRoute) && daysWithoutRoute > 15) {
+    alert = { label: 'Rota vencida', tone: 'red' };
+  } else if (!nextScheduled && Number.isFinite(daysWithoutRoute) && daysWithoutRoute >= 10) {
+    alert = { label: 'Rota vencendo', tone: 'amber' };
+  }
+
+  return {
+    lastCompleted,
+    nextScheduled,
+    pendingScheduled,
+    daysWithoutRoute,
+    statusLabel: status.label,
+    statusTone: status.tone,
+    alertLabel: alert?.label || '',
+    alertTone: alert?.tone || '',
+    nextLabel: nextScheduled ? `Próxima rota em ${formatShortDate(nextScheduled.meetingDate)}` : '',
+  };
+}
+
+function monthCalendarCells(year, month0) {
+  const first = new Date(year, month0, 1);
+  const firstDay = first.getDay();
+  const start = new Date(year, month0, 1 - firstDay);
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    return {
+      key: dateInputValue(date),
+      day: date.getDate(),
+      inMonth: date.getMonth() === month0,
+    };
+  });
+}
+
 function getSquadCoverPosition(squad) {
   return {
     x: Number(squad?.coverPositionX ?? squad?.cover_position_x ?? 50),
@@ -448,6 +546,162 @@ function SquadSettingsModal({ squad, users = [], busy = false, canManageOwner = 
   );
 }
 
+
+function RouteScheduleModal({ clients = [], capOptions = [], initial = {}, busy = false, onClose, onSubmit }) {
+  const [form, setForm] = useState(() => ({
+    clientId: initial.clientId || clients[0]?.id || '',
+    meetingDate: initial.meetingDate || dateInputValue(new Date()),
+    capName: initial.capName || '',
+    status: initial.status || 'scheduled',
+    notes: initial.notes || '',
+  }));
+
+  function setField(key, value) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  return (
+    <div className={styles.routeModalBackdrop} role="presentation" onClick={onClose}>
+      <section className={styles.routeModal} role="dialog" aria-modal="true" aria-label="Agendar rota" onClick={(event) => event.stopPropagation()}>
+        <div className={styles.routeModalHead}>
+          <div>
+            <span>Calendário de rotas</span>
+            <h3>{initial?.title || 'Agendar rota'}</h3>
+          </div>
+          <button type="button" className={styles.routeModalClose} onClick={onClose} aria-label="Fechar">
+            <CloseIcon size={16} />
+          </button>
+        </div>
+
+        <div className={styles.routeModalBody}>
+          <label className={styles.routeField}>
+            <span>Cliente</span>
+            <select value={form.clientId} onChange={(event) => setField('clientId', event.target.value)} disabled={busy}>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>{client.name}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className={styles.routeField}>
+            <span>Data da reunião</span>
+            <input type="date" value={form.meetingDate} onChange={(event) => setField('meetingDate', event.target.value)} disabled={busy} />
+          </label>
+
+          <label className={styles.routeField}>
+            <span>CAP responsável</span>
+            <input
+              type="text"
+              list="route-cap-options"
+              value={form.capName}
+              onChange={(event) => setField('capName', event.target.value)}
+              placeholder="Nome do CAP"
+              disabled={busy}
+            />
+            <datalist id="route-cap-options">
+              {capOptions.map((name) => <option key={name} value={name} />)}
+            </datalist>
+          </label>
+
+          <label className={styles.routeField}>
+            <span>Status</span>
+            <select value={form.status} onChange={(event) => setField('status', event.target.value)} disabled={busy}>
+              <option value="scheduled">Agendada</option>
+              <option value="completed">Realizada</option>
+            </select>
+          </label>
+
+          <label className={`${styles.routeField} ${styles.routeFieldWide}`.trim()}>
+            <span>Observações</span>
+            <textarea value={form.notes} onChange={(event) => setField('notes', event.target.value)} placeholder="Observações opcionais" disabled={busy} />
+          </label>
+        </div>
+
+        <div className={styles.routeModalActions}>
+          <button type="button" className={styles.routeGhostButton} onClick={onClose} disabled={busy}>Cancelar</button>
+          <button type="button" className={styles.routePrimaryButton} onClick={() => onSubmit(form)} disabled={busy || !form.clientId || !form.meetingDate}>
+            {busy ? 'Salvando...' : 'Salvar rota'}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function RouteCalendarPanel({ year, month0, meetings = [], capOptions = [], capFilter, onCapFilter, onNewMeeting, onMarkCompleted }) {
+  const cells = useMemo(() => monthCalendarCells(year, month0), [month0, year]);
+  const monthMeetings = useMemo(() => meetings.filter((meeting) => {
+    const date = parseLocalDate(meeting.meetingDate);
+    return date && date.getFullYear() === year && date.getMonth() === month0;
+  }), [meetings, month0, year]);
+  const meetingsByDate = useMemo(() => {
+    const map = new Map();
+    monthMeetings.forEach((meeting) => {
+      const key = String(meeting.meetingDate || '').slice(0, 10);
+      if (!key) return;
+      const list = map.get(key) || [];
+      list.push(meeting);
+      map.set(key, list);
+    });
+    return map;
+  }, [monthMeetings]);
+
+  const scheduledCount = monthMeetings.filter((meeting) => meeting.status === 'scheduled').length;
+  const completedCount = monthMeetings.filter((meeting) => meeting.status === 'completed').length;
+
+  return (
+    <section className={styles.routesPanel} aria-label="Calendário de rotas">
+      <div className={styles.routesHeader}>
+        <div>
+          <span className={styles.routesKicker}>Rotas</span>
+          <h2>Calendário de rotas</h2>
+        </div>
+
+        <div className={styles.routesActions}>
+          <select value={capFilter} onChange={(event) => onCapFilter(event.target.value)} aria-label="Filtrar por CAP">
+            <option value="">Todos os CAPs</option>
+            {capOptions.map((name) => <option key={name} value={name}>{name}</option>)}
+          </select>
+          <button type="button" onClick={onNewMeeting}>
+            <PlusIcon size={15} />
+            Agendar rota
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.routesSummary}>
+        <span><b>{displayInt(monthMeetings.length)}</b> rotas no período</span>
+        <span><b>{displayInt(scheduledCount)}</b> agendadas</span>
+        <span><b>{displayInt(completedCount)}</b> realizadas</span>
+      </div>
+
+      <div className={styles.routesCalendar}>
+        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => <span key={day} className={styles.routesWeekday}>{day}</span>)}
+        {cells.map((cell) => {
+          const dayMeetings = meetingsByDate.get(cell.key) || [];
+          return (
+            <div key={cell.key} className={`${styles.routesDayCell} ${cell.inMonth ? '' : styles.routesDayMuted}`.trim()}>
+              <span className={styles.routesDayNumber}>{cell.day}</span>
+              <div className={styles.routesDayEvents}>
+                {dayMeetings.slice(0, 3).map((meeting) => (
+                  <div key={meeting.id} className={`${styles.routesEvent} ${meeting.status === 'completed' ? styles.routesEventDone : ''}`.trim()}>
+                    <strong>{meeting.clientName}</strong>
+                    <span>{meeting.status === 'completed' ? 'Realizada' : 'Agendada'}{meeting.capName ? ` · ${meeting.capName}` : ''}</span>
+                    {meeting.status === 'scheduled' ? (
+                      <button type="button" onClick={() => onMarkCompleted(meeting)}>Marcar realizada</button>
+                    ) : null}
+                  </div>
+                ))}
+                {dayMeetings.length > 3 ? <small>+{dayMeetings.length - 3} rota(s)</small> : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function SquadPage() {
   const { squadId } = useParams();
   const navigate = useNavigate();
@@ -505,6 +759,12 @@ export default function SquadPage() {
   const [metricsByKey, setMetricsByKey] = useState({});
   const [metricsLoading, setMetricsLoading] = useState(false);
   const [metricsError, setMetricsError] = useState(null);
+  const [routeMeetings, setRouteMeetings] = useState([]);
+  const [routeMeetingsLoading, setRouteMeetingsLoading] = useState(false);
+  const [routeMeetingsError, setRouteMeetingsError] = useState(null);
+  const [routeCapFilter, setRouteCapFilter] = useState('');
+  const [routeModal, setRouteModal] = useState(null);
+  const [routeSaving, setRouteSaving] = useState(false);
   const metricsFetchRef = useRef(0);
   const logoInputRef = useRef(null);
   const cardsRef = useRef(null);
@@ -535,6 +795,66 @@ export default function SquadPage() {
     () => squadClients.filter((client) => isActiveClientStatus(client.status)),
     [squadClients]
   );
+
+
+  const reloadRouteMeetings = useCallback(async ({ signal } = {}) => {
+    if (!resolvedSquadId) {
+      setRouteMeetings([]);
+      return;
+    }
+    setRouteMeetingsLoading(true);
+    setRouteMeetingsError(null);
+    try {
+      const response = await listRouteMeetings({ squadId: resolvedSquadId }, { signal });
+      setRouteMeetings(Array.isArray(response?.meetings) ? response.meetings : []);
+    } catch (err) {
+      if (signal?.aborted) return;
+      setRouteMeetingsError(err);
+    } finally {
+      if (!signal?.aborted) setRouteMeetingsLoading(false);
+    }
+  }, [resolvedSquadId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    reloadRouteMeetings({ signal: controller.signal });
+    return () => controller.abort();
+  }, [reloadRouteMeetings]);
+
+  const routeCapOptions = useMemo(() => {
+    const values = new Set();
+    squadClients.forEach((client) => {
+      if (client?.gestor) values.add(client.gestor);
+      if (client?.gdvName) values.add(client.gdvName);
+    });
+    routeMeetings.forEach((meeting) => {
+      if (meeting?.capName) values.add(meeting.capName);
+    });
+    (Array.isArray(userDirectory) ? userDirectory : []).forEach((entry) => {
+      if (entry?.name) values.add(entry.name);
+    });
+    return [...values].filter(Boolean).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }, [routeMeetings, squadClients, userDirectory]);
+
+  const visibleRouteMeetings = useMemo(() => {
+    if (!routeCapFilter) return routeMeetings;
+    return routeMeetings.filter((meeting) => String(meeting.capName || '').trim() === routeCapFilter);
+  }, [routeCapFilter, routeMeetings]);
+
+  const routeInfoByClient = useMemo(() => {
+    const grouped = new Map();
+    routeMeetings.forEach((meeting) => {
+      if (!meeting?.clientId) return;
+      const list = grouped.get(meeting.clientId) || [];
+      list.push(meeting);
+      grouped.set(meeting.clientId, list);
+    });
+    const map = new Map();
+    squadClients.forEach((client) => {
+      map.set(client.id, buildRouteInfoForClient(grouped.get(client.id) || [], today));
+    });
+    return map;
+  }, [routeMeetings, squadClients, today]);
 
   useEffect(() => {
     setLogoUrl(getSquadAvatar(squad));
@@ -750,6 +1070,7 @@ export default function SquadPage() {
       const tone = statusTone(calc, client.status);
       const statusText = statusLabel(calc, client.status);
       const onboardingDays = getClientOnboardingDays(client, today);
+      const routeInfo = routeInfoByClient.get(client.id) || buildRouteInfoForClient([], today);
 
       const row = {
         ...client,
@@ -762,6 +1083,7 @@ export default function SquadPage() {
         tone,
         statusText,
         onboardingDays,
+        routeInfo,
       };
 
       return {
@@ -770,7 +1092,7 @@ export default function SquadPage() {
         priorityScore: clientPriorityScore(row),
       };
     });
-  }, [metricRows, metricsByKey, monthPeriodKeys, periodKey, squadClients, today, week]);
+  }, [metricRows, metricsByKey, monthPeriodKeys, periodKey, routeInfoByClient, squadClients, today, week]);
 
 
   const activeClientRows = useMemo(
@@ -1221,6 +1543,60 @@ export default function SquadPage() {
     ];
   }, [agg, clientRows, selectedClient, week]);
 
+
+  const handleOpenRouteModal = useCallback((initial = {}) => {
+    setRouteModal({
+      clientId: initial.clientId || selectedClientId || activeSquadClients[0]?.id || squadClients[0]?.id || '',
+      meetingDate: initial.meetingDate || dateInputValue(new Date()),
+      capName: initial.capName || user?.name || '',
+      status: initial.status || 'scheduled',
+      notes: initial.notes || '',
+      title: initial.title || 'Agendar rota',
+    });
+  }, [activeSquadClients, selectedClientId, squadClients, user?.name]);
+
+  const handleSaveRouteMeeting = useCallback(async (form) => {
+    setRouteSaving(true);
+    try {
+      await createRouteMeeting({
+        clientId: form.clientId,
+        meetingDate: form.meetingDate,
+        capName: form.capName,
+        status: form.status,
+        notes: form.notes,
+      });
+      setRouteModal(null);
+      await reloadRouteMeetings();
+      showToast('Rota salva no calendário.', { variant: 'success' });
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível salvar a rota.', { variant: 'error' });
+    } finally {
+      setRouteSaving(false);
+    }
+  }, [reloadRouteMeetings, showToast]);
+
+  const handleMarkRouteCompleted = useCallback(async (meeting) => {
+    if (!meeting?.id) return;
+    setRouteSaving(true);
+    try {
+      await updateRouteMeeting(meeting.id, { status: 'completed' });
+      await reloadRouteMeetings();
+      showToast('Rota marcada como realizada.', { variant: 'success' });
+      setRouteModal({
+        clientId: meeting.clientId,
+        meetingDate: addDays(meeting.meetingDate || new Date(), 15),
+        capName: meeting.capName || user?.name || '',
+        status: 'scheduled',
+        notes: '',
+        title: 'Agendar próxima rota',
+      });
+    } catch (err) {
+      showToast(err?.message || 'Não foi possível atualizar a rota.', { variant: 'error' });
+    } finally {
+      setRouteSaving(false);
+    }
+  }, [reloadRouteMeetings, showToast, user?.name]);
+
   if (shellLoading && !squad) {
     return (
       <div className={styles.page}>
@@ -1271,6 +1647,18 @@ export default function SquadPage() {
           canManageOwner={canManageSquads}
           onClose={() => setSettingsOpen(false)}
           onSubmit={handleSaveSquadSettings}
+        />
+      ) : null}
+
+
+      {routeModal ? (
+        <RouteScheduleModal
+          clients={squadClients}
+          capOptions={routeCapOptions}
+          initial={routeModal}
+          busy={routeSaving}
+          onClose={() => setRouteModal(null)}
+          onSubmit={handleSaveRouteMeeting}
         />
       ) : null}
 
@@ -1366,6 +1754,20 @@ export default function SquadPage() {
         </section>
       </section>
 
+      <RouteCalendarPanel
+        year={year}
+        month0={month0}
+        meetings={visibleRouteMeetings}
+        capOptions={routeCapOptions}
+        capFilter={routeCapFilter}
+        onCapFilter={setRouteCapFilter}
+        onNewMeeting={() => handleOpenRouteModal()}
+        onMarkCompleted={handleMarkRouteCompleted}
+      />
+
+      {routeMeetingsLoading ? <div className={styles.routesInlineState}>Carregando calendário de rotas...</div> : null}
+      {routeMeetingsError ? <div className={styles.routesInlineState}>Não foi possível carregar o calendário de rotas.</div> : null}
+
       {showComplementaryMetrics ? (
         <div className={styles.modalBackdrop} role="presentation" onClick={() => setShowComplementaryMetrics(false)}>
           <section className={styles.indicatorsModal} role="dialog" aria-modal="true" aria-label="Indicadores da carteira" onClick={(event) => event.stopPropagation()}>
@@ -1434,6 +1836,15 @@ export default function SquadPage() {
                   </div>
 
                   <div className={styles.clientStatus}>
+                    {row.routeInfo?.alertLabel ? (
+                      <span className={`${styles.routeAlertBadge} ${styles[`routeAlertBadge_${row.routeInfo.alertTone}`] || ''}`.trim()}>
+                        {row.routeInfo.alertLabel}
+                      </span>
+                    ) : null}
+                    <span className={`${styles.routeStatusBadge} ${styles[`routeStatusBadge_${row.routeInfo?.statusTone || 'muted'}`] || ''}`.trim()}>
+                      {row.routeInfo?.statusLabel || 'Sem rota'}
+                    </span>
+                    {row.routeInfo?.nextLabel ? <span className={styles.routeNextLabel}>{row.routeInfo.nextLabel}</span> : null}
                     {Number.isFinite(row.onboardingDays) ? (
                       <span className={`${styles.onboardingDays} ${styles[`onboardingDays_${onboardingDaysTone(row.onboardingDays)}`] || ''}`.trim()}>
                         {onboardingDaysLabel(row.onboardingDays)}
