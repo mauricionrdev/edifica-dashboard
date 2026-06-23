@@ -650,7 +650,6 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
       <section className={styles.routeModal} role="dialog" aria-modal="true" aria-label="Agendar rota" onClick={(event) => event.stopPropagation()}>
         <div className={styles.routeModalHead}>
           <div>
-            <span>Calendário de rotas</span>
             <h3>{initial?.title || 'Agendar rota'}</h3>
           </div>
           <button type="button" className={styles.routeModalClose} onClick={onClose} aria-label="Fechar">
@@ -698,7 +697,6 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
                         aria-selected={String(client.id) === String(form.clientId)}
                       >
                         <span>{client.name}</span>
-                        <small>{client.gestor || client.gdvName || 'Sem responsável'}</small>
                       </button>
                     ))}
                     {!filteredClients.length ? <div className={styles.routeComboboxEmpty}>Nenhum cliente encontrado.</div> : null}
@@ -823,6 +821,40 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
   );
 }
 
+function RouteDeleteConfirmModal({ meeting, busy = false, onClose, onConfirm }) {
+  if (!meeting) return null;
+
+  return (
+    <div className={styles.routeConfirmBackdrop} role="presentation" onClick={onClose}>
+      <section
+        className={styles.routeConfirmDialog}
+        role="alertdialog"
+        aria-modal="true"
+        aria-label="Confirmar exclusão de rota"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className={styles.routeConfirmIcon} aria-hidden="true">
+          <TrashIcon size={17} />
+        </div>
+
+        <div className={styles.routeConfirmContent}>
+          <h3>Excluir rota?</h3>
+          <p>{meeting.clientName || 'Cliente'} · {formatShortDate(meeting.meetingDate)}</p>
+        </div>
+
+        <div className={styles.routeConfirmActions}>
+          <button type="button" className={styles.routeGhostButton} onClick={onClose} disabled={busy}>
+            Cancelar
+          </button>
+          <button type="button" className={styles.routeDangerButton} onClick={onConfirm} disabled={busy}>
+            {busy ? 'Excluindo...' : 'Excluir rota'}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function RouteCalendarPanel({ year, month0, meetings = [], onNewMeeting, onMarkCompleted, onDeleteMeeting }) {
   const cells = useMemo(() => monthCalendarCells(year, month0), [month0, year]);
   const todayKey = dateInputValue(new Date());
@@ -874,22 +906,27 @@ function RouteCalendarPanel({ year, month0, meetings = [], onNewMeeting, onMarkC
             <div key={cell.key} className={`${styles.routesDayCell} ${cell.inMonth ? '' : styles.routesDayMuted} ${isToday ? styles.routesDayToday : ''}`.trim()}>
               <span className={styles.routesDayNumber}>{cell.day}</span>
               <div className={styles.routesDayEvents}>
-                {dayMeetings.slice(0, 3).map((meeting) => (
-                  <div key={meeting.id} className={`${styles.routesEvent} ${meeting.status === 'completed' ? styles.routesEventDone : ''}`.trim()}>
-                    <div className={styles.routesEventMain}>
-                      <strong>{meeting.clientName}</strong>
-                      <span>{meeting.status === 'completed' ? 'Realizada' : 'Agendada'}{meeting.capName ? ` · ${meeting.capName}` : ''}</span>
+                {dayMeetings.slice(0, 3).map((meeting) => {
+                  const completed = meeting.status === 'completed';
+                  return (
+                    <div key={meeting.id} className={`${styles.routesEvent} ${completed ? styles.routesEventDone : ''}`.trim()}>
+                      <div className={styles.routesEventMain}>
+                        <strong>{meeting.clientName}</strong>
+                        <span>{completed ? 'Realizada' : 'Agendada'}</span>
+                      </div>
+                      <div className={styles.routesEventActions}>
+                        {completed ? (
+                          <span className={styles.routesEventStatus}>Realizada</span>
+                        ) : (
+                          <button type="button" className={styles.routesEventComplete} onClick={() => onMarkCompleted(meeting)}>Concluir</button>
+                        )}
+                        <button type="button" className={styles.routesEventDelete} onClick={() => onDeleteMeeting(meeting)} aria-label="Excluir rota">
+                          <TrashIcon size={12} />
+                        </button>
+                      </div>
                     </div>
-                    <div className={styles.routesEventActions}>
-                      {meeting.status === 'scheduled' ? (
-                        <button type="button" onClick={() => onMarkCompleted(meeting)}>Realizada</button>
-                      ) : null}
-                      <button type="button" className={styles.routesEventDelete} onClick={() => onDeleteMeeting(meeting)} aria-label="Excluir rota">
-                        <TrashIcon size={12} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {dayMeetings.length > 3 ? <small>+{dayMeetings.length - 3} rota(s)</small> : null}
               </div>
             </div>
@@ -961,6 +998,7 @@ export default function SquadPage() {
   const [routeMeetingsLoading, setRouteMeetingsLoading] = useState(false);
   const [routeMeetingsError, setRouteMeetingsError] = useState(null);
   const [routeModal, setRouteModal] = useState(null);
+  const [routeDeleteTarget, setRouteDeleteTarget] = useState(null);
   const [routeSaving, setRouteSaving] = useState(false);
   const metricsFetchRef = useRef(0);
   const logoInputRef = useRef(null);
@@ -1781,22 +1819,26 @@ export default function SquadPage() {
   }, [reloadRouteMeetings, showToast, squadOwnership.owner?.name, user?.name]);
 
 
-  const handleDeleteRouteMeeting = useCallback(async (meeting) => {
+  const handleDeleteRouteMeeting = useCallback((meeting) => {
     if (!meeting?.id) return;
-    const confirmed = window.confirm(`Excluir rota de ${meeting.clientName || 'cliente'} em ${formatShortDate(meeting.meetingDate)}?`);
-    if (!confirmed) return;
+    setRouteDeleteTarget(meeting);
+  }, []);
+
+  const handleConfirmDeleteRouteMeeting = useCallback(async () => {
+    if (!routeDeleteTarget?.id) return;
 
     setRouteSaving(true);
     try {
-      await deleteRouteMeeting(meeting.id);
+      await deleteRouteMeeting(routeDeleteTarget.id);
       await reloadRouteMeetings();
+      setRouteDeleteTarget(null);
       showToast('Rota excluída.', { variant: 'success' });
     } catch (err) {
       showToast(err?.message || 'Não foi possível excluir a rota.', { variant: 'error' });
     } finally {
       setRouteSaving(false);
     }
-  }, [reloadRouteMeetings, showToast]);
+  }, [reloadRouteMeetings, routeDeleteTarget, showToast]);
 
   if (shellLoading && !squad) {
     return (
@@ -1860,6 +1902,15 @@ export default function SquadPage() {
           busy={routeSaving}
           onClose={() => setRouteModal(null)}
           onSubmit={handleSaveRouteMeeting}
+        />
+      ) : null}
+
+      {routeDeleteTarget ? (
+        <RouteDeleteConfirmModal
+          meeting={routeDeleteTarget}
+          busy={routeSaving}
+          onClose={() => (routeSaving ? null : setRouteDeleteTarget(null))}
+          onConfirm={handleConfirmDeleteRouteMeeting}
         />
       ) : null}
 

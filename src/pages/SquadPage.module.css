@@ -9457,3 +9457,250 @@
     width: min(286px, calc(100vw - 72px));
   }
 }
+
+
+/* v95 · Refinamento de rotas: confirmação própria, evento no calendário e seletor limpo */
+.routeModal {
+  width: min(520px, calc(100vw - 48px));
+}
+
+.routeModalHead span {
+  display: none !important;
+}
+
+.routeModalHead h3 {
+  margin-top: 0;
+}
+
+.routeComboboxOption {
+  min-height: 38px;
+  padding: 8px 10px;
+  align-items: center;
+  gap: 0;
+}
+
+.routeComboboxOption small {
+  display: none !important;
+}
+
+.routeComboboxOption span {
+  color: rgba(170, 205, 224, .88);
+  font-size: 12.5px;
+  font-weight: 760;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+
+.routeComboboxOption:hover span,
+.routeComboboxOptionActive span {
+  color: #f5b800;
+}
+
+.routesDayCell {
+  min-height: 112px;
+  padding: 8px;
+}
+
+.routesDayEvents {
+  gap: 6px;
+}
+
+.routesEvent {
+  width: 100%;
+  min-height: 52px;
+  padding: 7px 8px 7px 10px;
+  border: 0;
+  border-left: 3px solid rgba(245, 184, 0, .90);
+  border-radius: 10px;
+  background:
+    linear-gradient(90deg, rgba(245, 184, 0, .105), rgba(245, 184, 0, .035));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.routesEventDone {
+  border-left-color: rgba(72, 213, 151, .88);
+  background:
+    linear-gradient(90deg, rgba(72, 213, 151, .105), rgba(72, 213, 151, .032));
+}
+
+.routesEventMain {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  align-content: center;
+}
+
+.routesEvent strong,
+.routesEvent span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routesEvent strong {
+  color: #f3f0ea;
+  font-size: 11.5px;
+  line-height: 1.08;
+  font-weight: 740;
+  letter-spacing: -.02em;
+}
+
+.routesEventMain span {
+  color: rgba(243, 240, 234, .58);
+  font-size: 10px;
+  line-height: 1.05;
+  font-weight: 620;
+}
+
+.routesEventActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.routesEventStatus,
+.routesEventComplete {
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid rgba(72, 213, 151, .24);
+  border-radius: 99px;
+  background: transparent;
+  color: #48d597;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.routesEventComplete {
+  cursor: pointer;
+}
+
+.routesEventComplete:hover {
+  background: rgba(72, 213, 151, .065);
+  border-color: rgba(72, 213, 151, .34);
+}
+
+.routesEventDelete {
+  width: 26px !important;
+  height: 26px;
+  min-height: 26px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 95, 95, .28) !important;
+  border-radius: 99px !important;
+  background: transparent !important;
+  color: #ff8a8a !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.routesEventDelete:hover {
+  background: rgba(255, 95, 95, .065) !important;
+  border-color: rgba(255, 95, 95, .38) !important;
+}
+
+.routeConfirmBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9400;
+  padding: 24px;
+  background: rgba(3, 4, 5, .78);
+  backdrop-filter: blur(16px);
+  display: grid;
+  place-items: center;
+}
+
+.routeConfirmDialog {
+  width: min(420px, calc(100vw - 48px));
+  border: 1px solid rgba(255, 95, 95, .22);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 95, 95, .065), transparent 33%),
+    #0f0f0d;
+  color: var(--text-primary);
+  box-shadow: none;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.routeConfirmIcon {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 95, 95, .28);
+  border-radius: 999px;
+  color: #ff8a8a;
+  background: rgba(255, 95, 95, .055);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.routeConfirmContent {
+  min-width: 0;
+}
+
+.routeConfirmContent h3 {
+  margin: 0;
+  color: #f3f0ea;
+  font-size: 19px;
+  line-height: 1.15;
+  letter-spacing: -.04em;
+}
+
+.routeConfirmContent p {
+  margin: 7px 0 0;
+  color: rgba(243, 240, 234, .68);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+.routeConfirmActions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.routeDangerButton {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 95, 95, .34);
+  border-radius: 99px;
+  background: rgba(255, 95, 95, .075);
+  color: #ff8a8a;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  box-shadow: none;
+}
+
+.routeDangerButton:hover {
+  background: rgba(255, 95, 95, .105);
+}
+
+.routeDangerButton:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .routesEvent {
+    grid-template-columns: 1fr;
+  }
+
+  .routesEventActions {
+    justify-content: flex-start;
+  }
+}
