@@ -20,7 +20,6 @@ import {
 } from '../../utils/permissions.js';
 import {
   BriefcaseIcon,
-  ChartColumnIcon,
   CalendarIcon,
   ChevronLeftIcon,
   CloseIcon,
@@ -29,7 +28,6 @@ import {
   SearchIcon,
   TrophyIcon,
   UsersIcon,
-  BotIcon,
 } from '../ui/Icons.jsx';
 import { matchesSearch, normalizeSearch } from '../../utils/search.js';
 import styles from './Sidebar.module.css';
@@ -175,19 +173,6 @@ export default function Sidebar({
     [activeCount, emptyWorkspaceView, totalCount, user]
   );
 
-  const technologyItems = useMemo(
-    () => [
-      hasPermission(user, 'support.view')
-        ? {
-            to: '/suporte-tecnologia',
-            icon: <BotIcon size={16} />,
-            label: 'Suporte TI',
-          }
-        : null,
-    ].filter(Boolean),
-    [user]
-  );
-
   const adminItems = useMemo(
     () => [
       {
@@ -200,7 +185,6 @@ export default function Sidebar({
   );
 
   const filteredPrimary = primaryItems.filter((item) => matchesSearch(item.label, normalizedQuery));
-  const filteredTechnology = technologyItems.filter((item) => matchesSearch(item.label, normalizedQuery) || matchesSearch('Tecnologia', normalizedQuery));
   const filteredPeople = useMemo(() => {
     if (!normalizedQuery) return [];
     const list = Array.isArray(userDirectory) ? userDirectory : [];
@@ -369,17 +353,6 @@ export default function Sidebar({
           </section>
         ) : null}
 
-        {filteredTechnology.length > 0 ? (
-          <section className={styles.group}>
-            <div className={styles.groupLabel}>
-              <span>Tecnologia</span>
-            </div>
-            {filteredTechnology.map((item) => (
-              <Item key={item.to} {...item} onClick={handleNavigate} collapsed={collapsed} />
-            ))}
-          </section>
-        ) : null}
-
         {filteredPeople.length > 0 ? (
           <section className={styles.group}>
             <div className={styles.groupLabel}>
@@ -424,7 +397,7 @@ export default function Sidebar({
                 title={collapsed ? entry.name : undefined}
               >
                 <span className={styles.itemIcon}>
-                  <ChartColumnIcon size={16} />
+                  <TrophyIcon size={16} />
                 </span>
                 {editingGdvKey === entry.key ? (
                   <input
@@ -475,7 +448,7 @@ export default function Sidebar({
             />
             <Item
               to="/ranking-gdvs"
-              icon={<ChartColumnIcon size={16} />}
+              icon={<TrophyIcon size={16} />}
               label="Ranking GDVs"
               onClick={handleNavigate}
               collapsed={collapsed}
