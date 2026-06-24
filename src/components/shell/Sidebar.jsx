@@ -20,6 +20,7 @@ import {
 } from '../../utils/permissions.js';
 import {
   BriefcaseIcon,
+  ChartColumnIcon,
   CalendarIcon,
   ChevronLeftIcon,
   CloseIcon,
@@ -397,7 +398,7 @@ export default function Sidebar({
                 title={collapsed ? entry.name : undefined}
               >
                 <span className={styles.itemIcon}>
-                  <TrophyIcon size={16} />
+                  <ChartColumnIcon size={16} />
                 </span>
                 {editingGdvKey === entry.key ? (
                   <input
