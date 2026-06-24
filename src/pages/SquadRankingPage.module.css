@@ -534,6 +534,64 @@
   box-shadow: 0 0 14px rgba(245, 184, 0, 0.20);
 }
 
+
+
+/* Ranking GDVs: mantém o pódio sempre com 3 posições mesmo sem competidores suficientes. */
+.podiumCard_empty {
+  cursor: default;
+  border-color: rgba(255, 255, 255, 0.075);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.035), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.006)),
+    var(--bg-canvas);
+  box-shadow: none;
+  opacity: 0.72;
+}
+
+.podiumCard_empty:hover {
+  border-color: rgba(255, 255, 255, 0.075);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.035), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.006)),
+    var(--bg-canvas);
+  transform: none;
+}
+
+.podiumCard_empty .podiumGhostRank {
+  opacity: 0.035;
+}
+
+.podiumAvatar_empty {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    var(--bg-canvas);
+  color: var(--text-tertiary);
+}
+
+.podiumAvatar_empty span {
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.podiumCard_empty .podiumIdentity strong {
+  color: var(--text-secondary);
+  font-size: clamp(16px, 1.35vw, 20px);
+}
+
+.podiumCard_empty .podiumScore,
+.podiumCard_empty .podiumForecast strong,
+.podiumCard_empty .podiumMeta strong {
+  color: var(--text-tertiary);
+}
+
+.podiumBar_empty span {
+  width: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .listSection,
 .championsSection {
   margin-top: 14px;

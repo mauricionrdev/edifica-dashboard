@@ -50,6 +50,50 @@ function targetBarProgress(progress, goalPercent) {
   return clampProgress((safeProgress / safeGoal) * 100);
 }
 
+function EmptyPodiumCard({ position, variant = 'default' }) {
+  return (
+    <div
+      className={`${styles.podiumCard} ${styles[`podiumCard_${variant}`] || ''} ${styles.podiumCard_empty}`.trim()}
+      aria-label={`${rankLabel(position)} lugar aguardando competidor`}
+    >
+      <span className={styles.podiumGhostRank}>{position}</span>
+      <span className={styles.podiumRank}>{rankLabel(position)}</span>
+
+      <div className={styles.podiumAvatarWrap}>
+        <div className={`${styles.podiumAvatar} ${styles.podiumAvatar_empty}`.trim()} aria-hidden="true">
+          <span>{rankLabel(position)}</span>
+        </div>
+      </div>
+
+      <div className={styles.podiumIdentity}>
+        <strong>Aguardando competidor</strong>
+        <span>{rankLabel(position)} lugar</span>
+      </div>
+
+      <div className={styles.podiumScore}>—</div>
+      <div className={styles.podiumForecast}>
+        <span>Previsto</span>
+        <strong>—</strong>
+      </div>
+
+      <div className={styles.podiumMeta}>
+        <div>
+          <span>Meta Lucro</span>
+          <strong>—</strong>
+        </div>
+        <div>
+          <span>Churn</span>
+          <strong>—</strong>
+        </div>
+      </div>
+
+      <div className={`${styles.podiumBar} ${styles.podiumBar_empty}`.trim()} aria-hidden="true">
+        <span />
+      </div>
+    </div>
+  );
+}
+
 function PodiumCard({ row, variant = 'default', onOpen }) {
   if (!row) return null;
 
@@ -333,9 +377,21 @@ export default function GdvRankingPage() {
             <StateBlock compact variant="empty" title="Nenhum GDV encontrado" />
           ) : (
             <div className={styles.podiumGrid}>
-              <PodiumCard row={podiumRows[1]} variant="runnerUp" onOpen={openGdv} />
-              <PodiumCard row={podiumRows[0]} variant="champion" onOpen={openGdv} />
-              <PodiumCard row={podiumRows[2]} variant="third" onOpen={openGdv} />
+              {podiumRows[1] ? (
+                <PodiumCard row={podiumRows[1]} variant="runnerUp" onOpen={openGdv} />
+              ) : (
+                <EmptyPodiumCard position={2} variant="runnerUp" />
+              )}
+              {podiumRows[0] ? (
+                <PodiumCard row={podiumRows[0]} variant="champion" onOpen={openGdv} />
+              ) : (
+                <EmptyPodiumCard position={1} variant="champion" />
+              )}
+              {podiumRows[2] ? (
+                <PodiumCard row={podiumRows[2]} variant="third" onOpen={openGdv} />
+              ) : (
+                <EmptyPodiumCard position={3} variant="third" />
+              )}
             </div>
           )}
         </section>
