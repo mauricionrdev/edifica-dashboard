@@ -464,12 +464,19 @@ export default function Sidebar({
           </section>
         ) : null}
 
-        {(hasPermission(user, 'ranking.view') || emptyWorkspaceView) && matchesSearch('Ranking', normalizedQuery) ? (
+        {(hasPermission(user, 'ranking.view') || emptyWorkspaceView) && (matchesSearch('Ranking', normalizedQuery) || matchesSearch('GDV', normalizedQuery)) ? (
           <section className={styles.group}>
             <Item
               to="/ranking-squads"
               icon={<TrophyIcon size={16} />}
-              label="Ranking"
+              label="Ranking Squads"
+              onClick={handleNavigate}
+              collapsed={collapsed}
+            />
+            <Item
+              to="/ranking-gdvs"
+              icon={<ChartColumnIcon size={16} />}
+              label="Ranking GDVs"
               onClick={handleNavigate}
               collapsed={collapsed}
             />

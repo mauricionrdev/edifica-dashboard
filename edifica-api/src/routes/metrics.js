@@ -396,7 +396,9 @@ function clientProjectedToHitGoalInMonth(clientMetrics = [], monthPrefix = '', m
   const effectiveProjected = Math.max(monthClosed, monthProjected);
 
   return {
-    predicted: monthGoal > 0 && effectiveProjected >= monthGoal,
+    // Ranking previsto considera exclusivamente o equivalente ao status visual
+    // "Vai bater meta": ainda não bateu, mas a projeção alcança a meta.
+    predicted: monthGoal > 0 && monthClosed < monthGoal && effectiveProjected >= monthGoal,
     monthClosed,
     monthProjected: effectiveProjected,
     monthGoal,
@@ -784,6 +786,312 @@ function closedCompetitionMonths(now = new Date()) {
   return months;
 }
 
+
+function slugifyRankingSegment(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+}
+
+function normalizeRankingGdvName(value) {
+  return String(value || '')
+    .trim()
+    .replace(/^gdv\s+/i, '')
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
+async function listGdvRankingRows() {
+  const tables = await query("SHOW TABLES LIKE 'gdvs'");
+  if (tables.length === 0) return [];
+
+  return query(
+    `SELECT g.id, g.name, g.owner_user_id, g.active, g.logo_data_url, g.custom_slug,
+            u.name AS owner_name, u.email AS owner_email, u.role AS owner_role
+       FROM gdvs g
+       LEFT JOIN users u ON u.id = g.owner_user_id
+      ORDER BY g.name ASC`
+  );
+}
+
+function buildRankingEntityClientSummaries(clients = [], metricsByClient = new Map(), monthPrefix = '', weekKey = '', prevWeekKey = '', prevMonthPrefix = '', rankingMaxWeek = 4) {
+  return clients.map((client) => {
+    const clientMetricRows = metricsByClient.get(client.id) || [];
+    const clientMetaLucro = Number(client.meta_lucro) || 0;
+    const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek);
+    const projected = clientProjectedToHitGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
+    const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
+      prevWeekKey,
+      prevMonthPrefix,
+      clientMetaLucro,
+    });
+    return {
+      clientId: client.id,
+      name: client.name,
+      squadId: client.squad_id,
+      clientMetaLucro,
+      ...summary,
+      predicted: projected.predicted,
+      monthProjected: projected.monthProjected,
+      projectedMonthGoal: projected.monthGoal,
+      hit,
+      hasGoal: hit || projected.predicted,
+    };
+  });
+}
+
+function buildRankingStatsForClients(clients = [], metricsByClient = new Map(), monthPrefix = '', context = {}) {
+  const {
+    weekKey = currentPeriodKey(new Date()),
+    prevWeekKey = previousPeriodKey(weekKey),
+    prevMonthPrefix = previousMonthPrefix(monthPrefix),
+    rankingMaxWeek = 4,
+    goalPercent = DEFAULT_RANKING_GOAL_PERCENT,
+    churnTarget = DEFAULT_CHURN_TARGET_RATE,
+  } = context;
+
+  const portfolioClients = clients;
+  const activeClients = clients.filter((client) => activeAtMonthEnd(client, monthPrefix));
+  const revenueClients = clients.filter(isRevenueClientStatus);
+  const churnedInPeriod = clients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
+  const mrrBreakdownByStatus = {};
+  const mrrClients = revenueClients.map((client) => {
+    const feeInfo = resolveMonthlyFeeInfo(client, monthPrefix);
+    const status = normalizedClientStatus(client.status);
+    if (!mrrBreakdownByStatus[status]) {
+      mrrBreakdownByStatus[status] = { count: 0, total: 0 };
+    }
+    mrrBreakdownByStatus[status].count += 1;
+    mrrBreakdownByStatus[status].total += feeInfo.value;
+    return {
+      id: client.id,
+      name: client.name,
+      status,
+      fee: feeInfo.value,
+      baseFee: Number(client.fee) || 0,
+      feeSource: feeInfo.source,
+      feeStepType: feeInfo.stepType,
+      feeStepMonth: feeInfo.stepMonth,
+    };
+  });
+
+  const mrr = mrrClients.reduce((sum, client) => sum + client.fee, 0);
+  const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
+  const clientSummaries = buildRankingEntityClientSummaries(
+    activeClients,
+    metricsByClient,
+    monthPrefix,
+    weekKey,
+    prevWeekKey,
+    prevMonthPrefix,
+    rankingMaxWeek
+  );
+  const totals = aggregatePortfolioSummary(clientSummaries);
+  const rankingGoalClients = clientSummaries.filter((client) => client.hit).length;
+  const rankingGoalBaseClients = activeClients.length;
+  const predictedGoalClients = clientSummaries.filter((client) => client.predicted).length;
+  const predictedGoalBaseClients = activeClients.length;
+  const metaIndex = rankingGoalBaseClients > 0 ? (rankingGoalClients / rankingGoalBaseClients) * 100 : 0;
+  const predictedGoalProgress = predictedGoalBaseClients > 0 ? (predictedGoalClients / predictedGoalBaseClients) * 100 : 0;
+  const metaActiveProgress = metaIndex;
+  const metaActiveTargetProgress = goalPercent > 0 ? (metaActiveProgress / goalPercent) * 100 : metaActiveProgress;
+  const metaActiveDistance = goalDistance(metaActiveProgress, goalPercent);
+  const predictedActiveTargetProgress = goalPercent > 0 ? (predictedGoalProgress / goalPercent) * 100 : predictedGoalProgress;
+  const predictedActiveDistance = goalDistance(predictedGoalProgress, goalPercent);
+  const legacyPerformanceScore = performanceScore({ mrr, metaIndex, churnRate, activeClients: activeClients.length });
+  const rankingScore = metaTargetRankScore(metaActiveProgress, goalPercent);
+  const predictedRankingScore = metaTargetRankScore(predictedGoalProgress, goalPercent);
+
+  return {
+    activeClients: activeClients.length,
+    clientsWithGoal: rankingGoalClients,
+    rankingGoalClients,
+    rankingGoalBaseClients,
+    predictedGoalClients,
+    predictedGoalBaseClients,
+    projectedGoalClients: predictedGoalClients,
+    projectedGoalBaseClients: predictedGoalBaseClients,
+    mrr,
+    mrrBreakdown: {
+      month: monthPrefix,
+      clients: mrrClients,
+      byStatus: mrrBreakdownByStatus,
+    },
+    metaIndex,
+    hitRate: metaActiveProgress,
+    metaActiveProgress,
+    predictedGoalProgress,
+    projectedGoalProgress: predictedGoalProgress,
+    predictedActiveTargetProgress,
+    predictedActiveDistance,
+    metaActiveClosed: rankingGoalClients,
+    metaActiveGoal: rankingGoalBaseClients,
+    predictedActiveClosed: predictedGoalClients,
+    predictedActiveGoal: predictedGoalBaseClients,
+    goalPercent,
+    churnRate,
+    churnedClients: churnedInPeriod.length,
+    churnBaseClients: portfolioClients.length,
+    churnTarget,
+    goalOnTarget: metaActiveProgress >= goalPercent,
+    churnOnTarget: churnRate <= churnTarget,
+    metaActiveTargetProgress,
+    metaActiveDistance,
+    rankingScore,
+    predictedRankingScore,
+    performanceScore: legacyPerformanceScore,
+    totals,
+  };
+}
+
+async function buildGdvRankingRows(req, monthPrefix, gdvId = '') {
+  if (req.emptyWorkspaceView) return [];
+
+  const weekKey = currentPeriodKey(new Date(`${monthPrefix}-15T00:00:00Z`));
+  const prevWeekKey = previousPeriodKey(weekKey);
+  const prevMonthPrefix = previousMonthPrefix(monthPrefix);
+  const rankingMaxWeek = rankingMaxWeekForMonth(monthPrefix);
+  const referenceDateSql = monthPrefix + '-01';
+  const rankingSettings = await getRankingSettings();
+
+  const squadScope = getAllowedSquads(req.user, 'ranking.view.all');
+  const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
+
+  const gdvRows = await listGdvRankingRows();
+  const gdvByName = new Map();
+  gdvRows.forEach((gdv) => {
+    const key = normalizeRankingGdvName(gdv.name);
+    if (key && !gdvByName.has(key)) gdvByName.set(key, gdv);
+  });
+
+  let clientSql = `SELECT c.id, c.name, c.squad_id, c.gdv_name, c.status, c.fee, c.fee_steps_json, c.meta_lucro,
+                          c.start_date, c.churn_date, c.created_at
+                     FROM clients c
+                    WHERE c.gdv_name IS NOT NULL
+                      AND TRIM(c.gdv_name) <> ''
+                      AND COALESCE(c.start_date, DATE(c.created_at)) <= LAST_DAY(?)`;
+  const clientParams = [referenceDateSql];
+
+  if (allowedSquads) {
+    if (allowedSquads.length === 0) return [];
+    clientSql += ` AND c.squad_id IN (${allowedSquads.map(() => '?').join(',')})`;
+    clientParams.push(...allowedSquads);
+  }
+  clientSql += ' ORDER BY c.gdv_name ASC, c.name ASC';
+
+  const clients = await query(clientSql, clientParams);
+  const clientIds = clients.map((client) => client.id);
+  let metricRows = [];
+  if (clientIds.length > 0) {
+    const clientPlaceholders = clientIds.map(() => '?').join(',');
+    metricRows = await query(
+      `SELECT client_id, period_key, data
+         FROM weekly_metrics
+        WHERE client_id IN (${clientPlaceholders})
+          AND (period_key LIKE ? OR period_key LIKE ?)
+        ORDER BY client_id, period_key`,
+      [...clientIds, monthPrefix + '-S%', prevMonthPrefix + '-S%']
+    );
+  }
+
+  const metricsByClient = new Map();
+  for (const row of metricRows) {
+    if (!metricsByClient.has(row.client_id)) metricsByClient.set(row.client_id, []);
+    metricsByClient.get(row.client_id).push({
+      period_key: row.period_key,
+      data: typeof row.data === 'object' ? row.data : JSON.parse(row.data || '{}'),
+    });
+  }
+
+  const groups = new Map();
+  function ensureGroup(key, fallbackName = '') {
+    const normalized = normalizeRankingGdvName(key || fallbackName);
+    if (!normalized) return null;
+    if (!groups.has(normalized)) {
+      const gdv = gdvByName.get(normalized) || null;
+      groups.set(normalized, {
+        key: normalized,
+        gdv,
+        displayName: gdv?.name || String(fallbackName || key || '').trim(),
+        clients: [],
+      });
+    }
+    return groups.get(normalized);
+  }
+
+  gdvRows.forEach((gdv) => ensureGroup(gdv.name, gdv.name));
+  clients.forEach((client) => {
+    const group = ensureGroup(client.gdv_name, client.gdv_name);
+    if (group) group.clients.push(client);
+  });
+
+  const cleanGdvFilter = String(gdvId || '').trim();
+  const userId = String(req.user?.id || '');
+  const userName = normalizeRankingGdvName(req.user?.name || '');
+
+  const rows = Array.from(groups.values())
+    .filter((group) => {
+      if (!group.displayName) return false;
+      const gdv = group.gdv || {};
+      if (cleanGdvFilter) {
+        const allowed = new Set([
+          String(gdv.id || ''),
+          String(gdv.custom_slug || ''),
+          slugifyRankingSegment(gdv.name || group.displayName),
+          slugifyRankingSegment(group.displayName),
+        ].filter(Boolean));
+        if (!allowed.has(cleanGdvFilter) && !allowed.has(slugifyRankingSegment(cleanGdvFilter))) return false;
+      }
+
+      if (!allowedSquads) return true;
+      if (gdv.owner_user_id && String(gdv.owner_user_id) === userId) return true;
+      if (normalizeRankingGdvName(group.displayName) === userName) return true;
+      return group.clients.length > 0;
+    })
+    .map((group) => {
+      const gdv = group.gdv || {};
+      const stats = buildRankingStatsForClients(group.clients, metricsByClient, monthPrefix, {
+        weekKey,
+        prevWeekKey,
+        prevMonthPrefix,
+        rankingMaxWeek,
+        goalPercent: rankingSettings.goalPercent,
+        churnTarget: rankingSettings.churnTarget,
+      });
+      const entityId = gdv.id || slugifyRankingSegment(group.displayName) || group.key;
+      return {
+        gdv: {
+          id: entityId,
+          name: group.displayName,
+          ownerUserId: gdv.owner_user_id || '',
+          owner: gdv.owner_user_id ? {
+            id: gdv.owner_user_id,
+            name: gdv.owner_name || '',
+            email: gdv.owner_email || '',
+            role: gdv.owner_role || '',
+          } : null,
+          active: gdv.active !== false,
+          logoUrl: gdv.logo_data_url || '',
+          slug: gdv.custom_slug || slugifyRankingSegment(group.displayName) || entityId,
+        },
+        ownerName: gdv.owner_name || group.displayName || 'Sem responsável',
+        ownerRole: gdv.owner_role || '',
+        ...stats,
+      };
+    })
+    .sort((a, b) => compareRankingRows(
+      { ...a, squad: { name: a.gdv?.name } },
+      { ...b, squad: { name: b.gdv?.name } }
+    ))
+    .map((row, index) => ({ ...row, position: index + 1 }));
+
+  return rows;
+}
+
 async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
   if (req.emptyWorkspaceView) return [];
 
@@ -972,7 +1280,7 @@ async function ensureRankingChampionSnapshots(req) {
     await query(
       `INSERT INTO squad_ranking_champions
         (period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, mrr, position, trophy_number, closed_at, snapshot_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, LAST_DAY(?), ?)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, LAST_DAY(?), ?)
        ON DUPLICATE KEY UPDATE
         squad_name = VALUES(squad_name),
         owner_name = VALUES(owner_name),
@@ -1306,6 +1614,40 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     }).sort(compareRankingRows).map((row, index) => ({ ...row, position: index + 1 }));
 
     res.json({ weekKey, monthPrefix, settings: rankingSettings, goalPercent: rankingSettings.goalPercent, churnTarget: rankingSettings.churnTarget, rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+// --------------------------------------------------------------
+//  GET /api/metrics/ranking/gdvs
+//  Ranking consolidado por GDV usando as mesmas regras do ranking
+//  de squads: Meta Lucro realizada, previsão "Vai bater meta" e churn.
+// --------------------------------------------------------------
+router.get('/ranking/gdvs', requirePermission('ranking.view'), async (req, res, next) => {
+  try {
+    const ref = req.query?.date ? new Date(String(req.query.date) + 'T00:00:00Z') : new Date();
+    if (Number.isNaN(ref.getTime())) throw badRequest('Parâmetro date inválido. Use YYYY-MM-DD.');
+
+    const weekKey = currentPeriodKey(ref);
+    const monthPrefix = monthPrefixFromDate(ref);
+
+    if (req.emptyWorkspaceView) {
+      return res.json({ weekKey, monthPrefix, rows: [] });
+    }
+
+    const rankingSettings = await getRankingSettings();
+    const rows = await buildGdvRankingRows(req, monthPrefix, String(req.query?.gdvId || '').trim());
+
+    res.json({
+      weekKey,
+      monthPrefix,
+      settings: rankingSettings,
+      goalPercent: rankingSettings.goalPercent,
+      churnTarget: rankingSettings.churnTarget,
+      rows,
+    });
   } catch (err) {
     next(err);
   }

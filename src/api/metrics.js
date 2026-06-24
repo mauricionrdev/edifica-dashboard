@@ -53,6 +53,14 @@ export function getSquadRanking({ date, squadId } = {}) {
   return api.get(`/metrics/ranking${qs ? `?${qs}` : ''}`);
 }
 
+export function getGdvRanking({ date, gdvId } = {}) {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  if (gdvId) params.set('gdvId', gdvId);
+  const qs = params.toString();
+  return api.get(`/metrics/ranking/gdvs${qs ? `?${qs}` : ''}`);
+}
+
 export function getRankingSettings() {
   return api.get('/metrics/ranking/settings');
 }

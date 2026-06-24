@@ -5,19 +5,9 @@ const ROUTE_META = [
     crumb: 'Dashboard',
   },
   {
-    match: (pathname) => pathname.startsWith('/design-lab/dashboard'),
-    title: 'Dashboard',
-    crumb: 'Dashboard',
-  },
-  {
     match: (pathname) => pathname.startsWith('/design-lab/clientes'),
     title: 'Clientes',
     crumb: 'Clientes',
-  },
-  {
-    match: (pathname) => pathname.startsWith('/design-lab/preencher-semana'),
-    title: 'Preencher Semana',
-    crumb: 'Preencher Semana',
   },
   {
     match: (pathname) => pathname.startsWith('/clientes'),
@@ -58,6 +48,11 @@ const ROUTE_META = [
     match: (pathname) => pathname.startsWith('/ranking-squads'),
     title: 'Ranking de Squads',
     crumb: 'Ranking',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/ranking-gdvs'),
+    title: 'Ranking de GDVs',
+    crumb: 'Ranking GDV',
   },
   {
     match: (pathname) => pathname.startsWith('/equipe'),
