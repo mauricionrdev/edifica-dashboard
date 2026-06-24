@@ -25,6 +25,8 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
 import WorkspacePage from './pages/WorkspacePage.jsx';
 import DesignLabClientsPage from './pages/design-lab/DesignLabClientsPage.jsx';
+import DesignLabDashboardPage from './pages/design-lab/DesignLabDashboardPage.jsx';
+import DesignLabPreencherSemanaPage from './pages/design-lab/DesignLabPreencherSemanaPage.jsx';
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
 
 export default function App() {
@@ -60,10 +62,18 @@ export default function App() {
                 path="clientes"
                 element={<RequirePermissionRoute permission="clients.view"><ClientsPage /></RequirePermissionRoute>}
               />
-              <Route path="design-lab" element={<Navigate to="/design-lab/clientes" replace />} />
+              <Route path="design-lab" element={<Navigate to="/design-lab/dashboard" replace />} />
+              <Route
+                path="design-lab/dashboard"
+                element={<RequirePermissionRoute permission="central.view"><DesignLabDashboardPage /></RequirePermissionRoute>}
+              />
               <Route
                 path="design-lab/clientes"
                 element={<RequirePermissionRoute permission="clients.view"><DesignLabClientsPage /></RequirePermissionRoute>}
+              />
+              <Route
+                path="design-lab/preencher-semana"
+                element={<RequirePermissionRoute permission="metrics.view"><DesignLabPreencherSemanaPage /></RequirePermissionRoute>}
               />
               <Route
                 path="projetos"
