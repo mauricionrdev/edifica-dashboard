@@ -60,7 +60,7 @@ export default function App() {
               />
               <Route
                 path="clientes"
-                element={<RequirePermissionRoute permission="clients.view"><ClientsPage /></RequirePermissionRoute>}
+                element={<RequirePermissionRoute permission="clients.view"><DesignLabClientsPage /></RequirePermissionRoute>}
               />
               <Route path="design-lab" element={<Navigate to="/design-lab/dashboard" replace />} />
               <Route
