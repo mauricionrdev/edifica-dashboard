@@ -4,12 +4,15 @@ import { ApiError } from '../../api/client.js';
 import { clientInitials } from '../../utils/clientHelpers.js';
 import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
 import {
+  getSquadAvatar,
+  getUserAvatar,
   readAvatarFile,
   saveClientAvatar,
 } from '../../utils/avatarStorage.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
 import { CameraIcon, CloseIcon, TrashIcon } from '../../components/ui/Icons.jsx';
+import { Select } from '../../components/ui/index.js';
 import styles from './DesignLabClientCreateModal.module.css';
 
 const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
@@ -230,68 +233,68 @@ export default function DesignLabClientCreateModal({
               </label>
 
               <div className={styles.mainFieldsGrid}>
-                <label className={styles.field}>
-                  <span>Squad</span>
-                  <select
-                    value={form.squadId}
-                    onChange={(event) => setField('squadId', event.target.value)}
-                    disabled={saving}
-                  >
-                    <option value="">Sem squad</option>
-                    {squads.map((squad) => (
-                      <option key={squad.id} value={squad.id}>
-                        {squad.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Squad"
+                  className={styles.modalSelect}
+                  type="squad"
+                  value={form.squadId}
+                  onChange={(event) => setField('squadId', event.target.value)}
+                  disabled={saving}
+                  placeholder="Sem squad"
+                >
+                  <option value="">Sem squad</option>
+                  {squads.map((squad) => (
+                    <option key={squad.id} value={squad.id} data-avatar={getSquadAvatar(squad)} data-name={squad.name}>{squad.name}</option>
+                  ))}
+                </Select>
 
-                <label className={styles.field}>
-                  <span>Status</span>
-                  <select
-                    value={form.status}
-                    onChange={(event) => setField('status', event.target.value)}
-                    disabled={saving}
-                  >
-                    {CLIENT_STATUS_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Status"
+                  className={styles.modalSelect}
+                  value={form.status}
+                  onChange={(event) => setField('status', event.target.value)}
+                  disabled={saving}
+                >
+                  {CLIENT_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </Select>
 
-                <label className={styles.field}>
-                  <span>Gestor</span>
-                  <select
-                    value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
-                    onChange={(event) => {
-                      const selected = gestorRows.find((entry) => entry.id === event.target.value);
-                      setField('gestor', selected?.name || '');
-                    }}
-                    disabled={saving}
-                  >
-                    <option value="">Sem gestor</option>
-                    {gestorRows.map((entry) => (
-                      <option key={entry.id} value={entry.id}>{entry.name}</option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Gestor"
+                  className={styles.modalSelect}
+                  type="user"
+                  value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+                  onChange={(event) => {
+                    const selected = gestorRows.find((entry) => entry.id === event.target.value);
+                    setField('gestor', selected?.name || '');
+                  }}
+                  disabled={saving}
+                  placeholder="Sem gestor"
+                >
+                  <option value="">Sem gestor</option>
+                  {gestorRows.map((entry) => (
+                    <option key={entry.id} value={entry.id} data-avatar={getUserAvatar(entry)} data-name={entry.name}>{entry.name}</option>
+                  ))}
+                </Select>
 
-                <label className={styles.field}>
-                  <span>GDV</span>
-                  <select
-                    value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
-                    onChange={(event) => {
-                      const selected = gdvRows.find((entry) => entry.id === event.target.value);
-                      setField('gdvName', selected?.name || '');
-                    }}
-                    disabled={saving}
-                  >
-                    <option value="">Sem GDV</option>
-                    {gdvRows.map((entry) => (
-                      <option key={entry.id} value={entry.id}>{entry.name}</option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="GDV"
+                  className={styles.modalSelect}
+                  type="user"
+                  value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+                  onChange={(event) => {
+                    const selected = gdvRows.find((entry) => entry.id === event.target.value);
+                    setField('gdvName', selected?.name || '');
+                  }}
+                  disabled={saving}
+                  placeholder="Sem GDV"
+                >
+                  <option value="">Sem GDV</option>
+                  {gdvRows.map((entry) => (
+                    <option key={entry.id} value={entry.id} data-avatar={getUserAvatar(entry)} data-name={entry.name}>{entry.name}</option>
+                  ))}
+                </Select>
               </div>
             </div>
           </section>
@@ -302,17 +305,16 @@ export default function DesignLabClientCreateModal({
             </div>
 
             <div className={styles.contractGrid}>
-              <label className={styles.field}>
-                <span>Comercial interno</span>
-                <select
-                  value={form.internalCommercial}
-                  onChange={(event) => setField('internalCommercial', event.target.value)}
-                  disabled={saving}
-                >
-                  <option value="no">Não possui</option>
-                  <option value="yes">Possui</option>
-                </select>
-              </label>
+              <Select
+                label="Comercial interno"
+                className={styles.modalSelect}
+                value={form.internalCommercial}
+                onChange={(event) => setField('internalCommercial', event.target.value)}
+                disabled={saving}
+              >
+                <option value="no">Não possui</option>
+                <option value="yes">Possui</option>
+              </Select>
 
               {form.internalCommercial === 'yes' ? (
                 <label className={styles.field}>
@@ -336,17 +338,16 @@ export default function DesignLabClientCreateModal({
                 <span aria-hidden="true" />
               )}
 
-              <label className={styles.field}>
-                <span>Tipo de contrato</span>
-                <select
-                  value={form.contractType}
-                  onChange={(event) => setField('contractType', event.target.value)}
-                  disabled={saving}
-                >
-                  <option value="recurring">Recorrente</option>
-                  <option value="tcv">TCV</option>
-                </select>
-              </label>
+              <Select
+                label="Tipo de contrato"
+                className={styles.modalSelect}
+                value={form.contractType}
+                onChange={(event) => setField('contractType', event.target.value)}
+                disabled={saving}
+              >
+                <option value="recurring">Recorrente</option>
+                <option value="tcv">TCV</option>
+              </Select>
 
               <label className={styles.field}>
                 <span>Início</span>

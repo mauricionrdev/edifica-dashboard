@@ -1357,3 +1357,29 @@
     justify-content: flex-start !important;
   }
 }
+
+
+/* v103 · Selects dos modais no padrão da plataforma */
+.modalSelect {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.modalSelect :global(button) {
+  box-shadow: none;
+}
+
+.modalSelect :global(button:focus-visible) {
+  box-shadow: none;
+}
+
+.modalSelect :global([role='listbox']) {
+  box-shadow: none;
+}
+
+.modalSelect :global([class*='optionAvatar']) {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+}
