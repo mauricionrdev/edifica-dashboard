@@ -497,103 +497,24 @@
   border-radius: 999px;
 }
 
-
-/* v104 · Paleta principal dos modais alinhada ao amarelo Edifica */
+/* v106 · Modais de clientes: paleta minimalista sem excesso de cor */
 .modal {
-  --client-primary: var(--accent, #f5b800);
-  --client-primary-strong: var(--accent-strong, #ffc400);
-  --client-primary-soft: var(--accent-soft, rgba(245, 184, 0, 0.08));
-  --client-primary-line: var(--accent-line, rgba(245, 184, 0, 0.24));
-  --client-label: color-mix(in srgb, var(--accent, #f5b800) 72%, var(--text-secondary, #c7cbd1));
-}
-
-.kicker,
-.sectionKicker,
-.sectionHeader span,
-.field span,
-.fieldFull span,
-.feeCardHeader span {
-  color: var(--client-label);
-}
-
-.field input:focus,
-.field select:focus,
-.fieldFull input:focus {
-  border-color: var(--client-primary-line);
-  background: color-mix(in srgb, var(--client-primary) 3%, transparent);
-}
-
-.primaryButton {
-  border-color: var(--client-primary);
-  background: var(--client-primary);
-  color: var(--accent-text, #1a1500);
-}
-
-.primaryButton:hover:not(:disabled) {
-  border-color: var(--client-primary-strong);
-  background: var(--client-primary-strong);
-}
-
-.modalSelect > span:first-child {
-  color: var(--client-label);
-}
-
-.modalSelect > button,
-.modalSelect :global(button[aria-haspopup='listbox']) {
-  border-color: rgba(255, 255, 255, 0.075);
-}
-
-.modalSelect > button:hover,
-.modalSelect > button[aria-expanded='true'],
-.modalSelect :global(button[aria-haspopup='listbox']:hover),
-.modalSelect :global(button[aria-haspopup='listbox'][aria-expanded='true']) {
-  border-color: var(--client-primary-line);
-  background: color-mix(in srgb, var(--client-primary) 4%, transparent);
-}
-
-.modalSelect :global([role='listbox']) {
-  border-color: var(--client-primary-line);
+  --client-modal-panel: var(--bg-elevated, #090b0d);
+  --client-modal-raised: var(--bg-raised, #0d1013);
+  --client-modal-line: var(--line, rgba(255, 255, 255, 0.078));
+  --client-modal-line-soft: var(--line-subtle, rgba(255, 255, 255, 0.052));
+  --client-modal-text: var(--text-primary, #f1f3f4);
+  --client-modal-label: color-mix(in srgb, var(--text-secondary, #c7cbd1) 92%, var(--accent, #f5b800));
   background:
-    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--client-primary) 6%, transparent), transparent 36%),
-    var(--bg-raised, #0d1013);
-  box-shadow: none;
-}
-
-.modalSelect :global([role='option'][aria-selected='true']) {
-  background: var(--client-primary-soft);
-  color: var(--client-primary);
-}
-
-.modalSelect :global([role='option']:hover:not(:disabled)) {
-  background: color-mix(in srgb, var(--client-primary) 5%, transparent);
-  color: var(--text-primary, #f1f3f4);
-}
-
-
-/* v105 · Unificação final da cor principal dos modais de clientes */
-.modal {
-  --client-primary: var(--accent, #f5b800);
-  --client-primary-strong: var(--accent-strong, #ffc400);
-  --client-primary-soft: var(--accent-soft, rgba(245, 184, 0, 0.08));
-  --client-primary-line: var(--accent-line, rgba(245, 184, 0, 0.24));
-  --client-text: var(--text-primary, #f1f3f4);
-  --client-text-secondary: var(--text-secondary, #c7cbd1);
-  --client-text-muted: var(--text-tertiary, #9aa0a6);
-  --client-panel: var(--bg-elevated, #090b0d);
-  --client-panel-raised: var(--bg-raised, #0d1013);
-  --client-line: var(--line, rgba(255, 255, 255, 0.078));
-  --client-line-soft: var(--line-subtle, rgba(255, 255, 255, 0.052));
-  --client-label: color-mix(in srgb, var(--client-primary) 54%, var(--client-text-secondary));
-  background:
-    radial-gradient(circle at 16% 0%, color-mix(in srgb, var(--client-primary) 3.5%, transparent), transparent 31%),
-    var(--client-panel);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.004)),
+    var(--client-modal-panel);
 }
 
 .header,
 .footer,
 .tabs {
-  background: color-mix(in srgb, var(--client-primary) 1.4%, transparent);
-  border-color: var(--client-line-soft);
+  background: rgba(255, 255, 255, 0.010);
+  border-color: var(--client-modal-line-soft);
 }
 
 .kicker,
@@ -603,7 +524,7 @@
 .fieldFull span,
 .feeCardHeader span,
 .modalSelect > span:first-child {
-  color: var(--client-label);
+  color: var(--client-modal-label);
 }
 
 .field input,
@@ -611,9 +532,9 @@
 .fieldFull input,
 .modalSelect > button,
 .modalSelect :global(button[aria-haspopup='listbox']) {
-  border-color: var(--client-line);
-  background: color-mix(in srgb, var(--client-text) 2.2%, transparent);
-  color: var(--client-text);
+  border-color: var(--client-modal-line);
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--client-modal-text);
 }
 
 .field input:hover,
@@ -622,7 +543,7 @@
 .modalSelect > button:hover,
 .modalSelect :global(button[aria-haspopup='listbox']:hover) {
   border-color: var(--line-strong, rgba(255, 255, 255, 0.112));
-  background: color-mix(in srgb, var(--client-text) 3.4%, transparent);
+  background: rgba(255, 255, 255, 0.026);
 }
 
 .field input:focus,
@@ -630,71 +551,35 @@
 .fieldFull input:focus,
 .modalSelect > button[aria-expanded='true'],
 .modalSelect :global(button[aria-haspopup='listbox'][aria-expanded='true']) {
-  border-color: var(--client-primary-line);
-  background: color-mix(in srgb, var(--client-primary) 4%, transparent);
+  border-color: var(--line-strong, rgba(255, 255, 255, 0.112));
+  background: rgba(255, 255, 255, 0.026);
 }
 
 .primaryButton {
-  border-color: var(--client-primary) !important;
-  background: var(--client-primary) !important;
-  color: var(--accent-text, #1a1500) !important;
+  border-color: var(--text-primary, #f1f3f4);
+  background: var(--text-primary, #f1f3f4);
+  color: #121212;
 }
 
 .primaryButton:hover:not(:disabled) {
-  border-color: var(--client-primary-strong) !important;
-  background: var(--client-primary-strong) !important;
+  border-color: #fffaf0;
+  background: #fffaf0;
 }
 
 .modalSelect :global([role='listbox']) {
-  border-color: var(--client-primary-line);
+  border-color: var(--client-modal-line);
   background:
-    radial-gradient(circle at 22% 0%, color-mix(in srgb, var(--client-primary) 5%, transparent), transparent 36%),
-    var(--client-panel-raised);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.010)),
+    var(--client-modal-raised);
   box-shadow: none;
 }
 
 .modalSelect :global([role='option'][aria-selected='true']) {
-  background: var(--client-primary-soft) !important;
-  color: var(--client-primary) !important;
+  background: rgba(255, 255, 255, 0.052);
+  color: var(--client-modal-text);
 }
 
 .modalSelect :global([role='option']:hover:not(:disabled)) {
-  background: color-mix(in srgb, var(--client-primary) 5%, transparent) !important;
-  color: var(--client-text) !important;
-}
-
-.tabActive,
-.headerActionActive,
-.analysisTabActive,
-.analysisTabActive.analysisTab_icp,
-.analysisTabActive.analysisTab_gdv,
-.analysisTabActive.analysisTab_routes {
-  color: var(--client-primary) !important;
-  border-color: var(--client-primary-line) !important;
-  background: var(--client-primary-soft) !important;
-}
-
-.analysisTab_icp,
-.analysisTab_gdv,
-.analysisTab_routes {
-  color: var(--client-text-secondary);
-  border-color: var(--client-line);
-  background: transparent;
-}
-
-.analysisTab_icp:hover,
-.analysisTab_gdv:hover,
-.analysisTab_routes:hover {
-  color: var(--client-text);
-  border-color: var(--client-primary-line);
-  background: color-mix(in srgb, var(--client-primary) 4%, transparent);
-}
-
-.feeActions button {
-  color: var(--client-primary);
-  border-color: var(--client-primary-line);
-}
-
-.feeActions button:hover {
-  background: color-mix(in srgb, var(--client-primary) 5%, transparent);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--client-modal-text);
 }
