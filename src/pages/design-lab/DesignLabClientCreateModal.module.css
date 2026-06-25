@@ -568,3 +568,133 @@
   background: color-mix(in srgb, var(--client-primary) 5%, transparent);
   color: var(--text-primary, #f1f3f4);
 }
+
+
+/* v105 · Unificação final da cor principal dos modais de clientes */
+.modal {
+  --client-primary: var(--accent, #f5b800);
+  --client-primary-strong: var(--accent-strong, #ffc400);
+  --client-primary-soft: var(--accent-soft, rgba(245, 184, 0, 0.08));
+  --client-primary-line: var(--accent-line, rgba(245, 184, 0, 0.24));
+  --client-text: var(--text-primary, #f1f3f4);
+  --client-text-secondary: var(--text-secondary, #c7cbd1);
+  --client-text-muted: var(--text-tertiary, #9aa0a6);
+  --client-panel: var(--bg-elevated, #090b0d);
+  --client-panel-raised: var(--bg-raised, #0d1013);
+  --client-line: var(--line, rgba(255, 255, 255, 0.078));
+  --client-line-soft: var(--line-subtle, rgba(255, 255, 255, 0.052));
+  --client-label: color-mix(in srgb, var(--client-primary) 54%, var(--client-text-secondary));
+  background:
+    radial-gradient(circle at 16% 0%, color-mix(in srgb, var(--client-primary) 3.5%, transparent), transparent 31%),
+    var(--client-panel);
+}
+
+.header,
+.footer,
+.tabs {
+  background: color-mix(in srgb, var(--client-primary) 1.4%, transparent);
+  border-color: var(--client-line-soft);
+}
+
+.kicker,
+.sectionKicker,
+.sectionHeader span,
+.field span,
+.fieldFull span,
+.feeCardHeader span,
+.modalSelect > span:first-child {
+  color: var(--client-label);
+}
+
+.field input,
+.field select,
+.fieldFull input,
+.modalSelect > button,
+.modalSelect :global(button[aria-haspopup='listbox']) {
+  border-color: var(--client-line);
+  background: color-mix(in srgb, var(--client-text) 2.2%, transparent);
+  color: var(--client-text);
+}
+
+.field input:hover,
+.field select:hover,
+.fieldFull input:hover,
+.modalSelect > button:hover,
+.modalSelect :global(button[aria-haspopup='listbox']:hover) {
+  border-color: var(--line-strong, rgba(255, 255, 255, 0.112));
+  background: color-mix(in srgb, var(--client-text) 3.4%, transparent);
+}
+
+.field input:focus,
+.field select:focus,
+.fieldFull input:focus,
+.modalSelect > button[aria-expanded='true'],
+.modalSelect :global(button[aria-haspopup='listbox'][aria-expanded='true']) {
+  border-color: var(--client-primary-line);
+  background: color-mix(in srgb, var(--client-primary) 4%, transparent);
+}
+
+.primaryButton {
+  border-color: var(--client-primary) !important;
+  background: var(--client-primary) !important;
+  color: var(--accent-text, #1a1500) !important;
+}
+
+.primaryButton:hover:not(:disabled) {
+  border-color: var(--client-primary-strong) !important;
+  background: var(--client-primary-strong) !important;
+}
+
+.modalSelect :global([role='listbox']) {
+  border-color: var(--client-primary-line);
+  background:
+    radial-gradient(circle at 22% 0%, color-mix(in srgb, var(--client-primary) 5%, transparent), transparent 36%),
+    var(--client-panel-raised);
+  box-shadow: none;
+}
+
+.modalSelect :global([role='option'][aria-selected='true']) {
+  background: var(--client-primary-soft) !important;
+  color: var(--client-primary) !important;
+}
+
+.modalSelect :global([role='option']:hover:not(:disabled)) {
+  background: color-mix(in srgb, var(--client-primary) 5%, transparent) !important;
+  color: var(--client-text) !important;
+}
+
+.tabActive,
+.headerActionActive,
+.analysisTabActive,
+.analysisTabActive.analysisTab_icp,
+.analysisTabActive.analysisTab_gdv,
+.analysisTabActive.analysisTab_routes {
+  color: var(--client-primary) !important;
+  border-color: var(--client-primary-line) !important;
+  background: var(--client-primary-soft) !important;
+}
+
+.analysisTab_icp,
+.analysisTab_gdv,
+.analysisTab_routes {
+  color: var(--client-text-secondary);
+  border-color: var(--client-line);
+  background: transparent;
+}
+
+.analysisTab_icp:hover,
+.analysisTab_gdv:hover,
+.analysisTab_routes:hover {
+  color: var(--client-text);
+  border-color: var(--client-primary-line);
+  background: color-mix(in srgb, var(--client-primary) 4%, transparent);
+}
+
+.feeActions button {
+  color: var(--client-primary);
+  border-color: var(--client-primary-line);
+}
+
+.feeActions button:hover {
+  background: color-mix(in srgb, var(--client-primary) 5%, transparent);
+}
