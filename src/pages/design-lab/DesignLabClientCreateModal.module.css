@@ -496,3 +496,75 @@
   height: 22px;
   border-radius: 999px;
 }
+
+
+/* v104 · Paleta principal dos modais alinhada ao amarelo Edifica */
+.modal {
+  --client-primary: var(--accent, #f5b800);
+  --client-primary-strong: var(--accent-strong, #ffc400);
+  --client-primary-soft: var(--accent-soft, rgba(245, 184, 0, 0.08));
+  --client-primary-line: var(--accent-line, rgba(245, 184, 0, 0.24));
+  --client-label: color-mix(in srgb, var(--accent, #f5b800) 72%, var(--text-secondary, #c7cbd1));
+}
+
+.kicker,
+.sectionKicker,
+.sectionHeader span,
+.field span,
+.fieldFull span,
+.feeCardHeader span {
+  color: var(--client-label);
+}
+
+.field input:focus,
+.field select:focus,
+.fieldFull input:focus {
+  border-color: var(--client-primary-line);
+  background: color-mix(in srgb, var(--client-primary) 3%, transparent);
+}
+
+.primaryButton {
+  border-color: var(--client-primary);
+  background: var(--client-primary);
+  color: var(--accent-text, #1a1500);
+}
+
+.primaryButton:hover:not(:disabled) {
+  border-color: var(--client-primary-strong);
+  background: var(--client-primary-strong);
+}
+
+.modalSelect > span:first-child {
+  color: var(--client-label);
+}
+
+.modalSelect > button,
+.modalSelect :global(button[aria-haspopup='listbox']) {
+  border-color: rgba(255, 255, 255, 0.075);
+}
+
+.modalSelect > button:hover,
+.modalSelect > button[aria-expanded='true'],
+.modalSelect :global(button[aria-haspopup='listbox']:hover),
+.modalSelect :global(button[aria-haspopup='listbox'][aria-expanded='true']) {
+  border-color: var(--client-primary-line);
+  background: color-mix(in srgb, var(--client-primary) 4%, transparent);
+}
+
+.modalSelect :global([role='listbox']) {
+  border-color: var(--client-primary-line);
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--client-primary) 6%, transparent), transparent 36%),
+    var(--bg-raised, #0d1013);
+  box-shadow: none;
+}
+
+.modalSelect :global([role='option'][aria-selected='true']) {
+  background: var(--client-primary-soft);
+  color: var(--client-primary);
+}
+
+.modalSelect :global([role='option']:hover:not(:disabled)) {
+  background: color-mix(in srgb, var(--client-primary) 5%, transparent);
+  color: var(--text-primary, #f1f3f4);
+}
