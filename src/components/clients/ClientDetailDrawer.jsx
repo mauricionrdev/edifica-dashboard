@@ -114,7 +114,7 @@ export default function ClientDetailDrawer({
                 background: 'var(--warning-soft)',
                 border: 'color-mix(in srgb, var(--warning) 26%, transparent)',
               }
-          : sc === 'cc-paused'
+          : sc === 'cc-paused' || sc === 'cc-finished'
             ? {
                 color: 'var(--text-secondary)',
                 background: 'rgba(255, 255, 255, 0.04)',

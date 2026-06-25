@@ -39,6 +39,7 @@ const SCOPES = [
   { key: 'onboarding', label: 'Onboard' },
   { key: 'paused', label: 'Pausados' },
   { key: 'churn', label: 'Churn' },
+  { key: 'finished', label: 'Finalizados' },
   { key: 'expired', label: 'Vencidos' },
   { key: 'ending', label: 'Vencendo' },
   { key: 'tcv', label: 'TCV', tone: 'purple' },
@@ -101,6 +102,7 @@ function dueProgressValue(due) {
 function statusTone(client, today) {
   if (isExpired(client, today)) return 'danger';
   if (client?.status === CLIENT_STATUS.CHURN) return 'danger';
+  if (client?.status === CLIENT_STATUS.FINISHED) return 'muted';
   if (client?.status === CLIENT_STATUS.ONBOARDING) return 'info';
   if (client?.status === CLIENT_STATUS.RAMPAGE) return 'warning';
   if (client?.status === CLIENT_STATUS.PAUSED) return 'muted';
@@ -248,6 +250,7 @@ export default function DesignLabClientsPage() {
     onboarding: visibleBase.filter((client) => client.status === CLIENT_STATUS.ONBOARDING).length,
     paused: visibleBase.filter((client) => client.status === CLIENT_STATUS.PAUSED).length,
     churn: visibleBase.filter((client) => client.status === CLIENT_STATUS.CHURN).length,
+    finished: visibleBase.filter((client) => client.status === CLIENT_STATUS.FINISHED).length,
     expired: visibleBase.filter((client) => isExpired(client, today)).length,
     ending: visibleBase.filter((client) => isEndingSoon(client, 30, today)).length,
     tcv: visibleBase.filter(isTcvClient).length,
@@ -261,6 +264,7 @@ export default function DesignLabClientsPage() {
       if (scope === 'onboarding') return client.status === CLIENT_STATUS.ONBOARDING;
       if (scope === 'paused') return client.status === CLIENT_STATUS.PAUSED;
       if (scope === 'churn') return client.status === CLIENT_STATUS.CHURN;
+      if (scope === 'finished') return client.status === CLIENT_STATUS.FINISHED;
       if (scope === 'expired') return isExpired(client, today);
       if (scope === 'ending') return isEndingSoon(client, 30, today);
       if (scope === 'tcv') return isTcvClient(client);

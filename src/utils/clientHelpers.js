@@ -106,6 +106,7 @@ export function statusClass(client, today = new Date()) {
   if (status === CLIENT_STATUS.RAMPAGE) return 'cc-rampage';
   if (status === CLIENT_STATUS.PAUSED) return 'cc-paused';
   if (status === CLIENT_STATUS.CHURN) return 'cc-churn';
+  if (status === CLIENT_STATUS.FINISHED) return 'cc-finished';
   if (isExpired(client, today)) return 'cc-expired';
   if (isEndingSoon(client, 30, today)) return 'cc-ending';
   return 'cc-active';
@@ -118,6 +119,7 @@ export function statusLabel(client, today = new Date()) {
   if (status === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (status === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (status === CLIENT_STATUS.CHURN) return 'Churn';
+  if (status === CLIENT_STATUS.FINISHED) return 'Finalizado';
   if (isExpired(client, today)) return 'Vencido';
   if (isEndingSoon(client, 30, today)) return 'Vencendo';
   return 'Ativo';

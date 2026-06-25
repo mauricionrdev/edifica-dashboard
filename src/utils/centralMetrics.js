@@ -252,7 +252,11 @@ export function buildClientGoalReport(marketingData, limit = 6) {
 export function computeCentralMetrics(clients, year, month0) {
   const all = Array.isArray(clients) ? clients : [];
   const { start, end } = monthBounds(year, month0);
-  const signedToDate = all.filter((client) => startedOnOrBefore(client, end) && !churnedOnOrBefore(client, end));
+  const signedToDate = all.filter((client) => (
+    startedOnOrBefore(client, end)
+    && !churnedOnOrBefore(client, end)
+    && normalizeClientStatus(client.status) !== CLIENT_STATUS.FINISHED
+  ));
   const active = signedToDate.filter((client) => activeAt(client, end));
   const revenueClients = all.filter((client) => revenueAt(client, end));
   const activeAtStart = all.filter((client) => activeAt(client, start));
@@ -266,7 +270,7 @@ export function computeCentralMetrics(clients, year, month0) {
   }, 0);
 
   const churnedInPeriod = all.filter(
-    (c) => c.status === 'churn' && dateInMonth(c.churnDate, year, month0)
+    (c) => normalizeClientStatus(c.status) === CLIENT_STATUS.CHURN && dateInMonth(c.churnDate, year, month0)
   );
   const revLost = churnedInPeriod.reduce((sum, client) => {
     const churnDate = parseClientDate(client.churnDate) || end;
@@ -281,7 +285,7 @@ export function computeCentralMetrics(clients, year, month0) {
   return {
     active: active.length,
     total: signedToDate.length,
-    churned: all.filter((c) => c.status === 'churn').length,
+    churned: all.filter((c) => normalizeClientStatus(c.status) === CLIENT_STATUS.CHURN).length,
     mrr,
     revenueNew,
     newCnt: newInPeriod.length,

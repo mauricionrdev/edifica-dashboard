@@ -240,7 +240,8 @@ function normalizedClientStatus(status) {
   if (slug === 'onboard' || slug === 'onboarding') return 'onboarding';
   if (slug === 'rampagem' || slug === 'rampagem_comercial' || slug === 'rampage') return 'rampagem_comercial';
   if (slug === 'pausado' || slug === 'paused') return 'paused';
-  if (slug === 'churn' || slug === 'cancelado' || slug === 'encerrado') return 'churn';
+  if (slug === 'churn' || slug === 'cancelado') return 'churn';
+  if (slug === 'finished' || slug === 'finalizado' || slug === 'encerrado' || slug === 'concluido') return 'finished';
   return slug || 'active';
 }
 

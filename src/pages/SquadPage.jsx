@@ -125,6 +125,7 @@ function hasInternalCommercial(client) {
 
 function statusTone(calc, status) {
   if (status === CLIENT_STATUS.CHURN) return 'red';
+  if (status === CLIENT_STATUS.FINISHED) return 'muted';
   if (status === CLIENT_STATUS.ONBOARDING) return 'onboarding';
   if (status === CLIENT_STATUS.RAMPAGE) return 'rampage';
   if (!isActiveClientStatus(status)) return 'muted';
@@ -147,6 +148,7 @@ function statusLabel(calc, status) {
   if (status === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (status === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (status === CLIENT_STATUS.CHURN) return 'Churn';
+  if (status === CLIENT_STATUS.FINISHED) return 'Finalizado';
 
   const goal = monthlyGoalTarget(calc);
   if (!goal) return 'Sem meta';

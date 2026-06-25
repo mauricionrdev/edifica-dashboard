@@ -87,7 +87,7 @@ function roleSelectOptions(rows, current) {
 function statusTone(status) {
   if (status === 'onboarding') return 'info';
   if (status === 'churn') return 'danger';
-  if (status === 'paused' || status === 'rampage') return 'muted';
+  if (status === 'paused' || status === 'rampage' || status === 'rampagem_comercial' || status === 'finished') return 'muted';
   return 'success';
 }
 

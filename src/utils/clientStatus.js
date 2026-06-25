@@ -4,6 +4,7 @@ export const CLIENT_STATUS = {
   RAMPAGE: 'rampagem_comercial',
   PAUSED: 'paused',
   CHURN: 'churn',
+  FINISHED: 'finished',
 };
 
 export const CLIENT_STATUS_OPTIONS = [
@@ -12,6 +13,7 @@ export const CLIENT_STATUS_OPTIONS = [
   { value: CLIENT_STATUS.RAMPAGE, label: 'Rampagem Comercial' },
   { value: CLIENT_STATUS.PAUSED, label: 'Pausado' },
   { value: CLIENT_STATUS.CHURN, label: 'Churn / Cancelado' },
+  { value: CLIENT_STATUS.FINISHED, label: 'Finalizado' },
 ];
 
 export function normalizeClientStatus(status) {
@@ -26,7 +28,8 @@ export function normalizeClientStatus(status) {
   if (slug === 'onboard' || slug === CLIENT_STATUS.ONBOARDING) return CLIENT_STATUS.ONBOARDING;
   if (slug === 'rampagem' || slug === CLIENT_STATUS.RAMPAGE || slug === 'rampage') return CLIENT_STATUS.RAMPAGE;
   if (slug === 'pausado' || slug === CLIENT_STATUS.PAUSED) return CLIENT_STATUS.PAUSED;
-  if (slug === 'cancelado' || slug === 'encerrado' || slug === CLIENT_STATUS.CHURN) return CLIENT_STATUS.CHURN;
+  if (slug === 'cancelado' || slug === CLIENT_STATUS.CHURN) return CLIENT_STATUS.CHURN;
+  if (slug === 'finalizado' || slug === 'encerrado' || slug === 'concluido' || slug === 'concluido_contrato' || slug === CLIENT_STATUS.FINISHED) return CLIENT_STATUS.FINISHED;
 
   return Object.values(CLIENT_STATUS).includes(slug) ? slug : CLIENT_STATUS.ACTIVE;
 }

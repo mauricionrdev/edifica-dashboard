@@ -5,6 +5,7 @@
 //   - Cliente não cria projeto automaticamente.
 //   - Projeto de cliente nasce somente por ação manual em Detalhes do Cliente.
 //   - Atualizar status=churn seta churn_date automaticamente.
+//   - status=finished representa contrato finalizado sem churn.
 //   - goal_status é campo derivado mas persistido; atualizado pela
 //     rota de métricas. Esta rota nunca o sobrescreve diretamente.
 // ==============================================================
@@ -27,7 +28,7 @@ import { hasPermission } from '../utils/permissions.js';
 const router = Router();
 router.use(requireAuth);
 
-const VALID_CLIENT_STATUSES = new Set(['active', 'onboarding', 'rampagem_comercial', 'paused', 'churn']);
+const VALID_CLIENT_STATUSES = new Set(['active', 'onboarding', 'rampagem_comercial', 'paused', 'churn', 'finished']);
 
 const VALID_CONTRACT_TYPES = new Set(['recurring', 'tcv']);
 
@@ -38,8 +39,21 @@ function normalizeContractType(value) {
 }
 
 function normalizeClientStatus(status) {
-  const value = String(status || '').trim();
-  return VALID_CLIENT_STATUSES.has(value) ? value : 'active';
+  const raw = String(status || '').trim().toLowerCase();
+  const slug = raw
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  if (VALID_CLIENT_STATUSES.has(slug)) return slug;
+  if (slug === 'ativo') return 'active';
+  if (slug === 'onboard') return 'onboarding';
+  if (slug === 'rampagem' || slug === 'rampage') return 'rampagem_comercial';
+  if (slug === 'pausado') return 'paused';
+  if (slug === 'cancelado') return 'churn';
+  if (slug === 'finalizado' || slug === 'encerrado' || slug === 'concluido') return 'finished';
+  return 'active';
 }
 
 function canViewFeeSchedule(user) {
@@ -213,8 +227,8 @@ async function ensureResponsibleSchema() {
         await query("ALTER TABLE clients ADD COLUMN contract_type ENUM('recurring','tcv') NOT NULL DEFAULT 'recurring' AFTER end_date");
       }
       const statusColumn = clientCols.find((column) => column.Field === 'status');
-      if (statusColumn && !String(statusColumn.Type || '').includes('rampagem_comercial')) {
-        await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','rampagem_comercial','paused','churn') NOT NULL DEFAULT 'active'");
+      if (statusColumn && !String(statusColumn.Type || '').includes('finished')) {
+        await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','rampagem_comercial','paused','churn','finished') NOT NULL DEFAULT 'active'");
       }
     })().catch((err) => {
       responsibleSchemaPromise = null;

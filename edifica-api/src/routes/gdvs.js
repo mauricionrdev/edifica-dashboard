@@ -152,7 +152,7 @@ async function listRows() {
   return query(
     `SELECT g.id, g.name, g.owner_user_id, g.active, g.logo_data_url, g.custom_slug, g.created_at, g.updated_at,
             u.name AS owner_name, u.email AS owner_email, u.role AS owner_role, u.active AS owner_active,
-            SUM(CASE WHEN c.status <> 'churn' THEN 1 ELSE 0 END) AS clients_count,
+            SUM(CASE WHEN c.status NOT IN ('churn','finished') THEN 1 ELSE 0 END) AS clients_count,
             SUM(CASE WHEN c.status = 'active' THEN 1 ELSE 0 END) AS active_clients
        FROM gdvs g
        LEFT JOIN users u ON u.id = g.owner_user_id

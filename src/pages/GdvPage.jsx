@@ -189,6 +189,7 @@ function predictionCard(closed, predicted, goal) {
 
 function statusTone(calc, clientStatus) {
   if (clientStatus === CLIENT_STATUS.CHURN) return 'red';
+  if (clientStatus === CLIENT_STATUS.FINISHED) return 'muted';
   if (clientStatus === CLIENT_STATUS.ONBOARDING) return 'onboarding';
   if (clientStatus === CLIENT_STATUS.RAMPAGE) return 'rampage';
   if (!isActiveClientStatus(clientStatus)) return 'muted';
@@ -211,6 +212,7 @@ function statusLabel(calc, clientStatus) {
   if (clientStatus === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (clientStatus === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (clientStatus === CLIENT_STATUS.CHURN) return 'Churn';
+  if (clientStatus === CLIENT_STATUS.FINISHED) return 'Finalizado';
 
   const goal = monthlyGoalTarget(calc);
   if (!goal) return 'Sem meta';
