@@ -1698,57 +1698,17 @@
 }
 
 
-/* v104 · Paleta principal alinhada ao amarelo Edifica */
-.page {
-  --bt-bg: var(--bg-primary, #030405);
-  --bt-canvas: var(--bg-secondary, #060708);
-  --bt-surface: color-mix(in srgb, var(--text-primary, #f1f3f4) 2.2%, transparent);
-  --bt-surface-raised: color-mix(in srgb, var(--text-primary, #f1f3f4) 3.5%, transparent);
-  --bt-surface-hover: color-mix(in srgb, var(--text-primary, #f1f3f4) 4.4%, transparent);
-  --bt-line-soft: var(--line-subtle, rgba(255, 255, 255, 0.052));
-  --bt-line: var(--line, rgba(255, 255, 255, 0.078));
-  --bt-line-strong: var(--line-strong, rgba(255, 255, 255, 0.112));
-  --bt-text: var(--text-primary, #f1f3f4);
-  --bt-text-secondary: var(--text-secondary, #c7cbd1);
-  --bt-text-tertiary: var(--text-tertiary, #9aa0a6);
-  --bt-text-muted: var(--text-quaternary, #6f757d);
-  --bt-amber: var(--accent, #f5b800);
-  --bt-amber-soft: var(--accent-soft, rgba(245, 184, 0, 0.08));
-  --bt-amber-line: var(--accent-line, rgba(245, 184, 0, 0.24));
+/* v107 · Ações do topo da Central de Clientes */
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.searchBox:focus-within,
-.filterButton[aria-expanded="true"],
-.pageSizeButton[aria-expanded="true"] {
-  border-color: var(--accent-line, rgba(245, 184, 0, 0.24));
-  background: color-mix(in srgb, var(--accent, #f5b800) 4%, transparent);
-}
-
-.segmentChipActive,
-.filterOptionActive,
-.pageSizeOptionActive {
-  border-color: var(--accent-line, rgba(245, 184, 0, 0.24));
-  background: var(--accent-soft, rgba(245, 184, 0, 0.08));
-  color: var(--accent, #f5b800);
-}
-
-.segmentChipActive strong,
-.filterOptionActive strong {
-  background: color-mix(in srgb, var(--accent, #f5b800) 14%, transparent);
-  color: var(--accent, #f5b800);
-}
-
-.filterMenu,
-.pageSizeMenu {
-  border-color: var(--line, rgba(255, 255, 255, 0.078));
-  background:
-    radial-gradient(circle at 24% 0%, color-mix(in srgb, var(--accent, #f5b800) 4%, transparent), transparent 34%),
-    var(--bg-raised, #0d1013);
-  box-shadow: none;
-}
-
-.filterOption:hover,
-.pageSizeOption:hover {
-  background: color-mix(in srgb, var(--accent, #f5b800) 5%, transparent);
-  color: var(--text-primary, #f1f3f4);
+@media (max-width: 640px) {
+  .headerActions {
+    justify-content: flex-start;
+  }
 }
