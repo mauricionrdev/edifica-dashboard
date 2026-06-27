@@ -942,70 +942,68 @@ export default function CentralPage() {
             ))}
           </section>
 
-          <section className={styles.goalsGrid} aria-label="Metas operacionais do dashboard">
-            <GoalCard
-              title="Meta Global"
-              value={`${fmtInt(globalClientsWithGoal)} de ${fmtInt(globalTargetClients)} clientes`}
-              helper={`${fmtPct(globalGoalProgress)} · Meta ${fmtPct(globalGoalTargetPercent)}`}
-              target={`${fmtInt(globalGoalSummary.remainingClients || 0)} faltam`}
-              progress={globalGoalProgress}
-              tone={globalGoalProgress >= 100 ? 'good' : 'warning'}
-            />
-            <GoalCard
-              title="Meta de Churn"
-              value={fmtPct(churnRate)}
-              helper={dashboardTargets.churnTarget > 0 ? `${fmtPct(churnTargetProgress)} da meta` : 'meta não cadastrada'}
-              target={dashboardTargets.churnTarget > 0 ? `Meta ${fmtPct(dashboardTargets.churnTarget)}` : 'Sem meta'}
-              progress={churnTargetProgress}
-              tone={churnRate <= dashboardTargets.churnTarget || dashboardTargets.churnTarget === 0 ? 'good' : 'risk'}
-            >
+          <section className={styles.goalsPanel} aria-label="Metas operacionais do dashboard">
+            <header className={styles.goalsPanelHeader}>
+              <span>Metas operacionais</span>
               {canEditDashboardTargets ? (
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  value={targetDraft.churnTarget}
-                  onChange={(event) => setTargetDraft((current) => ({ ...current, churnTarget: event.target.value }))}
-                  aria-label="Meta de churn mensal"
-                />
+                <button type="button" className={styles.goalSaveButton} onClick={handleSaveDashboardTargets} disabled={targetsSaving}>
+                  {targetsSaving ? 'Salvando…' : 'Salvar metas'}
+                </button>
               ) : null}
-            </GoalCard>
-            <GoalCard
-              title="Meta de Receita Perdida"
-              value={fmtMoney(revenueLost)}
-              helper={dashboardTargets.revenueLostTarget > 0 ? `${fmtPct(revenueLostProgress)} da meta` : 'meta não cadastrada'}
-              target={dashboardTargets.revenueLostTarget > 0 ? `Meta ${fmtMoney(dashboardTargets.revenueLostTarget)}` : 'Sem meta'}
-              progress={revenueLostProgress}
-              tone={revenueLost <= dashboardTargets.revenueLostTarget || dashboardTargets.revenueLostTarget === 0 ? 'good' : 'risk'}
-            >
-              {canEditDashboardTargets ? (
-                <input
-                  type="text"
-                  value={targetDraft.revenueLostTarget}
-                  onChange={(event) => setTargetDraft((current) => ({ ...current, revenueLostTarget: event.target.value }))}
-                  aria-label="Meta de receita perdida mensal"
-                />
-              ) : null}
-            </GoalCard>
-            {canEditDashboardTargets ? (
-              <button type="button" className={styles.goalSaveButton} onClick={handleSaveDashboardTargets} disabled={targetsSaving}>
-                {targetsSaving ? 'Salvando…' : 'Salvar metas'}
-              </button>
-            ) : null}
+            </header>
+
+            <div className={styles.goalsGrid}>
+              <GoalCard
+                title="Meta Global"
+                value={`${fmtInt(globalClientsWithGoal)} de ${fmtInt(globalTargetClients)} clientes`}
+                helper={`${fmtPct(globalGoalProgress)} · Meta ${fmtPct(globalGoalTargetPercent)}`}
+                target={`${fmtInt(globalGoalSummary.remainingClients || 0)} faltam`}
+                progress={globalGoalProgress}
+                tone={globalGoalProgress >= 100 ? 'good' : 'warning'}
+              />
+              <GoalCard
+                title="Meta de Churn"
+                value={fmtPct(churnRate)}
+                helper={dashboardTargets.churnTarget > 0 ? `${fmtPct(churnTargetProgress)} da meta` : 'meta não cadastrada'}
+                target={dashboardTargets.churnTarget > 0 ? `Meta ${fmtPct(dashboardTargets.churnTarget)}` : 'Sem meta'}
+                progress={churnTargetProgress}
+                tone={churnRate <= dashboardTargets.churnTarget || dashboardTargets.churnTarget === 0 ? 'good' : 'risk'}
+              >
+                {canEditDashboardTargets ? (
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={targetDraft.churnTarget}
+                    onChange={(event) => setTargetDraft((current) => ({ ...current, churnTarget: event.target.value }))}
+                    aria-label="Meta de churn mensal"
+                  />
+                ) : null}
+              </GoalCard>
+              <GoalCard
+                title="Meta de Receita Perdida"
+                value={fmtMoney(revenueLost)}
+                helper={dashboardTargets.revenueLostTarget > 0 ? `${fmtPct(revenueLostProgress)} da meta` : 'meta não cadastrada'}
+                target={dashboardTargets.revenueLostTarget > 0 ? `Meta ${fmtMoney(dashboardTargets.revenueLostTarget)}` : 'Sem meta'}
+                progress={revenueLostProgress}
+                tone={revenueLost <= dashboardTargets.revenueLostTarget || dashboardTargets.revenueLostTarget === 0 ? 'good' : 'risk'}
+              >
+                {canEditDashboardTargets ? (
+                  <input
+                    type="text"
+                    value={targetDraft.revenueLostTarget}
+                    onChange={(event) => setTargetDraft((current) => ({ ...current, revenueLostTarget: event.target.value }))}
+                    aria-label="Meta de receita perdida mensal"
+                  />
+                ) : null}
+              </GoalCard>
+            </div>
           </section>
 
-          <div className={styles.dashboardPanels}>
-            <section className={styles.boardSection}>
-              <EntryColumnsChart rows={entryColumns} />
-            </section>
-
-            <ComparisonPanel
-              current={executiveMetrics}
-              previous={previousMetrics}
-              currentLabel={periodLabel}
-            />
-          </div>
+          <section className={styles.boardSection}>
+            <EntryColumnsChart rows={entryColumns} />
+          </section>
 
           <section className={styles.dashboardLastCard}>
             <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
