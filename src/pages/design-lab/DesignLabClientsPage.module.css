@@ -1697,8 +1697,102 @@
   }
 }
 
+/* v115 · Central de Clientes alinhada ao Design System global */
+.page {
+  --bt-bg: var(--bg-app, #030405);
+  --bt-canvas: var(--bg-canvas, #060708);
+  --bt-surface: rgba(255, 255, 255, 0.018);
+  --bt-surface-raised: rgba(255, 255, 255, 0.030);
+  --bt-surface-hover: var(--bg-hover, #11151a);
+  --bt-line-soft: var(--line-subtle, rgba(255, 255, 255, 0.052));
+  --bt-line: var(--line, rgba(255, 255, 255, 0.078));
+  --bt-line-strong: var(--line-strong, rgba(255, 255, 255, 0.112));
+  --bt-text: var(--text-primary, #f1f3f4);
+  --bt-text-secondary: var(--text-secondary, #c7cbd1);
+  --bt-text-tertiary: var(--text-tertiary, #9aa0a6);
+  --bt-text-muted: var(--text-quaternary, #6f757d);
+  background: var(--bg-app, #030405);
+}
 
-/* v107 · Ações do topo da Central de Clientes */
+.board {
+  border-color: var(--line-subtle, rgba(255, 255, 255, 0.052));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.012), transparent 112px),
+    var(--bg-elevated, #090b0d);
+}
+
+.searchBox,
+.filterButton,
+.pageSizeButton {
+  border-color: var(--line-subtle, rgba(255, 255, 255, 0.052));
+  background: var(--bg-raised, #0d1013);
+  color: var(--text-secondary, #c7cbd1);
+}
+
+.searchBox:focus-within,
+.filterButton:hover,
+.filterButton[aria-expanded="true"],
+.pageSizeButton:hover,
+.pageSizeButton[aria-expanded="true"] {
+  border-color: var(--line-strong, rgba(255, 255, 255, 0.112));
+  background: var(--bg-hover, #11151a);
+}
+
+.filterMenu,
+.pageSizeMenu {
+  border-color: var(--line, rgba(255, 255, 255, 0.078));
+  background: var(--bg-raised, #0d1013);
+  box-shadow: none;
+}
+
+.filterOption:hover,
+.pageSizeOption:hover {
+  background: var(--bg-hover, #11151a);
+  color: var(--text-primary, #f1f3f4);
+}
+
+.clientItem {
+  border-bottom-color: var(--line-subtle, rgba(255, 255, 255, 0.052));
+  background: transparent;
+}
+
+.clientItem:hover {
+  background: var(--bg-hover, #11151a);
+}
+
+.avatar {
+  background: var(--bg-raised, #0d1013);
+  border-color: var(--line-subtle, rgba(255, 255, 255, 0.052));
+}
+
+/* Mantém capa de squad, mas remove a base marrom/amarelada que estava fora da paleta. */
+.clientItem::after {
+  right: -2%;
+  inset: 0 -2% 0 auto;
+  width: min(43%, 520px);
+  background:
+    linear-gradient(90deg, rgba(3, 4, 5, 0) 0%, rgba(3, 4, 5, 0.10) 12%, rgba(3, 4, 5, 0.22) 22%, rgba(3, 4, 5, 0.10) 44%, rgba(3, 4, 5, 0.02) 68%, rgba(3, 4, 5, 0) 100%),
+    var(--squad-cover, none);
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  opacity: 0.18;
+  filter: saturate(0.62) brightness(0.48);
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.36) 18%, rgba(0, 0, 0, 0.92) 40%, rgba(0, 0, 0, 0.92) 78%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.95) 10%, rgba(0, 0, 0, 0.95) 90%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.36) 18%, rgba(0, 0, 0, 0.92) 40%, rgba(0, 0, 0, 0.92) 78%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.95) 10%, rgba(0, 0, 0, 0.95) 90%, transparent 100%);
+  mask-composite: intersect;
+}
+
+.clientItem:hover::after {
+  opacity: 0.21;
+}
+
+/* Preserva o atalho Modelo padrão + Novo cliente quando a tela oficial usa o novo padrão. */
 .headerActions {
   display: inline-flex;
   align-items: center;
