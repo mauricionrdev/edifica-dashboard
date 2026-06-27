@@ -261,6 +261,34 @@ function normalizeMonthKey(value) {
   return '';
 }
 
+
+function normalizeContractType(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  return raw === 'tcv' || raw === 'single' || raw === 'one_time' || raw === 'valor_total'
+    ? 'tcv'
+    : 'recurring';
+}
+
+function resolveContractDurationMonths(client) {
+  const start = parseClientDate(client?.start_date || client?.startDate || client?.created_at || client?.createdAt);
+  const end = parseClientDate(client?.end_date || client?.endDate);
+  if (!start || !end || end <= start) return 1;
+
+  let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  if (end.getDate() > start.getDate()) months += 1;
+  return Math.max(1, months);
+}
+
+function resolveTcvMonthlyFee(client) {
+  if (normalizeContractType(client?.contract_type || client?.contractType) !== 'tcv') return null;
+
+  const total = Number(client?.fee) || 0;
+  if (total <= 0) return 0;
+
+  const months = resolveContractDurationMonths(client);
+  return Number((total / months).toFixed(2));
+}
+
 function normalizeFeeStepType(value) {
   return String(value || '').trim() === 'single' ? 'single' : 'recurring';
 }
@@ -305,6 +333,18 @@ function normalizeFeeSteps(value) {
 function resolveMonthlyFeeInfo(client, referenceMonth) {
   const month = normalizeMonthKey(referenceMonth);
   const baseFee = Number(client?.fee) || 0;
+  const tcvMonthlyFee = resolveTcvMonthlyFee(client);
+  if (tcvMonthlyFee !== null) {
+    return {
+      value: tcvMonthlyFee,
+      source: 'tcv_monthly_equivalent',
+      stepType: 'tcv',
+      stepMonth: month || '',
+      contractMonths: resolveContractDurationMonths(client),
+      contractTotal: baseFee,
+    };
+  }
+
   if (!month) {
     return { value: baseFee, source: 'base', stepType: '', stepMonth: '' };
   }
@@ -874,6 +914,9 @@ function buildRankingStatsForClients(clients = [], metricsByClient = new Map(), 
       status,
       fee: feeInfo.value,
       baseFee: Number(client.fee) || 0,
+      contractType: normalizeContractType(client.contract_type || client.contractType),
+      tcvContractMonths: feeInfo.contractMonths || null,
+      tcvContractTotal: feeInfo.contractTotal || null,
       feeSource: feeInfo.source,
       feeStepType: feeInfo.stepType,
       feeStepMonth: feeInfo.stepMonth,
@@ -969,8 +1012,8 @@ async function buildGdvRankingRows(req, monthPrefix, gdvId = '') {
     if (key && !gdvByName.has(key)) gdvByName.set(key, gdv);
   });
 
-  let clientSql = `SELECT c.id, c.name, c.squad_id, c.gdv_name, c.status, c.fee, c.fee_steps_json, c.meta_lucro,
-                          c.start_date, c.churn_date, c.created_at
+  let clientSql = `SELECT c.id, c.name, c.squad_id, c.gdv_name, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
+                          c.start_date, c.end_date, c.churn_date, c.created_at
                      FROM clients c
                     WHERE c.gdv_name IS NOT NULL
                       AND TRIM(c.gdv_name) <> ''
@@ -1131,8 +1174,8 @@ async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
   const squadPlaceholders = squadIds.map(() => '?').join(',');
 
   const clients = await query(
-    `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.fee_steps_json, c.meta_lucro,
-            c.start_date, c.churn_date, c.created_at
+    `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
+            c.start_date, c.end_date, c.churn_date, c.created_at
        FROM clients c
       WHERE c.squad_id IN (${squadPlaceholders})
         AND COALESCE(c.start_date, DATE(c.created_at)) <= LAST_DAY(?)`,
@@ -1179,7 +1222,13 @@ async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
     const churnedInPeriod = squadClients.filter((client) => normalizedClientStatus(client.status) === 'churn' && dateInMonth(client.churn_date, monthPrefix));
     const mrrClients = revenueClients.map((client) => {
       const feeInfo = resolveMonthlyFeeInfo(client, monthPrefix);
-      return { id: client.id, name: client.name, fee: feeInfo.value };
+      return {
+        id: client.id,
+        name: client.name,
+        fee: feeInfo.value,
+        contractType: normalizeContractType(client.contract_type || client.contractType),
+        tcvContractMonths: feeInfo.contractMonths || null,
+      };
     });
     const mrr = mrrClients.reduce((sum, client) => sum + client.fee, 0);
     const churnRate = portfolioClients.length > 0 ? (churnedInPeriod.length / portfolioClients.length) * 100 : 0;
@@ -1443,8 +1492,8 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     const squadPlaceholders = squadIds.map(() => '?').join(',');
 
     const clients = await query(
-      `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.fee_steps_json, c.meta_lucro,
-              c.start_date, c.churn_date, c.created_at
+      `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
+              c.start_date, c.end_date, c.churn_date, c.created_at
          FROM clients c
         WHERE c.squad_id IN (${squadPlaceholders})
           AND COALESCE(c.start_date, DATE(c.created_at)) <= LAST_DAY(?)`,

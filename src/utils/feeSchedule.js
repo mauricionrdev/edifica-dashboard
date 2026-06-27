@@ -24,6 +24,45 @@ function normalizeFeeType(value) {
   return String(value || '').trim() === 'single' ? 'single' : 'recurring';
 }
 
+
+function normalizeContractType(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  return raw === 'tcv' || raw === 'single' || raw === 'one_time' || raw === 'valor_total'
+    ? 'tcv'
+    : 'recurring';
+}
+
+function parseClientDate(value) {
+  if (!value) return null;
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+  const raw = String(value || '').slice(0, 10);
+  const date = new Date(`${raw}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function resolveContractDurationMonths(client) {
+  const start = parseClientDate(
+    client?.startDate || client?.start_date || client?.createdAt || client?.created_at
+  );
+  const end = parseClientDate(client?.endDate || client?.end_date);
+  if (!start || !end || end <= start) return 1;
+
+  let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  if (end.getDate() > start.getDate()) months += 1;
+  return Math.max(1, months);
+}
+
+export function resolveTcvMonthlyFee(client) {
+  const contractType = normalizeContractType(client?.contractType || client?.contract_type);
+  if (contractType !== 'tcv' && client?.isTcv !== true) return null;
+
+  const total = parseLocaleNumber(client?.baseFee ?? client?.base_fee ?? client?.fee, 0);
+  if (!Number.isFinite(total) || total <= 0) return 0;
+
+  const months = resolveContractDurationMonths(client);
+  return Number((total / months).toFixed(2));
+}
+
 export function sortFeeSteps(steps = []) {
   return [...(Array.isArray(steps) ? steps : [])]
     .map((step) => {
@@ -65,6 +104,9 @@ export function resolveClientFeeStepAtDate(client, referenceDate = new Date()) {
 }
 
 export function resolveClientFeeAtDate(client, referenceDate = new Date()) {
+  const tcvMonthlyFee = resolveTcvMonthlyFee(client);
+  if (tcvMonthlyFee !== null) return tcvMonthlyFee;
+
   const step = resolveClientFeeStepAtDate(client, referenceDate);
   if (step) return parseLocaleNumber(step.fee, 0);
   return parseLocaleNumber(client?.fee, 0);

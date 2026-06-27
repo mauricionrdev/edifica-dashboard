@@ -102,3 +102,11 @@ Se a intenção for continuar a maturação do produto, a melhor frente agora n�
 3. notificações operacionais;
 4. refinamento de permissões granulares;
 5. automações administrativas e de segurança.
+
+## Patch v108 — Ajuste de MRR para contratos TCV
+
+- Contratos do tipo `TCV` deixam de inflar o MRR do Squad com o valor total da venda.
+- O MRR passa a usar o equivalente mensal: `valor total do contrato ÷ duração do contrato em meses`.
+- Contratos recorrentes continuam usando a mensalidade normal e o histórico de mensalidades quando existir.
+- A regra foi aplicada no backend de métricas/ranking e no utilitário frontend de leitura de fee para dashboards e telas operacionais.
+- Não houve alteração visual, de rota, permissão ou banco de dados.

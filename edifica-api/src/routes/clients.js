@@ -5,7 +5,6 @@
 //   - Cliente não cria projeto automaticamente.
 //   - Projeto de cliente nasce somente por ação manual em Detalhes do Cliente.
 //   - Atualizar status=churn seta churn_date automaticamente.
-//   - status=finished representa contrato finalizado sem churn.
 //   - goal_status é campo derivado mas persistido; atualizado pela
 //     rota de métricas. Esta rota nunca o sobrescreve diretamente.
 // ==============================================================
@@ -42,7 +41,7 @@ function normalizeClientStatus(status) {
   const raw = String(status || '').trim().toLowerCase();
   const slug = raw
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
 
@@ -73,6 +72,27 @@ function normalizeMonthKey(value) {
 
 function normalizeFeeStepType(value) {
   return String(value || '').trim() === 'single' ? 'single' : 'recurring';
+}
+
+
+function resolveContractDurationMonths(client) {
+  const start = fromClientDate(client?.start_date || client?.startDate || client?.created_at || client?.createdAt);
+  const end = fromClientDate(client?.end_date || client?.endDate);
+  if (!start || !end || end <= start) return 1;
+
+  let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  if (end.getDate() > start.getDate()) months += 1;
+  return Math.max(1, months);
+}
+
+function resolveTcvMonthlyFee(client) {
+  if (normalizeContractType(client?.contract_type || client?.contractType) !== 'tcv') return null;
+
+  const total = Number(client?.fee) || 0;
+  if (total <= 0) return 0;
+
+  const months = resolveContractDurationMonths(client);
+  return Number((total / months).toFixed(2));
 }
 
 function normalizeFeeSteps(value) {
@@ -115,6 +135,9 @@ function normalizeFeeSteps(value) {
 }
 
 function resolveMonthlyFeeForDate(client, referenceDate = new Date()) {
+  const tcvMonthlyFee = resolveTcvMonthlyFee(client);
+  if (tcvMonthlyFee !== null) return tcvMonthlyFee;
+
   const date = referenceDate instanceof Date
     ? referenceDate
     : new Date(`${String(referenceDate || '').slice(0, 10)}T00:00:00`);
