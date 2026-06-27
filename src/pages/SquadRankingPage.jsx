@@ -101,17 +101,6 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
         <strong>{row.predictedGoalDisplay}</strong>
       </div>
 
-      <div className={styles.podiumGoalStats}>
-        <div>
-          <span>Bateram meta</span>
-          <strong>{clientCountLabel(row.rankingGoalClients)}</strong>
-        </div>
-        <div>
-          <span>Faltam</span>
-          <strong>{clientCountLabel(row.remainingGoalClients)}</strong>
-        </div>
-      </div>
-
       <div className={styles.podiumMeta}>
         <div>
           <span>Meta Lucro</span>
@@ -125,6 +114,17 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
 
       <div className={styles.podiumBar} aria-hidden="true">
         <span style={{ width: `${relative}%` }} />
+      </div>
+
+      <div className={styles.podiumGoalStats}>
+        <div>
+          <span>Bateram meta</span>
+          <strong>{clientCountLabel(row.rankingGoalClients)}</strong>
+        </div>
+        <div>
+          <span>Faltam</span>
+          <strong>{clientCountLabel(row.remainingGoalClients)}</strong>
+        </div>
       </div>
     </button>
   );
