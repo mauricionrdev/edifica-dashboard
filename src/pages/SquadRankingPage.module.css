@@ -1840,3 +1840,173 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+/* v109 · Ranking gerencial: Meta Global e contagem de clientes por meta */
+.globalGoalCard {
+  margin: 6px 0 16px;
+  padding: 16px 18px;
+  border: 1px solid rgba(245, 184, 0, 0.16);
+  border-radius: var(--radius-3);
+  background:
+    linear-gradient(180deg, rgba(245, 184, 0, 0.045), rgba(255, 255, 255, 0.008)),
+    var(--bg-canvas);
+  display: grid;
+  gap: 12px;
+}
+
+.globalGoalHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.globalGoalHeader > div:first-child,
+.globalGoalPercent {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.globalGoalHeader span,
+.globalGoalMeta span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.globalGoalHeader strong {
+  color: var(--text-primary);
+  font-size: clamp(18px, 2vw, 26px);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.globalGoalPercent {
+  text-align: right;
+  justify-items: end;
+}
+
+.globalGoalPercent strong {
+  color: var(--accent-amber, #f5b800);
+  font-size: clamp(28px, 3.2vw, 42px);
+  font-variant-numeric: tabular-nums;
+}
+
+.globalGoalBar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.globalGoalBar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(245, 184, 0, 0.58), var(--accent-amber, #f5b800));
+  box-shadow: 0 0 16px rgba(245, 184, 0, 0.20);
+}
+
+.globalGoalMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.podiumGoalStats {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.podiumGoalStats div {
+  min-width: 0;
+  padding: 10px 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: rgba(255, 255, 255, 0.018);
+  display: grid;
+  gap: 5px;
+}
+
+.podiumGoalStats span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 9px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.podiumGoalStats strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.15;
+  font-weight: 650;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.podiumCard_champion .podiumGoalStats div:first-child {
+  border-color: rgba(245, 184, 0, 0.20);
+  background: rgba(245, 184, 0, 0.055);
+}
+
+.podiumCard_champion .podiumGoalStats div:first-child strong {
+  color: var(--accent-amber, #f5b800);
+}
+
+.columns,
+.rankRow {
+  grid-template-columns: 54px minmax(154px, 0.82fr) minmax(170px, 0.95fr) 78px 88px 72px 72px 142px;
+  gap: 12px;
+}
+
+@media (max-width: 1180px) {
+  .columns,
+  .rankRow {
+    grid-template-columns: 50px minmax(140px, 1fr) minmax(146px, 1fr) 74px 82px 68px 68px 126px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 880px) {
+  .globalGoalHeader,
+  .globalGoalPercent {
+    text-align: left;
+    justify-items: start;
+  }
+
+  .globalGoalHeader {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .columns {
+    display: none;
+  }
+
+  .rankRow {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 720px) {
+  .podiumGoalStats {
+    grid-template-columns: 1fr;
+  }
+}

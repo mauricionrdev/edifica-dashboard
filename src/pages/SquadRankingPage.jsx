@@ -51,6 +51,11 @@ function targetBarProgress(progress, goalPercent) {
   return clampProgress((safeProgress / safeGoal) * 100);
 }
 
+function clientCountLabel(count) {
+  const n = Number(count) || 0;
+  return `${n} cliente${n === 1 ? '' : 's'}`;
+}
+
 function normalizePercentInput(value, fallback) {
   const n = Number(String(value ?? '').replace(',', '.'));
   if (!Number.isFinite(n)) return fallback;
@@ -96,6 +101,17 @@ function PodiumCard({ row, variant = 'default', onOpen }) {
         <strong>{row.predictedGoalDisplay}</strong>
       </div>
 
+      <div className={styles.podiumGoalStats}>
+        <div>
+          <span>Bateram meta</span>
+          <strong>{clientCountLabel(row.rankingGoalClients)}</strong>
+        </div>
+        <div>
+          <span>Faltam</span>
+          <strong>{clientCountLabel(row.remainingGoalClients)}</strong>
+        </div>
+      </div>
+
       <div className={styles.podiumMeta}>
         <div>
           <span>Meta Lucro</span>
@@ -128,6 +144,7 @@ export default function SquadRankingPage() {
   const [periodOpen, setPeriodOpen] = useState(false);
   const periodFilterRef = useRef(null);
   const [rows, setRows] = useState([]);
+  const [globalGoal, setGlobalGoal] = useState(null);
   const [rankingSettings, setRankingSettings] = useState({ goalPercent: 80, churnTarget: 8 });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsForm, setSettingsForm] = useState({});
@@ -155,11 +172,13 @@ export default function SquadRankingPage() {
     try {
       const response = await getSquadRanking({ date: buildReferenceDate(period.y, period.m) });
       setRows(Array.isArray(response?.rows) ? response.rows : []);
+      setGlobalGoal(response?.globalGoal || null);
       if (response?.settings || response?.goalPercent !== undefined || response?.churnTarget !== undefined) {
         syncSettings(response.settings || response);
       }
     } catch (err) {
       setRows([]);
+      setGlobalGoal(null);
       setError(err instanceof Error ? err : new Error('Não foi possível consolidar o ranking.'));
     } finally {
       setLoading(false);
@@ -316,6 +335,10 @@ export default function SquadRankingPage() {
       const hitRate = Number(row.hitRate) || 0;
       const rankingScore = Number(row.rankingScore) || 0;
       const goalPercent = Number(row.goalPercent ?? rankingSettings.goalPercent) || 80;
+      const goalTargetClients = Number(row.goalTargetClients) || Math.ceil((rankingGoalBaseClients * goalPercent) / 100);
+      const remainingGoalClients = Number.isFinite(Number(row.remainingGoalClients))
+        ? Math.max(0, Number(row.remainingGoalClients) || 0)
+        : Math.max(0, goalTargetClients - rankingGoalClients);
       const displayAvatar = getSquadAvatar(squad) || getUserAvatar(owner) || '';
 
       return {
@@ -327,6 +350,8 @@ export default function SquadRankingPage() {
         clientsWithGoal: rankingGoalClients,
         rankingGoalClients,
         rankingGoalBaseClients,
+        goalTargetClients,
+        remainingGoalClients,
         predictedGoalClients,
         predictedGoalBaseClients,
         projectedGoalClients: predictedGoalClients,
@@ -363,6 +388,37 @@ export default function SquadRankingPage() {
   }, [assetVersion, rankingSettings.churnTarget, rankingSettings.goalPercent, rows, userDirectory]);
 
   const filteredRows = rankingRows;
+
+  const globalGoalSummary = useMemo(() => {
+    const source = globalGoal || {};
+    const activeClients = Number(source.activeClients) || filteredRows.reduce((sum, row) => sum + (Number(row.rankingGoalBaseClients) || 0), 0);
+    const clientsWithGoal = Number(source.clientsWithGoal) || filteredRows.reduce((sum, row) => sum + (Number(row.rankingGoalClients) || 0), 0);
+    const targetPercent = Number(source.targetPercent ?? rankingSettings.goalPercent) || 80;
+    const targetClients = Number(source.targetClients) || Math.ceil((activeClients * targetPercent) / 100);
+    const remainingClients = Number.isFinite(Number(source.remainingClients))
+      ? Math.max(0, Number(source.remainingClients) || 0)
+      : Math.max(0, targetClients - clientsWithGoal);
+    const progress = Number.isFinite(Number(source.progress))
+      ? Number(source.progress)
+      : (targetClients > 0 ? (clientsWithGoal / targetClients) * 100 : 0);
+    const portfolioHitRate = Number.isFinite(Number(source.portfolioHitRate))
+      ? Number(source.portfolioHitRate)
+      : (activeClients > 0 ? (clientsWithGoal / activeClients) * 100 : 0);
+
+    return {
+      activeClients,
+      clientsWithGoal,
+      targetClients,
+      remainingClients,
+      targetPercent,
+      progress,
+      portfolioHitRate,
+      progressDisplay: progress > 0 ? fmtPct(progress) : '0,00%',
+      targetDisplay: fmtPct(targetPercent),
+      portfolioDisplay: portfolioHitRate > 0 ? fmtPct(portfolioHitRate) : '0,00%',
+      barProgress: clampProgress(progress),
+    };
+  }, [filteredRows, globalGoal, rankingSettings.goalPercent]);
 
 
   useEffect(() => {
@@ -461,6 +517,27 @@ export default function SquadRankingPage() {
           </div>
         </header>
 
+        <section className={styles.globalGoalCard} aria-label="Meta global da empresa">
+          <div className={styles.globalGoalHeader}>
+            <div>
+              <span>Meta Global</span>
+              <strong>{globalGoalSummary.clientsWithGoal} de {globalGoalSummary.targetClients} clientes</strong>
+            </div>
+            <div className={styles.globalGoalPercent}>
+              <strong>{globalGoalSummary.progressDisplay}</strong>
+              <span>Meta: {globalGoalSummary.targetDisplay}</span>
+            </div>
+          </div>
+          <div className={styles.globalGoalBar} aria-hidden="true">
+            <span style={{ width: `${globalGoalSummary.barProgress}%` }} />
+          </div>
+          <div className={styles.globalGoalMeta}>
+            <span>{globalGoalSummary.clientsWithGoal} bateram meta</span>
+            <span>{globalGoalSummary.remainingClients} faltam</span>
+            <span>{globalGoalSummary.activeClients} ativos na carteira</span>
+          </div>
+        </section>
+
         <section className={styles.podiumSection}>
           {loading && !filteredRows.length ? (
             <StateBlock compact variant="loading" title="Atualizando ranking" />
@@ -482,7 +559,8 @@ export default function SquadRankingPage() {
             <span>Squad</span>
             <span>Churn</span>
             <span>Meta Lucro</span>
-            <span>Previsto</span>
+            <span>Bateram</span>
+            <span>Faltam</span>
             <span>MRR</span>
           </div>
 
@@ -527,7 +605,8 @@ export default function SquadRankingPage() {
 
                     <strong className={styles.metricCell}>{row.churnDisplay}</strong>
                     <strong className={styles.metricCell}>{row.metaActiveDisplay}</strong>
-                    <strong className={`${styles.metricCell} ${styles.predictedMetric}`.trim()}>{row.predictedGoalDisplay}</strong>
+                    <strong className={styles.metricCell}>{row.rankingGoalClients}</strong>
+                    <strong className={styles.metricCell}>{row.remainingGoalClients}</strong>
 
                     <div className={styles.scoreCell}>
                       <strong>{fmtMoney(row.mrr)}</strong>

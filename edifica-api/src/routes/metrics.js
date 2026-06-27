@@ -1626,6 +1626,8 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
         clientsWithGoal: rankingGoalClients,
         rankingGoalClients,
         rankingGoalBaseClients,
+        goalTargetClients: Math.ceil((rankingGoalBaseClients * squadGoalPercent) / 100),
+        remainingGoalClients: Math.max(0, Math.ceil((rankingGoalBaseClients * squadGoalPercent) / 100) - rankingGoalClients),
         predictedGoalClients,
         predictedGoalBaseClients,
         projectedGoalClients: predictedGoalClients,
@@ -1663,7 +1665,32 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       };
     }).sort(compareRankingRows).map((row, index) => ({ ...row, position: index + 1 }));
 
-    res.json({ weekKey, monthPrefix, settings: rankingSettings, goalPercent: rankingSettings.goalPercent, churnTarget: rankingSettings.churnTarget, rows });
+    const globalGoalBaseClients = rows.reduce((sum, row) => sum + (Number(row.rankingGoalBaseClients) || 0), 0);
+    const globalGoalClients = rows.reduce((sum, row) => sum + (Number(row.rankingGoalClients) || 0), 0);
+    const globalGoalPercent = Number(rankingSettings.goalPercent) || DEFAULT_RANKING_GOAL_PERCENT;
+    const globalGoalTargetClients = Math.ceil((globalGoalBaseClients * globalGoalPercent) / 100);
+    const globalGoalRemainingClients = Math.max(0, globalGoalTargetClients - globalGoalClients);
+    const globalGoalProgress = globalGoalTargetClients > 0 ? (globalGoalClients / globalGoalTargetClients) * 100 : 0;
+    const globalPortfolioHitRate = globalGoalBaseClients > 0 ? (globalGoalClients / globalGoalBaseClients) * 100 : 0;
+
+    res.json({
+      weekKey,
+      monthPrefix,
+      settings: rankingSettings,
+      goalPercent: rankingSettings.goalPercent,
+      churnTarget: rankingSettings.churnTarget,
+      globalGoal: {
+        monthPrefix,
+        targetPercent: globalGoalPercent,
+        activeClients: globalGoalBaseClients,
+        clientsWithGoal: globalGoalClients,
+        targetClients: globalGoalTargetClients,
+        remainingClients: globalGoalRemainingClients,
+        progress: globalGoalProgress,
+        portfolioHitRate: globalPortfolioHitRate,
+      },
+      rows,
+    });
   } catch (err) {
     next(err);
   }
