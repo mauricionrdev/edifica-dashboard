@@ -10,6 +10,7 @@ import {
   TrendingUpIcon,
   UsersIcon,
 } from '../components/ui/Icons.jsx';
+import { getDashboardTargets, getSquadRanking, updateDashboardTargets } from '../api/metrics.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { buildBarChartData, computeCentralMetrics } from '../utils/centralMetrics.js';
 import { fmtMoney, fmtPct, MONTHS_FULL } from '../utils/format.js';
@@ -19,6 +20,7 @@ import {
   canEditClientFeeSchedule,
   canEditClients,
   canViewClientFeeSchedule,
+  hasPermission,
 } from '../utils/permissions.js';
 import styles from './CentralPage.module.css';
 
@@ -80,6 +82,20 @@ function progressFromChurn(pct) {
 function previousPeriod(year, month0) {
   if (month0 > 0) return { y: year, m: month0 - 1 };
   return { y: year - 1, m: 11 };
+}
+
+function monthParam(year, month0) {
+  return `${year}-${String(month0 + 1).padStart(2, '0')}`;
+}
+
+function referenceDateForPeriod(year, month0) {
+  return `${monthParam(year, month0)}-15`;
+}
+
+function progressPercent(current, target) {
+  const safeTarget = Number(target) || 0;
+  if (safeTarget <= 0) return 0;
+  return Math.max(0, Math.min((Number(current) / safeTarget) * 100, 100));
 }
 
 function moveItem(order, fromId, toId) {
@@ -178,6 +194,24 @@ function MetricCard({
           />
         </div>
       ) : null}
+    </article>
+  );
+}
+
+
+function GoalCard({ title, value, helper, target, progress, tone = 'neutral', children }) {
+  return (
+    <article className={`${styles.goalCard} ${styles[`goalCard_${tone}`] || styles.goalCard_neutral}`.trim()}>
+      <div className={styles.goalCardHeader}>
+        <span>{title}</span>
+        {target ? <em>{target}</em> : null}
+      </div>
+      <strong className={styles.goalCardValue}>{value}</strong>
+      {helper ? <p className={styles.goalCardHelper}>{helper}</p> : null}
+      <div className={styles.goalCardProgress} aria-hidden="true">
+        <span style={{ width: `${Math.max(0, Math.min(Number(progress) || 0, 100))}%` }} />
+      </div>
+      {children ? <div className={styles.goalCardActions}>{children}</div> : null}
     </article>
   );
 }
@@ -373,10 +407,9 @@ function ComparisonPanel({ current, previous, currentLabel }) {
   };
 
   const rows = [
-    buildRow('Ativos', current.active, previous.active),
-    buildRow('MRR', current.mrr, previous.mrr, fmtMoney),
-    buildRow('Receita nova', current.revenueNew, previous.revenueNew, fmtMoney),
     buildRow('Churn', current.churnRate, previous.churnRate, fmtPct, { invert: true }),
+    buildRow('Clientes churn', current.churnedPeriodCnt, previous.churnedPeriodCnt, fmtInt, { invert: true }),
+    buildRow('Receita perdida', current.revLost, previous.revLost, fmtMoney, { invert: true }),
   ];
 
   return (
@@ -529,6 +562,10 @@ export default function CentralPage() {
   const [clientFilter, setClientFilter] = useState('');
   const [draggingMetric, setDraggingMetric] = useState('');
   const [selectedClientId, setSelectedClientId] = useState(null);
+  const [globalGoal, setGlobalGoal] = useState(null);
+  const [dashboardTargets, setDashboardTargets] = useState({ churnTarget: 0, revenueLostTarget: 0 });
+  const [targetDraft, setTargetDraft] = useState({ churnTarget: '0', revenueLostTarget: '0' });
+  const [targetsSaving, setTargetsSaving] = useState(false);
 
   const clientOptions = useMemo(() => {
     const list = Array.isArray(clients) ? clients : [];
@@ -599,6 +636,65 @@ export default function CentralPage() {
     [visibleClients]
   );
 
+
+  const dashboardMonth = useMemo(() => monthParam(period.y, period.m), [period.m, period.y]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadDashboardIndicators() {
+      try {
+        const [rankingResult, targetResult] = await Promise.allSettled([
+          getSquadRanking({ date: referenceDateForPeriod(period.y, period.m) }),
+          getDashboardTargets({ month: dashboardMonth }),
+        ]);
+        if (!active) return;
+        if (rankingResult.status === 'fulfilled') {
+          setGlobalGoal(rankingResult.value?.globalGoal || null);
+        }
+        if (targetResult.status === 'fulfilled') {
+          const targets = targetResult.value?.targets || {};
+          const nextTargets = {
+            churnTarget: Number(targets.churnTarget) || 0,
+            revenueLostTarget: Number(targets.revenueLostTarget) || 0,
+          };
+          setDashboardTargets(nextTargets);
+          setTargetDraft({
+            churnTarget: String(nextTargets.churnTarget || 0),
+            revenueLostTarget: String(nextTargets.revenueLostTarget || 0),
+          });
+        }
+      } catch {
+        if (active) setGlobalGoal(null);
+      }
+    }
+    loadDashboardIndicators();
+    return () => { active = false; };
+  }, [dashboardMonth, period.m, period.y]);
+
+  const handleSaveDashboardTargets = useCallback(async () => {
+    setTargetsSaving(true);
+    try {
+      const payload = {
+        periodMonth: dashboardMonth,
+        churnTarget: Number(String(targetDraft.churnTarget).replace(',', '.')) || 0,
+        revenueLostTarget: Number(String(targetDraft.revenueLostTarget).replace(/\./g, '').replace(',', '.')) || 0,
+      };
+      const response = await updateDashboardTargets(payload);
+      const targets = response?.targets || payload;
+      const nextTargets = {
+        churnTarget: Number(targets.churnTarget) || 0,
+        revenueLostTarget: Number(targets.revenueLostTarget) || 0,
+      };
+      setDashboardTargets(nextTargets);
+      setTargetDraft({
+        churnTarget: String(nextTargets.churnTarget || 0),
+        revenueLostTarget: String(nextTargets.revenueLostTarget || 0),
+      });
+    } finally {
+      setTargetsSaving(false);
+    }
+  }, [dashboardMonth, targetDraft.churnTarget, targetDraft.revenueLostTarget]);
+
   const activeClients = executiveMetrics.active ?? 0;
   const totalClients = executiveMetrics.total ?? 0;
   const mrr = executiveMetrics.mrr ?? 0;
@@ -607,108 +703,71 @@ export default function CentralPage() {
   const revenueLost = executiveMetrics.revLost ?? 0;
   const churnRate = executiveMetrics.churnRate ?? 0;
   const churnedPeriod = executiveMetrics.churnedPeriodCnt ?? 0;
+  const finishedPeriod = executiveMetrics.finishedPeriodCnt ?? 0;
+  const lostPeriod = executiveMetrics.lostPeriodCnt ?? churnedPeriod + finishedPeriod;
+  const selectedSquadName = squadFilter ? (squads || []).find((squad) => squad.id === squadFilter)?.name || 'Squad selecionado' : 'Todos squads';
+  const revenueLostProgress = progressPercent(revenueLost, dashboardTargets.revenueLostTarget);
+  const churnTargetProgress = progressPercent(churnRate, dashboardTargets.churnTarget);
+  const globalGoalSummary = globalGoal || {};
+  const globalTargetClients = Number(globalGoalSummary.targetClients) || 0;
+  const globalClientsWithGoal = Number(globalGoalSummary.clientsWithGoal) || 0;
+  const globalGoalProgress = Number(globalGoalSummary.progress) || progressPercent(globalClientsWithGoal, globalTargetClients);
+  const globalGoalTargetPercent = Number(globalGoalSummary.targetPercent) || 80;
+  const canEditDashboardTargets = hasPermission(user, 'ranking.view.all');
   const periodLabel = `${MONTHS_FULL[period.m]} ${period.y}`;
 
   const metricDefinitions = useMemo(
     () => {
       const prevTotal = previousMetrics.total ?? 0;
-      const prevActive = previousMetrics.active ?? 0;
-      const prevMrr = previousMetrics.mrr ?? 0;
-      const prevRevenueNew = previousMetrics.revenueNew ?? 0;
+      const prevNewCnt = previousMetrics.newCnt ?? 0;
       const prevRevenueLost = previousMetrics.revLost ?? 0;
       const prevChurnRate = previousMetrics.churnRate ?? 0;
-      const prevTicket = prevActive > 0 ? prevMrr / prevActive : 0;
-      const prevNewCnt = previousMetrics.newCnt ?? 0;
+      const prevChurnedPeriod = previousMetrics.churnedPeriodCnt ?? 0;
+      const prevMrr = previousMetrics.mrr ?? 0;
 
       const baseDelta = buildKpiDelta(totalClients, prevTotal);
-      const ativosDelta = buildKpiDelta(activeClients, prevActive);
       const novosDelta = buildKpiDelta(currentMonthNewClients, prevNewCnt);
-      const mrrDelta = buildKpiPctDelta(mrr, prevMrr);
-      const receitaNovaDelta = buildKpiPctDelta(revenueNew, prevRevenueNew);
-      const ticketDelta = buildKpiDelta(ticketMedio, prevTicket, fmtMoney);
-      const perdidaDelta = buildKpiDelta(revenueLost, prevRevenueLost, fmtMoney, { invert: true });
+      const churnCountDelta = buildKpiDelta(churnedPeriod, prevChurnedPeriod, fmtInt, { invert: true });
       const churnDelta = buildKpiPctDelta(churnRate, prevChurnRate, { invert: true });
+      const perdidaDelta = buildKpiDelta(revenueLost, prevRevenueLost, fmtMoney, { invert: true });
+      const squadMrrDelta = buildKpiPctDelta(mrr, prevMrr);
 
       return [
         {
           id: 'base',
-          label: 'Base de dados',
+          label: 'Clientes acumulados',
           value: fmtInt(totalClients),
-          helper: 'vs. mês passado',
+          helper: 'carteira atualizada',
           delta: baseDelta.delta,
           deltaTone: baseDelta.deltaTone,
           icon: <UsersIcon size={14} />,
           tone: 'neutral',
         },
         {
-          id: 'ativos',
-          label: 'Clientes ativos',
-          value: fmtInt(activeClients),
-          helper: 'vs. mês passado',
-          delta: ativosDelta.delta,
-          deltaTone: ativosDelta.deltaTone,
-          icon: <BriefcaseIcon size={14} />,
-          tone: 'neutral',
-        },
-        {
           id: 'novosAtual',
-          label: 'Clientes novos no mês',
+          label: 'Novos clientes no mês',
           value: fmtInt(currentMonthNewClients),
-          helper: 'vs. mês passado',
+          helper: 'entradas no período',
           delta: novosDelta.delta,
           deltaTone: novosDelta.deltaTone,
           icon: <TrendingUpIcon size={14} />,
           tone: currentMonthNewClients > 0 ? 'good' : 'neutral',
         },
         {
-          id: 'mrr',
-          label: 'MRR atual',
-          value: fmtMoney(mrr),
-          helper: 'vs. mês passado',
-          delta: mrrDelta.delta,
-          deltaTone: mrrDelta.deltaTone,
-          icon: <CoinsIcon size={14} />,
-          tone: 'neutral',
-        },
-        {
-          id: 'receitaNova',
-          label: 'Receita nova gerada',
-          value: fmtMoney(revenueNew),
-          helper: 'vs. mês passado',
-          delta: receitaNovaDelta.delta,
-          deltaTone: receitaNovaDelta.deltaTone,
-          icon: <TrendingUpIcon size={14} />,
-          tone: revenueNew > 0 ? 'good' : 'neutral',
-        },
-        {
-          id: 'ticket',
-          label: 'Ticket médio',
-          value: fmtMoney(ticketMedio),
-          helper: 'vs. mês passado',
-          delta: ticketDelta.delta,
-          deltaTone: ticketDelta.deltaTone,
-          icon: <TargetIcon size={14} />,
-          tone: 'neutral',
-        },
-        {
-          id: 'perdida',
-          label: 'Receita perdida no mês',
-          value: fmtMoney(revenueLost),
-          helper: revenueLost > 0
-            ? `${fmtInt(churnedPeriod)} churn(s) em ${MONTHS_FULL[period.m]}`
-            : 'sem perdas',
-          delta: revenueLost > 0 ? perdidaDelta.delta : '',
-          deltaTone: perdidaDelta.deltaTone,
-          icon: <ChartColumnIcon size={14} />,
-          tone: revenueLost > 0 ? 'risk' : 'neutral',
+          id: 'churnCount',
+          label: 'Clientes churn no mês',
+          value: fmtInt(churnedPeriod),
+          helper: 'cancelamentos no período',
+          delta: churnedPeriod > 0 ? churnCountDelta.delta : '',
+          deltaTone: churnCountDelta.deltaTone,
+          icon: <BriefcaseIcon size={14} />,
+          tone: churnedPeriod > 0 ? 'risk' : 'neutral',
         },
         {
           id: 'churn',
           label: 'Taxa de churn',
           value: fmtPct(churnRate),
-          helper: churnedPeriod > 0
-            ? `${fmtInt(churnedPeriod)} no período`
-            : 'sem churn',
+          helper: churnedPeriod > 0 ? `${fmtInt(churnedPeriod)} no período` : 'sem churn',
           delta: churnedPeriod > 0 ? churnDelta.delta : '',
           deltaTone: churnDelta.deltaTone,
           icon: <ChartColumnIcon size={14} />,
@@ -716,19 +775,39 @@ export default function CentralPage() {
           progressTone: 'risk',
           tone: toneFromChurn(churnRate),
         },
+        {
+          id: 'perdida',
+          label: 'Receita perdida',
+          value: fmtMoney(revenueLost),
+          helper: lostPeriod > 0 ? `${fmtInt(churnedPeriod)} churn · ${fmtInt(finishedPeriod)} finalizado(s)` : 'sem perdas',
+          delta: revenueLost > 0 ? perdidaDelta.delta : '',
+          deltaTone: perdidaDelta.deltaTone,
+          icon: <ChartColumnIcon size={14} />,
+          tone: revenueLost > 0 ? 'risk' : 'neutral',
+        },
+        {
+          id: 'squadMrr',
+          label: 'MRR por Squad',
+          value: fmtMoney(mrr),
+          helper: selectedSquadName,
+          delta: squadMrrDelta.delta,
+          deltaTone: squadMrrDelta.deltaTone,
+          icon: <CoinsIcon size={14} />,
+          tone: 'neutral',
+        },
       ];
     },
     [
-      activeClients,
       churnRate,
       churnedPeriod,
       currentMonthNewClients,
+      dashboardTargets.revenueLostTarget,
+      finishedPeriod,
+      lostPeriod,
       mrr,
-      period,
       previousMetrics,
       revenueLost,
-      revenueNew,
-      ticketMedio,
+      selectedSquadName,
       totalClients,
     ]
   );
@@ -861,6 +940,59 @@ export default function CentralPage() {
                 onDragEnd={() => setDraggingMetric('')}
               />
             ))}
+          </section>
+
+          <section className={styles.goalsGrid} aria-label="Metas operacionais do dashboard">
+            <GoalCard
+              title="Meta Global"
+              value={`${fmtInt(globalClientsWithGoal)} de ${fmtInt(globalTargetClients)} clientes`}
+              helper={`${fmtPct(globalGoalProgress)} · Meta ${fmtPct(globalGoalTargetPercent)}`}
+              target={`${fmtInt(globalGoalSummary.remainingClients || 0)} faltam`}
+              progress={globalGoalProgress}
+              tone={globalGoalProgress >= 100 ? 'good' : 'warning'}
+            />
+            <GoalCard
+              title="Meta de Churn"
+              value={fmtPct(churnRate)}
+              helper={dashboardTargets.churnTarget > 0 ? `${fmtPct(churnTargetProgress)} da meta` : 'meta não cadastrada'}
+              target={dashboardTargets.churnTarget > 0 ? `Meta ${fmtPct(dashboardTargets.churnTarget)}` : 'Sem meta'}
+              progress={churnTargetProgress}
+              tone={churnRate <= dashboardTargets.churnTarget || dashboardTargets.churnTarget === 0 ? 'good' : 'risk'}
+            >
+              {canEditDashboardTargets ? (
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={targetDraft.churnTarget}
+                  onChange={(event) => setTargetDraft((current) => ({ ...current, churnTarget: event.target.value }))}
+                  aria-label="Meta de churn mensal"
+                />
+              ) : null}
+            </GoalCard>
+            <GoalCard
+              title="Meta de Receita Perdida"
+              value={fmtMoney(revenueLost)}
+              helper={dashboardTargets.revenueLostTarget > 0 ? `${fmtPct(revenueLostProgress)} da meta` : 'meta não cadastrada'}
+              target={dashboardTargets.revenueLostTarget > 0 ? `Meta ${fmtMoney(dashboardTargets.revenueLostTarget)}` : 'Sem meta'}
+              progress={revenueLostProgress}
+              tone={revenueLost <= dashboardTargets.revenueLostTarget || dashboardTargets.revenueLostTarget === 0 ? 'good' : 'risk'}
+            >
+              {canEditDashboardTargets ? (
+                <input
+                  type="text"
+                  value={targetDraft.revenueLostTarget}
+                  onChange={(event) => setTargetDraft((current) => ({ ...current, revenueLostTarget: event.target.value }))}
+                  aria-label="Meta de receita perdida mensal"
+                />
+              ) : null}
+            </GoalCard>
+            {canEditDashboardTargets ? (
+              <button type="button" className={styles.goalSaveButton} onClick={handleSaveDashboardTargets} disabled={targetsSaving}>
+                {targetsSaving ? 'Salvando…' : 'Salvar metas'}
+              </button>
+            ) : null}
           </section>
 
           <div className={styles.dashboardPanels}>

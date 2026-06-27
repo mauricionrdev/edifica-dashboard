@@ -1136,3 +1136,165 @@
 .emptyState {
   background: transparent;
 }
+
+/* v112 · metas operacionais do dashboard */
+.metricsGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.goalsGrid {
+  flex: 0 0 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.goalCard {
+  min-width: 0;
+  min-height: 112px;
+  padding: 15px 16px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, var(--surface-panel), transparent 58%),
+    var(--workspace-panel-bg);
+  display: grid;
+  align-content: space-between;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.goalCardHeader {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.goalCardHeader span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.goalCardHeader em {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 590;
+  white-space: nowrap;
+}
+
+.goalCardValue {
+  color: var(--text-primary);
+  font-size: clamp(20px, 1.28vw, 25px);
+  line-height: 1;
+  font-weight: 690;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+
+.goalCardHelper {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 560;
+}
+
+.goalCardProgress {
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--line-subtle);
+  overflow: hidden;
+}
+
+.goalCardProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-amber);
+}
+
+.goalCard_good .goalCardProgress span {
+  background: var(--success);
+}
+
+.goalCard_risk .goalCardProgress span {
+  background: var(--danger);
+}
+
+.goalCardActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.goalCardActions input {
+  width: 100%;
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+  padding: 0 11px;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+  box-shadow: none;
+}
+
+.goalCardActions input:focus {
+  border-color: var(--line-strong);
+}
+
+.goalSaveButton {
+  min-width: 118px;
+  min-height: 112px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.goalSaveButton:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.032);
+}
+
+.goalSaveButton:disabled {
+  opacity: 0.56;
+  cursor: wait;
+}
+
+@media (max-width: 1180px) {
+  .metricsGrid,
+  .goalsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .goalSaveButton {
+    min-height: 52px;
+  }
+}
+
+@media (max-width: 760px) {
+  .metricsGrid,
+  .goalsGrid {
+    grid-template-columns: 1fr;
+  }
+}

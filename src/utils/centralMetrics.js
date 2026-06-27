@@ -35,23 +35,42 @@ function churnDateFor(client) {
   return parseClientDate(client?.churnDate);
 }
 
+function finishedDateFor(client) {
+  return parseClientDate(client?.finishedDate || client?.endDate);
+}
+
 function churnedOnOrBefore(client, date) {
   const churn = churnDateFor(client);
   return Boolean(churn && churn <= date);
+}
+
+function finishedOnOrBefore(client, date) {
+  if (normalizeClientStatus(client?.status) !== CLIENT_STATUS.FINISHED) return false;
+  const finished = finishedDateFor(client);
+  if (!finished) return true;
+  return finished <= date;
+}
+
+function leftOnOrBefore(client, date) {
+  return churnedOnOrBefore(client, date) || finishedOnOrBefore(client, date);
 }
 
 function isHistoricalChurnClient(client, date) {
   return normalizeClientStatus(client?.status) === CLIENT_STATUS.CHURN && !churnedOnOrBefore(client, date);
 }
 
+function isHistoricalFinishedClient(client, date) {
+  return normalizeClientStatus(client?.status) === CLIENT_STATUS.FINISHED && !finishedOnOrBefore(client, date);
+}
+
 function activeAt(client, date) {
-  if (!startedOnOrBefore(client, date) || churnedOnOrBefore(client, date)) return false;
-  return isActiveClientStatus(client?.status) || isHistoricalChurnClient(client, date);
+  if (!startedOnOrBefore(client, date) || leftOnOrBefore(client, date)) return false;
+  return isActiveClientStatus(client?.status) || isHistoricalChurnClient(client, date) || isHistoricalFinishedClient(client, date);
 }
 
 function revenueAt(client, date) {
-  if (!startedOnOrBefore(client, date) || churnedOnOrBefore(client, date)) return false;
-  return isRevenueClientStatus(client?.status) || isHistoricalChurnClient(client, date);
+  if (!startedOnOrBefore(client, date) || leftOnOrBefore(client, date)) return false;
+  return isRevenueClientStatus(client?.status) || isHistoricalChurnClient(client, date) || isHistoricalFinishedClient(client, date);
 }
 
 function dateInMonth(value, year, month0) {
@@ -252,11 +271,7 @@ export function buildClientGoalReport(marketingData, limit = 6) {
 export function computeCentralMetrics(clients, year, month0) {
   const all = Array.isArray(clients) ? clients : [];
   const { start, end } = monthBounds(year, month0);
-  const signedToDate = all.filter((client) => (
-    startedOnOrBefore(client, end)
-    && !churnedOnOrBefore(client, end)
-    && normalizeClientStatus(client.status) !== CLIENT_STATUS.FINISHED
-  ));
+  const signedToDate = all.filter((client) => startedOnOrBefore(client, end) && !leftOnOrBefore(client, end));
   const active = signedToDate.filter((client) => activeAt(client, end));
   const revenueClients = all.filter((client) => revenueAt(client, end));
   const activeAtStart = all.filter((client) => activeAt(client, start));
@@ -272,9 +287,13 @@ export function computeCentralMetrics(clients, year, month0) {
   const churnedInPeriod = all.filter(
     (c) => normalizeClientStatus(c.status) === CLIENT_STATUS.CHURN && dateInMonth(c.churnDate, year, month0)
   );
-  const revLost = churnedInPeriod.reduce((sum, client) => {
-    const churnDate = parseClientDate(client.churnDate) || end;
-    return sum + resolveClientFeeAtDate(client, churnDate);
+  const finishedInPeriod = all.filter(
+    (c) => normalizeClientStatus(c.status) === CLIENT_STATUS.FINISHED && dateInMonth(c.finishedDate || c.endDate, year, month0)
+  );
+  const lostInPeriod = [...churnedInPeriod, ...finishedInPeriod];
+  const revLost = lostInPeriod.reduce((sum, client) => {
+    const exitDate = parseClientDate(client.churnDate || client.finishedDate || client.endDate) || end;
+    return sum + resolveClientFeeAtDate(client, exitDate);
   }, 0);
 
   const churnRate =
@@ -286,11 +305,14 @@ export function computeCentralMetrics(clients, year, month0) {
     active: active.length,
     total: signedToDate.length,
     churned: all.filter((c) => normalizeClientStatus(c.status) === CLIENT_STATUS.CHURN).length,
+    finished: all.filter((c) => normalizeClientStatus(c.status) === CLIENT_STATUS.FINISHED).length,
     mrr,
     revenueNew,
     newCnt: newInPeriod.length,
     revLost,
     churnedPeriodCnt: churnedInPeriod.length,
+    finishedPeriodCnt: finishedInPeriod.length,
+    lostPeriodCnt: lostInPeriod.length,
     churnRate,
   };
 }

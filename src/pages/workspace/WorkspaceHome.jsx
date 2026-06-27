@@ -4,7 +4,7 @@ import WorkspaceTaskRow from './WorkspaceTaskRow.jsx';
 import styles from './WorkspaceApp.module.css';
 import { formatDate, isDone, isOverdue, isToday, taskPriorityScore } from './workspaceUtils.js';
 
-export default function WorkspaceHome({ tasks, documents, onNavigate }) {
+export default function WorkspaceHome({ tasks, documents, supportMetrics = [], onNavigate }) {
   const openTasks = tasks.filter((task) => !isDone(task));
   const focusTasks = [...openTasks].sort((a, b) => taskPriorityScore(b) - taskPriorityScore(a)).slice(0, 6);
   const overdue = openTasks.filter(isOverdue).length;
@@ -32,6 +32,17 @@ export default function WorkspaceHome({ tasks, documents, onNavigate }) {
           <button type="button" onClick={() => onNavigate('tasks')}><span>Hoje</span><strong>{today}</strong></button>
           <button type="button" onClick={() => onNavigate('inbox')}><span>Sem prazo</span><strong>{noDue}</strong></button>
         </div>
+
+        {supportMetrics.length ? (
+          <div className={styles.supportMetricStrip} aria-label="Indicadores financeiros mantidos para suporte">
+            {supportMetrics.map((metric) => (
+              <article key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+              </article>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section className={styles.panelWide}>

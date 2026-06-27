@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { createWorkspaceDocument, deleteWorkspaceDocument, listSupportTasks, listWorkspaceDocuments, updateWorkspaceDocument } from '../../api/support.js';
+import { listClients } from '../../api/clients.js';
 import { getUserAvatar } from '../../utils/avatarStorage.js';
 import WorkspaceConfirmDialog from './WorkspaceConfirmDialog.jsx';
 import WorkspaceDocuments from './WorkspaceDocuments.jsx';
@@ -11,6 +12,8 @@ import WorkspaceSheets from './WorkspaceSheets.jsx';
 import WorkspaceShell from './WorkspaceShell.jsx';
 import WorkspaceTasks from './WorkspaceTasks.jsx';
 import { WORKSPACE_AREAS, WORKSPACE_AREA_IDS } from './workspaceNavigation.js';
+import { computeCentralMetrics } from '../../utils/centralMetrics.js';
+import { fmtMoney } from '../../utils/format.js';
 import { isDone, isOverdue } from './workspaceUtils.js';
 
 const MIN_SIDEBAR_WIDTH = 72;
@@ -25,6 +28,7 @@ export default function WorkspaceApp() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [supportClients, setSupportClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [confirmState, setConfirmState] = useState(null);
@@ -37,9 +41,10 @@ export default function WorkspaceApp() {
     setLoading(true);
     setError('');
     try {
-      const [taskResult, documentResult] = await Promise.allSettled([
+      const [taskResult, documentResult, clientResult] = await Promise.allSettled([
         listSupportTasks(),
         listWorkspaceDocuments(),
+        listClients(),
       ]);
 
       if (taskResult.status === 'fulfilled') {
@@ -47,6 +52,9 @@ export default function WorkspaceApp() {
       }
       if (documentResult.status === 'fulfilled') {
         setDocuments(Array.isArray(documentResult.value?.documents) ? documentResult.value.documents : []);
+      }
+      if (clientResult.status === 'fulfilled') {
+        setSupportClients(Array.isArray(clientResult.value?.clients) ? clientResult.value.clients : []);
       }
       if (taskResult.status === 'rejected' && documentResult.status === 'rejected') {
         throw taskResult.reason;
@@ -139,6 +147,20 @@ export default function WorkspaceApp() {
     documents: documents.length,
   }), [documents.length, openTasks]);
 
+  const supportMetrics = useMemo(() => {
+    const now = new Date();
+    const metrics = computeCentralMetrics(supportClients, now.getFullYear(), now.getMonth());
+    const active = Number(metrics.active) || 0;
+    const mrr = Number(metrics.mrr) || 0;
+    const ticket = active > 0 ? mrr / active : 0;
+    return [
+      { label: 'Clientes ativos', value: String(active) },
+      { label: 'MRR atual', value: fmtMoney(mrr) },
+      { label: 'Receita nova', value: fmtMoney(metrics.revenueNew || 0) },
+      { label: 'Ticket médio', value: fmtMoney(ticket) },
+    ];
+  }, [supportClients]);
+
   const activeArea = WORKSPACE_AREAS.find((area) => area.id === activeAreaId) || WORKSPACE_AREAS[0];
   const primaryActionLabel = activeAreaId === 'documents' ? 'Novo documento' : activeAreaId === 'sheets' ? 'Nova planilha' : 'Abrir planilhas';
   const primaryAction = activeAreaId === 'documents' ? handleCreateDocument : () => setActiveAreaId('sheets');
@@ -165,7 +187,7 @@ export default function WorkspaceApp() {
     >
       {error ? <div role="alert" className="workspace-state-box">{error}</div> : null}
       {loading ? <div className="workspace-state-box">Carregando workspace...</div> : null}
-      {!loading && activeAreaId === 'home' ? <WorkspaceHome tasks={tasks} documents={documents} onNavigate={navigateWorkspace} /> : null}
+      {!loading && activeAreaId === 'home' ? <WorkspaceHome tasks={tasks} documents={documents} supportMetrics={supportMetrics} onNavigate={navigateWorkspace} /> : null}
       {!loading && activeAreaId === 'inbox' ? <WorkspaceInbox tasks={tasks} documents={documents} onNavigate={navigateWorkspace} /> : null}
       {!loading && activeAreaId === 'tasks' ? <WorkspaceTasks tasks={tasks} /> : null}
       {!loading && activeAreaId === 'documents' ? (

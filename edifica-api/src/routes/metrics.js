@@ -458,6 +458,7 @@ function activeAtMonthEnd(row, prefix) {
 
 const DEFAULT_RANKING_GOAL_PERCENT = 80;
 const DEFAULT_CHURN_TARGET_RATE = 8;
+const DEFAULT_REVENUE_LOST_TARGET = 0;
 const RANKING_SETTINGS_KEY = 'global';
 // Chaves por squad usam o formato `squad:<uuid>`; UUID tem 36 caracteres.
 // O tamanho antigo (VARCHAR(32)) truncava a chave e fazia a calculadora voltar para 80/8.
@@ -603,6 +604,64 @@ async function getRankingSettings(settingKey = RANKING_SETTINGS_KEY) {
     [settingKey]
   );
   return serializeRankingSettings(rows[0]);
+}
+
+
+let dashboardTargetsInitPromise = null;
+
+function normalizeDashboardMonth(value) {
+  const raw = String(value || '').trim();
+  if (/^\d{4}-\d{2}$/.test(raw)) return raw;
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 7);
+  const date = raw ? new Date(raw) : new Date();
+  if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 7);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function clampMoney(value, fallback = DEFAULT_REVENUE_LOST_TARGET) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(999999999.99, n));
+}
+
+async function ensureDashboardTargetsSchema() {
+  if (!dashboardTargetsInitPromise) {
+    dashboardTargetsInitPromise = query(`
+      CREATE TABLE IF NOT EXISTS dashboard_targets (
+        period_month CHAR(7) NOT NULL PRIMARY KEY,
+        churn_target DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+        revenue_lost_target DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+        updated_by CHAR(36) NULL,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_dashboard_targets_updated_by (updated_by)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch((err) => {
+      dashboardTargetsInitPromise = null;
+      throw err;
+    });
+  }
+  return dashboardTargetsInitPromise;
+}
+
+async function getDashboardTargets(periodMonth) {
+  await ensureDashboardTargetsSchema();
+  const month = normalizeDashboardMonth(periodMonth);
+  const rows = await query(
+    `SELECT period_month, churn_target, revenue_lost_target, updated_by, updated_at
+       FROM dashboard_targets
+      WHERE period_month = ?
+      LIMIT 1`,
+    [month]
+  );
+  const rankingSettings = await getRankingSettings();
+  const row = rows[0] || {};
+  return {
+    periodMonth: month,
+    churnTarget: rows[0] ? clampPercent(row.churn_target, rankingSettings.churnTarget) : rankingSettings.churnTarget,
+    revenueLostTarget: rows[0] ? clampMoney(row.revenue_lost_target) : DEFAULT_REVENUE_LOST_TARGET,
+    updatedBy: row.updated_by || null,
+    updatedAt: row.updated_at || null,
+  };
 }
 
 function squadRankingSettingKey(squadId) {
@@ -1367,6 +1426,45 @@ async function ensureRankingChampionSnapshots(req) {
   );
 }
 
+
+
+// --------------------------------------------------------------
+//  GET/PUT /api/metrics/dashboard/targets
+//  Metas mensais do Dashboard operacional.
+// --------------------------------------------------------------
+router.get('/dashboard/targets', requirePermission('central.view'), async (req, res, next) => {
+  try {
+    const month = normalizeDashboardMonth(req.query?.month || req.query?.date);
+    const targets = await getDashboardTargets(month);
+    res.json({ targets });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/dashboard/targets', requirePermission('ranking.view.all'), async (req, res, next) => {
+  try {
+    await ensureDashboardTargetsSchema();
+    const month = normalizeDashboardMonth(req.body?.periodMonth || req.body?.month || req.query?.month);
+    const churnTarget = clampPercent(req.body?.churnTarget, DEFAULT_CHURN_TARGET_RATE);
+    const revenueLostTarget = clampMoney(req.body?.revenueLostTarget, DEFAULT_REVENUE_LOST_TARGET);
+
+    await query(
+      `INSERT INTO dashboard_targets (period_month, churn_target, revenue_lost_target, updated_by)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         churn_target = VALUES(churn_target),
+         revenue_lost_target = VALUES(revenue_lost_target),
+         updated_by = VALUES(updated_by),
+         updated_at = CURRENT_TIMESTAMP`,
+      [month, churnTarget, revenueLostTarget, req.user?.id || null]
+    );
+
+    res.json({ targets: await getDashboardTargets(month) });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // --------------------------------------------------------------
 //  GET/PUT /api/metrics/ranking/settings

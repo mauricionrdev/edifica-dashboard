@@ -29,7 +29,7 @@ export function normalizeClientStatus(status) {
   if (slug === 'rampagem' || slug === CLIENT_STATUS.RAMPAGE || slug === 'rampage') return CLIENT_STATUS.RAMPAGE;
   if (slug === 'pausado' || slug === CLIENT_STATUS.PAUSED) return CLIENT_STATUS.PAUSED;
   if (slug === 'cancelado' || slug === CLIENT_STATUS.CHURN) return CLIENT_STATUS.CHURN;
-  if (slug === 'finalizado' || slug === 'encerrado' || slug === 'concluido' || slug === 'concluido_contrato' || slug === CLIENT_STATUS.FINISHED) return CLIENT_STATUS.FINISHED;
+  if (slug === 'finalizado' || slug === 'encerrado' || slug === 'concluido' || slug === CLIENT_STATUS.FINISHED) return CLIENT_STATUS.FINISHED;
 
   return Object.values(CLIENT_STATUS).includes(slug) ? slug : CLIENT_STATUS.ACTIVE;
 }

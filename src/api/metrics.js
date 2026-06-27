@@ -65,6 +65,17 @@ export function getRankingSettings() {
   return api.get('/metrics/ranking/settings');
 }
 
+export function getDashboardTargets({ month } = {}) {
+  const params = new URLSearchParams();
+  if (month) params.set('month', month);
+  const qs = params.toString();
+  return api.get(`/metrics/dashboard/targets${qs ? `?${qs}` : ''}`);
+}
+
+export function updateDashboardTargets(data = {}) {
+  return api.put('/metrics/dashboard/targets', data);
+}
+
 export function getSquadRankingChampions() {
   return api.get('/metrics/ranking/champions');
 }
