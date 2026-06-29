@@ -31,8 +31,21 @@ function startedOnOrBefore(client, date) {
   return Boolean(start && start <= date);
 }
 
+function churnPeriodKeyFor(client) {
+  const year = Number(client?.churnYear || client?.churn_year);
+  const month = Number(client?.churnMonth || client?.churn_month);
+  if (Number.isFinite(year) && Number.isFinite(month) && month >= 1 && month <= 12) {
+    return `${year}-${String(month).padStart(2, '0')}`;
+  }
+  const churn = parseClientDate(client?.churnDate);
+  return churn ? monthKey(churn.getFullYear(), churn.getMonth()) : '';
+}
+
 function churnDateFor(client) {
-  return parseClientDate(client?.churnDate);
+  const explicit = parseClientDate(client?.churnDate);
+  if (explicit) return explicit;
+  const periodKey = churnPeriodKeyFor(client);
+  return periodKey ? parseClientDate(`${periodKey}-01`) : null;
 }
 
 function finishedDateFor(client) {
@@ -284,8 +297,9 @@ export function computeCentralMetrics(clients, year, month0) {
     return sum + resolveClientFeeAtDate(client, startDate);
   }, 0);
 
+  const periodKey = monthKey(year, month0);
   const churnedInPeriod = all.filter(
-    (c) => normalizeClientStatus(c.status) === CLIENT_STATUS.CHURN && dateInMonth(c.churnDate, year, month0)
+    (c) => normalizeClientStatus(c.status) === CLIENT_STATUS.CHURN && churnPeriodKeyFor(c) === periodKey
   );
   const portfolioChurnedInPeriod = churnedInPeriod.filter((client) => activeAt(client, start));
   const finishedInPeriod = all.filter(

@@ -1742,13 +1742,50 @@ function clientEntryDate(row) {
     || validRetentionDate(parseClientDate(row?.created_at));
 }
 
+function retentionMonthKeyFromParts(yearValue, monthValue) {
+  const year = Number(yearValue);
+  const month = Number(monthValue);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return '';
+  return `${year}-${String(month).padStart(2, '0')}`;
+}
+
+function monthStartFromKey(monthKey) {
+  const bounds = monthBoundsFromPrefix(monthKey);
+  return bounds?.start || null;
+}
+
+function clientChurnMonthKey(row) {
+  const explicit = retentionMonthKeyFromParts(row?.churn_year, row?.churn_month);
+  if (explicit) return explicit;
+
+  const churn = validRetentionDate(parseClientDate(row?.churn_date));
+  if (churn) return churn.toISOString().slice(0, 7);
+
+  if (normalizedClientStatus(row?.status) === 'churn') {
+    const changed = validRetentionDate(parseClientDate(row?.status_changed_at));
+    if (changed) return changed.toISOString().slice(0, 7);
+  }
+
+  return '';
+}
+
 function clientChurnDate(row) {
-  return validRetentionDate(parseClientDate(row?.churn_date));
+  return validRetentionDate(parseClientDate(row?.churn_date))
+    || (normalizedClientStatus(row?.status) === 'churn' ? validRetentionDate(parseClientDate(row?.status_changed_at)) : null);
+}
+
+function clientChurnEffectiveDate(row) {
+  return clientChurnDate(row) || monthStartFromKey(clientChurnMonthKey(row));
+}
+
+function clientChurnedInMonth(row, monthPrefix) {
+  return normalizedClientStatus(row?.status) === 'churn' && clientChurnMonthKey(row) === monthPrefix;
 }
 
 function daysBetween(start, end) {
   if (!start || !end) return null;
-  return Math.max(0, Math.round((end.getTime() - start.getTime()) / 86400000));
+  const diff = Math.round((end.getTime() - start.getTime()) / 86400000);
+  return diff >= 0 ? diff : null;
 }
 
 function monthsBetweenApprox(start, end) {
@@ -1766,7 +1803,7 @@ function isRetentionBaseClient(row, periodStart) {
   if (!entry || entry > periodStart) return false;
 
   const status = normalizedClientStatus(row?.status);
-  const churn = clientChurnDate(row);
+  const churn = clientChurnEffectiveDate(row);
   if (churn && churn < periodStart) return false;
 
   if (status === 'churn') return Boolean(churn && churn >= periodStart);
@@ -1802,7 +1839,7 @@ function calculateRetentionStats(clients = [], monthPrefix) {
 
   const { start, end } = bounds;
   const portfolioStartRows = clients.filter((client) => isRetentionBaseClient(client, start));
-  const churnsInPeriod = clients.filter((client) => dateBetween(clientChurnDate(client), start, end));
+  const churnsInPeriod = clients.filter((client) => clientChurnedInMonth(client, monthPrefix));
   const portfolioChurnRows = churnsInPeriod.filter((client) => isRetentionBaseClient(client, start));
   const newRows = clients.filter((client) => dateBetween(clientEntryDate(client), start, end));
   const earlyRows = newRows.filter((client) => {
@@ -1812,7 +1849,11 @@ function calculateRetentionStats(clients = [], monthPrefix) {
     return Number.isFinite(tenure) && tenure <= 30;
   });
 
-  const churnsWithEntryDate = churnsInPeriod.filter((client) => clientEntryDate(client) && clientChurnDate(client));
+  const churnsWithEntryDate = churnsInPeriod.filter((client) => {
+    const entry = clientEntryDate(client);
+    const churn = clientChurnDate(client);
+    return entry && churn && Number.isFinite(daysBetween(entry, churn));
+  });
 
   const distribution = blankDistribution();
   churnsWithEntryDate.forEach((client) => {

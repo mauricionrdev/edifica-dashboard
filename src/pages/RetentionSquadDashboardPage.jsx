@@ -25,11 +25,6 @@ function fmtInt(value) {
   return Number.isFinite(Number(value)) ? Math.round(Number(value)).toLocaleString('pt-BR') : '0';
 }
 
-function fmtMonths(value) {
-  const numeric = Number(value) || 0;
-  return `${numeric.toFixed(1).replace('.', ',')} meses`;
-}
-
 function progressWidth(value) {
   return `${Math.max(0, Math.min(Number(value) || 0, 100))}%`;
 }
@@ -93,9 +88,9 @@ function SquadBlock({ row }) {
           <em>{fmtInt(row?.earlyChurn)} de {fmtInt(row?.newClients)} novos</em>
         </div>
         <div className={styles.squadMetric}>
-          <span>LTV médio</span>
-          <strong>{fmtMonths(row?.ltvAverageMonths)}</strong>
-          <em>{fmtInt(row?.churnTotal)} churn{Number(row?.churnTotal) === 1 ? '' : 's'} no período</em>
+          <span>Clientes novos</span>
+          <strong>{fmtInt(row?.newClients)}</strong>
+          <em>base do churn precoce</em>
         </div>
       </div>
 
@@ -183,9 +178,9 @@ export default function RetentionSquadDashboardPage() {
             tone={Number(summary.earlyChurnRate) > 10 ? 'risk' : 'neutral'}
           />
           <SummaryMetric
-            label="LTV médio"
-            value={fmtMonths(summary.ltvAverageMonths || 0)}
-            helper={`${fmtInt(summary.churnTotal)} churn${Number(summary.churnTotal) === 1 ? '' : 's'} no período`}
+            label="Distribuição do churn"
+            value={`${fmtInt(summary.churnTotal)} cliente${Number(summary.churnTotal) === 1 ? '' : 's'}`}
+            helper="churns classificados por tempo de permanência"
           />
         </section>
 
