@@ -9704,3 +9704,67 @@
     justify-content: flex-start;
   }
 }
+
+
+/* v124 · Correção da lista da tela de Squad: propriedades alinhadas e estáveis */
+.clientRow {
+  grid-template-columns: minmax(320px, 1fr) minmax(230px, 280px) minmax(260px, max-content);
+  gap: clamp(18px, 2.6vw, 42px);
+  min-height: 66px;
+  padding: 10px 16px;
+}
+
+.clientStats {
+  width: 100%;
+  max-width: 280px;
+  grid-template-columns: minmax(132px, 1fr) 76px;
+  justify-self: end;
+  justify-content: start;
+  column-gap: 24px;
+}
+
+.clientStatus {
+  min-width: 0;
+  justify-self: end;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.clientStatus .badge,
+.clientStatus .routeStatusBadge,
+.clientStatus .routeAlertBadge,
+.clientStatus .onboardingDays {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1220px) {
+  .clientRow {
+    grid-template-columns: minmax(260px, 1fr) minmax(190px, 250px) minmax(220px, max-content);
+    gap: 16px;
+  }
+
+  .clientStats {
+    max-width: 250px;
+    grid-template-columns: minmax(112px, 1fr) 68px;
+    column-gap: 16px;
+  }
+}
+
+@media (max-width: 920px) {
+  .clientRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .clientStats,
+  .clientStatus {
+    justify-self: stretch;
+    justify-content: flex-start;
+  }
+
+  .clientStatus {
+    flex-wrap: wrap;
+  }
+}

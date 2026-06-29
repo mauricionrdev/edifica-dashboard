@@ -1750,3 +1750,106 @@
 .headerSide .addBtn {
   /* Cores de identificação preservadas: não converter para tokens neutros. */
 }
+
+
+/* v124 · Correção visual das análises no modal de cliente */
+.panel {
+  padding: 0;
+  gap: 14px;
+  background: transparent;
+}
+
+.header {
+  min-height: 86px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 14px 16px;
+  border-color: var(--line-subtle);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.headerSide {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+}
+
+.heroMetric {
+  min-height: 34px;
+  padding: 0 14px;
+  border-left: 1px solid var(--line-subtle);
+}
+
+.heroMetric strong {
+  font-size: 15px;
+}
+
+.addBtn,
+.attachButton,
+.delBtn {
+  border-radius: 999px;
+}
+
+.entry {
+  border-color: var(--line-subtle);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.010);
+}
+
+.entryHdr {
+  min-height: 48px;
+  grid-template-columns: max-content minmax(120px, 1fr) max-content;
+  padding: 10px 14px;
+  border-bottom-color: var(--line-subtle);
+  background: transparent;
+}
+
+.analysisPreview {
+  min-height: 92px;
+  max-height: 178px;
+  padding: 16px 18px;
+  border-top: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.analysisPreview:focus,
+.analysisPreview:focus-visible,
+.analysisPreview:hover {
+  background: transparent;
+}
+
+.attachmentsArea {
+  padding: 12px 14px 14px;
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.attachmentsEmpty {
+  width: min(360px, 100%);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+@media (max-width: 820px) {
+  .header,
+  .entryHdr {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .headerSide,
+  .headerMeta,
+  .entryActions {
+    justify-content: flex-start;
+  }
+}

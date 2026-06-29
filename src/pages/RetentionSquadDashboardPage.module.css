@@ -252,3 +252,97 @@
     border-bottom: 0;
   }
 }
+
+
+/* v124 · Retenção por Squad no padrão gerencial da plataforma */
+.page {
+  padding: 18px 22px 28px;
+  gap: 16px;
+}
+
+.summaryPanel {
+  border-color: var(--line-subtle);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.010);
+}
+
+.summaryMetric {
+  min-height: 104px;
+  padding: 18px 22px;
+  justify-content: center;
+}
+
+.summaryMetric strong {
+  font-size: clamp(28px, 2.25vw, 38px);
+  letter-spacing: -0.06em;
+}
+
+.squadsList {
+  gap: 14px;
+}
+
+.squadBlock {
+  border-color: var(--line-subtle);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.008);
+}
+
+.squadHeader {
+  min-height: 70px;
+  padding: 16px 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.014), transparent);
+}
+
+.squadAvatar {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+}
+
+.squadMetrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.squadMetric {
+  min-height: 92px;
+  padding: 16px 18px;
+  justify-content: center;
+}
+
+.squadMetric strong {
+  font-size: 25px;
+}
+
+.squadDistributionArea {
+  padding: 16px 18px 18px;
+}
+
+.distribution {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.distributionRow {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(180px, 1.2fr) 64px;
+  align-items: center;
+  gap: 12px;
+}
+
+.distributionTopline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 10px;
+}
+
+.distributionTrack {
+  height: 4px;
+}
+
+@media (max-width: 900px) {
+  .distributionRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}

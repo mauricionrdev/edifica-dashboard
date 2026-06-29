@@ -1727,12 +1727,23 @@ function sqlDate(value) {
   return date ? date.toISOString().slice(0, 10) : null;
 }
 
+function validRetentionDate(date) {
+  if (!date) return null;
+  const year = date.getUTCFullYear();
+  const currentYear = new Date().getUTCFullYear();
+  // Campos antigos/defaults como 0000/1970 distorcem LTV e distribuição.
+  // Para retenção, só usamos datas operacionais plausíveis.
+  if (year < 2020 || year > currentYear + 1) return null;
+  return date;
+}
+
 function clientEntryDate(row) {
-  return parseClientDate(row?.start_date || row?.created_at);
+  return validRetentionDate(parseClientDate(row?.start_date))
+    || validRetentionDate(parseClientDate(row?.created_at));
 }
 
 function clientChurnDate(row) {
-  return parseClientDate(row?.churn_date);
+  return validRetentionDate(parseClientDate(row?.churn_date));
 }
 
 function daysBetween(start, end) {
@@ -1801,18 +1812,20 @@ function calculateRetentionStats(clients = [], monthPrefix) {
     return Number.isFinite(tenure) && tenure <= 30;
   });
 
+  const churnsWithEntryDate = churnsInPeriod.filter((client) => clientEntryDate(client) && clientChurnDate(client));
+
   const distribution = blankDistribution();
-  churnsInPeriod.forEach((client) => {
+  churnsWithEntryDate.forEach((client) => {
     const tenure = daysBetween(clientEntryDate(client), clientChurnDate(client));
     const bucket = bucketForTenure(tenure);
     const item = distribution.find((entry) => entry.key === bucket.key);
     if (item) item.count += 1;
   });
   distribution.forEach((item) => {
-    item.percent = churnsInPeriod.length > 0 ? (item.count / churnsInPeriod.length) * 100 : 0;
+    item.percent = churnsWithEntryDate.length > 0 ? (item.count / churnsWithEntryDate.length) * 100 : 0;
   });
 
-  const totalLtvMonths = churnsInPeriod.reduce((sum, client) => (
+  const totalLtvMonths = churnsWithEntryDate.reduce((sum, client) => (
     sum + monthsBetweenApprox(clientEntryDate(client), clientChurnDate(client))
   ), 0);
 
@@ -1823,7 +1836,7 @@ function calculateRetentionStats(clients = [], monthPrefix) {
     newClients: newRows.length,
     earlyChurn: earlyRows.length,
     earlyChurnRate: newRows.length > 0 ? (earlyRows.length / newRows.length) * 100 : 0,
-    ltvAverageMonths: churnsInPeriod.length > 0 ? totalLtvMonths / churnsInPeriod.length : 0,
+    ltvAverageMonths: churnsWithEntryDate.length > 0 ? totalLtvMonths / churnsWithEntryDate.length : 0,
     churnTotal: churnsInPeriod.length,
     distribution,
   };

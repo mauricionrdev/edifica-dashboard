@@ -27,6 +27,7 @@ import {
   HomeIcon,
   LogOutIcon,
   SearchIcon,
+  TargetIcon,
   TrophyIcon,
   UsersIcon,
 } from '../ui/Icons.jsx';
@@ -173,7 +174,7 @@ export default function Sidebar({
       (canViewMetrics(user) || emptyWorkspaceView)
         ? {
             to: '/gestao-trafego',
-            icon: <ChartColumnIcon size={16} />,
+            icon: <TargetIcon size={16} />,
             label: 'Gestão de Tráfego',
           }
         : null,
