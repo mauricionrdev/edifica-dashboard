@@ -746,3 +746,18 @@
     grid-template-columns: 390px minmax(0, 1fr);
   }
 }
+
+
+/* v120 · Gestão de Tráfego: remover label do gestor e limitar só pela página */
+.clientRows {
+  max-height: none;
+  overflow: visible;
+}
+
+.clientList {
+  overflow: visible;
+}
+
+.workspace {
+  align-items: stretch;
+}

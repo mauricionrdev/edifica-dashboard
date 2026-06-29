@@ -182,7 +182,7 @@ export default function TrafficManagementPage() {
           <SearchIcon size={16} aria-hidden="true" />
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar cliente, squad ou gestor" />
         </label>
-        <Select label="Gestor" value={managerFilter} onChange={(event) => setManagerFilter(event.target.value)}>
+        <Select aria-label="Gestor" value={managerFilter} onChange={(event) => setManagerFilter(event.target.value)}>
           <option value="">Todos os gestores</option>
           {managers.map((manager) => <option key={manager.name} value={manager.name}>{compactName(manager.name)}</option>)}
         </Select>
