@@ -18,6 +18,7 @@ import PreencherSemanaPage from './pages/PreencherSemanaPage.jsx';
 import SquadPage from './pages/SquadPage.jsx';
 import SquadRankingPage from './pages/SquadRankingPage.jsx';
 import GdvRankingPage from './pages/GdvRankingPage.jsx';
+import TrafficManagementPage from './pages/TrafficManagementPage.jsx';
 import TeamAccessPage from './pages/TeamAccessPage.jsx';
 import SupportTechnologyPage from './pages/SupportTechnologyPage.jsx';
 import ForbiddenPage from './pages/ForbiddenPage.jsx';
@@ -25,8 +26,6 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import UserProfilePage from './pages/UserProfilePage.jsx';
 import WorkspacePage from './pages/WorkspacePage.jsx';
 import DesignLabClientsPage from './pages/design-lab/DesignLabClientsPage.jsx';
-import DesignLabDashboardPage from './pages/design-lab/DesignLabDashboardPage.jsx';
-import DesignLabPreencherSemanaPage from './pages/design-lab/DesignLabPreencherSemanaPage.jsx';
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
 
 export default function App() {
@@ -60,20 +59,12 @@ export default function App() {
               />
               <Route
                 path="clientes"
-                element={<RequirePermissionRoute permission="clients.view"><DesignLabClientsPage /></RequirePermissionRoute>}
+                element={<RequirePermissionRoute permission="clients.view"><ClientsPage /></RequirePermissionRoute>}
               />
-              <Route path="design-lab" element={<Navigate to="/design-lab/dashboard" replace />} />
-              <Route
-                path="design-lab/dashboard"
-                element={<RequirePermissionRoute permission="central.view"><DesignLabDashboardPage /></RequirePermissionRoute>}
-              />
+              <Route path="design-lab" element={<Navigate to="/design-lab/clientes" replace />} />
               <Route
                 path="design-lab/clientes"
                 element={<RequirePermissionRoute permission="clients.view"><DesignLabClientsPage /></RequirePermissionRoute>}
-              />
-              <Route
-                path="design-lab/preencher-semana"
-                element={<RequirePermissionRoute permission="metrics.view"><DesignLabPreencherSemanaPage /></RequirePermissionRoute>}
               />
               <Route
                 path="projetos"
@@ -90,6 +81,7 @@ export default function App() {
               <Route path="squads/:squadId" element={<RequirePermissionRoute permission="squads.view"><SquadPage /></RequirePermissionRoute>} />
               <Route path="ranking-squads" element={<RequirePermissionRoute permission="ranking.view"><SquadRankingPage /></RequirePermissionRoute>} />
               <Route path="ranking-gdvs" element={<RequirePermissionRoute permission="ranking.view"><GdvRankingPage /></RequirePermissionRoute>} />
+              <Route path="gestao-trafego" element={<RequirePermissionRoute permission="metrics.view"><TrafficManagementPage /></RequirePermissionRoute>} />
               <Route path="suporte-tecnologia" element={<RequirePermissionRoute permission="support.view"><SupportTechnologyPage /></RequirePermissionRoute>} />
               <Route path="equipe" element={<RequirePermissionRoute permission="team.view"><TeamAccessPage /></RequirePermissionRoute>} />
               <Route path="acesso-negado" element={<ForbiddenPage />} />

@@ -170,6 +170,13 @@ export default function Sidebar({
             label: 'Preencher Semana',
           }
         : null,
+      (canViewMetrics(user) || emptyWorkspaceView)
+        ? {
+            to: '/gestao-trafego',
+            icon: <ChartColumnIcon size={16} />,
+            label: 'Gestão de Tráfego',
+          }
+        : null,
     ].filter(Boolean),
     [activeCount, emptyWorkspaceView, totalCount, user]
   );

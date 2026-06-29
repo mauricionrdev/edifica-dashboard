@@ -45,6 +45,24 @@ export function getContractsHistory({ months, date, squadId, clientId } = {}) {
 }
 
 
+
+
+export function getTrafficManagement({ date, gestor } = {}) {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+  if (gestor) params.set('gestor', gestor);
+  const qs = params.toString();
+  return api.get(`/metrics/traffic-management${qs ? `?${qs}` : ''}`);
+}
+
+export function getTrafficRankingSettings() {
+  return api.get('/metrics/traffic-ranking/settings');
+}
+
+export function updateTrafficRankingSettings(data = {}) {
+  return api.put('/metrics/traffic-ranking/settings', data);
+}
+
 export function getSquadRanking({ date, squadId } = {}) {
   const params = new URLSearchParams();
   if (date) params.set('date', date);

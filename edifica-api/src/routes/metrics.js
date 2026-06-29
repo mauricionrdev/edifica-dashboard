@@ -54,6 +54,9 @@ const ALLOWED_METRIC_FIELDS = new Set([
   'metaCpl',
   'weekStatus',   // 'vai' | 'nao' | ''
   'observacoes',  // até 2000 chars
+  'icpPercent',
+  'metaIcp',
+  'icpValidated',
 ]);
 
 async function ensureMetricPresenceSchema() {
@@ -153,6 +156,14 @@ function sanitizeMetricData(incoming) {
       const s = v == null ? '' : String(v);
       if (s.length > 2000) throw badRequest('observacoes muito longas (max 2000)');
       clean[key] = s;
+    } else if (key === 'icpValidated') {
+      if (v === null || v === '' || v === undefined) {
+        clean[key] = null;
+      } else if (v === true || v === 'true' || v === 'sim' || v === 1 || v === '1') {
+        clean[key] = true;
+      } else if (v === false || v === 'false' || v === 'nao' || v === 'não' || v === 0 || v === '0') {
+        clean[key] = false;
+      }
     } else {
       if (v === null) {
         clean[key] = null;
@@ -1432,6 +1443,265 @@ async function ensureRankingChampionSnapshots(req) {
 //  GET/PUT /api/metrics/dashboard/targets
 //  Metas mensais do Dashboard operacional.
 // --------------------------------------------------------------
+
+
+// --------------------------------------------------------------
+//  Gestão de Tráfego
+//  Consome os dados semanais já preenchidos em weekly_metrics.
+// --------------------------------------------------------------
+const DEFAULT_TRAFFIC_RANKING_TARGET = 80;
+let trafficRankingSettingsInitPromise = null;
+
+async function ensureTrafficRankingSettingsSchema() {
+  if (!trafficRankingSettingsInitPromise) {
+    trafficRankingSettingsInitPromise = query(`
+      CREATE TABLE IF NOT EXISTS traffic_ranking_settings (
+        id TINYINT NOT NULL PRIMARY KEY DEFAULT 1,
+        target_percent DECIMAL(6,2) NOT NULL DEFAULT 80.00,
+        updated_by CHAR(36) NULL,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT chk_traffic_ranking_settings_id CHECK (id = 1)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `).catch((err) => {
+      trafficRankingSettingsInitPromise = null;
+      throw err;
+    });
+  }
+  return trafficRankingSettingsInitPromise;
+}
+
+async function getTrafficRankingSettingsRow() {
+  await ensureTrafficRankingSettingsSchema();
+  const rows = await query('SELECT target_percent FROM traffic_ranking_settings WHERE id = 1 LIMIT 1');
+  return {
+    targetPercent: Number(rows[0]?.target_percent) || DEFAULT_TRAFFIC_RANKING_TARGET,
+  };
+}
+
+function trafficNumber(value) {
+  if (value === '' || value === null || value === undefined) return 0;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function latestNonZero(metrics = [], key = '') {
+  for (const metric of [...metrics].reverse()) {
+    const value = trafficNumber(metric.data?.[key]);
+    if (value > 0) return value;
+  }
+  return 0;
+}
+
+function latestBoolean(metrics = [], key = '') {
+  for (const metric of [...metrics].reverse()) {
+    if (metric.data && Object.prototype.hasOwnProperty.call(metric.data, key)) {
+      const value = metric.data[key];
+      if (value === true || value === 'true' || value === 'sim' || value === 1 || value === '1') return true;
+      if (value === false || value === 'false' || value === 'nao' || value === 'não' || value === 0 || value === '0') return false;
+    }
+  }
+  return null;
+}
+
+function periodWeekOrder(periodKey = '') {
+  const base = String(periodKey || '').split('__campaign:')[0];
+  const match = /-S([1-4])$/.exec(base);
+  return match ? Number(match[1]) : 0;
+}
+
+function summarizeTrafficClient(client = {}, metrics = []) {
+  const sorted = [...metrics].sort((a, b) => periodWeekOrder(a.periodKey) - periodWeekOrder(b.periodKey));
+  const investimento = latestNonZero(sorted, 'investimento');
+  const metaCpl = latestNonZero(sorted, 'metaCpl');
+  const metaLeads = latestNonZero(sorted, 'metaVolume');
+  const metaIcp = latestNonZero(sorted, 'metaIcp');
+  const latestCpl = latestNonZero(sorted, 'cpl');
+  const icpPercent = latestNonZero(sorted, 'icpPercent');
+  const icpValidated = latestBoolean(sorted, 'icpValidated');
+  const leadsCurrent = sorted.reduce((sum, metric) => sum + trafficNumber(metric.data?.volume), 0);
+  const totalInvestment = sorted.reduce((sum, metric) => sum + trafficNumber(metric.data?.investimento), 0);
+  const currentCpl = leadsCurrent > 0 && totalInvestment > 0 ? totalInvestment / leadsCurrent : latestCpl;
+  const latestProjection = sorted.reduce((max, metric) => {
+    const calc = computeWeeklyMetrics(metric.data || {}, { clientMetaLucro: Number(client.meta_lucro) || 0 });
+    return Math.max(max, Number(calc.leadsPrevistos) || 0);
+  }, 0);
+  const projectedLeads = Math.max(latestProjection, leadsCurrent);
+  const cplHasTarget = currentCpl > 0 && metaCpl > 0;
+  const leadsHasTarget = projectedLeads > 0 && metaLeads > 0;
+  const icpHasTarget = icpPercent > 0 && metaIcp > 0;
+  const cplOk = cplHasTarget ? currentCpl <= metaCpl : null;
+  const leadsOk = leadsHasTarget ? projectedLeads >= metaLeads : null;
+  const icpOk = icpValidated === true ? true : (icpHasTarget ? icpPercent >= metaIcp : (icpValidated === false ? false : null));
+  let priority = 0;
+  if (cplOk === false) priority += 1;
+  if (leadsOk === false) priority += 1;
+  if (icpOk === false) priority += 1;
+  const tags = [];
+  if (leadsOk === true) tags.push({ key: 'leads_ok', label: 'Vai bater a meta de leads', tone: 'good' });
+  if (leadsOk === false) tags.push({ key: 'leads_bad', label: 'Não vai bater a meta de leads', tone: 'danger' });
+  if (cplOk === true) tags.push({ key: 'cpl_ok', label: 'Dentro da meta de CPL', tone: 'good' });
+  if (cplOk === false) tags.push({ key: 'cpl_bad', label: 'Fora da meta de CPL', tone: 'danger' });
+  if (icpOk === true) tags.push({ key: 'icp_ok', label: 'ICP dentro da meta', tone: 'good' });
+  if (icpOk === false) tags.push({ key: 'icp_bad', label: 'ICP fora da meta', tone: 'danger' });
+  if (icpValidated === true) tags.push({ key: 'icp_validated', label: 'ICP validado', tone: 'info' });
+  if (icpValidated === false) tags.push({ key: 'icp_unvalidated', label: 'ICP não validado', tone: 'warning' });
+  const hasData = sorted.length > 0 && [investimento, leadsCurrent, projectedLeads, currentCpl, metaCpl, metaLeads, icpPercent, metaIcp].some((value) => Number(value) > 0);
+
+  return {
+    client: {
+      id: client.id,
+      name: client.name,
+      avatarUrl: client.avatar_data_url || '',
+      squadId: client.squad_id || '',
+      squadName: client.squad_name || '',
+      gestor: client.gestor || '',
+      status: client.status || '',
+    },
+    metrics: {
+      investimento,
+      leadsCurrent,
+      metaLeads,
+      projectedLeads,
+      currentCpl,
+      metaCpl,
+      icpPercent,
+      metaIcp,
+      icpValidated,
+    },
+    flags: { cplOk, leadsOk, icpOk },
+    priority,
+    hasData,
+    tags,
+  };
+}
+
+function isTrafficPortfolioStatus(status = '') {
+  const normalized = normalizedClientStatus(status);
+  return ['active', 'onboarding', 'rampagem_comercial', 'paused'].includes(normalized);
+}
+
+async function buildTrafficManagementPayload(req, monthPrefix, gestorFilter = '') {
+  if (req.emptyWorkspaceView) {
+    return { monthPrefix, managers: [], clients: [], ranking: [], summary: { portfolio: 0, critical: 0, projectedHit: 0, withoutData: 0 } };
+  }
+
+  const squadScope = getAllowedSquads(req.user, 'metrics.view.all');
+  const params = [];
+  let clientSql = `SELECT c.id, c.name, c.avatar_data_url, c.squad_id, c.gestor, c.status, c.meta_lucro, s.name AS squad_name
+                     FROM clients c
+                     LEFT JOIN squads s ON s.id = c.squad_id
+                    WHERE c.gestor IS NOT NULL
+                      AND TRIM(c.gestor) <> ''`;
+  if (Array.isArray(squadScope)) {
+    if (squadScope.length === 0) {
+      return { monthPrefix, managers: [], clients: [], ranking: [], summary: { portfolio: 0, critical: 0, projectedHit: 0, withoutData: 0 } };
+    }
+    clientSql += ` AND c.squad_id IN (${squadScope.map(() => '?').join(',')})`;
+    params.push(...squadScope);
+  }
+  clientSql += ' ORDER BY c.gestor ASC, c.name ASC';
+
+  const clientRows = (await query(clientSql, params)).filter((client) => isTrafficPortfolioStatus(client.status));
+  const clientIds = clientRows.map((client) => client.id);
+  let metricRows = [];
+  if (clientIds.length > 0) {
+    metricRows = await query(
+      `SELECT client_id, period_key, data
+         FROM weekly_metrics
+        WHERE client_id IN (${clientIds.map(() => '?').join(',')})
+          AND period_key LIKE ?
+          AND period_key NOT LIKE '%__campaign:%'
+        ORDER BY client_id, period_key`,
+      [...clientIds, monthPrefix + '-S%']
+    );
+  }
+  const metricsByClient = new Map();
+  for (const row of metricRows) {
+    if (!metricsByClient.has(row.client_id)) metricsByClient.set(row.client_id, []);
+    metricsByClient.get(row.client_id).push({ periodKey: row.period_key, data: parseJson(row.data, {}) });
+  }
+
+  const summaries = clientRows.map((client) => summarizeTrafficClient(client, metricsByClient.get(client.id) || []));
+  const cleanGestorFilter = String(gestorFilter || '').trim();
+  const visible = cleanGestorFilter ? summaries.filter((row) => row.client.gestor === cleanGestorFilter) : summaries;
+  const managersMap = new Map();
+  for (const row of summaries) {
+    const name = row.client.gestor || 'Sem gestor';
+    if (!managersMap.has(name)) managersMap.set(name, { name, portfolio: 0, projectedHit: 0, critical: 0, withoutData: 0 });
+    const manager = managersMap.get(name);
+    manager.portfolio += 1;
+    if (row.flags.leadsOk === true) manager.projectedHit += 1;
+    if (row.priority > 0) manager.critical += 1;
+    if (!row.hasData) manager.withoutData += 1;
+  }
+
+  const settings = await getTrafficRankingSettingsRow();
+  const managers = Array.from(managersMap.values()).sort((a, b) => String(a.name).localeCompare(String(b.name), 'pt-BR'));
+  const ranking = managers.map((manager) => ({
+    ...manager,
+    resultPercent: manager.portfolio > 0 ? (manager.projectedHit / manager.portfolio) * 100 : 0,
+    targetPercent: settings.targetPercent,
+    status: manager.portfolio > 0 && (manager.projectedHit / manager.portfolio) * 100 >= settings.targetPercent ? 'above' : 'below',
+  })).sort((a, b) => (b.resultPercent - a.resultPercent) || String(a.name).localeCompare(String(b.name), 'pt-BR'))
+    .map((row, index) => ({ ...row, position: index + 1 }));
+
+  const clients = visible.sort((a, b) => (b.priority - a.priority) || String(a.client.name).localeCompare(String(b.client.name), 'pt-BR'));
+  const summary = {
+    portfolio: visible.length,
+    critical: visible.filter((row) => row.priority > 0).length,
+    projectedHit: visible.filter((row) => row.flags.leadsOk === true).length,
+    withoutData: visible.filter((row) => !row.hasData).length,
+  };
+
+  return { monthPrefix, managers, clients, ranking, summary, targetPercent: settings.targetPercent };
+}
+
+
+// --------------------------------------------------------------
+//  GET /api/metrics/traffic-management
+//  Dashboard da carteira de Gestão de Tráfego + ranking por gestor.
+// --------------------------------------------------------------
+router.get('/traffic-management', requirePermission('metrics.view'), async (req, res, next) => {
+  try {
+    const ref = req.query?.date ? new Date(String(req.query.date) + 'T00:00:00Z') : new Date();
+    if (Number.isNaN(ref.getTime())) throw badRequest('Parâmetro date inválido. Use YYYY-MM-DD.');
+    const monthPrefix = monthPrefixFromDate(ref);
+    const payload = await buildTrafficManagementPayload(req, monthPrefix, String(req.query?.gestor || '').trim());
+    res.json(payload);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/traffic-ranking/settings', requirePermission('ranking.view'), async (req, res, next) => {
+  try {
+    const settings = await getTrafficRankingSettingsRow();
+    res.json(settings);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/traffic-ranking/settings', requirePermission('ranking.view.all'), async (req, res, next) => {
+  try {
+    await ensureTrafficRankingSettingsSchema();
+    const targetPercent = parseLocaleNumber(req.body?.targetPercent, DEFAULT_TRAFFIC_RANKING_TARGET);
+    if (!Number.isFinite(targetPercent) || targetPercent <= 0 || targetPercent > 100) {
+      throw badRequest('targetPercent deve estar entre 1 e 100');
+    }
+    await query(
+      `INSERT INTO traffic_ranking_settings (id, target_percent, updated_by)
+       VALUES (1, ?, ?)
+       ON DUPLICATE KEY UPDATE target_percent = VALUES(target_percent), updated_by = VALUES(updated_by), updated_at = CURRENT_TIMESTAMP`,
+      [targetPercent, req.user?.id || null]
+    );
+    const settings = await getTrafficRankingSettingsRow();
+    res.json(settings);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/dashboard/targets', requirePermission('central.view'), async (req, res, next) => {
   try {
     const month = normalizeDashboardMonth(req.query?.month || req.query?.date);
