@@ -761,3 +761,33 @@
 .workspace {
   align-items: stretch;
 }
+
+/* v121 · Gestão de Tráfego: lista lateral com altura operacional controlada */
+.clientList {
+  overflow: hidden;
+}
+
+.clientRows {
+  max-height: clamp(360px, calc(100vh - 430px), 560px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.workspace {
+  align-items: stretch;
+  min-height: 0;
+}
+
+.detailPanel {
+  min-height: clamp(430px, calc(100vh - 430px), 560px);
+}
+
+@media (max-width: 1180px) {
+  .clientRows {
+    max-height: 360px;
+  }
+
+  .detailPanel {
+    min-height: auto;
+  }
+}
