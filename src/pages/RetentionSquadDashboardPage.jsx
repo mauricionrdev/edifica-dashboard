@@ -81,16 +81,19 @@ function SquadBlock({ row }) {
           <span>Churn da carteira</span>
           <strong>{fmtPct(churnRate)}</strong>
           <em>{fmtInt(row?.portfolioChurn)} de {fmtInt(row?.portfolioStart)} clientes</em>
+          <i aria-hidden="true"><b style={{ width: progressWidth(churnRate) }} /></i>
         </div>
         <div className={styles.squadMetric}>
           <span>Churn precoce</span>
           <strong>{fmtPct(earlyRate)}</strong>
           <em>{fmtInt(row?.earlyChurn)} de {fmtInt(row?.newClients)} novos</em>
+          <i aria-hidden="true"><b style={{ width: progressWidth(earlyRate) }} /></i>
         </div>
         <div className={styles.squadMetric}>
           <span>Clientes novos</span>
           <strong>{fmtInt(row?.newClients)}</strong>
           <em>base do churn precoce</em>
+          <i aria-hidden="true"><b style={{ width: progressWidth(Number(row?.newClients) > 0 ? 100 : 0) }} /></i>
         </div>
       </div>
 
@@ -160,10 +163,24 @@ export default function RetentionSquadDashboardPage() {
 
   const summary = data?.summary || {};
   const rows = Array.isArray(data?.squads) ? data.squads : [];
+  const selectedMonthLabel = monthOptions.find((option) => option.value === month)?.label || month;
+  const selectedSquadName = squadId ? (squads || []).find((squad) => squad.id === squadId)?.name || 'Squad selecionado' : 'Todos os squads';
 
   return (
     <div className="content">
       <main className={styles.page}>
+        <section className={styles.retentionHero}>
+          <div>
+            <span>Retenção por Squad</span>
+            <h1>{selectedSquadName}</h1>
+            <p>{selectedMonthLabel} · base congelada no primeiro dia do período</p>
+          </div>
+          <div className={styles.retentionHeroStats}>
+            <strong>{fmtPct(summary.portfolioChurnRate || 0)}</strong>
+            <span>Churn da carteira</span>
+          </div>
+        </section>
+
         <section className={styles.summaryPanel}>
           <SummaryMetric
             label="Churn da carteira"

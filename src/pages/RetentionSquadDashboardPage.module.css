@@ -346,3 +346,160 @@
     gap: 6px;
   }
 }
+
+/* v128 · Indicadores por Squad com leitura gerencial, menos genérica */
+.page {
+  padding: 18px 22px 28px;
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+  gap: 14px;
+}
+
+.retentionHero {
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0.006)),
+    var(--workspace-panel-bg);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.retentionHero span {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.retentionHero h1 {
+  margin: 7px 0 0;
+  color: var(--text-primary);
+  font-size: clamp(24px, 2vw, 34px);
+  line-height: 1;
+  font-weight: 720;
+  letter-spacing: -0.065em;
+}
+
+.retentionHero p {
+  margin: 7px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.retentionHeroStats {
+  min-width: 156px;
+  text-align: right;
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.retentionHeroStats strong {
+  color: var(--text-primary);
+  font-size: clamp(28px, 2.5vw, 42px);
+  line-height: 1;
+  font-weight: 740;
+  letter-spacing: -0.07em;
+}
+
+.summaryPanel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  gap: 12px;
+  overflow: visible;
+}
+
+.summaryMetric {
+  min-height: 96px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--workspace-panel-bg);
+}
+
+.summaryMetric:last-child {
+  border-right: 1px solid var(--line);
+}
+
+.squadBlock {
+  border-color: var(--line);
+  border-radius: 18px;
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.squadHeader {
+  padding: 16px 18px;
+  border-bottom-color: var(--line-subtle);
+}
+
+.squadMetrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom-color: var(--line-subtle);
+}
+
+.squadMetric {
+  padding: 15px 18px 14px;
+  gap: 7px;
+}
+
+.squadMetric i {
+  width: 100%;
+  height: 2px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: var(--line-subtle);
+  display: block;
+  overflow: hidden;
+}
+
+.squadMetric i b {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-amber);
+  display: block;
+}
+
+.squadMetric strong {
+  font-size: 23px;
+}
+
+.squadDistributionArea {
+  padding: 16px 18px 18px;
+}
+
+.distribution {
+  gap: 10px;
+}
+
+.distributionRow {
+  min-height: 72px;
+  padding: 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.distributionTrack {
+  height: 3px;
+}
+
+@media (max-width: 900px) {
+  .retentionHero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .retentionHeroStats {
+    text-align: left;
+    justify-items: start;
+  }
+}

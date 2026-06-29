@@ -6,9 +6,11 @@ import {
   BriefcaseIcon,
   ChartColumnIcon,
   CoinsIcon,
+  SettingsIcon,
   TargetIcon,
   TrendingUpIcon,
   UsersIcon,
+  CloseIcon,
 } from '../components/ui/Icons.jsx';
 import { getDashboardTargets, getSquadRanking, updateDashboardTargets } from '../api/metrics.js';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -566,6 +568,7 @@ export default function CentralPage() {
   const [globalGoal, setGlobalGoal] = useState(null);
   const [dashboardTargets, setDashboardTargets] = useState({ churnTarget: 0, revenueLostTarget: 0 });
   const [targetDraft, setTargetDraft] = useState({ churnTarget: '0', revenueLostTarget: '0' });
+  const [targetsModalOpen, setTargetsModalOpen] = useState(false);
   const [targetsSaving, setTargetsSaving] = useState(false);
 
   const clientOptions = useMemo(() => {
@@ -691,6 +694,7 @@ export default function CentralPage() {
         churnTarget: String(nextTargets.churnTarget || 0),
         revenueLostTarget: String(nextTargets.revenueLostTarget || 0),
       });
+      setTargetsModalOpen(false);
     } finally {
       setTargetsSaving(false);
     }
@@ -951,8 +955,15 @@ export default function CentralPage() {
                   Indicadores por Squad
                 </button>
                 {canEditDashboardTargets ? (
-                  <button type="button" className={styles.goalSaveButton} onClick={handleSaveDashboardTargets} disabled={targetsSaving}>
-                    {targetsSaving ? 'Salvando…' : 'Salvar metas'}
+                  <button
+                    type="button"
+                    className={styles.goalConfigButton}
+                    onClick={() => setTargetsModalOpen(true)}
+                    aria-label="Configurar metas operacionais"
+                    title="Configurar metas operacionais"
+                  >
+                    <SettingsIcon size={14} aria-hidden="true" />
+                    Configurar metas
                   </button>
                 ) : null}
               </div>
@@ -974,19 +985,7 @@ export default function CentralPage() {
                 target={dashboardTargets.churnTarget > 0 ? `Meta ${fmtPct(dashboardTargets.churnTarget)}` : 'Sem meta'}
                 progress={churnTargetProgress}
                 tone={churnRate <= dashboardTargets.churnTarget || dashboardTargets.churnTarget === 0 ? 'good' : 'risk'}
-              >
-                {canEditDashboardTargets ? (
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={targetDraft.churnTarget}
-                    onChange={(event) => setTargetDraft((current) => ({ ...current, churnTarget: event.target.value }))}
-                    aria-label="Meta de churn mensal"
-                  />
-                ) : null}
-              </GoalCard>
+              />
               <GoalCard
                 title="Meta de Receita Perdida"
                 value={fmtMoney(revenueLost)}
@@ -994,16 +993,7 @@ export default function CentralPage() {
                 target={dashboardTargets.revenueLostTarget > 0 ? `Meta ${fmtMoney(dashboardTargets.revenueLostTarget)}` : 'Sem meta'}
                 progress={revenueLostProgress}
                 tone={revenueLost <= dashboardTargets.revenueLostTarget || dashboardTargets.revenueLostTarget === 0 ? 'good' : 'risk'}
-              >
-                {canEditDashboardTargets ? (
-                  <input
-                    type="text"
-                    value={targetDraft.revenueLostTarget}
-                    onChange={(event) => setTargetDraft((current) => ({ ...current, revenueLostTarget: event.target.value }))}
-                    aria-label="Meta de receita perdida mensal"
-                  />
-                ) : null}
-              </GoalCard>
+              />
             </div>
           </section>
 
@@ -1015,6 +1005,72 @@ export default function CentralPage() {
             <ActivityPanel activities={recentActivities} onOpenClient={openClientDetail} />
           </section>
         </div>
+
+        {targetsModalOpen ? (
+          <div className={styles.targetsModalBackdrop} role="presentation" onClick={() => (targetsSaving ? null : setTargetsModalOpen(false))}>
+            <section
+              className={styles.targetsModal}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Configurar metas operacionais"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <header className={styles.targetsModalHeader}>
+                <span className={styles.targetsModalIcon} aria-hidden="true">
+                  <SettingsIcon size={17} />
+                </span>
+                <div>
+                  <span>Dashboard operacional</span>
+                  <h3>Configurar metas</h3>
+                  <p>{periodLabel}</p>
+                </div>
+                <button type="button" onClick={() => setTargetsModalOpen(false)} aria-label="Fechar" disabled={targetsSaving}>
+                  <CloseIcon size={16} aria-hidden="true" />
+                </button>
+              </header>
+
+              <div className={styles.targetsModalBody}>
+                <label className={styles.targetsField}>
+                  <span>Meta de Churn mensal</span>
+                  <div className={styles.targetsInputWrap}>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={targetDraft.churnTarget}
+                      onChange={(event) => setTargetDraft((current) => ({ ...current, churnTarget: event.target.value }))}
+                      aria-label="Meta de churn mensal"
+                    />
+                    <em>%</em>
+                  </div>
+                </label>
+
+                <label className={styles.targetsField}>
+                  <span>Meta de Receita Perdida</span>
+                  <div className={styles.targetsInputWrap}>
+                    <em>R$</em>
+                    <input
+                      type="text"
+                      value={targetDraft.revenueLostTarget}
+                      onChange={(event) => setTargetDraft((current) => ({ ...current, revenueLostTarget: event.target.value }))}
+                      aria-label="Meta de receita perdida mensal"
+                    />
+                  </div>
+                </label>
+              </div>
+
+              <footer className={styles.targetsModalFooter}>
+                <button type="button" className={styles.targetsCancelButton} onClick={() => setTargetsModalOpen(false)} disabled={targetsSaving}>
+                  Cancelar
+                </button>
+                <button type="button" className={styles.targetsSaveButton} onClick={handleSaveDashboardTargets} disabled={targetsSaving}>
+                  {targetsSaving ? 'Salvando…' : 'Salvar metas'}
+                </button>
+              </footer>
+            </section>
+          </div>
+        ) : null}
 
         {selectedClient ? (
           <ClientDetailDrawer
