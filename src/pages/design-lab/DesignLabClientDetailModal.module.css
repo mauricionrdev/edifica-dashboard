@@ -1380,3 +1380,120 @@
 .analysisHost > :global(div > div:not(:first-child)) {
   background: rgba(255, 255, 255, 0.010) !important;
 }
+
+/* v125 · restaura paleta neutra do Design System no modal de detalhes */
+.overlay {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.modal {
+  border-color: var(--line-subtle);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 1.8%, transparent), transparent 34%),
+    var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.header,
+.tabs {
+  border-color: var(--line-subtle);
+  background: color-mix(in srgb, var(--text-primary) 1.1%, transparent);
+}
+
+.avatar,
+.largeAvatar {
+  border-color: var(--line);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.titleBlock h2,
+.feeCardHeader strong {
+  color: var(--text-primary);
+}
+
+.iconButton,
+.headerPill,
+.tab,
+.secondaryButton,
+.primaryButton,
+.feeActions button {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.iconButton:hover,
+.headerPill:hover,
+.tab:hover,
+.secondaryButton:hover {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  color: var(--text-primary);
+}
+
+.sectionKicker,
+.field span,
+.fieldFull span,
+.footerLeft > span,
+.feeCardHeader span,
+.modalSelect > span:first-child {
+  color: var(--text-secondary);
+}
+
+.field input,
+.field select,
+.fieldFull input,
+.analysisHost :global(textarea),
+.analysisHost :global(input),
+.analysisHost :global(select),
+.modalSelect > button,
+.modalSelect :global(button[aria-haspopup='listbox']) {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--text-primary) 1.8%, transparent) !important;
+  color: var(--text-primary);
+}
+
+.field input:hover,
+.field select:hover,
+.fieldFull input:hover,
+.modalSelect > button:hover,
+.modalSelect :global(button[aria-haspopup='listbox']:hover) {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--text-primary) 2.8%, transparent) !important;
+}
+
+.field input:focus,
+.field select:focus,
+.fieldFull input:focus,
+.modalSelect > button[aria-expanded='true'],
+.modalSelect :global(button[aria-haspopup='listbox'][aria-expanded='true']) {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--text-primary) 2.8%, transparent) !important;
+}
+
+.primaryButton {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.primaryButton:hover:not(:disabled) {
+  border-color: #ffffff;
+  background: #ffffff;
+}
+
+.confirmDialog {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.confirmDialog p {
+  color: var(--text-secondary);
+}
+
+.analysisHost > :global(div > div:first-child),
+.analysisHost :global(article),
+.analysisHost > :global(div > div:not(:first-child)) {
+  background: color-mix(in srgb, var(--text-primary) 1.2%, transparent) !important;
+}

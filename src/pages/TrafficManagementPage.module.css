@@ -791,3 +791,176 @@
     min-height: auto;
   }
 }
+
+/* v125 · Gestão de Tráfego com contexto claro do gestor selecionado */
+.page {
+  gap: 12px;
+}
+
+.commandBar {
+  padding: 12px 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 18px;
+  background: var(--bg-canvas);
+}
+
+.managerHero {
+  min-height: 96px;
+  padding: 16px 18px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 20px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 3.2%, transparent), transparent 34%),
+    var(--bg-canvas);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.62fr);
+  align-items: center;
+  gap: 20px;
+}
+
+.managerHeroMain {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.managerIcon {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  color: var(--accent);
+  display: inline-grid;
+  place-items: center;
+}
+
+.managerHeroMain span:not(.managerIcon),
+.managerHeroStats span {
+  color: color-mix(in srgb, var(--text-secondary) 88%, var(--accent));
+  font-size: 10.5px;
+  font-weight: 760;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.managerHeroMain h1 {
+  margin: 3px 0 3px;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.managerHeroMain small {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.managerHeroStats {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text-primary) 1.25%, transparent);
+}
+
+.managerHeroStats div {
+  min-width: 0;
+  min-height: 58px;
+  padding: 10px 12px;
+  border-right: 1px solid var(--line-subtle);
+  display: grid;
+  align-content: center;
+  gap: 5px;
+}
+
+.managerHeroStats div:last-child {
+  border-right: 0;
+}
+
+.managerHeroStats strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kpis {
+  display: none;
+}
+
+.rankingRowActive {
+  background: color-mix(in srgb, var(--accent) 4.5%, transparent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.rankingRowActive .rankingPosition,
+.rankingRowActive .rankingIdentity strong {
+  color: var(--accent);
+}
+
+.workspace {
+  grid-template-columns: minmax(320px, 386px) minmax(0, 1fr);
+}
+
+.clientList header span {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detailGrid {
+  border-color: var(--line-subtle);
+  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
+}
+
+.metricLine span {
+  color: color-mix(in srgb, var(--text-secondary) 82%, var(--accent));
+}
+
+@media (max-width: 1180px) {
+  .managerHero {
+    grid-template-columns: 1fr;
+  }
+
+  .managerHeroStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .managerHeroStats div:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .managerHeroStats div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line-subtle);
+  }
+}
+
+@media (max-width: 720px) {
+  .managerHeroStats {
+    grid-template-columns: 1fr;
+  }
+
+  .managerHeroStats div,
+  .managerHeroStats div:nth-child(2n) {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .managerHeroStats div:last-child {
+    border-bottom: 0;
+  }
+}

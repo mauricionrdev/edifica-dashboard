@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getTrafficManagement, updateTrafficRankingSettings } from '../api/metrics.js';
 import { ApiError } from '../api/client.js';
-import { ChartColumnIcon, RotateCcwIcon, SearchIcon, Select, TargetIcon, TrophyIcon, UsersIcon } from '../components/ui/index.js';
+import { ChartColumnIcon, RotateCcwIcon, SearchIcon, Select, TargetIcon, TrendingUpIcon, TrophyIcon, UsersIcon } from '../components/ui/index.js';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import Button from '../components/ui/Button.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -154,6 +154,13 @@ export default function TrafficManagementPage() {
     return clients.filter((row) => [row.client.name, row.client.squadName, row.client.gestor].some((value) => String(value || '').toLowerCase().includes(clean)));
   }, [clients, query]);
   const activeTarget = Number(payload.targetPercent) || 80;
+  const selectedPeriodLabel = periodOptions.find((option) => option.value === monthKey(period))?.label || `${MONTHS_FULL[period.month]} de ${period.year}`;
+  const summaryPortfolio = Number(payload.summary?.portfolio) || 0;
+  const summaryProjected = Number(payload.summary?.projectedHit) || 0;
+  const summaryCritical = Number(payload.summary?.critical) || 0;
+  const selectedManagerName = managerFilter ? compactName(managerFilter) : 'Todos os gestores';
+  const managerResultPercent = summaryPortfolio > 0 ? (summaryProjected / summaryPortfolio) * 100 : 0;
+  const managerContext = managerFilter ? 'Gestor selecionado' : 'Visão geral da carteira';
 
   async function saveTarget() {
     if (!canManageTarget) return;
@@ -190,6 +197,23 @@ export default function TrafficManagementPage() {
 
       {error ? <StateBlock variant="error" title={error.message} /> : null}
 
+      <section className={styles.managerHero} aria-label="Gestor de tráfego em revisão">
+        <div className={styles.managerHeroMain}>
+          <span className={styles.managerIcon}><TrendingUpIcon size={18} aria-hidden="true" /></span>
+          <div>
+            <span>{managerContext}</span>
+            <h1>{selectedManagerName}</h1>
+            <small>{selectedPeriodLabel} · prioridade por CPL, projeção de leads e ICP</small>
+          </div>
+        </div>
+        <div className={styles.managerHeroStats}>
+          <div><span>Carteira</span><strong>{fmtIntSafe(summaryPortfolio)}</strong></div>
+          <div><span>Projetados</span><strong>{fmtIntSafe(summaryProjected)}</strong></div>
+          <div><span>Atenção</span><strong>{fmtIntSafe(summaryCritical)}</strong></div>
+          <div><span>Resultado</span><strong className={managerResultPercent >= activeTarget ? styles.goodText : styles.dangerText}>{fmtPct(managerResultPercent)}</strong></div>
+        </div>
+      </section>
+
       <section className={styles.kpis}>
         <article><UsersIcon size={16} /><span>Carteira</span><strong>{fmtIntSafe(payload.summary?.portfolio)}</strong></article>
         <article><TargetIcon size={16} /><span>Projetados para meta</span><strong>{fmtIntSafe(payload.summary?.projectedHit)}</strong></article>
@@ -208,7 +232,13 @@ export default function TrafficManagementPage() {
         </header>
         <div className={styles.rankingRows}>
           {ranking.map((row) => (
-            <button key={row.name} type="button" className={styles.rankingRow} onClick={() => setManagerFilter(row.name)}>
+            <button
+              key={row.name}
+              type="button"
+              className={`${styles.rankingRow} ${managerFilter === row.name ? styles.rankingRowActive : ''}`.trim()}
+              onClick={() => setManagerFilter(row.name)}
+              aria-pressed={managerFilter === row.name}
+            >
               <strong className={styles.rankingPosition}>{String(row.position).padStart(2, '0')}</strong>
               <span className={styles.rankingIdentity}>
                 <strong>{compactName(row.name)}</strong>
@@ -231,7 +261,7 @@ export default function TrafficManagementPage() {
       <section className={styles.workspace}>
         <aside className={styles.clientList}>
           <header>
-            <span>Carteira</span>
+            <span>{managerFilter ? `Carteira de ${selectedManagerName}` : 'Carteira'}</span>
             <strong>{fmtIntSafe(visibleClients.length)}</strong>
           </header>
           <div className={styles.clientRows}>
