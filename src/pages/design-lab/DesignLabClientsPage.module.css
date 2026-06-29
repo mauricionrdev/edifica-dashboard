@@ -1806,3 +1806,56 @@
     justify-content: flex-start;
   }
 }
+
+/* v126 · Filtro histórico da tela de Churn */
+.churnMonthControl {
+  grid-area: churn;
+  justify-self: end;
+  height: 38px;
+  min-width: 174px;
+  padding: 0 12px;
+  border: 1px solid var(--bt-line-soft);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--bt-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.churnMonthControl select {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.churnMonthControl option {
+  background: #101113;
+  color: var(--bt-text);
+}
+
+.churnMonthControl:focus-within,
+.churnMonthControl:hover {
+  border-color: var(--bt-line);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+@media (min-width: 960px) {
+  .commandLayer:has(.churnMonthControl) {
+    grid-template-columns: minmax(260px, 420px) minmax(0, 1fr) auto auto;
+    grid-template-areas: "search filters churn page";
+  }
+}
+
+@media (max-width: 959px) {
+  .churnMonthControl {
+    justify-self: stretch;
+    width: 100%;
+  }
+}

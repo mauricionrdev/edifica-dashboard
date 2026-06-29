@@ -1497,3 +1497,8 @@
 .analysisHost > :global(div > div:not(:first-child)) {
   background: color-mix(in srgb, var(--text-primary) 1.2%, transparent) !important;
 }
+
+/* v126 · Campo obrigatório do histórico de Churn */
+.churnMonthField input[type="month"] {
+  color-scheme: dark;
+}

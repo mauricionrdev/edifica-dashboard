@@ -70,6 +70,26 @@ function normalizeMonthKey(value) {
   return '';
 }
 
+function resolveChurnPeriod(value, fallback = new Date()) {
+  const monthKey = normalizeMonthKey(value);
+  if (monthKey) {
+    const [year, month] = monthKey.split('-').map(Number);
+    return {
+      date: `${year}-${String(month).padStart(2, '0')}-01`,
+      month,
+      year,
+    };
+  }
+
+  const date = fallback instanceof Date ? fallback : new Date(fallback);
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  return {
+    date: toDateString(safeDate),
+    month: safeDate.getMonth() + 1,
+    year: safeDate.getFullYear(),
+  };
+}
+
 function normalizeFeeStepType(value) {
   return String(value || '').trim() === 'single' ? 'single' : 'recurring';
 }
@@ -318,6 +338,7 @@ function pickUpdatableFields(body) {
     'internalSeller',
     'contractType',
     'status',
+    'churnMonth',
     'avatarUrl',
     'fee',
     'metaLucro',
@@ -528,10 +549,11 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
 
     const id = uuid();
     const status = normalizeClientStatus(fields.status);
-    const churnTimestamp = status === 'churn' ? new Date() : null;
-    const churnDate = churnTimestamp ? toDateString(churnTimestamp) : null;
-    const churnMonth = churnTimestamp ? churnTimestamp.getMonth() + 1 : null;
-    const churnYear = churnTimestamp ? churnTimestamp.getFullYear() : null;
+    const churnPeriod = status === 'churn' ? resolveChurnPeriod(fields.churnMonth) : null;
+    const churnTimestamp = status === 'churn' ? new Date(`${churnPeriod.date}T00:00:00`) : null;
+    const churnDate = churnPeriod ? churnPeriod.date : null;
+    const churnMonth = churnPeriod ? churnPeriod.month : null;
+    const churnYear = churnPeriod ? churnPeriod.year : null;
 
     await withTransaction(async (conn) => {
       await conn.query(
@@ -710,15 +732,18 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
         params.push(new Date());
       }
 
-      // Transição para churn marca data, mês e ano; saída de churn limpa.
-      if (nextStatus === 'churn' && currentStatus !== 'churn') {
-        const churnTimestamp = new Date();
+      // Transição para churn exige/salva o período do churn; saída de churn limpa.
+      if (nextStatus === 'churn') {
+        const currentPeriod = current.churn_year && current.churn_month
+          ? `${current.churn_year}-${String(current.churn_month).padStart(2, '0')}`
+          : null;
+        const churnPeriod = resolveChurnPeriod(fields.churnMonth || currentPeriod || new Date());
         updates.push('churn_date = ?');
-        params.push(toDateString(churnTimestamp));
+        params.push(churnPeriod.date);
         updates.push('churn_month = ?');
-        params.push(churnTimestamp.getMonth() + 1);
+        params.push(churnPeriod.month);
         updates.push('churn_year = ?');
-        params.push(churnTimestamp.getFullYear());
+        params.push(churnPeriod.year);
       } else if (nextStatus !== 'churn' && currentStatus === 'churn') {
         updates.push('churn_date = ?');
         params.push(null);

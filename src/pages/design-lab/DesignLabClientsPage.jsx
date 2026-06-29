@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import {
@@ -26,7 +26,7 @@ import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
 import { getClientAvatar, subscribeAvatarChange } from '../../utils/avatarStorage.js';
 import { matchesAnySearch } from '../../utils/search.js';
 import StateBlock from '../../components/ui/StateBlock.jsx';
-import { ChartColumnIcon, ChevronDownIcon, ClipboardListIcon, PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
+import { CalendarIcon, ChartColumnIcon, ChevronDownIcon, ClipboardListIcon, PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
 import { BareBadge, BareButton } from '../../components/design-system/index.js';
 import DesignLabClientCreateModal from './DesignLabClientCreateModal.jsx';
 import DesignLabClientDetailModal from './DesignLabClientDetailModal.jsx';
@@ -39,7 +39,6 @@ const SCOPES = [
   { key: 'onboarding', label: 'Onboard' },
   { key: 'paused', label: 'Pausados' },
   { key: 'churn', label: 'Churn' },
-  { key: 'finished', label: 'Finalizados' },
   { key: 'expired', label: 'Vencidos' },
   { key: 'ending', label: 'Vencendo' },
   { key: 'tcv', label: 'TCV', tone: 'purple' },
@@ -47,6 +46,34 @@ const SCOPES = [
 ];
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
+
+const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
+const SHORT_MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric' });
+
+function currentMonthKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function monthKeyFromClientChurn(client) {
+  const year = Number(client?.churnYear || client?.churn_year);
+  const month = Number(client?.churnMonth || client?.churn_month);
+  if (year && month >= 1 && month <= 12) return `${year}-${String(month).padStart(2, '0')}`;
+  const raw = String(client?.churnDate || client?.churn_date || '').slice(0, 7);
+  return /^\d{4}-\d{2}$/.test(raw) ? raw : '';
+}
+
+function monthLabel(monthKey, formatter = MONTH_LABEL_FORMATTER) {
+  if (!/^\d{4}-\d{2}$/.test(String(monthKey || ''))) return 'Mês não informado';
+  const [year, month] = monthKey.split('-').map(Number);
+  const text = formatter.format(new Date(year, month - 1, 1));
+  return text.charAt(0).toUpperCase() + text.slice(1).replace('.', '');
+}
+
+function churnPeriodLabel(client) {
+  const key = monthKeyFromClientChurn(client);
+  return key ? monthLabel(key, SHORT_MONTH_LABEL_FORMATTER).replace(/\s+de\s+/i, '/') : 'Mês não informado';
+}
+
 
 const ANALYSIS_ITEMS = [
   { key: 'icp', tab: 'icp', label: 'Análise ICP', className: 'analysisIcp', icon: ChartColumnIcon },
@@ -102,7 +129,6 @@ function dueProgressValue(due) {
 function statusTone(client, today) {
   if (isExpired(client, today)) return 'danger';
   if (client?.status === CLIENT_STATUS.CHURN) return 'danger';
-  if (client?.status === CLIENT_STATUS.FINISHED) return 'muted';
   if (client?.status === CLIENT_STATUS.ONBOARDING) return 'info';
   if (client?.status === CLIENT_STATUS.RAMPAGE) return 'warning';
   if (client?.status === CLIENT_STATUS.PAUSED) return 'muted';
@@ -156,15 +182,17 @@ function clientSquadVisual(squads, client) {
 
 export default function DesignLabClientsPage() {
   const { clients, squads, userDirectory, loading, error, refreshClients, setPanelHeader } = useOutletContext();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const canCreate = canCreateClients(user);
-  const canOpenTemplate = hasPermission(user, 'project_template.view') || hasPermission(user, 'project_template.edit');
   const [query, setQuery] = useState(() => searchParams.get('search') || '');
-  const [scope, setScope] = useState('all');
+  const [scope, setScope] = useState(() => {
+    const initial = searchParams.get('scope') || 'all';
+    return SCOPES.some((item) => item.key === initial) ? initial : 'all';
+  });
+  const [churnMonth, setChurnMonth] = useState(() => searchParams.get('churnMonth') || currentMonthKey());
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [pageSize, setPageSize] = useState(20);
@@ -252,12 +280,27 @@ export default function DesignLabClientsPage() {
     onboarding: visibleBase.filter((client) => client.status === CLIENT_STATUS.ONBOARDING).length,
     paused: visibleBase.filter((client) => client.status === CLIENT_STATUS.PAUSED).length,
     churn: visibleBase.filter((client) => client.status === CLIENT_STATUS.CHURN).length,
-    finished: visibleBase.filter((client) => client.status === CLIENT_STATUS.FINISHED).length,
     expired: visibleBase.filter((client) => isExpired(client, today)).length,
     ending: visibleBase.filter((client) => isEndingSoon(client, 30, today)).length,
     tcv: visibleBase.filter(isTcvClient).length,
     internalCommercial: visibleBase.filter(hasInternalCommercial).length,
   }), [today, visibleBase]);
+
+  const churnMonthOptions = useMemo(() => {
+    const values = new Set([currentMonthKey(today)]);
+    visibleBase.forEach((client) => {
+      if (client.status !== CLIENT_STATUS.CHURN) return;
+      const key = monthKeyFromClientChurn(client);
+      if (key) values.add(key);
+    });
+    return [...values].sort((a, b) => b.localeCompare(a));
+  }, [today, visibleBase]);
+
+  useEffect(() => {
+    if (scope !== 'churn') return;
+    if (churnMonth) return;
+    setChurnMonth(churnMonthOptions[0] || currentMonthKey(today));
+  }, [churnMonth, churnMonthOptions, scope, today]);
 
   const filteredRows = useMemo(() => {
     const normalized = query.trim();
@@ -265,8 +308,7 @@ export default function DesignLabClientsPage() {
       if (scope === 'active') return isActiveClientStatus(client.status) && !isExpired(client, today);
       if (scope === 'onboarding') return client.status === CLIENT_STATUS.ONBOARDING;
       if (scope === 'paused') return client.status === CLIENT_STATUS.PAUSED;
-      if (scope === 'churn') return client.status === CLIENT_STATUS.CHURN;
-      if (scope === 'finished') return client.status === CLIENT_STATUS.FINISHED;
+      if (scope === 'churn') return client.status === CLIENT_STATUS.CHURN && (!churnMonth || monthKeyFromClientChurn(client) === churnMonth);
       if (scope === 'expired') return isExpired(client, today);
       if (scope === 'ending') return isEndingSoon(client, 30, today);
       if (scope === 'tcv') return isTcvClient(client);
@@ -294,7 +336,7 @@ export default function DesignLabClientsPage() {
       if (byCreated !== 0) return byCreated;
       return String(a?.name || '').localeCompare(String(b?.name || ''), 'pt-BR');
     });
-  }, [query, scope, today, visibleBase]);
+  }, [churnMonth, query, scope, today, visibleBase]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -315,13 +357,15 @@ export default function DesignLabClientsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [query, scope, pageSize]);
+  }, [churnMonth, query, scope, pageSize]);
 
   useEffect(() => {
     const next = new URLSearchParams();
     if (query.trim()) next.set('search', query.trim());
+    if (scope !== 'all') next.set('scope', scope);
+    if (scope === 'churn' && churnMonth) next.set('churnMonth', churnMonth);
     setSearchParams(next, { replace: true });
-  }, [query, setSearchParams]);
+  }, [churnMonth, query, scope, setSearchParams]);
 
   useEffect(() => {
     const title = (
@@ -332,32 +376,15 @@ export default function DesignLabClientsPage() {
       </>
     );
 
-    const actions = (
-      <div className={styles.headerActions}>
-        {canOpenTemplate ? (
-          <BareButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => navigate('/modelo-oficial')}
-            aria-label="Editar modelo padrão de projeto"
-            title="Editar modelo padrão de projeto"
-          >
-            <ClipboardListIcon size={14} aria-hidden="true" />
-            Modelo padrão
-          </BareButton>
-        ) : null}
-        {canCreate ? (
-          <BareButton type="button" variant="primary" size="sm" onClick={() => setModalOpen(true)}>
-            <PlusIcon size={14} aria-hidden="true" />
-            Novo cliente
-          </BareButton>
-        ) : null}
-      </div>
-    );
+    const actions = canCreate ? (
+      <BareButton type="button" variant="primary" size="sm" onClick={() => setModalOpen(true)}>
+        <PlusIcon size={14} aria-hidden="true" />
+        Novo cliente
+      </BareButton>
+    ) : null;
 
     setPanelHeader({ title, actions });
-  }, [canCreate, canOpenTemplate, counts.active, counts.all, navigate, setPanelHeader]);
+  }, [canCreate, counts.active, counts.all, setPanelHeader]);
 
   const openDetail = useCallback((id, tab = 'overview') => {
     setDetailId(id);
@@ -431,6 +458,9 @@ export default function DesignLabClientsPage() {
                     className={`${styles.filterOption} ${active ? styles.filterOptionActive : ''} ${item.tone === 'purple' ? styles.filterOptionPurple : ''}`.trim()}
                     onClick={() => {
                       setScope(item.key);
+                      if (item.key === 'churn' && !churnMonth) {
+                        setChurnMonth(churnMonthOptions[0] || currentMonthKey(today));
+                      }
                       setFilterOpen(false);
                     }}
                   >
@@ -442,6 +472,21 @@ export default function DesignLabClientsPage() {
             </div>
           ) : null}
         </div>
+
+        {scope === 'churn' ? (
+          <label className={styles.churnMonthControl}>
+            <CalendarIcon size={14} aria-hidden="true" />
+            <select
+              value={churnMonth}
+              onChange={(event) => setChurnMonth(event.target.value)}
+              aria-label="Mês do churn"
+            >
+              {churnMonthOptions.map((option) => (
+                <option key={option} value={option}>{monthLabel(option)}</option>
+              ))}
+            </select>
+          </label>
+        ) : null}
 
         <div className={styles.pageSizeDropdown} ref={pageSizeRef}>
           <button
@@ -575,6 +620,9 @@ export default function DesignLabClientsPage() {
                       </BareBadge>
                     ) : null}
                     <BareBadge tone={listStatusTone(client, today)}>{status}</BareBadge>
+                    {client.status === CLIENT_STATUS.CHURN ? (
+                      <BareBadge tone="muted">{churnPeriodLabel(client)}</BareBadge>
+                    ) : null}
                   </div>
                 </article>
               );

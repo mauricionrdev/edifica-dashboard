@@ -4,7 +4,7 @@ import { deleteClient, updateClient, updateClientFeeSteps } from '../../api/clie
 import { useToast } from '../../context/ToastContext.jsx';
 import { clientInitials, statusLabel } from '../../utils/clientHelpers.js';
 import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
-import { getClientAvatar, getSquadAvatar, getUserAvatar, readAvatarFile, saveClientAvatar } from '../../utils/avatarStorage.js';
+import { getClientAvatar, readAvatarFile, saveClientAvatar } from '../../utils/avatarStorage.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
 import { sortFeeSteps } from '../../utils/feeSchedule.js';
@@ -16,7 +16,6 @@ import {
   SaveIcon,
   TrashIcon,
 } from '../../components/ui/Icons.jsx';
-import { Select } from '../../components/ui/index.js';
 import AnalysisTab from '../../components/clients/AnalysisTab.jsx';
 import ClientBookTab from '../../components/clients/ClientBookTab.jsx';
 import ClientProjectTab from '../../components/clients/ClientProjectTab.jsx';
@@ -25,6 +24,19 @@ import ClientTasksTab from '../../components/clients/ClientTasksTab.jsx';
 import styles from './DesignLabClientDetailModal.module.css';
 
 const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
+
+function currentMonthKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function clientChurnMonthKey(client) {
+  const year = Number(client?.churnYear || client?.churn_year);
+  const month = Number(client?.churnMonth || client?.churn_month);
+  if (year && month >= 1 && month <= 12) return `${year}-${String(month).padStart(2, '0')}`;
+  const raw = String(client?.churnDate || client?.churn_date || '').slice(0, 7);
+  return /^\d{4}-\d{2}$/.test(raw) ? raw : '';
+}
+
 
 const PRIMARY_TABS = [
   { key: 'overview', label: 'Visão geral' },
@@ -51,6 +63,7 @@ function buildForm(client) {
     gdvName: client?.gdvName || '',
     gestor: client?.gestor || '',
     status: normalizeClientStatus(client?.status || 'active'),
+    churnMonth: clientChurnMonthKey(client),
     fee: client?.fee != null ? formatLocaleNumber(client.fee, '') : '',
     metaLucro: client?.metaLucro != null ? formatLocaleNumber(client.metaLucro, '') : '',
     startDate: client?.startDate || '',
@@ -68,6 +81,7 @@ function toPayload(form) {
     gdvName: form.gdvName.trim(),
     gestor: form.gestor.trim(),
     status: normalizeClientStatus(form.status),
+    churnMonth: normalizeClientStatus(form.status) === 'churn' ? form.churnMonth : '',
     fee: parseLocaleNumber(form.fee, 0),
     metaLucro: parseLocaleNumber(form.metaLucro, 0),
     startDate: form.startDate || null,
@@ -88,7 +102,7 @@ function roleSelectOptions(rows, current) {
 function statusTone(status) {
   if (status === 'onboarding') return 'info';
   if (status === 'churn') return 'danger';
-  if (status === 'paused' || status === 'rampage' || status === 'rampagem_comercial' || status === 'finished') return 'muted';
+  if (status === 'paused' || status === 'rampage') return 'muted';
   return 'success';
 }
 
@@ -419,6 +433,12 @@ export default function DesignLabClientDetailModal({
     setForm((previous) => {
       const next = { ...previous, [key]: value };
       if (key === 'internalCommercial' && value !== 'yes') next.internalSeller = '';
+      if (key === 'status' && normalizeClientStatus(value) === 'churn' && !next.churnMonth) {
+        next.churnMonth = currentMonthKey();
+      }
+      if (key === 'status' && normalizeClientStatus(value) !== 'churn') {
+        next.churnMonth = '';
+      }
       return next;
     });
   }
@@ -459,6 +479,10 @@ export default function DesignLabClientDetailModal({
     if (!canEditClient || saving) return;
     if (!form.name.trim()) {
       setError('Informe o nome do cliente.');
+      return;
+    }
+    if (normalizeClientStatus(form.status) === 'churn' && !form.churnMonth) {
+      setError('Selecione o mês do churn.');
       return;
     }
 
@@ -583,71 +607,65 @@ export default function DesignLabClientDetailModal({
                     </label>
 
                     <div className={styles.mainFieldsGrid}>
-                      <Select
-                        label="Gestor da Conta"
-                        className={styles.modalSelect}
-                        type="user"
-                        value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
-                        onChange={(event) => setField('gestor', gestorRows.find((entry) => entry.id === event.target.value)?.name || '')}
-                        disabled={!canEditClient || saving}
-                        placeholder="Sem gestor"
-                      >
-                        <option value="">Sem gestor</option>
-                        {gestorRows.map((entry) => (
-                          <option key={entry.id} value={entry.id} data-avatar={getUserAvatar(entry)} data-name={entry.name}>{entry.name}</option>
-                        ))}
-                      </Select>
+                      <label className={styles.field}>
+                        <span>Gestor da Conta</span>
+                        <select
+                          value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+                          onChange={(event) => setField('gestor', gestorRows.find((entry) => entry.id === event.target.value)?.name || '')}
+                          disabled={!canEditClient || saving}
+                        >
+                          <option value="">Sem gestor</option>
+                          {gestorRows.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
+                        </select>
+                      </label>
 
-                      <Select
-                        label="Squad"
-                        className={styles.modalSelect}
-                        type="squad"
-                        value={form.squadId}
-                        onChange={(event) => setField('squadId', event.target.value)}
-                        disabled={!canEditClient || saving}
-                        placeholder="Sem squad"
-                      >
-                        <option value="">Sem squad</option>
-                        {squads.map((squad) => (
-                          <option key={squad.id} value={squad.id} data-avatar={getSquadAvatar(squad)} data-name={squad.name}>{squad.name}</option>
-                        ))}
-                      </Select>
+                      <label className={styles.field}>
+                        <span>Squad</span>
+                        <select value={form.squadId} onChange={(event) => setField('squadId', event.target.value)} disabled={!canEditClient || saving}>
+                          <option value="">Sem squad</option>
+                          {squads.map((squad) => <option key={squad.id} value={squad.id}>{squad.name}</option>)}
+                        </select>
+                      </label>
 
-                      <Select
-                        label="Gestor de Vendas"
-                        className={styles.modalSelect}
-                        type="user"
-                        value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
-                        onChange={(event) => setField('gdvName', gdvRows.find((entry) => entry.id === event.target.value)?.name || '')}
-                        disabled={!canEditClient || saving}
-                        placeholder="Sem GDV"
-                      >
-                        <option value="">Sem GDV</option>
-                        {gdvRows.map((entry) => (
-                          <option key={entry.id} value={entry.id} data-avatar={getUserAvatar(entry)} data-name={entry.name}>{entry.name}</option>
-                        ))}
-                      </Select>
+                      <label className={styles.field}>
+                        <span>Gestor de Vendas</span>
+                        <select
+                          value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+                          onChange={(event) => setField('gdvName', gdvRows.find((entry) => entry.id === event.target.value)?.name || '')}
+                          disabled={!canEditClient || saving}
+                        >
+                          <option value="">Sem GDV</option>
+                          {gdvRows.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
+                        </select>
+                      </label>
 
-                      <Select
-                        label="Status"
-                        className={styles.modalSelect}
-                        value={form.status}
-                        onChange={(event) => setField('status', event.target.value)}
-                        disabled={!canEditClient || saving}
-                      >
-                        {CLIENT_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                      </Select>
+                      <label className={styles.field}>
+                        <span>Status</span>
+                        <select value={form.status} onChange={(event) => setField('status', event.target.value)} disabled={!canEditClient || saving}>
+                          {CLIENT_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                        </select>
+                      </label>
 
-                      <Select
-                        label="Comercial Interno"
-                        className={styles.modalSelect}
-                        value={form.internalCommercial}
-                        onChange={(event) => setField('internalCommercial', event.target.value)}
-                        disabled={!canEditClient || saving}
-                      >
-                        <option value="no">Não possui</option>
-                        <option value="yes">Possui</option>
-                      </Select>
+                      {normalizeClientStatus(form.status) === 'churn' ? (
+                        <label className={`${styles.field} ${styles.churnMonthField || ''}`.trim()}>
+                          <span>Mês do churn</span>
+                          <input
+                            type="month"
+                            value={form.churnMonth}
+                            onChange={(event) => setField('churnMonth', event.target.value)}
+                            disabled={!canEditClient || saving}
+                            required
+                          />
+                        </label>
+                      ) : null}
+
+                      <label className={styles.field}>
+                        <span>Comercial Interno</span>
+                        <select value={form.internalCommercial} onChange={(event) => setField('internalCommercial', event.target.value)} disabled={!canEditClient || saving}>
+                          <option value="no">Não possui</option>
+                          <option value="yes">Possui</option>
+                        </select>
+                      </label>
 
                       {form.internalCommercial === 'yes' ? (
                         <label className={styles.field}>
@@ -666,16 +684,13 @@ export default function DesignLabClientDetailModal({
               <section className={styles.contractCard}>
                 <div className={styles.sectionKicker}>Contrato</div>
                 <div className={styles.contractGrid}>
-                  <Select
-                    label="Tipo de contrato"
-                    className={styles.modalSelect}
-                    value={form.contractType}
-                    onChange={(event) => setField('contractType', event.target.value)}
-                    disabled={!canEditClient || saving}
-                  >
-                    <option value="recurring">Recorrente</option>
-                    <option value="tcv">TCV</option>
-                  </Select>
+                  <label className={styles.field}>
+                    <span>Tipo de contrato</span>
+                    <select value={form.contractType} onChange={(event) => setField('contractType', event.target.value)} disabled={!canEditClient || saving}>
+                      <option value="recurring">Recorrente</option>
+                      <option value="tcv">TCV</option>
+                    </select>
+                  </label>
                   <label className={styles.field}>
                     <span>Início</span>
                     <input type="date" value={form.startDate} onChange={(event) => setField('startDate', event.target.value)} disabled={!canEditClient || saving} />
