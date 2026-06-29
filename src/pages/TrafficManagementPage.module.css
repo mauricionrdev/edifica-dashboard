@@ -561,3 +561,188 @@
     justify-items: start;
   }
 }
+
+/* v118 · Gestão de Tráfego: refinamento visual no padrão operacional */
+.page {
+  gap: 12px;
+  padding: 14px 20px 24px;
+  background: var(--bg-app);
+}
+
+.commandBar {
+  gap: 14px;
+  padding: 0;
+}
+
+.searchBox {
+  width: min(420px, 100%);
+  height: 42px;
+  background: color-mix(in srgb, var(--text-primary) 1.8%, transparent);
+}
+
+.kpis {
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--text-primary) 1.2%, transparent), transparent 38%),
+    var(--bg-canvas);
+}
+
+.kpis article {
+  min-height: 74px;
+  padding: 13px 18px;
+  row-gap: 4px;
+}
+
+.kpis span,
+.rankingPanel header span,
+.clientList header span {
+  color: color-mix(in srgb, var(--text-secondary) 86%, var(--accent));
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+}
+
+.kpis strong {
+  font-size: 25px;
+}
+
+.rankingPanel {
+  border-radius: 18px;
+  background: var(--bg-canvas);
+}
+
+.rankingPanel header {
+  min-height: 58px;
+  padding: 13px 18px;
+}
+
+.rankingPanel h2 {
+  margin-top: 2px;
+  font-size: 20px;
+}
+
+.targetEditor input,
+.targetEditor button {
+  height: 34px;
+}
+
+.rankingRow {
+  min-height: 58px;
+  grid-template-columns: 48px minmax(0, 1fr) minmax(150px, 190px) minmax(112px, 132px);
+  padding: 0 18px;
+}
+
+.rankingPosition {
+  font-size: 20px;
+}
+
+.rankingIdentity,
+.rankingGoal,
+.rankingResult {
+  gap: 3px;
+}
+
+.rankingIdentity small,
+.rankingGoal small {
+  color: var(--text-tertiary);
+}
+
+.workspace {
+  grid-template-columns: minmax(300px, 376px) minmax(0, 1fr);
+  min-height: 0;
+  border-radius: 20px;
+  background: var(--bg-canvas);
+}
+
+.clientList header {
+  height: 48px;
+  padding: 0 16px;
+}
+
+.clientRows {
+  max-height: min(520px, calc(100vh - 410px));
+}
+
+.clientRow {
+  min-height: 62px;
+  grid-template-columns: 38px minmax(0, 1fr) 24px;
+  gap: 11px;
+  padding: 0 14px;
+}
+
+.clientRowActive {
+  background: color-mix(in srgb, var(--accent) 3%, transparent);
+}
+
+.clientRow em {
+  min-width: 23px;
+  height: 23px;
+  font-size: 11px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+}
+
+.detailPanel {
+  min-height: 492px;
+  padding: 22px 24px;
+}
+
+.detailPanel > header {
+  margin-bottom: 18px;
+}
+
+.detailTitle .avatar {
+  width: 48px;
+  height: 48px;
+}
+
+.detailTitle h2 {
+  font-size: clamp(22px, 1.7vw, 27px);
+}
+
+.priorityDanger,
+.priorityGood {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.detailGrid {
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 1.3%, transparent), transparent 70%),
+    transparent;
+}
+
+.metricLine {
+  min-height: 72px;
+  padding: 13px 16px;
+  background: transparent;
+}
+
+.metricLine strong {
+  font-size: 20px;
+}
+
+.tags {
+  margin-top: 16px;
+}
+
+.tag {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+@media (min-width: 1380px) {
+  .page {
+    padding-right: 26px;
+    padding-left: 26px;
+  }
+
+  .workspace {
+    grid-template-columns: 390px minmax(0, 1fr);
+  }
+}
