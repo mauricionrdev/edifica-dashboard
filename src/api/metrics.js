@@ -47,6 +47,16 @@ export function getContractsHistory({ months, date, squadId, clientId } = {}) {
 
 
 
+
+export function getRetentionMetrics({ month, date, squadId } = {}) {
+  const params = new URLSearchParams();
+  if (month) params.set('month', month);
+  if (date) params.set('date', date);
+  if (squadId) params.set('squadId', squadId);
+  const qs = params.toString();
+  return api.get(`/metrics/retention${qs ? `?${qs}` : ''}`);
+}
+
 export function getTrafficManagement({ date, gestor } = {}) {
   const params = new URLSearchParams();
   if (date) params.set('date', date);

@@ -1,0 +1,254 @@
+.page {
+  min-height: 0;
+  padding: 14px 18px 22px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.summaryPanel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--workspace-panel-bg);
+  overflow: hidden;
+}
+
+.summaryMetric {
+  min-width: 0;
+  padding: 18px 20px;
+  border-right: 1px solid var(--line-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.summaryMetric:last-child {
+  border-right: 0;
+}
+
+.summaryMetric span,
+.squadMetric span,
+.squadDistributionTitle span {
+  color: var(--text-accent);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.summaryMetric strong {
+  color: var(--text-primary);
+  font-size: clamp(25px, 2vw, 34px);
+  line-height: 1;
+  font-weight: 720;
+  letter-spacing: -0.055em;
+}
+
+.summaryMetric em,
+.squadMetric em,
+.squadHeader p,
+.distributionRow em {
+  color: var(--text-tertiary);
+  font-style: normal;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 560;
+}
+
+.summaryMetric_risk strong {
+  color: var(--danger);
+}
+
+.squadsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.squadBlock {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--workspace-panel-bg);
+  overflow: hidden;
+}
+
+.squadHeader {
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.squadAvatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-panel);
+  color: var(--text-accent);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.squadAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.squadHeader h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.squadHeader p {
+  margin: 5px 0 0;
+}
+
+.squadMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.squadMetric {
+  min-width: 0;
+  padding: 17px 20px;
+  border-right: 1px solid var(--line-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.squadMetric:last-child {
+  border-right: 0;
+}
+
+.squadMetric strong {
+  color: var(--text-primary);
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 720;
+  letter-spacing: -0.045em;
+}
+
+.squadDistributionArea {
+  padding: 18px 20px 20px;
+}
+
+.squadDistributionTitle {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.squadDistributionTitle strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.distribution {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.distributionRow {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.distributionTopline {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.distributionTopline span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 650;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.distributionTopline strong {
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.distributionTrack {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  overflow: hidden;
+}
+
+.distributionTrack span {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-amber);
+  display: block;
+}
+
+.state {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--workspace-panel-bg);
+  color: var(--text-tertiary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 1100px) {
+  .summaryPanel,
+  .squadMetrics,
+  .distribution {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryMetric,
+  .squadMetric {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .summaryMetric:last-child,
+  .squadMetric:last-child {
+    border-bottom: 0;
+  }
+}

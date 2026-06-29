@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import ClientDetailDrawer from '../components/clients/ClientDetailDrawer.jsx';
 import Select from '../components/ui/Select.jsx';
 import {
@@ -554,6 +554,7 @@ export default function CentralPage() {
     setPanelHeader,
   } = useOutletContext();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const now = useMemo(() => new Date(), []);
   const periodOptions = useMemo(buildPeriodOptions, []);
@@ -621,9 +622,9 @@ export default function CentralPage() {
     () =>
       visibleClients.filter((client) => {
         const start = parseClientDate(client.startDate);
-        return start && start.getFullYear() === now.getFullYear() && start.getMonth() === now.getMonth();
+        return start && start.getFullYear() === period.y && start.getMonth() === period.m;
       }).length,
-    [now, visibleClients]
+    [period.m, period.y, visibleClients]
   );
 
   const entryColumns = useMemo(
@@ -945,11 +946,16 @@ export default function CentralPage() {
           <section className={styles.goalsPanel} aria-label="Metas operacionais do dashboard">
             <header className={styles.goalsPanelHeader}>
               <span>Metas operacionais</span>
-              {canEditDashboardTargets ? (
-                <button type="button" className={styles.goalSaveButton} onClick={handleSaveDashboardTargets} disabled={targetsSaving}>
-                  {targetsSaving ? 'Salvando…' : 'Salvar metas'}
+              <div className={styles.goalsPanelActions}>
+                <button type="button" className={styles.goalNavButton} onClick={() => navigate('/dashboard/indicadores-por-squad')}>
+                  Indicadores por Squad
                 </button>
-              ) : null}
+                {canEditDashboardTargets ? (
+                  <button type="button" className={styles.goalSaveButton} onClick={handleSaveDashboardTargets} disabled={targetsSaving}>
+                    {targetsSaving ? 'Salvando…' : 'Salvar metas'}
+                  </button>
+                ) : null}
+              </div>
             </header>
 
             <div className={styles.goalsGrid}>

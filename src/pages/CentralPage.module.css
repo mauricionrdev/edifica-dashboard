@@ -1730,3 +1730,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v123 · Atalho para dashboard de retenção por squad */
+.goalsPanelActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.goalNavButton {
+  min-height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.018);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.goalNavButton:hover {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.032);
+  color: var(--text-primary);
+}

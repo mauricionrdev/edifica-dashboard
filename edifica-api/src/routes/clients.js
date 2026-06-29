@@ -253,6 +253,15 @@ async function ensureResponsibleSchema() {
       if (statusColumn && !String(statusColumn.Type || '').includes('finished')) {
         await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','rampagem_comercial','paused','churn','finished') NOT NULL DEFAULT 'active'");
       }
+      if (!clientNames.has('churn_month')) {
+        await query('ALTER TABLE clients ADD COLUMN churn_month TINYINT NULL AFTER churn_date');
+      }
+      if (!clientNames.has('churn_year')) {
+        await query('ALTER TABLE clients ADD COLUMN churn_year SMALLINT NULL AFTER churn_month');
+      }
+      if (!clientNames.has('status_changed_at')) {
+        await query('ALTER TABLE clients ADD COLUMN status_changed_at DATETIME NULL AFTER churn_year');
+      }
     })().catch((err) => {
       responsibleSchemaPromise = null;
       throw err;
@@ -286,6 +295,9 @@ function serializeClient(row) {
     startDate: toDateString(row.start_date),
     endDate: toDateString(row.end_date),
     churnDate: toDateString(row.churn_date),
+    churnMonth: row.churn_month ? Number(row.churn_month) : null,
+    churnYear: row.churn_year ? Number(row.churn_year) : null,
+    statusChangedAt: row.status_changed_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     analysisCounts: {
@@ -516,14 +528,17 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
 
     const id = uuid();
     const status = normalizeClientStatus(fields.status);
-    const churnDate = status === 'churn' ? toDateString(new Date()) : null;
+    const churnTimestamp = status === 'churn' ? new Date() : null;
+    const churnDate = churnTimestamp ? toDateString(churnTimestamp) : null;
+    const churnMonth = churnTimestamp ? churnTimestamp.getMonth() + 1 : null;
+    const churnYear = churnTimestamp ? churnTimestamp.getFullYear() : null;
 
     await withTransaction(async (conn) => {
       await conn.query(
         `INSERT INTO clients (
            id, name, avatar_data_url, squad_id, gdv_name, gestor, internal_commercial_enabled, internal_seller, status, goal_status,
-           contract_type, fee, meta_lucro, start_date, end_date, churn_date
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           contract_type, fee, meta_lucro, start_date, end_date, churn_date, churn_month, churn_year, status_changed_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           name,
@@ -541,6 +556,9 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
           fromClientDate(fields.startDate),
           fromClientDate(fields.endDate),
           churnDate,
+          churnMonth,
+          churnYear,
+          churnTimestamp,
         ]
       );
     });
@@ -683,15 +701,30 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
     }
     if (fields.status !== undefined) {
       const nextStatus = normalizeClientStatus(fields.status);
+      const currentStatus = normalizeClientStatus(current.status);
       updates.push('status = ?');
       params.push(nextStatus);
 
-      // Transição para churn marca churn_date; saída de churn limpa.
-      if (nextStatus === 'churn' && current.status !== 'churn') {
+      if (nextStatus !== currentStatus) {
+        updates.push('status_changed_at = ?');
+        params.push(new Date());
+      }
+
+      // Transição para churn marca data, mês e ano; saída de churn limpa.
+      if (nextStatus === 'churn' && currentStatus !== 'churn') {
+        const churnTimestamp = new Date();
         updates.push('churn_date = ?');
-        params.push(toDateString(new Date()));
-      } else if (nextStatus !== 'churn' && current.status === 'churn') {
+        params.push(toDateString(churnTimestamp));
+        updates.push('churn_month = ?');
+        params.push(churnTimestamp.getMonth() + 1);
+        updates.push('churn_year = ?');
+        params.push(churnTimestamp.getFullYear());
+      } else if (nextStatus !== 'churn' && currentStatus === 'churn') {
         updates.push('churn_date = ?');
+        params.push(null);
+        updates.push('churn_month = ?');
+        params.push(null);
+        updates.push('churn_year = ?');
         params.push(null);
       }
     }

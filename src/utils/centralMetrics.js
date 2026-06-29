@@ -287,6 +287,7 @@ export function computeCentralMetrics(clients, year, month0) {
   const churnedInPeriod = all.filter(
     (c) => normalizeClientStatus(c.status) === CLIENT_STATUS.CHURN && dateInMonth(c.churnDate, year, month0)
   );
+  const portfolioChurnedInPeriod = churnedInPeriod.filter((client) => activeAt(client, start));
   const finishedInPeriod = all.filter(
     (c) => normalizeClientStatus(c.status) === CLIENT_STATUS.FINISHED && dateInMonth(c.finishedDate || c.endDate, year, month0)
   );
@@ -298,7 +299,7 @@ export function computeCentralMetrics(clients, year, month0) {
 
   const churnRate =
     activeAtStart.length > 0
-      ? (churnedInPeriod.length / activeAtStart.length) * 100
+      ? (portfolioChurnedInPeriod.length / activeAtStart.length) * 100
       : 0;
 
   return {
@@ -310,6 +311,8 @@ export function computeCentralMetrics(clients, year, month0) {
     revenueNew,
     newCnt: newInPeriod.length,
     revLost,
+    churnBaseCnt: activeAtStart.length,
+    portfolioChurnedPeriodCnt: portfolioChurnedInPeriod.length,
     churnedPeriodCnt: churnedInPeriod.length,
     finishedPeriodCnt: finishedInPeriod.length,
     lostPeriodCnt: lostInPeriod.length,

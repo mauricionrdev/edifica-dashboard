@@ -1,5 +1,10 @@
 const ROUTE_META = [
   {
+    match: (pathname) => pathname.startsWith('/dashboard/indicadores-por-squad'),
+    title: 'Indicadores por Squad',
+    crumb: 'Indicadores por Squad',
+  },
+  {
     match: (pathname) => pathname === '/',
     title: 'Dashboard',
     crumb: 'Dashboard',

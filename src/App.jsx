@@ -10,6 +10,7 @@ import ProtectedRoute from './routes/ProtectedRoute.jsx';
 import AppShell from './components/shell/AppShell.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import CentralPage from './pages/CentralPage.jsx';
+import RetentionSquadDashboardPage from './pages/RetentionSquadDashboardPage.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
 import ModeloOficialPage from './pages/ModeloOficialPage.jsx';
 import GdvPage from './pages/GdvPage.jsx';
@@ -57,6 +58,10 @@ export default function App() {
               <Route
                 index
                 element={<RequirePermissionRoute permission="central.view"><CentralPage /></RequirePermissionRoute>}
+              />
+              <Route
+                path="dashboard/indicadores-por-squad"
+                element={<RequirePermissionRoute permission="central.view"><RetentionSquadDashboardPage /></RequirePermissionRoute>}
               />
               <Route
                 path="clientes"

@@ -1702,6 +1702,217 @@ router.put('/traffic-ranking/settings', requirePermission('ranking.view.all'), a
   }
 });
 
+
+
+// --------------------------------------------------------------
+//  Indicadores de retenção
+// --------------------------------------------------------------
+const RETENTION_BUCKETS = [
+  { key: 'd0_30', label: 'Até 30 dias', min: 0, max: 30 },
+  { key: 'd31_90', label: '31 a 90 dias', min: 31, max: 90 },
+  { key: 'd91_180', label: '91 a 180 dias', min: 91, max: 180 },
+  { key: 'd181_365', label: '181 a 365 dias', min: 181, max: 365 },
+  { key: 'd365_plus', label: 'Acima de 365 dias', min: 366, max: Infinity },
+];
+
+function normalizeRetentionMonth(value) {
+  const raw = String(value || '').trim();
+  if (/^\d{4}-(0[1-9]|1[0-2])$/.test(raw)) return raw;
+  if (/^\d{4}-(0[1-9]|1[0-2])-\d{2}/.test(raw)) return raw.slice(0, 7);
+  return monthPrefixFromDate(new Date());
+}
+
+function sqlDate(value) {
+  const date = parseClientDate(value);
+  return date ? date.toISOString().slice(0, 10) : null;
+}
+
+function clientEntryDate(row) {
+  return parseClientDate(row?.start_date || row?.created_at);
+}
+
+function clientChurnDate(row) {
+  return parseClientDate(row?.churn_date);
+}
+
+function daysBetween(start, end) {
+  if (!start || !end) return null;
+  return Math.max(0, Math.round((end.getTime() - start.getTime()) / 86400000));
+}
+
+function monthsBetweenApprox(start, end) {
+  const days = daysBetween(start, end);
+  if (!Number.isFinite(days)) return 0;
+  return Number((days / 30.4375).toFixed(1));
+}
+
+function dateBetween(date, start, end) {
+  return Boolean(date && date >= start && date <= end);
+}
+
+function isRetentionBaseClient(row, periodStart) {
+  const entry = clientEntryDate(row);
+  if (!entry || entry > periodStart) return false;
+
+  const status = normalizedClientStatus(row?.status);
+  const churn = clientChurnDate(row);
+  if (churn && churn < periodStart) return false;
+
+  if (status === 'churn') return Boolean(churn && churn >= periodStart);
+  if (status === 'finished' || status === 'onboarding' || status === 'paused') return false;
+  return status === 'active' || status === 'rampagem_comercial';
+}
+
+function bucketForTenure(days) {
+  const numeric = Number(days);
+  if (!Number.isFinite(numeric)) return RETENTION_BUCKETS[0];
+  return RETENTION_BUCKETS.find((bucket) => numeric >= bucket.min && numeric <= bucket.max) || RETENTION_BUCKETS[RETENTION_BUCKETS.length - 1];
+}
+
+function blankDistribution() {
+  return RETENTION_BUCKETS.map((bucket) => ({ ...bucket, count: 0, percent: 0 }));
+}
+
+function calculateRetentionStats(clients = [], monthPrefix) {
+  const bounds = monthBoundsFromPrefix(monthPrefix);
+  if (!bounds) {
+    return {
+      portfolioStart: 0,
+      portfolioChurn: 0,
+      portfolioChurnRate: 0,
+      newClients: 0,
+      earlyChurn: 0,
+      earlyChurnRate: 0,
+      ltvAverageMonths: 0,
+      churnTotal: 0,
+      distribution: blankDistribution(),
+    };
+  }
+
+  const { start, end } = bounds;
+  const portfolioStartRows = clients.filter((client) => isRetentionBaseClient(client, start));
+  const churnsInPeriod = clients.filter((client) => dateBetween(clientChurnDate(client), start, end));
+  const portfolioChurnRows = churnsInPeriod.filter((client) => isRetentionBaseClient(client, start));
+  const newRows = clients.filter((client) => dateBetween(clientEntryDate(client), start, end));
+  const earlyRows = newRows.filter((client) => {
+    const entry = clientEntryDate(client);
+    const churn = clientChurnDate(client);
+    const tenure = daysBetween(entry, churn);
+    return Number.isFinite(tenure) && tenure <= 30;
+  });
+
+  const distribution = blankDistribution();
+  churnsInPeriod.forEach((client) => {
+    const tenure = daysBetween(clientEntryDate(client), clientChurnDate(client));
+    const bucket = bucketForTenure(tenure);
+    const item = distribution.find((entry) => entry.key === bucket.key);
+    if (item) item.count += 1;
+  });
+  distribution.forEach((item) => {
+    item.percent = churnsInPeriod.length > 0 ? (item.count / churnsInPeriod.length) * 100 : 0;
+  });
+
+  const totalLtvMonths = churnsInPeriod.reduce((sum, client) => (
+    sum + monthsBetweenApprox(clientEntryDate(client), clientChurnDate(client))
+  ), 0);
+
+  return {
+    portfolioStart: portfolioStartRows.length,
+    portfolioChurn: portfolioChurnRows.length,
+    portfolioChurnRate: portfolioStartRows.length > 0 ? (portfolioChurnRows.length / portfolioStartRows.length) * 100 : 0,
+    newClients: newRows.length,
+    earlyChurn: earlyRows.length,
+    earlyChurnRate: newRows.length > 0 ? (earlyRows.length / newRows.length) * 100 : 0,
+    ltvAverageMonths: churnsInPeriod.length > 0 ? totalLtvMonths / churnsInPeriod.length : 0,
+    churnTotal: churnsInPeriod.length,
+    distribution,
+  };
+}
+
+function serializeRetentionSquad(squad, clients, monthPrefix) {
+  const stats = calculateRetentionStats(clients, monthPrefix);
+  return {
+    squadId: squad?.id || 'no-squad',
+    squadName: squad?.name || 'Sem squad',
+    logoUrl: squad?.logo_data_url || '',
+    ...stats,
+  };
+}
+
+
+router.get('/retention', requirePermission('central.view'), async (req, res, next) => {
+  try {
+    if (req.emptyWorkspaceView) {
+      const monthPrefix = normalizeRetentionMonth(req.query?.month || req.query?.date);
+      return res.json({ monthPrefix, summary: calculateRetentionStats([], monthPrefix), squads: [] });
+    }
+
+    const monthPrefix = normalizeRetentionMonth(req.query?.month || req.query?.date);
+    const selectedSquadId = String(req.query?.squadId || '').trim();
+    const squadScope = getAllowedSquads(req.user, 'metrics.view.all');
+    const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
+
+    let squadSql = `SELECT id, name, logo_data_url FROM squads WHERE active = 1`;
+    const squadParams = [];
+    if (selectedSquadId) {
+      squadSql += ' AND id = ?';
+      squadParams.push(selectedSquadId);
+    }
+    if (allowedSquads) {
+      if (allowedSquads.length === 0) return res.json({ monthPrefix, summary: calculateRetentionStats([], monthPrefix), squads: [] });
+      squadSql += ` AND id IN (${allowedSquads.map(() => '?').join(',')})`;
+      squadParams.push(...allowedSquads);
+    }
+    squadSql += ' ORDER BY name ASC';
+
+    const squads = await query(squadSql, squadParams);
+    const squadIds = squads.map((squad) => squad.id);
+
+    let clientSql = `SELECT c.id, c.name, c.squad_id, c.status, c.start_date, c.churn_date,
+                            c.churn_month, c.churn_year, c.status_changed_at, c.created_at,
+                            s.name AS squad_name, s.logo_data_url AS squad_logo_url
+                       FROM clients c
+                       LEFT JOIN squads s ON s.id = c.squad_id
+                      WHERE 1 = 1`;
+    const clientParams = [];
+
+    if (selectedSquadId) {
+      clientSql += ' AND c.squad_id = ?';
+      clientParams.push(selectedSquadId);
+    } else if (squadIds.length > 0) {
+      clientSql += ` AND (c.squad_id IN (${squadIds.map(() => '?').join(',')}) OR c.squad_id IS NULL)`;
+      clientParams.push(...squadIds);
+    }
+    if (allowedSquads) {
+      clientSql += ` AND c.squad_id IN (${allowedSquads.map(() => '?').join(',')})`;
+      clientParams.push(...allowedSquads);
+    }
+
+    const clients = await query(clientSql, clientParams);
+    const clientsBySquad = new Map();
+    clients.forEach((client) => {
+      const key = client.squad_id || 'no-squad';
+      if (!clientsBySquad.has(key)) clientsBySquad.set(key, []);
+      clientsBySquad.get(key).push(client);
+    });
+
+    const rows = squads.map((squad) => serializeRetentionSquad(squad, clientsBySquad.get(squad.id) || [], monthPrefix));
+    if (!selectedSquadId && clientsBySquad.has('no-squad') && !allowedSquads) {
+      rows.push(serializeRetentionSquad({ id: 'no-squad', name: 'Sem squad', logo_data_url: '' }, clientsBySquad.get('no-squad'), monthPrefix));
+    }
+
+    const summary = calculateRetentionStats(clients, monthPrefix);
+    res.json({
+      monthPrefix,
+      squadId: selectedSquadId || '',
+      summary,
+      squads: rows,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/dashboard/targets', requirePermission('central.view'), async (req, res, next) => {
   try {
     const month = normalizeDashboardMonth(req.query?.month || req.query?.date);
