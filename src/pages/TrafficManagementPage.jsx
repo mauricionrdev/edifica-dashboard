@@ -125,7 +125,7 @@ export default function TrafficManagementPage() {
       actions: (
         <div className={styles.headerActions}>
           <Select
-            label="Período"
+            aria-label="Período"
             value={monthKey(period)}
             onChange={(event) => {
               const option = periodOptions.find((item) => item.value === event.target.value);
