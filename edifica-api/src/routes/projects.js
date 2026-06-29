@@ -55,19 +55,22 @@ async function ensureProjectTaskSchemaUpgrades() {
 }
 
 function normalizeAttachmentPayload(body = {}) {
-  const fileName = clean(body.fileName || body.name || 'imagem.png').slice(0, 180) || 'imagem.png';
   const mimeType = clean(body.mimeType || body.type || 'image/png').toLowerCase();
+  const isPdf = mimeType === 'application/pdf';
+  const fallbackName = isPdf ? 'arquivo.pdf' : 'imagem.png';
+  const fileName = clean(body.fileName || body.name || fallbackName).slice(0, 180) || fallbackName;
   const sizeBytes = Math.max(0, Math.min(Number(body.sizeBytes || body.size || 0) || 0, 50 * 1024 * 1024));
   const dataUrl = String(body.dataUrl || '').trim();
+  const supportedMimeTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif', 'application/pdf'];
 
-  if (!['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'].includes(mimeType)) {
-    throw badRequest('Anexe apenas imagens PNG, JPG, WEBP ou GIF');
+  if (!supportedMimeTypes.includes(mimeType)) {
+    throw badRequest('Anexe apenas imagens PNG, JPG, WEBP, GIF ou PDF');
   }
-  if (!dataUrl || !/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(dataUrl)) {
-    throw badRequest('Imagem inválida');
+  if (!dataUrl || !/^data:(image\/(png|jpe?g|webp|gif)|application\/pdf);base64,/i.test(dataUrl)) {
+    throw badRequest(isPdf ? 'PDF inválido' : 'Imagem inválida');
   }
   if (dataUrl.length > 18_000_000) {
-    throw badRequest('Imagem muito grande');
+    throw badRequest('Anexo muito grande');
   }
 
   return { fileName, mimeType, sizeBytes, dataUrl };

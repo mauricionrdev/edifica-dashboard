@@ -3599,6 +3599,8 @@ export default function ProfilePage() {
         },
       });
       const createdTask = res?.task;
+      let savedAttachmentCount = 0;
+      let failedAttachmentCount = 0;
       if (createdTask?.id) {
         const collaboratorIds = [...new Set((demandForm.collaboratorUserIds || []).filter((id) => id && id !== createdTask.assigneeUserId))];
         if (collaboratorIds.length) {
@@ -3615,7 +3617,11 @@ export default function ProfilePage() {
           const savedAttachments = uploaded
             .filter((result) => result.status === 'fulfilled' && result.value?.attachment)
             .map((result) => result.value.attachment);
-          setTaskAttachments(savedAttachments);
+          savedAttachmentCount = savedAttachments.length;
+          failedAttachmentCount = Math.max(0, attachments.length - savedAttachmentCount);
+          if (savedAttachments.length) {
+            setTaskAttachments(savedAttachments);
+          }
         }
         const createdForCurrentUser = createdTask.assigneeUserId === user?.id;
         const visibleCreatedTask = {
@@ -3628,7 +3634,12 @@ export default function ProfilePage() {
         setOperationPage(1);
       }
       closeDemandModal();
-      showToast(createdTask?.assigneeUserId && createdTask.assigneeUserId !== user?.id ? 'Demanda criada e acompanhada.' : 'Demanda criada.', { variant: 'success' });
+      if (failedAttachmentCount > 0) {
+        showToast(`${failedAttachmentCount} anexo(s) não foram salvos.`, { variant: 'error' });
+      } else {
+        const suffix = savedAttachmentCount > 0 ? ` ${savedAttachmentCount} anexo(s) salvo(s).` : '';
+        showToast(`${createdTask?.assigneeUserId && createdTask.assigneeUserId !== user?.id ? 'Demanda criada e acompanhada.' : 'Demanda criada.'}${suffix}`, { variant: 'success' });
+      }
     } catch (err) {
       showToast(err?.message || 'Erro ao criar demanda.', { variant: 'error' });
     } finally {
@@ -4332,7 +4343,7 @@ export default function ProfilePage() {
                 </section>
               ) : null}
 
-              {(taskAttachmentsLoading || taskAttachments.length) ? (
+              {(canEditActiveTask || taskAttachmentsLoading || taskAttachments.length) ? (
                 <section className={`${styles.drawerSection} ${styles.attachmentsSection}`.trim()}>
                   <div className={styles.sectionTitleRow}>
                     <h4>Anexos</h4>
@@ -4404,6 +4415,9 @@ export default function ProfilePage() {
                           </figure>
                         ))}
                       </div>
+                      {!taskAttachments.length ? (
+                        <div className={styles.attachmentEmptyState}>Nenhum anexo cadastrado.</div>
+                      ) : null}
                       {taskAttachments.length > 4 ? (
                         <button type="button" className={styles.attachmentsMoreButton} onClick={() => setTaskAttachmentsAlbumOpen(true)}>
                           Ver mais

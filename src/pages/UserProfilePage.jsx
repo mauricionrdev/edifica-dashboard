@@ -996,17 +996,26 @@ export default function UserProfilePage() {
       if (createdTask?.id && collaboratorIds.length) {
         await Promise.all(collaboratorIds.map((userId) => addTaskCollaborator(createdTask.id, { userId }).catch(() => null)));
       }
+      let savedAttachmentCount = 0;
+      let failedAttachmentCount = 0;
       if (createdTask?.id && Array.isArray(form?.attachments) && form.attachments.length) {
-        await Promise.all(form.attachments.map((item) => createTaskAttachment(createdTask.id, {
+        const uploaded = await Promise.allSettled(form.attachments.map((item) => createTaskAttachment(createdTask.id, {
           fileName: item.fileName,
           mimeType: item.mimeType,
           sizeBytes: item.sizeBytes,
           dataUrl: item.dataUrl,
-        }).catch(() => null)));
+        })));
+        savedAttachmentCount = uploaded.filter((result) => result.status === 'fulfilled' && result.value?.attachment).length;
+        failedAttachmentCount = Math.max(0, form.attachments.length - savedAttachmentCount);
       }
       await reloadProfileTasks(profileUser);
       setAssignOpen(false);
-      showToast('Demanda criada.', { variant: 'success' });
+      if (failedAttachmentCount > 0) {
+        showToast(`${failedAttachmentCount} anexo(s) não foram salvos.`, { variant: 'error' });
+      } else {
+        const suffix = savedAttachmentCount > 0 ? ` ${savedAttachmentCount} anexo(s) salvo(s).` : '';
+        showToast(`Demanda criada.${suffix}`, { variant: 'success' });
+      }
     } catch (err) {
       showToast(err?.message || 'Erro ao criar demanda.', { variant: 'error' });
     } finally {
