@@ -50,6 +50,17 @@ function compactName(name = '') {
   return String(name || '').replace(/^gestor\s+/i, '').trim() || 'Sem gestor';
 }
 
+function fmtIntSafe(value) {
+  const number = Number(value) || 0;
+  return number > 0 ? fmtInt(number) : '0';
+}
+
+function attentionLabel(priority) {
+  const value = Number(priority) || 0;
+  if (value <= 0) return 'Operação estável';
+  return `${value} ${value === 1 ? 'ponto' : 'pontos'} de atenção`;
+}
+
 function ClientAvatar({ client }) {
   const src = getClientAvatar(client) || client?.avatarUrl || '';
   return (
@@ -180,9 +191,9 @@ export default function TrafficManagementPage() {
       {error ? <StateBlock variant="error" title={error.message} /> : null}
 
       <section className={styles.kpis}>
-        <article><UsersIcon size={16} /><span>Carteira</span><strong>{fmtInt(payload.summary?.portfolio || 0)}</strong></article>
-        <article><TargetIcon size={16} /><span>Projetados para meta</span><strong>{fmtInt(payload.summary?.projectedHit || 0)}</strong></article>
-        <article><ChartColumnIcon size={16} /><span>Precisam de otimização</span><strong>{fmtInt(payload.summary?.critical || 0)}</strong></article>
+        <article><UsersIcon size={16} /><span>Carteira</span><strong>{fmtIntSafe(payload.summary?.portfolio)}</strong></article>
+        <article><TargetIcon size={16} /><span>Projetados para meta</span><strong>{fmtIntSafe(payload.summary?.projectedHit)}</strong></article>
+        <article><ChartColumnIcon size={16} /><span>Precisam de otimização</span><strong>{fmtIntSafe(payload.summary?.critical)}</strong></article>
         <article><TrophyIcon size={16} /><span>Meta ranking</span><strong>{fmtPct(activeTarget)}</strong></article>
       </section>
 
@@ -198,10 +209,19 @@ export default function TrafficManagementPage() {
         <div className={styles.rankingRows}>
           {ranking.map((row) => (
             <button key={row.name} type="button" className={styles.rankingRow} onClick={() => setManagerFilter(row.name)}>
-              <strong>{String(row.position).padStart(2, '0')}</strong>
-              <span>{compactName(row.name)}<small>{fmtInt(row.portfolio)} clientes</small></span>
-              <span>{fmtInt(row.projectedHit)} vão bater</span>
-              <em className={row.status === 'above' ? styles.goodText : styles.dangerText}>{fmtPct(row.resultPercent)}</em>
+              <strong className={styles.rankingPosition}>{String(row.position).padStart(2, '0')}</strong>
+              <span className={styles.rankingIdentity}>
+                <strong>{compactName(row.name)}</strong>
+                <small>{fmtIntSafe(row.portfolio)} clientes na carteira</small>
+              </span>
+              <span className={styles.rankingGoal}>
+                <strong>{fmtIntSafe(row.projectedHit)} de {fmtIntSafe(row.portfolio)}</strong>
+                <small>projetados para meta</small>
+              </span>
+              <span className={styles.rankingResult}>
+                <em className={row.status === 'above' ? styles.goodText : styles.dangerText}>{fmtPct(row.resultPercent)}</em>
+                <i aria-hidden="true"><b style={{ width: `${Math.max(0, Math.min(100, Number(row.resultPercent) || 0))}%` }} /></i>
+              </span>
             </button>
           ))}
           {!ranking.length ? <div className={styles.empty}>Nenhum gestor com carteira neste período.</div> : null}
@@ -212,7 +232,7 @@ export default function TrafficManagementPage() {
         <aside className={styles.clientList}>
           <header>
             <span>Carteira</span>
-            <strong>{fmtInt(visibleClients.length)}</strong>
+            <strong>{fmtIntSafe(visibleClients.length)}</strong>
           </header>
           <div className={styles.clientRows}>
             {visibleClients.map((row) => (
@@ -224,7 +244,7 @@ export default function TrafficManagementPage() {
               >
                 <ClientAvatar client={row.client} />
                 <span><strong>{row.client.name}</strong><small>{row.client.squadName || 'Sem squad'} · {compactName(row.client.gestor)}</small></span>
-                <em>{row.priority || 0}</em>
+                <em>{fmtIntSafe(row.priority)}</em>
               </button>
             ))}
             {!visibleClients.length ? <div className={styles.empty}>Nenhum cliente encontrado.</div> : null}
@@ -243,15 +263,15 @@ export default function TrafficManagementPage() {
                   </div>
                 </div>
                 <strong className={selectedClient.priority > 0 ? styles.priorityDanger : styles.priorityGood}>
-                  {selectedClient.priority > 0 ? `${selectedClient.priority} pontos de atenção` : 'Operação estável'}
+                  {attentionLabel(selectedClient.priority)}
                 </strong>
               </header>
 
               <div className={styles.detailGrid}>
                 <MetricLine label="Investimento" value={selectedClient.metrics.investimento > 0 ? fmtMoney(selectedClient.metrics.investimento) : '—'} />
-                <MetricLine label="Leads atuais" value={fmtInt(selectedClient.metrics.leadsCurrent || 0)} />
-                <MetricLine label="Meta de leads" value={selectedClient.metrics.metaLeads > 0 ? fmtInt(selectedClient.metrics.metaLeads) : '—'} />
-                <MetricLine label="Projeção de leads" value={selectedClient.metrics.projectedLeads > 0 ? fmtInt(Math.round(selectedClient.metrics.projectedLeads)) : '—'} />
+                <MetricLine label="Leads atuais" value={fmtIntSafe(selectedClient.metrics.leadsCurrent)} />
+                <MetricLine label="Meta de leads" value={selectedClient.metrics.metaLeads > 0 ? fmtIntSafe(selectedClient.metrics.metaLeads) : '—'} />
+                <MetricLine label="Projeção de leads" value={selectedClient.metrics.projectedLeads > 0 ? fmtIntSafe(Math.round(selectedClient.metrics.projectedLeads)) : '—'} />
                 <MetricLine label="CPL atual" value={selectedClient.metrics.currentCpl > 0 ? fmtMoney(selectedClient.metrics.currentCpl) : '—'} />
                 <MetricLine label="Meta de CPL" value={selectedClient.metrics.metaCpl > 0 ? fmtMoney(selectedClient.metrics.metaCpl) : '—'} />
                 <MetricLine label="ICP atual" value={selectedClient.metrics.icpPercent > 0 ? fmtPct(selectedClient.metrics.icpPercent) : '—'} />
