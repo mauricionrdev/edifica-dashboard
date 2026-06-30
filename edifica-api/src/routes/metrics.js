@@ -403,15 +403,7 @@ function rankingMaxWeekForMonth(monthPrefix = '', now = new Date()) {
   if (!/^\d{4}-\d{2}$/.test(String(monthPrefix))) return 0;
   if (monthPrefix < currentPrefix) return 4;
   if (monthPrefix > currentPrefix) return 0;
-
-  const currentDay = new Date(now).getUTCDate();
-  // Ranking mensal usa apenas semanas já fechadas:
-  // S1 fecha no dia 8, S2 no dia 15, S3 no dia 22.
-  // S4 só fecha quando o mês vira, por isso o mês atual nunca libera S4.
-  if (currentDay <= 7) return 0;
-  if (currentDay <= 14) return 1;
-  if (currentDay <= 21) return 2;
-  return 3;
+  return weekOfMonth(now);
 }
 
 function rankingMetricWeek(periodKey = '', monthPrefix = '') {
@@ -419,67 +411,49 @@ function rankingMetricWeek(periodKey = '', monthPrefix = '') {
   return match ? Number(match[1]) : 0;
 }
 
-function clientRankingMonthlyTotals(clientMetrics = [], monthPrefix = '', maxWeek = 4, clientMetaLucro = 0) {
+function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '', maxWeek = 4) {
+  return clientMetrics.some((row) => {
+    const week = rankingMetricWeek(row?.period_key, monthPrefix);
+    if (!week || week > maxWeek) return false;
+
+    const data = metricData(row);
+    const goal = rankingWeeklyGoal(data);
+    const closed = metricNumber(data?.fechados);
+
+    return goal > 0 && closed > 0 && closed >= goal;
+  });
+}
+
+function clientProjectedToHitGoalInMonth(clientMetrics = [], monthPrefix = '', maxWeek = 4, clientMetaLucro = 0) {
   let monthClosed = 0;
   let monthProjected = 0;
-  let monthGoal = 0;
-  let goalWeeks = 0;
-  let countedWeeks = 0;
+  let monthGoal = Number(clientMetaLucro) || 0;
 
   for (const row of clientMetrics) {
     const week = rankingMetricWeek(row?.period_key, monthPrefix);
     if (!week || week > maxWeek) continue;
 
-    countedWeeks = Math.max(countedWeeks, week);
-
     const data = metricData(row);
-    const weeklyGoal = rankingWeeklyGoal(data);
     const computed = computeWeeklyMetrics(data, { clientMetaLucro });
     const closed = metricNumber(data?.fechados);
     const predicted = metricNumber(computed?.contratosPrevistos);
+    const explicitMonthly = resolveMonthlyProfitGoal(data, 0);
+
+    if (explicitMonthly > 0) monthGoal = Math.max(monthGoal, explicitMonthly);
 
     monthClosed += closed;
     monthProjected += Math.max(closed, predicted);
-
-    if (weeklyGoal > 0) {
-      monthGoal += weeklyGoal;
-      goalWeeks += 1;
-    }
-  }
-
-  // Compatibilidade: se ainda não existe meta semanal preenchida, usa a meta
-  // mensal do cadastro rateada apenas pelas semanas fechadas do ranking.
-  if (monthGoal <= 0 && Number(clientMetaLucro) > 0 && maxWeek > 0) {
-    monthGoal = Math.ceil((Number(clientMetaLucro) || 0) / 4) * Math.min(maxWeek, 4);
   }
 
   const effectiveProjected = Math.max(monthClosed, monthProjected);
 
   return {
-    hit: monthGoal > 0 && monthClosed >= monthGoal,
+    // Ranking previsto considera exclusivamente o equivalente ao status visual
+    // "Vai bater meta": ainda não bateu, mas a projeção alcança a meta.
     predicted: monthGoal > 0 && monthClosed < monthGoal && effectiveProjected >= monthGoal,
     monthClosed,
     monthProjected: effectiveProjected,
     monthGoal,
-    goalWeeks,
-    countedWeeks,
-  };
-}
-
-function clientHitRankingGoalInMonth(clientMetrics = [], monthPrefix = '', maxWeek = 4, clientMetaLucro = 0) {
-  return clientRankingMonthlyTotals(clientMetrics, monthPrefix, maxWeek, clientMetaLucro).hit;
-}
-
-function clientProjectedToHitGoalInMonth(clientMetrics = [], monthPrefix = '', maxWeek = 4, clientMetaLucro = 0) {
-  const totals = clientRankingMonthlyTotals(clientMetrics, monthPrefix, maxWeek, clientMetaLucro);
-  return {
-    // Ranking previsto considera o acumulado mensal das semanas fechadas.
-    predicted: totals.predicted,
-    monthClosed: totals.monthClosed,
-    monthProjected: totals.monthProjected,
-    monthGoal: totals.monthGoal,
-    goalWeeks: totals.goalWeeks,
-    countedWeeks: totals.countedWeeks,
   };
 }
 
@@ -945,14 +919,11 @@ function compareMonthPrefix(a, b) {
 function lastClosedRankingMonth(now = new Date()) {
   const date = new Date(now);
   const currentPrefix = monthPrefixFromParts(date.getUTCFullYear(), date.getUTCMonth());
-  // O campeão mensal só pode ser consolidado depois que o mês virou.
-  // Mesmo no último dia, o mês ainda está operacionalmente aberto.
+  // O ranking pode ser acompanhado durante o mês, mas campeão oficial
+  // só é fechado depois da virada do mês. No último dia do mês ainda
+  // existe operação em aberto; portanto o último mês fechado é sempre
+  // o mês anterior ao mês atual.
   return addMonthsToPrefix(currentPrefix, -1);
-}
-
-function rankingPeriodClosed(monthPrefix = '', now = new Date()) {
-  const lastClosed = lastClosedRankingMonth(now);
-  return Boolean(monthPrefix && lastClosed && compareMonthPrefix(monthPrefix, lastClosed) <= 0);
 }
 
 function closedCompetitionMonths(now = new Date()) {
@@ -1003,7 +974,7 @@ function buildRankingEntityClientSummaries(clients = [], metricsByClient = new M
   return clients.map((client) => {
     const clientMetricRows = metricsByClient.get(client.id) || [];
     const clientMetaLucro = Number(client.meta_lucro) || 0;
-    const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
+    const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek);
     const projected = clientProjectedToHitGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
     const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
       prevWeekKey,
@@ -1376,7 +1347,7 @@ async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
     const clientSummaries = activeClients.map((client) => {
       const clientMetricRows = metricsByClient.get(client.id) || [];
       const clientMetaLucro = Number(client.meta_lucro) || 0;
-      const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
+      const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek);
       const projected = clientProjectedToHitGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
       return {
         clientId: client.id,
@@ -1440,24 +1411,23 @@ async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
 }
 
 async function ensureRankingChampionSnapshots(req) {
-  const lastClosed = lastClosedRankingMonth();
-  if (lastClosed && !req.emptyWorkspaceView) {
-    await query(
-      'DELETE FROM squad_ranking_champions WHERE period_month > ?',
-      [lastClosed]
-    );
-  }
-
   const months = closedCompetitionMonths();
   if (!months.length || req.emptyWorkspaceView) return [];
+
+  const lastClosedMonth = months[months.length - 1];
+  // Remove snapshots gravados antes da hora por versões anteriores.
+  // Isso não altera o ranking em tela; apenas impede campeão oficial
+  // de mês ainda aberto.
+  if (lastClosedMonth) {
+    await query('DELETE FROM squad_ranking_champions WHERE period_month > ?', [lastClosedMonth]);
+  }
 
   const existingRows = await query(
     `SELECT period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, mrr, position, trophy_number, closed_at, snapshot_json
        FROM squad_ranking_champions
       WHERE period_month >= ?
-        AND period_month <= ?
       ORDER BY period_month ASC`,
-    [RANKING_COMPETITION_START_MONTH, lastClosed]
+    [RANKING_COMPETITION_START_MONTH]
   );
 
   const existingMonths = new Set(existingRows.map((row) => row.period_month));
@@ -1511,9 +1481,8 @@ async function ensureRankingChampionSnapshots(req) {
     `SELECT period_month, squad_id, squad_name, owner_name, realized_percent, predicted_percent, churn_percent, mrr, position, trophy_number, closed_at, snapshot_json
        FROM squad_ranking_champions
       WHERE period_month >= ?
-        AND period_month <= ?
       ORDER BY period_month DESC`,
-    [RANKING_COMPETITION_START_MONTH, lastClosed]
+    [RANKING_COMPETITION_START_MONTH]
   );
 }
 
@@ -2155,16 +2124,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
   try {
     if (req.emptyWorkspaceView) {
       const ref = req.query?.date ? new Date(String(req.query.date) + 'T00:00:00Z') : new Date();
-      const monthPrefix = monthPrefixFromDate(ref);
-      const rankingMaxWeek = rankingMaxWeekForMonth(monthPrefix);
-      return res.json({
-        weekKey: currentPeriodKey(ref),
-        monthPrefix,
-        rankingMaxWeek,
-        rankingPeriodClosed: rankingPeriodClosed(monthPrefix),
-        lastClosedMonth: lastClosedRankingMonth(),
-        rows: [],
-      });
+      return res.json({ weekKey: currentPeriodKey(ref), monthPrefix: monthPrefixFromDate(ref), rows: [] });
     }
     const { date: dateParam, squadId } = req.query;
     const globalRankingSettings = await getRankingSettings();
@@ -2287,7 +2247,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const clientSummaries = activeClients.map((client) => {
         const clientMetricRows = metricsByClient.get(client.id) || [];
         const clientMetaLucro = Number(client.meta_lucro) || 0;
-        const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
+        const hit = clientHitRankingGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek);
         const projected = clientProjectedToHitGoalInMonth(clientMetricRows, monthPrefix, rankingMaxWeek, clientMetaLucro);
         const summary = aggregateClientSummary(clientMetricRows, weekKey, monthPrefix, {
           prevWeekKey,
@@ -2399,9 +2359,6 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     res.json({
       weekKey,
       monthPrefix,
-      rankingMaxWeek,
-      rankingPeriodClosed: rankingPeriodClosed(monthPrefix),
-      lastClosedMonth: lastClosedRankingMonth(),
       settings: rankingSettings,
       goalPercent: rankingSettings.goalPercent,
       churnTarget: rankingSettings.churnTarget,
@@ -2435,10 +2392,9 @@ router.get('/ranking/gdvs', requirePermission('ranking.view'), async (req, res, 
 
     const weekKey = currentPeriodKey(ref);
     const monthPrefix = monthPrefixFromDate(ref);
-    const rankingMaxWeek = rankingMaxWeekForMonth(monthPrefix);
 
     if (req.emptyWorkspaceView) {
-      return res.json({ weekKey, monthPrefix, rankingMaxWeek, rankingPeriodClosed: rankingPeriodClosed(monthPrefix), lastClosedMonth: lastClosedRankingMonth(), rows: [] });
+      return res.json({ weekKey, monthPrefix, rows: [] });
     }
 
     const rankingSettings = await getRankingSettings();
@@ -2447,9 +2403,6 @@ router.get('/ranking/gdvs', requirePermission('ranking.view'), async (req, res, 
     res.json({
       weekKey,
       monthPrefix,
-      rankingMaxWeek,
-      rankingPeriodClosed: rankingPeriodClosed(monthPrefix),
-      lastClosedMonth: lastClosedRankingMonth(),
       settings: rankingSettings,
       goalPercent: rankingSettings.goalPercent,
       churnTarget: rankingSettings.churnTarget,
