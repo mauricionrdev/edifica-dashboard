@@ -91,6 +91,16 @@ function monthlyGoalTarget(calc = {}) {
   return Number(calc?.monthlyGoal) || 0;
 }
 
+function weeklyGoalTarget(calc = {}) {
+  return Number(calc?.weeklyGoal ?? calc?.mLuc) || 0;
+}
+
+function hasHitEffectiveGoal(calc = {}) {
+  const weeklyGoal = weeklyGoalTarget(calc);
+  const closed = Number(calc?.fec) || 0;
+  return weeklyGoal > 0 && closed >= weeklyGoal;
+}
+
 function parseClientPeriodDate(value) {
   if (!value) return null;
   const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
@@ -125,20 +135,22 @@ function hasInternalCommercial(client) {
 
 function statusTone(calc, status) {
   if (status === CLIENT_STATUS.CHURN) return 'red';
-  if (status === CLIENT_STATUS.FINISHED) return 'muted';
   if (status === CLIENT_STATUS.ONBOARDING) return 'onboarding';
   if (status === CLIENT_STATUS.RAMPAGE) return 'rampage';
   if (!isActiveClientStatus(status)) return 'muted';
 
-  const goal = monthlyGoalTarget(calc);
+  const weeklyGoal = weeklyGoalTarget(calc);
+  const monthlyGoal = monthlyGoalTarget(calc);
+  const goal = weeklyGoal || monthlyGoal;
   if (!goal) return 'muted';
 
   const closed = Number(calc?.fec) || 0;
   const projected = effectiveForecast(closed, calc?.cp);
+  const projectionGoal = monthlyGoal || weeklyGoal;
   const progress = (closed / goal) * 100;
 
-  if (closed >= goal) return 'green';
-  if (projected >= goal) return 'amber';
+  if (hasHitEffectiveGoal(calc)) return 'green';
+  if (projectionGoal > 0 && projected >= projectionGoal) return 'amber';
   if (progress >= 55) return 'amber';
   return 'red';
 }
@@ -148,16 +160,18 @@ function statusLabel(calc, status) {
   if (status === CLIENT_STATUS.RAMPAGE) return 'Rampagem Comercial';
   if (status === CLIENT_STATUS.PAUSED) return 'Pausado';
   if (status === CLIENT_STATUS.CHURN) return 'Churn';
-  if (status === CLIENT_STATUS.FINISHED) return 'Finalizado';
 
-  const goal = monthlyGoalTarget(calc);
+  const weeklyGoal = weeklyGoalTarget(calc);
+  const monthlyGoal = monthlyGoalTarget(calc);
+  const goal = weeklyGoal || monthlyGoal;
   if (!goal) return 'Sem meta';
 
   const closed = Number(calc?.fec) || 0;
   const projected = effectiveForecast(closed, calc?.cp);
+  const projectionGoal = monthlyGoal || weeklyGoal;
 
-  if (closed >= goal) return 'Meta lucro batida';
-  if (projected >= goal) return 'Vai bater meta lucro';
+  if (hasHitEffectiveGoal(calc)) return 'Meta batida';
+  if (projectionGoal > 0 && projected >= projectionGoal) return 'Vai bater meta lucro';
   if ((closed / goal) * 100 >= 55) return 'Em andamento';
   return 'Crítico';
 }
@@ -219,17 +233,20 @@ function clientPriorityRank(row) {
   if (!isActiveClientStatus(clientStatus)) return 0;
 
   const calc = row.calc || {};
-  const goal = Number(calc.mLuc) || 0;
+  const weeklyGoal = weeklyGoalTarget(calc);
+  const monthlyGoal = monthlyGoalTarget(calc);
+  const goal = weeklyGoal || monthlyGoal;
   const closed = Number(calc.fec) || 0;
   const predicted = Number(calc.cp) || 0;
   const projected = effectiveForecast(closed, predicted);
+  const projectionGoal = monthlyGoal || weeklyGoal;
   const progress = goal > 0 ? (closed / goal) * 100 : 0;
 
   // Quanto maior o rank, mais alto o cliente aparece na lista.
   // A categoria é obrigatoriamente mais importante que qualquer pontuação numérica.
   if (goal <= 0) return 3; // Sem meta
-  if (closed >= goal) return 2; // Meta batida
-  if (projected >= goal) return 4; // Vai bater
+  if (hasHitEffectiveGoal(calc)) return 2; // Meta batida na semana vigente
+  if (projectionGoal > 0 && projected >= projectionGoal) return 4; // Vai bater
   if (progress >= 55) return 5; // Em andamento
 
   return 6; // Crítico
