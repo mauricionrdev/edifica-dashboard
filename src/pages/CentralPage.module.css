@@ -2439,3 +2439,211 @@
     flex-direction: column;
   }
 }
+
+/* v131 · Retenção: layout enxuto, sem bloco genérico e sem tipografia pesada */
+.retentionPanel {
+  border-color: var(--line-subtle);
+  border-radius: 16px;
+  background: var(--workspace-panel-bg);
+  overflow: hidden;
+}
+
+.retentionPanelHeader {
+  min-height: 58px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  align-items: center;
+}
+
+.retentionPanelTitleGroup h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 640;
+  letter-spacing: -0.025em;
+}
+
+.retentionPanelTitleGroup span {
+  margin-top: 4px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.retentionOverview {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.85fr);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.retentionMetricPrimary {
+  min-width: 0;
+  padding: 16px 18px;
+  border-right: 1px solid var(--line-subtle);
+  display: grid;
+  align-content: center;
+  gap: 6px;
+}
+
+.retentionMetricGrid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.retentionMetricItem {
+  min-width: 0;
+  padding: 16px 18px;
+  border-right: 1px solid var(--line-subtle);
+  display: grid;
+  align-content: center;
+  gap: 6px;
+}
+
+.retentionMetricItem:last-child {
+  border-right: 0;
+}
+
+.retentionMetricPrimary span,
+.retentionMetricItem span {
+  color: var(--text-tertiary);
+  font-size: 10.5px;
+  line-height: 1.15;
+  font-weight: 650;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.retentionMetricPrimary strong,
+.retentionMetricItem strong {
+  color: var(--text-primary);
+  line-height: 1;
+  font-weight: 640;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+
+.retentionMetricPrimary strong {
+  font-size: clamp(26px, 2vw, 34px);
+}
+
+.retentionMetricItem strong {
+  font-size: clamp(21px, 1.45vw, 27px);
+}
+
+.retentionMetricPrimary em,
+.retentionMetricItem em {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-style: normal;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.retentionMetricPrimary i {
+  height: 2px;
+  margin-top: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  display: block;
+  overflow: hidden;
+}
+
+.retentionMetricPrimary i b {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-amber);
+  display: block;
+}
+
+.retentionPanel_risk .retentionMetricPrimary i b {
+  background: var(--danger);
+}
+
+.retentionPanel_warning .retentionMetricPrimary i b {
+  background: var(--accent-amber);
+}
+
+.retentionPanel_good .retentionMetricPrimary i b {
+  background: var(--success);
+}
+
+.retentionDistributionCompact {
+  padding: 13px 16px 14px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.retentionDistributionCompact .retentionDistributionItem {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 7px 10px;
+}
+
+.retentionDistributionCompact .retentionDistributionItem span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 540;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.retentionDistributionCompact .retentionDistributionItem strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
+}
+
+.retentionDistributionCompact .retentionDistributionItem i {
+  grid-column: 1 / -1;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  display: block;
+  overflow: hidden;
+}
+
+.retentionDistributionCompact .retentionDistributionItem b {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-amber);
+  display: block;
+}
+
+@media (max-width: 1180px) {
+  .retentionOverview,
+  .retentionMetricGrid,
+  .retentionDistributionCompact {
+    grid-template-columns: 1fr;
+  }
+
+  .retentionMetricPrimary,
+  .retentionMetricItem {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .retentionMetricItem:last-child {
+    border-bottom: 0;
+  }
+}

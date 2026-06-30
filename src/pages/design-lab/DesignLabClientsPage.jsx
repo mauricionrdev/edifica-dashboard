@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import {
@@ -183,10 +183,12 @@ function clientSquadVisual(squads, client) {
 export default function DesignLabClientsPage() {
   const { clients, squads, userDirectory, loading, error, refreshClients, setPanelHeader } = useOutletContext();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const canCreate = canCreateClients(user);
+  const canOpenTemplate = hasPermission(user, 'project_template.view');
   const [query, setQuery] = useState(() => searchParams.get('search') || '');
   const [scope, setScope] = useState(() => {
     const initial = searchParams.get('scope') || 'all';
@@ -376,15 +378,31 @@ export default function DesignLabClientsPage() {
       </>
     );
 
-    const actions = canCreate ? (
-      <BareButton type="button" variant="primary" size="sm" onClick={() => setModalOpen(true)}>
-        <PlusIcon size={14} aria-hidden="true" />
-        Novo cliente
-      </BareButton>
-    ) : null;
+    const actions = (
+      <div className={styles.headerActions}>
+        {canOpenTemplate ? (
+          <BareButton
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate('/modelo-oficial')}
+            aria-label="Abrir modelo padrão"
+          >
+            <ClipboardListIcon size={14} aria-hidden="true" />
+            Modelo padrão
+          </BareButton>
+        ) : null}
+        {canCreate ? (
+          <BareButton type="button" variant="primary" size="sm" onClick={() => setModalOpen(true)}>
+            <PlusIcon size={14} aria-hidden="true" />
+            Novo cliente
+          </BareButton>
+        ) : null}
+      </div>
+    );
 
     setPanelHeader({ title, actions });
-  }, [canCreate, counts.active, counts.all, setPanelHeader]);
+  }, [canCreate, canOpenTemplate, counts.active, counts.all, navigate, setPanelHeader]);
 
   const openDetail = useCallback((id, tab = 'overview') => {
     setDetailId(id);
