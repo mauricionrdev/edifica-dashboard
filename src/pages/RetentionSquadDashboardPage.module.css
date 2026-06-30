@@ -526,3 +526,200 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v130 · Indicadores por Squad: painel operacional, sem empilhar cards genéricos */
+.page {
+  padding: 16px 20px 28px;
+  gap: 14px;
+}
+
+.retentionHero {
+  padding: 0 0 14px;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+  align-items: flex-end;
+}
+
+.retentionHero h1 {
+  font-size: clamp(25px, 2.15vw, 36px);
+}
+
+.retentionHeroStats {
+  min-width: 172px;
+  padding-left: 18px;
+  border-left: 1px solid var(--line-subtle);
+}
+
+.summaryPanel {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  background: var(--workspace-panel-bg);
+  overflow: hidden;
+}
+
+.summaryMetric {
+  min-height: 96px;
+  padding: 16px 18px;
+  border: 0;
+  border-right: 1px solid var(--line-subtle);
+  border-radius: 0;
+  background: transparent;
+  justify-content: center;
+}
+
+.summaryMetric:last-child {
+  border-right: 0;
+}
+
+.summaryMetric strong {
+  font-size: clamp(25px, 2vw, 34px);
+}
+
+.squadsList {
+  gap: 10px;
+}
+
+.squadBlock {
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  background: var(--workspace-panel-bg);
+  overflow: hidden;
+}
+
+.squadHeader {
+  min-height: 66px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+}
+
+.squadMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+}
+
+.squadMetric {
+  min-height: 86px;
+  padding: 14px 16px;
+  border: 0;
+  border-right: 1px solid var(--line-subtle);
+  background: transparent;
+  justify-content: center;
+}
+
+.squadMetric:last-child {
+  border-right: 0;
+}
+
+.squadMetric strong {
+  font-size: 23px;
+}
+
+.squadMetric i {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.squadDistributionArea {
+  padding: 14px 16px 16px;
+}
+
+.squadDistributionTitle {
+  margin-bottom: 12px;
+}
+
+.distribution {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.distributionRow {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.7fr) minmax(180px, 1.4fr) 58px;
+  align-items: center;
+  gap: 12px;
+}
+
+.distributionTopline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 10px;
+}
+
+.distributionTrack {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+@media (max-width: 1180px) {
+  .summaryPanel,
+  .squadMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summaryMetric,
+  .squadMetric {
+    border-right: 1px solid var(--line-subtle);
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .summaryMetric:nth-child(2n),
+  .squadMetric:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .summaryMetric:nth-last-child(-n + 2),
+  .squadMetric:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .retentionHero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .retentionHeroStats {
+    padding-left: 0;
+    border-left: 0;
+    text-align: left;
+    justify-items: start;
+  }
+
+  .summaryPanel,
+  .squadMetrics,
+  .distributionRow {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryMetric,
+  .squadMetric,
+  .summaryMetric:nth-child(2n),
+  .squadMetric:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .summaryMetric:nth-last-child(-n + 2),
+  .squadMetric:nth-last-child(-n + 2) {
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .summaryMetric:last-child,
+  .squadMetric:last-child {
+    border-bottom: 0;
+  }
+}

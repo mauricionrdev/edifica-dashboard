@@ -244,13 +244,14 @@ function RetentionDashboardPanel({ summary, periodLabel, selectedSquadName, onOp
   const earlyRate = Number(summary?.earlyChurnRate) || 0;
   const ltv = Number(summary?.ltvAverageMonths) || 0;
   const distribution = Array.isArray(summary?.distribution) ? summary.distribution : [];
+  const churnTone = toneFromChurn(churnRate);
 
   return (
-    <section className={styles.retentionPanel} aria-label="Indicadores de retenção do dashboard">
+    <section className={`${styles.retentionPanel} ${styles[`retentionPanel_${churnTone}`] || ''}`.trim()} aria-label="Indicadores de retenção do dashboard">
       <header className={styles.retentionPanelHeader}>
-        <div>
+        <div className={styles.retentionPanelTitleGroup}>
           <span>Retenção mensal</span>
-          <h3>Indicadores da carteira</h3>
+          <h3>Carteira em churn</h3>
           <p>{periodLabel} · {selectedSquadName}</p>
         </div>
         <button type="button" className={styles.retentionOpenButton} onClick={onOpenSquads}>
@@ -258,45 +259,49 @@ function RetentionDashboardPanel({ summary, periodLabel, selectedSquadName, onOp
         </button>
       </header>
 
-      <div className={styles.retentionPanelGrid}>
-        <article className={styles.retentionMainCard}>
-          <span>Churn da Carteira</span>
+      <div className={styles.retentionReading}>
+        <div className={styles.retentionLeadMetric}>
+          <span>Churn da carteira</span>
           <strong>{fmtPct(churnRate)}</strong>
           <p>{fmtInt(summary?.portfolioChurn)} de {fmtInt(summary?.portfolioStart)} clientes da base inicial</p>
           <div className={styles.retentionProgress} aria-hidden="true">
             <i style={{ width: `${safePercent(churnRate)}%` }} />
           </div>
-        </article>
+        </div>
 
-        <article className={styles.retentionMiniCard}>
-          <span>Churn Precoce</span>
-          <strong>{fmtPct(earlyRate)}</strong>
-          <p>{fmtInt(summary?.earlyChurn)} de {fmtInt(summary?.newClients)} novos clientes</p>
-        </article>
-
-        <article className={styles.retentionMiniCard}>
-          <span>LTV Médio</span>
-          <strong>{formatLtvMonths(ltv)}</strong>
-          <p>média dos clientes em churn no período</p>
-        </article>
-
-        <article className={styles.retentionMiniCard}>
-          <span>Distribuição do Churn</span>
-          <strong>{fmtInt(summary?.churnTotal)}</strong>
-          <p>{retentionDistributionLabel(distribution)}</p>
-        </article>
+        <dl className={styles.retentionFacts}>
+          <div>
+            <dt>Churn precoce</dt>
+            <dd>{fmtPct(earlyRate)}</dd>
+            <span>{fmtInt(summary?.earlyChurn)} de {fmtInt(summary?.newClients)} novos</span>
+          </div>
+          <div>
+            <dt>LTV médio</dt>
+            <dd>{formatLtvMonths(ltv)}</dd>
+            <span>clientes em churn no período</span>
+          </div>
+          <div>
+            <dt>Churns classificados</dt>
+            <dd>{fmtInt(summary?.churnTotal)}</dd>
+            <span>{retentionDistributionLabel(distribution)}</span>
+          </div>
+        </dl>
       </div>
 
-      <div className={styles.retentionDistributionStrip}>
-        {distribution.map((item) => (
-          <div key={item.key || item.label} className={styles.retentionDistributionItem}>
-            <div>
+      <div className={styles.retentionDistributionLine}>
+        <div className={styles.retentionDistributionTitle}>
+          <span>Distribuição por tempo de permanência</span>
+          <strong>{fmtInt(summary?.churnTotal)} cliente{Number(summary?.churnTotal) === 1 ? '' : 's'}</strong>
+        </div>
+        <div className={styles.retentionDistributionStrip}>
+          {distribution.map((item) => (
+            <div key={item.key || item.label} className={styles.retentionDistributionItem}>
               <span>{item.label}</span>
               <strong>{fmtInt(item.count)}</strong>
+              <i aria-hidden="true"><b style={{ width: `${safePercent(item.percent)}%` }} /></i>
             </div>
-            <i aria-hidden="true"><b style={{ width: `${safePercent(item.percent)}%` }} /></i>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

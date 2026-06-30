@@ -2201,3 +2201,241 @@
     border-right: 0;
   }
 }
+
+/* v130 · Retenção mensal integrada ao dashboard, sem cards aninhados */
+.retentionPanel {
+  border-color: var(--line-subtle);
+  border-radius: 18px;
+  background: var(--workspace-panel-bg);
+  overflow: hidden;
+}
+
+.retentionPanelHeader {
+  min-height: 70px;
+  padding: 16px 18px 14px;
+  border-bottom-color: var(--line-subtle);
+  align-items: center;
+}
+
+.retentionPanelTitleGroup span,
+.retentionLeadMetric span,
+.retentionFacts dt,
+.retentionDistributionTitle span {
+  color: var(--text-accent);
+  font-size: 10.5px;
+  line-height: 1.15;
+  font-weight: 760;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.retentionPanelTitleGroup h3 {
+  margin: 6px 0 0;
+  color: var(--text-primary);
+  font-size: 19px;
+  line-height: 1.05;
+  font-weight: 720;
+  letter-spacing: -0.05em;
+}
+
+.retentionPanelTitleGroup p {
+  margin: 6px 0 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 560;
+}
+
+.retentionReading {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(0, 2fr);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.retentionLeadMetric {
+  min-width: 0;
+  padding: 18px 20px;
+  border-right: 1px solid var(--line-subtle);
+  display: grid;
+  align-content: center;
+  gap: 7px;
+}
+
+.retentionLeadMetric strong {
+  color: var(--text-primary);
+  font-size: clamp(36px, 3vw, 50px);
+  line-height: 0.9;
+  font-weight: 760;
+  letter-spacing: -0.08em;
+}
+
+.retentionLeadMetric p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 560;
+}
+
+.retentionFacts {
+  min-width: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.retentionFacts div {
+  min-width: 0;
+  padding: 18px 18px;
+  border-right: 1px solid var(--line-subtle);
+  display: grid;
+  align-content: center;
+  gap: 7px;
+}
+
+.retentionFacts div:last-child {
+  border-right: 0;
+}
+
+.retentionFacts dd {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(23px, 1.8vw, 32px);
+  line-height: 1;
+  font-weight: 730;
+  letter-spacing: -0.06em;
+}
+
+.retentionFacts span {
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 560;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.retentionProgress {
+  height: 2px;
+  margin-top: 5px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.retentionProgress i {
+  background: var(--accent-amber);
+}
+
+.retentionPanel_risk .retentionProgress i {
+  background: var(--danger);
+}
+
+.retentionPanel_warning .retentionProgress i {
+  background: var(--accent-amber);
+}
+
+.retentionPanel_good .retentionProgress i {
+  background: var(--success);
+}
+
+.retentionDistributionLine {
+  padding: 14px 18px 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.retentionDistributionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.retentionDistributionTitle strong {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 680;
+  white-space: nowrap;
+}
+
+.retentionDistributionStrip {
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.retentionDistributionItem {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 7px 10px;
+}
+
+.retentionDistributionItem span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.retentionDistributionItem strong {
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 740;
+  font-variant-numeric: tabular-nums;
+}
+
+.retentionDistributionItem i {
+  grid-column: 1 / -1;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  display: block;
+  overflow: hidden;
+}
+
+.retentionDistributionItem b {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent-amber);
+  display: block;
+}
+
+@media (max-width: 1180px) {
+  .retentionReading,
+  .retentionFacts,
+  .retentionDistributionStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .retentionLeadMetric,
+  .retentionFacts div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+
+  .retentionFacts div:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .retentionPanelHeader,
+  .retentionDistributionTitle {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
