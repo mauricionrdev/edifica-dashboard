@@ -12,7 +12,7 @@ import {
   UsersIcon,
   CloseIcon,
 } from '../components/ui/Icons.jsx';
-import { getDashboardTargets, getSquadRanking, updateDashboardTargets } from '../api/metrics.js';
+import { getDashboardTargets, getRetentionMetrics, getSquadRanking, updateDashboardTargets } from '../api/metrics.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { buildBarChartData, computeCentralMetrics } from '../utils/centralMetrics.js';
 import { fmtMoney, fmtPct, MONTHS_FULL } from '../utils/format.js';
@@ -98,6 +98,27 @@ function progressPercent(current, target) {
   const safeTarget = Number(target) || 0;
   if (safeTarget <= 0) return 0;
   return Math.max(0, Math.min((Number(current) / safeTarget) * 100, 100));
+}
+
+function safePercent(value) {
+  return Math.max(0, Math.min(Number(value) || 0, 100));
+}
+
+function formatLtvMonths(value) {
+  const months = Number(value) || 0;
+  if (months <= 0) return '0 mês';
+  if (months < 1) return `${months.toFixed(1).replace('.', ',')} mês`;
+  const rounded = months >= 10 ? Math.round(months) : Number(months.toFixed(1));
+  return `${String(rounded).replace('.', ',')} ${rounded === 1 ? 'mês' : 'meses'}`;
+}
+
+function retentionDistributionLabel(rows = []) {
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const top = safeRows.reduce((best, item) => (
+    Number(item?.count || 0) > Number(best?.count || 0) ? item : best
+  ), safeRows[0] || null);
+  if (!top || Number(top.count || 0) <= 0) return 'sem churn no período';
+  return `${top.label} · ${fmtInt(top.count)} cliente${Number(top.count) === 1 ? '' : 's'}`;
 }
 
 function moveItem(order, fromId, toId) {
@@ -215,6 +236,69 @@ function GoalCard({ title, value, helper, target, progress, tone = 'neutral', ch
       </div>
       {children ? <div className={styles.goalCardActions}>{children}</div> : null}
     </article>
+  );
+}
+
+function RetentionDashboardPanel({ summary, periodLabel, selectedSquadName, onOpenSquads }) {
+  const churnRate = Number(summary?.portfolioChurnRate) || 0;
+  const earlyRate = Number(summary?.earlyChurnRate) || 0;
+  const ltv = Number(summary?.ltvAverageMonths) || 0;
+  const distribution = Array.isArray(summary?.distribution) ? summary.distribution : [];
+
+  return (
+    <section className={styles.retentionPanel} aria-label="Indicadores de retenção do dashboard">
+      <header className={styles.retentionPanelHeader}>
+        <div>
+          <span>Retenção mensal</span>
+          <h3>Indicadores da carteira</h3>
+          <p>{periodLabel} · {selectedSquadName}</p>
+        </div>
+        <button type="button" className={styles.retentionOpenButton} onClick={onOpenSquads}>
+          Ver por Squad
+        </button>
+      </header>
+
+      <div className={styles.retentionPanelGrid}>
+        <article className={styles.retentionMainCard}>
+          <span>Churn da Carteira</span>
+          <strong>{fmtPct(churnRate)}</strong>
+          <p>{fmtInt(summary?.portfolioChurn)} de {fmtInt(summary?.portfolioStart)} clientes da base inicial</p>
+          <div className={styles.retentionProgress} aria-hidden="true">
+            <i style={{ width: `${safePercent(churnRate)}%` }} />
+          </div>
+        </article>
+
+        <article className={styles.retentionMiniCard}>
+          <span>Churn Precoce</span>
+          <strong>{fmtPct(earlyRate)}</strong>
+          <p>{fmtInt(summary?.earlyChurn)} de {fmtInt(summary?.newClients)} novos clientes</p>
+        </article>
+
+        <article className={styles.retentionMiniCard}>
+          <span>LTV Médio</span>
+          <strong>{formatLtvMonths(ltv)}</strong>
+          <p>média dos clientes em churn no período</p>
+        </article>
+
+        <article className={styles.retentionMiniCard}>
+          <span>Distribuição do Churn</span>
+          <strong>{fmtInt(summary?.churnTotal)}</strong>
+          <p>{retentionDistributionLabel(distribution)}</p>
+        </article>
+      </div>
+
+      <div className={styles.retentionDistributionStrip}>
+        {distribution.map((item) => (
+          <div key={item.key || item.label} className={styles.retentionDistributionItem}>
+            <div>
+              <span>{item.label}</span>
+              <strong>{fmtInt(item.count)}</strong>
+            </div>
+            <i aria-hidden="true"><b style={{ width: `${safePercent(item.percent)}%` }} /></i>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -566,6 +650,7 @@ export default function CentralPage() {
   const [draggingMetric, setDraggingMetric] = useState('');
   const [selectedClientId, setSelectedClientId] = useState(null);
   const [globalGoal, setGlobalGoal] = useState(null);
+  const [retentionSummary, setRetentionSummary] = useState(null);
   const [dashboardTargets, setDashboardTargets] = useState({ churnTarget: 0, revenueLostTarget: 0 });
   const [targetDraft, setTargetDraft] = useState({ churnTarget: '0', revenueLostTarget: '0' });
   const [targetsModalOpen, setTargetsModalOpen] = useState(false);
@@ -647,9 +732,10 @@ export default function CentralPage() {
     let active = true;
     async function loadDashboardIndicators() {
       try {
-        const [rankingResult, targetResult] = await Promise.allSettled([
+        const [rankingResult, targetResult, retentionResult] = await Promise.allSettled([
           getSquadRanking({ date: referenceDateForPeriod(period.y, period.m) }),
           getDashboardTargets({ month: dashboardMonth }),
+          getRetentionMetrics({ month: dashboardMonth, squadId: squadFilter }),
         ]);
         if (!active) return;
         if (rankingResult.status === 'fulfilled') {
@@ -667,13 +753,21 @@ export default function CentralPage() {
             revenueLostTarget: String(nextTargets.revenueLostTarget || 0),
           });
         }
+        if (retentionResult.status === 'fulfilled') {
+          setRetentionSummary(retentionResult.value?.summary || null);
+        } else {
+          setRetentionSummary(null);
+        }
       } catch {
-        if (active) setGlobalGoal(null);
+        if (active) {
+          setGlobalGoal(null);
+          setRetentionSummary(null);
+        }
       }
     }
     loadDashboardIndicators();
     return () => { active = false; };
-  }, [dashboardMonth, period.m, period.y]);
+  }, [dashboardMonth, period.m, period.y, squadFilter]);
 
   const handleSaveDashboardTargets = useCallback(async () => {
     setTargetsSaving(true);
@@ -711,8 +805,21 @@ export default function CentralPage() {
   const finishedPeriod = executiveMetrics.finishedPeriodCnt ?? 0;
   const lostPeriod = executiveMetrics.lostPeriodCnt ?? churnedPeriod + finishedPeriod;
   const selectedSquadName = squadFilter ? (squads || []).find((squad) => squad.id === squadFilter)?.name || 'Squad selecionado' : 'Todos squads';
+  const dashboardRetentionSummary = retentionSummary || {
+    portfolioStart: executiveMetrics.churnBaseCnt || 0,
+    portfolioChurn: executiveMetrics.portfolioChurnedPeriodCnt || 0,
+    portfolioChurnRate: churnRate,
+    newClients: currentMonthNewClients,
+    earlyChurn: 0,
+    earlyChurnRate: 0,
+    ltvAverageMonths: 0,
+    churnTotal: churnedPeriod,
+    distribution: [],
+  };
+  const displayChurnRate = Number(dashboardRetentionSummary.portfolioChurnRate) || 0;
+  const displayChurnedPeriod = Number(dashboardRetentionSummary.portfolioChurn) || 0;
   const revenueLostProgress = progressPercent(revenueLost, dashboardTargets.revenueLostTarget);
-  const churnTargetProgress = progressPercent(churnRate, dashboardTargets.churnTarget);
+  const churnTargetProgress = progressPercent(displayChurnRate, dashboardTargets.churnTarget);
   const globalGoalSummary = globalGoal || {};
   const globalTargetClients = Number(globalGoalSummary.targetClients) || 0;
   const globalClientsWithGoal = Number(globalGoalSummary.clientsWithGoal) || 0;
@@ -732,8 +839,8 @@ export default function CentralPage() {
 
       const baseDelta = buildKpiDelta(totalClients, prevTotal);
       const novosDelta = buildKpiDelta(currentMonthNewClients, prevNewCnt);
-      const churnCountDelta = buildKpiDelta(churnedPeriod, prevChurnedPeriod, fmtInt, { invert: true });
-      const churnDelta = buildKpiPctDelta(churnRate, prevChurnRate, { invert: true });
+      const churnCountDelta = buildKpiDelta(displayChurnedPeriod, prevChurnedPeriod, fmtInt, { invert: true });
+      const churnDelta = buildKpiPctDelta(displayChurnRate, prevChurnRate, { invert: true });
       const perdidaDelta = buildKpiDelta(revenueLost, prevRevenueLost, fmtMoney, { invert: true });
       const squadMrrDelta = buildKpiPctDelta(mrr, prevMrr);
 
@@ -761,24 +868,24 @@ export default function CentralPage() {
         {
           id: 'churnCount',
           label: 'Clientes churn no mês',
-          value: fmtInt(churnedPeriod),
+          value: fmtInt(displayChurnedPeriod),
           helper: 'cancelamentos no período',
-          delta: churnedPeriod > 0 ? churnCountDelta.delta : '',
+          delta: displayChurnedPeriod > 0 ? churnCountDelta.delta : '',
           deltaTone: churnCountDelta.deltaTone,
           icon: <BriefcaseIcon size={14} />,
-          tone: churnedPeriod > 0 ? 'risk' : 'neutral',
+          tone: displayChurnedPeriod > 0 ? 'risk' : 'neutral',
         },
         {
           id: 'churn',
           label: 'Taxa de churn',
-          value: fmtPct(churnRate),
-          helper: churnedPeriod > 0 ? `${fmtInt(churnedPeriod)} no período` : 'sem churn',
-          delta: churnedPeriod > 0 ? churnDelta.delta : '',
+          value: fmtPct(displayChurnRate),
+          helper: displayChurnedPeriod > 0 ? `${fmtInt(displayChurnedPeriod)} no período` : 'sem churn',
+          delta: displayChurnedPeriod > 0 ? churnDelta.delta : '',
           deltaTone: churnDelta.deltaTone,
           icon: <ChartColumnIcon size={14} />,
-          progress: progressFromChurn(churnRate),
+          progress: progressFromChurn(displayChurnRate),
           progressTone: 'risk',
-          tone: toneFromChurn(churnRate),
+          tone: toneFromChurn(displayChurnRate),
         },
         {
           id: 'perdida',
@@ -803,8 +910,8 @@ export default function CentralPage() {
       ];
     },
     [
-      churnRate,
-      churnedPeriod,
+      displayChurnRate,
+      displayChurnedPeriod,
       currentMonthNewClients,
       dashboardTargets.revenueLostTarget,
       finishedPeriod,
@@ -980,11 +1087,11 @@ export default function CentralPage() {
               />
               <GoalCard
                 title="Meta de Churn"
-                value={fmtPct(churnRate)}
+                value={fmtPct(displayChurnRate)}
                 helper={dashboardTargets.churnTarget > 0 ? `${fmtPct(churnTargetProgress)} da meta` : 'meta não cadastrada'}
                 target={dashboardTargets.churnTarget > 0 ? `Meta ${fmtPct(dashboardTargets.churnTarget)}` : 'Sem meta'}
                 progress={churnTargetProgress}
-                tone={churnRate <= dashboardTargets.churnTarget || dashboardTargets.churnTarget === 0 ? 'good' : 'risk'}
+                tone={displayChurnRate <= dashboardTargets.churnTarget || dashboardTargets.churnTarget === 0 ? 'good' : 'risk'}
               />
               <GoalCard
                 title="Meta de Receita Perdida"
@@ -996,6 +1103,13 @@ export default function CentralPage() {
               />
             </div>
           </section>
+
+          <RetentionDashboardPanel
+            summary={dashboardRetentionSummary}
+            periodLabel={periodLabel}
+            selectedSquadName={selectedSquadName}
+            onOpenSquads={() => navigate('/dashboard/indicadores-por-squad')}
+          />
 
           <section className={styles.boardSection}>
             <EntryColumnsChart rows={entryColumns} />

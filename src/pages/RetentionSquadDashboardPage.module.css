@@ -503,3 +503,26 @@
     justify-items: start;
   }
 }
+
+/* v129 · LTV Médio na retenção por squad */
+.summaryPanel {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.squadMetrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1180px) {
+  .summaryPanel,
+  .squadMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .summaryPanel,
+  .squadMetrics {
+    grid-template-columns: 1fr;
+  }
+}

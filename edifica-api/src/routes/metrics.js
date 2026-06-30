@@ -675,6 +675,46 @@ async function getDashboardTargets(periodMonth) {
   };
 }
 
+
+let retentionClientsInitPromise = null;
+
+async function ensureRetentionClientSchema() {
+  if (!retentionClientsInitPromise) {
+    retentionClientsInitPromise = (async () => {
+      const columns = await query('SHOW COLUMNS FROM clients');
+      const names = new Set(columns.map((column) => column.Field));
+      const statusColumn = columns.find((column) => column.Field === 'status');
+      if (statusColumn && !String(statusColumn.Type || '').includes('finished')) {
+        await query("ALTER TABLE clients MODIFY COLUMN status ENUM('active','onboarding','rampagem_comercial','paused','churn','finished') NOT NULL DEFAULT 'active'");
+      }
+      if (!names.has('start_date')) {
+        await query('ALTER TABLE clients ADD COLUMN start_date DATE NULL AFTER meta_lucro');
+      }
+      if (!names.has('churn_date')) {
+        await query('ALTER TABLE clients ADD COLUMN churn_date DATE NULL AFTER end_date');
+      }
+      if (!names.has('churn_month')) {
+        await query('ALTER TABLE clients ADD COLUMN churn_month TINYINT NULL AFTER churn_date');
+      }
+      if (!names.has('churn_year')) {
+        await query('ALTER TABLE clients ADD COLUMN churn_year SMALLINT NULL AFTER churn_month');
+      }
+      if (!names.has('status_changed_at')) {
+        await query('ALTER TABLE clients ADD COLUMN status_changed_at DATETIME NULL AFTER churn_year');
+      }
+      await query(`UPDATE clients
+                     SET churn_month = MONTH(churn_date),
+                         churn_year = YEAR(churn_date)
+                   WHERE churn_date IS NOT NULL
+                     AND (churn_month IS NULL OR churn_year IS NULL)`);
+    })().catch((err) => {
+      retentionClientsInitPromise = null;
+      throw err;
+    });
+  }
+  return retentionClientsInitPromise;
+}
+
 function squadRankingSettingKey(squadId) {
   return `squad:${String(squadId || '').trim()}`;
 }
@@ -1896,6 +1936,7 @@ function serializeRetentionSquad(squad, clients, monthPrefix) {
 
 router.get('/retention', requirePermission('central.view'), async (req, res, next) => {
   try {
+    if (!req.emptyWorkspaceView) await ensureRetentionClientSchema();
     if (req.emptyWorkspaceView) {
       const monthPrefix = normalizeRetentionMonth(req.query?.month || req.query?.date);
       return res.json({ monthPrefix, summary: calculateRetentionStats([], monthPrefix), squads: [] });

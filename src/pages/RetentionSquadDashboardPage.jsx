@@ -29,6 +29,14 @@ function progressWidth(value) {
   return `${Math.max(0, Math.min(Number(value) || 0, 100))}%`;
 }
 
+function formatLtvMonths(value) {
+  const months = Number(value) || 0;
+  if (months <= 0) return '0 mês';
+  if (months < 1) return `${months.toFixed(1).replace('.', ',')} mês`;
+  const rounded = months >= 10 ? Math.round(months) : Number(months.toFixed(1));
+  return `${String(rounded).replace('.', ',')} ${rounded === 1 ? 'mês' : 'meses'}`;
+}
+
 function SummaryMetric({ label, value, helper, tone = 'neutral' }) {
   return (
     <article className={`${styles.summaryMetric} ${styles[`summaryMetric_${tone}`] || ''}`.trim()}>
@@ -88,6 +96,12 @@ function SquadBlock({ row }) {
           <strong>{fmtPct(earlyRate)}</strong>
           <em>{fmtInt(row?.earlyChurn)} de {fmtInt(row?.newClients)} novos</em>
           <i aria-hidden="true"><b style={{ width: progressWidth(earlyRate) }} /></i>
+        </div>
+        <div className={styles.squadMetric}>
+          <span>LTV médio</span>
+          <strong>{formatLtvMonths(row?.ltvAverageMonths)}</strong>
+          <em>média dos churns do período</em>
+          <i aria-hidden="true"><b style={{ width: progressWidth(Number(row?.ltvAverageMonths) > 0 ? 100 : 0) }} /></i>
         </div>
         <div className={styles.squadMetric}>
           <span>Clientes novos</span>
@@ -193,6 +207,11 @@ export default function RetentionSquadDashboardPage() {
             value={fmtPct(summary.earlyChurnRate || 0)}
             helper={`${fmtInt(summary.earlyChurn)} de ${fmtInt(summary.newClients)} novos clientes`}
             tone={Number(summary.earlyChurnRate) > 10 ? 'risk' : 'neutral'}
+          />
+          <SummaryMetric
+            label="LTV médio"
+            value={formatLtvMonths(summary.ltvAverageMonths)}
+            helper="permanência média dos clientes em churn"
           />
           <SummaryMetric
             label="Distribuição do churn"
