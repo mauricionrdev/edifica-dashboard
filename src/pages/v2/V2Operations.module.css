@@ -1,0 +1,418 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  color: var(--text-primary);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-4);
+  align-items: start;
+  padding: var(--space-5);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3);
+  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-raised));
+}
+
+.heroIcon,
+.badgeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--bg-selected);
+  color: var(--accent);
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.eyebrow,
+.fieldLabel,
+.tableHead,
+.metaLabel {
+  color: var(--text-tertiary);
+  font-size: var(--fs-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.hero h1,
+.sectionHeader h2,
+.leaderName,
+.cardValue {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-snug);
+}
+
+.hero h1 {
+  font-size: var(--fs-xl);
+}
+
+.hero p,
+.sectionHeader p,
+.safeNotice p,
+.emptyState,
+.rowMeta,
+.cardHelper {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+}
+
+.safeBadge,
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: max-content;
+  height: 28px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--success-line);
+  border-radius: var(--radius-3);
+  background: var(--success-soft);
+  color: var(--success-text);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.statusBadgeMuted {
+  border-color: var(--line);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+  padding: var(--space-4);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.fieldGroup,
+.searchBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fieldGroup select,
+.searchBox input {
+  min-height: 38px;
+  min-width: 190px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  font: inherit;
+  outline: none;
+}
+
+.fieldGroup select {
+  padding: 0 var(--space-3);
+}
+
+.searchBox {
+  position: relative;
+  flex: 1 1 240px;
+}
+
+.searchBox svg {
+  position: absolute;
+  left: var(--space-3);
+  bottom: 11px;
+  color: var(--text-quaternary);
+}
+
+.searchBox input {
+  width: 100%;
+  padding: 0 var(--space-3) 0 var(--space-7);
+}
+
+.safeNotice,
+.errorBox,
+.emptyState {
+  padding: var(--space-4);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.errorBox {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.safeNotice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.gridCards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.metricCard,
+.panel,
+.leaderCard,
+.tablePanel {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  min-width: 0;
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+}
+
+.cardValue {
+  font-size: var(--fs-kpi);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel,
+.tablePanel {
+  padding: var(--space-4);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  align-items: flex-start;
+  margin-bottom: var(--space-4);
+}
+
+.sectionHeader h2 {
+  font-size: var(--fs-lg);
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+  gap: var(--space-4);
+}
+
+.leaderList,
+.stackList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.leaderCard {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+}
+
+.rankPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--bg-raised);
+  color: var(--accent);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderIdentity {
+  min-width: 0;
+}
+
+.leaderName {
+  display: block;
+  overflow: hidden;
+  font-size: var(--fs-md);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderStats {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-1);
+  background: var(--bg-raised);
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  overflow: hidden;
+}
+
+.tableRow,
+.tableHead {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(4, minmax(100px, 1fr));
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.tableRow:last-child {
+  border-bottom: 0;
+}
+
+.tableHead {
+  background: var(--bg-raised);
+}
+
+.tableRow {
+  color: var(--text-secondary);
+  font-size: var(--fs-body);
+}
+
+.tableRow strong {
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+}
+
+.toneGood {
+  color: var(--success-text);
+}
+
+.toneWarning {
+  color: var(--warning-text);
+}
+
+.toneDanger {
+  color: var(--danger-text);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 26px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-3);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+}
+
+@media (max-width: 1100px) {
+  .hero {
+    grid-template-columns: auto 1fr;
+  }
+
+  .safeBadge {
+    grid-column: 1 / -1;
+  }
+
+  .gridCards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .twoColumns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .gridCards {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar,
+  .sectionHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .fieldGroup select,
+  .searchBox input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .table {
+    overflow-x: auto;
+  }
+
+  .tableHead,
+  .tableRow {
+    min-width: 720px;
+  }
+
+  .leaderCard {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .leaderStats {
+    grid-column: 2;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+}

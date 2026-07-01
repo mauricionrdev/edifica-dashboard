@@ -36,6 +36,9 @@ const ClientsV2Page = lazy(() => import('./pages/v2/ClientsV2Page.jsx'));
 const OfficialModelV2Page = lazy(() => import('./pages/v2/OfficialModelV2Page.jsx'));
 const TeamV2Page = lazy(() => import('./pages/v2/TeamV2Page.jsx'));
 const TrafficV2Page = lazy(() => import('./pages/v2/TrafficV2Page.jsx'));
+const DashboardV2Page = lazy(() => import('./pages/v2/DashboardV2Page.jsx'));
+const RetentionV2Page = lazy(() => import('./pages/v2/RetentionV2Page.jsx'));
+const RankingsV2Page = lazy(() => import('./pages/v2/RankingsV2Page.jsx'));
 
 export default function App() {
   return (
@@ -121,6 +124,36 @@ export default function App() {
                   <RequirePermissionRoute permission="metrics.view">
                     <Suspense fallback={null}>
                       <TrafficV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/dashboard"
+                element={
+                  <RequirePermissionRoute permission="central.view">
+                    <Suspense fallback={null}>
+                      <DashboardV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/retencao"
+                element={
+                  <RequirePermissionRoute permission="central.view">
+                    <Suspense fallback={null}>
+                      <RetentionV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/rankings"
+                element={
+                  <RequirePermissionRoute permission="ranking.view">
+                    <Suspense fallback={null}>
+                      <RankingsV2Page />
                     </Suspense>
                   </RequirePermissionRoute>
                 }
