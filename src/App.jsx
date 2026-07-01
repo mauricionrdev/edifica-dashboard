@@ -35,6 +35,7 @@ const SafeMigrationPage = lazy(() => import('./pages/v2/SafeMigrationPage.jsx'))
 const ClientsV2Page = lazy(() => import('./pages/v2/ClientsV2Page.jsx'));
 const OfficialModelV2Page = lazy(() => import('./pages/v2/OfficialModelV2Page.jsx'));
 const TeamV2Page = lazy(() => import('./pages/v2/TeamV2Page.jsx'));
+const TrafficV2Page = lazy(() => import('./pages/v2/TrafficV2Page.jsx'));
 
 export default function App() {
   return (
@@ -110,6 +111,16 @@ export default function App() {
                   <RequirePermissionRoute permission="team.view">
                     <Suspense fallback={null}>
                       <TeamV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/gestao-trafego"
+                element={
+                  <RequirePermissionRoute permission="metrics.view">
+                    <Suspense fallback={null}>
+                      <TrafficV2Page />
                     </Suspense>
                   </RequirePermissionRoute>
                 }
