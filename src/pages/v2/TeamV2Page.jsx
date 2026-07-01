@@ -34,6 +34,10 @@ function userEmail(user) {
   return String(user?.email || 'Sem e-mail').trim();
 }
 
+function userKey(user) {
+  return String(user?.id || user?.email || userName(user));
+}
+
 function userRoles(user) {
   const secondary = Array.isArray(user?.secondaryRoles) ? user.secondaryRoles : [];
   return [user?.role, ...secondary].filter(Boolean);
@@ -82,6 +86,7 @@ export default function TeamV2Page() {
   const [error, setError] = useState(null);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedUserKey, setSelectedUserKey] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -133,6 +138,12 @@ export default function TeamV2Page() {
       })
       .sort((a, b) => userName(a).localeCompare(userName(b), 'pt-BR'));
   }, [query, sourceUsers, squads, statusFilter]);
+
+  const selectedUser = useMemo(() => {
+    if (!filteredUsers.length) return null;
+    if (!selectedUserKey) return filteredUsers[0];
+    return filteredUsers.find((user) => userKey(user) === selectedUserKey) || filteredUsers[0];
+  }, [filteredUsers, selectedUserKey]);
 
   const roleRows = useMemo(() => {
     return Object.entries(summary.byRole)
@@ -238,72 +249,104 @@ export default function TeamV2Page() {
         </div>
       </section>
 
-      <section className={styles.tablePanel}>
-        <div className={styles.tableHeader}>
-          <div>
-            <h2>Usuários carregados</h2>
-            <p>{loading || shellLoading ? 'Carregando dados...' : `${filteredUsers.length} usuário${filteredUsers.length === 1 ? '' : 's'} nesta visão`}</p>
+      <section className={styles.teamGrid}>
+        <article className={styles.tablePanel}>
+          <div className={styles.tableHeader}>
+            <div>
+              <h2>Usuários carregados</h2>
+              <p>{loading || shellLoading ? 'Carregando dados...' : `${filteredUsers.length} usuário${filteredUsers.length === 1 ? '' : 's'} nesta visão`}</p>
+            </div>
+            <span className={styles.readOnly}>Somente leitura</span>
           </div>
-          <span className={styles.readOnly}>Somente leitura</span>
-        </div>
 
-        {shellError || error ? (
-          <div className={styles.stateBox}>A listagem foi carregada parcialmente. Valide a API antes de comparar esta V2 com a tela oficial.</div>
-        ) : null}
+          {shellError || error ? (
+            <div className={styles.stateBox}>A listagem foi carregada parcialmente. Valide a API antes de comparar esta V2 com a tela oficial.</div>
+          ) : null}
 
-        {!loading && !shellLoading && filteredUsers.length === 0 ? (
-          <div className={styles.stateBox}>Nenhum usuário encontrado com os filtros atuais.</div>
-        ) : null}
+          {!loading && !shellLoading && filteredUsers.length === 0 ? (
+            <div className={styles.stateBox}>Nenhum usuário encontrado com os filtros atuais.</div>
+          ) : null}
 
-        {filteredUsers.length > 0 ? (
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Usuário</th>
-                  <th>Funções</th>
-                  <th>Squads</th>
-                  <th>Status</th>
-                  <th>Perfil</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => {
-                  const roles = userRoles(user);
-                  const squadNames = userSquadNames(user, squads);
-                  const active = user?.active !== false;
-                  return (
-                    <tr key={user?.id || userEmail(user)}>
-                      <td>
-                        <div className={styles.userCell}>
-                          {user?.avatarUrl ? (
-                            <img className={styles.avatarImage} src={user.avatarUrl} alt="" />
-                          ) : (
-                            <span className={styles.avatar}>{initials(userName(user))}</span>
-                          )}
-                          <div>
-                            <strong>{userName(user)}</strong>
-                            <small>{userEmail(user)}</small>
+          {filteredUsers.length > 0 ? (
+            <div className={styles.tableScroll}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Usuário</th>
+                    <th>Funções</th>
+                    <th>Squads</th>
+                    <th>Status</th>
+                    <th>Perfil</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => {
+                    const roles = userRoles(user);
+                    const squadNames = userSquadNames(user, squads);
+                    const active = user?.active !== false;
+                    const key = userKey(user);
+                    const selected = selectedUser ? userKey(selectedUser) === key : false;
+                    return (
+                      <tr
+                        key={key}
+                        className={selected ? styles.tableRowActive : ''}
+                        onClick={() => setSelectedUserKey(key)}
+                        tabIndex={0}
+                        onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedUserKey(key); }}
+                      >
+                        <td>
+                          <div className={styles.userCell}>
+                            {user?.avatarUrl ? (
+                              <img className={styles.avatarImage} src={user.avatarUrl} alt="" />
+                            ) : (
+                              <span className={styles.avatar}>{initials(userName(user))}</span>
+                            )}
+                            <div>
+                              <strong>{userName(user)}</strong>
+                              <small>{userEmail(user)}</small>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.pillGroup}>
-                          {roles.length ? roles.map((role) => <span className={styles.rolePill} key={role}>{roleLabel(role)}</span>) : <span className={styles.muted}>Sem função</span>}
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.squadText}>{squadNames.slice(0, 3).join(', ')}{squadNames.length > 3 ? ` +${squadNames.length - 3}` : ''}</div>
-                      </td>
-                      <td><span className={`${styles.statusPill} ${active ? styles.statusActive : styles.statusInactive}`}>{active ? 'Ativo' : 'Inativo'}</span></td>
-                      <td>{user?.customSlug ? <span className={styles.slug}>/{user.customSlug}</span> : <span className={styles.muted}>Sem link</span>}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td>
+                          <div className={styles.pillGroup}>
+                            {roles.length ? roles.map((role) => <span className={styles.rolePill} key={role}>{roleLabel(role)}</span>) : <span className={styles.muted}>Sem função</span>}
+                          </div>
+                        </td>
+                        <td>
+                          <div className={styles.squadText}>{squadNames.slice(0, 3).join(', ')}{squadNames.length > 3 ? ` +${squadNames.length - 3}` : ''}</div>
+                        </td>
+                        <td><span className={`${styles.statusPill} ${active ? styles.statusActive : styles.statusInactive}`}>{active ? 'Ativo' : 'Inativo'}</span></td>
+                        <td>{user?.customSlug ? <span className={styles.slug}>/{user.customSlug}</span> : <span className={styles.muted}>Sem link</span>}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </article>
+
+        <article className={styles.detailPanel}>
+          <div className={styles.panelHeader}>
+            <div>
+              <h2>{selectedUser ? userName(selectedUser) : 'Usuário selecionado'}</h2>
+              <p>Detalhe somente leitura para validar papel, escopo e vínculos.</p>
+            </div>
+            <span className={styles.readOnly}>Sem edição</span>
           </div>
-        ) : null}
+          {selectedUser ? (
+            <div className={styles.detailBody}>
+              <div className={styles.detailGrid}>
+                <div><span>E-mail</span><strong>{userEmail(selectedUser)}</strong></div>
+                <div><span>Status</span><strong>{selectedUser.active === false ? 'Inativo' : 'Ativo'}</strong></div>
+                <div><span>Funções</span><strong>{userRoles(selectedUser).map(roleLabel).join(', ') || 'Sem função'}</strong></div>
+                <div><span>Squads</span><strong>{userSquadNames(selectedUser, squads).join(', ')}</strong></div>
+                <div><span>Perfil</span><strong>{selectedUser?.customSlug ? `/${selectedUser.customSlug}` : 'Sem link'}</strong></div>
+                <div><span>Master</span><strong>{selectedUser?.isMaster ? 'Sim' : 'Não'}</strong></div>
+              </div>
+            </div>
+          ) : <div className={styles.stateBox}>Selecione um usuário para validar o detalhe.</div>}
+        </article>
       </section>
     </main>
   );

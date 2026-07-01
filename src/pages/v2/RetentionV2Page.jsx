@@ -25,6 +25,10 @@ function distributionValue(row) {
   return safeNumber(row?.count ?? row?.total ?? row?.value, 0);
 }
 
+function squadRowKey(row, index = 0) {
+  return String(row?.squadId || row?.squad_id || row?.squadName || row?.name || `squad-${index}`);
+}
+
 function formatLtvMonths(value) {
   const number = safeNumber(value, 0);
   if (!number) return '0 meses';
@@ -37,6 +41,7 @@ export default function RetentionV2Page() {
   const [period, setPeriod] = useState(currentPeriod);
   const [squadId, setSquadId] = useState('');
   const [query, setQuery] = useState('');
+  const [selectedRowKey, setSelectedRowKey] = useState('');
   const [payload, setPayload] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -70,6 +75,11 @@ export default function RetentionV2Page() {
   }, [query, rows]);
   const selectedSquad = resolveSquadName(squads, squadId);
   const distribution = Array.isArray(summary.distribution) ? summary.distribution : [];
+  const selectedRow = useMemo(() => {
+    if (!filteredRows.length) return null;
+    if (!selectedRowKey) return filteredRows[0];
+    return filteredRows.find((row, index) => squadRowKey(row, index) === selectedRowKey) || filteredRows[0];
+  }, [filteredRows, selectedRowKey]);
 
   return (
     <main className={styles.page}>
@@ -155,15 +165,24 @@ export default function RetentionV2Page() {
               <span>Churn precoce</span>
               <span>LTV</span>
             </div>
-            {filteredRows.map((row) => (
-              <div className={styles.tableRow} key={row.squadId || row.squadName}>
-                <strong>{row.squadName || row.name || 'Squad'}</strong>
-                <span>{safeInt(row.portfolioStart)} clientes</span>
-                <span>{safePct(row.portfolioChurnRate)} · {safeInt(row.portfolioChurn)}</span>
-                <span>{safePct(row.earlyChurnRate)} · {safeInt(row.earlyChurn)}</span>
-                <span>{formatLtvMonths(row.ltvAverageMonths)}</span>
-              </div>
-            ))}
+            {filteredRows.map((row, index) => {
+              const key = squadRowKey(row, index);
+              const active = selectedRow ? squadRowKey(selectedRow) === key : index === 0;
+              return (
+                <button
+                  type="button"
+                  className={`${styles.tableRow} ${styles.tableRowClickable} ${active ? styles.tableRowActive : ''}`.trim()}
+                  key={key}
+                  onClick={() => setSelectedRowKey(key)}
+                >
+                  <strong>{row.squadName || row.name || 'Squad'}</strong>
+                  <span>{safeInt(row.portfolioStart)} clientes</span>
+                  <span>{safePct(row.portfolioChurnRate)} · {safeInt(row.portfolioChurn)}</span>
+                  <span>{safePct(row.earlyChurnRate)} · {safeInt(row.earlyChurn)}</span>
+                  <span>{formatLtvMonths(row.ltvAverageMonths)}</span>
+                </button>
+              );
+            })}
           </div>
           {!loading && filteredRows.length === 0 ? <p className={styles.emptyState}>Nenhum squad retornado para este filtro.</p> : null}
         </article>
@@ -171,12 +190,32 @@ export default function RetentionV2Page() {
         <article className={styles.panel}>
           <header className={styles.sectionHeader}>
             <div>
-              <p className={styles.eyebrow}>Distribuição</p>
-              <h2>Motivos de churn</h2>
-              <p>Usa a classificação consolidada do backend.</p>
+              <p className={styles.eyebrow}>Detalhe readonly</p>
+              <h2>{selectedRow?.squadName || selectedRow?.name || 'Squad selecionado'}</h2>
+              <p>Prévia operacional para comparar a V2 sem abrir edição ou recalcular regra oficial.</p>
             </div>
+            <span className={styles.statusBadgeMuted}>Sem escrita</span>
           </header>
-          <div className={styles.stackList}>
+          {selectedRow ? (
+            <div className={styles.detailGrid}>
+              <div className={styles.detailMetric}><span>Carteira inicial</span><strong>{safeInt(selectedRow.portfolioStart)} clientes</strong></div>
+              <div className={styles.detailMetric}><span>Churn da carteira</span><strong>{safePct(selectedRow.portfolioChurnRate)} · {safeInt(selectedRow.portfolioChurn)}</strong></div>
+              <div className={styles.detailMetric}><span>Churn precoce</span><strong>{safePct(selectedRow.earlyChurnRate)} · {safeInt(selectedRow.earlyChurn)}</strong></div>
+              <div className={styles.detailMetric}><span>LTV médio</span><strong>{formatLtvMonths(selectedRow.ltvAverageMonths)}</strong></div>
+            </div>
+          ) : <p className={styles.emptyState}>Selecione um squad para validar o detalhe.</p>}
+        </article>
+      </section>
+
+      <section className={styles.panel}>
+        <header className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>Distribuição</p>
+            <h2>Motivos de churn</h2>
+            <p>Usa a classificação consolidada do backend.</p>
+          </div>
+        </header>
+        <div className={styles.stackList}>
             {distribution.map((row, index) => {
               const value = distributionValue(row);
               const total = safeNumber(summary.churnTotal, 0);
@@ -189,8 +228,7 @@ export default function RetentionV2Page() {
               );
             })}
             {!loading && distribution.length === 0 ? <p className={styles.emptyState}>Sem distribuição classificada no período.</p> : null}
-          </div>
-        </article>
+        </div>
       </section>
     </main>
   );

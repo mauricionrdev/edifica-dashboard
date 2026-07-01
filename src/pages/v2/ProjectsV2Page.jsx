@@ -60,6 +60,7 @@ function projectHaystack(project) {
 export default function ProjectsV2Page() {
   const [projects, setProjects] = useState([]);
   const [query, setQuery] = useState('');
+  const [selectedProjectKey, setSelectedProjectKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -87,6 +88,14 @@ export default function ProjectsV2Page() {
     if (!needle) return projects;
     return projects.filter((project) => projectHaystack(project).includes(needle));
   }, [projects, query]);
+
+  const selectedProject = useMemo(() => {
+    if (!filtered.length) return null;
+    if (!selectedProjectKey) return filtered[0];
+    return filtered.find((project, index) => projectId(project, index) === selectedProjectKey) || filtered[0];
+  }, [filtered, selectedProjectKey]);
+
+  const selectedTasks = Array.isArray(selectedProject?.tasks) ? selectedProject.tasks.slice(0, 8) : [];
 
   const totals = useMemo(() => {
     const totalTasks = projects.reduce((acc, project) => acc + countTasks(project), 0);
@@ -141,28 +150,70 @@ export default function ProjectsV2Page() {
         </article>
       </section>
 
-      <section className={styles.tablePanel}>
-        <header className={styles.sectionHeader}>
-          <div>
-            <p className={styles.eyebrow}>Snapshot de projetos</p>
-            <h2>Projetos carregados</h2>
-            <p>Lista limitada para validação de estrutura, vínculo com cliente e progresso aparente.</p>
-          </div>
-          <span className={styles.statusBadgeMuted}>GET /api/projects</span>
-        </header>
-        <div className={styles.table} role="table" aria-label="Projetos V2">
-          <div className={styles.tableHead} role="row"><span>Projeto</span><span>Cliente</span><span>Status</span><span>Tarefas</span><span>Atualização</span></div>
-          {filtered.slice(0, 80).map((project, index) => (
-            <div className={styles.tableRow} role="row" key={projectId(project, index)}>
-              <span><strong>{projectName(project)}</strong><br /><small>{memberCount(project)} membros</small></span>
-              <span>{clientName(project)}</span>
-              <span>{projectStatus(project)}</span>
-              <span>{safeInt(countDone(project))} / {safeInt(countTasks(project))}</span>
-              <span>{projectUpdatedAt(project)}</span>
+      <section className={styles.twoColumns}>
+        <article className={styles.tablePanel}>
+          <header className={styles.sectionHeader}>
+            <div>
+              <p className={styles.eyebrow}>Snapshot de projetos</p>
+              <h2>Projetos carregados</h2>
+              <p>Lista limitada para validação de estrutura, vínculo com cliente e progresso aparente.</p>
             </div>
-          ))}
-        </div>
-        {!loading && filtered.length === 0 ? <p className={styles.emptyState}>Nenhum projeto encontrado para os filtros atuais.</p> : null}
+            <span className={styles.statusBadgeMuted}>GET /api/projects</span>
+          </header>
+          <div className={styles.table} role="table" aria-label="Projetos V2">
+            <div className={styles.tableHead} role="row"><span>Projeto</span><span>Cliente</span><span>Status</span><span>Tarefas</span><span>Atualização</span></div>
+            {filtered.slice(0, 80).map((project, index) => {
+              const key = projectId(project, index);
+              const active = selectedProject ? projectId(selectedProject) === key : index === 0;
+              return (
+                <button
+                  type="button"
+                  className={`${styles.tableRow} ${styles.tableRowClickable} ${active ? styles.tableRowActive : ''}`.trim()}
+                  role="row"
+                  key={key}
+                  onClick={() => setSelectedProjectKey(key)}
+                >
+                  <span><strong>{projectName(project)}</strong><br /><small>{memberCount(project)} membros</small></span>
+                  <span>{clientName(project)}</span>
+                  <span>{projectStatus(project)}</span>
+                  <span>{safeInt(countDone(project))} / {safeInt(countTasks(project))}</span>
+                  <span>{projectUpdatedAt(project)}</span>
+                </button>
+              );
+            })}
+          </div>
+          {!loading && filtered.length === 0 ? <p className={styles.emptyState}>Nenhum projeto encontrado para os filtros atuais.</p> : null}
+        </article>
+
+        <article className={styles.panel}>
+          <header className={styles.sectionHeader}>
+            <div>
+              <p className={styles.eyebrow}>Detalhe readonly</p>
+              <h2>{selectedProject ? projectName(selectedProject) : 'Projeto selecionado'}</h2>
+              <p>Prévia operacional do projeto sem edição de quadro, membros ou tarefas.</p>
+            </div>
+            <span className={styles.statusBadgeMuted}>Sem escrita</span>
+          </header>
+          {selectedProject ? (
+            <>
+              <div className={styles.detailGrid}>
+                <div className={styles.detailMetric}><span>Cliente</span><strong>{clientName(selectedProject)}</strong></div>
+                <div className={styles.detailMetric}><span>Status</span><strong>{projectStatus(selectedProject)}</strong></div>
+                <div className={styles.detailMetric}><span>Tarefas</span><strong>{safeInt(countDone(selectedProject))} / {safeInt(countTasks(selectedProject))}</strong></div>
+                <div className={styles.detailMetric}><span>Membros</span><strong>{safeInt(memberCount(selectedProject))}</strong></div>
+              </div>
+              <div className={styles.miniList}>
+                {selectedTasks.map((task, index) => (
+                  <div className={styles.miniListRow} key={task?.id || task?.title || index}>
+                    <strong>{task?.title || task?.name || `Tarefa ${index + 1}`}</strong>
+                    <span>{task?.status || 'Sem status'}</span>
+                  </div>
+                ))}
+                {!selectedTasks.length ? <p className={styles.emptyState}>O payload atual não trouxe tarefas detalhadas para este projeto.</p> : null}
+              </div>
+            </>
+          ) : <p className={styles.emptyState}>Selecione um projeto para validar o detalhe.</p>}
+        </article>
       </section>
     </main>
   );

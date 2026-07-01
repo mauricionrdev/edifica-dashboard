@@ -50,6 +50,10 @@ function clientName(row) {
   return String(row?.client?.name || 'Cliente sem nome').trim();
 }
 
+function clientKey(row) {
+  return String(row?.client?.id || row?.client?.clientId || clientName(row));
+}
+
 function clientSquad(row) {
   return String(row?.client?.squadName || 'Sem squad').trim();
 }
@@ -84,6 +88,7 @@ export default function TrafficV2Page() {
   const [period, setPeriod] = useState(currentPeriod);
   const [managerFilter, setManagerFilter] = useState('');
   const [query, setQuery] = useState('');
+  const [selectedClientKey, setSelectedClientKey] = useState('');
   const [payload, setPayload] = useState({ managers: [], clients: [], ranking: [], summary: {}, targetPercent: 80 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -135,6 +140,11 @@ export default function TrafficV2Page() {
   }, [clients, query]);
 
   const criticalClients = filteredClients.filter((row) => Number(row?.priority) > 0).length;
+  const selectedClient = useMemo(() => {
+    if (!filteredClients.length) return null;
+    if (!selectedClientKey) return filteredClients[0];
+    return filteredClients.find((row) => clientKey(row) === selectedClientKey) || filteredClients[0];
+  }, [filteredClients, selectedClientKey]);
 
   return (
     <main className={styles.page}>
@@ -283,58 +293,96 @@ export default function TrafficV2Page() {
         </article>
       </section>
 
-      <section className={styles.tablePanel}>
-        <div className={styles.tableHeader}>
-          <div>
-            <h2>Clientes priorizados</h2>
-            <p>{loading ? 'Carregando dados...' : `${filteredClients.length} cliente${filteredClients.length === 1 ? '' : 's'} nesta visão`}</p>
+      <section className={styles.clientGrid}>
+        <article className={styles.tablePanel}>
+          <div className={styles.tableHeader}>
+            <div>
+              <h2>Clientes priorizados</h2>
+              <p>{loading ? 'Carregando dados...' : `${filteredClients.length} cliente${filteredClients.length === 1 ? '' : 's'} nesta visão`}</p>
+            </div>
+            <span className={styles.readOnly}>Dados semanais existentes</span>
           </div>
-          <span className={styles.readOnly}>Dados semanais existentes</span>
-        </div>
 
-        {!error && !loading && !filteredClients.length ? <div className={styles.stateBox}>Nenhum cliente encontrado com os filtros atuais.</div> : null}
+          {!error && !loading && !filteredClients.length ? <div className={styles.stateBox}>Nenhum cliente encontrado com os filtros atuais.</div> : null}
 
-        {!error && filteredClients.length > 0 ? (
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Gestor</th>
-                  <th>Squad</th>
-                  <th>Atenção</th>
-                  <th>Investimento</th>
-                  <th>CPL</th>
-                  <th>Leads</th>
-                  <th>ICP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClients.slice(0, 80).map((row) => (
-                  <tr key={row?.client?.id || clientName(row)}>
-                    <td>
-                      <div className={styles.clientCell}>
-                        <span className={styles.avatar}>{clientName(row).slice(0, 2).toUpperCase()}</span>
-                        <div>
-                          <strong>{clientName(row)}</strong>
-                          <small>{row?.client?.id ? `ID ${row.client.id}` : 'Sem ID'}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{clientManager(row)}</td>
-                    <td>{clientSquad(row)}</td>
-                    <td><span className={`${styles.priorityPill} ${Number(row?.priority) > 0 ? styles.priorityAlert : styles.priorityStable}`}>{clientPriorityLabel(row?.priority)}</span></td>
-                    <td className={styles.money}>{metricValue(row, 'investimento') > 0 ? fmtMoney(metricValue(row, 'investimento')) : '—'}</td>
-                    <td className={styles.money}>{metricValue(row, 'currentCpl') > 0 ? fmtMoney(metricValue(row, 'currentCpl')) : '—'}</td>
-                    <td>{fmtIntSafe(metricValue(row, 'leadsCurrent'))}</td>
-                    <td>{metricValue(row, 'icpPercent') > 0 ? fmtPct(metricValue(row, 'icpPercent')) : '—'}</td>
+          {!error && filteredClients.length > 0 ? (
+            <div className={styles.tableScroll}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Gestor</th>
+                    <th>Squad</th>
+                    <th>Atenção</th>
+                    <th>Investimento</th>
+                    <th>CPL</th>
+                    <th>Leads</th>
+                    <th>ICP</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredClients.length > 80 ? <p className={styles.limitNote}>Exibindo os primeiros 80 registros para manter a validação leve.</p> : null}
+                </thead>
+                <tbody>
+                  {filteredClients.slice(0, 80).map((row) => {
+                    const key = clientKey(row);
+                    const active = selectedClient ? clientKey(selectedClient) === key : false;
+                    return (
+                      <tr
+                        key={key}
+                        className={active ? styles.tableRowActive : ''}
+                        onClick={() => setSelectedClientKey(key)}
+                        tabIndex={0}
+                        onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setSelectedClientKey(key); }}
+                      >
+                        <td>
+                          <div className={styles.clientCell}>
+                            <span className={styles.avatar}>{clientName(row).slice(0, 2).toUpperCase()}</span>
+                            <div>
+                              <strong>{clientName(row)}</strong>
+                              <small>{row?.client?.id ? `ID ${row.client.id}` : 'Sem ID'}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{clientManager(row)}</td>
+                        <td>{clientSquad(row)}</td>
+                        <td><span className={`${styles.priorityPill} ${Number(row?.priority) > 0 ? styles.priorityAlert : styles.priorityStable}`}>{clientPriorityLabel(row?.priority)}</span></td>
+                        <td className={styles.money}>{metricValue(row, 'investimento') > 0 ? fmtMoney(metricValue(row, 'investimento')) : '—'}</td>
+                        <td className={styles.money}>{metricValue(row, 'currentCpl') > 0 ? fmtMoney(metricValue(row, 'currentCpl')) : '—'}</td>
+                        <td>{fmtIntSafe(metricValue(row, 'leadsCurrent'))}</td>
+                        <td>{metricValue(row, 'icpPercent') > 0 ? fmtPct(metricValue(row, 'icpPercent')) : '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {filteredClients.length > 80 ? <p className={styles.limitNote}>Exibindo os primeiros 80 registros para manter a validação leve.</p> : null}
+            </div>
+          ) : null}
+        </article>
+
+        <article className={styles.detailPanel}>
+          <div className={styles.panelHeader}>
+            <div>
+              <h2>{selectedClient ? clientName(selectedClient) : 'Cliente selecionado'}</h2>
+              <p>Detalhe somente leitura para validar priorização sem abrir edição.</p>
+            </div>
+            <span className={styles.readOnly}>Sem escrita</span>
           </div>
-        ) : null}
+          {selectedClient ? (
+            <div className={styles.detailBody}>
+              <div className={styles.detailGrid}>
+                <div><span>Gestor</span><strong>{clientManager(selectedClient)}</strong></div>
+                <div><span>Squad</span><strong>{clientSquad(selectedClient)}</strong></div>
+                <div><span>Investimento</span><strong>{metricValue(selectedClient, 'investimento') > 0 ? fmtMoney(metricValue(selectedClient, 'investimento')) : '—'}</strong></div>
+                <div><span>CPL atual</span><strong>{metricValue(selectedClient, 'currentCpl') > 0 ? fmtMoney(metricValue(selectedClient, 'currentCpl')) : '—'}</strong></div>
+                <div><span>Leads atuais</span><strong>{fmtIntSafe(metricValue(selectedClient, 'leadsCurrent'))}</strong></div>
+                <div><span>ICP</span><strong>{metricValue(selectedClient, 'icpPercent') > 0 ? fmtPct(metricValue(selectedClient, 'icpPercent')) : '—'}</strong></div>
+              </div>
+              <div className={styles.guardList}>
+                <span>Prioridade: {clientPriorityLabel(selectedClient?.priority)}</span>
+                <span>Origem: GET /api/metrics/traffic-management</span>
+              </div>
+            </div>
+          ) : <div className={styles.stateBox}>Selecione um cliente para validar o detalhe.</div>}
+        </article>
       </section>
     </main>
   );
