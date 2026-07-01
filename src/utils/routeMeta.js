@@ -1,5 +1,10 @@
 const ROUTE_META = [
   {
+    match: (pathname) => pathname.startsWith('/v2/modelo-oficial'),
+    title: 'Modelo Oficial V2',
+    crumb: 'Modelo V2',
+  },
+  {
     match: (pathname) => pathname.startsWith('/v2/clientes'),
     title: 'Clientes V2',
     crumb: 'Clientes V2',
