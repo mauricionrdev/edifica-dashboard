@@ -9,6 +9,7 @@ import {
   monthLabel,
   normalizeText,
   periodValue,
+  progressWidth,
   resolveSquadName,
   safeInt,
   safePct,
