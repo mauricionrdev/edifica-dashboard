@@ -1,5 +1,20 @@
 const ROUTE_META = [
   {
+    match: (pathname) => pathname.startsWith('/v2/gdvs'),
+    title: 'GDVs V2',
+    crumb: 'GDVs V2',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/v2/squads'),
+    title: 'Squads V2',
+    crumb: 'Squads V2',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/v2/preencher-semana'),
+    title: 'Preencher Semana V2',
+    crumb: 'Semana V2',
+  },
+  {
     match: (pathname) => pathname.startsWith('/v2/rankings'),
     title: 'Rankings V2',
     crumb: 'Rankings V2',

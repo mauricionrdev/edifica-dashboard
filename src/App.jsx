@@ -39,6 +39,9 @@ const TrafficV2Page = lazy(() => import('./pages/v2/TrafficV2Page.jsx'));
 const DashboardV2Page = lazy(() => import('./pages/v2/DashboardV2Page.jsx'));
 const RetentionV2Page = lazy(() => import('./pages/v2/RetentionV2Page.jsx'));
 const RankingsV2Page = lazy(() => import('./pages/v2/RankingsV2Page.jsx'));
+const WeeklyV2Page = lazy(() => import('./pages/v2/WeeklyV2Page.jsx'));
+const SquadsV2Page = lazy(() => import('./pages/v2/SquadsV2Page.jsx'));
+const GdvsV2Page = lazy(() => import('./pages/v2/GdvsV2Page.jsx'));
 
 export default function App() {
   return (
@@ -154,6 +157,36 @@ export default function App() {
                   <RequirePermissionRoute permission="ranking.view">
                     <Suspense fallback={null}>
                       <RankingsV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/preencher-semana"
+                element={
+                  <RequirePermissionRoute permission="metrics.view">
+                    <Suspense fallback={null}>
+                      <WeeklyV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/squads"
+                element={
+                  <RequirePermissionRoute permission="squads.view">
+                    <Suspense fallback={null}>
+                      <SquadsV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/gdvs"
+                element={
+                  <RequirePermissionRoute permission="ranking.view">
+                    <Suspense fallback={null}>
+                      <GdvsV2Page />
                     </Suspense>
                   </RequirePermissionRoute>
                 }
