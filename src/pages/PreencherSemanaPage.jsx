@@ -339,7 +339,7 @@ function SegmentBlock({ title, shortLabel, fields, client, form, localCalc, canE
   );
 }
 
-function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCount = 0, monthlySummary = null, canEdit, onSaved, onRequestCampaign, onRequestCampaigns }) {
+function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCount = 0, monthlySummary = null, canEdit, onSaved, onRequestCampaign, onRequestCampaigns, onLoadError = null }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(EMPTY_DATA);
   const [loaded, setLoaded] = useState(false);
@@ -437,7 +437,11 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
       .catch((err) => {
         if (loadGenRef.current !== token) return;
         if (!(err instanceof ApiError && err.status === 401)) {
-          showToast(`Erro ao carregar ${client.name}`, 'error');
+          if (typeof onLoadError === 'function') {
+            onLoadError(client, err);
+          } else {
+            showToast(`Erro ao carregar ${client.name}`, 'error');
+          }
         }
         latestFormRef.current = EMPTY_DATA;
         lastSavedRef.current = JSON.stringify(sanitizeForSave(EMPTY_DATA));
@@ -453,7 +457,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
         void runSave(latestFormRef.current, true);
       }
     };
-  }, [client.id, client.name, periodKey, runSave, showToast]);
+  }, [client, client.id, client.name, onLoadError, periodKey, runSave, showToast]);
 
   const localCalc = useMemo(
     () => calcWeek({ data: sanitizeForSave(form), computed: serverComputed }),
@@ -583,7 +587,8 @@ const WeekCard = memo(WeekCardBase, (prevProps, nextProps) => {
     prevProps.canEdit === nextProps.canEdit &&
     prevProps.onSaved === nextProps.onSaved &&
     prevProps.onRequestCampaign === nextProps.onRequestCampaign &&
-    prevProps.onRequestCampaigns === nextProps.onRequestCampaigns
+    prevProps.onRequestCampaigns === nextProps.onRequestCampaigns &&
+    prevProps.onLoadError === nextProps.onLoadError
   );
 });
 
@@ -609,6 +614,7 @@ export default function PreencherSemanaPage() {
   const [pendingDeleteCampaign, setPendingDeleteCampaign] = useState(null);
   const [summaryReloadKey, setSummaryReloadKey] = useState(0);
   const [monthlySummaryByClient, setMonthlySummaryByClient] = useState({});
+  const loadErrorToastRef = useRef('');
 
   const periodKey = useMemo(() => buildPeriodKey(year, month0, week), [year, month0, week]);
   const summaryDate = useMemo(() => weekReferenceDate(year, month0, week), [month0, week, year]);
@@ -616,6 +622,12 @@ export default function PreencherSemanaPage() {
   const handleMetricSaved = useCallback(() => {
     setSummaryReloadKey((value) => value + 1);
   }, []);
+
+  const handleMetricLoadError = useCallback(() => {
+    if (loadErrorToastRef.current === periodKey) return;
+    loadErrorToastRef.current = periodKey;
+    showToast('Alguns clientes não foram carregados. Verifique a API e tente novamente.', 'error');
+  }, [periodKey, showToast]);
 
   const handleOpenCampaignModal = useCallback((client) => {
     setCampaignModalClient(client || null);
@@ -1050,6 +1062,7 @@ export default function PreencherSemanaPage() {
                           onSaved={handleMetricSaved}
                           onRequestCampaign={handleOpenCampaignModal}
                           onRequestCampaigns={handleOpenCampaignsModal}
+                          onLoadError={handleMetricLoadError}
                         />
                       );
                     })}
@@ -1134,6 +1147,7 @@ export default function PreencherSemanaPage() {
                         canEdit={canEditMetrics}
                         onSaved={handleMetricSaved}
                         onRequestCampaign={handleOpenCampaignModal}
+                        onLoadError={handleMetricLoadError}
                       />
                     </section>
                   ))
