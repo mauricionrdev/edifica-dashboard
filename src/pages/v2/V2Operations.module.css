@@ -785,3 +785,27 @@
     flex-direction: column;
   }
 }
+
+.leaderButton {
+  width: 100%;
+  border-right: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  border-left: 1px solid var(--line-subtle);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.leaderButton:first-child {
+  border-top: 1px solid var(--line-subtle);
+}
+
+.leaderButton:hover,
+.leaderCardActive {
+  background: var(--bg-selected);
+}
+
+.leaderCardActive {
+  box-shadow: inset 2px 0 0 var(--accent);
+}

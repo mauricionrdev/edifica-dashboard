@@ -6,9 +6,11 @@ import {
   buildPeriodOptions,
   currentPeriod,
   errorMessage,
+  normalizeText,
   periodValue,
   progressWidth,
   referenceDate,
+  resolveName,
   resolveSquadName,
   safeInt,
   safeMoney,
@@ -23,6 +25,40 @@ function targetTone(value, target, invert = false) {
   if (!safeTarget) return styles.toneWarning;
   const ok = invert ? safeValue <= safeTarget : safeValue >= safeTarget;
   return ok ? styles.toneGood : styles.toneDanger;
+}
+
+function clientName(client) {
+  return resolveName(client?.name || client?.clientName || client?.client_name, 'Cliente sem nome');
+}
+
+function clientStatus(client) {
+  return String(client?.status || client?.clientStatus || client?.client_status || 'sem_status').replace(/_/g, ' ');
+}
+
+function clientFee(client) {
+  return safeNumber(client?.fee ?? client?.monthlyFee ?? client?.monthly_fee ?? client?.mrr, 0);
+}
+
+function hasGoal(client) {
+  const goal = safeNumber(client?.monthGoal ?? client?.monthlyGoal ?? client?.goal ?? client?.target ?? client?.meta, 0);
+  return goal > 0 || Boolean(client?.hasGoal || client?.goalConfigured || client?.goal_configured);
+}
+
+function isAttentionClient(client) {
+  const status = normalizeText(clientStatus(client));
+  if (!hasGoal(client)) return true;
+  if (status.includes('churn') || status.includes('paus') || status.includes('finaliz')) return true;
+  return safeNumber(client?.monthProgress ?? client?.progress ?? client?.goalProgress, 0) < 35;
+}
+
+function clientProgress(client) {
+  return safeNumber(client?.monthProgress ?? client?.progress ?? client?.goalProgress, 0);
+}
+
+function endpointStatus(value) {
+  if (Array.isArray(value)) return value.length > 0 ? 'OK' : 'Sem dados';
+  if (value && typeof value === 'object') return 'OK';
+  return 'Pendente';
 }
 
 export default function DashboardV2Page() {
@@ -74,6 +110,13 @@ export default function DashboardV2Page() {
   const selectedSquad = resolveSquadName(squads, squadId);
   const bestSquads = Array.isArray(rankingPayload?.rows) ? rankingPayload.rows.slice(0, 5) : [];
   const clientsWithoutGoal = Math.max(0, clients.length - safeNumber(totals.clientsWithGoal, 0));
+  const attentionClients = useMemo(() => clients.filter(isAttentionClient).slice(0, 8), [clients]);
+  const dataSources = [
+    ['Contratos e metas', endpointStatus(summaryPayload?.totals), 'GET /api/metrics/summary'],
+    ['Ranking ao vivo', endpointStatus(rankingPayload?.rows), 'GET /api/metrics/ranking'],
+    ['Retenção', endpointStatus(retentionPayload?.summary), 'GET /api/metrics/retention'],
+    ['Metas do dashboard', endpointStatus(targetsPayload?.targets), 'GET /api/metrics/dashboard/targets'],
+  ];
 
   return (
     <main className={styles.page}>
@@ -187,6 +230,47 @@ export default function DashboardV2Page() {
               </article>
             ))}
             {!loading && bestSquads.length === 0 ? <p className={styles.emptyState}>Nenhum ranking retornado para o período.</p> : null}
+          </div>
+        </article>
+      </section>
+
+      <section className={styles.twoColumns}>
+        <article className={styles.panel}>
+          <header className={styles.sectionHeader}>
+            <div>
+              <p className={styles.eyebrow}>Saúde dos dados</p>
+              <h2>Fontes usadas pela V2</h2>
+              <p>Checklist de leitura para validar a promoção sem alterar contrato de API.</p>
+            </div>
+            <span className={styles.statusBadgeMuted}>Somente GET</span>
+          </header>
+          <div className={styles.miniList}>
+            {dataSources.map(([label, status, endpoint]) => (
+              <div className={styles.miniListRow} key={endpoint}>
+                <strong>{label}</strong>
+                <span>{status} · {endpoint}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className={styles.panel}>
+          <header className={styles.sectionHeader}>
+            <div>
+              <p className={styles.eyebrow}>Atenção operacional</p>
+              <h2>Clientes para revisar</h2>
+              <p>Prévia readonly da base do summary. Não aciona salvamento.</p>
+            </div>
+            <span className={styles.statusBadgeMuted}>{safeInt(attentionClients.length)} item(ns)</span>
+          </header>
+          <div className={styles.miniList}>
+            {attentionClients.map((client) => (
+              <div className={styles.miniListRow} key={client?.id || clientName(client)}>
+                <strong>{clientName(client)}</strong>
+                <span>{clientStatus(client)} · {safePct(clientProgress(client))} · {safeMoney(clientFee(client))}</span>
+              </div>
+            ))}
+            {!loading && attentionClients.length === 0 ? <p className={styles.emptyState}>Nenhum cliente de atenção retornado no período.</p> : null}
           </div>
         </article>
       </section>

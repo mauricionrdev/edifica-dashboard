@@ -23,7 +23,7 @@ function entityName(row, type) {
 }
 
 function ownerName(row) {
-  return row?.ownerName || row?.owner?.name || 'Sem responsável';
+  return row?.ownerName || row?.owner?.name || row?.leaderName || row?.responsibleName || 'Sem responsável';
 }
 
 function realizedPercent(row) {
@@ -31,14 +31,22 @@ function realizedPercent(row) {
 }
 
 function predictedPercent(row) {
-  return safeNumber(row?.predictedGoalProgress ?? row?.projectedGoalProgress ?? row?.predictedPercent, 0);
+  return safeNumber(row?.predictedGoalProgress ?? row?.projectedGoalProgress ?? row?.projectedProgress ?? row?.predictedPercent, 0);
+}
+
+function churnPercent(row) {
+  return safeNumber(row?.churnRate ?? row?.churnPercent ?? row?.portfolioChurnRate, 0);
 }
 
 function rankingRowId(row, index, type) {
-  return row?.[`${type}Id`] || row?.[type]?.id || row?.id || `${type}-${index}`;
+  return String(row?.[`${type}Id`] || row?.[type]?.id || row?.id || `${type}-${index}`);
 }
 
-function RankingList({ title, subtitle, rows, type }) {
+function baseClients(row) {
+  return safeNumber(row?.rankingGoalBaseClients ?? row?.activeClients ?? row?.clients ?? row?.clientCount, 0);
+}
+
+function RankingList({ title, subtitle, rows, type, selectedKey, onSelect }) {
   return (
     <article className={styles.panel}>
       <header className={styles.sectionHeader}>
@@ -53,8 +61,15 @@ function RankingList({ title, subtitle, rows, type }) {
         {rows.map((row, index) => {
           const realized = realizedPercent(row);
           const predicted = predictedPercent(row);
+          const key = rankingRowId(row, index, type);
+          const selected = selectedKey === `${type}:${key}`;
           return (
-            <article className={styles.leaderCard} key={rankingRowId(row, index, type)}>
+            <button
+              className={`${styles.leaderCard} ${styles.leaderButton} ${selected ? styles.leaderCardActive : ''}`}
+              key={key}
+              type="button"
+              onClick={() => onSelect(type, key)}
+            >
               <span className={styles.rankPill}>{String(index + 1).padStart(2, '0')}</span>
               <div className={styles.leaderIdentity}>
                 <strong className={styles.leaderName}>{entityName(row, type)}</strong>
@@ -66,10 +81,84 @@ function RankingList({ title, subtitle, rows, type }) {
                 <span>MRR {safeMoney(row?.mrr)}</span>
               </div>
               <div className={styles.progressTrack} aria-hidden="true"><span style={{ width: `${progressWidth(realized)}%` }} /></div>
-            </article>
+            </button>
           );
         })}
         {rows.length === 0 ? <p className={styles.emptyState}>Nenhum item retornado para o período.</p> : null}
+      </div>
+    </article>
+  );
+}
+
+function RankingDetail({ selected, periodLabel }) {
+  if (!selected?.row) {
+    return (
+      <article className={styles.panel}>
+        <header className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>Detalhe</p>
+            <h2>Selecione uma linha</h2>
+            <p>Clique em um squad ou GDV para comparar meta, previsão, churn e base ranqueada.</p>
+          </div>
+          <span className={styles.statusBadgeMuted}>Readonly</span>
+        </header>
+      </article>
+    );
+  }
+
+  const { row, type } = selected;
+  const realized = realizedPercent(row);
+  const predicted = predictedPercent(row);
+  const delta = predicted - realized;
+
+  return (
+    <article className={styles.panel}>
+      <header className={styles.sectionHeader}>
+        <div>
+          <p className={styles.eyebrow}>{type === 'gdv' ? 'GDV selecionado' : 'Squad selecionado'}</p>
+          <h2>{entityName(row, type)}</h2>
+          <p>{ownerName(row)} · leitura ao vivo de {periodLabel}.</p>
+        </div>
+        <span className={styles.statusBadgeMuted}>Não grava snapshot</span>
+      </header>
+
+      <div className={styles.detailGrid}>
+        <div className={styles.detailMetric}>
+          <span>Meta realizada</span>
+          <strong>{safePct(realized)}</strong>
+        </div>
+        <div className={styles.detailMetric}>
+          <span>Projeção</span>
+          <strong>{safePct(predicted)}</strong>
+        </div>
+        <div className={styles.detailMetric}>
+          <span>Delta projeção</span>
+          <strong>{safePct(delta)}</strong>
+        </div>
+        <div className={styles.detailMetric}>
+          <span>Churn</span>
+          <strong>{safePct(churnPercent(row))}</strong>
+        </div>
+        <div className={styles.detailMetric}>
+          <span>MRR</span>
+          <strong>{safeMoney(row?.mrr)}</strong>
+        </div>
+        <div className={styles.detailMetric}>
+          <span>Clientes base</span>
+          <strong>{safeInt(baseClients(row))}</strong>
+        </div>
+      </div>
+
+      <div className={styles.stackList}>
+        <div>
+          <div className={styles.cardTop}><span>Avanço no ranking</span><strong>{safePct(realized)}</strong></div>
+          <div className={styles.progressTrack} aria-hidden="true"><span style={{ width: `${progressWidth(realized)}%` }} /></div>
+        </div>
+        <div className={styles.chips}>
+          <span className={styles.chip}>Fonte: GET /api/metrics/ranking{type === 'gdv' ? '/gdvs' : ''}</span>
+          <span className={styles.chip}>Sem PUT/POST</span>
+          <span className={styles.chip}>Snapshot separado</span>
+        </div>
       </div>
     </article>
   );
@@ -79,6 +168,7 @@ export default function RankingsV2Page() {
   const periodOptions = useMemo(() => buildPeriodOptions(new Date(), 14), []);
   const [period, setPeriod] = useState(currentPeriod);
   const [query, setQuery] = useState('');
+  const [selectedKey, setSelectedKey] = useState('');
   const [squadPayload, setSquadPayload] = useState(null);
   const [gdvPayload, setGdvPayload] = useState(null);
   const [championsPayload, setChampionsPayload] = useState(null);
@@ -111,17 +201,35 @@ export default function RankingsV2Page() {
   }, [period.month, period.year]);
 
   const cleanQuery = normalizeText(query);
-  const squadRows = (Array.isArray(squadPayload?.rows) ? squadPayload.rows : []).filter((row) => {
+  const allSquadRows = Array.isArray(squadPayload?.rows) ? squadPayload.rows : [];
+  const allGdvRows = Array.isArray(gdvPayload?.rows) ? gdvPayload.rows : [];
+  const squadRows = allSquadRows.filter((row) => {
     if (!cleanQuery) return true;
     return normalizeText(`${entityName(row, 'squad')} ${ownerName(row)}`).includes(cleanQuery);
   }).slice(0, 8);
-  const gdvRows = (Array.isArray(gdvPayload?.rows) ? gdvPayload.rows : []).filter((row) => {
+  const gdvRows = allGdvRows.filter((row) => {
     if (!cleanQuery) return true;
     return normalizeText(`${entityName(row, 'gdv')} ${ownerName(row)}`).includes(cleanQuery);
   }).slice(0, 8);
   const champions = Array.isArray(championsPayload?.rows) ? championsPayload.rows.slice(0, 6) : [];
   const globalGoal = squadPayload?.globalGoal || {};
   const currentLeader = squadRows[0] || null;
+  const selectedPeriod = periodValue(period);
+  const selectedPeriodLabel = monthLabel(selectedPeriod);
+  const currentPeriodChampion = champions.find((item) => String(item.periodMonth || item.month || '') === selectedPeriod);
+
+  const selected = useMemo(() => {
+    if (!selectedKey) {
+      const first = squadRows[0];
+      return first ? { type: 'squad', row: first } : null;
+    }
+    const [type, id] = selectedKey.split(':');
+    const source = type === 'gdv' ? gdvRows : squadRows;
+    const row = source.find((item, index) => rankingRowId(item, index, type) === id);
+    return row ? { type, row } : null;
+  }, [gdvRows, selectedKey, squadRows]);
+
+  const handleSelect = (type, id) => setSelectedKey(`${type}:${id}`);
 
   return (
     <main className={styles.page}>
@@ -157,10 +265,14 @@ export default function RankingsV2Page() {
         </label>
       </section>
 
-      <section className={styles.safeNotice}>
+      <section className={currentPeriodChampion ? styles.errorBox : styles.safeNotice}>
         <span className={styles.badgeIcon}><TargetIcon size={16} /></span>
         <p>
-          Regra preservada: <strong>campeão oficial só deve existir após 00:00 em America/Sao_Paulo no primeiro dia do mês seguinte</strong>. O líder abaixo é apenas leitura ao vivo de {monthLabel(periodValue(period))}.
+          {currentPeriodChampion ? (
+            <>Atenção: o endpoint de campeões retornou {selectedPeriodLabel}. Esta condição precisa ser verificada no backend antes de promover a tela oficial.</>
+          ) : (
+            <>Regra preservada: <strong>campeão oficial só deve existir após 00:00 em America/Sao_Paulo no primeiro dia do mês seguinte</strong>. O líder abaixo é apenas leitura ao vivo de {selectedPeriodLabel}.</>
+          )}
         </p>
       </section>
 
@@ -179,7 +291,7 @@ export default function RankingsV2Page() {
         </article>
         <article className={styles.metricCard}>
           <div className={styles.cardTop}><span>Squads ranqueados</span><UsersIcon size={15} /></div>
-          <strong className={styles.cardValue}>{safeInt(Array.isArray(squadPayload?.rows) ? squadPayload.rows.length : 0)}</strong>
+          <strong className={styles.cardValue}>{safeInt(allSquadRows.length)}</strong>
           <p className={styles.cardHelper}>endpoint de ranking de squads</p>
         </article>
         <article className={styles.metricCard}>
@@ -190,9 +302,11 @@ export default function RankingsV2Page() {
       </section>
 
       <section className={styles.twoColumns}>
-        <RankingList title="Squads" subtitle="Fonte: GET /api/metrics/ranking." rows={squadRows} type="squad" />
-        <RankingList title="GDVs" subtitle="Fonte: GET /api/metrics/ranking/gdvs." rows={gdvRows} type="gdv" />
+        <RankingList title="Squads" subtitle="Fonte: GET /api/metrics/ranking." rows={squadRows} type="squad" selectedKey={selectedKey} onSelect={handleSelect} />
+        <RankingList title="GDVs" subtitle="Fonte: GET /api/metrics/ranking/gdvs." rows={gdvRows} type="gdv" selectedKey={selectedKey} onSelect={handleSelect} />
       </section>
+
+      <RankingDetail selected={selected} periodLabel={selectedPeriodLabel} />
 
       <section className={styles.tablePanel}>
         <header className={styles.sectionHeader}>
