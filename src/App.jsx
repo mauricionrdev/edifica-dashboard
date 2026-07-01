@@ -32,6 +32,7 @@ import DesignLabPreencherSemanaPage from './pages/design-lab/DesignLabPreencherS
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
 
 const SafeMigrationPage = lazy(() => import('./pages/v2/SafeMigrationPage.jsx'));
+const ClientsV2Page = lazy(() => import('./pages/v2/ClientsV2Page.jsx'));
 
 export default function App() {
   return (
@@ -77,6 +78,16 @@ export default function App() {
                   <RequirePermissionRoute permission="team.view">
                     <Suspense fallback={null}>
                       <SafeMigrationPage />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/clientes"
+                element={
+                  <RequirePermissionRoute permission="clients.view">
+                    <Suspense fallback={null}>
+                      <ClientsV2Page />
                     </Suspense>
                   </RequirePermissionRoute>
                 }
