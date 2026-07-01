@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { SearchIcon, ShieldIcon, UsersIcon } from '../../components/ui/Icons.jsx';
+import { CloseIcon, SearchIcon, ShieldIcon, UsersIcon } from '../../components/ui/Icons.jsx';
 import { clientInitials, fmtDateBR, statusLabel } from '../../utils/clientHelpers.js';
 import { CLIENT_STATUS, isRevenueClientStatus, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { fmtMoney } from '../../utils/format.js';
@@ -26,6 +26,10 @@ function normalizeText(value) {
 
 function clientId(client) {
   return client?.id || client?.clientId || client?.client_id || '';
+}
+
+function clientKey(client) {
+  return String(clientId(client) || clientName(client));
 }
 
 function clientName(client) {
@@ -56,6 +60,22 @@ function clientStartDate(client) {
   return client?.startDate || client?.start_date || client?.createdAt || client?.created_at || '';
 }
 
+function clientEndDate(client) {
+  return client?.endDate || client?.end_date || client?.churnDate || client?.churn_date || '';
+}
+
+function clientMetaLucro(client) {
+  return Number(client?.metaLucro ?? client?.meta_lucro ?? client?.profitTarget ?? client?.profit_target ?? 0) || 0;
+}
+
+function clientText(client, keys, fallback = 'Não informado') {
+  for (const key of keys) {
+    const value = client?.[key];
+    if (value !== null && value !== undefined && String(value).trim()) return String(value).trim();
+  }
+  return fallback;
+}
+
 function buildSummary(clients) {
   const list = Array.isArray(clients) ? clients : [];
   return list.reduce(
@@ -75,10 +95,76 @@ function buildSummary(clients) {
   );
 }
 
+function DetailRow({ label, value }) {
+  return (
+    <div className={styles.detailRow}>
+      <span>{label}</span>
+      <strong>{value || 'Não informado'}</strong>
+    </div>
+  );
+}
+
+function ReadOnlyClientDetail({ client, squads, onClose }) {
+  if (!client) return null;
+  const id = clientId(client);
+  const status = normalizeClientStatus(client?.status);
+  const isRevenue = isRevenueClientStatus(status);
+
+  return (
+    <aside className={styles.detailPanel} aria-label="Detalhes do cliente selecionado">
+      <header className={styles.detailHeader}>
+        <div className={styles.detailIdentity}>
+          <span className={styles.detailAvatar}>{clientInitials(clientName(client))}</span>
+          <div>
+            <p className={styles.eyebrow}>Cliente selecionado</p>
+            <h2>{clientName(client)}</h2>
+            <span className={`${styles.statusPill} ${styles[`status_${status}`] || ''}`}>{statusLabel(client)}</span>
+          </div>
+        </div>
+        <button type="button" className={styles.iconButton} onClick={onClose} aria-label="Fechar detalhes">
+          <CloseIcon size={16} />
+        </button>
+      </header>
+
+      <section className={styles.detailSection}>
+        <h3>Operação</h3>
+        <DetailRow label="ID" value={id || 'Sem ID'} />
+        <DetailRow label="Squad" value={clientSquadName(client, squads)} />
+        <DetailRow label="GDV" value={clientGdvName(client)} />
+        <DetailRow label="Gestor de tráfego" value={clientGestorName(client)} />
+      </section>
+
+      <section className={styles.detailSection}>
+        <h3>Financeiro</h3>
+        <DetailRow label="MRR / mensalidade" value={fmtMoney(clientFee(client))} />
+        <DetailRow label="Meta lucro" value={clientMetaLucro(client) ? fmtMoney(clientMetaLucro(client)) : 'Não informado'} />
+        <DetailRow label="Conta receita" value={isRevenue ? 'Sim' : 'Não'} />
+      </section>
+
+      <section className={styles.detailSection}>
+        <h3>Ciclo</h3>
+        <DetailRow label="Entrada" value={fmtDateBR(clientStartDate(client))} />
+        <DetailRow label="Saída / churn" value={fmtDateBR(clientEndDate(client))} />
+        <DetailRow label="Mês churn" value={clientText(client, ['churnMonth', 'churn_month'], 'Não informado')} />
+      </section>
+
+      <section className={styles.detailSection}>
+        <h3>Campos de apoio</h3>
+        <DetailRow label="ICP" value={clientText(client, ['icp', 'icpName', 'icp_name'])} />
+        <DetailRow label="Rota" value={clientText(client, ['route', 'routeName', 'route_name'])} />
+        <DetailRow label="Observação" value={clientText(client, ['notes', 'observation', 'observacao'])} />
+      </section>
+
+      <p className={styles.detailNotice}>Painel somente leitura. Nenhum dado é salvo ou alterado nesta rota V2.</p>
+    </aside>
+  );
+}
+
 export default function ClientsV2Page() {
   const { clients, squads, loading, error } = useOutletContext();
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedClientId, setSelectedClientId] = useState(null);
 
   const summary = useMemo(() => buildSummary(clients), [clients]);
 
@@ -100,6 +186,11 @@ export default function ClientsV2Page() {
       })
       .sort((a, b) => clientName(a).localeCompare(clientName(b), 'pt-BR'));
   }, [clients, query, squads, statusFilter]);
+
+  const selectedClient = useMemo(() => {
+    if (!selectedClientId) return null;
+    return (Array.isArray(clients) ? clients : []).find((client) => clientKey(client) === String(selectedClientId)) || null;
+  }, [clients, selectedClientId]);
 
   return (
     <main className={styles.page}>
@@ -163,69 +254,79 @@ export default function ClientsV2Page() {
         </div>
       </section>
 
-      <section className={styles.tablePanel}>
-        <div className={styles.tableHeader}>
-          <div>
-            <h2>Carteira carregada</h2>
-            <p>{loading ? 'Carregando dados...' : `${filteredClients.length} cliente${filteredClients.length === 1 ? '' : 's'} nesta visão`}</p>
+      <section className={`${styles.contentGrid} ${selectedClient ? styles.contentGridWithDetail : ''}`}>
+        <section className={styles.tablePanel}>
+          <div className={styles.tableHeader}>
+            <div>
+              <h2>Carteira carregada</h2>
+              <p>{loading ? 'Carregando dados...' : `${filteredClients.length} cliente${filteredClients.length === 1 ? '' : 's'} nesta visão`}</p>
+            </div>
+            <span className={styles.readOnly}>Somente leitura</span>
           </div>
-          <span className={styles.readOnly}>Somente leitura</span>
-        </div>
 
-        {error ? (
-          <div className={styles.stateBox}>Não foi possível carregar clientes. Verifique a API antes de validar a V2.</div>
-        ) : null}
+          {error ? (
+            <div className={styles.stateBox}>Não foi possível carregar clientes. Verifique a API antes de validar a V2.</div>
+          ) : null}
 
-        {!error && !loading && filteredClients.length === 0 ? (
-          <div className={styles.stateBox}>Nenhum cliente encontrado com os filtros atuais.</div>
-        ) : null}
+          {!error && !loading && filteredClients.length === 0 ? (
+            <div className={styles.stateBox}>Nenhum cliente encontrado com os filtros atuais.</div>
+          ) : null}
 
-        {!error && filteredClients.length > 0 ? (
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Status</th>
-                  <th>Squad</th>
-                  <th>GDV</th>
-                  <th>Gestor</th>
-                  <th>MRR</th>
-                  <th>Entrada</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClients.slice(0, 80).map((client) => {
-                  const id = clientId(client);
-                  const status = normalizeClientStatus(client?.status);
-                  return (
-                    <tr key={id || clientName(client)}>
-                      <td>
-                        <div className={styles.clientCell}>
-                          <span className={styles.avatar}>{clientInitials(clientName(client))}</span>
-                          <div>
-                            <strong>{clientName(client)}</strong>
-                            <small>{id ? `ID ${id}` : 'Sem ID'}</small>
+          {!error && filteredClients.length > 0 ? (
+            <div className={styles.tableScroll}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Status</th>
+                    <th>Squad</th>
+                    <th>GDV</th>
+                    <th>Gestor</th>
+                    <th>MRR</th>
+                    <th>Entrada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredClients.slice(0, 80).map((client) => {
+                    const id = clientId(client);
+                    const status = normalizeClientStatus(client?.status);
+                    const key = clientKey(client);
+                    const isSelected = selectedClient && clientKey(selectedClient) === key;
+                    return (
+                      <tr
+                        key={key}
+                        className={isSelected ? styles.selectedRow : ''}
+                        onClick={() => setSelectedClientId(key)}
+                      >
+                        <td>
+                          <div className={styles.clientCell}>
+                            <span className={styles.avatar}>{clientInitials(clientName(client))}</span>
+                            <div>
+                              <strong>{clientName(client)}</strong>
+                              <small>{id ? `ID ${id}` : 'Sem ID'}</small>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td><span className={`${styles.statusPill} ${styles[`status_${status}`] || ''}`}>{statusLabel(client)}</span></td>
-                      <td>{clientSquadName(client, squads)}</td>
-                      <td>{clientGdvName(client)}</td>
-                      <td>{clientGestorName(client)}</td>
-                      <td className={styles.money}>{fmtMoney(clientFee(client))}</td>
-                      <td>{fmtDateBR(clientStartDate(client))}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
+                        </td>
+                        <td><span className={`${styles.statusPill} ${styles[`status_${status}`] || ''}`}>{statusLabel(client)}</span></td>
+                        <td>{clientSquadName(client, squads)}</td>
+                        <td>{clientGdvName(client)}</td>
+                        <td>{clientGestorName(client)}</td>
+                        <td className={styles.money}>{fmtMoney(clientFee(client))}</td>
+                        <td>{fmtDateBR(clientStartDate(client))}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
 
-        {filteredClients.length > 80 ? (
-          <p className={styles.limitNote}>Exibindo os primeiros 80 clientes para manter a rota de validação leve.</p>
-        ) : null}
+          {filteredClients.length > 80 ? (
+            <p className={styles.limitNote}>Exibindo os primeiros 80 clientes para manter a rota de validação leve.</p>
+          ) : null}
+        </section>
+
+        <ReadOnlyClientDetail client={selectedClient} squads={squads} onClose={() => setSelectedClientId(null)} />
       </section>
     </main>
   );
