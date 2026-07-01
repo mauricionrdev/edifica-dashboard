@@ -1,5 +1,30 @@
 const ROUTE_META = [
   {
+    match: (pathname) => pathname.startsWith('/v2/suporte-tecnologia'),
+    title: 'Suporte TI V2',
+    crumb: 'Suporte V2',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/v2/workspace'),
+    title: 'Workspace V2',
+    crumb: 'Workspace V2',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/v2/perfil'),
+    title: 'Perfil V2',
+    crumb: 'Perfil V2',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/v2/projetos'),
+    title: 'Projetos V2',
+    crumb: 'Projetos V2',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/v2/visao-geral'),
+    title: 'Central V2',
+    crumb: 'V2',
+  },
+  {
     match: (pathname) => pathname.startsWith('/v2/gdvs'),
     title: 'GDVs V2',
     crumb: 'GDVs V2',

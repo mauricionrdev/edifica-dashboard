@@ -42,6 +42,11 @@ const RankingsV2Page = lazy(() => import('./pages/v2/RankingsV2Page.jsx'));
 const WeeklyV2Page = lazy(() => import('./pages/v2/WeeklyV2Page.jsx'));
 const SquadsV2Page = lazy(() => import('./pages/v2/SquadsV2Page.jsx'));
 const GdvsV2Page = lazy(() => import('./pages/v2/GdvsV2Page.jsx'));
+const ProjectsV2Page = lazy(() => import('./pages/v2/ProjectsV2Page.jsx'));
+const ProfileV2Page = lazy(() => import('./pages/v2/ProfileV2Page.jsx'));
+const WorkspaceV2Page = lazy(() => import('./pages/v2/WorkspaceV2Page.jsx'));
+const SupportV2Page = lazy(() => import('./pages/v2/SupportV2Page.jsx'));
+const V2OverviewPage = lazy(() => import('./pages/v2/V2OverviewPage.jsx'));
 
 export default function App() {
   return (
@@ -80,7 +85,7 @@ export default function App() {
                 path="clientes"
                 element={<RequirePermissionRoute permission="clients.view"><DesignLabClientsPage /></RequirePermissionRoute>}
               />
-              <Route path="v2" element={<Navigate to="/v2/plano-migracao" replace />} />
+              <Route path="v2" element={<Navigate to="/v2/visao-geral" replace />} />
               <Route
                 path="v2/plano-migracao"
                 element={
@@ -187,6 +192,56 @@ export default function App() {
                   <RequirePermissionRoute permission="ranking.view">
                     <Suspense fallback={null}>
                       <GdvsV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/visao-geral"
+                element={
+                  <RequirePermissionRoute permission="central.view">
+                    <Suspense fallback={null}>
+                      <V2OverviewPage />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/projetos"
+                element={
+                  <RequirePermissionRoute permission="projects.view">
+                    <Suspense fallback={null}>
+                      <ProjectsV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/perfil"
+                element={
+                  <RequirePermissionRoute permission="profile.view">
+                    <Suspense fallback={null}>
+                      <ProfileV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/workspace"
+                element={
+                  <RequirePermissionRoute permission="profile.view">
+                    <Suspense fallback={null}>
+                      <WorkspaceV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
+              <Route
+                path="v2/suporte-tecnologia"
+                element={
+                  <RequirePermissionRoute permission="support.view">
+                    <Suspense fallback={null}>
+                      <SupportV2Page />
                     </Suspense>
                   </RequirePermissionRoute>
                 }
