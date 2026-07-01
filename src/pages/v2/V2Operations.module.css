@@ -419,3 +419,115 @@
     white-space: normal;
   }
 }
+
+.promotionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.promotionCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-raised);
+}
+
+.promotionCard h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--fs-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-snug);
+}
+
+.promotionCard p,
+.timelineItem p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  line-height: var(--lh-normal);
+}
+
+.compactList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compactList li {
+  position: relative;
+  padding-left: var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  line-height: var(--lh-normal);
+}
+
+.compactList li::before {
+  position: absolute;
+  top: 0.55em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  content: '';
+}
+
+.timelineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.timelineItem {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-3);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-raised);
+}
+
+.timelineItem > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  background: var(--bg-selected);
+  color: var(--accent);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.timelineItem strong {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+}
+
+@media (max-width: 1180px) {
+  .promotionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .promotionGrid {
+    grid-template-columns: 1fr;
+  }
+}

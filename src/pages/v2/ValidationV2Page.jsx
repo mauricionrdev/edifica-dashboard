@@ -19,23 +19,9 @@ import {
   safeInt,
 } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
+import { routeMatrixRows } from './v2RouteRegistry.js';
 
-const ROUTE_MATRIX = [
-  ['Dashboard', '/', '/v2/dashboard', 'central.view', 'Comparar indicadores principais e metas'],
-  ['Clientes', '/clientes', '/v2/clientes', 'clients.view', 'Conferir status, MRR, Churn e Finalizado'],
-  ['Preencher Semana', '/preencher-semana', '/v2/preencher-semana', 'metrics.view', 'Conferir leitura semanal antes de qualquer edição'],
-  ['Squads', '/squads/:squadId', '/v2/squads', 'squads.view', 'Conferir carteira sem alterar métricas'],
-  ['Rankings', '/ranking-squads', '/v2/rankings', 'ranking.view', 'Conferir ranking ao vivo e campeões fechados'],
-  ['GDVs', '/ranking-gdvs', '/v2/gdvs', 'ranking.view', 'Conferir ranking por GDV'],
-  ['Retenção', '/dashboard/indicadores-por-squad', '/v2/retencao', 'central.view', 'Conferir churn, LTV e distribuição'],
-  ['Gestão de Tráfego', '/gestao-trafego', '/v2/gestao-trafego', 'metrics.view', 'Conferir dados semanais sem criar lançamento'],
-  ['Modelo Oficial', '/modelo-oficial', '/v2/modelo-oficial', 'project_template.view', 'Conferir estrutura sem salvar/resetar'],
-  ['Equipe', '/equipe', '/v2/equipe', 'team.view', 'Conferir usuários sem editar permissões'],
-  ['Projetos', '/projetos', '/v2/projetos', 'projects.view', 'Conferir leitura de projetos'],
-  ['Perfil', '/perfil', '/v2/perfil', 'profile.view', 'Conferir visão pessoal sem editar'],
-  ['Workspace', '/espaco-trabalho', '/v2/workspace', 'profile.view', 'Conferir leitura do workspace'],
-  ['Suporte TI', '/suporte-tecnologia', '/v2/suporte-tecnologia', 'support.view', 'Conferir demandas e operação de suporte'],
-];
+const ROUTE_MATRIX = routeMatrixRows();
 
 function buildChecks(period) {
   const refDate = referenceDate(period);

@@ -48,6 +48,7 @@ const WorkspaceV2Page = lazy(() => import('./pages/v2/WorkspaceV2Page.jsx'));
 const SupportV2Page = lazy(() => import('./pages/v2/SupportV2Page.jsx'));
 const V2OverviewPage = lazy(() => import('./pages/v2/V2OverviewPage.jsx'));
 const ValidationV2Page = lazy(() => import('./pages/v2/ValidationV2Page.jsx'));
+const PromotionV2Page = lazy(() => import('./pages/v2/PromotionV2Page.jsx'));
 
 export default function App() {
   return (
@@ -208,6 +209,17 @@ export default function App() {
                 }
               />
 
+
+              <Route
+                path="v2/promocao"
+                element={
+                  <RequirePermissionRoute permission="team.view">
+                    <Suspense fallback={null}>
+                      <PromotionV2Page />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
+              />
               <Route
                 path="v2/validacao"
                 element={
