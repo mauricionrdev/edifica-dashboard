@@ -3,6 +3,7 @@ import { ShieldIcon, SparklesIcon } from '../../components/ui/Icons.jsx';
 import styles from './V2Operations.module.css';
 
 const ROUTES = [
+  ['/v2/validacao', 'Validação V2', 'team.view'],
   ['/v2/clientes', 'Clientes', 'clients.view'],
   ['/v2/modelo-oficial', 'Modelo Oficial', 'project_template.view'],
   ['/v2/equipe', 'Equipe', 'team.view'],
