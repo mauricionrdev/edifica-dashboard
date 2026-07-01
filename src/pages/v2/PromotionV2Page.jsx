@@ -1,15 +1,25 @@
 import { Link } from 'react-router-dom';
 import { ChecklistIcon, ShieldIcon, SparklesIcon, TargetIcon } from '../../components/ui/Icons.jsx';
 import { V2_PROMOTION_BLOCKERS, V2_ROUTE_REGISTRY, criticalRoutes, lockedPromotionRoutes, promotableFlagRoutes, promotionCandidates } from './v2RouteRegistry.js';
-import { V2_PROMOTION_FLAGS, isV2RoutePromoted } from './v2PromotionFlags.js';
+import { V2_PROMOTION_FLAGS, enabledV2PromotionFlags, isV2RoutePromoted } from './v2PromotionFlags.js';
 import styles from './V2Operations.module.css';
 
 const PHASES = [
   ['01', 'Validar leitura', 'A tela V2 precisa abrir, carregar dados reais e respeitar o espaço do workspace.'],
   ['02', 'Comparar com produção', 'Números e estados precisam bater com a rota oficial no mesmo período.'],
-  ['03', 'Promover rota', 'A rota oficial aponta para V2, mantendo a tela antiga disponível como fallback temporário.'],
+  ['03', 'Ativar flag', 'Alterar apenas uma variável VITE_PROMOTE_* para true, gerar novo build e manter fallback legado.'],
   ['04', 'Observar produção', 'Acompanhar uso real, console, permissões e chamados antes de limpar legado.'],
-  ['05', 'Limpar legado', 'Remover arquivos antigos somente depois do período de estabilidade.'],
+  ['05', 'Rollback se necessário', 'Voltar a flag para false, gerar novo build e reabrir a rota oficial antiga.'],
+  ['06', 'Limpar legado', 'Remover arquivos antigos somente depois do período de estabilidade.'],
+];
+
+const DEPLOY_SEQUENCE = [
+  'git status',
+  'npm run verify:v2',
+  'npm run build',
+  'npm run verify:prod',
+  'subir dist/ no frontend',
+  'validar rota oficial e /legacy correspondente',
 ];
 
 export default function PromotionV2Page() {
@@ -17,6 +27,7 @@ export default function PromotionV2Page() {
   const critical = criticalRoutes();
   const flagRoutes = promotableFlagRoutes();
   const lockedRoutes = lockedPromotionRoutes();
+  const activeFlags = enabledV2PromotionFlags();
 
   return (
     <main className={styles.page}>
@@ -34,7 +45,7 @@ export default function PromotionV2Page() {
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Rotas mapeadas</span><SparklesIcon size={15} /></div><strong className={styles.cardValue}>{V2_ROUTE_REGISTRY.length}</strong><p className={styles.cardHelper}>Todas em paralelo</p></article>
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Candidatas iniciais</span><ChecklistIcon size={15} /></div><strong className={styles.cardValue}>{candidates.length}</strong><p className={styles.cardHelper}>Baixo ou médio risco</p></article>
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Críticas</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>{critical.length}</strong><p className={styles.cardHelper}>Exigem comparação numérica</p></article>
-        <article className={styles.metricCard}><div className={styles.cardTop}><span>Banco</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>Sem mudança</strong><p className={styles.cardHelper}>Nada de migration nesta etapa</p></article>
+        <article className={styles.metricCard}><div className={styles.cardTop}><span>Flags ativas</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>{activeFlags.length}</strong><p className={styles.cardHelper}>{activeFlags.length ? 'Revisar produção' : 'Padrão seguro'}</p></article>
       </section>
 
       <section className={styles.tablePanel}>
@@ -64,6 +75,33 @@ export default function PromotionV2Page() {
         <p className={styles.sectionNote}>Rotas críticas ainda não têm flag de promoção. Permanecem apenas em /v2 até comparação numérica completa: {lockedRoutes.map((route) => route.title).join(', ')}.</p>
       </section>
 
+      <section className={styles.guardPanel}>
+        <header className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>Guard rail</p>
+            <h2>Estado atual das flags</h2>
+            <p>Use esta leitura antes de qualquer build. Em produção, o estado seguro é zero flag ativa até a rota estar validada.</p>
+          </div>
+          <span className={activeFlags.length ? `${styles.statusBadge} ${styles.statusBadgeWarning}` : styles.safeBadge}>
+            <ShieldIcon size={14} /> {activeFlags.length ? 'Atenção: V2 promovida' : 'Nenhuma promoção ativa'}
+          </span>
+        </header>
+        <div className={styles.guardGrid}>
+          <article className={styles.guardCard}>
+            <strong>Ativas neste build</strong>
+            <p>{activeFlags.length ? activeFlags.map((flag) => flag.env).join(', ') : 'Nenhuma flag ativa. As rotas oficiais continuam no legado.'}</p>
+          </article>
+          <article className={styles.guardCard}>
+            <strong>Rollback</strong>
+            <p>Defina a flag da tela como false, rode novo build e suba novamente o conteúdo de dist/. O fallback /legacy deve continuar acessível.</p>
+          </article>
+          <article className={styles.guardCard}>
+            <strong>Verificação local</strong>
+            <p>Antes do build final, rode npm run verify:v2 para bloquear flags críticas ou fallback ausente.</p>
+          </article>
+        </div>
+      </section>
+
       <section className={styles.tablePanel}>
         <header className={styles.sectionHeader}>
           <div>
@@ -90,6 +128,25 @@ export default function PromotionV2Page() {
                 {route.checks.slice(0, 4).map((check) => <li key={check}>{check}</li>)}
               </ul>
             </article>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.tablePanel}>
+        <header className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>Deploy controlado</p>
+            <h2>Sequência mínima antes de subir frontend</h2>
+            <p>Este fluxo evita troca acidental de rota crítica e mantém rollback simples na Hostinger.</p>
+          </div>
+          <span className={styles.statusBadgeMuted}>Frontend only</span>
+        </header>
+        <div className={styles.commandList}>
+          {DEPLOY_SEQUENCE.map((command, index) => (
+            <div className={styles.commandRow} key={command}>
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              <code>{command}</code>
+            </div>
           ))}
         </div>
       </section>

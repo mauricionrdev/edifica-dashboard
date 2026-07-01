@@ -605,3 +605,85 @@
     flex-direction: column;
   }
 }
+
+.guardPanel {
+  padding: var(--space-4);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-elevated);
+}
+
+.guardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.guardCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-raised);
+}
+
+.guardCard strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+}
+
+.guardCard p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  line-height: var(--lh-normal);
+}
+
+.statusBadgeWarning {
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.commandList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.commandRow {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--bg-raised);
+}
+
+.commandRow span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.commandRow code {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--fs-label);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .guardGrid {
+    grid-template-columns: 1fr;
+  }
+}

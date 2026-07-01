@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
 import { ShieldIcon, SparklesIcon } from '../../components/ui/Icons.jsx';
 import { V2_ROUTE_REGISTRY } from './v2RouteRegistry.js';
+import { enabledV2PromotionFlags } from './v2PromotionFlags.js';
 import styles from './V2Operations.module.css';
 
 export default function V2OverviewPage() {
+  const activeFlags = enabledV2PromotionFlags();
+
   return (
     <main className={styles.page}>
       <section className={styles.hero}>
@@ -20,13 +23,13 @@ export default function V2OverviewPage() {
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Rotas V2</span><SparklesIcon size={15} /></div><strong className={styles.cardValue}>{V2_ROUTE_REGISTRY.length}</strong><p className={styles.cardHelper}>Todas ocultas da sidebar</p></article>
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Modo</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>Seguro</strong><p className={styles.cardHelper}>Validação antes de substituir rota oficial</p></article>
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Banco</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>Intacto</strong><p className={styles.cardHelper}>Sem migration neste ciclo</p></article>
-        <article className={styles.metricCard}><div className={styles.cardTop}><span>Deploy</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>Front</strong><p className={styles.cardHelper}>Apenas build do frontend</p></article>
+        <article className={styles.metricCard}><div className={styles.cardTop}><span>Flags ativas</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>{activeFlags.length}</strong><p className={styles.cardHelper}>{activeFlags.length ? 'Há rota promovida' : 'Nenhuma promoção'}</p></article>
       </section>
 
       <section className={styles.tablePanel}>
         <header className={styles.sectionHeader}>
           <div><p className={styles.eyebrow}>Mapa de validação</p><h2>Rotas disponíveis</h2><p>Acesse cada rota para comparar com a tela oficial antes de qualquer promoção.</p></div>
-          <span className={styles.statusBadgeMuted}>Sem alteração de rota oficial</span>
+          <div className={styles.chips}><Link className={styles.chip} to="/v2/validacao">Validar</Link><Link className={styles.chip} to="/v2/promocao">Promover</Link></div>
         </header>
         <div className={styles.table} role="table" aria-label="Rotas V2">
           <div className={styles.tableHead} role="row"><span>Tela</span><span>Rota</span><span>Permissão</span><span>Status</span><span>Ação</span></div>

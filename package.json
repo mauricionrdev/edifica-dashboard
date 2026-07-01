@@ -12,7 +12,8 @@
     "hooks:install": "git config core.hooksPath .githooks",
     "precommit:check": "npm run audit:css:strict && npm run build",
     "verify:prod": "node scripts/verify-production.mjs",
-    "release:check": "npm run audit:css:strict && npm run verify:prod && npm run build"
+    "release:check": "npm run audit:css:strict && npm run verify:prod && npm run build",
+    "verify:v2": "node scripts/verify-v2-promotion.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.2",
