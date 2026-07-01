@@ -90,6 +90,11 @@ const ROUTE_META = [
     crumb: 'V2',
   },
   {
+    match: (pathname) => pathname.startsWith('/legacy/'),
+    title: 'Fallback legado',
+    crumb: 'Legacy',
+  },
+  {
     match: (pathname) => pathname.startsWith('/dashboard/indicadores-por-squad'),
     title: 'Indicadores por Squad',
     crumb: 'Indicadores por Squad',

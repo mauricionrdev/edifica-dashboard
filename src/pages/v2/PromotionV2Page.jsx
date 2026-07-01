@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChecklistIcon, ShieldIcon, SparklesIcon, TargetIcon } from '../../components/ui/Icons.jsx';
-import { V2_PROMOTION_BLOCKERS, V2_ROUTE_REGISTRY, criticalRoutes, promotionCandidates } from './v2RouteRegistry.js';
+import { V2_PROMOTION_BLOCKERS, V2_ROUTE_REGISTRY, criticalRoutes, lockedPromotionRoutes, promotableFlagRoutes, promotionCandidates } from './v2RouteRegistry.js';
+import { V2_PROMOTION_FLAGS, isV2RoutePromoted } from './v2PromotionFlags.js';
 import styles from './V2Operations.module.css';
 
 const PHASES = [
@@ -14,6 +15,8 @@ const PHASES = [
 export default function PromotionV2Page() {
   const candidates = promotionCandidates();
   const critical = criticalRoutes();
+  const flagRoutes = promotableFlagRoutes();
+  const lockedRoutes = lockedPromotionRoutes();
 
   return (
     <main className={styles.page}>
@@ -32,6 +35,33 @@ export default function PromotionV2Page() {
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Candidatas iniciais</span><ChecklistIcon size={15} /></div><strong className={styles.cardValue}>{candidates.length}</strong><p className={styles.cardHelper}>Baixo ou médio risco</p></article>
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Críticas</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>{critical.length}</strong><p className={styles.cardHelper}>Exigem comparação numérica</p></article>
         <article className={styles.metricCard}><div className={styles.cardTop}><span>Banco</span><ShieldIcon size={15} /></div><strong className={styles.cardValue}>Sem mudança</strong><p className={styles.cardHelper}>Nada de migration nesta etapa</p></article>
+      </section>
+
+      <section className={styles.tablePanel}>
+        <header className={styles.sectionHeader}>
+          <div>
+            <p className={styles.eyebrow}>Flags de promoção</p>
+            <h2>Troca controlada por variável de build</h2>
+            <p>As rotas oficiais continuam usando as telas atuais. Uma V2 só assume a rota produtiva se a variável correspondente estiver exatamente como true no build.</p>
+          </div>
+          <span className={styles.safeBadge}><ShieldIcon size={14} /> Padrão desligado</span>
+        </header>
+        <div className={styles.flagGrid}>
+          {flagRoutes.map((route) => {
+            const flag = V2_PROMOTION_FLAGS[route.flagKey];
+            const active = isV2RoutePromoted(route.flagKey);
+            return (
+              <article className={styles.flagRow} key={route.key}>
+                <div className={styles.flagMeta}>
+                  <strong>{route.title}</strong>
+                  <span>{flag?.env || 'sem flag'} · fallback: {route.productionPath.replace('/', '/legacy/')}</span>
+                </div>
+                <span className={active ? `${styles.switchPill} ${styles.switchPillActive}` : styles.switchPill}>{active ? 'V2 ativa' : 'Legado ativo'}</span>
+              </article>
+            );
+          })}
+        </div>
+        <p className={styles.sectionNote}>Rotas críticas ainda não têm flag de promoção. Permanecem apenas em /v2 até comparação numérica completa: {lockedRoutes.map((route) => route.title).join(', ')}.</p>
       </section>
 
       <section className={styles.tablePanel}>

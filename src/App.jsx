@@ -30,6 +30,7 @@ import DesignLabClientsPage from './pages/design-lab/DesignLabClientsPage.jsx';
 import DesignLabDashboardPage from './pages/design-lab/DesignLabDashboardPage.jsx';
 import DesignLabPreencherSemanaPage from './pages/design-lab/DesignLabPreencherSemanaPage.jsx';
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
+import { isV2RoutePromoted } from './pages/v2/v2PromotionFlags.js';
 
 const SafeMigrationPage = lazy(() => import('./pages/v2/SafeMigrationPage.jsx'));
 const ClientsV2Page = lazy(() => import('./pages/v2/ClientsV2Page.jsx'));
@@ -49,6 +50,14 @@ const SupportV2Page = lazy(() => import('./pages/v2/SupportV2Page.jsx'));
 const V2OverviewPage = lazy(() => import('./pages/v2/V2OverviewPage.jsx'));
 const ValidationV2Page = lazy(() => import('./pages/v2/ValidationV2Page.jsx'));
 const PromotionV2Page = lazy(() => import('./pages/v2/PromotionV2Page.jsx'));
+
+function LazyV2({ Component }) {
+  return (
+    <Suspense fallback={null}>
+      <Component />
+    </Suspense>
+  );
+}
 
 export default function App() {
   return (
@@ -85,7 +94,11 @@ export default function App() {
               />
               <Route
                 path="clientes"
-                element={<RequirePermissionRoute permission="clients.view"><DesignLabClientsPage /></RequirePermissionRoute>}
+                element={
+                  <RequirePermissionRoute permission="clients.view">
+                    {isV2RoutePromoted('clients') ? <LazyV2 Component={ClientsV2Page} /> : <DesignLabClientsPage />}
+                  </RequirePermissionRoute>
+                }
               />
               <Route path="v2" element={<Navigate to="/v2/visao-geral" replace />} />
               <Route
@@ -285,7 +298,11 @@ export default function App() {
               />
               <Route
                 path="projetos"
-                element={<RequirePermissionRoute permission="projects.view"><ProjectsPage /></RequirePermissionRoute>}
+                element={
+                  <RequirePermissionRoute permission="projects.view">
+                    {isV2RoutePromoted('projects') ? <LazyV2 Component={ProjectsV2Page} /> : <ProjectsPage />}
+                  </RequirePermissionRoute>
+                }
               />
               <Route
                 path="preencher-semana"
@@ -293,19 +310,50 @@ export default function App() {
               />
               <Route path="gdv" element={<RequirePermissionRoute permission="gdv.view"><GdvPage /></RequirePermissionRoute>} />
               <Route path="gdvs/:gdvId" element={<RequirePermissionRoute permission="gdv.view"><GdvPage /></RequirePermissionRoute>} />
-              <Route path="perfil" element={<RequirePermissionRoute permission="profile.view"><ProfilePage /></RequirePermissionRoute>} />
+              <Route
+                path="perfil"
+                element={
+                  <RequirePermissionRoute permission="profile.view">
+                    {isV2RoutePromoted('profile') ? <LazyV2 Component={ProfileV2Page} /> : <ProfilePage />}
+                  </RequirePermissionRoute>
+                }
+              />
               <Route path="perfil/:userId" element={<RequirePermissionRoute permission="profile.view"><UserProfilePage /></RequirePermissionRoute>} />
               <Route path="squads/:squadId" element={<RequirePermissionRoute permission="squads.view"><SquadPage /></RequirePermissionRoute>} />
               <Route path="ranking-squads" element={<RequirePermissionRoute permission="ranking.view"><SquadRankingPage /></RequirePermissionRoute>} />
               <Route path="ranking-gdvs" element={<RequirePermissionRoute permission="ranking.view"><GdvRankingPage /></RequirePermissionRoute>} />
-              <Route path="gestao-trafego" element={<RequirePermissionRoute permission="metrics.view"><TrafficManagementPage /></RequirePermissionRoute>} />
+              <Route
+                path="gestao-trafego"
+                element={
+                  <RequirePermissionRoute permission="metrics.view">
+                    {isV2RoutePromoted('traffic') ? <LazyV2 Component={TrafficV2Page} /> : <TrafficManagementPage />}
+                  </RequirePermissionRoute>
+                }
+              />
               <Route path="suporte-tecnologia" element={<RequirePermissionRoute permission="support.view"><SupportTechnologyPage /></RequirePermissionRoute>} />
-              <Route path="equipe" element={<RequirePermissionRoute permission="team.view"><TeamAccessPage /></RequirePermissionRoute>} />
+              <Route
+                path="equipe"
+                element={
+                  <RequirePermissionRoute permission="team.view">
+                    {isV2RoutePromoted('team') ? <LazyV2 Component={TeamV2Page} /> : <TeamAccessPage />}
+                  </RequirePermissionRoute>
+                }
+              />
               <Route path="acesso-negado" element={<ForbiddenPage />} />
               <Route
                 path="modelo-oficial"
-                element={<RequirePermissionRoute permission="project_template.view"><ModeloOficialPage /></RequirePermissionRoute>}
+                element={
+                  <RequirePermissionRoute permission="project_template.view">
+                    {isV2RoutePromoted('model') ? <LazyV2 Component={OfficialModelV2Page} /> : <ModeloOficialPage />}
+                  </RequirePermissionRoute>
+                }
               />
+              <Route path="legacy/clientes" element={<RequirePermissionRoute permission="clients.view"><DesignLabClientsPage /></RequirePermissionRoute>} />
+              <Route path="legacy/projetos" element={<RequirePermissionRoute permission="projects.view"><ProjectsPage /></RequirePermissionRoute>} />
+              <Route path="legacy/perfil" element={<RequirePermissionRoute permission="profile.view"><ProfilePage /></RequirePermissionRoute>} />
+              <Route path="legacy/gestao-trafego" element={<RequirePermissionRoute permission="metrics.view"><TrafficManagementPage /></RequirePermissionRoute>} />
+              <Route path="legacy/equipe" element={<RequirePermissionRoute permission="team.view"><TeamAccessPage /></RequirePermissionRoute>} />
+              <Route path="legacy/modelo-oficial" element={<RequirePermissionRoute permission="project_template.view"><ModeloOficialPage /></RequirePermissionRoute>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

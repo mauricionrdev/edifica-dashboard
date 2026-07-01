@@ -25,6 +25,7 @@ export const V2_ROUTE_REGISTRY = [
   },
   {
     key: 'clients',
+    flagKey: 'clients',
     title: 'Clientes',
     productionPath: '/clientes',
     v2Path: '/v2/clientes',
@@ -97,6 +98,7 @@ export const V2_ROUTE_REGISTRY = [
   },
   {
     key: 'traffic',
+    flagKey: 'traffic',
     title: 'Gestão de Tráfego',
     productionPath: '/gestao-trafego',
     v2Path: '/v2/gestao-trafego',
@@ -109,6 +111,7 @@ export const V2_ROUTE_REGISTRY = [
   },
   {
     key: 'model',
+    flagKey: 'model',
     title: 'Modelo Oficial',
     productionPath: '/modelo-oficial',
     v2Path: '/v2/modelo-oficial',
@@ -121,6 +124,7 @@ export const V2_ROUTE_REGISTRY = [
   },
   {
     key: 'team',
+    flagKey: 'team',
     title: 'Equipe',
     productionPath: '/equipe',
     v2Path: '/v2/equipe',
@@ -133,6 +137,7 @@ export const V2_ROUTE_REGISTRY = [
   },
   {
     key: 'projects',
+    flagKey: 'projects',
     title: 'Projetos',
     productionPath: '/projetos',
     v2Path: '/v2/projetos',
@@ -145,6 +150,7 @@ export const V2_ROUTE_REGISTRY = [
   },
   {
     key: 'profile',
+    flagKey: 'profile',
     title: 'Perfil',
     productionPath: '/perfil',
     v2Path: '/v2/perfil',
@@ -202,4 +208,13 @@ export function promotionCandidates() {
 
 export function criticalRoutes() {
   return V2_ROUTE_REGISTRY.filter((route) => ['Alto', 'Crítico'].includes(route.risk));
+}
+
+
+export function promotableFlagRoutes() {
+  return V2_ROUTE_REGISTRY.filter((route) => Boolean(route.flagKey));
+}
+
+export function lockedPromotionRoutes() {
+  return V2_ROUTE_REGISTRY.filter((route) => route.productionPath !== '—' && !route.flagKey);
 }
