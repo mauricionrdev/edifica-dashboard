@@ -1,10 +1,5 @@
 const ROUTE_META = [
   {
-    match: (pathname) => pathname.startsWith('/v2/plano-migracao'),
-    title: 'Migração segura',
-    crumb: 'V2',
-  },
-  {
     match: (pathname) => pathname.startsWith('/dashboard/indicadores-por-squad'),
     title: 'Indicadores por Squad',
     crumb: 'Indicadores por Squad',
