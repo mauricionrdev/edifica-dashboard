@@ -423,14 +423,10 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
         const nextForm = resolvedFixedFields.form;
         if (loadGenRef.current !== token) return;
 
-        const inheritedPayload = sanitizeForSave(resolvedFixedFields.inherited);
-        if (resolvedFixedFields.source === 'previous-month-week-4' && Object.keys(inheritedPayload).length > 0) {
-          const targetWeeks = [1, 2, 3, 4].filter((targetWeek) => targetWeek >= week);
-          await Promise.all(
-            targetWeeks.map((targetWeek) => upsertMetric(client.id, sameMonthPeriodKey(periodKey, targetWeek), inheritedPayload))
-          );
-          if (loadGenRef.current !== token) return;
-        }
+        // Segurança de produção: não gravar métricas automaticamente durante o carregamento.
+        // A herança de campos fixos do mês anterior continua preenchendo a UI, mas a
+        // persistência só acontece em ação explícita do usuário. Isso evita uma cascata
+        // de PUTs/500 ao abrir Preencher Semana na virada do mês.
 
         latestFormRef.current = nextForm;
         lastSavedRef.current = JSON.stringify(sanitizeForSave(nextForm));

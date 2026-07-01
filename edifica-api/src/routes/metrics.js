@@ -813,6 +813,15 @@ async function assertClientExists(clientId, user, allPermission = 'metrics.view.
   return { clientMetaLucro: Number(row.meta_lucro) || 0 };
 }
 
+function isGoalStatusBlankSchemaError(err) {
+  const message = String(err?.message || '').toLowerCase();
+  return Boolean(
+    err &&
+    (err.code === 'WARN_DATA_TRUNCATED' || err.code === 'ER_TRUNCATED_WRONG_VALUE_FOR_FIELD' || err.errno === 1265 || err.errno === 1366) &&
+    message.includes('goal_status')
+  );
+}
+
 async function recalcGoalStatus(conn, clientId, periodKey) {
   const monthPrefix = periodKey.slice(0, 7);
 
@@ -840,10 +849,21 @@ async function recalcGoalStatus(conn, clientId, periodKey) {
   }
 
   const goalStatus = aggregateGoalStatus(weekStatuses);
-  await conn.query('UPDATE clients SET goal_status = ? WHERE id = ?', [
-    goalStatus,
-    clientId,
-  ]);
+  try {
+    await conn.query('UPDATE clients SET goal_status = ? WHERE id = ?', [
+      goalStatus,
+      clientId,
+    ]);
+  } catch (err) {
+    // Ambientes antigos podem ter o ENUM de goal_status sem o valor vazio ''.
+    // Não derruba o salvamento da semana por causa desse campo derivado; mantém
+    // o registro semanal salvo e registra o alerta para ajuste de schema em janela segura.
+    if (goalStatus === '' && isGoalStatusBlankSchemaError(err)) {
+      console.warn('[metrics] goal_status vazio não aceito pelo schema atual; mantendo valor anterior', { clientId, periodKey });
+      return goalStatus;
+    }
+    throw err;
+  }
   return goalStatus;
 }
 
