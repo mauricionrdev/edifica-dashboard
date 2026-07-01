@@ -894,9 +894,45 @@ router.get('/presence', requirePermission('metrics.view'), async (req, res, next
 
 
 const RANKING_COMPETITION_START_MONTH = '2026-04';
+const RANKING_BUSINESS_TIME_ZONE = 'America/Sao_Paulo';
 
 function monthPrefixFromParts(year, month0) {
   return `${year}-${String(month0 + 1).padStart(2, '0')}`;
+}
+
+function rankingDatePartsInBusinessTimeZone(now = new Date()) {
+  const date = now instanceof Date ? now : new Date(now);
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: RANKING_BUSINESS_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(safeDate);
+
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== 'literal')
+      .map((part) => [part.type, part.value])
+  );
+
+  return {
+    year: Number(values.year) || safeDate.getUTCFullYear(),
+    month: Number(values.month) || safeDate.getUTCMonth() + 1,
+    day: Number(values.day) || safeDate.getUTCDate(),
+    hour: Number(values.hour) || 0,
+    minute: Number(values.minute) || 0,
+    second: Number(values.second) || 0,
+  };
+}
+
+function rankingBusinessMonthPrefix(now = new Date()) {
+  const { year, month } = rankingDatePartsInBusinessTimeZone(now);
+  return `${year}-${String(month).padStart(2, '0')}`;
 }
 
 function monthPrefixToDate(monthPrefix) {
@@ -917,8 +953,7 @@ function compareMonthPrefix(a, b) {
 }
 
 function lastClosedRankingMonth(now = new Date()) {
-  const date = new Date(now);
-  const currentPrefix = monthPrefixFromParts(date.getUTCFullYear(), date.getUTCMonth());
+  const currentPrefix = rankingBusinessMonthPrefix(now);
   // O ranking pode ser acompanhado durante o mês, mas campeão oficial
   // só é fechado depois da virada do mês. No último dia do mês ainda
   // existe operação em aberto; portanto o último mês fechado é sempre
@@ -2447,6 +2482,8 @@ router.get('/ranking/champions', requirePermission('ranking.view'), async (req, 
 
     res.json({
       startMonth: RANKING_COMPETITION_START_MONTH,
+      businessTimeZone: RANKING_BUSINESS_TIME_ZONE,
+      currentBusinessMonth: rankingBusinessMonthPrefix(),
       lastClosedMonth: lastClosedRankingMonth(),
       rows: payload,
     });
