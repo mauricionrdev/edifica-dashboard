@@ -3,6 +3,7 @@
 //  [Fase 2] /preencher-semana agora aponta para a tela real.
 // ================================================================
 
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
@@ -29,6 +30,8 @@ import DesignLabClientsPage from './pages/design-lab/DesignLabClientsPage.jsx';
 import DesignLabDashboardPage from './pages/design-lab/DesignLabDashboardPage.jsx';
 import DesignLabPreencherSemanaPage from './pages/design-lab/DesignLabPreencherSemanaPage.jsx';
 import RequirePermissionRoute from './routes/RequirePermissionRoute.jsx';
+
+const SafeMigrationPage = lazy(() => import('./pages/v2/SafeMigrationPage.jsx'));
 
 export default function App() {
   return (
@@ -66,6 +69,17 @@ export default function App() {
               <Route
                 path="clientes"
                 element={<RequirePermissionRoute permission="clients.view"><DesignLabClientsPage /></RequirePermissionRoute>}
+              />
+              <Route path="v2" element={<Navigate to="/v2/plano-migracao" replace />} />
+              <Route
+                path="v2/plano-migracao"
+                element={
+                  <RequirePermissionRoute permission="team.view">
+                    <Suspense fallback={null}>
+                      <SafeMigrationPage />
+                    </Suspense>
+                  </RequirePermissionRoute>
+                }
               />
               <Route path="design-lab" element={<Navigate to="/design-lab/dashboard" replace />} />
               <Route
