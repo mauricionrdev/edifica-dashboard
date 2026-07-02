@@ -20,23 +20,13 @@ import {
   isExpired,
   statusLabel,
 } from '../../utils/clientHelpers.js';
-import { CLIENT_STATUS, isActiveClientStatus, isRevenueClientStatus, isVisibleClientStatus, normalizeClientStatus } from '../../utils/clientStatus.js';
+import { CLIENT_STATUS, isActiveClientStatus, isVisibleClientStatus, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { fmtMoney } from '../../utils/format.js';
 import { resolveClientFeeAtDate } from '../../utils/feeSchedule.js';
 import { getClientAvatar, subscribeAvatarChange } from '../../utils/avatarStorage.js';
 import { matchesAnySearch } from '../../utils/search.js';
 import StateBlock from '../../components/ui/StateBlock.jsx';
-import {
-  CalendarIcon,
-  ChartColumnIcon,
-  ChevronDownIcon,
-  ClipboardListIcon,
-  PlusIcon,
-  SearchIcon,
-  TargetIcon,
-  TrendingUpIcon,
-  UsersIcon,
-} from '../../components/ui/Icons.jsx';
+import { CalendarIcon, ChartColumnIcon, ChevronDownIcon, ClipboardListIcon, PlusIcon, SearchIcon } from '../../components/ui/Icons.jsx';
 import { BareBadge, BareButton } from '../../components/design-system/index.js';
 import DesignLabClientCreateModal from '../design-lab/DesignLabClientCreateModal.jsx';
 import DesignLabClientDetailModal from '../design-lab/DesignLabClientDetailModal.jsx';
@@ -57,7 +47,8 @@ const SCOPES = [
   { key: 'internalCommercial', label: 'Comercial Interno', tone: 'purple' },
 ];
 
-const PAGE_SIZE_OPTIONS = [12, 20, 30, 50];
+const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
+
 const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
 const SHORT_MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric' });
 
@@ -84,6 +75,16 @@ function churnPeriodLabel(client) {
   const key = monthKeyFromClientChurn(client);
   return key ? monthLabel(key, SHORT_MONTH_LABEL_FORMATTER).replace(/\s+de\s+/i, '/') : 'Mês não informado';
 }
+
+function clientStatusKey(client) {
+  return normalizeClientStatus(client?.status);
+}
+
+const ANALYSIS_ITEMS = [
+  { key: 'icp', tab: 'icp', label: 'Análise ICP', className: 'analysisIcp', icon: ChartColumnIcon },
+  { key: 'gdv', tab: 'gdv', label: 'Análise GDV', className: 'analysisGdv', icon: ChartColumnIcon },
+  { key: 'routes', tab: 'routes', label: 'Resumo de Rotas', className: 'analysisRoutes', icon: ClipboardListIcon },
+];
 
 function isTcvClient(client) {
   return client?.contractType === 'tcv' || client?.contract_type === 'tcv' || client?.isTcv === true;
@@ -124,6 +125,14 @@ function contractEndInfo(client, today = new Date()) {
   if (diff <= 30) return { label: `Vence em ${diff} dias`, tone: 'warning', days: diff };
   if (diff <= 60) return { label: `Vence em ${diff} dias`, tone: 'info', days: diff };
   return { label: `Vence em ${diff} dias`, tone: 'muted', days: diff };
+}
+
+function dueProgressValue(due) {
+  if (!Number.isFinite(Number(due?.days))) return 0;
+  const days = Number(due.days);
+  if (days <= 0) return 100;
+  if (days >= 120) return 12;
+  return Math.max(12, Math.min(100, Math.round(((120 - days) / 120) * 100)));
 }
 
 function statusTone(client, today) {
@@ -169,11 +178,6 @@ function createdSortValue(client) {
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
-function numberValue(value) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function clientSquadVisual(squads, client) {
   const squadId = client?.squadId || client?.squad_id;
   const squadName = client?.squadName || client?.squad_name || '';
@@ -187,24 +191,6 @@ function clientSquadVisual(squads, client) {
     coverUrl,
   };
 }
-
-function uniqueOptions(clients, getter) {
-  return [...new Set((Array.isArray(clients) ? clients : [])
-    .map(getter)
-    .map((value) => String(value || '').trim())
-    .filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
-}
-
-function clientStatusKey(client) {
-  return normalizeClientStatus(client?.status);
-}
-
-const ANALYSIS_ITEMS = [
-  { key: 'icp', tab: 'icp', label: 'ICP', icon: ChartColumnIcon },
-  { key: 'gdv', tab: 'gdv', label: 'GDV', icon: ChartColumnIcon },
-  { key: 'routes', tab: 'routes', label: 'Rotas', icon: ClipboardListIcon },
-];
 
 export default function ClientsV2Page() {
   const { clients, squads, userDirectory, loading, error, refreshClients, setPanelHeader } = useOutletContext();
@@ -220,18 +206,20 @@ export default function ClientsV2Page() {
     const initial = searchParams.get('scope') || 'all';
     return SCOPES.some((item) => item.key === initial) ? initial : 'all';
   });
-  const [squadFilter, setSquadFilter] = useState(() => searchParams.get('squad') || '');
-  const [gdvFilter, setGdvFilter] = useState(() => searchParams.get('gdv') || '');
-  const [managerFilter, setManagerFilter] = useState(() => searchParams.get('gestor') || '');
   const [churnMonth, setChurnMonth] = useState(() => searchParams.get('churnMonth') || currentMonthKey());
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [pageSize, setPageSize] = useState(20);
+  const [pageSizeOpen, setPageSizeOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [detailId, setDetailId] = useState(null);
   const [detailTab, setDetailTab] = useState('overview');
   const [avatarVersion, setAvatarVersion] = useState(0);
   const [today, setToday] = useState(() => new Date());
-  const tableTopRef = useRef(null);
+  const searchRef = useRef(null);
+  const filterRef = useRef(null);
+  const pageSizeRef = useRef(null);
 
   useEffect(() => {
     const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -243,6 +231,57 @@ export default function ClientsV2Page() {
   }, []);
 
   useEffect(() => subscribeAvatarChange(() => setAvatarVersion((current) => current + 1)), []);
+
+  useEffect(() => {
+    if (!pageSizeOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!pageSizeRef.current || pageSizeRef.current.contains(event.target)) return;
+      setPageSizeOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setPageSizeOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [pageSizeOpen]);
+
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!searchRef.current || searchRef.current.contains(event.target)) return;
+      setSearchOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setSearchOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!filterOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!filterRef.current || filterRef.current.contains(event.target)) return;
+      setFilterOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setFilterOpen(false);
+    };
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [filterOpen]);
 
   const visibleBase = useMemo(
     () => (Array.isArray(clients) ? clients : []).filter((client) => isVisibleClientStatus(client.status)),
@@ -261,15 +300,7 @@ export default function ClientsV2Page() {
     ending: visibleBase.filter((client) => isEndingSoon(client, 30, today)).length,
     tcv: visibleBase.filter(isTcvClient).length,
     internalCommercial: visibleBase.filter(hasInternalCommercial).length,
-    revenue: visibleBase.filter((client) => isRevenueClientStatus(clientStatusKey(client))).length,
   }), [today, visibleBase]);
-
-  const summary = useMemo(() => {
-    const revenueClients = visibleBase.filter((client) => isRevenueClientStatus(clientStatusKey(client)));
-    const mrr = revenueClients.reduce((sum, client) => sum + numberValue(resolveClientFeeAtDate(client, today)), 0);
-    const risk = visibleBase.filter((client) => isExpired(client, today) || isEndingSoon(client, 30, today));
-    return { mrr, risk: risk.length };
-  }, [today, visibleBase]);
 
   const churnMonthOptions = useMemo(() => {
     const values = new Set([currentMonthKey(today)]);
@@ -281,10 +312,6 @@ export default function ClientsV2Page() {
     return [...values].sort((a, b) => b.localeCompare(a));
   }, [today, visibleBase]);
 
-  const squadOptions = useMemo(() => uniqueOptions(visibleBase, (client) => client?.squadName || client?.squad_name), [visibleBase]);
-  const gdvOptions = useMemo(() => uniqueOptions(visibleBase, (client) => client?.gdvName || client?.gdv_name), [visibleBase]);
-  const managerOptions = useMemo(() => uniqueOptions(visibleBase, (client) => client?.gestor || client?.trafficManagerName || client?.traffic_manager_name), [visibleBase]);
-
   useEffect(() => {
     if (scope !== 'churn') return;
     if (churnMonth) return;
@@ -295,21 +322,16 @@ export default function ClientsV2Page() {
     const normalized = query.trim();
     const scoped = visibleBase.filter((client) => {
       const status = clientStatusKey(client);
-      if (scope === 'active' && !(isActiveClientStatus(status) && !isExpired(client, today))) return false;
-      if (scope === 'onboarding' && status !== CLIENT_STATUS.ONBOARDING) return false;
-      if (scope === 'rampage' && status !== CLIENT_STATUS.RAMPAGE) return false;
-      if (scope === 'paused' && status !== CLIENT_STATUS.PAUSED) return false;
-      if (scope === 'churn' && !(status === CLIENT_STATUS.CHURN && (!churnMonth || monthKeyFromClientChurn(client) === churnMonth))) return false;
-      if (scope === 'finished' && status !== CLIENT_STATUS.FINISHED) return false;
-      if (scope === 'expired' && !isExpired(client, today)) return false;
-      if (scope === 'ending' && !isEndingSoon(client, 30, today)) return false;
-      if (scope === 'tcv' && !isTcvClient(client)) return false;
-      if (scope === 'internalCommercial' && !hasInternalCommercial(client)) return false;
-
-      if (squadFilter && String(client?.squadName || client?.squad_name || '') !== squadFilter) return false;
-      if (gdvFilter && String(client?.gdvName || client?.gdv_name || '') !== gdvFilter) return false;
-      if (managerFilter && String(client?.gestor || client?.trafficManagerName || client?.traffic_manager_name || '') !== managerFilter) return false;
-
+      if (scope === 'active') return isActiveClientStatus(status) && !isExpired(client, today);
+      if (scope === 'onboarding') return status === CLIENT_STATUS.ONBOARDING;
+      if (scope === 'rampage') return status === CLIENT_STATUS.RAMPAGE;
+      if (scope === 'paused') return status === CLIENT_STATUS.PAUSED;
+      if (scope === 'churn') return status === CLIENT_STATUS.CHURN && (!churnMonth || monthKeyFromClientChurn(client) === churnMonth);
+      if (scope === 'finished') return status === CLIENT_STATUS.FINISHED;
+      if (scope === 'expired') return isExpired(client, today);
+      if (scope === 'ending') return isEndingSoon(client, 30, today);
+      if (scope === 'tcv') return isTcvClient(client);
+      if (scope === 'internalCommercial') return hasInternalCommercial(client);
       return true;
     });
 
@@ -321,13 +343,14 @@ export default function ClientsV2Page() {
           client.squad_name,
           client.gestor,
           client.trafficManagerName,
+          client.traffic_manager_name,
           client.gdvName,
           client.gdv_name,
-          getInternalSeller(client),
-          client.contractType,
           client.icp,
           client.routeName,
           client.route_name,
+          getInternalSeller(client),
+          client.contractType,
         ], normalized));
 
     return [...searched].sort((a, b) => {
@@ -339,7 +362,7 @@ export default function ClientsV2Page() {
       if (byCreated !== 0) return byCreated;
       return String(a?.name || '').localeCompare(String(b?.name || ''), 'pt-BR');
     });
-  }, [churnMonth, gdvFilter, managerFilter, query, scope, squadFilter, today, visibleBase]);
+  }, [churnMonth, query, scope, today, visibleBase]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -353,20 +376,22 @@ export default function ClientsV2Page() {
     [clients, detailId]
   );
 
+  const selectedScope = useMemo(
+    () => SCOPES.find((item) => item.key === scope) || SCOPES[0],
+    [scope]
+  );
+
   useEffect(() => {
     setPage(1);
-  }, [churnMonth, gdvFilter, managerFilter, pageSize, query, scope, squadFilter]);
+  }, [churnMonth, query, scope, pageSize]);
 
   useEffect(() => {
     const next = new URLSearchParams();
     if (query.trim()) next.set('search', query.trim());
     if (scope !== 'all') next.set('scope', scope);
-    if (squadFilter) next.set('squad', squadFilter);
-    if (gdvFilter) next.set('gdv', gdvFilter);
-    if (managerFilter) next.set('gestor', managerFilter);
     if (scope === 'churn' && churnMonth) next.set('churnMonth', churnMonth);
     setSearchParams(next, { replace: true });
-  }, [churnMonth, gdvFilter, managerFilter, query, scope, setSearchParams, squadFilter]);
+  }, [churnMonth, query, scope, setSearchParams]);
 
   useEffect(() => {
     const title = (
@@ -378,7 +403,7 @@ export default function ClientsV2Page() {
     );
 
     const actions = (
-      <div className={styles.panelActions}>
+      <div className={styles.headerActions}>
         {canOpenTemplate ? (
           <BareButton
             type="button"
@@ -431,95 +456,116 @@ export default function ClientsV2Page() {
     await refreshClients?.();
   }
 
-  const resetFilters = () => {
-    setQuery('');
-    setScope('all');
-    setSquadFilter('');
-    setGdvFilter('');
-    setManagerFilter('');
-    setChurnMonth(currentMonthKey(today));
-    tableTopRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-  };
-
   const pageStart = filteredRows.length ? (safePage - 1) * pageSize + 1 : 0;
   const pageEnd = filteredRows.length ? Math.min(safePage * pageSize, filteredRows.length) : 0;
-  const hasFilters = query.trim() || scope !== 'all' || squadFilter || gdvFilter || managerFilter || (scope === 'churn' && churnMonth !== currentMonthKey(today));
 
   return (
     <div className={`btScope ${styles.page}`}>
-      <section className={styles.commandLayer} aria-label="Controle da carteira de clientes">
-        <label className={styles.searchBox}>
-          <SearchIcon size={15} aria-hidden="true" />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar cliente, squad, GDV, gestor, ICP ou rota"
-            aria-label="Buscar cliente"
-          />
-        </label>
-
-        <div className={styles.segmentCloud} aria-label="Escopos da carteira">
-          {SCOPES.map((item) => {
-            const active = scope === item.key;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                className={`${styles.segmentChip} ${item.tone === 'purple' ? styles.segmentChipPurple : ''} ${active ? styles.segmentChipActive : ''}`.trim()}
-                onClick={() => setScope(item.key)}
-                aria-pressed={active}
-              >
-                <span>{item.label}</span>
-                <strong>{counts[item.key] ?? 0}</strong>
-              </button>
-            );
-          })}
+      <section className={styles.commandLayer}>
+        <div className={`${styles.searchWrap} ${styles.searchWrapOpen}`.trim()} ref={searchRef}>
+          <label className={styles.searchBox}>
+            <SearchIcon size={15} aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar cliente, squad, GDV, gestor, ICP ou rota"
+              aria-label="Buscar cliente"
+            />
+          </label>
         </div>
 
-        <div className={styles.filterStrip} aria-label="Filtros da carteira">
-          <label className={styles.selectPill}>
-            <span>Squad</span>
-            <select value={squadFilter} onChange={(event) => setSquadFilter(event.target.value)}>
-              <option value="">Todos</option>
-              {squadOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          <label className={styles.selectPill}>
-            <span>GDV</span>
-            <select value={gdvFilter} onChange={(event) => setGdvFilter(event.target.value)}>
-              <option value="">Todos</option>
-              {gdvOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          <label className={styles.selectPill}>
-            <span>Gestor</span>
-            <select value={managerFilter} onChange={(event) => setManagerFilter(event.target.value)}>
-              <option value="">Todos</option>
-              {managerOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-            </select>
-          </label>
-          {scope === 'churn' ? (
-            <label className={styles.selectPill}>
-              <span>Mês</span>
-              <select value={churnMonth} onChange={(event) => setChurnMonth(event.target.value)}>
-                {churnMonthOptions.map((option) => <option key={option} value={option}>{monthLabel(option)}</option>)}
-              </select>
-            </label>
+        <div className={styles.filterDropdown} ref={filterRef}>
+          <button
+            type="button"
+            className={styles.filterButton}
+            onClick={() => setFilterOpen((current) => !current)}
+            aria-expanded={filterOpen}
+            aria-label="Filtrar clientes"
+          >
+            <span>{selectedScope.label}</span>
+            <strong>{counts[selectedScope.key] ?? 0}</strong>
+            <ChevronDownIcon size={14} aria-hidden="true" />
+          </button>
+
+          {filterOpen ? (
+            <div className={styles.filterMenu} role="listbox" aria-label="Filtros de clientes">
+              {SCOPES.map((item) => {
+                const active = scope === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`${styles.filterOption} ${active ? styles.filterOptionActive : ''} ${item.tone === 'purple' ? styles.filterOptionPurple : ''}`.trim()}
+                    onClick={() => {
+                      setScope(item.key);
+                      if (item.key === 'churn' && !churnMonth) {
+                        setChurnMonth(churnMonthOptions[0] || currentMonthKey(today));
+                      }
+                      setFilterOpen(false);
+                    }}
+                  >
+                    <span>{item.label}</span>
+                    <strong>{counts[item.key] ?? 0}</strong>
+                  </button>
+                );
+              })}
+            </div>
           ) : null}
-          <label className={styles.selectPill}>
-            <span>Exibição</span>
-            <select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))}>
-              {PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+        </div>
+
+        {scope === 'churn' ? (
+          <label className={styles.churnMonthControl}>
+            <CalendarIcon size={14} aria-hidden="true" />
+            <select
+              value={churnMonth}
+              onChange={(event) => setChurnMonth(event.target.value)}
+              aria-label="Mês do churn"
+            >
+              {churnMonthOptions.map((option) => (
+                <option key={option} value={option}>{monthLabel(option)}</option>
+              ))}
             </select>
           </label>
-          {hasFilters ? (
-            <button type="button" className={styles.clearButton} onClick={resetFilters}>Limpar</button>
+        ) : null}
+
+        <div className={styles.pageSizeDropdown} ref={pageSizeRef}>
+          <button
+            type="button"
+            className={styles.pageSizeButton}
+            onClick={() => setPageSizeOpen((current) => !current)}
+            aria-expanded={pageSizeOpen}
+            aria-label="Quantidade por página"
+          >
+            <span>{pageSize} por página</span>
+            <ChevronDownIcon size={14} aria-hidden="true" />
+          </button>
+
+          {pageSizeOpen ? (
+            <div className={styles.pageSizeMenu} role="listbox" aria-label="Quantidade de clientes por página">
+              {PAGE_SIZE_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className={`${styles.pageSizeOption} ${pageSize === option ? styles.pageSizeOptionActive : ''}`.trim()}
+                  onClick={() => {
+                    setPageSize(option);
+                    setPageSizeOpen(false);
+                  }}
+                  role="option"
+                  aria-selected={pageSize === option}
+                >
+                  {option} por página
+                </button>
+              ))}
+            </div>
           ) : null}
         </div>
       </section>
 
-      <section className={styles.board} aria-label="Lista de clientes" ref={tableTopRef}>
+      <section className={styles.board} aria-label="Clientes">
         {loading ? (
           <div className={styles.stateWrap}>
             <StateBlock variant="loading" compact title="Carregando clientes" />
@@ -531,7 +577,7 @@ export default function ClientsV2Page() {
         ) : pagedRows.length === 0 ? (
           <div className={styles.emptyState}>
             <strong>Nenhum cliente encontrado</strong>
-            <span>Ajuste a busca ou os filtros para localizar outro grupo da carteira.</span>
+            <span>Ajuste a busca ou selecione outro filtro.</span>
           </div>
         ) : (
           <div className={styles.clientList}>
@@ -540,112 +586,109 @@ export default function ClientsV2Page() {
               const due = contractEndInfo(client, today);
               const tcv = isTcvClient(client);
               const squadVisual = clientSquadVisual(squads, client);
+              const squadStyle = squadVisual.coverUrl ? { '--squad-cover': `url("${squadVisual.coverUrl}")` } : undefined;
               const internalSeller = getInternalSeller(client);
               const onboardingDays = getClientOnboardingDays(client, today);
               const showOnboardingDays = Number.isFinite(onboardingDays);
               const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
               const status = statusLabel(client, today);
-              const normalizedStatus = clientStatusKey(client);
-              const fee = resolveClientFeeAtDate(client, today);
-              const managerName = client?.gestor || client?.trafficManagerName || client?.traffic_manager_name || 'Sem gestor';
-              const gdvName = client?.gdvName || client?.gdv_name || 'Sem GDV';
-              const rowTone = due.tone && styles[`clientItem_${due.tone}`] ? styles[`clientItem_${due.tone}`] : '';
-              const squadCover = squadVisual.coverUrl ? { '--squad-cover': `url("${squadVisual.coverUrl}")` } : undefined;
 
               return (
-                <button
+                <article
                   key={client.id}
-                  type="button"
-                  className={`${styles.clientItem} ${rowTone}`.trim()}
-                  style={squadCover}
+                  className={`${styles.clientItem} ${styles[`clientItem_${due.tone}`] || ''}`.trim()}
+                  style={squadStyle}
                   onClick={() => openDetail(client.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openDetail(client.id);
+                    }
+                  }}
                 >
-                  <span className={styles.identityBlock}>
+                  <div className={styles.identityBlock}>
                     <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
                       {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
                     </span>
                     <span className={styles.identityText}>
                       <strong>{client.name}</strong>
-                      <small>{client?.routeName || client?.route_name || client?.icp || 'Sem rota vinculada'}</small>
                     </span>
-                  </span>
+                  </div>
 
-                  <span className={styles.statusStack}>
-                    <BareBadge tone={listStatusTone(client, today)}>{status}</BareBadge>
-                    {showOnboardingDays ? (
-                      <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
-                        {onboardingDaysLabel(onboardingDays)}
-                      </BareBadge>
-                    ) : null}
-                    {normalizedStatus === CLIENT_STATUS.CHURN ? <BareBadge tone="muted">{churnPeriodLabel(client)}</BareBadge> : null}
-                    {normalizedStatus === CLIENT_STATUS.FINISHED ? <BareBadge tone="muted">Finalizado</BareBadge> : null}
-                  </span>
-
-                  <span className={styles.squadBlock}>
+                  <div className={styles.squadBlock}>
                     <strong>{squadVisual.name}</strong>
-                  </span>
+                  </div>
 
-                  <span className={styles.valueBlock}>{fmtMoney(fee)}</span>
-
-                  <span className={styles.contractTags}>
+                  <div className={styles.typeBlock}>
                     <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
-                    {internalSeller ? <BareBadge tone="purple">Comercial interno</BareBadge> : null}
-                  </span>
+                  </div>
 
-                  <span className={styles.ownerBlock}>
-                    <strong>{gdvName}</strong>
-                    <small>{managerName}</small>
-                  </span>
+                  <strong className={styles.valueBlock}>{fmtMoney(resolveClientFeeAtDate(client, today))}</strong>
 
-                  <span className={styles.dueBlock}>
-                    <span className={styles.dueHeader}>
+                  <div className={styles.dueBlock}>
+                    <div className={styles.dueHeader}>
                       <BareBadge tone={due.tone}>{due.label}</BareBadge>
-                      <small>{fmtDateBR(client?.startDate || client?.start_date) || 'Sem entrada'}</small>
-                    </span>
-                  </span>
+                    </div>
+                  </div>
 
-                  <span className={styles.analysisGroup} aria-label="Análises do cliente">
+                  <div className={styles.analysisGroup} aria-label="Análises do cliente">
                     {ANALYSIS_ITEMS.map((item) => {
                       const Icon = item.icon;
                       const count = analysisCount(client, item.key);
                       return (
-                        <span
+                        <button
                           key={item.key}
-                          role="button"
-                          tabIndex={0}
-                          className={`${styles.analysisButton} ${styles[`analysis_${item.key}`] || ''}`.trim()}
+                          type="button"
+                          className={`${styles.analysisButton} ${styles[item.className]}`.trim()}
                           title={item.label}
                           aria-label={`Abrir ${item.label} de ${client.name}. Registros: ${count}`}
                           onClick={(event) => {
                             event.stopPropagation();
                             openDetail(client.id, item.tab);
                           }}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              openDetail(client.id, item.tab);
-                            }
-                          }}
                         >
                           <Icon size={13} strokeWidth={2} aria-hidden="true" />
                           {count > 0 ? <span>{count}</span> : null}
-                        </span>
+                        </button>
                       );
                     })}
-                  </span>
-                </button>
+                  </div>
+
+                  <div className={styles.statusStack}>
+                    {showOnboardingDays ? (
+                      <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
+                        {onboardingDaysLabel(onboardingDays)}
+                      </BareBadge>
+                    ) : null}
+                    <BareBadge tone={listStatusTone(client, today)}>{status}</BareBadge>
+                    {clientStatusKey(client) === CLIENT_STATUS.CHURN ? (
+                      <BareBadge tone="muted">{churnPeriodLabel(client)}</BareBadge>
+                    ) : null}
+                    {clientStatusKey(client) === CLIENT_STATUS.FINISHED ? (
+                      <BareBadge tone="muted">Finalizado</BareBadge>
+                    ) : null}
+                  </div>
+                </article>
               );
             })}
           </div>
         )}
 
         <footer className={styles.pagination}>
-          <span>{pageStart}-{pageEnd} de {filteredRows.length}</span>
+          <span>Exibindo {pageStart}-{pageEnd} de {filteredRows.length}</span>
           <div className={styles.pageButtons}>
-            <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={safePage <= 1}>Anterior</button>
-            <strong>{safePage} / {totalPages}</strong>
-            <button type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={safePage >= totalPages}>Próxima</button>
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={`${styles.pageButton} ${safePage === value ? styles.pageButtonActive : ''}`.trim()}
+                onClick={() => setPage(value)}
+              >
+                {value}
+              </button>
+            ))}
           </div>
         </footer>
       </section>
@@ -679,5 +722,4 @@ export default function ClientsV2Page() {
       ) : null}
     </div>
   );
-
 }
