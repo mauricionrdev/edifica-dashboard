@@ -5,7 +5,6 @@ import {
   ChartColumnIcon,
   CloseIcon,
   SearchIcon,
-  ShieldIcon,
   TargetIcon,
   UsersIcon,
 } from '../../components/ui/Icons.jsx';
@@ -20,7 +19,6 @@ import {
 import { CLIENT_STATUS, isRevenueClientStatus, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { fmtMoney } from '../../utils/format.js';
 import styles from './ClientsV2Page.module.css';
-import V2RouteNav from './V2RouteNav.jsx';
 
 const STATUS_FILTERS = [
   { key: 'all', label: 'Todos' },
@@ -46,7 +44,7 @@ const DETAIL_TABS = [
   { key: 'operation', label: 'Operação' },
   { key: 'finance', label: 'Financeiro' },
   { key: 'retention', label: 'Retenção' },
-  { key: 'validation', label: 'Validação' },
+  { key: 'observations', label: 'Observações' },
 ];
 
 const SORT_OPTIONS = [
@@ -333,24 +331,24 @@ function ClientDetailTab({ tab, client, squads, gdvs, today }) {
     );
   }
 
-  if (tab === 'validation') {
+  if (tab === 'observations') {
     return (
-      <div className={styles.validationBlock}>
-        <div className={styles.validationItem}>
-          <strong>Fonte de dados</strong>
-          <span>Lista já carregada pelo shell da plataforma via GET de clientes.</span>
-        </div>
-        <div className={styles.validationItem}>
-          <strong>Escrita em banco</strong>
-          <span>Não executa POST, PUT, PATCH ou DELETE nesta rota V2.</span>
-        </div>
-        <div className={styles.validationItem}>
-          <strong>Churn e Finalizado</strong>
-          <span>Separados por status. Finalizado não é tratado como churn.</span>
-        </div>
-        <div className={styles.validationItem}>
+      <div className={styles.notesBlock}>
+        <div className={styles.notesItem}>
           <strong>Pontos de atenção</strong>
-          <span>{reasons.length ? reasons.join(' · ') : 'Nenhum alerta operacional calculado nesta visão.'}</span>
+          <span>{reasons.length ? reasons.join(' · ') : 'Nenhum alerta operacional para este cliente.'}</span>
+        </div>
+        <div className={styles.notesItem}>
+          <strong>Análises registradas</strong>
+          <span>{analysisCount(client, 'icp')} ICP · {analysisCount(client, 'gdv')} GDV · {analysisCount(client, 'routes')} rota(s)</span>
+        </div>
+        <div className={styles.notesItem}>
+          <strong>Observação interna</strong>
+          <span>{pickText(client, ['notes', 'observation', 'observacao'], 'Nenhuma observação registrada.')}</span>
+        </div>
+        <div className={styles.notesItem}>
+          <strong>Situação da carteira</strong>
+          <span>{status === CLIENT_STATUS.FINISHED ? 'Cliente finalizado, sem compor churn.' : status === CLIENT_STATUS.CHURN ? 'Cliente classificado como churn.' : isRevenueClientStatus(status) ? 'Cliente dentro da base de receita.' : 'Cliente fora da base de receita.'}</span>
         </div>
       </div>
     );
@@ -412,8 +410,8 @@ function ReadOnlyClientDetail({ client, squads, gdvs, today, activeTab, onTabCha
       <ClientDetailTab tab={activeTab} client={client} squads={squads} gdvs={gdvs} today={today} />
 
       <footer className={styles.detailFooter}>
-        <Link className={styles.secondaryLink} to="/v2/modelo-oficial">Abrir modelo oficial V2</Link>
-        <p>Painel somente leitura. A promoção para produção só deve ocorrer após comparação com /clientes.</p>
+        <Link className={styles.secondaryLink} to="/v2/modelo-oficial">Abrir modelo oficial</Link>
+        <p>Consulta rápida da carteira sem sair do contexto do cliente.</p>
       </footer>
     </aside>
   );
@@ -501,25 +499,22 @@ export default function ClientsV2Page() {
 
   return (
     <main className={styles.page}>
-      <V2RouteNav currentKey="clients" />
-
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true">
           <UsersIcon size={20} />
         </div>
         <div className={styles.heroText}>
-          <p className={styles.eyebrow}>Clientes V2 · tela completa em rota paralela</p>
-          <h1>Carteira de clientes pronta para validação</h1>
+          <p className={styles.eyebrow}>Carteira de clientes</p>
+          <h1>Clientes</h1>
           <p>
-            Nova tela de clientes com filtros, paginação, leitura operacional e detalhe por abas. Continua sem substituir <strong>/clientes</strong> e sem qualquer escrita no banco.
+            Visão operacional da carteira com filtros, indicadores, status, responsáveis e detalhe completo do cliente em um único workspace.
           </p>
         </div>
         <div className={styles.heroActions}>
-          <span className={styles.safeBadge}><ShieldIcon size={14} /> Somente leitura</span>
           <button type="button" className={styles.heroButton} onClick={() => refreshClients?.()}>
             Atualizar dados
           </button>
-          <Link className={styles.heroButton} to="/clientes">Comparar produção</Link>
+          <Link className={styles.heroButton} to="/v2/modelo-oficial">Modelo oficial</Link>
         </div>
       </section>
 
@@ -623,10 +618,10 @@ export default function ClientsV2Page() {
               <h2>Clientes filtrados</h2>
               <p>{loading ? 'Carregando dados...' : `${filteredClients.length} de ${summary.total} cliente${summary.total === 1 ? '' : 's'}`}</p>
             </div>
-            <span className={styles.readOnly}>Rota V2 paralela</span>
+            <span className={styles.readOnly}>Carteira operacional</span>
           </div>
 
-          {error ? <div className={styles.stateBox}>Não foi possível carregar clientes. Verifique a API antes de validar a V2.</div> : null}
+          {error ? <div className={styles.stateBox}>Não foi possível carregar clientes. Verifique a API e tente novamente.</div> : null}
           {!error && !loading && filteredClients.length === 0 ? <div className={styles.stateBox}>Nenhum cliente encontrado com os filtros atuais.</div> : null}
 
           {!error && pageClients.length > 0 ? (
@@ -703,19 +698,6 @@ export default function ClientsV2Page() {
         />
       </section>
 
-      <section className={styles.validationPanel} aria-label="Checklist de validação">
-        <div>
-          <p className={styles.eyebrow}>Checklist antes de promover</p>
-          <h2>Critérios mínimos para trocar /clientes</h2>
-        </div>
-        <ul>
-          <li>Total de clientes deve bater com a tela oficial.</li>
-          <li>Churn e Finalizado devem aparecer como status separados.</li>
-          <li>Filtros por squad, GDV, gestor e status devem responder com dados reais.</li>
-          <li>Detalhe do cliente deve ser suficiente para operação sem abrir modal legado.</li>
-          <li>Nenhuma ação de escrita deve existir nesta rota antes da aprovação visual.</li>
-        </ul>
-      </section>
     </main>
   );
 }

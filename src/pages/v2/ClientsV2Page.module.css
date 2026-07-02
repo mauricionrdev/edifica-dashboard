@@ -11,8 +11,7 @@
 .scopeBar,
 .toolbar,
 .tablePanel,
-.detailPanel,
-.validationPanel {
+.detailPanel {
   border: 1px solid var(--line);
   background: var(--bg-elevated);
   border-radius: var(--radius-3);
@@ -69,11 +68,7 @@
 .detailSection h3,
 .detailRow span,
 .detailRow strong,
-.detailFooter p,
-.validationPanel h2,
-.validationPanel ul,
-.validationBlock strong,
-.validationBlock span {
+.detailFooter p {
   margin: 0;
 }
 
@@ -84,8 +79,7 @@
   line-height: var(--lh-tight);
 }
 
-.heroText h1,
-.validationPanel h2 {
+.heroText h1 {
   color: var(--text-primary);
   font-size: var(--fs-2xl);
   font-weight: var(--weight-semibold);
@@ -98,8 +92,7 @@
 .stateBox,
 .pagination,
 .detailFooter p,
-.validationPanel li,
-.validationBlock span {
+.notesItem span {
   color: var(--text-secondary);
   font-size: var(--fs-body);
   line-height: var(--lh-normal);
@@ -110,7 +103,6 @@
   font-weight: var(--weight-medium);
 }
 
-.safeBadge,
 .readOnly,
 .scopeButton,
 .statusPill,
@@ -129,14 +121,6 @@
   line-height: var(--lh-snug);
 }
 
-.safeBadge {
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--success-line);
-  color: var(--success-text);
-  background: var(--success-soft);
-  white-space: nowrap;
-}
 
 .heroButton,
 .resetButton,
@@ -604,12 +588,12 @@
   overflow-wrap: anywhere;
 }
 
-.validationBlock {
+.notesBlock {
   display: grid;
   gap: var(--space-3);
 }
 
-.validationItem {
+.notesItem {
   display: grid;
   gap: var(--space-1);
   padding: var(--space-3);
@@ -618,7 +602,7 @@
   background: var(--bg-raised);
 }
 
-.validationItem strong {
+.notesItem strong {
   color: var(--text-primary);
   font-size: var(--fs-body);
   font-weight: var(--weight-semibold);
@@ -631,23 +615,10 @@
   border-top: 1px solid var(--line-subtle);
 }
 
-.validationPanel {
-  display: grid;
-  grid-template-columns: minmax(220px, 0.6fr) minmax(0, 1fr);
-  gap: var(--space-5);
-  padding: var(--space-5);
-}
-
-.validationPanel ul {
-  display: grid;
-  gap: var(--space-2);
-  padding-left: var(--space-5);
-}
 
 @media (max-width: 1180px) {
   .hero,
-  .toolbar,
-  .validationPanel {
+  .toolbar {
     grid-template-columns: 1fr;
   }
 
