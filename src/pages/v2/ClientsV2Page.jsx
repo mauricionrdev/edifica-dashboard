@@ -447,78 +447,7 @@ export default function ClientsV2Page() {
 
   return (
     <div className={`btScope ${styles.page}`}>
-      <header className={styles.hero}>
-        <div className={styles.heroText}>
-          <span className={styles.eyebrow}>Carteira de clientes</span>
-          <h1>Clientes</h1>
-          <p>Controle operacional da carteira, com status, squad, responsáveis, contrato e retenção em um único lugar.</p>
-        </div>
-        <div className={styles.heroActions}>
-          {canOpenTemplate ? (
-            <BareButton type="button" variant="secondary" size="sm" onClick={() => navigate('/modelo-oficial')}>
-              <ClipboardListIcon size={14} aria-hidden="true" />
-              Modelo padrão
-            </BareButton>
-          ) : null}
-          {canCreate ? (
-            <BareButton type="button" variant="primary" size="sm" onClick={() => setModalOpen(true)}>
-              <PlusIcon size={14} aria-hidden="true" />
-              Novo cliente
-            </BareButton>
-          ) : null}
-        </div>
-      </header>
-
-      <section className={styles.metrics} aria-label="Resumo da carteira">
-        <article className={styles.metricCard}>
-          <UsersIcon size={16} aria-hidden="true" />
-          <span>Total</span>
-          <strong>{counts.all}</strong>
-        </article>
-        <article className={styles.metricCard}>
-          <TrendingUpIcon size={16} aria-hidden="true" />
-          <span>Receita ativa</span>
-          <strong>{counts.revenue}</strong>
-        </article>
-        <article className={styles.metricCard}>
-          <TargetIcon size={16} aria-hidden="true" />
-          <span>MRR previsto</span>
-          <strong>{fmtMoney(summary.mrr)}</strong>
-        </article>
-        <article className={styles.metricCard}>
-          <CalendarIcon size={16} aria-hidden="true" />
-          <span>Vencendo / vencidos</span>
-          <strong>{summary.risk}</strong>
-        </article>
-        <article className={styles.metricCard}>
-          <span>Churn</span>
-          <strong>{counts.churn}</strong>
-        </article>
-        <article className={styles.metricCard}>
-          <span>Finalizados</span>
-          <strong>{counts.finished}</strong>
-        </article>
-      </section>
-
-      <section className={styles.scopeBar} aria-label="Escopos de clientes">
-        {SCOPES.map((item) => {
-          const active = scope === item.key;
-          return (
-            <button
-              key={item.key}
-              type="button"
-              className={`${styles.scopeButton} ${active ? styles.scopeButtonActive : ''}`.trim()}
-              onClick={() => setScope(item.key)}
-              aria-pressed={active}
-            >
-              <span>{item.label}</span>
-              <strong>{counts[item.key] ?? 0}</strong>
-            </button>
-          );
-        })}
-      </section>
-
-      <section className={styles.toolbar} aria-label="Filtros da carteira">
+      <section className={styles.commandLayer} aria-label="Controle da carteira de clientes">
         <label className={styles.searchBox}>
           <SearchIcon size={15} aria-hidden="true" />
           <input
@@ -530,22 +459,40 @@ export default function ClientsV2Page() {
           />
         </label>
 
-        <div className={styles.filterGrid}>
-          <label className={styles.selectField}>
+        <div className={styles.segmentCloud} aria-label="Escopos da carteira">
+          {SCOPES.map((item) => {
+            const active = scope === item.key;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                className={`${styles.segmentChip} ${item.tone === 'purple' ? styles.segmentChipPurple : ''} ${active ? styles.segmentChipActive : ''}`.trim()}
+                onClick={() => setScope(item.key)}
+                aria-pressed={active}
+              >
+                <span>{item.label}</span>
+                <strong>{counts[item.key] ?? 0}</strong>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className={styles.filterStrip} aria-label="Filtros da carteira">
+          <label className={styles.selectPill}>
             <span>Squad</span>
             <select value={squadFilter} onChange={(event) => setSquadFilter(event.target.value)}>
               <option value="">Todos</option>
               {squadOptions.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
-          <label className={styles.selectField}>
+          <label className={styles.selectPill}>
             <span>GDV</span>
             <select value={gdvFilter} onChange={(event) => setGdvFilter(event.target.value)}>
               <option value="">Todos</option>
               {gdvOptions.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
-          <label className={styles.selectField}>
+          <label className={styles.selectPill}>
             <span>Gestor</span>
             <select value={managerFilter} onChange={(event) => setManagerFilter(event.target.value)}>
               <option value="">Todos</option>
@@ -553,35 +500,26 @@ export default function ClientsV2Page() {
             </select>
           </label>
           {scope === 'churn' ? (
-            <label className={styles.selectField}>
-              <span>Mês do churn</span>
+            <label className={styles.selectPill}>
+              <span>Mês</span>
               <select value={churnMonth} onChange={(event) => setChurnMonth(event.target.value)}>
                 {churnMonthOptions.map((option) => <option key={option} value={option}>{monthLabel(option)}</option>)}
               </select>
             </label>
           ) : null}
-          <label className={styles.selectField}>
+          <label className={styles.selectPill}>
             <span>Exibição</span>
             <select value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))}>
-              {PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{option} por página</option>)}
+              {PAGE_SIZE_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
+          {hasFilters ? (
+            <button type="button" className={styles.clearButton} onClick={resetFilters}>Limpar</button>
+          ) : null}
         </div>
-
-        {hasFilters ? (
-          <button type="button" className={styles.resetButton} onClick={resetFilters}>Limpar filtros</button>
-        ) : null}
       </section>
 
-      <section className={styles.tablePanel} aria-label="Lista de clientes" ref={tableTopRef}>
-        <div className={styles.tableHeader}>
-          <div>
-            <h2>Carteira</h2>
-            <p>{filteredRows.length} clientes encontrados</p>
-          </div>
-          <span>{pageStart}-{pageEnd} de {filteredRows.length}</span>
-        </div>
-
+      <section className={styles.board} aria-label="Lista de clientes" ref={tableTopRef}>
         {loading ? (
           <div className={styles.stateWrap}>
             <StateBlock variant="loading" compact title="Carregando clientes" />
@@ -596,130 +534,114 @@ export default function ClientsV2Page() {
             <span>Ajuste a busca ou os filtros para localizar outro grupo da carteira.</span>
           </div>
         ) : (
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Status</th>
-                  <th>Squad</th>
-                  <th>GDV / gestor</th>
-                  <th>Contrato</th>
-                  <th>Retenção</th>
-                  <th>Análises</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pagedRows.map((client) => {
-                  const avatar = getClientAvatar(client);
-                  const due = contractEndInfo(client, today);
-                  const tcv = isTcvClient(client);
-                  const squadVisual = clientSquadVisual(squads, client);
-                  const internalSeller = getInternalSeller(client);
-                  const onboardingDays = getClientOnboardingDays(client, today);
-                  const showOnboardingDays = Number.isFinite(onboardingDays);
-                  const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
-                  const status = statusLabel(client, today);
-                  const normalizedStatus = clientStatusKey(client);
-                  const fee = resolveClientFeeAtDate(client, today);
-                  const managerName = client?.gestor || client?.trafficManagerName || client?.traffic_manager_name || 'Sem gestor';
-                  const gdvName = client?.gdvName || client?.gdv_name || 'Sem GDV';
+          <div className={styles.clientList}>
+            {pagedRows.map((client) => {
+              const avatar = getClientAvatar(client);
+              const due = contractEndInfo(client, today);
+              const tcv = isTcvClient(client);
+              const squadVisual = clientSquadVisual(squads, client);
+              const internalSeller = getInternalSeller(client);
+              const onboardingDays = getClientOnboardingDays(client, today);
+              const showOnboardingDays = Number.isFinite(onboardingDays);
+              const onboardingTone = showOnboardingDays ? onboardingDaysTone(onboardingDays) : 'neutral';
+              const status = statusLabel(client, today);
+              const normalizedStatus = clientStatusKey(client);
+              const fee = resolveClientFeeAtDate(client, today);
+              const managerName = client?.gestor || client?.trafficManagerName || client?.traffic_manager_name || 'Sem gestor';
+              const gdvName = client?.gdvName || client?.gdv_name || 'Sem GDV';
+              const rowTone = due.tone && styles[`clientItem_${due.tone}`] ? styles[`clientItem_${due.tone}`] : '';
+              const squadCover = squadVisual.coverUrl ? { '--squad-cover': `url("${squadVisual.coverUrl}")` } : undefined;
 
-                  return (
-                    <tr
-                      key={client.id}
-                      className={styles.tableRow}
-                      onClick={() => openDetail(client.id)}
-                      tabIndex={0}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          openDetail(client.id);
-                        }
-                      }}
-                    >
-                      <td>
-                        <div className={styles.clientCell}>
-                          <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
-                            {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
-                          </span>
-                          <span className={styles.identityText}>
-                            <strong>{client.name}</strong>
-                            <small>{client?.routeName || client?.route_name || client?.icp || 'Sem rota vinculada'}</small>
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.badgeStack}>
-                          <BareBadge tone={listStatusTone(client, today)}>{status}</BareBadge>
-                          {showOnboardingDays ? (
-                            <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
-                              {onboardingDaysLabel(onboardingDays)}
-                            </BareBadge>
-                          ) : null}
-                          {normalizedStatus === CLIENT_STATUS.CHURN ? <BareBadge tone="muted">{churnPeriodLabel(client)}</BareBadge> : null}
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.squadCell}>
-                          {squadVisual.coverUrl ? <span className={styles.squadCover} style={{ backgroundImage: `url("${squadVisual.coverUrl}")` }} aria-hidden="true" /> : null}
-                          <strong>{squadVisual.name}</strong>
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.metaCell}>
-                          <strong>{gdvName}</strong>
-                          <span>{managerName}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.moneyCell}>
-                          <strong>{fmtMoney(fee)}</strong>
-                          <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
-                          {internalSeller ? <small>{internalSeller}</small> : null}
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.badgeStack}>
-                          <BareBadge tone={due.tone}>{due.label}</BareBadge>
-                          <span>{fmtDateBR(client?.startDate || client?.start_date) || 'Sem entrada'}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className={styles.analysisGroup} aria-label="Análises do cliente">
-                          {ANALYSIS_ITEMS.map((item) => {
-                            const Icon = item.icon;
-                            const count = analysisCount(client, item.key);
-                            return (
-                              <button
-                                key={item.key}
-                                type="button"
-                                className={styles.analysisButton}
-                                title={item.label}
-                                aria-label={`Abrir ${item.label} de ${client.name}. Registros: ${count}`}
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  openDetail(client.id, item.tab);
-                                }}
-                              >
-                                <Icon size={13} strokeWidth={2} aria-hidden="true" />
-                                <span>{item.label}</span>
-                                {count > 0 ? <strong>{count}</strong> : null}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              return (
+                <button
+                  key={client.id}
+                  type="button"
+                  className={`${styles.clientItem} ${rowTone}`.trim()}
+                  style={squadCover}
+                  onClick={() => openDetail(client.id)}
+                >
+                  <span className={styles.identityBlock}>
+                    <span className={styles.avatar} data-avatar-version={avatarVersion} aria-hidden="true">
+                      {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
+                    </span>
+                    <span className={styles.identityText}>
+                      <strong>{client.name}</strong>
+                      <small>{client?.routeName || client?.route_name || client?.icp || 'Sem rota vinculada'}</small>
+                    </span>
+                  </span>
+
+                  <span className={styles.statusStack}>
+                    <BareBadge tone={listStatusTone(client, today)}>{status}</BareBadge>
+                    {showOnboardingDays ? (
+                      <BareBadge tone={onboardingTone === 'overdue' ? 'danger' : onboardingTone === 'warning' ? 'warning' : 'info'}>
+                        {onboardingDaysLabel(onboardingDays)}
+                      </BareBadge>
+                    ) : null}
+                    {normalizedStatus === CLIENT_STATUS.CHURN ? <BareBadge tone="muted">{churnPeriodLabel(client)}</BareBadge> : null}
+                    {normalizedStatus === CLIENT_STATUS.FINISHED ? <BareBadge tone="muted">Finalizado</BareBadge> : null}
+                  </span>
+
+                  <span className={styles.squadBlock}>
+                    <strong>{squadVisual.name}</strong>
+                  </span>
+
+                  <span className={styles.valueBlock}>{fmtMoney(fee)}</span>
+
+                  <span className={styles.contractTags}>
+                    <BareBadge tone={tcv ? 'purple' : 'muted'}>{tcv ? 'TCV' : 'Recorrente'}</BareBadge>
+                    {internalSeller ? <BareBadge tone="purple">Comercial interno</BareBadge> : null}
+                  </span>
+
+                  <span className={styles.ownerBlock}>
+                    <strong>{gdvName}</strong>
+                    <small>{managerName}</small>
+                  </span>
+
+                  <span className={styles.dueBlock}>
+                    <span className={styles.dueHeader}>
+                      <BareBadge tone={due.tone}>{due.label}</BareBadge>
+                      <small>{fmtDateBR(client?.startDate || client?.start_date) || 'Sem entrada'}</small>
+                    </span>
+                  </span>
+
+                  <span className={styles.analysisGroup} aria-label="Análises do cliente">
+                    {ANALYSIS_ITEMS.map((item) => {
+                      const Icon = item.icon;
+                      const count = analysisCount(client, item.key);
+                      return (
+                        <span
+                          key={item.key}
+                          role="button"
+                          tabIndex={0}
+                          className={`${styles.analysisButton} ${styles[`analysis_${item.key}`] || ''}`.trim()}
+                          title={item.label}
+                          aria-label={`Abrir ${item.label} de ${client.name}. Registros: ${count}`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openDetail(client.id, item.tab);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              openDetail(client.id, item.tab);
+                            }
+                          }}
+                        >
+                          <Icon size={13} strokeWidth={2} aria-hidden="true" />
+                          {count > 0 ? <span>{count}</span> : null}
+                        </span>
+                      );
+                    })}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
 
         <footer className={styles.pagination}>
-          <span>Exibindo {pageStart}-{pageEnd} de {filteredRows.length}</span>
+          <span>{pageStart}-{pageEnd} de {filteredRows.length}</span>
           <div className={styles.pageButtons}>
             <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={safePage <= 1}>Anterior</button>
             <strong>{safePage} / {totalPages}</strong>
@@ -757,4 +679,5 @@ export default function ClientsV2Page() {
       ) : null}
     </div>
   );
+
 }
