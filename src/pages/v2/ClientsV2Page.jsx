@@ -5,6 +5,7 @@ import { clientInitials, fmtDateBR, statusLabel } from '../../utils/clientHelper
 import { CLIENT_STATUS, isRevenueClientStatus, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { fmtMoney } from '../../utils/format.js';
 import styles from './ClientsV2Page.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 const STATUS_FILTERS = [
   { key: 'all', label: 'Todos' },
@@ -194,6 +195,7 @@ export default function ClientsV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="clients" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true">
           <UsersIcon size={20} />

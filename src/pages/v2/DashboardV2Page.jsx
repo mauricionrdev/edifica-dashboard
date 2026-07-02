@@ -18,6 +18,7 @@ import {
   safeNumber,
 } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 function targetTone(value, target, invert = false) {
   const safeValue = safeNumber(value, 0);
@@ -120,6 +121,7 @@ export default function DashboardV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="dashboard" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true"><ChartColumnIcon size={20} /></div>
         <div className={styles.heroText}>

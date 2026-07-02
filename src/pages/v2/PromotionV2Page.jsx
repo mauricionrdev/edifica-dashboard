@@ -3,6 +3,7 @@ import { ChecklistIcon, ShieldIcon, SparklesIcon, TargetIcon } from '../../compo
 import { V2_PROMOTION_BLOCKERS, V2_ROUTE_REGISTRY, criticalRoutes, lockedPromotionRoutes, promotableFlagRoutes, promotionCandidates } from './v2RouteRegistry.js';
 import { V2_PROMOTION_FLAGS, enabledV2PromotionFlags, isV2RoutePromoted } from './v2PromotionFlags.js';
 import styles from './V2Operations.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 const PHASES = [
   ['01', 'Validar leitura', 'A tela V2 precisa abrir, carregar dados reais e respeitar o espaço do workspace.'],
@@ -31,6 +32,7 @@ export default function PromotionV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="promotion" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true"><TargetIcon size={20} /></div>
         <div className={styles.heroText}>

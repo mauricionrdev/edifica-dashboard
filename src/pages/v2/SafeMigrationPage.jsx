@@ -7,6 +7,7 @@ import {
   TargetIcon,
 } from '../../components/ui/Icons.jsx';
 import styles from './SafeMigrationPage.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 const guardrails = [
   'Produção atual permanece ativa durante toda a reconstrução.',
@@ -62,6 +63,7 @@ const validation = [
 export default function SafeMigrationPage() {
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="migration-plan" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true">
           <ShieldIcon size={20} />

@@ -3,6 +3,7 @@ import { listProjects } from '../../api/projects.js';
 import { BriefcaseIcon, ChecklistIcon, SearchIcon, ShieldIcon, UsersIcon } from '../../components/ui/Icons.jsx';
 import { errorMessage, normalizeText, resolveName, safeInt } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 function projectId(project, index) {
   return project?.id || project?.projectId || project?.project_id || project?.clientId || project?.client_id || project?.name || `project-${index}`;
@@ -106,6 +107,7 @@ export default function ProjectsV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="projects" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true"><BriefcaseIcon size={20} /></div>
         <div className={styles.heroText}>

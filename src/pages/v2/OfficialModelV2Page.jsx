@@ -3,6 +3,7 @@ import { BookTemplateIcon, ChecklistIcon, SearchIcon, ShieldIcon } from '../../c
 import { getTemplate } from '../../api/template.js';
 import { ApiError } from '../../api/client.js';
 import styles from './OfficialModelV2Page.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 function normalizeText(value) {
   return String(value || '')
@@ -123,6 +124,7 @@ export default function OfficialModelV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="model" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true">
           <BookTemplateIcon size={20} />

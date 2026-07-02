@@ -3,12 +3,14 @@ import { ShieldIcon, SparklesIcon } from '../../components/ui/Icons.jsx';
 import { V2_ROUTE_REGISTRY } from './v2RouteRegistry.js';
 import { enabledV2PromotionFlags } from './v2PromotionFlags.js';
 import styles from './V2Operations.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 export default function V2OverviewPage() {
   const activeFlags = enabledV2PromotionFlags();
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="overview" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true"><SparklesIcon size={20} /></div>
         <div className={styles.heroText}>

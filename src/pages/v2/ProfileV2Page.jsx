@@ -6,6 +6,7 @@ import { roleLabel } from '../../utils/roles.js';
 import { getUserPermissions, getUserSquadIds } from '../../utils/permissions.js';
 import { normalizeText, resolveName, safeInt } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 function userInitials(user) {
   const source = String(user?.name || user?.email || 'U').trim();
@@ -45,6 +46,7 @@ export default function ProfileV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="profile" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true">{userInitials(user)}</div>
         <div className={styles.heroText}>

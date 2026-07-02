@@ -16,6 +16,7 @@ import {
   safeNumber,
 } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 function distributionLabel(row) {
   return row?.label || row?.name || row?.reason || row?.key || 'Sem classificação';
@@ -83,6 +84,7 @@ export default function RetentionV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="retention" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true"><TrendingUpIcon size={20} /></div>
         <div className={styles.heroText}>

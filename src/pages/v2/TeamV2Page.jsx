@@ -4,6 +4,7 @@ import { listUsers } from '../../api/users.js';
 import { BuildingIcon, SearchIcon, ShieldIcon, UsersIcon } from '../../components/ui/Icons.jsx';
 import { roleLabel } from '../../utils/roles.js';
 import styles from './TeamV2Page.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 const STATUS_FILTERS = [
   { key: 'all', label: 'Todos' },
@@ -153,6 +154,7 @@ export default function TeamV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="team" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true">
           <UsersIcon size={20} />

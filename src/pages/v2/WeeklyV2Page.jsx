@@ -15,6 +15,7 @@ import {
   safeNumber,
 } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 const WEEKS = [1, 2, 3, 4];
 
@@ -93,6 +94,7 @@ export default function WeeklyV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="weekly" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true"><ChecklistIcon size={20} /></div>
         <div className={styles.heroText}>

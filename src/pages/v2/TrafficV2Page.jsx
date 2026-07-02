@@ -3,6 +3,7 @@ import { getTrafficManagement } from '../../api/metrics.js';
 import { ChartColumnIcon, SearchIcon, ShieldIcon, TargetIcon, TrendingUpIcon, TrophyIcon, UsersIcon } from '../../components/ui/Icons.jsx';
 import { MONTHS_FULL, fmtInt, fmtMoney, fmtPct } from '../../utils/format.js';
 import styles from './TrafficV2Page.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 function currentPeriod() {
   const now = new Date();
@@ -148,6 +149,7 @@ export default function TrafficV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="traffic" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true">
           <TrendingUpIcon size={20} />

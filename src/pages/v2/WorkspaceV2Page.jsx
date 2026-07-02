@@ -4,6 +4,7 @@ import { listSupportDailyRows, listWorkspaceDocuments } from '../../api/support.
 import { BookTemplateIcon, ChecklistIcon, ShieldIcon } from '../../components/ui/Icons.jsx';
 import { errorMessage, resolveName, safeInt } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
+import V2RouteNav from './V2RouteNav.jsx';
 
 function documentTitle(item) {
   return resolveName(item?.title || item?.name, 'Documento sem título');
@@ -63,6 +64,7 @@ export default function WorkspaceV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="workspace" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true"><BookTemplateIcon size={20} /></div>
         <div className={styles.heroText}>

@@ -20,6 +20,7 @@ import {
 } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
 import { routeMatrixRows } from './v2RouteRegistry.js';
+import V2RouteNav from './V2RouteNav.jsx';
 
 const ROUTE_MATRIX = routeMatrixRows();
 
@@ -149,6 +150,7 @@ export default function ValidationV2Page() {
 
   return (
     <main className={styles.page}>
+      <V2RouteNav currentKey="validation" />
       <section className={styles.hero}>
         <div className={styles.heroIcon} aria-hidden="true"><ChecklistIcon size={20} /></div>
         <div className={styles.heroText}>
