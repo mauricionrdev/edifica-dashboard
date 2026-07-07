@@ -2236,3 +2236,143 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+/* v118 · Correção de layout do Projeto dentro do modal de detalhes do cliente */
+.wrap {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 100%;
+  padding: 14px 16px 18px;
+  overflow: visible;
+  align-content: start;
+}
+
+.projectHeader {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) max-content 32px;
+  align-items: center;
+  gap: 14px;
+}
+
+.projectStats {
+  justify-self: end;
+}
+
+.deleteProjectButton {
+  justify-self: end;
+}
+
+.memberPanel,
+.projectTopTools,
+.workspace,
+.sections,
+.sectionCard,
+.sectionHead,
+.taskForm {
+  overflow: visible;
+}
+
+.memberPanel {
+  width: 100%;
+  grid-template-columns: max-content minmax(220px, 0.7fr) minmax(360px, 1fr);
+}
+
+.memberList {
+  min-width: 0;
+  overflow: visible;
+}
+
+.memberForm {
+  min-width: 0;
+  max-width: none;
+}
+
+.projectTopTools {
+  width: 100%;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(420px, 1fr);
+}
+
+.projectTopTools .sectionForm,
+.projectTopTools .projectTools {
+  min-width: 0;
+  max-width: none;
+}
+
+.sectionCard {
+  position: relative;
+}
+
+.taskForm {
+  position: relative;
+  z-index: 2;
+}
+
+.taskList {
+  overflow: hidden;
+  border-radius: 0 0 var(--workspace-card-radius) var(--workspace-card-radius);
+}
+
+.projectInlineSelect,
+.projectToolSelect {
+  max-width: none;
+  overflow: visible;
+}
+
+.projectInlineSelect :global(button),
+.projectToolSelect :global(button) {
+  box-shadow: none;
+}
+
+.projectInlineSelect :global(button:focus),
+.projectInlineSelect :global(button:focus-visible),
+.projectToolSelect :global(button:focus),
+.projectToolSelect :global(button:focus-visible),
+.dateField :global(button:focus),
+.dateField :global(button:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+@media (max-width: 1180px) {
+  .projectHeader {
+    grid-template-columns: minmax(0, 1fr) 32px;
+  }
+
+  .projectStats {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .deleteProjectButton {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .memberPanel,
+  .projectTopTools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .memberForm {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr) minmax(130px, 180px) 34px;
+  }
+}
+
+@media (max-width: 760px) {
+  .wrap {
+    padding: 12px;
+  }
+
+  .projectStats {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .memberForm,
+  .projectTopTools .projectToolGroup,
+  .taskForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

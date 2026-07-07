@@ -1502,3 +1502,37 @@
 .churnMonthField input[type="month"] {
   color-scheme: dark;
 }
+
+/* v141 · Projeto dentro do detalhe do cliente ocupando o workspace real */
+.projectHost {
+  min-height: 0;
+  padding: 12px 14px 18px;
+  overflow: visible;
+  display: block;
+}
+
+.projectHost > * {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  border-radius: 0;
+}
+
+.projectHost :global(button),
+.projectHost :global(input),
+.projectHost :global(textarea),
+.projectHost :global(select) {
+  box-shadow: none;
+}
+
+.projectHost :global(button:focus),
+.projectHost :global(button:focus-visible),
+.projectHost :global(input:focus),
+.projectHost :global(input:focus-visible),
+.projectHost :global(textarea:focus),
+.projectHost :global(textarea:focus-visible),
+.projectHost :global(select:focus),
+.projectHost :global(select:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}

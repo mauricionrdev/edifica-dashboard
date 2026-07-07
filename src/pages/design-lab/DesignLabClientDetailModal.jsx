@@ -408,12 +408,6 @@ export default function DesignLabClientDetailModal({
     const button = event.target?.closest?.('button');
     if (!button || confirmedDestructiveButtons.current.has(button)) return;
 
-    // Componentes embarcados que já possuem confirmação própria não devem
-    // passar pelo confirmador genérico do modal do cliente. Sem esta trava,
-    // a exclusão de análises abre duas confirmações em sequência e impede a
-    // remoção do registro.
-    if (button.closest?.('[data-skip-client-destructive-confirm="true"]')) return;
-
     const action = destructiveActionFromButton(button);
     if (!action) return;
 
@@ -741,21 +735,14 @@ export default function DesignLabClientDetailModal({
           ) : null}
 
           {activeTab === 'project' && canViewProject ? (
-            <div className={styles.embeddedPanel}>
+            <div className={`${styles.embeddedPanel} ${styles.projectHost}`.trim()}>
               <ClientProjectTab client={client} users={users} canCreateProject={canCreateProject} />
             </div>
           ) : null}
           {activeTab === 'tasks' && canViewTasks ? <div className={styles.embeddedPanel}><ClientTasksTab client={client} /></div> : null}
           {activeTab === 'book' ? <div className={styles.embeddedPanel}><ClientBookTab client={client} /></div> : null}
           {activeTab === 'drive' ? <div className={styles.embeddedPanel}><DesignLabClientDrivePanel client={client} canEdit={canEditClient} /></div> : null}
-          {activeAnalysisType ? (
-            <div
-              className={`${styles.embeddedPanel} ${styles.analysisHost}`.trim()}
-              data-skip-client-destructive-confirm="true"
-            >
-              <AnalysisTab clientId={client.id} type={activeAnalysisType} canEdit={canEditClient} />
-            </div>
-          ) : null}
+          {activeAnalysisType ? <div className={`${styles.embeddedPanel} ${styles.analysisHost}`.trim()}><AnalysisTab clientId={client.id} type={activeAnalysisType} canEdit={canEditClient} /></div> : null}
         </main>
 
         {pendingConfirm ? (

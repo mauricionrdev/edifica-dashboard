@@ -204,3 +204,9 @@
 .wrap[data-type='gdv'] .menu button.option {
   font-weight: 600;
 }
+
+/* v142 · dropdown opcional em portal para modais com overflow interno */
+.menuPortal {
+  z-index: 42000;
+  max-width: calc(100vw - 24px);
+}

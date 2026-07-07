@@ -1008,6 +1008,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         {canEditProject ? (
           <form className={styles.memberForm} onSubmit={handleAddProjectMember}>
             <Select
+              portal
               type="user"
               className={styles.projectInlineSelect}
               value={memberUserId}
@@ -1023,6 +1024,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                 ))}
             </Select>
             <Select
+              portal
               className={styles.projectInlineSelect}
               value={memberRole}
               onChange={(event) => setMemberRole(event.target.value)}
@@ -1051,6 +1053,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         <section className={styles.projectTools}>
           <div className={styles.projectToolGroup}>
             <Select
+              portal
               className={styles.projectToolSelect}
               value={taskFilter}
               onChange={(event) => setTaskFilter(event.target.value)}
@@ -1061,6 +1064,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
               ))}
             </Select>
             <Select
+              portal
               className={styles.projectToolSelect}
               value={taskSort}
               onChange={(event) => setTaskSort(event.target.value)}
@@ -1177,6 +1181,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                           disabled={busy || !canCreateTasks}
                         />
                         <Select
+              portal
                           className={styles.projectInlineSelect}
                           value={(taskDrafts[section.id] && typeof taskDrafts[section.id] === 'object' ? taskDrafts[section.id].assigneeUserId : '') || ''}
                           onChange={(event) =>
@@ -1339,6 +1344,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                 <label>
                   <span>Seção</span>
                   <Select
+              portal
                     className={styles.projectInlineSelect}
                     value={selectedTask.sectionId || ''}
                     onChange={(event) => handleUpdateTask(selectedTask, { sectionId: event.target.value })}
@@ -1354,6 +1360,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                 <label>
                   <span>Status</span>
                   <Select
+              portal
                     className={styles.projectInlineSelect}
                     value={selectedTask.status || 'todo'}
                     onChange={(event) => handleUpdateTask(selectedTask, { status: event.target.value, done: event.target.value === 'done' })}
@@ -1370,6 +1377,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                 <label>
                   <span>Prioridade</span>
                   <Select
+              portal
                     className={styles.projectInlineSelect}
                     value={selectedTask.priority || 'medium'}
                     onChange={(event) => handleUpdateTask(selectedTask, { priority: event.target.value })}
@@ -1385,6 +1393,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
                 <label>
                   <span>Responsável</span>
                   <Select
+              portal
                     type="user"
                     className={styles.projectInlineSelect}
                     value={selectedTask.assigneeUserId || ''}
@@ -1463,6 +1472,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
 
                 <form className={styles.collabForm} onSubmit={handleAddCollaborator}>
                   <Select
+              portal
                     type="user"
                     className={styles.projectInlineSelect}
                     value={collaboratorUserId}
