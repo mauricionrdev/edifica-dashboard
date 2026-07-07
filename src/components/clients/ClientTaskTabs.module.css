@@ -361,3 +361,81 @@
   border-color: var(--danger-line);
   background: var(--danger-soft);
 }
+
+/* v143 · tarefas no modal sem corte lateral */
+.panel {
+  min-width: 0;
+  padding: 16px 18px 20px;
+  overflow: hidden;
+}
+
+.tableWrap {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  min-width: 700px;
+  table-layout: fixed;
+}
+
+.table th,
+.table td {
+  padding-right: 14px;
+  padding-left: 14px;
+}
+
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 34%;
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 17%;
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 22%;
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  width: 12%;
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 15%;
+}
+
+.taskTitle {
+  min-width: 0;
+}
+
+.taskTitle strong {
+  overflow-wrap: anywhere;
+  line-height: 1.28;
+}
+
+.badge,
+.statusPill {
+  max-width: 100%;
+}
+
+.statusPill {
+  min-width: 120px;
+}
+
+.avatarStack {
+  min-width: 0;
+}
+
+.dateCell {
+  text-align: left;
+}

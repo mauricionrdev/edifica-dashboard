@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDownIcon } from './Icons.jsx';
 import Avatar from './Avatar.jsx';
@@ -43,7 +43,7 @@ export default function Select({
   ...props
 }) {
   const [open, setOpen] = useState(false);
-  const [menuMeta, setMenuMeta] = useState({ placement: 'down', maxHeight: 260, left: 0, top: 0, width: 0 });
+  const [menuMeta, setMenuMeta] = useState({ ready: false, placement: 'down', maxHeight: 260, left: 0, top: 0, width: 0 });
   const rootRef = useRef(null);
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
@@ -53,39 +53,52 @@ export default function Select({
   const options = useMemo(() => normalizeOptions(children), [children]);
   const selected = options.find((option) => option.value === String(value ?? ''));
 
-  useEffect(() => {
-    if (!open) return undefined;
+  const resolvePlacement = useCallback(() => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (!rect || typeof window === 'undefined') return null;
 
-    const updatePlacement = () => {
-      const rect = buttonRef.current?.getBoundingClientRect();
-      if (!rect) return;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const margin = 12;
+    const gap = 6;
+    const preferredHeight = Math.min(Math.max(options.length, 1) * 36 + 12, 300);
+    const spaceBelow = Math.max(0, viewportHeight - rect.bottom - margin - gap);
+    const spaceAbove = Math.max(0, rect.top - margin - gap);
+    const placement = spaceBelow < Math.min(preferredHeight, 170) && spaceAbove > spaceBelow ? 'up' : 'down';
+    const available = placement === 'up' ? spaceAbove : spaceBelow;
+    const maxHeight = Math.max(112, Math.min(preferredHeight, available || preferredHeight));
+    const width = Math.ceil(Math.max(rect.width, menuMinWidth ? Number(menuMinWidth) : 0));
+    const left = Math.round(Math.min(Math.max(margin, rect.left), Math.max(margin, viewportWidth - width - margin)));
+    const top = placement === 'up'
+      ? Math.round(Math.max(margin, rect.top - gap - maxHeight))
+      : Math.round(Math.min(rect.bottom + gap, viewportHeight - margin - Math.min(maxHeight, preferredHeight)));
 
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
-      const margin = 12;
-      const gap = 6;
-      const preferredHeight = Math.min(Math.max(options.length, 1) * 36 + 12, 300);
-      const spaceBelow = Math.max(0, viewportHeight - rect.bottom - margin - gap);
-      const spaceAbove = Math.max(0, rect.top - margin - gap);
-      const placement = spaceBelow < Math.min(preferredHeight, 170) && spaceAbove > spaceBelow ? 'up' : 'down';
-      const available = placement === 'up' ? spaceAbove : spaceBelow;
-      const maxHeight = Math.max(112, Math.min(preferredHeight, available || preferredHeight));
-      const width = Math.max(rect.width, menuMinWidth ? Number(menuMinWidth) : 0);
-      const left = Math.min(Math.max(margin, rect.left), Math.max(margin, viewportWidth - width - margin));
-      const top = placement === 'up'
-        ? Math.max(margin, rect.top - gap - maxHeight)
-        : Math.min(rect.bottom + gap, viewportHeight - margin - Math.min(maxHeight, preferredHeight));
-
-      setMenuMeta({
-        placement,
-        maxHeight,
-        left,
-        top,
-        width,
-      });
+    return {
+      ready: true,
+      placement,
+      maxHeight,
+      left,
+      top,
+      width,
     };
+  }, [options.length, menuMinWidth]);
 
+  const updatePlacement = useCallback(() => {
+    const next = resolvePlacement();
+    if (next) setMenuMeta(next);
+  }, [resolvePlacement]);
+
+  useLayoutEffect(() => {
+    if (!open) return undefined;
     updatePlacement();
+    return undefined;
+  }, [open, updatePlacement]);
+
+  useEffect(() => {
+    if (!open) {
+      setMenuMeta((current) => ({ ...current, ready: false }));
+      return undefined;
+    }
 
     const handlePointerDown = (event) => {
       const target = event.target;
@@ -100,20 +113,17 @@ export default function Select({
       }
     };
 
-    const handleResize = () => updatePlacement();
-    const handleScroll = () => updatePlacement();
-
     window.addEventListener('mousedown', handlePointerDown);
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', updatePlacement);
+    window.addEventListener('scroll', updatePlacement, true);
     return () => {
       window.removeEventListener('mousedown', handlePointerDown);
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', updatePlacement);
+      window.removeEventListener('scroll', updatePlacement, true);
     };
-  }, [open, options.length, menuMinWidth]);
+  }, [open, updatePlacement]);
 
   const emitChange = (nextValue) => {
     onChange?.({
@@ -132,7 +142,7 @@ export default function Select({
         bottom: 'auto',
         width: menuMeta.width || undefined,
         maxHeight: menuMeta.maxHeight,
-        minWidth: menuMinWidth ? Number(menuMinWidth) : undefined,
+        minWidth: menuMeta.width || (menuMinWidth ? Number(menuMinWidth) : undefined),
       }
     : {
         maxHeight: menuMeta.maxHeight,
@@ -142,7 +152,7 @@ export default function Select({
   const isIdentity = ['user', 'gdv', 'squad', 'client'].includes(type);
   const shouldShowAvatar = (option) => isIdentity && option && (option.value !== '' || option.avatar);
 
-  const menuNode = open ? (
+  const menuNode = open && (!portal || menuMeta.ready) ? (
     <div
       ref={menuRef}
       className={`${styles.menu} ${portal ? styles.menuPortal : ''} ${menuMeta.placement === 'up' ? styles.menuUp : styles.menuDown}`.trim()}
@@ -199,7 +209,14 @@ export default function Select({
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => {
           event.stopPropagation();
-          if (!disabled) setOpen((current) => !current);
+          if (disabled) return;
+          setOpen((current) => {
+            if (!current) {
+              const next = resolvePlacement();
+              if (next) setMenuMeta(next);
+            }
+            return !current;
+          });
         }}
         disabled={disabled}
         aria-label={ariaLabel}

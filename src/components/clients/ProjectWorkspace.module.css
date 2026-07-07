@@ -2376,3 +2376,124 @@ button:focus-visible {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* v143 · refinamento final do projeto dentro do modal de cliente */
+.wrap {
+  min-width: 0;
+  width: 100%;
+  padding: 12px 14px 18px;
+  gap: 10px;
+  overflow: visible;
+}
+
+.projectHeader {
+  min-height: 64px;
+  padding: 12px 14px;
+  grid-template-columns: minmax(220px, 1fr) minmax(360px, auto) 28px;
+  gap: 14px;
+}
+
+.projectTitle strong {
+  font-size: 18px;
+  line-height: 1.08;
+}
+
+.projectStats {
+  min-width: 0;
+  grid-template-columns: repeat(4, minmax(64px, max-content));
+}
+
+.projectStats div {
+  min-height: 32px;
+  padding: 0 10px;
+}
+
+.projectStats strong {
+  font-size: 14px;
+}
+
+.memberPanel {
+  min-height: 56px;
+  padding: 8px 12px;
+  grid-template-columns: max-content minmax(190px, 240px) minmax(280px, 1fr);
+  gap: 10px;
+  overflow: visible;
+}
+
+.memberRow {
+  min-width: 190px;
+  max-width: 240px;
+  min-height: 38px;
+}
+
+.memberForm {
+  max-width: none;
+  grid-template-columns: minmax(180px, 1fr) minmax(112px, 140px) 26px;
+  gap: 8px;
+}
+
+.projectTopTools {
+  min-height: 40px;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(360px, 1fr);
+  gap: 12px;
+}
+
+.projectTopTools .sectionForm {
+  max-width: none;
+}
+
+.projectTopTools .projectToolSelect {
+  width: min(190px, 100%);
+}
+
+.projectTopTools .projectTools > span {
+  min-width: 104px;
+  margin-left: 12px;
+}
+
+.sectionCard {
+  overflow: visible;
+}
+
+.taskForm {
+  min-height: 40px;
+  padding: 6px 10px;
+  grid-template-columns: minmax(180px, 1fr) minmax(150px, 200px) minmax(124px, 148px) 26px;
+  gap: 8px;
+}
+
+.taskRow {
+  min-height: 48px;
+  padding: 8px 10px;
+}
+
+.taskMain strong {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.workspace {
+  overflow: visible;
+}
+
+@media (max-width: 980px) {
+  .projectHeader,
+  .memberPanel,
+  .projectTopTools,
+  .taskForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .projectStats {
+    justify-self: start;
+    grid-template-columns: repeat(2, minmax(0, max-content));
+  }
+
+  .memberForm,
+  .projectTopTools .projectTools,
+  .projectToolGroup {
+    width: 100%;
+  }
+}

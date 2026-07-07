@@ -210,3 +210,30 @@
   z-index: 42000;
   max-width: calc(100vw - 24px);
 }
+
+/* v143 · portal seguro em modais: sem flash em 0,0 e sem largura do viewport */
+.select:focus,
+.select:focus-visible,
+.menu button.option:focus,
+.menu button.option:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.select:focus-visible {
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.menuPortal {
+  right: auto;
+  bottom: auto;
+  min-width: auto;
+  width: auto;
+  max-width: min(360px, calc(100vw - 24px));
+}
+
+.menuPortal.menuDown,
+.menuPortal.menuUp {
+  top: auto;
+  bottom: auto;
+}
