@@ -94,6 +94,141 @@ function clean(value) {
   return String(value || '').trim();
 }
 
+function normalizeResponsibleSector(value) {
+  const raw = clean(value).toLowerCase();
+  const slug = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  const aliases = {
+    cap: 'cap',
+    gestor: 'traffic_manager',
+    gestor_trafego: 'traffic_manager',
+    gestor_de_trafego: 'traffic_manager',
+    trafego: 'traffic_manager',
+    traffic: 'traffic_manager',
+    traffic_manager: 'traffic_manager',
+    comercial: 'commercial',
+    commercial: 'commercial',
+    tecnico: 'technical',
+    tecnica: 'technical',
+    technical: 'technical',
+    suporte_tecnologia: 'technical',
+    ti: 'technical',
+    designer: 'designer',
+    design: 'designer',
+    cs: 'cs',
+    customer_success: 'cs',
+    sucesso_cliente: 'cs',
+    financeiro: 'finance',
+    finance: 'finance',
+    gdv: 'gdv',
+    sdr: 'sdr',
+    closer: 'closer',
+  };
+
+  return aliases[slug] || '';
+}
+
+const RESPONSIBLE_SECTOR_LABELS = {
+  cap: 'CAP',
+  traffic_manager: 'Gestor de Tráfego',
+  commercial: 'Comercial',
+  technical: 'Técnico',
+  designer: 'Designer',
+  cs: 'CS',
+  finance: 'Financeiro',
+  gdv: 'GDV',
+  sdr: 'SDR',
+  closer: 'Closer',
+};
+
+function readSecondaryRoles(value) {
+  const parsed = parseJson(value, []);
+  return Array.isArray(parsed) ? parsed.map((role) => clean(role).toLowerCase()).filter(Boolean) : [];
+}
+
+async function resolveActiveUserIdByRoleAliases(aliases = [], db = null) {
+  const normalized = aliases.map((item) => clean(item).toLowerCase()).filter(Boolean);
+  if (normalized.length === 0) return '';
+
+  const exec = db ? db.query.bind(db) : query;
+  const placeholders = normalized.map(() => '?').join(', ');
+  const result = await exec(
+    `SELECT id, role, secondary_roles
+       FROM users
+      WHERE active = 1
+        AND (LOWER(role) IN (${placeholders}) OR secondary_roles IS NOT NULL)
+      ORDER BY name ASC`,
+    normalized
+  );
+  const rows = Array.isArray(result?.[0]) ? result[0] : result;
+
+  const matched = rows.find((row) => {
+    if (normalized.includes(clean(row.role).toLowerCase())) return true;
+    const secondary = readSecondaryRoles(row.secondary_roles);
+    return secondary.some((role) => normalized.includes(role));
+  });
+
+  return matched?.id || '';
+}
+
+async function resolveSquadOwnerUserId(squadId, db = null) {
+  const cleanSquadId = clean(squadId);
+  if (!cleanSquadId) return '';
+  const exec = db ? db.query.bind(db) : query;
+  const result = await exec('SELECT owner_user_id FROM squads WHERE id = ? LIMIT 1', [cleanSquadId]);
+  const rows = Array.isArray(result?.[0]) ? result[0] : result;
+  return rows?.[0]?.owner_user_id || '';
+}
+
+async function resolveTemplateSectorAssignee(task = {}, client = {}, db = null) {
+  const sector = normalizeResponsibleSector(task?.responsibleSector || task?.responsibleRole || task?.ownerSector);
+  if (!sector) return '';
+
+  if (sector === 'cap') {
+    return await resolveSquadOwnerUserId(client?.squad_id || client?.squadId, db);
+  }
+
+  if (sector === 'traffic_manager') {
+    return await resolveUserIdByName(client?.gestor, db);
+  }
+
+  if (sector === 'commercial') {
+    return await resolveUserIdByName(client?.internal_seller || client?.internalSeller, db)
+      || await resolveUserIdByName(client?.gdv_name || client?.gdvName, db)
+      || await resolveActiveUserIdByRoleAliases(['closer', 'sdr', 'gdv'], db);
+  }
+
+  if (sector === 'gdv') {
+    return await resolveUserIdByName(client?.gdv_name || client?.gdvName, db)
+      || await resolveActiveUserIdByRoleAliases(['gdv', 'closer'], db);
+  }
+
+  const roleFallbacks = {
+    technical: ['suporte_tecnologia', 'technical', 'tecnico', 'tecnica', 'ti'],
+    designer: ['designer', 'design'],
+    cs: ['cs', 'customer_success', 'sucesso_cliente'],
+    finance: ['finance', 'financeiro'],
+    sdr: ['sdr'],
+    closer: ['closer'],
+  };
+
+  return await resolveActiveUserIdByRoleAliases(roleFallbacks[sector] || [sector], db);
+}
+
+function templateAssigneeMetadata(task = {}) {
+  const sector = normalizeResponsibleSector(task?.responsibleSector || task?.responsibleRole || task?.ownerSector);
+  return {
+    templateTaskId: task?.id || null,
+    templateAssignee: task?.assignee || '',
+    templateResponsibleSector: sector,
+    templateResponsibleSectorLabel: RESPONSIBLE_SECTOR_LABELS[sector] || '',
+  };
+}
+
 const TASK_STATUS_VALUES = [
   'todo',
   'in_progress',
@@ -534,7 +669,7 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
       );
 
       for (const [taskIndex, task] of (section?.tasks || []).entries()) {
-        const assigneeUserId = clean(task?.assigneeId) || await resolveUserIdByName(task?.assignee, db);
+        const assigneeUserId = await resolveTemplateSectorAssignee(task, client, db) || clean(task?.assigneeId) || await resolveUserIdByName(task?.assignee, db);
 
         if (assigneeUserId) templateAssigneeUserIds.add(assigneeUserId);
 
@@ -552,7 +687,7 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
             position: taskIndex,
             source: 'modelo_oficial',
             sourceId: `${sectionIndex}:${taskIndex}`,
-            metadata: { templateTaskId: task?.id || null, templateAssignee: task?.assignee || '' },
+            metadata: templateAssigneeMetadata(task),
             notifyAssignee: false,
             includeCreatorCollaborator: false,
           },
@@ -561,7 +696,7 @@ async function createClientProjectRecord({ client, mode, name, actorUser, db }) 
         );
 
         for (const [subIndex, sub] of (task?.subs || task?.subtasks || []).entries()) {
-          const subAssigneeUserId = clean(sub?.assigneeId) || await resolveUserIdByName(sub?.assignee, db) || assigneeUserId;
+          const subAssigneeUserId = await resolveTemplateSectorAssignee(sub, client, db) || clean(sub?.assigneeId) || await resolveUserIdByName(sub?.assignee, db) || assigneeUserId;
 
           if (subAssigneeUserId) templateAssigneeUserIds.add(subAssigneeUserId);
 
@@ -897,7 +1032,7 @@ router.post('/', requirePermission('projects.create'), async (req, res, next) =>
 
 router.post('/client/:clientId', requirePermission('projects.create'), async (req, res, next) => {
   try {
-    const client = await getAccessibleClientRow(req.params.clientId, req.user, 'id, name, squad_id');
+    const client = await getAccessibleClientRow(req.params.clientId, req.user, 'id, name, squad_id, gdv_name, gestor, internal_seller');
     const mode = clean(req.body?.mode) === 'blank' ? 'blank' : 'template';
     const name = clean(req.body?.name) || `Projeto - ${client.name}`;
     const existing = await query(

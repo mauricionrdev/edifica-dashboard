@@ -1,18 +1,57 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getTemplate, resetTemplate, saveTemplate } from '../api/template.js';
-import { listUserDirectory } from '../api/users.js';
 import { ApiError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
-import { getUserAvatar } from '../utils/avatarStorage.js';
 import { hasPermission } from '../utils/permissions.js';
 import { useAutoSave } from '../hooks/useAutoSave.js';
 import { ChevronDownIcon, CloseIcon, PlusIcon, RotateCcwIcon } from '../components/ui/Icons.jsx';
-import Select from '../components/ui/Select.jsx';
-import UserPicker from '../components/users/UserPicker.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import styles from './ModeloOficialPage.module.css';
+
+const RESPONSIBLE_SECTORS = [
+  { value: '', label: 'Sem setor definido' },
+  { value: 'cap', label: 'CAP' },
+  { value: 'traffic_manager', label: 'Gestor de Tráfego' },
+  { value: 'commercial', label: 'Comercial' },
+  { value: 'technical', label: 'Técnico' },
+  { value: 'designer', label: 'Designer' },
+  { value: 'cs', label: 'CS' },
+  { value: 'finance', label: 'Financeiro' },
+];
+
+const RESPONSIBLE_SECTOR_LABELS = RESPONSIBLE_SECTORS.reduce((acc, item) => {
+  acc[item.value] = item.label;
+  return acc;
+}, {});
+
+function normalizeResponsibleSector(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  const aliases = {
+    gestor: 'traffic_manager',
+    gestor_trafego: 'traffic_manager',
+    gestor_de_trafego: 'traffic_manager',
+    trafego: 'traffic_manager',
+    traffic: 'traffic_manager',
+    traffic_manager: 'traffic_manager',
+    comercial: 'commercial',
+    commercial: 'commercial',
+    tecnico: 'technical',
+    técnica: 'technical',
+    tecnica: 'technical',
+    technical: 'technical',
+    design: 'designer',
+    designer: 'designer',
+    customer_success: 'cs',
+    sucesso_cliente: 'cs',
+    cs: 'cs',
+    financeiro: 'finance',
+    finance: 'finance',
+    cap: 'cap',
+  };
+  return aliases[raw] || '';
+}
 
 function normalizeTemplate(raw) {
   if (!Array.isArray(raw)) return [];
@@ -23,9 +62,13 @@ function normalizeTemplate(raw) {
       name: String(task?.name || ''),
       assignee: String(task?.assignee || ''),
       assigneeId: String(task?.assigneeId || ''),
+      responsibleSector: normalizeResponsibleSector(task?.responsibleSector || task?.responsibleRole || task?.ownerSector),
       notes: String(task?.notes || ''),
       showNote: Boolean(task?.showNote),
-      subs: (task?.subs || []).map((sub) => ({ name: String(sub?.name || '') })),
+      subs: (task?.subs || []).map((sub) => ({
+        name: String(sub?.name || ''),
+        responsibleSector: normalizeResponsibleSector(sub?.responsibleSector || sub?.responsibleRole || sub?.ownerSector),
+      })),
     })),
   }));
 }
@@ -37,23 +80,18 @@ function sectionsForApi(sections) {
       name: task.name,
       assignee: task.assignee || '',
       assigneeId: task.assigneeId || '',
+      responsibleSector: normalizeResponsibleSector(task.responsibleSector),
       notes: task.notes || '',
-      ...(task.subs?.length ? { subs: task.subs.map((sub) => ({ name: sub.name })) } : {}),
+      ...(task.subs?.length
+        ? {
+            subs: task.subs.map((sub) => ({
+              name: sub.name,
+              responsibleSector: normalizeResponsibleSector(sub.responsibleSector),
+            })),
+          }
+        : {}),
     })),
   }));
-}
-
-function initials(name = '') {
-  const parts = String(name || '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  if (parts.length === 0) return 'NA';
-  return parts
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
 }
 
 
@@ -90,7 +128,6 @@ export default function ModeloOficialPage() {
   const [sectionDeleteTarget, setSectionDeleteTarget] = useState(null);
   const [draggedSectionIndex, setDraggedSectionIndex] = useState(null);
   const [draggedTaskRef, setDraggedTaskRef] = useState(null);
-  const [directoryUsers, setDirectoryUsers] = useState([]);
   const fetchIdRef = useRef(0);
 
   useEffect(() => {
@@ -111,19 +148,6 @@ export default function ModeloOficialPage() {
       });
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    listUserDirectory()
-      .then((res) => {
-        if (!cancelled) setDirectoryUsers(Array.isArray(res?.users) ? res.users : []);
-      })
-      .catch(() => {
-        if (!cancelled) setDirectoryUsers([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const handleError = useCallback(
     (err) => {
@@ -192,10 +216,6 @@ export default function ModeloOficialPage() {
   const totalTasks = useMemo(
     () => sections.reduce((sum, section) => sum + section.tasks.length, 0),
     [sections]
-  );
-  const assigneeById = useMemo(
-    () => new Map(directoryUsers.map((item) => [item.id, item])),
-    [directoryUsers]
   );
 
   const renameSection = (si, name) =>
@@ -278,8 +298,8 @@ export default function ModeloOficialPage() {
     );
   };
 
-  const setTaskAssignee = (si, ti, assigneeId) => {
-    const option = directoryUsers.find((item) => item.id === assigneeId);
+  const setTaskResponsibleSector = (si, ti, responsibleSector) => {
+    const normalized = normalizeResponsibleSector(responsibleSector);
     setSections((prev) =>
       prev.map((section, i) =>
         i !== si
@@ -287,7 +307,14 @@ export default function ModeloOficialPage() {
           : {
               ...section,
               tasks: section.tasks.map((task, j) =>
-                j !== ti ? task : { ...task, assigneeId, assignee: option?.name || '' }
+                j !== ti
+                  ? task
+                  : {
+                      ...task,
+                      responsibleSector: normalized,
+                      assignee: '',
+                      assigneeId: '',
+                    }
               ),
             }
       )
@@ -325,7 +352,7 @@ export default function ModeloOficialPage() {
     if (!name) return;
     setSections((prev) =>
       prev.map((section, i) =>
-        i !== si ? section : { ...section, tasks: [...section.tasks, { name, notes: '', subs: [] }] }
+        i !== si ? section : { ...section, tasks: [...section.tasks, { name, responsibleSector: '', notes: '', subs: [] }] }
       )
     );
     setAddDraft((draft) => ({ ...draft, [si]: '' }));
@@ -339,10 +366,6 @@ export default function ModeloOficialPage() {
     setSectionDraft('');
   };
 
-  function renderAvatar(userEntry, fallbackName) {
-    const avatarUrl = getUserAvatar(userEntry) || userEntry?.avatarUrl || '';
-    return avatarUrl ? <img src={avatarUrl} alt="" /> : initials(userEntry?.name || fallbackName);
-  }
 
   if (loading) {
     return (
@@ -397,7 +420,7 @@ export default function ModeloOficialPage() {
 
         <div className={styles.tableHeader}>
           <span>Tarefa</span>
-          <span>Responsável</span>
+          <span>Setor responsável</span>
           <span>Nota</span>
           <span />
         </div>
@@ -459,7 +482,7 @@ export default function ModeloOficialPage() {
               {section.open ? (
                 <div className={styles.tasks}>
                   {section.tasks.map((task, ti) => {
-                    const assignee = assigneeById.get(task.assigneeId);
+                    const responsibleSector = normalizeResponsibleSector(task.responsibleSector);
                     return (
                       <article
                         key={ti}
@@ -505,14 +528,24 @@ export default function ModeloOficialPage() {
                         </div>
 
                         <div className={styles.assigneeCell}>
-                          <UserPicker
-                            className={styles.assigneeSelect}
-                            users={directoryUsers}
-                            value={task.assigneeId || ''}
-                            disabled={!admin}
-                            onChange={(userId) => setTaskAssignee(si, ti, userId)}
-                            placeholder="Sem responsável"
-                          />
+                          {admin ? (
+                            <select
+                              className={styles.sectorSelect}
+                              value={responsibleSector}
+                              onChange={(event) => setTaskResponsibleSector(si, ti, event.target.value)}
+                              aria-label={`Setor responsável por ${task.name || 'tarefa'}`}
+                            >
+                              {RESPONSIBLE_SECTORS.map((sector) => (
+                                <option key={sector.value || 'none'} value={sector.value}>
+                                  {sector.label}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className={`${styles.sectorPill} ${responsibleSector ? styles.sectorPillActive : ''}`.trim()}>
+                              {RESPONSIBLE_SECTOR_LABELS[responsibleSector] || 'Sem setor definido'}
+                            </span>
+                          )}
                         </div>
 
                         <button
