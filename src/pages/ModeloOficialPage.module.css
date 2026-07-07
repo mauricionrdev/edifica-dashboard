@@ -1255,39 +1255,108 @@ button:focus-visible {
 }
 
 
-/* v83 · Modelo Oficial por setor responsável */
+/* v84 · Modelo Oficial por setor responsável real da Edifica */
 .assigneeCell {
   min-width: 0;
   display: flex;
   align-items: center;
 }
 
-.sectorSelect {
+.sectorPicker {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+.sectorButton {
   width: 100%;
   min-height: 32px;
-  padding: 0 30px 0 11px;
+  padding: 0 10px 0 11px;
   border: 1px solid var(--line);
   border-radius: var(--radius-2);
   background: var(--field-bg);
   color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   font: inherit;
   font-size: 12px;
   font-weight: 680;
+  text-align: left;
   outline: none;
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--text-tertiary) 50%), linear-gradient(135deg, var(--text-tertiary) 50%, transparent 50%);
-  background-position: calc(100% - 15px) 13px, calc(100% - 10px) 13px;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
+  box-shadow: none;
 }
 
-.sectorSelect:hover {
+.sectorButton span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sectorButton svg {
+  color: var(--text-tertiary);
+  flex: 0 0 auto;
+}
+
+.sectorButton:hover {
   border-color: var(--line-strong);
-  background-color: color-mix(in srgb, var(--field-bg) 72%, var(--bg-hover));
+  background: color-mix(in srgb, var(--field-bg) 72%, var(--bg-hover));
 }
 
-.sectorSelect:focus-visible {
-  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+.sectorButton:focus,
+.sectorButton:focus-visible,
+.sectorOption:focus,
+.sectorOption:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.sectorButtonActive {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: color-mix(in srgb, var(--accent) 6%, var(--field-bg));
+}
+
+.sectorMenu {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  top: calc(100% + 6px);
+  width: min(240px, 100%);
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--surface-strong, var(--workspace-panel-bg));
+  box-shadow: var(--shadow-panel);
+  display: grid;
+  gap: 2px;
+}
+
+.sectorOption {
+  width: 100%;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: calc(var(--radius-2) - 2px);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 640;
+  text-align: left;
+  outline: none;
+  box-shadow: none;
+}
+
+.sectorOption:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sectorOptionActive {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text-primary);
 }
 
 .sectorPill {

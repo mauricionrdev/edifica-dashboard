@@ -110,23 +110,21 @@ function normalizeResponsibleSector(value) {
     trafego: 'traffic_manager',
     traffic: 'traffic_manager',
     traffic_manager: 'traffic_manager',
-    comercial: 'commercial',
-    commercial: 'commercial',
-    tecnico: 'technical',
-    tecnica: 'technical',
-    technical: 'technical',
-    suporte_tecnologia: 'technical',
-    ti: 'technical',
-    designer: 'designer',
-    design: 'designer',
-    cs: 'cs',
-    customer_success: 'cs',
-    sucesso_cliente: 'cs',
-    financeiro: 'finance',
-    finance: 'finance',
+    comercial: 'internal_commercial',
+    comercial_interno: 'internal_commercial',
+    internal_commercial: 'internal_commercial',
+    internal_seller: 'internal_commercial',
+    commercial: 'internal_commercial',
     gdv: 'gdv',
     sdr: 'sdr',
     closer: 'closer',
+    tecnico: 'suporte_tecnologia',
+    tecnica: 'suporte_tecnologia',
+    technical: 'suporte_tecnologia',
+    suporte: 'suporte_tecnologia',
+    suporte_tecnologia: 'suporte_tecnologia',
+    suporte_de_tecnologia: 'suporte_tecnologia',
+    ti: 'suporte_tecnologia',
   };
 
   return aliases[slug] || '';
@@ -135,14 +133,11 @@ function normalizeResponsibleSector(value) {
 const RESPONSIBLE_SECTOR_LABELS = {
   cap: 'CAP',
   traffic_manager: 'Gestor de Tráfego',
-  commercial: 'Comercial',
-  technical: 'Técnico',
-  designer: 'Designer',
-  cs: 'CS',
-  finance: 'Financeiro',
+  internal_commercial: 'Comercial Interno',
   gdv: 'GDV',
   sdr: 'SDR',
   closer: 'Closer',
+  suporte_tecnologia: 'Suporte de Tecnologia',
 };
 
 function readSecondaryRoles(value) {
@@ -196,7 +191,7 @@ async function resolveTemplateSectorAssignee(task = {}, client = {}, db = null) 
     return await resolveUserIdByName(client?.gestor, db);
   }
 
-  if (sector === 'commercial') {
+  if (sector === 'internal_commercial') {
     return await resolveUserIdByName(client?.internal_seller || client?.internalSeller, db)
       || await resolveUserIdByName(client?.gdv_name || client?.gdvName, db)
       || await resolveActiveUserIdByRoleAliases(['closer', 'sdr', 'gdv'], db);
@@ -208,10 +203,7 @@ async function resolveTemplateSectorAssignee(task = {}, client = {}, db = null) 
   }
 
   const roleFallbacks = {
-    technical: ['suporte_tecnologia', 'technical', 'tecnico', 'tecnica', 'ti'],
-    designer: ['designer', 'design'],
-    cs: ['cs', 'customer_success', 'sucesso_cliente'],
-    finance: ['finance', 'financeiro'],
+    suporte_tecnologia: ['suporte_tecnologia'],
     sdr: ['sdr'],
     closer: ['closer'],
   };

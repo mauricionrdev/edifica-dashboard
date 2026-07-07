@@ -14,11 +14,11 @@ const RESPONSIBLE_SECTORS = [
   { value: '', label: 'Sem setor definido' },
   { value: 'cap', label: 'CAP' },
   { value: 'traffic_manager', label: 'Gestor de Tráfego' },
-  { value: 'commercial', label: 'Comercial' },
-  { value: 'technical', label: 'Técnico' },
-  { value: 'designer', label: 'Designer' },
-  { value: 'cs', label: 'CS' },
-  { value: 'finance', label: 'Financeiro' },
+  { value: 'internal_commercial', label: 'Comercial Interno' },
+  { value: 'gdv', label: 'GDV' },
+  { value: 'sdr', label: 'SDR' },
+  { value: 'closer', label: 'Closer' },
+  { value: 'suporte_tecnologia', label: 'Suporte de Tecnologia' },
 ];
 
 const RESPONSIBLE_SECTOR_LABELS = RESPONSIBLE_SECTORS.reduce((acc, item) => {
@@ -35,19 +35,22 @@ function normalizeResponsibleSector(value) {
     trafego: 'traffic_manager',
     traffic: 'traffic_manager',
     traffic_manager: 'traffic_manager',
-    comercial: 'commercial',
-    commercial: 'commercial',
-    tecnico: 'technical',
-    técnica: 'technical',
-    tecnica: 'technical',
-    technical: 'technical',
-    design: 'designer',
-    designer: 'designer',
-    customer_success: 'cs',
-    sucesso_cliente: 'cs',
-    cs: 'cs',
-    financeiro: 'finance',
-    finance: 'finance',
+    comercial: 'internal_commercial',
+    comercial_interno: 'internal_commercial',
+    internal_commercial: 'internal_commercial',
+    internal_seller: 'internal_commercial',
+    commercial: 'internal_commercial',
+    gdv: 'gdv',
+    sdr: 'sdr',
+    closer: 'closer',
+    tecnico: 'suporte_tecnologia',
+    técnica: 'suporte_tecnologia',
+    tecnica: 'suporte_tecnologia',
+    technical: 'suporte_tecnologia',
+    suporte: 'suporte_tecnologia',
+    suporte_tecnologia: 'suporte_tecnologia',
+    suporte_de_tecnologia: 'suporte_tecnologia',
+    ti: 'suporte_tecnologia',
     cap: 'cap',
   };
   return aliases[raw] || '';
@@ -111,13 +114,56 @@ function SaveStatusPill({ status }) {
   );
 }
 
+function SectorPicker({ value, open, menuRef, onToggle, onChange, label }) {
+  const selected = RESPONSIBLE_SECTORS.find((sector) => sector.value === value) || RESPONSIBLE_SECTORS[0];
+
+  return (
+    <div className={styles.sectorPicker} ref={open ? menuRef : null}>
+      <button
+        type="button"
+        className={`${styles.sectorButton} ${value ? styles.sectorButtonActive : ''}`.trim()}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={onToggle}
+        aria-label={label}
+        aria-expanded={open}
+      >
+        <span>{selected.label}</span>
+        <ChevronDownIcon size={13} aria-hidden="true" />
+      </button>
+
+      {open ? (
+        <div className={styles.sectorMenu} role="listbox">
+          {RESPONSIBLE_SECTORS.map((sector) => {
+            const active = sector.value === value;
+            return (
+              <button
+                key={sector.value || 'none'}
+                type="button"
+                className={`${styles.sectorOption} ${active ? styles.sectorOptionActive : ''}`.trim()}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => onChange(sector.value)}
+                role="option"
+                aria-selected={active}
+              >
+                {sector.label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function ModeloOficialPage() {
   const { setPanelHeader } = useOutletContext();
   const { user } = useAuth();
   const { showToast } = useToast();
   const admin = hasPermission(user, 'project_template.edit');
+  const sectorMenuRef = useRef(null);
 
   const [sections, setSections] = useState([]);
+  const [sectorMenu, setSectorMenu] = useState(null);
   const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -529,18 +575,23 @@ export default function ModeloOficialPage() {
 
                         <div className={styles.assigneeCell}>
                           {admin ? (
-                            <select
-                              className={styles.sectorSelect}
+                            <SectorPicker
                               value={responsibleSector}
-                              onChange={(event) => setTaskResponsibleSector(si, ti, event.target.value)}
-                              aria-label={`Setor responsável por ${task.name || 'tarefa'}`}
-                            >
-                              {RESPONSIBLE_SECTORS.map((sector) => (
-                                <option key={sector.value || 'none'} value={sector.value}>
-                                  {sector.label}
-                                </option>
-                              ))}
-                            </select>
+                              open={sectorMenu?.sectionIndex === si && sectorMenu?.taskIndex === ti}
+                              menuRef={sectorMenuRef}
+                              label={`Setor responsável por ${task.name || 'tarefa'}`}
+                              onToggle={() => {
+                                setSectorMenu((current) => (
+                                  current?.sectionIndex === si && current?.taskIndex === ti
+                                    ? null
+                                    : { sectionIndex: si, taskIndex: ti }
+                                ));
+                              }}
+                              onChange={(value) => {
+                                setTaskResponsibleSector(si, ti, value);
+                                setSectorMenu(null);
+                              }}
+                            />
                           ) : (
                             <span className={`${styles.sectorPill} ${responsibleSector ? styles.sectorPillActive : ''}`.trim()}>
                               {RESPONSIBLE_SECTOR_LABELS[responsibleSector] || 'Sem setor definido'}
