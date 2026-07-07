@@ -1,4 +1,4 @@
-import { isActiveClientStatus } from '../../utils/clientStatus.js';
+import { CLIENT_STATUS, isActiveClientStatus, normalizeClientStatus } from '../../utils/clientStatus.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { updateGdv } from '../../api/gdvs.js';
@@ -52,6 +52,24 @@ function getSquadLogo(squad) {
     || squad?.image_url
     || ''
   );
+}
+
+
+function isSidebarSquadActiveClient(client) {
+  const status = normalizeClientStatus(client?.status);
+  return status !== CLIENT_STATUS.CHURN && status !== CLIENT_STATUS.FINISHED;
+}
+
+function getClientSquadId(client) {
+  return client?.squadId || client?.squad_id || '';
+}
+
+function getSquadActiveClientsCount(clients, squadId) {
+  if (!squadId) return 0;
+  return (Array.isArray(clients) ? clients : []).filter((client) => (
+    String(getClientSquadId(client)) === String(squadId)
+    && isSidebarSquadActiveClient(client)
+  )).length;
 }
 
 function Item({ to, icon, label, meta, onClick, collapsed = false }) {
@@ -519,7 +537,7 @@ export default function Sidebar({
                   ) : null}
                   {!collapsed ? (
                     <span className={styles.itemMeta}>
-                      {clients.filter((client) => (client.squadId || client.squad_id) === squad.id).length || ''}
+                      {getSquadActiveClientsCount(clients, squad.id) || ''}
                     </span>
                   ) : null}
                 </NavLink>
