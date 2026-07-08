@@ -1803,7 +1803,7 @@
 .entry {
   border-color: var(--line-subtle);
   border-radius: var(--radius-4, 10px);
-  background: rgba(255, 255, 255, 0.010);
+  background: color-mix(in srgb, var(--surface-1) 78%, transparent);
 }
 
 .entryHdr {
@@ -2344,5 +2344,274 @@
   .actionPlanHistory {
     border-right: 0;
     border-bottom: 1px solid var(--line-subtle);
+  }
+}
+
+/* v139 · Refinamento visual dos Planos de ação ICP */
+.header {
+  min-height: auto;
+  padding: 10px 12px;
+  align-items: center;
+}
+
+.headerSide {
+  gap: 10px;
+}
+
+.actionPlanButton {
+  min-height: 32px;
+  padding: 0 11px;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: -0.01em;
+}
+
+.actionPlanButton strong {
+  min-width: 20px;
+  height: 20px;
+  font-size: 11px;
+}
+
+.headerMeta {
+  min-height: 34px;
+  padding-left: 4px;
+  overflow: hidden;
+}
+
+.heroMetric {
+  min-width: 78px;
+  min-height: 32px;
+  padding: 0 10px;
+  gap: 3px;
+}
+
+.heroMetric strong {
+  max-width: 96px;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+
+.heroMetric span {
+  font-size: 9px;
+  letter-spacing: 0.09em;
+}
+
+.actionPlanOverlay {
+  padding: clamp(16px, 3vw, 30px);
+  align-items: center;
+}
+
+.actionPlanModal {
+  width: min(1040px, calc(100vw - 40px));
+  max-height: min(760px, calc(100vh - 40px));
+  border-color: var(--line-subtle);
+}
+
+.actionPlanHeader {
+  align-items: center;
+  padding: 18px 20px;
+  gap: 16px;
+}
+
+.actionPlanHeader strong {
+  margin-top: 4px;
+  font-size: clamp(20px, 2.35vw, 25px);
+  line-height: 1.05;
+}
+
+.actionPlanHeader p {
+  max-width: 560px;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.actionPlanHeaderActions {
+  gap: 8px;
+}
+
+.actionPlanPrimary,
+.actionPlanClose,
+.actionPlanEmpty button,
+.actionPlanBlockHead button,
+.actionPlanEvidenceActions label,
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.actionPlanBody {
+  grid-template-columns: minmax(196px, 236px) minmax(0, 1fr);
+}
+
+.actionPlanHistory {
+  padding: 18px;
+  gap: 12px;
+}
+
+.actionPlanSectionTitle {
+  min-height: 28px;
+}
+
+.actionPlanHistoryList {
+  gap: 8px;
+}
+
+.actionPlanHistoryItem {
+  padding: 12px;
+  gap: 4px;
+}
+
+.actionPlanHistoryItem strong {
+  font-size: 14px;
+}
+
+.actionPlanWorkspace {
+  padding: 18px;
+  gap: 14px;
+}
+
+.actionPlanMetaRow {
+  gap: 12px;
+}
+
+.actionPlanDateField,
+.actionPlanObjective {
+  gap: 8px;
+}
+
+.actionPlanDateInput,
+.actionPlanObjective textarea,
+.actionPlanActionRow input[type='text'],
+.actionPlanActionRow input:not([type]) {
+  border-radius: var(--radius-3, 10px);
+  background: var(--field-bg);
+}
+
+.actionPlanDateInput {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.actionPlanObjective textarea {
+  min-height: 94px;
+  padding: 12px;
+}
+
+.actionPlanActionsBlock,
+.actionPlanEvidence {
+  gap: 12px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--surface-1) 78%, transparent);
+}
+
+.actionPlanBlockHead {
+  min-height: 34px;
+  align-items: center;
+}
+
+.actionPlanBlockHead strong {
+  font-size: 15px;
+}
+
+.actionPlanActionList {
+  gap: 8px;
+}
+
+.actionPlanActionRow {
+  grid-template-columns: 28px minmax(0, 1fr) max-content;
+  gap: 8px;
+}
+
+.actionPlanCheck,
+.actionPlanCheck span {
+  width: 24px;
+  height: 24px;
+}
+
+.actionPlanCheck span {
+  border-radius: var(--radius-2, 8px);
+}
+
+.actionPlanActionRow input[type='text'],
+.actionPlanActionRow input:not([type]) {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.actionPlanEvidenceActions {
+  align-items: center;
+  gap: 6px;
+}
+
+.actionPlanEvidenceGrid {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.actionPlanEvidenceCard {
+  grid-template-columns: 44px minmax(0, 1fr) max-content;
+  gap: 8px;
+  padding: 8px;
+}
+
+.actionPlanEvidenceCard > button:first-child {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-2, 8px);
+}
+
+.actionPlanRemoveEvidence {
+  grid-column: auto;
+  justify-self: end;
+  min-height: 28px;
+  padding: 0 10px;
+}
+
+.actionPlanEvidenceEmpty {
+  min-height: 44px;
+  padding: 12px 14px;
+}
+
+@media (max-width: 1120px) {
+  .header {
+    grid-template-columns: 1fr;
+  }
+
+  .headerSide {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .headerMeta {
+    flex: 1 1 320px;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .actionPlanModal {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .actionPlanBody {
+    grid-template-columns: 1fr;
+  }
+
+  .actionPlanMetaRow,
+  .actionPlanActionRow,
+  .actionPlanEvidenceCard {
+    grid-template-columns: 1fr;
+  }
+
+  .actionPlanRemoveEvidence,
+  .actionPlanRemoveAction {
+    justify-self: start;
   }
 }
