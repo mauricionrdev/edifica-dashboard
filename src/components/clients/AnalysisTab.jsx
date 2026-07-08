@@ -91,6 +91,63 @@ function analysisAuthor(entry) {
   );
 }
 
+
+const ACTION_PLAN_MARKER = '[EDIFICA_ICP_ACTION_PLAN_V1]';
+
+function makeLocalId(prefix = 'item') {
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeActionPlan(raw = {}) {
+  const actions = Array.isArray(raw.actions) ? raw.actions : [];
+  return {
+    objective: String(raw.objective || '').slice(0, 5000),
+    deadline: String(raw.deadline || '').slice(0, 10),
+    actions: actions.length
+      ? actions.map((action) => ({
+          id: String(action?.id || makeLocalId('acao')),
+          text: String(action?.text || '').slice(0, 1200),
+          done: Boolean(action?.done),
+        }))
+      : [{ id: makeLocalId('acao'), text: '', done: false }],
+  };
+}
+
+function createEmptyActionPlan() {
+  return normalizeActionPlan({
+    objective: '',
+    deadline: '',
+    actions: [{ id: makeLocalId('acao'), text: '', done: false }],
+  });
+}
+
+function parseActionPlan(value) {
+  const text = String(value || '').trim();
+  if (!text.startsWith(ACTION_PLAN_MARKER)) return null;
+  try {
+    return normalizeActionPlan(JSON.parse(text.slice(ACTION_PLAN_MARKER.length).trim() || '{}'));
+  } catch {
+    return null;
+  }
+}
+
+function serializeActionPlan(plan) {
+  return `${ACTION_PLAN_MARKER}\n${JSON.stringify(normalizeActionPlan(plan))}`;
+}
+
+function actionPlanPreviewText(plan) {
+  const normalized = normalizeActionPlan(plan);
+  const done = normalized.actions.filter((action) => action.done).length;
+  const total = normalized.actions.length;
+  const objective = normalized.objective.trim() || 'Plano de ação sem objetivo preenchido';
+  const deadline = normalized.deadline ? ` · Prazo ${formatDateBR(normalized.deadline)}` : '';
+  return `${objective}\n${done}/${total} ações concluídas${deadline}`;
+}
+
+function actionPlanNumber(index, total) {
+  return `Plano #${Math.max(1, total - index)}`;
+}
+
 function isPreviewableAttachment(item) {
   const mime = String(item?.mimeType || '');
   return mime.startsWith('image/') || mime === 'application/pdf';
@@ -171,11 +228,17 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [attachmentDeleteTarget, setAttachmentDeleteTarget] = useState(null);
   const [expandedEntry, setExpandedEntry] = useState(null);
+  const [actionPlanOpen, setActionPlanOpen] = useState(false);
+  const [selectedActionPlanId, setSelectedActionPlanId] = useState('');
 
   const timersRef = useRef(new Map());
   const fetchIdRef = useRef(0);
 
   const meta = ANALYSIS_META[type] || ANALYSIS_META.icp;
+  const isIcpAnalysis = type === 'icp';
+  const actionPlanEntries = isIcpAnalysis ? entries.filter((entry) => parseActionPlan(entry.text)) : [];
+  const selectedActionPlanEntry = actionPlanEntries.find((entry) => entry.id === selectedActionPlanId) || actionPlanEntries[0] || null;
+  const selectedActionPlan = selectedActionPlanEntry ? parseActionPlan(selectedActionPlanEntry.text) : null;
 
   useEffect(() => {
     setPreviewZoom(1);
@@ -353,6 +416,34 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     }
   }
 
+
+  function openActionPlans() {
+    if (actionPlanEntries[0]?.id) setSelectedActionPlanId(actionPlanEntries[0].id);
+    setActionPlanOpen(true);
+  }
+
+  async function handleCreateActionPlan() {
+    if (creating || !clientId || !canEdit) return;
+    setCreating(true);
+    try {
+      const response = await createAnalysis(clientId, type, {
+        date: todayISO(),
+        text: serializeActionPlan(createEmptyActionPlan()),
+      });
+      const entry = response?.analysis;
+      if (entry) {
+        setEntries((previous) => [entry, ...previous]);
+        setSelectedActionPlanId(entry.id);
+        setActionPlanOpen(true);
+      }
+    } catch (error) {
+      const message = error instanceof ApiError ? error.message : 'Erro ao criar plano de ação.';
+      showToast(message, { variant: 'error' });
+    } finally {
+      setCreating(false);
+    }
+  }
+
   async function commitPatch(id, patch) {
     markSaving(id, true);
     markPending(id, false);
@@ -393,6 +484,27 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       previous.map((entry) => (entry.id === id ? { ...entry, date: value } : entry))
     );
     commitPatch(id, { date: value });
+  }
+
+
+  function updateActionPlan(entryId, updater) {
+    const target = entries.find((entry) => entry.id === entryId);
+    if (!target) return;
+    const current = parseActionPlan(target.text) || createEmptyActionPlan();
+    const next = normalizeActionPlan(typeof updater === 'function' ? updater(current) : updater);
+    const text = serializeActionPlan(next);
+    setEntries((previous) => previous.map((entry) => (entry.id === entryId ? { ...entry, text } : entry)));
+    scheduleCommit(entryId, { text });
+  }
+
+  function updateSelectedActionPlan(updater) {
+    if (!selectedActionPlanEntry?.id) return;
+    updateActionPlan(selectedActionPlanEntry.id, updater);
+  }
+
+  function updateActionPlanDate(entryId, value) {
+    setEntries((previous) => previous.map((entry) => (entry.id === entryId ? { ...entry, date: value } : entry)));
+    commitPatch(entryId, { date: value });
   }
 
   async function confirmDelete() {
@@ -441,6 +553,17 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         </div>
 
         <div className={styles.headerSide}>
+          {isIcpAnalysis ? (
+            <button
+              type="button"
+              className={styles.actionPlanButton}
+              onClick={openActionPlans}
+            >
+              <span>Planos de ação</span>
+              <strong>{actionPlanEntries.length}</strong>
+            </button>
+          ) : null}
+
           <button
             type="button"
             className={styles.addBtn}
@@ -471,6 +594,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         entries.map((entry) => {
           const isPending = pendingIds.has(entry.id);
           const isSaving = savingIds.has(entry.id);
+          const entryActionPlan = isIcpAnalysis ? parseActionPlan(entry.text) : null;
           return (
             <div key={entry.id} className={styles.entry} onPasteCapture={(event) => handleEntryPaste(entry.id, event)}>
               <div className={styles.entryHdr}>
@@ -516,11 +640,19 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               </div>
               <button
                 type="button"
-                className={`${styles.analysisPreview} ${String(entry.text || '').trim() ? '' : styles.analysisPreviewEmpty}`.trim()}
-                onClick={() => setExpandedEntry(entry)}
+                className={`${styles.analysisPreview} ${entryActionPlan ? styles.analysisPreviewPlan : ''} ${String(entry.text || '').trim() ? '' : styles.analysisPreviewEmpty}`.trim()}
+                onClick={() => {
+                  if (entryActionPlan) {
+                    setSelectedActionPlanId(entry.id);
+                    setActionPlanOpen(true);
+                    return;
+                  }
+                  setExpandedEntry(entry);
+                }}
                 onPaste={(event) => handleEntryPaste(entry.id, event)}
               >
-                <span>{String(entry.text || '').trim() || 'Sem registro'}</span>
+                {entryActionPlan ? <em>Plano de ação</em> : null}
+                <span>{entryActionPlan ? actionPlanPreviewText(entryActionPlan) : String(entry.text || '').trim() || 'Sem registro'}</span>
               </button>
 
               <div className={styles.attachmentsArea}>
@@ -593,6 +725,260 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
             </div>
           );
         })
+      ) : null}
+
+      {actionPlanOpen && isIcpAnalysis && typeof document !== 'undefined' ? createPortal(
+        <div className={styles.actionPlanOverlay} role="presentation" onClick={() => setActionPlanOpen(false)}>
+          <section
+            className={styles.actionPlanModal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Planos de ação da Análise ICP"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className={styles.actionPlanHeader}>
+              <div>
+                <span>ANÁLISE ICP</span>
+                <strong>Planos de ação</strong>
+                <p>Objetivo, ações, prazo e evidências vinculados ao histórico deste cliente.</p>
+              </div>
+              <div className={styles.actionPlanHeaderActions}>
+                {canEdit ? (
+                  <button type="button" className={styles.actionPlanPrimary} onClick={handleCreateActionPlan} disabled={creating}>
+                    {creating ? 'Criando…' : '+ Novo plano'}
+                  </button>
+                ) : null}
+                <button type="button" className={styles.actionPlanClose} onClick={() => setActionPlanOpen(false)}>
+                  Fechar
+                </button>
+              </div>
+            </header>
+
+            <div className={styles.actionPlanBody}>
+              <aside className={styles.actionPlanHistory}>
+                <div className={styles.actionPlanSectionTitle}>
+                  <span>Histórico</span>
+                  <strong>{actionPlanEntries.length}</strong>
+                </div>
+                {actionPlanEntries.length ? (
+                  <div className={styles.actionPlanHistoryList}>
+                    {actionPlanEntries.map((entry, index) => {
+                      const plan = parseActionPlan(entry.text) || createEmptyActionPlan();
+                      const done = plan.actions.filter((action) => action.done).length;
+                      return (
+                        <button
+                          type="button"
+                          key={entry.id}
+                          className={`${styles.actionPlanHistoryItem} ${selectedActionPlanEntry?.id === entry.id ? styles.actionPlanHistoryItemActive : ''}`.trim()}
+                          onClick={() => setSelectedActionPlanId(entry.id)}
+                        >
+                          <span>{actionPlanNumber(index, actionPlanEntries.length)}</span>
+                          <strong>{formatDateBR(entry.date)}</strong>
+                          <small>{done}/{plan.actions.length} ações · {plan.deadline ? `prazo ${formatDateBR(plan.deadline)}` : 'sem prazo'}</small>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className={styles.actionPlanEmpty}>
+                    <strong>Nenhum plano registrado</strong>
+                    <span>Crie um plano para acompanhar ações, datas e evidências da Análise ICP.</span>
+                    {canEdit ? (
+                      <button type="button" onClick={handleCreateActionPlan} disabled={creating}>
+                        Criar primeiro plano
+                      </button>
+                    ) : null}
+                  </div>
+                )}
+              </aside>
+
+              <main className={styles.actionPlanWorkspace}>
+                {selectedActionPlanEntry && selectedActionPlan ? (
+                  <>
+                    <div className={styles.actionPlanMetaRow}>
+                      <label className={styles.actionPlanDateField}>
+                        <span>Data do plano</span>
+                        <DateField
+                          value={selectedActionPlanEntry.date || ''}
+                          onChange={(value) => updateActionPlanDate(selectedActionPlanEntry.id, value)}
+                          disabled={!canEdit}
+                          ariaLabel="Data do plano de ação"
+                          className={styles.actionPlanDateInput}
+                        />
+                      </label>
+                      <label className={styles.actionPlanDateField}>
+                        <span>Prazo</span>
+                        <DateField
+                          value={selectedActionPlan.deadline || ''}
+                          onChange={(value) => updateSelectedActionPlan((plan) => ({ ...plan, deadline: value }))}
+                          disabled={!canEdit}
+                          ariaLabel="Prazo do plano de ação"
+                          className={styles.actionPlanDateInput}
+                        />
+                      </label>
+                    </div>
+
+                    <label className={styles.actionPlanObjective}>
+                      <span>Objetivo</span>
+                      <textarea
+                        value={selectedActionPlan.objective || ''}
+                        disabled={!canEdit}
+                        placeholder="Ex.: Reduzir tempo de resposta."
+                        rows={4}
+                        onChange={(event) => updateSelectedActionPlan((plan) => ({ ...plan, objective: event.target.value }))}
+                      />
+                    </label>
+
+                    <section className={styles.actionPlanActionsBlock}>
+                      <div className={styles.actionPlanBlockHead}>
+                        <div>
+                          <span>Ações</span>
+                          <strong>{selectedActionPlan.actions.filter((action) => action.done).length}/{selectedActionPlan.actions.length}</strong>
+                        </div>
+                        {canEdit ? (
+                          <button
+                            type="button"
+                            onClick={() => updateSelectedActionPlan((plan) => ({
+                              ...plan,
+                              actions: [...plan.actions, { id: makeLocalId('acao'), text: '', done: false }],
+                            }))}
+                          >
+                            + Adicionar ação
+                          </button>
+                        ) : null}
+                      </div>
+
+                      <div className={styles.actionPlanActionList}>
+                        {selectedActionPlan.actions.map((action) => (
+                          <div key={action.id} className={styles.actionPlanActionRow}>
+                            <label className={styles.actionPlanCheck}>
+                              <input
+                                type="checkbox"
+                                checked={action.done}
+                                disabled={!canEdit}
+                                onChange={(event) => updateSelectedActionPlan((plan) => ({
+                                  ...plan,
+                                  actions: plan.actions.map((item) => (
+                                    item.id === action.id ? { ...item, done: event.target.checked } : item
+                                  )),
+                                }))}
+                              />
+                              <span aria-hidden="true">✓</span>
+                            </label>
+                            <input
+                              value={action.text}
+                              disabled={!canEdit}
+                              placeholder="Descrever ação"
+                              onChange={(event) => updateSelectedActionPlan((plan) => ({
+                                ...plan,
+                                actions: plan.actions.map((item) => (
+                                  item.id === action.id ? { ...item, text: event.target.value } : item
+                                )),
+                              }))}
+                            />
+                            {canEdit && selectedActionPlan.actions.length > 1 ? (
+                              <button
+                                type="button"
+                                className={styles.actionPlanRemoveAction}
+                                onClick={() => updateSelectedActionPlan((plan) => ({
+                                  ...plan,
+                                  actions: plan.actions.filter((item) => item.id !== action.id),
+                                }))}
+                              >
+                                Remover
+                              </button>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className={styles.actionPlanEvidence}>
+                      <div className={styles.actionPlanBlockHead}>
+                        <div>
+                          <span>Evidências</span>
+                          <strong>{(selectedActionPlanEntry.attachments || []).length}</strong>
+                        </div>
+                        {canEdit ? (
+                          <div className={styles.actionPlanEvidenceActions}>
+                            <label>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                disabled={uploadingIds.has(selectedActionPlanEntry.id)}
+                                onChange={(event) => {
+                                  handleAttachmentFiles(selectedActionPlanEntry.id, event.target.files);
+                                  event.target.value = '';
+                                }}
+                              />
+                              Anexar imagem
+                            </label>
+                            <label>
+                              <input
+                                type="file"
+                                accept="application/pdf"
+                                multiple
+                                disabled={uploadingIds.has(selectedActionPlanEntry.id)}
+                                onChange={(event) => {
+                                  handleAttachmentFiles(selectedActionPlanEntry.id, event.target.files);
+                                  event.target.value = '';
+                                }}
+                              />
+                              Anexar PDF
+                            </label>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {(selectedActionPlanEntry.attachments || []).length ? (
+                        <div className={styles.actionPlanEvidenceGrid}>
+                          {(selectedActionPlanEntry.attachments || []).map((attachment) => {
+                            const isPdf = attachment.mimeType === 'application/pdf';
+                            const isDeleting = deletingAttachmentIds.has(attachment.id);
+                            return (
+                              <article key={attachment.id} className={styles.actionPlanEvidenceCard}>
+                                <button
+                                  type="button"
+                                  onClick={() => isPreviewableAttachment(attachment) && setPreviewAttachment({ ...attachment, entryId: selectedActionPlanEntry.id })}
+                                  disabled={!isPreviewableAttachment(attachment)}
+                                >
+                                  {isPdf ? <span>PDF</span> : <img src={attachment.dataUrl} alt="" />}
+                                </button>
+                                <div>
+                                  <strong title={attachment.fileName}>{attachment.fileName}</strong>
+                                  <small>{attachmentKind(attachment)} · {formatBytes(attachment.sizeBytes)}</small>
+                                </div>
+                                {canEdit ? (
+                                  <button
+                                    type="button"
+                                    className={styles.actionPlanRemoveEvidence}
+                                    onClick={() => handleRemoveAttachment(selectedActionPlanEntry.id, attachment)}
+                                    disabled={isDeleting}
+                                  >
+                                    {isDeleting ? 'Removendo…' : 'Remover'}
+                                  </button>
+                                ) : null}
+                              </article>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className={styles.actionPlanEvidenceEmpty}>Nenhuma evidência anexada.</div>
+                      )}
+                    </section>
+                  </>
+                ) : (
+                  <div className={styles.actionPlanWorkspaceEmpty}>
+                    <strong>Selecione ou crie um plano</strong>
+                    <span>Os planos de ação ficam vinculados à Análise ICP e podem receber imagens ou PDFs.</span>
+                  </div>
+                )}
+              </main>
+            </div>
+          </section>
+        </div>,
+        document.body
       ) : null}
 
       {expandedEntry ? (

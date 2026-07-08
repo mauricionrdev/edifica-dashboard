@@ -1764,7 +1764,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   padding: 14px 16px;
   border-color: var(--line-subtle);
-  border-radius: 18px;
+  border-radius: var(--radius-4, 10px);
   background: rgba(255, 255, 255, 0.012);
 }
 
@@ -1802,7 +1802,7 @@
 
 .entry {
   border-color: var(--line-subtle);
-  border-radius: 18px;
+  border-radius: var(--radius-4, 10px);
   background: rgba(255, 255, 255, 0.010);
 }
 
@@ -1851,5 +1851,498 @@
   .headerMeta,
   .entryActions {
     justify-content: flex-start;
+  }
+}
+
+.actionPlanButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 999px;
+  background: var(--analysis-accent-soft);
+  color: var(--analysis-accent);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.actionPlanButton strong {
+  min-width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--analysis-accent) 14%, transparent);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.analysisPreviewPlan em {
+  display: inline-flex;
+  width: max-content;
+  margin: 0 0 8px;
+  padding: 5px 9px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 999px;
+  color: var(--analysis-accent);
+  background: var(--analysis-accent-soft);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.actionPlanOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vw, 42px);
+  background: color-mix(in srgb, var(--bg-primary) 74%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.actionPlanModal {
+  width: min(1120px, 100%);
+  max-height: min(840px, calc(100vh - 56px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: var(--radius-4, 10px);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-xl);
+}
+
+.actionPlanHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 24px 26px 20px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.actionPlanHeader span,
+.actionPlanSectionTitle span,
+.actionPlanObjective span,
+.actionPlanDateField span,
+.actionPlanBlockHead span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.actionPlanHeader strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-primary);
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -0.04em;
+}
+
+.actionPlanHeader p {
+  max-width: 620px;
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.actionPlanHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.actionPlanPrimary,
+.actionPlanClose,
+.actionPlanEmpty button,
+.actionPlanBlockHead button,
+.actionPlanRemoveAction,
+.actionPlanEvidenceActions label,
+.actionPlanRemoveEvidence {
+  min-height: 36px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.actionPlanPrimary,
+.actionPlanEmpty button {
+  border-color: var(--analysis-accent-line);
+  background: var(--analysis-accent-soft);
+  color: var(--analysis-accent);
+}
+
+.actionPlanPrimary,
+.actionPlanClose,
+.actionPlanEmpty button,
+.actionPlanBlockHead button,
+.actionPlanRemoveAction,
+.actionPlanEvidenceActions label,
+.actionPlanRemoveEvidence {
+  padding: 0 14px;
+}
+
+.actionPlanBody {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.actionPlanHistory {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+  border-right: 1px solid var(--line-subtle);
+  background: color-mix(in srgb, var(--surface-2) 54%, transparent);
+  overflow: auto;
+}
+
+.actionPlanSectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.actionPlanSectionTitle strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.actionPlanHistoryList {
+  display: grid;
+  gap: 10px;
+}
+
+.actionPlanHistoryItem {
+  width: 100%;
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.actionPlanHistoryItemActive {
+  border-color: var(--analysis-accent-line);
+  background: var(--analysis-accent-soft);
+}
+
+.actionPlanHistoryItem span {
+  color: var(--analysis-accent);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.actionPlanHistoryItem strong {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.actionPlanHistoryItem small,
+.actionPlanEmpty span,
+.actionPlanWorkspaceEmpty span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.actionPlanEmpty,
+.actionPlanWorkspaceEmpty,
+.actionPlanEvidenceEmpty {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: color-mix(in srgb, var(--surface-1) 64%, transparent);
+  color: var(--text-secondary);
+}
+
+.actionPlanEmpty strong,
+.actionPlanWorkspaceEmpty strong {
+  color: var(--text-primary);
+}
+
+.actionPlanWorkspace {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 22px;
+  overflow: auto;
+}
+
+.actionPlanMetaRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.actionPlanDateField,
+.actionPlanObjective {
+  display: grid;
+  gap: 9px;
+}
+
+.actionPlanDateInput,
+.actionPlanObjective textarea,
+.actionPlanActionRow input[type='text'],
+.actionPlanActionRow input:not([type]) {
+  width: 100%;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.actionPlanDateInput {
+  min-height: 42px;
+  padding: 0 13px;
+}
+
+.actionPlanObjective textarea {
+  min-height: 116px;
+  padding: 14px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.actionPlanDateInput:focus,
+.actionPlanDateInput:focus-visible,
+.actionPlanObjective textarea:focus,
+.actionPlanObjective textarea:focus-visible,
+.actionPlanActionRow input:focus,
+.actionPlanActionRow input:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+
+.actionPlanActionsBlock,
+.actionPlanEvidence {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: color-mix(in srgb, var(--surface-1) 72%, transparent);
+}
+
+.actionPlanBlockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.actionPlanBlockHead div {
+  display: grid;
+  gap: 4px;
+}
+
+.actionPlanBlockHead strong {
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.actionPlanActionList {
+  display: grid;
+  gap: 10px;
+}
+
+.actionPlanActionRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.actionPlanCheck {
+  position: relative;
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  cursor: pointer;
+}
+
+.actionPlanCheck input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.actionPlanCheck span {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: transparent;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.actionPlanCheck input:checked + span {
+  border-color: color-mix(in srgb, var(--success) 62%, transparent);
+  background: color-mix(in srgb, var(--success) 20%, transparent);
+  color: var(--success);
+}
+
+.actionPlanActionRow input[type='text'],
+.actionPlanActionRow input:not([type]) {
+  min-height: 42px;
+  padding: 0 13px;
+}
+
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence {
+  color: var(--danger);
+}
+
+.actionPlanEvidenceActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actionPlanEvidenceActions input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.actionPlanEvidenceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.actionPlanEvidenceCard {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: var(--surface-2);
+}
+
+.actionPlanEvidenceCard > button:first-child {
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-1);
+  color: var(--analysis-accent);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.actionPlanEvidenceCard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.actionPlanEvidenceCard div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.actionPlanEvidenceCard strong,
+.actionPlanEvidenceCard small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actionPlanEvidenceCard strong {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.actionPlanEvidenceCard small {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.actionPlanRemoveEvidence {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: 30px;
+  font-size: 12px;
+}
+
+@media (max-width: 860px) {
+  .actionPlanOverlay {
+    padding: 12px;
+  }
+
+  .actionPlanHeader,
+  .actionPlanBody,
+  .actionPlanMetaRow,
+  .actionPlanActionRow {
+    grid-template-columns: 1fr;
+  }
+
+  .actionPlanHeader {
+    display: grid;
+  }
+
+  .actionPlanBody {
+    overflow: auto;
+  }
+
+  .actionPlanHistory,
+  .actionPlanWorkspace {
+    overflow: visible;
+  }
+
+  .actionPlanHistory {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-subtle);
   }
 }
