@@ -133,8 +133,17 @@ function serializeActionPlan(plan) {
   return `${ACTION_PLAN_MARKER}\n${JSON.stringify(normalizeActionPlan(plan))}`;
 }
 
+function normalizedActionText(value) {
+  const text = String(value || '');
+  return text.trim().toLowerCase() === 'descrever ação' ? '' : text;
+}
+
+function hasActionText(action) {
+  return Boolean(normalizedActionText(action?.text).trim());
+}
+
 function getActionCompletion(actions = []) {
-  const validActions = (Array.isArray(actions) ? actions : []).filter((action) => String(action?.text || '').trim());
+  const validActions = (Array.isArray(actions) ? actions : []).filter(hasActionText);
   return {
     done: validActions.filter((action) => action.done).length,
     total: validActions.length,
@@ -242,10 +251,11 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const fetchIdRef = useRef(0);
 
   const meta = ANALYSIS_META[type] || ANALYSIS_META.icp;
-  const isIcpAnalysis = type === 'icp';
+  const isActionPlanAnalysis = type === 'gdvanalise';
   const requestKey = clientId ? `${clientId}:${type}` : '';
   const isStaleRender = Boolean(requestKey && loadedKey !== requestKey);
-  const actionPlanEntries = isIcpAnalysis ? entries.filter((entry) => parseActionPlan(entry.text)) : [];
+  const actionPlanEntries = isActionPlanAnalysis ? entries.filter((entry) => parseActionPlan(entry.text)) : [];
+  const visibleEntries = entries.filter((entry) => isActionPlanAnalysis || !parseActionPlan(entry.text));
   const selectedActionPlanEntry = actionPlanEntries.find((entry) => entry.id === selectedActionPlanId) || actionPlanEntries[0] || null;
   const selectedActionPlan = selectedActionPlanEntry ? parseActionPlan(selectedActionPlanEntry.text) : null;
 
@@ -578,7 +588,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     <div key={requestKey || 'analysis-panel'} className={`${styles.panel} ${meta.className}`.trim()}>
       <div className={styles.header}>
         <div className={styles.headerActions}>
-          {isIcpAnalysis ? (
+          {isActionPlanAnalysis ? (
             <button
               type="button"
               className={styles.actionPlanButton}
@@ -601,25 +611,25 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
 
         <div className={styles.headerMeta}>
           <div className={styles.heroMetric}>
-            <strong>{entries.length}</strong>
+            <strong>{visibleEntries.length}</strong>
             <span>registros</span>
           </div>
           <div className={styles.heroMetric}>
-            <strong>{formatDateBR(entries[0]?.date)}</strong>
+            <strong>{formatDateBR(visibleEntries[0]?.date)}</strong>
             <span>última data</span>
           </div>
           <div className={styles.heroMetric}>
-            <strong>{entries.filter((entry) => String(entry.text || '').trim()).length}</strong>
+            <strong>{visibleEntries.filter((entry) => String(entry.text || '').trim()).length}</strong>
             <span>preenchidos</span>
           </div>
         </div>
       </div>
 
-      {entries.length > 0 ? (
-        entries.map((entry) => {
+      {visibleEntries.length > 0 ? (
+        visibleEntries.map((entry) => {
           const isPending = pendingIds.has(entry.id);
           const isSaving = savingIds.has(entry.id);
-          const entryActionPlan = isIcpAnalysis ? parseActionPlan(entry.text) : null;
+          const entryActionPlan = isActionPlanAnalysis ? parseActionPlan(entry.text) : null;
           return (
             <div key={entry.id} className={styles.entry} onPasteCapture={(event) => handleEntryPaste(entry.id, event)}>
               <div className={styles.entryHdr}>
@@ -764,13 +774,13 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         </div>
       )}
 
-      {actionPlanOpen && isIcpAnalysis && typeof document !== 'undefined' ? createPortal(
+      {actionPlanOpen && isActionPlanAnalysis && typeof document !== 'undefined' ? createPortal(
         <div className={styles.actionPlanOverlay} role="presentation" onClick={() => setActionPlanOpen(false)}>
           <section
             className={styles.actionPlanModal}
             role="dialog"
             aria-modal="true"
-            aria-label="Planos de ação da Análise ICP"
+            aria-label="Planos de ação da Análise GDV"
             onClick={(event) => event.stopPropagation()}
           >
             <header className={styles.actionPlanHeader}>
@@ -801,24 +811,37 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                     {actionPlanEntries.map((entry, index) => {
                       const plan = parseActionPlan(entry.text) || createEmptyActionPlan();
                       const { done, total: actionTotal } = getActionCompletion(plan.actions);
+                      const isPlanDone = actionTotal > 0 && done === actionTotal;
                       return (
-                        <button
-                          type="button"
-                          key={entry.id}
-                          className={`${styles.actionPlanHistoryItem} ${selectedActionPlanEntry?.id === entry.id ? styles.actionPlanHistoryItemActive : ''}`.trim()}
-                          onClick={() => setSelectedActionPlanId(entry.id)}
-                        >
-                          <span>{actionPlanNumber(index, actionPlanEntries.length)}</span>
-                          <strong>{formatDateBR(entry.date)}</strong>
-                          <small>{actionTotal ? `${done}/${actionTotal} ações` : 'Nenhuma ação'} · {plan.deadline ? `prazo ${formatDateBR(plan.deadline)}` : 'sem prazo'}</small>
-                        </button>
+                        <div key={entry.id} className={styles.actionPlanHistoryItemShell}>
+                          <button
+                            type="button"
+                            className={`${styles.actionPlanHistoryItem} ${selectedActionPlanEntry?.id === entry.id ? styles.actionPlanHistoryItemActive : ''} ${isPlanDone ? styles.actionPlanHistoryItemDone : ''}`.trim()}
+                            onClick={() => setSelectedActionPlanId(entry.id)}
+                          >
+                            <span>{actionPlanNumber(index, actionPlanEntries.length)}</span>
+                            <strong>{formatDateBR(entry.date)}</strong>
+                            <small>{actionTotal ? `${done}/${actionTotal} ações` : 'Nenhuma ação'} · {plan.deadline ? `prazo ${formatDateBR(plan.deadline)}` : 'sem prazo'}</small>
+                          </button>
+                          {canEdit ? (
+                            <button
+                              type="button"
+                              className={styles.actionPlanHistoryRemove}
+                              title="Remover plano"
+                              aria-label={`Remover ${actionPlanNumber(index, actionPlanEntries.length)}`}
+                              onClick={() => setDeleteTarget(entry)}
+                            >
+                              <TrashIcon size={13} aria-hidden="true" />
+                            </button>
+                          ) : null}
+                        </div>
                       );
                     })}
                   </div>
                 ) : (
                   <div className={styles.actionPlanEmpty}>
                     <strong>Nenhum plano registrado</strong>
-                    <span>Crie um plano para acompanhar ações, datas e evidências da Análise ICP.</span>
+                    <span>Crie um plano para acompanhar ações, datas e evidências da Análise GDV.</span>
                     {canEdit ? (
                       <button type="button" onClick={handleCreateActionPlan} disabled={creating}>
                         Criar primeiro plano
@@ -892,7 +915,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                           {selectedActionPlan.actions.map((action) => (
                             <div
                               key={action.id}
-                              className={`${styles.actionPlanActionRow} ${String(action.text || '').trim() ? '' : styles.actionPlanActionRowEmpty}`.trim()}
+                              className={`${styles.actionPlanActionRow} ${hasActionText(action) ? '' : styles.actionPlanActionRowEmpty}`.trim()}
                             >
                               <label
                                 className={styles.actionPlanCheck}
@@ -915,7 +938,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                               <input
                                 type="text"
                                 className={styles.actionPlanActionInput}
-                                value={action.text}
+                                value={normalizedActionText(action.text)}
                                 disabled={!canEdit}
                                 placeholder="Descrever ação"
                                 onChange={(event) => updateSelectedActionPlan((plan) => ({
@@ -1033,7 +1056,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                 ) : (
                   <div className={styles.actionPlanWorkspaceEmpty}>
                     <strong>Selecione ou crie um plano</strong>
-                    <span>Os planos de ação ficam vinculados à Análise ICP e podem receber imagens ou PDFs.</span>
+                    <span>Os planos de ação ficam vinculados à Análise GDV e podem receber imagens ou PDFs.</span>
                   </div>
                 )}
               </main>
@@ -1139,7 +1162,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         document.body
       ) : null}
 
-      {attachmentDeleteTarget ? (
+      {attachmentDeleteTarget && typeof document !== 'undefined' ? createPortal(
         <div className={styles.confirmOverlay} role="presentation" onClick={() => setAttachmentDeleteTarget(null)}>
           <section
             className={styles.confirmModal}
@@ -1162,10 +1185,11 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               </button>
             </div>
           </section>
-        </div>
+        </div>,
+        document.body
       ) : null}
 
-      {deleteTarget ? (
+      {deleteTarget && typeof document !== 'undefined' ? createPortal(
         <div className={styles.confirmOverlay} role="presentation" onClick={() => setDeleteTarget(null)}>
           <section
             className={styles.confirmModal}
@@ -1176,9 +1200,9 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           >
             <div className={styles.confirmHead}>
               <span>{meta.deleteEyebrow}</span>
-              <strong>{meta.deleteTitle}</strong>
+              <strong>{parseActionPlan(deleteTarget.text) ? 'Plano de ação' : meta.deleteTitle}</strong>
             </div>
-            <p>{meta.deleteDescription}</p>
+            <p>{parseActionPlan(deleteTarget.text) ? 'Este plano de ação será removido do histórico e não poderá ser recuperado.' : meta.deleteDescription}</p>
             <div className={styles.confirmActions}>
               <button type="button" className={styles.cancelBtn} onClick={() => setDeleteTarget(null)}>
                 Cancelar
@@ -1188,7 +1212,8 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               </button>
             </div>
           </section>
-        </div>
+        </div>,
+        document.body
       ) : null}
     </div>
   );

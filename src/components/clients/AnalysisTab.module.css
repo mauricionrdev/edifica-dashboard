@@ -2263,3 +2263,94 @@
   font-size: 12px;
   line-height: 1.45;
 }
+
+/* v128 · Planos de ação movidos para Análise GDV, histórico com remoção e conclusão verde. */
+.actionPlanHistoryItemShell {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.actionPlanHistoryItemShell .actionPlanHistoryItem {
+  width: 100%;
+}
+
+.actionPlanHistoryRemove {
+  width: 34px;
+  min-width: 34px;
+  height: auto;
+  min-height: 72px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--workspace-control-radius);
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.actionPlanHistoryRemove:hover {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.actionPlanHistoryRemove:focus,
+.actionPlanHistoryRemove:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+
+.actionPlanHistoryItemDone {
+  border-color: var(--success-line) !important;
+  background: color-mix(in srgb, var(--success-soft) 72%, transparent) !important;
+}
+
+.actionPlanHistoryItemDone span {
+  color: var(--success-text) !important;
+}
+
+.actionPlanHistoryItemDone strong {
+  color: var(--text-primary) !important;
+}
+
+.actionPlanHistoryItemDone small {
+  color: var(--success-text) !important;
+}
+
+.actionPlanOverlay {
+  z-index: 2100;
+}
+
+.viewerOverlay {
+  z-index: 3400;
+}
+
+.confirmOverlay {
+  z-index: 4200;
+}
+
+.actionPlanActionRowEmpty .actionPlanCheck span {
+  border-color: var(--line-subtle);
+  background: var(--field-bg);
+  color: var(--text-muted);
+}
+
+.actionPlanActionRowEmpty .actionPlanActionInput {
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 720px) {
+  .actionPlanHistoryItemShell {
+    grid-template-columns: minmax(0, 1fr) 32px;
+  }
+
+  .actionPlanHistoryRemove {
+    width: 32px;
+    min-width: 32px;
+  }
+}
