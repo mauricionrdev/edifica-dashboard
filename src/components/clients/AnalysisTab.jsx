@@ -550,7 +550,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
 
   if (loading || isStaleRender) {
     return (
-      <div className={`${styles.panel} ${meta.className}`.trim()}>
+      <div key={requestKey || 'analysis-loading'} className={`${styles.panel} ${meta.className}`.trim()}>
         <div className={styles.loadingShell} role="status" aria-live="polite">
           <div className={styles.analysisLoading}>
             <div className={styles.loadingHeader}>
@@ -569,7 +569,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   }
 
   return (
-    <div className={`${styles.panel} ${meta.className}`.trim()}>
+    <div key={requestKey || 'analysis-panel'} className={`${styles.panel} ${meta.className}`.trim()}>
       <div className={styles.header}>
         <div className={styles.headerActions}>
           {isIcpAnalysis ? (
