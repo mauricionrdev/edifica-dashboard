@@ -103,13 +103,11 @@ function normalizeActionPlan(raw = {}) {
   return {
     objective: String(raw.objective || '').slice(0, 5000),
     deadline: String(raw.deadline || '').slice(0, 10),
-    actions: actions.length
-      ? actions.map((action) => ({
-          id: String(action?.id || makeLocalId('acao')),
-          text: String(action?.text || '').slice(0, 1200),
-          done: Boolean(action?.done),
-        }))
-      : [{ id: makeLocalId('acao'), text: '', done: false }],
+    actions: actions.map((action) => ({
+      id: String(action?.id || makeLocalId('acao')),
+      text: String(action?.text || '').slice(0, 1200),
+      done: Boolean(action?.done),
+    })),
   };
 }
 
@@ -117,7 +115,7 @@ function createEmptyActionPlan() {
   return normalizeActionPlan({
     objective: '',
     deadline: '',
-    actions: [{ id: makeLocalId('acao'), text: '', done: false }],
+    actions: [],
   });
 }
 
@@ -141,7 +139,8 @@ function actionPlanPreviewText(plan) {
   const total = normalized.actions.length;
   const objective = normalized.objective.trim() || 'Plano de ação sem objetivo preenchido';
   const deadline = normalized.deadline ? ` · Prazo ${formatDateBR(normalized.deadline)}` : '';
-  return `${objective}\n${done}/${total} ações concluídas${deadline}`;
+  const actionSummary = total ? `${done}/${total} ações concluídas` : 'Nenhuma ação definida';
+  return `${objective}\n${actionSummary}${deadline}`;
 }
 
 function actionPlanNumber(index, total) {
@@ -878,51 +877,58 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                         ) : null}
                       </div>
 
-                      <div className={styles.actionPlanActionList}>
-                        {selectedActionPlan.actions.map((action) => (
-                          <div key={action.id} className={styles.actionPlanActionRow}>
-                            <label className={styles.actionPlanCheck}>
+                      {selectedActionPlan.actions.length ? (
+                        <div className={styles.actionPlanActionList}>
+                          {selectedActionPlan.actions.map((action) => (
+                            <div key={action.id} className={styles.actionPlanActionRow}>
+                              <label className={styles.actionPlanCheck}>
+                                <input
+                                  type="checkbox"
+                                  checked={action.done}
+                                  disabled={!canEdit}
+                                  onChange={(event) => updateSelectedActionPlan((plan) => ({
+                                    ...plan,
+                                    actions: plan.actions.map((item) => (
+                                      item.id === action.id ? { ...item, done: event.target.checked } : item
+                                    )),
+                                  }))}
+                                />
+                                <span aria-hidden="true">✓</span>
+                              </label>
                               <input
-                                type="checkbox"
-                                checked={action.done}
+                                type="text"
+                                className={styles.actionPlanActionInput}
+                                value={action.text}
                                 disabled={!canEdit}
+                                placeholder="Descrever ação"
                                 onChange={(event) => updateSelectedActionPlan((plan) => ({
                                   ...plan,
                                   actions: plan.actions.map((item) => (
-                                    item.id === action.id ? { ...item, done: event.target.checked } : item
+                                    item.id === action.id ? { ...item, text: event.target.value } : item
                                   )),
                                 }))}
                               />
-                              <span aria-hidden="true">✓</span>
-                            </label>
-                            <input
-                              type="text"
-                              className={styles.actionPlanActionInput}
-                              value={action.text}
-                              disabled={!canEdit}
-                              placeholder="Descrever ação"
-                              onChange={(event) => updateSelectedActionPlan((plan) => ({
-                                ...plan,
-                                actions: plan.actions.map((item) => (
-                                  item.id === action.id ? { ...item, text: event.target.value } : item
-                                )),
-                              }))}
-                            />
-                            {canEdit && selectedActionPlan.actions.length > 1 ? (
-                              <button
-                                type="button"
-                                className={styles.actionPlanRemoveAction}
-                                onClick={() => updateSelectedActionPlan((plan) => ({
-                                  ...plan,
-                                  actions: plan.actions.filter((item) => item.id !== action.id),
-                                }))}
-                              >
-                                Remover
-                              </button>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
+                              {canEdit ? (
+                                <button
+                                  type="button"
+                                  className={styles.actionPlanRemoveAction}
+                                  onClick={() => updateSelectedActionPlan((plan) => ({
+                                    ...plan,
+                                    actions: plan.actions.filter((item) => item.id !== action.id),
+                                  }))}
+                                >
+                                  Remover
+                                </button>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className={styles.actionPlanActionsEmpty}>
+                          <strong>Nenhuma ação definida</strong>
+                          <span>Adicione a primeira ação antes de acompanhar conclusões.</span>
+                        </div>
+                      )}
                     </section>
 
                     <section className={styles.actionPlanEvidence}>
