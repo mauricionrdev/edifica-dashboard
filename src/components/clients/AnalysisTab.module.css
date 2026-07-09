@@ -1289,3 +1289,239 @@
 .actionPlanWorkspace {
   background: var(--bg-elevated);
 }
+
+/* v132 · Correção final de visual das análises: limpa overrides residuais sem alterar funções. */
+.panel {
+  background: transparent;
+}
+
+.header,
+.headerMeta,
+.heroMetric {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.header {
+  min-height: auto;
+  padding: 0 0 11px;
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.headerMeta {
+  border: 0;
+  overflow: visible;
+}
+
+.heroMetric {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid var(--line-subtle);
+}
+
+.heroMetric:first-child {
+  border-left: 0;
+}
+
+.addBtn,
+.actionPlanButton,
+.attachButton,
+.delBtn,
+.actionPlanPrimary,
+.actionPlanClose,
+.actionPlanBlockHead button,
+.actionPlanEvidenceActions label,
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence,
+.entryViewerHeader button {
+  border-radius: var(--workspace-control-radius);
+  box-shadow: none;
+}
+
+.analysisPreview,
+.analysisPreview:hover,
+.analysisPreview:focus,
+.analysisPreview:focus-visible {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: 0;
+}
+
+.analysisPreviewPlan,
+.analysisPreviewPlan:hover,
+.analysisPreviewPlan:focus,
+.analysisPreviewPlan:focus-visible {
+  border: 0;
+  border-left: 2px solid var(--analysis-accent-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.analysisPreviewPlan em {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.actionPlanOverlay,
+.entryViewerOverlay,
+.viewerOverlay,
+.confirmOverlay {
+  background: rgba(0, 0, 0, 0.74);
+  backdrop-filter: blur(14px);
+}
+
+.actionPlanModal,
+.entryViewer,
+.viewer,
+.confirmModal {
+  background: var(--bg-elevated, #101113);
+  border: 1px solid var(--line-subtle);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+}
+
+.actionPlanHeader,
+.entryViewerHeader {
+  background: var(--bg-elevated, #101113);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.actionPlanBody {
+  background: var(--bg-elevated, #101113);
+}
+
+.actionPlanHistory {
+  background: var(--bg-primary, #090a0b);
+  border-right: 1px solid var(--line-subtle);
+}
+
+.actionPlanWorkspace {
+  background: var(--bg-elevated, #101113);
+}
+
+.actionPlanHistoryItem {
+  border-color: var(--line-subtle);
+  background: transparent;
+  border-radius: var(--workspace-control-radius);
+}
+
+.actionPlanHistoryItemActive {
+  border-color: var(--analysis-accent-line);
+  background: color-mix(in srgb, var(--analysis-accent) 5%, transparent);
+}
+
+.actionPlanDateInput,
+.actionPlanObjective textarea,
+.actionPlanActionRow input[type='text'],
+.actionPlanEvidenceEmpty,
+.attachmentsEmpty {
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.actionPlanDateInput button,
+.actionPlanDateInput button:hover,
+.actionPlanDateInput button:focus,
+.actionPlanDateInput button:focus-visible {
+  border-radius: 0;
+  background: transparent;
+  outline: 0;
+  box-shadow: none;
+}
+
+.actionPlanObjective textarea:focus,
+.actionPlanObjective textarea:focus-visible,
+.actionPlanActionRow input[type='text']:focus,
+.actionPlanActionRow input[type='text']:focus-visible,
+.entryViewerText:focus,
+.entryViewerText:focus-visible {
+  outline: 0;
+  border-color: var(--line-subtle);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.actionPlanActionRow {
+  grid-template-columns: 26px minmax(0, 1fr) max-content;
+}
+
+.actionPlanCheck {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.actionPlanCheck input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.actionPlanCheck span {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: 7px;
+  background: var(--field-bg);
+  color: transparent;
+  font-size: 13px;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.actionPlanCheck input:checked + span {
+  border-color: var(--success-line, rgba(72, 213, 151, 0.38));
+  background: var(--success-soft, rgba(72, 213, 151, 0.10));
+  color: var(--success-text, #48d597);
+}
+
+.actionPlanCheck input:focus + span,
+.actionPlanCheck input:focus-visible + span {
+  outline: 0;
+  box-shadow: none;
+}
+
+.actionPlanActionsBlock,
+.actionPlanEvidence {
+  border-radius: var(--workspace-card-radius);
+  background: transparent;
+}
+
+.actionPlanEvidenceActions label,
+.actionPlanBlockHead button,
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence {
+  min-height: 32px;
+  padding: 0 12px;
+  background: var(--field-bg);
+  border-color: var(--line-subtle);
+  color: var(--text-secondary);
+}
+
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence {
+  color: var(--danger-text);
+}
+
+.entryViewerText {
+  background: var(--bg-elevated, #101113);
+  color: var(--text-primary);
+  border: 0;
+  box-shadow: none;
+}

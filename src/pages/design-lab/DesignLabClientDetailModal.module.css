@@ -1425,3 +1425,81 @@
 .churnMonthField input[type="month"] {
   color-scheme: dark;
 }
+
+/* v132 · Isolamento definitivo: o modal pai não pode quebrar o CSS das abas de análise. */
+.analysisHost {
+  min-height: 0;
+  padding: 16px 18px 20px;
+  display: grid;
+  align-content: start;
+}
+
+.analysisHost > :global(div) {
+  min-width: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.analysisHost > :global(div > div:first-child) {
+  min-height: auto !important;
+  padding: 0 0 11px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--line-subtle) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.analysisHost > :global(div > div:first-child > div:last-child),
+.analysisHost :global([class*="headerMeta"]),
+.analysisHost :global([class*="heroMetric"]) {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.analysisHost :global(button[class*="analysisPreview"]),
+.analysisHost :global(button[class*="analysisPreviewPlan"]) {
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.analysisHost :global([class*="analysisPreviewPlan"]) {
+  border-left: 2px solid var(--info-line) !important;
+}
+
+.analysisHost :global(button:not([class*="analysisPreview"])),
+.analysisHost :global(a),
+.analysisHost :global(label[class*="attachButton"]),
+.analysisHost :global(label[class*="actionPlanEvidenceActions"]) {
+  border-radius: var(--workspace-control-radius) !important;
+  box-shadow: none !important;
+}
+
+.analysisHost :global(textarea),
+.analysisHost :global(input),
+.analysisHost :global(select) {
+  border-radius: var(--workspace-control-radius) !important;
+  box-shadow: none !important;
+}
+
+.analysisHost :global(textarea:focus),
+.analysisHost :global(input:focus),
+.analysisHost :global(select:focus),
+.analysisHost :global(button:focus),
+.analysisHost :global(textarea:focus-visible),
+.analysisHost :global(input:focus-visible),
+.analysisHost :global(select:focus-visible),
+.analysisHost :global(button:focus-visible) {
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.analysisHost :global(article),
+.analysisHost > :global(div > div:not(:first-child)) {
+  background: var(--workspace-panel-bg) !important;
+  box-shadow: none !important;
+}
