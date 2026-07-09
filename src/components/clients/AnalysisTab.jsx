@@ -959,25 +959,44 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                               <article key={attachment.id} className={styles.actionPlanEvidenceCard}>
                                 <button
                                   type="button"
+                                  className={styles.actionPlanEvidenceThumb}
                                   onClick={() => isPreviewableAttachment(attachment) && setPreviewAttachment({ ...attachment, entryId: selectedActionPlanEntry.id })}
                                   disabled={!isPreviewableAttachment(attachment)}
+                                  aria-label={`Visualizar ${attachment.fileName}`}
                                 >
                                   {isPdf ? <span>PDF</span> : <img src={attachment.dataUrl} alt="" />}
                                 </button>
-                                <div>
+                                <div className={styles.actionPlanEvidenceInfo}>
                                   <strong title={attachment.fileName}>{attachment.fileName}</strong>
                                   <small>{attachmentKind(attachment)} · {formatBytes(attachment.sizeBytes)}</small>
                                 </div>
-                                {canEdit ? (
+                                <div className={styles.actionPlanEvidenceControls}>
                                   <button
                                     type="button"
-                                    className={styles.actionPlanRemoveEvidence}
-                                    onClick={() => handleRemoveAttachment(selectedActionPlanEntry.id, attachment)}
-                                    disabled={isDeleting}
+                                    className={styles.actionPlanEvidenceControl}
+                                    onClick={() => isPreviewableAttachment(attachment) && setPreviewAttachment({ ...attachment, entryId: selectedActionPlanEntry.id })}
+                                    disabled={!isPreviewableAttachment(attachment)}
                                   >
-                                    {isDeleting ? 'Removendo…' : 'Remover'}
+                                    Visualizar
                                   </button>
-                                ) : null}
+                                  <a
+                                    className={styles.actionPlanEvidenceControl}
+                                    href={attachment.dataUrl}
+                                    download={attachment.fileName || 'anexo'}
+                                  >
+                                    Baixar
+                                  </a>
+                                  {canEdit ? (
+                                    <button
+                                      type="button"
+                                      className={`${styles.actionPlanEvidenceControl} ${styles.actionPlanRemoveEvidence}`.trim()}
+                                      onClick={() => handleRemoveAttachment(selectedActionPlanEntry.id, attachment)}
+                                      disabled={isDeleting}
+                                    >
+                                      {isDeleting ? 'Removendo…' : 'Remover'}
+                                    </button>
+                                  ) : null}
+                                </div>
                               </article>
                             );
                           })}
@@ -1032,7 +1051,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
         </div>
       ) : null}
 
-      {previewAttachment ? (
+      {previewAttachment && typeof document !== 'undefined' ? createPortal(
         <div className={styles.viewerOverlay} role="presentation" onClick={() => setPreviewAttachment(null)}>
           <section
             className={styles.viewer}
@@ -1092,7 +1111,8 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               )}
             </div>
           </section>
-        </div>
+        </div>,
+        document.body
       ) : null}
 
       {attachmentDeleteTarget ? (

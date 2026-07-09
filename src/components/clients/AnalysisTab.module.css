@@ -1397,3 +1397,315 @@
   background: var(--field-bg);
   box-shadow: none;
 }
+
+/* v127 · refinamento final do modal Planos de ação e camada de anexos.
+ * Mantém o restante das abas validado e corrige apenas organização visual,
+ * tipografia, ações de evidência e empilhamento do viewer.
+ */
+.actionPlanOverlay {
+  z-index: 1900;
+}
+
+.entryViewerOverlay {
+  z-index: 2050;
+}
+
+.viewerOverlay {
+  z-index: 2400;
+}
+
+.confirmOverlay {
+  z-index: 2600;
+}
+
+.actionPlanModal {
+  width: min(1060px, calc(100vw - 56px));
+  max-height: min(720px, calc(100vh - 56px));
+  background: var(--bg-canvas);
+}
+
+.actionPlanHeader {
+  min-height: 78px;
+  padding: 18px 22px;
+  background: var(--bg-canvas);
+}
+
+.actionPlanHeader strong {
+  font-size: 20px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-snug);
+}
+
+.actionPlanHeader p {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: var(--fs-body);
+}
+
+.actionPlanPrimary,
+.actionPlanClose,
+.actionPlanBlockHead button,
+.actionPlanEvidenceActions label,
+.actionPlanEvidenceControl,
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius-1);
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  box-shadow: none;
+}
+
+.actionPlanPrimary {
+  border-color: var(--line-strong);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.actionPlanPrimary:hover,
+.actionPlanClose:hover,
+.actionPlanBlockHead button:hover,
+.actionPlanEvidenceActions label:hover,
+.actionPlanEvidenceControl:hover {
+  border-color: var(--line-strong);
+  color: var(--text-primary);
+}
+
+.actionPlanBody {
+  grid-template-columns: 240px minmax(0, 1fr);
+  background: var(--bg-canvas);
+}
+
+.actionPlanHistory {
+  padding: 18px 16px;
+  background: var(--bg-soft);
+}
+
+.actionPlanHistoryItem {
+  min-height: 76px;
+  padding: 12px 13px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: transparent;
+}
+
+.actionPlanHistoryItemActive {
+  border-color: var(--line);
+  background: var(--bg-selected);
+}
+
+.actionPlanHistoryItem span,
+.actionPlanSectionTitle span,
+.actionPlanBlockHead span,
+.actionPlanDateField span,
+.actionPlanObjective span {
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+}
+
+.actionPlanHistoryItem strong,
+.actionPlanBlockHead strong,
+.actionPlanSectionTitle strong {
+  font-weight: var(--weight-semibold);
+}
+
+.actionPlanHistoryItem small {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  line-height: var(--lh-snug);
+}
+
+.actionPlanWorkspace {
+  gap: 16px;
+  padding: 18px 20px 20px;
+  background: var(--bg-canvas);
+}
+
+.actionPlanMetaRow {
+  gap: 14px;
+}
+
+.actionPlanDateInput {
+  min-height: 38px;
+  border-radius: var(--radius-1);
+  background: var(--bg-raised);
+}
+
+.actionPlanObjective textarea {
+  min-height: 104px;
+  border-radius: var(--radius-1);
+  background: var(--bg-raised);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-medium);
+}
+
+.actionPlanActionsBlock,
+.actionPlanEvidence {
+  padding: 14px 16px 16px;
+  border-radius: var(--radius-2);
+  background: var(--bg-canvas);
+}
+
+.actionPlanActionRow {
+  grid-template-columns: 24px minmax(0, 1fr) 90px;
+  gap: 10px;
+}
+
+.actionPlanActionInput,
+.actionPlanActionRow > input[type='text'] {
+  min-height: 36px;
+  border-radius: var(--radius-1);
+  background: var(--bg-raised);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-medium);
+}
+
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.actionPlanEvidenceGrid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.actionPlanEvidenceCard {
+  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 11px;
+  border-radius: var(--radius-2);
+  background: var(--bg-raised);
+}
+
+.actionPlanEvidenceCard > button:first-child,
+.actionPlanEvidenceThumb {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+}
+
+.actionPlanEvidenceThumb span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--danger-text);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-uppercase);
+}
+
+.actionPlanEvidenceInfo {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+}
+
+.actionPlanEvidenceInfo strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-tight);
+}
+
+.actionPlanEvidenceInfo small {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  line-height: var(--lh-snug);
+}
+
+.actionPlanEvidenceControls {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actionPlanEvidenceControl {
+  min-height: 30px;
+  padding: 0 10px;
+  text-decoration: none;
+}
+
+.actionPlanEvidenceControl:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.actionPlanEvidenceEmpty {
+  min-height: 40px;
+  border-radius: var(--radius-1);
+  background: var(--bg-raised);
+}
+
+.attachmentCard {
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 9px 11px;
+  padding: 11px;
+  border-radius: var(--radius-2);
+  background: var(--bg-raised);
+}
+
+.attachmentPreview {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+}
+
+.attachmentInfo strong {
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: var(--radius-1);
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.attachmentRemove {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+.attachmentRemove svg,
+.viewer header button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.viewer {
+  background: var(--bg-canvas);
+}
+
+.viewer header,
+.viewerBody {
+  background: var(--bg-canvas);
+}
+
+.viewer header button,
+.viewer header a {
+  border-radius: var(--radius-1);
+  background: var(--bg-raised);
+}
