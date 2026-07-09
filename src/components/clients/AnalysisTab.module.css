@@ -1,74 +1,82 @@
 .panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-  color: var(--text-primary);
-}
-
-.icp,
-.gdv,
-.routes {
-  --analysis-accent: var(--accent-primary);
-  --analysis-accent-soft: color-mix(in srgb, var(--analysis-accent) 16%, transparent);
-  --analysis-border: var(--workspace-panel-border-soft);
-  --analysis-border-strong: var(--workspace-panel-border);
-  --analysis-bg: var(--workspace-panel-bg);
-  --analysis-bg-soft: color-mix(in srgb, var(--analysis-bg) 82%, var(--surface-raised));
-  --analysis-muted: var(--text-secondary);
+  --analysis-accent: var(--accent-amber);
+  --analysis-accent-soft: var(--accent-soft);
+  --analysis-accent-line: var(--accent-line);
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: var(--workspace-bg);
 }
 
 .icp {
   --analysis-accent: var(--info);
+  --analysis-accent-soft: rgba(96, 165, 250, 0.08);
+  --analysis-accent-line: rgba(96, 165, 250, 0.22);
 }
 
 .gdv {
-  --analysis-accent: var(--success-text);
+  --analysis-accent: #2dd4bf;
+  --analysis-accent-soft: rgba(45, 212, 191, 0.08);
+  --analysis-accent-line: rgba(45, 212, 191, 0.22);
 }
 
 .routes {
-  --analysis-accent: var(--info-text);
+  --analysis-accent: #a78bfa;
+  --analysis-accent-soft: rgba(167, 139, 250, 0.08);
+  --analysis-accent-line: rgba(167, 139, 250, 0.24);
 }
 
 .header {
+  min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(220px, 1fr) auto max-content;
   align-items: center;
-  gap: 14px;
-  padding: 0 0 14px;
-  border-bottom: 1px solid var(--analysis-border);
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
 }
 
-.titleBlock,
-.eyebrow {
-  display: none;
-}
-
-.headerSide {
+.titleBlock {
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
 }
 
+.eyebrow {
+  width: max-content;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 999px;
+  color: var(--analysis-accent);
+  background: var(--analysis-accent-soft);
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+
 .headerMeta {
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(92px, auto));
-  align-items: stretch;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--analysis-bg) 92%, transparent);
+  grid-template-columns: repeat(3, max-content);
+  align-items: center;
+  justify-content: end;
 }
 
 .heroMetric {
-  min-height: 46px;
-  padding: 8px 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
-  border-left: 1px solid var(--analysis-border);
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 12px;
+  border-left: 1px solid var(--line-subtle);
+  display: grid;
+  align-content: center;
+  gap: 4px;
 }
 
 .heroMetric:first-child {
@@ -77,33 +85,1886 @@
 
 .heroMetric strong {
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1;
-  font-weight: 750;
+  font-weight: 620;
+  letter-spacing: -0.035em;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .heroMetric span {
-  color: var(--analysis-muted);
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.addBtn {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-subtle);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 560;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.addBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.entry {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
+  overflow: hidden;
+}
+
+.entryHdr {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.dateControl {
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.dateControl span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dateField {
+  width: 126px;
+}
+
+.dateField button {
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.dateField button span {
+  color: var(--analysis-accent);
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+.entryAuthor {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 560;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.delBtn {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--danger-line);
+  border-radius: 10px;
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.delBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 116px;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  outline: none;
+  resize: vertical;
+}
+
+.textarea::placeholder {
+  color: var(--text-quaternary);
+}
+
+.savingHint {
+  padding: 8px 14px 12px;
+  font-size: 11px;
+  color: var(--success);
+}
+
+.savingHint.pending {
+  color: var(--analysis-accent);
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: blur(8px);
+}
+
+.confirmModal {
+  width: min(440px, calc(100vw - 40px));
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4);
+  background: var(--bg-raised);
+  overflow: hidden;
+}
+
+.confirmHead {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.confirmHead span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.confirmHead strong {
+  display: block;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+}
+
+.confirmModal p {
+  margin: 0;
+  padding: 16px 18px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.confirmActions {
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--line-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancelBtn,
+.confirmDeleteBtn {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  border: 1px solid var(--line-subtle);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+}
+
+.confirmDeleteBtn {
+  border: 1px solid var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+@media (max-width: 920px) {
+  .header {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 12px;
+  }
+
+  .headerMeta {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .heroMetric {
+    padding-inline: 10px;
+  }
+
+  .addBtn {
+    width: max-content;
+  }
+}
+
+@media (max-width: 640px) {
+  .entryHdr {
+    grid-template-columns: 1fr max-content;
+  }
+
+  .entryAuthor {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .headerMeta {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .heroMetric {
+    min-height: 34px;
+    border-left: 0;
+    border-top: 1px solid var(--line-subtle);
+    padding: 10px 0 0;
+  }
+
+  .heroMetric:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+/* v133 — anexos nas análises */
+.attachmentsArea {
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--line-subtle);
+  display: grid;
+  gap: 10px;
+}
+
+.attachmentsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text-tertiary);
   font-size: 10px;
   line-height: 1;
-  font-weight: 760;
+  font-weight: 590;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.attachmentsHead strong {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 590;
+  letter-spacing: 0;
+}
+
+.attachmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.attachmentCard {
+  min-width: 0;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: color-mix(in srgb, var(--text-primary) 1.4%, transparent);
+  overflow: hidden;
+}
+
+.attachmentPreview {
+  width: 100%;
+  height: 104px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.attachmentPreview:disabled { cursor: default; }
+
+.attachmentPreview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.pdfMark {
+  min-width: 54px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .08em;
+}
+
+.attachmentInfo {
+  min-width: 0;
+  padding: 10px 10px 0;
+  display: grid;
+  gap: 3px;
+}
+
+.attachmentInfo strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 590;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.attachmentInfo span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.attachmentActions {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.attachmentActions button,
+.attachmentActions a,
+.attachButton {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 560;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.attachmentActions .attachmentRemove {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+}
+
+.attachButton {
+  width: max-content;
+}
+
+.attachButton input {
+  display: none;
+}
+
+.attachmentsEmpty {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 510;
+}
+
+.viewerOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  padding: 18px;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+}
+
+.viewer {
+  width: min(920px, 100%);
+  height: min(640px, 100%);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--bg-elevated);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.viewer header {
+  min-height: 56px;
+  padding: 10px 12px 10px 14px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.viewer header > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.viewer header strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 590;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.viewer header span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+}
+
+.viewer header > div:last-child {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.viewer header a,
+.viewer header button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.viewerBody {
+  min-height: 0;
+  background: var(--bg-canvas);
+  display: grid;
+  place-items: center;
+  overflow: auto;
+}
+
+.viewerBody img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.viewerBody iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--bg-selected);
+}
+
+
+/* v135 — loading estável sem flash claro na troca de abas */
+.loadingShell {
+  min-height: 260px;
+  padding: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: var(--surface-panel);
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.analysisLoading {
+  min-height: 190px;
+  padding: 4px 0 0;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.loadingHeader {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.38fr) 112px;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.loadingHeader span,
+.loadingRows span {
+  height: 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-primary) 3.5%, transparent);
+}
+
+.loadingHeader span:first-child { height: 16px; max-width: 260px; }
+
+.loadingRows {
+  display: grid;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.loadingRows span:nth-child(1) { width: 92%; }
+.loadingRows span:nth-child(2) { width: 76%; }
+.loadingRows span:nth-child(3) { width: 58%; }
+
+.attachmentsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 12px;
+}
+
+.attachmentCard {
+  background: color-mix(in srgb, var(--text-primary) 1.2%, transparent);
+}
+
+.attachmentActions {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.attachmentActions button,
+.attachmentActions a,
+.attachButton {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 999px;
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: transparent;
+}
+
+.attachmentActions .attachmentRemove svg {
+  width: 13px;
+  height: 13px;
+}
+
+.viewer header > div:last-child {
+  flex: 0 0 auto;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.viewer header a,
+.viewer header button {
+  min-width: 78px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--field-bg-hover);
+  color: var(--text-secondary);
+  font-weight: 560;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* v137 — ações de anexo no topo e alinhamento interno */
+.attachmentsHeadActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.attachmentsHeadActions .attachButton {
+  margin: 0;
+}
+
+.attachmentActions {
+  justify-content: center;
+  padding: 10px 12px 12px;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-width: 82px;
+}
+
+.attachmentActions .attachmentRemove {
+  min-width: 30px;
+}
+
+.attachmentsArea > .attachButton {
+  display: none;
+}
+
+/* v11 — análise em card único colorido, métricas à direita e anexo no header */
+.header {
+  grid-template-columns: minmax(220px, 1fr) auto;
+  align-items: start;
+  gap: 18px;
+  padding: 16px 18px;
+  border-color: var(--analysis-accent-line);
+  background:
+    linear-gradient(180deg, var(--analysis-accent-soft), color-mix(in srgb, var(--text-primary) 1%, transparent) 70%),
+    var(--surface-panel);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 2.6%, transparent),
+    0 12px 34px rgba(0, 0, 0, 0.12);
+}
+
+.titleBlock {
+  align-items: flex-start;
+  padding-top: 2px;
+}
+
+.eyebrow {
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: color-mix(in srgb, var(--analysis-accent) 9%, transparent);
+}
+
+.headerSide {
+  min-width: 360px;
+  display: grid;
+  justify-items: end;
+  gap: 13px;
+}
+
+.headerSide .addBtn {
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: color-mix(in srgb, var(--analysis-accent) 7%, transparent);
+}
+
+.headerMeta {
+  width: max-content;
+  grid-template-columns: repeat(3, max-content);
+  justify-content: end;
+  gap: 0;
+}
+
+.heroMetric {
+  min-height: 38px;
+  padding: 0 16px;
+  border-left: 1px solid color-mix(in srgb, var(--analysis-accent) 16%, transparent);
+}
+
+.heroMetric:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.entryHdr {
+  grid-template-columns: max-content minmax(120px, 1fr) max-content;
+  min-height: 48px;
+  padding: 10px 12px;
+}
+
+.entryActions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.entryActions .attachButton {
+  min-height: 28px;
+  padding: 0 11px;
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: color-mix(in srgb, var(--analysis-accent) 6%, transparent);
+}
+
+.attachmentsHeadActions .attachButton {
+  display: none;
+}
+
+.entry {
+  border-color: color-mix(in srgb, var(--analysis-accent) 12%, var(--line-subtle));
+}
+
+.attachmentsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(214px, 1fr));
+}
+
+.attachmentCard {
+  border-radius: var(--workspace-card-radius);
+}
+
+.attachmentActions {
+  gap: 7px;
+  justify-content: space-between;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-width: 76px;
+  padding-inline: 10px;
+}
+
+.attachmentActions .attachmentRemove {
+  min-width: 30px;
+  width: 30px;
+  flex: 0 0 30px;
+}
+
+@media (max-width: 920px) {
+  .header {
+    grid-template-columns: 1fr;
+  }
+
+  .headerSide {
+    min-width: 0;
+    width: 100%;
+    justify-items: start;
+  }
+
+  .headerMeta {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .heroMetric {
+    padding-inline: 12px;
+  }
+
+  .entryHdr {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .entryActions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .headerMeta {
+    grid-template-columns: 1fr;
+  }
+
+  .heroMetric,
+  .heroMetric:first-child {
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, var(--analysis-accent) 16%, transparent);
+    padding: 10px 0 0;
+  }
+
+  .heroMetric:first-child {
+    border-top: 0;
+  }
+}
+
+
+/* v12 — anexos compactos e menos espaçados */
+.attachmentsArea {
+  gap: 8px;
+  padding: 12px 14px 14px;
+}
+
+.attachmentsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 280px));
+  justify-content: start;
+  gap: 8px;
+}
+
+.attachmentCard {
+  border-radius: var(--workspace-card-radius);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--text-primary) 1.2%, transparent), color-mix(in srgb, var(--text-primary) 0.4%, transparent)),
+    color-mix(in srgb, var(--text-primary) 0.8%, transparent);
+}
+
+.attachmentPreview {
+  height: 88px;
+}
+
+.attachmentInfo {
+  padding: 9px 10px 0;
+}
+
+.attachmentActions {
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 9px 10px 10px;
+  flex-wrap: nowrap;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-width: 68px;
+  min-height: 28px;
+  padding-inline: 10px;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  margin-left: 0;
+}
+
+.loadingShell {
+  min-height: 260px;
+  border-color: var(--analysis-accent-line);
+  background:
+    linear-gradient(180deg, var(--analysis-accent-soft), color-mix(in srgb, var(--text-primary) 0.6%, transparent) 68%),
+    color-mix(in srgb, var(--text-primary) 1%, transparent);
+}
+
+.analysisLoading {
+  min-height: 168px;
+}
+
+/* v45 — viewer zoom and delete */
+.viewerBody {
+  overscroll-behavior: contain;
+}
+
+.viewerBody img {
+  transform-origin: center center;
+  transition: transform 120ms ease;
+  will-change: transform;
+}
+
+.viewer header button[title='Excluir anexo'] {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+/* v46 — paste capture and wheel zoom stability */
+.viewerBody {
+  cursor: zoom-in;
+}
+
+.viewerBody img {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* v46 — client paste capture and wheel zoom stability */
+.viewerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+}
+
+.viewerBody {
+  overscroll-behavior: contain;
+  cursor: zoom-in;
+}
+
+.viewerBody img {
+  margin-left: auto;
+  margin-right: auto;
+  transition: width 120ms ease;
+}
+
+.viewer header button[title='Excluir anexo'] {
+  color: var(--danger-text);
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+}
+
+/* v47 — focal image zoom */
+.viewerBody {
+  cursor: zoom-in;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.viewerBody img {
+  flex: 0 0 auto;
+  transition: transform 120ms ease, transform-origin 120ms ease;
+  will-change: transform;
+}
+
+/* v49 — confirmação de exclusão acima do preview */
+.viewerOverlay {
+  z-index: 10000;
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+}
+
+/* v52 — zoom out retorna ao estado natural nos anexos de cliente */
+.viewerBody img {
+  min-width: 0;
+}
+
+.viewerBody img[style*="scale(1)"] {
+  transform-origin: 50% 50%;
+}
+
+/* v53 — zoom abre ajustado à tela nos anexos de cliente */
+.viewerBody {
+  overflow: hidden;
+}
+
+.viewerBody img {
+  max-width: 100%;
+  max-height: calc(100vh - 138px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Fase 67 — workspace foundation */
+.panel {
+  background: var(--workspace-bg);
+}
+
+.header,
+.emptyState,
+.recordCard,
+.attachmentCard,
+.formCard {
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+}
+
+
+/* ==========================================================================
+   v71 · AnalysisTab cleanup real
+   Consolida as abas de análise/anexos no workspace.
+   ========================================================================== */
+.panel {
+  padding: var(--workspace-padding-y);
+  background: var(--workspace-bg);
+  color: var(--text-secondary);
+}
+
+.header,
+.emptyState,
+.recordCard,
+.attachmentCard,
+.formCard,
+.viewerPanel,
+.confirmModal {
+  border: 1px solid var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+}
+
+.viewerPanel,
+.confirmModal {
+  border-color: var(--workspace-panel-border);
+  box-shadow: var(--shadow-dialog);
+}
+
+.header {
+  min-height: 58px;
+}
+
+.addBtn,
+.formActions button,
+.attachmentAction,
+.attachmentDanger,
+.viewerAction,
+.confirmActions button,
+.fileButton,
+.textarea,
+.input {
+  min-height: var(--workspace-control-height);
+  border-color: var(--workspace-panel-border-soft);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  box-shadow: none;
+}
+
+.addBtn:focus-visible,
+.formActions button:focus-visible,
+.attachmentAction:focus-visible,
+.viewerAction:focus-visible,
+.fileButton:focus-visible,
+.textarea:focus,
+.input:focus {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.viewerOverlay,
+.confirmOverlay {
+  z-index: var(--chassis-z-dialog);
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: none;
+}
+
+.viewerHeader,
+.viewerFooter {
+  min-height: 54px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+}
+
+.viewerBody {
+  background: var(--workspace-bg);
+}
+
+.heroMetric span,
+.emptyState span,
+.recordMeta,
+.attachmentMeta,
+.formLabel {
+  color: var(--text-tertiary);
+}
+
+/* ==========================================================================
+   v95 · Backdrop blur restaurado
+   Todo modal/drawer deve desfocar o fundo da plataforma.
+   ========================================================================== */
+.overlay,
+.modalOverlay,
+.campaignModalOverlay,
+.drawerOverlay,
+.attachmentViewerOverlay,
+.viewerOverlay,
+.confirmOverlay,
+.deleteOverlay,
+.taskModalOverlay {
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+/* ==========================================================================
+   v115 · Análises sem hover em containers
+   ========================================================================== */
+.header,
+.entry,
+.textarea,
+.addBtn,
+.delBtn,
+.dateControl {
+  box-shadow: none;
+  transform: none;
+}
+
+.addBtn,
+.delBtn {
+  background: var(--field-bg);
+}
+
+.delBtn {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+/* ==========================================================================
+   v116 · Análises cores restauradas no topo
+   Cards superiores das abas ICP/GDV/Rotas retomam identidade cromática.
+   ========================================================================== */
+.header {
+  border-color: var(--analysis-accent-line);
+  background:
+    linear-gradient(180deg, var(--analysis-accent-soft), transparent 72%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.icp .header {
+  border-color: rgba(96, 165, 250, 0.24);
+  background:
+    linear-gradient(180deg, rgba(96, 165, 250, 0.075), transparent 74%),
+    var(--workspace-panel-bg);
+}
+
+.gdv .header {
+  border-color: rgba(45, 212, 191, 0.24);
+  background:
+    linear-gradient(180deg, rgba(45, 212, 191, 0.075), transparent 74%),
+    var(--workspace-panel-bg);
+}
+
+.routes .header {
+  border-color: rgba(167, 139, 250, 0.26);
+  background:
+    linear-gradient(180deg, rgba(167, 139, 250, 0.08), transparent 74%),
+    var(--workspace-panel-bg);
+}
+
+.eyebrow {
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: var(--analysis-accent-soft);
+}
+
+.heroMetric {
+  border-left-color: var(--analysis-accent-line);
+}
+
+.addBtn,
+.delBtn,
+.dateControl,
+.entry {
+  box-shadow: none;
+  transform: none;
+}
+
+.delBtn {
+  border-color: var(--danger-line);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+/* ==========================================================================
+   v117 · Cores finais nas análises
+   ========================================================================== */
+.panel {
+  background: var(--workspace-bg);
+}
+
+.header {
+  min-height: 64px;
+  padding: 13px 14px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: var(--workspace-card-radius);
+  background:
+    linear-gradient(180deg, var(--analysis-accent-soft), transparent 76%),
+    var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.icp .header {
+  border-color: rgba(96, 165, 250, 0.26);
+  background:
+    linear-gradient(180deg, rgba(96, 165, 250, 0.09), transparent 76%),
+    var(--workspace-panel-bg);
+}
+
+.gdv .header {
+  border-color: rgba(45, 212, 191, 0.26);
+  background:
+    linear-gradient(180deg, rgba(45, 212, 191, 0.09), transparent 76%),
+    var(--workspace-panel-bg);
+}
+
+.routes .header {
+  border-color: rgba(167, 139, 250, 0.28);
+  background:
+    linear-gradient(180deg, rgba(167, 139, 250, 0.095), transparent 76%),
+    var(--workspace-panel-bg);
+}
+
+.eyebrow {
+  border-color: var(--analysis-accent-line);
+  color: var(--analysis-accent);
+  background: var(--analysis-accent-soft);
+}
+
+.heroMetric {
+  border-left-color: var(--analysis-accent-line);
+}
+
+.entry,
+.textarea {
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--workspace-panel-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+/* v1 — registros de análise com leitura expandida e anexos compactos */
+.entry {
+  overflow: hidden;
+}
+
+.entryHdr {
+  min-height: 54px;
+  align-items: center;
+}
+
+.textarea {
+  min-height: 220px;
+  max-height: 420px;
+  padding: 16px 18px;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.65;
+  background: color-mix(in srgb, var(--text-primary) 0.6%, transparent);
+  border-top: 1px solid var(--line-subtle);
+  resize: vertical;
+}
+
+.entryActions {
+  gap: 8px;
+}
+
+.expandEntryBtn {
+  min-height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.attachmentsArea {
+  padding: 12px 16px 16px;
+  gap: 10px;
+}
+
+.attachmentsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.attachmentCard {
+  width: 228px;
+  max-width: 100%;
+  flex: 0 0 228px;
+}
+
+.attachmentPreview {
+  height: 76px;
+}
+
+.attachmentInfo {
+  padding: 8px 10px 0;
+}
+
+.attachmentActions {
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 8px 10px 10px;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-width: auto;
+  min-height: 28px;
+  padding: 0 10px;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+}
+
+.attachmentsEmpty {
+  min-height: 38px;
+  max-width: 320px;
+  border-style: solid;
+  background: color-mix(in srgb, var(--text-primary) 1%, transparent);
+}
+
+.entryViewerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: var(--chassis-modal-backdrop);
+  backdrop-filter: var(--chassis-modal-blur);
+  -webkit-backdrop-filter: var(--chassis-modal-blur);
+}
+
+.entryViewer {
+  width: min(980px, calc(100vw - 44px));
+  height: min(760px, calc(100vh - 44px));
+  min-height: 420px;
+  border: 1px solid var(--workspace-panel-border);
+  border-radius: var(--workspace-card-radius);
+  background: var(--workspace-panel-bg);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.entryViewerHeader {
+  min-height: 58px;
+  padding: 12px 14px 12px 16px;
+  border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.entryViewerHeader > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.entryViewerHeader strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.entryViewerHeader span {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 520;
+}
+
+.entryViewerHeader button {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: var(--field-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 560;
+  cursor: pointer;
+}
+
+.entryViewerText {
+  width: 100%;
+  min-height: 0;
+  padding: 22px 24px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.textarea:focus,
+.input:focus,
+.addBtn:focus-visible,
+.delBtn:focus-visible,
+.expandEntryBtn:focus-visible,
+.attachButton:focus-visible,
+.attachmentActions button:focus-visible,
+.attachmentActions a:focus-visible,
+.entryViewerHeader button:focus-visible,
+.entryViewerText:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--line-subtle);
+}
+
+@media (max-width: 760px) {
+  .entryHdr {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .entryActions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .textarea {
+    min-height: 180px;
+  }
+
+  .attachmentCard {
+    width: 100%;
+    flex-basis: 100%;
+  }
+}
+
+/* v2 — análise como leitura clicável e anexos compactos */
+.analysisPreview {
+  width: 100%;
+  min-height: 92px;
+  max-height: 176px;
+  padding: 16px 18px;
+  border: 0;
+  border-top: 1px solid var(--line-subtle);
+  background: color-mix(in srgb, var(--text-primary) 0.6%, transparent);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  display: block;
+  box-shadow: none;
+}
+
+.analysisPreview span {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.analysisPreviewEmpty {
+  min-height: 68px;
+  color: var(--text-tertiary);
+}
+
+.analysisPreview:focus,
+.analysisPreview:focus-visible,
+.analysisPreview:hover {
+  outline: none;
+  border-color: var(--line-subtle);
+  box-shadow: none;
+  transform: none;
+  background: color-mix(in srgb, var(--text-primary) 0.6%, transparent);
+}
+
+.entryActions .expandEntryBtn {
+  display: none;
+}
+
+.attachmentCard {
+  width: 178px;
+  flex: 0 0 178px;
+}
+
+.attachmentPreview {
+  height: 58px;
+}
+
+.pdfMark {
+  min-height: 34px;
+  padding: 0 13px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+.attachmentInfo {
+  padding: 8px 10px 0;
+}
+
+.attachmentInfo strong {
+  font-size: 12px;
+}
+
+.attachmentInfo span {
+  font-size: 10px;
+}
+
+.attachmentActions {
+  padding: 8px 10px 10px;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+.attachmentActions button,
+.attachmentActions a {
+  min-height: 26px;
+  padding: 0 9px;
+  font-size: 10px;
+  flex: 0 0 auto;
+}
+
+.attachmentActions .attachmentRemove {
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+  padding: 0;
+}
+
+.entryViewer {
+  width: min(860px, calc(100vw - 44px));
+  height: auto;
+  min-height: 0;
+  max-height: calc(100vh - 44px);
+  grid-template-rows: auto auto;
+}
+
+.entryViewerText {
+  min-height: 180px;
+  max-height: calc(100vh - 168px);
+  overflow: auto;
+  resize: none;
+}
+
+.entryViewerText:focus,
+.entryViewerText:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+@media (max-width: 760px) {
+  .analysisPreview {
+    min-height: 84px;
+    max-height: 160px;
+  }
+
+  .attachmentCard {
+    width: 100%;
+    flex-basis: 100%;
+  }
+}
+
+
+/* ==========================================================================
+   v9 · Ajuste visual seguro das análises de cliente
+   Preserva cores semânticas de ICP/GDV/Rotas e refina apenas superfícies neutras.
+   ========================================================================== */
+.panel {
+  background: var(--workspace-bg);
+}
+
+.header,
+.entry,
+.attachmentCard,
+.entryViewer,
+.confirmModal,
+.viewer {
+  background: var(--workspace-panel-bg);
+  border-color: var(--workspace-panel-border-soft);
+}
+
+.analysisPreview,
+.textarea,
+.attachmentsEmpty,
+.attachmentPreview,
+.viewerBody,
+.entryViewerText {
+  background: color-mix(in srgb, var(--bg-app) 84%, var(--workspace-panel-bg));
+}
+
+.addBtn,
+.dateControl,
+.expandEntryBtn,
+.entryActions .attachButton,
+.attachmentActions button,
+.attachmentActions a,
+.attachButton,
+.viewer header a,
+.viewer header button,
+.entryViewerHeader button,
+.cancelBtn {
+  background: var(--field-bg);
+  border-color: var(--line-subtle);
+  color: var(--text-secondary);
+}
+
+.addBtn:hover,
+.dateControl:hover,
+.expandEntryBtn:hover,
+.entryActions .attachButton:hover,
+.attachmentActions button:hover,
+.attachmentActions a:hover,
+.attachButton:hover,
+.viewer header a:hover,
+.viewer header button:hover,
+.entryViewerHeader button:hover,
+.cancelBtn:hover {
+  background: var(--field-bg-hover);
+  border-color: var(--line);
+}
+
+.icp .header,
+.gdv .header,
+.routes .header,
+.eyebrow,
+.entryActions .attachButton,
+.headerSide .addBtn {
+  /* Cores de identificação preservadas: não converter para tokens neutros. */
+}
+
+
+/* v124 · Correção visual das análises no modal de cliente */
+.panel {
+  padding: 0;
+  gap: 14px;
+  background: transparent;
+}
+
+.header {
+  min-height: 86px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 14px 16px;
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.headerSide {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+}
+
+.heroMetric {
+  min-height: 34px;
+  padding: 0 14px;
+  border-left: 1px solid var(--line-subtle);
+}
+
+.heroMetric strong {
+  font-size: 15px;
+}
+
+.addBtn,
+.attachButton,
+.delBtn {
+  border-radius: 999px;
+}
+
+.entry {
+  border-color: var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: color-mix(in srgb, var(--surface-1) 78%, transparent);
+}
+
+.entryHdr {
+  min-height: 48px;
+  grid-template-columns: max-content minmax(120px, 1fr) max-content;
+  padding: 10px 14px;
+  border-bottom-color: var(--line-subtle);
+  background: transparent;
+}
+
+.analysisPreview {
+  min-height: 92px;
+  max-height: 178px;
+  padding: 16px 18px;
+  border-top: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.analysisPreview:focus,
+.analysisPreview:focus-visible,
+.analysisPreview:hover {
+  background: transparent;
+}
+
+.attachmentsArea {
+  padding: 12px 14px 14px;
+  background: rgba(255, 255, 255, 0.004);
+}
+
+.attachmentsEmpty {
+  width: min(360px, 100%);
+  background: rgba(255, 255, 255, 0.012);
+}
+
+@media (max-width: 820px) {
+  .header,
+  .entryHdr {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .headerSide,
+  .headerMeta,
+  .entryActions {
+    justify-content: flex-start;
+  }
+}
+
+.actionPlanButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 999px;
+  background: var(--analysis-accent-soft);
+  color: var(--analysis-accent);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.actionPlanButton strong {
+  min-width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--analysis-accent) 14%, transparent);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.analysisPreviewPlan em {
+  display: inline-flex;
+  width: max-content;
+  margin: 0 0 8px;
+  padding: 5px 9px;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: 999px;
+  color: var(--analysis-accent);
+  background: var(--analysis-accent-soft);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.addBtn,
-.actionPlanButton,
-.attachButton,
-.delBtn,
-.entryActions button,
-.attachmentActions button,
-.attachmentActions a,
-.entryViewerHeader button,
-.viewer header a,
-.viewer header button,
-.cancelBtn,
-.confirmDeleteBtn,
+.actionPlanOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: clamp(18px, 4vw, 42px);
+  background: color-mix(in srgb, var(--bg-primary) 74%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.actionPlanModal {
+  width: min(1120px, 100%);
+  max-height: min(840px, calc(100vh - 56px));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--analysis-accent-line);
+  border-radius: var(--radius-4, 10px);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-xl);
+}
+
+.actionPlanHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 24px 26px 20px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.actionPlanHeader span,
+.actionPlanSectionTitle span,
+.actionPlanObjective span,
+.actionPlanDateField span,
+.actionPlanBlockHead span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.actionPlanHeader strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-primary);
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -0.04em;
+}
+
+.actionPlanHeader p {
+  max-width: 620px;
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.actionPlanHeaderActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .actionPlanPrimary,
 .actionPlanClose,
 .actionPlanEmpty button,
@@ -112,595 +1973,91 @@
 .actionPlanEvidenceActions label,
 .actionPlanRemoveEvidence {
   min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid var(--analysis-border-strong);
-  border-radius: 10px;
-  padding: 0 14px;
-  background: color-mix(in srgb, var(--analysis-bg) 88%, var(--surface-raised));
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: var(--surface-2);
   color: var(--text-primary);
   font: inherit;
   font-size: 13px;
-  font-weight: 720;
-  line-height: 1;
-  text-decoration: none;
+  font-weight: 850;
   cursor: pointer;
-  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
-.addBtn:hover,
-.actionPlanButton:hover,
-.attachButton:hover,
-.delBtn:hover,
-.entryActions button:hover,
-.attachmentActions button:hover,
-.attachmentActions a:hover,
-.entryViewerHeader button:hover,
-.viewer header a:hover,
-.viewer header button:hover,
-.cancelBtn:hover,
-.confirmDeleteBtn:hover,
-.actionPlanPrimary:hover,
-.actionPlanClose:hover,
-.actionPlanEmpty button:hover,
-.actionPlanBlockHead button:hover,
-.actionPlanRemoveAction:hover,
-.actionPlanEvidenceActions label:hover,
-.actionPlanRemoveEvidence:hover {
-  border-color: color-mix(in srgb, var(--analysis-accent) 48%, var(--analysis-border-strong));
-  background: color-mix(in srgb, var(--analysis-accent) 10%, var(--analysis-bg));
-}
-
-.addBtn:focus,
-.addBtn:focus-visible,
-.actionPlanButton:focus,
-.actionPlanButton:focus-visible,
-.attachButton:focus-within,
-.delBtn:focus,
-.delBtn:focus-visible,
-.entryActions button:focus,
-.entryActions button:focus-visible,
-.attachmentActions button:focus,
-.attachmentActions button:focus-visible,
-.attachmentActions a:focus,
-.attachmentActions a:focus-visible,
-.entryViewerHeader button:focus,
-.entryViewerHeader button:focus-visible,
-.viewer header a:focus,
-.viewer header a:focus-visible,
-.viewer header button:focus,
-.viewer header button:focus-visible,
-.cancelBtn:focus,
-.cancelBtn:focus-visible,
-.confirmDeleteBtn:focus,
-.confirmDeleteBtn:focus-visible,
-.actionPlanPrimary:focus,
-.actionPlanPrimary:focus-visible,
-.actionPlanClose:focus,
-.actionPlanClose:focus-visible,
-.actionPlanEmpty button:focus,
-.actionPlanEmpty button:focus-visible,
-.actionPlanBlockHead button:focus,
-.actionPlanBlockHead button:focus-visible,
-.actionPlanRemoveAction:focus,
-.actionPlanRemoveAction:focus-visible,
-.actionPlanEvidenceActions label:focus-within,
-.actionPlanRemoveEvidence:focus,
-.actionPlanRemoveEvidence:focus-visible,
-.dateField:focus,
-.dateField:focus-visible,
-.actionPlanDateInput:focus,
-.actionPlanDateInput:focus-visible,
-.actionPlanObjective textarea:focus,
-.actionPlanObjective textarea:focus-visible,
-.actionPlanActionRow input:focus,
-.actionPlanActionRow input:focus-visible,
-.entryViewerText:focus,
-.entryViewerText:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
-
-.addBtn:disabled,
-.actionPlanPrimary:disabled,
-.attachButton:has(input:disabled),
-.delBtn:disabled,
-.actionPlanEvidenceActions label:has(input:disabled),
-.actionPlanRemoveEvidence:disabled {
-  opacity: 0.48;
-  cursor: not-allowed;
-}
-
-.actionPlanButton {
-  min-width: 156px;
-  justify-content: space-between;
-  color: var(--analysis-accent);
-  border-color: color-mix(in srgb, var(--analysis-accent) 35%, var(--analysis-border-strong));
+.actionPlanPrimary,
+.actionPlanEmpty button {
+  border-color: var(--analysis-accent-line);
   background: var(--analysis-accent-soft);
-}
-
-.actionPlanButton strong {
-  min-width: 24px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-accent) 22%, var(--analysis-bg));
-  color: var(--text-primary);
-  font-size: 12px;
-}
-
-.addBtn {
-  color: color-mix(in srgb, var(--analysis-accent) 82%, var(--text-primary));
-}
-
-.entry {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-bg) 94%, transparent);
-}
-
-.entryHdr {
-  display: grid;
-  grid-template-columns: minmax(150px, 220px) minmax(120px, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-}
-
-.dateControl {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-}
-
-.dateControl span {
-  color: var(--analysis-muted);
-  font-size: 10px;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 760;
-}
-
-.dateField {
-  width: 100%;
-  min-height: 38px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bg-app) 72%, var(--analysis-bg));
-  color: var(--text-primary);
-}
-
-.entryAuthor {
-  min-width: 0;
-  color: var(--analysis-muted);
-  font-size: 13px;
-  font-weight: 620;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.entryActions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.attachButton input,
-.actionPlanEvidenceActions input {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.delBtn,
-.attachmentRemove,
-.confirmDeleteBtn,
-.actionPlanRemoveAction,
-.actionPlanRemoveEvidence {
-  color: var(--danger-text);
-  border-color: color-mix(in srgb, var(--danger) 32%, var(--analysis-border));
-}
-
-.analysisPreview,
-.analysisPreviewEmpty {
-  width: 100%;
-  min-height: 94px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 16px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bg-app) 78%, var(--analysis-bg));
-  color: var(--text-primary);
-  text-align: left;
-  white-space: pre-wrap;
-  cursor: pointer;
-}
-
-.analysisPreview:hover {
-  border-color: color-mix(in srgb, var(--analysis-accent) 40%, var(--analysis-border));
-}
-
-.analysisPreview:focus,
-.analysisPreview:focus-visible,
-.attachmentPreview:focus,
-.attachmentPreview:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
-
-.analysisPreview em {
   color: var(--analysis-accent);
-  font-size: 10px;
-  line-height: 1;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-style: normal;
-  font-weight: 800;
 }
 
-.analysisPreview span {
-  color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.48;
-}
-
-.analysisPreviewPlan {
-  border-color: color-mix(in srgb, var(--analysis-accent) 26%, var(--analysis-border));
-  background: color-mix(in srgb, var(--analysis-accent) 7%, var(--analysis-bg));
-}
-
-.analysisPreviewEmpty {
-  justify-content: center;
-  min-height: 110px;
-  cursor: default;
-  color: var(--analysis-muted);
-}
-
-.analysisPreviewEmpty strong {
-  color: var(--text-primary);
-  font-size: 14px;
-}
-
-.analysisPreviewEmpty span {
-  color: var(--analysis-muted);
-  font-size: 13px;
-}
-
-.attachmentsArea {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-bg) 88%, transparent);
-}
-
-.attachmentsHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  color: var(--analysis-muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.attachmentsHeadActions strong {
-  min-width: 22px;
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-accent) 14%, var(--analysis-bg));
-  color: var(--text-primary);
-  font-size: 12px;
-}
-
-.attachmentsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-}
-
-.attachmentCard {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bg-app) 80%, var(--analysis-bg));
-}
-
-.attachmentPreview {
-  width: 52px;
-  height: 52px;
-  overflow: hidden;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-bg) 80%, transparent);
-  cursor: pointer;
-}
-
-.attachmentPreview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.pdfMark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: var(--danger-text);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.attachmentInfo {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.attachmentInfo strong {
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.attachmentInfo span,
-.attachmentsEmpty {
-  color: var(--analysis-muted);
-  font-size: 12px;
-}
-
-.attachmentActions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.attachmentActions button,
-.attachmentActions a {
-  min-height: 30px;
-  padding-inline: 10px;
-  font-size: 12px;
-}
-
-.attachmentRemove {
-  width: 30px;
-  padding: 0;
-}
-
-.savingHint {
-  color: var(--success-text);
-  font-size: 12px;
-}
-
-.savingHint.pending {
-  color: var(--warning-text);
-}
-
-.loadingShell {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: var(--analysis-bg);
-}
-
-.analysisLoading,
-.loadingRows {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.loadingHeader {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 10px;
-}
-
-.loadingHeader span,
-.loadingRows span {
-  height: 18px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, var(--analysis-bg-soft), color-mix(in srgb, var(--analysis-bg-soft) 70%, var(--analysis-accent)), var(--analysis-bg-soft));
-  background-size: 180% 100%;
-  animation: pulseLine 1.4s ease-in-out infinite;
-}
-
-.loadingRows span:nth-child(1) { width: 94%; }
-.loadingRows span:nth-child(2) { width: 76%; }
-.loadingRows span:nth-child(3) { width: 86%; }
-
-@keyframes pulseLine {
-  0% { background-position: 120% 0; }
-  100% { background-position: -120% 0; }
-}
-
-.actionPlanOverlay,
-.entryViewerOverlay,
-.viewerOverlay,
-.confirmOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 26px;
-  background: color-mix(in srgb, var(--bg-app) 78%, transparent);
-  backdrop-filter: blur(12px);
-}
-
-.actionPlanModal {
-  width: min(1040px, calc(100vw - 52px));
-  max-height: min(820px, calc(100vh - 52px));
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  overflow: hidden;
-  border: 1px solid var(--analysis-border-strong);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-bg) 94%, var(--bg-app));
-  box-shadow: 0 28px 90px color-mix(in srgb, var(--bg-app) 52%, transparent);
-}
-
-.actionPlanHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 22px 24px;
-  border-bottom: 1px solid var(--analysis-border);
-}
-
-.actionPlanHeader > div:first-child {
-  min-width: 0;
-}
-
-.actionPlanHeader span,
-.actionPlanSectionTitle span,
-.actionPlanObjective span,
-.actionPlanDateField span,
-.actionPlanBlockHead span {
-  color: var(--analysis-muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.actionPlanHeader strong {
-  display: block;
-  color: var(--text-primary);
-  font-size: clamp(24px, 4vw, 32px);
-  line-height: 1.1;
-  font-weight: 780;
-}
-
-.actionPlanHeader p {
-  max-width: 660px;
-  margin: 8px 0 0;
-  color: var(--analysis-muted);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.actionPlanHeaderActions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  flex: 0 0 auto;
-}
-
-.actionPlanPrimary {
-  color: var(--text-primary);
-  border-color: color-mix(in srgb, var(--analysis-accent) 58%, var(--analysis-border));
-  background: color-mix(in srgb, var(--analysis-accent) 16%, var(--analysis-bg));
+.actionPlanPrimary,
+.actionPlanClose,
+.actionPlanEmpty button,
+.actionPlanBlockHead button,
+.actionPlanRemoveAction,
+.actionPlanEvidenceActions label,
+.actionPlanRemoveEvidence {
+  padding: 0 14px;
 }
 
 .actionPlanBody {
   min-height: 0;
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .actionPlanHistory {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 18px;
-  border-right: 1px solid var(--analysis-border);
+  gap: 14px;
+  padding: 22px;
+  border-right: 1px solid var(--line-subtle);
+  background: color-mix(in srgb, var(--surface-2) 54%, transparent);
   overflow: auto;
 }
 
-.actionPlanSectionTitle,
-.actionPlanBlockHead {
+.actionPlanSectionTitle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
-.actionPlanSectionTitle strong,
-.actionPlanBlockHead strong {
+.actionPlanSectionTitle strong {
   color: var(--text-primary);
   font-size: 14px;
-  font-weight: 780;
 }
 
 .actionPlanHistoryList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  gap: 10px;
 }
 
 .actionPlanHistoryItem {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
   width: 100%;
-  padding: 12px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: transparent;
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: var(--surface-1);
   color: var(--text-primary);
   text-align: left;
   cursor: pointer;
 }
 
-.actionPlanHistoryItem:hover,
 .actionPlanHistoryItemActive {
-  border-color: color-mix(in srgb, var(--analysis-accent) 52%, var(--analysis-border));
+  border-color: var(--analysis-accent-line);
   background: var(--analysis-accent-soft);
 }
 
-.actionPlanHistoryItem:focus,
-.actionPlanHistoryItem:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
-
 .actionPlanHistoryItem span {
-  color: var(--analysis-muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.09em;
+  color: var(--analysis-accent);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -711,40 +2068,36 @@
 
 .actionPlanHistoryItem small,
 .actionPlanEmpty span,
-.actionPlanWorkspaceEmpty span,
-.actionPlanEvidenceEmpty {
-  color: var(--analysis-muted);
+.actionPlanWorkspaceEmpty span {
+  color: var(--text-secondary);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .actionPlanEmpty,
 .actionPlanWorkspaceEmpty,
 .actionPlanEvidenceEmpty {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
   gap: 10px;
-  min-height: 120px;
   padding: 18px;
-  border: 1px dashed var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-bg) 70%, transparent);
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: color-mix(in srgb, var(--surface-1) 64%, transparent);
+  color: var(--text-secondary);
 }
 
 .actionPlanEmpty strong,
 .actionPlanWorkspaceEmpty strong {
   color: var(--text-primary);
-  font-size: 14px;
 }
 
 .actionPlanWorkspace {
   min-width: 0;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 18px;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 22px;
   overflow: auto;
 }
 
@@ -756,10 +2109,8 @@
 
 .actionPlanDateField,
 .actionPlanObjective {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
+  display: grid;
+  gap: 9px;
 }
 
 .actionPlanDateInput,
@@ -767,62 +2118,81 @@
 .actionPlanActionRow input[type='text'],
 .actionPlanActionRow input:not([type]) {
   width: 100%;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bg-app) 78%, var(--analysis-bg));
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: var(--surface-1);
   color: var(--text-primary);
   font: inherit;
-  font-size: 14px;
 }
 
 .actionPlanDateInput {
   min-height: 42px;
+  padding: 0 13px;
 }
 
 .actionPlanObjective textarea {
-  min-height: 98px;
+  min-height: 116px;
   padding: 14px;
   resize: vertical;
-  line-height: 1.5;
+  line-height: 1.55;
+}
+
+.actionPlanDateInput:focus,
+.actionPlanDateInput:focus-visible,
+.actionPlanObjective textarea:focus,
+.actionPlanObjective textarea:focus-visible,
+.actionPlanActionRow input:focus,
+.actionPlanActionRow input:focus-visible {
+  outline: 0;
+  box-shadow: none;
 }
 
 .actionPlanActionsBlock,
 .actionPlanEvidence {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: color-mix(in srgb, var(--surface-1) 72%, transparent);
+}
+
+.actionPlanBlockHead {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-bg) 86%, transparent);
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
 }
 
 .actionPlanBlockHead div {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  display: grid;
+  gap: 4px;
+}
+
+.actionPlanBlockHead strong {
+  color: var(--text-primary);
+  font-size: 16px;
 }
 
 .actionPlanActionList {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 10px;
 }
 
 .actionPlanActionRow {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
 }
 
 .actionPlanCheck {
   position: relative;
+  display: inline-grid;
   width: 28px;
   height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  place-items: center;
+  cursor: pointer;
 }
 
 .actionPlanCheck input {
@@ -835,67 +2205,78 @@
 .actionPlanCheck span {
   width: 26px;
   height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--analysis-border-strong);
-  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
   color: transparent;
-  background: color-mix(in srgb, var(--analysis-bg) 80%, transparent);
+  font-size: 14px;
+  font-weight: 900;
 }
 
 .actionPlanCheck input:checked + span {
-  color: var(--text-primary);
-  border-color: color-mix(in srgb, var(--success-text) 58%, var(--analysis-border));
-  background: color-mix(in srgb, var(--success) 56%, var(--analysis-bg));
+  border-color: color-mix(in srgb, var(--success) 62%, transparent);
+  background: color-mix(in srgb, var(--success) 20%, transparent);
+  color: var(--success);
 }
 
 .actionPlanActionRow input[type='text'],
 .actionPlanActionRow input:not([type]) {
   min-height: 42px;
-  padding: 0 12px;
+  padding: 0 13px;
 }
 
 .actionPlanRemoveAction,
 .actionPlanRemoveEvidence {
-  min-height: 34px;
-  padding-inline: 12px;
-  font-size: 12px;
+  color: var(--danger);
 }
 
 .actionPlanEvidenceActions {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actionPlanEvidenceActions input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .actionPlanEvidenceGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 10px;
 }
 
 .actionPlanEvidenceCard {
+  min-width: 0;
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
-  align-items: center;
+  grid-template-columns: 54px minmax(0, 1fr);
   gap: 10px;
+  align-items: center;
   padding: 10px;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bg-app) 78%, var(--analysis-bg));
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-4, 10px);
+  background: var(--surface-2);
 }
 
 .actionPlanEvidenceCard > button:first-child {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   overflow: hidden;
-  padding: 0;
-  border: 1px solid var(--analysis-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--analysis-bg) 80%, transparent);
-  color: var(--text-primary);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-3, 10px);
+  background: var(--surface-1);
+  color: var(--analysis-accent);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
   cursor: pointer;
 }
 
@@ -907,8 +2288,7 @@
 
 .actionPlanEvidenceCard div {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 4px;
 }
 
@@ -925,192 +2305,26 @@
 }
 
 .actionPlanEvidenceCard small {
-  color: var(--analysis-muted);
+  color: var(--text-secondary);
   font-size: 12px;
 }
 
-.entryViewerOverlay,
-.viewerOverlay,
-.confirmOverlay {
-  z-index: 1300;
-}
-
-.entryViewer,
-.viewer,
-.confirmModal {
-  width: min(860px, calc(100vw - 48px));
-  max-height: calc(100vh - 48px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--analysis-border-strong);
-  border-radius: 10px;
-  background: var(--analysis-bg);
-  box-shadow: 0 24px 80px color-mix(in srgb, var(--bg-app) 52%, transparent);
-}
-
-.entryViewerHeader,
-.viewer header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--analysis-border);
-}
-
-.entryViewerHeader > div,
-.viewer header > div:first-child {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.entryViewerHeader strong,
-.viewer header strong {
-  color: var(--text-primary);
-  font-size: 15px;
-}
-
-.entryViewerHeader span,
-.viewer header span {
-  color: var(--analysis-muted);
+.actionPlanRemoveEvidence {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: 30px;
   font-size: 12px;
 }
 
-.entryViewerText {
-  width: 100%;
-  min-height: 360px;
-  padding: 18px;
-  border: 0;
-  border-radius: 0;
-  background: color-mix(in srgb, var(--bg-app) 78%, var(--analysis-bg));
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 15px;
-  line-height: 1.55;
-  resize: vertical;
-}
-
-.viewer {
-  width: min(1040px, calc(100vw - 48px));
-}
-
-.viewer header > div:last-child {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.viewerBody {
-  min-height: 0;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: auto;
-  background: color-mix(in srgb, var(--bg-app) 86%, var(--analysis-bg));
-}
-
-.viewerBody iframe {
-  width: 100%;
-  height: min(760px, calc(100vh - 160px));
-  border: 0;
-  background: var(--text-primary);
-}
-
-.viewerBody img {
-  max-width: 100%;
-  max-height: min(760px, calc(100vh - 160px));
-  object-fit: contain;
-  transition: transform 120ms ease;
-}
-
-.confirmModal {
-  width: min(440px, calc(100vw - 48px));
-  padding: 22px;
-  gap: 14px;
-}
-
-.confirmHead {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.confirmHead span {
-  color: var(--danger-text);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.confirmHead strong {
-  color: var(--text-primary);
-  font-size: 18px;
-}
-
-.confirmModal p {
-  margin: 0;
-  color: var(--analysis-muted);
-  line-height: 1.5;
-}
-
-.confirmActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-@media (max-width: 980px) {
-  .header {
-    grid-template-columns: 1fr;
+@media (max-width: 860px) {
+  .actionPlanOverlay {
+    padding: 12px;
   }
 
-  .headerMeta {
-    width: 100%;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .actionPlanBody {
-    grid-template-columns: 1fr;
-  }
-
-  .actionPlanHistory {
-    max-height: 190px;
-    border-right: 0;
-    border-bottom: 1px solid var(--analysis-border);
-  }
-}
-
-@media (max-width: 720px) {
-  .headerSide,
-  .entryActions,
-  .actionPlanHeaderActions,
-  .actionPlanEvidenceActions,
-  .confirmActions {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .headerSide > *,
-  .entryActions > *,
-  .actionPlanHeaderActions > *,
-  .actionPlanEvidenceActions > *,
-  .confirmActions > * {
-    flex: 1;
-  }
-
-  .headerMeta,
-  .entryHdr,
   .actionPlanHeader,
+  .actionPlanBody,
   .actionPlanMetaRow,
-  .actionPlanActionRow,
-  .attachmentCard,
-  .actionPlanEvidenceCard {
+  .actionPlanActionRow {
     grid-template-columns: 1fr;
   }
 
@@ -1118,27 +2332,286 @@
     display: grid;
   }
 
-  .heroMetric {
-    border-left: 0;
-    border-top: 1px solid var(--analysis-border);
+  .actionPlanBody {
+    overflow: auto;
   }
 
-  .heroMetric:first-child {
-    border-top: 0;
+  .actionPlanHistory,
+  .actionPlanWorkspace {
+    overflow: visible;
   }
 
-  .actionPlanOverlay,
-  .entryViewerOverlay,
-  .viewerOverlay,
-  .confirmOverlay {
-    padding: 12px;
+  .actionPlanHistory {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-subtle);
+  }
+}
+
+/* v139 · Refinamento visual dos Planos de ação ICP */
+.header {
+  min-height: auto;
+  padding: 10px 12px;
+  align-items: center;
+}
+
+.headerSide {
+  gap: 10px;
+}
+
+.actionPlanButton {
+  min-height: 32px;
+  padding: 0 11px;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: -0.01em;
+}
+
+.actionPlanButton strong {
+  min-width: 20px;
+  height: 20px;
+  font-size: 11px;
+}
+
+.headerMeta {
+  min-height: 34px;
+  padding-left: 4px;
+  overflow: hidden;
+}
+
+.heroMetric {
+  min-width: 78px;
+  min-height: 32px;
+  padding: 0 10px;
+  gap: 3px;
+}
+
+.heroMetric strong {
+  max-width: 96px;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+
+.heroMetric span {
+  font-size: 9px;
+  letter-spacing: 0.09em;
+}
+
+.actionPlanOverlay {
+  padding: clamp(16px, 3vw, 30px);
+  align-items: center;
+}
+
+.actionPlanModal {
+  width: min(1040px, calc(100vw - 40px));
+  max-height: min(760px, calc(100vh - 40px));
+  border-color: var(--line-subtle);
+}
+
+.actionPlanHeader {
+  align-items: center;
+  padding: 18px 20px;
+  gap: 16px;
+}
+
+.actionPlanHeader strong {
+  margin-top: 4px;
+  font-size: clamp(20px, 2.35vw, 25px);
+  line-height: 1.05;
+}
+
+.actionPlanHeader p {
+  max-width: 560px;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.actionPlanHeaderActions {
+  gap: 8px;
+}
+
+.actionPlanPrimary,
+.actionPlanClose,
+.actionPlanEmpty button,
+.actionPlanBlockHead button,
+.actionPlanEvidenceActions label,
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 740;
+}
+
+.actionPlanBody {
+  grid-template-columns: minmax(196px, 236px) minmax(0, 1fr);
+}
+
+.actionPlanHistory {
+  padding: 18px;
+  gap: 12px;
+}
+
+.actionPlanSectionTitle {
+  min-height: 28px;
+}
+
+.actionPlanHistoryList {
+  gap: 8px;
+}
+
+.actionPlanHistoryItem {
+  padding: 12px;
+  gap: 4px;
+}
+
+.actionPlanHistoryItem strong {
+  font-size: 14px;
+}
+
+.actionPlanWorkspace {
+  padding: 18px;
+  gap: 14px;
+}
+
+.actionPlanMetaRow {
+  gap: 12px;
+}
+
+.actionPlanDateField,
+.actionPlanObjective {
+  gap: 8px;
+}
+
+.actionPlanDateInput,
+.actionPlanObjective textarea,
+.actionPlanActionRow input[type='text'],
+.actionPlanActionRow input:not([type]) {
+  border-radius: var(--radius-3, 10px);
+  background: var(--field-bg);
+}
+
+.actionPlanDateInput {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.actionPlanObjective textarea {
+  min-height: 94px;
+  padding: 12px;
+}
+
+.actionPlanActionsBlock,
+.actionPlanEvidence {
+  gap: 12px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--surface-1) 78%, transparent);
+}
+
+.actionPlanBlockHead {
+  min-height: 34px;
+  align-items: center;
+}
+
+.actionPlanBlockHead strong {
+  font-size: 15px;
+}
+
+.actionPlanActionList {
+  gap: 8px;
+}
+
+.actionPlanActionRow {
+  grid-template-columns: 28px minmax(0, 1fr) max-content;
+  gap: 8px;
+}
+
+.actionPlanCheck,
+.actionPlanCheck span {
+  width: 24px;
+  height: 24px;
+}
+
+.actionPlanCheck span {
+  border-radius: var(--radius-2, 8px);
+}
+
+.actionPlanActionRow input[type='text'],
+.actionPlanActionRow input:not([type]) {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.actionPlanEvidenceActions {
+  align-items: center;
+  gap: 6px;
+}
+
+.actionPlanEvidenceGrid {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.actionPlanEvidenceCard {
+  grid-template-columns: 44px minmax(0, 1fr) max-content;
+  gap: 8px;
+  padding: 8px;
+}
+
+.actionPlanEvidenceCard > button:first-child {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-2, 8px);
+}
+
+.actionPlanRemoveEvidence {
+  grid-column: auto;
+  justify-self: end;
+  min-height: 28px;
+  padding: 0 10px;
+}
+
+.actionPlanEvidenceEmpty {
+  min-height: 44px;
+  padding: 12px 14px;
+}
+
+@media (max-width: 1120px) {
+  .header {
+    grid-template-columns: 1fr;
   }
 
-  .actionPlanModal,
-  .entryViewer,
-  .viewer,
-  .confirmModal {
+  .headerSide {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .headerMeta {
+    flex: 1 1 320px;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .actionPlanModal {
     width: calc(100vw - 24px);
     max-height: calc(100vh - 24px);
+  }
+
+  .actionPlanBody {
+    grid-template-columns: 1fr;
+  }
+
+  .actionPlanMetaRow,
+  .actionPlanActionRow,
+  .actionPlanEvidenceCard {
+    grid-template-columns: 1fr;
+  }
+
+  .actionPlanRemoveEvidence,
+  .actionPlanRemoveAction {
+    justify-self: start;
   }
 }

@@ -548,6 +548,10 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   return (
     <div className={`${styles.panel} ${meta.className}`.trim()}>
       <div className={styles.header}>
+        <div className={styles.titleBlock}>
+          <span className={styles.eyebrow}>{meta.title}</span>
+        </div>
+
         <div className={styles.headerSide}>
           {isIcpAnalysis ? (
             <button
@@ -568,20 +572,20 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           >
             {creating ? 'Criando…' : meta.createLabel}
           </button>
-        </div>
 
-        <div className={styles.headerMeta}>
-          <div className={styles.heroMetric}>
-            <strong>{entries.length}</strong>
-            <span>registros</span>
-          </div>
-          <div className={styles.heroMetric}>
-            <strong>{formatDateBR(entries[0]?.date)}</strong>
-            <span>última data</span>
-          </div>
-          <div className={styles.heroMetric}>
-            <strong>{entries.filter((entry) => String(entry.text || '').trim()).length}</strong>
-            <span>preenchidos</span>
+          <div className={styles.headerMeta}>
+            <div className={styles.heroMetric}>
+              <strong>{entries.length}</strong>
+              <span>registros</span>
+            </div>
+            <div className={styles.heroMetric}>
+              <strong>{formatDateBR(entries[0]?.date)}</strong>
+              <span>última data</span>
+            </div>
+            <div className={styles.heroMetric}>
+              <strong>{entries.filter((entry) => String(entry.text || '').trim()).length}</strong>
+              <span>preenchidos</span>
+            </div>
           </div>
         </div>
       </div>
@@ -721,14 +725,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
             </div>
           );
         })
-      ) : (
-        <div className={styles.entry}>
-          <div className={styles.analysisPreviewEmpty}>
-            <strong>{meta.emptyTitle}</strong>
-            <span>{meta.emptyDescription}</span>
-          </div>
-        </div>
-      )}
+      ) : null}
 
       {actionPlanOpen && isIcpAnalysis && typeof document !== 'undefined' ? createPortal(
         <div className={styles.actionPlanOverlay} role="presentation" onClick={() => setActionPlanOpen(false)}>
@@ -741,6 +738,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           >
             <header className={styles.actionPlanHeader}>
               <div>
+                <span>ANÁLISE ICP</span>
                 <strong>Planos de ação</strong>
                 <p>Objetivo, ações, prazo e evidências vinculados ao histórico deste cliente.</p>
               </div>
