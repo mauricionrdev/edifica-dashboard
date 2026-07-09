@@ -408,6 +408,11 @@ export default function DesignLabClientDetailModal({
     const button = event.target?.closest?.('button');
     if (!button || confirmedDestructiveButtons.current.has(button)) return;
 
+    // As abas embarcadas possuem confirmações próprias e alguns modais via portal.
+    // O confirmador genérico do modal do cliente não deve interceptar essas ações,
+    // porque isso abre duas confirmações e impede a execução da exclusão real.
+    if (button.closest?.('[data-skip-client-destructive-confirm="true"]')) return;
+
     const action = destructiveActionFromButton(button);
     if (!action) return;
 
@@ -742,7 +747,14 @@ export default function DesignLabClientDetailModal({
           {activeTab === 'tasks' && canViewTasks ? <div className={styles.embeddedPanel}><ClientTasksTab client={client} /></div> : null}
           {activeTab === 'book' ? <div className={styles.embeddedPanel}><ClientBookTab client={client} /></div> : null}
           {activeTab === 'drive' ? <div className={styles.embeddedPanel}><DesignLabClientDrivePanel client={client} canEdit={canEditClient} /></div> : null}
-          {activeAnalysisType ? <div className={`${styles.embeddedPanel} ${styles.analysisHost}`.trim()}><AnalysisTab clientId={client.id} type={activeAnalysisType} canEdit={canEditClient} /></div> : null}
+          {activeAnalysisType ? (
+            <div
+              className={`${styles.embeddedPanel} ${styles.analysisHost}`.trim()}
+              data-skip-client-destructive-confirm="true"
+            >
+              <AnalysisTab clientId={client.id} type={activeAnalysisType} canEdit={canEditClient} />
+            </div>
+          ) : null}
         </main>
 
         {pendingConfirm ? (

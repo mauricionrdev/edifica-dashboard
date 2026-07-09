@@ -666,6 +666,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                   <button
                     type="button"
                     className={styles.delBtn}
+                    data-skip-client-destructive-confirm="true"
                     onClick={() => setDeleteTarget(entry)}
                     disabled={!canEdit}
                   >
@@ -733,6 +734,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                               <button
                                 type="button"
                                 className={styles.attachmentRemove}
+                                data-skip-client-destructive-confirm="true"
                                 onClick={() => handleRemoveAttachment(entry.id, attachment)}
                                 disabled={isDeleting}
                                 aria-label={isDeleting ? 'Removendo anexo' : 'Remover anexo'}
@@ -775,7 +777,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       )}
 
       {actionPlanOpen && isActionPlanAnalysis && typeof document !== 'undefined' ? createPortal(
-        <div className={styles.actionPlanOverlay} role="presentation" onClick={() => setActionPlanOpen(false)}>
+        <div className={styles.actionPlanOverlay} data-skip-client-destructive-confirm="true" role="presentation" onClick={() => setActionPlanOpen(false)}>
           <section
             className={styles.actionPlanModal}
             role="dialog"
@@ -827,6 +829,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                             <button
                               type="button"
                               className={styles.actionPlanHistoryRemove}
+                              data-skip-client-destructive-confirm="true"
                               title="Remover plano"
                               aria-label={`Remover ${actionPlanNumber(index, actionPlanEntries.length)}`}
                               onClick={() => setDeleteTarget(entry)}
@@ -952,6 +955,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                                 <button
                                   type="button"
                                   className={styles.actionPlanRemoveAction}
+                                  data-skip-client-destructive-confirm="true"
                                   onClick={() => updateSelectedActionPlan((plan) => ({
                                     ...plan,
                                     actions: plan.actions.filter((item) => item.id !== action.id),
@@ -1037,6 +1041,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                                     <button
                                       type="button"
                                       className={`${styles.actionPlanEvidenceControl} ${styles.actionPlanRemoveEvidence}`.trim()}
+                                      data-skip-client-destructive-confirm="true"
                                       onClick={() => handleRemoveAttachment(selectedActionPlanEntry.id, attachment)}
                                       disabled={isDeleting}
                                     >
@@ -1067,7 +1072,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       ) : null}
 
       {expandedEntry ? (
-        <div className={styles.entryViewerOverlay} role="presentation" onClick={() => setExpandedEntry(null)}>
+        <div className={styles.entryViewerOverlay} data-skip-client-destructive-confirm="true" role="presentation" onClick={() => setExpandedEntry(null)}>
           <section
             className={styles.entryViewer}
             role="dialog"
@@ -1099,7 +1104,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       ) : null}
 
       {previewAttachment && typeof document !== 'undefined' ? createPortal(
-        <div className={styles.viewerOverlay} role="presentation" onClick={() => setPreviewAttachment(null)}>
+        <div className={styles.viewerOverlay} data-skip-client-destructive-confirm="true" role="presentation" onClick={() => setPreviewAttachment(null)}>
           <section
             className={styles.viewer}
             role="dialog"
@@ -1163,7 +1168,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       ) : null}
 
       {attachmentDeleteTarget && typeof document !== 'undefined' ? createPortal(
-        <div className={styles.confirmOverlay} role="presentation" onClick={() => setAttachmentDeleteTarget(null)}>
+        <div className={styles.confirmOverlay} data-skip-client-destructive-confirm="true" role="presentation" onClick={() => setAttachmentDeleteTarget(null)}>
           <section
             className={styles.confirmModal}
             role="dialog"
@@ -1180,7 +1185,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               <button type="button" className={styles.cancelBtn} onClick={() => setAttachmentDeleteTarget(null)}>
                 Cancelar
               </button>
-              <button type="button" className={styles.confirmDeleteBtn} onClick={confirmRemoveAttachment}>
+              <button type="button" className={styles.confirmDeleteBtn} data-skip-client-destructive-confirm="true" onClick={confirmRemoveAttachment}>
                 Remover
               </button>
             </div>
@@ -1190,7 +1195,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
       ) : null}
 
       {deleteTarget && typeof document !== 'undefined' ? createPortal(
-        <div className={styles.confirmOverlay} role="presentation" onClick={() => setDeleteTarget(null)}>
+        <div className={styles.confirmOverlay} data-skip-client-destructive-confirm="true" role="presentation" onClick={() => setDeleteTarget(null)}>
           <section
             className={styles.confirmModal}
             role="dialog"
@@ -1207,7 +1212,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
               <button type="button" className={styles.cancelBtn} onClick={() => setDeleteTarget(null)}>
                 Cancelar
               </button>
-              <button type="button" className={styles.confirmDeleteBtn} onClick={confirmDelete}>
+              <button type="button" className={styles.confirmDeleteBtn} data-skip-client-destructive-confirm="true" onClick={confirmDelete}>
                 Remover
               </button>
             </div>
