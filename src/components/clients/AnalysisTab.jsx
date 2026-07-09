@@ -216,6 +216,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
 
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadedKey, setLoadedKey] = useState('');
   const [creating, setCreating] = useState(false);
   const [pendingIds, setPendingIds] = useState(new Set());
   const [savingIds, setSavingIds] = useState(new Set());
@@ -236,6 +237,8 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
 
   const meta = ANALYSIS_META[type] || ANALYSIS_META.icp;
   const isIcpAnalysis = type === 'icp';
+  const requestKey = clientId ? `${clientId}:${type}` : '';
+  const isStaleRender = Boolean(requestKey && loadedKey !== requestKey);
   const actionPlanEntries = isIcpAnalysis ? entries.filter((entry) => parseActionPlan(entry.text)) : [];
   const selectedActionPlanEntry = actionPlanEntries.find((entry) => entry.id === selectedActionPlanId) || actionPlanEntries[0] || null;
   const selectedActionPlan = selectedActionPlanEntry ? parseActionPlan(selectedActionPlanEntry.text) : null;
@@ -274,17 +277,38 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   }, [previewAttachment?.id, previewAttachment?.mimeType, previewAttachment?.dataUrl]);
 
   useEffect(() => {
-    if (!clientId) return undefined;
+    for (const timer of timersRef.current.values()) clearTimeout(timer);
+    timersRef.current.clear();
+    setExpandedEntry(null);
+    setActionPlanOpen(false);
+    setPreviewAttachment(null);
+    setDeleteTarget(null);
+    setAttachmentDeleteTarget(null);
+    setSelectedActionPlanId('');
+
+    if (!clientId) {
+      setEntries([]);
+      setLoadedKey('');
+      setLoading(false);
+      return undefined;
+    }
+
     const fetchId = ++fetchIdRef.current;
+    const nextKey = `${clientId}:${type}`;
     setLoading(true);
+    setEntries([]);
+    setLoadedKey('');
 
     listAnalyses(clientId, type)
       .then((response) => {
         if (fetchIdRef.current !== fetchId) return;
         setEntries(Array.isArray(response?.analyses) ? response.analyses : []);
+        setLoadedKey(nextKey);
       })
       .catch((error) => {
         if (fetchIdRef.current !== fetchId) return;
+        setEntries([]);
+        setLoadedKey(nextKey);
         const message = error instanceof ApiError ? error.message : 'Erro ao carregar registros.';
         showToast(message, { variant: 'error' });
       })
@@ -524,7 +548,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
     }
   }
 
-  if (loading) {
+  if (loading || isStaleRender) {
     return (
       <div className={`${styles.panel} ${meta.className}`.trim()}>
         <div className={styles.loadingShell} role="status" aria-live="polite">
@@ -720,7 +744,19 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
             </div>
           );
         })
-      ) : null}
+      ) : (
+        <div className={styles.analysisEmptyState}>
+          <div>
+            <strong>{meta.emptyTitle}</strong>
+            <span>{meta.emptyDescription}</span>
+          </div>
+          {canEdit ? (
+            <button type="button" onClick={handleCreate} disabled={creating}>
+              {creating ? 'Criando…' : meta.createLabel}
+            </button>
+          ) : null}
+        </div>
+      )}
 
       {actionPlanOpen && isIcpAnalysis && typeof document !== 'undefined' ? createPortal(
         <div className={styles.actionPlanOverlay} role="presentation" onClick={() => setActionPlanOpen(false)}>
@@ -898,7 +934,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                             <label>
                               <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,application/pdf"
                                 multiple
                                 disabled={uploadingIds.has(selectedActionPlanEntry.id)}
                                 onChange={(event) => {
@@ -906,20 +942,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                                   event.target.value = '';
                                 }}
                               />
-                              Anexar imagem
-                            </label>
-                            <label>
-                              <input
-                                type="file"
-                                accept="application/pdf"
-                                multiple
-                                disabled={uploadingIds.has(selectedActionPlanEntry.id)}
-                                onChange={(event) => {
-                                  handleAttachmentFiles(selectedActionPlanEntry.id, event.target.files);
-                                  event.target.value = '';
-                                }}
-                              />
-                              Anexar PDF
+                              {uploadingIds.has(selectedActionPlanEntry.id) ? 'Anexando…' : 'Anexar imagem ou PDF'}
                             </label>
                           </div>
                         ) : null}
