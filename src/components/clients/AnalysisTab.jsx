@@ -896,6 +896,8 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                               <span aria-hidden="true">✓</span>
                             </label>
                             <input
+                              type="text"
+                              className={styles.actionPlanActionInput}
                               value={action.text}
                               disabled={!canEdit}
                               placeholder="Descrever ação"
