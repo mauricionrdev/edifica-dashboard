@@ -255,6 +255,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
   const requestKey = clientId ? `${clientId}:${type}` : '';
   const isStaleRender = Boolean(requestKey && loadedKey !== requestKey);
   const actionPlanEntries = isActionPlanAnalysis ? entries.filter((entry) => parseActionPlan(entry.text)) : [];
+  const legacyActionPlanEntries = !isActionPlanAnalysis ? entries.filter((entry) => parseActionPlan(entry.text)) : [];
   const visibleEntries = entries.filter((entry) => isActionPlanAnalysis || !parseActionPlan(entry.text));
   const selectedActionPlanEntry = actionPlanEntries.find((entry) => entry.id === selectedActionPlanId) || actionPlanEntries[0] || null;
   const selectedActionPlan = selectedActionPlanEntry ? parseActionPlan(selectedActionPlanEntry.text) : null;
@@ -624,6 +625,38 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
           </div>
         </div>
       </div>
+
+      {legacyActionPlanEntries.length > 0 ? (
+        <div className={styles.legacyActionPlanNotice}>
+          <div>
+            <strong>{legacyActionPlanEntries.length} plano{legacyActionPlanEntries.length === 1 ? '' : 's'} de ação antigo{legacyActionPlanEntries.length === 1 ? '' : 's'} nesta aba</strong>
+            <span>Esses registros foram criados antes da mudança para Análise GDV. Remova daqui para limpar a contagem da Análise ICP.</span>
+          </div>
+          <div className={styles.legacyActionPlanList}>
+            {legacyActionPlanEntries.map((entry) => {
+              const plan = parseActionPlan(entry.text) || createEmptyActionPlan();
+              const { done, total } = getActionCompletion(plan.actions);
+              return (
+                <div key={entry.id} className={styles.legacyActionPlanItem}>
+                  <div>
+                    <strong>{formatDateBR(entry.date)}</strong>
+                    <span>{plan.objective.trim() || 'Plano de ação sem objetivo'} · {total ? `${done}/${total} ações` : 'sem ações'}</span>
+                  </div>
+                  {canEdit ? (
+                    <button
+                      type="button"
+                      data-skip-client-destructive-confirm="true"
+                      onClick={() => setDeleteTarget(entry)}
+                    >
+                      Remover desta aba
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       {visibleEntries.length > 0 ? (
         visibleEntries.map((entry) => {
