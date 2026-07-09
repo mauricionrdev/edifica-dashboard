@@ -1285,101 +1285,32 @@
 }
 
 
-/* v72 · refinamento Drive + últimas abas */
+/* v72 · AnalysisTab isolation: o componente controla seu próprio visual. */
 .embeddedPanel {
   min-height: 390px;
 }
 
 .analysisHost {
-  padding: 18px 20px 22px;
+  min-height: 0;
+  padding: 16px 18px 20px;
   display: grid;
   align-content: start;
 }
 
 .analysisHost > :global(div) {
-  padding: 0 !important;
-  background: transparent !important;
-  display: grid;
-  gap: 14px;
-}
-
-.analysisHost :global(button),
-.analysisHost :global(a) {
-  border-radius: 99px !important;
-  box-shadow: none !important;
-}
-
-.analysisHost :global(textarea),
-.analysisHost :global(input),
-.analysisHost :global(select) {
-  border-radius: 16px !important;
-  background: rgba(255, 255, 255, 0.014) !important;
-  box-shadow: none !important;
-}
-
-.analysisHost > :global(div > div:first-child) {
-  min-height: 112px !important;
-  padding: 16px 18px !important;
-  border-radius: 22px !important;
-  background: rgba(255, 255, 255, 0.010) !important;
-  box-shadow: none !important;
-}
-
-.analysisHost > :global(div > div:first-child > div:first-child) {
   min-width: 0;
-}
-
-.analysisHost > :global(div > div:first-child > div:last-child) {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 18px !important;
-  flex-wrap: wrap !important;
-}
-
-.analysisHost :global(article),
-.analysisHost > :global(div > div:not(:first-child)) {
-  border-radius: 20px !important;
-  background: rgba(255, 255, 255, 0.010) !important;
-  box-shadow: none !important;
-}
-
-.analysisHost :global([role="dialog"]) {
-  box-shadow: none !important;
+  padding: 0;
+  background: transparent;
+  display: grid;
+  gap: 12px;
 }
 
 @media (max-width: 720px) {
   .analysisHost {
     padding-inline: 14px;
   }
-
-  .analysisHost > :global(div > div:first-child > div:last-child) {
-    justify-content: flex-start !important;
-  }
 }
 
-
-/* v124 · Proteção do layout das abas de análise dentro do modal */
-.analysisHost {
-  padding: 16px 18px 20px;
-}
-
-.analysisHost > :global(div > div:first-child) {
-  min-height: auto !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-}
-
-.analysisHost > :global(div > div:first-child > div:last-child) {
-  gap: 14px !important;
-}
-
-.analysisHost :global(article),
-.analysisHost > :global(div > div:not(:first-child)) {
-  background: rgba(255, 255, 255, 0.010) !important;
-}
 
 /* v125 · restaura paleta neutra do Design System no modal de detalhes */
 .overlay {
@@ -1444,9 +1375,6 @@
 .field input,
 .field select,
 .fieldFull input,
-.analysisHost :global(textarea),
-.analysisHost :global(input),
-.analysisHost :global(select),
 .modalSelect > button,
 .modalSelect :global(button[aria-haspopup='listbox']) {
   border-color: var(--line);
@@ -1492,59 +1420,8 @@
   color: var(--text-secondary);
 }
 
-.analysisHost > :global(div > div:first-child),
-.analysisHost :global(article),
-.analysisHost > :global(div > div:not(:first-child)) {
-  background: color-mix(in srgb, var(--text-primary) 1.2%, transparent) !important;
-}
 
 /* v126 · Campo obrigatório do histórico de Churn */
 .churnMonthField input[type="month"] {
   color-scheme: dark;
-}
-
-/* v141 · Projeto dentro do detalhe do cliente ocupando o workspace real */
-.projectHost {
-  min-height: 0;
-  padding: 12px 14px 18px;
-  overflow: visible;
-  display: block;
-}
-
-.projectHost > * {
-  width: 100%;
-  max-width: none;
-  margin-inline: 0;
-  border-radius: 0;
-}
-
-.projectHost :global(button),
-.projectHost :global(input),
-.projectHost :global(textarea),
-.projectHost :global(select) {
-  box-shadow: none;
-}
-
-.projectHost :global(button:focus),
-.projectHost :global(button:focus-visible),
-.projectHost :global(input:focus),
-.projectHost :global(input:focus-visible),
-.projectHost :global(textarea:focus),
-.projectHost :global(textarea:focus-visible),
-.projectHost :global(select:focus),
-.projectHost :global(select:focus-visible) {
-  outline: none;
-  box-shadow: none;
-}
-
-/* v143 · abas Projeto/Tarefas aproveitando largura real do modal */
-.projectHost {
-  min-width: 0;
-  width: 100%;
-  padding: 10px 12px 18px;
-  overflow: visible;
-}
-
-.projectHost > * {
-  min-width: 0;
 }
