@@ -2125,3 +2125,141 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v127 · marcador de conclusão redondo e estado vazio claro nas ações dos planos. */
+.actionPlanActionRow {
+  grid-template-columns: 28px minmax(0, 1fr) max-content;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.actionPlanActionRowEmpty .actionPlanActionInput {
+  color: var(--text-tertiary);
+}
+
+.actionPlanCheck {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  margin: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.actionPlanCheck input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.actionPlanCheck span {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-panel) 76%, transparent);
+  color: var(--text-tertiary);
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.actionPlanCheck span::before {
+  content: '✓';
+  display: block;
+  transform: translateY(-0.5px);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 760;
+  color: var(--text-tertiary);
+  opacity: 0.42;
+}
+
+.actionPlanCheck:hover span {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+}
+
+.actionPlanCheck input:checked + span {
+  border-color: var(--success-line);
+  background: var(--success-soft);
+}
+
+.actionPlanCheck input:checked + span::before {
+  color: var(--success-text);
+  opacity: 1;
+}
+
+.actionPlanCheck input:disabled {
+  cursor: not-allowed;
+}
+
+.actionPlanCheck input:disabled + span {
+  opacity: 0.56;
+}
+
+.actionPlanCheck input:focus,
+.actionPlanCheck input:focus-visible,
+.actionPlanCheck input:focus + span,
+.actionPlanCheck input:focus-visible + span {
+  outline: 0;
+  box-shadow: none;
+}
+
+.actionPlanActionsEmpty {
+  min-height: 92px;
+  padding: 16px;
+  border: 1px dashed var(--line-subtle);
+  border-radius: var(--workspace-card-radius);
+  background: transparent;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 12px;
+  text-align: left;
+}
+
+.actionPlanActionsEmptyIcon {
+  grid-row: span 2;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-panel) 76%, transparent);
+  display: grid;
+  place-items: center;
+}
+
+.actionPlanActionsEmptyIcon::before {
+  content: '✓';
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 760;
+  color: var(--text-tertiary);
+  opacity: 0.42;
+}
+
+.actionPlanActionsEmpty strong {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 680;
+}
+
+.actionPlanActionsEmpty span:not(.actionPlanActionsEmptyIcon) {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.45;
+}

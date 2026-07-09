@@ -133,10 +133,17 @@ function serializeActionPlan(plan) {
   return `${ACTION_PLAN_MARKER}\n${JSON.stringify(normalizeActionPlan(plan))}`;
 }
 
+function getActionCompletion(actions = []) {
+  const validActions = (Array.isArray(actions) ? actions : []).filter((action) => String(action?.text || '').trim());
+  return {
+    done: validActions.filter((action) => action.done).length,
+    total: validActions.length,
+  };
+}
+
 function actionPlanPreviewText(plan) {
   const normalized = normalizeActionPlan(plan);
-  const done = normalized.actions.filter((action) => action.done).length;
-  const total = normalized.actions.length;
+  const { done, total } = getActionCompletion(normalized.actions);
   const objective = normalized.objective.trim() || 'Plano de ação sem objetivo preenchido';
   const deadline = normalized.deadline ? ` · Prazo ${formatDateBR(normalized.deadline)}` : '';
   const actionSummary = total ? `${done}/${total} ações concluídas` : 'Nenhuma ação definida';
@@ -793,7 +800,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                   <div className={styles.actionPlanHistoryList}>
                     {actionPlanEntries.map((entry, index) => {
                       const plan = parseActionPlan(entry.text) || createEmptyActionPlan();
-                      const done = plan.actions.filter((action) => action.done).length;
+                      const { done, total: actionTotal } = getActionCompletion(plan.actions);
                       return (
                         <button
                           type="button"
@@ -803,7 +810,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                         >
                           <span>{actionPlanNumber(index, actionPlanEntries.length)}</span>
                           <strong>{formatDateBR(entry.date)}</strong>
-                          <small>{done}/{plan.actions.length} ações · {plan.deadline ? `prazo ${formatDateBR(plan.deadline)}` : 'sem prazo'}</small>
+                          <small>{actionTotal ? `${done}/${actionTotal} ações` : 'Nenhuma ação'} · {plan.deadline ? `prazo ${formatDateBR(plan.deadline)}` : 'sem prazo'}</small>
                         </button>
                       );
                     })}
@@ -862,7 +869,10 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                       <div className={styles.actionPlanBlockHead}>
                         <div>
                           <span>Ações</span>
-                          <strong>{selectedActionPlan.actions.filter((action) => action.done).length}/{selectedActionPlan.actions.length}</strong>
+                          {(() => {
+                            const { done, total } = getActionCompletion(selectedActionPlan.actions);
+                            return <strong>{done}/{total}</strong>;
+                          })()}
                         </div>
                         {canEdit ? (
                           <button
@@ -880,8 +890,15 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                       {selectedActionPlan.actions.length ? (
                         <div className={styles.actionPlanActionList}>
                           {selectedActionPlan.actions.map((action) => (
-                            <div key={action.id} className={styles.actionPlanActionRow}>
-                              <label className={styles.actionPlanCheck}>
+                            <div
+                              key={action.id}
+                              className={`${styles.actionPlanActionRow} ${String(action.text || '').trim() ? '' : styles.actionPlanActionRowEmpty}`.trim()}
+                            >
+                              <label
+                                className={styles.actionPlanCheck}
+                                title={action.done ? 'Marcar como pendente' : 'Marcar como concluída'}
+                                aria-label={action.done ? 'Marcar ação como pendente' : 'Marcar ação como concluída'}
+                              >
                                 <input
                                   type="checkbox"
                                   checked={action.done}
@@ -893,7 +910,7 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                                     )),
                                   }))}
                                 />
-                                <span aria-hidden="true">✓</span>
+                                <span aria-hidden="true" />
                               </label>
                               <input
                                 type="text"
@@ -925,8 +942,9 @@ export default function AnalysisTab({ clientId, type, canEdit = false }) {
                         </div>
                       ) : (
                         <div className={styles.actionPlanActionsEmpty}>
+                          <span className={styles.actionPlanActionsEmptyIcon} aria-hidden="true" />
                           <strong>Nenhuma ação definida</strong>
-                          <span>Adicione a primeira ação antes de acompanhar conclusões.</span>
+                          <span>Adicione uma ação para liberar o marcador redondo de conclusão.</span>
                         </div>
                       )}
                     </section>
