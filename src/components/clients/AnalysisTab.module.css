@@ -1525,3 +1525,207 @@
   border: 0;
   box-shadow: none;
 }
+
+/* v133 · Refinamento final apenas do modal de Planos de ação. */
+.actionPlanModal {
+  width: min(1040px, calc(100vw - 48px));
+  max-height: min(720px, calc(100vh - 48px));
+  background: var(--bg-elevated, #101113);
+}
+
+.actionPlanHeader {
+  padding: 18px 20px;
+  background: var(--bg-elevated, #101113);
+}
+
+.actionPlanHeader strong {
+  font-size: 21px;
+  letter-spacing: -0.035em;
+}
+
+.actionPlanBody {
+  grid-template-columns: 230px minmax(0, 1fr);
+  background: var(--bg-elevated, #101113);
+}
+
+.actionPlanHistory {
+  padding: 16px 14px;
+  background: var(--bg-canvas, #08090a);
+}
+
+.actionPlanHistoryItem {
+  min-height: 72px;
+  border-color: var(--line-subtle);
+  border-radius: var(--workspace-control-radius);
+  background: transparent;
+}
+
+.actionPlanHistoryItemActive {
+  border-color: color-mix(in srgb, var(--analysis-accent) 38%, transparent);
+  background: color-mix(in srgb, var(--analysis-accent) 6%, transparent);
+}
+
+.actionPlanWorkspace {
+  padding: 16px;
+  gap: 12px;
+  background: var(--bg-elevated, #101113);
+}
+
+.actionPlanObjective textarea {
+  min-height: 96px;
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color-scheme: dark;
+}
+
+.actionPlanActionsBlock,
+.actionPlanEvidence {
+  padding: 13px;
+  border-radius: var(--workspace-control-radius);
+  background: color-mix(in srgb, var(--bg-canvas) 54%, transparent);
+}
+
+.actionPlanActionRow {
+  grid-template-columns: 26px minmax(0, 1fr) max-content;
+  gap: 10px;
+}
+
+.actionPlanCheck {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  display: inline-grid;
+  place-items: center;
+  align-self: center;
+  cursor: pointer;
+}
+
+.actionPlanCheck input,
+.actionPlanCheck input[type='checkbox'] {
+  position: absolute;
+  inset: 0;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  opacity: 0;
+  appearance: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.actionPlanCheck span {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: 7px;
+  background: var(--field-bg);
+  color: transparent;
+  font-size: 13px;
+  line-height: 1;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.actionPlanCheck input:checked + span {
+  border-color: var(--success-line, rgba(72, 213, 151, 0.38));
+  background: var(--success-soft, rgba(72, 213, 151, 0.10));
+  color: var(--success-text, #48d597);
+}
+
+.actionPlanCheck input:focus + span,
+.actionPlanCheck input:focus-visible + span {
+  outline: 0;
+  box-shadow: none;
+}
+
+.actionPlanActionRow > input,
+.actionPlanActionRow input:not([type]),
+.actionPlanActionRow input[type='text'] {
+  min-width: 0;
+  width: 100%;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 38px;
+  appearance: none;
+  color-scheme: dark;
+  outline: 0;
+  box-shadow: none;
+}
+
+.actionPlanActionRow > input::placeholder,
+.actionPlanActionRow input:not([type])::placeholder,
+.actionPlanActionRow input[type='text']::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.actionPlanActionRow > input:hover,
+.actionPlanActionRow input:not([type]):hover,
+.actionPlanActionRow input[type='text']:hover {
+  border-color: var(--line-subtle);
+  background: var(--field-bg);
+}
+
+.actionPlanActionRow > input:focus,
+.actionPlanActionRow > input:focus-visible,
+.actionPlanActionRow input:not([type]):focus,
+.actionPlanActionRow input:not([type]):focus-visible,
+.actionPlanActionRow input[type='text']:focus,
+.actionPlanActionRow input[type='text']:focus-visible {
+  border-color: var(--line-subtle);
+  background: var(--field-bg);
+  outline: 0;
+  box-shadow: none;
+}
+
+.actionPlanPrimary,
+.actionPlanClose,
+.actionPlanBlockHead button,
+.actionPlanEvidenceActions label,
+.actionPlanRemoveAction,
+.actionPlanRemoveEvidence {
+  min-height: 34px;
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  border-color: var(--line-subtle);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.actionPlanPrimary {
+  border-color: var(--text-primary);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.actionPlanEvidenceEmpty {
+  min-height: 46px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--workspace-control-radius);
+  background: var(--field-bg);
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 900px) {
+  .actionPlanModal {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .actionPlanBody {
+    grid-template-columns: 1fr;
+  }
+}
