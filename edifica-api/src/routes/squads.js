@@ -34,6 +34,9 @@ async function ensureSquadSchema() {
       if (!names.has('active')) {
         await query('ALTER TABLE squads ADD COLUMN active TINYINT(1) NOT NULL DEFAULT 0 AFTER owner_user_id');
       }
+      if (!names.has('show_in_ranking')) {
+        await query('ALTER TABLE squads ADD COLUMN show_in_ranking TINYINT(1) NOT NULL DEFAULT 1 AFTER active');
+      }
       if (!names.has('logo_data_url')) {
         await query('ALTER TABLE squads ADD COLUMN logo_data_url MEDIUMTEXT NULL AFTER active');
       }
@@ -102,6 +105,7 @@ function serialize(row) {
         }
       : null,
     active: Boolean(row.active),
+    showInRanking: row.show_in_ranking === undefined || row.show_in_ranking === null ? true : Number(row.show_in_ranking) !== 0,
     logoUrl: row.logo_data_url || '',
     coverUrl: row.cover_data_url || '',
     coverPositionX: Number(row.cover_position_x ?? 50),
@@ -132,14 +136,14 @@ async function ensureUniqueCustomSlug(customSlug, excludeId = null) {
 async function listRows() {
   await ensureSquadSchema();
   return query(
-    `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.cover_data_url, s.cover_position_x, s.cover_position_y, s.cover_zoom, s.custom_slug, s.created_at, s.updated_at,
+    `SELECT s.id, s.name, s.owner_user_id, s.active, s.show_in_ranking, s.logo_data_url, s.cover_data_url, s.cover_position_x, s.cover_position_y, s.cover_zoom, s.custom_slug, s.created_at, s.updated_at,
             u.name AS owner_name, u.email AS owner_email, u.role AS owner_role, u.active AS owner_active,
             SUM(CASE WHEN c.status NOT IN ('churn','finished') THEN 1 ELSE 0 END) AS clients_count,
             SUM(CASE WHEN c.status = 'active' THEN 1 ELSE 0 END) AS active_clients
        FROM squads s
        LEFT JOIN users u ON u.id = s.owner_user_id
        LEFT JOIN clients c ON c.squad_id = s.id
-      GROUP BY s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.cover_data_url, s.cover_position_x, s.cover_position_y, s.cover_zoom, s.custom_slug, s.created_at, s.updated_at,
+      GROUP BY s.id, s.name, s.owner_user_id, s.active, s.show_in_ranking, s.logo_data_url, s.cover_data_url, s.cover_position_x, s.cover_position_y, s.cover_zoom, s.custom_slug, s.created_at, s.updated_at,
                u.name, u.email, u.role, u.active
       ORDER BY s.name ASC`
   );
@@ -169,6 +173,8 @@ router.post('/', requireAuth, requirePermission('squads.manage'), async (req, re
     const coverPositionX = Math.min(100, Math.max(0, Number(req.body?.coverPositionX ?? 50) || 50));
     const coverPositionY = Math.min(100, Math.max(0, Number(req.body?.coverPositionY ?? 50) || 50));
     const coverZoom = Math.min(220, Math.max(100, Number(req.body?.coverZoom ?? 100) || 100));
+    const active = req.body?.active === undefined ? 1 : (req.body.active ? 1 : 0);
+    const showInRanking = req.body?.showInRanking === undefined ? 1 : (req.body.showInRanking ? 1 : 0);
     if (cleanLogo && !cleanLogo.startsWith('data:image/')) throw badRequest('Imagem do squad inválida');
     if (cleanCover && !cleanCover.startsWith('data:image/')) throw badRequest('Capa do squad inválida');
     if (!clean) throw badRequest('Informe o nome do squad');
@@ -180,8 +186,8 @@ router.post('/', requireAuth, requirePermission('squads.manage'), async (req, re
 
     const id = uuid();
     await query(
-      'INSERT INTO squads (id, name, owner_user_id, active, logo_data_url, cover_data_url, cover_position_x, cover_position_y, cover_zoom, custom_slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [id, clean, owner?.id || null, owner ? 1 : 0, cleanLogo || null, cleanCover || null, coverPositionX, coverPositionY, coverZoom, customSlug || null]
+      'INSERT INTO squads (id, name, owner_user_id, active, show_in_ranking, logo_data_url, cover_data_url, cover_position_x, cover_position_y, cover_zoom, custom_slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, clean, owner?.id || null, active, showInRanking, cleanLogo || null, cleanCover || null, coverPositionX, coverPositionY, coverZoom, customSlug || null]
     );
 
     await writeAuditLog({
@@ -191,7 +197,7 @@ router.post('/', requireAuth, requirePermission('squads.manage'), async (req, re
       entityId: id,
       entityLabel: clean,
       summary: `Squad ${clean} criado`,
-      metadata: { ownerUserId: owner?.id || null, customSlug: customSlug || null },
+      metadata: { ownerUserId: owner?.id || null, active: Boolean(active), showInRanking: Boolean(showInRanking), customSlug: customSlug || null },
     });
 
     const rows = await listRows();
@@ -221,6 +227,8 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     const nextCoverPositionX = req.body?.coverPositionX !== undefined ? Math.min(100, Math.max(0, Number(req.body.coverPositionX) || 50)) : Number(current.cover_position_x ?? 50);
     const nextCoverPositionY = req.body?.coverPositionY !== undefined ? Math.min(100, Math.max(0, Number(req.body.coverPositionY) || 50)) : Number(current.cover_position_y ?? 50);
     const nextCoverZoom = req.body?.coverZoom !== undefined ? Math.min(220, Math.max(100, Number(req.body.coverZoom) || 100)) : Number(current.cover_zoom ?? 100);
+    const nextActive = req.body?.active !== undefined ? (req.body.active ? 1 : 0) : Number(current.active ?? 0) ? 1 : 0;
+    const nextShowInRanking = req.body?.showInRanking !== undefined ? (req.body.showInRanking ? 1 : 0) : (current.show_in_ranking === undefined || current.show_in_ranking === null ? 1 : (Number(current.show_in_ranking) ? 1 : 0));
     if (nextLogo && !nextLogo.startsWith('data:image/')) throw badRequest('Imagem do squad inválida');
     if (nextCover && !nextCover.startsWith('data:image/')) throw badRequest('Capa do squad inválida');
 
@@ -229,15 +237,14 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     const ownerUserId = canUpdateOwner
       ? owner?.id || null
       : current.owner_user_id || null;
-    const active = ownerUserId ? 1 : 0;
 
     const dup = await query('SELECT id FROM squads WHERE name = ? AND id <> ? LIMIT 1', [nextName, id]);
     if (dup.length > 0) throw conflict('Já existe um squad com esse nome');
     await ensureUniqueCustomSlug(nextCustomSlug, id);
 
     await query(
-      'UPDATE squads SET name = ?, owner_user_id = ?, active = ?, logo_data_url = ?, cover_data_url = ?, cover_position_x = ?, cover_position_y = ?, cover_zoom = ?, custom_slug = ? WHERE id = ?',
-      [nextName, ownerUserId, active, nextLogo || null, nextCover || null, nextCoverPositionX, nextCoverPositionY, nextCoverZoom, nextCustomSlug || null, id]
+      'UPDATE squads SET name = ?, owner_user_id = ?, active = ?, show_in_ranking = ?, logo_data_url = ?, cover_data_url = ?, cover_position_x = ?, cover_position_y = ?, cover_zoom = ?, custom_slug = ? WHERE id = ?',
+      [nextName, ownerUserId, nextActive, nextShowInRanking, nextLogo || null, nextCover || null, nextCoverPositionX, nextCoverPositionY, nextCoverZoom, nextCustomSlug || null, id]
     );
 
     await writeAuditLog({
@@ -247,7 +254,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
       entityId: id,
       entityLabel: nextName,
       summary: `Squad ${nextName} atualizado`,
-      metadata: { ownerUserId, customSlug: nextCustomSlug || null, coverUpdated: req.body?.coverUrl !== undefined, coverAdjusted: req.body?.coverPositionX !== undefined || req.body?.coverPositionY !== undefined || req.body?.coverZoom !== undefined },
+      metadata: { ownerUserId, active: Boolean(nextActive), showInRanking: Boolean(nextShowInRanking), customSlug: nextCustomSlug || null, coverUpdated: req.body?.coverUrl !== undefined, coverAdjusted: req.body?.coverPositionX !== undefined || req.body?.coverPositionY !== undefined || req.body?.coverZoom !== undefined },
     });
 
     const rows = await listRows();

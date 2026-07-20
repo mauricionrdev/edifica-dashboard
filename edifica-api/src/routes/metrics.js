@@ -40,6 +40,24 @@ const METRIC_PERIOD_KEY_RE = /^\d{4}-(0[1-9]|1[0-2])-S[1-4](?:__campaign:[A-Za-z
 const METRIC_CAMPAIGN_NAME_MAX_LENGTH = 80;
 let metricCampaignsInitPromise = null;
 
+let squadRankingVisibilitySchemaPromise = null;
+
+async function ensureSquadRankingVisibilitySchema() {
+  if (!squadRankingVisibilitySchemaPromise) {
+    squadRankingVisibilitySchemaPromise = (async () => {
+      const cols = await query('SHOW COLUMNS FROM squads');
+      const names = new Set(cols.map((col) => col.Field));
+      if (!names.has('show_in_ranking')) {
+        await query('ALTER TABLE squads ADD COLUMN show_in_ranking TINYINT(1) NOT NULL DEFAULT 1 AFTER active');
+      }
+    })().catch((err) => {
+      squadRankingVisibilitySchemaPromise = null;
+      throw err;
+    });
+  }
+  return squadRankingVisibilitySchemaPromise;
+}
+
 // Campos aceitos no payload `data` do PUT. Qualquer outra chave é
 // silenciosamente ignorada (defesa contra injeção no JSON).
 const ALLOWED_METRIC_FIELDS = new Set([
@@ -813,15 +831,6 @@ async function assertClientExists(clientId, user, allPermission = 'metrics.view.
   return { clientMetaLucro: Number(row.meta_lucro) || 0 };
 }
 
-function isGoalStatusBlankSchemaError(err) {
-  const message = String(err?.message || '').toLowerCase();
-  return Boolean(
-    err &&
-    (err.code === 'WARN_DATA_TRUNCATED' || err.code === 'ER_TRUNCATED_WRONG_VALUE_FOR_FIELD' || err.errno === 1265 || err.errno === 1366) &&
-    message.includes('goal_status')
-  );
-}
-
 async function recalcGoalStatus(conn, clientId, periodKey) {
   const monthPrefix = periodKey.slice(0, 7);
 
@@ -849,21 +858,10 @@ async function recalcGoalStatus(conn, clientId, periodKey) {
   }
 
   const goalStatus = aggregateGoalStatus(weekStatuses);
-  try {
-    await conn.query('UPDATE clients SET goal_status = ? WHERE id = ?', [
-      goalStatus,
-      clientId,
-    ]);
-  } catch (err) {
-    // Ambientes antigos podem ter o ENUM de goal_status sem o valor vazio ''.
-    // Não derruba o salvamento da semana por causa desse campo derivado; mantém
-    // o registro semanal salvo e registra o alerta para ajuste de schema em janela segura.
-    if (goalStatus === '' && isGoalStatusBlankSchemaError(err)) {
-      console.warn('[metrics] goal_status vazio não aceito pelo schema atual; mantendo valor anterior', { clientId, periodKey });
-      return goalStatus;
-    }
-    throw err;
-  }
+  await conn.query('UPDATE clients SET goal_status = ? WHERE id = ?', [
+    goalStatus,
+    clientId,
+  ]);
   return goalStatus;
 }
 
@@ -914,45 +912,9 @@ router.get('/presence', requirePermission('metrics.view'), async (req, res, next
 
 
 const RANKING_COMPETITION_START_MONTH = '2026-04';
-const RANKING_BUSINESS_TIME_ZONE = 'America/Sao_Paulo';
 
 function monthPrefixFromParts(year, month0) {
   return `${year}-${String(month0 + 1).padStart(2, '0')}`;
-}
-
-function rankingDatePartsInBusinessTimeZone(now = new Date()) {
-  const date = now instanceof Date ? now : new Date(now);
-  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: RANKING_BUSINESS_TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  }).formatToParts(safeDate);
-
-  const values = Object.fromEntries(
-    parts
-      .filter((part) => part.type !== 'literal')
-      .map((part) => [part.type, part.value])
-  );
-
-  return {
-    year: Number(values.year) || safeDate.getUTCFullYear(),
-    month: Number(values.month) || safeDate.getUTCMonth() + 1,
-    day: Number(values.day) || safeDate.getUTCDate(),
-    hour: Number(values.hour) || 0,
-    minute: Number(values.minute) || 0,
-    second: Number(values.second) || 0,
-  };
-}
-
-function rankingBusinessMonthPrefix(now = new Date()) {
-  const { year, month } = rankingDatePartsInBusinessTimeZone(now);
-  return `${year}-${String(month).padStart(2, '0')}`;
 }
 
 function monthPrefixToDate(monthPrefix) {
@@ -973,7 +935,8 @@ function compareMonthPrefix(a, b) {
 }
 
 function lastClosedRankingMonth(now = new Date()) {
-  const currentPrefix = rankingBusinessMonthPrefix(now);
+  const date = new Date(now);
+  const currentPrefix = monthPrefixFromParts(date.getUTCFullYear(), date.getUTCMonth());
   // O ranking pode ser acompanhado durante o mês, mas campeão oficial
   // só é fechado depois da virada do mês. No último dia do mês ainda
   // existe operação em aberto; portanto o último mês fechado é sempre
@@ -1314,11 +1277,13 @@ async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
   const squadScope = getAllowedSquads(req.user, 'ranking.view.all');
   const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
 
+  await ensureSquadRankingVisibilitySchema();
+
   let squadSql = `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.cover_data_url, s.cover_position_x, s.cover_position_y, s.cover_zoom,
                          u.name AS owner_name, u.email AS owner_email, u.role AS owner_role
                     FROM squads s
                     LEFT JOIN users u ON u.id = s.owner_user_id
-                   WHERE 1 = 1`;
+                   WHERE COALESCE(s.show_in_ranking, 1) = 1`;
   const squadParams = [];
 
   if (squadId) {
@@ -2204,11 +2169,13 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     const squadScope = getAllowedSquads(req.user, 'ranking.view.all');
     const allowedSquads = Array.isArray(squadScope) ? squadScope : null;
 
+    await ensureSquadRankingVisibilitySchema();
+
     let squadSql = `SELECT s.id, s.name, s.owner_user_id, s.active, s.logo_data_url, s.cover_data_url, s.cover_position_x, s.cover_position_y, s.cover_zoom,
                            u.name AS owner_name, u.email AS owner_email, u.role AS owner_role
                       FROM squads s
                       LEFT JOIN users u ON u.id = s.owner_user_id
-                     WHERE 1 = 1`;
+                     WHERE COALESCE(s.show_in_ranking, 1) = 1`;
     const squadParams = [];
 
     if (squadId) {
@@ -2502,8 +2469,6 @@ router.get('/ranking/champions', requirePermission('ranking.view'), async (req, 
 
     res.json({
       startMonth: RANKING_COMPETITION_START_MONTH,
-      businessTimeZone: RANKING_BUSINESS_TIME_ZONE,
-      currentBusinessMonth: rankingBusinessMonthPrefix(),
       lastClosedMonth: lastClosedRankingMonth(),
       rows: payload,
     });

@@ -1143,3 +1143,77 @@ button:disabled,
     flex-direction: column;
   }
 }
+
+/* Squad creation/configuration */
+.squadConfigModal {
+  width: min(860px, calc(100vw - 40px));
+}
+
+.squadConfigGrid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.switchCard {
+  min-width: 0;
+  min-height: 92px;
+  padding: 13px 14px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-2);
+  background: var(--bg-canvas);
+  color: var(--text-secondary);
+  text-align: left;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: none;
+  outline: none;
+}
+
+.switchCard span {
+  color: var(--text-tertiary);
+  font-size: var(--fs-tiny);
+  font-weight: var(--weight-medium);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-uppercase);
+  text-transform: uppercase;
+}
+
+.switchCard strong {
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-snug);
+}
+
+.switchCard small {
+  color: var(--text-tertiary);
+  font-size: var(--fs-label);
+  line-height: var(--lh-normal);
+}
+
+.switchCard:hover {
+  border-color: var(--line);
+  background: var(--bg-elevated);
+}
+
+.switchCardActive,
+.switchCardActive:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.switchCard:focus,
+.switchCard:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+@media (max-width: 760px) {
+  .squadConfigGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -23,7 +23,7 @@ import { Select } from '../components/ui/index.js';
 import UserPicker from '../components/users/UserPicker.jsx';
 import { readAvatarFile } from '../utils/avatarStorage.js';
 import { matchesAnySearch } from '../utils/search.js';
-import { isActiveClientStatus } from '../utils/clientStatus.js';
+import { CLIENT_STATUS, isActiveClientStatus, normalizeClientStatus } from '../utils/clientStatus.js';
 import { buildGdvPath, buildProfilePath, buildSquadPath, slugifySegment } from '../utils/entityPaths.js';
 import styles from './TeamAccessPage.module.css';
 
@@ -44,6 +44,11 @@ function squadInitials(name = '') {
   if (!parts.length) return 'SQ';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function isSquadPortfolioClient(status) {
+  const normalized = normalizeClientStatus(status);
+  return normalized !== CLIENT_STATUS.CHURN && normalized !== CLIENT_STATUS.FINISHED;
 }
 
 function SquadFormModal({ mode = 'create', initialName = '', busy = false, onClose, onSubmit }) {
@@ -177,26 +182,28 @@ function SquadOwnerFormModal({
   users = [],
   canEditOwner = false,
   busy = false,
-  deleting = false,
   onClose,
   onSubmit,
-  onDelete,
 }) {
   const fileInputRef = useRef(null);
   const [name, setName] = useState(squad?.name || '');
   const [ownerUserId, setOwnerUserId] = useState(squad?.ownerUserId || squad?.ownerId || squad?.owner?.id || '');
   const [logoUrl, setLogoUrl] = useState(squad?.logoUrl || '');
   const [customSlug, setCustomSlug] = useState(squad?.customSlug || squad?.slug || slugifySegment(squad?.name || ''));
+  const [active, setActive] = useState(squad?.active !== false);
+  const [showInRanking, setShowInRanking] = useState(squad?.showInRanking !== false);
 
   useEffect(() => {
     setName(squad?.name || '');
     setOwnerUserId(squad?.ownerUserId || squad?.ownerId || squad?.owner?.id || '');
     setLogoUrl(squad?.logoUrl || '');
     setCustomSlug(squad?.customSlug || squad?.slug || slugifySegment(squad?.name || ''));
-  }, [squad?.id, squad?.name, squad?.ownerUserId, squad?.ownerId, squad?.owner, squad?.logoUrl, squad?.customSlug, squad?.slug]);
+    setActive(squad?.active !== false);
+    setShowInRanking(squad?.showInRanking !== false);
+  }, [squad?.id, squad?.name, squad?.ownerUserId, squad?.ownerId, squad?.owner, squad?.logoUrl, squad?.customSlug, squad?.slug, squad?.active, squad?.showInRanking]);
 
   const owner = users.find((entry) => entry.id === ownerUserId) || null;
-  const statusLabel = owner ? 'Ativo' : 'Desativado';
+  const rankingLabel = showInRanking ? 'Sim' : 'Não';
 
   async function handleLogoFile(event) {
     const file = event.target.files?.[0];
@@ -208,11 +215,11 @@ function SquadOwnerFormModal({
 
   return (
     <div className={styles.modalBackdrop} role="presentation" onClick={onClose}>
-      <div className={styles.modalCard} role="dialog" aria-modal="true" aria-labelledby="squad-owner-form-title" onClick={(event) => event.stopPropagation()}>
+      <div className={`${styles.modalCard} ${styles.squadConfigModal}`} role="dialog" aria-modal="true" aria-labelledby="squad-owner-form-title" onClick={(event) => event.stopPropagation()}>
         <div className={styles.modalHead}>
           <div>
-            <span className={styles.modalEyebrow}>Estrutura operacional</span>
-            <h3 id="squad-owner-form-title">{mode === 'create' ? 'Novo squad' : 'Editar squad'}</h3>
+            <span className={styles.modalEyebrow}>Configuração de Squad</span>
+            <h3 id="squad-owner-form-title">{mode === 'create' ? 'Criar Squad' : 'Editar Squad'}</h3>
           </div>
           <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
         </div>
@@ -220,28 +227,27 @@ function SquadOwnerFormModal({
         <div className={styles.userModalBody}>
           <section className={styles.squadIdentityPanel}>
             <input ref={fileInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleLogoFile} />
-            <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()}>
+            <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()} aria-label="Alterar imagem do squad">
               {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(name)}</span>}
             </button>
             <div className={styles.squadIdentityFields}>
               <label className={styles.field}>
-                <span>Nome do squad</span>
+                <span>Nome do Squad</span>
                 <input
-                  autoFocus
                   type="text"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  placeholder="Ex.: Squad Comercial Sul"
+                  placeholder="Ex.: TITANS"
                   maxLength={80}
                 />
               </label>
               <div className={styles.rowActions}>
                 <button type="button" className={styles.ghostButton} onClick={() => fileInputRef.current?.click()}>
-                  Alterar avatar
+                  Alterar logotipo
                 </button>
                 {logoUrl ? (
                   <button type="button" className={styles.ghostButton} onClick={() => setLogoUrl('')}>
-                    Remover avatar
+                    Remover logotipo
                   </button>
                 ) : null}
               </div>
@@ -250,24 +256,19 @@ function SquadOwnerFormModal({
 
           <div className={styles.formGrid}>
             <label className={styles.field}>
-              <span>Status operacional</span>
-              <input value={statusLabel} disabled />
-            </label>
-
-            <label className={styles.field}>
-              <span>Proprietário do squad</span>
+              <span>Responsável / líder</span>
               {canEditOwner ? (
                 <UserPicker
                   users={users}
                   value={ownerUserId}
                   onChange={setOwnerUserId}
-                  placeholder="Sem proprietário"
+                  placeholder="Sem líder definido"
                   showRole
                   portal
                   disableHover
                 />
               ) : (
-                <input value={owner?.name || 'Sem proprietário'} disabled />
+                <input value={owner?.name || 'Sem líder definido'} disabled />
               )}
             </label>
 
@@ -284,32 +285,53 @@ function SquadOwnerFormModal({
             </label>
           </div>
 
+          <section className={styles.squadConfigGrid} aria-label="Configurações do Squad">
+            <button type="button" className={`${styles.switchCard} ${active ? styles.switchCardActive : ''}`} onClick={() => setActive(true)}>
+              <span>Status da equipe</span>
+              <strong>Ativa</strong>
+              <small>Disponível para receber clientes e aparecer na operação.</small>
+            </button>
+            <button type="button" className={`${styles.switchCard} ${!active ? styles.switchCardActive : ''}`} onClick={() => setActive(false)}>
+              <span>Status da equipe</span>
+              <strong>Inativa</strong>
+              <small>Preserva histórico e clientes, mas indica equipe fora de operação.</small>
+            </button>
+            <button type="button" className={`${styles.switchCard} ${showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(true)}>
+              <span>Exibir no ranking</span>
+              <strong>Sim</strong>
+              <small>Participa da competição e dos painéis de ranking.</small>
+            </button>
+            <button type="button" className={`${styles.switchCard} ${!showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(false)}>
+              <span>Exibir no ranking</span>
+              <strong>Não</strong>
+              <small>Continua recebendo clientes, sem interferir no ranking.</small>
+            </button>
+          </section>
+
           {mode === 'edit' && squad?.id ? (
             <div className={styles.selectorBlock}>
               <div className={styles.selectorHead}>
-                <strong>Ações do squad</strong>
+                <strong>Resumo da configuração</strong>
+                <span>{active ? 'Ativa' : 'Inativa'} · Ranking: {rankingLabel}</span>
               </div>
               <div className={styles.rowActions}>
                 <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.dashboardLink} onClick={onClose}>
                   Abrir dashboard
                 </Link>
-                <button type="button" className={styles.dangerButton} onClick={() => onDelete?.(squad)} disabled={busy || deleting}>
-                  {deleting ? 'Removendo...' : 'Excluir squad'}
-                </button>
               </div>
             </div>
           ) : null}
         </div>
 
         <div className={styles.modalActions}>
-          <button type="button" className={styles.ghostButton} onClick={onClose} disabled={busy || deleting}>Cancelar</button>
+          <button type="button" className={styles.ghostButton} onClick={onClose} disabled={busy}>Cancelar</button>
           <button
             type="button"
             className={styles.primaryButton}
-            onClick={() => onSubmit({ name, ownerUserId, active: Boolean(ownerUserId), logoUrl, customSlug })}
-            disabled={busy || deleting || !name.trim()}
+            onClick={() => onSubmit({ name, ownerUserId, active, showInRanking, logoUrl, customSlug })}
+            disabled={busy || !name.trim()}
           >
-            {busy ? 'Salvando...' : mode === 'create' ? 'Criar squad' : 'Salvar alterações'}
+            {busy ? 'Salvando...' : mode === 'create' ? 'Criar Squad' : 'Salvar alterações'}
           </button>
         </div>
       </div>
@@ -1070,8 +1092,8 @@ export default function TeamAccessPage() {
     const clientList = Array.isArray(clients) ? clients : [];
     return squadList
       .map((squad) => {
-        const linked = clientList.filter((client) => client?.squadId === squad.id);
-        const active = linked.filter((client) => isActiveClientStatus(client?.status)).length;
+        const linked = clientList.filter((client) => String(client?.squadId || '') === String(squad.id || ''));
+        const active = linked.filter((client) => isSquadPortfolioClient(client?.status)).length;
         const gestors = new Set(linked.map((client) => client?.gestor).filter(Boolean)).size;
         const owner =
           squad?.owner
@@ -1083,13 +1105,14 @@ export default function TeamAccessPage() {
           ...squad,
           clientsCount: linked.length,
           activeClients: active,
+          showInRanking: squad?.showInRanking !== false,
           gestors,
           ownerUserId,
           owner,
-          operationalStatus: owner ? 'Ativo' : 'Desativado',
+          operationalStatus: squad?.active === false ? 'Inativa' : 'Ativa',
         };
       })
-      .sort((a, b) => b.clientsCount - a.clientsCount || String(a.name).localeCompare(String(b.name), 'pt-BR'));
+      .sort((a, b) => b.activeClients - a.activeClients || String(a.name).localeCompare(String(b.name), 'pt-BR'));
   }, [squads, clients, users]);
 
   const totalClients = Array.isArray(clients) ? clients.length : 0;
@@ -1261,7 +1284,7 @@ export default function TeamAccessPage() {
           <div className={styles.headerActions}>
             <button type="button" className={styles.headerBtn} onClick={() => setSquadModal({ open: true, mode: 'create', squad: null })}>
               <PlusIcon size={14} />
-              <span>Novo squad</span>
+              <span>+ Criar Squad</span>
             </button>
           </div>
         );
@@ -1292,20 +1315,21 @@ export default function TeamAccessPage() {
     if (!canManageSquads) return;
     const safeName = String(payload?.name || '').trim();
     const ownerUserId = payload?.ownerUserId || '';
-    const active = Boolean(ownerUserId);
+    const active = payload?.active !== false;
+    const showInRanking = payload?.showInRanking !== false;
     const logoUrl = typeof payload?.logoUrl === 'string' ? payload.logoUrl : '';
     const customSlug = slugifySegment(payload?.customSlug || '');
     setSubmitting(true);
     try {
       if (squadModal.mode === 'create') {
-        await createSquad({ name: safeName, ownerUserId, active, logoUrl, customSlug });
+        await createSquad({ name: safeName, ownerUserId, active, showInRanking, logoUrl, customSlug });
         showToast(`"${safeName}" criado com sucesso.`);
       } else if (squadModal.squad?.id) {
-        await updateSquad(squadModal.squad.id, { name: safeName, ownerUserId, active, logoUrl, customSlug });
+        await updateSquad(squadModal.squad.id, { name: safeName, ownerUserId, active, showInRanking, logoUrl, customSlug });
         showToast(`"${safeName}" atualizado com sucesso.`);
       }
       setSquadModal({ open: false, mode: 'create', squad: null });
-      await refreshSquads?.();
+      await Promise.all([refreshSquads?.(), refreshClients?.()]);
     } catch (err) {
       showToast(err?.message || 'Não foi possível salvar o squad.', { variant: 'error' });
     } finally {
@@ -1568,7 +1592,7 @@ export default function TeamAccessPage() {
               <StatCard label="Total de squads" value={squadRows.length} hint="estrutura cadastrada" />
               <StatCard label="Clientes alocados" value={allocatedClients} hint="já vinculados a squad" />
               <StatCard label="Clientes sem squad" value={unallocatedClients} hint="" />
-              <StatCard label="Maior carteira" value={biggestSquad?.clientsCount || 0} hint={biggestSquad?.name || '—'} />
+              <StatCard label="Maior carteira" value={biggestSquad?.activeClients || 0} hint={biggestSquad?.name || '—'} />
             </section>
 
             <section className={styles.tableCard}>
@@ -1577,6 +1601,12 @@ export default function TeamAccessPage() {
                   <span className={styles.sectionEyebrow}>Estrutura atual</span>
                   <h3>Squads cadastrados</h3>
                 </div>
+                {canManageSquads ? (
+                  <button type="button" className={styles.headerBtn} onClick={() => setSquadModal({ open: true, mode: 'create', squad: null })}>
+                    <PlusIcon size={14} />
+                    <span>+ Criar Squad</span>
+                  </button>
+                ) : null}
               </div>
 
               <div className={styles.tableWrap}>
@@ -1584,8 +1614,9 @@ export default function TeamAccessPage() {
                   <thead>
                     <tr>
                       <th>Squad</th>
-                      <th>Clientes</th>
+                      <th>Clientes ativos</th>
                       <th>Status</th>
+                      <th>Ranking</th>
                       <th>Gestores</th>
                       <th>Ações</th>
                     </tr>
@@ -1615,10 +1646,15 @@ export default function TeamAccessPage() {
                             </div>
                           </div>
                         </td>
-                        <td>{squad.clientsCount}</td>
+                        <td><strong>{squad.activeClients}</strong><small className={styles.dimText}> de {squad.clientsCount} vínculo(s)</small></td>
                         <td>
-                          <span className={`${styles.statusPill} ${squad.owner ? styles.statusPillActive : styles.statusPillMuted}`}>
+                          <span className={`${styles.statusPill} ${squad.active === false ? styles.statusPillMuted : styles.statusPillActive}`}>
                             {squad.operationalStatus}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`${styles.statusPill} ${squad.showInRanking ? styles.statusPillActive : styles.statusPillMuted}`}>
+                            {squad.showInRanking ? 'Exibir' : 'Ocultar'}
                           </span>
                         </td>
                         <td>{squad.gestors}</td>
@@ -1628,9 +1664,6 @@ export default function TeamAccessPage() {
                             {canManageSquads ? (
                               <>
                                 <button type="button" className={styles.ghostButton} onClick={() => setSquadModal({ open: true, mode: 'edit', squad })}>Editar</button>
-                                <button type="button" className={styles.dangerButton} disabled={isRowAction(squad.id, 'delete-squad')} onClick={() => handleDeleteSquad(squad)}>
-                                  {isRowAction(squad.id, 'delete-squad') ? 'Removendo...' : 'Excluir'}
-                                </button>
                               </>
                             ) : <span className={styles.dimText}>Somente leitura</span>}
                           </div>
@@ -1638,7 +1671,7 @@ export default function TeamAccessPage() {
                       </tr>
                     ))}
                     {squadRows.length === 0 ? (
-                      <tr><td colSpan="5"><div className={styles.tableEmpty}>Nenhum squad cadastrado.</div></td></tr>
+                      <tr><td colSpan="6"><div className={styles.tableEmpty}>Nenhum squad cadastrado.</div></td></tr>
                     ) : null}
                   </tbody>
                 </table>
@@ -2186,10 +2219,8 @@ export default function TeamAccessPage() {
           users={userRows.filter((entry) => entry.active)}
           canEditOwner={canManageSquads}
           busy={submitting}
-          deleting={isRowAction(squadModal.squad?.id, 'delete-squad')}
           onClose={() => setSquadModal({ open: false, mode: 'create', squad: null })}
           onSubmit={handleSquadSubmit}
-          onDelete={handleDeleteSquad}
         />
       ) : null}
 
