@@ -225,12 +225,23 @@ function SquadOwnerFormModal({
 
         <div className={styles.userModalBody}>
           <section className={styles.squadIdentityPanel}>
-            <input ref={fileInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleLogoFile} />
-            <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()} aria-label="Alterar imagem do squad">
-              {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(name)}</span>}
-            </button>
+            <div className={styles.squadLogoColumn}>
+              <input ref={fileInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleLogoFile} />
+              <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()} aria-label="Alterar imagem do squad">
+                {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(name)}</span>}
+              </button>
+              <button type="button" className={styles.logoTextButton} onClick={() => fileInputRef.current?.click()}>
+                Alterar logo
+              </button>
+              {logoUrl ? (
+                <button type="button" className={styles.logoTextButton} onClick={() => setLogoUrl('')}>
+                  Remover
+                </button>
+              ) : null}
+            </div>
+
             <div className={styles.squadIdentityFields}>
-              <label className={styles.field}>
+              <label className={`${styles.field} ${styles.squadNameField}`}>
                 <span>Nome do Squad</span>
                 <input
                   type="text"
@@ -240,72 +251,69 @@ function SquadOwnerFormModal({
                   maxLength={80}
                 />
               </label>
-              <div className={styles.rowActions}>
-                <button type="button" className={styles.ghostButton} onClick={() => fileInputRef.current?.click()}>
-                  Alterar logotipo
-                </button>
-                {logoUrl ? (
-                  <button type="button" className={styles.ghostButton} onClick={() => setLogoUrl('')}>
-                    Remover logotipo
-                  </button>
-                ) : null}
+
+              <div className={styles.squadMetaGrid}>
+                <label className={styles.field}>
+                  <span>Responsável / líder</span>
+                  {canEditOwner ? (
+                    <UserPicker
+                      users={users}
+                      value={ownerUserId}
+                      onChange={setOwnerUserId}
+                      placeholder="Sem líder definido"
+                      showRole
+                      portal
+                      disableHover
+                      className={styles.squadOwnerPicker}
+                    />
+                  ) : (
+                    <input value={owner?.name || 'Sem líder definido'} disabled />
+                  )}
+                </label>
+
+                <label className={styles.field}>
+                  <span>Link</span>
+                  <div className={styles.slugField}>
+                    <small>/squads/</small>
+                    <input
+                      value={customSlug}
+                      onChange={(event) => setCustomSlug(slugifySegment(event.target.value))}
+                      maxLength={120}
+                    />
+                  </div>
+                </label>
               </div>
             </div>
           </section>
 
-          <div className={styles.formGrid}>
-            <label className={styles.field}>
-              <span>Responsável / líder</span>
-              {canEditOwner ? (
-                <UserPicker
-                  users={users}
-                  value={ownerUserId}
-                  onChange={setOwnerUserId}
-                  placeholder="Sem líder definido"
-                  showRole
-                  portal
-                  disableHover
-                  className={styles.squadOwnerPicker}
-                />
-              ) : (
-                <input value={owner?.name || 'Sem líder definido'} disabled />
-              )}
-            </label>
-
-            <label className={styles.field}>
-              <span>Link personalizado</span>
-              <div className={styles.slugField}>
-                <small>/squads/</small>
-                <input
-                  value={customSlug}
-                  onChange={(event) => setCustomSlug(slugifySegment(event.target.value))}
-                  maxLength={120}
-                />
+          <section className={styles.squadSettingsStack} aria-label="Configurações do Squad">
+            <div className={styles.settingRow}>
+              <span className={styles.settingLabel}>Status</span>
+              <div className={styles.segmentGrid}>
+                <button type="button" className={`${styles.switchCard} ${active ? styles.switchCardActive : ''}`} onClick={() => setActive(true)}>
+                  <strong>Ativa</strong>
+                  <small>Recebe clientes</small>
+                </button>
+                <button type="button" className={`${styles.switchCard} ${!active ? styles.switchCardActive : ''}`} onClick={() => setActive(false)}>
+                  <strong>Inativa</strong>
+                  <small>Preserva histórico</small>
+                </button>
               </div>
-            </label>
-          </div>
+            </div>
 
-          <section className={styles.squadConfigGrid} aria-label="Configurações do Squad">
-            <button type="button" className={`${styles.switchCard} ${active ? styles.switchCardActive : ''}`} onClick={() => setActive(true)}>
-              <span>Status da equipe</span>
-              <strong>Ativa</strong>
-              <small>Recebe clientes e aparece na operação.</small>
-            </button>
-            <button type="button" className={`${styles.switchCard} ${!active ? styles.switchCardActive : ''}`} onClick={() => setActive(false)}>
-              <span>Status da equipe</span>
-              <strong>Inativa</strong>
-              <small>Mantém histórico, fora da operação.</small>
-            </button>
-            <button type="button" className={`${styles.switchCard} ${showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(true)}>
-              <span>Exibir no ranking</span>
-              <strong>Sim</strong>
-              <small>Participa dos painéis de ranking.</small>
-            </button>
-            <button type="button" className={`${styles.switchCard} ${!showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(false)}>
-              <span>Exibir no ranking</span>
-              <strong>Não</strong>
-              <small>Recebe clientes sem entrar no ranking.</small>
-            </button>
+            <div className={styles.settingRow}>
+              <span className={styles.settingLabel}>Ranking</span>
+              <div className={styles.segmentGrid}>
+                <button type="button" className={`${styles.switchCard} ${showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(true)}>
+                  <strong>Exibir</strong>
+                  <small>Entra nos painéis</small>
+                </button>
+                <button type="button" className={`${styles.switchCard} ${!showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(false)}>
+                  <strong>Ocultar</strong>
+                  <small>Não compete</small>
+                </button>
+              </div>
+            </div>
           </section>
 
           {mode === 'edit' && squad?.id ? (
