@@ -218,7 +218,6 @@ function SquadOwnerFormModal({
       <div className={`${styles.modalCard} ${styles.squadConfigModal}`} role="dialog" aria-modal="true" aria-labelledby="squad-owner-form-title" onClick={(event) => event.stopPropagation()}>
         <div className={styles.modalHead}>
           <div>
-            <span className={styles.modalEyebrow}>Configuração de Squad</span>
             <h3 id="squad-owner-form-title">{mode === 'create' ? 'Criar Squad' : 'Editar Squad'}</h3>
           </div>
           <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
@@ -290,22 +289,22 @@ function SquadOwnerFormModal({
             <button type="button" className={`${styles.switchCard} ${active ? styles.switchCardActive : ''}`} onClick={() => setActive(true)}>
               <span>Status da equipe</span>
               <strong>Ativa</strong>
-              <small>Disponível para receber clientes e aparecer na operação.</small>
+              <small>Recebe clientes e aparece na operação.</small>
             </button>
             <button type="button" className={`${styles.switchCard} ${!active ? styles.switchCardActive : ''}`} onClick={() => setActive(false)}>
               <span>Status da equipe</span>
               <strong>Inativa</strong>
-              <small>Preserva histórico e clientes, mas indica equipe fora de operação.</small>
+              <small>Mantém histórico, fora da operação.</small>
             </button>
             <button type="button" className={`${styles.switchCard} ${showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(true)}>
               <span>Exibir no ranking</span>
               <strong>Sim</strong>
-              <small>Participa da competição e dos painéis de ranking.</small>
+              <small>Participa dos painéis de ranking.</small>
             </button>
             <button type="button" className={`${styles.switchCard} ${!showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(false)}>
               <span>Exibir no ranking</span>
               <strong>Não</strong>
-              <small>Continua recebendo clientes, sem interferir no ranking.</small>
+              <small>Recebe clientes sem entrar no ranking.</small>
             </button>
           </section>
 
