@@ -203,6 +203,7 @@ function SquadOwnerFormModal({
   }, [squad?.id, squad?.name, squad?.ownerUserId, squad?.ownerId, squad?.owner, squad?.logoUrl, squad?.customSlug, squad?.slug, squad?.active, squad?.showInRanking]);
 
   const owner = users.find((entry) => entry.id === ownerUserId) || null;
+
   async function handleLogoFile(event) {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -212,27 +213,46 @@ function SquadOwnerFormModal({
   }
 
   return (
-    <div className={styles.modalBackdrop} role="presentation" onClick={onClose}>
-      <div className={`${styles.modalCard} ${styles.squadConfigModal}`} role="dialog" aria-modal="true" aria-labelledby="squad-owner-form-title" onClick={(event) => event.stopPropagation()}>
-        <div className={styles.modalHead}>
-          <div>
-            <h3 id="squad-owner-form-title">{mode === 'create' ? 'Criar Squad' : 'Editar Squad'}</h3>
-          </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar"><CloseIcon size={16} /></button>
-        </div>
+    <div className={styles.squadFormBackdrop} role="presentation" onClick={onClose}>
+      <section
+        className={styles.squadFormModal}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="squad-owner-form-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header className={styles.squadFormHeader}>
+          <h3 id="squad-owner-form-title">{mode === 'create' ? 'Criar Squad' : 'Editar Squad'}</h3>
+          <button type="button" className={styles.squadFormClose} onClick={onClose} aria-label="Fechar">
+            <CloseIcon size={17} />
+          </button>
+        </header>
 
-        <div className={styles.userModalBody}>
-          <section className={styles.squadIdentityPanel}>
-            <div className={styles.squadLogoColumn}>
+        <div className={styles.squadFormBody}>
+          <div className={styles.squadFormIdentity}>
+            <div className={styles.squadFormLogoBlock}>
               <input ref={fileInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleLogoFile} />
-              <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()} aria-label="Alterar logotipo do Squad">
+              <button
+                type="button"
+                className={styles.squadFormLogo}
+                onClick={() => fileInputRef.current?.click()}
+                aria-label={logoUrl ? 'Alterar logotipo do Squad' : 'Adicionar logotipo ao Squad'}
+              >
                 {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(name)}</span>}
-                <span className={styles.squadLogoEditMark} aria-hidden="true"><PlusIcon size={12} /></span>
+                <span className={styles.squadFormLogoAction} aria-hidden="true"><PlusIcon size={12} /></span>
               </button>
+              <button type="button" className={styles.squadFormLogoText} onClick={() => fileInputRef.current?.click()}>
+                {logoUrl ? 'Alterar logo' : 'Adicionar logo'}
+              </button>
+              {logoUrl ? (
+                <button type="button" className={styles.squadFormLogoRemove} onClick={() => setLogoUrl('')}>
+                  Remover
+                </button>
+              ) : null}
             </div>
 
-            <div className={styles.squadIdentityFields}>
-              <label className={`${styles.field} ${styles.squadNameField}`}>
+            <div className={styles.squadFormMainFields}>
+              <label className={styles.squadFormField}>
                 <span>Nome do Squad</span>
                 <input
                   type="text"
@@ -243,19 +263,8 @@ function SquadOwnerFormModal({
                 />
               </label>
 
-              <div className={styles.squadLogoActions}>
-                <button type="button" className={styles.logoTextButton} onClick={() => fileInputRef.current?.click()}>
-                  {logoUrl ? 'Alterar logo' : 'Adicionar logo'}
-                </button>
-                {logoUrl ? (
-                  <button type="button" className={styles.logoTextButton} onClick={() => setLogoUrl('')}>
-                    Remover logo
-                  </button>
-                ) : null}
-              </div>
-
-              <div className={styles.squadMetaGrid}>
-                <label className={styles.field}>
+              <div className={styles.squadFormMetaRow}>
+                <label className={styles.squadFormField}>
                   <span>Responsável / líder</span>
                   {canEditOwner ? (
                     <UserPicker
@@ -266,77 +275,77 @@ function SquadOwnerFormModal({
                       showRole
                       portal
                       disableHover
-                      className={styles.squadOwnerPicker}
+                      className={styles.squadFormOwnerPicker}
                     />
                   ) : (
                     <input value={owner?.name || 'Sem líder definido'} disabled />
                   )}
                 </label>
 
-                <label className={styles.field}>
+                <label className={styles.squadFormField}>
                   <span>Link</span>
-                  <div className={styles.slugField}>
+                  <div className={styles.squadFormSlug}>
                     <small>/squads/</small>
                     <input
                       value={customSlug}
                       onChange={(event) => setCustomSlug(slugifySegment(event.target.value))}
                       maxLength={120}
+                      aria-label="Endereço personalizado do Squad"
                     />
                   </div>
                 </label>
               </div>
             </div>
-          </section>
+          </div>
 
-          <section className={styles.squadSettingsStack} aria-label="Configurações do Squad">
-            <div className={styles.settingRow}>
-              <span className={styles.settingLabel}>Status</span>
-              <div className={styles.segmentGrid}>
-                <button type="button" className={`${styles.switchCard} ${active ? styles.switchCardActive : ''}`} onClick={() => setActive(true)}>
+          <div className={styles.squadFormSettings}>
+            <div className={styles.squadFormSettingRow}>
+              <span className={styles.squadFormSettingLabel}>Status</span>
+              <div className={styles.squadFormOptions}>
+                <button type="button" aria-pressed={active} className={styles.squadFormOption} onClick={() => setActive(true)}>
                   <strong>Ativa</strong>
                   <small>Recebe clientes</small>
                 </button>
-                <button type="button" className={`${styles.switchCard} ${!active ? styles.switchCardActive : ''}`} onClick={() => setActive(false)}>
+                <button type="button" aria-pressed={!active} className={styles.squadFormOption} onClick={() => setActive(false)}>
                   <strong>Inativa</strong>
                   <small>Preserva histórico</small>
                 </button>
               </div>
             </div>
 
-            <div className={styles.settingRow}>
-              <span className={styles.settingLabel}>Ranking</span>
-              <div className={styles.segmentGrid}>
-                <button type="button" className={`${styles.switchCard} ${showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(true)}>
+            <div className={styles.squadFormSettingRow}>
+              <span className={styles.squadFormSettingLabel}>Ranking</span>
+              <div className={styles.squadFormOptions}>
+                <button type="button" aria-pressed={showInRanking} className={styles.squadFormOption} onClick={() => setShowInRanking(true)}>
                   <strong>Exibir</strong>
                   <small>Entra nos painéis</small>
                 </button>
-                <button type="button" className={`${styles.switchCard} ${!showInRanking ? styles.switchCardActive : ''}`} onClick={() => setShowInRanking(false)}>
+                <button type="button" aria-pressed={!showInRanking} className={styles.squadFormOption} onClick={() => setShowInRanking(false)}>
                   <strong>Ocultar</strong>
                   <small>Não compete</small>
                 </button>
               </div>
             </div>
-          </section>
-
+          </div>
         </div>
 
-        <div className={styles.modalActions}>
+        <footer className={styles.squadFormFooter}>
           {mode === 'edit' && squad?.id ? (
-            <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.footerDashboardLink} onClick={onClose}>
+            <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.squadFormDashboardLink} onClick={onClose}>
               Abrir dashboard
             </Link>
           ) : null}
-          <button type="button" className={styles.ghostButton} onClick={onClose} disabled={busy}>Cancelar</button>
+          <button type="button" className={styles.squadFormCancel} onClick={onClose} disabled={busy}>Cancelar</button>
           <button
             type="button"
-            className={styles.primaryButton}
+            className={styles.squadFormSubmit}
             onClick={() => onSubmit({ name, ownerUserId, active, showInRanking, logoUrl, customSlug })}
             disabled={busy || !name.trim()}
           >
             {busy ? 'Salvando...' : mode === 'create' ? 'Criar Squad' : 'Salvar alterações'}
           </button>
-        </div>
-      </div>
+        </footer>
+      </section>
     </div>
   );
 }
