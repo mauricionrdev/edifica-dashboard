@@ -16,7 +16,7 @@ import { isActiveClientStatus } from '../../utils/clientStatus.js';
 import { clientInitials } from '../../utils/clientHelpers.js';
 import { getClientAvatar, getSquadAvatar, subscribeAvatarChange } from '../../utils/avatarStorage.js';
 import styles from './DesignLabPreencherSemanaPage.module.css';
-import ClientName, { isPremiumClient } from '../../components/clients/ClientName.jsx';
+import ClientName from '../../components/clients/ClientName.jsx';
 
 const EMPTY_DATA = {
   metaSemanal: '',
@@ -914,7 +914,7 @@ export default function DesignLabPreencherSemanaPage() {
               data-avatar={getClientAvatar(client) || client.avatarUrl || ''}
               data-name={client.name}
             >
-              {client.name}{isPremiumClient(client) ? ' — Premium' : ''}
+              <ClientName client={client} />
             </option>
           ))}
         </Select>

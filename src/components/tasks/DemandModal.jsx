@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import DateField from '../ui/DateField.jsx';
 import { ChevronDownIcon, CloseIcon } from '../ui/Icons.jsx';
 import { getClientAvatar, getUserAvatar } from '../../utils/avatarStorage.js';
+import ClientName from '../clients/ClientName.jsx';
 import styles from './DemandModal.module.css';
 
 const DEMAND_TYPES = [
@@ -613,7 +614,7 @@ export default function DemandModal({
             }}>
               <SelectAvatar src={getClientAvatar(client) || client.avatarUrl || undefined} name={client.name} />
               <div className={styles.clientOptionText}>
-                <strong>{client.name}</strong>
+                <ClientName as="strong" client={client} />
                 {client.squadName || client.managerName || client.gdvName ? <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span> : null}
               </div>
             </button>

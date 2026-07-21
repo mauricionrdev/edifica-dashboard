@@ -3,6 +3,7 @@ import { query } from '../db/pool.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { filterRowsBySquadAccess, getAccessibleClientRow } from '../utils/access.js';
 import { uuid, fromClientDate, toDateString, badRequest, notFound } from '../utils/helpers.js';
+import { ensureClientPremiumSchema } from '../utils/clientPremium.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -71,6 +72,7 @@ function serialize(row) {
     id: row.id,
     clientId: row.client_id,
     clientName: row.client_name || '',
+    clientIsPremium: Boolean(row.client_is_premium),
     clientAvatarUrl: row.client_avatar_url || '',
     squadId: row.squad_id || '',
     squadName: row.squad_name || '',
@@ -89,7 +91,7 @@ function serialize(row) {
 }
 
 async function getRouteRows({ clientId = '', squadId = '', status = '', from = '', to = '' } = {}) {
-  await ensureRouteMeetingSchema();
+  await Promise.all([ensureRouteMeetingSchema(), ensureClientPremiumSchema()]);
 
   const where = [];
   const params = [];
@@ -124,6 +126,7 @@ async function getRouteRows({ clientId = '', squadId = '', status = '', from = '
   const sql = `
     SELECT rm.*,
            c.name AS client_name,
+           c.is_premium AS client_is_premium,
            c.avatar_data_url AS client_avatar_url,
            c.squad_id,
            c.gdv_name,

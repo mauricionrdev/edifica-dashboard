@@ -859,7 +859,7 @@ function RouteDeleteConfirmModal({ meeting, busy = false, onClose, onConfirm }) 
 
         <div className={styles.routeConfirmContent}>
           <h3>Excluir rota?</h3>
-          <p>{meeting.clientName || 'Cliente'} · {formatShortDate(meeting.meetingDate)}</p>
+          <p><ClientName client={{ name: meeting.clientName || 'Cliente', isPremium: meeting.clientIsPremium }} /> · {formatShortDate(meeting.meetingDate)}</p>
         </div>
 
         <div className={styles.routeConfirmActions}>
@@ -931,7 +931,7 @@ function RouteCalendarPanel({ year, month0, meetings = [], onNewMeeting, onMarkC
                   return (
                     <div key={meeting.id} className={`${styles.routesEvent} ${completed ? styles.routesEventDone : ''}`.trim()}>
                       <div className={styles.routesEventMain}>
-                        <strong>{meeting.clientName}</strong>
+                        <ClientName as="strong" client={{ name: meeting.clientName, isPremium: meeting.clientIsPremium }} />
                         <span>{completed ? 'Realizada' : 'Agendada'}</span>
                       </div>
                       <div className={styles.routesEventActions}>

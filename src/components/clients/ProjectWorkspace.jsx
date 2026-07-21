@@ -30,6 +30,7 @@ import StateBlock from '../ui/StateBlock.jsx';
 import DateField from '../ui/DateField.jsx';
 import Select from '../ui/Select.jsx';
 import { TrashIcon } from '../ui/Icons.jsx';
+import ClientName from './ClientName.jsx';
 import styles from './ProjectWorkspace.module.css';
 
 function percent(done, total) {
@@ -907,7 +908,7 @@ export default function ProjectWorkspace({ client = null, users = [], canCreateP
         <section className={styles.emptyCard}>
           <div className={styles.emptyHead}>
             <span>Projeto</span>
-            <strong>{client?.name || projectLabel || 'Projeto'}</strong>
+            <ClientName as="strong" client={client} name={client?.name || projectLabel || 'Projeto'} />
           </div>
 
           {client?.id && canCreateProject ? (

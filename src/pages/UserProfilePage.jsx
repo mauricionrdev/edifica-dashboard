@@ -23,6 +23,7 @@ import Select from '../components/ui/Select.jsx';
 import DateField from '../components/ui/DateField.jsx';
 import { ChecklistIcon, CloseIcon, PlusIcon } from '../components/ui/Icons.jsx';
 import { buildProfilePath, matchesEntityRouteSegment } from '../utils/entityPaths.js';
+import ClientName from '../components/clients/ClientName.jsx';
 import styles from './UserProfilePage.module.css';
 
 
@@ -37,6 +38,16 @@ const STATUS_OPTIONS = [
 
 function clientSearchLabel(client) {
   return [client?.name, client?.squadName, client?.managerName, client?.gdvName].filter(Boolean).join(' ').toLowerCase();
+}
+
+function taskClient(task, clients = []) {
+  const id = String(task?.clientId || task?.client_id || '').trim();
+  const name = String(task?.clientName || task?.client_name || '').trim();
+  const source = (Array.isArray(clients) ? clients : []).find((client) => (
+    (id && String(client?.id || '') === id)
+    || (!id && name && String(client?.name || '').trim().toLowerCase() === name.toLowerCase())
+  ));
+  return source || (name ? { id, name, isPremium: task?.clientIsPremium ?? task?.client_is_premium } : null);
 }
 
 function initials(name) {
@@ -1196,7 +1207,9 @@ export default function UserProfilePage() {
                         <div className={styles.issueTitle}>
                           <strong>{compactText(task.title, 'Tarefa sem título')}</strong>
                           {(task.clientName || task.projectName) ? (
-                            <span>{task.clientName || task.projectName}</span>
+                            task.clientName
+                              ? <ClientName client={taskClient(task, clients)} name={task.clientName} />
+                              : <span>{task.projectName}</span>
                           ) : null}
                         </div>
 
@@ -1318,7 +1331,7 @@ export default function UserProfilePage() {
                 )}
                 {(activeTask.clientName || activeTask.projectName) ? (
                   <div className={styles.drawerHeroMeta}>
-                    {activeTask.clientName ? <span>{activeTask.clientName}</span> : null}
+                    {activeTask.clientName ? <ClientName client={taskClient(activeTask, clients)} name={activeTask.clientName} /> : null}
                     {activeTask.projectName ? <em>Projeto · {activeTask.projectName}</em> : null}
                   </div>
                 ) : null}

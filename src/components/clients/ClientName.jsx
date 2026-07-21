@@ -1,3 +1,4 @@
+import Badge from '../ui/Badge.jsx';
 import styles from './ClientName.module.css';
 
 export function isPremiumClient(client) {
@@ -9,7 +10,11 @@ export function isPremiumClient(client) {
 }
 
 export function PremiumBadge({ className = '' }) {
-  return <span className={`${styles.premiumBadge} ${className}`.trim()}>Premium</span>;
+  return (
+    <Badge variant="warning" dot={false} className={`${styles.premiumBadge} ${className}`.trim()}>
+      Premium
+    </Badge>
+  );
 }
 
 export default function ClientName({

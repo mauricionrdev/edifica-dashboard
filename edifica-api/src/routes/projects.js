@@ -5,6 +5,7 @@ import { badRequest, forbidden, notFound, parseJson, uuid } from '../utils/helpe
 import { getAccessibleClientRow, getAllowedSquads, isAdminUser } from '../utils/access.js';
 import { notifyUsers } from '../utils/notifications.js';
 import { hasPermission } from '../utils/permissions.js';
+import { ensureClientPremiumSchema } from '../utils/clientPremium.js';
 import {
   addProjectMembers,
   addTaskCollaborators,
@@ -19,6 +20,14 @@ import {
 
 const router = Router();
 router.use(requireAuth);
+router.use(async (req, res, next) => {
+  try {
+    await ensureClientPremiumSchema();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 
 let projectTaskSchemaUpgradePromise = null;
@@ -779,7 +788,7 @@ async function loadProjectDetails(projectId) {
     [projectId]
   );
   const tasks = await query(
-    `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+    `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
             au.name AS assignee_name, cu.name AS created_by_name
        FROM tasks t
        LEFT JOIN projects p ON p.id = t.project_id
@@ -898,7 +907,7 @@ router.get('/', requirePermission('projects.view'), async (req, res, next) => {
     if (req.emptyWorkspaceView) return res.json({ projects: [] });
     const rows = await query(
       `SELECT p.*, COALESCE(p.squad_id, c.squad_id) AS squad_id,
-              c.name AS client_name, s.name AS squad_name, u.name AS owner_name,
+              c.name AS client_name, c.is_premium AS client_is_premium, s.name AS squad_name, u.name AS owner_name,
               COUNT(t.id) AS task_count,
               SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END) AS done_count
          FROM projects p
@@ -922,7 +931,7 @@ router.get('/:id([0-9a-fA-F-]{36})', requirePermission('projects.view'), async (
     await assertProjectAccess(req.params.id, req.user, 'projects.view');
     const rows = await query(
       `SELECT p.*, COALESCE(p.squad_id, c.squad_id) AS squad_id,
-              c.name AS client_name, s.name AS squad_name, u.name AS owner_name,
+              c.name AS client_name, c.is_premium AS client_is_premium, s.name AS squad_name, u.name AS owner_name,
               COUNT(t.id) AS task_count,
               SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END) AS done_count
          FROM projects p
@@ -1071,7 +1080,7 @@ router.get('/client/:clientId', requirePermission('projects.view'), async (req, 
     await getAccessibleClientRow(req.params.clientId, req.user, 'id, squad_id');
     const rows = await query(
       `SELECT p.*, COALESCE(p.squad_id, c.squad_id) AS squad_id,
-              c.name AS client_name, s.name AS squad_name, u.name AS owner_name,
+              c.name AS client_name, c.is_premium AS client_is_premium, s.name AS squad_name, u.name AS owner_name,
               COUNT(t.id) AS task_count,
               SUM(CASE WHEN t.status = 'done' THEN 1 ELSE 0 END) AS done_count
          FROM projects p
@@ -1100,7 +1109,7 @@ router.get('/clients/:clientId/tasks', requirePermission('tasks.view'), async (r
     await getAccessibleClientRow(clientId, req.user);
 
     const rows = await query(
-      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
               au.name AS assignee_name, cu.name AS created_by_name,
               CASE
                 WHEN t.assignee_user_id = ? THEN 'responsible'
@@ -1231,7 +1240,7 @@ router.post('/clients/:clientId/book/:taskId/confirm-access', requireAnyPermissi
     });
 
     const rows = await query(
-      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
               au.name AS assignee_name, cu.name AS created_by_name,
               CASE
                 WHEN t.assignee_user_id = ? THEN 'responsible'
@@ -1260,7 +1269,7 @@ router.get('/tasks/my/list', requirePermission('tasks.view'), async (req, res, n
   try {
     if (req.emptyWorkspaceView) return res.json({ tasks: [] });
     const rows = await query(
-      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
               au.name AS assignee_name, cu.name AS created_by_name,
               CASE
                 WHEN t.assignee_user_id = ? THEN 'responsible'
@@ -1312,7 +1321,7 @@ router.get('/users/:userId/projects', requirePermission('profile.view'), async (
 
     const rows = await query(
       `SELECT p.*,
-              c.name AS client_name,
+              c.name AS client_name, c.is_premium AS client_is_premium,
               s.name AS squad_name,
               ou.name AS owner_name,
               COUNT(DISTINCT t.id) AS task_count,
@@ -1367,7 +1376,7 @@ router.get('/users/:userId/tasks', requirePermission('profile.view'), async (req
     }
 
     const rows = await query(
-      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
               au.name AS assignee_name, cu.name AS created_by_name,
               CASE
                 WHEN t.assignee_user_id = ? THEN 'responsible'
@@ -1398,7 +1407,7 @@ router.get('/tasks/:id([0-9a-fA-F-]{36})', requirePermission('tasks.view'), asyn
   try {
     await assertTaskAccess(req.params.id, req.user, 'tasks.view');
     const rows = await query(
-      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
               au.name AS assignee_name, cu.name AS created_by_name,
               CASE
                 WHEN t.assignee_user_id = ? THEN 'responsible'
@@ -1447,7 +1456,7 @@ router.post('/tasks', requirePermission('tasks.create'), async (req, res, next) 
     );
     await addTaskCollaborators(taskId, [req.user?.id].filter(Boolean), 'follower');
     const rows = await query(
-      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
               au.name AS assignee_name, cu.name AS created_by_name,
               CASE
                 WHEN t.assignee_user_id = ? THEN 'responsible'
@@ -1978,7 +1987,7 @@ router.patch('/tasks/:id', requireAnyPermission(['tasks.edit', 'tasks.complete.o
     }
 
     const rows = await query(
-      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
               au.name AS assignee_name, cu.name AS created_by_name,
               CASE
                 WHEN t.assignee_user_id = ? THEN 'responsible'
@@ -2117,7 +2126,7 @@ router.get('/tasks/:id/subtasks', requirePermission('tasks.view'), async (req, r
   try {
     const parentTask = await assertTaskAccess(req.params.id, req.user, 'tasks.view');
     const rows = await query(
-      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name,
+      `SELECT t.*, p.name AS project_name, ps.name AS section_name, c.name AS client_name, c.is_premium AS client_is_premium,
               au.name AS assignee_name, cu.name AS created_by_name
          FROM tasks t
          LEFT JOIN projects p ON p.id = t.project_id

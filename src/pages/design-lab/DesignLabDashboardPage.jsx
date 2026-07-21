@@ -22,7 +22,7 @@ import {
   hasPermission,
 } from '../../utils/permissions.js';
 import DesignLabClientDetailModal from './DesignLabClientDetailModal.jsx';
-import ClientName, { isPremiumClient } from '../../components/clients/ClientName.jsx';
+import ClientName from '../../components/clients/ClientName.jsx';
 import styles from './DesignLabDashboardPage.module.css';
 
 function buildPeriodOptions() {
@@ -609,7 +609,7 @@ export default function DesignLabDashboardPage() {
         <Select type="client" value={clientFilter} onChange={(event) => setClientFilter(event.target.value)} aria-label="Filtrar por cliente" disabled={shellLoading && clientOptions.length === 0} placeholder={shellLoading && clientOptions.length === 0 ? 'Carregando clientes…' : 'Todos clientes'}>
           <option value="">Todos clientes</option>
           {clientOptions.map((client) => (
-            <option key={client.id} value={client.id} data-avatar={getClientAvatar(client) || client.avatarUrl || ''} data-name={client.name}>{client.name}{isPremiumClient(client) ? ' — Premium' : ''}</option>
+            <option key={client.id} value={client.id} data-avatar={getClientAvatar(client) || client.avatarUrl || ''} data-name={client.name}><ClientName client={client} /></option>
           ))}
         </Select>
 

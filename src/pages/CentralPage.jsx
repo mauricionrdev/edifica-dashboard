@@ -25,7 +25,7 @@ import {
   hasPermission,
 } from '../utils/permissions.js';
 import styles from './CentralPage.module.css';
-import ClientName, { isPremiumClient } from '../components/clients/ClientName.jsx';
+import ClientName from '../components/clients/ClientName.jsx';
 
 function buildPeriodOptions() {
   const now = new Date();
@@ -993,7 +993,7 @@ export default function CentralPage() {
               data-avatar={getClientAvatar(client) || client.avatarUrl || ''}
               data-name={client.name}
             >
-              {client.name}{isPremiumClient(client) ? ' — Premium' : ''}
+              <ClientName client={client} />
             </option>
           ))}
         </Select>

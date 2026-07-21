@@ -1139,6 +1139,7 @@ function buildRankingStatsForClients(clients = [], metricsByClient = new Map(), 
 }
 
 async function buildGdvRankingRows(req, monthPrefix, gdvId = '') {
+  await ensureClientPremiumSchema();
   if (req.emptyWorkspaceView) return [];
 
   const weekKey = currentPeriodKey(new Date(`${monthPrefix}-15T00:00:00Z`));
@@ -1158,7 +1159,7 @@ async function buildGdvRankingRows(req, monthPrefix, gdvId = '') {
     if (key && !gdvByName.has(key)) gdvByName.set(key, gdv);
   });
 
-  let clientSql = `SELECT c.id, c.name, c.squad_id, c.gdv_name, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
+  let clientSql = `SELECT c.id, c.name, c.is_premium, c.squad_id, c.gdv_name, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
                           c.start_date, c.end_date, c.churn_date, c.created_at
                      FROM clients c
                     WHERE c.gdv_name IS NOT NULL
@@ -1283,6 +1284,7 @@ async function buildGdvRankingRows(req, monthPrefix, gdvId = '') {
 }
 
 async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
+  await ensureClientPremiumSchema();
   if (req.emptyWorkspaceView) return [];
 
   const referenceDateSql = monthPrefix + '-01';
@@ -1322,7 +1324,7 @@ async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
   const squadPlaceholders = squadIds.map(() => '?').join(',');
 
   const clients = await query(
-    `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
+    `SELECT c.id, c.name, c.is_premium, c.squad_id, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
             c.start_date, c.end_date, c.churn_date, c.created_at
        FROM clients c
       WHERE c.squad_id IN (${squadPlaceholders})
@@ -2013,7 +2015,7 @@ router.get('/retention', requirePermission('central.view'), async (req, res, nex
     const squads = await query(squadSql, squadParams);
     const squadIds = squads.map((squad) => squad.id);
 
-    let clientSql = `SELECT c.id, c.name, c.squad_id, c.status, c.start_date, c.churn_date,
+    let clientSql = `SELECT c.id, c.name, c.is_premium, c.squad_id, c.status, c.start_date, c.churn_date,
                             c.churn_month, c.churn_year, c.status_changed_at, c.created_at,
                             s.name AS squad_name, s.logo_data_url AS squad_logo_url
                        FROM clients c
@@ -2163,6 +2165,7 @@ router.put('/ranking/settings', requirePermission('ranking.view.all'), async (re
 // --------------------------------------------------------------
 router.get('/ranking', requirePermission('ranking.view'), async (req, res, next) => {
   try {
+    await ensureClientPremiumSchema();
     if (req.emptyWorkspaceView) {
       const ref = req.query?.date ? new Date(String(req.query.date) + 'T00:00:00Z') : new Date();
       return res.json({ weekKey: currentPeriodKey(ref), monthPrefix: monthPrefixFromDate(ref), rows: [] });
@@ -2218,7 +2221,7 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
     const squadPlaceholders = squadIds.map(() => '?').join(',');
 
     const clients = await query(
-      `SELECT c.id, c.name, c.squad_id, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
+      `SELECT c.id, c.name, c.is_premium, c.squad_id, c.status, c.fee, c.contract_type, c.fee_steps_json, c.meta_lucro,
               c.start_date, c.end_date, c.churn_date, c.created_at
          FROM clients c
         WHERE c.squad_id IN (${squadPlaceholders})

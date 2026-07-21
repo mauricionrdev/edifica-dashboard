@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { listProjects } from '../../api/projects.js';
 import { BriefcaseIcon, ChecklistIcon, SearchIcon, ShieldIcon, UsersIcon } from '../../components/ui/Icons.jsx';
 import { errorMessage, normalizeText, resolveName, safeInt } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
 import V2RouteNav from './V2RouteNav.jsx';
+import ClientName from '../../components/clients/ClientName.jsx';
 
 function projectId(project, index) {
   return project?.id || project?.projectId || project?.project_id || project?.clientId || project?.client_id || project?.name || `project-${index}`;
@@ -15,6 +17,23 @@ function projectName(project) {
 
 function clientName(project) {
   return resolveName(project?.clientName || project?.client_name || project?.client?.name || project?.client, 'Sem cliente vinculado');
+}
+
+function projectClient(project, clients = []) {
+  const id = String(project?.clientId || project?.client_id || project?.client?.id || '').trim();
+  const name = clientName(project);
+  const source = (Array.isArray(clients) ? clients : []).find((client) => (
+    (id && String(client?.id || '') === id)
+    || (!id && String(client?.name || '').trim().toLowerCase() === name.toLowerCase())
+  ));
+
+  return {
+    ...(source || {}),
+    ...(project?.client && typeof project.client === 'object' ? project.client : {}),
+    id: source?.id || id,
+    name,
+    isPremium: source?.isPremium ?? project?.clientIsPremium ?? project?.client_is_premium ?? project?.client?.isPremium,
+  };
 }
 
 function projectStatus(project) {
@@ -59,6 +78,7 @@ function projectHaystack(project) {
 }
 
 export default function ProjectsV2Page() {
+  const { clients = [] } = useOutletContext();
   const [projects, setProjects] = useState([]);
   const [query, setQuery] = useState('');
   const [selectedProjectKey, setSelectedProjectKey] = useState('');
@@ -176,7 +196,7 @@ export default function ProjectsV2Page() {
                   onClick={() => setSelectedProjectKey(key)}
                 >
                   <span><strong>{projectName(project)}</strong><br /><small>{memberCount(project)} membros</small></span>
-                  <span>{clientName(project)}</span>
+                  <span><ClientName client={projectClient(project, clients)} /></span>
                   <span>{projectStatus(project)}</span>
                   <span>{safeInt(countDone(project))} / {safeInt(countTasks(project))}</span>
                   <span>{projectUpdatedAt(project)}</span>
@@ -199,7 +219,7 @@ export default function ProjectsV2Page() {
           {selectedProject ? (
             <>
               <div className={styles.detailGrid}>
-                <div className={styles.detailMetric}><span>Cliente</span><strong>{clientName(selectedProject)}</strong></div>
+                <div className={styles.detailMetric}><span>Cliente</span><ClientName as="strong" client={projectClient(selectedProject, clients)} /></div>
                 <div className={styles.detailMetric}><span>Status</span><strong>{projectStatus(selectedProject)}</strong></div>
                 <div className={styles.detailMetric}><span>Tarefas</span><strong>{safeInt(countDone(selectedProject))} / {safeInt(countTasks(selectedProject))}</strong></div>
                 <div className={styles.detailMetric}><span>Membros</span><strong>{safeInt(memberCount(selectedProject))}</strong></div>

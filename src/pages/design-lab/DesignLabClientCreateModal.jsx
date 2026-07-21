@@ -4,15 +4,16 @@ import { ApiError } from '../../api/client.js';
 import { clientInitials } from '../../utils/clientHelpers.js';
 import { CLIENT_STATUS_OPTIONS, normalizeClientStatus } from '../../utils/clientStatus.js';
 import {
+  getSquadAvatar,
+  getUserAvatar,
   readAvatarFile,
   saveClientAvatar,
 } from '../../utils/avatarStorage.js';
 import { formatLocaleNumber, parseLocaleNumber } from '../../utils/number.js';
 import { gdvOptions, gestorOptions } from '../../utils/responsibleUsers.js';
 import { CameraIcon, CloseIcon, TrashIcon } from '../../components/ui/Icons.jsx';
+import Select from '../../components/ui/Select.jsx';
 import styles from './DesignLabClientCreateModal.module.css';
-
-const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
 
 function currentMonthKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -248,57 +249,53 @@ export default function DesignLabClientCreateModal({
                 />
               </label>
 
-              <fieldset className={styles.premiumField}>
-                <legend>Cliente Premium?</legend>
-                <div className={styles.premiumOptions}>
-                  <button
-                    type="button"
-                    className={form.isPremium === 'no' ? styles.premiumOptionActive : ''}
-                    onClick={() => setField('isPremium', 'no')}
-                    disabled={saving}
-                  >
-                    Não
-                  </button>
-                  <button
-                    type="button"
-                    className={form.isPremium === 'yes' ? styles.premiumOptionActive : ''}
-                    onClick={() => setField('isPremium', 'yes')}
-                    disabled={saving}
-                  >
-                    Sim
-                  </button>
-                </div>
-              </fieldset>
+              <Select
+                label="Cliente Premium?"
+                className={`${styles.formSelect} ${styles.premiumSelect}`.trim()}
+                value={form.isPremium}
+                onChange={(event) => setField('isPremium', event.target.value)}
+                disabled={saving}
+                portal
+              >
+                <option value="no">Não</option>
+                <option value="yes">Sim</option>
+              </Select>
 
               <div className={styles.mainFieldsGrid}>
-                <label className={styles.field}>
-                  <span>Squad</span>
-                  <select
-                    value={form.squadId}
-                    onChange={(event) => setField('squadId', event.target.value)}
-                    disabled={saving}
-                  >
-                    <option value="">Sem squad</option>
-                    {squads.map((squad) => (
-                      <option key={squad.id} value={squad.id}>
-                        {squad.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Squad"
+                  className={styles.formSelect}
+                  type="squad"
+                  value={form.squadId}
+                  onChange={(event) => setField('squadId', event.target.value)}
+                  disabled={saving}
+                  portal
+                >
+                  <option value="">Sem squad</option>
+                  {squads.map((squad) => (
+                    <option
+                      key={squad.id}
+                      value={squad.id}
+                      data-avatar={getSquadAvatar(squad) || squad.logoUrl || ''}
+                      data-name={squad.name}
+                    >
+                      {squad.name}
+                    </option>
+                  ))}
+                </Select>
 
-                <label className={styles.field}>
-                  <span>Status</span>
-                  <select
-                    value={form.status}
-                    onChange={(event) => setField('status', event.target.value)}
-                    disabled={saving}
-                  >
-                    {CLIENT_STATUS_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Status"
+                  className={styles.formSelect}
+                  value={form.status}
+                  onChange={(event) => setField('status', event.target.value)}
+                  disabled={saving}
+                  portal
+                >
+                  {CLIENT_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </Select>
 
                 {normalizeClientStatus(form.status) === 'churn' ? (
                   <label className={`${styles.field} ${styles.churnMonthField || ''}`.trim()}>
@@ -313,39 +310,55 @@ export default function DesignLabClientCreateModal({
                   </label>
                 ) : null}
 
-                <label className={styles.field}>
-                  <span>Gestor</span>
-                  <select
-                    value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
-                    onChange={(event) => {
-                      const selected = gestorRows.find((entry) => entry.id === event.target.value);
-                      setField('gestor', selected?.name || '');
-                    }}
-                    disabled={saving}
-                  >
-                    <option value="">Sem gestor</option>
-                    {gestorRows.map((entry) => (
-                      <option key={entry.id} value={entry.id}>{entry.name}</option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Gestor da Conta"
+                  className={styles.formSelect}
+                  type="user"
+                  value={gestorRows.find((entry) => entry.name === form.gestor)?.id || ''}
+                  onChange={(event) => {
+                    const selected = gestorRows.find((entry) => entry.id === event.target.value);
+                    setField('gestor', selected?.name || '');
+                  }}
+                  disabled={saving}
+                  portal
+                >
+                  <option value="">Sem gestor</option>
+                  {gestorRows.map((entry) => (
+                    <option
+                      key={entry.id}
+                      value={entry.id}
+                      data-avatar={getUserAvatar(entry) || entry.avatarUrl || ''}
+                      data-name={entry.name}
+                    >
+                      {entry.name}
+                    </option>
+                  ))}
+                </Select>
 
-                <label className={styles.field}>
-                  <span>GDV</span>
-                  <select
-                    value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
-                    onChange={(event) => {
-                      const selected = gdvRows.find((entry) => entry.id === event.target.value);
-                      setField('gdvName', selected?.name || '');
-                    }}
-                    disabled={saving}
-                  >
-                    <option value="">Sem GDV</option>
-                    {gdvRows.map((entry) => (
-                      <option key={entry.id} value={entry.id}>{entry.name}</option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Gestor de Vendas"
+                  className={styles.formSelect}
+                  type="gdv"
+                  value={gdvRows.find((entry) => entry.name === form.gdvName)?.id || ''}
+                  onChange={(event) => {
+                    const selected = gdvRows.find((entry) => entry.id === event.target.value);
+                    setField('gdvName', selected?.name || '');
+                  }}
+                  disabled={saving}
+                  portal
+                >
+                  <option value="">Sem GDV</option>
+                  {gdvRows.map((entry) => (
+                    <option
+                      key={entry.id}
+                      value={entry.id}
+                      data-avatar={getUserAvatar(entry) || entry.avatarUrl || ''}
+                      data-name={entry.name}
+                    >
+                      {entry.name}
+                    </option>
+                  ))}
+                </Select>
               </div>
             </div>
           </section>
@@ -356,51 +369,45 @@ export default function DesignLabClientCreateModal({
             </div>
 
             <div className={styles.contractGrid}>
-              <label className={styles.field}>
-                <span>Comercial interno</span>
-                <select
-                  value={form.internalCommercial}
-                  onChange={(event) => setField('internalCommercial', event.target.value)}
-                  disabled={saving}
-                >
-                  <option value="no">Não possui</option>
-                  <option value="yes">Possui</option>
-                </select>
-              </label>
+              <Select
+                label="Comercial interno"
+                className={styles.formSelect}
+                value={form.internalCommercial}
+                onChange={(event) => setField('internalCommercial', event.target.value)}
+                disabled={saving}
+                portal
+              >
+                <option value="no">Não possui</option>
+                <option value="yes">Possui</option>
+              </Select>
 
               {form.internalCommercial === 'yes' ? (
                 <label className={styles.field}>
                   <span>Vendedor interno</span>
                   <input
                     type="text"
-                    list="design-lab-internal-seller-options"
                     value={form.internalSeller}
                     onChange={(event) => setField('internalSeller', event.target.value)}
                     placeholder="Michael, Camila ou novo"
                     maxLength={80}
                     disabled={saving}
                   />
-                  <datalist id="design-lab-internal-seller-options">
-                    {INTERNAL_SELLER_OPTIONS.map((name) => (
-                      <option key={name} value={name} />
-                    ))}
-                  </datalist>
                 </label>
               ) : (
                 <span aria-hidden="true" />
               )}
 
-              <label className={styles.field}>
-                <span>Tipo de contrato</span>
-                <select
-                  value={form.contractType}
-                  onChange={(event) => setField('contractType', event.target.value)}
-                  disabled={saving}
-                >
-                  <option value="recurring">Recorrente</option>
-                  <option value="tcv">TCV</option>
-                </select>
-              </label>
+              <Select
+                label="Tipo de contrato"
+                className={styles.formSelect}
+                value={form.contractType}
+                onChange={(event) => setField('contractType', event.target.value)}
+                disabled={saving}
+                portal
+              >
+                <option value="recurring">Recorrente</option>
+                <option value="tcv">TCV</option>
+              </Select>
 
               <label className={styles.field}>
                 <span>Início</span>

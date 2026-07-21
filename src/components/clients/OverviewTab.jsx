@@ -14,9 +14,9 @@ import Select from '../ui/Select.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import FeeScheduleTab from './FeeScheduleTab.jsx';
 import styles from './OverviewTab.module.css';
+import ClientName, { isPremiumClient } from './ClientName.jsx';
 
 const DEBOUNCE_MS = 400;
-const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
 
 function withCurrentResponsible(options, selectedName) {
   const currentName = String(selectedName || '').trim();
@@ -49,6 +49,7 @@ function buildForm(client) {
       contractType: 'recurring',
       internalCommercial: 'no',
       internalSeller: '',
+      isPremium: 'no',
     };
   }
 
@@ -65,6 +66,7 @@ function buildForm(client) {
     contractType: client.contractType === 'tcv' || client.isTcv ? 'tcv' : 'recurring',
     internalCommercial: client.internalCommercial || client.internal_commercial_enabled ? 'yes' : 'no',
     internalSeller: client.internalSeller || client.internal_seller || '',
+    isPremium: isPremiumClient(client) ? 'yes' : 'no',
   };
 }
 
@@ -151,6 +153,12 @@ export default function OverviewTab({
   function onSelectChange(fieldKey, apiKey, rawValue) {
     setForm((current) => ({ ...current, [fieldKey]: rawValue }));
     commit(fieldKey, { [apiKey]: rawValue || (apiKey === 'squadId' ? null : '') });
+  }
+
+  function onPremiumChange(rawValue) {
+    const value = rawValue === 'yes' ? 'yes' : 'no';
+    setForm((current) => ({ ...current, isPremium: value }));
+    commit('isPremium', { isPremium: value === 'yes' });
   }
 
   function onInternalCommercialChange(rawValue) {
@@ -256,6 +264,22 @@ export default function OverviewTab({
             </div>
 
             <div className={drawerStyles.field}>
+              <label className={drawerStyles.label} htmlFor="cd-premium">Cliente Premium?</label>
+              <Select
+                id="cd-premium"
+                className={drawerStyles.selectControl}
+                value={form.isPremium}
+                onChange={(event) => onPremiumChange(event.target.value)}
+                disabled={deleting || !canEdit || Boolean(saving.isPremium)}
+                aria-label="Cliente Premium"
+                portal
+              >
+                <option value="no">Não</option>
+                <option value="yes">Sim</option>
+              </Select>
+            </div>
+
+            <div className={drawerStyles.field}>
               <label className={drawerStyles.label} htmlFor="cd-gestor">Gestor da Conta</label>
               <Select
                 type="user"
@@ -355,18 +379,12 @@ export default function OverviewTab({
                   id="cd-internal-seller"
                   className={drawerStyles.input}
                   type="text"
-                  list="cd-internal-seller-options"
                   maxLength={80}
                   value={form.internalSeller}
                   onChange={(event) => onInternalSellerChange(event.target.value)}
                   disabled={deleting || !canEdit || Boolean(saving.internalSeller)}
                   placeholder="Michael, Camila ou novo vendedor"
                 />
-                <datalist id="cd-internal-seller-options">
-                  {INTERNAL_SELLER_OPTIONS.map((name) => (
-                    <option key={name} value={name} />
-                  ))}
-                </datalist>
               </div>
             ) : null}
           </div>
@@ -455,7 +473,7 @@ export default function OverviewTab({
           {confirmingDelete ? (
             <div className={drawerStyles.confirmBar}>
               <div className={drawerStyles.confirmText}>
-                Remover <strong>{client.name}</strong>? Isso também apaga projeto, métricas e análises vinculadas.
+                Remover <ClientName as="strong" client={client} />? Isso também apaga projeto, métricas e análises vinculadas.
               </div>
               <div className={drawerStyles.confirmActions}>
                 <button
