@@ -225,17 +225,10 @@ function SquadOwnerFormModal({
           <section className={styles.squadIdentityPanel}>
             <div className={styles.squadLogoColumn}>
               <input ref={fileInputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleLogoFile} />
-              <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()} aria-label="Alterar imagem do squad">
+              <button type="button" className={styles.squadAvatarEditor} onClick={() => fileInputRef.current?.click()} aria-label="Alterar logotipo do Squad">
                 {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(name)}</span>}
+                <span className={styles.squadLogoEditMark} aria-hidden="true"><PlusIcon size={12} /></span>
               </button>
-              <button type="button" className={styles.logoTextButton} onClick={() => fileInputRef.current?.click()}>
-                Alterar logo
-              </button>
-              {logoUrl ? (
-                <button type="button" className={styles.logoTextButton} onClick={() => setLogoUrl('')}>
-                  Remover
-                </button>
-              ) : null}
             </div>
 
             <div className={styles.squadIdentityFields}>
@@ -249,6 +242,17 @@ function SquadOwnerFormModal({
                   maxLength={80}
                 />
               </label>
+
+              <div className={styles.squadLogoActions}>
+                <button type="button" className={styles.logoTextButton} onClick={() => fileInputRef.current?.click()}>
+                  {logoUrl ? 'Alterar logo' : 'Adicionar logo'}
+                </button>
+                {logoUrl ? (
+                  <button type="button" className={styles.logoTextButton} onClick={() => setLogoUrl('')}>
+                    Remover logo
+                  </button>
+                ) : null}
+              </div>
 
               <div className={styles.squadMetaGrid}>
                 <label className={styles.field}>

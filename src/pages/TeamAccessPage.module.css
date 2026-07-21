@@ -1543,3 +1543,101 @@ button:disabled,
     max-width: none;
   }
 }
+
+/* Squad modal · correção de composição do logo e seleção */
+.squadConfigModal .squadIdentityPanel {
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.squadConfigModal .squadLogoColumn {
+  align-self: start;
+  justify-items: center;
+  gap: 0;
+  padding-top: 18px;
+  overflow: visible;
+}
+
+.squadConfigModal .squadAvatarEditor {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  overflow: visible;
+}
+
+.squadConfigModal .squadAvatarEditor > img,
+.squadConfigModal .squadAvatarEditor > span:not(.squadLogoEditMark) {
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.squadLogoEditMark {
+  position: absolute;
+  right: -1px;
+  bottom: 1px;
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  border: 2px solid var(--bg-canvas) !important;
+  border-radius: 999px !important;
+  background: var(--bg-raised) !important;
+  color: var(--text-secondary) !important;
+  display: grid !important;
+  place-items: center !important;
+  pointer-events: none;
+}
+
+.squadLogoEditMark svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 1.8;
+}
+
+.squadLogoActions {
+  min-height: 16px;
+  margin-top: -4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.squadLogoActions .logoTextButton {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: 16px;
+  padding: 0;
+  overflow: visible;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.squadLogoActions .logoTextButton:hover {
+  color: var(--text-primary);
+}
+
+.squadConfigModal .switchCard {
+  min-height: 42px;
+  padding: 7px 10px 7px 12px;
+}
+
+.squadConfigModal .switchCard::after {
+  display: none;
+}
+
+.squadConfigModal .switchCardActive,
+.squadConfigModal .switchCardActive:hover {
+  border-color: var(--line);
+  background: var(--bg-raised);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 52%, transparent);
+}
+
+.squadConfigModal .switchCardActive:focus,
+.squadConfigModal .switchCardActive:focus-visible {
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 52%, transparent);
+}
