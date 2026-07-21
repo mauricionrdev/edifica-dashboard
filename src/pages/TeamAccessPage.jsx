@@ -203,8 +203,6 @@ function SquadOwnerFormModal({
   }, [squad?.id, squad?.name, squad?.ownerUserId, squad?.ownerId, squad?.owner, squad?.logoUrl, squad?.customSlug, squad?.slug, squad?.active, squad?.showInRanking]);
 
   const owner = users.find((entry) => entry.id === ownerUserId) || null;
-  const rankingLabel = showInRanking ? 'Sim' : 'Não';
-
   async function handleLogoFile(event) {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -316,22 +314,14 @@ function SquadOwnerFormModal({
             </div>
           </section>
 
-          {mode === 'edit' && squad?.id ? (
-            <div className={styles.selectorBlock}>
-              <div className={styles.selectorHead}>
-                <strong>Resumo da configuração</strong>
-                <span>{active ? 'Ativa' : 'Inativa'} · Ranking: {rankingLabel}</span>
-              </div>
-              <div className={styles.rowActions}>
-                <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.dashboardLink} onClick={onClose}>
-                  Abrir dashboard
-                </Link>
-              </div>
-            </div>
-          ) : null}
         </div>
 
         <div className={styles.modalActions}>
+          {mode === 'edit' && squad?.id ? (
+            <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.footerDashboardLink} onClick={onClose}>
+              Abrir dashboard
+            </Link>
+          ) : null}
           <button type="button" className={styles.ghostButton} onClick={onClose} disabled={busy}>Cancelar</button>
           <button
             type="button"

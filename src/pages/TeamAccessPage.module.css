@@ -1146,8 +1146,8 @@ button:disabled,
 
 /* Squad creation/configuration */
 .squadConfigModal {
-  width: min(500px, calc(100vw - 32px));
-  max-height: min(620px, calc(100vh - 32px));
+  width: min(540px, calc(100vw - 32px));
+  max-height: min(640px, calc(100vh - 32px));
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
   border: 1px solid var(--workspace-panel-border-soft);
@@ -1158,7 +1158,7 @@ button:disabled,
 
 .squadConfigModal .modalHead {
   min-height: 48px;
-  padding: 0 14px 0 18px;
+  padding: 0 14px 0 20px;
   border-bottom: 1px solid var(--workspace-panel-border-soft);
   background: var(--bg-canvas);
 }
@@ -1166,10 +1166,10 @@ button:disabled,
 .squadConfigModal .modalHead h3 {
   margin: 0;
   color: var(--text-primary);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 650;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .squadConfigModal .modalClose {
@@ -1180,24 +1180,24 @@ button:disabled,
 }
 
 .squadConfigModal .userModalBody {
-  padding: 16px 18px 14px;
-  gap: 12px;
+  padding: 18px 20px 16px;
+  gap: 14px;
   overflow: auto;
   background: var(--bg-canvas);
 }
 
 .squadConfigModal .modalActions {
-  min-height: 52px;
-  padding: 9px 18px;
+  min-height: 54px;
+  padding: 9px 20px;
   border-top: 1px solid var(--workspace-panel-border-soft);
   background: var(--bg-canvas);
 }
 
 .squadConfigModal .squadIdentityPanel {
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr);
+  grid-template-columns: 92px minmax(0, 1fr);
   align-items: start;
-  gap: 14px;
+  gap: 16px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1206,28 +1206,28 @@ button:disabled,
 .squadLogoColumn {
   display: grid;
   justify-items: center;
-  gap: 8px;
-  padding-top: 2px;
+  gap: 7px;
+  padding-top: 4px;
 }
 
 .squadConfigModal .squadAvatarEditor {
-  width: 74px;
-  height: 74px;
-  min-width: 74px;
+  width: 76px;
+  height: 76px;
+  min-width: 76px;
   padding: 0;
-  border: 1px solid var(--line-subtle);
+  border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--bg-raised) 40%, transparent);
-  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  color: var(--text-primary);
   display: inline-grid;
   place-items: center;
   overflow: hidden;
-  box-shadow: none;
+  box-shadow: inset 0 0 0 1px var(--line-subtle);
 }
 
 .squadConfigModal .squadAvatarEditor:hover {
-  border-color: var(--line);
-  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .squadConfigModal .squadAvatarEditor span {
@@ -1236,10 +1236,9 @@ button:disabled,
   display: grid;
   place-items: center;
   color: var(--text-primary);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: -0.01em;
-  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+  letter-spacing: -0.02em;
 }
 
 .squadConfigModal .squadAvatarEditor img {
@@ -1259,7 +1258,7 @@ button:disabled,
   color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.1;
   box-shadow: none;
 }
 
@@ -1276,7 +1275,7 @@ button:disabled,
 
 .squadConfigModal .squadIdentityFields {
   display: grid;
-  gap: 10px;
+  gap: 11px;
   min-width: 0;
 }
 
@@ -1293,7 +1292,7 @@ button:disabled,
 }
 
 .squadNameField {
-  max-width: 328px;
+  max-width: 316px;
 }
 
 .squadConfigModal .field input,
@@ -1329,7 +1328,7 @@ button:disabled,
 
 .squadMetaGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 132px;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 210px);
   gap: 10px;
   align-items: end;
 }
@@ -1380,12 +1379,13 @@ button:disabled,
   border: 0;
   border-radius: 0;
   background: transparent;
-  padding: 0 8px;
+  padding: 0 9px;
+  font-weight: 600;
 }
 
 .squadSettingsStack {
   display: grid;
-  gap: 9px;
+  gap: 10px;
   padding-top: 2px;
 }
 
@@ -1412,24 +1412,38 @@ button:disabled,
 }
 
 .switchCard {
-  min-height: 46px;
-  padding: 8px 10px;
+  position: relative;
+  min-height: 42px;
+  padding: 7px 30px 7px 10px;
   border: 1px solid var(--line-subtle);
   border-radius: 9px;
-  background: color-mix(in srgb, var(--bg-canvas) 94%, #000 6%);
+  background: color-mix(in srgb, var(--bg-canvas) 96%, #000 4%);
   color: var(--text-secondary);
   text-align: left;
   display: grid;
   align-content: center;
-  gap: 3px;
+  gap: 2px;
   cursor: pointer;
   box-shadow: none;
   outline: none;
 }
 
+.switchCard::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--line);
+  opacity: 0;
+  transform: translateY(-50%);
+}
+
 .switchCard strong {
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 650;
   line-height: 1.1;
   letter-spacing: -0.01em;
@@ -1437,9 +1451,9 @@ button:disabled,
 
 .switchCard small {
   color: var(--text-tertiary);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.18;
 }
 
 .switchCard:hover {
@@ -1449,8 +1463,14 @@ button:disabled,
 
 .switchCardActive,
 .switchCardActive:hover {
-  border-color: color-mix(in srgb, var(--accent) 52%, var(--line-subtle));
-  background: color-mix(in srgb, var(--accent) 4%, var(--bg-canvas));
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line-subtle));
+  background: color-mix(in srgb, var(--accent) 2.6%, var(--bg-canvas));
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 76%, transparent);
+}
+
+.switchCardActive::after {
+  background: var(--accent);
+  opacity: 0.9;
 }
 
 .switchCard:focus,
@@ -1459,19 +1479,40 @@ button:disabled,
   box-shadow: none;
 }
 
+.switchCardActive:focus,
+.switchCardActive:focus-visible {
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 76%, transparent);
+}
+
 .squadConfigModal .rowActions {
   gap: 8px;
 }
 
 .squadConfigModal .ghostButton,
 .squadConfigModal .primaryButton,
-.squadConfigModal .dashboardLink {
+.squadConfigModal .dashboardLink,
+.footerDashboardLink {
   min-height: 32px;
   padding: 0 12px;
   border-radius: 9px;
   font-size: 13px;
   font-weight: 650;
   line-height: 1;
+}
+
+.footerDashboardLink {
+  margin-right: auto;
+  border: 1px solid var(--line-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.footerDashboardLink:hover {
+  border-color: var(--line);
+  color: var(--text-primary);
 }
 
 .squadConfigModal .selectorBlock {
