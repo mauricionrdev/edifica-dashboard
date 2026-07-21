@@ -266,6 +266,7 @@ function SquadOwnerFormModal({
                   showRole
                   portal
                   disableHover
+                  className={styles.squadOwnerPicker}
                 />
               ) : (
                 <input value={owner?.name || 'Sem líder definido'} disabled />
@@ -1284,7 +1285,7 @@ export default function TeamAccessPage() {
           <div className={styles.headerActions}>
             <button type="button" className={styles.headerBtn} onClick={() => setSquadModal({ open: true, mode: 'create', squad: null })}>
               <PlusIcon size={14} />
-              <span>+ Criar Squad</span>
+              <span>Criar Squad</span>
             </button>
           </div>
         );
@@ -1604,7 +1605,7 @@ export default function TeamAccessPage() {
                 {canManageSquads ? (
                   <button type="button" className={styles.headerBtn} onClick={() => setSquadModal({ open: true, mode: 'create', squad: null })}>
                     <PlusIcon size={14} />
-                    <span>+ Criar Squad</span>
+                    <span>Criar Squad</span>
                   </button>
                 ) : null}
               </div>

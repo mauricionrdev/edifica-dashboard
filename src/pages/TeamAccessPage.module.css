@@ -1217,3 +1217,130 @@ button:disabled,
     grid-template-columns: 1fr;
   }
 }
+
+/* Refinamento final — criação/configuração de Squad */
+.squadConfigModal {
+  width: min(780px, calc(100vw - 40px));
+  max-height: min(680px, calc(100vh - 40px));
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+
+.squadConfigModal .modalHead {
+  min-height: 54px;
+  padding-inline: 18px 14px;
+}
+
+.squadConfigModal .modalHead h3 {
+  margin-top: 2px;
+  font-size: var(--fs-lg);
+}
+
+.squadConfigModal .userModalBody {
+  padding: 18px;
+  gap: 14px;
+  overflow: auto;
+}
+
+.squadConfigModal .modalActions {
+  min-height: 54px;
+  padding: 10px 18px;
+}
+
+.squadConfigModal .squadIdentityPanel {
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.squadConfigModal .squadAvatarEditor {
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  margin-top: 20px;
+  border-color: var(--workspace-panel-border-soft);
+  background: var(--bg-canvas);
+}
+
+.squadConfigModal .squadAvatarEditor span {
+  font-size: var(--fs-body);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+.squadConfigModal .squadIdentityFields {
+  gap: 8px;
+}
+
+.squadConfigModal .rowActions {
+  gap: 8px;
+}
+
+.squadConfigModal .ghostButton,
+.squadConfigModal .primaryButton {
+  min-height: 34px;
+  border-radius: var(--radius-1);
+}
+
+.squadConfigModal .formGrid {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.9fr);
+  gap: 12px;
+}
+
+.squadConfigModal .field input,
+.squadConfigModal .slugField {
+  min-height: 38px;
+}
+
+.squadOwnerPicker :global(button) {
+  min-height: 38px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-1);
+  background: var(--field-bg);
+  padding-inline: 10px;
+}
+
+.squadOwnerPicker :global(button:hover) {
+  border-color: var(--line);
+  background: var(--bg-raised);
+}
+
+.squadConfigGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.switchCard {
+  min-height: 76px;
+  padding: 11px 12px;
+  gap: 4px;
+  border-radius: var(--radius-1);
+  background: var(--bg-canvas);
+}
+
+.switchCard span {
+  font-size: 10px;
+  letter-spacing: 0.095em;
+}
+
+.switchCard strong {
+  font-size: var(--fs-label);
+  font-weight: var(--weight-semibold);
+}
+
+.switchCard small {
+  font-size: var(--fs-caption);
+  line-height: var(--lh-snug);
+}
+
+.switchCardActive,
+.switchCardActive:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+@media (max-width: 760px) {
+  .squadConfigModal .formGrid,
+  .squadConfigGrid {
+    grid-template-columns: 1fr;
+  }
+}
