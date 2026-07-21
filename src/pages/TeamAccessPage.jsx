@@ -17,6 +17,7 @@ import {
   MailIcon,
   CloseIcon,
   RotateCcwIcon,
+  TrashIcon,
 } from '../components/ui/Icons.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { Select } from '../components/ui/index.js';
@@ -241,12 +242,15 @@ function SquadOwnerFormModal({
                 {logoUrl ? <img src={logoUrl} alt="" /> : <span>{squadInitials(name)}</span>}
                 <span className={styles.squadFormLogoAction} aria-hidden="true"><PlusIcon size={12} /></span>
               </button>
-              <button type="button" className={styles.squadFormLogoText} onClick={() => fileInputRef.current?.click()}>
-                {logoUrl ? 'Alterar logo' : 'Adicionar logo'}
-              </button>
               {logoUrl ? (
-                <button type="button" className={styles.squadFormLogoRemove} onClick={() => setLogoUrl('')}>
-                  Remover
+                <button
+                  type="button"
+                  className={styles.squadFormLogoRemove}
+                  onClick={() => setLogoUrl('')}
+                  aria-label="Remover logotipo do Squad"
+                  title="Remover logotipo"
+                >
+                  <TrashIcon size={13} />
                 </button>
               ) : null}
             </div>
@@ -330,11 +334,6 @@ function SquadOwnerFormModal({
         </div>
 
         <footer className={styles.squadFormFooter}>
-          {mode === 'edit' && squad?.id ? (
-            <Link to={`/squads/${encodeURIComponent(squad.id)}`} className={styles.squadFormDashboardLink} onClick={onClose}>
-              Abrir dashboard
-            </Link>
-          ) : null}
           <button type="button" className={styles.squadFormCancel} onClick={onClose} disabled={busy}>Cancelar</button>
           <button
             type="button"

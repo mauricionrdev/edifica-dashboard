@@ -1617,10 +1617,10 @@ button:disabled,
 .squadFormHeader h3 {
   margin: 0;
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 650;
   line-height: 1.2;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
 }
 
 .squadFormClose {
@@ -1654,31 +1654,31 @@ button:disabled,
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
 .squadFormIdentity {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-columns: 94px minmax(0, 1fr);
   align-items: start;
   gap: 18px;
 }
 
 .squadFormLogoBlock {
+  position: relative;
+  width: 88px;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
+  display: grid;
+  place-items: start center;
 }
 
 .squadFormLogo {
   position: relative;
-  width: 84px;
-  height: 84px;
-  min-width: 84px;
+  width: 82px;
+  height: 82px;
+  min-width: 82px;
   padding: 0;
-  border: 1px solid var(--line-subtle);
+  border: 0;
   border-radius: 50%;
   background: transparent;
   color: var(--text-primary);
@@ -1688,14 +1688,11 @@ button:disabled,
   box-shadow: none;
 }
 
-.squadFormLogo:hover {
-  border-color: var(--line);
-  background: transparent;
-}
-
+.squadFormLogo:hover,
 .squadFormLogo:focus,
 .squadFormLogo:focus-visible {
   outline: none;
+  background: transparent;
   box-shadow: none;
 }
 
@@ -1711,6 +1708,8 @@ button:disabled,
 }
 
 .squadFormLogo > span:not(.squadFormLogoAction) {
+  border: 1px solid var(--line-subtle);
+  background: var(--bg-raised);
   color: var(--text-primary);
   font-size: 17px;
   font-weight: 650;
@@ -1720,7 +1719,7 @@ button:disabled,
 
 .squadFormLogoAction {
   position: absolute;
-  right: -1px;
+  right: 0;
   bottom: 2px;
   width: 23px;
   height: 23px;
@@ -1733,34 +1732,26 @@ button:disabled,
   pointer-events: none;
 }
 
-.squadFormLogoText,
 .squadFormLogoRemove {
-  min-height: 20px;
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  width: 26px;
+  height: 26px;
   padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.squadFormLogoText {
-  color: var(--text-secondary);
-}
-
-.squadFormLogoRemove {
+  border: 1px solid color-mix(in srgb, var(--danger-text, #ff8585) 28%, var(--line-subtle));
+  border-radius: 50%;
+  background: var(--bg-canvas);
   color: var(--danger-text, #ff8585);
+  display: grid;
+  place-items: center;
+  box-shadow: none;
 }
 
-.squadFormLogoText:hover,
 .squadFormLogoRemove:hover {
-  background: transparent;
-  color: var(--text-primary);
+  background: color-mix(in srgb, var(--danger-text, #ff8585) 8%, var(--bg-canvas));
 }
 
-.squadFormLogoText:focus,
-.squadFormLogoText:focus-visible,
 .squadFormLogoRemove:focus,
 .squadFormLogoRemove:focus-visible {
   outline: none;
@@ -1771,7 +1762,11 @@ button:disabled,
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 13px;
+}
+
+.squadFormMainFields > .squadFormField:first-child {
+  max-width: 420px;
 }
 
 .squadFormField {
@@ -1784,8 +1779,8 @@ button:disabled,
 .squadFormField > span {
   color: var(--text-tertiary);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.105em;
+  font-weight: 680;
+  letter-spacing: 0.1em;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -1797,7 +1792,7 @@ button:disabled,
   min-height: 40px;
   border: 1px solid var(--line-subtle);
   border-radius: 8px;
-  background: var(--bg-raised);
+  background: color-mix(in srgb, var(--bg-raised) 82%, transparent);
   color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
@@ -1823,19 +1818,36 @@ button:disabled,
 .squadFormMetaRow {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(190px, 0.9fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
   gap: 12px;
   align-items: end;
+}
+
+.squadFormOwnerPicker {
+  position: relative;
+}
+
+.squadFormOwnerPicker::after {
+  content: '';
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--text-tertiary);
+  border-bottom: 1.5px solid var(--text-tertiary);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
 }
 
 .squadFormOwnerPicker :global(button) {
   width: 100%;
   min-height: 40px;
+  padding: 0 32px 0 10px;
   border: 1px solid var(--line-subtle);
   border-radius: 8px;
-  background: var(--bg-raised);
+  background: color-mix(in srgb, var(--bg-raised) 82%, transparent);
   color: var(--text-primary);
-  padding-inline: 10px;
   font-size: 13px;
   font-weight: 500;
   box-shadow: none;
@@ -1886,39 +1898,40 @@ button:disabled,
 }
 
 .squadFormSettings {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  gap: 14px;
 }
 
 .squadFormSettingRow {
   min-width: 0;
   display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
+  gap: 7px;
 }
 
 .squadFormSettingLabel {
   color: var(--text-tertiary);
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.105em;
+  font-weight: 680;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .squadFormOptions {
   min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-subtle);
+  border-radius: 8px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  background: transparent;
 }
 
 .squadFormOption {
-  min-height: 48px;
-  padding: 8px 12px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 8px;
+  position: relative;
+  min-height: 50px;
+  padding: 8px 38px 8px 12px;
+  border: 0;
+  border-radius: 0;
   background: transparent;
   color: var(--text-secondary);
   text-align: left;
@@ -1929,44 +1942,53 @@ button:disabled,
   box-shadow: none;
 }
 
+.squadFormOption + .squadFormOption {
+  border-left: 1px solid var(--line-subtle);
+}
+
 .squadFormOption strong {
   color: var(--text-primary);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 620;
   line-height: 1.15;
 }
 
 .squadFormOption small {
   color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 10.5px;
+  font-weight: 450;
   line-height: 1.2;
 }
 
 .squadFormOption:hover {
-  border-color: var(--line);
-  background: var(--bg-raised);
+  background: color-mix(in srgb, var(--bg-raised) 64%, transparent);
 }
 
 .squadFormOption[aria-pressed='true'] {
-  border-color: color-mix(in srgb, var(--accent) 48%, var(--line-subtle));
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 72%, transparent);
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg-raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.squadFormOption[aria-pressed='true']::after {
+  content: '✓';
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: color-mix(in srgb, var(--accent) 72%, var(--text-secondary));
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .squadFormOption:focus,
-.squadFormOption:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
-
+.squadFormOption:focus-visible,
 .squadFormOption[aria-pressed='true']:focus,
 .squadFormOption[aria-pressed='true']:focus-visible {
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 72%, transparent);
+  outline: none;
 }
 
 .squadFormFooter {
-  min-height: 58px;
+  min-height: 56px;
   flex: 0 0 auto;
   padding: 10px 20px;
   border-top: 1px solid var(--workspace-panel-border-soft);
@@ -1977,54 +1999,44 @@ button:disabled,
 }
 
 .squadFormCancel,
-.squadFormSubmit,
-.squadFormDashboardLink {
+.squadFormSubmit {
   min-height: 36px;
   padding: 0 13px;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 640;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none;
 }
 
-.squadFormCancel,
-.squadFormDashboardLink {
+.squadFormCancel {
   border: 1px solid var(--line-subtle);
   background: transparent;
   color: var(--text-secondary);
 }
 
-.squadFormDashboardLink {
-  margin-right: auto;
-}
-
 .squadFormSubmit {
-  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line-subtle));
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line-subtle));
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
   color: var(--text-primary);
 }
 
-.squadFormCancel:hover,
-.squadFormDashboardLink:hover {
+.squadFormCancel:hover {
   border-color: var(--line);
   background: var(--bg-raised);
   color: var(--text-primary);
 }
 
 .squadFormSubmit:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .squadFormCancel:focus,
 .squadFormCancel:focus-visible,
 .squadFormSubmit:focus,
-.squadFormSubmit:focus-visible,
-.squadFormDashboardLink:focus,
-.squadFormDashboardLink:focus-visible {
+.squadFormSubmit:focus-visible {
   outline: none;
   box-shadow: none;
 }
@@ -2054,22 +2066,24 @@ button:disabled,
   }
 
   .squadFormLogoBlock {
-    align-items: flex-start;
+    justify-self: start;
+  }
+
+  .squadFormMainFields > .squadFormField:first-child {
+    max-width: none;
   }
 
   .squadFormMetaRow,
-  .squadFormSettingRow,
   .squadFormOptions {
     grid-template-columns: 1fr;
   }
 
-  .squadFormFooter {
-    padding-inline: 16px;
-    flex-wrap: wrap;
+  .squadFormOption + .squadFormOption {
+    border-top: 1px solid var(--line-subtle);
+    border-left: 0;
   }
 
-  .squadFormDashboardLink {
-    width: 100%;
-    margin-right: 0;
+  .squadFormFooter {
+    padding-inline: 16px;
   }
 }
