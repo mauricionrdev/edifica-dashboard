@@ -1146,9 +1146,9 @@ button:disabled,
 
 /* Squad creation/configuration */
 .squadConfigModal {
-  width: min(540px, calc(100vw - 32px));
-  max-height: min(640px, calc(100vh - 32px));
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  grid-template-rows: auto auto auto;
   overflow: hidden;
   border: 1px solid var(--workspace-panel-border-soft);
   border-radius: 14px;
@@ -1157,7 +1157,7 @@ button:disabled,
 }
 
 .squadConfigModal .modalHead {
-  min-height: 48px;
+  min-height: 52px;
   padding: 0 14px 0 20px;
   border-bottom: 1px solid var(--workspace-panel-border-soft);
   background: var(--bg-canvas);
@@ -1180,9 +1180,15 @@ button:disabled,
 }
 
 .squadConfigModal .userModalBody {
-  padding: 18px 20px 16px;
-  gap: 14px;
-  overflow: auto;
+  min-height: 0;
+  max-height: calc(100vh - 150px);
+  padding: 18px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: grid;
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 16px;
   background: var(--bg-canvas);
 }
 
@@ -1195,22 +1201,29 @@ button:disabled,
 
 .squadConfigModal .squadIdentityPanel {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-columns: 84px minmax(0, 1fr);
   align-items: start;
+  align-self: start;
   gap: 16px;
+  min-height: 0;
   padding: 0;
   border: 0;
   background: transparent;
 }
 
-.squadLogoColumn {
+.squadConfigModal .squadLogoColumn {
+  align-self: start;
   display: grid;
   justify-items: center;
-  gap: 7px;
-  padding-top: 4px;
+  align-content: start;
+  gap: 0;
+  padding-top: 18px;
+  min-height: 0;
+  overflow: visible;
 }
 
 .squadConfigModal .squadAvatarEditor {
+  position: relative;
   width: 76px;
   height: 76px;
   min-width: 76px;
@@ -1221,7 +1234,7 @@ button:disabled,
   color: var(--text-primary);
   display: inline-grid;
   place-items: center;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: inset 0 0 0 1px var(--line-subtle);
 }
 
@@ -1230,9 +1243,19 @@ button:disabled,
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
-.squadConfigModal .squadAvatarEditor span {
+.squadConfigModal .squadAvatarEditor > img,
+.squadConfigModal .squadAvatarEditor > span:not(.squadLogoEditMark) {
   width: 100%;
   height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.squadConfigModal .squadAvatarEditor > img {
+  object-fit: cover;
+}
+
+.squadConfigModal .squadAvatarEditor > span:not(.squadLogoEditMark) {
   display: grid;
   place-items: center;
   color: var(--text-primary);
@@ -1241,46 +1264,40 @@ button:disabled,
   letter-spacing: -0.02em;
 }
 
-.squadConfigModal .squadAvatarEditor img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 999px;
+.squadLogoEditMark {
+  position: absolute;
+  right: -1px;
+  bottom: 1px;
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  border: 2px solid var(--bg-canvas) !important;
+  border-radius: 999px !important;
+  background: var(--bg-raised) !important;
+  color: var(--text-secondary) !important;
+  display: grid !important;
+  place-items: center !important;
+  pointer-events: none;
 }
 
-.logoTextButton {
-  width: auto;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.1;
-  box-shadow: none;
-}
-
-.logoTextButton:hover {
-  color: var(--text-primary);
-  background: transparent;
-}
-
-.logoTextButton:focus,
-.logoTextButton:focus-visible {
-  outline: none;
-  box-shadow: none;
+.squadLogoEditMark svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 1.8;
 }
 
 .squadConfigModal .squadIdentityFields {
-  display: grid;
-  gap: 11px;
   min-width: 0;
+  display: grid;
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 10px;
 }
 
 .squadConfigModal .field {
+  display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .squadConfigModal .field > span {
@@ -1292,12 +1309,13 @@ button:disabled,
 }
 
 .squadNameField {
-  max-width: 316px;
+  width: min(100%, 360px);
+  max-width: 360px;
 }
 
 .squadConfigModal .field input,
 .squadConfigModal .slugField {
-  min-height: 36px;
+  min-height: 38px;
   border: 1px solid var(--line-subtle);
   border-radius: 9px;
   background: color-mix(in srgb, var(--bg-raised) 74%, #000 26%);
@@ -1309,6 +1327,8 @@ button:disabled,
 }
 
 .squadConfigModal .field input {
+  width: 100%;
+  min-width: 0;
   padding: 0 12px;
 }
 
@@ -1326,15 +1346,51 @@ button:disabled,
   box-shadow: none;
 }
 
+.squadLogoActions {
+  min-height: 18px;
+  margin-top: -2px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.logoTextButton {
+  width: auto;
+  min-height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+.logoTextButton:hover {
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.logoTextButton:focus,
+.logoTextButton:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .squadMetaGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 210px);
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 210px);
   gap: 10px;
   align-items: end;
+  min-width: 0;
 }
 
 .squadOwnerPicker :global(button) {
-  min-height: 36px;
+  min-height: 38px;
   border: 1px solid var(--line-subtle);
   border-radius: 9px;
   background: color-mix(in srgb, var(--bg-raised) 74%, #000 26%);
@@ -1360,6 +1416,7 @@ button:disabled,
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -1375,7 +1432,8 @@ button:disabled,
 }
 
 .squadConfigModal .slugField input {
-  min-height: 34px;
+  min-width: 0;
+  min-height: 36px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -1385,8 +1443,10 @@ button:disabled,
 
 .squadSettingsStack {
   display: grid;
+  grid-auto-rows: max-content;
+  align-content: start;
   gap: 10px;
-  padding-top: 2px;
+  padding-top: 0;
 }
 
 .settingRow {
@@ -1413,8 +1473,8 @@ button:disabled,
 
 .switchCard {
   position: relative;
-  min-height: 42px;
-  padding: 7px 30px 7px 10px;
+  min-height: 44px;
+  padding: 8px 12px;
   border: 1px solid var(--line-subtle);
   border-radius: 9px;
   background: color-mix(in srgb, var(--bg-canvas) 96%, #000 4%);
@@ -1426,19 +1486,6 @@ button:disabled,
   cursor: pointer;
   box-shadow: none;
   outline: none;
-}
-
-.switchCard::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--line);
-  opacity: 0;
-  transform: translateY(-50%);
 }
 
 .switchCard strong {
@@ -1463,29 +1510,22 @@ button:disabled,
 
 .switchCardActive,
 .switchCardActive:hover {
-  border-color: color-mix(in srgb, var(--accent) 34%, var(--line-subtle));
-  background: color-mix(in srgb, var(--accent) 2.6%, var(--bg-canvas));
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 76%, transparent);
-}
-
-.switchCardActive::after {
-  background: var(--accent);
-  opacity: 0.9;
+  border-color: var(--line);
+  background: var(--bg-raised);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 52%, transparent);
 }
 
 .switchCard:focus,
-.switchCard:focus-visible {
+.switchCard:focus-visible,
+.switchCardActive:focus,
+.switchCardActive:focus-visible {
   outline: none;
   box-shadow: none;
 }
 
 .switchCardActive:focus,
 .switchCardActive:focus-visible {
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 76%, transparent);
-}
-
-.squadConfigModal .rowActions {
-  gap: 8px;
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 52%, transparent);
 }
 
 .squadConfigModal .ghostButton,
@@ -1515,13 +1555,6 @@ button:disabled,
   color: var(--text-primary);
 }
 
-.squadConfigModal .selectorBlock {
-  padding: 10px 11px;
-  border: 1px solid var(--line-subtle);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bg-canvas) 94%, #000 6%);
-}
-
 @media (max-width: 760px) {
   .squadConfigModal {
     width: calc(100vw - 24px);
@@ -1534,110 +1567,13 @@ button:disabled,
     grid-template-columns: 1fr;
   }
 
-  .squadLogoColumn {
+  .squadConfigModal .squadLogoColumn {
     justify-items: start;
+    padding-top: 0;
   }
 
-  .squadConfigModal .squadIdentityFields,
   .squadNameField {
+    width: 100%;
     max-width: none;
   }
-}
-
-/* Squad modal · correção de composição do logo e seleção */
-.squadConfigModal .squadIdentityPanel {
-  grid-template-columns: 76px minmax(0, 1fr);
-  align-items: start;
-  gap: 14px;
-}
-
-.squadConfigModal .squadLogoColumn {
-  align-self: start;
-  justify-items: center;
-  gap: 0;
-  padding-top: 18px;
-  overflow: visible;
-}
-
-.squadConfigModal .squadAvatarEditor {
-  position: relative;
-  width: 72px;
-  height: 72px;
-  min-width: 72px;
-  overflow: visible;
-}
-
-.squadConfigModal .squadAvatarEditor > img,
-.squadConfigModal .squadAvatarEditor > span:not(.squadLogoEditMark) {
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.squadLogoEditMark {
-  position: absolute;
-  right: -1px;
-  bottom: 1px;
-  width: 22px !important;
-  height: 22px !important;
-  min-width: 22px !important;
-  border: 2px solid var(--bg-canvas) !important;
-  border-radius: 999px !important;
-  background: var(--bg-raised) !important;
-  color: var(--text-secondary) !important;
-  display: grid !important;
-  place-items: center !important;
-  pointer-events: none;
-}
-
-.squadLogoEditMark svg {
-  width: 12px;
-  height: 12px;
-  stroke-width: 1.8;
-}
-
-.squadLogoActions {
-  min-height: 16px;
-  margin-top: -4px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.squadLogoActions .logoTextButton {
-  display: inline-flex;
-  align-items: center;
-  width: auto;
-  min-height: 16px;
-  padding: 0;
-  overflow: visible;
-  white-space: nowrap;
-  color: var(--text-tertiary);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.squadLogoActions .logoTextButton:hover {
-  color: var(--text-primary);
-}
-
-.squadConfigModal .switchCard {
-  min-height: 42px;
-  padding: 7px 10px 7px 12px;
-}
-
-.squadConfigModal .switchCard::after {
-  display: none;
-}
-
-.squadConfigModal .switchCardActive,
-.squadConfigModal .switchCardActive:hover {
-  border-color: var(--line);
-  background: var(--bg-raised);
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 52%, transparent);
-}
-
-.squadConfigModal .switchCardActive:focus,
-.squadConfigModal .switchCardActive:focus-visible {
-  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--accent) 52%, transparent);
 }
