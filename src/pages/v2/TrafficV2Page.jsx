@@ -4,6 +4,7 @@ import { ChartColumnIcon, SearchIcon, ShieldIcon, TargetIcon, TrendingUpIcon, Tr
 import { MONTHS_FULL, fmtInt, fmtMoney, fmtPct } from '../../utils/format.js';
 import styles from './TrafficV2Page.module.css';
 import V2RouteNav from './V2RouteNav.jsx';
+import ClientName from '../../components/clients/ClientName.jsx';
 
 function currentPeriod() {
   const now = new Date();
@@ -338,7 +339,7 @@ export default function TrafficV2Page() {
                           <div className={styles.clientCell}>
                             <span className={styles.avatar}>{clientName(row).slice(0, 2).toUpperCase()}</span>
                             <div>
-                              <strong>{clientName(row)}</strong>
+                              <ClientName as="strong" client={row?.client || row} name={clientName(row)} />
                               <small>{row?.client?.id ? `ID ${row.client.id}` : 'Sem ID'}</small>
                             </div>
                           </div>
@@ -363,7 +364,7 @@ export default function TrafficV2Page() {
         <article className={styles.detailPanel}>
           <div className={styles.panelHeader}>
             <div>
-              <h2>{selectedClient ? clientName(selectedClient) : 'Cliente selecionado'}</h2>
+              <ClientName as="h2" client={selectedClient?.client || selectedClient} name={selectedClient ? clientName(selectedClient) : 'Cliente selecionado'} />
               <p>Detalhe somente leitura para validar priorização sem abrir edição.</p>
             </div>
             <span className={styles.readOnly}>Sem escrita</span>

@@ -39,6 +39,7 @@ import {
 } from '../utils/avatarStorage.js';
 import DateField from '../components/ui/DateField.jsx';
 import Avatar from '../components/ui/Avatar.jsx';
+import ClientName from '../components/clients/ClientName.jsx';
 import StateBlock from '../components/ui/StateBlock.jsx';
 import { BellIcon, BuildingIcon, CalendarIcon, ChecklistIcon, CloseIcon, SettingsIcon, TargetIcon, TrashIcon, UsersIcon } from '../components/ui/Icons.jsx';
 import styles from './ProfilePage.module.css';
@@ -5226,7 +5227,7 @@ export default function ProfilePage() {
                       className={styles.clientSearchOptionAvatar}
                     />
                     <div className={styles.clientSearchOptionText}>
-                      <strong>{client.name}</strong>
+                      <ClientName as="strong" client={client} />
                       {client.squadName || client.managerName || client.gdvName ? (
                         <span>{[client.squadName, client.managerName, client.gdvName].filter(Boolean).join(' · ')}</span>
                       ) : null}

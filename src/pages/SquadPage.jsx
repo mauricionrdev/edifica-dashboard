@@ -48,6 +48,7 @@ import UserPicker from '../components/users/UserPicker.jsx';
 import { buildSquadPath, matchesEntityRouteSegment, slugifySegment } from '../utils/entityPaths.js';
 import { TrashIcon } from '../components/ui/Icons.jsx';
 import styles from './SquadPage.module.css';
+import ClientName from '../components/clients/ClientName.jsx';
 
 const PAGE_SIZE = 10;
 const WEEKS_IN_MONTH = [1, 2, 3, 4];
@@ -688,7 +689,7 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
                 aria-haspopup="listbox"
                 aria-expanded={clientMenuOpen}
               >
-                <strong>{selectedClient?.name || 'Selecionar cliente'}</strong>
+                <ClientName as="strong" client={selectedClient} name={selectedClient?.name || 'Selecionar cliente'} />
                 <ChevronRightIcon size={14} aria-hidden="true" />
               </button>
 
@@ -715,7 +716,7 @@ function RouteScheduleModal({ clients = [], capName = '', initial = {}, busy = f
                         role="option"
                         aria-selected={String(client.id) === String(form.clientId)}
                       >
-                        <span>{client.name}</span>
+                        <ClientName client={client} />
                       </button>
                     ))}
                     {!filteredClients.length ? <div className={styles.routeComboboxEmpty}>Nenhum cliente encontrado.</div> : null}
@@ -1936,7 +1937,7 @@ export default function SquadPage() {
       {false && selectedClient && renderStickyResult ? (
         <section className={`${styles.stickyResultBar} ${showStickyResult ? styles.stickyVisible : styles.stickyLeaving}`.trim()}>
           <span className={styles.clientAvatarMini}>{selectedClient.avatarUrl ? <img src={selectedClient.avatarUrl} alt="" /> : initialsFromClient(selectedClient.name)}</span>
-          <strong>{selectedClient.name}</strong>
+          <ClientName as="strong" client={selectedClient} />
 
           <div className={styles.stickyMetric}>
             <span>Fechados</span>

@@ -22,6 +22,7 @@ import {
   hasPermission,
 } from '../../utils/permissions.js';
 import DesignLabClientDetailModal from './DesignLabClientDetailModal.jsx';
+import ClientName, { isPremiumClient } from '../../components/clients/ClientName.jsx';
 import styles from './DesignLabDashboardPage.module.css';
 
 function buildPeriodOptions() {
@@ -388,7 +389,7 @@ function ActivityPanel({ activities = [], onOpenClient }) {
                     {avatarUrl ? <img src={avatarUrl} alt="" /> : <span className={styles.activityAvatarInitials}>{initials}</span>}
                   </span>
                   <span className={styles.activityIdentityText}>
-                    <strong>{client.name || 'Cliente'}</strong>
+                    <ClientName as="strong" client={client} name={client.name || 'Cliente'} />
                     <small>{client.gestor || client.gdvName || 'Sem gestor'}</small>
                   </span>
                 </span>
@@ -608,7 +609,7 @@ export default function DesignLabDashboardPage() {
         <Select type="client" value={clientFilter} onChange={(event) => setClientFilter(event.target.value)} aria-label="Filtrar por cliente" disabled={shellLoading && clientOptions.length === 0} placeholder={shellLoading && clientOptions.length === 0 ? 'Carregando clientes…' : 'Todos clientes'}>
           <option value="">Todos clientes</option>
           {clientOptions.map((client) => (
-            <option key={client.id} value={client.id} data-avatar={getClientAvatar(client) || client.avatarUrl || ''} data-name={client.name}>{client.name}</option>
+            <option key={client.id} value={client.id} data-avatar={getClientAvatar(client) || client.avatarUrl || ''} data-name={client.name}>{client.name}{isPremiumClient(client) ? ' — Premium' : ''}</option>
           ))}
         </Select>
 

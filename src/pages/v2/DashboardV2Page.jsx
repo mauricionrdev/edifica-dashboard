@@ -19,6 +19,7 @@ import {
 } from './v2PageUtils.js';
 import styles from './V2Operations.module.css';
 import V2RouteNav from './V2RouteNav.jsx';
+import ClientName from '../../components/clients/ClientName.jsx';
 
 function targetTone(value, target, invert = false) {
   const safeValue = safeNumber(value, 0);
@@ -268,7 +269,7 @@ export default function DashboardV2Page() {
           <div className={styles.miniList}>
             {attentionClients.map((client) => (
               <div className={styles.miniListRow} key={client?.id || clientName(client)}>
-                <strong>{clientName(client)}</strong>
+                <ClientName as="strong" client={client} name={clientName(client)} />
                 <span>{clientStatus(client)} · {safePct(clientProgress(client))} · {safeMoney(clientFee(client))}</span>
               </div>
             ))}

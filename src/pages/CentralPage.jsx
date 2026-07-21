@@ -25,6 +25,7 @@ import {
   hasPermission,
 } from '../utils/permissions.js';
 import styles from './CentralPage.module.css';
+import ClientName, { isPremiumClient } from '../components/clients/ClientName.jsx';
 
 function buildPeriodOptions() {
   const now = new Date();
@@ -564,7 +565,7 @@ function ActivityPanel({ activities = [], onOpenClient }) {
                   )}
                 </span>
 
-                <span className={styles.activityName}>{client.name || 'Cliente'}</span>
+                <ClientName client={client} name={client.name || 'Cliente'} className={styles.activityName} />
                 <span className={styles.activityDate}>{formatShortDate(activity.date)}</span>
                 <span className={styles.activitySquad}>{squad}</span>
                 <span className={styles.activityFee}>{fee || 'Sem mensalidade'}</span>
@@ -992,7 +993,7 @@ export default function CentralPage() {
               data-avatar={getClientAvatar(client) || client.avatarUrl || ''}
               data-name={client.name}
             >
-              {client.name}
+              {client.name}{isPremiumClient(client) ? ' — Premium' : ''}
             </option>
           ))}
         </Select>

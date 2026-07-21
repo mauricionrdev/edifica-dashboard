@@ -16,6 +16,7 @@ import { isActiveClientStatus } from '../utils/clientStatus.js';
 import { clientInitials } from '../utils/clientHelpers.js';
 import { getClientAvatar, getSquadAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import styles from './PreencherSemanaPage.module.css';
+import ClientName, { isPremiumClient } from '../components/clients/ClientName.jsx';
 
 const EMPTY_DATA = {
   metaSemanal: '',
@@ -512,7 +513,7 @@ function WeekCardBase({ client, periodKey, week, campaignLabel = '', campaignCou
           </div>
 
           <div className={styles.clientText}>
-            <strong>{client.name}</strong>
+            <ClientName as="strong" client={client} />
             <span>{ownerLabel || 'Sem responsável definido'}</span>
           </div>
         </div>
@@ -913,7 +914,7 @@ export default function PreencherSemanaPage() {
               data-avatar={getClientAvatar(client) || client.avatarUrl || ''}
               data-name={client.name}
             >
-              {client.name}
+              {client.name}{isPremiumClient(client) ? ' — Premium' : ''}
             </option>
           ))}
         </Select>

@@ -37,6 +37,7 @@ import {
 import UserPicker from '../components/users/UserPicker.jsx';
 import { buildGdvPath, getEntityRouteSegment, matchesEntityRouteSegment, slugifySegment } from '../utils/entityPaths.js';
 import styles from './GdvPage.module.css';
+import ClientName from '../components/clients/ClientName.jsx';
 
 const PAGE_SIZE = 10;
 const METRIC_BATCH_SIZE = 8;
@@ -1379,7 +1380,7 @@ export default function GdvPage() {
               clientInitials(selectedRow.client.name)
             )}
           </span>
-          <strong>{selectedRow.client.name}</strong>
+          <ClientName as="strong" client={selectedRow.client} />
 
           <div className={styles.stickyMetric}><span>Fechados</span><b>{displayInt(selectedRow.calc.fec)}</b></div>
           <div className={styles.stickyMetric}><span>Meta</span><b>{selectedRow.calc.mLuc > 0 ? displayInt(selectedRow.calc.mLuc) : '—'}</b></div>
@@ -1482,7 +1483,7 @@ export default function GdvPage() {
                         )}
                       </span>
                       <div>
-                        <strong>{client.name}</strong>
+                        <ClientName as="strong" client={client} />
                         <span>{squadName}{client.gestor ? ` · ${client.gestor}` : ''}</span>
                       </div>
                     </div>

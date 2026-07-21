@@ -31,6 +31,7 @@ import {
 } from '../utils/domain.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { getAccessibleClientRow, getAllowedSquads } from '../utils/access.js';
+import { ensureClientPremiumSchema } from '../utils/clientPremium.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -466,8 +467,8 @@ function clientProjectedToHitGoalInMonth(clientMetrics = [], monthPrefix = '', m
   const effectiveProjected = Math.max(monthClosed, monthProjected);
 
   return {
-    // Ranking previsto considera exclusivamente o equivalente ao status visual
-    // "Vai bater meta": ainda não bateu, mas a projeção alcança a meta.
+    // `predicted` representa apenas quem ainda não bateu, mas está projetado para bater.
+    // A Meta Prevista dos Squads soma este grupo aos clientes que já bateram a meta.
     predicted: monthGoal > 0 && monthClosed < monthGoal && effectiveProjected >= monthGoal,
     monthClosed,
     monthProjected: effectiveProjected,
@@ -1002,6 +1003,7 @@ function buildRankingEntityClientSummaries(clients = [], metricsByClient = new M
     return {
       clientId: client.id,
       name: client.name,
+      isPremium: Boolean(client.is_premium),
       squadId: client.squad_id,
       clientMetaLucro,
       ...summary,
@@ -1012,6 +1014,21 @@ function buildRankingEntityClientSummaries(clients = [], metricsByClient = new M
       hasGoal: hit || projected.predicted,
     };
   });
+}
+
+function buildPredictedGoalStats(clientSummaries = [], activeClientCount = 0) {
+  const predictedGoalBaseClients = Math.max(0, Number(activeClientCount) || 0);
+  const qualifyingClients = clientSummaries.filter((client) => Boolean(client?.hit || client?.predicted)).length;
+  const predictedGoalClients = Math.min(predictedGoalBaseClients, qualifyingClients);
+  const predictedGoalProgress = predictedGoalBaseClients > 0
+    ? (predictedGoalClients / predictedGoalBaseClients) * 100
+    : 0;
+
+  return {
+    predictedGoalClients,
+    predictedGoalBaseClients,
+    predictedGoalProgress,
+  };
 }
 
 function buildRankingStatsForClients(clients = [], metricsByClient = new Map(), monthPrefix = '', context = {}) {
@@ -1379,10 +1396,12 @@ async function buildSquadRankingSnapshotRows(req, monthPrefix, squadId = '') {
 
     const rankingGoalClients = clientSummaries.filter((client) => client.hit).length;
     const rankingGoalBaseClients = activeClients.length;
-    const predictedGoalClients = clientSummaries.filter((client) => client.predicted).length;
-    const predictedGoalBaseClients = activeClients.length;
+    const {
+      predictedGoalClients,
+      predictedGoalBaseClients,
+      predictedGoalProgress,
+    } = buildPredictedGoalStats(clientSummaries, activeClients.length);
     const metaActiveProgress = rankingGoalBaseClients > 0 ? (rankingGoalClients / rankingGoalBaseClients) * 100 : 0;
-    const predictedGoalProgress = predictedGoalBaseClients > 0 ? (predictedGoalClients / predictedGoalBaseClients) * 100 : 0;
 
     return {
       squad: {
@@ -1621,6 +1640,7 @@ function summarizeTrafficClient(client = {}, metrics = []) {
       id: client.id,
       name: client.name,
       avatarUrl: client.avatar_data_url || '',
+      isPremium: Boolean(client.is_premium),
       squadId: client.squad_id || '',
       squadName: client.squad_name || '',
       gestor: client.gestor || '',
@@ -1650,13 +1670,14 @@ function isTrafficPortfolioStatus(status = '') {
 }
 
 async function buildTrafficManagementPayload(req, monthPrefix, gestorFilter = '') {
+  await ensureClientPremiumSchema();
   if (req.emptyWorkspaceView) {
     return { monthPrefix, managers: [], clients: [], ranking: [], summary: { portfolio: 0, critical: 0, projectedHit: 0, withoutData: 0 } };
   }
 
   const squadScope = getAllowedSquads(req.user, 'metrics.view.all');
   const params = [];
-  let clientSql = `SELECT c.id, c.name, c.avatar_data_url, c.squad_id, c.gestor, c.status, c.meta_lucro, s.name AS squad_name
+  let clientSql = `SELECT c.id, c.name, c.avatar_data_url, c.is_premium, c.squad_id, c.gestor, c.status, c.meta_lucro, s.name AS squad_name
                      FROM clients c
                      LEFT JOIN squads s ON s.id = c.squad_id
                     WHERE c.gestor IS NOT NULL
@@ -2293,10 +2314,12 @@ router.get('/ranking', requirePermission('ranking.view'), async (req, res, next)
       const totals = aggregatePortfolioSummary(clientSummaries);
       const rankingGoalClients = clientSummaries.filter((client) => client.hit).length;
       const rankingGoalBaseClients = activeClients.length;
-      const predictedGoalClients = clientSummaries.filter((client) => client.predicted).length;
-      const predictedGoalBaseClients = activeClients.length;
+      const {
+        predictedGoalClients,
+        predictedGoalBaseClients,
+        predictedGoalProgress,
+      } = buildPredictedGoalStats(clientSummaries, activeClients.length);
       const metaIndex = rankingGoalBaseClients > 0 ? (rankingGoalClients / rankingGoalBaseClients) * 100 : 0;
-      const predictedGoalProgress = predictedGoalBaseClients > 0 ? (predictedGoalClients / predictedGoalBaseClients) * 100 : 0;
       const metaActiveProgress = metaIndex;
       const metaActiveTargetProgress = squadGoalPercent > 0 ? (metaActiveProgress / squadGoalPercent) * 100 : metaActiveProgress;
       const metaActiveDistance = goalDistance(metaActiveProgress, squadGoalPercent);
@@ -2483,6 +2506,7 @@ router.get('/ranking/champions', requirePermission('ranking.view'), async (req, 
 // --------------------------------------------------------------
 router.get('/summary', requirePermission('metrics.view'), async (req, res, next) => {
   try {
+    await ensureClientPremiumSchema();
     if (req.emptyWorkspaceView) {
       const ref = req.query?.date ? new Date(`${req.query.date}T00:00:00Z`) : new Date();
       const weekKey = currentPeriodKey(ref);
@@ -2512,7 +2536,7 @@ router.get('/summary', requirePermission('metrics.view'), async (req, res, next)
 
     // [Fase 2] Seleciona c.meta_lucro para usar no fallback
     let clientSql = `
-      SELECT c.id, c.name, c.squad_id, c.gdv_name, c.gestor, c.meta_lucro,
+      SELECT c.id, c.name, c.is_premium, c.squad_id, c.gdv_name, c.gestor, c.meta_lucro,
              c.status, c.start_date, c.churn_date, c.created_at,
              s.name AS squad_name
         FROM clients c
@@ -2590,6 +2614,7 @@ router.get('/summary', requirePermission('metrics.view'), async (req, res, next)
       return {
         clientId:   c.id,
         name:       c.name,
+        isPremium:  Boolean(c.is_premium),
         squadId:    c.squad_id   || null,
         squadName:  c.squad_name || null,
         gdvName:    c.gdv_name   || '',

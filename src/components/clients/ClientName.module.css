@@ -1,0 +1,30 @@
+.clientName {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  vertical-align: middle;
+}
+
+.nameText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.premiumBadge {
+  flex: 0 0 auto;
+  min-height: 18px;
+  padding: 1px 7px;
+  border: 1px solid color-mix(in srgb, var(--accent) 58%, transparent);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 9px;
+  font-weight: 780;
+  line-height: 14px;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+  box-shadow: none;
+}

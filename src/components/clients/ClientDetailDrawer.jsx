@@ -24,6 +24,7 @@ import ClientProjectTab from './ClientProjectTab.jsx';
 import ClientBookTab from './ClientBookTab.jsx';
 import ClientTasksTab from './ClientTasksTab.jsx';
 import ClientFilesTab from './ClientFilesTab.jsx';
+import ClientName from './ClientName.jsx';
 import drawerStyles from './ClientDetailDrawer.module.css';
 import tabStyles from './ClientTabs.module.css';
 
@@ -195,9 +196,7 @@ export default function ClientDetailDrawer({
 
             <div className={drawerStyles.identityText}>
               <div className={drawerStyles.nameRow}>
-                <h2 id="client-drawer-name" className={drawerStyles.name}>
-                  {client.name}
-                </h2>
+                <ClientName as="h2" id="client-drawer-name" className={drawerStyles.name} client={client} />
                 <span
                   className={drawerStyles.status}
                   style={{

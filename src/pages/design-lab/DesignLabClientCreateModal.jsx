@@ -34,6 +34,7 @@ const EMPTY = {
   contractType: 'recurring',
   internalCommercial: 'no',
   internalSeller: '',
+  isPremium: 'no',
 };
 
 function toPayload(form) {
@@ -52,6 +53,7 @@ function toPayload(form) {
     contractType: form.contractType === 'tcv' ? 'tcv' : 'recurring',
     internalCommercial: form.internalCommercial === 'yes',
     internalSeller: form.internalCommercial === 'yes' ? form.internalSeller.trim() : '',
+    isPremium: form.isPremium === 'yes',
   };
 }
 
@@ -245,6 +247,28 @@ export default function DesignLabClientCreateModal({
                   disabled={saving}
                 />
               </label>
+
+              <fieldset className={styles.premiumField}>
+                <legend>Cliente Premium?</legend>
+                <div className={styles.premiumOptions}>
+                  <button
+                    type="button"
+                    className={form.isPremium === 'no' ? styles.premiumOptionActive : ''}
+                    onClick={() => setField('isPremium', 'no')}
+                    disabled={saving}
+                  >
+                    Não
+                  </button>
+                  <button
+                    type="button"
+                    className={form.isPremium === 'yes' ? styles.premiumOptionActive : ''}
+                    onClick={() => setField('isPremium', 'yes')}
+                    disabled={saving}
+                  >
+                    Sim
+                  </button>
+                </div>
+              </fieldset>
 
               <div className={styles.mainFieldsGrid}>
                 <label className={styles.field}>

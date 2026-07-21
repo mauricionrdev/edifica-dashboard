@@ -12,6 +12,7 @@ import { MONTHS_FULL, fmtInt, fmtMoney, fmtPct } from '../utils/format.js';
 import { getClientAvatar, subscribeAvatarChange } from '../utils/avatarStorage.js';
 import { clientInitials } from '../utils/clientHelpers.js';
 import styles from './TrafficManagementPage.module.css';
+import ClientName from '../components/clients/ClientName.jsx';
 
 function currentPeriod() {
   const now = new Date();
@@ -273,7 +274,7 @@ export default function TrafficManagementPage() {
                 onClick={() => setSelectedClientId(row.client.id)}
               >
                 <ClientAvatar client={row.client} />
-                <span><strong>{row.client.name}</strong><small>{row.client.squadName || 'Sem squad'} · {compactName(row.client.gestor)}</small></span>
+                <span><ClientName as="strong" client={row.client} /><small>{row.client.squadName || 'Sem squad'} · {compactName(row.client.gestor)}</small></span>
                 <em>{fmtIntSafe(row.priority)}</em>
               </button>
             ))}
@@ -288,7 +289,7 @@ export default function TrafficManagementPage() {
                 <div className={styles.detailTitle}>
                   <ClientAvatar client={selectedClient.client} />
                   <div>
-                    <h2>{selectedClient.client.name}</h2>
+                    <ClientName as="h2" client={selectedClient.client} />
                     <span>{selectedClient.client.squadName || 'Sem squad'} · {compactName(selectedClient.client.gestor)}</span>
                   </div>
                 </div>

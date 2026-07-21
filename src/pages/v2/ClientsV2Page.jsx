@@ -30,6 +30,7 @@ import { CalendarIcon, ChartColumnIcon, ChevronDownIcon, ClipboardListIcon, Plus
 import { BareBadge, BareButton } from '../../components/design-system/index.js';
 import DesignLabClientCreateModal from '../design-lab/DesignLabClientCreateModal.jsx';
 import DesignLabClientDetailModal from '../design-lab/DesignLabClientDetailModal.jsx';
+import ClientName from '../../components/clients/ClientName.jsx';
 import '../../styles/design-system/barely-there.css';
 import styles from './ClientsV2Page.module.css';
 
@@ -613,7 +614,7 @@ export default function ClientsV2Page() {
                       {avatar ? <img src={avatar} alt="" /> : clientInitials(client.name)}
                     </span>
                     <span className={styles.identityText}>
-                      <strong>{client.name}</strong>
+                      <ClientName as="strong" client={client} />
                     </span>
                   </div>
 

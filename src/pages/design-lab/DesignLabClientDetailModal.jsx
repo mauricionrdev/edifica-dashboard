@@ -21,6 +21,7 @@ import ClientBookTab from '../../components/clients/ClientBookTab.jsx';
 import ClientProjectTab from '../../components/clients/ClientProjectTab.jsx';
 import DesignLabClientDrivePanel from './DesignLabClientDrivePanel.jsx';
 import ClientTasksTab from '../../components/clients/ClientTasksTab.jsx';
+import ClientName, { isPremiumClient } from '../../components/clients/ClientName.jsx';
 import styles from './DesignLabClientDetailModal.module.css';
 
 const INTERNAL_SELLER_OPTIONS = ['Michael', 'Camila'];
@@ -71,6 +72,7 @@ function buildForm(client) {
     contractType: client?.contractType === 'tcv' || client?.isTcv ? 'tcv' : 'recurring',
     internalCommercial: client?.internalCommercial || client?.internal_commercial_enabled ? 'yes' : 'no',
     internalSeller: client?.internalSeller || client?.internal_seller || '',
+    isPremium: isPremiumClient(client) ? 'yes' : 'no',
   };
 }
 
@@ -89,6 +91,7 @@ function toPayload(form) {
     contractType: form.contractType === 'tcv' ? 'tcv' : 'recurring',
     internalCommercial: form.internalCommercial === 'yes',
     internalSeller: form.internalCommercial === 'yes' ? form.internalSeller.trim() : '',
+    isPremium: form.isPremium === 'yes',
   };
 }
 
@@ -523,7 +526,7 @@ export default function DesignLabClientDetailModal({
           <div className={styles.identity}>
             <span className={styles.avatar}>{avatarUrl ? <img src={avatarUrl} alt="" /> : clientInitials(form.name)}</span>
             <div className={styles.titleBlock}>
-              <h2>{form.name || client.name}</h2>
+              <ClientName as="h2" client={{ ...client, isPremium: form.isPremium === 'yes' }} name={form.name || client.name} />
               <span className={`${styles.statusBadge} ${styles[`status_${tone}`]}`.trim()}>{statusLabel({ ...client, status: form.status })}</span>
             </div>
           </div>
@@ -610,6 +613,28 @@ export default function DesignLabClientDetailModal({
                       <span>Nome do cliente / Escritório</span>
                       <input value={form.name} onChange={(event) => setField('name', event.target.value)} disabled={!canEditClient || saving} />
                     </label>
+
+                    <fieldset className={styles.premiumField}>
+                      <legend>Cliente Premium?</legend>
+                      <div className={styles.premiumOptions}>
+                        <button
+                          type="button"
+                          className={form.isPremium === 'no' ? styles.premiumOptionActive : ''}
+                          onClick={() => setField('isPremium', 'no')}
+                          disabled={!canEditClient || saving}
+                        >
+                          Não
+                        </button>
+                        <button
+                          type="button"
+                          className={form.isPremium === 'yes' ? styles.premiumOptionActive : ''}
+                          onClick={() => setField('isPremium', 'yes')}
+                          disabled={!canEditClient || saving}
+                        >
+                          Sim
+                        </button>
+                      </div>
+                    </fieldset>
 
                     <div className={styles.mainFieldsGrid}>
                       <label className={styles.field}>

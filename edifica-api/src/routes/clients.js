@@ -23,6 +23,7 @@ import {
 import { filterRowsBySquadAccess, getAccessibleClientRow, getAllowedSquads, isAdminUser } from '../utils/access.js';
 import { requireAuth, requirePermission } from '../middleware/auth.js';
 import { hasPermission } from '../utils/permissions.js';
+import { ensureClientPremiumSchema } from '../utils/clientPremium.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -35,6 +36,12 @@ function normalizeContractType(value) {
   const raw = String(value || '').trim().toLowerCase();
   if (raw === 'tcv' || raw === 'single' || raw === 'one_time' || raw === 'valor_total') return 'tcv';
   return 'recurring';
+}
+
+function normalizeBooleanFlag(value) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value === 1;
+  return ['1', 'true', 'yes', 'sim', 'on'].includes(String(value || '').trim().toLowerCase());
 }
 
 function normalizeClientStatus(status) {
@@ -282,6 +289,7 @@ async function ensureResponsibleSchema() {
       if (!clientNames.has('status_changed_at')) {
         await query('ALTER TABLE clients ADD COLUMN status_changed_at DATETIME NULL AFTER churn_year');
       }
+      await ensureClientPremiumSchema();
     })().catch((err) => {
       responsibleSchemaPromise = null;
       throw err;
@@ -298,6 +306,7 @@ function serializeClient(row) {
     id: row.id,
     name: row.name,
     avatarUrl: row.avatar_data_url || '',
+    isPremium: Boolean(row.is_premium),
     squadId: row.squad_id,
     squadName: row.squad_name ?? null, // vem do JOIN quando disponível
     gdvName: row.gdv_name || '',
@@ -340,6 +349,7 @@ function pickUpdatableFields(body) {
     'status',
     'churnMonth',
     'avatarUrl',
+    'isPremium',
     'fee',
     'metaLucro',
     'startDate',
@@ -558,13 +568,14 @@ router.post('/', requirePermission('clients.create'), async (req, res, next) => 
     await withTransaction(async (conn) => {
       await conn.query(
         `INSERT INTO clients (
-           id, name, avatar_data_url, squad_id, gdv_name, gestor, internal_commercial_enabled, internal_seller, status, goal_status,
+           id, name, avatar_data_url, is_premium, squad_id, gdv_name, gestor, internal_commercial_enabled, internal_seller, status, goal_status,
            contract_type, fee, meta_lucro, start_date, end_date, churn_date, churn_month, churn_year, status_changed_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           name,
           String(fields.avatarUrl || '').trim() || null,
+          normalizeBooleanFlag(fields.isPremium) ? 1 : 0,
           fields.squadId || null,
           String(fields.gdvName || ''),
           String(fields.gestor || ''),
@@ -692,6 +703,10 @@ router.put('/:id', requirePermission('clients.edit'), async (req, res, next) => 
       }
       updates.push('avatar_data_url = ?');
       params.push(cleanAvatar || null);
+    }
+    if (fields.isPremium !== undefined) {
+      updates.push('is_premium = ?');
+      params.push(normalizeBooleanFlag(fields.isPremium) ? 1 : 0);
     }
     if (fields.squadId !== undefined) {
       updates.push('squad_id = ?');
