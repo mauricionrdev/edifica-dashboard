@@ -1,54 +1,53 @@
 [data-edifica-new] {
-  --new-bg-app: #050607;
-  --new-bg-sidebar: #08090b;
-  --new-bg-topbar: rgba(8, 9, 11, 0.96);
-  --new-bg-surface: #0b0d10;
-  --new-bg-surface-raised: #101318;
-  --new-bg-control: #0d1014;
-  --new-bg-hover: #14181e;
-  --new-bg-selected: #171c23;
-  --new-bg-overlay: #0c0f13;
-  --new-bg-bar: #303640;
-  --new-bg-bar-hover: #434b57;
+  --new-bg-app: #030405;
+  --new-bg-sidebar: #060708;
+  --new-bg-topbar: rgba(6, 7, 8, 0.96);
+  --new-bg-surface: #090b0d;
+  --new-bg-surface-raised: #0d1013;
+  --new-bg-control: #0d1013;
+  --new-bg-hover: #11151a;
+  --new-bg-selected: #151a20;
+  --new-bg-overlay: #0d1013;
+  --new-bg-bar: color-mix(in srgb, #6f757d 42%, transparent);
+  --new-bg-bar-hover: color-mix(in srgb, #9aa0a6 48%, transparent);
   --new-bg-scrim: rgba(0, 0, 0, 0.58);
   --new-bg-muted-overlay: rgba(0, 0, 0, 0.14);
   --new-bg-track: rgba(255, 255, 255, 0.025);
   --new-bg-track-strong: rgba(255, 255, 255, 0.05);
   --new-bg-row-hover: rgba(255, 255, 255, 0.018);
   --new-bg-icon: rgba(255, 255, 255, 0.035);
-  --new-bg-skeleton-highlight: #12161b;
+  --new-bg-skeleton-highlight: #11151a;
 
-  --new-text-primary: #f2f3f5;
-  --new-text-secondary: #b8bec7;
-  --new-text-muted: #7e8793;
-  --new-text-faint: #59616c;
+  --new-text-primary: #f1f3f4;
+  --new-text-secondary: #c7cbd1;
+  --new-text-muted: #9aa0a6;
+  --new-text-faint: #6f757d;
 
-  --new-line-subtle: rgba(255, 255, 255, 0.05);
-  --new-line: rgba(255, 255, 255, 0.085);
-  --new-line-strong: rgba(255, 255, 255, 0.14);
+  --new-line-subtle: rgba(255, 255, 255, 0.052);
+  --new-line: rgba(255, 255, 255, 0.078);
+  --new-line-strong: rgba(255, 255, 255, 0.112);
 
   --new-brand: #f5b800;
-  --new-brand-hover: #ffc526;
-  --new-brand-soft: rgba(245, 184, 0, 0.1);
-  --new-brand-line: rgba(245, 184, 0, 0.25);
+  --new-brand-hover: #ffc400;
+  --new-brand-soft: rgba(245, 184, 0, 0.08);
+  --new-brand-line: rgba(245, 184, 0, 0.24);
   --new-brand-contrast: #1a1500;
-  --new-brand-focus: rgba(245, 184, 0, 0.72);
   --new-brand-glow: rgba(245, 184, 0, 0.035);
-  --new-avatar: #e4ad13;
+  --new-avatar: #f5b800;
   --new-avatar-contrast: #211800;
 
-  --new-success: #5bd178;
-  --new-success-soft: rgba(57, 183, 88, 0.11);
-  --new-success-line: rgba(91, 209, 120, 0.22);
-  --new-warning: #f2bd46;
-  --new-warning-soft: rgba(242, 189, 70, 0.11);
-  --new-warning-line: rgba(242, 189, 70, 0.24);
-  --new-danger: #f07878;
-  --new-danger-soft: rgba(240, 120, 120, 0.1);
-  --new-danger-line: rgba(240, 120, 120, 0.22);
-  --new-info: #72b7f4;
-  --new-info-soft: rgba(114, 183, 244, 0.1);
-  --new-info-line: rgba(114, 183, 244, 0.22);
+  --new-success: #5ee282;
+  --new-success-soft: rgba(39, 166, 68, 0.1);
+  --new-success-line: rgba(39, 166, 68, 0.22);
+  --new-warning: #fcd34d;
+  --new-warning-soft: rgba(245, 184, 0, 0.1);
+  --new-warning-line: rgba(245, 184, 0, 0.24);
+  --new-danger: #fca5a5;
+  --new-danger-soft: rgba(239, 68, 68, 0.1);
+  --new-danger-line: rgba(239, 68, 68, 0.22);
+  --new-info: #baE6fd;
+  --new-info-soft: rgba(85, 237, 246, 0.08);
+  --new-info-line: rgba(85, 237, 246, 0.22);
 
   --new-radius-control: 7px;
   --new-radius-surface: 8px;
@@ -76,6 +75,8 @@
 [data-edifica-new] button,
 [data-edifica-new] input,
 [data-edifica-new] textarea {
+  outline: none;
+  box-shadow: none;
   color: inherit;
   font: inherit;
 }
@@ -83,11 +84,6 @@
 [data-edifica-new] button,
 [data-edifica-new] a {
   -webkit-tap-highlight-color: transparent;
-}
-
-[data-edifica-new] :where(button, a, input, textarea, [role="button"], [role="option"]):focus-visible {
-  outline: 2px solid var(--new-brand-focus);
-  outline-offset: 2px;
 }
 
 [data-edifica-new] ::selection {

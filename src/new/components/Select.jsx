@@ -21,7 +21,6 @@ export default function Select({
   className = '',
 }) {
   const rootRef = useRef(null);
-  const triggerRef = useRef(null);
   const listId = useId();
   const [open, setOpen] = useState(false);
   const selectedIndex = useMemo(
@@ -39,7 +38,6 @@ export default function Select({
     const onEscape = (event) => {
       if (event.key !== 'Escape') return;
       setOpen(false);
-      triggerRef.current?.focus();
     };
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onEscape);
@@ -57,7 +55,6 @@ export default function Select({
     if (!option || option.disabled) return;
     onChange?.(option.value);
     setOpen(false);
-    triggerRef.current?.focus();
   }
 
   function handleKeyDown(event) {
@@ -85,7 +82,6 @@ export default function Select({
   return (
     <div ref={rootRef} className={`${styles.root} ${className}`.trim()}>
       <button
-        ref={triggerRef}
         type="button"
         className={`${styles.trigger} ${open ? styles.triggerOpen : ''}`.trim()}
         aria-label={ariaLabel}
@@ -96,7 +92,12 @@ export default function Select({
         onClick={() => setOpen((current) => !current)}
         onKeyDown={handleKeyDown}
       >
-        <span className={styles.triggerLabel}>{selectedOption?.label || 'Selecionar'}</span>
+        <span className={styles.triggerContent}>
+          {selectedOption?.avatar ? (
+            <img className={styles.optionAvatar} src={selectedOption.avatar} alt="" />
+          ) : null}
+          <span className={styles.triggerLabel}>{selectedOption?.label || 'Selecionar'}</span>
+        </span>
         <ChevronDown size={15} strokeWidth={1.8} aria-hidden="true" />
       </button>
 
@@ -117,7 +118,12 @@ export default function Select({
                   onPointerMove={() => setActiveIndex(index)}
                   onClick={() => choose(option)}
                 >
-                  <span>{option.label}</span>
+                  <span className={styles.optionContent}>
+                    {option.avatar ? (
+                      <img className={styles.optionAvatar} src={option.avatar} alt="" />
+                    ) : null}
+                    <span>{option.label}</span>
+                  </span>
                   <span className={`${styles.check} ${selected ? styles.checkSelected : ''}`.trim()}>
                     {selected ? <Check size={11} strokeWidth={2.4} aria-hidden="true" /> : null}
                   </span>

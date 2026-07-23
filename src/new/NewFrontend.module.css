@@ -36,23 +36,20 @@
 }
 
 .brand {
+  width: 112px;
   min-width: 0;
   display: inline-flex;
   align-items: center;
+  overflow: hidden;
 }
 
-.brandExpanded {
-  width: 112px;
+.brandLogo {
+  width: 106px;
   max-height: 28px;
+  display: block;
+  flex: 0 0 106px;
   object-fit: contain;
   object-position: left center;
-}
-
-.brandCompact {
-  display: none;
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
 }
 
 .mobileClose,
@@ -327,7 +324,6 @@
   display: none;
 }
 
-.shellCollapsed .brandExpanded,
 .shellCollapsed .navGroupLabel,
 .shellCollapsed .navItem span,
 .shellCollapsed .profileText {
@@ -339,8 +335,18 @@
   padding: 0;
 }
 
-.shellCollapsed .brandCompact {
-  display: block;
+.shellCollapsed .brand {
+  width: 28px;
+  flex: 0 0 28px;
+}
+
+.shellCollapsed .brandLogo {
+  width: 106px;
+  height: 28px;
+  max-height: 28px;
+  flex-basis: 106px;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .shellCollapsed .navigation {

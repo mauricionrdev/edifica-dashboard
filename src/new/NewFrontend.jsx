@@ -79,15 +79,9 @@ export default function NewFrontend() {
         <div className={styles.brandRow}>
           <Link to="/new/dashboard" className={styles.brand} aria-label="Edifica Central">
             <img
-              className={styles.brandExpanded}
-              src="/brand/logotipo.svg"
+              className={styles.brandLogo}
+              src="/brand/logo.png"
               alt="Edifica"
-            />
-            <img
-              className={styles.brandCompact}
-              src="/favicon.png"
-              alt=""
-              aria-hidden="true"
             />
           </Link>
           <button

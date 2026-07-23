@@ -7,9 +7,23 @@ export default function MetricCard({
   meta,
   icon: Icon,
   tone = 'neutral',
+  progress,
+  draggable = false,
+  dragging = false,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
 }) {
   return (
-    <article className={`${styles.card} ${styles[`tone_${tone}`] || styles.tone_neutral}`.trim()}>
+    <article
+      className={`${styles.card} ${styles[`tone_${tone}`] || styles.tone_neutral} ${dragging ? styles.dragging : ''}`.trim()}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+    >
       <div className={styles.header}>
         <span className={styles.label}>{label}</span>
         {Icon ? (
@@ -23,6 +37,11 @@ export default function MetricCard({
         <span className={styles.detail}>{detail}</span>
         {meta ? <span className={styles.meta}>{meta}</span> : null}
       </div>
+      {typeof progress === 'number' ? (
+        <span className={styles.progress} aria-hidden="true">
+          <i style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }} />
+        </span>
+      ) : null}
     </article>
   );
 }

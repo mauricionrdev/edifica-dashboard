@@ -15,6 +15,18 @@
   background: var(--new-bg-control);
 }
 
+.card[draggable='true'] {
+  cursor: grab;
+}
+
+.card[draggable='true']:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.48;
+}
+
 .header,
 .footer {
   display: flex;
@@ -93,6 +105,22 @@
 .tone_brand .icon {
   color: var(--new-brand);
   background: var(--new-brand-soft);
+}
+
+.progress {
+  height: 3px;
+  display: block;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--new-bg-track-strong);
+}
+
+.progress i {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: var(--new-danger);
 }
 
 @media (max-width: 720px) {
