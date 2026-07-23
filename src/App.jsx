@@ -89,6 +89,17 @@ export default function App() {
             />
 
             <Route
+              path="/new/*"
+              element={
+                <ProtectedRoute>
+                  <Suspense fallback={null}>
+                    <NewFrontend />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/"
               element={
                 <ProtectedRoute>

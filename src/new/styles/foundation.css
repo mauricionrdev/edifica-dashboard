@@ -1,0 +1,128 @@
+[data-edifica-new] {
+  --new-bg-app: #050607;
+  --new-bg-sidebar: #08090b;
+  --new-bg-topbar: rgba(8, 9, 11, 0.96);
+  --new-bg-surface: #0b0d10;
+  --new-bg-surface-raised: #101318;
+  --new-bg-control: #0d1014;
+  --new-bg-hover: #14181e;
+  --new-bg-selected: #171c23;
+  --new-bg-overlay: #0c0f13;
+  --new-bg-bar: #303640;
+  --new-bg-bar-hover: #434b57;
+  --new-bg-scrim: rgba(0, 0, 0, 0.58);
+  --new-bg-muted-overlay: rgba(0, 0, 0, 0.14);
+  --new-bg-track: rgba(255, 255, 255, 0.025);
+  --new-bg-track-strong: rgba(255, 255, 255, 0.05);
+  --new-bg-row-hover: rgba(255, 255, 255, 0.018);
+  --new-bg-icon: rgba(255, 255, 255, 0.035);
+  --new-bg-skeleton-highlight: #12161b;
+
+  --new-text-primary: #f2f3f5;
+  --new-text-secondary: #b8bec7;
+  --new-text-muted: #7e8793;
+  --new-text-faint: #59616c;
+
+  --new-line-subtle: rgba(255, 255, 255, 0.05);
+  --new-line: rgba(255, 255, 255, 0.085);
+  --new-line-strong: rgba(255, 255, 255, 0.14);
+
+  --new-brand: #f5b800;
+  --new-brand-hover: #ffc526;
+  --new-brand-soft: rgba(245, 184, 0, 0.1);
+  --new-brand-line: rgba(245, 184, 0, 0.25);
+  --new-brand-contrast: #1a1500;
+  --new-brand-focus: rgba(245, 184, 0, 0.72);
+  --new-brand-glow: rgba(245, 184, 0, 0.035);
+  --new-avatar: #e4ad13;
+  --new-avatar-contrast: #211800;
+
+  --new-success: #5bd178;
+  --new-success-soft: rgba(57, 183, 88, 0.11);
+  --new-success-line: rgba(91, 209, 120, 0.22);
+  --new-warning: #f2bd46;
+  --new-warning-soft: rgba(242, 189, 70, 0.11);
+  --new-warning-line: rgba(242, 189, 70, 0.24);
+  --new-danger: #f07878;
+  --new-danger-soft: rgba(240, 120, 120, 0.1);
+  --new-danger-line: rgba(240, 120, 120, 0.22);
+  --new-info: #72b7f4;
+  --new-info-soft: rgba(114, 183, 244, 0.1);
+  --new-info-line: rgba(114, 183, 244, 0.22);
+
+  --new-radius-control: 7px;
+  --new-radius-surface: 8px;
+  --new-radius-overlay: 10px;
+
+  --new-shadow-overlay: 0 22px 70px rgba(0, 0, 0, 0.48);
+  --new-shadow-sidebar: 28px 0 60px rgba(0, 0, 0, 0.48);
+  --new-sidebar-expanded: 256px;
+  --new-sidebar-collapsed: 76px;
+  --new-topbar-height: 64px;
+
+  color: var(--new-text-primary);
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+[data-edifica-new],
+[data-edifica-new] *,
+[data-edifica-new] *::before,
+[data-edifica-new] *::after {
+  box-sizing: border-box;
+}
+
+[data-edifica-new] button,
+[data-edifica-new] input,
+[data-edifica-new] textarea {
+  color: inherit;
+  font: inherit;
+}
+
+[data-edifica-new] button,
+[data-edifica-new] a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-edifica-new] :where(button, a, input, textarea, [role="button"], [role="option"]):focus-visible {
+  outline: 2px solid var(--new-brand-focus);
+  outline-offset: 2px;
+}
+
+[data-edifica-new] ::selection {
+  color: var(--new-text-primary);
+  background: var(--new-brand-line);
+}
+
+[data-edifica-new] * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--new-line-strong) transparent;
+}
+
+[data-edifica-new] *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-edifica-new] *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-edifica-new] *::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--new-line-strong);
+  background-clip: padding-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-edifica-new] *,
+  [data-edifica-new] *::before,
+  [data-edifica-new] *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}
