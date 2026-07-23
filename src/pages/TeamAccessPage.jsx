@@ -594,6 +594,32 @@ function UserFormModal({
             </div>
           </section>
 
+          <section className={styles.selectorBlock}>
+            <div className={styles.selectorHead}>
+              <strong>Cargos secundários</strong>
+              <span>{form.secondaryRoles.length} selecionado(s)</span>
+            </div>
+            <div className={styles.secondaryRoleSelectGrid}>
+              {SECONDARY_ROLE_OPTIONS
+                .filter((role) => role !== form.role)
+                .map((role) => {
+                  const checked = form.secondaryRoles.includes(role);
+                  return (
+                    <label
+                      key={role}
+                      className={`${styles.checkboxCard} ${styles.secondaryRoleOption} ${checked ? styles.checkboxCardActive : ''}`.trim()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleSecondaryRole(role)}
+                      />
+                      <span>{roleLabel(role)}</span>
+                    </label>
+                  );
+                })}
+            </div>
+          </section>
 
           <section className={styles.selectorBlock}>
             <div className={styles.selectorHead}><strong>Escopo de squads</strong><span>{form.squads.length} selecionado(s)</span></div>

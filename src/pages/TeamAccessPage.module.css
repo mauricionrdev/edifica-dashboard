@@ -660,6 +660,7 @@ button:disabled,
 
 .checkboxGrid,
 .squadSelectGrid,
+.secondaryRoleSelectGrid,
 .permissionSelectGrid {
   min-width: 0;
   display: grid;
@@ -669,6 +670,21 @@ button:disabled,
 .checkboxGrid,
 .squadSelectGrid {
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.secondaryRoleSelectGrid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.secondaryRoleOption {
+  min-height: 38px;
+}
+
+.secondaryRoleOption span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .permissionSelectGrid {
