@@ -50,6 +50,7 @@ const SupportV2Page = lazy(() => import('./pages/v2/SupportV2Page.jsx'));
 const V2OverviewPage = lazy(() => import('./pages/v2/V2OverviewPage.jsx'));
 const ValidationV2Page = lazy(() => import('./pages/v2/ValidationV2Page.jsx'));
 const PromotionV2Page = lazy(() => import('./pages/v2/PromotionV2Page.jsx'));
+const NewFrontend = lazy(() => import('./new/NewFrontend.jsx'));
 
 function LazyV2({ Component }) {
   return (
@@ -66,6 +67,17 @@ export default function App() {
         <ToastProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+
+            <Route
+              path="/new/*"
+              element={
+                <ProtectedRoute>
+                  <Suspense fallback={null}>
+                    <NewFrontend />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path="/espaco-trabalho"
